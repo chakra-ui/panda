@@ -287,6 +287,57 @@ describe('validateConfig', () => {
     )
   })
 
+  test('should accept a valid object (multi-block) condition', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
+      conditions: {
+        hoverActive: {
+          '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+          '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+        },
+      },
+    }
+    expect(() => validateConfig(config)).not.toThrow()
+  })
+
+  test('should report error when an object condition has no @slot marker', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
+      conditions: {
+        hoverActive: {
+          '@media (hover: hover)': { '&:hover': {} },
+        },
+      },
+    }
+    expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: ⚠️ Invalid config:
+      - [conditions] Object conditions must contain at least one \`'@slot'\` marker
+      ]
+    `,
+    )
+  })
+
+  test('should report error when a leaf is a non-@slot string (typo)', () => {
+    const config: Partial<UserConfig> = {
+      validation: 'error',
+      conditions: {
+        // @ts-expect-error intentional: typo on slot marker
+        hoverActive: {
+          '@media (hover: hover)': { '&:hover': '@stol' },
+        },
+      },
+    }
+    expect(() => validateConfig(config)).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: ⚠️ Invalid config:
+      - [conditions] Object condition leaves must be the literal string \`'@slot'\`, got \`"@stol"\` at \`&:hover\`
+      - [conditions] Object conditions must contain at least one \`'@slot'\` marker
+      ]
+    `,
+    )
+  })
+
   test('should report error for token paths not ending with value', () => {
     const config: Partial<UserConfig> = {
       validation: 'error',

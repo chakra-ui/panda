@@ -3,7 +3,7 @@ import { sortAtRules } from './sort-at-rules'
 import { getPropertyPriority } from '@pandacss/shared'
 
 const hasAtRule = (conditions: ConditionDetails[]) =>
-  conditions.some((details) => details.type === 'at-rule' || details.type === 'mixed')
+  conditions.some((details) => details.type === 'at-rule' || details.type === 'mixed' || details.type === 'multi-block')
 const styleOrder = [':link', ':visited', ':focus-within', ':focus', ':focus-visible', ':hover', ':active']
 
 const pseudoSelectorScore = (selector: string) => {
@@ -27,7 +27,12 @@ const compareSelectors = (a: WithConditions, b: WithConditions) => {
 /**
  * Flatten mixed conditions to Array<AtRuleCondition | SelectorCondition>
  */
-const flatten = (conds: ConditionDetails[]) => conds.flatMap((cond) => (cond.type === 'mixed' ? cond.value : cond))
+const flatten = (conds: ConditionDetails[]) =>
+  conds.flatMap((cond) => {
+    if (cond.type === 'mixed') return cond.value
+    if (cond.type === 'multi-block') return cond.value.flatMap((block) => block.value)
+    return cond
+  })
 
 /**
  * Compare 2 Array<AtRuleCondition | SelectorCondition>

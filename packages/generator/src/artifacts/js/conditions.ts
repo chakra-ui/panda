@@ -1,5 +1,14 @@
 import type { Context } from '@pandacss/core'
+import type { ConditionQuery } from '@pandacss/types'
 import outdent from 'outdent'
+
+function formatConditionJsDoc(raw: ConditionQuery | undefined): string {
+  if (!raw) return ''
+  if (typeof raw === 'string') return `/** \`${raw}\` */\n`
+  if (Array.isArray(raw)) return `/** \`${raw.join(' ')}\` */\n`
+  // Object condition (multi-block) - display a compact representation
+  return `/** Multi-block condition */\n`
+}
 
 export function generateConditions(ctx: Context) {
   const keys = Object.keys(ctx.conditions.values).concat('base')
@@ -52,9 +61,7 @@ export function generateConditions(ctx: Context) {
           `\t${
             key === 'base'
               ? `/** The base (=no conditions) styles to apply  */\n`
-              : ctx.conditions.get(key)
-                ? `/** \`${([] as string[]).concat(ctx.conditions.get(key) ?? '').join(' ')}\` */\n`
-                : ''
+              : formatConditionJsDoc(ctx.conditions.get(key))
           }\t${JSON.stringify(key)}: string`,
       )
       .join('\n')}

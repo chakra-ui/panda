@@ -1,6 +1,7 @@
 import type { Conditions, Context } from '@pandacss/core'
 import { Stylesheet, expandNestedCss, extractParentSelectors, stringify } from '@pandacss/core'
 import { logger } from '@pandacss/logger'
+import type { ConditionQuery } from '@pandacss/types'
 import postcss, { AtRule, CssSyntaxError, Rule } from 'postcss'
 
 export function generateTokenCss(ctx: Context, sheet: Stylesheet) {
@@ -69,25 +70,75 @@ export function stringifyVars(options: {
 
   const css = stringify(varsObj)
 
-  const mapped = keys
-    .map((key) => conditions.get(key))
-    .map((condition) => {
-      const lastSegment = Array.isArray(condition) ? condition.at(-1)! : condition
-      if (!lastSegment) return
+  // Each chained condition contributes one or more selector paths.
+  // String/array conditions yield a single path; multi-block (object)
+  // conditions yield one path per `@slot` leaf. The final rules are the
+  // cartesian product of paths across the chain.
+  const altsPerKey = keys.map((key) => getSelectorPaths(conditions.get(key)))
+  if (altsPerKey.some((alts) => alts.length === 0)) return
 
-      const parent = extractParentSelectors(lastSegment)
-      // ASSUMPTION: the nature of parent selectors with tokens is that they're merged
-      // [data-color-mode=dark][data-theme=pastel]
-      // If we really want it nested, we remove the `&`
-      return parent ? `&${parent}` : lastSegment
+  let combos: string[][] = [[]]
+  for (const alts of altsPerKey) {
+    const next: string[][] = []
+    for (const partial of combos) {
+      for (const alt of alts) {
+        next.push([...partial, ...alt])
+      }
+    }
+    combos = next
+  }
+
+  const rules = combos
+    .map((segments) => {
+      const transformed = segments.map(transformSegment).filter(Boolean) as string[]
+      const rule = getDeepestRule(root, transformed)
+      if (!rule) return
+      getDeepestNode(rule)?.append(css)
+      return expandNestedCss(rule.toString())
     })
-    .filter(Boolean)
+    .filter(Boolean) as string[]
 
-  const rule = getDeepestRule(root, mapped as string[])
-  if (!rule) return
+  return rules.length ? rules.join('\n\n') : undefined
+}
 
-  getDeepestNode(rule)?.append(css)
-  return expandNestedCss(rule.toString())
+/**
+ * Convert a condition value into one or more selector paths.
+ * - string: one path with one segment
+ * - array (mixed): one path with the last segment (preserves prior behavior)
+ * - object (multi-block): one path per `@slot` leaf, with the full segment chain
+ */
+function getSelectorPaths(condition: ConditionQuery | undefined): string[][] {
+  if (condition == null) return []
+  if (typeof condition === 'string') return [[condition]]
+  if (Array.isArray(condition)) {
+    const last = condition.at(-1)
+    return last ? [[last]] : []
+  }
+  const paths: string[][] = []
+  const walk = (node: Record<string, any>, path: string[]) => {
+    for (const [key, value] of Object.entries(node)) {
+      if (value === '@slot') {
+        paths.push([...path, key])
+      } else if (typeof value === 'object' && value !== null) {
+        walk(value, [...path, key])
+      }
+    }
+  }
+  walk(condition as Record<string, any>, [])
+  return paths
+}
+
+/**
+ * Apply the existing parent-selector transform to selector segments.
+ * At-rules pass through untouched so `getDeepestRule` can wrap them.
+ * ASSUMPTION: the nature of parent selectors with tokens is that they're merged
+ * (e.g. `[data-color-mode=dark][data-theme=pastel]`). Removing the `&` keeps
+ * sibling selectors flat instead of nested.
+ */
+function transformSegment(seg: string): string {
+  if (seg.startsWith('@')) return seg
+  const parent = extractParentSelectors(seg)
+  return parent ? `&${parent}` : seg
 }
 
 function getDeepestRule(root: string, selectors: string[]) {

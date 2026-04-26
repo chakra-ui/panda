@@ -1261,4 +1261,238 @@ describe('generator', () => {
       }"
     `)
   })
+
+  test('semantic tokens emit one rule per @slot path for multi-block conditions', () => {
+    const css = tokenCss({
+      eject: true,
+      conditions: {
+        hoverActive: {
+          '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+          '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+        },
+      },
+      theme: {
+        tokens: {
+          colors: {
+            red: { 500: { value: '#f00' } },
+            blue: { 500: { value: '#00f' } },
+          },
+          spacing: {
+            '1': { value: '0.25rem' },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            accent: {
+              value: {
+                base: '{colors.red.500}',
+                _hoverActive: '{colors.blue.500}',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --colors-red-500: #f00;
+          --colors-blue-500: #00f;
+          --spacing-1: 0.25rem;
+          --colors-accent: var(--colors-red-500);
+      }
+
+        @media (hover: hover) {
+          :is(:hover, [data-hover]) {
+            --colors-accent: var(--colors-blue-500)
+                  }
+          }
+
+        @media (hover: none) {
+          :is(:active, [data-active]) {
+            --colors-accent: var(--colors-blue-500)
+                  }
+          }
+      }"
+    `)
+  })
+
+  test('multi-block stacked under a parent-nesting condition produces cartesian rules', () => {
+    const css = tokenCss({
+      eject: true,
+      conditions: {
+        dark: '.dark &',
+        hoverActive: {
+          '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+          '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+        },
+      },
+      theme: {
+        tokens: {
+          colors: {
+            red: { 500: { value: '#f00' } },
+            blue: { 500: { value: '#00f' } },
+            zinc: { 700: { value: '#3f3f46' } },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            accent: {
+              value: {
+                base: '{colors.red.500}',
+                _dark: {
+                  _hoverActive: '{colors.zinc.700}',
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --colors-red-500: #f00;
+          --colors-blue-500: #00f;
+          --colors-zinc-700: #3f3f46;
+          --colors-accent: var(--colors-red-500);
+      }
+
+        @media (hover: hover) {
+          .dark:is(:hover, [data-hover]) {
+            --colors-accent: var(--colors-zinc-700)
+                      }
+              }
+
+        @media (hover: none) {
+          .dark:is(:active, [data-active]) {
+            --colors-accent: var(--colors-zinc-700)
+                      }
+              }
+      }"
+    `)
+  })
+
+  test('two stacked multi-block conditions produce N×M rules', () => {
+    const css = tokenCss({
+      eject: true,
+      conditions: {
+        hoverActive: {
+          '@media (hover: hover)': { '&:is(:hover, [data-hover])': '@slot' },
+          '@media (hover: none)': { '&:is(:active, [data-active])': '@slot' },
+        },
+        lightDark: {
+          '@media (prefers-color-scheme: light)': { '&[data-mode="light"]': '@slot' },
+          '@media (prefers-color-scheme: dark)': { '&[data-mode="dark"]': '@slot' },
+        },
+      },
+      theme: {
+        tokens: {
+          colors: {
+            red: { 500: { value: '#f00' } },
+            blue: { 500: { value: '#00f' } },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            accent: {
+              value: {
+                base: '{colors.red.500}',
+                _hoverActive: {
+                  _lightDark: '{colors.blue.500}',
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --colors-red-500: #f00;
+          --colors-blue-500: #00f;
+          --colors-accent: var(--colors-red-500);
+      }
+
+        @media (hover: hover) {
+          @media (prefers-color-scheme: light) {
+            :is(:hover, [data-hover])[data-mode="light"] {
+              --colors-accent: var(--colors-blue-500)
+                              }
+                      }
+          }
+
+        @media (hover: hover) {
+          @media (prefers-color-scheme: dark) {
+            :is(:hover, [data-hover])[data-mode="dark"] {
+              --colors-accent: var(--colors-blue-500)
+                              }
+                      }
+          }
+
+        @media (hover: none) {
+          @media (prefers-color-scheme: light) {
+            :is(:active, [data-active])[data-mode="light"] {
+              --colors-accent: var(--colors-blue-500)
+                              }
+                      }
+          }
+
+        @media (hover: none) {
+          @media (prefers-color-scheme: dark) {
+            :is(:active, [data-active])[data-mode="dark"] {
+              --colors-accent: var(--colors-blue-500)
+                              }
+                      }
+          }
+      }"
+    `)
+  })
+
+  test('selector-only multi-block (darkTheme matches data-theme=dark or data-dark-theme) emits one rule per attr', () => {
+    const css = tokenCss({
+      eject: true,
+      conditions: {
+        darkTheme: {
+          '&[data-theme="dark"]': '@slot',
+          '&[data-dark-theme]': '@slot',
+        },
+      },
+      theme: {
+        tokens: {
+          colors: {
+            zinc: { 50: { value: '#fafafa' }, 700: { value: '#3f3f46' } },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            surface: {
+              value: {
+                base: '{colors.zinc.50}',
+                _darkTheme: '{colors.zinc.700}',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(html) {
+          --colors-zinc-50: #fafafa;
+          --colors-zinc-700: #3f3f46;
+          --colors-surface: var(--colors-zinc-50);
+      }
+
+        [data-theme="dark"],[data-dark-theme] {
+          --colors-surface: var(--colors-zinc-700)
+      }
+      }"
+    `)
+  })
 })

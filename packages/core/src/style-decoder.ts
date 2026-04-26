@@ -13,6 +13,7 @@ import type {
   Dict,
   GroupedResult,
   GroupedStyleResultDetails,
+  MultiBlockCondition,
   RecipeBaseResult,
   StyleEntry,
   StyleResultObject,
@@ -104,9 +105,49 @@ export class StyleDecoder {
   }
 
   resolveCondition = (condition: ConditionDetails) => {
-    return Array.isArray(condition.raw)
-      ? condition.raw.map((c) => this.context.utility.tokens.resolveReference(c))
-      : this.context.utility.tokens.resolveReference(condition.raw)
+    if (condition.type === 'multi-block') return []
+
+    if (Array.isArray(condition.raw)) {
+      return condition.raw.map((c) => this.context.utility.tokens.resolveReference(c))
+    }
+
+    return this.context.utility.tokens.resolveReference(condition.raw)
+  }
+
+  /**
+   * Expands multi-block conditions into separate sets of conditions.
+   * Each block becomes an independent condition set that produces its own CSS block.
+   * When multiple multi-block conditions are stacked (e.g. two custom multi-block
+   * conditions used together), the cartesian product of all blocks is produced.
+   * Returns null if no multi-block condition is found.
+   */
+  private expandMultiBlock(conditions: ConditionDetails[]): ConditionDetails[][] | null {
+    if (!conditions.some((c) => c.type === 'multi-block')) return null
+
+    // For each slot, list its alternative condition arrays.
+    // - multi-block: one alternative per inner block (flatten the MixedCondition's value)
+    // - others: a single alternative containing just that condition
+    const alternatives: ConditionDetails[][][] = conditions.map((c) => {
+      if (c.type === 'multi-block') {
+        return (c as MultiBlockCondition).value.map((block) => block.value.filter(Boolean) as ConditionDetails[])
+      }
+      return [[c]]
+    })
+
+    // Cartesian product across all slots.
+    let combos: ConditionDetails[][] = [[]]
+    for (const slot of alternatives) {
+      const next: ConditionDetails[][] = []
+      for (const partial of combos) {
+        for (const choice of slot) {
+          next.push([...partial, ...choice])
+        }
+      }
+      combos = next
+    }
+
+    // Sort each combo: at-rules first, pseudo-elements last, preserve relative order.
+    return combos.map((combo) => sortConditionDetails(combo))
   }
 
   private getAtomic = (hash: string) => {
@@ -128,8 +169,18 @@ export class StyleDecoder {
 
     if (entry.cond) {
       conditions = this.context.conditions.sort(parts)
-      const path = basePath.concat(conditions.flatMap((c) => this.resolveCondition(c)))
-      deepSet(obj, path, styles)
+
+      // Expand multi-block conditions into separate CSS blocks
+      const expanded = this.expandMultiBlock(conditions)
+      if (expanded) {
+        for (const blockConditions of expanded) {
+          const path = basePath.concat(blockConditions.flatMap((c) => this.resolveCondition(c)))
+          deepSet(obj, path, styles)
+        }
+      } else {
+        const path = basePath.concat(conditions.flatMap((c) => this.resolveCondition(c)))
+        deepSet(obj, path, styles)
+      }
     } else {
       deepSet(obj, basePath, styles)
     }
@@ -190,8 +241,17 @@ export class StyleDecoder {
     const sorted = sortStyleRules(details)
     sorted.forEach((value) => {
       if (value.conditions) {
-        const path = basePath.concat(value.conditions.flatMap((c) => this.resolveCondition(c)))
-        obj = deepSet(obj, path, value.result)
+        // Expand multi-block conditions into separate CSS blocks
+        const expanded = this.expandMultiBlock(value.conditions)
+        if (expanded) {
+          for (const blockConditions of expanded) {
+            const path = basePath.concat(blockConditions.flatMap((c) => this.resolveCondition(c)))
+            obj = deepSet(obj, path, value.result)
+          }
+        } else {
+          const path = basePath.concat(value.conditions.flatMap((c) => this.resolveCondition(c)))
+          obj = deepSet(obj, path, value.result)
+        }
       } else {
         obj = deepSet(obj, basePath, value.result)
       }
@@ -385,4 +445,31 @@ const castBoolean = (value: string) => {
   if (value === 'true') return true
   if (value === 'false') return false
   return value
+}
+
+const pseudoElementRegex = /::[\w-]/
+
+/**
+ * Sort flattened condition details (at-rules and selectors only):
+ * at-rules first, pseudo-elements last, preserve relative order.
+ *
+ * Note: This only operates on individual at-rule and selector conditions
+ * (not mixed or multi-block), so checking `raw` as string is sufficient
+ * for pseudo-element detection.
+ */
+const sortConditionDetails = (conditions: ConditionDetails[]): ConditionDetails[] => {
+  const indexed = conditions.map((cond, i) => ({ cond, i }))
+  indexed.sort((a, b) => {
+    const aIsAtRule = a.cond.type === 'at-rule'
+    const bIsAtRule = b.cond.type === 'at-rule'
+    if (aIsAtRule && !bIsAtRule) return -1
+    if (!aIsAtRule && bIsAtRule) return 1
+
+    const aIsPseudo = typeof a.cond.raw === 'string' && pseudoElementRegex.test(a.cond.raw)
+    const bIsPseudo = typeof b.cond.raw === 'string' && pseudoElementRegex.test(b.cond.raw)
+    if (aIsPseudo !== bIsPseudo) return aIsPseudo ? 1 : -1
+
+    return a.i - b.i
+  })
+  return indexed.map((item) => item.cond)
 }
