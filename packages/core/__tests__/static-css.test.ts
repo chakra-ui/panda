@@ -2114,6 +2114,18 @@ describe('static-css', () => {
         .withCompound--size_sm {
           font-size: 2px;
       }
+
+        .withCompound--compound_0 {
+          font-size: 3px;
+      }
+
+        .withCompound--compound_0:is(:hover, [data-hover]) {
+          font-size: 4px;
+      }
+
+        [data-theme=dark] .withCompound--compound_0:is(:hover, [data-hover]),.dark .withCompound--compound_0:is(:hover, [data-hover]),.withCompound--compound_0:is(:hover, [data-hover]).dark,.withCompound--compound_0:is(:hover, [data-hover])[data-theme=dark] {
+          font-size: 5px;
+      }
       }
 
       @layer utilities {
