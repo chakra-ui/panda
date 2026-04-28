@@ -16,6 +16,8 @@ import {
   generateReactJsxPattern,
   generateReactJsxTypes,
   generateReactCreateStyleContext,
+  generateReactCreateRecipeContext,
+  generateReactCreateSlotRecipeContext,
 } from './react-jsx'
 import { generateReactJsxStringLiteralFactory } from './react-jsx/jsx.string-literal'
 import { generateReactJsxStringLiteralTypes } from './react-jsx/types.string-literal'
@@ -127,5 +129,35 @@ export function generateJsxCreateStyleContext(ctx: Context) {
   if (ctx.isTemplateLiteralSyntax || !ctx.jsx.framework) return
   if (!isKnownFramework(ctx.jsx.framework)) return
   const generator = (createStyleContextMap as any)[ctx.jsx.framework]
+  return generator?.(ctx)
+}
+
+/* -----------------------------------------------------------------------------
+ * Create Recipe Context JSX
+ * -----------------------------------------------------------------------------*/
+
+const createRecipeContextMap = {
+  react: generateReactCreateRecipeContext,
+}
+
+export function generateJsxCreateRecipeContext(ctx: Context) {
+  if (ctx.isTemplateLiteralSyntax || !ctx.jsx.framework) return
+  if (!isKnownFramework(ctx.jsx.framework)) return
+  const generator = (createRecipeContextMap as any)[ctx.jsx.framework]
+  return generator?.(ctx)
+}
+
+/* -----------------------------------------------------------------------------
+ * Create Slot Recipe Context JSX
+ * -----------------------------------------------------------------------------*/
+
+const createSlotRecipeContextMap = {
+  react: generateReactCreateSlotRecipeContext,
+}
+
+export function generateJsxCreateSlotRecipeContext(ctx: Context) {
+  if (ctx.isTemplateLiteralSyntax || !ctx.jsx.framework) return
+  if (!isKnownFramework(ctx.jsx.framework)) return
+  const generator = (createSlotRecipeContextMap as any)[ctx.jsx.framework]
   return generator?.(ctx)
 }
