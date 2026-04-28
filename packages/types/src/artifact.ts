@@ -24,6 +24,8 @@ export type ArtifactId =
   | 'jsx-factory'
   | 'jsx-patterns'
   | 'jsx-create-style-context'
+  | 'jsx-create-recipe-context'
+  | 'jsx-create-slot-recipe-context'
   | 'jsx-patterns-index'
   | 'css-index'
   | 'themes'

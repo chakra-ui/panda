@@ -306,6 +306,14 @@ describe('setup-artifacts', () => {
           "jsx/create-style-context.d.ts",
         ],
         [
+          "jsx/create-recipe-context.mjs",
+          "jsx/create-recipe-context.d.ts",
+        ],
+        [
+          "jsx/create-slot-recipe-context.mjs",
+          "jsx/create-slot-recipe-context.d.ts",
+        ],
+        [
           "jsx/index.mjs",
           "jsx/index.d.ts",
         ],

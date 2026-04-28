@@ -14,7 +14,14 @@ import { generatePattern } from './js/pattern'
 import { generateCreateRecipe, generateRecipes } from './js/recipe'
 import { generateSvaFn } from './js/sva'
 import { generateTokenJs } from './js/token'
-import { generateJsxFactory, generateJsxPatterns, generateJsxTypes, generateJsxCreateStyleContext } from './jsx'
+import {
+  generateJsxFactory,
+  generateJsxPatterns,
+  generateJsxTypes,
+  generateJsxCreateStyleContext,
+  generateJsxCreateRecipeContext,
+  generateJsxCreateSlotRecipeContext,
+} from './jsx'
 import { getGeneratedSystemTypes, getGeneratedTypes } from './types/generated'
 import { generateTypesEntry } from './types/main'
 import { generatePropTypes } from './types/prop-types'
@@ -338,24 +345,61 @@ function setupJsxCreateStyleContext(ctx: Context): Artifact | undefined {
   }
 }
 
+function setupJsxCreateRecipeContext(ctx: Context): Artifact | undefined {
+  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
+
+  const createRecipeContext = generateJsxCreateRecipeContext(ctx)
+  if (!createRecipeContext) return
+
+  return {
+    id: 'jsx-create-recipe-context',
+    dir: ctx.paths.jsx,
+    files: [
+      { file: ctx.file.ext('create-recipe-context'), code: createRecipeContext.js },
+      { file: ctx.file.extDts('create-recipe-context'), code: createRecipeContext.dts },
+    ],
+  }
+}
+
+function setupJsxCreateSlotRecipeContext(ctx: Context): Artifact | undefined {
+  if (!ctx.jsx.framework || ctx.isTemplateLiteralSyntax) return
+
+  const createSlotRecipeContext = generateJsxCreateSlotRecipeContext(ctx)
+  if (!createSlotRecipeContext) return
+
+  return {
+    id: 'jsx-create-slot-recipe-context',
+    dir: ctx.paths.jsx,
+    files: [
+      { file: ctx.file.ext('create-slot-recipe-context'), code: createSlotRecipeContext.js },
+      { file: ctx.file.extDts('create-slot-recipe-context'), code: createSlotRecipeContext.dts },
+    ],
+  }
+}
+
 function setupJsxPatternsIndex(ctx: Context): Artifact | undefined {
   if (!ctx.jsx.framework) return
 
   const isStyleProp = !ctx.isTemplateLiteralSyntax
   const patternNames = ctx.patterns.details.map((pattern) => pattern.dashName)
   const styleContextExclude = ['qwik', 'svelte']
+  const isReact = ctx.jsx.framework === 'react'
 
   const index = {
     js: outdent`
   ${ctx.file.exportStar('./factory')}
   ${isStyleProp ? ctx.file.exportStar('./is-valid-prop') : ''}
   ${isStyleProp && !styleContextExclude.includes(ctx.jsx.framework) ? ctx.file.exportStar('./create-style-context') : ''}
+  ${isStyleProp && isReact ? ctx.file.exportStar('./create-recipe-context') : ''}
+  ${isStyleProp && isReact ? ctx.file.exportStar('./create-slot-recipe-context') : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportStar(`./${file}`)).join('\n')) : ''}
   `,
     dts: outdent`
   ${ctx.file.exportTypeStar('./factory')}
   ${isStyleProp ? ctx.file.exportTypeStar('./is-valid-prop') : ''}
   ${isStyleProp ? ctx.file.exportTypeStar('./create-style-context') : ''}
+  ${isStyleProp && isReact ? ctx.file.exportTypeStar('./create-recipe-context') : ''}
+  ${isStyleProp && isReact ? ctx.file.exportTypeStar('./create-slot-recipe-context') : ''}
   ${isStyleProp ? outdent.string(patternNames.map((file) => ctx.file.exportTypeStar(`./${file}`)).join('\n')) : ''}
   ${ctx.file.exportType([ctx.jsx.typeName, ctx.jsx.componentName].join(', '), '../types/jsx')}
     `,
@@ -492,6 +536,8 @@ const entries: ArtifactEntry[] = [
   ['jsx-helpers', setupJsxHelpers],
   ['jsx-patterns', setupJsxPatterns],
   ['jsx-create-style-context', setupJsxCreateStyleContext],
+  ['jsx-create-recipe-context', setupJsxCreateRecipeContext],
+  ['jsx-create-slot-recipe-context', setupJsxCreateSlotRecipeContext],
   ['jsx-patterns-index', setupJsxPatternsIndex],
   ['css-index', setupCssIndex],
   ['themes', setupThemes],
