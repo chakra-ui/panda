@@ -45,6 +45,6 @@
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {
-    "@types/picomatch": "4.0.2"
+    "@types/picomatch": "4.0.3"
   }
 }

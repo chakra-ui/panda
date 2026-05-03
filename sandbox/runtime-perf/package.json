@@ -13,19 +13,19 @@
     "visualize": "pnpm panda codegen --clean && vite-bundle-visualizer"
   },
   "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@pandacss/studio": "workspace:*",
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "5.1.1",
-    "postcss": "8.5.6",
+    "@vitejs/plugin-react": "5.2.0",
+    "postcss": "8.5.13",
     "source-map-explorer": "2.5.3",
-    "typescript": "6.0.2",
-    "vite": "7.2.6",
+    "typescript": "6.0.3",
+    "vite": "7.3.2",
     "vite-bundle-visualizer": "1.2.1"
   }
 }
