@@ -4,6 +4,70 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.11.0](#1.11.0) - 2026-05-03
+
+### Added
+
+- Support multi-block conditions with declarative object syntax.
+
+  A single condition can now generate multiple independent CSS blocks using a declarative object syntax with `@slot` markers. This is useful for patterns like hover-on-desktop + active-on-touch, where each block needs its own at-rule.
+
+  **Config:**
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    conditions: {
+      extend: {
+        hoverActive: {
+          '@media (hover: hover)': {
+            '&:is(:hover, [data-hover])': '@slot',
+          },
+          '@media (hover: none)': {
+            '&:is(:active, [data-active])': '@slot',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  **Usage:**
+
+  ```ts
+  css({ _hoverActive: { bg: 'red' } })
+  ```
+
+  **Generated CSS:**
+
+  ```css
+  @media (hover: hover) {
+    .hoverActive\:bg_red:is(:hover, [data-hover]) {
+      background: red;
+    }
+  }
+  @media (hover: none) {
+    .hoverActive\:bg_red:is(:active, [data-active]) {
+      background: red;
+    }
+  }
+  ```
+
+  This is backward compatible — existing `string` and `string[]` conditions continue to work as before.
+
+### Fixed
+
+- Fix `panda codegen` crashing with `ERR_REQUIRE_ESM` on Node 18 and Node 20.0–20.18 by pinning `@csstools/postcss-cascade-layers` back to `5.0.2`.
+
+  Version `6.0.0` dropped CommonJS support and raised the engine requirement to Node `>=20.19.0`. Since `@pandacss/core` ships a CJS build, we stay on the last dual-published version — the two releases are functionally equivalent.
+
+- Fix `panda` crashing with a TypeScript compiler options error when using a `tsconfig.json` with string-form enum values like `target: "ESNext"`.
+
+  TypeScript 6.0 (inside `ts-morph@28`) now requires `compilerOptions` to be passed as numeric enums, not raw JSON strings. Panda now normalizes `compilerOptions` via `ts.convertCompilerOptionsFromJson` before handing them to ts-morph.
+
+- Improve compiled JSX extraction so `css` props are correctly recognized from framework runtime helper output (React, Preact, Vue, Solid, and Qwik builds).
+
 ## [1.10.0](#1.10.0) - 2026-04-18
 
 ### Added
