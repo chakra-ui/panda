@@ -1,5 +1,13 @@
 # @pandacss/extractor
 
+## 1.11.0
+
+### Patch Changes
+
+- b567ae6: Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including
+  React, Preact, Vue, Solid, and Qwik builds.
+  - @pandacss/shared@1.11.0
+
 ## 1.10.0
 
 ### Patch Changes

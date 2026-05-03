@@ -1,5 +1,77 @@
 # @pandacss/core
 
+## 1.11.0
+
+### Minor Changes
+
+- 78869ae: ### Added: Multi-block conditions with object syntax
+
+  Allow a single condition to generate multiple independent CSS blocks using a declarative object syntax with `@slot`
+  markers.
+
+  This is useful for defining conditions like hover-for-desktop + active-for-touch in one condition, where each block
+  needs its own at-rule.
+
+  **Config:**
+
+  ```ts
+  import { defineConfig } from '@pandacss/dev'
+
+  export default defineConfig({
+    conditions: {
+      extend: {
+        hoverActive: {
+          '@media (hover: hover)': {
+            '&:is(:hover, [data-hover])': '@slot',
+          },
+          '@media (hover: none)': {
+            '&:is(:active, [data-active])': '@slot',
+          },
+        },
+      },
+    },
+  })
+  ```
+
+  **Usage:**
+
+  ```ts
+  css({ _hoverActive: { bg: 'red' } })
+  ```
+
+  **Generated CSS:**
+
+  ```css
+  @media (hover: hover) {
+    .hoverActive\:bg_red:is(:hover, [data-hover]) {
+      background: red;
+    }
+  }
+  @media (hover: none) {
+    .hoverActive\:bg_red:is(:active, [data-active]) {
+      background: red;
+    }
+  }
+  ```
+
+  This is backward compatible — existing `string` and `string[]` conditions continue to work as before.
+
+### Patch Changes
+
+- 055e69c: Pin `@csstools/postcss-cascade-layers` back to `5.0.2`.
+
+  Version `6.0.0` dropped the CommonJS export and raised the engine requirement to Node `>=20.19.0`, which broke
+  `panda codegen` on Node 20.0–20.18 and Node 18 with `ERR_REQUIRE_ESM` (issue #3518). Since `@pandacss/core` ships a
+  CJS build that requires the package, we stay on the last dual-published version. The two releases are functionally
+  equivalent — v6 only removed CJS support.
+
+- Updated dependencies [78869ae]
+  - @pandacss/types@1.11.0
+  - @pandacss/logger@1.11.0
+  - @pandacss/token-dictionary@1.11.0
+  - @pandacss/is-valid-prop@1.11.0
+  - @pandacss/shared@1.11.0
+
 ## 1.10.0
 
 ### Minor Changes

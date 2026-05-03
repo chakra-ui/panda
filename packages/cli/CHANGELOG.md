@@ -1,5 +1,21 @@
 # @pandacss/dev
 
+## 1.11.0
+
+### Patch Changes
+
+- Updated dependencies [78869ae]
+  - @pandacss/types@1.11.0
+  - @pandacss/config@1.11.0
+  - @pandacss/node@1.11.0
+  - @pandacss/logger@1.11.0
+  - @pandacss/mcp@1.11.0
+  - @pandacss/preset-base@1.11.0
+  - @pandacss/preset-panda@1.11.0
+  - @pandacss/token-dictionary@1.11.0
+  - @pandacss/postcss@1.11.0
+  - @pandacss/shared@1.11.0
+
 ## 1.10.0
 
 ### Patch Changes

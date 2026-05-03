@@ -1,5 +1,13 @@
 # @pandacss/plugin-lightningcss
 
+## 1.11.0
+
+### Patch Changes
+
+- Updated dependencies [78869ae]
+  - @pandacss/types@1.11.0
+  - @pandacss/logger@1.11.0
+
 ## 1.10.0
 
 ### Minor Changes

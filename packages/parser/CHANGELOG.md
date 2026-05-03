@@ -1,5 +1,38 @@
 # @pandacss/parser
 
+## 1.11.0
+
+### Patch Changes
+
+- b567ae6: Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including
+  React, Preact, Vue, Solid, and Qwik builds.
+- 0608e92: Normalize tsconfig `compilerOptions` before passing them to ts-morph.
+
+  TypeScript 6.0 (bundled inside `ts-morph@28` via `@ts-morph/common@0.29`) now refuses to accept raw JSON
+  `compilerOptions` with string-form enum values like `target: "ESNext"`. They must be converted to numeric enum values
+  via the TypeScript parser API.
+
+  Previously, panda forwarded the parsed-as-JSON `compilerOptions` from `get-tsconfig` straight to ts-morph, which
+  caused `panda` (codegen and any command that loads source files) to throw:
+
+  ```
+  target is a string value; tsconfig JSON must be parsed with parseJsonSourceFileConfigFileContent
+  or getParsedCommandLineOfConfigFile before passing to createProgram
+  ```
+
+  We now run `compilerOptions` through `ts.convertCompilerOptionsFromJson` so string enums are normalized before
+  ts-morph instantiates its TypeScript program.
+
+- Updated dependencies [b567ae6]
+- Updated dependencies [055e69c]
+- Updated dependencies [78869ae]
+  - @pandacss/extractor@1.11.0
+  - @pandacss/core@1.11.0
+  - @pandacss/types@1.11.0
+  - @pandacss/config@1.11.0
+  - @pandacss/logger@1.11.0
+  - @pandacss/shared@1.11.0
+
 ## 1.10.0
 
 ### Minor Changes
