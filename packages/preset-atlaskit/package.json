@@ -43,7 +43,7 @@
     "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
-    "@atlaskit/motion": "^5.3.10",
+    "@atlaskit/motion": "^6.0.0",
     "@atlaskit/tokens": "8.4.0"
   }
 }
