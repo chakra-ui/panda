@@ -54,7 +54,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@astrojs/react": "4.4.2",
+    "@astrojs/react": "5.0.4",
     "@nanostores/react": "^1.0.0",
     "@pandacss/astro-plugin-studio": "workspace:*",
     "@pandacss/config": "workspace:*",
