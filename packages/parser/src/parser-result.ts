@@ -55,7 +55,8 @@ export class ParserResult implements ParserResultInterface {
     this.css.add(this.append(Object.assign({ type: 'css' }, result)))
 
     const encoder = this.encoder
-    result.data.forEach((obj) => encoder.processAtomic(obj))
+    const grouped = this.context.config.groupedStyles
+    result.data.forEach((obj) => (grouped ? encoder.processGrouped(obj) : encoder.processAtomic(obj)))
   }
 
   setCva(result: ResultItem) {
@@ -82,7 +83,8 @@ export class ParserResult implements ParserResultInterface {
     this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
 
     const encoder = this.encoder
-    result.data.forEach((obj) => encoder.processStyleProps(obj))
+    const grouped = this.context.config.groupedStyles
+    result.data.forEach((obj) => encoder.processStyleProps(obj, grouped))
   }
 
   setPattern(name: string, result: ResultItem) {

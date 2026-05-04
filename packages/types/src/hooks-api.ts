@@ -1,6 +1,6 @@
 import type { UserConfig } from './config'
 import type { RecipeDefinition, RecipeVariantRecord, SlotRecipeDefinition, SlotRecipeVariantRecord } from './recipe'
-import type { AtomicStyleResult, RecipeBaseResult } from './style-rules'
+import type { AtomicStyleResult, GroupedResult, RecipeBaseResult } from './style-rules'
 import type { SystemStyleObject } from './system-types'
 
 export interface BaseRule {
@@ -9,6 +9,10 @@ export interface BaseRule {
 }
 
 export interface AtomicRule extends BaseRule {
+  styles: SystemStyleObject
+}
+
+export interface GroupedRule extends BaseRule {
   styles: SystemStyleObject
 }
 
@@ -22,6 +26,7 @@ export interface RecipeVariantsRule extends BaseRule {
 
 export interface ProcessorInterface {
   css(styles: SystemStyleObject): AtomicRule
+  grouped(styles: SystemStyleObject): GroupedRule
   cva(recipeConfig: RecipeDefinition<RecipeVariantRecord>): AtomicRecipeRule
   sva(recipeConfig: SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>): AtomicRecipeRule
   recipe(name: string, variants?: RecipeVariantRecord): RecipeVariantsRule | undefined
@@ -52,5 +57,5 @@ export interface HooksApiInterface {
   /**
    * Map that contains all the classNames found (and therefore generated) in the app code
    */
-  generatedClassNames: Map<string, AtomicStyleResult | RecipeBaseResult>
+  generatedClassNames: Map<string, AtomicStyleResult | RecipeBaseResult | GroupedResult>
 }

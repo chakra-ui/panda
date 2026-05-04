@@ -423,6 +423,13 @@ interface CodegenOptions {
    * @default false
    */
   forceConsistentTypeExtension?: boolean
+  /**
+   * Whether to group multiple CSS properties from a single `css()` call into one class instead of
+   * producing one atomic class per property. This reduces the number of classes in the HTML
+   * at the cost of potential CSS duplication.
+   * @default false
+   */
+  groupedStyles?: boolean
 }
 
 interface PresetOptions {
