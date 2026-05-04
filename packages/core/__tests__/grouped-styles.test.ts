@@ -230,7 +230,7 @@ describe('grouped styles', () => {
   })
 })
 
-describe('groupedStyles config', () => {
+describe('cssMode: grouped', () => {
   function createRuntimeCss(ctx: ReturnType<typeof createContext>) {
     return createCss({
       grouped: true,

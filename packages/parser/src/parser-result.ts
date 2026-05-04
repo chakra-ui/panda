@@ -55,7 +55,7 @@ export class ParserResult implements ParserResultInterface {
     this.css.add(this.append(Object.assign({ type: 'css' }, result)))
 
     const encoder = this.encoder
-    const grouped = this.context.config.groupedStyles
+    const grouped = this.context.config.cssMode === 'grouped'
     result.data.forEach((obj) => (grouped ? encoder.processGrouped(obj) : encoder.processAtomic(obj)))
   }
 
@@ -83,7 +83,7 @@ export class ParserResult implements ParserResultInterface {
     this.jsx.add(this.append(Object.assign({ type: 'jsx' }, result)))
 
     const encoder = this.encoder
-    const grouped = this.context.config.groupedStyles
+    const grouped = this.context.config.cssMode === 'grouped'
     result.data.forEach((obj) => encoder.processStyleProps(obj, grouped))
   }
 

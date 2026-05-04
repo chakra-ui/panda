@@ -424,12 +424,14 @@ interface CodegenOptions {
    */
   forceConsistentTypeExtension?: boolean
   /**
-   * Whether to group multiple CSS properties from a single `css()` call into one class instead of
-   * producing one atomic class per property. This reduces the number of classes in the HTML
-   * at the cost of potential CSS duplication.
-   * @default false
+   * Controls how CSS utility classes are generated.
+   * - `'atomic'` (default): one class per property (e.g. `c_red p_8px`)
+   * - `'grouped'`: one class per `css()` call, grouping all properties together
+   *
+   * Grouped mode reduces the number of classes in the HTML at the cost of potential CSS duplication.
+   * @default 'atomic'
    */
-  groupedStyles?: boolean
+  cssMode?: 'atomic' | 'grouped'
 }
 
 interface PresetOptions {

@@ -1,15 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import { parseAndExtract } from './fixture'
 
-describe('groupedStyles config', () => {
-  test('css() produces a single grouped class when groupedStyles is true', () => {
+describe('cssMode config', () => {
+  test('css() produces a single grouped class when cssMode is grouped', () => {
     const code = `
     import { css } from "styled-system/css"
 
     css({ color: "red", padding: "8px" })
     `
 
-    const result = parseAndExtract(code, { groupedStyles: true })
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
 
     expect(result.encoder.grouped.size).toBe(1)
     expect(result.encoder.atomic.size).toBe(0)
@@ -21,7 +21,7 @@ describe('groupedStyles config', () => {
     expect(classMatches).toHaveLength(1)
   })
 
-  test('css() remains atomic when groupedStyles is not set', () => {
+  test('css() remains atomic when cssMode is not set', () => {
     const code = `
     import { css } from "styled-system/css"
 
@@ -44,7 +44,7 @@ describe('groupedStyles config', () => {
     })
     `
 
-    const result = parseAndExtract(code, { groupedStyles: true })
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
 
     expect(result.encoder.grouped.size).toBe(1)
     expect(result.css).toContain('color: blue')
@@ -60,7 +60,7 @@ describe('groupedStyles config', () => {
     css({ padding: "8px" })
     `
 
-    const result = parseAndExtract(code, { groupedStyles: true })
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
 
     expect(result.encoder.grouped.size).toBe(2)
   })
@@ -73,19 +73,19 @@ describe('groupedStyles config', () => {
     css({ color: "red", padding: "8px" })
     `
 
-    const result = parseAndExtract(code, { groupedStyles: true })
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
 
     expect(result.encoder.grouped.size).toBe(1)
   })
 
-  test('recipes are unaffected by groupedStyles', () => {
+  test('recipes are unaffected by cssMode', () => {
     const code = `
     import { css } from "styled-system/css"
 
     css({ color: "red" })
     `
 
-    const result = parseAndExtract(code, { groupedStyles: true })
+    const result = parseAndExtract(code, { cssMode: 'grouped' })
 
     expect(result.encoder.grouped.size).toBe(1)
     expect(result.encoder.recipes.size).toBe(0)
