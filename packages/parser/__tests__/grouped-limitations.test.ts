@@ -47,7 +47,7 @@ describe('cssMode: grouped — known limitations', () => {
     expect(result.css).not.toContain(runtimeClass)
   })
 
-  test('ternary: parser splits branches into separate groups, none match the full runtime object', () => {
+  test('ternary: parser reconstructs combined groups from branches + base', () => {
     const code = `
     import { css } from "styled-system/css"
     import { useState } from "react"
@@ -59,19 +59,21 @@ describe('cssMode: grouped — known limitations', () => {
     `
     const result = parseAndExtract(code, { cssMode: 'grouped' })
 
-    // Parser produces 3 separate data entries — never the combined object
+    // Parser produces 3 data entries, but reconstructs 2 combined groups
     expect(result.json[0].data).toEqual([{ color: 'red' }, { color: 'blue' }, { fontSize: 'xl' }])
-    expect(result.encoder.grouped.size).toBe(3)
+    expect(result.encoder.grouped.size).toBe(2)
 
     // Runtime evaluates the ternary and sees { fontSize: "xl", color: "red" } as one object
     const cssFn = createRuntimeCss()
-    const runtimeClass = cssFn({ fontSize: 'xl', color: 'red' })
+    const runtimeClassRed = cssFn({ fontSize: 'xl', color: 'red' })
+    const runtimeClassBlue = cssFn({ fontSize: 'xl', color: 'blue' })
 
-    // No build-generated rule matches the runtime's combined hash
-    expect(result.css).not.toContain(runtimeClass)
+    // Build-generated CSS contains rules for both branches
+    expect(result.css).toContain(runtimeClassRed)
+    expect(result.css).toContain(runtimeClassBlue)
   })
 
-  test('css.raw merging: build sees individual parts, runtime sees merged result', () => {
+  test('css.raw merging: build merges non-overlapping entries into one group', () => {
     const code = `
     import { css } from "styled-system/css"
 
@@ -84,8 +86,6 @@ describe('cssMode: grouped — known limitations', () => {
     `
     const result = parseAndExtract(code, { cssMode: 'grouped' })
 
-    // Build produces separate groups for each raw object
-    expect(result.encoder.grouped.size).toBe(2)
     expect(result.css).toContain('font-size')
     expect(result.css).toContain('color')
 
@@ -93,8 +93,8 @@ describe('cssMode: grouped — known limitations', () => {
     const cssFn = createRuntimeCss()
     const runtimeClass = cssFn({ fontSize: 'xl', color: 'red' })
 
-    // No build-generated rule matches the merged hash
-    expect(result.css).not.toContain(runtimeClass)
+    // Build-generated CSS matches the merged hash
+    expect(result.css).toContain(runtimeClass)
   })
 
   // --- Cases that DO work ---
