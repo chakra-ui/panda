@@ -22,7 +22,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
-    "postcss": "8.5.6",
+    "postcss": "8.5.14",
     "source-map-explorer": "2.5.3",
     "typescript": "6.0.2",
     "vite": "7.2.6",
