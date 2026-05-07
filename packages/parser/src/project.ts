@@ -151,9 +151,12 @@ export class Project {
       filePath,
       content: original,
       configure(opts) {
-        const { matchTag, matchTagProp } = opts
+        const { matchTag, matchTagMode, matchTagProp } = opts
         if (matchTag) {
           options.matchTag = matchTag
+        }
+        if (matchTagMode) {
+          options.matchTagMode = matchTagMode
         }
         if (matchTagProp) {
           options.matchTagProp = matchTagProp
