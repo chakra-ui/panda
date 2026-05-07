@@ -65,7 +65,14 @@ export function createParser(context: ParserOptions) {
                 // If the user has a custom matchTag function,
                 // we're not going to match every uppercased tag
                 const isPandaComponent = file.isPandaComponent(prop.tagName)
-                return isPandaComponent || options.matchTag(prop.tagName, isPandaComponent)
+                const matchTagMode = options.matchTagMode ?? 'extend'
+                const isCustomMatch = options.matchTag(prop.tagName, isPandaComponent)
+
+                if (matchTagMode === 'override') {
+                  return isCustomMatch
+                }
+
+                return isPandaComponent || isCustomMatch
               }
 
               return !!file.matchTag(prop.tagName)

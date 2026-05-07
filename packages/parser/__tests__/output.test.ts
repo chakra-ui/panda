@@ -3292,6 +3292,96 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('custom matchTag in extend mode preserves panda component matching', () => {
+    const code = `
+    import { Stack } from "styled-system/jsx"
+
+    const App = () => {
+      return <Stack direction="column" />
+    }
+     `
+    const calls = new Map<string, boolean>()
+    const result = parseAndExtract(code, {
+      hooks: {
+        'parser:before': (args) => {
+          args.configure({
+            matchTagMode: 'extend',
+            matchTag(tag, isPandaComponent) {
+              calls.set(tag, isPandaComponent)
+              return false
+            },
+          })
+        },
+      },
+    })
+
+    expect(Object.fromEntries(calls)).toMatchInlineSnapshot(`
+      {
+        "Stack": true,
+      }
+    `)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "direction": "column",
+            },
+          ],
+          "name": "Stack",
+          "type": "jsx-pattern",
+        },
+      ]
+    `)
+  })
+
+  test('custom matchTag in override mode controls panda component matching', () => {
+    const code = `
+    import { Stack } from "styled-system/jsx"
+
+    const App = () => {
+      return <>
+      <Stack direction="column" />
+      <OkComponent padding="4" />
+      </>
+    }
+     `
+    const calls = new Map<string, boolean>()
+    const result = parseAndExtract(code, {
+      hooks: {
+        'parser:before': (args) => {
+          args.configure({
+            matchTagMode: 'override',
+            matchTag(tag, isPandaComponent) {
+              calls.set(tag, isPandaComponent)
+              return tag === 'OkComponent'
+            },
+          })
+        },
+      },
+    })
+
+    expect(Object.fromEntries(calls)).toMatchInlineSnapshot(`
+      {
+        "OkComponent": false,
+        "Stack": true,
+      }
+    `)
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {
+              "padding": "4",
+            },
+          ],
+          "name": "OkComponent",
+          "type": "jsx",
+        },
+      ]
+    `)
+  })
+
   test('multiple css alias', () => {
     const code = `
     import { css } from '../styled-system/css'

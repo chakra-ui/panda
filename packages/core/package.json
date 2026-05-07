@@ -47,7 +47,7 @@
     "browserslist": "4.28.1",
     "lodash.merge": "4.6.2",
     "outdent": "0.8.0",
-    "postcss": "8.5.6",
+    "postcss": "8.5.14",
     "postcss-discard-duplicates": "7.0.2",
     "postcss-discard-empty": "7.0.1",
     "postcss-minify-selectors": "7.0.5",

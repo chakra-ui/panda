@@ -162,6 +162,7 @@ export interface PresetResolvedHookArgs {
 
 export interface ParserResultConfigureOptions {
   matchTag?: (tag: string, isPandaComponent: boolean) => boolean
+  matchTagMode?: 'extend' | 'override'
   matchTagProp?: (tag: string, prop: string) => boolean
 }
 

@@ -54,7 +54,7 @@
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@astrojs/react": "4.4.2",
+    "@astrojs/react": "5.0.4",
     "@nanostores/react": "^1.0.0",
     "@pandacss/astro-plugin-studio": "workspace:*",
     "@pandacss/config": "workspace:*",
@@ -62,11 +62,11 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "astro": "6.1.5",
+    "astro": "6.2.2",
     "nanostores": "^1.1.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "vite": "7.2.6"
+    "vite": "7.3.2"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.0",
