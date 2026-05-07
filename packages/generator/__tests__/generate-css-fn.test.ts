@@ -174,29 +174,33 @@ describe('generate css-fn', () => {
 })
 
 describe('generate string-literal css-fn', () => {
-  test('dts declares multi-arg overloads and css.raw', () => {
+  test('dts declares multi-arg signature and css.raw returning SystemStyleObject', () => {
     const result = generateStringLiteralCssFn(createContext({ syntax: 'template-literal' }))
 
-    expect(result.dts).toContain('(...styles: Array<Styles | Styles[]>): string')
+    expect(result.dts).toContain("import type { SystemStyleObject } from '../types/index'")
+    expect(result.dts).toContain('(...styles: Styles[]): string')
+    expect(result.dts).toContain('(...styles: Styles[]): SystemStyleObject')
     expect(result.dts).toContain('raw: CssRawFunction')
-    expect(result.dts).toContain('interface CssRawFunction')
   })
 
   test('matches snapshot', () => {
     expect(generateStringLiteralCssFn(createContext({ syntax: 'template-literal' }))).toMatchInlineSnapshot(`
       {
-        "dts": "type Styles = { raw: readonly string[] | ArrayLike<string> } | undefined | null | false
+        "dts": "import type { SystemStyleObject } from '../types/index';
+
+      type Styles =
+        | { raw: readonly string[] | ArrayLike<string> }
+        | SystemStyleObject
+        | boolean
+        | null
+        | undefined
 
       interface CssRawFunction {
-        (styles: Styles): object
-        (styles: Styles[]): object
-        (...styles: Array<Styles | Styles[]>): object
+        (...styles: Styles[]): SystemStyleObject
       }
 
       interface CssFunction {
-        (styles: Styles): string
-        (styles: Styles[]): string
-        (...styles: Array<Styles | Styles[]>): string
+        (...styles: Styles[]): string
 
         raw: CssRawFunction
       }

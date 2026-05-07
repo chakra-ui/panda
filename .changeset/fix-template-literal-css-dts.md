@@ -12,21 +12,24 @@ export declare function css(template: { raw: readonly string[] | ArrayLike<strin
 
 But the runtime already supported both multi-arg invocations (`css(styleA, styleB, ...)`) and a `css.raw` companion. Calling these features failed type-checking with `TS2554` ("Expected 1 arguments, but got N") and `TS2339` ("Property 'raw' does not exist").
 
-The generated `dts` is now aligned with the object-syntax `css-fn` shape, exposing both overloads and `css.raw`:
+The generated `dts` is now aligned with the runtime so that both forms type-check, and `css.raw` returns `SystemStyleObject` so it composes cleanly with `Record<Variant, SystemStyleObject>` patterns and `cx(css(...), externalClassName)` migrations:
 
 ```ts
-type Styles = { raw: readonly string[] | ArrayLike<string> } | undefined | null | false
+import type { SystemStyleObject } from '../types/index';
+
+type Styles =
+  | { raw: readonly string[] | ArrayLike<string> }
+  | SystemStyleObject
+  | boolean
+  | null
+  | undefined
 
 interface CssRawFunction {
-  (styles: Styles): object
-  (styles: Styles[]): object
-  (...styles: Array<Styles | Styles[]>): object
+  (...styles: Styles[]): SystemStyleObject
 }
 
 interface CssFunction {
-  (styles: Styles): string
-  (styles: Styles[]): string
-  (...styles: Array<Styles | Styles[]>): string
+  (...styles: Styles[]): string
 
   raw: CssRawFunction
 }

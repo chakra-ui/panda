@@ -8,18 +8,21 @@ export function generateStringLiteralCssFn(ctx: Context) {
 
   return {
     dts: outdent`
-    type Styles = { raw: readonly string[] | ArrayLike<string> } | undefined | null | false
+    ${ctx.file.importType('SystemStyleObject', '../types/index')}
+
+    type Styles =
+      | { raw: readonly string[] | ArrayLike<string> }
+      | SystemStyleObject
+      | boolean
+      | null
+      | undefined
 
     interface CssRawFunction {
-      (styles: Styles): object
-      (styles: Styles[]): object
-      (...styles: Array<Styles | Styles[]>): object
+      (...styles: Styles[]): SystemStyleObject
     }
 
     interface CssFunction {
-      (styles: Styles): string
-      (styles: Styles[]): string
-      (...styles: Array<Styles | Styles[]>): string
+      (...styles: Styles[]): string
 
       raw: CssRawFunction
     }
