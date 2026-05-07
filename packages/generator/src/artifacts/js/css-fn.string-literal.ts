@@ -8,7 +8,23 @@ export function generateStringLiteralCssFn(ctx: Context) {
 
   return {
     dts: outdent`
-    export declare function css(template: { raw: readonly string[] | ArrayLike<string> }): string
+    type Styles = { raw: readonly string[] | ArrayLike<string> } | undefined | null | false
+
+    interface CssRawFunction {
+      (styles: Styles): object
+      (styles: Styles[]): object
+      (...styles: Array<Styles | Styles[]>): object
+    }
+
+    interface CssFunction {
+      (styles: Styles): string
+      (styles: Styles[]): string
+      (...styles: Array<Styles | Styles[]>): string
+
+      raw: CssRawFunction
+    }
+
+    export declare const css: CssFunction;
     `,
     js: outdent`
     ${ctx.file.import('astish, createCss, isObject, mergeProps, withoutSpace', '../helpers')}
