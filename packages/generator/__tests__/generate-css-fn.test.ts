@@ -174,20 +174,15 @@ describe('generate css-fn', () => {
 })
 
 describe('generate string-literal css-fn', () => {
-  test('dts は複数引数とcss.rawをサポートする型を出力する', () => {
+  test('dts declares multi-arg overloads and css.raw', () => {
     const result = generateStringLiteralCssFn(createContext({ syntax: 'template-literal' }))
 
-    // 複数引数の呼び出し: css(stylesA, stylesB, ...)
     expect(result.dts).toContain('(...styles: Array<Styles | Styles[]>): string')
-
-    // css.raw プロパティ
     expect(result.dts).toContain('raw: CssRawFunction')
-
-    // CssRawFunction の戻り値はオブジェクトであり、文字列ではない
     expect(result.dts).toContain('interface CssRawFunction')
   })
 
-  test('スナップショット', () => {
+  test('matches snapshot', () => {
     expect(generateStringLiteralCssFn(createContext({ syntax: 'template-literal' }))).toMatchInlineSnapshot(`
       {
         "dts": "type Styles = { raw: readonly string[] | ArrayLike<string> } | undefined | null | false
