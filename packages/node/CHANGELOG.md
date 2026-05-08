@@ -1,5 +1,27 @@
 # @pandacss/node
 
+## 1.11.1
+
+### Patch Changes
+
+- 2f29aa6: Bump `postcss` from `8.5.6` to `8.5.14` to address
+  [CVE-2026-41305](https://www.cve.org/CVERecord?id=CVE-2026-41305).
+- Updated dependencies [2f29aa6]
+- Updated dependencies [1d781ff]
+- Updated dependencies [2ea9205]
+  - @pandacss/core@1.11.1
+  - @pandacss/generator@1.11.1
+  - @pandacss/parser@1.11.1
+  - @pandacss/types@1.11.1
+  - @pandacss/reporter@1.11.1
+  - @pandacss/config@1.11.1
+  - @pandacss/logger@1.11.1
+  - @pandacss/plugin-lightningcss@1.11.1
+  - @pandacss/plugin-svelte@1.11.1
+  - @pandacss/plugin-vue@1.11.1
+  - @pandacss/token-dictionary@1.11.1
+  - @pandacss/shared@1.11.1
+
 ## 1.11.0
 
 ### Patch Changes
