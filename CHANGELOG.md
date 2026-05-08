@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.11.1](#1.11.1) - 2026-05-08
+
+### Added
+
+- Add `matchTagMode` to let parser hooks fully override JSX tag matching instead of extending the default behavior.
+
+  ```ts
+  hooks: {
+    'parser:before': ({ configure }) => {
+      configure({
+        matchTagMode: 'override',
+        matchTag(tag, isPandaComponent) {
+          return isPandaComponent && tag !== 'Stack'
+        },
+      })
+    },
+  }
+  ```
+
+### Fixed
+
+- Fix `css.d.ts` for `syntax: 'template-literal'` mode to match the runtime implementation.
+
+  Previously the generated `styled-system/css/css.d.ts` only declared a single tagged-template signature, causing type errors (`TS2554`, `TS2339`) when using multi-arg invocations (`css(styleA, styleB, ...)`) or `css.raw`. The generated types are now aligned with the runtime.
+
+- Bump `postcss` from `8.5.6` to `8.5.14` to address [CVE-2026-41305](https://www.cve.org/CVERecord?id=CVE-2026-41305).
+
+- Bump `@modelcontextprotocol/sdk` from `^1.25.2` to `^1.29.0` in the MCP package.
+
+- Bump `astro` to `6.2.2`, `vite` to `7.3.2`, and `@astrojs/react` to `5.0.4` in Studio to address upstream security fixes (CVE-2026-41067, CVE-2026-39365, CVE-2026-39364, CVE-2026-29074).
+
 ## [1.11.0](#1.11.0) - 2026-05-03
 
 ### Added
