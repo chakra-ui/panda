@@ -1,5 +1,24 @@
 # @pandacss/types
 
+## 1.11.1
+
+### Patch Changes
+
+- 2ea9205: Add `matchTagMode` to let parser hooks fully override JSX tag matching.
+
+  ```ts
+  hooks: {
+    'parser:before': ({ configure }) => {
+      configure({
+        matchTagMode: 'override',
+        matchTag(tag, isPandaComponent) {
+          return isPandaComponent && tag !== 'Stack'
+        },
+      })
+    },
+  }
+  ```
+
 ## 1.11.0
 
 ### Minor Changes

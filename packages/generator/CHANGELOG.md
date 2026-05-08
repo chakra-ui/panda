@@ -1,5 +1,56 @@
 # @pandacss/generator
 
+## 1.11.1
+
+### Patch Changes
+
+- 2f29aa6: Bump `postcss` from `8.5.6` to `8.5.14` to address
+  [CVE-2026-41305](https://www.cve.org/CVERecord?id=CVE-2026-41305).
+- 1d781ff: Fix `css.d.ts` for `syntax: 'template-literal'` mode to match the runtime implementation.
+
+  Previously the generated `styled-system/css/css.d.ts` only declared a single tagged-template signature:
+
+  ```ts
+  export declare function css(template: { raw: readonly string[] | ArrayLike<string> }): string
+  ```
+
+  But the runtime already supported both multi-arg invocations (`css(styleA, styleB, ...)`) and a `css.raw` companion.
+  Calling these features failed type-checking with `TS2554` ("Expected 1 arguments, but got N") and `TS2339` ("Property
+  'raw' does not exist").
+
+  The generated `dts` is now aligned with the runtime so that both forms type-check, and `css.raw` returns
+  `SystemStyleObject` so it composes cleanly with `Record<Variant, SystemStyleObject>` patterns and
+  `cx(css(...), externalClassName)` migrations:
+
+  ```ts
+  import type { SystemStyleObject } from '../types/index'
+
+  type Styles = { raw: readonly string[] | ArrayLike<string> } | SystemStyleObject | boolean | null | undefined
+
+  interface CssRawFunction {
+    (...styles: Styles[]): SystemStyleObject
+  }
+
+  interface CssFunction {
+    (...styles: Styles[]): string
+
+    raw: CssRawFunction
+  }
+
+  export declare const css: CssFunction
+  ```
+
+  Closes #3534.
+
+- Updated dependencies [2f29aa6]
+- Updated dependencies [2ea9205]
+  - @pandacss/core@1.11.1
+  - @pandacss/types@1.11.1
+  - @pandacss/logger@1.11.1
+  - @pandacss/token-dictionary@1.11.1
+  - @pandacss/is-valid-prop@1.11.1
+  - @pandacss/shared@1.11.1
+
 ## 1.11.0
 
 ### Minor Changes
