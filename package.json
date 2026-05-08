@@ -79,26 +79,6 @@
     "overrides": {
       "@swc/helpers@~0.4": "0.4.36",
       "picomatch@4.0.3": "4.0.4"
-    },
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "@prisma/client",
-      "@prisma/engines",
-      "@swc/core",
-      "esbuild",
-      "lmdb",
-      "msgpackr-extract",
-      "prisma",
-      "sharp",
-      "svelte-preprocess",
-      "unrs-resolver"
-    ],
-    "ignoredBuiltDependencies": [
-      "core-js",
-      "core-js-pure",
-      "es5-ext",
-      "gatsby",
-      "gatsby-cli"
-    ]
+    }
   }
 }

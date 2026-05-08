@@ -4,3 +4,23 @@ packages:
   - 'sandbox/component-lib/**'
   - 'playground'
   - 'website'
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+  - prisma
+  - sharp
+  - svelte-preprocess
+  - unrs-resolver
+
+ignoredBuiltDependencies:
+  - core-js
+  - core-js-pure
+  - es5-ext
+  - gatsby
+  - gatsby-cli
