@@ -49,6 +49,18 @@ describe('PostCSS plugin', () => {
     expect(result.css.length).toBeGreaterThan(2)
   })
 
+  test('strip layer declarations when polyfill is enabled', async () => {
+    const input = '@layer reset, base, tokens, recipes, utilities;'
+    const configPath = join(__dirname, 'samples', 'panda.polyfill.config.cjs')
+
+    builder.context = undefined
+    const result = await run(input, { configPath })
+
+    expect(result.css).not.toContain('@layer reset, base, tokens, recipes, utilities;')
+    expect(result.css).not.toContain('@layer')
+    expect(result.css.length).toBeGreaterThan(2)
+  })
+
   test('register `include` as dependencies', async () => {
     const input = '@layer reset, base, tokens, recipes, utilities;'
     const configPath = join(__dirname, 'samples', 'panda.config.cjs')

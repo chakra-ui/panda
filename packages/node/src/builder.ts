@@ -196,6 +196,17 @@ export class Builder {
     ctx.appendBaselineCss(sheet)
     const css = ctx.getCss(sheet)
 
+    // When polyfill is enabled, the generated CSS has already been processed
+    // by @csstools/postcss-cascade-layers (in sheet.toCss()). The user's
+    // entry CSS still contains the @layer order declaration which must be
+    // removed to prevent downstream polyfill tools from producing bloated
+    // :not(#\#) specificity selectors.
+    if (ctx.config.polyfill) {
+      root.walkAtRules('layer', (rule) => {
+        rule.remove()
+      })
+    }
+
     root.append(css)
   }
 
