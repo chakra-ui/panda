@@ -5,22 +5,20 @@ packages:
   - 'playground'
   - 'website'
 
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@prisma/client'
-  - '@prisma/engines'
-  - '@swc/core'
-  - esbuild
-  - lmdb
-  - msgpackr-extract
-  - prisma
-  - sharp
-  - svelte-preprocess
-  - unrs-resolver
-
-ignoredBuiltDependencies:
-  - core-js
-  - core-js-pure
-  - es5-ext
-  - gatsby
-  - gatsby-cli
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+  prisma: true
+  sharp: true
+  svelte-preprocess: true
+  unrs-resolver: true
+  core-js: false
+  core-js-pure: false
+  es5-ext: false
+  gatsby: false
+  gatsby-cli: false
