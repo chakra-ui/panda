@@ -1,5 +1,5 @@
 use crate::convert::{
-    convert_diagnostic, convert_record, matched_record, to_call, to_core_matchers, to_jsx,
+    convert_diagnostic, convert_record, matched_record, to_call, to_core_config, to_jsx,
 };
 use crate::{Diagnostic, ExtractedCall, ExtractedJsx, ImportRecord, MatchedImport, Matchers};
 use napi_derive::napi;
@@ -33,8 +33,8 @@ pub struct ExtractDebugResult {
     reason = "NAPI requires owned arguments"
 )]
 pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResult {
-    let core_matchers = to_core_matchers(matchers);
-    let result = extractor::extract(&source, &path, &core_matchers);
+    let config = to_core_config(matchers);
+    let result = extractor::extract(&source, &path, &config);
     ExtractResult {
         calls: result.calls.into_iter().map(to_call).collect(),
         jsx: result.jsx.into_iter().map(to_jsx).collect(),
@@ -53,8 +53,8 @@ pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResul
     reason = "NAPI requires owned arguments"
 )]
 pub fn extract_debug(source: String, path: String, matchers: Matchers) -> ExtractDebugResult {
-    let core_matchers = to_core_matchers(matchers);
-    let result = extractor::extract(&source, &path, &core_matchers);
+    let config = to_core_config(matchers);
+    let result = extractor::extract_debug(&source, &path, &config);
     ExtractDebugResult {
         imports: result.imports.into_iter().map(convert_record).collect(),
         matched: result.matched.into_iter().map(matched_record).collect(),

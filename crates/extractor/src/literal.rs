@@ -3,24 +3,60 @@
 //! `Literal` is the typed shape used by the extractor for object/array/
 //! primitive values read out of source. Compared to `serde_json::Value` it
 //! preserves intent (this is a static literal, not arbitrary JSON), keeps
-//! object-key ordering, and gives us a single place to attach static-evaluator
-//! plumbing later. JSON-side serialization (NAPI and snapshots) goes through
-//! the custom `Serialize` impl below, which produces the same wire shape as
-//! before — integer/float distinction included.
+//! object-key ordering, and centralizes the static-evaluator entry point.
+//! JSON-side serialization (NAPI and snapshots) goes through the custom
+//! `Serialize` impl below, which produces the same wire shape as before —
+//! integer/float distinction included.
 //!
-//! Conversion from Oxc AST nodes lives in this module. Anything non-literal
-//! (identifiers, conditionals, template-with-interpolation, member access,
-//! getters/setters) returns `None`. Operators are *constant-folded* when
-//! their operands are themselves literal: `-1` → `Number(-1.0)`,
-//! `'a' + 'b'` → `String("ab")`, etc. AST-only unwrappers like
-//! `ParenthesizedExpression` and `TSAsExpression` recurse on the inner
-//! expression and have no runtime effect.
+//! ## What `expression_to_literal` folds
+//!
+//! With a [`Resolver`] passed in (the production hot path through
+//! `extract()`), the evaluator handles a lot more than basic literals:
+//!
+//! - **Primitive literals**: string, number, boolean, null.
+//! - **Composite literals**: object and array expressions, including
+//!   spreads when the spread source resolves to a matching literal.
+//! - **Syntactic unwraps**: `ParenthesizedExpression`, `TSAsExpression`,
+//!   `TSSatisfiesExpression`, `TSNonNullExpression`, `TSTypeAssertion`,
+//!   `TSInstantiationExpression` — all no-ops at runtime, so we recurse
+//!   on the inner expression.
+//! - **Constant folding**: unary, binary, logical, conditional, and
+//!   template-literal expressions fold when their operands fold.
+//!   `'foo' + 'bar'`, `2 + 3`, `x ? a : b` when `x` is statically known,
+//!   `` `${size}px` `` when `size` resolves, `a && b` short-circuiting,
+//!   `?? null`, etc. ts-evaluator parity is the goal — see `eval_*`
+//!   helpers for the per-operator coercion rules.
+//! - **Scope resolution** (resolver only): identifier references, static
+//!   member access (`obj.key`), computed member access (`obj[key]`),
+//!   array indexing.
+//! - **Optional chaining**: `ChainExpression` unwraps transparently —
+//!   `a?.b` folds when `a` is resolvable.
+//! - **Tagged templates**: `` css`color: red;` `` folds to the template
+//!   string; the tag identity is ignored at this layer.
+//! - **`token()` / `token.var()` calls**: when the callee resolves to a
+//!   `tokens`-category import, the dictionary supplies the value.
+//!
+//! Things that still return `None`:
+//!
+//! - Free identifiers (no scope binding).
+//! - `let`/`var` after mutation, function parameters, function bodies.
+//! - Conditional / logical operators whose deciding side itself doesn't
+//!   fold (e.g. `unknownFn() && 'x'`).
+//! - Calls other than `token()` / `token.var()`.
+//! - Anything we just don't recognize yet (typeof, `Object.keys`, enums
+//!   from a non-VariableDeclarator declaration site, etc.).
+//!
+//! Without a resolver (the staged `extract_calls` / `extract_jsx`
+//! entrypoints), identifier-dependent expressions collapse to `None`
+//! since there's no scope context to consult — only purely-literal
+//! expressions fold.
 
 use oxc_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator,
-    ComputedMemberExpression, ConditionalExpression, Expression, LogicalExpression,
-    LogicalOperator, ObjectExpression, ObjectPropertyKind, PropertyKey, PropertyKind,
-    StaticMemberExpression, TemplateLiteral, UnaryExpression, UnaryOperator,
+    ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator, CallExpression,
+    ChainElement, ChainExpression, ComputedMemberExpression, ConditionalExpression, Expression,
+    LogicalExpression, LogicalOperator, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    PropertyKind, StaticMemberExpression, TaggedTemplateExpression, TemplateLiteral,
+    UnaryExpression, UnaryOperator,
 };
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
@@ -173,6 +209,25 @@ pub(crate) fn expression_to_literal(
             computed_member_to_literal(member, resolver)
         }
 
+        // Optional chaining (`a?.b`, `a?.[b]`, `a?.()`) is wrapped in a
+        // `ChainExpression`. Treat it as a transparent unwrap — the inner
+        // element folds through the normal member/call path. If the base
+        // resolves to a non-object, member lookup returns `None`, which
+        // matches "the chain short-circuited to undefined" for our purposes
+        // (we drop rather than emit JS `undefined`).
+        Expression::ChainExpression(chain) => chain_to_literal(chain, resolver),
+
+        // `css\`color: red;\`` — strip the tag and fold the template literal.
+        // Matches the JS extractor's `isTaggedTemplateExpression` handling,
+        // which returns the template independent of which tag fn was used.
+        Expression::TaggedTemplateExpression(t) => tagged_template_to_literal(t, resolver),
+
+        // Most call expressions are not foldable, but `token(...)` /
+        // `token.var(...)` resolve against the design-token dictionary when
+        // one is configured. The resolver gates this to avoid false matches
+        // on locally-shadowed names.
+        Expression::CallExpression(call) => call_to_literal(call, resolver),
+
         _ => None,
     }
 }
@@ -301,6 +356,52 @@ fn lookup_member(object: &Literal, key: &str) -> Option<Literal> {
         }
         _ => None,
     }
+}
+
+// --- optional chaining ---
+
+/// Unwrap a `ChainExpression` (`a?.b`, `a?.[b]`, `a?.()`) and fold the
+/// inner element through the standard expression path. We do not model the
+/// short-circuit behavior beyond "if the inner lookup returns `None`, the
+/// whole call is non-foldable" — JS `undefined` is not a value we emit.
+fn chain_to_literal(
+    chain: &ChainExpression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
+    match &chain.expression {
+        ChainElement::StaticMemberExpression(member) => static_member_to_literal(member, resolver),
+        ChainElement::ComputedMemberExpression(member) => {
+            computed_member_to_literal(member, resolver)
+        }
+        ChainElement::TSNonNullExpression(e) => expression_to_literal(&e.expression, resolver),
+        // `foo?.()` — calls don't produce static values for us.
+        // `obj?.#field` — private fields aren't meaningful for style extraction.
+        ChainElement::CallExpression(_) | ChainElement::PrivateFieldExpression(_) => None,
+    }
+}
+
+// --- tagged template literals ---
+
+/// Tagged template like ``css`color: red` ``: JS extractor unwraps the tag
+/// and folds the template literal itself. The tag identity is irrelevant
+/// at this layer; downstream extraction logic decides whether the call
+/// site is a Panda usage. We just turn the literal into a string when its
+/// interpolations fold.
+fn tagged_template_to_literal(
+    t: &TaggedTemplateExpression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
+    template_literal_to_literal(&t.quasi, resolver)
+}
+
+// --- call expressions ---
+
+/// Only `token(...)` / `token.var(...)` fold at this layer; every other call
+/// is `None` and gets handled by the extractor visitors as a regular call
+/// site (or dropped). Without a resolver we can't recognize the token import,
+/// so we bail.
+fn call_to_literal(call: &CallExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+    resolver?.resolve_token_call(call)
 }
 
 fn number_as_key(value: f64) -> String {

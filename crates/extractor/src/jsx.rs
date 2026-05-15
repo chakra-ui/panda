@@ -1,5 +1,5 @@
 use crate::{
-    Diagnostic, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Matchers, Span,
+    Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
     VisitorContext, literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
@@ -57,14 +57,18 @@ pub fn extract_jsx(
     source: &str,
     path: &str,
     matched: &[MatchedImport],
-    matchers: &Matchers,
+    config: &ExtractorConfig,
 ) -> ExtractedJsxResult {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
-    let resolver = crate::Resolver::build(&parser_return.program);
-    let ctx = VisitorContext::new(matched, matchers).with_resolver(&resolver);
+    let resolver = crate::Resolver::build(
+        &parser_return.program,
+        matched,
+        config.token_dictionary.as_ref(),
+    );
+    let ctx = VisitorContext::new(matched, &config.matchers).with_resolver(&resolver);
     ExtractedJsxResult {
         jsx: collect_jsx(&parser_return.program, &ctx),
         diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),

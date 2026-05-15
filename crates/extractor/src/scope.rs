@@ -30,19 +30,35 @@
 //!   reached during evaluation.
 
 use std::cell::RefCell;
-use std::collections::HashMap;
 
 use oxc_ast::AstKind;
-use oxc_ast::ast::{BindingPattern, IdentifierReference, PropertyKey, VariableDeclarator};
+use oxc_ast::ast::{
+    BindingPattern, CallExpression, Expression, IdentifierReference, PropertyKey,
+    VariableDeclarator,
+};
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
+use rustc_hash::FxHashMap;
+use tokens::TokenDictionary;
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
+use crate::matcher::{MatchCategory, MatchedImport};
 
 /// Per-file symbol/scope index plus a memo of resolved literal values.
+///
+/// Beyond plain identifier folding, the resolver also recognizes Panda
+/// `token()` / `token.var()` calls and resolves them through the supplied
+/// [`TokenDictionary`]. To do that it needs to know which local names
+/// correspond to a `tokens`-category import — hence the alias table.
 pub(crate) struct Resolver<'a> {
     semantic: Semantic<'a>,
-    cache: RefCell<HashMap<SymbolId, ResolutionState>>,
+    /// Memo of resolved literals keyed by `SymbolId`. `FxHashMap` because
+    /// keys are tiny u32 newtypes — `SipHash` overhead is pure waste here.
+    cache: RefCell<FxHashMap<SymbolId, ResolutionState>>,
+    /// Local-name → matched import. Borrowed from the caller so the visitor
+    /// and the resolver share a single source of truth.
+    aliases: FxHashMap<&'a str, &'a MatchedImport>,
+    tokens: Option<&'a TokenDictionary>,
 }
 
 /// Cache slot for `resolve_symbol`. `InProgress` guards against cycles like
@@ -55,12 +71,20 @@ enum ResolutionState {
 }
 
 impl<'a> Resolver<'a> {
-    /// Build a `Semantic` from the parsed program and wrap it.
-    pub(crate) fn build(program: &'a oxc_ast::ast::Program<'a>) -> Self {
+    /// Build a `Semantic` from the parsed program and wrap it. Pass the
+    /// matched imports so the resolver can answer "is this identifier a
+    /// `token` import?" without re-plumbing through `VisitorContext`.
+    pub(crate) fn build(
+        program: &'a oxc_ast::ast::Program<'a>,
+        matched: &'a [MatchedImport],
+        tokens: Option<&'a TokenDictionary>,
+    ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
             semantic,
             cache: RefCell::default(),
+            aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
+            tokens,
         }
     }
 
@@ -95,6 +119,70 @@ impl<'a> Resolver<'a> {
             .scoping()
             .symbol_flags(symbol_id)
             .contains(SymbolFlags::Import)
+    }
+
+    /// Resolve a Panda `token(...)` / `token.var(...)` call to its dictionary
+    /// value. Returns `None` when:
+    /// - no token dictionary is configured,
+    /// - the callee doesn't resolve to a Panda `tokens`-category import,
+    /// - the local is shadowed by a function param / block-scoped binding,
+    /// - the first argument isn't a string literal (token paths are static
+    ///   by design — dynamic paths require runtime resolution),
+    /// - the path isn't in the dictionary and no fallback was provided.
+    ///
+    /// Mirrors the JS extractor's behavior in `maybe-box-node.ts` so that
+    /// `css({ color: token('colors.red.500') })` folds to a string literal
+    /// at extraction time.
+    pub(crate) fn resolve_token_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        let dict = self.tokens?;
+
+        // Determine the callee shape: bare `token(path)` vs `token.var(path)`.
+        let (token_ident, is_var) = match &call.callee {
+            Expression::Identifier(id) => (id, false),
+            Expression::StaticMemberExpression(member) => {
+                let Expression::Identifier(id) = &member.object else {
+                    return None;
+                };
+                if member.property.name.as_str() != "var" {
+                    return None;
+                }
+                (id, true)
+            }
+            _ => return None,
+        };
+
+        // Must be a Panda `tokens`-category import, and not shadowed.
+        let matched = self.aliases.get(token_ident.name.as_str())?;
+        if matched.category != MatchCategory::Tokens {
+            return None;
+        }
+        if !self.is_import_binding(token_ident) {
+            return None;
+        }
+
+        // First arg: token path (must be a string literal).
+        let path_arg = call.arguments.first()?.as_expression()?;
+        let Literal::String(path) = expression_to_literal(path_arg, Some(self))? else {
+            return None;
+        };
+
+        // Optional fallback: second arg as string literal.
+        let fallback = call
+            .arguments
+            .get(1)
+            .and_then(|a| a.as_expression())
+            .and_then(|e| expression_to_literal(e, Some(self)))
+            .and_then(|l| match l {
+                Literal::String(s) => Some(s),
+                _ => None,
+            });
+
+        let resolved = if is_var {
+            dict.get_var(&path, fallback.as_deref())
+        } else {
+            dict.get(&path, fallback.as_deref())
+        };
+        resolved.map(Literal::String)
     }
 
     /// Resolve an identifier reference to its constant literal value, if it

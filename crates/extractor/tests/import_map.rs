@@ -1,4 +1,4 @@
-use extractor::{Matcher, Matchers, NameMatcher, match_imports, scan_imports};
+use extractor::{MatchCategory, Matcher, Matchers, NameMatcher, match_imports, scan_imports};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
@@ -206,4 +206,79 @@ fn js_parity_multiple_packages() {
       alias: css
       kind: named
     "#);
+}
+
+// --- Module-matching ambiguity (reviewer #36) ---
+//
+// `mod_matches` is substring-based by design (mirrors the JS `ImportMap`
+// rule). When a module string matches more than one category's substring
+// list, the first category in declaration order wins. The traversal
+// order in `match_import_records` is: css, tokens, recipe, pattern, jsx.
+// These tests pin that precedence so a future refactor can't reorder it
+// silently.
+
+#[test]
+fn overlapping_modules_pick_css_over_recipe() {
+    // Both categories' module lists contain "panda" so the import would
+    // match either by substring. Category priority must pick css first.
+    let scan = scan_imports("import { css } from '@panda/css';\n", "f.tsx");
+    let matchers = Matchers {
+        css: Matcher {
+            modules: vec!["@panda".into()], // any "@panda" module
+            names: NameMatcher::only(["css"]),
+        },
+        recipe: Matcher {
+            modules: vec!["@panda".into()],
+            names: NameMatcher::Any,
+        },
+        ..Default::default()
+    };
+    assert_yaml_snapshot!(match_imports(&scan, &matchers), @r#"
+    - category: css
+      module: "@panda/css"
+      name: css
+      alias: css
+      kind: named
+    "#);
+}
+
+#[test]
+fn substring_match_intentionally_loose_for_org_namespacing() {
+    // Modules can be referenced with various org prefixes; the matcher's
+    // substring check is what makes `@my-co/panda-css` match a Panda
+    // config keyed by just `"panda-css"`. Lock that behavior in so we
+    // don't accidentally tighten it.
+    let scan = scan_imports("import { css } from '@my-co/panda-css';\n", "f.tsx");
+    let matchers = Matchers {
+        css: Matcher {
+            modules: vec!["panda-css".into()],
+            names: NameMatcher::only(["css"]),
+        },
+        ..Default::default()
+    };
+    let result = match_imports(&scan, &matchers);
+    assert_eq!(result.len(), 1, "substring match should find css import");
+    assert_eq!(result[0].category, MatchCategory::Css);
+}
+
+#[test]
+fn extremely_short_substring_over_matches() {
+    // Documents the failure mode: a single-character or very short
+    // `modules` entry will substring-match almost anything. This test
+    // demonstrates the hazard so users understand why they should
+    // configure with full module paths.
+    let scan = scan_imports(
+        "import { unrelated } from 'totally-unrelated-package';\n",
+        "f.tsx",
+    );
+    let matchers = Matchers {
+        css: Matcher {
+            modules: vec!["a".into()], // too short — over-matches
+            names: NameMatcher::Any,
+        },
+        ..Default::default()
+    };
+    // The matcher correctly applies its substring rule; the lesson is
+    // that this is the user's bug to fix in their config.
+    assert_eq!(match_imports(&scan, &matchers).len(), 1);
 }

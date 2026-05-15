@@ -10,16 +10,18 @@ mod scope;
 mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
-pub use extract::{ExtractResult, extract};
+pub use extract::{ExtractDebugResult, ExtractUsage, extract, extract_debug};
 pub use imports::{
-    ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
-    collect_imports, collect_parser_diagnostics, scan_imports,
+    ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
 };
+// Internal helpers that take Oxc-shaped inputs — kept out of the public
+// surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
+pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use literal::Literal;
 pub use matcher::{
-    MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, match_import_records,
-    match_imports,
+    ExtractorConfig, MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary,
+    match_import_records, match_imports,
 };
 pub use source::{SourceLocation, SourceRange};
 

@@ -1,6 +1,9 @@
 use crate::{ImportRecord, ImportScanResult, ImportSpecifierKind, Resolver};
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+
+// Re-export so extractor consumers don't need a separate `tokens` import.
+pub use tokens::TokenDictionary;
 
 /// Panda category a matched import resolves to. Mirrors the JS
 /// `ImportMap.matchers` keys in `packages/core/src/import-map.ts`.
@@ -17,25 +20,26 @@ pub enum MatchCategory {
 /// Which imported names qualify for a category. `Any` matches anything
 /// (used by recipes/patterns where allowed names are user-defined);
 /// `Only(set)` restricts to the given allowlist (used by css → css/cva/sva).
-/// Backed by a `HashSet` so `accepts()` is O(1) regardless of allowlist size.
+/// Backed by an `FxHashSet` — non-cryptographic hash for short, internal,
+/// trusted keys; ~2× faster than `std::HashSet` on names like `"css"`.
 #[derive(Debug, Clone)]
 pub enum NameMatcher {
     Any,
-    Only(HashSet<String>),
+    Only(FxHashSet<String>),
 }
 
 impl Default for NameMatcher {
     /// An empty `Only` — accepts nothing — so a default-constructed matcher
     /// is inert, not "accept everything".
     fn default() -> Self {
-        Self::Only(HashSet::new())
+        Self::Only(FxHashSet::default())
     }
 }
 
 impl NameMatcher {
     /// Construct an `Only` matcher from any iterable of name-like values.
     /// Lets call sites stay readable (`NameMatcher::only(["css", "cva"])`)
-    /// without needing `HashSet::from(...)` boilerplate.
+    /// without needing `FxHashSet::from(...)` boilerplate.
     pub fn only<I, S>(names: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -64,6 +68,8 @@ pub struct Matcher {
 
 /// Pre-built matchers for each Panda category. The TS bridge constructs
 /// this from `context.config.importMap` plus JSX/recipe/pattern names.
+/// Purely import-matching config — no runtime extraction state. Runtime
+/// inputs like the resolved token dictionary live on [`ExtractorConfig`].
 #[derive(Debug, Clone, Default)]
 pub struct Matchers {
     pub css: Matcher,
@@ -71,6 +77,39 @@ pub struct Matchers {
     pub pattern: Matcher,
     pub jsx: Option<Matcher>,
     pub tokens: Matcher,
+}
+
+/// Full extractor configuration: import matchers plus any runtime state
+/// the extractor needs (currently the resolved token dictionary, soon
+/// the user's panda config flags). Keep this separate from [`Matchers`]
+/// so the import-matching config stays small and reusable.
+#[derive(Debug, Clone, Default)]
+pub struct ExtractorConfig {
+    pub matchers: Matchers,
+    /// Resolved token values. When `Some`, `token('x.y')` calls fold to
+    /// the looked-up value via the [`tokens`] crate. `None` disables
+    /// token resolution entirely — useful for tests and for users who
+    /// haven't enabled token extraction.
+    pub token_dictionary: Option<TokenDictionary>,
+}
+
+impl ExtractorConfig {
+    /// Convenience: wrap a `Matchers` config with no token dictionary.
+    /// Equivalent to `ExtractorConfig { matchers, token_dictionary: None }`.
+    #[must_use]
+    pub fn new(matchers: Matchers) -> Self {
+        Self {
+            matchers,
+            token_dictionary: None,
+        }
+    }
+
+    /// Builder-style attach a token dictionary.
+    #[must_use]
+    pub fn with_token_dictionary(mut self, dictionary: TokenDictionary) -> Self {
+        self.token_dictionary = Some(dictionary);
+        self
+    }
 }
 
 impl Matchers {
@@ -98,7 +137,7 @@ impl Matchers {
 /// alias lookup and an optional [`Resolver`] for same-file scope resolution
 /// so visitor code doesn't have to thread arguments through every helper.
 pub(crate) struct VisitorContext<'a> {
-    pub aliases: HashMap<&'a str, &'a MatchedImport>,
+    pub aliases: FxHashMap<&'a str, &'a MatchedImport>,
     pub matchers: &'a Matchers,
     /// `None` for the stage-by-stage entrypoints (`extract_calls`,
     /// `extract_jsx`) which re-parse and skip semantic-build cost for
@@ -193,6 +232,13 @@ pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Ve
     out
 }
 
+/// Module match is *substring* by design — Panda's JS `ImportMap.match()`
+/// uses the same rule so configs like `modules: ["panda/css"]` match both
+/// `@my-org/panda/css` and `styled-system/css`. The trade-off is that an
+/// accidentally short candidate (e.g. `"css"`) would over-match. The
+/// reviewer flagged this as worth pinning with tests; see
+/// `tests/import_map.rs` for the overlap cases that lock in the
+/// category-priority order.
 fn mod_matches(module: &str, candidates: &[String]) -> bool {
     candidates.iter().any(|c| module.contains(c.as_str()))
 }

@@ -1,5 +1,5 @@
-use crate::convert::{convert_diagnostic, to_call, to_core_matchers, to_matched};
-use crate::{Diagnostic, MatchCategory, MatchedImport, Matchers, Span};
+use crate::convert::{convert_diagnostic, to_call, to_core_config, to_matched};
+use crate::{Diagnostic, ExtractedArg, MatchCategory, MatchedImport, Matchers, Span};
 use napi_derive::napi;
 
 #[napi(object)]
@@ -7,9 +7,12 @@ pub struct ExtractedCall {
     pub category: MatchCategory,
     pub name: String,
     pub alias: String,
-    /// Per-argument values in source order. `null` entries mark arguments
-    /// that were present but not literal-extractable yet.
-    pub data: Vec<Option<serde_json::Value>>,
+    /// Per-argument values in source order. Each entry is tagged so that
+    /// a real `null` literal (an `ExtractedArg` with `kind: "value"` and
+    /// `value: null`) is unambiguous against a non-extractable argument
+    /// (`kind: "missing"`, `value: undefined`). `data.length` always
+    /// matches the source arity of the call.
+    pub data: Vec<ExtractedArg>,
     pub span: Span,
 }
 
@@ -32,8 +35,8 @@ pub fn extract_calls(
     matchers: Matchers,
 ) -> ExtractedCallsResult {
     let matched: Vec<extractor::MatchedImport> = matched.into_iter().map(to_matched).collect();
-    let core_matchers = to_core_matchers(matchers);
-    let result = extractor::extract_calls(&source, &path, &matched, &core_matchers);
+    let config = to_core_config(matchers);
+    let result = extractor::extract_calls(&source, &path, &matched, &config);
     ExtractedCallsResult {
         calls: result.calls.into_iter().map(to_call).collect(),
         diagnostics: result

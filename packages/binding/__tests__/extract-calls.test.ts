@@ -31,8 +31,11 @@ describe('extractCalls', () => {
             "alias": "nCss",
             "data": [
               {
-                "color": "red",
-                "fontSize": 12,
+                "kind": "value",
+                "value": {
+                  "color": "red",
+                  "fontSize": 12,
+                },
               },
             ],
             "span": {
@@ -51,9 +54,12 @@ describe('extractCalls', () => {
     expect(result.calls[0].data).toMatchInlineSnapshot(`
       [
         {
-          "z": 1,
-          "a": 2,
-          "m": 3,
+          "kind": "value",
+          "value": {
+            "z": 1,
+            "a": 2,
+            "m": 3,
+          },
         },
       ]
     `)
@@ -65,7 +71,10 @@ describe('extractCalls', () => {
       [
         [
           {
-            "color": "blue",
+            "kind": "value",
+            "value": {
+              "color": "blue",
+            },
           },
         ],
       ]
@@ -88,7 +97,10 @@ describe('extractCalls', () => {
           "alias": "panda",
           "data": [
             {
-              "color": "red",
+              "kind": "value",
+              "value": {
+                "color": "red",
+              },
             },
           ],
           "span": {
@@ -102,8 +114,11 @@ describe('extractCalls', () => {
           "alias": "panda",
           "data": [
             {
-              "base": {
-                "color": "blue",
+              "kind": "value",
+              "value": {
+                "base": {
+                  "color": "blue",
+                },
               },
             },
           ],
@@ -118,9 +133,12 @@ describe('extractCalls', () => {
           "alias": "panda",
           "data": [
             {
-              "base": {
-                "root": {
-                  "color": "green",
+              "kind": "value",
+              "value": {
+                "base": {
+                  "root": {
+                    "color": "green",
+                  },
                 },
               },
             },
@@ -143,10 +161,16 @@ describe('extractCalls', () => {
     const source = ["import { styled } from '@panda/jsx'", "styled('div', { base: { color: 'red' } })", ''].join('\n')
     expect(pipeline(source).calls[0].data).toMatchInlineSnapshot(`
       [
-        "div",
         {
-          "base": {
-            "color": "red",
+          "kind": "value",
+          "value": "div",
+        },
+        {
+          "kind": "value",
+          "value": {
+            "base": {
+              "color": "red",
+            },
           },
         },
       ]

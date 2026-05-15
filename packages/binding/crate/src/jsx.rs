@@ -1,4 +1,4 @@
-use crate::convert::{convert_diagnostic, to_core_matchers, to_jsx, to_matched};
+use crate::convert::{convert_diagnostic, to_core_config, to_jsx, to_matched};
 use crate::{Diagnostic, MatchCategory, MatchedImport, Matchers, Span};
 use napi_derive::napi;
 
@@ -30,8 +30,8 @@ pub fn extract_jsx(
     matchers: Matchers,
 ) -> ExtractedJsxResult {
     let matched: Vec<extractor::MatchedImport> = matched.into_iter().map(to_matched).collect();
-    let core_matchers = to_core_matchers(matchers);
-    let result = extractor::extract_jsx(&source, &path, &matched, &core_matchers);
+    let config = to_core_config(matchers);
+    let result = extractor::extract_jsx(&source, &path, &matched, &config);
     ExtractedJsxResult {
         jsx: result.jsx.into_iter().map(to_jsx).collect(),
         diagnostics: result

@@ -133,6 +133,18 @@ pub(crate) fn to_core_matcher(m: Matcher) -> extractor::Matcher {
     }
 }
 
+/// Convert a JS-shaped `Matchers` (which historically carried the token
+/// dictionary as a child field) into a core `ExtractorConfig`. Keeping
+/// the wire shape flat avoids a churn cycle on JS callers — the split is
+/// purely Rust-internal.
+pub(crate) fn to_core_config(m: Matchers) -> extractor::ExtractorConfig {
+    let token_dictionary = m.token_dictionary.clone().map(to_core_token_dictionary);
+    extractor::ExtractorConfig {
+        matchers: to_core_matchers(m),
+        token_dictionary,
+    }
+}
+
 pub(crate) fn to_core_matchers(m: Matchers) -> extractor::Matchers {
     extractor::Matchers {
         css: to_core_matcher(m.css),
@@ -143,6 +155,14 @@ pub(crate) fn to_core_matchers(m: Matchers) -> extractor::Matchers {
     }
 }
 
+fn to_core_token_dictionary(d: crate::TokenDictionary) -> tokens::TokenDictionary {
+    // The JS side passes two parallel `path → string` maps. Re-key them
+    // into the structured `Token` records the `tokens` crate uses.
+    tokens::TokenDictionary::builder()
+        .extend_flat(d.values, &d.vars)
+        .build()
+}
+
 pub(crate) fn to_call(c: extractor::ExtractedCall) -> ExtractedCall {
     ExtractedCall {
         category: convert_category(c.category),
@@ -151,7 +171,10 @@ pub(crate) fn to_call(c: extractor::ExtractedCall) -> ExtractedCall {
         data: c
             .data
             .into_iter()
-            .map(|opt| opt.map(|lit| lit.to_json()))
+            .map(|opt| match opt {
+                Some(lit) => crate::ExtractedArg::value(lit.to_json()),
+                None => crate::ExtractedArg::missing(),
+            })
             .collect(),
         span: convert_span(c.span),
     }

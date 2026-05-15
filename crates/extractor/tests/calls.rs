@@ -1,6 +1,6 @@
 use extractor::{
-    ExtractedCallsResult, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher, Matchers,
-    NameMatcher, extract_calls,
+    ExtractedCallsResult, ExtractorConfig, ImportSpecifierKind, MatchCategory, MatchedImport,
+    Matcher, Matchers, NameMatcher, extract_calls,
 };
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
@@ -71,7 +71,12 @@ fn panda_matchers(prefix: &str) -> Matchers {
 }
 
 fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedCallsResult {
-    extract_calls(source, "fixture.tsx", matched, &css_matchers())
+    extract_calls(
+        source,
+        "fixture.tsx",
+        matched,
+        &ExtractorConfig::new(css_matchers()),
+    )
 }
 
 fn extract_with(
@@ -79,7 +84,63 @@ fn extract_with(
     matched: &[MatchedImport],
     matchers: &Matchers,
 ) -> ExtractedCallsResult {
-    extract_calls(source, "fixture.tsx", matched, matchers)
+    extract_calls(
+        source,
+        "fixture.tsx",
+        matched,
+        &ExtractorConfig::new(matchers.clone()),
+    )
+}
+
+#[test]
+fn duplicate_object_keys_keep_first_position_with_last_value() {
+    // ES object-initializer semantics: a later property with the same key
+    // overwrites the earlier value but keeps the *position* of the first
+    // occurrence in enumeration order. Our `upsert` helper has to honor
+    // both halves of that rule; this test pins it so a future refactor
+    // can't silently change extraction order.
+    assert_yaml_snapshot!(
+        extract("css({ color: 'red', padding: '4px', color: 'blue' })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: blue
+            padding: 4px
+        span:
+          start: 0
+          end: 52
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn spread_overwrite_keeps_spread_position() {
+    // Same upsert semantics but the duplicate enters through an inline
+    // literal spread. The key from the spread keeps its position; the
+    // explicit later property only changes the value.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...{ color: 'red', padding: '4px' }, color: 'blue' })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: blue
+            padding: 4px
+        span:
+          start: 0
+          end: 59
+    diagnostics: []
+    ",
+    );
 }
 
 #[test]
@@ -641,7 +702,7 @@ fn ts_old_style_type_assertion_unwraps() {
             "css(<any>{ color: 'red' })",
             "fixture.ts",
             &[css("css")],
-            &css_matchers(),
+            &ExtractorConfig::new(css_matchers()),
         ),
         @"
     calls:

@@ -1,9 +1,9 @@
-use extractor::{Matcher, Matchers, NameMatcher, extract};
+use extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract_debug};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
-fn panda_matchers() -> Matchers {
-    Matchers {
+fn panda_config() -> ExtractorConfig {
+    ExtractorConfig::new(Matchers {
         css: Matcher {
             modules: vec!["@panda/css".into()],
             names: NameMatcher::only(["css", "cva", "sva"]),
@@ -24,7 +24,7 @@ fn panda_matchers() -> Matchers {
             modules: vec!["@panda/tokens".into()],
             names: NameMatcher::only(["token"]),
         },
-    }
+    })
 }
 
 #[test]
@@ -32,7 +32,7 @@ fn single_pass_extract_combines_calls_and_jsx() {
     // One source containing imports, matched calls, unmatched calls, and JSX.
     // The combined entrypoint should produce all four sections from one parse.
     assert_yaml_snapshot!(
-        extract(
+        extract_debug(
             indoc! {r#"
                 import { css } from "@panda/css"
                 import { Box } from "@panda/jsx"
@@ -41,7 +41,7 @@ fn single_pass_extract_combines_calls_and_jsx() {
                 const el = <Box fontSize="lg" />
             "#},
             "fixture.tsx",
-            &panda_matchers(),
+            &panda_config(),
         ),
         @r#"
     imports:
@@ -110,14 +110,14 @@ fn single_pass_extract_combines_calls_and_jsx() {
 #[test]
 fn extract_with_namespace() {
     assert_yaml_snapshot!(
-        extract(
+        extract_debug(
             indoc! {r#"
                 import * as panda from "@panda/css"
                 panda.css({ color: "red" })
                 panda.cva({ base: { color: "blue" } })
             "#},
             "fixture.tsx",
-            &panda_matchers(),
+            &panda_config(),
         ),
         @r#"
     imports:
@@ -167,7 +167,7 @@ fn extract_with_namespace() {
 
 #[test]
 fn extract_surfaces_parse_errors() {
-    let result = extract("import { css } from", "fixture.tsx", &panda_matchers());
+    let result = extract_debug("import { css } from", "fixture.tsx", &panda_config());
     assert!(result.calls.is_empty());
     assert!(result.jsx.is_empty());
     assert!(!result.diagnostics.is_empty());
@@ -188,14 +188,14 @@ fn parse_error_contract_diagnostics_and_partial_extractions() {
     //   - a parse error always surfaces at least one diagnostic
     //   - extractions before the error point are returned when Oxc emits
     //     them; we don't assert how many or where the cutoff falls.
-    let result = extract(
+    let result = extract_debug(
         indoc! {r#"
             import { css } from "@panda/css"
             const a = css({ color: "red" })
             const b = ;
         "#},
         "fixture.tsx",
-        &panda_matchers(),
+        &panda_config(),
     );
     assert!(
         !result.diagnostics.is_empty(),

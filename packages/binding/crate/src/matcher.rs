@@ -25,6 +25,19 @@ pub struct Matchers {
     pub pattern: Matcher,
     pub jsx: Option<Matcher>,
     pub tokens: Matcher,
+    /// Resolved Panda token dictionary. When present, `token('path')` /
+    /// `token.var('path')` calls fold to their dictionary value during
+    /// extraction. Pass two parallel maps from JS: `values[path]` → raw
+    /// value (e.g. `"#ef4444"`), `vars[path]` → CSS-var form (e.g.
+    /// `"var(--colors-red-500)"`). Omit to disable token resolution.
+    pub token_dictionary: Option<TokenDictionary>,
+}
+
+#[napi(object)]
+#[derive(Clone)]
+pub struct TokenDictionary {
+    pub values: std::collections::HashMap<String, String>,
+    pub vars: std::collections::HashMap<String, String>,
 }
 
 #[napi(object)]
@@ -54,7 +67,7 @@ pub fn match_imports(scan: crate::ImportScanResult, matchers: Matchers) -> Vec<M
         .collect()
 }
 
-fn to_core_record(r: crate::ImportRecord) -> extractor::ImportRecord {
+pub(crate) fn to_core_record(r: crate::ImportRecord) -> extractor::ImportRecord {
     extractor::ImportRecord {
         module: r.module,
         kind: match r.kind {

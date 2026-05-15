@@ -1,0 +1,24 @@
+[package]
+name = "tokens"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+rustc-hash = { workspace = true }
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
+insta = { workspace = true }
+serde_json = { workspace = true }
+tokens = { workspace = true, features = ["serde"] }
+
+[features]
+serde = ["dep:serde"]
+
+[lints]
+workspace = true

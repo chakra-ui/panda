@@ -30,6 +30,7 @@ dependencies = [
  "napi-build",
  "napi-derive",
  "serde_json",
+ "tokens",
 ]
 
 [[package]]
@@ -173,8 +174,10 @@ dependencies = [
  "oxc_parser",
  "oxc_semantic",
  "oxc_span",
+ "rustc-hash",
  "serde",
  "serde_json",
+ "tokens",
 ]
 
 [[package]]
@@ -1030,6 +1033,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "tokens"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "tokens",
 ]
 
 [[package]]

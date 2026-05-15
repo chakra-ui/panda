@@ -31,10 +31,12 @@ encoder = { path = "crates/encoder" }
 engine = { path = "crates/engine" }
 extractor = { path = "crates/extractor" }
 optimizer = { path = "crates/optimizer" }
+tokens = { path = "crates/tokens" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 insta = { version = "1.47.2", features = ["yaml"] }
 indoc = "2.0.7"
+rustc-hash = "2.1"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

@@ -5,7 +5,7 @@
 //! `oxc_semantic` integration. These tests use the combined `extract()`
 //! entrypoint so the resolver is always present.
 
-use extractor::{ExtractResult, Matcher, Matchers, NameMatcher, extract};
+use extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
@@ -34,8 +34,8 @@ fn matchers() -> Matchers {
     }
 }
 
-fn run(source: &str) -> ExtractResult {
-    extract(source, "fixture.tsx", &matchers())
+fn run(source: &str) -> ExtractUsage {
+    extract(source, "fixture.tsx", &ExtractorConfig::new(matchers()))
 }
 
 // --- identifier reference resolution ---

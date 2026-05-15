@@ -1,6 +1,6 @@
 use extractor::{
-    ExtractedJsxResult, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher, Matchers,
-    NameMatcher, extract_jsx,
+    ExtractedJsxResult, ExtractorConfig, ImportSpecifierKind, MatchCategory, MatchedImport,
+    Matcher, Matchers, NameMatcher, extract_jsx,
 };
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
@@ -46,7 +46,12 @@ fn jsx_matchers() -> Matchers {
 }
 
 fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
-    extract_jsx(source, "fixture.tsx", matched, &jsx_matchers())
+    extract_jsx(
+        source,
+        "fixture.tsx",
+        matched,
+        &ExtractorConfig::new(jsx_matchers()),
+    )
 }
 
 #[test]
