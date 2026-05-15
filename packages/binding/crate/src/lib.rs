@@ -30,6 +30,19 @@ pub struct Span {
     pub end: u32,
 }
 
+/// 1-indexed line, 1-indexed UTF-16 column (matches `tsc`/IDE output).
+#[napi(object)]
+pub struct SourceLocation {
+    pub line: u32,
+    pub column: u32,
+}
+
+#[napi(object)]
+pub struct SourceRange {
+    pub start: SourceLocation,
+    pub end: SourceLocation,
+}
+
 #[napi(string_enum = "camelCase")]
 pub enum DiagnosticSeverity {
     Info,
@@ -41,5 +54,8 @@ pub enum DiagnosticSeverity {
 pub struct Diagnostic {
     pub message: String,
     pub severity: DiagnosticSeverity,
+    /// UTF-8 byte offsets.
     pub span: Option<Span>,
+    /// Human-readable line/column range covering `span`.
+    pub location: Option<SourceRange>,
 }

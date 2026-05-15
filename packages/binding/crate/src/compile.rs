@@ -51,6 +51,7 @@ pub fn compile(_input: Option<CompileInput>) -> CompileOutput {
                     engine::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
                 },
                 span: None,
+                location: None,
             })
             .collect(),
     }

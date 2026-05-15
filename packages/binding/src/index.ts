@@ -16,10 +16,25 @@ export interface CompileManifest {
 
 export type DiagnosticSeverity = 'info' | 'warning' | 'error'
 
+/** 1-indexed line, 1-indexed UTF-16 column. Matches what `tsc` and editors
+ *  report so error messages line up with the source the user sees. */
+export interface SourceLocation {
+  line: number
+  column: number
+}
+
+export interface SourceRange {
+  start: SourceLocation
+  end: SourceLocation
+}
+
 export interface Diagnostic {
   message: string
   severity: DiagnosticSeverity
+  /** UTF-8 byte offsets — useful for slicing the source. */
   span?: Span
+  /** Human-readable line/column range covering `span`. */
+  location?: SourceRange
 }
 
 export interface CompileOutput {

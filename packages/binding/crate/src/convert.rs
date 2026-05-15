@@ -26,6 +26,21 @@ pub(crate) fn convert_diagnostic(d: extractor::Diagnostic) -> Diagnostic {
         message: d.message,
         severity: convert_severity(d.severity),
         span: d.span.map(convert_span),
+        location: d.location.map(convert_range),
+    }
+}
+
+fn convert_location(loc: extractor::SourceLocation) -> crate::SourceLocation {
+    crate::SourceLocation {
+        line: loc.line,
+        column: loc.column,
+    }
+}
+
+fn convert_range(range: extractor::SourceRange) -> crate::SourceRange {
+    crate::SourceRange {
+        start: convert_location(range.start),
+        end: convert_location(range.end),
     }
 }
 

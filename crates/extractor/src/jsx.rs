@@ -66,7 +66,7 @@ pub fn extract_jsx(
     let ctx = VisitorContext::new(matched, matchers);
     ExtractedJsxResult {
         jsx: collect_jsx(&parser_return.program, &ctx),
-        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors),
+        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
     }
 }
 

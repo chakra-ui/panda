@@ -40,7 +40,7 @@ pub fn extract(source: &str, path: &str, matchers: &Matchers) -> ExtractResult {
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
     let imports = collect_imports(&parser_return.program);
-    let diagnostics = collect_parser_diagnostics(&parser_return.errors);
+    let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
 
     let matched = match_import_records(&imports, matchers);
     let ctx = VisitorContext::new(&matched, matchers);

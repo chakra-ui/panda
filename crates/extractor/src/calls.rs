@@ -57,7 +57,7 @@ pub fn extract_calls(
     let ctx = crate::VisitorContext::new(matched, matchers);
     ExtractedCallsResult {
         calls: collect_calls(&parser_return.program, &ctx),
-        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors),
+        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
     }
 }
 

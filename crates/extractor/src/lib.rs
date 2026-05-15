@@ -6,6 +6,7 @@ mod imports;
 mod jsx;
 mod literal;
 mod matcher;
+mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use extract::{ExtractResult, extract};
@@ -19,10 +20,12 @@ pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, match_import_records,
     match_imports,
 };
+pub use source::{SourceLocation, SourceRange};
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
 pub(crate) use matcher::VisitorContext;
+pub(crate) use source::LineIndex;
 
 use oxc_span::Span as OxcSpan;
 use serde::Serialize;
@@ -56,5 +59,10 @@ pub enum DiagnosticSeverity {
 pub struct Diagnostic {
     pub message: String,
     pub severity: DiagnosticSeverity,
+    /// UTF-8 byte offsets. Useful for slicing the source. `None` when the
+    /// underlying error didn't attribute a location.
     pub span: Option<Span>,
+    /// Human-readable line/column range covering the same offsets as `span`.
+    /// 1-indexed line, 1-indexed UTF-16 column — matches `tsc`/IDE output.
+    pub location: Option<SourceRange>,
 }

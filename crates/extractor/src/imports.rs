@@ -69,7 +69,7 @@ pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
 
     ImportScanResult {
         imports: collect_imports(&parser_return.program),
-        diagnostics: collect_parser_diagnostics(&parser_return.errors),
+        diagnostics: collect_parser_diagnostics(&parser_return.errors, source),
     }
 }
 
@@ -102,20 +102,28 @@ pub fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
     out
 }
 
-/// Map Oxc parse errors onto our `Diagnostic` shape.
+/// Map Oxc parse errors onto our `Diagnostic` shape. `source` is used to
+/// resolve byte offsets to line/column locations; pass the same string that
+/// was fed to `Parser::new` so the indexing matches.
 #[must_use]
-pub fn collect_parser_diagnostics(errors: &[OxcDiagnostic]) -> Vec<Diagnostic> {
+pub fn collect_parser_diagnostics(errors: &[OxcDiagnostic], source: &str) -> Vec<Diagnostic> {
+    let line_index = crate::LineIndex::new(source);
     errors
         .iter()
-        .map(|error| Diagnostic {
-            message: error.message.to_string(),
-            severity: DiagnosticSeverity::Error,
-            span: error.labels.as_ref().and_then(|labels| {
+        .map(|error| {
+            let span = error.labels.as_ref().and_then(|labels| {
                 labels.first().map(|label| Span {
                     start: u32::try_from(label.offset()).unwrap_or(0),
                     end: u32::try_from(label.offset() + label.len()).unwrap_or(0),
                 })
-            }),
+            });
+            let location = span.map(|s| line_index.locate_range(s.start, s.end));
+            Diagnostic {
+                message: error.message.to_string(),
+                severity: DiagnosticSeverity::Error,
+                span,
+                location,
+            }
         })
         .collect()
 }
