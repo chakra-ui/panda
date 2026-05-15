@@ -31,6 +31,7 @@ fn matchers() -> Matchers {
             modules: vec!["@panda/tokens".into()],
             names: NameMatcher::only(["token"]),
         },
+        jsx_factories: None,
     }
 }
 

@@ -1,6 +1,7 @@
 //! Oxc-based source extractor for Panda usages.
 
 mod calls;
+mod cross_file;
 mod extract;
 mod imports;
 mod jsx;
@@ -16,6 +17,7 @@ pub use imports::{
 };
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
+pub use cross_file::CrossFileResolver;
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use literal::Literal;

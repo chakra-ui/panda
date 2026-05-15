@@ -142,6 +142,11 @@ pub(crate) fn to_core_config(m: Matchers) -> extractor::ExtractorConfig {
     extractor::ExtractorConfig {
         matchers: to_core_matchers(m),
         token_dictionary,
+        // Cross-file resolution isn't surfaced through the flat
+        // `Matchers` shape — the `Extractor` session class wires it up
+        // explicitly. Free-function callers always extract single
+        // files, so a per-call cache wouldn't help them anyway.
+        cross_file: None,
     }
 }
 
@@ -152,6 +157,7 @@ pub(crate) fn to_core_matchers(m: Matchers) -> extractor::Matchers {
         pattern: to_core_matcher(m.pattern),
         jsx: m.jsx.map(to_core_matcher),
         tokens: to_core_matcher(m.tokens),
+        jsx_factories: m.jsx_factories,
     }
 }
 

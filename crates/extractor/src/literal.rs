@@ -113,7 +113,10 @@ impl Literal {
             }
             Self::Conditional(branches) => {
                 let mut map = serde_json::Map::with_capacity(2);
-                map.insert("kind".into(), serde_json::Value::String("conditional".into()));
+                map.insert(
+                    "kind".into(),
+                    serde_json::Value::String("conditional".into()),
+                );
                 map.insert(
                     "branches".into(),
                     serde_json::Value::Array(branches.iter().map(Self::to_json).collect()),

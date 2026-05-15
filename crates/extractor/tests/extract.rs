@@ -24,6 +24,7 @@ fn panda_config() -> ExtractorConfig {
             modules: vec!["@panda/tokens".into()],
             names: NameMatcher::only(["token"]),
         },
+        jsx_factories: None,
     })
 }
 

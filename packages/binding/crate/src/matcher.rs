@@ -31,6 +31,11 @@ pub struct Matchers {
     /// value (e.g. `"#ef4444"`), `vars[path]` → CSS-var form (e.g.
     /// `"var(--colors-red-500)"`). Omit to disable token resolution.
     pub token_dictionary: Option<TokenDictionary>,
+    /// JSX factory names that accept member-chain tags (`<styled.div>`).
+    /// Omit (or pass `None`) to use the built-in default `["styled"]`;
+    /// pass `["styled", "panda"]` to override. Replaces the default
+    /// outright — not additive.
+    pub jsx_factories: Option<Vec<String>>,
 }
 
 #[napi(object)]

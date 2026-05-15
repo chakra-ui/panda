@@ -96,6 +96,10 @@ export interface Matchers {
    *  `token.var('path')` calls fold to their dictionary value during
    *  extraction. Omit to disable token resolution. */
   tokenDictionary?: TokenDictionary
+  /** JSX factory names that accept member-chain tags (`<styled.div>`).
+   *  Omit to use the built-in default `["styled"]`; provide an array to
+   *  override (replaces the default outright — not additive). */
+  jsxFactories?: string[]
 }
 
 /** Two parallel `path → string` maps backing `token()` resolution.

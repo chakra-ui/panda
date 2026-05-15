@@ -1,6 +1,6 @@
 use crate::{
-    Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
-    VisitorContext, literal::expression_to_literal,
+    Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
+    Matchers, Span, VisitorContext, literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -12,13 +12,21 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
 
-/// Names treated as JSX factories for the purpose of accepting member-chain
-/// tags like `<styled.div>`. Without this restriction a named import like
-/// `Box` would also match `<Box.Item />`, which is not a Panda factory call.
-///
-/// TODO(port): make this configurable via `Matcher.factories: Vec<String>`
-/// instead of hardcoding `"styled"`.
-const JSX_FACTORY_NAMES: &[&str] = &["styled"];
+/// Built-in JSX factory names — the default fallback when the JSX
+/// `Matcher` doesn't specify `jsx_factories`. Member-chain tags like
+/// `<styled.div>` are accepted only when the root name appears in
+/// this list (or in the matcher's override list); without it, a named
+/// import like `Box` would over-match on `<Box.Item />`.
+const DEFAULT_JSX_FACTORY_NAMES: &[&str] = &["styled"];
+
+/// `true` when `name` is configured as a JSX factory: either via the
+/// caller's `jsx_factories` override or in the built-in default list.
+fn is_jsx_factory(matchers: &Matchers, name: &str) -> bool {
+    if let Some(overrides) = matchers.jsx_factories.as_ref() {
+        return overrides.iter().any(|f| f == name);
+    }
+    DEFAULT_JSX_FACTORY_NAMES.contains(&name)
+}
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -67,6 +75,8 @@ pub fn extract_jsx(
         &parser_return.program,
         matched,
         config.token_dictionary.as_ref(),
+        config.cross_file.as_ref(),
+        Some(std::path::PathBuf::from(path)),
     );
     let ctx = VisitorContext::new(matched, &config.matchers).with_resolver(&resolver);
     ExtractedJsxResult {
@@ -135,7 +145,7 @@ impl Extractor<'_, '_> {
                         // recognized JSX factory (e.g. `styled.div`). For a
                         // recipe/pattern Component, `Box.Item` is just dot
                         // access, not a Panda usage.
-                        if !JSX_FACTORY_NAMES.iter().any(|f| f == &matched.name) {
+                        if !is_jsx_factory(self.ctx.matchers, &matched.name) {
                             return None;
                         }
                         if !self

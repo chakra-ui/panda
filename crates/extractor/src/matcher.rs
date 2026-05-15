@@ -77,30 +77,44 @@ pub struct Matchers {
     pub pattern: Matcher,
     pub jsx: Option<Matcher>,
     pub tokens: Matcher,
+    /// JSX factory names that accept member-chain tags like
+    /// `<styled.div>`. `None` falls back to the built-in default
+    /// (`["styled"]`); `Some(list)` replaces the default — useful when
+    /// a Panda preset renames the factory or adds aliases (`panda.css`
+    /// alongside `styled`).
+    pub jsx_factories: Option<Vec<String>>,
 }
 
 /// Full extractor configuration: import matchers plus any runtime state
-/// the extractor needs (currently the resolved token dictionary, soon
-/// the user's panda config flags). Keep this separate from [`Matchers`]
-/// so the import-matching config stays small and reusable.
-#[derive(Debug, Clone, Default)]
+/// the extractor needs (resolved token dictionary, cross-file resolver,
+/// etc.). Keep this separate from [`Matchers`] so the import-matching
+/// config stays small and reusable.
+#[derive(Debug, Default)]
 pub struct ExtractorConfig {
     pub matchers: Matchers,
     /// Resolved token values. When `Some`, `token('x.y')` calls fold to
     /// the looked-up value via the [`tokens`] crate. `None` disables
-    /// token resolution entirely — useful for tests and for users who
-    /// haven't enabled token extraction.
+    /// token resolution entirely.
     pub token_dictionary: Option<TokenDictionary>,
+    /// Cross-file import resolver. When `Some`, references to imported
+    /// `const` exports from local files (`import { brand } from
+    /// './tokens'`) are loaded and folded at extraction time. The
+    /// resolver's internal cache is shared across every `extract()`
+    /// call that uses this config, so build a config once per session
+    /// and reuse it for the full file batch.
+    pub cross_file: Option<crate::CrossFileResolver>,
 }
 
 impl ExtractorConfig {
-    /// Convenience: wrap a `Matchers` config with no token dictionary.
-    /// Equivalent to `ExtractorConfig { matchers, token_dictionary: None }`.
+    /// Convenience: wrap a `Matchers` config with no runtime state.
+    /// Equivalent to `ExtractorConfig { matchers, token_dictionary:
+    /// None, cross_file: None }`.
     #[must_use]
     pub fn new(matchers: Matchers) -> Self {
         Self {
             matchers,
             token_dictionary: None,
+            cross_file: None,
         }
     }
 
@@ -108,6 +122,13 @@ impl ExtractorConfig {
     #[must_use]
     pub fn with_token_dictionary(mut self, dictionary: TokenDictionary) -> Self {
         self.token_dictionary = Some(dictionary);
+        self
+    }
+
+    /// Builder-style attach a cross-file resolver.
+    #[must_use]
+    pub fn with_cross_file(mut self, resolver: crate::CrossFileResolver) -> Self {
+        self.cross_file = Some(resolver);
         self
     }
 }

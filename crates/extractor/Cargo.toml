@@ -24,6 +24,7 @@ tokens = { workspace = true }
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }
+tempfile = "3.13"
 
 [lints]
 workspace = true

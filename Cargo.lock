@@ -195,6 +195,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "tempfile",
  "tokens",
 ]
 

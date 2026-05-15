@@ -34,6 +34,7 @@ fn panda_org(prefix: &str) -> Matchers {
             modules: vec![format!("{prefix}/tokens")],
             names: NameMatcher::only(["token"]),
         },
+        jsx_factories: None,
     }
 }
 
