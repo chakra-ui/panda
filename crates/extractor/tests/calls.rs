@@ -561,3 +561,651 @@ fn called_namespace_alias_without_property_is_skipped() {
     ",
     );
 }
+
+// --- constant folding + AST unwraps ---
+// Anything in this section operates on already-literal operands. Identifier
+// references and member access still fall through to `None` until Phase 5.
+
+#[test]
+fn parenthesized_argument_unwraps() {
+    assert_yaml_snapshot!(extract("css(({ color: 'red' }))", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 23
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn ts_as_const_unwraps() {
+    assert_yaml_snapshot!(extract("css({ color: 'red' } as const)", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 30
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn ts_satisfies_unwraps() {
+    assert_yaml_snapshot!(
+        extract("css({ color: 'red' } satisfies any)", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 35
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn ts_non_null_unwraps() {
+    assert_yaml_snapshot!(extract("css({ color: 'red' }!)", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 22
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn ts_old_style_type_assertion_unwraps() {
+    // <T>expr — only valid in non-TSX, so use .ts path
+    assert_yaml_snapshot!(
+        extract_calls(
+            "css(<any>{ color: 'red' })",
+            "fixture.ts",
+            &[css("css")],
+            &css_matchers(),
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 26
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn unary_negation_on_numeric_literal() {
+    assert_yaml_snapshot!(extract("css({ margin: -4, opacity: -0.5 })", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - margin: -4
+            opacity: -0.5
+        span:
+          start: 0
+          end: 34
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn unary_plus_on_numeric_literal() {
+    assert_yaml_snapshot!(extract("css({ width: +50 })", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - width: 50
+        span:
+          start: 0
+          end: 19
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn unary_logical_not_on_literal() {
+    assert_yaml_snapshot!(
+        extract("css({ a: !true, b: !false, c: !0, d: !'' })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: false
+            b: true
+            c: true
+            d: true
+        span:
+          start: 0
+          end: 43
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn binary_string_concatenation() {
+    assert_yaml_snapshot!(
+        extract("css({ width: '50' + '%', padding: 'x' + 'y' + 'z' })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - width: 50%
+            padding: xyz
+        span:
+          start: 0
+          end: 52
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn binary_numeric_arithmetic() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ a: 2 + 3, b: 10 - 4, c: 2 * 3, d: 12 / 4, e: 7 % 3 })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: 5
+            b: 6
+            c: 6
+            d: 3
+            e: 1
+        span:
+          start: 0
+          end: 59
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn template_literal_without_interpolation() {
+    assert_yaml_snapshot!(
+        extract("css({ color: `red`, font: `sans \\n serif` })", &[css("css")]),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+            font: "sans \n serif"
+        span:
+          start: 0
+          end: 44
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn template_literal_with_interpolation_is_skipped() {
+    // Interpolated template literals need identifier/scope resolution
+    // (Phase 5). For now they're dropped; the surrounding `css()` call
+    // still extracts if other args are extractable, otherwise skipped.
+    assert_yaml_snapshot!(
+        extract("css({ color: `${dynamic}px` })", &[css("css")]),
+        @"
+    calls: []
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn literal_object_spread_inside_arg() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...{ color: 'red', size: 'lg' }, fontSize: 14 })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+            size: lg
+            fontSize: 14
+        span:
+          start: 0
+          end: 54
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn literal_array_spread_inside_arg() {
+    assert_yaml_snapshot!(
+        extract("css({ padding: [1, ...[2, 3], 4] })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - padding:
+              - 1
+              - 2
+              - 3
+              - 4
+        span:
+          start: 0
+          end: 35
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn computed_key_from_string_literal() {
+    assert_yaml_snapshot!(extract("css({ ['color']: 'red' })", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 25
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn computed_key_from_numeric_literal() {
+    assert_yaml_snapshot!(extract("css({ [42]: 'red' })", &[css("css")]), @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - "42": red
+        span:
+          start: 0
+          end: 20
+    diagnostics: []
+    "#);
+}
+
+#[test]
+fn computed_key_from_concatenation() {
+    assert_yaml_snapshot!(
+        extract("css({ ['col' + 'or']: 'red' })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 30
+    diagnostics: []
+    ",
+    );
+}
+
+// --- ts-evaluator parity: coercion + conditional/logical with literals ---
+
+#[test]
+fn string_coercion_on_addition() {
+    // JS `+` coerces non-strings to string when either operand is a string.
+    // Very common Panda idiom: `width: 1 + 'px'`.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ width: 1 + 'px', label: 'x: ' + 42, flag: true + '!' })",
+            &[css("css")],
+        ),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - width: 1px
+            label: "x: 42"
+            flag: true!
+        span:
+          start: 0
+          end: 61
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn numeric_coercion_in_arithmetic() {
+    // JS coerces both operands to number for `-`, `*`, `/`, `%`, `**`.
+    // String operands that parse as numbers go through; others fold to None.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ a: '5' - 1, b: '2' * 3, c: true * 4, d: '10' / '2' })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: 4
+            b: 6
+            c: 4
+            d: 5
+        span:
+          start: 0
+          end: 59
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn non_numeric_string_in_arithmetic_drops() {
+    // `'foo' - 1` would be NaN in JS; we drop the call to avoid emitting
+    // a value that doesn't round-trip cleanly through JSON.
+    assert_yaml_snapshot!(
+        extract("css({ a: 'foo' - 1 })", &[css("css")]),
+        @"
+    calls: []
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn template_literal_with_literal_interpolations() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ size: `${2 + 3}px`, msg: `count = ${42}, status = ${true}` })",
+            &[css("css")],
+        ),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - size: 5px
+            msg: "count = 42, status = true"
+        span:
+          start: 0
+          end: 67
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn conditional_with_literal_test() {
+    // Test is literal → fold the taken branch. Either branch may be a
+    // non-literal; the untaken branch isn't evaluated.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ a: true ? 'red' : 'blue', b: 0 ? 'no' : 'yes', c: 'x' ? 'a' : nope })",
+            &[css("css")],
+        ),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: red
+            b: "yes"
+            c: a
+        span:
+          start: 0
+          end: 75
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn conditional_with_non_literal_test_drops() {
+    // Test is an identifier → can't decide which branch runs at build time.
+    // Phase 5 may emit both as alternatives; for now we drop the attribute.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ color: dark ? 'red' : 'blue', size: 'lg' })",
+            &[css("css")],
+        ),
+        @"
+    calls: []
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn logical_and_or_coalesce_with_literals() {
+    assert_yaml_snapshot!(
+        extract(
+            indoc! {"
+                css({
+                    a: 'x' && 'y',
+                    b: '' && 'z',
+                    c: 'first' || 'second',
+                    d: '' || 'fallback',
+                    e: null ?? 'default',
+                    f: 'value' ?? 'unused',
+                })
+            "},
+            &[css("css")],
+        ),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: y
+            b: ""
+            c: first
+            d: fallback
+            e: default
+            f: value
+        span:
+          start: 0
+          end: 152
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn strict_equality_on_literals() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ a: 'red' === 'red', b: 'red' === 'blue', c: 1 === 1, d: 1 === '1' })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: true
+            b: false
+            c: true
+            d: false
+        span:
+          start: 0
+          end: 74
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn loose_equality_with_coercion() {
+    // `1 == '1'` → true (string coerces to number).
+    // `null == 'x'` → false (only null == null/undefined).
+    // `true == 1` → true.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ a: 1 == '1', b: null == 'x', c: true == 1, d: 0 == false })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: true
+            b: false
+            c: true
+            d: true
+        span:
+          start: 0
+          end: 65
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn numeric_comparison() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ a: 3 < 5, b: 5 < 3, c: 5 <= 5, d: 6 > 2, e: 2 >= 2 })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: true
+            b: false
+            c: true
+            d: true
+            e: true
+        span:
+          start: 0
+          end: 59
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn string_comparison_is_lexicographic() {
+    assert_yaml_snapshot!(
+        extract("css({ a: 'a' < 'b', b: 'b' < 'a', c: 'ab' < 'abc' })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - a: true
+            b: false
+            c: true
+        span:
+          start: 0
+          end: 52
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn equality_inside_conditional_test() {
+    // `cond ? a : b` where `cond` is a literal-foldable equality.
+    // Combines binary folding + conditional folding.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ color: (2 + 2 === 4) ? 'green' : 'red', size: (1 > 2) ? 'lg' : 'sm' })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: green
+            size: sm
+        span:
+          start: 0
+          end: 76
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn nested_unwraps_and_folding() {
+    // Combine several features in one expression: parens, TS cast,
+    // unary, binary, computed key, template literal.
+    assert_yaml_snapshot!(
+        extract(
+            "css(((({ ['m' + 'argin']: -2 * 4, color: `red` } as const))))",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - margin: -8
+            color: red
+        span:
+          start: 0
+          end: 61
+    diagnostics: []
+    ",
+    );
+}

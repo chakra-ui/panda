@@ -485,3 +485,270 @@ fn matched_jsx_element_with_no_props_emits_empty_object() {
     ",
     );
 }
+
+// --- constant folding + AST unwraps inside JSX expression containers ---
+// JSX attribute values that wrap an expression in `{...}` route through the
+// shared literal evaluator, so anything `expression_to_literal` can fold
+// (parens, TS casts, unary/binary on literals, template literals, spreads,
+// computed keys) should work inside `<Box prop={...} />` too.
+
+#[test]
+fn parenthesized_attribute_value() {
+    assert_yaml_snapshot!(
+        extract("<Box style={({ color: 'red' })} />", &[pattern_component("Box")]),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          style:
+            color: red
+        span:
+          start: 0
+          end: 34
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn ts_as_const_attribute_value() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box style={{ color: 'red' } as const} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          style:
+            color: red
+        span:
+          start: 0
+          end: 41
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn ts_satisfies_attribute_value() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box style={{ color: 'red' } satisfies any} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          style:
+            color: red
+        span:
+          start: 0
+          end: 46
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn unary_in_attribute_value() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box margin={-4} opacity={-0.5} disabled={!false} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          margin: -4
+          opacity: -0.5
+          disabled: true
+        span:
+          start: 0
+          end: 52
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn binary_in_attribute_value() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box width={'50' + '%'} margin={2 + 3} padding={2 * 4} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          width: 50%
+          margin: 5
+          padding: 8
+        span:
+          start: 0
+          end: 57
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn template_literal_attribute_value() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box color={`red`} font={`sans \\n serif`} />",
+            &[pattern_component("Box")],
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          color: red
+          font: "sans \n serif"
+        span:
+          start: 0
+          end: 44
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn template_literal_with_interpolation_attribute_is_skipped() {
+    // Interpolated template literals need identifier/scope resolution.
+    // The attribute is dropped; the element itself is still matched.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box color={`${dynamic}px`} fontSize='lg' />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          fontSize: lg
+        span:
+          start: 0
+          end: 44
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn literal_object_spread_inside_attribute_object() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box style={{ ...{ color: 'red', size: 'lg' }, fontSize: 14 }} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          style:
+            color: red
+            size: lg
+            fontSize: 14
+        span:
+          start: 0
+          end: 65
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn computed_key_inside_attribute_object() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box style={{ ['col' + 'or']: 'red', [42]: 'fortytwo' }} />",
+            &[pattern_component("Box")],
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          style:
+            color: red
+            "42": fortytwo
+        span:
+          start: 0
+          end: 59
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn literal_object_spread_attribute() {
+    // Top-level `{...{...}}` JSX spread attribute, not nested inside an
+    // object value. Already worked; covered now with the new expression
+    // forms (parens around a literal object).
+    assert_yaml_snapshot!(
+        extract(
+            "<Box {...({ color: 'red' } as const)} fontSize='lg' />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          color: red
+          fontSize: lg
+        span:
+          start: 0
+          end: 54
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn nested_folding_inside_attribute() {
+    // Combine parens, TS cast, unary, binary, template, computed key.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box style={((({ ['m' + 'argin']: -2 * 4, color: `red` } as const)))} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          style:
+            margin: -8
+            color: red
+        span:
+          start: 0
+          end: 72
+    diagnostics: []
+    ",
+    );
+}

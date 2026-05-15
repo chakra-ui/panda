@@ -1,12 +1,11 @@
 use crate::{
     Diagnostic, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Matchers, Span,
-    VisitorContext,
-    literal::{expression_to_literal, object_to_literal},
+    VisitorContext, literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElementName,
-    JSXExpression, JSXMemberExpression, JSXMemberExpressionObject, JSXOpeningElement,
+    JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElementName, JSXExpression,
+    JSXMemberExpression, JSXMemberExpressionObject, JSXOpeningElement,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -211,11 +210,9 @@ fn merge_attribute(item: &JSXAttributeItem<'_>, out: &mut Vec<(String, Literal)>
             upsert(out, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
-            // Only merge literal object spreads. Identifiers/conditionals
-            // would need static evaluation (Phase 5).
-            if let Expression::ObjectExpression(obj) = &spread.argument
-                && let Some(Literal::Object(entries)) = object_to_literal(obj)
-            {
+            // Only merge literal-object spreads. `{...{ a: 1 }}` works;
+            // `{...rest}` needs Phase 5's identifier evaluator.
+            if let Some(Literal::Object(entries)) = expression_to_literal(&spread.argument) {
                 for (k, v) in entries {
                     upsert(out, k, v);
                 }
