@@ -1,6 +1,6 @@
 use crate::{ImportRecord, ImportScanResult, ImportSpecifierKind};
 use serde::Serialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Panda category a matched import resolves to. Mirrors the JS
 /// `ImportMap.matchers` keys in `packages/core/src/import-map.ts`.
@@ -16,27 +16,39 @@ pub enum MatchCategory {
 
 /// Which imported names qualify for a category. `Any` matches anything
 /// (used by recipes/patterns where allowed names are user-defined);
-/// `Only(list)` restricts to the given allowlist (used by css → css/cva/sva).
+/// `Only(set)` restricts to the given allowlist (used by css → css/cva/sva).
+/// Backed by a `HashSet` so `accepts()` is O(1) regardless of allowlist size.
 #[derive(Debug, Clone)]
 pub enum NameMatcher {
     Any,
-    Only(Vec<String>),
+    Only(HashSet<String>),
 }
 
 impl Default for NameMatcher {
     /// An empty `Only` — accepts nothing — so a default-constructed matcher
     /// is inert, not "accept everything".
     fn default() -> Self {
-        Self::Only(Vec::new())
+        Self::Only(HashSet::new())
     }
 }
 
 impl NameMatcher {
+    /// Construct an `Only` matcher from any iterable of name-like values.
+    /// Lets call sites stay readable (`NameMatcher::only(["css", "cva"])`)
+    /// without needing `HashSet::from(...)` boilerplate.
+    pub fn only<I, S>(names: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        Self::Only(names.into_iter().map(Into::into).collect())
+    }
+
     #[must_use]
     pub fn accepts(&self, name: &str) -> bool {
         match self {
             Self::Any => true,
-            Self::Only(list) => list.iter().any(|n| n == name),
+            Self::Only(set) => set.contains(name),
         }
     }
 }

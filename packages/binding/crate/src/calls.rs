@@ -7,7 +7,9 @@ pub struct ExtractedCall {
     pub category: MatchCategory,
     pub name: String,
     pub alias: String,
-    pub data: Vec<serde_json::Value>,
+    /// Per-argument values in source order. `null` entries mark arguments
+    /// that were present but not literal-extractable yet.
+    pub data: Vec<Option<serde_json::Value>>,
     pub span: Span,
 }
 

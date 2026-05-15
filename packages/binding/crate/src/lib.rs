@@ -12,7 +12,7 @@ mod matcher;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use compile::{CompileInput, CompileManifest, CompileOutput, InputFile, compile};
-pub use extract::{ExtractResult, extract};
+pub use extract::{ExtractDebugResult, ExtractResult, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
 };

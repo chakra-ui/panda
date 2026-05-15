@@ -1,6 +1,7 @@
 use crate::{
-    Diagnostic, ImportSpecifierKind, MatchCategory, MatchedImport, Matchers, Span, VisitorContext,
-    literal::{expression_to_value, object_to_value},
+    Diagnostic, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Matchers, Span,
+    VisitorContext,
+    literal::{expression_to_literal, object_to_literal},
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -20,7 +21,7 @@ use serde::Serialize;
 /// instead of hardcoding `"styled"`.
 const JSX_FACTORY_NAMES: &[&str] = &["styled"];
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedJsx {
     pub category: MatchCategory,
@@ -30,15 +31,15 @@ pub struct ExtractedJsx {
     /// Local root binding at the call site (`"styled"` for `<styled.div>`,
     /// `"JSX"` for `<JSX.Stack>`).
     pub alias: String,
-    /// Extracted prop/value map. Non-literal attribute values are skipped.
-    /// Literal `{...spread}` attributes are merged in source order. Empty
-    /// for matched elements that have no props — the element itself is the
-    /// signal (e.g. recipe component usage).
-    pub data: serde_json::Value,
+    /// Prop/value map as a `Literal::Object`. Non-literal attribute values
+    /// are skipped (omitted from the object). Literal `{...spread}` attrs
+    /// are merged in source order. Empty for matched elements with no
+    /// extractable props — the element itself is the signal.
+    pub data: Literal,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedJsxResult {
     pub jsx: Vec<ExtractedJsx>,
@@ -151,15 +152,15 @@ impl Extractor<'_, '_> {
 impl<'a> Visit<'a> for Extractor<'_, '_> {
     fn visit_jsx_opening_element(&mut self, element: &JSXOpeningElement<'a>) {
         if let Some((category, name, alias)) = self.resolve_tag(&element.name) {
-            let mut data = serde_json::Map::new();
+            let mut entries: Vec<(String, Literal)> = Vec::new();
             for item in &element.attributes {
-                merge_attribute(item, &mut data);
+                merge_attribute(item, &mut entries);
             }
             self.out.push(ExtractedJsx {
                 category,
                 name,
                 alias,
-                data: serde_json::Value::Object(data),
+                data: Literal::Object(entries),
                 span: Span::from(element.span),
             });
         }
@@ -188,10 +189,7 @@ fn flatten_member(member: &JSXMemberExpression<'_>) -> Option<(String, Vec<Strin
     }
 }
 
-fn merge_attribute(
-    item: &JSXAttributeItem<'_>,
-    out: &mut serde_json::Map<String, serde_json::Value>,
-) {
+fn merge_attribute(item: &JSXAttributeItem<'_>, out: &mut Vec<(String, Literal)>) {
     match item {
         JSXAttributeItem::Attribute(attr) => {
             let JSXAttributeName::Identifier(name) = &attr.name else {
@@ -200,34 +198,44 @@ fn merge_attribute(
             };
             let key = name.name.to_string();
             let value = match attr.value.as_ref() {
-                None => serde_json::Value::Bool(true), // boolean shorthand
+                None => Literal::Bool(true), // boolean shorthand
                 Some(v) => match attribute_value(v) {
                     Some(v) => v,
                     None => return,
                 },
             };
-            out.insert(key, value);
+            upsert(out, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
             // Only merge literal object spreads. Identifiers/conditionals
             // would need static evaluation (Phase 5).
             if let Expression::ObjectExpression(obj) = &spread.argument
-                && let Some(serde_json::Value::Object(map)) = object_to_value(obj)
+                && let Some(Literal::Object(entries)) = object_to_literal(obj)
             {
-                for (k, v) in map {
-                    out.insert(k, v);
+                for (k, v) in entries {
+                    upsert(out, k, v);
                 }
             }
         }
     }
 }
 
-fn attribute_value(value: &JSXAttributeValue<'_>) -> Option<serde_json::Value> {
+/// Insert-or-overwrite by key — last-writer-wins on duplicate keys,
+/// preserving the first-occurrence position.
+fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
+    if let Some(entry) = out.iter_mut().find(|(k, _)| k == &key) {
+        entry.1 = value;
+    } else {
+        out.push((key, value));
+    }
+}
+
+fn attribute_value(value: &JSXAttributeValue<'_>) -> Option<Literal> {
     match value {
-        JSXAttributeValue::StringLiteral(s) => Some(serde_json::Value::String(s.value.to_string())),
+        JSXAttributeValue::StringLiteral(s) => Some(Literal::String(s.value.to_string())),
         JSXAttributeValue::ExpressionContainer(container) => match &container.expression {
             JSXExpression::EmptyExpression(_) => None,
-            other => other.as_expression().and_then(expression_to_value),
+            other => other.as_expression().and_then(expression_to_literal),
         },
         JSXAttributeValue::Element(_) | JSXAttributeValue::Fragment(_) => None,
     }

@@ -39,7 +39,7 @@ fn css_matchers() -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec!["@panda/css".into()],
-            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::only(["css", "cva", "sva"]),
         },
         ..Default::default()
     }
@@ -49,7 +49,7 @@ fn panda_matchers(prefix: &str) -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec![format!("{prefix}/css")],
-            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::only(["css", "cva", "sva"]),
         },
         recipe: Matcher {
             modules: vec![format!("{prefix}/recipes")],
@@ -61,11 +61,11 @@ fn panda_matchers(prefix: &str) -> Matchers {
         },
         jsx: Some(Matcher {
             modules: vec![format!("{prefix}/jsx")],
-            names: NameMatcher::Only(vec!["styled".into(), "Box".into()]),
+            names: NameMatcher::only(["styled", "Box"]),
         }),
         tokens: Matcher {
             modules: vec![format!("{prefix}/tokens")],
-            names: NameMatcher::Only(vec!["token".into()]),
+            names: NameMatcher::only(["token"]),
         },
     }
 }
@@ -414,6 +414,7 @@ fn non_literal_args_are_omitted_from_data() {
         name: pattern
         alias: pattern
         data:
+          - ~
           - color: red
         span:
           start: 0

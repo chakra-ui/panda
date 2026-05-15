@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
 
-#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractResult {
     pub imports: Vec<ImportRecord>,

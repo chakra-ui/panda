@@ -6,7 +6,7 @@ fn css_only(modules: &[&str]) -> Matchers {
     Matchers {
         css: Matcher {
             modules: modules.iter().map(|s| (*s).to_string()).collect(),
-            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::only(["css", "cva", "sva"]),
         },
         ..Default::default()
     }
@@ -16,7 +16,7 @@ fn panda_org(prefix: &str) -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec![format!("{prefix}/css")],
-            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::only(["css", "cva", "sva"]),
         },
         recipe: Matcher {
             modules: vec![format!("{prefix}/recipes")],
@@ -28,11 +28,11 @@ fn panda_org(prefix: &str) -> Matchers {
         },
         jsx: Some(Matcher {
             modules: vec![format!("{prefix}/jsx")],
-            names: NameMatcher::Only(vec!["styled".into(), "Box".into()]),
+            names: NameMatcher::only(["styled", "Box"]),
         }),
         tokens: Matcher {
             modules: vec![format!("{prefix}/tokens")],
-            names: NameMatcher::Only(vec!["token".into()]),
+            names: NameMatcher::only(["token"]),
         },
     }
 }
@@ -177,7 +177,7 @@ fn js_parity_multiple_packages() {
     let matchers = Matchers {
         css: Matcher {
             modules: vec!["@acme/org/css".into(), "@foo/org/css".into()],
-            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::only(["css", "cva", "sva"]),
         },
         recipe: Matcher {
             modules: vec!["@acme/org/recipes".into(), "@bar/org/recipes".into()],

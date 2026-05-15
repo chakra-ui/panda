@@ -97,9 +97,10 @@ export interface ExtractedCall {
   /** Local binding at the call site. For namespace calls this is the
    * namespace alias (e.g. `"p"` in `p.css(...)`). */
   alias: string
-  /** Literal-extractable arguments in source order. Non-extractable args
-   * are omitted, so positional alignment with the call is not preserved. */
-  data: unknown[]
+  /** One entry per source argument, in order. `null` marks an argument that
+   * was present but not literal-extractable (identifier, conditional, etc.).
+   * `data.length` always matches the source arity. */
+  data: Array<unknown | null>
   span: Span
 }
 
@@ -129,7 +130,16 @@ export interface ExtractedJsxResult {
 
 // --- extract (combined single-parse entrypoint) ---
 
+/** Lean result returned by `extract()` — production hot path. */
 export interface ExtractResult {
+  calls: ExtractedCall[]
+  jsx: ExtractedJsx[]
+  diagnostics: Diagnostic[]
+}
+
+/** Full result returned by `extractDebug()` — includes raw + matched imports
+ *  for tooling, docs, and parity-compare flows. */
+export interface ExtractDebugResult {
   imports: ImportRecord[]
   matched: MatchedImport[]
   calls: ExtractedCall[]
@@ -144,6 +154,7 @@ export interface NativeBinding {
   extractCalls(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedCallsResult
   extractJsx(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedJsxResult
   extract(source: string, path: string, matchers: Matchers): ExtractResult
+  extractDebug(source: string, path: string, matchers: Matchers): ExtractDebugResult
 }
 
 const fallback: NativeBinding = {
@@ -167,6 +178,9 @@ const fallback: NativeBinding = {
     return { jsx: [], diagnostics: [] }
   },
   extract() {
+    return { calls: [], jsx: [], diagnostics: [] }
+  },
+  extractDebug() {
     return { imports: [], matched: [], calls: [], jsx: [], diagnostics: [] }
   },
 }
@@ -205,6 +219,10 @@ export function extractJsx(
 
 export function extract(source: string, path: string, matchers: Matchers): ExtractResult {
   return binding.extract(source, path, matchers)
+}
+
+export function extractDebug(source: string, path: string, matchers: Matchers): ExtractDebugResult {
+  return binding.extractDebug(source, path, matchers)
 }
 
 export function getBindingInfo() {

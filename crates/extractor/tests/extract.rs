@@ -6,7 +6,7 @@ fn panda_matchers() -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec!["@panda/css".into()],
-            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::only(["css", "cva", "sva"]),
         },
         recipe: Matcher {
             modules: vec!["@panda/recipes".into()],
@@ -18,11 +18,11 @@ fn panda_matchers() -> Matchers {
         },
         jsx: Some(Matcher {
             modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::Only(vec!["styled".into(), "Box".into()]),
+            names: NameMatcher::only(["styled", "Box"]),
         }),
         tokens: Matcher {
             modules: vec!["@panda/tokens".into()],
-            names: NameMatcher::Only(vec!["token".into()]),
+            names: NameMatcher::only(["token"]),
         },
     }
 }

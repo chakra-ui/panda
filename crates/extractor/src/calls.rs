@@ -1,6 +1,6 @@
 use crate::{
-    Diagnostic, ImportSpecifierKind, MatchCategory, MatchedImport, Matchers, Span,
-    literal::expression_to_value,
+    Diagnostic, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Matchers, Span,
+    literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression};
@@ -10,7 +10,7 @@ use oxc_span::SourceType;
 use serde::Serialize;
 use std::borrow::Cow;
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedCall {
     pub category: MatchCategory,
@@ -20,11 +20,16 @@ pub struct ExtractedCall {
     /// Local binding actually used at the call site — may differ from `name`
     /// if the import was aliased (`import { css as nCss }`).
     pub alias: String,
-    pub data: Vec<serde_json::Value>,
+    /// One entry per source argument, in order. `None` means the argument
+    /// was present but not literal-extractable yet (identifier, conditional,
+    /// template literal with interpolation, etc.) — Phase 5 will resolve
+    /// many of those. Callers can rely on `data.len()` matching the source
+    /// arity. Calls where *every* argument is non-extractable are dropped.
+    pub data: Vec<Option<Literal>>,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedCallsResult {
     pub calls: Vec<ExtractedCall>,
@@ -123,12 +128,12 @@ impl Extractor<'_, '_> {
 impl<'a> Visit<'a> for Extractor<'_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let Some(resolved) = self.resolve_callee(call) {
-            let data: Vec<_> = call
-                .arguments
-                .iter()
-                .filter_map(argument_to_value)
-                .collect();
-            if !data.is_empty() {
+            let data: Vec<Option<Literal>> =
+                call.arguments.iter().map(argument_to_literal).collect();
+            // Drop the call only if no argument was extractable at all —
+            // otherwise keep it and preserve positional `None` slots so
+            // consumers know which arg was non-literal.
+            if data.iter().any(Option::is_some) {
                 self.out.push(ExtractedCall {
                     category: resolved.category,
                     name: resolved.name.into_owned(),
@@ -142,6 +147,6 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-fn argument_to_value(arg: &Argument<'_>) -> Option<serde_json::Value> {
-    arg.as_expression().and_then(expression_to_value)
+fn argument_to_literal(arg: &Argument<'_>) -> Option<Literal> {
+    arg.as_expression().and_then(expression_to_literal)
 }

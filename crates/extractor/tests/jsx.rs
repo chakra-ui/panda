@@ -39,12 +39,7 @@ fn jsx_matchers() -> Matchers {
     Matchers {
         jsx: Some(Matcher {
             modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::Only(vec![
-                "styled".into(),
-                "Box".into(),
-                "Stack".into(),
-                "Grid".into(),
-            ]),
+            names: NameMatcher::only(["styled", "Box", "Stack", "Grid"]),
         }),
         ..Default::default()
     }

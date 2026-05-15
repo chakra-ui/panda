@@ -113,7 +113,7 @@ pub(crate) fn to_core_matcher(m: Matcher) -> extractor::Matcher {
         modules: m.modules,
         names: match m.names {
             None => extractor::NameMatcher::Any,
-            Some(list) => extractor::NameMatcher::Only(list),
+            Some(list) => extractor::NameMatcher::only(list),
         },
     }
 }
@@ -133,7 +133,11 @@ pub(crate) fn to_call(c: extractor::ExtractedCall) -> ExtractedCall {
         category: convert_category(c.category),
         name: c.name,
         alias: c.alias,
-        data: c.data,
+        data: c
+            .data
+            .into_iter()
+            .map(|opt| opt.map(|lit| lit.to_json()))
+            .collect(),
         span: convert_span(c.span),
     }
 }
@@ -143,7 +147,7 @@ pub(crate) fn to_jsx(j: extractor::ExtractedJsx) -> ExtractedJsx {
         category: convert_category(j.category),
         name: j.name,
         alias: j.alias,
-        data: j.data,
+        data: j.data.to_json(),
         span: convert_span(j.span),
     }
 }

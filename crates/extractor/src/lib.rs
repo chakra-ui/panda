@@ -14,6 +14,7 @@ pub use imports::{
     collect_imports, collect_parser_diagnostics, scan_imports,
 };
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
+pub use literal::Literal;
 pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, match_import_records,
     match_imports,
