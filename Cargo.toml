@@ -11,12 +11,17 @@ version = "0.0.0"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/chakra-ui/panda"
-rust-version = "1.88"
+rust-version = "1.93"
 
 [workspace.dependencies]
 napi = { version = "3.3.0", default-features = false, features = ["napi4", "serde-json"] }
 napi-build = "2.2.3"
 napi-derive = "3.3.0"
+oxc_allocator = "0.130.0"
+oxc_ast = "0.130.0"
+oxc_diagnostics = "0.130.0"
+oxc_parser = "0.130.0"
+oxc_span = "0.130.0"
 cache = { path = "crates/cache" }
 config = { path = "crates/config" }
 emitter = { path = "crates/emitter" }
@@ -26,6 +31,8 @@ extractor = { path = "crates/extractor" }
 optimizer = { path = "crates/optimizer" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
+insta = { version = "1.47.2", features = ["yaml"] }
+indoc = "2.0.7"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

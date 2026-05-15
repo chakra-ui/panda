@@ -7,5 +7,17 @@ repository.workspace = true
 rust-version.workspace = true
 publish = false
 
+[dependencies]
+oxc_allocator = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_diagnostics = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
+insta = { workspace = true }
+
 [lints]
 workspace = true
