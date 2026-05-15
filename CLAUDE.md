@@ -292,7 +292,14 @@ Use these exact strings so audits can run with `rg`:
 - ✅ Workspace scaffold, CI, NAPI binding skeleton (OSS-2400/2401).
 - ✅ `scan_imports()` over Oxc — full named/default/namespace/side-effect/type-only coverage.
 - ✅ `match_imports()` — ports `ImportMap.match()` semantics from `packages/core/src/import-map.ts`.
-- ⬜ Next: Phase 4.1 — `css({ literal })` extraction (find call sites for matched local bindings, extract object-literal arguments).
+- ✅ `extract_calls()` — literal object/array/primitive extraction from `css({...})`, namespace member calls (`p.css({...})`), multi-arg patterns. Positional `Option<Literal>` so non-extractable args don't shift indices.
+- ✅ `extract_jsx()` — `<Box>`, `<styled.div>`, `<JSX.Stack>` style-prop extraction with boolean-shorthand + literal-spread merge.
+- ✅ `extract()` (combined hot path) + `extract_debug()` (kitchen-sink) — single parse per file; lean result strips `imports`/`matched` for production callers.
+- ⬜ Next: Phase 5 — same-file static evaluator (identifier resolution, `token()` resolution, conditionals).
+
+### Parse-error contract
+
+Oxc recovers from parse errors and returns a partial AST. All four entrypoints (`scan_imports`, `extract_calls`, `extract_jsx`, `extract`) run their visitors on whatever AST Oxc produces, so a result can include extractions **and** non-empty `diagnostics` simultaneously. **Treat `diagnostics` as authoritative**: code that needs strict correctness should bail when `!diagnostics.is_empty()`. Build pipelines that already tolerate ts-morph's recovery don't need to change behaviour.
 
 ### Package Naming for Publishing
 

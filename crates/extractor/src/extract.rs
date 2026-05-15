@@ -23,6 +23,16 @@ pub struct ExtractResult {
 /// Prefer this over the staged `scan_imports` + `match_imports` +
 /// `extract_calls` + `extract_jsx` for production use — those each re-parse
 /// the source and are intended for testing/debugging individual stages.
+///
+/// # Parse-error contract
+///
+/// Oxc recovers from parse errors and emits a partial AST. We run the
+/// visitors on whatever it produces, so the returned `ExtractResult` may
+/// contain extractions *and* a non-empty `diagnostics` list at the same
+/// time. **`diagnostics` is the authoritative signal.** Callers that need
+/// strict correctness should check `diagnostics.is_empty()` before trusting
+/// `calls`/`jsx`. Callers that already tolerate ts-morph's recovery (the
+/// existing TS extractor does) can keep behavior as-is.
 #[must_use]
 pub fn extract(source: &str, path: &str, matchers: &Matchers) -> ExtractResult {
     let allocator = Allocator::default();

@@ -57,6 +57,10 @@ pub struct ImportScanResult {
 
 /// `path` is used only for `SourceType` detection; no filesystem access.
 /// Unknown extensions fall back to `tsx`.
+///
+/// Parse-error contract: see [`crate::extract`] — `diagnostics` is
+/// authoritative, `imports` may be partial when Oxc recovers from a
+/// syntax error.
 #[must_use]
 pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
     let allocator = Allocator::default();

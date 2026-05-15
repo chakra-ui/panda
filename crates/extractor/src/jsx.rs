@@ -49,6 +49,10 @@ pub struct ExtractedJsxResult {
 /// Find every Panda JSX element and extract its attributes. Handles direct
 /// named tags (`<Box>`), styled factories (`<styled.div>`), and namespace
 /// chains (`<JSX.styled.div>`, `<JSX.Stack>`).
+///
+/// Parse-error contract: see [`crate::extract`] — `diagnostics` is
+/// authoritative, `jsx` may be partial when Oxc recovers from a syntax
+/// error.
 #[must_use]
 pub fn extract_jsx(
     source: &str,

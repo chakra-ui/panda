@@ -172,3 +172,40 @@ fn extract_surfaces_parse_errors() {
     assert!(result.jsx.is_empty());
     assert!(!result.diagnostics.is_empty());
 }
+
+#[test]
+fn parse_error_contract_diagnostics_and_partial_extractions() {
+    // Contract: when Oxc encounters a parse error in TSX, it still tries to
+    // recover and emit a partial AST. Our extractors run on whatever AST
+    // Oxc returns, so callers may see extractions AND diagnostics in the
+    // same result. Diagnostics are the authoritative signal: code that
+    // needs strict correctness should check `diagnostics.is_empty()`
+    // before trusting `calls`/`jsx`. Build pipelines that already tolerate
+    // ts-morph's recovery behaviour don't need to change.
+    //
+    // This test asserts the *contract*, not the recovery quality (which is
+    // Oxc-version-dependent). Specifically:
+    //   - a parse error always surfaces at least one diagnostic
+    //   - extractions before the error point are returned when Oxc emits
+    //     them; we don't assert how many or where the cutoff falls.
+    let result = extract(
+        indoc! {r#"
+            import { css } from "@panda/css"
+            const a = css({ color: "red" })
+            const b = ;
+        "#},
+        "fixture.tsx",
+        &panda_matchers(),
+    );
+    assert!(
+        !result.diagnostics.is_empty(),
+        "parse error must surface as a diagnostic"
+    );
+    assert_eq!(
+        result.diagnostics[0].severity,
+        extractor::DiagnosticSeverity::Error,
+    );
+    // No assertion on `result.calls` — Oxc's recovery may or may not
+    // expose the pre-error css() call depending on parser behaviour.
+    // The point is that the API doesn't crash and surfaces the error.
+}

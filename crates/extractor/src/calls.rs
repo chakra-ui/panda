@@ -39,6 +39,10 @@ pub struct ExtractedCallsResult {
 /// Find every Panda call site and extract its literal arguments. Handles both
 /// direct identifier callees (`css({...})`) and namespace member callees
 /// (`p.css({...})`).
+///
+/// Parse-error contract: see [`crate::extract`] — `diagnostics` is
+/// authoritative, `calls` may be partial when Oxc recovers from a syntax
+/// error.
 #[must_use]
 pub fn extract_calls(
     source: &str,
