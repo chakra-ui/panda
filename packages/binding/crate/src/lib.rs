@@ -172,3 +172,141 @@ fn convert_span(span: extractor::Span) -> Span {
         end: span.end,
     }
 }
+
+// --- matchImports ---
+
+#[napi(string_enum = "camelCase")]
+pub enum MatchCategory {
+    Css,
+    Recipe,
+    Pattern,
+    Jsx,
+    Tokens,
+}
+
+#[napi(object)]
+pub struct Matcher {
+    pub modules: Vec<String>,
+    /// `None` matches any imported name (used for recipes/patterns).
+    pub names: Option<Vec<String>>,
+}
+
+#[napi(object)]
+pub struct Matchers {
+    pub css: Matcher,
+    pub recipe: Matcher,
+    pub pattern: Matcher,
+    pub jsx: Option<Matcher>,
+    pub tokens: Matcher,
+}
+
+#[napi(object)]
+pub struct MatchedImport {
+    pub category: MatchCategory,
+    pub module: String,
+    pub name: String,
+    pub alias: String,
+    pub kind: ImportSpecifierKind,
+}
+
+#[napi]
+#[must_use]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "NAPI requires owned arguments"
+)]
+pub fn match_imports(scan: ImportScanResult, matchers: Matchers) -> Vec<MatchedImport> {
+    let scan = to_core_scan(scan);
+    let matchers = to_core_matchers(matchers);
+    extractor::match_imports(&scan, &matchers)
+        .into_iter()
+        .map(matched_record)
+        .collect()
+}
+
+fn to_core_scan(scan: ImportScanResult) -> extractor::ImportScanResult {
+    extractor::ImportScanResult {
+        imports: scan
+            .imports
+            .into_iter()
+            .map(|r| extractor::ImportRecord {
+                module: r.module,
+                kind: match r.kind {
+                    ImportKind::SideEffect => extractor::ImportKind::SideEffect,
+                    ImportKind::Value => extractor::ImportKind::Value,
+                },
+                type_only: r.type_only,
+                specifiers: r
+                    .specifiers
+                    .into_iter()
+                    .map(|s| extractor::ImportSpecifier {
+                        kind: match s.kind {
+                            ImportSpecifierKind::Named => extractor::ImportSpecifierKind::Named,
+                            ImportSpecifierKind::Default => extractor::ImportSpecifierKind::Default,
+                            ImportSpecifierKind::Namespace => {
+                                extractor::ImportSpecifierKind::Namespace
+                            }
+                        },
+                        imported: s.imported,
+                        local: s.local,
+                        type_only: s.type_only,
+                        span: extractor::Span {
+                            start: s.span.start,
+                            end: s.span.end,
+                        },
+                    })
+                    .collect(),
+                span: extractor::Span {
+                    start: r.span.start,
+                    end: r.span.end,
+                },
+            })
+            .collect(),
+        diagnostics: Vec::new(),
+    }
+}
+
+fn to_core_matchers(m: Matchers) -> extractor::Matchers {
+    extractor::Matchers {
+        css: extractor::Matcher {
+            modules: m.css.modules,
+            names: m.css.names,
+        },
+        recipe: extractor::Matcher {
+            modules: m.recipe.modules,
+            names: m.recipe.names,
+        },
+        pattern: extractor::Matcher {
+            modules: m.pattern.modules,
+            names: m.pattern.names,
+        },
+        jsx: m.jsx.map(|j| extractor::Matcher {
+            modules: j.modules,
+            names: j.names,
+        }),
+        tokens: extractor::Matcher {
+            modules: m.tokens.modules,
+            names: m.tokens.names,
+        },
+    }
+}
+
+fn matched_record(m: extractor::MatchedImport) -> MatchedImport {
+    MatchedImport {
+        category: match m.category {
+            extractor::MatchCategory::Css => MatchCategory::Css,
+            extractor::MatchCategory::Recipe => MatchCategory::Recipe,
+            extractor::MatchCategory::Pattern => MatchCategory::Pattern,
+            extractor::MatchCategory::Jsx => MatchCategory::Jsx,
+            extractor::MatchCategory::Tokens => MatchCategory::Tokens,
+        },
+        module: m.module,
+        name: m.name,
+        alias: m.alias,
+        kind: match m.kind {
+            extractor::ImportSpecifierKind::Named => ImportSpecifierKind::Named,
+            extractor::ImportSpecifierKind::Default => ImportSpecifierKind::Default,
+            extractor::ImportSpecifierKind::Namespace => ImportSpecifierKind::Namespace,
+        },
+    }
+}

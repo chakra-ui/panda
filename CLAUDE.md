@@ -20,6 +20,19 @@ Panda CSS is a CSS-in-JS framework with static extraction capabilities. The proj
   /fixture/        # Shared test fixtures and utilities
   /postcss/        # PostCSS plugin
   /preset-*/       # Design system presets
+  /binding/        # @pandacss/binding — NAPI wrapper around Rust engine
+    /crate/        # binding_napi cdylib (NAPI boundary only)
+
+/crates/           # Rust workspace — the v2 Oxc-based compiler engine
+  /extractor/      # Oxc-based AST scanning + extraction
+  /engine/         # Orchestrator (extract → encode → emit → optimize → cache)
+  /encoder/        # Style usage → atomic rules
+  /emitter/        # Encoded rules → flat CSS
+  /optimizer/      # lightningcss wrapper
+  /cache/          # File/rule caches
+  /config/         # Serializable config types
+
+/bench/            # Rust + TS benchmark harness for the OSS-2400 spike
 
 /sandbox/          # Integration tests and examples
   /codegen/        # Generated code validation tests
@@ -208,7 +221,82 @@ Brief description of the change and its impact.
   ├─ lightningcss (optional, faster CSS processing)
   ├─ browserslist (browser targets)
   └─ postcss-* plugins (optimization)
+
+@pandacss/binding (v2, NAPI)
+  └─ crates/* (Rust workspace)
+      ├─ extractor (Oxc parsing + scan_imports + match_imports)
+      ├─ engine, encoder, emitter, optimizer, cache, config (placeholders)
+      └─ packages/binding/crate (binding_napi cdylib)
 ```
+
+## Rust / Oxc Engine (v2 migration)
+
+The repo is in the middle of porting the compiler hot path from `ts-morph` + `ts-evaluator` to a Rust/Oxc engine. JS-facing APIs stay stable; Rust ships behind `@pandacss/binding`.
+
+**Read first** before touching Rust:
+- `RUST_OXC_MIGRATION.md` — the master plan, phase breakdown, data contract, hook semantics.
+- `RUST_ENGINE_SPIKE.mdx` — OSS-2400 spike spec + porting rules (crate boundaries, comment markers, unsafe policy, output rules).
+
+### Toolchain
+
+- Rust pinned to `1.93.0` via `rust-toolchain.toml` (matches Oxc 0.130 MSRV).
+- Oxc crates: `oxc_allocator`, `oxc_ast`, `oxc_diagnostics`, `oxc_parser`, `oxc_span` at `0.130.0`.
+- Test deps: `insta` (inline YAML snapshots) + `indoc` (dedented multi-line source fixtures).
+
+### Commands
+
+```sh
+pnpm rust:check      # cargo check --workspace --locked
+pnpm rust:test       # cargo test --workspace --locked
+pnpm rust:fmt        # cargo fmt --all --check
+pnpm rust:clippy     # cargo clippy --all-targets --locked -- -D warnings
+pnpm bench:rust-spike                          # TS baseline benchmark
+pnpm --filter @pandacss/binding build:native   # build the NAPI .node artifact
+pnpm --filter @pandacss/binding test           # binding round-trip Vitest tests
+```
+
+Run these from the repo root via `pnpm`. Cargo binaries live in `~/.cargo/bin`; user shells (zsh) load `.zshenv` which adds it to PATH, so pnpm child processes inherit it.
+
+### Test Conventions
+
+- **Public-API tests live in `crates/<name>/tests/<feature>.rs`** as separate integration binaries — not in `src/`. Inline `#[cfg(test)] mod tests` is reserved for private helpers (rare).
+- Use **inline YAML snapshots**: `assert_yaml_snapshot!(value, @"...")` from `insta`. Update with `cargo insta test --accept -p <crate>` or `cargo insta review`.
+- Use `indoc! {"..."}` for multi-line source fixtures so spans match plain unindented source.
+- For tests where output text isn't part of the contract (e.g. Oxc parse error messages), assert shape only.
+
+### Porting Comment Markers
+
+Use these exact strings so audits can run with `rg`:
+
+```rust
+// TODO(port): unsupported or uncertain behavior — must be behind TS fallback.
+// PERF(port): known performance-sensitive translation; needs benchmark before default flip.
+// SAFETY: invariant that makes an unsafe block valid (mandatory next to every unsafe).
+// PORT NOTE: intentional reshaping from the TypeScript implementation.
+```
+
+### Workspace Lints
+
+`Cargo.toml` enables `clippy::all` + `clippy::pedantic` workspace-wide, plus warn on `dbg_macro` / `todo` / `unimplemented` / `print_stdout` / `print_stderr`. CI runs with `-D warnings`, so anything clippy flags blocks the build. Per-function `#[allow(...)]` is fine when justified — include a `reason = "..."` (e.g. NAPI requires owned `String` parameters so `clippy::needless_pass_by_value` must be allowed on `#[napi]` entry points).
+
+### Native Binding (`@pandacss/binding`)
+
+- `packages/binding/crate/src/lib.rs` is the NAPI boundary — thin mirror types only, no compiler logic.
+- TS wrapper `packages/binding/src/index.ts` defines the public API + a no-op fallback for unsupported platforms.
+- Loader `src/load-binary.ts` looks for `binding.node` next to the package root, then falls back to `@pandacss/binding-native`.
+- Native artifact (`binding.node`) and auto-generated `native.d.ts` are gitignored.
+- **NAPI quirks**: `#[napi]` functions can't take `&str` — use owned `String` with `#[allow(clippy::needless_pass_by_value, reason = "...")]`. `Option<T>` accepts `undefined`/omitted in JS but **not `null`** — TS callers should leave the field off, not pass `null`.
+
+### Current State
+
+- ✅ Workspace scaffold, CI, NAPI binding skeleton (OSS-2400/2401).
+- ✅ `scan_imports()` over Oxc — full named/default/namespace/side-effect/type-only coverage.
+- ✅ `match_imports()` — ports `ImportMap.match()` semantics from `packages/core/src/import-map.ts`.
+- ⬜ Next: Phase 4.1 — `css({ literal })` extraction (find call sites for matched local bindings, extract object-literal arguments).
+
+### Package Naming for Publishing
+
+Internal crate names (`engine`, `extractor`, etc.) are placeholders. Before publishing anything, rename per the namespace rules — see `~/.claude/projects/<this-repo>/memory/project_rust_package_namespace.md`.
 
 ## Useful References
 
@@ -216,6 +304,7 @@ Brief description of the change and its impact.
 - **Type definitions**: `packages/types/src/` (comprehensive types)
 - **Integration examples**: `/sandbox/` (real-world usage)
 - **Test patterns**: `packages/fixture/` and `packages/core/__tests__/`
+- **Rust migration**: `RUST_OXC_MIGRATION.md` and `RUST_ENGINE_SPIKE.mdx`
 
 ## Best Practices for AI Assistants
 
@@ -237,5 +326,5 @@ pnpm test packages/core         # Verify tests pass
 
 ---
 
-**Last Updated**: 2025-01-17
-**Project Version**: 1.4.2
+**Last Updated**: 2026-05-15
+**Project Version**: v2 branch (Rust/Oxc migration in progress)
