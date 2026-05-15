@@ -18,11 +18,14 @@
 
 use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator,
-    ConditionalExpression, Expression, LogicalExpression, LogicalOperator, ObjectExpression,
-    ObjectPropertyKind, PropertyKey, PropertyKind, TemplateLiteral, UnaryExpression, UnaryOperator,
+    ComputedMemberExpression, ConditionalExpression, Expression, LogicalExpression,
+    LogicalOperator, ObjectExpression, ObjectPropertyKind, PropertyKey, PropertyKind,
+    StaticMemberExpression, TemplateLiteral, UnaryExpression, UnaryOperator,
 };
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
+
+use crate::Resolver;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
@@ -124,7 +127,18 @@ fn json_number(value: f64) -> Option<serde_json::Value> {
 
 // --- AST → Literal conversion ---
 
-pub(crate) fn expression_to_literal(expr: &Expression<'_>) -> Option<Literal> {
+/// Convert an expression to a `Literal` if it folds to a static value.
+///
+/// `resolver` is the [`Resolver`] built from `oxc_semantic` for the file
+/// being extracted. Pass `None` only for unit tests that exercise pure
+/// literal folding without scope context — production call paths (the
+/// `extract()` family) always pass `Some`. With a resolver, `Identifier`
+/// references, shorthand object props, and member access on resolved
+/// objects/arrays fold as well; without one, they all return `None`.
+pub(crate) fn expression_to_literal(
+    expr: &Expression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
     match expr {
         // Primitive literals.
         Expression::StringLiteral(s) => Some(Literal::String(s.value.to_string())),
@@ -133,30 +147,40 @@ pub(crate) fn expression_to_literal(expr: &Expression<'_>) -> Option<Literal> {
         Expression::NullLiteral(_) => Some(Literal::Null),
 
         // Composite literals.
-        Expression::ObjectExpression(obj) => object_to_literal(obj),
-        Expression::ArrayExpression(arr) => array_to_literal(arr),
+        Expression::ObjectExpression(obj) => object_to_literal(obj, resolver),
+        Expression::ArrayExpression(arr) => array_to_literal(arr, resolver),
 
         // Transparent unwraps — these are purely syntactic and have no
         // runtime effect, so recurse on the inner expression.
-        Expression::ParenthesizedExpression(p) => expression_to_literal(&p.expression),
-        Expression::TSAsExpression(e) => expression_to_literal(&e.expression),
-        Expression::TSSatisfiesExpression(e) => expression_to_literal(&e.expression),
-        Expression::TSNonNullExpression(e) => expression_to_literal(&e.expression),
-        Expression::TSTypeAssertion(e) => expression_to_literal(&e.expression),
-        Expression::TSInstantiationExpression(e) => expression_to_literal(&e.expression),
+        Expression::ParenthesizedExpression(p) => expression_to_literal(&p.expression, resolver),
+        Expression::TSAsExpression(e) => expression_to_literal(&e.expression, resolver),
+        Expression::TSSatisfiesExpression(e) => expression_to_literal(&e.expression, resolver),
+        Expression::TSNonNullExpression(e) => expression_to_literal(&e.expression, resolver),
+        Expression::TSTypeAssertion(e) => expression_to_literal(&e.expression, resolver),
+        Expression::TSInstantiationExpression(e) => expression_to_literal(&e.expression, resolver),
 
         // Constant folding.
-        Expression::UnaryExpression(u) => eval_unary(u),
-        Expression::BinaryExpression(b) => eval_binary(b),
-        Expression::LogicalExpression(l) => eval_logical(l),
-        Expression::ConditionalExpression(c) => eval_conditional(c),
-        Expression::TemplateLiteral(t) => template_literal_to_literal(t),
+        Expression::UnaryExpression(u) => eval_unary(u, resolver),
+        Expression::BinaryExpression(b) => eval_binary(b, resolver),
+        Expression::LogicalExpression(l) => eval_logical(l, resolver),
+        Expression::ConditionalExpression(c) => eval_conditional(c, resolver),
+        Expression::TemplateLiteral(t) => template_literal_to_literal(t, resolver),
+
+        // Same-file scope resolution.
+        Expression::Identifier(ident) => resolver?.resolve_identifier(ident),
+        Expression::StaticMemberExpression(member) => static_member_to_literal(member, resolver),
+        Expression::ComputedMemberExpression(member) => {
+            computed_member_to_literal(member, resolver)
+        }
 
         _ => None,
     }
 }
 
-pub(crate) fn object_to_literal(obj: &ObjectExpression<'_>) -> Option<Literal> {
+pub(crate) fn object_to_literal(
+    obj: &ObjectExpression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(obj.properties.len());
     for prop in &obj.properties {
         match prop {
@@ -164,14 +188,15 @@ pub(crate) fn object_to_literal(obj: &ObjectExpression<'_>) -> Option<Literal> {
                 if prop.method || prop.kind != PropertyKind::Init {
                     return None;
                 }
-                let key = property_key_to_string(&prop.key, prop.computed)?;
-                let value = expression_to_literal(&prop.value)?;
+                let key = property_key_to_string(&prop.key, prop.computed, resolver)?;
+                let value = expression_to_literal(&prop.value, resolver)?;
                 upsert(&mut entries, key, value);
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
-                // Only literal-object spreads inline cleanly. Identifier/
-                // member-access spreads need Phase 5's static evaluator.
-                let inner = expression_to_literal(&spread.argument)?;
+                // With a resolver, `{ ...base }` where `base` is a local
+                // const-bound object folds naturally — `expression_to_literal`
+                // chases the identifier through `Resolver::resolve_identifier`.
+                let inner = expression_to_literal(&spread.argument, resolver)?;
                 let Literal::Object(inner_entries) = inner else {
                     return None;
                 };
@@ -184,14 +209,15 @@ pub(crate) fn object_to_literal(obj: &ObjectExpression<'_>) -> Option<Literal> {
     Some(Literal::Object(entries))
 }
 
-fn array_to_literal(arr: &ArrayExpression<'_>) -> Option<Literal> {
+fn array_to_literal(arr: &ArrayExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
     let mut items = Vec::with_capacity(arr.elements.len());
     for element in &arr.elements {
         match element {
             ArrayExpressionElement::Elision(_) => items.push(Literal::Null),
             ArrayExpressionElement::SpreadElement(spread) => {
-                // Only literal-array spreads inline cleanly.
-                let inner = expression_to_literal(&spread.argument)?;
+                // Literal-array spreads inline; resolver also unlocks
+                // `[...local]` when `local` is a const-bound array.
+                let inner = expression_to_literal(&spread.argument, resolver)?;
                 let Literal::Array(inner_items) = inner else {
                     return None;
                 };
@@ -199,14 +225,18 @@ fn array_to_literal(arr: &ArrayExpression<'_>) -> Option<Literal> {
             }
             _ => {
                 let expr = element.as_expression()?;
-                items.push(expression_to_literal(expr)?);
+                items.push(expression_to_literal(expr, resolver)?);
             }
         }
     }
     Some(Literal::Array(items))
 }
 
-fn property_key_to_string(key: &PropertyKey<'_>, computed: bool) -> Option<String> {
+fn property_key_to_string(
+    key: &PropertyKey<'_>,
+    computed: bool,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<String> {
     if !computed {
         return match key {
             PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
@@ -217,9 +247,58 @@ fn property_key_to_string(key: &PropertyKey<'_>, computed: bool) -> Option<Strin
     }
     // Computed: evaluate the key expression and stringify if literal.
     let expr = key.as_expression()?;
-    match expression_to_literal(expr)? {
+    match expression_to_literal(expr, resolver)? {
         Literal::String(s) => Some(s),
         Literal::Number(n) => Some(number_as_key(n)),
+        _ => None,
+    }
+}
+
+// --- member access ---
+
+/// `obj.prop` — resolve `obj` to a literal object/array and look up `prop`.
+fn static_member_to_literal(
+    member: &StaticMemberExpression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
+    let object = expression_to_literal(&member.object, resolver)?;
+    lookup_member(&object, member.property.name.as_str())
+}
+
+/// `obj[key]` — resolve both sides and look up by string-or-number key.
+fn computed_member_to_literal(
+    member: &ComputedMemberExpression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
+    let object = expression_to_literal(&member.object, resolver)?;
+    let key_literal = expression_to_literal(&member.expression, resolver)?;
+    let key = match key_literal {
+        Literal::String(s) => s,
+        Literal::Number(n) => number_as_key(n),
+        // `obj[true]` / `obj[null]` are valid JS — coerce to `"true"`/`"null"` —
+        // but they don't show up in real Panda code. Drop to keep the surface
+        // narrow.
+        _ => return None,
+    };
+    lookup_member(&object, &key)
+}
+
+/// Look up a member on a resolved object or array literal.
+///
+/// - Object: case-sensitive key match against insertion-ordered entries.
+/// - Array: parse the key as an integer index; out-of-bounds returns `None`
+///   (JS would return `undefined`; we treat that as "not foldable").
+/// - Other literal kinds: not addressable, return `None`.
+fn lookup_member(object: &Literal, key: &str) -> Option<Literal> {
+    match object {
+        Literal::Object(entries) => entries
+            .iter()
+            .find(|(k, _)| k == key)
+            .map(|(_, v)| v.clone()),
+        Literal::Array(items) => {
+            let idx = key.parse::<usize>().ok()?;
+            items.get(idx).cloned()
+        }
         _ => None,
     }
 }
@@ -241,8 +320,8 @@ fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
 
 // --- constant folding ---
 
-fn eval_unary(u: &UnaryExpression<'_>) -> Option<Literal> {
-    let inner = expression_to_literal(&u.argument)?;
+fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+    let inner = expression_to_literal(&u.argument, resolver)?;
     match (u.operator, inner) {
         (UnaryOperator::UnaryPlus, Literal::Number(n)) => Some(Literal::Number(n)),
         (UnaryOperator::UnaryNegation, Literal::Number(n)) => Some(Literal::Number(-n)),
@@ -260,9 +339,9 @@ fn eval_unary(u: &UnaryExpression<'_>) -> Option<Literal> {
     }
 }
 
-fn eval_binary(b: &BinaryExpression<'_>) -> Option<Literal> {
-    let left = expression_to_literal(&b.left)?;
-    let right = expression_to_literal(&b.right)?;
+fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+    let left = expression_to_literal(&b.left, resolver)?;
+    let right = expression_to_literal(&b.right, resolver)?;
     match b.operator {
         BinaryOperator::Addition => {
             // JS `+` semantics: if either operand is a string, the other is
@@ -391,16 +470,16 @@ fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
     Some(l < r)
 }
 
-fn eval_logical(l: &LogicalExpression<'_>) -> Option<Literal> {
+fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
     // Short-circuit: evaluate left first. If left determines the result,
     // skip evaluating right (and importantly, allow right to be non-literal
     // since it's unreachable). When left doesn't decide, both sides must
     // be literal for us to fold.
-    let left = expression_to_literal(&l.left)?;
+    let left = expression_to_literal(&l.left, resolver)?;
     match l.operator {
         LogicalOperator::And => {
             if truthy(&left) {
-                expression_to_literal(&l.right)
+                expression_to_literal(&l.right, resolver)
             } else {
                 Some(left)
             }
@@ -409,14 +488,14 @@ fn eval_logical(l: &LogicalExpression<'_>) -> Option<Literal> {
             if truthy(&left) {
                 Some(left)
             } else {
-                expression_to_literal(&l.right)
+                expression_to_literal(&l.right, resolver)
             }
         }
         LogicalOperator::Coalesce => {
             // `?? right` only short-circuits when left is null/undefined.
             // We model `undefined` as `Null` (we have no separate variant).
             if matches!(left, Literal::Null) {
-                expression_to_literal(&l.right)
+                expression_to_literal(&l.right, resolver)
             } else {
                 Some(left)
             }
@@ -424,20 +503,26 @@ fn eval_logical(l: &LogicalExpression<'_>) -> Option<Literal> {
     }
 }
 
-fn eval_conditional(c: &ConditionalExpression<'_>) -> Option<Literal> {
+fn eval_conditional(
+    c: &ConditionalExpression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
     // Only fold when the test is literal-resolvable. When `cond` is an
     // identifier, callers can't know which branch will run at build time —
     // a future slice may emit both branches as alternative extractions
     // (atomic CSS pattern), but that needs a richer output type.
-    let test = expression_to_literal(&c.test)?;
+    let test = expression_to_literal(&c.test, resolver)?;
     if truthy(&test) {
-        expression_to_literal(&c.consequent)
+        expression_to_literal(&c.consequent, resolver)
     } else {
-        expression_to_literal(&c.alternate)
+        expression_to_literal(&c.alternate, resolver)
     }
 }
 
-fn template_literal_to_literal(t: &TemplateLiteral<'_>) -> Option<Literal> {
+fn template_literal_to_literal(
+    t: &TemplateLiteral<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
     // Walk the template: quasi[0] expr[0] quasi[1] expr[1] ... quasi[N].
     // Each interpolation must be a literal-foldable expression; stringify
     // it via JS coercion rules and concatenate.
@@ -445,7 +530,7 @@ fn template_literal_to_literal(t: &TemplateLiteral<'_>) -> Option<Literal> {
     for (i, expr) in t.expressions.iter().enumerate() {
         let quasi = t.quasis.get(i)?;
         out.push_str(quasi.value.cooked.as_ref()?.as_str());
-        let value = expression_to_literal(expr)?;
+        let value = expression_to_literal(expr, resolver)?;
         let stringified = coerce_to_string(&value)?;
         out.push_str(&stringified);
     }

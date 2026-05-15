@@ -54,7 +54,8 @@ pub fn extract_calls(
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
-    let ctx = crate::VisitorContext::new(matched, matchers);
+    let resolver = crate::Resolver::build(&parser_return.program);
+    let ctx = crate::VisitorContext::new(matched, matchers).with_resolver(&resolver);
     ExtractedCallsResult {
         calls: collect_calls(&parser_return.program, &ctx),
         diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
@@ -96,6 +97,16 @@ impl Extractor<'_, '_> {
                     // `p({...})` where `p` is a namespace alias — not a Panda call.
                     return None;
                 }
+                // Scope guard: if the resolver says this identifier binds to a
+                // local (e.g. `function f(css)` parameter), skip even though
+                // the name matches a Panda alias. Without a resolver we fall
+                // back to name-based matching for the stage-by-stage testing
+                // entrypoints.
+                if let Some(resolver) = self.ctx.resolver
+                    && !resolver.is_import_binding(ident)
+                {
+                    return None;
+                }
                 Some(ResolvedCallee {
                     category: matched.category,
                     name: Cow::Borrowed(&matched.name),
@@ -108,6 +119,11 @@ impl Extractor<'_, '_> {
                 };
                 let matched = self.ctx.aliases.get(object.name.as_str())?;
                 if matched.kind != ImportSpecifierKind::Namespace {
+                    return None;
+                }
+                if let Some(resolver) = self.ctx.resolver
+                    && !resolver.is_import_binding(object)
+                {
                     return None;
                 }
                 let property = member.property.name.as_str();
@@ -132,8 +148,12 @@ impl Extractor<'_, '_> {
 impl<'a> Visit<'a> for Extractor<'_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let Some(resolved) = self.resolve_callee(call) {
-            let data: Vec<Option<Literal>> =
-                call.arguments.iter().map(argument_to_literal).collect();
+            let resolver = self.ctx.resolver;
+            let data: Vec<Option<Literal>> = call
+                .arguments
+                .iter()
+                .map(|arg| argument_to_literal(arg, resolver))
+                .collect();
             // Drop the call only if no argument was extractable at all —
             // otherwise keep it and preserve positional `None` slots so
             // consumers know which arg was non-literal.
@@ -151,6 +171,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-fn argument_to_literal(arg: &Argument<'_>) -> Option<Literal> {
-    arg.as_expression().and_then(expression_to_literal)
+fn argument_to_literal(
+    arg: &Argument<'_>,
+    resolver: Option<&crate::Resolver<'_>>,
+) -> Option<Literal> {
+    arg.as_expression()
+        .and_then(|e| expression_to_literal(e, resolver))
 }

@@ -6,6 +6,7 @@ mod imports;
 mod jsx;
 mod literal;
 mod matcher;
+mod scope;
 mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
@@ -25,6 +26,7 @@ pub use source::{SourceLocation, SourceRange};
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
 pub(crate) use matcher::VisitorContext;
+pub(crate) use scope::Resolver;
 pub(crate) use source::LineIndex;
 
 use oxc_span::Span as OxcSpan;

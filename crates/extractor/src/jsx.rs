@@ -4,8 +4,8 @@ use crate::{
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElementName, JSXExpression,
-    JSXMemberExpression, JSXMemberExpressionObject, JSXOpeningElement,
+    IdentifierReference, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElementName,
+    JSXExpression, JSXMemberExpression, JSXMemberExpressionObject, JSXOpeningElement,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -63,7 +63,8 @@ pub fn extract_jsx(
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
-    let ctx = VisitorContext::new(matched, matchers);
+    let resolver = crate::Resolver::build(&parser_return.program);
+    let ctx = VisitorContext::new(matched, matchers).with_resolver(&resolver);
     ExtractedJsxResult {
         jsx: collect_jsx(&parser_return.program, &ctx),
         diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
@@ -105,6 +106,11 @@ impl Extractor<'_, '_> {
                 {
                     return None;
                 }
+                if let Some(resolver) = self.ctx.resolver
+                    && !resolver.is_import_binding(id)
+                {
+                    return None;
+                }
                 Some((
                     matched.category,
                     matched.name.clone(),
@@ -112,8 +118,13 @@ impl Extractor<'_, '_> {
                 ))
             }
             JSXElementName::MemberExpression(member) => {
-                let (root, path) = flatten_member(member)?;
+                let (root, root_ident, path) = flatten_member(member)?;
                 let matched = self.ctx.aliases.get(root.as_str())?;
+                if let Some(resolver) = self.ctx.resolver
+                    && !resolver.is_import_binding(root_ident)
+                {
+                    return None;
+                }
                 match matched.kind {
                     ImportSpecifierKind::Named => {
                         // <X.Y> on a named import is only valid when X is a
@@ -157,7 +168,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
         if let Some((category, name, alias)) = self.resolve_tag(&element.name) {
             let mut entries: Vec<(String, Literal)> = Vec::new();
             for item in &element.attributes {
-                merge_attribute(item, &mut entries);
+                merge_attribute(item, &mut entries, self.ctx.resolver);
             }
             self.out.push(ExtractedJsx {
                 category,
@@ -171,17 +182,21 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-/// Flatten a JSX member chain into (root identifier, property path).
-/// `JSX.styled.div` → (`"JSX"`, `["styled", "div"]`).
-fn flatten_member(member: &JSXMemberExpression<'_>) -> Option<(String, Vec<String>)> {
+/// Flatten a JSX member chain into (root identifier name, root identifier
+/// reference, property path). `JSX.styled.div` → (`"JSX"`, `&JSX`,
+/// `["styled", "div"]`). The reference is returned so callers can ask the
+/// resolver whether the root is actually an imported binding.
+fn flatten_member<'a>(
+    member: &'a JSXMemberExpression<'_>,
+) -> Option<(String, &'a IdentifierReference<'a>, Vec<String>)> {
     let mut path = vec![member.property.name.to_string()];
     let mut current = &member.object;
     loop {
         match current {
             JSXMemberExpressionObject::IdentifierReference(id) => {
-                let root = id.name.to_string();
+                let root_name = id.name.to_string();
                 path.reverse();
-                return Some((root, path));
+                return Some((root_name, id, path));
             }
             JSXMemberExpressionObject::MemberExpression(inner) => {
                 path.push(inner.property.name.to_string());
@@ -192,7 +207,11 @@ fn flatten_member(member: &JSXMemberExpression<'_>) -> Option<(String, Vec<Strin
     }
 }
 
-fn merge_attribute(item: &JSXAttributeItem<'_>, out: &mut Vec<(String, Literal)>) {
+fn merge_attribute(
+    item: &JSXAttributeItem<'_>,
+    out: &mut Vec<(String, Literal)>,
+    resolver: Option<&crate::Resolver<'_>>,
+) {
     match item {
         JSXAttributeItem::Attribute(attr) => {
             let JSXAttributeName::Identifier(name) = &attr.name else {
@@ -202,7 +221,7 @@ fn merge_attribute(item: &JSXAttributeItem<'_>, out: &mut Vec<(String, Literal)>
             let key = name.name.to_string();
             let value = match attr.value.as_ref() {
                 None => Literal::Bool(true), // boolean shorthand
-                Some(v) => match attribute_value(v) {
+                Some(v) => match attribute_value(v, resolver) {
                     Some(v) => v,
                     None => return,
                 },
@@ -210,9 +229,12 @@ fn merge_attribute(item: &JSXAttributeItem<'_>, out: &mut Vec<(String, Literal)>
             upsert(out, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
-            // Only merge literal-object spreads. `{...{ a: 1 }}` works;
-            // `{...rest}` needs Phase 5's identifier evaluator.
-            if let Some(Literal::Object(entries)) = expression_to_literal(&spread.argument) {
+            // With the resolver, `{...local}` folds when `local` binds to a
+            // const object literal. Without it, only inline object spreads
+            // (`{...{ a: 1 }}`) merge — same as before.
+            if let Some(Literal::Object(entries)) =
+                expression_to_literal(&spread.argument, resolver)
+            {
                 for (k, v) in entries {
                     upsert(out, k, v);
                 }
@@ -231,12 +253,17 @@ fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
     }
 }
 
-fn attribute_value(value: &JSXAttributeValue<'_>) -> Option<Literal> {
+fn attribute_value(
+    value: &JSXAttributeValue<'_>,
+    resolver: Option<&crate::Resolver<'_>>,
+) -> Option<Literal> {
     match value {
         JSXAttributeValue::StringLiteral(s) => Some(Literal::String(s.value.to_string())),
         JSXAttributeValue::ExpressionContainer(container) => match &container.expression {
             JSXExpression::EmptyExpression(_) => None,
-            other => other.as_expression().and_then(expression_to_literal),
+            other => other
+                .as_expression()
+                .and_then(|e| expression_to_literal(e, resolver)),
         },
         JSXAttributeValue::Element(_) | JSXAttributeValue::Fragment(_) => None,
     }

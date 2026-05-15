@@ -1,4 +1,4 @@
-use crate::{ImportRecord, ImportScanResult, ImportSpecifierKind};
+use crate::{ImportRecord, ImportScanResult, ImportSpecifierKind, Resolver};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
@@ -95,11 +95,15 @@ impl Matchers {
 }
 
 /// Per-file context shared between the call and JSX visitors. Owns the
-/// alias lookup so visitor code doesn't have to thread three arguments
-/// (program, aliases, matchers) through every helper.
+/// alias lookup and an optional [`Resolver`] for same-file scope resolution
+/// so visitor code doesn't have to thread arguments through every helper.
 pub(crate) struct VisitorContext<'a> {
     pub aliases: HashMap<&'a str, &'a MatchedImport>,
     pub matchers: &'a Matchers,
+    /// `None` for the stage-by-stage entrypoints (`extract_calls`,
+    /// `extract_jsx`) which re-parse and skip semantic-build cost for
+    /// targeted testing. `Some` for the combined `extract()` hot path.
+    pub resolver: Option<&'a Resolver<'a>>,
 }
 
 impl<'a> VisitorContext<'a> {
@@ -107,7 +111,13 @@ impl<'a> VisitorContext<'a> {
         Self {
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
             matchers,
+            resolver: None,
         }
+    }
+
+    pub(crate) fn with_resolver(mut self, resolver: &'a Resolver<'a>) -> Self {
+        self.resolver = Some(resolver);
+        self
     }
 }
 

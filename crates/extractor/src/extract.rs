@@ -1,5 +1,6 @@
 use crate::calls::collect_calls;
 use crate::jsx::collect_jsx;
+use crate::scope::Resolver;
 use crate::{
     Diagnostic, ExtractedCall, ExtractedJsx, ImportRecord, MatchedImport, Matchers, VisitorContext,
     collect_imports, collect_parser_diagnostics, match_import_records,
@@ -43,7 +44,11 @@ pub fn extract(source: &str, path: &str, matchers: &Matchers) -> ExtractResult {
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
 
     let matched = match_import_records(&imports, matchers);
-    let ctx = VisitorContext::new(&matched, matchers);
+    // Build the semantic table once and share it through the visitor context.
+    // Scope-aware folding (identifiers, member access, shorthand) flows
+    // through `Resolver` from here.
+    let resolver = Resolver::build(&parser_return.program);
+    let ctx = VisitorContext::new(&matched, matchers).with_resolver(&resolver);
 
     let calls = collect_calls(&parser_return.program, &ctx);
     let jsx = collect_jsx(&parser_return.program, &ctx);
