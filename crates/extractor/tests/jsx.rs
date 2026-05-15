@@ -757,3 +757,84 @@ fn nested_folding_inside_attribute() {
     ",
     );
 }
+
+// --- attribute overwrite & spread interleaving ---
+
+#[test]
+fn explicit_then_spread_then_explicit_keeps_first_position() {
+    // Three `color` writes: explicit, spread, explicit. Last value
+    // wins on the value side; first occurrence keeps the slot. Same
+    // upsert contract as the call-args spread test; verifies JSX uses
+    // the same merge path.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box color='never.100' padding='4' {...{ color: 'never.200' }} color='after.300' margin={2} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          color: after.300
+          padding: \"4\"
+          margin: 2
+        span:
+          start: 0
+          end: 94
+    diagnostics: []
+    ",
+    );
+}
+
+// --- JSX-inside-JSX attribute values ---
+
+#[test]
+fn attribute_with_nested_jsx_element_drops_that_attribute() {
+    // `icon={<svg />}` — value is a JSX element, not a literal. The
+    // attribute is skipped; sibling literal attributes still extract.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box icon={<svg />} ml='2' />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          ml: \"2\"
+        span:
+          start: 0
+          end: 29
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn spread_with_nested_jsx_element_drops_the_spread() {
+    // `{...{ icon: <svg /> }}` — spread source can't fold because one
+    // entry is a JSX element. The spread drops entirely; sibling
+    // attributes still extract.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box ml='4' {...{ icon: <svg /> }} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          ml: \"4\"
+        span:
+          start: 0
+          end: 37
+    diagnostics: []
+    ",
+    );
+}

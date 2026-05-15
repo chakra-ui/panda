@@ -1285,3 +1285,180 @@ fn nested_unwraps_and_folding() {
     ",
     );
 }
+
+// --- multi-arg shapes ---
+
+#[test]
+fn no_args_call_does_not_extract() {
+    // `css()` has no literal-extractable arguments, so the call drops.
+    // Matches JS extractor's no-args behavior.
+    assert_yaml_snapshot!(extract("css()", &[css("css")]), @"
+    calls: []
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn multi_arg_call_string_then_object() {
+    // `createTheme('contract', { … })` shape — first arg a string,
+    // second arg the actual config. Both fold positionally.
+    assert_yaml_snapshot!(
+        extract("css('panda', { color: 'red' })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - panda
+          - color: red
+        span:
+          start: 0
+          end: 30
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn multi_arg_call_preserves_position_for_unresolvable_middle() {
+    // Three args, middle one is a free function call. We keep
+    // positional `None` so consumers know which slot dropped.
+    let result = extract(
+        "css('panda', somethingUnknown(), { color: 'red' })",
+        &[css("css")],
+    );
+    let call = &result.calls[0];
+    assert_eq!(call.data.len(), 3);
+    assert!(call.data[0].is_some());
+    assert!(call.data[1].is_none(), "middle arg unresolvable");
+    assert!(call.data[2].is_some());
+}
+
+// --- spread merging ---
+
+#[test]
+fn merge_two_inline_object_spreads_second_wins() {
+    // `css({ ...a, ...b })` with both inline object literals — second
+    // spread overwrites overlapping keys from the first.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...{ color: 'red', padding: '4px' }, ...{ color: 'blue', margin: '8px' } })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: blue
+            padding: 4px
+            margin: 8px
+        span:
+          start: 0
+          end: 81
+    diagnostics: []
+    ",
+    );
+}
+
+// --- arrays preserve nulls ---
+
+#[test]
+fn array_value_preserves_null_elements() {
+    // Responsive-array idiom uses `null` slots to skip a breakpoint.
+    // We keep their position so downstream encoders can interpret the
+    // arity correctly.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ color: ['black', null, 'orange', 'red'] })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color:
+              - black
+              - ~
+              - orange
+              - red
+        span:
+          start: 0
+          end: 48
+    diagnostics: []
+    ",
+    );
+}
+
+// --- multiline template literal ---
+
+#[test]
+fn multiline_template_literal_with_interpolation_folds() {
+    // Template spans multiple lines, with a const-bound interpolation.
+    // Newlines and indentation are preserved verbatim — matches JS.
+    let result = extract_with(
+        indoc! {r"
+            const angle = '135deg';
+            css({
+                backgroundImage: `linear-gradient(
+                    ${angle},
+                    #d946ef80 10%,
+                    transparent 50%
+                )`,
+            });
+        "},
+        &[css("css")],
+        &css_matchers(),
+    );
+    let lit = serde_json::to_value(&result.calls[0].data[0]).unwrap();
+    let bg = lit["backgroundImage"].as_str().unwrap();
+    assert!(bg.starts_with("linear-gradient("));
+    assert!(bg.contains("135deg"), "interpolation folded");
+    assert!(bg.contains("#d946ef80 10%"));
+}
+
+// --- TS syntactic unwraps (additional coverage) ---
+
+#[test]
+fn satisfies_operator_is_transparent_for_call_args() {
+    // `expr satisfies T` — compile-time check, runtime no-op. We
+    // unwrap `TSSatisfiesExpression` transparently.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ color: 'red' } satisfies Record<string, string>)",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 54
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn non_null_assertion_unwraps_through_member_access() {
+    // `tokens!.color` — the `!` is a TS non-null assertion, a runtime
+    // no-op. Inner member access folds normally.
+    let result = extract_with(
+        indoc! {r"
+            const tokens = { color: 'red' };
+            css({ color: tokens!.color });
+        "},
+        &[css("css")],
+        &css_matchers(),
+    );
+    let json = serde_json::to_value(&result.calls[0].data[0]).unwrap();
+    assert_eq!(json["color"], "red");
+}

@@ -575,3 +575,89 @@ fn conditional_with_identifier_test_folds() {
         end: 93
     ");
 }
+
+// --- nested-scope semantics ---
+
+#[test]
+fn inner_scope_shadows_outer_same_named_const() {
+    // Two `const color` bindings — module-level and function-local —
+    // with the JSX inside the function. The local binding wins via
+    // oxc_semantic's symbol resolution.
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        const color = 'never.500';
+        function Wrapper() {
+          const color = 'orange.500';
+          return <Box color={color} />;
+        }
+    "};
+    let json = serde_json::to_value(&run(src).jsx[0].data).unwrap();
+    assert_eq!(
+        json["color"], "orange.500",
+        "inner scope's binding should win, not the module-level one",
+    );
+}
+
+#[test]
+fn closure_captures_outer_const() {
+    // No inner shadow — the function-local const points at the
+    // module-level binding, which the resolver follows transitively.
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        const referenced = 'orange.600';
+        function Wrapper() {
+          const color = referenced;
+          return <Box color={color} />;
+        }
+    "};
+    let json = serde_json::to_value(&run(src).jsx[0].data).unwrap();
+    assert_eq!(json["color"], "orange.600");
+}
+
+// --- unfoldable bindings ---
+
+#[test]
+fn function_expression_initializer_drops() {
+    // `getColor` binds to an arrow function, not a literal. Resolver
+    // bails on FunctionExpression / ArrowFunctionExpression initializers.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const getColor = () => 'red';
+        css({ color: getColor });
+    "};
+    let calls = run(src).calls;
+    assert!(
+        calls.is_empty(),
+        "function-valued binding should not fold: {calls:#?}"
+    );
+}
+
+#[test]
+fn identifier_without_initializer_drops() {
+    // `let color;` — declared but uninitialized. Reading it at runtime
+    // yields `undefined`; we drop rather than emit a phantom value.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        let color;
+        css({ color });
+    "};
+    let calls = run(src).calls;
+    assert!(
+        calls.is_empty(),
+        "uninitialized binding should not fold: {calls:#?}"
+    );
+}
+
+#[test]
+fn chained_element_access_on_resolved_object() {
+    // `colors['red']['500']` — two consecutive computed-member
+    // expressions. Each step folds the previous result through the
+    // standard lookup path; works the same as `colors.red[500]`.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const colors = { red: { 500: '#ef4444' } };
+        css({ color: colors['red']['500'] });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_eq!(json["color"], "#ef4444");
+}
