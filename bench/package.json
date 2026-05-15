@@ -1,0 +1,13 @@
+{
+  "name": "@pandacss/bench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "baseline": "tsx --conditions source src/baseline.ts"
+  },
+  "dependencies": {
+    "@pandacss/node": "workspace:*"
+  },
+  "devDependencies": {}
+}

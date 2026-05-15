@@ -1,0 +1,100 @@
+name: Rust
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/rust.yml"
+      - ".cargo/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - ".clippy.toml"
+      - "deny.toml"
+      - "bench/**"
+      - "crates/**"
+      - "packages/binding/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/rust.yml"
+      - ".cargo/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - ".clippy.toml"
+      - "deny.toml"
+      - "bench/**"
+      - "crates/**"
+      - "packages/binding/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        run: rustup toolchain install 1.88.0 --profile minimal --component clippy rustfmt
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: rust-lint-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            rust-lint-${{ runner.os }}-
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        run: rustup toolchain install 1.88.0 --profile minimal --component clippy rustfmt
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: rust-test-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            rust-test-${{ runner.os }}-
+
+      - name: Check workspace
+        run: cargo check --workspace --locked
+
+      - name: Run tests
+        run: cargo test --workspace --locked
