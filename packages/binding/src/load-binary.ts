@@ -7,16 +7,12 @@ import type { NativeBinding } from './index'
 const require = createRequire(import.meta.url)
 const currentDir = dirname(fileURLToPath(import.meta.url))
 
-const candidates = [
-  join(currentDir, '..', 'binding_napi.node'),
-  join(currentDir, '..', '..', 'binding_napi.node'),
-  join(currentDir, '..', '..', 'binding.node'),
-]
+// `dist/` and `src/` both sit next to `binding.node` in the package root.
+const localBinding = join(currentDir, '..', 'binding.node')
 
 export function loadNativeBinding(): NativeBinding | undefined {
-  for (const candidate of candidates) {
-    if (!existsSync(candidate)) continue
-    return require(candidate) as NativeBinding
+  if (existsSync(localBinding)) {
+    return require(localBinding) as NativeBinding
   }
 
   try {

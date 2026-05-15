@@ -33,12 +33,16 @@
     "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
     "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
     "build:native": "tsx build-binding.ts",
-    "dev": "pnpm build-fast --watch"
+    "dev": "pnpm build-fast --watch",
+    "test": "vitest run"
   },
   "files": [
     "dist",
     "*.node"
   ],
+  "napi": {
+    "binaryName": "binding"
+  },
   "dependencies": {},
   "devDependencies": {
     "@napi-rs/cli": "^3.0.0"

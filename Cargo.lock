@@ -25,6 +25,7 @@ name = "binding_napi"
 version = "0.0.0"
 dependencies = [
  "engine",
+ "extractor",
  "napi",
  "napi-build",
  "napi-derive",

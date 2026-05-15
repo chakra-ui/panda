@@ -1,5 +1,7 @@
 use napi_derive::napi;
 
+// --- compile (no-op placeholder) ---
+
 #[napi(object)]
 pub struct CompileInput {
     pub files: Option<Vec<InputFile>>,
@@ -28,12 +30,6 @@ pub struct CompileManifest {
     pub tokens: Vec<String>,
 }
 
-#[napi(object)]
-pub struct Diagnostic {
-    pub message: String,
-    pub severity: String,
-}
-
 #[napi]
 #[must_use]
 pub fn compile(_input: Option<CompileInput>) -> CompileOutput {
@@ -49,10 +45,130 @@ pub fn compile(_input: Option<CompileInput>) -> CompileOutput {
         diagnostics: output
             .diagnostics
             .into_iter()
-            .map(|diagnostic| Diagnostic {
-                message: diagnostic.message,
-                severity: format!("{:?}", diagnostic.severity).to_lowercase(),
+            .map(|d| Diagnostic {
+                message: d.message,
+                severity: format!("{:?}", d.severity).to_lowercase(),
+                span: None,
             })
             .collect(),
+    }
+}
+
+// --- scanImports ---
+
+#[napi(object)]
+pub struct Span {
+    pub start: u32,
+    pub end: u32,
+}
+
+#[napi(string_enum = "camelCase")]
+pub enum ImportSpecifierKind {
+    Named,
+    Default,
+    Namespace,
+}
+
+#[napi(object)]
+pub struct ImportSpecifier {
+    pub kind: ImportSpecifierKind,
+    pub imported: String,
+    pub local: String,
+    pub type_only: bool,
+    pub span: Span,
+}
+
+#[napi(string_enum = "camelCase")]
+pub enum ImportKind {
+    SideEffect,
+    Value,
+}
+
+#[napi(object)]
+pub struct ImportRecord {
+    pub module: String,
+    pub kind: ImportKind,
+    pub type_only: bool,
+    pub specifiers: Vec<ImportSpecifier>,
+    pub span: Span,
+}
+
+#[napi(object)]
+pub struct Diagnostic {
+    pub message: String,
+    pub severity: String,
+    pub span: Option<Span>,
+}
+
+#[napi(object)]
+pub struct ImportScanResult {
+    pub imports: Vec<ImportRecord>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+#[napi]
+#[must_use]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "NAPI requires owned String parameters"
+)]
+pub fn scan_imports(source: String, path: String) -> ImportScanResult {
+    convert_scan_result(extractor::scan_imports(&source, &path))
+}
+
+fn convert_scan_result(result: extractor::ImportScanResult) -> ImportScanResult {
+    ImportScanResult {
+        imports: result.imports.into_iter().map(convert_record).collect(),
+        diagnostics: result
+            .diagnostics
+            .into_iter()
+            .map(convert_diagnostic)
+            .collect(),
+    }
+}
+
+fn convert_record(record: extractor::ImportRecord) -> ImportRecord {
+    ImportRecord {
+        module: record.module,
+        kind: match record.kind {
+            extractor::ImportKind::SideEffect => ImportKind::SideEffect,
+            extractor::ImportKind::Value => ImportKind::Value,
+        },
+        type_only: record.type_only,
+        specifiers: record
+            .specifiers
+            .into_iter()
+            .map(convert_specifier)
+            .collect(),
+        span: convert_span(record.span),
+    }
+}
+
+fn convert_specifier(specifier: extractor::ImportSpecifier) -> ImportSpecifier {
+    ImportSpecifier {
+        kind: match specifier.kind {
+            extractor::ImportSpecifierKind::Named => ImportSpecifierKind::Named,
+            extractor::ImportSpecifierKind::Default => ImportSpecifierKind::Default,
+            extractor::ImportSpecifierKind::Namespace => ImportSpecifierKind::Namespace,
+        },
+        imported: specifier.imported,
+        local: specifier.local,
+        type_only: specifier.type_only,
+        span: convert_span(specifier.span),
+    }
+}
+
+fn convert_diagnostic(diagnostic: extractor::Diagnostic) -> Diagnostic {
+    Diagnostic {
+        message: diagnostic.message,
+        severity: format!("{:?}", diagnostic.severity).to_lowercase(),
+        span: diagnostic.span.map(convert_span),
+    }
+}
+
+fn convert_span(span: extractor::Span) -> Span {
+    Span {
+        start: span.start,
+        end: span.end,
     }
 }

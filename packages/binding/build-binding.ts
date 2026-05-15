@@ -1,6 +1,9 @@
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
 
 const require = createRequire(import.meta.url)
+const packageRoot = dirname(fileURLToPath(import.meta.url))
 
 async function main() {
   const { NapiCli } = require('@napi-rs/cli') as {
@@ -12,10 +15,11 @@ async function main() {
   const cli = new NapiCli()
 
   await cli.build({
-    cwd: new URL('./crate', import.meta.url).pathname,
-    platform: true,
+    cwd: packageRoot,
+    manifestPath: 'crate/Cargo.toml',
+    outputDir: packageRoot,
     release: true,
-    dts: false,
+    dts: 'native.d.ts',
   })
 }
 
