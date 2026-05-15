@@ -1,12 +1,27 @@
 //! Oxc-based source extractor for Panda usages.
 
 mod calls;
+mod extract;
 mod imports;
+mod jsx;
+mod literal;
 mod matcher;
 
-pub use calls::*;
-pub use imports::*;
-pub use matcher::*;
+pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
+pub use extract::{ExtractResult, extract};
+pub use imports::{
+    ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
+    collect_imports, collect_parser_diagnostics, scan_imports,
+};
+pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
+pub use matcher::{
+    MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, match_import_records,
+    match_imports,
+};
+
+// Internal-only: keep `VisitorContext` accessible to sibling modules but out
+// of the public API.
+pub(crate) use matcher::VisitorContext;
 
 use oxc_span::Span as OxcSpan;
 use serde::Serialize;

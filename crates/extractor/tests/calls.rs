@@ -1,6 +1,6 @@
 use extractor::{
     ExtractedCallsResult, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher, Matchers,
-    extract_calls,
+    NameMatcher, extract_calls,
 };
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
@@ -39,7 +39,7 @@ fn css_matchers() -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec!["@panda/css".into()],
-            names: Some(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
         },
         ..Default::default()
     }
@@ -49,23 +49,23 @@ fn panda_matchers(prefix: &str) -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec![format!("{prefix}/css")],
-            names: Some(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
         },
         recipe: Matcher {
             modules: vec![format!("{prefix}/recipes")],
-            names: None,
+            names: NameMatcher::Any,
         },
         pattern: Matcher {
             modules: vec![format!("{prefix}/patterns")],
-            names: None,
+            names: NameMatcher::Any,
         },
         jsx: Some(Matcher {
             modules: vec![format!("{prefix}/jsx")],
-            names: Some(vec!["styled".into(), "Box".into()]),
+            names: NameMatcher::Only(vec!["styled".into(), "Box".into()]),
         }),
         tokens: Matcher {
             modules: vec![format!("{prefix}/tokens")],
-            names: Some(vec!["token".into()]),
+            names: NameMatcher::Only(vec!["token".into()]),
         },
     }
 }

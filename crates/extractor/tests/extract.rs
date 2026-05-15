@@ -1,0 +1,174 @@
+use extractor::{Matcher, Matchers, NameMatcher, extract};
+use indoc::indoc;
+use insta::assert_yaml_snapshot;
+
+fn panda_matchers() -> Matchers {
+    Matchers {
+        css: Matcher {
+            modules: vec!["@panda/css".into()],
+            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
+        },
+        recipe: Matcher {
+            modules: vec!["@panda/recipes".into()],
+            names: NameMatcher::Any,
+        },
+        pattern: Matcher {
+            modules: vec!["@panda/patterns".into()],
+            names: NameMatcher::Any,
+        },
+        jsx: Some(Matcher {
+            modules: vec!["@panda/jsx".into()],
+            names: NameMatcher::Only(vec!["styled".into(), "Box".into()]),
+        }),
+        tokens: Matcher {
+            modules: vec!["@panda/tokens".into()],
+            names: NameMatcher::Only(vec!["token".into()]),
+        },
+    }
+}
+
+#[test]
+fn single_pass_extract_combines_calls_and_jsx() {
+    // One source containing imports, matched calls, unmatched calls, and JSX.
+    // The combined entrypoint should produce all four sections from one parse.
+    assert_yaml_snapshot!(
+        extract(
+            indoc! {r#"
+                import { css } from "@panda/css"
+                import { Box } from "@panda/jsx"
+                const a = css({ color: "red" })
+                unrelated({ ignored: true })
+                const el = <Box fontSize="lg" />
+            "#},
+            "fixture.tsx",
+            &panda_matchers(),
+        ),
+        @r#"
+    imports:
+      - module: "@panda/css"
+        kind: value
+        typeOnly: false
+        specifiers:
+          - kind: named
+            imported: css
+            local: css
+            typeOnly: false
+            span:
+              start: 9
+              end: 12
+        span:
+          start: 0
+          end: 32
+      - module: "@panda/jsx"
+        kind: value
+        typeOnly: false
+        specifiers:
+          - kind: named
+            imported: Box
+            local: Box
+            typeOnly: false
+            span:
+              start: 42
+              end: 45
+        span:
+          start: 33
+          end: 65
+    matched:
+      - category: css
+        module: "@panda/css"
+        name: css
+        alias: css
+        kind: named
+      - category: jsx
+        module: "@panda/jsx"
+        name: Box
+        alias: Box
+        kind: named
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 76
+          end: 97
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          fontSize: lg
+        span:
+          start: 138
+          end: 159
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn extract_with_namespace() {
+    assert_yaml_snapshot!(
+        extract(
+            indoc! {r#"
+                import * as panda from "@panda/css"
+                panda.css({ color: "red" })
+                panda.cva({ base: { color: "blue" } })
+            "#},
+            "fixture.tsx",
+            &panda_matchers(),
+        ),
+        @r#"
+    imports:
+      - module: "@panda/css"
+        kind: value
+        typeOnly: false
+        specifiers:
+          - kind: namespace
+            imported: "*"
+            local: panda
+            typeOnly: false
+            span:
+              start: 7
+              end: 17
+        span:
+          start: 0
+          end: 35
+    matched:
+      - category: css
+        module: "@panda/css"
+        name: "*"
+        alias: panda
+        kind: namespace
+    calls:
+      - category: css
+        name: css
+        alias: panda
+        data:
+          - color: red
+        span:
+          start: 36
+          end: 63
+      - category: css
+        name: cva
+        alias: panda
+        data:
+          - base:
+              color: blue
+        span:
+          start: 64
+          end: 102
+    jsx: []
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn extract_surfaces_parse_errors() {
+    let result = extract("import { css } from", "fixture.tsx", &panda_matchers());
+    assert!(result.calls.is_empty());
+    assert!(result.jsx.is_empty());
+    assert!(!result.diagnostics.is_empty());
+}

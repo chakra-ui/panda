@@ -1,4 +1,4 @@
-use extractor::{Matcher, Matchers, match_imports, scan_imports};
+use extractor::{Matcher, Matchers, NameMatcher, match_imports, scan_imports};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
@@ -6,7 +6,7 @@ fn css_only(modules: &[&str]) -> Matchers {
     Matchers {
         css: Matcher {
             modules: modules.iter().map(|s| (*s).to_string()).collect(),
-            names: Some(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
         },
         ..Default::default()
     }
@@ -16,23 +16,23 @@ fn panda_org(prefix: &str) -> Matchers {
     Matchers {
         css: Matcher {
             modules: vec![format!("{prefix}/css")],
-            names: Some(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
         },
         recipe: Matcher {
             modules: vec![format!("{prefix}/recipes")],
-            names: None,
+            names: NameMatcher::Any,
         },
         pattern: Matcher {
             modules: vec![format!("{prefix}/patterns")],
-            names: None,
+            names: NameMatcher::Any,
         },
         jsx: Some(Matcher {
             modules: vec![format!("{prefix}/jsx")],
-            names: Some(vec!["styled".into(), "Box".into()]),
+            names: NameMatcher::Only(vec!["styled".into(), "Box".into()]),
         }),
         tokens: Matcher {
             modules: vec![format!("{prefix}/tokens")],
-            names: Some(vec!["token".into()]),
+            names: NameMatcher::Only(vec!["token".into()]),
         },
     }
 }
@@ -177,15 +177,15 @@ fn js_parity_multiple_packages() {
     let matchers = Matchers {
         css: Matcher {
             modules: vec!["@acme/org/css".into(), "@foo/org/css".into()],
-            names: Some(vec!["css".into(), "cva".into(), "sva".into()]),
+            names: NameMatcher::Only(vec!["css".into(), "cva".into(), "sva".into()]),
         },
         recipe: Matcher {
             modules: vec!["@acme/org/recipes".into(), "@bar/org/recipes".into()],
-            names: None,
+            names: NameMatcher::Any,
         },
         pattern: Matcher {
             modules: vec!["@acme/org/patterns".into()],
-            names: None,
+            names: NameMatcher::Any,
         },
         ..Default::default()
     };

@@ -1,17 +1,14 @@
 use crate::{
-    Diagnostic, DiagnosticSeverity, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher,
-    Matchers, Span,
+    Diagnostic, ImportSpecifierKind, MatchCategory, MatchedImport, Matchers, Span,
+    literal::expression_to_value,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{
-    Argument, ArrayExpression, ArrayExpressionElement, CallExpression, Expression,
-    ObjectExpression, ObjectPropertyKind, PropertyKey, PropertyKind,
-};
+use oxc_ast::ast::{Argument, CallExpression, Expression};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
-use std::collections::HashMap;
+use std::borrow::Cow;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -20,12 +17,9 @@ pub struct ExtractedCall {
     /// Canonical Panda name (e.g. `"css"`, `"cardStyle"`). For namespace
     /// callees like `p.css(...)`, this is the property name.
     pub name: String,
-    /// Local binding at the call site. For namespace calls this is the
-    /// namespace alias (e.g. `"p"` in `p.css(...)`).
+    /// Local binding actually used at the call site — may differ from `name`
+    /// if the import was aliased (`import { css as nCss }`).
     pub alias: String,
-    /// Literal-extractable arguments in source order. Non-extractable args
-    /// (identifiers, conditionals, etc.) are omitted from this list, so
-    /// positional alignment with the original call is not preserved.
     pub data: Vec<serde_json::Value>,
     pub span: Span,
 }
@@ -39,9 +33,7 @@ pub struct ExtractedCallsResult {
 
 /// Find every Panda call site and extract its literal arguments. Handles both
 /// direct identifier callees (`css({...})`) and namespace member callees
-/// (`p.css({...})`). The `matchers` argument lets us validate the property
-/// name on namespace calls (e.g. only `css`/`cva`/`sva` qualify on a css
-/// namespace alias).
+/// (`p.css({...})`).
 #[must_use]
 pub fn extract_calls(
     source: &str,
@@ -53,62 +45,75 @@ pub fn extract_calls(
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
-    let mut result = ExtractedCallsResult::default();
-    for error in &parser_return.errors {
-        result.diagnostics.push(Diagnostic {
-            message: error.message.to_string(),
-            severity: DiagnosticSeverity::Error,
-            span: None,
-        });
+    let ctx = crate::VisitorContext::new(matched, matchers);
+    ExtractedCallsResult {
+        calls: collect_calls(&parser_return.program, &ctx),
+        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors),
     }
-
-    let aliases: HashMap<&str, &MatchedImport> =
-        matched.iter().map(|m| (m.alias.as_str(), m)).collect();
-
-    let mut extractor = Extractor {
-        aliases: &aliases,
-        matchers,
-        out: &mut result.calls,
-    };
-    extractor.visit_program(&parser_return.program);
-
-    result
 }
 
-struct Extractor<'walk, 'm> {
-    aliases: &'walk HashMap<&'walk str, &'m MatchedImport>,
-    matchers: &'walk Matchers,
+/// Run the call-site visitor on a parsed program. Used internally by
+/// `extract_calls` and the combined `extract` entrypoint.
+pub(crate) fn collect_calls(
+    program: &oxc_ast::ast::Program<'_>,
+    ctx: &crate::VisitorContext<'_>,
+) -> Vec<ExtractedCall> {
+    let mut out = Vec::new();
+    let mut extractor = Extractor { ctx, out: &mut out };
+    extractor.visit_program(program);
+    out
+}
+
+struct Extractor<'walk, 'ctx> {
+    ctx: &'walk crate::VisitorContext<'ctx>,
     out: &'walk mut Vec<ExtractedCall>,
 }
 
+/// Resolved callee. `name` borrows from either the matched import or the
+/// AST so we don't allocate per call site; the visitor only clones when it
+/// commits to pushing a record.
+struct ResolvedCallee<'a> {
+    category: MatchCategory,
+    name: Cow<'a, str>,
+    alias: &'a str,
+}
+
 impl Extractor<'_, '_> {
-    fn resolve_callee(&self, call: &CallExpression<'_>) -> Option<(MatchCategory, String, String)> {
+    fn resolve_callee<'a>(&'a self, call: &'a CallExpression<'_>) -> Option<ResolvedCallee<'a>> {
         match &call.callee {
             Expression::Identifier(ident) => {
-                let matched = self.aliases.get(ident.name.as_str())?;
+                let matched = self.ctx.aliases.get(ident.name.as_str())?;
                 if matched.kind == ImportSpecifierKind::Namespace {
                     // `p({...})` where `p` is a namespace alias — not a Panda call.
                     return None;
                 }
-                Some((
-                    matched.category,
-                    matched.name.clone(),
-                    matched.alias.clone(),
-                ))
+                Some(ResolvedCallee {
+                    category: matched.category,
+                    name: Cow::Borrowed(&matched.name),
+                    alias: &matched.alias,
+                })
             }
             Expression::StaticMemberExpression(member) => {
                 let Expression::Identifier(object) = &member.object else {
                     return None;
                 };
-                let matched = self.aliases.get(object.name.as_str())?;
+                let matched = self.ctx.aliases.get(object.name.as_str())?;
                 if matched.kind != ImportSpecifierKind::Namespace {
                     return None;
                 }
                 let property = member.property.name.as_str();
-                if !category_accepts_name(self.matchers, matched.category, property) {
+                if !self
+                    .ctx
+                    .matchers
+                    .category_accepts_name(matched.category, property)
+                {
                     return None;
                 }
-                Some((matched.category, property.to_owned(), matched.alias.clone()))
+                Some(ResolvedCallee {
+                    category: matched.category,
+                    name: Cow::Borrowed(property),
+                    alias: &matched.alias,
+                })
             }
             _ => None,
         }
@@ -117,7 +122,7 @@ impl Extractor<'_, '_> {
 
 impl<'a> Visit<'a> for Extractor<'_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-        if let Some((category, name, alias)) = self.resolve_callee(call) {
+        if let Some(resolved) = self.resolve_callee(call) {
             let data: Vec<_> = call
                 .arguments
                 .iter()
@@ -125,9 +130,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                 .collect();
             if !data.is_empty() {
                 self.out.push(ExtractedCall {
-                    category,
-                    name,
-                    alias,
+                    category: resolved.category,
+                    name: resolved.name.into_owned(),
+                    alias: resolved.alias.to_owned(),
                     data,
                     span: Span::from(call.span),
                 });
@@ -137,94 +142,6 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-fn category_accepts_name(matchers: &Matchers, category: MatchCategory, name: &str) -> bool {
-    let matcher = match category {
-        MatchCategory::Css => &matchers.css,
-        MatchCategory::Recipe => &matchers.recipe,
-        MatchCategory::Pattern => &matchers.pattern,
-        MatchCategory::Jsx => match matchers.jsx.as_ref() {
-            Some(m) => m,
-            None => return false,
-        },
-        MatchCategory::Tokens => &matchers.tokens,
-    };
-    matcher_accepts_name(matcher, name)
-}
-
-fn matcher_accepts_name(matcher: &Matcher, name: &str) -> bool {
-    match matcher.names.as_deref() {
-        None => true,
-        Some(list) => list.iter().any(|n| n == name),
-    }
-}
-
 fn argument_to_value(arg: &Argument<'_>) -> Option<serde_json::Value> {
     arg.as_expression().and_then(expression_to_value)
-}
-
-fn expression_to_value(expr: &Expression<'_>) -> Option<serde_json::Value> {
-    match expr {
-        Expression::StringLiteral(s) => Some(serde_json::Value::String(s.value.to_string())),
-        Expression::NumericLiteral(n) => json_number(n.value),
-        Expression::BooleanLiteral(b) => Some(serde_json::Value::Bool(b.value)),
-        Expression::NullLiteral(_) => Some(serde_json::Value::Null),
-        Expression::ObjectExpression(obj) => object_to_value(obj),
-        Expression::ArrayExpression(arr) => array_to_value(arr),
-        _ => None,
-    }
-}
-
-fn object_to_value(obj: &ObjectExpression<'_>) -> Option<serde_json::Value> {
-    let mut map = serde_json::Map::with_capacity(obj.properties.len());
-    for prop in &obj.properties {
-        let ObjectPropertyKind::ObjectProperty(prop) = prop else {
-            return None;
-        };
-        if prop.computed || prop.method || prop.kind != PropertyKind::Init {
-            return None;
-        }
-        let key = property_key_to_string(&prop.key)?;
-        let value = expression_to_value(&prop.value)?;
-        map.insert(key, value);
-    }
-    Some(serde_json::Value::Object(map))
-}
-
-fn array_to_value(arr: &ArrayExpression<'_>) -> Option<serde_json::Value> {
-    let mut out = Vec::with_capacity(arr.elements.len());
-    for element in &arr.elements {
-        match element {
-            ArrayExpressionElement::Elision(_) => out.push(serde_json::Value::Null),
-            ArrayExpressionElement::SpreadElement(_) => return None,
-            _ => {
-                let expr = element.as_expression()?;
-                out.push(expression_to_value(expr)?);
-            }
-        }
-    }
-    Some(serde_json::Value::Array(out))
-}
-
-fn property_key_to_string(key: &PropertyKey<'_>) -> Option<String> {
-    match key {
-        PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
-        PropertyKey::StringLiteral(s) => Some(s.value.to_string()),
-        PropertyKey::NumericLiteral(n) => Some(n.value.to_string()),
-        _ => None,
-    }
-}
-
-fn json_number(value: f64) -> Option<serde_json::Value> {
-    // 2^53 is the largest integer f64 can represent without precision loss.
-    const MAX_SAFE_INT: f64 = 9_007_199_254_740_992.0;
-    if value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_SAFE_INT {
-        #[allow(
-            clippy::cast_possible_truncation,
-            reason = "bounds checked against MAX_SAFE_INT (2^53)"
-        )]
-        return Some(serde_json::Value::Number(serde_json::Number::from(
-            value as i64,
-        )));
-    }
-    serde_json::Number::from_f64(value).map(serde_json::Value::Number)
 }

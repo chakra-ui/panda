@@ -14,9 +14,11 @@ export interface CompileManifest {
   tokens: string[]
 }
 
-export interface CompileDiagnostic {
+export type DiagnosticSeverity = 'info' | 'warning' | 'error'
+
+export interface Diagnostic {
   message: string
-  severity: 'info' | 'warning' | 'error'
+  severity: DiagnosticSeverity
   span?: Span
 }
 
@@ -24,7 +26,7 @@ export interface CompileOutput {
   css: string
   sourceMap?: string
   manifest: CompileManifest
-  diagnostics: CompileDiagnostic[]
+  diagnostics: Diagnostic[]
 }
 
 // --- scanImports ---
@@ -54,15 +56,9 @@ export interface ImportRecord {
   span: Span
 }
 
-export interface ScanDiagnostic {
-  message: string
-  severity: 'error' | 'warning'
-  span?: Span
-}
-
 export interface ImportScanResult {
   imports: ImportRecord[]
-  diagnostics: ScanDiagnostic[]
+  diagnostics: Diagnostic[]
 }
 
 // --- matchImports ---
@@ -109,7 +105,36 @@ export interface ExtractedCall {
 
 export interface ExtractedCallsResult {
   calls: ExtractedCall[]
-  diagnostics: ScanDiagnostic[]
+  diagnostics: Diagnostic[]
+}
+
+// --- extractJsx ---
+
+export interface ExtractedJsx {
+  category: MatchCategory
+  /** Canonical Panda element name (e.g. `"Box"`, `"styled.div"`). */
+  name: string
+  /** Local root binding (`"styled"` for `<styled.div>`, `"JSX"` for `<JSX.Stack>`). */
+  alias: string
+  /** Extracted props as a single object. Non-literal values are skipped;
+   * literal `{...spread}` attributes are merged in source order. */
+  data: Record<string, unknown>
+  span: Span
+}
+
+export interface ExtractedJsxResult {
+  jsx: ExtractedJsx[]
+  diagnostics: Diagnostic[]
+}
+
+// --- extract (combined single-parse entrypoint) ---
+
+export interface ExtractResult {
+  imports: ImportRecord[]
+  matched: MatchedImport[]
+  calls: ExtractedCall[]
+  jsx: ExtractedJsx[]
+  diagnostics: Diagnostic[]
 }
 
 export interface NativeBinding {
@@ -117,6 +142,8 @@ export interface NativeBinding {
   scanImports(source: string, path: string): ImportScanResult
   matchImports(scan: ImportScanResult, matchers: Matchers): MatchedImport[]
   extractCalls(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedCallsResult
+  extractJsx(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedJsxResult
+  extract(source: string, path: string, matchers: Matchers): ExtractResult
 }
 
 const fallback: NativeBinding = {
@@ -135,6 +162,12 @@ const fallback: NativeBinding = {
   },
   extractCalls() {
     return { calls: [], diagnostics: [] }
+  },
+  extractJsx() {
+    return { jsx: [], diagnostics: [] }
+  },
+  extract() {
+    return { imports: [], matched: [], calls: [], jsx: [], diagnostics: [] }
   },
 }
 
@@ -159,6 +192,19 @@ export function extractCalls(
   matchers: Matchers,
 ): ExtractedCallsResult {
   return binding.extractCalls(source, path, matched, matchers)
+}
+
+export function extractJsx(
+  source: string,
+  path: string,
+  matched: MatchedImport[],
+  matchers: Matchers,
+): ExtractedJsxResult {
+  return binding.extractJsx(source, path, matched, matchers)
+}
+
+export function extract(source: string, path: string, matchers: Matchers): ExtractResult {
+  return binding.extract(source, path, matchers)
 }
 
 export function getBindingInfo() {

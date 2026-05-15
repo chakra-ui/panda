@@ -1,8 +1,10 @@
 use crate::{Diagnostic, DiagnosticSeverity, Span};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingIdentifier, ImportDeclarationSpecifier, ImportOrExportKind, ModuleExportName, Statement,
+    BindingIdentifier, ImportDeclarationSpecifier, ImportOrExportKind, ModuleExportName, Program,
+    Statement,
 };
+use oxc_diagnostics::OxcDiagnostic;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
@@ -61,27 +63,22 @@ pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
-    let mut result = ImportScanResult::default();
-
-    for error in &parser_return.errors {
-        result.diagnostics.push(Diagnostic {
-            message: error.message.to_string(),
-            severity: DiagnosticSeverity::Error,
-            span: error.labels.as_ref().and_then(|labels| {
-                labels.first().map(|label| Span {
-                    start: u32::try_from(label.offset()).unwrap_or(0),
-                    end: u32::try_from(label.offset() + label.len()).unwrap_or(0),
-                })
-            }),
-        });
+    ImportScanResult {
+        imports: collect_imports(&parser_return.program),
+        diagnostics: collect_parser_diagnostics(&parser_return.errors),
     }
+}
 
-    for stmt in &parser_return.program.body {
+/// Walk a parsed program's top-level statements and return all import
+/// declarations. Exposed for the combined extractor so we can parse once.
+#[must_use]
+pub fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
+    let mut out = Vec::new();
+    for stmt in &program.body {
         if let Statement::ImportDeclaration(decl) = stmt {
             let module = decl.source.value.to_string();
             let type_only = matches!(decl.import_kind, ImportOrExportKind::Type);
             let span = Span::from(decl.span);
-
             let (kind, specifiers) = match decl.specifiers.as_ref() {
                 None => (ImportKind::SideEffect, Vec::new()),
                 Some(specs) => (
@@ -89,8 +86,7 @@ pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
                     specs.iter().map(specifier_record).collect(),
                 ),
             };
-
-            result.imports.push(ImportRecord {
+            out.push(ImportRecord {
                 module,
                 kind,
                 type_only,
@@ -99,8 +95,25 @@ pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
             });
         }
     }
+    out
+}
 
-    result
+/// Map Oxc parse errors onto our `Diagnostic` shape.
+#[must_use]
+pub fn collect_parser_diagnostics(errors: &[OxcDiagnostic]) -> Vec<Diagnostic> {
+    errors
+        .iter()
+        .map(|error| Diagnostic {
+            message: error.message.to_string(),
+            severity: DiagnosticSeverity::Error,
+            span: error.labels.as_ref().and_then(|labels| {
+                labels.first().map(|label| Span {
+                    start: u32::try_from(label.offset()).unwrap_or(0),
+                    end: u32::try_from(label.offset() + label.len()).unwrap_or(0),
+                })
+            }),
+        })
+        .collect()
 }
 
 fn specifier_record(spec: &ImportDeclarationSpecifier<'_>) -> ImportSpecifier {
