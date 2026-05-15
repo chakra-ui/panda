@@ -74,6 +74,20 @@ pub enum Literal {
     /// can build whatever index it needs.
     Object(Vec<(String, Literal)>),
     Array(Vec<Literal>),
+    /// Alternatives extracted from a ternary or logical expression whose
+    /// deciding side isn't statically known. Both branches resolved
+    /// independently; the encoder treats them as alternative outputs to
+    /// be emitted under different runtime conditions.
+    ///
+    /// Emitted by:
+    /// - `a ? b : c` when `a` doesn't fold but both `b` and `c` do.
+    /// - `a && b` / `a || b` / `a ?? b` when `a` doesn't fold but both
+    ///   sides resolve.
+    ///
+    /// Serializes to `{ "kind": "conditional", "branches": [...] }` —
+    /// the explicit discriminator makes the shape distinguishable from
+    /// a regular object literal.
+    Conditional(Vec<Literal>),
 }
 
 impl Literal {
@@ -96,6 +110,15 @@ impl Literal {
             }
             Self::Array(items) => {
                 serde_json::Value::Array(items.iter().map(Self::to_json).collect())
+            }
+            Self::Conditional(branches) => {
+                let mut map = serde_json::Map::with_capacity(2);
+                map.insert("kind".into(), serde_json::Value::String("conditional".into()));
+                map.insert(
+                    "branches".into(),
+                    serde_json::Value::Array(branches.iter().map(Self::to_json).collect()),
+                );
+                serde_json::Value::Object(map)
             }
         }
     }
@@ -123,6 +146,12 @@ impl Serialize for Literal {
                     seq.serialize_element(item)?;
                 }
                 seq.end()
+            }
+            Self::Conditional(branches) => {
+                let mut map = serializer.serialize_map(Some(2))?;
+                map.serialize_entry("kind", "conditional")?;
+                map.serialize_entry("branches", branches)?;
+                map.end()
             }
         }
     }
@@ -572,52 +601,72 @@ fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
 }
 
 fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
-    // Short-circuit: evaluate left first. If left determines the result,
-    // skip evaluating right (and importantly, allow right to be non-literal
-    // since it's unreachable). When left doesn't decide, both sides must
-    // be literal for us to fold.
-    let left = expression_to_literal(&l.left, resolver)?;
-    match l.operator {
-        LogicalOperator::And => {
-            if truthy(&left) {
-                expression_to_literal(&l.right, resolver)
-            } else {
-                Some(left)
+    // First try to fold left. When it folds, short-circuit normally:
+    // skip evaluating right where the operator allows. When left
+    // doesn't fold, emit a Conditional with both sides so the encoder
+    // can treat them as alternatives (matches JS box.conditional for
+    // logical operators).
+    if let Some(left) = expression_to_literal(&l.left, resolver) {
+        return match l.operator {
+            LogicalOperator::And => {
+                if truthy(&left) {
+                    expression_to_literal(&l.right, resolver)
+                } else {
+                    Some(left)
+                }
             }
-        }
-        LogicalOperator::Or => {
-            if truthy(&left) {
-                Some(left)
-            } else {
-                expression_to_literal(&l.right, resolver)
+            LogicalOperator::Or => {
+                if truthy(&left) {
+                    Some(left)
+                } else {
+                    expression_to_literal(&l.right, resolver)
+                }
             }
-        }
-        LogicalOperator::Coalesce => {
-            // `?? right` only short-circuits when left is null/undefined.
-            // We model `undefined` as `Null` (we have no separate variant).
-            if matches!(left, Literal::Null) {
-                expression_to_literal(&l.right, resolver)
-            } else {
-                Some(left)
+            LogicalOperator::Coalesce => {
+                // `?? right` only short-circuits when left is null/undefined.
+                // We model `undefined` as `Null`.
+                if matches!(left, Literal::Null) {
+                    expression_to_literal(&l.right, resolver)
+                } else {
+                    Some(left)
+                }
             }
-        }
+        };
     }
+    // Left didn't fold — emit conditional alternatives when both sides
+    // independently resolve. Matches JS box.conditional semantics.
+    conditional_from_branches(&l.left, &l.right, resolver)
 }
 
 fn eval_conditional(
     c: &ConditionalExpression<'_>,
     resolver: Option<&Resolver<'_>>,
 ) -> Option<Literal> {
-    // Only fold when the test is literal-resolvable. When `cond` is an
-    // identifier, callers can't know which branch will run at build time —
-    // a future slice may emit both branches as alternative extractions
-    // (atomic CSS pattern), but that needs a richer output type.
-    let test = expression_to_literal(&c.test, resolver)?;
-    if truthy(&test) {
-        expression_to_literal(&c.consequent, resolver)
-    } else {
-        expression_to_literal(&c.alternate, resolver)
+    if let Some(test) = expression_to_literal(&c.test, resolver) {
+        // Test folds: pick the matching branch.
+        return if truthy(&test) {
+            expression_to_literal(&c.consequent, resolver)
+        } else {
+            expression_to_literal(&c.alternate, resolver)
+        };
     }
+    // Test doesn't fold — emit a Conditional with both branches so the
+    // downstream encoder can treat them as alternative outputs.
+    conditional_from_branches(&c.consequent, &c.alternate, resolver)
+}
+
+/// Build a `Literal::Conditional` from two branch expressions. Both must
+/// fold; if either side doesn't resolve, we drop rather than emit a
+/// partial conditional — the encoder needs both alternatives to generate
+/// correct atomic CSS.
+fn conditional_from_branches(
+    a: &Expression<'_>,
+    b: &Expression<'_>,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<Literal> {
+    let left = expression_to_literal(a, resolver)?;
+    let right = expression_to_literal(b, resolver)?;
+    Some(Literal::Conditional(vec![left, right]))
 }
 
 fn template_literal_to_literal(
@@ -647,21 +696,24 @@ fn truthy(value: &Literal) -> bool {
         Literal::Bool(b) => *b,
         Literal::Number(n) => *n != 0.0 && !n.is_nan(),
         Literal::String(s) => !s.is_empty(),
-        Literal::Object(_) | Literal::Array(_) => true,
+        // Objects / arrays / conditionals are reference-typed at the
+        // JS level — always truthy.
+        Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => true,
     }
 }
 
 /// JS `ToString` for literal values. Mirrors `String(x)` semantics for the
-/// kinds we can fold; returns `None` for object/array (which JS would map
-/// to `"[object Object]"` / `"a,b,c"`-style strings — not useful for style
-/// extraction).
+/// kinds we can fold; returns `None` for object/array/conditional (JS
+/// would coerce these via `[object Object]` / `"a,b,c"` — not useful for
+/// style extraction, and a `Conditional` doesn't have a single string
+/// form anyway).
 fn coerce_to_string(lit: &Literal) -> Option<String> {
     match lit {
         Literal::String(s) => Some(s.clone()),
         Literal::Number(n) => Some(number_to_js_string(*n)),
         Literal::Bool(b) => Some(if *b { "true".into() } else { "false".into() }),
         Literal::Null => Some("null".into()),
-        Literal::Object(_) | Literal::Array(_) => None,
+        Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
     }
 }
 
@@ -681,7 +733,7 @@ fn coerce_to_number(lit: &Literal) -> Option<f64> {
                 trimmed.parse::<f64>().ok()
             }
         }
-        Literal::Object(_) | Literal::Array(_) => None,
+        Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
     }
 }
 

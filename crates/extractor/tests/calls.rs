@@ -1070,16 +1070,30 @@ fn conditional_with_literal_test() {
 }
 
 #[test]
-fn conditional_with_non_literal_test_drops() {
-    // Test is an identifier → can't decide which branch runs at build time.
-    // Phase 5 may emit both as alternatives; for now we drop the attribute.
+fn conditional_with_non_literal_test_emits_branches() {
+    // Test (`dark`) is a free identifier so we can't pick a branch. Both
+    // resolve to literals, so we emit a `Conditional` carrying the
+    // alternatives — the encoder uses this for atomic-CSS-style output.
     assert_yaml_snapshot!(
         extract(
             "css({ color: dark ? 'red' : 'blue', size: 'lg' })",
             &[css("css")],
         ),
         @"
-    calls: []
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color:
+              kind: conditional
+              branches:
+                - red
+                - blue
+            size: lg
+        span:
+          start: 0
+          end: 49
     diagnostics: []
     ",
     );

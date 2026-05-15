@@ -137,6 +137,17 @@ export interface ExtractedCall {
 /** Tagged shape for one extracted call argument. */
 export type ExtractedArg = { kind: 'value'; value: unknown } | { kind: 'missing'; value?: undefined }
 
+/** Alternatives emitted by a ternary (`a ? b : c`) or logical
+ *  (`a && b`, `a || b`, `a ?? b`) expression whose deciding side isn't
+ *  statically foldable. The downstream encoder treats each branch as
+ *  an alternative output applied under different runtime conditions
+ *  (atomic-CSS style). Both branches are themselves any extractable
+ *  value — strings, numbers, objects, nested conditionals, etc. */
+export interface ExtractedConditional {
+  kind: 'conditional'
+  branches: unknown[]
+}
+
 export interface ExtractedCallsResult {
   calls: ExtractedCall[]
   diagnostics: Diagnostic[]
