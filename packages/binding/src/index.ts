@@ -91,10 +91,32 @@ export interface MatchedImport {
   kind: ImportSpecifierKind
 }
 
+// --- extractCalls ---
+
+export interface ExtractedCall {
+  category: MatchCategory
+  /** Canonical Panda name (e.g. `"css"`, `"cardStyle"`). For namespace
+   * callees like `p.css(...)`, this is the property name. */
+  name: string
+  /** Local binding at the call site. For namespace calls this is the
+   * namespace alias (e.g. `"p"` in `p.css(...)`). */
+  alias: string
+  /** Literal-extractable arguments in source order. Non-extractable args
+   * are omitted, so positional alignment with the call is not preserved. */
+  data: unknown[]
+  span: Span
+}
+
+export interface ExtractedCallsResult {
+  calls: ExtractedCall[]
+  diagnostics: ScanDiagnostic[]
+}
+
 export interface NativeBinding {
   compile(input?: CompileInput): CompileOutput
   scanImports(source: string, path: string): ImportScanResult
   matchImports(scan: ImportScanResult, matchers: Matchers): MatchedImport[]
+  extractCalls(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedCallsResult
 }
 
 const fallback: NativeBinding = {
@@ -111,6 +133,9 @@ const fallback: NativeBinding = {
   matchImports() {
     return []
   },
+  extractCalls() {
+    return { calls: [], diagnostics: [] }
+  },
 }
 
 const binding = loadNativeBinding() ?? fallback
@@ -125,6 +150,15 @@ export function scanImports(source: string, path: string): ImportScanResult {
 
 export function matchImports(scan: ImportScanResult, matchers: Matchers): MatchedImport[] {
   return binding.matchImports(scan, matchers)
+}
+
+export function extractCalls(
+  source: string,
+  path: string,
+  matched: MatchedImport[],
+  matchers: Matchers,
+): ExtractedCallsResult {
+  return binding.extractCalls(source, path, matched, matchers)
 }
 
 export function getBindingInfo() {

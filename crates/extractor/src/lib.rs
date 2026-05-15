@@ -1,8 +1,10 @@
 //! Oxc-based source extractor for Panda usages.
 
+mod calls;
 mod imports;
 mod matcher;
 
+pub use calls::*;
 pub use imports::*;
 pub use matcher::*;
 

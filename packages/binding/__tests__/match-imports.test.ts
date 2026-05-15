@@ -25,46 +25,46 @@ describe('matchImports', () => {
     expect(matchImports(scan, pandaOrg('@panda'))).toMatchInlineSnapshot(`
       [
         {
-          "alias": "css",
           "category": "css",
-          "kind": "named",
           "module": "@panda/css",
           "name": "css",
+          "alias": "css",
+          "kind": "named",
         },
         {
-          "alias": "token",
           "category": "tokens",
-          "kind": "named",
           "module": "@panda/tokens",
           "name": "token",
+          "alias": "token",
+          "kind": "named",
         },
         {
-          "alias": "cardStyle",
           "category": "recipe",
-          "kind": "named",
           "module": "@panda/recipes",
           "name": "cardStyle",
+          "alias": "cardStyle",
+          "kind": "named",
         },
         {
-          "alias": "stack",
           "category": "pattern",
-          "kind": "named",
           "module": "@panda/patterns",
           "name": "stack",
+          "alias": "stack",
+          "kind": "named",
         },
         {
-          "alias": "styled",
           "category": "jsx",
-          "kind": "named",
           "module": "@panda/jsx",
           "name": "styled",
+          "alias": "styled",
+          "kind": "named",
         },
         {
-          "alias": "Box",
           "category": "jsx",
-          "kind": "named",
           "module": "@panda/jsx",
           "name": "Box",
+          "alias": "Box",
+          "kind": "named",
         },
       ]
     `)
@@ -72,18 +72,21 @@ describe('matchImports', () => {
 
   test('rejects unknown names within a Panda module', () => {
     const scan = scanImports("import { somethingElse } from '@panda/css'\n", 'fixture.tsx')
-    expect(matchImports(scan, pandaOrg('@panda'))).toEqual([])
+    expect(matchImports(scan, pandaOrg('@panda'))).toMatchInlineSnapshot('[]')
   })
 
   test('namespace import bypasses the name allowlist', () => {
     const scan = scanImports("import * as p from '@panda/css'\n", 'fixture.tsx')
-    const result = matchImports(scan, pandaOrg('@panda'))
-    expect(result).toHaveLength(1)
-    expect(result[0]).toMatchObject({
-      category: 'css',
-      kind: 'namespace',
-      name: '*',
-      alias: 'p',
-    })
+    expect(matchImports(scan, pandaOrg('@panda'))).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "css",
+          "module": "@panda/css",
+          "name": "*",
+          "alias": "p",
+          "kind": "namespace",
+        },
+      ]
+    `)
   })
 })

@@ -293,13 +293,7 @@ fn to_core_matchers(m: Matchers) -> extractor::Matchers {
 
 fn matched_record(m: extractor::MatchedImport) -> MatchedImport {
     MatchedImport {
-        category: match m.category {
-            extractor::MatchCategory::Css => MatchCategory::Css,
-            extractor::MatchCategory::Recipe => MatchCategory::Recipe,
-            extractor::MatchCategory::Pattern => MatchCategory::Pattern,
-            extractor::MatchCategory::Jsx => MatchCategory::Jsx,
-            extractor::MatchCategory::Tokens => MatchCategory::Tokens,
-        },
+        category: convert_category(m.category),
         module: m.module,
         name: m.name,
         alias: m.alias,
@@ -308,5 +302,97 @@ fn matched_record(m: extractor::MatchedImport) -> MatchedImport {
             extractor::ImportSpecifierKind::Default => ImportSpecifierKind::Default,
             extractor::ImportSpecifierKind::Namespace => ImportSpecifierKind::Namespace,
         },
+    }
+}
+
+fn convert_category(c: extractor::MatchCategory) -> MatchCategory {
+    match c {
+        extractor::MatchCategory::Css => MatchCategory::Css,
+        extractor::MatchCategory::Recipe => MatchCategory::Recipe,
+        extractor::MatchCategory::Pattern => MatchCategory::Pattern,
+        extractor::MatchCategory::Jsx => MatchCategory::Jsx,
+        extractor::MatchCategory::Tokens => MatchCategory::Tokens,
+    }
+}
+
+fn to_core_matched(m: MatchedImport) -> extractor::MatchedImport {
+    extractor::MatchedImport {
+        category: match m.category {
+            MatchCategory::Css => extractor::MatchCategory::Css,
+            MatchCategory::Recipe => extractor::MatchCategory::Recipe,
+            MatchCategory::Pattern => extractor::MatchCategory::Pattern,
+            MatchCategory::Jsx => extractor::MatchCategory::Jsx,
+            MatchCategory::Tokens => extractor::MatchCategory::Tokens,
+        },
+        module: m.module,
+        name: m.name,
+        alias: m.alias,
+        kind: match m.kind {
+            ImportSpecifierKind::Named => extractor::ImportSpecifierKind::Named,
+            ImportSpecifierKind::Default => extractor::ImportSpecifierKind::Default,
+            ImportSpecifierKind::Namespace => extractor::ImportSpecifierKind::Namespace,
+        },
+    }
+}
+
+// --- extractCalls ---
+
+#[napi(object)]
+pub struct ExtractedCall {
+    pub category: MatchCategory,
+    pub name: String,
+    pub alias: String,
+    pub data: Vec<serde_json::Value>,
+    pub span: Span,
+}
+
+#[napi(object)]
+pub struct ExtractedCallsResult {
+    pub calls: Vec<ExtractedCall>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+#[napi]
+#[must_use]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "NAPI requires owned arguments"
+)]
+pub fn extract_calls(
+    source: String,
+    path: String,
+    matched: Vec<MatchedImport>,
+    matchers: Matchers,
+) -> ExtractedCallsResult {
+    let matched: Vec<extractor::MatchedImport> = matched.into_iter().map(to_core_matched).collect();
+    let core_matchers = to_core_matchers(matchers);
+    let result = extractor::extract_calls(&source, &path, &matched, &core_matchers);
+    ExtractedCallsResult {
+        calls: result
+            .calls
+            .into_iter()
+            .map(|c| ExtractedCall {
+                category: convert_category(c.category),
+                name: c.name,
+                alias: c.alias,
+                data: c.data,
+                span: Span {
+                    start: c.span.start,
+                    end: c.span.end,
+                },
+            })
+            .collect(),
+        diagnostics: result
+            .diagnostics
+            .into_iter()
+            .map(|d| Diagnostic {
+                message: d.message,
+                severity: format!("{:?}", d.severity).to_lowercase(),
+                span: d.span.map(|s| Span {
+                    start: s.start,
+                    end: s.end,
+                }),
+            })
+            .collect(),
     }
 }
