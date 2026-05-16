@@ -13,10 +13,13 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+pandacss_encoder = { workspace = true }
 pandacss_engine = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["os"] }
-serde_json = { workspace = true }
+pandacss_project = { workspace = true }
+pandacss_recipes = { workspace = true }
 pandacss_tokens = { workspace = true }
+serde_json = { workspace = true }
 
 [build-dependencies]
 napi-build = { workspace = true }

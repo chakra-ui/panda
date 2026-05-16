@@ -56,3 +56,52 @@ export declare class WasmExtractor {
   constructor(fs: WasmFileSystem, matchers: MatchersInput)
   parseFile(path: string, source: string): unknown
 }
+
+/** One atomic style declaration: `(prop, value, conditions)`. */
+export interface Atom {
+  prop: string
+  value: string | number | boolean | null
+  conditions: string[]
+}
+
+/** `(file, spanStart, recipe)` entry. The `recipe` matches the
+ *  serialized shape of `pandacss_recipes::Recipe` / `SlotRecipe`. */
+export interface RecipeEntry {
+  file: string
+  spanStart: number
+  recipe: unknown
+}
+
+export interface FileReport {
+  cssCalls: number
+  cvaCalls: number
+  svaCalls: number
+  jsxUsages: number
+  diagnostics: unknown[]
+}
+
+export interface ProjectSummary {
+  filesProcessed: number
+  atomCount: number
+  recipeCount: number
+  slotRecipeCount: number
+}
+
+export interface WasmProjectOptions {
+  tokenDictionary?: TokenDictionaryInput
+}
+
+/** Stateful project handle over a `WasmFileSystem`. Cross-file
+ *  resolution always shares the same FS — `import { x } from './tokens'`
+ *  references resolve through whatever the JS host has populated. */
+export declare class WasmProject {
+  constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
+  parseFile(path: string, source: string): FileReport
+  refreshFile(path: string, source: string): boolean
+  removeFile(path: string): boolean
+  clear(): void
+  atoms(): Atom[]
+  recipes(): RecipeEntry[]
+  slotRecipes(): RecipeEntry[]
+  summary(): ProjectSummary
+}

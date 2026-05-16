@@ -33,8 +33,11 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
+ "pandacss_encoder",
  "pandacss_engine",
  "pandacss_extractor",
+ "pandacss_project",
+ "pandacss_recipes",
  "pandacss_tokens",
  "serde_json",
 ]
@@ -45,8 +48,11 @@ version = "0.0.0"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
+ "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_fs",
+ "pandacss_project",
+ "pandacss_recipes",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",

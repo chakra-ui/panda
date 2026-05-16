@@ -159,7 +159,7 @@ pub(crate) fn to_core_matchers(m: Matchers) -> pandacss_extractor::Matchers {
 
 // JS passes two parallel `path → string` maps; re-key them into the
 // structured `Token` records the `tokens` crate uses.
-fn to_core_token_dictionary(d: crate::TokenDictionary) -> pandacss_tokens::TokenDictionary {
+pub(crate) fn to_core_token_dictionary(d: crate::TokenDictionary) -> pandacss_tokens::TokenDictionary {
     pandacss_tokens::TokenDictionary::builder()
         .extend_flat(d.values, &d.vars)
         .build()
@@ -196,5 +196,74 @@ pub(crate) fn to_jsx(j: pandacss_extractor::ExtractedJsx) -> ExtractedJsx {
         alias: j.alias,
         data: j.data.to_json(),
         span: convert_span(j.span),
+    }
+}
+
+/// Convert an `AtomValue` to a JSON value that JS consumers expect.
+///
+/// `pandacss_encoder::AtomValue::Number` is stored as a string internally so
+/// `Atom` can be `Hash + Eq`. At the JS boundary we parse back to an actual
+/// number so consumers see `42`, not `"42"`. Integers and floats are
+/// distinguished — same rule the literal evaluator uses (2^53 safe-integer
+/// boundary).
+pub(crate) fn to_atom_value(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
+    match v {
+        pandacss_encoder::AtomValue::String(s) => serde_json::Value::String(s.to_string()),
+        pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
+        pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
+        pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
+    }
+}
+
+fn parse_number_string(s: &str) -> serde_json::Value {
+    if let Ok(n) = s.parse::<i64>() {
+        return serde_json::Value::from(n);
+    }
+    if let Ok(f) = s.parse::<f64>()
+        && let Some(num) = serde_json::Number::from_f64(f)
+    {
+        return serde_json::Value::Number(num);
+    }
+    // Unparseable — preserve the raw string rather than drop.
+    serde_json::Value::String(s.to_string())
+}
+
+/// Build a stable-ordered JS array of atoms. Sort by `(prop, conditions,
+/// value)` so snapshot tests don't depend on hash-set iteration order.
+pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
+    atoms: &std::collections::HashSet<pandacss_encoder::Atom, S>,
+) -> Vec<crate::Atom> {
+    let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
+    sorted.sort_by(|a, b| {
+        a.prop
+            .cmp(&b.prop)
+            .then_with(|| {
+                let a_conds: Vec<&str> = a.conditions.iter().map(AsRef::as_ref).collect();
+                let b_conds: Vec<&str> = b.conditions.iter().map(AsRef::as_ref).collect();
+                a_conds.cmp(&b_conds)
+            })
+            .then_with(|| value_sort_key(&a.value).cmp(&value_sort_key(&b.value)))
+    });
+    sorted
+        .into_iter()
+        .map(|atom| crate::Atom {
+            prop: atom.prop.to_string(),
+            value: to_atom_value(&atom.value),
+            conditions: atom
+                .conditions
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect::<Vec<String>>(),
+        })
+        .collect()
+}
+
+// Lexicographic sort key over the variant tag + raw bytes — stable, cheap.
+fn value_sort_key(v: &pandacss_encoder::AtomValue) -> String {
+    match v {
+        pandacss_encoder::AtomValue::String(s) => format!("s:{s}"),
+        pandacss_encoder::AtomValue::Number(s) => format!("n:{s}"),
+        pandacss_encoder::AtomValue::Bool(b) => format!("b:{b}"),
+        pandacss_encoder::AtomValue::Null => "z:".to_owned(),
     }
 }

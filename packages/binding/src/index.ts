@@ -213,6 +213,74 @@ export interface ExtractorSessionConstructor {
   new (matchers: Matchers): ExtractorSession
 }
 
+// --- Project (stateful) ---
+
+/** One atomic style declaration: `(prop, value, conditions)`. Returned
+ *  by `Project.atoms()`. Conditions are outer→inner; an unconditional
+ *  atom has an empty array. */
+export interface Atom {
+  prop: string
+  value: string | number | boolean | null
+  conditions: string[]
+}
+
+/** One `(file, spanStart, recipe)` entry from `Project.recipes()` /
+ *  `slotRecipes()`. The `recipe` value is the serialized shape of
+ *  `pandacss_recipes::Recipe` / `SlotRecipe`. */
+export interface RecipeEntry {
+  file: string
+  spanStart: number
+  recipe: unknown
+}
+
+/** Per-call telemetry returned by `Project.parseFile()`. */
+export interface FileReport {
+  cssCalls: number
+  cvaCalls: number
+  svaCalls: number
+  jsxUsages: number
+  diagnostics: Diagnostic[]
+}
+
+/** Aggregate counts across the project. Returned by `Project.summary()`. */
+export interface ProjectSummary {
+  filesProcessed: number
+  atomCount: number
+  recipeCount: number
+  slotRecipeCount: number
+}
+
+/** Optional construction inputs. `crossFile` defaults to `true` — the
+ *  resolver is cheap if no imports get followed and lets `token('…')`
+ *  and `import { x } from './tokens'` references fold. */
+export interface ProjectOptions {
+  tokenDictionary?: TokenDictionary
+  crossFile?: boolean
+}
+
+/** Stateful project orchestration. Holds a per-file atom registry,
+ *  drops a file's contribution on `removeFile` / `refreshFile`, and
+ *  runs the encoder over every extracted style so callers see `Atom[]`
+ *  directly. For raw `ExtractedCall` / `ExtractedJsx` records (linting,
+ *  parity testing), use `Extractor` instead. */
+export interface ProjectInstance {
+  parseFile(path: string, source: string): FileReport
+  /** Re-parse `path` *only if* already known. Returns `true` when the
+   *  file was present. Filter watch events through this to ignore
+   *  changes in unrelated paths. */
+  refreshFile(path: string, source: string): boolean
+  removeFile(path: string): boolean
+  clear(): void
+  atoms(): Atom[]
+  recipes(): RecipeEntry[]
+  slotRecipes(): RecipeEntry[]
+  summary(): ProjectSummary
+}
+
+export interface ProjectConstructor {
+  new (matchers: Matchers, options?: ProjectOptions): ProjectInstance
+}
+
 export interface NativeBinding {
   compile(input?: CompileInput): CompileOutput
   scanImports(source: string, path: string): ImportScanResult
@@ -224,6 +292,8 @@ export interface NativeBinding {
   /** Native class export. Construct once via `new binding.Extractor(matchers)`
    *  then reuse the instance across files. */
   Extractor: ExtractorSessionConstructor
+  /** Stateful project orchestration. See `ProjectInstance`. */
+  Project: ProjectConstructor
 }
 
 class FallbackExtractor implements ExtractorSession {
@@ -235,6 +305,33 @@ class FallbackExtractor implements ExtractorSession {
   }
   matchImports() {
     return []
+  }
+}
+
+class FallbackProject implements ProjectInstance {
+  parseFile() {
+    return { cssCalls: 0, cvaCalls: 0, svaCalls: 0, jsxUsages: 0, diagnostics: [] }
+  }
+  refreshFile() {
+    return false
+  }
+  removeFile() {
+    return false
+  }
+  clear() {
+    /* no-op */
+  }
+  atoms() {
+    return [] as Atom[]
+  }
+  recipes() {
+    return [] as RecipeEntry[]
+  }
+  slotRecipes() {
+    return [] as RecipeEntry[]
+  }
+  summary() {
+    return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
   }
 }
 
@@ -265,6 +362,7 @@ const fallback: NativeBinding = {
     return { imports: [], matched: [], calls: [], jsx: [], diagnostics: [] }
   },
   Extractor: FallbackExtractor as unknown as ExtractorSessionConstructor,
+  Project: FallbackProject as unknown as ProjectConstructor,
 }
 
 const binding = loadNativeBinding() ?? fallback
@@ -331,6 +429,12 @@ export function extractDebug(source: string, path: string, matchers: Matchers): 
  *  prebuilt token dictionary so per-file `extract` calls don't pay the
  *  dictionary-build cost. */
 export const Extractor = binding.Extractor
+
+/** Stateful project orchestration. Returns `Atom[]` directly (the
+ *  encoder is wired in) and tracks recipes across files. Use this
+ *  when the caller wants atom-level output and watch-mode semantics;
+ *  use `Extractor` for raw extraction records. */
+export const Project = binding.Project
 
 export function getBindingInfo() {
   return {

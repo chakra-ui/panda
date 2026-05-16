@@ -9,6 +9,7 @@ mod extract;
 mod imports;
 mod jsx;
 mod matcher;
+mod project;
 mod session;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
@@ -21,6 +22,7 @@ pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
+pub use project::{FileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry};
 pub use session::Extractor;
 
 use napi_derive::napi;
@@ -95,4 +97,16 @@ impl ExtractedArg {
             value: Some(value),
         }
     }
+}
+
+/// One atomic style declaration: `(prop, value, conditions)`. Returned by
+/// `Project::atoms()`. Mirrors `pandacss_encoder::Atom` but with the
+/// internal `Box<str>` Number form parsed back to a JS-native number.
+#[napi(object)]
+pub struct Atom {
+    pub prop: String,
+    /// `string | number | boolean | null`.
+    pub value: serde_json::Value,
+    /// Outer-to-inner condition chain. Empty for unconditional atoms.
+    pub conditions: Vec<String>,
 }

@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { createExtractor, loadWasm } from '../src'
-import type { ExtractUsage, MatchersInput } from '../src'
+import { createExtractor, createProject, loadWasm } from '../src'
+import type { Atom, ExtractUsage, MatchersInput } from '../src'
 
 const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'binding_wasm.js')
 const wasmAvailable = existsSync(PKG_NODE)
@@ -201,6 +201,111 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       const { WasmFileSystem, WasmExtractor } = await loadWasm()
       const fs = new WasmFileSystem()
       expect(() => new WasmExtractor(fs, 'not-an-object' as unknown)).toThrow()
+    })
+  })
+
+  describe('WasmProject', () => {
+    it('extracts atoms from a css() call', async () => {
+      const { project } = await createProject(baseMatchers)
+      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "bg",
+            "value": "blue",
+            "conditions": [],
+          },
+          {
+            "prop": "color",
+            "value": "red",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('cross-file imports fold via the shared WasmFileSystem', async () => {
+      const { fs, project } = await createProject(baseMatchers)
+      fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444'\n")
+      project.parseFile(
+        '/proj/main.tsx',
+        `import { brand } from './tokens'\nimport { css } from '@panda/css'\ncss({ color: brand })`,
+      )
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "color",
+            "value": "#ef4444",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('dedups atoms across files', async () => {
+      const { project } = await createProject(baseMatchers)
+      project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
+      project.parseFile('/c.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      expect((project.atoms() as Atom[]).length).toBe(2)
+      const summary = project.summary()
+      expect(summary).toMatchInlineSnapshot(`
+        {
+          "filesProcessed": 3,
+          "atomCount": 2,
+          "recipeCount": 0,
+          "slotRecipeCount": 0,
+        }
+      `)
+    })
+
+    it('refresh and remove update the atom set', async () => {
+      const { project } = await createProject(baseMatchers)
+      project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      expect(project.refreshFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'blue' })`)).toBe(true)
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "color",
+            "value": "blue",
+            "conditions": [],
+          },
+        ]
+      `)
+      expect(project.refreshFile('/unknown.tsx', 'whatever')).toBe(false)
+      expect(project.removeFile('/a.tsx')).toBe(true)
+      expect(project.removeFile('/a.tsx')).toBe(false)
+      expect(project.atoms() as Atom[]).toEqual([])
+    })
+
+    it('records cva recipes', async () => {
+      const { project } = await createProject(baseMatchers)
+      project.parseFile('/Button.tsx', `import { cva } from '@panda/css'\nexport const btn = cva({ base: { p: '2' } })`)
+      const recipes = project.recipes()
+      expect(recipes).toHaveLength(1)
+      expect(recipes[0].file).toBe('/Button.tsx')
+      expect(recipes[0].recipe).toMatchInlineSnapshot(`
+        {
+          "base": {
+            "p": "2",
+          },
+        }
+      `)
+    })
+
+    it('clear drops every file', async () => {
+      const { project } = await createProject(baseMatchers)
+      project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
+      project.clear()
+      expect(project.summary()).toMatchInlineSnapshot(`
+        {
+          "filesProcessed": 0,
+          "atomCount": 0,
+          "recipeCount": 0,
+          "slotRecipeCount": 0,
+        }
+      `)
     })
   })
 })

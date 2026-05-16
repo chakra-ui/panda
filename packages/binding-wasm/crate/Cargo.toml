@@ -13,8 +13,11 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
+pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["memory"] }
 pandacss_fs = { workspace = true, features = ["memory"] }
+pandacss_project = { workspace = true }
+pandacss_recipes = { workspace = true }
 serde = { workspace = true }
 serde-wasm-bindgen = "0.6"
 serde_json = { workspace = true }

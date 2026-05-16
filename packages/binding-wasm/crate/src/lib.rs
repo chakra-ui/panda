@@ -9,10 +9,12 @@
 mod extract;
 mod fs;
 mod matcher;
+mod project;
 
 pub use extract::WasmExtractor;
 pub use fs::WasmFileSystem;
 pub use matcher::{MatcherInput, MatchersInput, TokenDictionaryInput};
+pub use project::WasmProject;
 
 use wasm_bindgen::prelude::*;
 
