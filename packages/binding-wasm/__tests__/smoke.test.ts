@@ -21,6 +21,20 @@ const baseMatchers: MatchersInput = {
   tokens: { modules: ['@panda/css'], names: ['token'] },
 }
 
+/// Strip span offsets from a result so snapshots don't churn when the
+/// source string changes whitespace. Use when the test is about extraction
+/// shape (calls/jsx/data) rather than precise byte locations.
+function withoutSpans(result: ExtractUsage): unknown {
+  return {
+    calls: result.calls.map(({ span: _span, ...rest }) => rest),
+    jsx: result.jsx.map(({ span: _span, ...rest }) => rest),
+    diagnostics: result.diagnostics.map((d) => ({
+      message: d.message,
+      severity: d.severity,
+    })),
+  }
+}
+
 describeIfBuilt('@pandacss/binding-wasm', () => {
   describe('WasmFileSystem', () => {
     it('round-trips file content', async () => {
@@ -57,15 +71,16 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       })
       results.sort()
 
-      // .d.ts dropped by default exclude (because we passed a non-empty
-      // exclude, but it doesn't match d.ts — wait, that disables default).
-      // We explicitly pass exclude here so default isn't injected; helpers.ts
-      // is a `.ts` so it matches; Button.tsx matches; types.d.ts matches
-      // `*.ts` glob. Adjust expectations accordingly.
-      expect(results).toContain('/proj/src/Button.tsx')
-      expect(results).toContain('/proj/src/helpers.ts')
-      // node_modules pruned
-      expect(results.some((p: string) => p.startsWith('/proj/node_modules'))).toBe(false)
+      // Snapshot the full match list so the include/exclude interaction is
+      // visible in the test. Note: explicit `exclude` disables the default
+      // `**/*.d.ts` rule, so types.d.ts is included here.
+      expect(results).toMatchInlineSnapshot(`
+        [
+          "/proj/src/Button.tsx",
+          "/proj/src/helpers.ts",
+          "/proj/src/types.d.ts",
+        ]
+      `)
     })
 
     it('default exclude (empty user exclude) drops .d.ts', async () => {
@@ -77,7 +92,11 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
         include: ['**/*.ts'],
         cwd: '/proj',
       })
-      expect(results).toEqual(['/proj/main.ts'])
+      expect(results).toMatchInlineSnapshot(`
+        [
+          "/proj/main.ts",
+        ]
+      `)
     })
   })
 
@@ -86,37 +105,51 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       const { extractor } = await createExtractor(baseMatchers)
       const raw = extractor.parseFile(
         '/src/code.tsx',
-        `
-          import { css } from '@panda/css';
-          css({ color: 'red', bg: 'blue' });
-        `,
+        `import { css } from '@panda/css';\ncss({ color: 'red', bg: 'blue' });\n`,
       )
-      const result = raw as ExtractUsage
-      expect(result.diagnostics).toEqual([])
-      expect(result.calls).toHaveLength(1)
-      expect(result.calls[0]).toMatchObject({
-        name: 'css',
-        category: 'css',
-        data: [{ color: 'red', bg: 'blue' }],
-      })
+      expect(withoutSpans(raw as ExtractUsage)).toMatchInlineSnapshot(`
+        {
+          "calls": [
+            {
+              "category": "css",
+              "name": "css",
+              "alias": "css",
+              "data": [
+                {
+                  "color": "red",
+                  "bg": "blue",
+                },
+              ],
+            },
+          ],
+          "jsx": [],
+          "diagnostics": [],
+        }
+      `)
     })
 
     it('extracts a <styled.div> JSX usage', async () => {
       const { extractor } = await createExtractor(baseMatchers)
       const raw = extractor.parseFile(
         '/src/code.tsx',
-        `
-          import { styled } from '@panda/jsx';
-          const X = () => <styled.div color="red" />;
-        `,
+        `import { styled } from '@panda/jsx';\nconst X = () => <styled.div color="red" />;\n`,
       )
-      const result = raw as ExtractUsage
-      expect(result.diagnostics).toEqual([])
-      expect(result.jsx).toHaveLength(1)
-      expect(result.jsx[0]).toMatchObject({
-        name: 'styled.div',
-        data: { color: 'red' },
-      })
+      expect(withoutSpans(raw as ExtractUsage)).toMatchInlineSnapshot(`
+        {
+          "calls": [],
+          "jsx": [
+            {
+              "category": "jsx",
+              "name": "styled.div",
+              "alias": "styled",
+              "data": {
+                "color": "red",
+              },
+            },
+          ],
+          "diagnostics": [],
+        }
+      `)
     })
 
     it('cross-file imports fold through the shared memory FS', async () => {
@@ -124,15 +157,26 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444';\n")
       const raw = extractor.parseFile(
         '/proj/main.tsx',
-        `
-          import { brand } from './tokens';
-          import { css } from '@panda/css';
-          css({ color: brand });
-        `,
+        `import { brand } from './tokens';\nimport { css } from '@panda/css';\ncss({ color: brand });\n`,
       )
-      const result = raw as ExtractUsage
-      expect(result.calls).toHaveLength(1)
-      expect(result.calls[0].data).toEqual([{ color: '#ef4444' }])
+      expect(withoutSpans(raw as ExtractUsage)).toMatchInlineSnapshot(`
+        {
+          "calls": [
+            {
+              "category": "css",
+              "name": "css",
+              "alias": "css",
+              "data": [
+                {
+                  "color": "#ef4444",
+                },
+              ],
+            },
+          ],
+          "jsx": [],
+          "diagnostics": [],
+        }
+      `)
     })
 
     it('extract reports parse-error diagnostics', async () => {
@@ -142,7 +186,15 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
         `import { css } from '@panda/css';\ncss({ color: }) // syntax error\n`,
       )
       const result = raw as ExtractUsage
-      expect(result.diagnostics.length).toBeGreaterThan(0)
+      // Just message + severity — exact text comes from oxc and isn't part
+      // of our contract, but the shape should be stable.
+      expect(result.diagnostics.map((d) => ({ severity: d.severity }))).toMatchInlineSnapshot(`
+        [
+          {
+            "severity": "error",
+          },
+        ]
+      `)
     })
 
     it('throws on invalid matchers shape', async () => {
@@ -155,6 +207,9 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
 
 if (!wasmAvailable) {
   describe('@pandacss/binding-wasm', () => {
-    it.skip('wasm bundle not built — run `pnpm --filter @pandacss/binding-wasm build:wasm` first', () => {})
+    it.skip('wasm bundle not built — run `pnpm --filter @pandacss/binding-wasm build:wasm` first', () => {
+      // placeholder body — the test is skipped; this is only here so the
+      // skipped name shows up in CI output as a build prerequisite hint.
+    })
   })
 }
