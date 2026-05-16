@@ -239,6 +239,168 @@ fn nested_conditional_inside_object() {
 }
 
 #[test]
+fn constant_comparison_test_folds_to_chosen_branch() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: 1 === 1 ? 'red' : 'blue' });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 74
+    ");
+}
+
+#[test]
+fn nested_ternary_emits_nested_conditional() {
+    // Nesting is preserved rather than flattened.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: isDark ? 'red' : isPrimary ? 'blue' : 'green' });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - red
+              - kind: conditional
+                branches:
+                  - blue
+                  - green
+      span:
+        start: 34
+        end: 95
+    ");
+}
+
+#[test]
+fn nullish_coalesce_with_null_left_picks_right() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: null ?? 'red' });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 63
+    ");
+}
+
+#[test]
+fn logical_or_with_null_left_picks_right() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: null || 'red' });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 63
+    ");
+}
+
+#[test]
+fn ternary_with_mixed_type_branches_emits_conditional() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: isDark ? 'red' : 12 });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - red
+              - 12
+      span:
+        start: 34
+        end: 69
+    ");
+}
+
+#[test]
+fn multiple_conditionals_with_inline_spread_flatten_in_order() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({
+          color: isDark ? 'white' : 'black',
+          ...{ padding: isSmall ? '4px' : '8px', margin: '2px' },
+          fontSize: isLarge ? 24 : 12,
+        });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color:
+            kind: conditional
+            branches:
+              - white
+              - black
+          padding:
+            kind: conditional
+            branches:
+              - 4px
+              - 8px
+          margin: 2px
+          fontSize:
+            kind: conditional
+            branches:
+              - 24
+              - 12
+      span:
+        start: 34
+        end: 168
+    ");
+}
+
+#[test]
+fn conditional_inside_cva_recipe_base() {
+    let src = indoc! {r"
+        import { cva } from '@panda/css';
+        cva({ base: { color: isDark ? 'red' : 'blue' } });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: cva
+      alias: cva
+      data:
+        - base:
+            color:
+              kind: conditional
+              branches:
+                - red
+                - blue
+      span:
+        start: 34
+        end: 83
+    ");
+}
+
+#[test]
 fn ternary_with_object_branches() {
     // Branches can be objects (responsive-style alternatives).
     let src = indoc! {r"

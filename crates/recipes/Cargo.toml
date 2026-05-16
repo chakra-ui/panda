@@ -1,5 +1,5 @@
 [package]
-name = "encoder"
+name = "recipes"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -9,10 +9,8 @@ publish = false
 
 [dependencies]
 extractor = { workspace = true }
-recipes = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
-smallvec = { workspace = true }
 
 [dev-dependencies]
 indoc = { workspace = true }

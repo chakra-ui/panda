@@ -61,8 +61,31 @@ pub enum DiagnosticSeverity {
     Error,
 }
 
-/// No-op compiler entrypoint used while the Rust workspace is being wired up.
+/// Placeholder compiler entrypoint. The real pipeline (extract → encode →
+/// emit → optimize) lands in subsequent slices; until then the engine
+/// surfaces a single `Warning` diagnostic so callers don't silently
+/// consume an empty stylesheet thinking compilation succeeded.
+///
+/// The input is observed (file count appears in the diagnostic) so a
+/// caller wiring up the binding can verify the round-trip without
+/// pretending the output is real.
+// TODO(port): replace this placeholder once the extract → encode → emit
+// pipeline is in place. The output shape is stable; only the body
+// needs to grow.
 #[must_use]
-pub fn compile(_input: CompileInput) -> CompileOutput {
-    CompileOutput::default()
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "signature stays owned for the future real impl which will consume `files`/`config`/`cache_dir`"
+)]
+pub fn compile(input: CompileInput) -> CompileOutput {
+    let file_count = input.files.len();
+    CompileOutput {
+        diagnostics: vec![Diagnostic {
+            message: format!(
+                "engine::compile is a placeholder; received {file_count} file(s) but no CSS was produced",
+            ),
+            severity: DiagnosticSeverity::Warning,
+        }],
+        ..CompileOutput::default()
+    }
 }

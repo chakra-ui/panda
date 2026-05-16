@@ -169,6 +169,13 @@ fn to_core_token_dictionary(d: crate::TokenDictionary) -> tokens::TokenDictionar
         .build()
 }
 
+// PERF(port): every `Literal::to_json()` materializes a `serde_json::Value`
+// that crosses the NAPI boundary. This is fine for the tooling-shaped
+// `extract*()` APIs (JS callers want JSON), but the production hot path
+// (`compile()`) must never reach here — the engine keeps Literal → encoder
+// → emitter → optimizer in Rust and returns compact CSS/manifest. Keep
+// this conversion confined to the tooling APIs; do not call it from
+// inside `compile()` when the real pipeline lands.
 pub(crate) fn to_call(c: extractor::ExtractedCall) -> ExtractedCall {
     ExtractedCall {
         category: convert_category(c.category),

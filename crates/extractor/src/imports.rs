@@ -112,6 +112,9 @@ pub(crate) fn collect_parser_diagnostics(
     errors: &[OxcDiagnostic],
     source: &str,
 ) -> Vec<Diagnostic> {
+    if errors.is_empty() {
+        return Vec::new();
+    }
     let line_index = crate::LineIndex::new(source);
     errors
         .iter()

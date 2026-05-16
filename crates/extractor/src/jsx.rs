@@ -259,6 +259,10 @@ fn merge_attribute(
 
 /// Insert-or-overwrite by key — last-writer-wins on duplicate keys,
 /// preserving the first-occurrence position.
+// PERF(port): mirrors `literal::upsert` — same O(n²) trade-off applies.
+// JSX prop lists are even smaller than nested style objects in practice
+// (rarely > 30 props), so a `Vec` scan stays the better choice. Swap to
+// a `FxHashMap<String, usize>` builder only if benches show otherwise.
 fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
     if let Some(entry) = out.iter_mut().find(|(k, _)| k == &key) {
         entry.1 = value;

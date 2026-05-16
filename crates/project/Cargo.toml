@@ -1,5 +1,5 @@
 [package]
-name = "encoder"
+name = "project"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,11 +8,12 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
+encoder = { workspace = true }
 extractor = { workspace = true }
 recipes = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
-smallvec = { workspace = true }
+tokens = { workspace = true }
 
 [dev-dependencies]
 indoc = { workspace = true }

@@ -50,9 +50,10 @@ use crate::literal::expression_to_literal;
 
 type FileExports = FxHashMap<String, Literal>;
 
-/// Per-session cross-file import resolver. Cheap to clone (the inner
-/// `oxc_resolver` is `Arc`-backed) and safe to share between sessions
-/// when the project layout is stable.
+/// Per-session cross-file import resolver. Not `Clone` — the resolver
+/// owns an internal options bundle and a per-session cache that can't
+/// be cheaply duplicated; thread one via `&` or wrap in `Arc` if you
+/// need shared ownership across sessions.
 pub struct CrossFileResolver {
     inner: OxcResolver,
     cache: RefCell<HashMap<PathBuf, FileExports>>,
@@ -70,16 +71,6 @@ impl std::fmt::Debug for CrossFileResolver {
         f.debug_struct("CrossFileResolver")
             .field("cached_files", &self.cache.borrow().len())
             .finish_non_exhaustive()
-    }
-}
-
-impl Clone for CrossFileResolver {
-    fn clone(&self) -> Self {
-        // `oxc_resolver::Resolver` is cheap to share, but it doesn't
-        // impl Clone directly; build a fresh one with the same default
-        // options. Callers that customize options should construct
-        // explicitly via [`Self::with_options`] and rebuild on clone.
-        Self::new()
     }
 }
 

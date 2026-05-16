@@ -56,6 +56,19 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let matched = match_import_records(&imports, &config.matchers);
 
+    // Fast path: no Panda imports → no extractable calls, no extractable
+    // JSX (Panda's JSX visitor needs `styled` / `Box` / pattern imports
+    // to be matched first). Skip the resolver build + both visitor walks
+    // entirely. Parse diagnostics still flow through because they're
+    // independent of Panda usage.
+    if matched.is_empty() {
+        return ExtractUsage {
+            calls: Vec::new(),
+            jsx: Vec::new(),
+            diagnostics,
+        };
+    }
+
     let resolver = Resolver::build(
         &parser_return.program,
         &matched,

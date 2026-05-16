@@ -1,4 +1,4 @@
-use extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract_debug};
+use extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract, extract_debug};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
@@ -164,6 +164,43 @@ fn extract_with_namespace() {
     diagnostics: []
     "#,
     );
+}
+
+#[test]
+fn extract_skips_visitor_work_when_no_panda_imports_match() {
+    // Fast path: a file with no Panda imports produces no calls and no
+    // JSX (Panda's JSX matchers require imported components like
+    // `styled` / `Box`), so we skip building the resolver and walking
+    // both visitors entirely. Behaviour-only assertion — the speedup
+    // belongs in the bench harness.
+    let result = extract(
+        indoc! {r#"
+            import { useState } from "react"
+            import path from "node:path"
+
+            const Component = () => {
+              const [n, setN] = useState(0)
+              return <div onClick={() => setN(n + 1)}>{n}</div>
+            }
+        "#},
+        "fixture.tsx",
+        &panda_config(),
+    );
+    assert!(result.calls.is_empty());
+    assert!(result.jsx.is_empty());
+    assert!(result.diagnostics.is_empty());
+}
+
+#[test]
+fn extract_surfaces_parse_errors_even_with_no_panda_imports() {
+    // The fast-path skip mustn't swallow parse diagnostics — a syntax
+    // error in a Panda-free file still surfaces as a diagnostic.
+    let result = extract(
+        "import { useState } from 'react'\nconst x = ;",
+        "fixture.tsx",
+        &panda_config(),
+    );
+    assert!(!result.diagnostics.is_empty());
 }
 
 #[test]

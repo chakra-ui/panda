@@ -457,7 +457,7 @@ impl TokenDictionary {
     /// view's `getCategoryValues(category)` shape. Only base tokens are
     /// included; conditional variants live under their own indices.
     #[must_use]
-    pub fn category_values(&self, category: &TokenCategory) -> HashMap<String, String> {
+    pub fn category_values(&self, category: &TokenCategory) -> FxHashMap<String, String> {
         self.iter_category(category)
             .filter(|t| t.condition.is_none())
             .map(|t| (t.path.clone(), t.value.clone()))

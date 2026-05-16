@@ -443,6 +443,11 @@ fn number_as_key(value: f64) -> String {
 /// Insert-or-overwrite by key — last-writer-wins on duplicate keys,
 /// preserving the first-occurrence position. Same semantics as ES object
 /// initializers with duplicate keys / spread overwrites.
+// PERF(port): O(n²) on object construction (linear scan per insert).
+// Deliberately kept: real style objects rarely exceed ~50 keys, and at
+// that scale a `Vec` scan beats a `HashMap`-backed builder on cache
+// locality + zero allocation. Bench before swapping; the threshold for
+// HashMap to win is somewhere around n=128 for `String` keys.
 fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
     if let Some(entry) = out.iter_mut().find(|(k, _)| k == &key) {
         entry.1 = value;

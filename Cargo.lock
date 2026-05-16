@@ -153,6 +153,15 @@ checksum = "34aa73646ffb006b8f5147f3dc182bd4bcb190227ce861fc4a4844bf8e3cb2c0"
 [[package]]
 name = "encoder"
 version = "0.0.0"
+dependencies = [
+ "extractor",
+ "indoc",
+ "insta",
+ "recipes",
+ "rustc-hash",
+ "serde",
+ "smallvec",
+]
 
 [[package]]
 name = "engine"
@@ -1085,6 +1094,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "project"
+version = "0.0.0"
+dependencies = [
+ "encoder",
+ "extractor",
+ "indoc",
+ "insta",
+ "recipes",
+ "rustc-hash",
+ "serde",
+ "tokens",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1098,6 +1121,17 @@ name = "r-efi"
 version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+
+[[package]]
+name = "recipes"
+version = "0.0.0"
+dependencies = [
+ "extractor",
+ "indoc",
+ "insta",
+ "rustc-hash",
+ "serde",
+]
 
 [[package]]
 name = "ref-cast"
@@ -1263,6 +1297,9 @@ name = "smallvec"
 version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "smawk"
