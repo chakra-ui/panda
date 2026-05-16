@@ -73,9 +73,8 @@ pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
     }
 }
 
-/// Walk a parsed program's top-level statements and return all import
-/// declarations. Internal: takes a borrowed Oxc `Program`, which we don't
-/// want to expose on the public surface.
+// Internal: borrows an Oxc `Program` which we don't expose on the public
+// surface.
 #[must_use]
 pub(crate) fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
     let mut out = Vec::new();
@@ -103,10 +102,8 @@ pub(crate) fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
     out
 }
 
-/// Map Oxc parse errors onto our `Diagnostic` shape. `source` is used to
-/// resolve byte offsets to line/column locations; pass the same string that
-/// was fed to `Parser::new` so the indexing matches. Internal: takes
-/// `OxcDiagnostic`, which we don't want to expose on the public surface.
+/// `source` resolves byte offsets to line/column locations — must be the
+/// same string fed to `Parser::new` so the indexing matches.
 #[must_use]
 pub(crate) fn collect_parser_diagnostics(
     errors: &[OxcDiagnostic],

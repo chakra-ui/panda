@@ -7,11 +7,9 @@ pub struct ExtractedCall {
     pub category: MatchCategory,
     pub name: String,
     pub alias: String,
-    /// Per-argument values in source order. Each entry is tagged so that
-    /// a real `null` literal (an `ExtractedArg` with `kind: "value"` and
-    /// `value: null`) is unambiguous against a non-extractable argument
-    /// (`kind: "missing"`, `value: undefined`). `data.length` always
-    /// matches the source arity of the call.
+    /// Per-argument values in source order; `data.length` matches the
+    /// source arity. Each entry is tagged so a real `null` literal stays
+    /// distinct from a non-foldable argument — see [`ExtractedArg`].
     pub data: Vec<ExtractedArg>,
     pub span: Span,
 }

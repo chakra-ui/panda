@@ -3,7 +3,6 @@
 use config::SerializedConfig;
 use serde::{Deserialize, Serialize};
 
-/// File content passed to the native engine.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InputFile {
@@ -11,7 +10,6 @@ pub struct InputFile {
     pub content: String,
 }
 
-/// Compile input passed from the TypeScript boundary.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CompileInput {
@@ -25,7 +23,6 @@ pub struct CompileInput {
     pub cache_dir: Option<String>,
 }
 
-/// Compile output returned to the TypeScript boundary.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CompileOutput {
@@ -36,7 +33,6 @@ pub struct CompileOutput {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Summary of emitted hashes and token usage.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CompileManifest {
@@ -44,7 +40,6 @@ pub struct CompileManifest {
     pub tokens: Vec<String>,
 }
 
-/// Structured diagnostic from the native engine.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Diagnostic {
@@ -52,7 +47,6 @@ pub struct Diagnostic {
     pub severity: DiagnosticSeverity,
 }
 
-/// Diagnostic severity.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum DiagnosticSeverity {
@@ -61,17 +55,10 @@ pub enum DiagnosticSeverity {
     Error,
 }
 
-/// Placeholder compiler entrypoint. The real pipeline (extract → encode →
-/// emit → optimize) lands in subsequent slices; until then the engine
-/// surfaces a single `Warning` diagnostic so callers don't silently
-/// consume an empty stylesheet thinking compilation succeeded.
-///
-/// The input is observed (file count appears in the diagnostic) so a
-/// caller wiring up the binding can verify the round-trip without
-/// pretending the output is real.
-// TODO(port): replace this placeholder once the extract → encode → emit
-// pipeline is in place. The output shape is stable; only the body
-// needs to grow.
+// TODO(port): placeholder until the extract → encode → emit pipeline lands.
+// Emits a single Warning so callers don't silently consume an empty
+// stylesheet thinking compilation succeeded. Output shape is stable;
+// only the body needs to grow.
 #[must_use]
 #[allow(
     clippy::needless_pass_by_value,

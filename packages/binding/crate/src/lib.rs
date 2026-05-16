@@ -25,8 +25,7 @@ pub use session::Extractor;
 
 use napi_derive::napi;
 
-// Shared cross-module types live here so every submodule can refer to them
-// via `crate::*`.
+// Shared cross-module types — submodules reach them via `crate::*`.
 
 #[napi(object)]
 pub struct Span {
@@ -64,18 +63,13 @@ pub struct Diagnostic {
     pub location: Option<SourceRange>,
 }
 
-/// Tagged shape for one extracted call argument. Disambiguates a real
-/// `null` literal (`kind: "value", value: null`) from a non-extractable
-/// argument (`kind: "missing", value: undefined`) — the previous shape
-/// `Array<unknown | null>` collapsed those two cases.
+/// Tagged so a real `null` literal (`{ kind: "value", value: null }`) is
+/// distinguishable from a non-foldable argument (`{ kind: "missing",
+/// value: undefined }`). The previous `Array<unknown | null>` shape
+/// collapsed those two cases.
 #[napi(string_enum = "camelCase")]
 pub enum ExtractedArgKind {
-    /// The argument folded to a literal. `value` is the folded JSON
-    /// (which may itself be `null` for a literal `null`).
     Value,
-    /// The argument was present in the source but not statically
-    /// foldable (identifier without resolution, function call, etc.).
-    /// `value` is `undefined`.
     Missing,
 }
 

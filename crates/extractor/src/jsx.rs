@@ -12,15 +12,11 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
 
-/// Built-in JSX factory names — the default fallback when the JSX
-/// `Matcher` doesn't specify `jsx_factories`. Member-chain tags like
-/// `<styled.div>` are accepted only when the root name appears in
-/// this list (or in the matcher's override list); without it, a named
-/// import like `Box` would over-match on `<Box.Item />`.
+/// Member-chain tags like `<styled.div>` are accepted only when the root
+/// name is configured as a JSX factory; otherwise a named import like
+/// `Box` would over-match on `<Box.Item />`.
 const DEFAULT_JSX_FACTORY_NAMES: &[&str] = &["styled"];
 
-/// `true` when `name` is configured as a JSX factory: either via the
-/// caller's `jsx_factories` override or in the built-in default list.
 fn is_jsx_factory(matchers: &Matchers, name: &str) -> bool {
     if let Some(overrides) = matchers.jsx_factories.as_ref() {
         return overrides.iter().any(|f| f == name);
@@ -32,16 +28,16 @@ fn is_jsx_factory(matchers: &Matchers, name: &str) -> bool {
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedJsx {
     pub category: MatchCategory,
-    /// Canonical name of the matched JSX element. For `<styled.div>` this is
-    /// `"styled.div"`; for `<JSX.Stack>` (namespace) it's `"Stack"`.
+    /// Canonical name. `<styled.div>` → `"styled.div"`;
+    /// `<JSX.Stack>` (namespace) → `"Stack"`.
     pub name: String,
-    /// Local root binding at the call site (`"styled"` for `<styled.div>`,
-    /// `"JSX"` for `<JSX.Stack>`).
+    /// Local root binding (`"styled"` for `<styled.div>`, `"JSX"` for
+    /// `<JSX.Stack>`).
     pub alias: String,
-    /// Prop/value map as a `Literal::Object`. Non-literal attribute values
-    /// are skipped (omitted from the object). Literal `{...spread}` attrs
-    /// are merged in source order. Empty for matched elements with no
-    /// extractable props — the element itself is the signal.
+    /// Prop/value map. Non-literal attribute values are skipped. Literal
+    /// `{...spread}` attributes merge in source order. Empty for matched
+    /// elements with no extractable props — the element itself is the
+    /// signal.
     pub data: Literal,
     pub span: Span,
 }
@@ -53,13 +49,12 @@ pub struct ExtractedJsxResult {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Find every Panda JSX element and extract its attributes. Handles direct
-/// named tags (`<Box>`), styled factories (`<styled.div>`), and namespace
-/// chains (`<JSX.styled.div>`, `<JSX.Stack>`).
+/// Find every Panda JSX element and extract its attributes. Handles
+/// direct named tags (`<Box>`), styled factories (`<styled.div>`), and
+/// namespace chains (`<JSX.styled.div>`, `<JSX.Stack>`).
 ///
 /// Parse-error contract: see [`crate::extract`] — `diagnostics` is
-/// authoritative, `jsx` may be partial when Oxc recovers from a syntax
-/// error.
+/// authoritative; `jsx` may be partial when Oxc recovers.
 #[must_use]
 pub fn extract_jsx(
     source: &str,
@@ -85,8 +80,6 @@ pub fn extract_jsx(
     }
 }
 
-/// Run the JSX visitor on a parsed program. Used internally by `extract_jsx`
-/// and the combined `extract` entrypoint.
 pub(crate) fn collect_jsx(
     program: &oxc_ast::ast::Program<'_>,
     ctx: &VisitorContext<'_>,
@@ -104,9 +97,8 @@ struct Extractor<'walk, 'ctx> {
 
 impl Extractor<'_, '_> {
     fn resolve_tag(&self, name: &JSXElementName<'_>) -> Option<(MatchCategory, String, String)> {
-        // `JSXElementName::Identifier` (lowercase HTML tags),
-        // `JSXNamespacedName` (`<svg:circle>`), and `ThisExpression`
-        // (`<this.X>`) are never Panda usages, so they fall through to `_`.
+        // Lowercase HTML idents, `JSXNamespacedName` (`<svg:circle>`),
+        // and `ThisExpression` (`<this.X>`) are never Panda usages.
         match name {
             JSXElementName::IdentifierReference(id) => {
                 let matched = self.ctx.aliases.get(id.name.as_str())?;
@@ -141,10 +133,10 @@ impl Extractor<'_, '_> {
                 }
                 match matched.kind {
                     ImportSpecifierKind::Named => {
-                        // <X.Y> on a named import is only valid when X is a
-                        // recognized JSX factory (e.g. `styled.div`). For a
-                        // recipe/pattern Component, `Box.Item` is just dot
-                        // access, not a Panda usage.
+                        // `<X.Y>` on a named import is only a Panda usage
+                        // when X is a JSX factory like `styled.div`. For
+                        // a recipe Component, `Box.Item` is plain dot
+                        // access — skip.
                         if !is_jsx_factory(self.ctx.matchers, &matched.name) {
                             return None;
                         }
@@ -196,10 +188,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-/// Flatten a JSX member chain into (root identifier name, root identifier
-/// reference, property path). `JSX.styled.div` → (`"JSX"`, `&JSX`,
-/// `["styled", "div"]`). The reference is returned so callers can ask the
-/// resolver whether the root is actually an imported binding.
+/// `JSX.styled.div` → (`"JSX"`, `&JSX`, `["styled", "div"]`). The
+/// reference is returned so callers can ask the resolver whether the
+/// root is actually an imported binding.
 fn flatten_member<'a>(
     member: &'a JSXMemberExpression<'_>,
 ) -> Option<(String, &'a IdentifierReference<'a>, Vec<String>)> {
@@ -228,13 +219,13 @@ fn merge_attribute(
 ) {
     match item {
         JSXAttributeItem::Attribute(attr) => {
+            // Namespaced attribute names (`foo:bar`) — skip.
             let JSXAttributeName::Identifier(name) = &attr.name else {
-                // Namespaced attribute names (`foo:bar`) — skip.
                 return;
             };
             let key = name.name.to_string();
             let value = match attr.value.as_ref() {
-                None => Literal::Bool(true), // boolean shorthand
+                None => Literal::Bool(true), // boolean shorthand: `<Box hidden />`
                 Some(v) => match attribute_value(v, resolver) {
                     Some(v) => v,
                     None => return,
@@ -243,9 +234,9 @@ fn merge_attribute(
             upsert(out, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
-            // With the resolver, `{...local}` folds when `local` binds to a
-            // const object literal. Without it, only inline object spreads
-            // (`{...{ a: 1 }}`) merge — same as before.
+            // With a resolver, `{...local}` folds when `local` binds to
+            // a const object literal. Without one, only inline object
+            // spreads merge.
             if let Some(Literal::Object(entries)) =
                 expression_to_literal(&spread.argument, resolver)
             {
@@ -257,12 +248,9 @@ fn merge_attribute(
     }
 }
 
-/// Insert-or-overwrite by key — last-writer-wins on duplicate keys,
-/// preserving the first-occurrence position.
-// PERF(port): mirrors `literal::upsert` — same O(n²) trade-off applies.
-// JSX prop lists are even smaller than nested style objects in practice
-// (rarely > 30 props), so a `Vec` scan stays the better choice. Swap to
-// a `FxHashMap<String, usize>` builder only if benches show otherwise.
+// PERF(port): same O(n²) trade-off as `literal::upsert`. JSX prop lists
+// are smaller than nested style objects (rarely > 30 props), so Vec scan
+// stays the better choice. Swap to FxHashMap only if benches show otherwise.
 fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
     if let Some(entry) = out.iter_mut().find(|(k, _)| k == &key) {
         entry.1 = value;

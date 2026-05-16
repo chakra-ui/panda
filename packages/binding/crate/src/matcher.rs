@@ -25,16 +25,13 @@ pub struct Matchers {
     pub pattern: Matcher,
     pub jsx: Option<Matcher>,
     pub tokens: Matcher,
-    /// Resolved Panda token dictionary. When present, `token('path')` /
-    /// `token.var('path')` calls fold to their dictionary value during
-    /// extraction. Pass two parallel maps from JS: `values[path]` → raw
-    /// value (e.g. `"#ef4444"`), `vars[path]` → CSS-var form (e.g.
-    /// `"var(--colors-red-500)"`). Omit to disable token resolution.
+    /// When present, `token('path')` / `token.var('path')` fold during
+    /// extraction. Pass parallel JS maps: `values[path]` → raw value,
+    /// `vars[path]` → CSS-var form. Omit to disable.
     pub token_dictionary: Option<TokenDictionary>,
-    /// JSX factory names that accept member-chain tags (`<styled.div>`).
-    /// Omit (or pass `None`) to use the built-in default `["styled"]`;
-    /// pass `["styled", "panda"]` to override. Replaces the default
-    /// outright — not additive.
+    /// JSX factory names accepting member-chain tags (`<styled.div>`).
+    /// Omit for the built-in `["styled"]` default; `Some(list)` replaces
+    /// it outright (not additive).
     pub jsx_factories: Option<Vec<String>>,
 }
 
@@ -61,8 +58,6 @@ pub struct MatchedImport {
     reason = "NAPI requires owned arguments"
 )]
 pub fn match_imports(scan: crate::ImportScanResult, matchers: Matchers) -> Vec<MatchedImport> {
-    // NAPI gives us the scan back as an owned struct; rebuild the core
-    // record list and run the pure matcher.
     let records: Vec<extractor::ImportRecord> =
         scan.imports.into_iter().map(to_core_record).collect();
     let core_matchers = to_core_matchers(matchers);

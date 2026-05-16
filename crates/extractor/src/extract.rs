@@ -10,9 +10,9 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
 
-/// Lean extraction result — what the production hot path actually needs.
-/// Strips raw `imports` and `matched` so callers don't pay serialization
-/// cost for fields they don't use. Use [`extract`] to produce this.
+/// Lean extraction result for the production hot path — strips `imports`
+/// and `matched` so callers don't pay serialization cost for fields they
+/// don't use.
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractUsage {
@@ -21,9 +21,8 @@ pub struct ExtractUsage {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Full extraction result — includes the raw import scan and the matched
-/// imports alongside calls / jsx. Use [`extract_debug`] for tooling,
-/// docs, and parity-compare flows.
+/// Kitchen-sink extraction result — includes raw imports and matched
+/// imports for tooling / parity-compare flows.
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractDebugResult {
@@ -34,18 +33,15 @@ pub struct ExtractDebugResult {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Single-parse, single-pass extract. Returns the lean result —
-/// production callers should use this. For introspection of the raw
-/// imports + matched-import shape, use [`extract_debug`].
+/// Single-parse, single-pass extract.
 ///
 /// # Parse-error contract
 ///
-/// Oxc recovers from parse errors and emits a partial AST. We run the
-/// visitors on whatever it produces, so the returned result may contain
-/// extractions *and* a non-empty `diagnostics` list at the same time.
-/// **`diagnostics` is the authoritative signal.** Callers that need
-/// strict correctness should check `diagnostics.is_empty()` before
-/// trusting `calls` / `jsx`.
+/// Oxc recovers from parse errors and emits a partial AST; visitors run
+/// on whatever it produces, so the result may carry extractions *and* a
+/// non-empty `diagnostics` list at the same time. **`diagnostics` is the
+/// authoritative signal** — callers needing strict correctness should
+/// check `diagnostics.is_empty()` before trusting `calls` / `jsx`.
 #[must_use]
 pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
     let allocator = Allocator::default();
@@ -56,11 +52,11 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let matched = match_import_records(&imports, &config.matchers);
 
-    // Fast path: no Panda imports → no extractable calls, no extractable
-    // JSX (Panda's JSX visitor needs `styled` / `Box` / pattern imports
-    // to be matched first). Skip the resolver build + both visitor walks
-    // entirely. Parse diagnostics still flow through because they're
-    // independent of Panda usage.
+    // PERF(port): fast path — no Panda imports means no extractable calls
+    // or JSX (the JSX visitor needs styled/Box/pattern imports matched
+    // first). Skip the resolver build and both visitor walks entirely.
+    // Parse diagnostics still flow through because they're independent
+    // of Panda usage.
     if matched.is_empty() {
         return ExtractUsage {
             calls: Vec::new(),
@@ -88,9 +84,6 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     }
 }
 
-/// Full-detail extract: same single parse, but the returned record also
-/// carries the raw imports + matched imports for tooling / compare-harness
-/// flows. The production hot path should use [`extract`].
 #[must_use]
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
     let allocator = Allocator::default();

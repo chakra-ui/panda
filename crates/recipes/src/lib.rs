@@ -1,38 +1,16 @@
 //! Typed recipe / slot-recipe model and atomic decomposition.
 //!
-//! Mirrors the cva / sva pipeline from `packages/parser` +
-//! `packages/core` — the extractor produces a raw [`Literal::Object`]
-//! for each `cva(...)` / `sva(...)` call, this crate turns that into a
-//! typed [`Recipe`] / [`SlotRecipe`], and the future Rust encoder
-//! consumes the typed shape to emit atomic CSS rules.
+//! Mirrors the cva / sva pipeline from `packages/parser` + `packages/core`:
+//! the extractor produces a raw [`Literal::Object`] for each `cva(...)` /
+//! `sva(...)` call, this crate turns it into a typed [`Recipe`] /
+//! [`SlotRecipe`], and the encoder consumes the typed shape to emit
+//! atomic CSS rules.
 //!
-//! ## Data model
-//!
-//! - [`Recipe`] — `cva({ base, variants, compoundVariants, defaultVariants })`.
-//!   Variants are stored in *source order* so downstream emit is
-//!   deterministic.
-//! - [`SlotRecipe`] — `sva({ slots, base, variants, compoundVariants })`.
-//!   `slots` is auto-inferred from `base` + variant keys when the
-//!   user-supplied list is empty / missing, matching `Recipes.inferSlots`
-//!   in the JS reference.
-//! - [`VariantGroup`] / [`CompoundVariant`] — building blocks shared by
-//!   both recipe shapes.
-//!
-//! ## Parsing
-//!
-//! [`Recipe::from_literal`] / [`SlotRecipe::from_literal`] accept the
-//! single `Literal::Object` extracted from the call's first argument.
-//! Unknown keys are ignored (forward-compat); malformed shapes return
-//! `None` (atomic CSS emit can decide whether to surface a diagnostic
-//! or fall back).
-//!
-//! ## Atomic decomposition
-//!
-//! [`Recipe::atomic_styles`] returns every style object the encoder
-//! needs to hash: `base`, each `variant.option.style`, and each
-//! `compoundVariant.css`. [`SlotRecipe::atomic_styles_per_slot`] does
-//! the same keyed by slot. The encoder hashes each into an atomic
-//! ruleset.
+//! Variants are stored in *source order* so downstream emit is
+//! deterministic. Unknown keys parse as no-ops (forward-compat); malformed
+//! shapes return `None` and let downstream decide whether to surface a
+//! diagnostic. Slot inference (`SlotRecipe::infer_slots`) mirrors the
+//! JS-side `Recipes.inferSlots`.
 
 use rustc_hash::FxHashSet;
 use serde::Serialize;
@@ -49,28 +27,25 @@ pub struct Recipe {
     pub variants: Vec<VariantGroup>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub compound_variants: Vec<CompoundVariant>,
-    /// Source-order list of `(variant_name, chosen_key)` pairs.
+    /// Source-order `(variant_name, chosen_key)` pairs.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub default_variants: Vec<(String, String)>,
 }
 
-/// One named variant axis (`size`, `intent`, …) with its options.
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 pub struct VariantGroup {
     pub name: String,
     pub options: Vec<VariantOption>,
 }
 
-/// One named choice within a variant axis (`size: 'sm'`).
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct VariantOption {
     pub key: String,
     pub style: Literal,
 }
 
-/// `{ size: 'sm', intent: 'danger', css: { … } }` — all `conditions`
-/// must match for `css` to apply on top of the base + per-variant
-/// styles.
+/// `{ size: 'sm', intent: 'danger', css: { … } }` — all `conditions` must
+/// match for `css` to apply on top of base + per-variant styles.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CompoundVariant {
     pub conditions: Vec<(String, String)>,
@@ -81,10 +56,9 @@ pub struct CompoundVariant {
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotRecipe {
-    /// Final list of slot names. When the user omits `slots`, we
-    /// infer from `base` keys + variant option styles' keys.
+    /// Slot names. Inferred from `base` + variant option keys when the
+    /// user omits the field.
     pub slots: Vec<String>,
-    /// `slot → style` for the unconditional base.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub base: Vec<(String, Literal)>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -104,25 +78,19 @@ pub struct SlotVariantGroup {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SlotVariantOption {
     pub key: String,
-    /// `slot → style` for this variant option.
     pub styles: Vec<(String, Literal)>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SlotCompoundVariant {
     pub conditions: Vec<(String, String)>,
-    /// `slot → style` for this compound match.
     pub css: Vec<(String, Literal)>,
 }
 
-// --- Parsing ---
-
 impl Recipe {
-    /// Parse a `cva()` argument literal into a typed `Recipe`. Returns
-    /// `None` only when the argument isn't an object at all; partial
-    /// shapes (missing `base` or `variants`) parse with `None` /
-    /// empty fields so downstream consumers can decide how strict to
-    /// be.
+    /// Returns `None` only when the argument isn't an object. Partial
+    /// shapes (missing `base` or `variants`) parse with `None` / empty
+    /// fields so downstream consumers decide how strict to be.
     #[must_use]
     pub fn from_literal(literal: &Literal) -> Option<Self> {
         let entries = object_entries(literal)?;
@@ -133,18 +101,15 @@ impl Recipe {
                 "variants" => recipe.variants = parse_variants(value),
                 "compoundVariants" => recipe.compound_variants = parse_compound_variants(value),
                 "defaultVariants" => recipe.default_variants = parse_string_map(value),
-                // Unknown keys (e.g. `className`, `description`) are
-                // ignored so future config fields don't break parsing.
                 _ => {}
             }
         }
         Some(recipe)
     }
 
-    /// Every style object the encoder should hash into an atomic rule:
-    /// `base`, every `variant.option.style`, and every
-    /// `compoundVariant.css`. Lazy iterator — no intermediate `Vec`
-    /// allocation; the encoder consumes lazily.
+    /// Lazy iterator over every style object the encoder hashes: `base`,
+    /// every `variant.option.style`, every `compoundVariant.css`. No
+    /// intermediate Vec allocation.
     pub fn atomic_styles(&self) -> impl Iterator<Item = &Literal> + '_ {
         self.base
             .as_ref()
@@ -159,10 +124,6 @@ impl Recipe {
 }
 
 impl SlotRecipe {
-    /// Parse an `sva()` argument literal. Like [`Recipe::from_literal`],
-    /// partial shapes are tolerated. When the user-supplied `slots`
-    /// list is absent, slots are inferred from `base` + variant option
-    /// styles via [`Self::infer_slots`].
     #[must_use]
     pub fn from_literal(literal: &Literal) -> Option<Self> {
         let entries = object_entries(literal)?;
@@ -198,10 +159,8 @@ impl SlotRecipe {
         })
     }
 
-    /// Static slot inference: the JS-side `Recipes.inferSlots` reads
-    /// every slot name that appears under `base.<slot>` or any
-    /// variant option's per-slot map. Order: insertion of first
-    /// appearance.
+    /// Slot names in first-appearance order from `base.<slot>` and every
+    /// variant option's per-slot map. Matches JS-side `Recipes.inferSlots`.
     #[must_use]
     pub fn infer_slots(base: &[(String, Literal)], variants: &[SlotVariantGroup]) -> Vec<String> {
         let mut seen: FxHashSet<String> = FxHashSet::default();
@@ -227,21 +186,14 @@ impl SlotRecipe {
         order
     }
 
-    /// Atomic style objects grouped by slot. Each slot gets a lazy
-    /// iterator over its base, variant-option, and compound-variant
-    /// styles. Slots not in `self.slots` are silently dropped.
-    ///
-    /// The outer iterator yields `(slot_name, inner_iter)` in
-    /// `self.slots` order; the inner iterator emits styles in
-    /// base → variants → compound order. Zero intermediate Vec
-    /// allocation either way.
-    // PERF(port): the per-slot filter rescans base / variants /
-    // compound for every slot, so total work is O(slots × styles).
-    // The lazy iterator shape is deliberate — callers that only need
-    // one slot pay only that slot's cost. If a future profile shows
-    // multi-slot consumers dominating, pre-bucketize once into
-    // `FxHashMap<&str, Vec<&Literal>>` during construction and let
-    // this method hand out borrowed slices instead.
+    /// `(slot_name, inner_iter)` in `self.slots` order; each inner
+    /// iterator emits styles in base → variants → compound order. Slots
+    /// not in `self.slots` are silently dropped.
+    // PERF(port): the per-slot filter rescans base / variants / compound
+    // for every slot, so total work is O(slots × styles). Lazy shape is
+    // deliberate — callers needing one slot pay only that slot's cost. If
+    // multi-slot consumers dominate in a profile, pre-bucketize once into
+    // `FxHashMap<&str, Vec<&Literal>>` and hand out borrowed slices.
     pub fn atomic_styles_per_slot(
         &self,
     ) -> impl Iterator<Item = (&str, impl Iterator<Item = &Literal>)> + '_ {
@@ -252,9 +204,6 @@ impl SlotRecipe {
         })
     }
 
-    /// Lazy iterator of every style object targeting a single slot.
-    /// Visits base, every variant option's per-slot map, then every
-    /// compound-variant css.
     fn styles_for_slot<'a>(&'a self, slot: &'a str) -> impl Iterator<Item = &'a Literal> + 'a {
         let from_base = self
             .base
@@ -276,8 +225,6 @@ impl SlotRecipe {
     }
 }
 
-// --- helpers ---
-
 fn object_entries(literal: &Literal) -> Option<&Vec<(String, Literal)>> {
     if let Literal::Object(entries) = literal {
         Some(entries)
@@ -286,8 +233,6 @@ fn object_entries(literal: &Literal) -> Option<&Vec<(String, Literal)>> {
     }
 }
 
-/// `variants: { size: { sm: {…}, lg: {…} } }` → ordered
-/// `[VariantGroup{ "size", [option(sm), option(lg)] }]`.
 fn parse_variants(literal: &Literal) -> Vec<VariantGroup> {
     let Some(groups) = object_entries(literal) else {
         return Vec::new();
@@ -311,9 +256,7 @@ fn parse_variants(literal: &Literal) -> Vec<VariantGroup> {
     out
 }
 
-/// `compoundVariants: [{ size: 'sm', intent: 'danger', css: {…} }, …]`
-/// → ordered list of `CompoundVariant`. Entries missing `css` drop;
-/// non-string condition values drop.
+/// Entries missing `css` drop; non-string condition values drop.
 fn parse_compound_variants(literal: &Literal) -> Vec<CompoundVariant> {
     let Literal::Array(items) = literal else {
         return Vec::new();
@@ -339,7 +282,6 @@ fn parse_compound_variants(literal: &Literal) -> Vec<CompoundVariant> {
         .collect()
 }
 
-/// `defaultVariants: { size: 'sm', intent: 'danger' }`.
 fn parse_string_map(literal: &Literal) -> Vec<(String, String)> {
     let Some(entries) = object_entries(literal) else {
         return Vec::new();
@@ -353,7 +295,6 @@ fn parse_string_map(literal: &Literal) -> Vec<(String, String)> {
         .collect()
 }
 
-/// `slots: ['root', 'icon', 'label']`.
 fn parse_string_array(literal: &Literal) -> Vec<String> {
     let Literal::Array(items) = literal else {
         return Vec::new();
@@ -367,7 +308,6 @@ fn parse_string_array(literal: &Literal) -> Vec<String> {
         .collect()
 }
 
-/// `base: { root: {...}, icon: {...} }` → ordered `(slot, style)` list.
 fn parse_slot_styles(literal: &Literal) -> Vec<(String, Literal)> {
     let Some(entries) = object_entries(literal) else {
         return Vec::new();
@@ -378,8 +318,6 @@ fn parse_slot_styles(literal: &Literal) -> Vec<(String, Literal)> {
         .collect()
 }
 
-/// `variants: { size: { sm: { root: {...}, icon: {...} } } }` →
-/// [`SlotVariantGroup`] structure.
 fn parse_slot_variants(literal: &Literal) -> Vec<SlotVariantGroup> {
     let Some(groups) = object_entries(literal) else {
         return Vec::new();
@@ -404,7 +342,6 @@ fn parse_slot_variants(literal: &Literal) -> Vec<SlotVariantGroup> {
     out
 }
 
-/// `compoundVariants: [{ size: 'sm', css: { root: {...} } }, …]`.
 fn parse_slot_compound_variants(literal: &Literal) -> Vec<SlotCompoundVariant> {
     let Literal::Array(items) = literal else {
         return Vec::new();

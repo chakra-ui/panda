@@ -1,18 +1,12 @@
-//! Session-style extractor API.
+//! Session-style extractor API — the recommended path for batch /
+//! production extraction.
 //!
-//! The free `extract()` / `extract_debug()` functions accept `Matchers`
-//! by value and convert the inner token dictionary on every call. For a
-//! Vite-style build extracting thousands of files against the same
-//! design tokens, that rebuild cost adds up — O(tokens × files) extra
-//! work for nothing.
-//!
-//! The [`Extractor`] class flips the trade-off: construct it once on
-//! the JS side, hand it a `Matchers` config (including the resolved
-//! token dictionary), then call `extract` / `extractDebug` per file.
-//! The dictionary is built exactly once.
-//!
-//! This is the recommended path for production / batch extraction.
-//! The free functions stay around for one-off CLI use and tests.
+//! The free `extract()` / `extract_debug()` functions rebuild the token
+//! dictionary on every call (O(tokens × files) overhead for nothing in
+//! a Vite-style batch). [`Extractor`] flips the trade-off: build it once
+//! from `Matchers`, then call `extract` / `extractDebug` per file with a
+//! shared, pre-materialized `ExtractorConfig`. Free functions stay for
+//! one-off CLI use and tests.
 
 use napi_derive::napi;
 
@@ -24,10 +18,6 @@ use crate::imports::ImportScanResult;
 use crate::matcher::to_core_record;
 use crate::{MatchedImport, Matchers};
 
-/// Reusable extractor handle. Owns a prebuilt `extractor::ExtractorConfig`
-/// (matchers + resolved token dictionary) so per-file calls skip the
-/// dictionary-rebuild step.
-///
 /// ```js
 /// const extractor = new Extractor(matchers)
 /// for (const file of files) {
@@ -41,9 +31,8 @@ pub struct Extractor {
 
 #[napi]
 impl Extractor {
-    /// Build the extractor once from a `Matchers` config. The token
-    /// dictionary (if any) is materialized here so each subsequent
-    /// `extract` call is a lean parse + visit, no rebuild.
+    /// Token dictionary (if any) is materialized once so each subsequent
+    /// `extract` call is a lean parse + visit.
     #[napi(constructor)]
     #[must_use]
     #[allow(
@@ -56,8 +45,6 @@ impl Extractor {
         }
     }
 
-    /// Single-pass extract over one source file. Returns the lean
-    /// result shape (calls + jsx + diagnostics, no debug metadata).
     #[napi]
     #[must_use]
     #[allow(
@@ -77,8 +64,6 @@ impl Extractor {
         }
     }
 
-    /// Full-detail extract: includes raw imports + matched imports
-    /// alongside calls / jsx for tooling and parity-compare flows.
     #[napi]
     #[must_use]
     #[allow(
@@ -100,8 +85,8 @@ impl Extractor {
         }
     }
 
-    /// Run the matched-imports filter without re-parsing. Uses the same
-    /// `Matchers` config the session was built with.
+    /// Run the matched-imports filter without re-parsing. Uses the
+    /// session's `Matchers` config.
     #[napi]
     #[must_use]
     #[allow(

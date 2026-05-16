@@ -72,10 +72,9 @@ fn to_engine_input(input: CompileInput) -> engine::CompileInput {
             content: f.content,
         })
         .collect();
-    // Config is opaque on the binding boundary today; deserialize into the
-    // engine's shape when callers send something, fall back to default
-    // otherwise. `SerializedConfig` is itself a placeholder, so a malformed
-    // value silently degrades rather than failing the round trip.
+    // Config is opaque on the binding boundary today. Malformed values
+    // degrade to default silently — `SerializedConfig` is a placeholder
+    // and we don't want a parse failure to break the round trip.
     let config = input
         .config
         .and_then(|v| serde_json::from_value(v).ok())

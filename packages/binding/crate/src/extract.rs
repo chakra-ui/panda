@@ -4,9 +4,8 @@ use crate::convert::{
 use crate::{Diagnostic, ExtractedCall, ExtractedJsx, ImportRecord, MatchedImport, Matchers};
 use napi_derive::napi;
 
-/// Lean result returned by `extract()` — the production hot path. Strips
-/// `imports` and `matched` so callers don't pay NAPI serialization cost for
-/// debug-only data.
+/// Lean result for the production hot path — `imports` and `matched` are
+/// stripped so callers don't pay NAPI serialization cost for debug data.
 #[napi(object)]
 pub struct ExtractResult {
     pub calls: Vec<ExtractedCall>,
@@ -14,9 +13,8 @@ pub struct ExtractResult {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Full result returned by `extractDebug()` — includes `imports` (raw
-/// import scan) and `matched` (Panda-filtered imports) for tooling, docs,
-/// and parity-compare flows.
+/// Kitchen-sink result with raw `imports` and Panda-filtered `matched`,
+/// for tooling and parity-compare flows.
 #[napi(object)]
 pub struct ExtractDebugResult {
     pub imports: Vec<ImportRecord>,

@@ -14,17 +14,16 @@ use std::borrow::Cow;
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedCall {
     pub category: MatchCategory,
-    /// Canonical Panda name (e.g. `"css"`, `"cardStyle"`). For namespace
-    /// callees like `p.css(...)`, this is the property name.
+    /// Canonical Panda name (`"css"`, `"cardStyle"`). For namespace
+    /// callees (`p.css(...)`) this is the property name.
     pub name: String,
-    /// Local binding actually used at the call site — may differ from `name`
-    /// if the import was aliased (`import { css as nCss }`).
+    /// Local binding at the call site — differs from `name` when the
+    /// import was aliased (`import { css as nCss }`).
     pub alias: String,
-    /// One entry per source argument, in order. `None` means the argument
-    /// was present but not literal-extractable yet (identifier, conditional,
-    /// template literal with interpolation, etc.) — Phase 5 will resolve
-    /// many of those. Callers can rely on `data.len()` matching the source
-    /// arity. Calls where *every* argument is non-extractable are dropped.
+    /// One entry per source argument, in order. `None` means the
+    /// argument was present but not literal-extractable yet (identifier,
+    /// non-foldable expression). Calls where *every* argument is
+    /// non-extractable are dropped.
     pub data: Vec<Option<Literal>>,
     pub span: Span,
 }
@@ -36,13 +35,12 @@ pub struct ExtractedCallsResult {
     pub diagnostics: Vec<Diagnostic>,
 }
 
-/// Find every Panda call site and extract its literal arguments. Handles both
-/// direct identifier callees (`css({...})`) and namespace member callees
+/// Extract every Panda call site's literal arguments. Handles direct
+/// identifier callees (`css({...})`) and namespace member callees
 /// (`p.css({...})`).
 ///
 /// Parse-error contract: see [`crate::extract`] — `diagnostics` is
-/// authoritative, `calls` may be partial when Oxc recovers from a syntax
-/// error.
+/// authoritative; `calls` may be partial when Oxc recovers.
 #[must_use]
 pub fn extract_calls(
     source: &str,
@@ -68,8 +66,6 @@ pub fn extract_calls(
     }
 }
 
-/// Run the call-site visitor on a parsed program. Used internally by
-/// `extract_calls` and the combined `extract` entrypoint.
 pub(crate) fn collect_calls(
     program: &oxc_ast::ast::Program<'_>,
     ctx: &crate::VisitorContext<'_>,
@@ -85,9 +81,8 @@ struct Extractor<'walk, 'ctx> {
     out: &'walk mut Vec<ExtractedCall>,
 }
 
-/// Resolved callee. `name` borrows from either the matched import or the
-/// AST so we don't allocate per call site; the visitor only clones when it
-/// commits to pushing a record.
+/// `name` borrows from either the matched import or the AST so we don't
+/// allocate per call site; only clone when committing a record.
 struct ResolvedCallee<'a> {
     category: MatchCategory,
     name: Cow<'a, str>,
@@ -99,15 +94,14 @@ impl Extractor<'_, '_> {
         match &call.callee {
             Expression::Identifier(ident) => {
                 let matched = self.ctx.aliases.get(ident.name.as_str())?;
+                // `p({...})` where `p` is a namespace alias isn't a Panda call.
                 if matched.kind == ImportSpecifierKind::Namespace {
-                    // `p({...})` where `p` is a namespace alias — not a Panda call.
                     return None;
                 }
-                // Scope guard: if the resolver says this identifier binds to a
-                // local (e.g. `function f(css)` parameter), skip even though
-                // the name matches a Panda alias. Without a resolver we fall
-                // back to name-based matching for the stage-by-stage testing
-                // entrypoints.
+                // Scope guard: skip when the identifier binds to a local
+                // (`function f(css) { css({}) }`). Stage-by-stage testing
+                // entrypoints fall back to name-based matching when no
+                // resolver is supplied.
                 if let Some(resolver) = self.ctx.resolver
                     && !resolver.is_import_binding(ident)
                 {
@@ -160,9 +154,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                 .iter()
                 .map(|arg| argument_to_literal(arg, resolver))
                 .collect();
-            // Drop the call only if no argument was extractable at all —
-            // otherwise keep it and preserve positional `None` slots so
-            // consumers know which arg was non-literal.
+            // Drop only when nothing was extractable. Otherwise keep
+            // positional `None` slots so consumers know which arg was
+            // non-literal.
             if data.iter().any(Option::is_some) {
                 self.out.push(ExtractedCall {
                     category: resolved.category,

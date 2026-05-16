@@ -1,6 +1,5 @@
-//! Shared conversion helpers between `extractor::` types and the NAPI
-//! mirror types defined in sibling modules. Keep all `extractor::X -> X`
-//! mapping here so the NAPI entrypoints stay readable.
+//! `extractor::X ↔ X` conversion between core types and the NAPI mirror
+//! types in sibling modules. Centralized so NAPI entrypoints stay clean.
 
 use crate::{
     Diagnostic, DiagnosticSeverity, ExtractedCall, ExtractedJsx, ImportKind, ImportRecord,
@@ -133,19 +132,16 @@ pub(crate) fn to_core_matcher(m: Matcher) -> extractor::Matcher {
     }
 }
 
-/// Convert a JS-shaped `Matchers` (which historically carried the token
-/// dictionary as a child field) into a core `ExtractorConfig`. Keeping
-/// the wire shape flat avoids a churn cycle on JS callers — the split is
-/// purely Rust-internal.
+/// JS-shaped `Matchers` (token dictionary as a child field, for backward
+/// JS-wire compat) → core `ExtractorConfig`.
 pub(crate) fn to_core_config(m: Matchers) -> extractor::ExtractorConfig {
     let token_dictionary = m.token_dictionary.clone().map(to_core_token_dictionary);
     extractor::ExtractorConfig {
         matchers: to_core_matchers(m),
         token_dictionary,
-        // Cross-file resolution isn't surfaced through the flat
-        // `Matchers` shape — the `Extractor` session class wires it up
-        // explicitly. Free-function callers always extract single
-        // files, so a per-call cache wouldn't help them anyway.
+        // Cross-file resolution isn't on the flat `Matchers` shape — the
+        // session class wires it up explicitly. Free-function callers
+        // extract single files anyway, so a per-call cache wouldn't help.
         cross_file: None,
     }
 }
@@ -161,9 +157,9 @@ pub(crate) fn to_core_matchers(m: Matchers) -> extractor::Matchers {
     }
 }
 
+// JS passes two parallel `path → string` maps; re-key them into the
+// structured `Token` records the `tokens` crate uses.
 fn to_core_token_dictionary(d: crate::TokenDictionary) -> tokens::TokenDictionary {
-    // The JS side passes two parallel `path → string` maps. Re-key them
-    // into the structured `Token` records the `tokens` crate uses.
     tokens::TokenDictionary::builder()
         .extend_flat(d.values, &d.vars)
         .build()
