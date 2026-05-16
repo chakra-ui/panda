@@ -30,13 +30,13 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 name = "binding_napi"
 version = "0.0.0"
 dependencies = [
- "engine",
- "extractor",
  "napi",
  "napi-build",
  "napi-derive",
+ "pandacss_engine",
+ "pandacss_extractor",
+ "pandacss_tokens",
  "serde_json",
- "tokens",
 ]
 
 [[package]]
@@ -44,10 +44,6 @@ name = "bitflags"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
-
-[[package]]
-name = "cache"
-version = "0.0.0"
 
 [[package]]
 name = "castaway"
@@ -76,13 +72,6 @@ dependencies = [
  "rustversion",
  "ryu",
  "static_assertions",
-]
-
-[[package]]
-name = "config"
-version = "0.0.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -141,35 +130,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
-name = "emitter"
-version = "0.0.0"
-
-[[package]]
 name = "encode_unicode"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34aa73646ffb006b8f5147f3dc182bd4bcb190227ce861fc4a4844bf8e3cb2c0"
-
-[[package]]
-name = "encoder"
-version = "0.0.0"
-dependencies = [
- "extractor",
- "indoc",
- "insta",
- "recipes",
- "rustc-hash",
- "serde",
- "smallvec",
-]
-
-[[package]]
-name = "engine"
-version = "0.0.0"
-dependencies = [
- "config",
- "serde",
-]
 
 [[package]]
 name = "equivalent"
@@ -185,27 +149,6 @@ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
  "windows-sys",
-]
-
-[[package]]
-name = "extractor"
-version = "0.0.0"
-dependencies = [
- "indoc",
- "insta",
- "oxc_allocator",
- "oxc_ast",
- "oxc_ast_visit",
- "oxc_diagnostics",
- "oxc_parser",
- "oxc_resolver",
- "oxc_semantic",
- "oxc_span",
- "rustc-hash",
- "serde",
- "serde_json",
- "tempfile",
- "tokens",
 ]
 
 [[package]]
@@ -723,10 +666,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
-name = "optimizer"
-version = "0.0.0"
-
-[[package]]
 name = "owo-colors"
 version = "4.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -997,8 +936,106 @@ dependencies = [
 ]
 
 [[package]]
-name = "panda_bench"
+name = "pandacss_bench"
 version = "0.0.0"
+
+[[package]]
+name = "pandacss_cache"
+version = "0.0.0"
+
+[[package]]
+name = "pandacss_config"
+version = "0.0.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "pandacss_emitter"
+version = "0.0.0"
+
+[[package]]
+name = "pandacss_encoder"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_extractor",
+ "pandacss_recipes",
+ "rustc-hash",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
+name = "pandacss_engine"
+version = "0.0.0"
+dependencies = [
+ "pandacss_config",
+ "serde",
+]
+
+[[package]]
+name = "pandacss_extractor"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_diagnostics",
+ "oxc_parser",
+ "oxc_resolver",
+ "oxc_semantic",
+ "oxc_span",
+ "pandacss_tokens",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "pandacss_optimizer"
+version = "0.0.0"
+
+[[package]]
+name = "pandacss_project"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_encoder",
+ "pandacss_extractor",
+ "pandacss_recipes",
+ "pandacss_tokens",
+ "rustc-hash",
+ "serde",
+]
+
+[[package]]
+name = "pandacss_recipes"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_extractor",
+ "rustc-hash",
+ "serde",
+]
+
+[[package]]
+name = "pandacss_tokens"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_tokens",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "papaya"
@@ -1094,20 +1131,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "project"
-version = "0.0.0"
-dependencies = [
- "encoder",
- "extractor",
- "indoc",
- "insta",
- "recipes",
- "rustc-hash",
- "serde",
- "tokens",
-]
-
-[[package]]
 name = "quote"
 version = "1.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1121,17 +1144,6 @@ name = "r-efi"
 version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
-
-[[package]]
-name = "recipes"
-version = "0.0.0"
-dependencies = [
- "extractor",
- "indoc",
- "insta",
- "rustc-hash",
- "serde",
-]
 
 [[package]]
 name = "ref-cast"
@@ -1393,18 +1405,6 @@ checksum = "c8323304221c2a851516f22236c5722a72eaa19749016521d6dff0824447d96d"
 dependencies = [
  "displaydoc",
  "zerovec",
-]
-
-[[package]]
-name = "tokens"
-version = "0.0.0"
-dependencies = [
- "indoc",
- "insta",
- "rustc-hash",
- "serde",
- "serde_json",
- "tokens",
 ]
 
 [[package]]

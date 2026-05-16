@@ -37,7 +37,7 @@ pub struct CompileManifest {
 )]
 pub fn compile(input: Option<CompileInput>) -> CompileOutput {
     let engine_input = input.map(to_engine_input).unwrap_or_default();
-    let output = engine::compile(engine_input);
+    let output = pandacss_engine::compile(engine_input);
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
@@ -51,9 +51,9 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
             .map(|d| Diagnostic {
                 message: d.message,
                 severity: match d.severity {
-                    engine::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
-                    engine::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
-                    engine::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
+                    pandacss_engine::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
+                    pandacss_engine::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
+                    pandacss_engine::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
                 },
                 span: None,
                 location: None,
@@ -62,12 +62,12 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
     }
 }
 
-fn to_engine_input(input: CompileInput) -> engine::CompileInput {
+fn to_engine_input(input: CompileInput) -> pandacss_engine::CompileInput {
     let files = input
         .files
         .unwrap_or_default()
         .into_iter()
-        .map(|f| engine::InputFile {
+        .map(|f| pandacss_engine::InputFile {
             path: f.path,
             content: f.content,
         })
@@ -79,7 +79,7 @@ fn to_engine_input(input: CompileInput) -> engine::CompileInput {
         .config
         .and_then(|v| serde_json::from_value(v).ok())
         .unwrap_or_default();
-    engine::CompileInput {
+    pandacss_engine::CompileInput {
         files,
         config,
         cwd: input.cwd.unwrap_or_default(),

@@ -25,16 +25,16 @@ oxc_parser = "0.130.0"
 oxc_resolver = "11.19.1"
 oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
-cache = { path = "crates/cache" }
-config = { path = "crates/config" }
-emitter = { path = "crates/emitter" }
-encoder = { path = "crates/encoder" }
-engine = { path = "crates/engine" }
-extractor = { path = "crates/extractor" }
-optimizer = { path = "crates/optimizer" }
-project = { path = "crates/project" }
-recipes = { path = "crates/recipes" }
-tokens = { path = "crates/tokens" }
+pandacss_cache = { path = "crates/pandacss_cache" }
+pandacss_config = { path = "crates/pandacss_config" }
+pandacss_emitter = { path = "crates/pandacss_emitter" }
+pandacss_encoder = { path = "crates/pandacss_encoder" }
+pandacss_engine = { path = "crates/pandacss_engine" }
+pandacss_extractor = { path = "crates/pandacss_extractor" }
+pandacss_optimizer = { path = "crates/pandacss_optimizer" }
+pandacss_project = { path = "crates/pandacss_project" }
+pandacss_recipes = { path = "crates/pandacss_recipes" }
+pandacss_tokens = { path = "crates/pandacss_tokens" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 insta = { version = "1.47.2", features = ["yaml"] }

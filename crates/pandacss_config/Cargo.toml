@@ -1,11 +1,14 @@
 [package]
-name = "pandacss_bench"
+name = "pandacss_config"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 publish = false
+
+[dependencies]
+serde = { workspace = true }
 
 [lints]
 workspace = true

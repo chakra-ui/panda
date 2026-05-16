@@ -1,5 +1,5 @@
 //! NAPI boundary for the Panda Rust engine. Compiler logic lives in
-//! `crates/extractor`; this crate only mirrors core types into NAPI-shaped
+//! `crates/pandacss_extractor`; this crate only mirrors core types into NAPI-shaped
 //! structs and wires up the JS-facing functions.
 
 mod calls;

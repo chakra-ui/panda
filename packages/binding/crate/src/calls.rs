@@ -32,9 +32,9 @@ pub fn extract_calls(
     matched: Vec<MatchedImport>,
     matchers: Matchers,
 ) -> ExtractedCallsResult {
-    let matched: Vec<extractor::MatchedImport> = matched.into_iter().map(to_matched).collect();
+    let matched: Vec<pandacss_extractor::MatchedImport> = matched.into_iter().map(to_matched).collect();
     let config = to_core_config(matchers);
-    let result = extractor::extract_calls(&source, &path, &matched, &config);
+    let result = pandacss_extractor::extract_calls(&source, &path, &matched, &config);
     ExtractedCallsResult {
         calls: result.calls.into_iter().map(to_call).collect(),
         diagnostics: result

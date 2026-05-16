@@ -32,7 +32,7 @@ pub struct ExtractDebugResult {
 )]
 pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResult {
     let config = to_core_config(matchers);
-    let result = extractor::extract(&source, &path, &config);
+    let result = pandacss_extractor::extract(&source, &path, &config);
     ExtractResult {
         calls: result.calls.into_iter().map(to_call).collect(),
         jsx: result.jsx.into_iter().map(to_jsx).collect(),
@@ -52,7 +52,7 @@ pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResul
 )]
 pub fn extract_debug(source: String, path: String, matchers: Matchers) -> ExtractDebugResult {
     let config = to_core_config(matchers);
-    let result = extractor::extract_debug(&source, &path, &config);
+    let result = pandacss_extractor::extract_debug(&source, &path, &config);
     ExtractDebugResult {
         imports: result.imports.into_iter().map(convert_record).collect(),
         matched: result.matched.into_iter().map(matched_record).collect(),

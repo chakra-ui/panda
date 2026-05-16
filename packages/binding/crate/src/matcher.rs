@@ -58,42 +58,42 @@ pub struct MatchedImport {
     reason = "NAPI requires owned arguments"
 )]
 pub fn match_imports(scan: crate::ImportScanResult, matchers: Matchers) -> Vec<MatchedImport> {
-    let records: Vec<extractor::ImportRecord> =
+    let records: Vec<pandacss_extractor::ImportRecord> =
         scan.imports.into_iter().map(to_core_record).collect();
     let core_matchers = to_core_matchers(matchers);
-    extractor::match_import_records(&records, &core_matchers)
+    pandacss_extractor::match_import_records(&records, &core_matchers)
         .into_iter()
         .map(matched_record)
         .collect()
 }
 
-pub(crate) fn to_core_record(r: crate::ImportRecord) -> extractor::ImportRecord {
-    extractor::ImportRecord {
+pub(crate) fn to_core_record(r: crate::ImportRecord) -> pandacss_extractor::ImportRecord {
+    pandacss_extractor::ImportRecord {
         module: r.module,
         kind: match r.kind {
-            crate::ImportKind::SideEffect => extractor::ImportKind::SideEffect,
-            crate::ImportKind::Value => extractor::ImportKind::Value,
+            crate::ImportKind::SideEffect => pandacss_extractor::ImportKind::SideEffect,
+            crate::ImportKind::Value => pandacss_extractor::ImportKind::Value,
         },
         type_only: r.type_only,
         specifiers: r
             .specifiers
             .into_iter()
-            .map(|s| extractor::ImportSpecifier {
+            .map(|s| pandacss_extractor::ImportSpecifier {
                 kind: match s.kind {
-                    ImportSpecifierKind::Named => extractor::ImportSpecifierKind::Named,
-                    ImportSpecifierKind::Default => extractor::ImportSpecifierKind::Default,
-                    ImportSpecifierKind::Namespace => extractor::ImportSpecifierKind::Namespace,
+                    ImportSpecifierKind::Named => pandacss_extractor::ImportSpecifierKind::Named,
+                    ImportSpecifierKind::Default => pandacss_extractor::ImportSpecifierKind::Default,
+                    ImportSpecifierKind::Namespace => pandacss_extractor::ImportSpecifierKind::Namespace,
                 },
                 imported: s.imported,
                 local: s.local,
                 type_only: s.type_only,
-                span: extractor::Span {
+                span: pandacss_extractor::Span {
                     start: s.span.start,
                     end: s.span.end,
                 },
             })
             .collect(),
-        span: extractor::Span {
+        span: pandacss_extractor::Span {
             start: r.span.start,
             end: r.span.end,
         },

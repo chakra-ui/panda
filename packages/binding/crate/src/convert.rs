@@ -1,4 +1,4 @@
-//! `extractor::X ↔ X` conversion between core types and the NAPI mirror
+//! `pandacss_extractor::X ↔ X` conversion between core types and the NAPI mirror
 //! types in sibling modules. Centralized so NAPI entrypoints stay clean.
 
 use crate::{
@@ -6,21 +6,21 @@ use crate::{
     ImportSpecifier, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher, Matchers, Span,
 };
 
-pub(crate) fn convert_span(span: extractor::Span) -> Span {
+pub(crate) fn convert_span(span: pandacss_extractor::Span) -> Span {
     Span {
         start: span.start,
         end: span.end,
     }
 }
 
-pub(crate) fn convert_severity(s: extractor::DiagnosticSeverity) -> DiagnosticSeverity {
+pub(crate) fn convert_severity(s: pandacss_extractor::DiagnosticSeverity) -> DiagnosticSeverity {
     match s {
-        extractor::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
-        extractor::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
+        pandacss_extractor::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
+        pandacss_extractor::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
     }
 }
 
-pub(crate) fn convert_diagnostic(d: extractor::Diagnostic) -> Diagnostic {
+pub(crate) fn convert_diagnostic(d: pandacss_extractor::Diagnostic) -> Diagnostic {
     Diagnostic {
         message: d.message,
         severity: convert_severity(d.severity),
@@ -29,36 +29,36 @@ pub(crate) fn convert_diagnostic(d: extractor::Diagnostic) -> Diagnostic {
     }
 }
 
-fn convert_location(loc: extractor::SourceLocation) -> crate::SourceLocation {
+fn convert_location(loc: pandacss_extractor::SourceLocation) -> crate::SourceLocation {
     crate::SourceLocation {
         line: loc.line,
         column: loc.column,
     }
 }
 
-fn convert_range(range: extractor::SourceRange) -> crate::SourceRange {
+fn convert_range(range: pandacss_extractor::SourceRange) -> crate::SourceRange {
     crate::SourceRange {
         start: convert_location(range.start),
         end: convert_location(range.end),
     }
 }
 
-pub(crate) fn convert_kind(k: extractor::ImportKind) -> ImportKind {
+pub(crate) fn convert_kind(k: pandacss_extractor::ImportKind) -> ImportKind {
     match k {
-        extractor::ImportKind::SideEffect => ImportKind::SideEffect,
-        extractor::ImportKind::Value => ImportKind::Value,
+        pandacss_extractor::ImportKind::SideEffect => ImportKind::SideEffect,
+        pandacss_extractor::ImportKind::Value => ImportKind::Value,
     }
 }
 
-pub(crate) fn convert_specifier_kind(k: extractor::ImportSpecifierKind) -> ImportSpecifierKind {
+pub(crate) fn convert_specifier_kind(k: pandacss_extractor::ImportSpecifierKind) -> ImportSpecifierKind {
     match k {
-        extractor::ImportSpecifierKind::Named => ImportSpecifierKind::Named,
-        extractor::ImportSpecifierKind::Default => ImportSpecifierKind::Default,
-        extractor::ImportSpecifierKind::Namespace => ImportSpecifierKind::Namespace,
+        pandacss_extractor::ImportSpecifierKind::Named => ImportSpecifierKind::Named,
+        pandacss_extractor::ImportSpecifierKind::Default => ImportSpecifierKind::Default,
+        pandacss_extractor::ImportSpecifierKind::Namespace => ImportSpecifierKind::Namespace,
     }
 }
 
-pub(crate) fn convert_specifier(specifier: extractor::ImportSpecifier) -> ImportSpecifier {
+pub(crate) fn convert_specifier(specifier: pandacss_extractor::ImportSpecifier) -> ImportSpecifier {
     ImportSpecifier {
         kind: convert_specifier_kind(specifier.kind),
         imported: specifier.imported,
@@ -68,7 +68,7 @@ pub(crate) fn convert_specifier(specifier: extractor::ImportSpecifier) -> Import
     }
 }
 
-pub(crate) fn convert_record(record: extractor::ImportRecord) -> ImportRecord {
+pub(crate) fn convert_record(record: pandacss_extractor::ImportRecord) -> ImportRecord {
     ImportRecord {
         module: record.module,
         kind: convert_kind(record.kind),
@@ -82,37 +82,37 @@ pub(crate) fn convert_record(record: extractor::ImportRecord) -> ImportRecord {
     }
 }
 
-pub(crate) fn convert_category(c: extractor::MatchCategory) -> MatchCategory {
+pub(crate) fn convert_category(c: pandacss_extractor::MatchCategory) -> MatchCategory {
     match c {
-        extractor::MatchCategory::Css => MatchCategory::Css,
-        extractor::MatchCategory::Recipe => MatchCategory::Recipe,
-        extractor::MatchCategory::Pattern => MatchCategory::Pattern,
-        extractor::MatchCategory::Jsx => MatchCategory::Jsx,
-        extractor::MatchCategory::Tokens => MatchCategory::Tokens,
+        pandacss_extractor::MatchCategory::Css => MatchCategory::Css,
+        pandacss_extractor::MatchCategory::Recipe => MatchCategory::Recipe,
+        pandacss_extractor::MatchCategory::Pattern => MatchCategory::Pattern,
+        pandacss_extractor::MatchCategory::Jsx => MatchCategory::Jsx,
+        pandacss_extractor::MatchCategory::Tokens => MatchCategory::Tokens,
     }
 }
 
-pub(crate) fn to_matched(m: MatchedImport) -> extractor::MatchedImport {
-    extractor::MatchedImport {
+pub(crate) fn to_matched(m: MatchedImport) -> pandacss_extractor::MatchedImport {
+    pandacss_extractor::MatchedImport {
         category: match m.category {
-            MatchCategory::Css => extractor::MatchCategory::Css,
-            MatchCategory::Recipe => extractor::MatchCategory::Recipe,
-            MatchCategory::Pattern => extractor::MatchCategory::Pattern,
-            MatchCategory::Jsx => extractor::MatchCategory::Jsx,
-            MatchCategory::Tokens => extractor::MatchCategory::Tokens,
+            MatchCategory::Css => pandacss_extractor::MatchCategory::Css,
+            MatchCategory::Recipe => pandacss_extractor::MatchCategory::Recipe,
+            MatchCategory::Pattern => pandacss_extractor::MatchCategory::Pattern,
+            MatchCategory::Jsx => pandacss_extractor::MatchCategory::Jsx,
+            MatchCategory::Tokens => pandacss_extractor::MatchCategory::Tokens,
         },
         module: m.module,
         name: m.name,
         alias: m.alias,
         kind: match m.kind {
-            ImportSpecifierKind::Named => extractor::ImportSpecifierKind::Named,
-            ImportSpecifierKind::Default => extractor::ImportSpecifierKind::Default,
-            ImportSpecifierKind::Namespace => extractor::ImportSpecifierKind::Namespace,
+            ImportSpecifierKind::Named => pandacss_extractor::ImportSpecifierKind::Named,
+            ImportSpecifierKind::Default => pandacss_extractor::ImportSpecifierKind::Default,
+            ImportSpecifierKind::Namespace => pandacss_extractor::ImportSpecifierKind::Namespace,
         },
     }
 }
 
-pub(crate) fn matched_record(m: extractor::MatchedImport) -> MatchedImport {
+pub(crate) fn matched_record(m: pandacss_extractor::MatchedImport) -> MatchedImport {
     MatchedImport {
         category: convert_category(m.category),
         module: m.module,
@@ -122,21 +122,21 @@ pub(crate) fn matched_record(m: extractor::MatchedImport) -> MatchedImport {
     }
 }
 
-pub(crate) fn to_core_matcher(m: Matcher) -> extractor::Matcher {
-    extractor::Matcher {
+pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
+    pandacss_extractor::Matcher {
         modules: m.modules,
         names: match m.names {
-            None => extractor::NameMatcher::Any,
-            Some(list) => extractor::NameMatcher::only(list),
+            None => pandacss_extractor::NameMatcher::Any,
+            Some(list) => pandacss_extractor::NameMatcher::only(list),
         },
     }
 }
 
 /// JS-shaped `Matchers` (token dictionary as a child field, for backward
 /// JS-wire compat) → core `ExtractorConfig`.
-pub(crate) fn to_core_config(m: Matchers) -> extractor::ExtractorConfig {
+pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
     let token_dictionary = m.token_dictionary.clone().map(to_core_token_dictionary);
-    extractor::ExtractorConfig {
+    pandacss_extractor::ExtractorConfig {
         matchers: to_core_matchers(m),
         token_dictionary,
         // Cross-file resolution isn't on the flat `Matchers` shape — the
@@ -146,8 +146,8 @@ pub(crate) fn to_core_config(m: Matchers) -> extractor::ExtractorConfig {
     }
 }
 
-pub(crate) fn to_core_matchers(m: Matchers) -> extractor::Matchers {
-    extractor::Matchers {
+pub(crate) fn to_core_matchers(m: Matchers) -> pandacss_extractor::Matchers {
+    pandacss_extractor::Matchers {
         css: to_core_matcher(m.css),
         recipe: to_core_matcher(m.recipe),
         pattern: to_core_matcher(m.pattern),
@@ -159,8 +159,8 @@ pub(crate) fn to_core_matchers(m: Matchers) -> extractor::Matchers {
 
 // JS passes two parallel `path → string` maps; re-key them into the
 // structured `Token` records the `tokens` crate uses.
-fn to_core_token_dictionary(d: crate::TokenDictionary) -> tokens::TokenDictionary {
-    tokens::TokenDictionary::builder()
+fn to_core_token_dictionary(d: crate::TokenDictionary) -> pandacss_tokens::TokenDictionary {
+    pandacss_tokens::TokenDictionary::builder()
         .extend_flat(d.values, &d.vars)
         .build()
 }
@@ -172,7 +172,7 @@ fn to_core_token_dictionary(d: crate::TokenDictionary) -> tokens::TokenDictionar
 // → emitter → optimizer in Rust and returns compact CSS/manifest. Keep
 // this conversion confined to the tooling APIs; do not call it from
 // inside `compile()` when the real pipeline lands.
-pub(crate) fn to_call(c: extractor::ExtractedCall) -> ExtractedCall {
+pub(crate) fn to_call(c: pandacss_extractor::ExtractedCall) -> ExtractedCall {
     ExtractedCall {
         category: convert_category(c.category),
         name: c.name,
@@ -189,7 +189,7 @@ pub(crate) fn to_call(c: extractor::ExtractedCall) -> ExtractedCall {
     }
 }
 
-pub(crate) fn to_jsx(j: extractor::ExtractedJsx) -> ExtractedJsx {
+pub(crate) fn to_jsx(j: pandacss_extractor::ExtractedJsx) -> ExtractedJsx {
     ExtractedJsx {
         category: convert_category(j.category),
         name: j.name,

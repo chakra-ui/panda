@@ -26,7 +26,7 @@ use crate::{MatchedImport, Matchers};
 /// ```
 #[napi]
 pub struct Extractor {
-    config: extractor::ExtractorConfig,
+    config: pandacss_extractor::ExtractorConfig,
 }
 
 #[napi]
@@ -52,7 +52,7 @@ impl Extractor {
         reason = "NAPI requires owned arguments"
     )]
     pub fn extract(&self, source: String, path: String) -> ExtractResult {
-        let result = extractor::extract(&source, &path, &self.config);
+        let result = pandacss_extractor::extract(&source, &path, &self.config);
         ExtractResult {
             calls: result.calls.into_iter().map(to_call).collect(),
             jsx: result.jsx.into_iter().map(to_jsx).collect(),
@@ -71,7 +71,7 @@ impl Extractor {
         reason = "NAPI requires owned arguments"
     )]
     pub fn extract_debug(&self, source: String, path: String) -> ExtractDebugResult {
-        let result = extractor::extract_debug(&source, &path, &self.config);
+        let result = pandacss_extractor::extract_debug(&source, &path, &self.config);
         ExtractDebugResult {
             imports: result.imports.into_iter().map(convert_record).collect(),
             matched: result.matched.into_iter().map(matched_record).collect(),
@@ -94,9 +94,9 @@ impl Extractor {
         reason = "NAPI requires owned arguments"
     )]
     pub fn match_imports(&self, scan: ImportScanResult) -> Vec<MatchedImport> {
-        let records: Vec<extractor::ImportRecord> =
+        let records: Vec<pandacss_extractor::ImportRecord> =
             scan.imports.into_iter().map(to_core_record).collect();
-        extractor::match_import_records(&records, &self.config.matchers)
+        pandacss_extractor::match_import_records(&records, &self.config.matchers)
             .into_iter()
             .map(matched_record)
             .collect()

@@ -1,5 +1,5 @@
 [package]
-name = "pandacss_bench"
+name = "pandacss_cache"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

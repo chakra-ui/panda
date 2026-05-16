@@ -45,7 +45,7 @@ pub struct ImportScanResult {
     reason = "NAPI requires owned String parameters"
 )]
 pub fn scan_imports(source: String, path: String) -> ImportScanResult {
-    let result = extractor::scan_imports(&source, &path);
+    let result = pandacss_extractor::scan_imports(&source, &path);
     ImportScanResult {
         imports: result.imports.into_iter().map(convert_record).collect(),
         diagnostics: result
