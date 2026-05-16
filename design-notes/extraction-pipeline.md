@@ -91,11 +91,11 @@ Each `extract()` allocates:
 
 For batch extraction across many files, the `Extractor` NAPI session class amortizes the matcher / token-dictionary
 construction across calls. The per-file allocator and semantic build still happen for each file. See
-[napi-boundary](./napi-boundary.md).
+[bindings](./bindings.md).
 
 ## Related
 
 - [literal-evaluator](./literal-evaluator.md)
 - [cross-file-resolution](./cross-file-resolution.md)
-- [napi-boundary](./napi-boundary.md)
+- [bindings](./bindings.md)
 - [performance-budget](./performance-budget.md)

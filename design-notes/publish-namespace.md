@@ -30,20 +30,28 @@ identical, no `package = "..."` aliasing needed.
 The `pandacss_bench` crate (under `bench/`) follows the same prefix, even though it's a workspace member rather than a
 library crate. Consistency for grep + workspace tooling.
 
-## NAPI crate
+## Binding crates (NAPI + WASM)
 
-`packages/binding/crate/Cargo.toml` keeps `[package] name = "binding_napi"` — it's a cdylib, not a publishable library
-crate, and the output `.node` artifact lives next to the `@pandacss/binding` npm package. The TS loader
-(`packages/binding/src/load-binary.ts`) expects `binding.node`; changing the cdylib name would invalidate that path.
-This is a deliberate exception to the `pandacss_*` rule.
+Both binding cdylibs keep load-bearing names that mirror their JS-side output filenames. These are deliberate exceptions
+to the `pandacss_*` rule because the cdylib name flows through to the JS loader path.
+
+- **`packages/binding/crate/Cargo.toml`** — `[package] name = "binding_napi"`. Produces `binding.node` consumed by
+  `@pandacss/binding`. `packages/binding/src/load-binary.ts` requires the file at that exact name.
+- **`packages/binding-wasm/crate/Cargo.toml`** — `[package] name = "binding_wasm"`. wasm-pack produces
+  `binding_wasm_bg.wasm` + `binding_wasm.js` under `pkg-node/` and `pkg-web/`, consumed by `@pandacss/binding-wasm`. The
+  TS wrapper imports from `../pkg-node/binding_wasm.js`; renaming the crate would invalidate that path.
+
+Neither cdylib publishes to crates.io. Both ship only via npm.
 
 ## NPM packages
 
-`@pandacss/binding` is already namespaced. The per-platform native packages produced by `@napi-rs/cli` (darwin-arm64,
-linux-x64-gnu, win32-x64-msvc, …) should also be `@pandacss/binding-<platform>`.
+- `@pandacss/binding` — already namespaced. The per-platform native packages produced by `@napi-rs/cli` (darwin-arm64,
+  linux-x64-gnu, win32-x64-msvc, …) should also be `@pandacss/binding-<platform>`.
+- `@pandacss/binding-wasm` — single npm package shipping both Node and browser wasm bundles. No per-platform split
+  needed (wasm is portable).
 
-Set via the napi config (`packageName` in the binding's `package.json` or `napi.binaryName` / `napi.npmClient`
-settings). Don't let napi-rs default to an unscoped name — the default `@napi-rs/cli` behavior would publish unscoped
+Set NAPI per-platform naming via `packageName` in the binding's `package.json` or `napi.binaryName` / `napi.npmClient`
+settings. Don't let napi-rs default to an unscoped name — the default `@napi-rs/cli` behavior would publish unscoped
 packages.
 
 ## When something needs to publish
@@ -55,4 +63,4 @@ name is already publish-ready. Run `cargo publish --dry-run` against the target 
 ## Related
 
 - [crate-layering](./crate-layering.md)
-- [napi-boundary](./napi-boundary.md)
+- [bindings](./bindings.md)

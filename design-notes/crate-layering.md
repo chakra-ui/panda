@@ -2,12 +2,20 @@
 
 ## Summary
 
-The `crates/` workspace is organized as a three-tier dependency line, not a flat bag of crates. Dependencies point one
-way — leaf data crates know nothing about traversal, traversal crates know nothing about orchestration. The shape makes
-refactors correctness-preserving and stops future contributors from accidentally coupling a leaf crate to walker
-machinery.
+The `crates/` workspace is organized as a tiered dependency line, not a flat bag of crates. Dependencies point one way —
+infrastructure crates know nothing about parsing, parsing crates know nothing about traversal, traversal crates know
+nothing about orchestration. The shape makes refactors correctness-preserving and stops future contributors from
+accidentally coupling a leaf crate to walker machinery.
 
-## The three tiers
+## The tiers
+
+### Tier 0 — infrastructure
+
+`pandacss_fs`.
+
+Filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the `FileSystem` trait, never
+`std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See [filesystem](./filesystem.md) for the
+full design.
 
 ### Tier 1 — leaf data + parsing
 
@@ -33,7 +41,7 @@ The `PandaProject` crate wires everything together. It's the primary entry point
 recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to this, not to the lower tiers
 directly. See [project-lifecycle](./project-lifecycle.md).
 
-### Placeholder tiers
+### Placeholders
 
 `pandacss_cache`, `pandacss_config`, `pandacss_emitter`, `pandacss_optimizer`, `pandacss_engine` are skeletons today.
 When they're built out, they'll slot in roughly as:
@@ -50,9 +58,9 @@ These come up periodically — the standing answer is here so we don't re-litiga
 reads Recipe; recipes doesn't know about Encoder), and Tier-1 consumers should not pull `smallvec` / walker machinery
 transitively. Merging is reversible later; splitting clean code post-merge is annoying.
 
-**"Should `pandacss_project` own file discovery?"** — No, not yet. The binding being the realistic-only consumer doesn't
-justify coupling the façade to `ignore` / fs. When file discovery lands it goes in a separate `pandacss_discover` crate
-(likely using the `ignore` crate for `.gitignore` parity with JS-side `tinyglobby`).
+**"Should `pandacss_project` own file discovery?"** — No, not yet. Globbing now lives in `pandacss_fs::FileSystem::glob`
+(via `fast-glob`), and the binding/JS host calls it explicitly. When `.gitignore`-aware walking lands, it goes in a
+separate `pandacss_discover` crate built on `pandacss_fs` + the `ignore` crate.
 
 **"Should `pandacss_project` mutate source files?"** — No. `ParsedFile` is intentionally read-only. It is _not_ a
 ts-morph `SourceFile` analog — naming it `SourceFile` would invite `copy()` / `move()` / `applyTextChanges()` requests

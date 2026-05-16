@@ -23,6 +23,8 @@ with workspace support.
   /preset-*/       # Design system presets
   /binding/        # @pandacss/binding — NAPI wrapper around Rust engine
     /crate/        # binding_napi cdylib (NAPI boundary only)
+  /binding-wasm/   # @pandacss/binding-wasm — browser wasm-bindgen wrapper
+    /crate/        # binding_wasm cdylib (wasm32-unknown-unknown)
 
 /crates/           # Rust workspace — the v2 Oxc-based compiler engine
   /extractor/      # Oxc-based AST scanning + extraction
@@ -241,7 +243,8 @@ Brief description of the change and its impact.
       ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
       ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project
       ├─ pandacss_engine, pandacss_emitter, pandacss_optimizer, pandacss_cache, pandacss_config (placeholders)
-      └─ packages/binding/crate (binding_napi cdylib — exception, see design-notes/publish-namespace.md)
+      ├─ packages/binding/crate (binding_napi cdylib — native NAPI)
+      └─ packages/binding-wasm/crate (binding_wasm cdylib — browser wasm-bindgen)
 ```
 
 ## Rust / Oxc Engine (v2 migration)

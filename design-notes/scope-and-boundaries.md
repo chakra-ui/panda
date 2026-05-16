@@ -8,15 +8,15 @@ that list.
 
 ## Not in scope
 
-### File discovery (globbing, `.gitignore`)
+### File discovery beyond globbing
 
-Not in `pandacss_project`. Was proposed (`add_files(include, exclude, cwd)`) and deferred. When file discovery lands it
-goes in a separate `discover` crate, likely using the `ignore` crate to match the JS-side `tinyglobby` semantics
-(including `.gitignore` parsing).
+Glob resolution now lives in `pandacss_fs::FileSystem::glob` (`fast-glob`-backed, brace expansion + globstar). That
+covers the `Runtime.fs.glob` contract from JS Panda. See [filesystem](./filesystem.md).
 
-**Why deferred:** the binding being the realistic-only consumer doesn't justify coupling the `pandacss_project` façade
-to filesystem walking. A separate crate keeps responsibilities focused and means non-binding consumers (CLI tools, test
-harnesses) can pick their own discovery strategy.
+**Still out of scope:** `.gitignore`-aware walking, monorepo workspace detection, `package.json#workspaces` traversal.
+When those land they go in a separate `pandacss_discover` crate built on `pandacss_fs` + the `ignore` crate. The binding
+being the realistic-only consumer doesn't justify coupling `pandacss_project` or `pandacss_fs` to gitignore semantics
+today.
 
 ### Source-file mutation / codemod
 

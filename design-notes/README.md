@@ -11,7 +11,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 ### Architecture
 
-- [Crate layering](./crate-layering.md) — Tier 1/2/3 dependency model and what lives in each tier.
+- [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
 - [Project lifecycle](./project-lifecycle.md) — `PandaProject` add / replace / remove semantics for watch mode.
@@ -19,13 +19,14 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 ### Subsystems
 
+- [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (the ts-evaluator parity surface).
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape, cycle guard.
 - [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe decomposition.
 
 ### Boundary
 
-- [NAPI boundary](./napi-boundary.md) — mirror types, `ExtractedArg` discriminated union, `Extractor` session.
+- [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
 
 ### Performance & operations
 

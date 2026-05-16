@@ -6,6 +6,11 @@
 //! delegated to `oxc_resolver` (relative paths, extension probing,
 //! tsconfig paths, package.json `exports`).
 //!
+//! `CrossFileResolver` is type-erased over the [`pandacss_fs::FileSystem`]
+//! impl so consumer types (`ExtractorConfig`, `PandaProject`) stay
+//! non-generic. The concrete impl lives in `ResolverImpl<F>` behind a
+//! `Box<dyn CrossFileLookup>`.
+//!
 //! Cache shape is `path → HashMap<exported_name, Literal>`: each file is
 //! parsed and folded exactly once per session, and the AST is dropped
 //! after exports are extracted so we don't keep every imported file's
@@ -24,8 +29,9 @@ use oxc_ast::ast::{
     BindingPattern, Declaration, ExportNamedDeclaration, Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
-use oxc_resolver::{ResolveOptions, Resolver as OxcResolver};
+use oxc_resolver::{ResolveOptions, ResolverGeneric};
 use oxc_span::SourceType;
+use pandacss_fs::FileSystem;
 use rustc_hash::FxHashMap;
 
 use crate::Literal;
@@ -33,56 +39,124 @@ use crate::literal::expression_to_literal;
 
 type FileExports = FxHashMap<String, Literal>;
 
-/// Per-session cross-file import resolver. Not `Clone` — wrap in `Arc`
-/// for shared ownership across sessions.
-pub struct CrossFileResolver {
-    inner: OxcResolver,
-    cache: RefCell<HashMap<PathBuf, FileExports>>,
-    in_flight: RefCell<HashSet<PathBuf>>,
+fn default_resolve_options() -> ResolveOptions {
+    ResolveOptions {
+        extensions: [".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".json"]
+            .iter()
+            .map(|s| (*s).to_string())
+            .collect(),
+        ..ResolveOptions::default()
+    }
 }
 
+/// Public type-erased resolver. Wraps a generic `ResolverImpl<F>` behind
+/// a trait object so `ExtractorConfig` doesn't need to be generic over the
+/// filesystem impl.
+pub struct CrossFileResolver {
+    inner: Box<dyn CrossFileLookup>,
+}
+
+impl std::fmt::Debug for CrossFileResolver {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CrossFileResolver")
+            .field("cached_files", &self.inner.cache_len())
+            .finish_non_exhaustive()
+    }
+}
+
+#[cfg(feature = "os")]
 impl Default for CrossFileResolver {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl std::fmt::Debug for CrossFileResolver {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CrossFileResolver")
-            .field("cached_files", &self.cache.borrow().len())
-            .finish_non_exhaustive()
-    }
-}
-
 impl CrossFileResolver {
-    /// Default ESM/CJS resolution with `.tsx, .ts, .jsx, .mjs, .cjs, .js,
-    /// .json` extension probing.
+    /// Construct with the default OS filesystem.
+    #[cfg(feature = "os")]
     #[must_use]
     pub fn new() -> Self {
-        let options = ResolveOptions {
-            extensions: [".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".json"]
-                .iter()
-                .map(|s| (*s).to_string())
-                .collect(),
-            ..ResolveOptions::default()
-        };
-        Self::with_options(options)
+        Self::with_fs(pandacss_fs::OsFileSystem::default())
     }
 
-    #[must_use]
-    pub fn with_options(options: ResolveOptions) -> Self {
+    /// Construct with a custom filesystem. Use this from wasm builds
+    /// (with [`pandacss_fs::MemoryFileSystem`]) or for testing.
+    pub fn with_fs<F: FileSystem + Clone + 'static>(fs: F) -> Self {
+        Self::with_fs_and_options(fs, default_resolve_options())
+    }
+
+    /// Construct with custom FS *and* resolver options (tsconfig paths,
+    /// alternative extension order, etc.).
+    pub fn with_fs_and_options<F: FileSystem + Clone + 'static>(
+        fs: F,
+        options: ResolveOptions,
+    ) -> Self {
         Self {
-            inner: OxcResolver::new(options),
-            cache: RefCell::default(),
-            in_flight: RefCell::default(),
+            inner: Box::new(ResolverImpl::new(fs, options)),
         }
     }
 
     /// Returns `None` when the specifier doesn't resolve, the file can't
     /// be read or parsed, `name` isn't a foldable `const` export, or
     /// we're already mid-load for the same file (cycle guard).
+    #[must_use]
     pub fn resolve_named_export(
+        &self,
+        from_file: &Path,
+        specifier: &str,
+        name: &str,
+    ) -> Option<Literal> {
+        self.inner.resolve_named_export(from_file, specifier, name)
+    }
+}
+
+/// Object-safe interface the rest of the crate consumes. Keeps the
+/// `F: FileSystem` parameter contained inside `cross_file.rs`.
+trait CrossFileLookup {
+    fn resolve_named_export(
+        &self,
+        from_file: &Path,
+        specifier: &str,
+        name: &str,
+    ) -> Option<Literal>;
+
+    fn cache_len(&self) -> usize;
+}
+
+/// Concrete generic implementation. Constructed from any
+/// `F: FileSystem + Clone` and then boxed behind `CrossFileLookup`.
+struct ResolverImpl<F: FileSystem + Clone> {
+    inner: ResolverGeneric<F>,
+    fs: F,
+    cache: RefCell<HashMap<PathBuf, FileExports>>,
+    in_flight: RefCell<HashSet<PathBuf>>,
+}
+
+impl<F: FileSystem + Clone> ResolverImpl<F> {
+    fn new(fs: F, options: ResolveOptions) -> Self {
+        let inner = ResolverGeneric::<F>::new_with_file_system(fs.clone(), options);
+        Self {
+            inner,
+            fs,
+            cache: RefCell::default(),
+            in_flight: RefCell::default(),
+        }
+    }
+
+    fn extract_exports(&self, path: &Path) -> Option<FileExports> {
+        let source = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, path).ok()?;
+        let allocator = Allocator::default();
+        let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
+        let parser_return = Parser::new(&allocator, &source, source_type).parse();
+
+        // Oxc returns a partial AST on parse errors; walk what we get,
+        // matching the JS extractor's recovery behavior.
+        Some(collect_exports(&parser_return.program))
+    }
+}
+
+impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
+    fn resolve_named_export(
         &self,
         from_file: &Path,
         specifier: &str,
@@ -104,7 +178,7 @@ impl CrossFileResolver {
             }
         }
 
-        let exports = Self::extract_exports(&path).unwrap_or_default();
+        let exports = self.extract_exports(&path).unwrap_or_default();
         self.in_flight.borrow_mut().remove(&path);
 
         let value = exports.get(name).cloned();
@@ -112,16 +186,8 @@ impl CrossFileResolver {
         value
     }
 
-    fn extract_exports(path: &Path) -> Option<FileExports> {
-        let source = std::fs::read_to_string(path).ok()?;
-        let allocator = Allocator::default();
-        let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-        let parser_return = Parser::new(&allocator, &source, source_type).parse();
-
-        // Oxc returns a partial AST on parse errors; walk what we get,
-        // matching the JS extractor's recovery behavior.
-        let program = &parser_return.program;
-        Some(collect_exports(program))
+    fn cache_len(&self) -> usize {
+        self.cache.borrow().len()
     }
 }
 

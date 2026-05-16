@@ -3,6 +3,7 @@ members = [
   "bench",
   "crates/*",
   "packages/binding/crate",
+  "packages/binding-wasm/crate",
 ]
 resolver = "2"
 
@@ -30,7 +31,8 @@ pandacss_config = { path = "crates/pandacss_config" }
 pandacss_emitter = { path = "crates/pandacss_emitter" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }
 pandacss_engine = { path = "crates/pandacss_engine" }
-pandacss_extractor = { path = "crates/pandacss_extractor" }
+pandacss_extractor = { path = "crates/pandacss_extractor", default-features = false }
+pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
 pandacss_optimizer = { path = "crates/pandacss_optimizer" }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
@@ -38,9 +40,11 @@ pandacss_tokens = { path = "crates/pandacss_tokens" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 insta = { version = "1.47.2", features = ["yaml"] }
+fast-glob = "1"
 indoc = "2.0.7"
 rustc-hash = "2.1"
 smallvec = { version = "1.13", features = ["serde"] }
+walkdir = "2"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

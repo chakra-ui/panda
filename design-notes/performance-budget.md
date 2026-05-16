@@ -86,7 +86,7 @@ until the cost shows up in a profile.
 ## What's not measured yet
 
 - **`Literal::to_json()` cost across the NAPI boundary.** Used by `extract*()` for tooling consumers. The production
-  `compile()` path must avoid it entirely (see [napi-boundary](./napi-boundary.md)).
+  `compile()` path must avoid it entirely (see [bindings](./bindings.md)).
 - **Per-file parallelism.** Not built; tied to a deferred bulk-file API. The `parse_files(iter)` shape is the natural
   seam when it lands.
 - **Native file watching.** Out of scope for v2.x. `notify-debouncer-full` + mpsc + oneshot is footnoted as a future
