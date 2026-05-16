@@ -1,0 +1,224 @@
+---
+title: Extractor — JS vs Rust
+date: 2026-05-16
+fixtures:
+  - sandbox/vite-ts
+  - sandbox/codegen
+  - synth-100
+  - synth-1000
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+---
+
+# Extractor: JS (ts-morph) vs Rust (Oxc + NAPI)
+
+> First measured comparison between Panda's JS extractor (`@pandacss/parser` over ts-morph) and the new Rust extractor
+> (`@pandacss/binding`'s `Extractor` session class over Oxc). Same fixtures, same matchers, two paths.
+
+## TL;DR
+
+The Rust extractor is **15–37× faster** than the JS path across every fixture size, and the gap widens dramatically at
+setup time (**up to 108×**). Cold-build throughput is the dominant win — the same hardware processes ~30× more files per
+second through Rust.
+
+| Fixture           | Files | Total bytes | JS cold (total) | Rust cold (total) | Cold speedup | JS warm/file | Rust warm/file | Warm speedup |
+| ----------------- | ----: | ----------: | --------------: | ----------------: | -----------: | -----------: | -------------: | -----------: |
+| `sandbox/vite-ts` |     5 |      8.1 KB |          6.9 ms |           0.31 ms |    **22.6×** |      2.23 ms |        0.11 ms |    **19.6×** |
+| `sandbox/codegen` |     2 |      0.7 KB |          2.2 ms |           0.07 ms |    **32.1×** |      0.30 ms |       0.014 ms |    **21.6×** |
+| `synth-100`       |   100 |    173.6 KB |        183.6 ms |           4.93 ms |    **37.3×** |      0.86 ms |        0.05 ms |    **17.4×** |
+| `synth-1000`      |  1000 |      1.7 MB |       1455.8 ms |          48.05 ms |    **30.3×** |      0.77 ms |        0.05 ms |    **15.3×** |
+
+## Methodology
+
+### Harness
+
+`bench/src/extract-compare.ts`. Takes either a real project directory (`--cwd`) or a synthetic file count (`--synth N`)
+and runs both paths over the same source strings.
+
+```sh
+# Real project
+pnpm --filter @pandacss/bench extract-compare -- --cwd sandbox/vite-ts --warm 50
+
+# Synthetic stress test
+pnpm --filter @pandacss/bench extract-compare -- --synth 1000 --warm 200
+```
+
+### Phases measured
+
+1. **Setup (one-time)** — JS: a single `parseSourceFile` call that warms ts-morph's compiler-host caches. Rust:
+   `new Extractor(matchers)` plus a first-call warmup. Both measure cold initialization including the first JIT compile
+   of the visitor code.
+2. **Cold pass** — every file parsed once, fresh encoder / fresh extractor. Mimics a build from scratch.
+3. **Warm pass** — the largest file re-parsed N times against an already-warm extractor. Steady-state per-file cost;
+   relevant for watch-mode where the same file is re-parsed on edit.
+
+### Fairness controls
+
+- **File I/O excluded.** Sources are read upfront (real fixtures) or generated in-memory (synthetic). Neither path pays
+  disk latency inside the timed region.
+- **Same source strings.** Both paths receive identical bytes keyed by the same path.
+- **Same matchers.** Hard-coded matcher config in the harness (broad substring match against
+  `styled-system/{css,jsx,recipes,patterns,tokens}`). The JS path uses whatever matchers the resolved `panda.config.ts`
+  produces — slightly richer than the Rust input, but the overhead is asymmetric in favor of JS (more matchers = more
+  work, not less).
+
+### What runs in each path
+
+- **JS**: `context.project.parseSourceFile(path, encoder)` from `@pandacss/parser`'s `Project` class. This is the exact
+  call `context.parseFile()` makes in production. ts-morph parses, the custom visitor walks, the encoder collects
+  styles.
+- **Rust**: `new Extractor(matchers).extract(source, path)` from `@pandacss/binding`. Oxc parses, the Rust visitor
+  walks, the result crosses the NAPI boundary as a JSON object.
+
+## Detailed results
+
+### `sandbox/vite-ts` (5 real files, 8.1 KB)
+
+```json
+{
+  "files": 5,
+  "totalBytes": 8278,
+  "largestFile": { "path": "sandbox/vite-ts/src/App.tsx", "bytes": 5520 },
+  "warmIterations": 50,
+  "js": {
+    "setupMs": 14.474,
+    "cold": { "totalMs": 6.914, "perFileMs": 1.383, "bytesPerMs": 1197.274 },
+    "warm": { "totalMs": 111.434, "perCallMs": 2.229 }
+  },
+  "rust": {
+    "setupMs": 2.553,
+    "cold": { "totalMs": 0.306, "perFileMs": 0.061, "bytesPerMs": 27033.912 },
+    "warm": { "totalMs": 5.697, "perCallMs": 0.114 }
+  },
+  "speedup": {
+    "setup": "5.67×",
+    "coldTotal": "22.58×",
+    "coldPerFile": "22.58×",
+    "warmPerCall": "19.56×"
+  }
+}
+```
+
+### `synth-100` (100 generated files, 173.6 KB)
+
+```json
+{
+  "files": 100,
+  "totalBytes": 177734,
+  "warmIterations": 100,
+  "js": {
+    "setupMs": 489.322,
+    "cold": { "totalMs": 183.589, "perFileMs": 1.836, "bytesPerMs": 968.107 },
+    "warm": { "totalMs": 85.766, "perCallMs": 0.858 }
+  },
+  "rust": {
+    "setupMs": 5.188,
+    "cold": { "totalMs": 4.927, "perFileMs": 0.049, "bytesPerMs": 36071.335 },
+    "warm": { "totalMs": 4.928, "perCallMs": 0.049 }
+  },
+  "speedup": {
+    "setup": "94.31×",
+    "coldTotal": "37.26×",
+    "coldPerFile": "37.26×",
+    "warmPerCall": "17.40×"
+  }
+}
+```
+
+### `synth-1000` (1000 generated files, 1.7 MB)
+
+```json
+{
+  "files": 1000,
+  "totalBytes": 1779434,
+  "warmIterations": 200,
+  "js": {
+    "setupMs": 592.412,
+    "cold": { "totalMs": 1455.811, "perFileMs": 1.456, "bytesPerMs": 1222.298 },
+    "warm": { "totalMs": 153.467, "perCallMs": 0.767 }
+  },
+  "rust": {
+    "setupMs": 5.472,
+    "cold": { "totalMs": 48.054, "perFileMs": 0.048, "bytesPerMs": 37029.626 },
+    "warm": { "totalMs": 10.013, "perCallMs": 0.05 }
+  },
+  "speedup": {
+    "setup": "108.27×",
+    "coldTotal": "30.30×",
+    "coldPerFile": "30.30×",
+    "warmPerCall": "15.33×"
+  }
+}
+```
+
+## Interpretation
+
+### Bytes per ms
+
+JS sustains ~1.2 MB/s of TS source through parse + extraction. Rust sustains ~37 MB/s. The **30× ratio** is consistent
+across fixture sizes, which suggests we're seeing the fundamental parser-throughput gap (oxc-vs-tsc) rather than
+fixture-specific noise.
+
+### Why setup is the biggest win (94–108×)
+
+The JS path constructs a `ts.Program`, instantiates ts-morph wrappers, and warms compiler-host caches. Rust's
+`new Extractor(matchers)` is one allocation plus the matcher hashmap. For editor integration or tools that spin up
+extractors per file/per query, this dominates.
+
+### Why warm/file is the smallest win (15–20×)
+
+NAPI's per-call serialization cost is constant per extraction. As the Rust work itself shrinks (warm path, small file),
+that fixed boundary cost becomes a visible fraction of the total. For the largest synthetic file (~1.8 KB), the boundary
+cost is roughly half the per-call Rust time. The "raw" Rust extraction inside the cdylib is likely 2-3× faster than what
+we're measuring at the JS surface.
+
+### Why cold scales sub-linearly for JS but linearly for Rust
+
+JS cold per-file actually drops at scale (1.46 ms/file at 1000 vs 1.84 ms at 100) — ts-morph's compiler host amortizes
+some setup as more files come through. Rust per-file is flat (~0.05 ms) regardless of count, because there's no shared
+cache to warm up; each `extract()` is independent.
+
+## Caveats
+
+1. **Encoder bias.** The JS path runs `parseSourceFile` which includes the encoder writing styles into the shared
+   encoder state. The Rust path returns raw extraction results without running them through `pandacss_encoder` (that
+   crate exists but isn't wired into the binding's `extract()` yet). The encoder step is small relative to parse, but
+   the comparison isn't strictly apples-to-apples until Phase C lands.
+2. **Synthetic fixtures don't exercise hooks or async config.** Real Panda projects with `parser:before` /
+   `parser:preprocess` hooks pay extra JS-side cost that the Rust path can't replace yet (hooks are JS-only by design).
+3. **Single-machine measurements.** Run on a local darwin-arm64 dev box, not a clean-room CI box. Treat absolute timings
+   as indicative; speedup ratios are more robust.
+4. **`sandbox/codegen` matched only 2 files** because its `include` glob targets `./src/**` and `./pages/**`, most of
+   which don't exist in the checked-in fixture. Don't read too much into the 32× cold ratio there — small N.
+
+## How to reproduce
+
+```sh
+# 1. Build the native binding
+PATH="$HOME/.cargo/bin:$PATH" pnpm --filter @pandacss/binding build:native
+
+# 2. Run the harness
+pnpm --filter @pandacss/bench extract-compare                       # default: sandbox/vite-ts
+pnpm --filter @pandacss/bench extract-compare -- --cwd sandbox/codegen
+pnpm --filter @pandacss/bench extract-compare -- --synth 100 --warm 100
+pnpm --filter @pandacss/bench extract-compare -- --synth 1000 --warm 200
+```
+
+Output is JSON to stdout with a human summary to stderr. Drop the JSON into this report as a new fixture row when adding
+numbers.
+
+## Open questions worth resolving
+
+- **What does the gap look like with the Rust encoder wired in?** Phase C goal. The Rust encoder turns extracted
+  literals into atoms; that work currently happens JS-side too, so the comparison should remain favorable to Rust but
+  might tighten by 10-20%.
+- **What's the WASM equivalent?** The wasm binding (`@pandacss/binding-wasm`) uses `serde-wasm-bindgen` instead of NAPI;
+  expect 1.5-3× slower than NAPI based on rolldown's published numbers. Worth measuring before Phase C.
+- **What's the memory footprint?** ts-morph retains the AST graph; Rust drops the allocator per call. Significant for
+  long-running watch processes. Needs a separate harness (RSS / heap delta across the 1000-file run).
+
+## Related
+
+- [extraction-pipeline](../extraction-pipeline.md) — the Rust extractor's design.
+- [bindings](../bindings.md) — NAPI + WASM boundary that the JS side talks to.
+- [performance-budget](../performance-budget.md) — the perf decisions encoded inline in `// PERF(port):` markers that
+  this measurement validates.

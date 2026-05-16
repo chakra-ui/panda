@@ -32,6 +32,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 - [Performance budget](./performance-budget.md) — `PERF(port)` markers, allocation choices, `FxHashMap` usage.
 - [Publish namespace](./publish-namespace.md) — placeholder crate names + rename plan before publish.
+- [Benchmarks](./bench/) — dated reports comparing implementations. Latest:
+  [extract-js-vs-rust](./bench/2026-05-16-extract-js-vs-rust.mdx) (15–37× speedup).
 
 ## Migration plan vs design notes
 

@@ -1,0 +1,24 @@
+# Benchmark reports
+
+Dated reports comparing Panda implementations (JS / Rust NAPI / Rust WASM) against the same fixtures.
+
+## Conventions
+
+- **Filename**: `YYYY-MM-DD-<topic>.mdx`. The date is when the numbers were captured, not when the doc was written.
+- **Top frontmatter**: include `fixtures`, `hardware`, and any caveat metadata so a future reader can judge whether the
+  numbers still apply.
+- **TL;DR table up front** — headline ratios in the first screen.
+- **Reproduce section at the end** — exact commands a contributor can paste to re-run on their machine.
+- **Don't delete older reports.** They're history; if numbers stop applying, write a new dated report that references
+  the old one.
+
+## How these connect to the design notes
+
+The design notes capture _why_ the architecture looks the way it does. Benchmarks capture _whether the architecture pays
+off_. When a benchmark surfaces a surprise (worse than expected, or a regression), that's the trigger to update or add a
+design note explaining the trade-off.
+
+## Reports
+
+- [2026-05-16 — extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx) — first comparison of `@pandacss/parser`
+  (ts-morph) vs `@pandacss/binding`'s `Extractor` (Oxc + NAPI). 15–37× speedup.

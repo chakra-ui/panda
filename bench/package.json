@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "baseline": "tsx --conditions source src/baseline.ts"
+    "baseline": "tsx --conditions source src/baseline.ts",
+    "extract-compare": "tsx --conditions source src/extract-compare.ts"
   },
   "dependencies": {
+    "@pandacss/binding": "workspace:*",
     "@pandacss/node": "workspace:*"
   },
   "devDependencies": {}
