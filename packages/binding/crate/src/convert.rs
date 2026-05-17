@@ -240,22 +240,22 @@ pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
 ) -> Vec<crate::Atom> {
     let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
     sorted.sort_by(|a, b| {
-        a.prop
-            .cmp(&b.prop)
+        a.prop()
+            .cmp(b.prop())
             .then_with(|| {
-                let a_conds: Vec<&str> = a.conditions.iter().map(AsRef::as_ref).collect();
-                let b_conds: Vec<&str> = b.conditions.iter().map(AsRef::as_ref).collect();
+                let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
+                let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
                 a_conds.cmp(&b_conds)
             })
-            .then_with(|| value_sort_key(&a.value).cmp(&value_sort_key(&b.value)))
+            .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
     });
     sorted
         .into_iter()
         .map(|atom| crate::Atom {
-            prop: atom.prop.to_string(),
-            value: to_atom_value(&atom.value),
+            prop: atom.prop().to_string(),
+            value: to_atom_value(atom.value()),
             conditions: atom
-                .conditions
+                .conditions()
                 .iter()
                 .map(std::string::ToString::to_string)
                 .collect::<Vec<String>>(),

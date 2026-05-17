@@ -284,6 +284,14 @@ impl Project {
             .collect()
     }
 
+    /// Encoded config recipe styles, separate from atomic utility atoms.
+    #[napi(js_name = encodedRecipes)]
+    #[must_use]
+    pub fn encoded_recipes(&self) -> serde_json::Value {
+        serde_json::to_value(self.inner.encoded_recipes().snapshot())
+            .unwrap_or(serde_json::Value::Null)
+    }
+
     /// Aggregate counts.
     #[napi]
     #[must_use]
@@ -460,12 +468,6 @@ fn collect_pattern_transform_refs(
     };
 
     collect_pattern_transform_ref_map(patterns, refs);
-    if let Some(extend) = patterns
-        .get("extend")
-        .and_then(serde_json::Value::as_object)
-    {
-        collect_pattern_transform_ref_map(extend, refs);
-    }
 }
 
 fn collect_pattern_transform_ref_map(
@@ -473,9 +475,6 @@ fn collect_pattern_transform_ref_map(
     refs: &mut HashMap<String, String>,
 ) {
     for (name, pattern) in patterns {
-        if name == "extend" {
-            continue;
-        }
         let Some(pattern) = pattern.as_object() else {
             continue;
         };

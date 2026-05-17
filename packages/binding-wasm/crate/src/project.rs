@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
 use crate::fs::WasmFileSystem;
-use crate::matcher::{to_core_matchers, to_core_token_dictionary, MatchersInput};
+use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
@@ -240,6 +240,17 @@ impl WasmProject {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Encoded config recipe styles, separate from atomic utility atoms.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    #[wasm_bindgen(js_name = encodedRecipes)]
+    pub fn encoded_recipes(&self) -> Result<JsValue, JsValue> {
+        let json = serde_json::to_string(&self.inner.encoded_recipes().snapshot())
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        js_sys::JSON::parse(&json)
+    }
+
     /// Aggregate counts.
     ///
     /// # Errors
@@ -288,22 +299,22 @@ fn collect_sorted_atoms<S: std::hash::BuildHasher>(
 ) -> Vec<AtomSerde> {
     let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
     sorted.sort_by(|a, b| {
-        a.prop
-            .cmp(&b.prop)
+        a.prop()
+            .cmp(b.prop())
             .then_with(|| {
-                let a_conds: Vec<&str> = a.conditions.iter().map(AsRef::as_ref).collect();
-                let b_conds: Vec<&str> = b.conditions.iter().map(AsRef::as_ref).collect();
+                let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
+                let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
                 a_conds.cmp(&b_conds)
             })
-            .then_with(|| value_sort_key(&a.value).cmp(&value_sort_key(&b.value)))
+            .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
     });
     sorted
         .into_iter()
         .map(|atom| AtomSerde {
-            prop: atom.prop.to_string(),
-            value: atom_value_to_json(&atom.value),
+            prop: atom.prop().to_string(),
+            value: atom_value_to_json(atom.value()),
             conditions: atom
-                .conditions
+                .conditions()
                 .iter()
                 .map(std::string::ToString::to_string)
                 .collect::<Vec<String>>(),
@@ -370,12 +381,6 @@ fn collect_pattern_transform_refs(
     };
 
     collect_pattern_transform_ref_map(patterns, refs);
-    if let Some(extend) = patterns
-        .get("extend")
-        .and_then(serde_json::Value::as_object)
-    {
-        collect_pattern_transform_ref_map(extend, refs);
-    }
 }
 
 fn collect_pattern_transform_ref_map(
@@ -383,9 +388,6 @@ fn collect_pattern_transform_ref_map(
     refs: &mut HashMap<String, String>,
 ) {
     for (name, pattern) in patterns {
-        if name == "extend" {
-            continue;
-        }
         let Some(pattern) = pattern.as_object() else {
             continue;
         };

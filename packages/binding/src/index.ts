@@ -240,6 +240,25 @@ export interface RecipeEntry {
   recipe: unknown
 }
 
+export interface EncodedRecipeStyles {
+  base: RecipeStyleGroup[]
+  variants: RecipeStyleGroup[]
+  atomic: Atom[]
+}
+
+export interface RecipeStyleGroup {
+  recipe: string
+  slot?: string | null
+  className: string
+  entries: RecipeStyleEntry[]
+}
+
+export interface RecipeStyleEntry {
+  prop: string
+  value: string | number | boolean | null
+  conditions: string[]
+}
+
 /** Per-call telemetry returned by `Project.parseFile()`. */
 export interface FileReport {
   cssCalls: number
@@ -295,6 +314,7 @@ export interface ProjectInstance {
   atoms(): Atom[]
   recipes(): RecipeEntry[]
   slotRecipes(): RecipeEntry[]
+  encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
 }
 
@@ -360,6 +380,9 @@ class FallbackProject implements ProjectInstance {
   }
   slotRecipes() {
     return [] as RecipeEntry[]
+  }
+  encodedRecipes() {
+    return { base: [], variants: [], atomic: [] } as EncodedRecipeStyles
   }
   summary() {
     return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
@@ -492,7 +515,7 @@ function createProject(matchers: Matchers, options?: ProjectOptions) {
   const project = new binding.Project(matchers, stripProjectCallbacks(options))
   const callbacks = options?.callbacks ?? {}
   const tokenDictionary = options?.tokenDictionary ?? matchers.tokenDictionary
-  if (registerNativeProjectCallbacks(project, callbacks, tokenDictionary)) return project
+  if (registerNativeProjectCallbacks(project, callbacks)) return project
   return wrapProjectCallbacks(project, callbacks, tokenDictionary)
 }
 
@@ -507,7 +530,7 @@ Object.defineProperty(createProject, 'fromConfig', {
     const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, tokenDictionary)
     if (nativeProjectFromConfig) {
       const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
-      if (registerNativeProjectCallbacks(project, callbacks, tokenDictionary)) return project
+      if (registerNativeProjectCallbacks(project, callbacks)) return project
       return wrapProjectCallbacks(project, callbacks, tokenDictionary)
     }
     const project = new binding.Project(matchersFromSerializedConfig(resolvedConfig), nativeOptions)
@@ -547,11 +570,6 @@ function jsxNamesFromSerializedConfig(config: Record<string, unknown>, jsxFactor
   if (isPlainObject(theme)) {
     collectRecipeJsxNames(theme.recipes, names)
     collectSlotRecipeJsxNames(theme.slotRecipes, names)
-
-    if (isPlainObject(theme.extend)) {
-      collectRecipeJsxNames(theme.extend.recipes, names)
-      collectSlotRecipeJsxNames(theme.extend.slotRecipes, names)
-    }
   }
 
   return Array.from(new Set(names))
@@ -560,12 +578,11 @@ function jsxNamesFromSerializedConfig(config: Record<string, unknown>, jsxFactor
 function collectPatternJsxNames(value: unknown, names: string[]) {
   if (!isPlainObject(value)) return
   collectPatternMapJsxNames(value, names)
-  if (isPlainObject(value.extend)) collectPatternMapJsxNames(value.extend, names)
 }
 
 function collectPatternMapJsxNames(patterns: Record<string, unknown>, names: string[]) {
   for (const [name, pattern] of Object.entries(patterns)) {
-    if (name === 'extend' || !isPlainObject(pattern)) continue
+    if (!isPlainObject(pattern)) continue
     names.push(typeof pattern.jsxName === 'string' ? pattern.jsxName : capitalize(name))
     collectStringArray(pattern.jsx, names)
   }
@@ -574,8 +591,7 @@ function collectPatternMapJsxNames(patterns: Record<string, unknown>, names: str
 function collectRecipeJsxNames(value: unknown, names: string[]) {
   if (!isPlainObject(value)) return
   for (const [name, recipe] of Object.entries(value)) {
-    names.push(capitalize(name))
-    if (isPlainObject(recipe)) collectStringArray(recipe.jsx, names)
+    names.push(...recipeJsxNames(name, recipe))
   }
 }
 
@@ -583,9 +599,14 @@ function collectSlotRecipeJsxNames(value: unknown, names: string[]) {
   if (!isPlainObject(value)) return
   for (const [name, recipe] of Object.entries(value)) {
     const capitalized = capitalize(name)
-    names.push(capitalized, `${capitalized}.Root`, `${capitalized}Root`)
-    if (isPlainObject(recipe)) collectStringArray(recipe.jsx, names)
+    names.push(...recipeJsxNames(name, recipe), `${capitalized}.Root`, `${capitalized}Root`)
   }
+}
+
+function recipeJsxNames(name: string, recipe: unknown) {
+  const names: string[] = []
+  if (isPlainObject(recipe) && Array.isArray(recipe.jsx)) collectStringArray(recipe.jsx, names)
+  return names.length ? names : [capitalize(name)]
 }
 
 function collectStringArray(value: unknown, names: string[]) {

@@ -1,4 +1,11 @@
-import type { Atom, TokenDictionaryInput, WasmProject, WasmProjectCallbacks, WasmProjectOptions } from './types'
+import type {
+  Atom,
+  EncodedRecipeStyles,
+  TokenDictionaryInput,
+  WasmProject,
+  WasmProjectCallbacks,
+  WasmProjectOptions,
+} from './types'
 
 interface RawToken {
   path: string
@@ -57,6 +64,14 @@ export function wrapProjectCallbacks(project: WasmProject, options: WasmProjectO
     isEmpty: () => project.isEmpty(),
     atoms: () =>
       applyUtilityTransformCallbacks(project.atoms(), config, callbacks, utilityTransformCache, tokenDictionary),
+    encodedRecipes: () =>
+      applyEncodedRecipeTransformCallbacks(
+        project.encodedRecipes(),
+        config,
+        callbacks,
+        utilityTransformCache,
+        tokenDictionary,
+      ),
     recipes: () => project.recipes(),
     slotRecipes: () => project.slotRecipes(),
     summary: () => project.summary(),
@@ -143,6 +158,26 @@ function applyUtilityTransformCallbacks(
     cache.set(cacheKey, transformed)
     return applyConditions(transformed, atom.conditions)
   })
+}
+
+function applyEncodedRecipeTransformCallbacks(
+  encoded: EncodedRecipeStyles,
+  config: Record<string, unknown>,
+  callbacks: WasmProjectCallbacks,
+  cache: Map<string, Atom[]>,
+  tokenDictionary: TokenDictionaryInput | undefined,
+): EncodedRecipeStyles {
+  return {
+    base: encoded.base.map((group) => ({
+      ...group,
+      entries: applyUtilityTransformCallbacks(group.entries, config, callbacks, cache, tokenDictionary),
+    })),
+    variants: encoded.variants.map((group) => ({
+      ...group,
+      entries: applyUtilityTransformCallbacks(group.entries, config, callbacks, cache, tokenDictionary),
+    })),
+    atomic: applyUtilityTransformCallbacks(encoded.atomic, config, callbacks, cache, tokenDictionary),
+  }
 }
 
 function createTransformArgs(raw: unknown, tokenDictionary: TokenDictionaryInput | undefined): TransformArgs {
@@ -279,15 +314,11 @@ function getPatternTransformRefs(config: Record<string, unknown>) {
 function collectPatternTransformRefs(value: unknown, refs: Map<string, string>) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return
   collectPatternTransformRefMap(value as Record<string, unknown>, refs)
-  const extend = (value as Record<string, unknown>).extend
-  if (extend && typeof extend === 'object' && !Array.isArray(extend)) {
-    collectPatternTransformRefMap(extend as Record<string, unknown>, refs)
-  }
 }
 
 function collectPatternTransformRefMap(patterns: Record<string, unknown>, refs: Map<string, string>) {
   for (const [name, pattern] of Object.entries(patterns)) {
-    if (name === 'extend' || !pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
     const transform = (pattern as Record<string, unknown>).transform
     if (isCallbackRef(transform)) refs.set(name, transform.id)
   }
@@ -307,25 +338,42 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
+interface StyleLeaf {
+  prop: string
+  value: unknown
+  conditions: string[]
+}
+
 function styleObjectToAtoms(style: Record<string, unknown>, baseConditions: string[]): Atom[] {
   const atoms: Atom[] = []
-  walkStyle(style, [], baseConditions, atoms)
+  walkStyleObject(style, baseConditions, (leaf) => {
+    atoms.push({
+      prop: leaf.prop,
+      value: normalizeAtomValue(leaf.value),
+      conditions: leaf.conditions,
+    })
+  })
   return atoms.sort(compareAtoms)
 }
 
-function walkStyle(value: unknown, path: string[], baseConditions: string[], atoms: Atom[]) {
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
+function walkStyleObject(
+  value: unknown,
+  baseConditions: string[],
+  visit: (leaf: StyleLeaf) => void,
+  path: string[] = [],
+) {
+  if (isPlainObject(value)) {
     for (const [key, child] of Object.entries(value)) {
-      walkStyle(child, path.concat(key), baseConditions, atoms)
+      walkStyleObject(child, baseConditions, visit, path.concat(key))
     }
     return
   }
 
   const prop = path[0]
   if (!prop) return
-  atoms.push({
+  visit({
     prop,
-    value: normalizeAtomValue(value),
+    value,
     conditions: [...baseConditions],
   })
 }

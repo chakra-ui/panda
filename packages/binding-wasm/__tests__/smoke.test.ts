@@ -357,6 +357,258 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       `)
     })
 
+    it('tracks config recipes and slot recipes', async () => {
+      const { project } = await createProjectFromConfig({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        theme: {
+          recipes: {
+            button: {
+              base: { display: 'inline-flex' },
+              variants: { size: { sm: { fontSize: '12px' } } },
+            },
+          },
+          slotRecipes: {
+            card: {
+              slots: ['root', 'label'],
+              base: {
+                root: { padding: '4px' },
+                label: { color: 'red' },
+              },
+            },
+          },
+        },
+      })
+
+      expect(project.summary()).toMatchInlineSnapshot(`
+        {
+          "filesProcessed": 0,
+          "atomCount": 0,
+          "recipeCount": 1,
+          "slotRecipeCount": 1,
+        }
+      `)
+      expect(project.recipes().map(({ file }) => file)).toEqual(['theme.recipes.button'])
+      expect(project.slotRecipes().map(({ file }) => file)).toEqual(['theme.slotRecipes.card'])
+
+      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
+      project.clear()
+      expect(project.summary().recipeCount).toBe(1)
+      expect(project.summary().slotRecipeCount).toBe(1)
+      expect(project.atoms() as Atom[]).toEqual([])
+      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+        {
+          "base": [],
+          "variants": [],
+          "atomic": [],
+        }
+      `)
+    })
+
+    it('splits config recipe component props from style props', async () => {
+      const { project } = await createProjectFromConfig({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        theme: {
+          recipes: {
+            button: {
+              jsx: ['Action'],
+              base: { display: 'inline-flex' },
+              variants: { size: { sm: { fontSize: '12px' } } },
+            },
+          },
+          slotRecipes: {
+            tabs: {
+              jsx: ['Tabs'],
+              slots: ['root'],
+              variants: {
+                size: {
+                  sm: { root: { gap: '4px' } },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      const report = project.parseFile(
+        '/Button.tsx',
+        `import { Action, Tabs, TabsRoot } from './components'
+         const el = <>
+           <Action size="sm" color="red" />
+           <Tabs.Root size="sm" padding="2px" />
+           <TabsRoot size="sm" margin="8px" />
+         </>`,
+      )
+
+      expect(report.jsxUsages).toBe(3)
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "color",
+            "value": "red",
+            "conditions": [],
+          },
+          {
+            "prop": "margin",
+            "value": "8px",
+            "conditions": [],
+          },
+          {
+            "prop": "padding",
+            "value": "2px",
+            "conditions": [],
+          },
+        ]
+      `)
+      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+        {
+          "base": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button",
+              "entries": [
+                {
+                  "prop": "display",
+                  "value": "inline-flex",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "variants": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button--size_sm",
+              "entries": [
+                {
+                  "prop": "fontSize",
+                  "value": "12px",
+                  "conditions": [],
+                },
+              ],
+            },
+            {
+              "recipe": "tabs",
+              "slot": "root",
+              "className": "tabs__root--size_sm",
+              "entries": [
+                {
+                  "prop": "gap",
+                  "value": "4px",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "atomic": [],
+        }
+      `)
+    })
+
+    it('tracks config recipe function calls', async () => {
+      const { project } = await createProjectFromConfig({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        theme: {
+          recipes: {
+            button: {
+              base: { display: 'inline-flex' },
+              variants: { size: { sm: { fontSize: '12px' } } },
+            },
+          },
+          slotRecipes: {
+            tabs: {
+              slots: ['root'],
+              variants: {
+                size: {
+                  sm: { root: { gap: '4px' } },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      project.parseFile(
+        '/recipes.ts',
+        `import { button } from '@panda/recipes'
+         import * as recipes from '@panda/recipes'
+         button({ size: 'sm', color: 'red' })
+         recipes.tabs({ size: 'sm', margin: '8px' })`,
+      )
+
+      expect(project.atoms() as Atom[]).toEqual([])
+      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+        {
+          "base": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button",
+              "entries": [
+                {
+                  "prop": "display",
+                  "value": "inline-flex",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "variants": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button--size_sm",
+              "entries": [
+                {
+                  "prop": "fontSize",
+                  "value": "12px",
+                  "conditions": [],
+                },
+              ],
+            },
+            {
+              "recipe": "tabs",
+              "slot": "root",
+              "className": "tabs__root--size_sm",
+              "entries": [
+                {
+                  "prop": "gap",
+                  "value": "4px",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "atomic": [],
+        }
+      `)
+    })
+
     it('applies utility transform callbacks in the JS host', async () => {
       const { project } = await createProject(baseMatchers, {
         config: {
@@ -463,6 +715,130 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
             "conditions": [],
           },
         ]
+      `)
+    })
+
+    it('applies utility transform callbacks to encoded config recipes', async () => {
+      const { project } = await createProjectFromConfig({
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+          theme: {
+            recipes: {
+              button: {
+                base: { size: '4px' },
+                variants: {
+                  size: {
+                    sm: { size: '8px' },
+                  },
+                },
+              },
+            },
+            slotRecipes: {
+              tabs: {
+                slots: ['root'],
+                variants: {
+                  size: {
+                    sm: { root: { size: '12px' } },
+                  },
+                },
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      })
+
+      project.parseFile(
+        '/recipes.ts',
+        `import { button } from '@panda/recipes'
+         import * as recipes from '@panda/recipes'
+         button({ size: 'sm' })
+         recipes.tabs({ size: 'sm' })`,
+      )
+
+      expect(project.atoms() as Atom[]).toEqual([])
+      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+        {
+          "base": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button",
+              "entries": [
+                {
+                  "prop": "height",
+                  "value": "4px",
+                  "conditions": [],
+                },
+                {
+                  "prop": "width",
+                  "value": "4px",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "variants": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button--size_sm",
+              "entries": [
+                {
+                  "prop": "height",
+                  "value": "8px",
+                  "conditions": [],
+                },
+                {
+                  "prop": "width",
+                  "value": "8px",
+                  "conditions": [],
+                },
+              ],
+            },
+            {
+              "recipe": "tabs",
+              "slot": "root",
+              "className": "tabs__root--size_sm",
+              "entries": [
+                {
+                  "prop": "height",
+                  "value": "12px",
+                  "conditions": [],
+                },
+                {
+                  "prop": "width",
+                  "value": "12px",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "atomic": [],
+        }
       `)
     })
 
@@ -768,6 +1144,76 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
           "atomCount": 0,
           "recipeCount": 0,
           "slotRecipeCount": 0,
+        }
+      `)
+    })
+
+    it('tracks conditional config recipe variants', async () => {
+      const { project } = await createProjectFromConfig({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        theme: {
+          breakpoints: {
+            md: '768px',
+          },
+          recipes: {
+            button: {
+              variants: {
+                size: {
+                  sm: { fontSize: '12px' },
+                  md: { fontSize: '16px' },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      project.parseFile(
+        '/recipes.ts',
+        `import { button } from '@panda/recipes'
+         button({ size: { base: 'sm', md: 'md' } })`,
+      )
+
+      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+        {
+          "base": [],
+          "variants": [
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button--size_md",
+              "entries": [
+                {
+                  "prop": "fontSize",
+                  "value": "16px",
+                  "conditions": [
+                    "md",
+                  ],
+                },
+              ],
+            },
+            {
+              "recipe": "button",
+              "slot": null,
+              "className": "button--size_sm",
+              "entries": [
+                {
+                  "prop": "fontSize",
+                  "value": "12px",
+                  "conditions": [],
+                },
+              ],
+            },
+          ],
+          "atomic": [],
         }
       `)
     })

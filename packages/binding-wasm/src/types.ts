@@ -72,6 +72,25 @@ export interface RecipeEntry {
   recipe: unknown
 }
 
+export interface EncodedRecipeStyles {
+  base: RecipeStyleGroup[]
+  variants: RecipeStyleGroup[]
+  atomic: Atom[]
+}
+
+export interface RecipeStyleGroup {
+  recipe: string
+  slot?: string | null
+  className: string
+  entries: RecipeStyleEntry[]
+}
+
+export interface RecipeStyleEntry {
+  prop: string
+  value: string | number | boolean | null
+  conditions: string[]
+}
+
 export interface FileReport {
   cssCalls: number
   cvaCalls: number
@@ -120,5 +139,6 @@ export declare class WasmProject {
   atoms(): Atom[]
   recipes(): RecipeEntry[]
   slotRecipes(): RecipeEntry[]
+  encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
 }
