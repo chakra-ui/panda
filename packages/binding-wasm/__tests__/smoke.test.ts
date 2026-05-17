@@ -855,6 +855,9 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
               jsx: ['@panda/jsx'],
               tokens: ['@panda/tokens'],
             },
+            conditions: {
+              _hover: '&:hover',
+            },
             utilities: {
               space: {
                 values: {
@@ -934,8 +937,20 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
     })
 
     it('applies utility transform callbacks under conditions', async () => {
-      const { project } = await createProject(baseMatchers, {
+      const { project } = await createProjectFromConfig({
         config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          conditions: {
+            _hover: '&:hover',
+          },
           utilities: {
             size: {
               transform: {
@@ -1061,6 +1076,9 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
             pattern: ['@panda/patterns'],
             jsx: ['@panda/jsx'],
             tokens: ['@panda/tokens'],
+          },
+          conditions: {
+            _hover: '&:hover',
           },
           patterns: {
             stack: {

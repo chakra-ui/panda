@@ -625,17 +625,15 @@ function isPlainObject(value: unknown): value is Record<string, any> {
 }
 
 function normalizeImportMap(config: Record<string, unknown>) {
-  const outdir =
-    typeof config.outdir === 'string' ? config.outdir.split('/').at(-1) ?? 'styled-system' : 'styled-system'
   const map = config.importMap
   if (map && typeof map === 'object' && !Array.isArray(map)) {
     const input = map as Record<string, unknown>
     return {
-      css: toStringArray(input.css, `${outdir}/css`),
-      recipe: toStringArray(input.recipe ?? input.recipes, `${outdir}/recipes`),
-      pattern: toStringArray(input.pattern ?? input.patterns, `${outdir}/patterns`),
-      jsx: toStringArray(input.jsx, `${outdir}/jsx`),
-      tokens: toStringArray(input.tokens, `${outdir}/tokens`),
+      css: toStringArray(input.css),
+      recipe: toStringArray(input.recipe ?? input.recipes),
+      pattern: toStringArray(input.pattern ?? input.patterns),
+      jsx: toStringArray(input.jsx),
+      tokens: toStringArray(input.tokens),
     }
   }
   if (typeof map === 'string') {
@@ -648,17 +646,17 @@ function normalizeImportMap(config: Record<string, unknown>) {
     }
   }
   return {
-    css: [`${outdir}/css`],
-    recipe: [`${outdir}/recipes`],
-    pattern: [`${outdir}/patterns`],
-    jsx: [`${outdir}/jsx`],
-    tokens: [`${outdir}/tokens`],
+    css: [],
+    recipe: [],
+    pattern: [],
+    jsx: [],
+    tokens: [],
   }
 }
 
-function toStringArray(value: unknown, fallback: string) {
+function toStringArray(value: unknown) {
   if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string')
-  return typeof value === 'string' ? [value] : [fallback]
+  return typeof value === 'string' ? [value] : []
 }
 
 function normalizeProjectConfigInput(

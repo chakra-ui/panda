@@ -100,23 +100,24 @@ impl Project {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned constructor arguments"
     )]
-    pub fn from_config(config: serde_json::Value, options: Option<ProjectOptions>) -> Self {
+    pub fn from_config(config: serde_json::Value, options: Option<ProjectOptions>) -> napi::Result<Self> {
         let opts = options.unwrap_or(ProjectOptions {
             token_dictionary: None,
             cross_file: None,
         });
         let utility_transform_refs = get_utility_transform_refs(&config);
         let pattern_transform_refs = get_pattern_transform_refs(&config);
-        let config = serde_json::from_value(config).unwrap_or_default();
+        let config = serde_json::from_value(config)
+            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         let project = pandacss_project::Project::from_serialized_config(config);
-        Self {
+        Ok(Self {
             inner: apply_project_options(project, opts),
             utility_transform_refs,
             pattern_transform_refs,
             utility_transforms: HashMap::new(),
             pattern_transforms: HashMap::new(),
             utility_transform_cache: HashMap::new(),
-        }
+        })
     }
 
     /// Return the serialized config snapshot this project was constructed

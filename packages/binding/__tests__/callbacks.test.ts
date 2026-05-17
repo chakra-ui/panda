@@ -262,6 +262,9 @@ describe('Project callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          conditions: {
+            _hover: '&:hover',
+          },
           utilities: {
             space: {
               values: {
@@ -346,6 +349,9 @@ describe('Project callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          conditions: {
+            _hover: '&:hover',
+          },
           utilities: {
             size: {
               transform: {
@@ -490,6 +496,9 @@ describe('Project callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          conditions: {
+            _hover: '&:hover',
+          },
           theme: {
             breakpoints: {
               tablet: '768px',

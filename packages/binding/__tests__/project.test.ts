@@ -99,7 +99,22 @@ describe('Project', () => {
   })
 
   it('decomposes nested conditions into condition chains', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = Project.fromConfig(
+      {
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap,
+        conditions: {
+          _hover: '&:hover',
+        },
+        theme: {
+          breakpoints: {
+            md: '768px',
+          },
+        },
+      },
+      { crossFile: false },
+    )
     project.parseFile(
       '/virtual/Card.tsx',
       `import { css } from '@panda/css'
