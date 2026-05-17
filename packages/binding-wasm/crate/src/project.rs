@@ -6,11 +6,13 @@
 //! through whatever the JS host has populated.
 
 use pandacss_extractor::CrossFileResolver;
+use pandacss_extractor::{DiagnosticSeverity, Literal};
 use serde::Serialize as _;
+use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
 use crate::fs::WasmFileSystem;
-use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
+use crate::matcher::{to_core_matchers, to_core_token_dictionary, MatchersInput};
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
@@ -27,6 +29,8 @@ use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
 #[wasm_bindgen]
 pub struct WasmProject {
     inner: pandacss_project::Project,
+    pattern_transform_refs: HashMap<String, String>,
+    pattern_transforms: HashMap<String, js_sys::Function>,
 }
 
 #[wasm_bindgen]
@@ -66,6 +70,8 @@ impl WasmProject {
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
+            pattern_transform_refs: HashMap::new(),
+            pattern_transforms: HashMap::new(),
         })
     }
 
@@ -87,7 +93,10 @@ impl WasmProject {
             opts.token_dictionary
         };
 
-        let config = serde_wasm_bindgen::from_value(config)
+        let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
+            .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        let pattern_transform_refs = get_pattern_transform_refs(&config_value);
+        let config = serde_json::from_value(config_value)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
         let mut project = pandacss_project::Project::from_serialized_config(config);
         if let Some(dict) = token_dictionary_input.map(to_core_token_dictionary) {
@@ -96,7 +105,16 @@ impl WasmProject {
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
+            pattern_transform_refs,
+            pattern_transforms: HashMap::new(),
         })
+    }
+
+    /// Register a JS-backed pattern transform callback. The wrapper package
+    /// installs callbacks referenced by the serialized config snapshot.
+    #[wasm_bindgen(js_name = registerPatternTransform)]
+    pub fn register_pattern_transform(&mut self, id: String, callback: js_sys::Function) {
+        self.pattern_transforms.insert(id, callback);
     }
 
     /// Extract + encode a single file. Replaces any prior contribution
@@ -106,7 +124,17 @@ impl WasmProject {
     /// Returns a JS error if serializing the per-call report fails.
     #[wasm_bindgen(js_name = parseFile)]
     pub fn parse_file(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let report = self.inner.parse_file(path, source);
+        let report = if self.pattern_transforms.is_empty() {
+            self.inner.parse_file(path, source)
+        } else {
+            let pattern_transform_refs = &self.pattern_transform_refs;
+            let pattern_transforms = &self.pattern_transforms;
+            let mut transform = |name: &str, styles: &Literal| {
+                apply_pattern_transform(name, styles, pattern_transform_refs, pattern_transforms)
+            };
+            self.inner
+                .parse_file_with_pattern_transforms(path, source, &mut transform)
+        };
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         report
             .serialize(&serializer)
@@ -283,6 +311,151 @@ fn collect_sorted_atoms<S: std::hash::BuildHasher>(
         .collect()
 }
 
+fn apply_pattern_transform(
+    name: &str,
+    styles: &Literal,
+    pattern_transform_refs: &HashMap<String, String>,
+    callbacks: &HashMap<String, js_sys::Function>,
+) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
+    let Some(id) = pattern_transform_refs.get(name) else {
+        return Ok(None);
+    };
+    let Some(callback) = callbacks.get(id) else {
+        return Err(callback_diagnostic(format!(
+            "Missing pattern transform callback `{id}` for `{name}`"
+        )));
+    };
+
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+    let props = styles.serialize(&serializer).map_err(|err| {
+        callback_diagnostic(format!(
+            "Failed to serialize pattern props for `{name}`: {err}"
+        ))
+    })?;
+    let result = callback
+        .call2(&JsValue::NULL, &props, &JsValue::NULL)
+        .map_err(|err| {
+            callback_diagnostic(format!(
+                "Pattern transform callback `{id}` for `{name}` threw: {err:?}"
+            ))
+        })?;
+    if result.is_null() || result.is_undefined() {
+        return Ok(None);
+    }
+
+    let value: serde_json::Value = serde_wasm_bindgen::from_value(result).map_err(|err| {
+        callback_diagnostic(format!(
+            "Pattern transform callback `{id}` for `{name}` returned an invalid style object: {err}"
+        ))
+    })?;
+    json_value_to_literal(&value).map(Some).ok_or_else(|| {
+        callback_diagnostic(format!(
+            "Pattern transform callback `{id}` for `{name}` returned an invalid style object"
+        ))
+    })
+}
+
+fn get_pattern_transform_refs(config: &serde_json::Value) -> HashMap<String, String> {
+    let mut refs = HashMap::new();
+    collect_pattern_transform_refs(config.get("patterns"), &mut refs);
+    refs
+}
+
+fn collect_pattern_transform_refs(
+    value: Option<&serde_json::Value>,
+    refs: &mut HashMap<String, String>,
+) {
+    let Some(patterns) = value.and_then(serde_json::Value::as_object) else {
+        return;
+    };
+
+    collect_pattern_transform_ref_map(patterns, refs);
+    if let Some(extend) = patterns
+        .get("extend")
+        .and_then(serde_json::Value::as_object)
+    {
+        collect_pattern_transform_ref_map(extend, refs);
+    }
+}
+
+fn collect_pattern_transform_ref_map(
+    patterns: &serde_json::Map<String, serde_json::Value>,
+    refs: &mut HashMap<String, String>,
+) {
+    for (name, pattern) in patterns {
+        if name == "extend" {
+            continue;
+        }
+        let Some(pattern) = pattern.as_object() else {
+            continue;
+        };
+        let Some(id) = pattern
+            .get("transform")
+            .and_then(callback_ref_id)
+            .map(str::to_owned)
+        else {
+            continue;
+        };
+        refs.insert(name.clone(), id.clone());
+        refs.insert(capitalize(name), id.clone());
+        if let Some(jsx_name) = pattern.get("jsxName").and_then(serde_json::Value::as_str) {
+            refs.insert(jsx_name.to_owned(), id.clone());
+        }
+        if let Some(items) = pattern.get("jsx").and_then(serde_json::Value::as_array) {
+            for jsx_name in items.iter().filter_map(serde_json::Value::as_str) {
+                refs.insert(jsx_name.to_owned(), id.clone());
+            }
+        }
+    }
+}
+
+fn callback_ref_id(value: &serde_json::Value) -> Option<&str> {
+    let value = value.as_object()?;
+    let kind = value.get("kind").and_then(serde_json::Value::as_str)?;
+    if kind != "js-callback" {
+        return None;
+    }
+    value.get("id").and_then(serde_json::Value::as_str)
+}
+
+fn json_value_to_literal(value: &serde_json::Value) -> Option<Literal> {
+    match value {
+        serde_json::Value::String(value) => Some(Literal::String(value.clone())),
+        serde_json::Value::Number(value) => value.as_f64().map(Literal::Number),
+        serde_json::Value::Bool(value) => Some(Literal::Bool(*value)),
+        serde_json::Value::Null => Some(Literal::Null),
+        serde_json::Value::Array(items) => items
+            .iter()
+            .map(json_value_to_literal)
+            .collect::<Option<Vec<_>>>()
+            .map(Literal::Array),
+        serde_json::Value::Object(entries) => {
+            let mut out = Vec::with_capacity(entries.len());
+            for (key, value) in entries {
+                out.push((key.clone(), json_value_to_literal(value)?));
+            }
+            Some(Literal::Object(out))
+        }
+    }
+}
+
+fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
+    pandacss_extractor::Diagnostic {
+        message,
+        severity: DiagnosticSeverity::Warning,
+        span: None,
+        location: None,
+    }
+}
+
+fn capitalize(value: &str) -> String {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return String::new();
+    };
+    first.to_uppercase().chain(chars).collect()
+}
+
 fn atom_value_to_json(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
     match v {
         pandacss_encoder::AtomValue::String(s) => serde_json::Value::String(s.to_string()),
@@ -296,10 +469,10 @@ fn parse_number_string(s: &str) -> serde_json::Value {
     if let Ok(n) = s.parse::<i64>() {
         return serde_json::Value::from(n);
     }
-    if let Ok(f) = s.parse::<f64>()
-        && let Some(num) = serde_json::Number::from_f64(f)
-    {
-        return serde_json::Value::Number(num);
+    if let Ok(f) = s.parse::<f64>() {
+        if let Some(num) = serde_json::Number::from_f64(f) {
+            return serde_json::Value::Number(num);
+        }
     }
     serde_json::Value::String(s.to_string())
 }

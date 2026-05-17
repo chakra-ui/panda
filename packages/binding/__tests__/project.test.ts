@@ -550,12 +550,21 @@ describe('Project', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: string }) => ({
-              display: 'flex',
-              gap: props.gap,
-              tablet: {
-                gap: '8',
+            'patterns.stack.transform': (
+              props: { gap?: unknown },
+              helpers: {
+                map: (value: unknown, fn: (value: string) => string) => unknown
+                isCssUnit: (value: unknown) => boolean
+                isCssVar: (value: unknown) => boolean
+                isCssFunction: (value: unknown) => boolean
               },
+            ) => ({
+              display: 'flex',
+              gap: helpers.map(props.gap, (value) =>
+                helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
+                  ? value
+                  : `token(spacing.${value}, ${value})`,
+              ),
             }),
           },
         },
@@ -567,8 +576,8 @@ describe('Project', () => {
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
-       stack({ gap: '4' })
-       const el = <Stack gap="6" />`,
+       stack({ gap: { base: '4', _hover: '8px' } })
+       const el = <Stack gap="var(--gap)" />`,
     )
 
     expect(project.atoms()).toMatchInlineSnapshot(`
@@ -580,19 +589,19 @@ describe('Project', () => {
         },
         {
           "prop": "gap",
-          "value": "4",
+          "value": "token(spacing.4, 4)",
           "conditions": [],
         },
         {
           "prop": "gap",
-          "value": "6",
+          "value": "var(--gap)",
           "conditions": [],
         },
         {
           "prop": "gap",
-          "value": "8",
+          "value": "8px",
           "conditions": [
-            "tablet",
+            "_hover",
           ],
         },
       ]

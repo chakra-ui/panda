@@ -674,6 +674,88 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       expect(calls).toBe(1)
     })
 
+    it('applies pattern transform callbacks with helpers', async () => {
+      const { project } = await createProjectFromConfig({
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          patterns: {
+            stack: {
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (
+              props: { gap?: unknown },
+              helpers: {
+                map: (value: unknown, fn: (value: string) => string) => unknown
+                isCssUnit: (value: unknown) => boolean
+                isCssVar: (value: unknown) => boolean
+                isCssFunction: (value: unknown) => boolean
+              },
+            ) => ({
+              display: 'flex',
+              gap: helpers.map(props.gap, (value) =>
+                helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
+                  ? value
+                  : `token(spacing.${value}, ${value})`,
+              ),
+            }),
+          },
+        },
+      })
+
+      project.parseFile(
+        '/Stack.tsx',
+        `import { stack } from '@panda/patterns'
+         import { Stack } from '@panda/jsx'
+         stack({ gap: { base: '4', _hover: '8px' } })
+         const el = <Stack gap="var(--gap)" />`,
+      )
+
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "display",
+            "value": "flex",
+            "conditions": [],
+          },
+          {
+            "prop": "gap",
+            "value": "token(spacing.4, 4)",
+            "conditions": [],
+          },
+          {
+            "prop": "gap",
+            "value": "var(--gap)",
+            "conditions": [],
+          },
+          {
+            "prop": "gap",
+            "value": "8px",
+            "conditions": [
+              "_hover",
+            ],
+          },
+        ]
+      `)
+    })
+
     it('clear drops every file', async () => {
       const { project } = await createProject(baseMatchers)
       project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)

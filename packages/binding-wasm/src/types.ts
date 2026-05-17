@@ -116,6 +116,7 @@ export declare class WasmProject {
   removeFile(path: string): boolean
   clear(): void
   isEmpty(): boolean
+  registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   atoms(): Atom[]
   recipes(): RecipeEntry[]
   slotRecipes(): RecipeEntry[]

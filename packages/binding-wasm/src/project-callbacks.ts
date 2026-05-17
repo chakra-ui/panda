@@ -20,6 +20,22 @@ interface TransformArgs {
   }
 }
 
+interface PatternHelpers {
+  map(value: unknown, fn: (value: any) => any): unknown
+  isCssUnit(value: unknown): boolean
+  isCssVar(value: unknown): boolean
+  isCssFunction(value: unknown): boolean
+}
+
+export function registerProjectCallbacks(project: WasmProject, callbacks: WasmProjectCallbacks) {
+  const patternTransforms = callbacks['pattern.transform']
+  if (project.registerPatternTransform && patternTransforms && Object.keys(patternTransforms).length > 0) {
+    for (const [id, callback] of Object.entries(patternTransforms)) {
+      project.registerPatternTransform(id, (props) => callback(props, createPatternHelpers()))
+    }
+  }
+}
+
 export function wrapProjectCallbacks(project: WasmProject, options: WasmProjectOptions | undefined): WasmProject {
   const callbacks = options?.callbacks
   const config = options?.config
@@ -169,6 +185,51 @@ function colorMix(value: string, token: TransformArgs['token']): ColorMixResult 
   }
 }
 
+function createPatternHelpers(): PatternHelpers {
+  return {
+    map: mapPatternValue,
+    isCssUnit,
+    isCssVar,
+    isCssFunction,
+  }
+}
+
+function mapPatternValue(value: unknown, fn: (value: any) => any): unknown {
+  if (Array.isArray(value)) return value.map((item) => fn(item))
+  if (!isPlainObject(value)) return fn(value)
+  return walkObject(value, fn)
+}
+
+function walkObject(value: Record<string, unknown>, fn: (value: any) => any): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    const next = isPlainObject(child)
+      ? walkObject(child, fn)
+      : Array.isArray(child)
+        ? child.map((item) => fn(item))
+        : fn(child)
+    if (next != null) out[key] = next
+  }
+  return out
+}
+
+const lengthUnits =
+  'cm,mm,Q,in,pc,pt,px,em,ex,ch,rem,lh,rlh,vw,vh,vmin,vmax,vb,vi,svw,svh,lvw,lvh,dvw,dvh,cqw,cqh,cqi,cqb,cqmin,cqmax,%'
+const lengthUnitsPattern = `(?:${lengthUnits.split(',').join('|')})`
+const lengthRegExp = new RegExp(`^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?${lengthUnitsPattern}$`)
+
+function isCssUnit(value: unknown) {
+  return typeof value === 'string' && lengthRegExp.test(value)
+}
+
+function isCssVar(value: unknown) {
+  return typeof value === 'string' && /^var\(--.+\)$/.test(value)
+}
+
+function isCssFunction(value: unknown) {
+  return typeof value === 'string' && /^(min|max|clamp|calc)\(.*\)/.test(value)
+}
+
 function getTokenCategoryValues(category: string, tokenDictionary: TokenDictionaryInput | undefined) {
   if (!tokenDictionary) return undefined
 
@@ -240,6 +301,10 @@ function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: stri
     (value as Record<string, unknown>).kind === 'js-callback' &&
     typeof (value as Record<string, unknown>).id === 'string'
   )
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
 function styleObjectToAtoms(style: Record<string, unknown>, baseConditions: string[]): Atom[] {

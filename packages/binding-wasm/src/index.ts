@@ -19,7 +19,12 @@ import type {
   WasmProjectOptions,
   WasmConfigSnapshot,
 } from './types'
-import { assertProjectCallbacks, resolveUtilityValueCallbacks, wrapProjectCallbacks } from './project-callbacks'
+import {
+  assertProjectCallbacks,
+  registerProjectCallbacks,
+  resolveUtilityValueCallbacks,
+  wrapProjectCallbacks,
+} from './project-callbacks'
 
 export type {
   Atom,
@@ -138,6 +143,7 @@ export async function createProject(
     ? resolveUtilityValueCallbacks(options.config, callbacks, options?.tokenDictionary ?? matchers.tokenDictionary)
     : undefined
   const project = new P(fs, matchers as unknown, nativeOptions)
+  registerProjectCallbacks(project, callbacks)
   return {
     fs,
     project: wrapProjectCallbacks(project, {
@@ -165,6 +171,7 @@ export async function createProjectFromConfig(
   assertProjectCallbacks(config, callbacks)
   const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, nativeOptions?.tokenDictionary)
   const project = P.fromConfig(fs, resolvedConfig, nativeOptions)
+  registerProjectCallbacks(project, callbacks)
   return { fs, project: wrapProjectCallbacks(project, { ...options, config: resolvedConfig, callbacks }) }
 }
 
