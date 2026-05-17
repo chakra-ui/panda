@@ -2,7 +2,11 @@
 
 mod calls;
 mod cross_file;
+mod css_property;
 mod extract;
+mod generated {
+    pub(crate) mod css_properties;
+}
 mod imports;
 mod jsx;
 mod literal;
@@ -11,6 +15,7 @@ mod scope;
 mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
+pub use css_property::{css_property_names, is_css_property};
 pub use extract::{ExtractDebugResult, ExtractUsage, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
@@ -22,8 +27,8 @@ pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use literal::Literal;
 pub use matcher::{
-    ExtractorConfig, MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary,
-    match_import_records, match_imports,
+    ExtractorConfig, JsxExtractionConfig, JsxStyleProps, MatchCategory, MatchedImport, Matcher,
+    Matchers, NameMatcher, TokenDictionary, match_import_records, match_imports,
 };
 pub use source::{SourceLocation, SourceRange};
 

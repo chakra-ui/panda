@@ -7,21 +7,14 @@
 //! consumer interprets the resulting string; the extractor just hands it
 //! back.
 
-use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
-use indoc::indoc;
+mod common;
 
-fn matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        ..Default::default()
-    }
-}
+use common::css_config;
+use indoc::indoc;
+use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
-    extract(source, "fixture.tsx", &ExtractorConfig::new(matchers()))
+    extract(source, "fixture.tsx", &css_config())
 }
 
 #[test]

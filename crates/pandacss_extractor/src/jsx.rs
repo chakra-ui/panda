@@ -73,7 +73,7 @@ pub fn extract_jsx(
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );
-    let ctx = VisitorContext::new(matched, &config.matchers).with_resolver(&resolver);
+    let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
     ExtractedJsxResult {
         jsx: collect_jsx(&parser_return.program, &ctx),
         diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
@@ -107,6 +107,7 @@ impl Extractor<'_, '_> {
                 }
                 if !self
                     .ctx
+                    .config
                     .matchers
                     .category_accepts_name(matched.category, &matched.name)
                 {
@@ -137,11 +138,12 @@ impl Extractor<'_, '_> {
                         // when X is a JSX factory like `styled.div`. For
                         // a recipe Component, `Box.Item` is plain dot
                         // access — skip.
-                        if !is_jsx_factory(self.ctx.matchers, &matched.name) {
+                        if !is_jsx_factory(&self.ctx.config.matchers, &matched.name) {
                             return None;
                         }
                         if !self
                             .ctx
+                            .config
                             .matchers
                             .category_accepts_name(matched.category, &matched.name)
                         {
@@ -154,6 +156,7 @@ impl Extractor<'_, '_> {
                         let first = path.first()?;
                         if !self
                             .ctx
+                            .config
                             .matchers
                             .category_accepts_name(matched.category, first)
                         {
@@ -176,6 +179,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
             for item in &element.attributes {
                 merge_attribute(item, &mut entries, self.ctx.resolver);
             }
+            entries.retain(|(prop, _)| self.ctx.config.jsx.should_extract_prop(&name, prop));
             self.out.push(ExtractedJsx {
                 category,
                 name,

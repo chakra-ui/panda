@@ -7,26 +7,13 @@
 //! dictionary value. Shadowed locals, unknown paths without a fallback,
 //! and missing dictionaries all drop the resolution.
 
-use pandacss_extractor::{
-    ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, TokenDictionary, extract,
-};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_tokens::{Token, TokenCategory};
+mod common;
 
-fn base_matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        tokens: Matcher {
-            modules: vec!["@panda/tokens".into()],
-            names: NameMatcher::only(["token"]),
-        },
-        ..Default::default()
-    }
-}
+use common::{panda_config, panda_config_with_token_dictionary};
+use pandacss_extractor::{ExtractUsage, TokenDictionary, extract};
+use pandacss_tokens::{Token, TokenCategory};
 
 /// A small token dictionary mirroring what the Panda runtime would emit
 /// for a tiny theme.
@@ -48,15 +35,11 @@ fn sample_tokens() -> TokenDictionary {
 }
 
 fn run(source: &str) -> ExtractUsage {
-    extract(
-        source,
-        "fixture.tsx",
-        &ExtractorConfig::new(base_matchers()),
-    )
+    extract(source, "fixture.tsx", &panda_config())
 }
 
 fn run_with_tokens(source: &str) -> ExtractUsage {
-    let config = ExtractorConfig::new(base_matchers()).with_token_dictionary(sample_tokens());
+    let config = panda_config_with_token_dictionary(sample_tokens());
     extract(source, "fixture.tsx", &config)
 }
 

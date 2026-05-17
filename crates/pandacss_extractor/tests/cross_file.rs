@@ -6,25 +6,12 @@
 
 use std::path::{Path, PathBuf};
 
-use insta::assert_yaml_snapshot;
-use pandacss_extractor::{
-    CrossFileResolver, ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract,
-};
-use pandacss_fs::MemoryFileSystem;
+mod common;
 
-fn matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        jsx: Some(Matcher {
-            modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::only(["styled", "Box"]),
-        }),
-        ..Default::default()
-    }
-}
+use common::panda_config;
+use insta::assert_yaml_snapshot;
+use pandacss_extractor::{CrossFileResolver, ExtractUsage, extract};
+use pandacss_fs::MemoryFileSystem;
 
 /// Build an in-memory project at `/proj` with `main.tsx` plus N sibling
 /// files. Returns the populated FS + the absolute main.tsx path.
@@ -42,8 +29,7 @@ fn project(main_source: &str, siblings: &[(&str, &str)]) -> (MemoryFileSystem, P
 }
 
 fn run(fs: &MemoryFileSystem, main_path: &Path, source: &str) -> ExtractUsage {
-    let config = ExtractorConfig::new(matchers())
-        .with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
     extract(source, main_path.to_str().unwrap(), &config)
 }
 
@@ -72,10 +58,7 @@ fn named_const_import_resolves_to_value() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
     calls:
       - name: css
@@ -97,10 +80,7 @@ fn imported_object_folds_member_access() {
             "export const tokens = { primary: '#3b82f6', secondary: '#a78bfa' };\n",
         )],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
     calls:
       - name: css
@@ -122,10 +102,7 @@ fn aliased_import_resolves_by_exported_name() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
     calls:
       - name: css
@@ -146,10 +123,7 @@ fn extensionless_import_resolves_through_probed_extensions() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
     calls:
       - name: css
@@ -170,10 +144,7 @@ fn unresolvable_specifier_drops_outer_call() {
         "},
         &[],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
 }
 
@@ -187,10 +158,7 @@ fn missing_export_drops_outer_call() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
 }
 
@@ -208,10 +176,7 @@ fn export_let_currently_folds_too() {
         "},
         &[("tokens.ts", "export let brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
     calls:
       - name: css
@@ -232,11 +197,8 @@ fn no_cross_file_resolver_means_no_folding() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
-    let config = ExtractorConfig::new(matchers());
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    let config = panda_config();
     let result = extract(&src, main.to_str().unwrap(), &config);
     assert_yaml_snapshot!(shape(&result), @"calls: []");
 }
@@ -260,10 +222,7 @@ fn cyclic_imports_drop_safely_without_panic() {
             ("b.ts", "import { brand } from './a';\nexport { brand };\n"),
         ],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     // No assertion on output beyond "didn't crash and produced *some*
     // result"; we don't currently fold `export { x } from './…'`
     // re-exports, so the cycle path produces `calls: []`.
@@ -284,12 +243,8 @@ fn cache_reuses_across_multiple_extracts() {
         "},
         &[("tokens.ts", "export const brand = '#ef4444';\n")],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
-    let config = ExtractorConfig::new(matchers())
-        .with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
     let a = extract(&src, main.to_str().unwrap(), &config);
     let b = extract(&src, main.to_str().unwrap(), &config);
     assert_eq!(shape(&a), shape(&b));
@@ -310,14 +265,8 @@ fn memory_fs_isolation_between_projects() {
         &[("tokens.ts", "export const brand = '#bbb';\n")],
     );
 
-    let src_a = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs_a, &main_a).unwrap(),
-    )
-    .unwrap();
-    let src_b = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs_b, &main_b).unwrap(),
-    )
-    .unwrap();
+    let src_a = String::from_utf8(oxc_resolver::FileSystem::read(&fs_a, &main_a).unwrap()).unwrap();
+    let src_b = String::from_utf8(oxc_resolver::FileSystem::read(&fs_b, &main_b).unwrap()).unwrap();
 
     let ra = run(&fs_a, &main_a, &src_a);
     let rb = run(&fs_b, &main_b, &src_b);
@@ -343,11 +292,8 @@ fn fs_mutation_after_resolver_construction_visible() {
     );
 
     let main = PathBuf::from("/proj/main.tsx");
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
-    let config = ExtractorConfig::new(matchers()).with_cross_file(resolver);
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    let config = panda_config().with_cross_file(resolver);
     let result = extract(&src, main.to_str().unwrap(), &config);
 
     assert_yaml_snapshot!(shape(&result), @r##"
@@ -374,10 +320,7 @@ fn deep_import_chain_resolves_at_one_level() {
             ("b.ts", "export const brand = '#ef4444';\n"),
         ],
     );
-    let src = String::from_utf8(
-        oxc_resolver::FileSystem::read(&fs, &main).unwrap(),
-    )
-    .unwrap();
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
     // Re-exports aren't folded yet → outer call drops.
     assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
 }

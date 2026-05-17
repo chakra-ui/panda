@@ -5,38 +5,15 @@
 //! `oxc_semantic` integration. These tests use the combined `extract()`
 //! entrypoint so the resolver is always present.
 
-use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
+mod common;
+
+use common::panda_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-
-fn matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        recipe: Matcher {
-            modules: vec!["@panda/recipes".into()],
-            names: NameMatcher::Any,
-        },
-        pattern: Matcher {
-            modules: vec!["@panda/patterns".into()],
-            names: NameMatcher::Any,
-        },
-        jsx: Some(Matcher {
-            modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::only(["styled", "Box"]),
-        }),
-        tokens: Matcher {
-            modules: vec!["@panda/tokens".into()],
-            names: NameMatcher::only(["token"]),
-        },
-        jsx_factories: None,
-    }
-}
+use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
-    extract(source, "fixture.tsx", &ExtractorConfig::new(matchers()))
+    extract(source, "fixture.tsx", &panda_config())
 }
 
 // --- identifier reference resolution ---

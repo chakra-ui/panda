@@ -1,9 +1,12 @@
+use indoc::indoc;
+use insta::assert_yaml_snapshot;
+mod common;
+
+use common::css_matchers;
 use pandacss_extractor::{
     ExtractedCallsResult, ExtractorConfig, ImportSpecifierKind, MatchCategory, MatchedImport,
     Matcher, Matchers, NameMatcher, extract_calls,
 };
-use indoc::indoc;
-use insta::assert_yaml_snapshot;
 
 fn css(alias: &str) -> MatchedImport {
     MatchedImport {
@@ -32,16 +35,6 @@ fn namespace(alias: &str, module: &str, category: MatchCategory) -> MatchedImpor
         name: "*".into(),
         alias: alias.into(),
         kind: ImportSpecifierKind::Namespace,
-    }
-}
-
-fn css_matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        ..Default::default()
     }
 }
 
@@ -174,6 +167,46 @@ fn literal_string_value() {
           end: 21
     diagnostics: []
     ");
+}
+
+#[test]
+fn named_raw_css_call_normalizes_to_imported_name() {
+    assert_yaml_snapshot!(extract("css.raw({ color: 'red' })", &[css("css")]), @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 25
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn namespace_raw_pattern_call_normalizes_to_property_name() {
+    let matchers = panda_matchers("@panda");
+    assert_yaml_snapshot!(
+        extract_with(
+            "p.stack.raw({ gap: '4' })",
+            &[namespace("p", "@panda/patterns", MatchCategory::Pattern)],
+            &matchers,
+        ),
+        @r#"
+    calls:
+      - category: pattern
+        name: stack
+        alias: p
+        data:
+          - gap: "4"
+        span:
+          start: 0
+          end: 25
+    diagnostics: []
+    "#,
+    );
 }
 
 #[test]

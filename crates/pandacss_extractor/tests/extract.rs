@@ -1,32 +1,9 @@
-use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract, extract_debug};
+mod common;
+
+use common::panda_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-
-fn panda_config() -> ExtractorConfig {
-    ExtractorConfig::new(Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        recipe: Matcher {
-            modules: vec!["@panda/recipes".into()],
-            names: NameMatcher::Any,
-        },
-        pattern: Matcher {
-            modules: vec!["@panda/patterns".into()],
-            names: NameMatcher::Any,
-        },
-        jsx: Some(Matcher {
-            modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::only(["styled", "Box"]),
-        }),
-        tokens: Matcher {
-            modules: vec!["@panda/tokens".into()],
-            names: NameMatcher::only(["token"]),
-        },
-        jsx_factories: None,
-    })
-}
+use pandacss_extractor::{extract, extract_debug};
 
 #[test]
 fn single_pass_extract_combines_calls_and_jsx() {

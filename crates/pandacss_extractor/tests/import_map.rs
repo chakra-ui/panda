@@ -1,6 +1,8 @@
-use pandacss_extractor::{MatchCategory, Matcher, Matchers, NameMatcher, match_imports, scan_imports};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_extractor::{
+    MatchCategory, Matcher, Matchers, NameMatcher, match_imports, scan_imports,
+};
 
 fn css_only(modules: &[&str]) -> Matchers {
     Matchers {

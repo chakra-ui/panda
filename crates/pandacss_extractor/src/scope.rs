@@ -22,8 +22,8 @@ use oxc_ast::ast::{
     VariableDeclarator,
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
-use rustc_hash::FxHashMap;
 use pandacss_tokens::TokenDictionary;
+use rustc_hash::FxHashMap;
 
 use crate::Literal;
 use crate::cross_file::CrossFileResolver;

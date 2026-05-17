@@ -87,6 +87,7 @@ pub struct Matchers {
 #[derive(Debug, Default)]
 pub struct ExtractorConfig {
     pub matchers: Matchers,
+    pub jsx: JsxExtractionConfig,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<TokenDictionary>,
     /// When `Some`, references to imported `const` exports from local
@@ -101,9 +102,16 @@ impl ExtractorConfig {
     pub fn new(matchers: Matchers) -> Self {
         Self {
             matchers,
+            jsx: JsxExtractionConfig::default(),
             token_dictionary: None,
             cross_file: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_jsx(mut self, jsx: JsxExtractionConfig) -> Self {
+        self.jsx = jsx;
+        self
     }
 
     #[must_use]
@@ -116,6 +124,45 @@ impl ExtractorConfig {
     pub fn with_cross_file(mut self, resolver: crate::CrossFileResolver) -> Self {
         self.cross_file = Some(resolver);
         self
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum JsxStyleProps {
+    #[default]
+    All,
+    Minimal,
+    None,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct JsxExtractionConfig {
+    pub style_props: JsxStyleProps,
+    pub component_props: FxHashMap<String, FxHashSet<String>>,
+    pub valid_style_props: FxHashSet<String>,
+}
+
+impl JsxExtractionConfig {
+    #[must_use]
+    pub fn should_extract_prop(&self, tag_name: &str, prop_name: &str) -> bool {
+        let is_component_prop = self
+            .component_props
+            .get(tag_name)
+            .is_some_and(|props| props.contains(prop_name));
+
+        match self.style_props {
+            JsxStyleProps::All => {
+                is_component_prop
+                    || self.valid_style_props.is_empty()
+                    || self.valid_style_props.contains(prop_name)
+                    || prop_name == "css"
+                    || prop_name.ends_with("Css")
+            }
+            JsxStyleProps::Minimal => {
+                is_component_prop || prop_name == "css" || prop_name.ends_with("Css")
+            }
+            JsxStyleProps::None => is_component_prop,
+        }
     }
 }
 
@@ -142,7 +189,7 @@ impl Matchers {
 /// Per-file context shared between the call and JSX visitors.
 pub(crate) struct VisitorContext<'a> {
     pub aliases: FxHashMap<&'a str, &'a MatchedImport>,
-    pub matchers: &'a Matchers,
+    pub config: &'a ExtractorConfig,
     /// `None` for staged entrypoints (`extract_calls`, `extract_jsx`)
     /// that skip semantic-build cost; `Some` for the combined `extract()`
     /// hot path.
@@ -150,10 +197,10 @@ pub(crate) struct VisitorContext<'a> {
 }
 
 impl<'a> VisitorContext<'a> {
-    pub(crate) fn new(matched: &'a [MatchedImport], matchers: &'a Matchers) -> Self {
+    pub(crate) fn new(matched: &'a [MatchedImport], config: &'a ExtractorConfig) -> Self {
         Self {
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
-            matchers,
+            config,
             resolver: None,
         }
     }

@@ -6,21 +6,17 @@
 //! - Configurable JSX factory names via `Matchers.jsx_factories`
 //! - Destructuring with default values (`const { x = 'red' } = obj`)
 
-use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+mod common;
 
-fn matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        jsx: Some(Matcher {
-            modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::only(["styled", "Box", "Panda"]),
-        }),
-        ..Default::default()
+use common::{matcher, panda_matchers};
+use pandacss_extractor::{ExtractUsage, ExtractorConfig, extract};
+
+fn matchers() -> pandacss_extractor::Matchers {
+    pandacss_extractor::Matchers {
+        jsx: Some(matcher("@panda/jsx", ["styled", "Box", "Panda"])),
+        ..panda_matchers()
     }
 }
 

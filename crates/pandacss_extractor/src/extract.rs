@@ -72,7 +72,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );
-    let ctx = VisitorContext::new(&matched, &config.matchers).with_resolver(&resolver);
+    let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
     let calls = collect_calls(&parser_return.program, &ctx);
     let jsx = collect_jsx(&parser_return.program, &ctx);
@@ -101,7 +101,7 @@ pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> Extr
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );
-    let ctx = VisitorContext::new(&matched, &config.matchers).with_resolver(&resolver);
+    let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
     let calls = collect_calls(&parser_return.program, &ctx);
     let jsx = collect_jsx(&parser_return.program, &ctx);

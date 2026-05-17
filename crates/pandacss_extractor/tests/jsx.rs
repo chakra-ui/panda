@@ -1,9 +1,11 @@
-use pandacss_extractor::{
-    ExtractedJsxResult, ExtractorConfig, ImportSpecifierKind, MatchCategory, MatchedImport,
-    Matcher, Matchers, NameMatcher, extract_jsx,
-};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+mod common;
+
+use common::jsx_config;
+use pandacss_extractor::{
+    ExtractedJsxResult, ImportSpecifierKind, MatchCategory, MatchedImport, extract_jsx,
+};
 
 fn styled(alias: &str) -> MatchedImport {
     MatchedImport {
@@ -35,22 +37,12 @@ fn namespace_jsx(alias: &str) -> MatchedImport {
     }
 }
 
-fn jsx_matchers() -> Matchers {
-    Matchers {
-        jsx: Some(Matcher {
-            modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::only(["styled", "Box", "Stack", "Grid"]),
-        }),
-        ..Default::default()
-    }
-}
-
 fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
     extract_jsx(
         source,
         "fixture.tsx",
         matched,
-        &ExtractorConfig::new(jsx_matchers()),
+        &jsx_config(["styled", "Box", "Stack", "Grid"]),
     )
 }
 

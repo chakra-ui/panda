@@ -3,7 +3,7 @@ use crate::{
     literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression};
+use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -59,7 +59,7 @@ pub fn extract_calls(
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );
-    let ctx = crate::VisitorContext::new(matched, &config.matchers).with_resolver(&resolver);
+    let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     ExtractedCallsResult {
         calls: collect_calls(&parser_return.program, &ctx),
         diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
@@ -113,27 +113,45 @@ impl Extractor<'_, '_> {
                     alias: &matched.alias,
                 })
             }
-            Expression::StaticMemberExpression(member) => {
-                let Expression::Identifier(object) = &member.object else {
-                    return None;
-                };
+            Expression::StaticMemberExpression(_) => {
+                let (object, path) = flatten_static_member_path(&call.callee)?;
                 let matched = self.ctx.aliases.get(object.name.as_str())?;
-                if matched.kind != ImportSpecifierKind::Namespace {
-                    return None;
-                }
                 if let Some(resolver) = self.ctx.resolver
                     && !resolver.is_import_binding(object)
                 {
                     return None;
                 }
-                let property = member.property.name.as_str();
+
+                if matched.kind == ImportSpecifierKind::Named {
+                    if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
+                        return None;
+                    }
+                    return Some(ResolvedCallee {
+                        category: matched.category,
+                        name: Cow::Borrowed(&matched.name),
+                        alias: &matched.alias,
+                    });
+                }
+
+                if matched.kind != ImportSpecifierKind::Namespace {
+                    return None;
+                }
+                let (&property, raw_tail) = path.split_first()?;
+                if !raw_tail.is_empty() && raw_tail != ["raw"] {
+                    return None;
+                }
+                if raw_tail == ["raw"] && !is_raw_category(matched.category) {
+                    return None;
+                }
                 if !self
                     .ctx
+                    .config
                     .matchers
                     .category_accepts_name(matched.category, property)
                 {
                     return None;
                 }
+
                 Some(ResolvedCallee {
                     category: matched.category,
                     name: Cow::Borrowed(property),
@@ -141,6 +159,33 @@ impl Extractor<'_, '_> {
                 })
             }
             _ => None,
+        }
+    }
+}
+
+fn is_raw_category(category: MatchCategory) -> bool {
+    matches!(
+        category,
+        MatchCategory::Css | MatchCategory::Recipe | MatchCategory::Pattern
+    )
+}
+
+fn flatten_static_member_path<'a>(
+    expr: &'a Expression<'_>,
+) -> Option<(&'a IdentifierReference<'a>, Vec<&'a str>)> {
+    let mut path = Vec::new();
+    let mut current = expr;
+    loop {
+        match current {
+            Expression::StaticMemberExpression(member) => {
+                path.push(member.property.name.as_str());
+                current = &member.object;
+            }
+            Expression::Identifier(ident) => {
+                path.reverse();
+                return Some((ident, path));
+            }
+            _ => return None,
         }
     }
 }

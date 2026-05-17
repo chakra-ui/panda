@@ -1,6 +1,6 @@
-use pandacss_extractor::{DiagnosticSeverity, ImportScanResult, scan_imports};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_extractor::{DiagnosticSeverity, ImportScanResult, scan_imports};
 
 fn scan(source: &str) -> ImportScanResult {
     scan_imports(source, "fixture.tsx")

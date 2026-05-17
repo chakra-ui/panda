@@ -6,26 +6,15 @@
 //! we emit both alternatives so the downstream encoder can generate
 //! atomic-CSS-style output.
 
-use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
+mod common;
+
+use common::panda_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-
-fn matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        jsx: Some(Matcher {
-            modules: vec!["@panda/jsx".into()],
-            names: NameMatcher::only(["styled", "Box"]),
-        }),
-        ..Default::default()
-    }
-}
+use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
-    extract(source, "fixture.tsx", &ExtractorConfig::new(matchers()))
+    extract(source, "fixture.tsx", &panda_config())
 }
 
 // --- ternary ---

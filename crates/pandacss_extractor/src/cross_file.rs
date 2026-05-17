@@ -7,7 +7,7 @@
 //! tsconfig paths, package.json `exports`).
 //!
 //! `CrossFileResolver` is type-erased over the [`pandacss_fs::FileSystem`]
-//! impl so consumer types (`ExtractorConfig`, `PandaProject`) stay
+//! impl so consumer types (`ExtractorConfig`, `Project`) stay
 //! non-generic. The concrete impl lives in `ResolverImpl<F>` behind a
 //! `Box<dyn CrossFileLookup>`.
 //!

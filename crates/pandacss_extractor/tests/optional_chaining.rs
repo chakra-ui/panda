@@ -6,22 +6,15 @@
 //! object/array lookup path. We don't model JS `undefined`; if the base
 //! isn't a resolvable object, the call is simply dropped.
 
-use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
+mod common;
+
+use common::css_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-
-fn matchers() -> Matchers {
-    Matchers {
-        css: Matcher {
-            modules: vec!["@panda/css".into()],
-            names: NameMatcher::only(["css", "cva", "sva"]),
-        },
-        ..Default::default()
-    }
-}
+use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
-    extract(source, "fixture.tsx", &ExtractorConfig::new(matchers()))
+    extract(source, "fixture.tsx", &css_config())
 }
 
 #[test]
