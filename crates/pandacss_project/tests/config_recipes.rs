@@ -242,6 +242,106 @@ fn recipe_function_calls_encode_config_recipes() {
 }
 
 #[test]
+fn config_recipe_entries_preserve_important_metadata() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "color": "red !important" },
+                    "variants": {
+                        "tone": {
+                            "solid": { "background": "blue!" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { button } from '@panda/recipes';
+            button({ tone: 'solid' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: color
+            value: red
+            conditions: []
+            important: true
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--tone_solid
+        entries:
+          - prop: background
+            value: blue
+            conditions: []
+            important: true
+    atomic: []
+    ");
+}
+
+#[test]
+fn config_recipe_entries_skip_absolute_url_values() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": {
+                        "color": "red",
+                        "backgroundImage": "https://example.com/bg.png"
+                    },
+                    "variants": {
+                        "tone": {
+                            "solid": {
+                                "background": "blue",
+                                "maskImage": "http://example.com/mask.svg"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { button } from '@panda/recipes';
+            button({ tone: 'solid' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: color
+            value: red
+            conditions: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--tone_solid
+        entries:
+          - prop: background
+            value: blue
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn no_arg_recipe_calls_use_base_and_defaults() {
     let mut project = create_project(json!({
         "theme": {

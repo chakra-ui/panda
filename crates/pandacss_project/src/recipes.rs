@@ -7,8 +7,8 @@ use std::borrow::Cow;
 use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder};
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{number_to_js_string, push_number_to_js_string};
-use pandacss_utility::Utility;
+use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
+use pandacss_utility::{StyleNormalizer, Utility};
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
 use crate::{ProjectConditionMatcher, literal_entries};
@@ -71,6 +71,7 @@ struct ResolvedCompoundVariant {
 pub(crate) struct StyleResolver<'a> {
     pub(crate) utility: Option<&'a Utility>,
     pub(crate) conditions: &'a ProjectConditionMatcher,
+    pub(crate) breakpoints: &'a [String],
 }
 
 impl StyleResolver<'_> {
@@ -93,25 +94,28 @@ impl StyleResolver<'_> {
         let style = self.normalize_style_object(style);
         let mut entries = FxHashSet::default();
         walk_style_object(style.as_ref(), self.conditions, |leaf| {
-            let Some(value) = literal_to_atom_value(leaf.value) else {
+            let Some(value) = literal_to_recipe_value(leaf.value) else {
                 return;
             };
             let mut conditions = prefix_conditions.clone();
             conditions.extend(leaf.conditions);
             entries.insert(RecipeStyleEntry {
                 prop: leaf.prop.into(),
-                value,
+                value: value.value,
                 conditions,
+                important: value.important,
             });
         });
         entries
     }
 
     fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
-        self.utility.map_or_else(
-            || Cow::Borrowed(style),
-            |utility| Cow::Owned(utility.normalize_style_object(style)),
-        )
+        StyleNormalizer {
+            utility: self.utility,
+            breakpoints: self.breakpoints,
+            shorthand: false,
+        }
+        .normalize(style)
     }
 }
 
@@ -481,6 +485,8 @@ pub struct RecipeStyleEntry {
     pub prop: Box<str>,
     pub value: AtomValue,
     pub conditions: SmallVec<[Box<str>; 2]>,
+    #[serde(skip_serializing_if = "is_false")]
+    pub important: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -1025,22 +1031,61 @@ fn walk_style_object_inner<F>(
     });
 }
 
-fn literal_to_atom_value(value: &Literal) -> Option<AtomValue> {
+struct RecipeValue {
+    value: AtomValue,
+    important: bool,
+}
+
+fn literal_to_recipe_value(value: &Literal) -> Option<RecipeValue> {
     match value {
-        Literal::String(value) => Some(AtomValue::String(value.clone().into_boxed_str())),
-        Literal::Number(value) => Some(AtomValue::Number(
-            number_to_js_string(*value).into_boxed_str(),
-        )),
-        Literal::Bool(value) => Some(AtomValue::Bool(*value)),
-        Literal::Null => Some(AtomValue::Null),
-        Literal::Array(items) => Some(AtomValue::String(
-            format!("[{}]", literal_join(items, ",")).into_boxed_str(),
-        )),
-        Literal::Conditional(branches) => Some(AtomValue::String(
-            format!("?({})", literal_join(branches, "|")).into_boxed_str(),
-        )),
+        Literal::String(value) => {
+            if is_absolute_url(value) {
+                return None;
+            }
+            let (value, important) = split_important(value);
+            Some(RecipeValue {
+                value: AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            })
+        }
+        Literal::Number(value) => Some(RecipeValue {
+            value: AtomValue::Number(number_to_js_string(*value).into_boxed_str()),
+            important: false,
+        }),
+        Literal::Bool(value) => Some(RecipeValue {
+            value: AtomValue::Bool(*value),
+            important: false,
+        }),
+        Literal::Null => Some(RecipeValue {
+            value: AtomValue::Null,
+            important: false,
+        }),
+        Literal::Array(items) => {
+            let value = format!("[{}]", literal_join(items, ","));
+            let (value, important) = split_important(&value);
+            Some(RecipeValue {
+                value: AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            })
+        }
+        Literal::Conditional(branches) => {
+            let value = format!("?({})", literal_join(branches, "|"));
+            let (value, important) = split_important(&value);
+            Some(RecipeValue {
+                value: AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            })
+        }
         Literal::Object(_) => None,
     }
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+
+fn is_absolute_url(value: &str) -> bool {
+    value.starts_with("http://") || value.starts_with("https://")
 }
 
 fn literal_join(items: &[Literal], separator: &str) -> String {

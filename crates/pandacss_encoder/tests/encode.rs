@@ -88,6 +88,60 @@ fn nested_condition_creates_condition_chain() {
 }
 
 #[test]
+fn important_string_values_are_structural_metadata() {
+    let lit = first_arg(
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({
+              color: 'red !important',
+              background: 'blue!',
+              _hover: { borderColor: 'green !IMPORTANT' },
+            });
+        "},
+        "css",
+    );
+    let mut encoder = Encoder::new();
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: background
+      value: blue
+      conditions: []
+      important: true
+    - prop: borderColor
+      value: green
+      conditions:
+        - _hover
+      important: true
+    - prop: color
+      value: red
+      conditions: []
+      important: true
+    ");
+}
+
+#[test]
+fn absolute_url_string_values_are_skipped() {
+    let lit = first_arg(
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({
+              color: 'red',
+              backgroundImage: 'https://example.com/bg.png',
+              maskImage: 'http://example.com/mask.svg',
+            });
+        "},
+        "css",
+    );
+    let mut encoder = Encoder::new();
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
 fn deeply_nested_conditions_stack_in_order() {
     let lit = first_arg(
         indoc! {r"

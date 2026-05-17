@@ -25,7 +25,7 @@ use smallvec::SmallVec;
 
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{number_to_js_string, push_number_to_js_string};
+use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
 
 // PERF(port): inline budget for `Atom::conditions`. Picked from real
 // Panda usage where atoms typically have 0-2 conditions; 3+ spills.
@@ -41,6 +41,8 @@ pub struct Atom {
     value: AtomValue,
     /// Outer-to-inner condition chain. Empty for unconditional atoms.
     conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    #[serde(skip_serializing_if = "is_false")]
+    important: bool,
     #[serde(skip)]
     hash: u64,
 }
@@ -62,12 +64,14 @@ impl Atom {
         prop: Box<str>,
         value: AtomValue,
         conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+        important: bool,
     ) -> Self {
-        let hash = hash_atom_parts(&prop, &value, &conditions);
+        let hash = hash_atom_parts(&prop, &value, &conditions, important);
         Self {
             prop,
             value,
             conditions,
+            important,
             hash,
         }
     }
@@ -79,7 +83,12 @@ impl Atom {
         }
         let mut conditions = prefix.clone();
         conditions.extend(self.conditions.iter().cloned());
-        Self::new(self.prop.clone(), self.value.clone(), conditions)
+        Self::new(
+            self.prop.clone(),
+            self.value.clone(),
+            conditions,
+            self.important,
+        )
     }
 
     #[must_use]
@@ -96,11 +105,19 @@ impl Atom {
     pub fn conditions(&self) -> &[Box<str>] {
         &self.conditions
     }
+
+    #[must_use]
+    pub fn important(&self) -> bool {
+        self.important
+    }
 }
 
 impl PartialEq for Atom {
     fn eq(&self, other: &Self) -> bool {
-        self.prop == other.prop && self.value == other.value && self.conditions == other.conditions
+        self.prop == other.prop
+            && self.value == other.value
+            && self.conditions == other.conditions
+            && self.important == other.important
     }
 }
 
@@ -233,8 +250,8 @@ impl<C: ConditionMatcher> Encoder<C> {
             .filter(|s| s.is_condition && s.name != "base")
             .map(|s| s.name.into())
             .collect();
-        let value = leaf_to_atom_value(leaf)?;
-        Some(Atom::new(prop, value, conditions))
+        let leaf = leaf_to_atom_value(leaf)?;
+        Some(Atom::new(prop, leaf.value, conditions, leaf.important))
     }
 }
 
@@ -242,11 +259,13 @@ fn hash_atom_parts(
     prop: &str,
     value: &AtomValue,
     conditions: &SmallVec<[Box<str>; INLINE_CONDS]>,
+    important: bool,
 ) -> u64 {
     let mut hasher = FxHasher::default();
     prop.hash(&mut hasher);
     value.hash(&mut hasher);
     conditions.hash(&mut hasher);
+    important.hash(&mut hasher);
     hasher.finish()
 }
 
@@ -256,28 +275,67 @@ struct PathSegment<'a> {
     is_condition: bool,
 }
 
-fn leaf_to_atom_value(value: &Literal) -> Option<AtomValue> {
+struct EncodedLeaf {
+    value: AtomValue,
+    important: bool,
+}
+
+fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
     match value {
-        Literal::String(s) => Some(AtomValue::String(s.clone().into_boxed_str())),
-        Literal::Number(n) => Some(AtomValue::Number(number_to_js_string(*n).into_boxed_str())),
-        Literal::Bool(b) => Some(AtomValue::Bool(*b)),
-        Literal::Null => Some(AtomValue::Null),
+        Literal::String(s) => {
+            if is_absolute_url(s) {
+                return None;
+            }
+            let (value, important) = split_important(s);
+            Some(EncodedLeaf {
+                value: AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            })
+        }
+        Literal::Number(n) => Some(EncodedLeaf {
+            value: AtomValue::Number(number_to_js_string(*n).into_boxed_str()),
+            important: false,
+        }),
+        Literal::Bool(b) => Some(EncodedLeaf {
+            value: AtomValue::Bool(*b),
+            important: false,
+        }),
+        Literal::Null => Some(EncodedLeaf {
+            value: AtomValue::Null,
+            important: false,
+        }),
         Literal::Array(items) => {
             let mut out = String::with_capacity(items.len().saturating_mul(8) + 2);
             out.push('[');
             append_joined_literal_repr(&mut out, items, ",");
             out.push(']');
-            Some(AtomValue::String(out.into_boxed_str()))
+            let (value, important) = split_important(&out);
+            Some(EncodedLeaf {
+                value: AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            })
         }
         Literal::Conditional(branches) => {
             let mut out = String::with_capacity(branches.len().saturating_mul(8) + 3);
             out.push_str("?(");
             append_joined_literal_repr(&mut out, branches, "|");
             out.push(')');
-            Some(AtomValue::String(out.into_boxed_str()))
+            let (value, important) = split_important(&out);
+            Some(EncodedLeaf {
+                value: AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            })
         }
         Literal::Object(_) => None,
     }
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+
+fn is_absolute_url(value: &str) -> bool {
+    value.starts_with("http://") || value.starts_with("https://")
 }
 
 fn append_joined_literal_repr(out: &mut String, items: &[Literal], sep: &str) {
