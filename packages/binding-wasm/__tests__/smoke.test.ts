@@ -530,6 +530,33 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       `)
     })
 
+    it('throws when serialized callback refs are missing callbacks', async () => {
+      await expect(
+        createProjectFromConfig({
+          config: {
+            cwd: '/virtual',
+            outdir: 'styled-system',
+            importMap: {
+              css: ['@panda/css'],
+              recipe: ['@panda/recipes'],
+              pattern: ['@panda/patterns'],
+              jsx: ['@panda/jsx'],
+              tokens: ['@panda/tokens'],
+            },
+            utilities: {
+              size: {
+                transform: {
+                  kind: 'js-callback',
+                  id: 'utilities.size.transform',
+                },
+              },
+            },
+          },
+          callbacks: {},
+        }),
+      ).rejects.toThrow('Missing utility.transform callback `utilities.size.transform` for `size`')
+    })
+
     it('applies utility transform callbacks under conditions', async () => {
       const { project } = await createProject(baseMatchers, {
         config: {

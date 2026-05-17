@@ -333,8 +333,10 @@ fn apply_utility_transforms(
             continue;
         };
         let Some(callback) = callbacks.get(id) else {
-            out.push(atom);
-            continue;
+            return Err(napi::Error::from_reason(format!(
+                "Missing utility transform callback `{id}` for `{}`",
+                atom.prop
+            )));
         };
 
         let cache_key = UtilityTransformCacheKey {

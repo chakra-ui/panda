@@ -326,6 +326,36 @@ describe('Project', () => {
     `)
   })
 
+  it('throws when serialized callback refs are missing callbacks', () => {
+    expect(() =>
+      Project.fromConfig(
+        {
+          config: {
+            cwd: '/virtual',
+            outdir: 'styled-system',
+            importMap: {
+              css: ['@panda/css'],
+              recipe: ['@panda/recipes'],
+              pattern: ['@panda/patterns'],
+              jsx: ['@panda/jsx'],
+              tokens: ['@panda/tokens'],
+            },
+            utilities: {
+              size: {
+                transform: {
+                  kind: 'js-callback',
+                  id: 'utilities.size.transform',
+                },
+              },
+            },
+          },
+          callbacks: {},
+        },
+        { crossFile: false },
+      ),
+    ).toThrow('Missing utility.transform callback `utilities.size.transform` for `size`')
+  })
+
   it('applies utility transform callbacks under conditions', () => {
     const project = Project.fromConfig(
       {

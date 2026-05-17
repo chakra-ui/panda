@@ -54,6 +54,12 @@ export function wrapProjectCallbacks(
   }
 }
 
+export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: ProjectCallbacks) {
+  assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])
+  assertCallbackRefs('utility.transform', getUtilityTransformRefs(config), callbacks['utility.transform'])
+  assertCallbackRefs('pattern.transform', getPatternTransformRefs(config), callbacks['pattern.transform'])
+}
+
 export function resolveUtilityValueCallbacks(
   config: Record<string, unknown>,
   callbacks: ProjectCallbacks,
@@ -89,6 +95,14 @@ export function resolveUtilityValueCallbacks(
   }
 
   return changed ? { ...config, utilities: nextUtilities } : config
+}
+
+function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: Record<string, Function> | undefined) {
+  for (const [name, id] of refs) {
+    if (!callbacks?.[id]) {
+      throw new Error(`Missing ${kind} callback \`${id}\` for \`${name}\``)
+    }
+  }
 }
 
 export function registerNativeProjectCallbacks(
@@ -217,6 +231,43 @@ function getUtilityTransformRefs(config: Record<string, unknown>) {
   }
 
   return refs
+}
+
+function getUtilityValueRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  const utilities = config.utilities
+  if (!utilities || typeof utilities !== 'object' || Array.isArray(utilities)) return refs
+
+  for (const [prop, utility] of Object.entries(utilities as Record<string, unknown>)) {
+    if (!utility || typeof utility !== 'object' || Array.isArray(utility)) continue
+    const values = (utility as Record<string, unknown>).values
+    if (isCallbackRef(values)) refs.set(prop, values.id)
+  }
+
+  return refs
+}
+
+function getPatternTransformRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  collectPatternTransformRefs(config.patterns, refs)
+  return refs
+}
+
+function collectPatternTransformRefs(value: unknown, refs: Map<string, string>) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  collectPatternTransformRefMap(value as Record<string, unknown>, refs)
+  const extend = (value as Record<string, unknown>).extend
+  if (extend && typeof extend === 'object' && !Array.isArray(extend)) {
+    collectPatternTransformRefMap(extend as Record<string, unknown>, refs)
+  }
+}
+
+function collectPatternTransformRefMap(patterns: Record<string, unknown>, refs: Map<string, string>) {
+  for (const [name, pattern] of Object.entries(patterns)) {
+    if (name === 'extend' || !pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    const transform = (pattern as Record<string, unknown>).transform
+    if (isCallbackRef(transform)) refs.set(name, transform.id)
+  }
 }
 
 function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: string } {
