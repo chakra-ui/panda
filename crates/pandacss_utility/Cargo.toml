@@ -10,8 +10,12 @@ publish = false
 [dependencies]
 pandacss_extractor = { workspace = true }
 pandacss_shared = { workspace = true }
+pandacss_tokens = { workspace = true }
 rustc-hash = { workspace = true }
 serde_json = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
 
 [lints]
 workspace = true

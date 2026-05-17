@@ -1007,6 +1007,7 @@ version = "0.0.0"
 dependencies = [
  "pandacss_recipes",
  "pandacss_shared",
+ "pandacss_tokens",
  "regex",
  "rustc-hash",
  "serde",
@@ -1137,8 +1138,10 @@ dependencies = [
 name = "pandacss_utility"
 version = "0.0.0"
 dependencies = [
+ "insta",
  "pandacss_extractor",
  "pandacss_shared",
+ "pandacss_tokens",
  "rustc-hash",
  "serde_json",
 ]

@@ -233,6 +233,8 @@ pub struct TokenDictionary {
     #[cfg_attr(feature = "serde", serde(skip))]
     by_category: FxHashMap<TokenCategory, Vec<usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
+    by_category_key: FxHashMap<TokenCategory, FxHashMap<String, usize>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
     by_condition: FxHashMap<String, Vec<usize>>,
     /// Nested so lookups never allocate (two O(1) hashes); a flat
     /// `(String, String)` key would force a `to_owned` per call.
@@ -377,6 +379,15 @@ impl TokenDictionary {
     }
 
     #[must_use]
+    pub fn category_value_str(&self, category: &str, key: &str) -> Option<&str> {
+        let category = TokenCategory::from_path_segment(category);
+        self.by_category_key
+            .get(&category)?
+            .get(key)
+            .map(|&i| self.tokens[i].value.as_str())
+    }
+
+    #[must_use]
     pub fn is_deprecated(&self, path: &str) -> bool {
         self.token(path).is_some_and(|t| t.deprecated)
     }
@@ -452,6 +463,8 @@ impl TokenDictionaryBuilder {
         let mut by_var: FxHashMap<String, usize> =
             FxHashMap::with_capacity_and_hasher(n, rustc_hash::FxBuildHasher);
         let mut by_category: FxHashMap<TokenCategory, Vec<usize>> = FxHashMap::default();
+        let mut by_category_key: FxHashMap<TokenCategory, FxHashMap<String, usize>> =
+            FxHashMap::default();
         let mut by_condition: FxHashMap<String, Vec<usize>> = FxHashMap::default();
         let mut by_path_condition: FxHashMap<String, FxHashMap<String, usize>> =
             FxHashMap::default();
@@ -467,6 +480,14 @@ impl TokenDictionaryBuilder {
                 .entry(token.category.clone())
                 .or_default()
                 .push(i);
+            if token.condition.is_none()
+                && let Some(key) = token.path.split_once('.').map(|(_, key)| key)
+            {
+                by_category_key
+                    .entry(token.category.clone())
+                    .or_default()
+                    .insert(key.to_owned(), i);
+            }
 
             if let Some(condition) = token.condition.as_deref() {
                 if !by_condition.contains_key(condition) {
@@ -512,6 +533,7 @@ impl TokenDictionaryBuilder {
             by_path,
             by_var,
             by_category,
+            by_category_key,
             by_condition,
             by_path_condition,
             conditions_order,

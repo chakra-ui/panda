@@ -3,6 +3,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub use pandacss_tokens::TokenDictionary;
+
 /// JSON-safe resolved config snapshot produced on the JavaScript side.
 ///
 /// JavaScript remains responsible for executing `panda.config.*`,
@@ -21,6 +23,8 @@ pub struct SerializedConfig {
     pub exclude: Vec<String>,
     #[serde(default)]
     pub import_map: Option<ImportMap>,
+    #[serde(default)]
+    pub token_dictionary: Option<TokenDictionary>,
     #[serde(default)]
     pub jsx_factory: Option<String>,
     #[serde(default)]

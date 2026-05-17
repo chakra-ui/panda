@@ -34,6 +34,7 @@
 mod conditions;
 mod config;
 mod parsed_file;
+mod patterns;
 mod recipes;
 
 use std::borrow::Cow;
@@ -47,14 +48,15 @@ use smallvec::SmallVec;
 use pandacss_config::SerializedConfig;
 use pandacss_encoder::{Atom, Encoder};
 use pandacss_extractor::{
-    CrossFileResolver, ExtractorConfig, Literal, MatchCategory, Matchers, TokenDictionary, extract,
+    CrossFileResolver, ExtractorConfig, Literal, MatchCategory, Matchers, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_utility::Utility;
+use pandacss_utility::{StyleNormalizer, Utility};
 
 pub(crate) use conditions::{ProjectConditionMatcher, ProjectConditions};
 use config::ProjectConfig;
 pub use parsed_file::ParsedFile;
+use patterns::PatternRegistry;
 pub use recipes::{
     EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
     RecipeStyleGroupSnapshot,
@@ -68,6 +70,8 @@ pub struct Project {
     extractor_config: ExtractorConfig,
     utility: Option<Utility>,
     conditions: ProjectConditionMatcher,
+    breakpoints: Vec<String>,
+    patterns: PatternRegistry,
     recipes: RecipeRegistry,
     files: FxHashMap<Arc<str>, FileEntry>,
     /// Deduplicated union of every value in `files`. Updated by reference
@@ -120,6 +124,8 @@ impl Project {
             extractor_config,
             utility: None,
             conditions: ProjectConditions::from_names([]),
+            breakpoints: Vec::new(),
+            patterns: PatternRegistry::default(),
             recipes: RecipeRegistry::default(),
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
@@ -142,6 +148,8 @@ impl Project {
             extractor_config: project_config.extractor_config,
             utility: project_config.utility,
             conditions: project_config.conditions,
+            breakpoints: project_config.breakpoints,
+            patterns: project_config.patterns,
             recipes: project_config.recipes,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
@@ -154,12 +162,6 @@ impl Project {
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
         }
-    }
-
-    #[must_use]
-    pub fn with_token_dictionary(mut self, dictionary: TokenDictionary) -> Self {
-        self.extractor_config.token_dictionary = Some(dictionary);
-        self
     }
 
     #[must_use]
@@ -225,8 +227,7 @@ impl Project {
                     let Some(arg) = arg else {
                         continue;
                     };
-                    let normalized = self.normalize_style_object(&arg);
-                    encoder.process_atomic(normalized.as_ref());
+                    self.process_atomic(&mut encoder, &arg);
                     report.css_calls += 1;
                 }
                 (MatchCategory::Css, "cva") => {
@@ -274,10 +275,10 @@ impl Project {
                         continue;
                     };
                     if let Some(transform) = pattern_transform.as_deref_mut() {
-                        match transform(&call.name, &arg) {
+                        let pattern = self.patterns.transform_input(&call.name, &arg);
+                        match transform(pattern.name, pattern.styles.as_ref()) {
                             Ok(Some(style)) => {
-                                let normalized = self.normalize_style_object(&style);
-                                encoder.process_atomic(normalized.as_ref());
+                                self.process_style_props(&mut encoder, &style);
                             }
                             Ok(None) => {}
                             Err(diagnostic) => report.diagnostics.push(diagnostic),
@@ -299,8 +300,7 @@ impl Project {
                     .recipes
                     .style_props_for_recipes(&recipe_names, &jsx.data)
                 {
-                    let normalized = self.normalize_style_object(&style_props);
-                    encoder.process_atomic(normalized.as_ref());
+                    self.process_style_props(&mut encoder, &style_props);
                 }
                 for recipe_name in &recipe_names {
                     encoded_recipes.process_usage(
@@ -315,7 +315,8 @@ impl Project {
             }
 
             let style = if let Some(transform) = pattern_transform.as_deref_mut() {
-                match transform(&jsx.name, &jsx.data) {
+                let pattern = self.patterns.transform_input(&jsx.name, &jsx.data);
+                match transform(pattern.name, pattern.styles.as_ref()) {
                     Ok(Some(style)) => style,
                     Ok(None) => jsx.data,
                     Err(diagnostic) => {
@@ -326,8 +327,7 @@ impl Project {
             } else {
                 jsx.data
             };
-            let normalized = self.normalize_style_object(&style);
-            encoder.process_atomic(normalized.as_ref());
+            self.process_style_props(&mut encoder, &style);
             report.jsx_usages += 1;
         }
 
@@ -448,10 +448,55 @@ impl Project {
     }
 
     fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
-        self.utility.as_ref().map_or_else(
-            || Cow::Borrowed(style),
-            |utility| Cow::Owned(utility.normalize_style_object(style)),
-        )
+        StyleNormalizer {
+            utility: self.utility.as_ref(),
+            breakpoints: &self.breakpoints,
+            shorthand: true,
+        }
+        .normalize(style)
+    }
+
+    fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let normalized = self.normalize_style_object(style);
+        encoder.process_atomic(normalized.as_ref());
+    }
+
+    fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let Literal::Object(entries) = style else {
+            self.process_atomic(encoder, style);
+            return;
+        };
+
+        let mut rest = Vec::with_capacity(entries.len());
+        for (key, value) in entries {
+            if is_css_prop(key) {
+                self.process_nested_css_prop(encoder, value);
+            } else {
+                rest.push((key.clone(), value.clone()));
+            }
+        }
+
+        if !rest.is_empty() {
+            self.process_atomic(encoder, &Literal::Object(rest));
+        }
+    }
+
+    fn process_nested_css_prop(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        value: &Literal,
+    ) {
+        match value {
+            Literal::Array(items) => {
+                for item in items {
+                    if !matches!(item, Literal::Null) {
+                        self.process_atomic(encoder, item);
+                    }
+                }
+            }
+            Literal::Null | Literal::Bool(false) => {}
+            _ => self.process_atomic(encoder, value),
+        }
     }
 
     #[must_use]
@@ -510,6 +555,10 @@ impl Project {
     pub fn serialized_config(&self) -> Option<&SerializedConfig> {
         self.serialized_config.as_ref()
     }
+}
+
+fn is_css_prop(key: &str) -> bool {
+    key == "css" || key.ends_with("Css")
 }
 
 pub type PatternTransformFn<'a> =

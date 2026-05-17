@@ -10,6 +10,7 @@ publish = false
 [dependencies]
 pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
+pandacss_tokens = { workspace = true, features = ["serde"] }
 regex = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }

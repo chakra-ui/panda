@@ -12,8 +12,9 @@ use pandacss_extractor::{
 };
 use pandacss_recipes::{Recipe, SlotRecipe, recipe_jsx_names, slot_recipe_jsx_names};
 use pandacss_shared::{capitalize, regex_from_serialized_value};
-use pandacss_utility::Utility;
+use pandacss_utility::{Utility, UtilityOptions};
 
+use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
 use crate::{ProjectConditionMatcher, ProjectConditions, RecipeKey};
 
@@ -21,6 +22,8 @@ pub(crate) struct ProjectConfig {
     pub(crate) extractor_config: ExtractorConfig,
     pub(crate) utility: Option<Utility>,
     pub(crate) conditions: ProjectConditionMatcher,
+    pub(crate) breakpoints: Vec<String>,
+    pub(crate) patterns: PatternRegistry,
     pub(crate) recipes: RecipeRegistry,
     pub(crate) config_recipes: BTreeMap<RecipeKey, Recipe>,
     pub(crate) config_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
@@ -29,19 +32,27 @@ pub(crate) struct ProjectConfig {
 impl ProjectConfig {
     pub(crate) fn from_config(config: &SerializedConfig) -> Self {
         let entries = ConfigEntries::from_config(config);
-        let utility = Utility::from_config(&config.utilities);
+        let token_dictionary = config.token_dictionary.clone().map(Arc::new);
+        let utility = Utility::from_config_with_options(
+            &config.utilities,
+            utility_options_from_config(config, token_dictionary.clone()),
+        );
         let conditions =
             ProjectConditions::from_names(entries.condition_names.iter().map(String::as_str));
-        let extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
-            jsx_extraction_config_from_definitions(config, &entries, &utility),
-        );
+        let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries))
+            .with_jsx(jsx_extraction_config_from_definitions(
+                config, &entries, &utility,
+            ));
+        extractor_config.token_dictionary = token_dictionary;
         let utility = (!utility.is_empty()).then_some(utility);
+        let patterns = PatternRegistry::from_definitions(&entries.patterns);
         let recipes = RecipeRegistry::from_definitions(
             &entries.recipes,
             &entries.slot_recipes,
             &StyleResolver {
                 utility: utility.as_ref(),
                 conditions: &conditions,
+                breakpoints: &entries.breakpoints,
             },
         );
 
@@ -49,6 +60,8 @@ impl ProjectConfig {
             extractor_config,
             utility,
             conditions,
+            breakpoints: entries.breakpoints,
+            patterns,
             recipes,
             config_recipes: config_recipes_from_definitions(&entries.recipes),
             config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
@@ -62,6 +75,7 @@ pub(crate) struct ConfigEntries {
     jsx_factory: String,
     jsx_names: Vec<String>,
     condition_names: Vec<String>,
+    breakpoints: Vec<String>,
     patterns: Vec<PatternDefinition>,
     recipes: Vec<RecipeDefinition>,
     slot_recipes: Vec<SlotRecipeDefinition>,
@@ -69,9 +83,13 @@ pub(crate) struct ConfigEntries {
 
 #[derive(Debug, Clone)]
 pub(crate) struct PatternDefinition {
-    jsx_names: Vec<String>,
-    jsx_regexes: Vec<Regex>,
-    props: Vec<String>,
+    pub(crate) name: String,
+    pub(crate) jsx_names: Vec<String>,
+    pub(crate) jsx_regexes: Vec<Regex>,
+    pub(crate) props: Vec<String>,
+    pub(crate) default_values: Option<Literal>,
+    strict: bool,
+    blocklist: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -107,12 +125,14 @@ impl ConfigEntries {
         let (recipes, slot_recipes) = recipe_definitions_from_config(&config.theme);
         let jsx_names =
             jsx_names_from_definitions(&jsx_factory, &patterns, &recipes, &slot_recipes);
+        let breakpoints = breakpoint_names_from_config(&config.theme);
 
         Self {
             import_map,
             jsx_factory,
             jsx_names,
             condition_names: condition_names_from_config(config),
+            breakpoints,
             patterns,
             recipes,
             slot_recipes,
@@ -137,9 +157,18 @@ fn pattern_definitions_from_config(value: &Value) -> Vec<PatternDefinition> {
             ];
             collect_string_array(pattern.get("jsx"), &mut jsx_names);
             PatternDefinition {
+                name: name.clone(),
                 jsx_names,
                 jsx_regexes: jsx_regexes(pattern.get("jsx")),
                 props: object_keys(pattern.get("properties")),
+                default_values: pattern
+                    .get("defaultValues")
+                    .and_then(non_callback_literal_from_json),
+                strict: pattern
+                    .get("strict")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false),
+                blocklist: string_array(pattern.get("blocklist")),
             }
         })
         .collect()
@@ -281,6 +310,10 @@ fn jsx_extraction_config_from_definitions(
     let mut component_regexes = Vec::new();
     let mut component_props = FxHashMap::default();
     let mut component_regex_props = Vec::new();
+    let mut component_strict = FxHashSet::default();
+    let mut component_regex_strict = Vec::new();
+    let mut component_blocklist = FxHashMap::default();
+    let mut component_regex_blocklist = Vec::new();
     for pattern in &entries.patterns {
         collect_component_entry(
             &pattern.jsx_names,
@@ -290,6 +323,13 @@ fn jsx_extraction_config_from_definitions(
             &mut component_regexes,
             &mut component_props,
             &mut component_regex_props,
+        );
+        collect_pattern_prop_controls(
+            pattern,
+            &mut component_strict,
+            &mut component_regex_strict,
+            &mut component_blocklist,
+            &mut component_regex_blocklist,
         );
     }
     for recipe in &entries.recipes {
@@ -321,6 +361,10 @@ fn jsx_extraction_config_from_definitions(
         component_regexes,
         component_props,
         component_regex_props,
+        component_strict,
+        component_regex_strict,
+        component_blocklist,
+        component_regex_blocklist,
         valid_style_props,
     }
 }
@@ -355,6 +399,39 @@ fn collect_component_entry(
     );
 }
 
+fn collect_pattern_prop_controls(
+    pattern: &PatternDefinition,
+    component_strict: &mut FxHashSet<String>,
+    component_regex_strict: &mut Vec<Regex>,
+    component_blocklist: &mut FxHashMap<String, FxHashSet<String>>,
+    component_regex_blocklist: &mut Vec<(Regex, Arc<FxHashSet<String>>)>,
+) {
+    if pattern.strict {
+        component_strict.extend(pattern.jsx_names.iter().cloned());
+        component_regex_strict.extend(pattern.jsx_regexes.iter().cloned());
+    }
+
+    if pattern.blocklist.is_empty() {
+        return;
+    }
+
+    let blocklist: FxHashSet<String> = pattern.blocklist.iter().cloned().collect();
+    for jsx_name in &pattern.jsx_names {
+        component_blocklist
+            .entry(jsx_name.clone())
+            .or_default()
+            .extend(blocklist.iter().cloned());
+    }
+    let blocklist = Arc::new(blocklist);
+    component_regex_blocklist.extend(
+        pattern
+            .jsx_regexes
+            .iter()
+            .cloned()
+            .map(|regex| (regex, Arc::clone(&blocklist))),
+    );
+}
+
 fn valid_jsx_style_props_from_config(utility: &Utility) -> FxHashSet<String> {
     let mut props: FxHashSet<String> = css_property_names()
         .iter()
@@ -372,28 +449,91 @@ fn jsx_style_props_from_config(config: &SerializedConfig) -> JsxStyleProps {
     }
 }
 
-fn condition_names_from_config(config: &SerializedConfig) -> Vec<String> {
-    let mut names = BTreeSet::new();
-    collect_object_keys(&config.conditions, &mut names);
-    collect_breakpoint_keys(&config.theme, &mut names);
-    names.into_iter().collect()
-}
-
-fn collect_breakpoint_keys(theme: &Value, names: &mut BTreeSet<String>) {
-    let Some(theme) = theme.as_object() else {
-        return;
-    };
-
-    if let Some(breakpoints) = theme.get("breakpoints") {
-        collect_object_keys(breakpoints, names);
+fn utility_options_from_config(
+    config: &SerializedConfig,
+    token_dictionary: Option<Arc<pandacss_config::TokenDictionary>>,
+) -> UtilityOptions {
+    UtilityOptions {
+        separator: config
+            .extra
+            .get("separator")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        prefix: class_name_prefix_from_config(config.extra.get("prefix")),
+        tokens: token_dictionary,
     }
 }
 
-fn collect_object_keys(value: &Value, names: &mut BTreeSet<String>) {
+fn class_name_prefix_from_config(value: Option<&Value>) -> Option<String> {
+    match value {
+        Some(Value::String(value)) => Some(value.clone()),
+        Some(Value::Object(value)) => value
+            .get("className")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        _ => None,
+    }
+}
+
+fn condition_names_from_config(config: &SerializedConfig) -> Vec<String> {
+    let mut names = BTreeSet::new();
+    names.insert("base".to_owned());
+    collect_condition_keys(&config.conditions, &mut names);
+    for name in breakpoint_names_from_config(&config.theme) {
+        names.insert(name);
+    }
+    names.into_iter().collect()
+}
+
+fn breakpoint_names_from_config(theme: &Value) -> Vec<String> {
+    let Some(theme) = theme.as_object() else {
+        return Vec::new();
+    };
+
+    let Some(breakpoints) = theme.get("breakpoints").and_then(Value::as_object) else {
+        return Vec::new();
+    };
+
+    let mut entries: Vec<_> = breakpoints
+        .iter()
+        .map(|(name, value)| (name.clone(), breakpoint_sort_value(value)))
+        .collect();
+    entries.sort_by(|(name_a, value_a), (name_b, value_b)| {
+        value_a
+            .partial_cmp(value_b)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| name_a.cmp(name_b))
+    });
+
+    let mut names = Vec::with_capacity(entries.len() + 1);
+    names.push("base".to_owned());
+    names.extend(entries.into_iter().map(|(name, _)| name));
+    names
+}
+
+fn breakpoint_sort_value(value: &Value) -> f64 {
+    match value {
+        Value::String(value) => value
+            .chars()
+            .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
+            .collect::<String>()
+            .parse()
+            .unwrap_or(f64::INFINITY),
+        Value::Number(value) => value.as_f64().unwrap_or(f64::INFINITY),
+        _ => f64::INFINITY,
+    }
+}
+
+fn collect_condition_keys(value: &Value, names: &mut BTreeSet<String>) {
     let Some(map) = value.as_object() else {
         return;
     };
-    names.extend(map.keys().filter(|key| !key.is_empty()).cloned());
+    for key in map.keys().filter(|key| !key.is_empty()) {
+        names.insert(key.clone());
+        if !key.starts_with('_') {
+            names.insert(format!("_{key}"));
+        }
+    }
 }
 
 fn collect_string_array(value: Option<&Value>, names: &mut Vec<String>) {
@@ -402,6 +542,12 @@ fn collect_string_array(value: Option<&Value>, names: &mut Vec<String>) {
     };
 
     names.extend(items.iter().filter_map(Value::as_str).map(str::to_owned));
+}
+
+fn string_array(value: Option<&Value>) -> Vec<String> {
+    let mut out = Vec::new();
+    collect_string_array(value, &mut out);
+    out
 }
 
 fn jsx_regexes(value: Option<&Value>) -> Vec<Regex> {
@@ -418,6 +564,18 @@ fn object_keys(value: Option<&Value>) -> Vec<String> {
         return Vec::new();
     };
     object.keys().cloned().collect()
+}
+
+fn non_callback_literal_from_json(value: &Value) -> Option<Literal> {
+    if value
+        .as_object()
+        .and_then(|object| object.get("kind"))
+        .and_then(Value::as_str)
+        .is_some_and(|kind| kind == "js-callback")
+    {
+        return None;
+    }
+    json_value_to_literal(value)
 }
 
 fn json_value_to_literal(value: &Value) -> Option<Literal> {

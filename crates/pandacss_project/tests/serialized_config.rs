@@ -280,6 +280,40 @@ fn config_breakpoints_are_encoded_as_conditions() {
 }
 
 #[test]
+fn responsive_arrays_use_config_breakpoint_order() {
+    let mut project = create_project(json!({
+        "theme": {
+            "breakpoints": {
+                "wide": "1440px",
+                "tablet": "768px"
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ color: ['red', 'blue', 'green'] });
+        "},
+    );
+
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: color
+      value: blue
+      conditions:
+        - tablet
+    - prop: color
+      value: green
+      conditions:
+        - wide
+    ");
+}
+
+#[test]
 fn non_shorthand_props_stay_unchanged() {
     let mut project = create_project(json!({
         "utilities": {
@@ -321,10 +355,34 @@ fn minimal_jsx_filters_style_props() {
 
     assert_eq!(report.jsx_usages, 1);
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
-    - prop: borderCss
+    - prop: margin
+      value: 8px
+      conditions: []
+    - prop: width
       value: 1px
       conditions: []
-    - prop: css
+    ");
+}
+
+#[test]
+fn jsx_css_prop_arrays_are_processed_as_style_objects() {
+    let mut project = create_project(json!({
+        "jsxStyleProps": "minimal"
+    }));
+
+    project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box css={[{ color: 'red' }, { margin: '8px' }]} />;
+        "},
+    );
+
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: margin
       value: 8px
       conditions: []
     ");

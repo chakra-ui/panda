@@ -109,7 +109,9 @@ fn builder_attaches_token_dictionary() {
         ))
         .build();
 
-    let mut project = create_project(json!({})).with_token_dictionary(dict);
+    let mut project = create_project(json!({
+        "tokenDictionary": dict,
+    }));
     project.parse_file(
         "fixture.tsx",
         indoc! {r"
