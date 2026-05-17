@@ -31,6 +31,10 @@ function sanitize(value: unknown, path: string[], callbacks: ConfigCallbacks): a
     return serializeFunction(value, path, callbacks)
   }
 
+  if (value instanceof RegExp) {
+    return { kind: 'regex', source: value.source, flags: value.flags }
+  }
+
   if (Array.isArray(value)) {
     return value.map((item, index) => sanitize(item, path.concat(String(index)), callbacks))
   }

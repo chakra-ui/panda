@@ -129,4 +129,35 @@ describe('serialized config', () => {
       },
     })
   })
+
+  test('serializes regex jsx matchers', () => {
+    const config = createSerializedConfig({
+      cwd: '/project',
+      include: [],
+      outdir: 'styled-system',
+      theme: {
+        recipes: {
+          button: {
+            jsx: ['Button', /WithRegex$/i],
+            variants: {
+              size: {
+                sm: { fontSize: '12px' },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect((config as any).theme.recipes.button.jsx).toMatchInlineSnapshot(`
+      [
+        "Button",
+        {
+          "flags": "i",
+          "kind": "regex",
+          "source": "WithRegex$",
+        },
+      ]
+    `)
+  })
 })
