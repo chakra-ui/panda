@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
-use pandacss_config::SerializedConfig;
+use pandacss_config::Config;
 use pandacss_encoder::Atom;
 use pandacss_project::Project;
 use serde_json::{Value, json};
 
-pub fn create_config(overrides: Value) -> SerializedConfig {
+pub fn create_config(overrides: Value) -> Config {
     let mut config = json!({
         "outdir": "styled-system",
         "importMap": {
@@ -21,7 +21,7 @@ pub fn create_config(overrides: Value) -> SerializedConfig {
 }
 
 pub fn create_project(overrides: Value) -> Project {
-    Project::from_serialized_config(create_config(overrides))
+    Project::from_config(create_config(overrides)).expect("valid project config")
 }
 
 fn merge_json(target: &mut Value, source: Value) {

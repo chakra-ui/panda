@@ -1,6 +1,6 @@
 //! Orchestrator for the Panda Rust engine.
 
-use pandacss_config::SerializedConfig;
+use pandacss_config::Config;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,7 +16,7 @@ pub struct CompileInput {
     #[serde(default)]
     pub files: Vec<InputFile>,
     #[serde(default)]
-    pub config: SerializedConfig,
+    pub config: Config,
     #[serde(default)]
     pub cwd: String,
     #[serde(default)]

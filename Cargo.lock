@@ -1005,11 +1005,7 @@ version = "0.0.0"
 name = "pandacss_config"
 version = "0.0.0"
 dependencies = [
- "pandacss_recipes",
- "pandacss_shared",
- "pandacss_tokens",
- "regex",
- "rustc-hash",
+ "insta",
  "serde",
  "serde_json",
 ]

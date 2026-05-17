@@ -1,9 +1,14 @@
 //! Serialized configuration types consumed by the Panda Rust runtime.
 
+mod theme;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub use pandacss_tokens::TokenDictionary;
+pub use theme::{
+    ColorPaletteOptions, SemanticTokenTree, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap,
+    TokenTree,
+};
 
 /// JSON-safe resolved config snapshot produced on the JavaScript side.
 ///
@@ -12,7 +17,7 @@ pub use pandacss_tokens::TokenDictionary;
 /// serializable shape after runtime-only hooks/plugins have been removed.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SerializedConfig {
+pub struct Config {
     #[serde(default)]
     pub cwd: String,
     #[serde(default)]
@@ -24,13 +29,11 @@ pub struct SerializedConfig {
     #[serde(default)]
     pub import_map: Option<ImportMap>,
     #[serde(default)]
-    pub token_dictionary: Option<TokenDictionary>,
-    #[serde(default)]
     pub jsx_factory: Option<String>,
     #[serde(default)]
     pub jsx_style_props: Option<String>,
     #[serde(default)]
-    pub theme: Value,
+    pub theme: Theme,
     #[serde(default)]
     pub conditions: Value,
     #[serde(default)]
@@ -48,7 +51,7 @@ pub struct SerializedConfig {
     #[serde(default)]
     pub global_position_try: Value,
     #[serde(default)]
-    pub themes: Value,
+    pub themes: ThemeVariantsMap,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
 }

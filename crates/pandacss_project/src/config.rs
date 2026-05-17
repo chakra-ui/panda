@@ -5,68 +5,59 @@ use regex::Regex;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
-use pandacss_config::{ImportMap, SerializedConfig};
+use pandacss_config::{Config, ImportMap};
 use pandacss_extractor::{
     ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal, Matcher as ExtractorMatcher,
     Matchers, NameMatcher as ExtractorNameMatcher, css_property_names,
 };
 use pandacss_recipes::{Recipe, SlotRecipe, recipe_jsx_names, slot_recipe_jsx_names};
-use pandacss_shared::{capitalize, regex_from_serialized_value};
+use pandacss_shared::{capitalize, compile_js_regex};
+use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
 
+use crate::conditions::ProjectConditions;
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
-use crate::{ProjectConditionMatcher, ProjectConditions, RecipeKey};
+use crate::system::System;
+use crate::tokens::create_token_dictionary;
+use crate::{ConfigError, RecipeKey, Result};
 
-pub(crate) struct ProjectConfig {
-    pub(crate) extractor_config: ExtractorConfig,
-    pub(crate) utility: Option<Utility>,
-    pub(crate) conditions: ProjectConditionMatcher,
-    pub(crate) breakpoints: Vec<String>,
-    pub(crate) patterns: PatternRegistry,
-    pub(crate) recipes: RecipeRegistry,
-    pub(crate) config_recipes: BTreeMap<RecipeKey, Recipe>,
-    pub(crate) config_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
-}
+pub(crate) fn system_from_config(config: Config) -> Result<System> {
+    let entries = ConfigEntries::from_config(&config)?;
+    let token_dictionary = create_token_dictionary(&config).map(Arc::new);
+    let utility = Utility::from_config_with_options(
+        &config.utilities,
+        utility_options_from_config(&config, token_dictionary.clone()),
+    );
+    let conditions =
+        ProjectConditions::from_names(entries.condition_names.iter().map(String::as_str));
+    let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
+        jsx_extraction_config_from_definitions(&config, &entries, &utility),
+    );
+    extractor_config.token_dictionary = token_dictionary;
+    let utility = (!utility.is_empty()).then_some(utility);
+    let patterns = PatternRegistry::from_definitions(&entries.patterns);
+    let recipes = RecipeRegistry::from_definitions(
+        &entries.recipes,
+        &entries.slot_recipes,
+        &StyleResolver {
+            utility: utility.as_ref(),
+            conditions: &conditions,
+            breakpoints: &entries.breakpoints,
+        },
+    );
 
-impl ProjectConfig {
-    pub(crate) fn from_config(config: &SerializedConfig) -> Self {
-        let entries = ConfigEntries::from_config(config);
-        let token_dictionary = config.token_dictionary.clone().map(Arc::new);
-        let utility = Utility::from_config_with_options(
-            &config.utilities,
-            utility_options_from_config(config, token_dictionary.clone()),
-        );
-        let conditions =
-            ProjectConditions::from_names(entries.condition_names.iter().map(String::as_str));
-        let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries))
-            .with_jsx(jsx_extraction_config_from_definitions(
-                config, &entries, &utility,
-            ));
-        extractor_config.token_dictionary = token_dictionary;
-        let utility = (!utility.is_empty()).then_some(utility);
-        let patterns = PatternRegistry::from_definitions(&entries.patterns);
-        let recipes = RecipeRegistry::from_definitions(
-            &entries.recipes,
-            &entries.slot_recipes,
-            &StyleResolver {
-                utility: utility.as_ref(),
-                conditions: &conditions,
-                breakpoints: &entries.breakpoints,
-            },
-        );
-
-        Self {
-            extractor_config,
-            utility,
-            conditions,
-            breakpoints: entries.breakpoints,
-            patterns,
-            recipes,
-            config_recipes: config_recipes_from_definitions(&entries.recipes),
-            config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
-        }
-    }
+    Ok(System {
+        config: Some(config),
+        extractor_config,
+        utility,
+        conditions,
+        breakpoints: entries.breakpoints,
+        patterns,
+        recipes,
+        config_recipes: config_recipes_from_definitions(&entries.recipes),
+        config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
+    })
 }
 
 #[derive(Debug, Clone)]
@@ -115,19 +106,20 @@ pub(crate) struct SlotRecipeDefinition {
 }
 
 impl ConfigEntries {
-    fn from_config(config: &SerializedConfig) -> Self {
+    fn from_config(config: &Config) -> Result<Self> {
         let import_map = config.import_map.clone().unwrap_or_default();
         let jsx_factory = config
             .jsx_factory
             .clone()
             .unwrap_or_else(|| "styled".to_string());
-        let patterns = pattern_definitions_from_config(&config.patterns);
-        let (recipes, slot_recipes) = recipe_definitions_from_config(&config.theme);
+        let patterns = pattern_definitions_from_config(&config.patterns)?;
+        let recipes = recipe_definitions(&config.theme.recipes)?;
+        let slot_recipes = slot_recipe_definitions(&config.theme.slot_recipes)?;
         let jsx_names =
             jsx_names_from_definitions(&jsx_factory, &patterns, &recipes, &slot_recipes);
-        let breakpoints = breakpoint_names_from_config(&config.theme);
+        let breakpoints = config.theme.breakpoint_names();
 
-        Self {
+        Ok(Self {
             import_map,
             jsx_factory,
             jsx_names,
@@ -136,13 +128,13 @@ impl ConfigEntries {
             patterns,
             recipes,
             slot_recipes,
-        }
+        })
     }
 }
 
-fn pattern_definitions_from_config(value: &Value) -> Vec<PatternDefinition> {
+fn pattern_definitions_from_config(value: &Value) -> Result<Vec<PatternDefinition>> {
     let Some(patterns) = value.as_object() else {
-        return Vec::new();
+        return Ok(Vec::new());
     };
 
     patterns
@@ -156,10 +148,10 @@ fn pattern_definitions_from_config(value: &Value) -> Vec<PatternDefinition> {
                     .unwrap_or_else(|| capitalize(name).into_owned()),
             ];
             collect_string_array(pattern.get("jsx"), &mut jsx_names);
-            PatternDefinition {
+            Ok(PatternDefinition {
                 name: name.clone(),
                 jsx_names,
-                jsx_regexes: jsx_regexes(pattern.get("jsx")),
+                jsx_regexes: jsx_regexes(pattern.get("jsx"), &format!("patterns.{name}.jsx"))?,
                 props: object_keys(pattern.get("properties")),
                 default_values: pattern
                     .get("defaultValues")
@@ -169,80 +161,63 @@ fn pattern_definitions_from_config(value: &Value) -> Vec<PatternDefinition> {
                     .and_then(Value::as_bool)
                     .unwrap_or(false),
                 blocklist: string_array(pattern.get("blocklist")),
-            }
-        })
-        .collect()
-}
-
-fn recipe_definitions_from_config(
-    theme: &Value,
-) -> (Vec<RecipeDefinition>, Vec<SlotRecipeDefinition>) {
-    let Some(theme) = theme.as_object() else {
-        return (Vec::new(), Vec::new());
-    };
-
-    (
-        recipe_definitions(theme.get("recipes")),
-        slot_recipe_definitions(theme.get("slotRecipes")),
-    )
-}
-
-fn recipe_definitions(value: Option<&Value>) -> Vec<RecipeDefinition> {
-    let Some(recipes) = value.and_then(Value::as_object) else {
-        return Vec::new();
-    };
-
-    recipes
-        .iter()
-        .enumerate()
-        .filter_map(|(index, (name, config))| {
-            let literal = json_value_to_literal(config)?;
-            let recipe = Recipe::from_literal_owned(literal)?;
-            let class_name = config
-                .get("className")
-                .and_then(Value::as_str)
-                .unwrap_or(name)
-                .to_owned();
-            Some(RecipeDefinition {
-                name: name.clone(),
-                class_name,
-                jsx_names: recipe_jsx_names(name, config),
-                jsx_regexes: jsx_regexes(config.get("jsx")),
-                variant_props: object_keys(config.get("variants")),
-                recipe,
-                index: u32::try_from(index).unwrap_or(u32::MAX),
             })
         })
         .collect()
 }
 
-fn slot_recipe_definitions(value: Option<&Value>) -> Vec<SlotRecipeDefinition> {
-    let Some(recipes) = value.and_then(Value::as_object) else {
-        return Vec::new();
-    };
+fn recipe_definitions(recipes: &BTreeMap<String, Value>) -> Result<Vec<RecipeDefinition>> {
+    let mut out = Vec::with_capacity(recipes.len());
+    for (index, (name, config)) in recipes.iter().enumerate() {
+        let Some(literal) = json_value_to_literal(config) else {
+            continue;
+        };
+        let Some(recipe) = Recipe::from_literal_owned(literal) else {
+            continue;
+        };
+        let class_name = config
+            .get("className")
+            .and_then(Value::as_str)
+            .unwrap_or(name)
+            .to_owned();
+        out.push(RecipeDefinition {
+            name: name.clone(),
+            class_name,
+            jsx_names: recipe_jsx_names(name, config),
+            jsx_regexes: jsx_regexes(config.get("jsx"), &format!("theme.recipes.{name}.jsx"))?,
+            variant_props: object_keys(config.get("variants")),
+            recipe,
+            index: u32::try_from(index).unwrap_or(u32::MAX),
+        });
+    }
+    Ok(out)
+}
 
-    recipes
-        .iter()
-        .enumerate()
-        .filter_map(|(index, (name, config))| {
-            let literal = json_value_to_literal(config)?;
-            let recipe = SlotRecipe::from_literal_owned(literal)?;
-            let class_name = config
-                .get("className")
-                .and_then(Value::as_str)
-                .unwrap_or(name)
-                .to_owned();
-            Some(SlotRecipeDefinition {
-                name: name.clone(),
-                class_name,
-                jsx_names: slot_recipe_jsx_names(name, config),
-                jsx_regexes: jsx_regexes(config.get("jsx")),
-                variant_props: object_keys(config.get("variants")),
-                recipe,
-                index: u32::try_from(index).unwrap_or(u32::MAX),
-            })
-        })
-        .collect()
+fn slot_recipe_definitions(recipes: &BTreeMap<String, Value>) -> Result<Vec<SlotRecipeDefinition>> {
+    let mut out = Vec::with_capacity(recipes.len());
+    for (index, (name, config)) in recipes.iter().enumerate() {
+        let Some(literal) = json_value_to_literal(config) else {
+            continue;
+        };
+        let Some(recipe) = SlotRecipe::from_literal_owned(literal) else {
+            continue;
+        };
+        let class_name = config
+            .get("className")
+            .and_then(Value::as_str)
+            .unwrap_or(name)
+            .to_owned();
+        out.push(SlotRecipeDefinition {
+            name: name.clone(),
+            class_name,
+            jsx_names: slot_recipe_jsx_names(name, config),
+            jsx_regexes: jsx_regexes(config.get("jsx"), &format!("theme.slotRecipes.{name}.jsx"))?,
+            variant_props: object_keys(config.get("variants")),
+            recipe,
+            index: u32::try_from(index).unwrap_or(u32::MAX),
+        });
+    }
+    Ok(out)
 }
 
 fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<RecipeKey, Recipe> {
@@ -302,7 +277,7 @@ fn matchers_from_definitions(config: &ConfigEntries) -> Matchers {
 }
 
 fn jsx_extraction_config_from_definitions(
-    config: &SerializedConfig,
+    config: &Config,
     entries: &ConfigEntries,
     utility: &Utility,
 ) -> JsxExtractionConfig {
@@ -441,7 +416,7 @@ fn valid_jsx_style_props_from_config(utility: &Utility) -> FxHashSet<String> {
     props
 }
 
-fn jsx_style_props_from_config(config: &SerializedConfig) -> JsxStyleProps {
+fn jsx_style_props_from_config(config: &Config) -> JsxStyleProps {
     match config.jsx_style_props.as_deref() {
         Some("minimal") => JsxStyleProps::Minimal,
         Some("none") => JsxStyleProps::None,
@@ -450,8 +425,8 @@ fn jsx_style_props_from_config(config: &SerializedConfig) -> JsxStyleProps {
 }
 
 fn utility_options_from_config(
-    config: &SerializedConfig,
-    token_dictionary: Option<Arc<pandacss_config::TokenDictionary>>,
+    config: &Config,
+    token_dictionary: Option<Arc<TokenDictionary>>,
 ) -> UtilityOptions {
     UtilityOptions {
         separator: config
@@ -475,53 +450,14 @@ fn class_name_prefix_from_config(value: Option<&Value>) -> Option<String> {
     }
 }
 
-fn condition_names_from_config(config: &SerializedConfig) -> Vec<String> {
+fn condition_names_from_config(config: &Config) -> Vec<String> {
     let mut names = BTreeSet::new();
     names.insert("base".to_owned());
     collect_condition_keys(&config.conditions, &mut names);
-    for name in breakpoint_names_from_config(&config.theme) {
+    for name in config.theme.breakpoint_names() {
         names.insert(name);
     }
     names.into_iter().collect()
-}
-
-fn breakpoint_names_from_config(theme: &Value) -> Vec<String> {
-    let Some(theme) = theme.as_object() else {
-        return Vec::new();
-    };
-
-    let Some(breakpoints) = theme.get("breakpoints").and_then(Value::as_object) else {
-        return Vec::new();
-    };
-
-    let mut entries: Vec<_> = breakpoints
-        .iter()
-        .map(|(name, value)| (name.clone(), breakpoint_sort_value(value)))
-        .collect();
-    entries.sort_by(|(name_a, value_a), (name_b, value_b)| {
-        value_a
-            .partial_cmp(value_b)
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then_with(|| name_a.cmp(name_b))
-    });
-
-    let mut names = Vec::with_capacity(entries.len() + 1);
-    names.push("base".to_owned());
-    names.extend(entries.into_iter().map(|(name, _)| name));
-    names
-}
-
-fn breakpoint_sort_value(value: &Value) -> f64 {
-    match value {
-        Value::String(value) => value
-            .chars()
-            .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
-            .collect::<String>()
-            .parse()
-            .unwrap_or(f64::INFINITY),
-        Value::Number(value) => value.as_f64().unwrap_or(f64::INFINITY),
-        _ => f64::INFINITY,
-    }
 }
 
 fn collect_condition_keys(value: &Value, names: &mut BTreeSet<String>) {
@@ -550,13 +486,34 @@ fn string_array(value: Option<&Value>) -> Vec<String> {
     out
 }
 
-fn jsx_regexes(value: Option<&Value>) -> Vec<Regex> {
-    value
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .filter_map(regex_from_serialized_value)
-        .collect()
+fn jsx_regexes(value: Option<&Value>, path: &str) -> Result<Vec<Regex>> {
+    let Some(items) = value.and_then(Value::as_array) else {
+        return Ok(Vec::new());
+    };
+
+    let mut out = Vec::new();
+    for (index, item) in items.iter().enumerate() {
+        let Some(object) = item.as_object() else {
+            continue;
+        };
+        if object.get("kind").and_then(Value::as_str) != Some("regex") {
+            continue;
+        }
+        let source = object
+            .get("source")
+            .and_then(Value::as_str)
+            .ok_or_else(|| {
+                ConfigError::new(format!("invalid regex at {path}[{index}]: missing source"))
+            })?;
+        let flags = object.get("flags").and_then(Value::as_str).unwrap_or("");
+        let regex = compile_js_regex(source, flags).ok_or_else(|| {
+            ConfigError::new(format!(
+                "invalid regex at {path}[{index}]: /{source}/{flags}"
+            ))
+        })?;
+        out.push(regex);
+    }
+    Ok(out)
 }
 
 fn object_keys(value: Option<&Value>) -> Vec<String> {
