@@ -26,14 +26,10 @@ oxc_parser = "0.130.0"
 oxc_resolver = "11.19.1"
 oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
-pandacss_cache = { path = "crates/pandacss_cache" }
 pandacss_config = { path = "crates/pandacss_config" }
-pandacss_emitter = { path = "crates/pandacss_emitter" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }
-pandacss_engine = { path = "crates/pandacss_engine" }
 pandacss_extractor = { path = "crates/pandacss_extractor", default-features = false }
 pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
-pandacss_optimizer = { path = "crates/pandacss_optimizer" }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }

@@ -14,8 +14,6 @@ crate-type = ["cdylib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 pandacss_encoder = { workspace = true }
-pandacss_config = { workspace = true }
-pandacss_engine = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["os"] }
 pandacss_project = { workspace = true }
 pandacss_recipes = { workspace = true }

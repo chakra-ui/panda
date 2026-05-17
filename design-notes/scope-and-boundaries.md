@@ -99,8 +99,8 @@ the Rust engine surfacing extraction results that JS-side hooks transform betwee
 - Import matching against Panda category rules
 - Recipe (`cva` / `sva`) parsing into typed shapes
 - Atomic encoding (one atom per `(prop, value, condition_chain)`)
-- CSS emission later (planned — `pandacss_emitter` crate)
-- CSS optimization later via `lightningcss` (planned — `pandacss_optimizer` crate)
+- CSS emission later
+- CSS optimization later via `lightningcss`
 
 Each of those is a closed system with a serializable input and output shape. JS calls in with a config + sources, Rust
 hands back CSS + manifest + diagnostics. Anything outside that contract lives on the JS side or in a separate crate.

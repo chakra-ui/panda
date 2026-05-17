@@ -43,13 +43,13 @@ The `Project` crate wires everything together. `System` compiles immutable confi
 `@pandacss/binding` and the recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to
 this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
 
-### Placeholders
+### Future crates
 
-`pandacss_cache`, `pandacss_emitter`, `pandacss_optimizer`, `pandacss_engine` are skeletons today. When they're built
-out, they'll slot in roughly as:
+Don't keep empty placeholder crates. When the implementation exists, add the crate at the boundary it actually earns:
 
-- `pandacss_cache`, `pandacss_emitter`, `pandacss_optimizer` — Tier 2 (process atoms into CSS).
-- `pandacss_engine` — Tier 3 (orchestrates the full extract → encode → emit → optimize pipeline).
+- CSS emission / optimization — Tier 2 (process atoms into CSS).
+- Compile orchestration — Tier 3 only if it does more than `Project` plus emitter calls.
+- Persistent cache — separate infrastructure/process crate only once real cache behavior exists.
 
 ## Standing answers to merge questions
 

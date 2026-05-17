@@ -42,9 +42,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
- "pandacss_config",
  "pandacss_encoder",
- "pandacss_engine",
  "pandacss_extractor",
  "pandacss_project",
  "pandacss_recipes",
@@ -998,10 +996,6 @@ name = "pandacss_bench"
 version = "0.0.0"
 
 [[package]]
-name = "pandacss_cache"
-version = "0.0.0"
-
-[[package]]
 name = "pandacss_config"
 version = "0.0.0"
 dependencies = [
@@ -1009,10 +1003,6 @@ dependencies = [
  "serde",
  "serde_json",
 ]
-
-[[package]]
-name = "pandacss_emitter"
-version = "0.0.0"
 
 [[package]]
 name = "pandacss_encoder"
@@ -1026,14 +1016,6 @@ dependencies = [
  "rustc-hash",
  "serde",
  "smallvec",
-]
-
-[[package]]
-name = "pandacss_engine"
-version = "0.0.0"
-dependencies = [
- "pandacss_config",
- "serde",
 ]
 
 [[package]]
@@ -1070,10 +1052,6 @@ dependencies = [
  "tempfile",
  "walkdir",
 ]
-
-[[package]]
-name = "pandacss_optimizer"
-version = "0.0.0"
 
 [[package]]
 name = "pandacss_project"
@@ -1115,7 +1093,6 @@ dependencies = [
  "itoa",
  "regex",
  "ryu",
- "serde_json",
 ]
 
 [[package]]
