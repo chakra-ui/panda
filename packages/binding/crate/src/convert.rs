@@ -137,7 +137,11 @@ pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
 /// JS-shaped `Matchers` (token dictionary as a child field, for backward
 /// JS-wire compat) → core `ExtractorConfig`.
 pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
-    let token_dictionary = m.token_dictionary.clone().map(to_core_token_dictionary);
+    let token_dictionary = m
+        .token_dictionary
+        .clone()
+        .map(to_core_token_dictionary)
+        .map(std::sync::Arc::new);
     pandacss_extractor::ExtractorConfig {
         matchers: to_core_matchers(m),
         jsx: pandacss_extractor::JsxExtractionConfig::default(),

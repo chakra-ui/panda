@@ -8,7 +8,7 @@
 use napi_derive::napi;
 use std::collections::HashMap;
 
-use crate::convert::{convert_diagnostic, to_atoms, to_core_matchers, to_core_token_dictionary};
+use crate::convert::{convert_diagnostic, to_atoms, to_core_matchers};
 use crate::{Diagnostic, Matchers, TokenDictionary};
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
@@ -100,7 +100,10 @@ impl Project {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned constructor arguments"
     )]
-    pub fn from_config(config: serde_json::Value, options: Option<ProjectOptions>) -> napi::Result<Self> {
+    pub fn from_config(
+        config: serde_json::Value,
+        options: Option<ProjectOptions>,
+    ) -> napi::Result<Self> {
         let opts = options.unwrap_or(ProjectOptions {
             token_dictionary: None,
             cross_file: None,
@@ -311,10 +314,6 @@ fn apply_project_options(
     mut project: pandacss_project::Project,
     opts: ProjectOptions,
 ) -> pandacss_project::Project {
-    if let Some(dict) = opts.token_dictionary.map(to_core_token_dictionary) {
-        project = project.with_token_dictionary(dict);
-    }
-
     if opts.cross_file.unwrap_or(true) {
         project = project.with_cross_file(pandacss_extractor::CrossFileResolver::new());
     }

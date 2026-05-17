@@ -285,13 +285,17 @@ export interface ProjectOptions {
   callbacks?: ProjectCallbacks
 }
 
-export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform'
+export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'
 
 export type ProjectCallbacks = Partial<Record<ProjectCallbackKind, Record<string, (...args: any[]) => unknown>>>
 
 export interface ConfigSnapshot {
   config: Record<string, unknown>
   callbacks?: ProjectCallbacks
+}
+
+type ProjectConfigInput = Record<string, unknown> & {
+  tokenDictionary?: TokenDictionary
 }
 
 /** Stateful project orchestration. Holds a per-file atom registry,
@@ -525,16 +529,18 @@ Object.defineProperty(createProject, 'fromConfig', {
   value(configOrSnapshot: Record<string, unknown> | ConfigSnapshot, options?: ProjectOptions) {
     const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
     const nativeOptions = stripProjectCallbacks(options)
-    const tokenDictionary = nativeOptions?.tokenDictionary
-    assertProjectCallbacks(config, callbacks)
-    const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, tokenDictionary)
+    const configWithRuntime = withProjectRuntimeConfig(config, nativeOptions)
+    const tokenDictionary = configWithRuntime.tokenDictionary
+    assertProjectCallbacks(configWithRuntime, callbacks)
+    const resolvedConfig = resolveUtilityValueCallbacks(configWithRuntime, callbacks, tokenDictionary)
+    const resolvedConfigWithRuntime = withProjectRuntimeConfig(resolvedConfig, nativeOptions)
     if (nativeProjectFromConfig) {
-      const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
+      const project = nativeProjectFromConfig(resolvedConfigWithRuntime, nativeOptions)
       if (registerNativeProjectCallbacks(project, callbacks)) return project
       return wrapProjectCallbacks(project, callbacks, tokenDictionary)
     }
-    const project = new binding.Project(matchersFromSerializedConfig(resolvedConfig), nativeOptions)
-    projectConfigs.set(project, resolvedConfig)
+    const project = new binding.Project(matchersFromSerializedConfig(resolvedConfigWithRuntime), nativeOptions)
+    projectConfigs.set(project, resolvedConfigWithRuntime)
     return wrapProjectCallbacks(project, callbacks, tokenDictionary)
   },
 })
@@ -684,6 +690,14 @@ function stripProjectCallbacks(options: ProjectOptions | undefined): ProjectOpti
   if (!options) return undefined
   const { callbacks: _callbacks, ...rest } = options
   return rest
+}
+
+function withProjectRuntimeConfig(
+  config: Record<string, unknown>,
+  options: ProjectOptions | undefined,
+): ProjectConfigInput {
+  const tokenDictionary = options?.tokenDictionary ?? (config as ProjectConfigInput).tokenDictionary
+  return tokenDictionary ? { ...config, tokenDictionary } : config
 }
 
 function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): ProjectCallbacks {

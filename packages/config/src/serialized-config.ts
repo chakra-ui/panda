@@ -3,7 +3,7 @@ import type { UserConfig } from '@pandacss/types'
 const runtimeOnlyKeys = new Set(['hooks', 'plugins', 'presets', 'name'])
 
 export type SerializedConfig = Record<string, unknown>
-export type ConfigCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform'
+export type ConfigCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'
 export type ConfigCallbacks = Partial<Record<ConfigCallbackKind, Record<string, Function>>>
 
 export interface ConfigSnapshot {
@@ -70,6 +70,9 @@ function getCallbackRef(path: string[]): { kind: ConfigCallbackKind; id: string 
   }
   if (path[0] === 'patterns' && key === 'transform') {
     return { kind: 'pattern.transform', id: path.join('.') }
+  }
+  if (path[0] === 'patterns' && key === 'defaultValues') {
+    return { kind: 'pattern.defaultValues', id: path.join('.') }
   }
 }
 

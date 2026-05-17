@@ -575,4 +575,262 @@ describe('Project callbacks', () => {
       ]
     `)
   })
+
+  it('applies pattern transform callbacks from pattern function calls', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          conditions: {
+            _hover: '&:hover',
+          },
+          patterns: {
+            stack: {
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              gap: props.gap,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.ts',
+      `import { stack } from '@panda/patterns'
+       stack({ gap: { base: '4px', _hover: '8px' } })`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "flexDirection",
+          "value": "column",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "8px",
+          "conditions": [
+            "_hover",
+          ],
+        },
+      ]
+    `)
+  })
+
+  it('applies pattern transform callbacks from JSX pattern components', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          patterns: {
+            stack: {
+              jsxName: 'Stack',
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              gap: props.gap,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.tsx',
+      `import { Stack } from '@panda/jsx'
+       const el = <Stack gap="4px" />`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "flexDirection",
+          "value": "column",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies object defaultValues before pattern transform callbacks', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          patterns: {
+            stack: {
+              jsxName: 'Stack',
+              properties: {
+                gap: {},
+              },
+              defaultValues: {
+                gap: '4px',
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              gap: props.gap,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.tsx',
+      `import { stack } from '@panda/patterns'
+       import { Stack } from '@panda/jsx'
+       stack({})
+       const el = <Stack />`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies function defaultValues before pattern transform callbacks', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          patterns: {
+            stack: {
+              jsxName: 'Stack',
+              properties: {
+                gap: {},
+              },
+              defaultValues: {
+                kind: 'js-callback',
+                id: 'patterns.stack.defaultValues',
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.defaultValues': {
+            'patterns.stack.defaultValues': (props: { dense?: boolean }) => ({
+              gap: props.dense ? '2px' : '4px',
+            }),
+          },
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              gap: props.gap,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.tsx',
+      `import { stack } from '@panda/patterns'
+       import { Stack } from '@panda/jsx'
+       stack({ dense: true })
+       const el = <Stack gap="8px" />`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "2px",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "8px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
 })
