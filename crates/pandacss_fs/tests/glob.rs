@@ -138,11 +138,7 @@ mod basics {
 
     #[test]
     fn results_are_deterministically_sorted() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/z.ts", ""),
-            ("/a.ts", ""),
-            ("/m.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/z.ts", ""), ("/a.ts", ""), ("/m.ts", "")]);
         let r1 = glob_abs(&fs, "/", &["*.ts"]);
         let r2 = glob_abs(&fs, "/", &["*.ts"]);
         assert_eq!(r1, r2);
@@ -204,11 +200,7 @@ mod patterns {
 
     #[test]
     fn question_mark_matches_exactly_one_char() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/a.ts", ""),
-            ("/ab.ts", ""),
-            ("/abc.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/a.ts", ""), ("/ab.ts", ""), ("/abc.ts", "")]);
         assert_eq!(glob_abs(&fs, "/", &["?.ts"]), vec![PathBuf::from("/a.ts")]);
     }
 
@@ -221,30 +213,32 @@ mod patterns {
     #[test]
     fn question_mark_does_not_cross_separator() {
         let fs = MemoryFileSystem::from_entries([("/a/x.ts", ""), ("/ax.ts", "")]);
-        assert_eq!(glob_abs(&fs, "/", &["?x.ts"]), vec![PathBuf::from("/ax.ts")]);
+        assert_eq!(
+            glob_abs(&fs, "/", &["?x.ts"]),
+            vec![PathBuf::from("/ax.ts")]
+        );
     }
 
     #[test]
     fn multiple_question_marks() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/ab.ts", ""),
-            ("/abc.ts", ""),
-            ("/abcd.ts", ""),
-        ]);
-        assert_eq!(glob_abs(&fs, "/", &["???.ts"]), vec![PathBuf::from("/abc.ts")]);
+        let fs =
+            MemoryFileSystem::from_entries([("/ab.ts", ""), ("/abc.ts", ""), ("/abcd.ts", "")]);
+        assert_eq!(
+            glob_abs(&fs, "/", &["???.ts"]),
+            vec![PathBuf::from("/abc.ts")]
+        );
     }
 
     // ---- single-segment wildcard `*` ---------------------------------------------
 
     #[test]
     fn star_matches_within_segment() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/foo.ts", ""),
-            ("/bar.ts", ""),
-            ("/x.tsx", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/foo.ts", ""), ("/bar.ts", ""), ("/x.tsx", "")]);
         let results = glob_abs(&fs, "/", &["*.ts"]);
-        assert_eq!(results, vec![PathBuf::from("/bar.ts"), PathBuf::from("/foo.ts")]);
+        assert_eq!(
+            results,
+            vec![PathBuf::from("/bar.ts"), PathBuf::from("/foo.ts")]
+        );
     }
 
     #[test]
@@ -256,7 +250,10 @@ mod patterns {
     #[test]
     fn star_can_match_empty() {
         let fs = MemoryFileSystem::from_entries([("/foo.ts", "")]);
-        assert_eq!(glob_abs(&fs, "/", &["foo*.ts"]), vec![PathBuf::from("/foo.ts")]);
+        assert_eq!(
+            glob_abs(&fs, "/", &["foo*.ts"]),
+            vec![PathBuf::from("/foo.ts")]
+        );
     }
 
     #[test]
@@ -299,7 +296,10 @@ mod patterns {
     fn globstar_matches_zero_segments() {
         let fs = MemoryFileSystem::from_entries([("/x.ts", ""), ("/a/x.ts", "")]);
         let results = glob_abs(&fs, "/", &["**/x.ts"]);
-        assert_eq!(results, vec![PathBuf::from("/a/x.ts"), PathBuf::from("/x.ts")]);
+        assert_eq!(
+            results,
+            vec![PathBuf::from("/a/x.ts"), PathBuf::from("/x.ts")]
+        );
     }
 
     #[test]
@@ -363,9 +363,8 @@ mod patterns {
             let path = format!("/{}.ts", "a/".repeat(depth));
             entries.push((path, ""));
         }
-        let fs = MemoryFileSystem::from_entries(
-            entries.iter().map(|(p, c)| (p.clone(), c.to_string())),
-        );
+        let fs =
+            MemoryFileSystem::from_entries(entries.iter().map(|(p, c)| (p.clone(), c.to_string())));
         let results = glob_abs(&fs, "/", &["**/*.ts"]);
         assert_eq!(results.len(), 10);
     }
@@ -374,11 +373,7 @@ mod patterns {
 
     #[test]
     fn braces_two_options() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/a.ts", ""),
-            ("/b.ts", ""),
-            ("/c.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/a.ts", ""), ("/b.ts", ""), ("/c.ts", "")]);
         assert_eq!(
             glob_abs(&fs, "/", &["{a,b}.ts"]),
             vec![PathBuf::from("/a.ts"), PathBuf::from("/b.ts")]
@@ -494,11 +489,7 @@ mod patterns {
 
     #[test]
     fn class_negated_with_caret() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/a.ts", ""),
-            ("/b.ts", ""),
-            ("/c.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/a.ts", ""), ("/b.ts", ""), ("/c.ts", "")]);
         let results = glob_abs(&fs, "/", &["[^a].ts"]);
         assert_eq!(results.len(), 2);
         assert!(!results.contains(&PathBuf::from("/a.ts")));
@@ -547,10 +538,7 @@ mod patterns {
 
     #[test]
     fn pattern_anchored_to_cwd() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/proj/src/a.ts", ""),
-            ("/proj/lib/b.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/proj/src/a.ts", ""), ("/proj/lib/b.ts", "")]);
         let opts = GlobOptions {
             include: vec!["src/*.ts".into()],
             cwd: PathBuf::from("/proj"),
@@ -565,20 +553,14 @@ mod patterns {
 
     #[test]
     fn unicode_filenames_match() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/café.ts", ""),
-            ("/🎉.ts", ""),
-            ("/中文.ts", ""),
-        ]);
+        let fs =
+            MemoryFileSystem::from_entries([("/café.ts", ""), ("/🎉.ts", ""), ("/中文.ts", "")]);
         assert_eq!(glob_abs(&fs, "/", &["**/*.ts"]).len(), 3);
     }
 
     #[test]
     fn unicode_in_directory_names() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/日本語/foo.ts", ""),
-            ("/中文/bar.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/日本語/foo.ts", ""), ("/中文/bar.ts", "")]);
         assert_eq!(glob_abs(&fs, "/", &["**/*.ts"]).len(), 2);
     }
 
@@ -599,11 +581,8 @@ mod patterns {
 
     #[test]
     fn explicit_dot_pattern() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/.env", ""),
-            ("/.env.local", ""),
-            ("/x.ts", ""),
-        ]);
+        let fs =
+            MemoryFileSystem::from_entries([("/.env", ""), ("/.env.local", ""), ("/x.ts", "")]);
         let results = glob_abs(&fs, "/", &[".env*"]);
         assert!(results.contains(&PathBuf::from("/.env")));
         assert!(results.contains(&PathBuf::from("/.env.local")));
@@ -628,7 +607,10 @@ mod walker {
             ("/test/c.ts", ""),
         ]);
         let results = glob_abs(&fs, "/", &["src/**/*.ts", "lib/**/*.ts"]);
-        assert_eq!(results, vec![PathBuf::from("/lib/b.ts"), PathBuf::from("/src/a.ts")]);
+        assert_eq!(
+            results,
+            vec![PathBuf::from("/lib/b.ts"), PathBuf::from("/src/a.ts")]
+        );
     }
 
     #[test]
@@ -640,16 +622,8 @@ mod walker {
 
     #[test]
     fn exclude_wins_when_both_include_and_exclude_match() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/src/keep.ts", ""),
-            ("/src/drop.test.ts", ""),
-        ]);
-        let results = glob_filtered(
-            &fs,
-            "/",
-            &["src/**/*.ts"],
-            &["**/*.test.ts"],
-        );
+        let fs = MemoryFileSystem::from_entries([("/src/keep.ts", ""), ("/src/drop.test.ts", "")]);
+        let results = glob_filtered(&fs, "/", &["src/**/*.ts"], &["**/*.test.ts"]);
         assert!(results.contains(&PathBuf::from("/src/keep.ts")));
         assert!(!results.contains(&PathBuf::from("/src/drop.test.ts")));
     }
@@ -682,12 +656,7 @@ mod walker {
             ("/proj/src/Button.tsx", ""),
             ("/proj/node_modules/lib/index.js", ""),
         ]);
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["**/*.{js,tsx}"],
-            &["**/node_modules/**"],
-        );
+        let results = glob_filtered(&fs, "/proj", &["**/*.{js,tsx}"], &["**/node_modules/**"]);
         assert_eq!(results, vec![PathBuf::from("/proj/src/Button.tsx")]);
     }
 
@@ -699,15 +668,13 @@ mod walker {
             ("/proj/b/dist/build.js", ""),
             ("/proj/b/src/b.ts", ""),
         ]);
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["**/*.{ts,js}"],
-            &["**/dist/**"],
-        );
+        let results = glob_filtered(&fs, "/proj", &["**/*.{ts,js}"], &["**/dist/**"]);
         assert_eq!(
             results,
-            vec![PathBuf::from("/proj/a/src/a.ts"), PathBuf::from("/proj/b/src/b.ts")]
+            vec![
+                PathBuf::from("/proj/a/src/a.ts"),
+                PathBuf::from("/proj/b/src/b.ts")
+            ]
         );
     }
 
@@ -717,12 +684,7 @@ mod walker {
             ("/proj/a/node_modules/pkg/sub/sub/sub/x.js", ""),
             ("/proj/a/src/x.ts", ""),
         ]);
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["**/*.{ts,js}"],
-            &["**/node_modules/**"],
-        );
+        let results = glob_filtered(&fs, "/proj", &["**/*.{ts,js}"], &["**/node_modules/**"]);
         assert_eq!(results, vec![PathBuf::from("/proj/a/src/x.ts")]);
     }
 
@@ -736,15 +698,9 @@ mod walker {
         }
         entries.push(("/proj/src/Button.tsx".to_string(), ""));
 
-        let fs = MemoryFileSystem::from_entries(
-            entries.iter().map(|(p, c)| (p.clone(), c.to_string())),
-        );
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["**/*.{js,tsx}"],
-            &["**/node_modules/**"],
-        );
+        let fs =
+            MemoryFileSystem::from_entries(entries.iter().map(|(p, c)| (p.clone(), c.to_string())));
+        let results = glob_filtered(&fs, "/proj", &["**/*.{js,tsx}"], &["**/node_modules/**"]);
         assert_eq!(results, vec![PathBuf::from("/proj/src/Button.tsx")]);
     }
 
@@ -752,20 +708,14 @@ mod walker {
 
     #[test]
     fn default_exclude_drops_d_ts() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/proj/types.d.ts", ""),
-            ("/proj/main.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/proj/types.d.ts", ""), ("/proj/main.ts", "")]);
         let results = glob_abs(&fs, "/proj", &["**/*.ts"]);
         assert_eq!(results, vec![PathBuf::from("/proj/main.ts")]);
     }
 
     #[test]
     fn caller_exclude_replaces_default() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/proj/types.d.ts", ""),
-            ("/proj/main.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/proj/types.d.ts", ""), ("/proj/main.ts", "")]);
         // Non-empty exclude — default is NOT injected.
         let results = glob_filtered(&fs, "/proj", &["**/*.ts"], &["**/main.ts"]);
         assert_eq!(results, vec![PathBuf::from("/proj/types.d.ts")]);
@@ -773,14 +723,14 @@ mod walker {
 
     #[test]
     fn caller_can_include_d_ts_explicitly() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/proj/types.d.ts", ""),
-            ("/proj/main.ts", ""),
-        ]);
+        let fs = MemoryFileSystem::from_entries([("/proj/types.d.ts", ""), ("/proj/main.ts", "")]);
         let results = glob_filtered(&fs, "/proj", &["**/*.ts"], &["nothing-to-match"]);
         assert_eq!(
             results,
-            vec![PathBuf::from("/proj/main.ts"), PathBuf::from("/proj/types.d.ts")]
+            vec![
+                PathBuf::from("/proj/main.ts"),
+                PathBuf::from("/proj/types.d.ts")
+            ]
         );
     }
 
@@ -797,10 +747,8 @@ mod walker {
 
     #[test]
     fn relative_results_with_nested_files() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/proj/src/a.ts", ""),
-            ("/proj/src/nested/b.ts", ""),
-        ]);
+        let fs =
+            MemoryFileSystem::from_entries([("/proj/src/a.ts", ""), ("/proj/src/nested/b.ts", "")]);
         let opts = GlobOptions {
             include: vec!["src/**/*.ts".into()],
             cwd: PathBuf::from("/proj"),
@@ -823,9 +771,8 @@ mod walker {
         for i in 0..200 {
             entries.push((format!("/src/file{i}.ts"), ""));
         }
-        let fs = MemoryFileSystem::from_entries(
-            entries.iter().map(|(p, c)| (p.clone(), c.to_string())),
-        );
+        let fs =
+            MemoryFileSystem::from_entries(entries.iter().map(|(p, c)| (p.clone(), c.to_string())));
         let results = glob_abs(&fs, "/", &["src/*.ts"]);
         assert_eq!(results.len(), 200);
     }
@@ -895,17 +842,11 @@ mod panda {
     #[test]
     fn multi_include_app_and_pages_routers() {
         let fs = project();
-        let results = glob_abs(
-            &fs,
-            "/proj",
-            &["app/**/*.{ts,tsx}", "pages/**/*.{ts,tsx}"],
-        );
+        let results = glob_abs(&fs, "/proj", &["app/**/*.{ts,tsx}", "pages/**/*.{ts,tsx}"]);
 
         assert!(results.contains(&PathBuf::from("/proj/app/page.tsx")));
         assert!(results.contains(&PathBuf::from("/proj/app/layout.tsx")));
-        assert!(results.contains(&PathBuf::from(
-            "/proj/app/(marketing)/about/page.tsx"
-        )));
+        assert!(results.contains(&PathBuf::from("/proj/app/(marketing)/about/page.tsx")));
         assert!(results.contains(&PathBuf::from("/proj/pages/index.tsx")));
         assert!(results.contains(&PathBuf::from("/proj/pages/_app.tsx")));
         assert!(results.contains(&PathBuf::from("/proj/pages/api/hello.ts")));
@@ -938,25 +879,16 @@ mod panda {
         );
         assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
         assert!(results.contains(&PathBuf::from("/proj/src/hooks/useToggle.ts")));
-        assert!(!results.contains(&PathBuf::from(
-            "/proj/src/components/Button.test.tsx"
-        )));
+        assert!(!results.contains(&PathBuf::from("/proj/src/components/Button.test.tsx")));
         assert!(!results.contains(&PathBuf::from("/proj/src/utils/helpers.spec.ts")));
     }
 
     #[test]
     fn excludes_stories() {
         let fs = project();
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["src/**/*.tsx"],
-            &["**/*.stories.{ts,tsx}"],
-        );
+        let results = glob_filtered(&fs, "/proj", &["src/**/*.tsx"], &["**/*.stories.{ts,tsx}"]);
         assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
-        assert!(!results.contains(&PathBuf::from(
-            "/proj/src/components/Button.stories.tsx"
-        )));
+        assert!(!results.contains(&PathBuf::from("/proj/src/components/Button.stories.tsx")));
     }
 
     #[test]
@@ -969,9 +901,7 @@ mod panda {
             &["styled-system/**", "**/*.d.ts"],
         );
         assert!(!results.contains(&PathBuf::from("/proj/styled-system/css.mjs")));
-        assert!(!results.contains(&PathBuf::from(
-            "/proj/styled-system/types/index.d.ts"
-        )));
+        assert!(!results.contains(&PathBuf::from("/proj/styled-system/types/index.d.ts")));
     }
 
     #[test]
@@ -1058,10 +988,8 @@ mod panda {
 
     #[test]
     fn cwd_at_src_with_relative_include() {
-        let fs = MemoryFileSystem::from_entries([
-            ("/proj/src/a.ts", ""),
-            ("/proj/src/nested/b.ts", ""),
-        ]);
+        let fs =
+            MemoryFileSystem::from_entries([("/proj/src/a.ts", ""), ("/proj/src/nested/b.ts", "")]);
         assert_eq!(glob_abs(&fs, "/proj/src", &["**/*.ts"]).len(), 2);
     }
 
@@ -1109,12 +1037,7 @@ mod panda {
             ("/proj/src/internal/secret.ts", ""),
             ("/proj/src/public/b.ts", ""),
         ]);
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["src/**/*.ts"],
-            &["src/internal/**"],
-        );
+        let results = glob_filtered(&fs, "/proj", &["src/**/*.ts"], &["src/internal/**"]);
         assert!(results.contains(&PathBuf::from("/proj/src/a.ts")));
         assert!(results.contains(&PathBuf::from("/proj/src/public/b.ts")));
         assert!(!results.contains(&PathBuf::from("/proj/src/internal/secret.ts")));
@@ -1125,23 +1048,14 @@ mod panda {
         let mut entries: Vec<(String, &'static str)> = Vec::new();
         for pkg in 0..30 {
             for sub in 0..10 {
-                entries.push((
-                    format!("/proj/node_modules/pkg{pkg}/lib/file{sub}.js"),
-                    "",
-                ));
+                entries.push((format!("/proj/node_modules/pkg{pkg}/lib/file{sub}.js"), ""));
             }
         }
         entries.push(("/proj/src/index.ts".to_string(), ""));
 
-        let fs = MemoryFileSystem::from_entries(
-            entries.iter().map(|(p, c)| (p.clone(), c.to_string())),
-        );
-        let results = glob_filtered(
-            &fs,
-            "/proj",
-            &["**/*.{ts,js}"],
-            &["**/node_modules/**"],
-        );
+        let fs =
+            MemoryFileSystem::from_entries(entries.iter().map(|(p, c)| (p.clone(), c.to_string())));
+        let results = glob_filtered(&fs, "/proj", &["**/*.{ts,js}"], &["**/node_modules/**"]);
         assert_eq!(results, vec![PathBuf::from("/proj/src/index.ts")]);
     }
 }

@@ -12,10 +12,13 @@ pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true }
 pandacss_recipes = { workspace = true }
+pandacss_shared = { workspace = true }
 pandacss_utility = { workspace = true }
+regex = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+smallvec = { workspace = true }
 pandacss_tokens = { workspace = true }
 
 [dev-dependencies]

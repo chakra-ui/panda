@@ -95,7 +95,13 @@ impl FileSystem for OsFileSystem {
         for entry in walker {
             let entry = match entry {
                 Ok(e) => e,
-                Err(err) if err.io_error().is_some_and(|e| e.kind() == io::ErrorKind::PermissionDenied) => continue,
+                Err(err)
+                    if err
+                        .io_error()
+                        .is_some_and(|e| e.kind() == io::ErrorKind::PermissionDenied) =>
+                {
+                    continue;
+                }
                 Err(err) => return Err(io::Error::other(err)),
             };
             if !entry.file_type().is_file() {

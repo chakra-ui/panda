@@ -4,9 +4,9 @@
 //! reference — `packages/parser/__tests__/*.test.ts` plus the panda
 //! preset configs.
 
-use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
 
 fn cva_matchers() -> Matchers {

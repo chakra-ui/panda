@@ -31,20 +31,37 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
+mod conditions;
+mod config;
+mod parsed_file;
+mod recipes;
+
+use std::borrow::Cow;
 use std::collections::BTreeMap;
+use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
-use rustc_hash::{FxHashMap, FxHashSet};
-use serde_json::{Map, Value};
+use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
+use smallvec::SmallVec;
 
-use pandacss_config::{DerivedEngineConfig, SerializedConfig};
+use pandacss_config::{EngineConfig, SerializedConfig};
 use pandacss_encoder::{Atom, Encoder};
 use pandacss_extractor::{
-    CrossFileResolver, ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal, MatchCategory,
-    Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher, TokenDictionary,
-    css_property_names, extract,
+    CrossFileResolver, ExtractorConfig, Literal, MatchCategory, Matchers, TokenDictionary, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::Utility;
+
+pub(crate) use conditions::{ProjectConditionMatcher, ProjectConditions};
+use config::{
+    DerivedProjectConfig, config_recipes_from_engine_config, config_slot_recipes_from_engine_config,
+};
+pub use parsed_file::ParsedFile;
+pub use recipes::{
+    EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
+    RecipeStyleGroupSnapshot,
+};
+use recipes::{EncodedRecipesCache, RecipeRegistry, StyleResolver};
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
@@ -53,28 +70,38 @@ pub struct Project {
     config: ExtractorConfig,
     utility: Option<Utility>,
     conditions: ProjectConditionMatcher,
-    files: FxHashMap<String, FileEntry>,
-    /// Deduplicated union of every value in `files`. Rebuilt eagerly on
-    /// every add / remove so [`Self::atoms`] hands out a stable
-    /// `&FxHashSet` borrow without recomputing on the read.
+    recipes: RecipeRegistry,
+    files: FxHashMap<Arc<str>, FileEntry>,
+    /// Deduplicated union of every value in `files`. Updated by reference
+    /// counts on add/remove so [`Self::atoms`] hands out a stable
+    /// `&FxHashSet` without walking the whole project on each save.
     atoms_cache: FxHashSet<Atom>,
+    atom_counts: FxHashMap<Atom, u32>,
+    encoded_recipes_cache: EncodedRecipesCache,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
-    recipes: BTreeMap<RecipeKey, Recipe>,
-    slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
+    config_recipes: BTreeMap<RecipeKey, Recipe>,
+    config_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
+    inline_recipes: BTreeMap<RecipeKey, Recipe>,
+    inline_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
+    inline_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    inline_slot_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
 // change without disturbing callers — [`ParsedFile`] is the public view.
 struct FileEntry {
+    source_hash: u64,
     atoms: FxHashSet<Atom>,
+    encoded_recipes: EncodedRecipes,
     diagnostics: Vec<Diagnostic>,
+    report: FileReport,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct RecipeKey {
-    file: String,
-    span_start: u32,
+pub(crate) struct RecipeKey {
+    pub(crate) file: Arc<str>,
+    pub(crate) span_start: u32,
 }
 
 impl Project {
@@ -95,25 +122,49 @@ impl Project {
             config,
             utility: None,
             conditions: ProjectConditionMatcher::Default(pandacss_encoder::DefaultConditions),
+            recipes: RecipeRegistry::default(),
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
-            recipes: BTreeMap::new(),
-            slot_recipes: BTreeMap::new(),
+            atom_counts: FxHashMap::default(),
+            encoded_recipes_cache: EncodedRecipesCache::default(),
+            config_recipes: BTreeMap::new(),
+            config_slot_recipes: BTreeMap::new(),
+            inline_recipes: BTreeMap::new(),
+            inline_slot_recipes: BTreeMap::new(),
+            inline_recipe_spans: FxHashMap::default(),
+            inline_slot_recipe_spans: FxHashMap::default(),
         }
     }
 
     #[must_use]
     pub fn from_serialized_config(config: SerializedConfig) -> Self {
-        let derived = DerivedProjectConfig::from_serialized_config(&config);
+        let engine = EngineConfig::from_serialized_config(&config);
+        let derived = DerivedProjectConfig::from_engine_config(&config, &engine);
+        let config_recipes = config_recipes_from_engine_config(&engine);
+        let config_slot_recipes = config_slot_recipes_from_engine_config(&engine);
+        let recipes = RecipeRegistry::from_engine_config(
+            &engine,
+            &StyleResolver {
+                utility: derived.utility.as_ref(),
+                conditions: &derived.conditions,
+            },
+        );
         Self {
             serialized_config: Some(config),
             config: derived.extractor,
             utility: derived.utility,
             conditions: derived.conditions,
+            recipes,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
-            recipes: BTreeMap::new(),
-            slot_recipes: BTreeMap::new(),
+            atom_counts: FxHashMap::default(),
+            encoded_recipes_cache: EncodedRecipesCache::default(),
+            config_recipes,
+            config_slot_recipes,
+            inline_recipes: BTreeMap::new(),
+            inline_slot_recipes: BTreeMap::new(),
+            inline_recipe_spans: FxHashMap::default(),
+            inline_slot_recipe_spans: FxHashMap::default(),
         }
     }
 
@@ -151,98 +202,155 @@ impl Project {
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> FileReport {
+        let source_hash = hash_source(source);
+        if pattern_transform.is_none()
+            && self
+                .files
+                .get(path)
+                .is_some_and(|entry| entry.source_hash == source_hash)
+        {
+            return self.files.get(path).expect("checked above").report.clone();
+        }
+
         let result = extract(source, path, &self.config);
+        let diagnostics = result.diagnostics;
         let mut report = FileReport {
             css_calls: 0,
             cva_calls: 0,
             sva_calls: 0,
             jsx_usages: 0,
-            diagnostics: result.diagnostics.clone(),
+            diagnostics: diagnostics.clone(),
         };
 
         // Drop the previous contribution first; otherwise removed styles
         // survive as ghost atoms in the global view.
         self.drop_file_state(path);
+        let path_key: Arc<str> = Arc::from(path);
 
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
-        for call in &result.calls {
-            let Some(arg) = call.data.first().and_then(|d| d.as_ref()) else {
-                continue;
-            };
+        let mut encoded_recipes = EncodedRecipes::default();
+        let empty_object = Literal::Object(Vec::new());
+        for call in result.calls {
+            let arg = call.data.into_iter().next().flatten();
             match (call.category, call.name.as_str()) {
                 (MatchCategory::Css, "css") => {
-                    let normalized = self.normalize_style_object(arg);
-                    encoder.process_atomic(&normalized);
+                    let Some(arg) = arg else {
+                        continue;
+                    };
+                    let normalized = self.normalize_style_object(&arg);
+                    encoder.process_atomic(normalized.as_ref());
                     report.css_calls += 1;
                 }
                 (MatchCategory::Css, "cva") => {
-                    if let Some(recipe) = Recipe::from_literal(arg) {
+                    let Some(arg) = arg else {
+                        continue;
+                    };
+                    if let Some(recipe) = Recipe::from_literal_owned(arg) {
                         encoder.process_atomic_recipe(&recipe);
-                        self.recipes.insert(
+                        self.inline_recipes.insert(
                             RecipeKey {
-                                file: path.to_owned(),
+                                file: Arc::clone(&path_key),
                                 span_start: call.span.start,
                             },
                             recipe,
                         );
+                        self.inline_recipe_spans
+                            .entry(Arc::clone(&path_key))
+                            .or_default()
+                            .push(call.span.start);
                         report.cva_calls += 1;
                     }
                 }
                 (MatchCategory::Css, "sva") => {
-                    if let Some(recipe) = SlotRecipe::from_literal(arg) {
+                    let Some(arg) = arg else {
+                        continue;
+                    };
+                    if let Some(recipe) = SlotRecipe::from_literal_owned(arg) {
                         encoder.process_atomic_slot_recipe(&recipe);
-                        self.slot_recipes.insert(
+                        self.inline_slot_recipes.insert(
                             RecipeKey {
-                                file: path.to_owned(),
+                                file: Arc::clone(&path_key),
                                 span_start: call.span.start,
                             },
                             recipe,
                         );
+                        self.inline_slot_recipe_spans
+                            .entry(Arc::clone(&path_key))
+                            .or_default()
+                            .push(call.span.start);
                         report.sva_calls += 1;
                     }
                 }
                 (MatchCategory::Pattern, _) => {
+                    let Some(arg) = arg else {
+                        continue;
+                    };
                     if let Some(transform) = pattern_transform.as_deref_mut() {
-                        match transform(&call.name, arg) {
+                        match transform(&call.name, &arg) {
                             Ok(Some(style)) => {
                                 let normalized = self.normalize_style_object(&style);
-                                encoder.process_atomic(&normalized);
+                                encoder.process_atomic(normalized.as_ref());
                             }
                             Ok(None) => {}
                             Err(diagnostic) => report.diagnostics.push(diagnostic),
                         }
                     }
                 }
+                (MatchCategory::Recipe, _) => {
+                    let arg = arg.as_ref().unwrap_or(&empty_object);
+                    encoded_recipes.process_usage(&self.recipes, &call.name, arg, &self.conditions);
+                }
                 _ => {}
             }
         }
 
-        for jsx in &result.jsx {
+        for jsx in result.jsx {
+            let recipe_names = self.recipes.find_by_jsx(&jsx.name);
+            if !recipe_names.is_empty() {
+                if let Some(style_props) = self
+                    .recipes
+                    .style_props_for_recipes(&recipe_names, &jsx.data)
+                {
+                    let normalized = self.normalize_style_object(&style_props);
+                    encoder.process_atomic(normalized.as_ref());
+                }
+                for recipe_name in &recipe_names {
+                    encoded_recipes.process_usage(
+                        &self.recipes,
+                        recipe_name,
+                        &jsx.data,
+                        &self.conditions,
+                    );
+                }
+                report.jsx_usages += 1;
+                continue;
+            }
+
             let style = if let Some(transform) = pattern_transform.as_deref_mut() {
                 match transform(&jsx.name, &jsx.data) {
                     Ok(Some(style)) => style,
-                    Ok(None) => jsx.data.clone(),
+                    Ok(None) => jsx.data,
                     Err(diagnostic) => {
                         report.diagnostics.push(diagnostic);
-                        jsx.data.clone()
+                        jsx.data
                     }
                 }
             } else {
-                jsx.data.clone()
+                jsx.data
             };
             let normalized = self.normalize_style_object(&style);
-            encoder.process_atomic(&normalized);
+            encoder.process_atomic(normalized.as_ref());
             report.jsx_usages += 1;
         }
 
-        self.files.insert(
-            path.to_owned(),
-            FileEntry {
-                atoms: encoder.into_atoms(),
-                diagnostics: result.diagnostics,
-            },
-        );
-        self.rebuild_atoms_cache();
+        let entry = FileEntry {
+            source_hash,
+            atoms: encoder.into_atoms(),
+            encoded_recipes,
+            diagnostics,
+            report: report.clone(),
+        };
+        self.add_file_state(path_key, entry);
         report
     }
 
@@ -265,16 +373,15 @@ impl Project {
             path,
             atoms: &entry.atoms,
             diagnostics: &entry.diagnostics,
-            recipes: &self.recipes,
-            slot_recipes: &self.slot_recipes,
+            recipes: &self.inline_recipes,
+            slot_recipes: &self.inline_slot_recipes,
         })
     }
 
     pub fn remove_file(&mut self, path: &str) -> bool {
-        let had_file = self.files.remove(path).is_some();
+        let had_file = self.remove_file_entry(path).is_some();
         let recipes_dropped = self.drop_recipes_for(path);
         if had_file {
-            self.rebuild_atoms_cache();
             true
         } else {
             // Skip rebuild on a no-op. A path with recipes but no file
@@ -290,41 +397,72 @@ impl Project {
     pub fn clear(&mut self) {
         self.files.clear();
         self.atoms_cache.clear();
-        self.recipes.clear();
-        self.slot_recipes.clear();
+        self.atom_counts.clear();
+        self.encoded_recipes_cache.clear();
+        self.inline_recipes.clear();
+        self.inline_slot_recipes.clear();
+        self.inline_recipe_spans.clear();
+        self.inline_slot_recipe_spans.clear();
     }
 
     fn drop_file_state(&mut self, path: &str) {
-        self.files.remove(path);
+        self.remove_file_entry(path);
         self.drop_recipes_for(path);
     }
 
-    fn drop_recipes_for(&mut self, path: &str) -> bool {
-        let before = self.recipes.len() + self.slot_recipes.len();
-        self.recipes.retain(|k, _| k.file != path);
-        self.slot_recipes.retain(|k, _| k.file != path);
-        before != self.recipes.len() + self.slot_recipes.len()
-    }
-
-    fn rebuild_atoms_cache(&mut self) {
-        // PERF(port): size to the largest single-file bucket; grows on
-        // insert if multiple files contribute distinct atoms.
-        let cap = self
-            .files
-            .values()
-            .map(|e| e.atoms.len())
-            .max()
-            .unwrap_or(0);
-        self.atoms_cache = FxHashSet::with_capacity_and_hasher(cap, rustc_hash::FxBuildHasher);
-        for entry in self.files.values() {
-            self.atoms_cache.extend(entry.atoms.iter().cloned());
+    fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
+        for atom in &entry.atoms {
+            let count = self.atom_counts.entry(atom.clone()).or_insert(0);
+            *count += 1;
+            if *count == 1 {
+                self.atoms_cache.insert(atom.clone());
+            }
         }
+        self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
+        self.files.insert(path, entry);
     }
 
-    fn normalize_style_object(&self, style: &Literal) -> Literal {
+    fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
+        let entry = self.files.remove(path)?;
+        for atom in &entry.atoms {
+            if let Some(count) = self.atom_counts.get_mut(atom) {
+                *count -= 1;
+                if *count == 0 {
+                    self.atom_counts.remove(atom);
+                    self.atoms_cache.remove(atom);
+                }
+            }
+        }
+        self.encoded_recipes_cache
+            .remove_from(&entry.encoded_recipes);
+        Some(entry)
+    }
+
+    fn drop_recipes_for(&mut self, path: &str) -> bool {
+        let before = self.inline_recipes.len() + self.inline_slot_recipes.len();
+        if let Some((file, spans)) = self.inline_recipe_spans.remove_entry(path) {
+            for span_start in spans {
+                self.inline_recipes.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
+        if let Some((file, spans)) = self.inline_slot_recipe_spans.remove_entry(path) {
+            for span_start in spans {
+                self.inline_slot_recipes.remove(&RecipeKey {
+                    file: Arc::clone(&file),
+                    span_start,
+                });
+            }
+        }
+        before != self.inline_recipes.len() + self.inline_slot_recipes.len()
+    }
+
+    fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
         self.utility.as_ref().map_or_else(
-            || style.clone(),
-            |utility| utility.normalize_style_object(style),
+            || Cow::Borrowed(style),
+            |utility| Cow::Owned(utility.normalize_style_object(style)),
         )
     }
 
@@ -334,25 +472,37 @@ impl Project {
     }
 
     #[must_use]
+    pub fn encoded_recipes(&self) -> &EncodedRecipes {
+        self.encoded_recipes_cache.view()
+    }
+
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.files.is_empty()
             && self.atoms_cache.is_empty()
-            && self.recipes.is_empty()
-            && self.slot_recipes.is_empty()
+            && self.encoded_recipes_cache.is_empty()
+            && self.config_recipes.is_empty()
+            && self.config_slot_recipes.is_empty()
+            && self.inline_recipes.is_empty()
+            && self.inline_slot_recipes.is_empty()
+            && self.inline_recipe_spans.is_empty()
+            && self.inline_slot_recipe_spans.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order
     /// (`BTreeMap`).
     pub fn recipes(&self) -> impl Iterator<Item = (&str, u32, &Recipe)> + '_ {
-        self.recipes
+        self.config_recipes
             .iter()
-            .map(|(k, v)| (k.file.as_str(), k.span_start, v))
+            .chain(self.inline_recipes.iter())
+            .map(|(k, v)| (k.file.as_ref(), k.span_start, v))
     }
 
     pub fn slot_recipes(&self) -> impl Iterator<Item = (&str, u32, &SlotRecipe)> + '_ {
-        self.slot_recipes
+        self.config_slot_recipes
             .iter()
-            .map(|(k, v)| (k.file.as_str(), k.span_start, v))
+            .chain(self.inline_slot_recipes.iter())
+            .map(|(k, v)| (k.file.as_ref(), k.span_start, v))
     }
 
     /// Aggregate counts; cheap, doesn't recompute. `files_processed` is
@@ -363,8 +513,8 @@ impl Project {
         ProjectSummary {
             files_processed: self.files.len(),
             atom_count: self.atoms_cache.len(),
-            recipe_count: self.recipes.len(),
-            slot_recipe_count: self.slot_recipes.len(),
+            recipe_count: self.config_recipes.len() + self.inline_recipes.len(),
+            slot_recipe_count: self.config_slot_recipes.len() + self.inline_slot_recipes.len(),
         }
     }
 
@@ -377,318 +527,16 @@ impl Project {
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic> + 'a;
 
-struct DerivedProjectConfig {
-    extractor: ExtractorConfig,
-    utility: Option<Utility>,
-    conditions: ProjectConditionMatcher,
+fn hash_source(source: &str) -> u64 {
+    let mut hasher = FxHasher::default();
+    source.hash(&mut hasher);
+    hasher.finish()
 }
 
-impl DerivedProjectConfig {
-    fn from_serialized_config(config: &SerializedConfig) -> Self {
-        let derived = DerivedEngineConfig::from_serialized_config(config);
-        let utility = Utility::from_serialized(&config.utilities);
-        Self {
-            extractor: ExtractorConfig::new(matchers_from_derived_config(&derived)).with_jsx(
-                jsx_extraction_config_from_serialized_config(config, &utility),
-            ),
-            utility: (!utility.is_empty()).then_some(utility),
-            conditions: ProjectConditions::from_derived_config(&derived),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-enum ProjectConditionMatcher {
-    Default(pandacss_encoder::DefaultConditions),
-    Config(ProjectConditions),
-}
-
-impl ConditionMatcher for ProjectConditionMatcher {
-    #[inline]
-    fn is_condition(&self, key: &str) -> bool {
-        match self {
-            Self::Default(matcher) => matcher.is_condition(key),
-            Self::Config(matcher) => matcher.is_condition(key),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Default)]
-struct ProjectConditions {
-    names: FxHashSet<Box<str>>,
-}
-
-impl ProjectConditions {
-    fn from_derived_config(config: &DerivedEngineConfig) -> ProjectConditionMatcher {
-        let mut conditions = Self::default();
-        conditions.extend(config.condition_names.iter().map(String::as_str));
-        ProjectConditionMatcher::Config(conditions)
-    }
-
-    fn extend<'a>(&mut self, names: impl IntoIterator<Item = &'a str>) {
-        self.names.extend(
-            names
-                .into_iter()
-                .filter(|name| !name.is_empty())
-                .map(Box::<str>::from),
-        );
-    }
-}
-
-impl ConditionMatcher for ProjectConditions {
-    #[inline]
-    fn is_condition(&self, key: &str) -> bool {
-        key.starts_with('_') || self.names.contains(key)
-    }
-}
-
-fn matchers_from_derived_config(config: &DerivedEngineConfig) -> Matchers {
-    Matchers {
-        css: ExtractorMatcher {
-            modules: config.import_map.css.clone(),
-            names: ExtractorNameMatcher::only(["css", "cva", "sva"]),
-        },
-        recipe: ExtractorMatcher {
-            modules: config.import_map.recipe.clone(),
-            names: ExtractorNameMatcher::Any,
-        },
-        pattern: ExtractorMatcher {
-            modules: config.import_map.pattern.clone(),
-            names: ExtractorNameMatcher::Any,
-        },
-        jsx: Some(ExtractorMatcher {
-            modules: config.import_map.jsx.clone(),
-            names: ExtractorNameMatcher::only(config.jsx_names.clone()),
-        }),
-        tokens: ExtractorMatcher {
-            modules: config.import_map.tokens.clone(),
-            names: ExtractorNameMatcher::only(["token"]),
-        },
-        jsx_factories: Some(vec![config.jsx_factory.clone()]),
-    }
-}
-
-fn collect_string_array(value: Option<&Value>, names: &mut Vec<String>) {
-    let Some(items) = value.and_then(Value::as_array) else {
-        return;
-    };
-
-    names.extend(items.iter().filter_map(Value::as_str).map(str::to_owned));
-}
-
-fn jsx_extraction_config_from_serialized_config(
-    config: &SerializedConfig,
-    utility: &Utility,
-) -> JsxExtractionConfig {
-    let mut component_props = FxHashMap::default();
-    collect_pattern_jsx_props(&config.patterns, &mut component_props);
-    let valid_style_props = valid_jsx_style_props_from_serialized_config(utility);
-    let Some(theme) = config.theme.as_object() else {
-        return JsxExtractionConfig {
-            style_props: jsx_style_props_from_serialized_config(config),
-            component_props,
-            valid_style_props,
-        };
-    };
-    collect_recipe_jsx_props(theme.get("recipes"), &mut component_props);
-    collect_slot_recipe_jsx_props(theme.get("slotRecipes"), &mut component_props);
-    if let Some(extend) = theme.get("extend").and_then(Value::as_object) {
-        collect_recipe_jsx_props(extend.get("recipes"), &mut component_props);
-        collect_slot_recipe_jsx_props(extend.get("slotRecipes"), &mut component_props);
-    }
-    JsxExtractionConfig {
-        style_props: jsx_style_props_from_serialized_config(config),
-        component_props,
-        valid_style_props,
-    }
-}
-
-fn valid_jsx_style_props_from_serialized_config(utility: &Utility) -> FxHashSet<String> {
-    let mut props: FxHashSet<String> = css_property_names()
-        .iter()
-        .map(|prop| (*prop).to_owned())
-        .collect();
-    props.extend(utility.known_prop_names().map(str::to_owned));
-    props
-}
-
-fn jsx_style_props_from_serialized_config(config: &SerializedConfig) -> JsxStyleProps {
-    match config.jsx_style_props.as_deref() {
-        Some("minimal") => JsxStyleProps::Minimal,
-        Some("none") => JsxStyleProps::None,
-        _ => JsxStyleProps::All,
-    }
-}
-
-fn collect_pattern_jsx_props(value: &Value, out: &mut FxHashMap<String, FxHashSet<String>>) {
-    let Some(patterns) = value.as_object() else {
-        return;
-    };
-    collect_pattern_map_jsx_props(patterns, out);
-    if let Some(extend) = patterns.get("extend").and_then(Value::as_object) {
-        collect_pattern_map_jsx_props(extend, out);
-    }
-}
-
-fn collect_pattern_map_jsx_props(
-    patterns: &Map<String, Value>,
-    out: &mut FxHashMap<String, FxHashSet<String>>,
-) {
-    for (name, pattern) in patterns {
-        if name == "extend" {
-            continue;
-        }
-        let mut jsx_names = vec![
-            pattern
-                .get("jsxName")
-                .and_then(Value::as_str)
-                .map(str::to_owned)
-                .unwrap_or_else(|| capitalize(name)),
-        ];
-        collect_string_array(pattern.get("jsx"), &mut jsx_names);
-        let props = object_keys(pattern.get("properties"));
-        insert_jsx_props(out, jsx_names, props);
-    }
-}
-
-fn collect_recipe_jsx_props(value: Option<&Value>, out: &mut FxHashMap<String, FxHashSet<String>>) {
-    let Some(recipes) = value.and_then(Value::as_object) else {
-        return;
-    };
-
-    for (name, recipe) in recipes {
-        let mut jsx_names = vec![capitalize(name)];
-        collect_string_array(recipe.get("jsx"), &mut jsx_names);
-        let props = object_keys(recipe.get("variants"));
-        insert_jsx_props(out, jsx_names, props);
-    }
-}
-
-fn collect_slot_recipe_jsx_props(
-    value: Option<&Value>,
-    out: &mut FxHashMap<String, FxHashSet<String>>,
-) {
-    let Some(recipes) = value.and_then(Value::as_object) else {
-        return;
-    };
-
-    for (name, recipe) in recipes {
-        let capitalized = capitalize(name);
-        let mut jsx_names = vec![
-            capitalized.clone(),
-            format!("{capitalized}.Root"),
-            format!("{capitalized}Root"),
-        ];
-        collect_string_array(recipe.get("jsx"), &mut jsx_names);
-        let props = object_keys(recipe.get("variants"));
-        insert_jsx_props(out, jsx_names, props);
-    }
-}
-
-fn object_keys(value: Option<&Value>) -> FxHashSet<String> {
-    value
-        .and_then(Value::as_object)
-        .map(|object| object.keys().cloned().collect())
-        .unwrap_or_default()
-}
-
-fn insert_jsx_props<I>(
-    out: &mut FxHashMap<String, FxHashSet<String>>,
-    jsx_names: I,
-    props: FxHashSet<String>,
-) where
-    I: IntoIterator<Item = String>,
-{
-    if props.is_empty() {
-        return;
-    }
-    for jsx_name in jsx_names {
-        out.entry(jsx_name)
-            .or_default()
-            .extend(props.iter().cloned());
-    }
-}
-
-fn capitalize(value: &str) -> String {
-    let mut chars = value.chars();
-    let Some(first) = chars.next() else {
-        return String::new();
-    };
-    first.to_uppercase().chain(chars).collect()
-}
-
-/// Borrowed read-only view of one parsed file. **Read-only by design** —
-/// unlike ts-morph's `SourceFile`, this view does not mutate, copy, move,
-/// save, or emit; Panda is an extractor, not a codemod toolkit. Re-process
-/// via [`Project::refresh_file`] / [`Project::parse_file`].
-pub struct ParsedFile<'a> {
-    path: &'a str,
-    atoms: &'a FxHashSet<Atom>,
-    diagnostics: &'a [Diagnostic],
-    recipes: &'a BTreeMap<RecipeKey, Recipe>,
-    slot_recipes: &'a BTreeMap<RecipeKey, SlotRecipe>,
-}
-
-impl<'a> ParsedFile<'a> {
-    #[must_use]
-    pub fn path(&self) -> &'a str {
-        self.path
-    }
-
-    #[must_use]
-    pub fn basename(&self) -> &'a str {
-        std::path::Path::new(self.path)
-            .file_name()
-            .and_then(|s| s.to_str())
-            .unwrap_or(self.path)
-    }
-
-    /// File extension *without* the leading dot — `"tsx"` for
-    /// `"button.tsx"`. Differs from ts-morph's `getExtension()` (which
-    /// returns `".tsx"`); Rust convention keeps the borrow allocation-free.
-    #[must_use]
-    pub fn extension(&self) -> &'a str {
-        std::path::Path::new(self.path)
-            .extension()
-            .and_then(|s| s.to_str())
-            .unwrap_or("")
-    }
-
-    #[must_use]
-    pub fn directory(&self) -> &'a str {
-        std::path::Path::new(self.path)
-            .parent()
-            .and_then(|p| p.to_str())
-            .unwrap_or("")
-    }
-
-    #[must_use]
-    pub fn atoms(&self) -> &'a FxHashSet<Atom> {
-        self.atoms
-    }
-
-    #[must_use]
-    pub fn diagnostics(&self) -> &'a [Diagnostic] {
-        self.diagnostics
-    }
-
-    // PERF(port): filter the project-wide registries by path on the fly.
-    // Typical files have 0-3 recipes, so a per-file index would cost more
-    // than it saves.
-    pub fn recipes(&self) -> impl Iterator<Item = (u32, &'a Recipe)> + 'a {
-        let path = self.path;
-        self.recipes
-            .iter()
-            .filter(move |(k, _)| k.file == path)
-            .map(|(k, v)| (k.span_start, v))
-    }
-
-    pub fn slot_recipes(&self) -> impl Iterator<Item = (u32, &'a SlotRecipe)> + 'a {
-        let path = self.path;
-        self.slot_recipes
-            .iter()
-            .filter(move |(k, _)| k.file == path)
-            .map(|(k, v)| (k.span_start, v))
+pub(crate) fn literal_entries(value: &Literal) -> Option<&[(String, Literal)]> {
+    match value {
+        Literal::Object(entries) => Some(entries.as_slice()),
+        _ => None,
     }
 }
 

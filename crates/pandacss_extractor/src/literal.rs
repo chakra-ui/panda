@@ -23,6 +23,8 @@ use oxc_ast::ast::{
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
 
+use pandacss_shared::{is_js_safe_integer, number_to_js_string};
+
 use crate::Resolver;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -43,6 +45,18 @@ pub enum Literal {
 }
 
 impl Literal {
+    // PERF(port): O(n²) on object construction (linear scan per insert).
+    // Deliberately kept: real style objects rarely exceed ~50 keys, where
+    // the Vec scan beats a HashMap on cache locality and zero allocation.
+    // Bench before swapping; HashMap wins around n=128 for String keys.
+    pub fn upsert_object_entry(entries: &mut Vec<(String, Self)>, key: String, value: Self) {
+        if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
+            entry.1 = value;
+        } else {
+            entries.push((key, value));
+        }
+    }
+
     #[must_use]
     pub fn to_json(&self) -> serde_json::Value {
         match self {
@@ -107,19 +121,12 @@ impl Serialize for Literal {
     }
 }
 
-// Largest integer f64 can represent without precision loss.
-const MAX_SAFE_INT: f64 = 9_007_199_254_740_992.0;
-
-fn fits_as_integer(value: f64) -> bool {
-    value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_SAFE_INT
-}
-
 #[allow(
     clippy::cast_possible_truncation,
-    reason = "bounds checked against MAX_SAFE_INT (2^53)"
+    reason = "bounds checked against Number.MAX_SAFE_INTEGER"
 )]
 fn serialize_number<S: Serializer>(value: f64, serializer: S) -> Result<S::Ok, S::Error> {
-    if fits_as_integer(value) {
+    if is_js_safe_integer(value) {
         serializer.serialize_i64(value as i64)
     } else {
         serializer.serialize_f64(value)
@@ -128,10 +135,10 @@ fn serialize_number<S: Serializer>(value: f64, serializer: S) -> Result<S::Ok, S
 
 #[allow(
     clippy::cast_possible_truncation,
-    reason = "bounds checked against MAX_SAFE_INT (2^53)"
+    reason = "bounds checked against Number.MAX_SAFE_INTEGER"
 )]
 fn json_number(value: f64) -> Option<serde_json::Value> {
-    if fits_as_integer(value) {
+    if is_js_safe_integer(value) {
         Some(serde_json::Value::Number(serde_json::Number::from(
             value as i64,
         )))
@@ -208,7 +215,7 @@ pub(crate) fn object_to_literal(
                 }
                 let key = property_key_to_string(&prop.key, prop.computed, resolver)?;
                 let value = expression_to_literal(&prop.value, resolver)?;
-                upsert(&mut entries, key, value);
+                Literal::upsert_object_entry(&mut entries, key, value);
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
                 let inner = expression_to_literal(&spread.argument, resolver)?;
@@ -216,7 +223,7 @@ pub(crate) fn object_to_literal(
                     return None;
                 };
                 for (k, v) in inner_entries {
-                    upsert(&mut entries, k, v);
+                    Literal::upsert_object_entry(&mut entries, k, v);
                 }
             }
         }
@@ -332,18 +339,6 @@ fn call_to_literal(call: &CallExpression<'_>, resolver: Option<&Resolver<'_>>) -
 
 fn number_as_key(value: f64) -> String {
     number_to_js_string(value)
-}
-
-// PERF(port): O(n²) on object construction (linear scan per insert).
-// Deliberately kept: real style objects rarely exceed ~50 keys, where the
-// Vec scan beats a HashMap on cache locality and zero allocation. Bench
-// before swapping; HashMap wins around n=128 for String keys.
-fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
-    if let Some(entry) = out.iter_mut().find(|(k, _)| k == &key) {
-        entry.1 = value;
-    } else {
-        out.push((key, value));
-    }
 }
 
 fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
@@ -591,12 +586,4 @@ fn coerce_to_number(lit: &Literal) -> Option<f64> {
         }
         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
     }
-}
-
-fn number_to_js_string(value: f64) -> String {
-    if fits_as_integer(value) {
-        #[allow(clippy::cast_possible_truncation, reason = "bounds checked")]
-        return (value as i64).to_string();
-    }
-    value.to_string()
 }

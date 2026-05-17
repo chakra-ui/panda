@@ -28,6 +28,16 @@ fn cva(alias: &str) -> MatchedImport {
     }
 }
 
+fn recipe(name: &str) -> MatchedImport {
+    MatchedImport {
+        category: MatchCategory::Recipe,
+        module: "@panda/recipes".into(),
+        name: name.into(),
+        alias: name.into(),
+        kind: ImportSpecifierKind::Named,
+    }
+}
+
 fn namespace(alias: &str, module: &str, category: MatchCategory) -> MatchedImport {
     MatchedImport {
         category,
@@ -378,6 +388,24 @@ fn skips_non_literal_arguments() {
         ),
         @"
     calls: []
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn keeps_no_arg_recipe_calls() {
+    assert_yaml_snapshot!(
+        extract("button()", &[recipe("button")]),
+        @"
+    calls:
+      - category: recipe
+        name: button
+        alias: button
+        data: []
+        span:
+          start: 0
+          end: 8
     diagnostics: []
     ",
     );

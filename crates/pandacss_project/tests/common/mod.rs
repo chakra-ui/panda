@@ -43,10 +43,10 @@ fn merge_json(target: &mut Value, source: Value) {
 pub fn sorted_atoms(project: &Project) -> Vec<&Atom> {
     let mut out: Vec<&Atom> = project.atoms().iter().collect();
     out.sort_by(|a, b| {
-        a.prop
-            .cmp(&b.prop)
-            .then_with(|| a.conditions.cmp(&b.conditions))
-            .then_with(|| format!("{:?}", a.value).cmp(&format!("{:?}", b.value)))
+        a.prop()
+            .cmp(b.prop())
+            .then_with(|| a.conditions().cmp(b.conditions()))
+            .then_with(|| format!("{:?}", a.value()).cmp(&format!("{:?}", b.value())))
     });
     out
 }

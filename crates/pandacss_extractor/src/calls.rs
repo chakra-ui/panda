@@ -202,7 +202,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
             // Drop only when nothing was extractable. Otherwise keep
             // positional `None` slots so consumers know which arg was
             // non-literal.
-            if data.iter().any(Option::is_some) {
+            if data.iter().any(Option::is_some)
+                || (resolved.category == MatchCategory::Recipe && data.is_empty())
+            {
                 self.out.push(ExtractedCall {
                     category: resolved.category,
                     name: resolved.name.into_owned(),

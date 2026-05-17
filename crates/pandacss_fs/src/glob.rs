@@ -66,7 +66,10 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
             let rel_str = rel.to_string_lossy();
 
             let rel_bytes = rel_str.as_bytes();
-            if excludes.iter().any(|pat| glob_match(pat.as_bytes(), rel_bytes)) {
+            if excludes
+                .iter()
+                .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+            {
                 continue;
             }
 

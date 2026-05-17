@@ -89,7 +89,7 @@ fn get_file_exposes_atoms_and_per_file_recipes() {
     );
     let view = project.get_file("button.tsx").expect("button.tsx parsed");
     assert_eq!(view.path(), "button.tsx");
-    assert!(view.atoms().iter().all(|a| &*a.prop != "margin"));
+    assert!(view.atoms().iter().all(|a| a.prop() != "margin"));
     let recipes: Vec<_> = view.recipes().map(|(_, r)| r.clone()).collect();
     assert_eq!(recipes.len(), 1);
     assert!(view.slot_recipes().next().is_none());

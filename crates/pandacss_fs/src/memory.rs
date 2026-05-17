@@ -88,7 +88,11 @@ impl MemoryFileSystem {
     /// Panics if the internal lock is poisoned.
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.inner.read().expect("memory FS poisoned").files.is_empty()
+        self.inner
+            .read()
+            .expect("memory FS poisoned")
+            .files
+            .is_empty()
     }
 
     fn register_ancestors(dirs: &mut FxHashSet<PathBuf>, path: &Path) {
@@ -129,7 +133,9 @@ impl FileSystem for MemoryFileSystem {
         let mut state = self.inner.write().expect("memory FS poisoned");
         let prefix = path.to_path_buf();
         state.files.retain(|p, _| !p.starts_with(&prefix));
-        state.dirs.retain(|p| p != &prefix && !p.starts_with(&prefix));
+        state
+            .dirs
+            .retain(|p| p != &prefix && !p.starts_with(&prefix));
         Ok(())
     }
 
@@ -150,6 +156,10 @@ impl FileSystem for MemoryFileSystem {
                 ));
             }
         }
+        // This memory FS is intentionally optimized for simple fixtures and
+        // wasm-backed virtual filesystems. Directory listing scans the current
+        // path set instead of maintaining a children index; production OS
+        // traversal uses `OsFileSystem`.
         let mut entries: Vec<PathBuf> = Vec::new();
         for p in state.files.keys() {
             if p.parent() == Some(path) {

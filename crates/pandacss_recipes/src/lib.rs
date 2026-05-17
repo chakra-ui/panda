@@ -14,8 +14,32 @@
 
 use rustc_hash::FxHashSet;
 use serde::Serialize;
+use serde_json::Value;
+
+use pandacss_shared::{capitalize, number_to_js_string};
 
 pub use pandacss_extractor::Literal;
+
+#[must_use]
+pub fn recipe_jsx_names(name: &str, recipe: &Value) -> Vec<String> {
+    match recipe.get("jsx") {
+        Some(Value::Array(items)) => items
+            .iter()
+            .filter_map(Value::as_str)
+            .map(str::to_owned)
+            .collect(),
+        _ => vec![capitalize(name).into_owned()],
+    }
+}
+
+#[must_use]
+pub fn slot_recipe_jsx_names(name: &str, recipe: &Value) -> Vec<String> {
+    let capitalized = capitalize(name);
+    let mut names = recipe_jsx_names(name, recipe);
+    names.push(format!("{capitalized}.Root"));
+    names.push(format!("{capitalized}Root"));
+    names
+}
 
 /// `cva({ base, variants, compoundVariants, defaultVariants })`.
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
@@ -93,14 +117,21 @@ impl Recipe {
     /// fields so downstream consumers decide how strict to be.
     #[must_use]
     pub fn from_literal(literal: &Literal) -> Option<Self> {
-        let entries = object_entries(literal)?;
+        Self::from_literal_owned(literal.clone())
+    }
+
+    #[must_use]
+    pub fn from_literal_owned(literal: Literal) -> Option<Self> {
+        let entries = object_entries_owned(literal)?;
         let mut recipe = Recipe::default();
         for (key, value) in entries {
             match key.as_str() {
-                "base" => recipe.base = Some(value.clone()),
-                "variants" => recipe.variants = parse_variants(value),
-                "compoundVariants" => recipe.compound_variants = parse_compound_variants(value),
-                "defaultVariants" => recipe.default_variants = parse_string_map(value),
+                "base" => recipe.base = Some(value),
+                "variants" => recipe.variants = parse_variants_owned(value),
+                "compoundVariants" => {
+                    recipe.compound_variants = parse_compound_variants_owned(value);
+                }
+                "defaultVariants" => recipe.default_variants = parse_string_map_owned(value),
                 _ => {}
             }
         }
@@ -126,7 +157,12 @@ impl Recipe {
 impl SlotRecipe {
     #[must_use]
     pub fn from_literal(literal: &Literal) -> Option<Self> {
-        let entries = object_entries(literal)?;
+        Self::from_literal_owned(literal.clone())
+    }
+
+    #[must_use]
+    pub fn from_literal_owned(literal: Literal) -> Option<Self> {
+        let entries = object_entries_owned(literal)?;
         let mut slots: Vec<String> = Vec::new();
         let mut base: Vec<(String, Literal)> = Vec::new();
         let mut variants: Vec<SlotVariantGroup> = Vec::new();
@@ -135,13 +171,13 @@ impl SlotRecipe {
 
         for (key, value) in entries {
             match key.as_str() {
-                "slots" => slots = parse_string_array(value),
-                "base" => base = parse_slot_styles(value),
-                "variants" => variants = parse_slot_variants(value),
+                "slots" => slots = parse_string_array_owned(value),
+                "base" => base = parse_slot_styles_owned(value),
+                "variants" => variants = parse_slot_variants_owned(value),
                 "compoundVariants" => {
-                    compound_variants = parse_slot_compound_variants(value);
+                    compound_variants = parse_slot_compound_variants_owned(value);
                 }
-                "defaultVariants" => default_variants = parse_string_map(value),
+                "defaultVariants" => default_variants = parse_string_map_owned(value),
                 _ => {}
             }
         }
@@ -225,7 +261,7 @@ impl SlotRecipe {
     }
 }
 
-fn object_entries(literal: &Literal) -> Option<&Vec<(String, Literal)>> {
+fn object_entries_owned(literal: Literal) -> Option<Vec<(String, Literal)>> {
     if let Literal::Object(entries) = literal {
         Some(entries)
     } else {
@@ -233,45 +269,40 @@ fn object_entries(literal: &Literal) -> Option<&Vec<(String, Literal)>> {
     }
 }
 
-fn parse_variants(literal: &Literal) -> Vec<VariantGroup> {
-    let Some(groups) = object_entries(literal) else {
+fn parse_variants_owned(literal: Literal) -> Vec<VariantGroup> {
+    let Some(groups) = object_entries_owned(literal) else {
         return Vec::new();
     };
     let mut out: Vec<VariantGroup> = Vec::with_capacity(groups.len());
     for (name, options_lit) in groups {
         let mut options: Vec<VariantOption> = Vec::new();
-        if let Some(option_entries) = object_entries(options_lit) {
+        if let Some(option_entries) = object_entries_owned(options_lit) {
+            options.reserve(option_entries.len());
             for (key, style) in option_entries {
-                options.push(VariantOption {
-                    key: key.clone(),
-                    style: style.clone(),
-                });
+                options.push(VariantOption { key, style });
             }
         }
-        out.push(VariantGroup {
-            name: name.clone(),
-            options,
-        });
+        out.push(VariantGroup { name, options });
     }
     out
 }
 
-/// Entries missing `css` drop; non-string condition values drop.
-fn parse_compound_variants(literal: &Literal) -> Vec<CompoundVariant> {
+/// Entries missing `css` drop; non-scalar condition values drop.
+fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
     let Literal::Array(items) = literal else {
         return Vec::new();
     };
     items
-        .iter()
+        .into_iter()
         .filter_map(|item| {
-            let entries = object_entries(item)?;
+            let entries = object_entries_owned(item)?;
             let mut conditions: Vec<(String, String)> = Vec::new();
             let mut css: Option<Literal> = None;
             for (key, value) in entries {
                 if key == "css" {
-                    css = Some(value.clone());
-                } else if let Literal::String(s) = value {
-                    conditions.push((key.clone(), s.clone()));
+                    css = Some(value);
+                } else if let Some(value) = variant_condition_value(&value) {
+                    conditions.push((key, value));
                 }
             }
             Some(CompoundVariant {
@@ -282,81 +313,70 @@ fn parse_compound_variants(literal: &Literal) -> Vec<CompoundVariant> {
         .collect()
 }
 
-fn parse_string_map(literal: &Literal) -> Vec<(String, String)> {
-    let Some(entries) = object_entries(literal) else {
+fn parse_string_map_owned(literal: Literal) -> Vec<(String, String)> {
+    let Some(entries) = object_entries_owned(literal) else {
         return Vec::new();
     };
     entries
-        .iter()
+        .into_iter()
         .filter_map(|(k, v)| match v {
-            Literal::String(s) => Some((k.clone(), s.clone())),
+            Literal::String(s) => Some((k, s)),
             _ => None,
         })
         .collect()
 }
 
-fn parse_string_array(literal: &Literal) -> Vec<String> {
+fn parse_string_array_owned(literal: Literal) -> Vec<String> {
     let Literal::Array(items) = literal else {
         return Vec::new();
     };
     items
-        .iter()
+        .into_iter()
         .filter_map(|v| match v {
-            Literal::String(s) => Some(s.clone()),
+            Literal::String(s) => Some(s),
             _ => None,
         })
         .collect()
 }
 
-fn parse_slot_styles(literal: &Literal) -> Vec<(String, Literal)> {
-    let Some(entries) = object_entries(literal) else {
-        return Vec::new();
-    };
-    entries
-        .iter()
-        .map(|(k, v)| (k.clone(), v.clone()))
-        .collect()
+fn parse_slot_styles_owned(literal: Literal) -> Vec<(String, Literal)> {
+    object_entries_owned(literal).unwrap_or_default()
 }
 
-fn parse_slot_variants(literal: &Literal) -> Vec<SlotVariantGroup> {
-    let Some(groups) = object_entries(literal) else {
+fn parse_slot_variants_owned(literal: Literal) -> Vec<SlotVariantGroup> {
+    let Some(groups) = object_entries_owned(literal) else {
         return Vec::new();
     };
     let mut out: Vec<SlotVariantGroup> = Vec::with_capacity(groups.len());
     for (name, options_lit) in groups {
         let mut options: Vec<SlotVariantOption> = Vec::new();
-        if let Some(option_entries) = object_entries(options_lit) {
+        if let Some(option_entries) = object_entries_owned(options_lit) {
+            options.reserve(option_entries.len());
             for (key, slot_styles) in option_entries {
-                let styles = parse_slot_styles(slot_styles);
-                options.push(SlotVariantOption {
-                    key: key.clone(),
-                    styles,
-                });
+                let styles = parse_slot_styles_owned(slot_styles);
+                options.push(SlotVariantOption { key, styles });
             }
         }
-        out.push(SlotVariantGroup {
-            name: name.clone(),
-            options,
-        });
+        out.push(SlotVariantGroup { name, options });
     }
     out
 }
 
-fn parse_slot_compound_variants(literal: &Literal) -> Vec<SlotCompoundVariant> {
+fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVariant> {
     let Literal::Array(items) = literal else {
         return Vec::new();
     };
     items
-        .iter()
+        .into_iter()
         .filter_map(|item| {
-            let entries = object_entries(item)?;
+            let entries = object_entries_owned(item)?;
             let mut conditions: Vec<(String, String)> = Vec::new();
             let mut css: Vec<(String, Literal)> = Vec::new();
             for (key, value) in entries {
                 if key == "css" {
-                    css = parse_slot_styles(value);
-                } else if let Literal::String(s) = value {
-                    conditions.push((key.clone(), s.clone()));
+                    css = parse_slot_styles_owned(value);
+                } else if let Some(value) = variant_condition_value(&value) {
+                    conditions.push((key, value));
                 }
             }
             if css.is_empty() {
@@ -366,4 +386,14 @@ fn parse_slot_compound_variants(literal: &Literal) -> Vec<SlotCompoundVariant> {
             }
         })
         .collect()
+}
+
+fn variant_condition_value(value: &Literal) -> Option<String> {
+    match value {
+        Literal::String(value) => Some(value.clone()),
+        Literal::Number(value) => Some(number_to_js_string(*value)),
+        Literal::Bool(true) => Some("true".to_owned()),
+        Literal::Bool(false) => Some("false".to_owned()),
+        Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
+    }
 }

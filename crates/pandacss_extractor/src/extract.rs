@@ -52,12 +52,13 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let matched = match_import_records(&imports, &config.matchers);
 
-    // PERF(port): fast path — no Panda imports means no extractable calls
-    // or JSX (the JSX visitor needs styled/Box/pattern imports matched
-    // first). Skip the resolver build and both visitor walks entirely.
+    // PERF(port): fast path — no Panda imports and no configured JSX
+    // component names means no extractable calls or JSX. Config recipe /
+    // pattern components are tag-name matched, so they can still be
+    // extracted when imported from user modules.
     // Parse diagnostics still flow through because they're independent
     // of Panda usage.
-    if matched.is_empty() {
+    if matched.is_empty() && !config.jsx.has_component_matchers() {
         return ExtractUsage {
             calls: Vec::new(),
             jsx: Vec::new(),

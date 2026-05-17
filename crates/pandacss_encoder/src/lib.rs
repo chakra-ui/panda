@@ -17,12 +17,15 @@
 //! - `FxHashSet<Atom>` for dedup — non-cryptographic hash for internal
 //!   trusted data.
 
-use rustc_hash::FxHashSet;
+use std::hash::{Hash, Hasher};
+
+use rustc_hash::{FxHashSet, FxHasher};
 use serde::Serialize;
 use smallvec::SmallVec;
 
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_shared::{number_to_js_string, push_number_to_js_string};
 
 // PERF(port): inline budget for `Atom::conditions`. Picked from real
 // Panda usage where atoms typically have 0-2 conditions; 3+ spills.
@@ -32,12 +35,14 @@ const INLINE_CONDS: usize = 2;
 const INLINE_PATH: usize = 8;
 
 /// One atomic style declaration: `(prop, value, conditions)`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, Eq, Serialize)]
 pub struct Atom {
-    pub prop: Box<str>,
-    pub value: AtomValue,
+    prop: Box<str>,
+    value: AtomValue,
     /// Outer-to-inner condition chain. Empty for unconditional atoms.
-    pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    #[serde(skip)]
+    hash: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
@@ -49,6 +54,60 @@ pub enum AtomValue {
     Number(Box<str>),
     Bool(bool),
     Null,
+}
+
+impl Atom {
+    #[must_use]
+    pub fn new(
+        prop: Box<str>,
+        value: AtomValue,
+        conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    ) -> Self {
+        let hash = hash_atom_parts(&prop, &value, &conditions);
+        Self {
+            prop,
+            value,
+            conditions,
+            hash,
+        }
+    }
+
+    #[must_use]
+    pub fn with_prefixed_conditions(&self, prefix: &SmallVec<[Box<str>; INLINE_CONDS]>) -> Self {
+        if prefix.is_empty() {
+            return self.clone();
+        }
+        let mut conditions = prefix.clone();
+        conditions.extend(self.conditions.iter().cloned());
+        Self::new(self.prop.clone(), self.value.clone(), conditions)
+    }
+
+    #[must_use]
+    pub fn prop(&self) -> &str {
+        &self.prop
+    }
+
+    #[must_use]
+    pub fn value(&self) -> &AtomValue {
+        &self.value
+    }
+
+    #[must_use]
+    pub fn conditions(&self) -> &[Box<str>] {
+        &self.conditions
+    }
+}
+
+impl PartialEq for Atom {
+    fn eq(&self, other: &Self) -> bool {
+        self.prop == other.prop && self.value == other.value && self.conditions == other.conditions
+    }
+}
+
+impl Hash for Atom {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u64(self.hash);
+    }
 }
 
 /// Decides which object keys are *conditions* vs CSS properties. Pass a
@@ -74,9 +133,6 @@ impl ConditionMatcher for DefaultConditions {
 pub struct Encoder<C: ConditionMatcher = DefaultConditions> {
     conditions: C,
     atoms: FxHashSet<Atom>,
-    // One allocation per walk root, not per descent. Pushed/popped during
-    // recursion in `walk`.
-    path: SmallVec<[PathSegment; INLINE_PATH]>,
 }
 
 impl Encoder<DefaultConditions> {
@@ -97,7 +153,6 @@ impl<C: ConditionMatcher> Encoder<C> {
         Self {
             conditions,
             atoms: FxHashSet::default(),
-            path: SmallVec::new(),
         }
     }
 
@@ -127,11 +182,8 @@ impl<C: ConditionMatcher> Encoder<C> {
     /// Walk a style object and emit one atom per leaf. Mirrors
     /// `processAtomic` in the JS encoder.
     pub fn process_atomic(&mut self, style: &Literal) {
-        debug_assert!(
-            self.path.is_empty(),
-            "path buffer must be empty between walks"
-        );
-        self.walk(style);
+        let mut path = SmallVec::new();
+        self.walk(style, &mut path);
     }
 
     pub fn process_atomic_recipe(&mut self, recipe: &Recipe) {
@@ -150,46 +202,57 @@ impl<C: ConditionMatcher> Encoder<C> {
 
     // Descends with push, ascends with pop on the shared path buffer.
     // The outermost non-condition key is the atom's `prop`.
-    fn walk(&mut self, value: &Literal) {
+    fn walk<'a>(
+        &mut self,
+        value: &'a Literal,
+        path: &mut SmallVec<[PathSegment<'a>; INLINE_PATH]>,
+    ) {
         if let Literal::Object(entries) = value {
             for (key, child) in entries {
                 let is_condition = self.conditions.is_condition(key);
-                self.path.push(PathSegment {
-                    name: key.clone().into_boxed_str(),
+                path.push(PathSegment {
+                    name: key,
                     is_condition,
                 });
-                self.walk(child);
-                self.path.pop();
+                self.walk(child, path);
+                path.pop();
             }
             return;
         }
-        if let Some(atom) = self.atom_from_path(value) {
+        if let Some(atom) = Self::atom_from_path(path, value) {
             self.atoms.insert(atom);
         }
     }
 
-    fn atom_from_path(&self, leaf: &Literal) -> Option<Atom> {
+    fn atom_from_path(path: &[PathSegment<'_>], leaf: &Literal) -> Option<Atom> {
         // `find` walks outer→inner so the *first* non-condition key wins,
         // matching JS semantics for the property name.
-        let prop = self.path.iter().find(|s| !s.is_condition)?.name.clone();
-        let conditions: SmallVec<[Box<str>; INLINE_CONDS]> = self
-            .path
+        let prop = path.iter().find(|s| !s.is_condition)?.name.into();
+        let conditions: SmallVec<[Box<str>; INLINE_CONDS]> = path
             .iter()
-            .filter(|s| s.is_condition && &*s.name != "base")
-            .map(|s| s.name.clone())
+            .filter(|s| s.is_condition && s.name != "base")
+            .map(|s| s.name.into())
             .collect();
         let value = leaf_to_atom_value(leaf)?;
-        Some(Atom {
-            prop,
-            value,
-            conditions,
-        })
+        Some(Atom::new(prop, value, conditions))
     }
 }
 
+fn hash_atom_parts(
+    prop: &str,
+    value: &AtomValue,
+    conditions: &SmallVec<[Box<str>; INLINE_CONDS]>,
+) -> u64 {
+    let mut hasher = FxHasher::default();
+    prop.hash(&mut hasher);
+    value.hash(&mut hasher);
+    conditions.hash(&mut hasher);
+    hasher.finish()
+}
+
 #[derive(Debug, Clone)]
-struct PathSegment {
-    name: Box<str>,
+struct PathSegment<'a> {
+    name: &'a str,
     is_condition: bool,
 }
 
@@ -200,34 +263,37 @@ fn leaf_to_atom_value(value: &Literal) -> Option<AtomValue> {
         Literal::Bool(b) => Some(AtomValue::Bool(*b)),
         Literal::Null => Some(AtomValue::Null),
         Literal::Array(items) => {
-            let joined = format_joined(items, ",");
-            Some(AtomValue::String(format!("[{joined}]").into_boxed_str()))
+            let mut out = String::with_capacity(items.len().saturating_mul(8) + 2);
+            out.push('[');
+            append_joined_literal_repr(&mut out, items, ",");
+            out.push(']');
+            Some(AtomValue::String(out.into_boxed_str()))
         }
         Literal::Conditional(branches) => {
-            let joined = format_joined(branches, "|");
-            Some(AtomValue::String(format!("?({joined})").into_boxed_str()))
+            let mut out = String::with_capacity(branches.len().saturating_mul(8) + 3);
+            out.push_str("?(");
+            append_joined_literal_repr(&mut out, branches, "|");
+            out.push(')');
+            Some(AtomValue::String(out.into_boxed_str()))
         }
         Literal::Object(_) => None,
     }
 }
 
-fn format_joined(items: &[Literal], sep: &str) -> String {
-    let mut out = String::new();
+fn append_joined_literal_repr(out: &mut String, items: &[Literal], sep: &str) {
     for (i, item) in items.iter().enumerate() {
         if i > 0 {
             out.push_str(sep);
         }
-        append_literal_repr(&mut out, item);
+        append_literal_repr(out, item);
     }
-    out
 }
 
 fn append_literal_repr(out: &mut String, value: &Literal) {
-    use std::fmt::Write as _;
     match value {
         Literal::String(s) => out.push_str(s),
         Literal::Number(n) => {
-            let _ = write!(out, "{}", number_to_js_string(*n));
+            push_number_to_js_string(out, *n);
         }
         Literal::Bool(true) => out.push_str("true"),
         Literal::Bool(false) => out.push_str("false"),
@@ -236,15 +302,4 @@ fn append_literal_repr(out: &mut String, value: &Literal) {
         Literal::Array(_) => out.push_str("[…]"),
         Literal::Conditional(_) => out.push_str("?(…)"),
     }
-}
-
-fn number_to_js_string(value: f64) -> String {
-    // 2^53 is the f64 max-safe-integer boundary; above it the equality
-    // check drifts, so the conversion shortcut stops being safe.
-    const MAX_SAFE_INT: f64 = 9_007_199_254_740_992.0;
-    if value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_SAFE_INT {
-        #[allow(clippy::cast_possible_truncation, reason = "bounds-checked above")]
-        return (value as i64).to_string();
-    }
-    value.to_string()
 }

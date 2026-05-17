@@ -101,37 +101,50 @@ impl Extractor<'_, '_> {
         // and `ThisExpression` (`<this.X>`) are never Panda usages.
         match name {
             JSXElementName::IdentifierReference(id) => {
-                let matched = self.ctx.aliases.get(id.name.as_str())?;
-                if matched.kind != ImportSpecifierKind::Named {
+                if let Some(matched) = self.ctx.aliases.get(id.name.as_str()) {
+                    if matched.kind != ImportSpecifierKind::Named {
+                        return None;
+                    }
+                    if !self
+                        .ctx
+                        .config
+                        .matchers
+                        .category_accepts_name(matched.category, &matched.name)
+                    {
+                        return None;
+                    }
+                    if let Some(resolver) = self.ctx.resolver
+                        && !resolver.is_import_binding(id)
+                    {
+                        return None;
+                    }
+                    return Some((
+                        matched.category,
+                        matched.name.clone(),
+                        matched.alias.clone(),
+                    ));
+                }
+
+                let tag_name = id.name.as_str();
+                if !self.ctx.config.jsx.is_component_tag(tag_name) {
                     return None;
                 }
-                if !self
-                    .ctx
-                    .config
-                    .matchers
-                    .category_accepts_name(matched.category, &matched.name)
-                {
-                    return None;
-                }
-                if let Some(resolver) = self.ctx.resolver
-                    && !resolver.is_import_binding(id)
-                {
-                    return None;
-                }
-                Some((
-                    matched.category,
-                    matched.name.clone(),
-                    matched.alias.clone(),
-                ))
+                Some((MatchCategory::Jsx, tag_name.to_owned(), tag_name.to_owned()))
             }
             JSXElementName::MemberExpression(member) => {
                 let (root, root_ident, path) = flatten_member(member)?;
-                let matched = self.ctx.aliases.get(root.as_str())?;
                 if let Some(resolver) = self.ctx.resolver
                     && !resolver.is_import_binding(root_ident)
                 {
                     return None;
                 }
+                let Some(matched) = self.ctx.aliases.get(root.as_str()) else {
+                    let display = format!("{}.{}", root, path.join("."));
+                    if self.ctx.config.jsx.is_component_tag(&display) {
+                        return Some((MatchCategory::Jsx, display, root));
+                    }
+                    return None;
+                };
                 match matched.kind {
                     ImportSpecifierKind::Named => {
                         // `<X.Y>` on a named import is only a Panda usage
@@ -235,7 +248,7 @@ fn merge_attribute(
                     None => return,
                 },
             };
-            upsert(out, key, value);
+            Literal::upsert_object_entry(out, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
             // With a resolver, `{...local}` folds when `local` binds to
@@ -245,21 +258,10 @@ fn merge_attribute(
                 expression_to_literal(&spread.argument, resolver)
             {
                 for (k, v) in entries {
-                    upsert(out, k, v);
+                    Literal::upsert_object_entry(out, k, v);
                 }
             }
         }
-    }
-}
-
-// PERF(port): same O(n²) trade-off as `literal::upsert`. JSX prop lists
-// are smaller than nested style objects (rarely > 30 props), so Vec scan
-// stays the better choice. Swap to FxHashMap only if benches show otherwise.
-fn upsert(out: &mut Vec<(String, Literal)>, key: String, value: Literal) {
-    if let Some(entry) = out.iter_mut().find(|(k, _)| k == &key) {
-        entry.1 = value;
-    } else {
-        out.push((key, value));
     }
 }
 

@@ -52,7 +52,10 @@ fn read_dir_lists_entries() {
 fn write_via_trait_round_trips() {
     let fs = MemoryFileSystem::new();
     fs.write(Path::new("/x.ts"), b"const x = 1").unwrap();
-    assert_eq!(fs.read_to_string(Path::new("/x.ts")).unwrap(), "const x = 1");
+    assert_eq!(
+        fs.read_to_string(Path::new("/x.ts")).unwrap(),
+        "const x = 1"
+    );
 }
 
 #[test]
@@ -65,11 +68,8 @@ fn remove_file_drops_entry() {
 
 #[test]
 fn remove_dir_all_drops_subtree() {
-    let fs = MemoryFileSystem::from_entries([
-        ("/a/b/x.ts", "x"),
-        ("/a/b/y.ts", "y"),
-        ("/a/c.ts", "z"),
-    ]);
+    let fs =
+        MemoryFileSystem::from_entries([("/a/b/x.ts", "x"), ("/a/b/y.ts", "y"), ("/a/c.ts", "z")]);
     fs.remove_dir_all(Path::new("/a/b")).unwrap();
     assert!(!fs.exists(Path::new("/a/b/x.ts")));
     assert!(!fs.exists(Path::new("/a/b")));

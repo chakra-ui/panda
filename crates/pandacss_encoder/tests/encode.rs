@@ -1,10 +1,10 @@
 //! Atomic encoder tests — walks a style object / recipe and verifies
 //! the emitted atoms.
 
-use pandacss_encoder::{Atom, Encoder};
-use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_encoder::{Atom, Encoder};
+use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
 
 fn css_matchers() -> Matchers {
@@ -33,10 +33,10 @@ fn first_arg(source: &str, name: &str) -> pandacss_extractor::Literal {
 fn sorted(atoms: &rustc_hash::FxHashSet<Atom>) -> Vec<&Atom> {
     let mut out: Vec<_> = atoms.iter().collect();
     out.sort_by(|a, b| {
-        a.prop
-            .cmp(&b.prop)
-            .then_with(|| a.conditions.cmp(&b.conditions))
-            .then_with(|| format!("{:?}", a.value).cmp(&format!("{:?}", b.value)))
+        a.prop()
+            .cmp(b.prop())
+            .then_with(|| a.conditions().cmp(b.conditions()))
+            .then_with(|| format!("{:?}", a.value()).cmp(&format!("{:?}", b.value())))
     });
     out
 }

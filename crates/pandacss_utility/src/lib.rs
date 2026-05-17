@@ -6,6 +6,7 @@
 //! callbacks on the binding side.
 
 use pandacss_extractor::Literal;
+use pandacss_shared::number_to_js_string;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
@@ -97,6 +98,10 @@ impl Utility {
 
     #[must_use]
     pub fn normalize_style_object(&self, style: &Literal) -> Literal {
+        if self.is_empty() {
+            return style.clone();
+        }
+
         match style {
             Literal::Object(entries) => {
                 let mut out = Vec::with_capacity(entries.len());
@@ -108,7 +113,7 @@ impl Utility {
                         }
                         _ => self.normalize_property_value(&key, value),
                     };
-                    upsert(&mut out, key, value);
+                    Literal::upsert_object_entry(&mut out, key, value);
                 }
                 Literal::Object(out)
             }
@@ -135,14 +140,19 @@ impl Utility {
         let Some(config) = self.properties.get(prop) else {
             return value.clone();
         };
-        let Some(key) = literal_key(value) else {
-            return value.clone();
+        let mapped = match value {
+            Literal::String(value) => config.values.get(value.as_str()),
+            Literal::Bool(true) => config.values.get("true"),
+            Literal::Bool(false) => config.values.get("false"),
+            Literal::Number(value) => {
+                let key = number_to_js_string(*value);
+                config.values.get(key.as_str())
+            }
+            Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
+                None
+            }
         };
-        config
-            .values
-            .get(&key)
-            .cloned()
-            .unwrap_or_else(|| value.clone())
+        mapped.cloned().unwrap_or_else(|| value.clone())
     }
 
     fn collect_shorthands(&mut self, property: &str, value: Option<&Value>) {
@@ -218,31 +228,6 @@ fn json_to_literal(value: &Value) -> Option<Literal> {
             .collect::<Option<Vec<_>>>()
             .map(Literal::Object),
     }
-}
-
-fn literal_key(value: &Literal) -> Option<String> {
-    match value {
-        Literal::String(value) => Some(value.clone()),
-        Literal::Number(value) => Some(number_key(*value)),
-        Literal::Bool(value) => Some(value.to_string()),
-        Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
-    }
-}
-
-fn number_key(value: f64) -> String {
-    if value.is_finite() && value.fract() == 0.0 {
-        format!("{value:.0}")
-    } else {
-        value.to_string()
-    }
-}
-
-fn upsert(entries: &mut Vec<(String, Literal)>, key: String, value: Literal) {
-    if let Some((_, existing)) = entries.iter_mut().find(|(existing, _)| existing == &key) {
-        *existing = value;
-        return;
-    }
-    entries.push((key, value));
 }
 
 #[cfg(test)]

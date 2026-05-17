@@ -244,12 +244,8 @@ fn config_breakpoints_are_encoded_as_conditions() {
     let mut project = create_project(json!({
         "theme": {
             "breakpoints": {
-                "tablet": "768px"
-            },
-            "extend": {
-                "breakpoints": {
-                    "wide": "1440px"
-                }
+                "tablet": "768px",
+                "wide": "1440px"
             }
         }
     }));

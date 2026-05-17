@@ -23,8 +23,12 @@ fn parse_file_routes_css_cva_and_sva_to_the_right_pipelines() {
     assert_eq!(report.css_calls, 1);
     assert_eq!(report.cva_calls, 1);
     assert_eq!(report.sva_calls, 1);
-    assert_eq!(project.summary().recipe_count, 1);
-    assert_eq!(project.summary().slot_recipe_count, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 3
+    recipeCount: 1
+    slotRecipeCount: 1
+    ");
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
     - prop: color
       value: red
@@ -117,12 +121,12 @@ fn builder_attaches_token_dictionary() {
     let color = project
         .atoms()
         .iter()
-        .find(|a| &*a.prop == "color")
+        .find(|a| a.prop() == "color")
         .expect("color atom");
     assert!(
-        matches!(&color.value, AtomValue::String(s) if &**s == "#ef4444"),
+        matches!(color.value(), AtomValue::String(s) if &**s == "#ef4444"),
         "token() resolved to dictionary value, got {:?}",
-        color.value,
+        color.value(),
     );
 }
 

@@ -20,9 +20,8 @@
 //! re-exports, `export default`, or non-const declarations — add when the
 //! simple case proves out.
 
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -32,7 +31,7 @@ use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric};
 use oxc_span::SourceType;
 use pandacss_fs::FileSystem;
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
@@ -112,7 +111,7 @@ impl CrossFileResolver {
 
 /// Object-safe interface the rest of the crate consumes. Keeps the
 /// `F: FileSystem` parameter contained inside `cross_file.rs`.
-trait CrossFileLookup {
+trait CrossFileLookup: Send + Sync {
     fn resolve_named_export(
         &self,
         from_file: &Path,
@@ -128,8 +127,8 @@ trait CrossFileLookup {
 struct ResolverImpl<F: FileSystem + Clone> {
     inner: ResolverGeneric<F>,
     fs: F,
-    cache: RefCell<HashMap<PathBuf, FileExports>>,
-    in_flight: RefCell<HashSet<PathBuf>>,
+    cache: Mutex<FxHashMap<PathBuf, FileExports>>,
+    in_flight: Mutex<FxHashSet<PathBuf>>,
 }
 
 impl<F: FileSystem + Clone> ResolverImpl<F> {
@@ -138,8 +137,8 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         Self {
             inner,
             fs,
-            cache: RefCell::default(),
-            in_flight: RefCell::default(),
+            cache: Mutex::default(),
+            in_flight: Mutex::default(),
         }
     }
 
@@ -166,28 +165,39 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         let resolution = self.inner.resolve(directory, specifier).ok()?;
         let path = resolution.full_path();
 
-        if let Some(exports) = self.cache.borrow().get(&path) {
+        if let Some(exports) = self
+            .cache
+            .lock()
+            .expect("cross-file cache poisoned")
+            .get(&path)
+        {
             return exports.get(name).cloned();
         }
 
         // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
         {
-            let mut in_flight = self.in_flight.borrow_mut();
+            let mut in_flight = self.in_flight.lock().expect("cross-file guard poisoned");
             if !in_flight.insert(path.clone()) {
                 return None;
             }
         }
 
         let exports = self.extract_exports(&path).unwrap_or_default();
-        self.in_flight.borrow_mut().remove(&path);
+        self.in_flight
+            .lock()
+            .expect("cross-file guard poisoned")
+            .remove(&path);
 
         let value = exports.get(name).cloned();
-        self.cache.borrow_mut().insert(path, exports);
+        self.cache
+            .lock()
+            .expect("cross-file cache poisoned")
+            .insert(path, exports);
         value
     }
 
     fn cache_len(&self) -> usize {
-        self.cache.borrow().len()
+        self.cache.lock().expect("cross-file cache poisoned").len()
     }
 }
 

@@ -53,9 +53,11 @@ fn glob_against_real_fs() {
     results.sort();
 
     // Default exclude drops .d.ts
-    assert!(!results
-        .iter()
-        .any(|p| p.to_string_lossy().ends_with(".d.ts")));
+    assert!(
+        !results
+            .iter()
+            .any(|p| p.to_string_lossy().ends_with(".d.ts"))
+    );
     assert_eq!(results.len(), 3);
     assert!(results.iter().any(|p| p.ends_with("Button.tsx")));
     assert!(results.iter().any(|p| p.ends_with("helpers.ts")));

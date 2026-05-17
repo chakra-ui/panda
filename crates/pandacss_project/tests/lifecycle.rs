@@ -31,8 +31,12 @@ fn atoms_dedup_across_files() {
             css({ color: 'red', margin: '8px' });
         "},
     );
-    assert_eq!(project.summary().files_processed, 2);
-    assert_eq!(project.summary().atom_count, 3);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 2
+    atomCount: 3
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
 }
 
 #[test]
@@ -52,7 +56,12 @@ fn re_adding_file_replaces_atoms_no_ghosts_left() {
             css({ color: 'blue' });
         "},
     );
-    assert_eq!(project.summary().files_processed, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
     - prop: color
       value: blue
@@ -70,7 +79,12 @@ fn re_adding_file_replaces_recipes_no_ghost_keys() {
             const button = cva({ base: { color: 'red' } });
         "},
     );
-    assert_eq!(project.summary().recipe_count, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 1
+    slotRecipeCount: 0
+    ");
     project.parse_file(
         "button.tsx",
         indoc! {r"
@@ -78,7 +92,12 @@ fn re_adding_file_replaces_recipes_no_ghost_keys() {
             css({ color: 'blue' });
         "},
     );
-    assert_eq!(project.summary().recipe_count, 0);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
 }
 
 #[test]
@@ -100,9 +119,12 @@ fn remove_file_drops_atoms_and_recipes_for_that_path_only() {
         "},
     );
     assert!(project.remove_file("a.tsx"));
-    let summary = project.summary();
-    assert_eq!(summary.files_processed, 1);
-    assert_eq!(summary.recipe_count, 0);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
     - prop: margin
       value: 8px
@@ -118,8 +140,12 @@ fn remove_file_on_unknown_path_is_a_noop() {
         "import { css } from '@panda/css';\ncss({ color: 'red' });",
     );
     assert!(!project.remove_file("never-added.tsx"));
-    assert_eq!(project.summary().files_processed, 1);
-    assert_eq!(project.summary().atom_count, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
 }
 
 #[test]
@@ -130,7 +156,12 @@ fn refresh_file_returns_false_on_unknown_path_and_doesnt_register() {
         "import { css } from '@panda/css';\ncss({ color: 'red' });",
     );
     assert!(!added);
-    assert_eq!(project.summary().files_processed, 0);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 0
+    atomCount: 0
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
     assert!(project.get_file("vendor.tsx").is_none());
 }
 
@@ -146,10 +177,36 @@ fn refresh_file_replaces_known_files_content() {
         "import { css } from '@panda/css';\ncss({ color: 'blue' });",
     );
     assert!(refreshed);
-    assert_eq!(project.summary().files_processed, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
     - prop: color
       value: blue
+      conditions: []
+    ");
+}
+
+#[test]
+fn identical_source_parse_is_a_noop() {
+    let mut project = create_project(json!({}));
+    let source = "import { css } from '@panda/css';\ncss({ color: 'red' });";
+    let first = project.parse_file("button.tsx", source);
+    let second = project.parse_file("button.tsx", source);
+
+    assert_eq!(first, second);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 1
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
       conditions: []
     ");
 }

@@ -9,6 +9,7 @@ publish = false
 
 [dependencies]
 pandacss_extractor = { workspace = true }
+pandacss_shared = { workspace = true }
 rustc-hash = { workspace = true }
 serde_json = { workspace = true }
 

@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use crate::{ImportRecord, ImportScanResult, ImportSpecifierKind, Resolver};
+use regex::Regex;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::Serialize;
 
@@ -40,9 +43,14 @@ impl NameMatcher {
     pub fn only<I, S>(names: I) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: Into<String>,
+        S: AsRef<str>,
     {
-        Self::Only(names.into_iter().map(Into::into).collect())
+        Self::Only(
+            names
+                .into_iter()
+                .map(|name| name.as_ref().to_owned())
+                .collect(),
+        )
     }
 
     #[must_use]
@@ -138,17 +146,38 @@ pub enum JsxStyleProps {
 #[derive(Debug, Clone, Default)]
 pub struct JsxExtractionConfig {
     pub style_props: JsxStyleProps,
+    pub component_names: FxHashSet<String>,
+    pub component_regexes: Vec<Regex>,
     pub component_props: FxHashMap<String, FxHashSet<String>>,
+    pub component_regex_props: Vec<(Regex, Arc<FxHashSet<String>>)>,
     pub valid_style_props: FxHashSet<String>,
 }
 
 impl JsxExtractionConfig {
     #[must_use]
+    pub fn has_component_matchers(&self) -> bool {
+        !self.component_names.is_empty() || !self.component_regexes.is_empty()
+    }
+
+    #[must_use]
+    pub fn is_component_tag(&self, tag_name: &str) -> bool {
+        self.component_names.contains(tag_name)
+            || self
+                .component_regexes
+                .iter()
+                .any(|regex| regex.is_match(tag_name))
+    }
+
+    #[must_use]
     pub fn should_extract_prop(&self, tag_name: &str, prop_name: &str) -> bool {
         let is_component_prop = self
             .component_props
             .get(tag_name)
-            .is_some_and(|props| props.contains(prop_name));
+            .is_some_and(|props| props.contains(prop_name))
+            || self
+                .component_regex_props
+                .iter()
+                .any(|(regex, props)| regex.is_match(tag_name) && props.contains(prop_name));
 
         match self.style_props {
             JsxStyleProps::All => {

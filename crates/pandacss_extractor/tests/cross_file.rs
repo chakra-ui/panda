@@ -33,6 +33,13 @@ fn run(fs: &MemoryFileSystem, main_path: &Path, source: &str) -> ExtractUsage {
     extract(source, main_path.to_str().unwrap(), &config)
 }
 
+fn assert_send_sync<T: Send + Sync>() {}
+
+#[test]
+fn cross_file_resolver_is_send_sync() {
+    assert_send_sync::<CrossFileResolver>();
+}
+
 /// Snapshot-friendly: drop spans (they vary by source-position) and keep
 /// `name + data` so cross-file resolution is asserted on the values that
 /// actually flowed through.
