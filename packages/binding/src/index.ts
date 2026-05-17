@@ -1,5 +1,5 @@
 import { loadNativeBinding } from './load-binary'
-import { registerNativeProjectCallbacks, wrapProjectCallbacks } from './project-callbacks'
+import { registerNativeProjectCallbacks, resolveUtilityValueCallbacks, wrapProjectCallbacks } from './project-callbacks'
 export type { ColorMixResult, RawToken, TransformArgs } from './project-callbacks'
 
 // --- compile (placeholder) ---
@@ -498,13 +498,14 @@ Object.defineProperty(createProject, 'fromConfig', {
     const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
     const nativeOptions = stripProjectCallbacks(options)
     const tokenDictionary = nativeOptions?.tokenDictionary
+    const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, tokenDictionary)
     if (nativeProjectFromConfig) {
-      const project = nativeProjectFromConfig(config, nativeOptions)
+      const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
       if (registerNativeProjectCallbacks(project, callbacks, tokenDictionary)) return project
       return wrapProjectCallbacks(project, callbacks, tokenDictionary)
     }
-    const project = new binding.Project(matchersFromSerializedConfig(config), nativeOptions)
-    projectConfigs.set(project, config)
+    const project = new binding.Project(matchersFromSerializedConfig(resolvedConfig), nativeOptions)
+    projectConfigs.set(project, resolvedConfig)
     return wrapProjectCallbacks(project, callbacks, tokenDictionary)
   },
 })

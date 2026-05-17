@@ -19,7 +19,7 @@ import type {
   WasmProjectOptions,
   WasmConfigSnapshot,
 } from './types'
-import { wrapProjectCallbacks } from './project-callbacks'
+import { resolveUtilityValueCallbacks, wrapProjectCallbacks } from './project-callbacks'
 
 export type {
   Atom,
@@ -132,11 +132,17 @@ export async function createProject(
   const { WasmFileSystem: FS, WasmProject: P } = await loadWasm()
   const fs = new FS()
   const nativeOptions = stripProjectCallbacks(options)
+  const callbacks = options?.callbacks ?? {}
+  const config = options?.config
+    ? resolveUtilityValueCallbacks(options.config, callbacks, options?.tokenDictionary ?? matchers.tokenDictionary)
+    : undefined
   const project = new P(fs, matchers as unknown, nativeOptions)
   return {
     fs,
     project: wrapProjectCallbacks(project, {
       ...options,
+      config,
+      callbacks,
       tokenDictionary: options?.tokenDictionary ?? matchers.tokenDictionary,
     }),
   }
@@ -155,8 +161,9 @@ export async function createProjectFromConfig(
   const fs = new FS()
   const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
   const nativeOptions = stripProjectCallbacks(options)
-  const project = P.fromConfig(fs, config, nativeOptions)
-  return { fs, project: wrapProjectCallbacks(project, { ...options, config, callbacks }) }
+  const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, nativeOptions?.tokenDictionary)
+  const project = P.fromConfig(fs, resolvedConfig, nativeOptions)
+  return { fs, project: wrapProjectCallbacks(project, { ...options, config: resolvedConfig, callbacks }) }
 }
 
 function stripProjectCallbacks(options: WasmProjectOptions | undefined): WasmProjectOptions | undefined {

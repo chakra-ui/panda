@@ -96,6 +96,40 @@ fn css_shorthands_are_normalized() {
 }
 
 #[test]
+fn utility_values_normalize_aliases() {
+    let mut project = create_project(json!({
+        "utilities": {
+            "spacing": {
+                "shorthand": "s",
+                "values": {
+                    "sm": "4px",
+                    "md": "8px"
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ spacing: 'sm', _hover: { s: 'md' } });
+        "},
+    );
+
+    assert_eq!(report.css_calls, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: spacing
+      value: 4px
+      conditions: []
+    - prop: spacing
+      value: 8px
+      conditions:
+        - _hover
+    "#);
+}
+
+#[test]
 fn jsx_shorthands_are_normalized() {
     let mut project = create_project(json!({
         "utilities": {

@@ -466,6 +466,70 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       `)
     })
 
+    it('resolves utility values callbacks in config-derived projects', async () => {
+      const { project } = await createProjectFromConfig(
+        {
+          config: {
+            cwd: '/virtual',
+            outdir: 'styled-system',
+            importMap: {
+              css: ['@panda/css'],
+              recipe: ['@panda/recipes'],
+              pattern: ['@panda/patterns'],
+              jsx: ['@panda/jsx'],
+              tokens: ['@panda/tokens'],
+            },
+            utilities: {
+              space: {
+                values: {
+                  kind: 'js-callback',
+                  id: 'utilities.space.values',
+                },
+              },
+            },
+          },
+          callbacks: {
+            'utility.values': {
+              'utilities.space.values': (theme: (category: string) => Record<string, string> | undefined) => ({
+                ...(theme('spacing') ?? {}),
+                compact: '2px',
+              }),
+            },
+          },
+        },
+        {
+          tokenDictionary: {
+            values: {
+              'spacing.4': '1rem',
+            },
+            vars: {},
+          },
+        },
+      )
+
+      project.parseFile(
+        '/Button.tsx',
+        `import { css } from '@panda/css'\ncss({ space: '4', _hover: { space: 'compact' } })`,
+      )
+
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "space",
+            "value": "1rem",
+            "conditions": [],
+          },
+          {
+            "prop": "space",
+            "value": "2px",
+            "conditions": [
+              "_hover",
+            ],
+          },
+        ]
+      `)
+    })
+
     it('applies utility transform callbacks under conditions', async () => {
       const { project } = await createProject(baseMatchers, {
         config: {
