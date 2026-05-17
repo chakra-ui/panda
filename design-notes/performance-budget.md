@@ -13,7 +13,7 @@ are used wherever keys are:
 
 - Short well-known strings (`"css"`, `"theme"`, …) — `pandacss_tokens::TokenExtensions`, matcher allowlists.
 - Newtype integer IDs (`SymbolId` u32) — `Resolver::cache`.
-- Atom dedup sets — `Encoder::atoms`, `PandaProject::atoms_cache`.
+- Atom dedup sets — `Encoder::atoms`, `Project::atoms_cache`.
 
 The only `std::HashMap` in the workspace is in `CrossFileResolver`'s outer cache, where the key is a `PathBuf` (already
 non-trivial to hash; the SipHash overhead is negligible relative to filesystem cost).
@@ -62,7 +62,7 @@ calls.
 
 ## Eager rebuild of atoms_cache
 
-`PandaProject::rebuild_atoms_cache` runs on every add / remove. The eager rebuild trades allocation churn on each
+`Project::rebuild_atoms_cache` runs on every add / remove. The eager rebuild trades allocation churn on each
 mutation for a **zero-work** `&FxHashSet` borrow on every read.
 
 Read is the hot path — emitters, manifest writers, and tooling all call `project.atoms()` repeatedly between mutations.

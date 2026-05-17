@@ -1,4 +1,4 @@
-//! WASM `WasmProject` — JS-facing wrapper around `pandacss_project::PandaProject`.
+//! WASM `WasmProject` — JS-facing wrapper around `pandacss_project::Project`.
 //!
 //! Stateful project orchestration over a `WasmFileSystem` handle. Atoms +
 //! recipes accumulate across `parseFile` calls. Cross-file folding shares
@@ -26,7 +26,7 @@ use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
 /// ```
 #[wasm_bindgen]
 pub struct WasmProject {
-    inner: pandacss_project::PandaProject,
+    inner: pandacss_project::Project,
 }
 
 #[wasm_bindgen]
@@ -52,21 +52,51 @@ impl WasmProject {
         } else {
             let opts: ProjectOptionsInput = serde_wasm_bindgen::from_value(options)
                 .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?;
-            opts.token_dictionary.or_else(|| input.token_dictionary.take())
+            opts.token_dictionary
+                .or_else(|| input.token_dictionary.take())
         };
 
         let token_dictionary = token_dictionary_input.map(to_core_token_dictionary);
         let core_matchers = to_core_matchers(input);
 
-        let mut project = pandacss_project::PandaProject::new(core_matchers);
+        let mut project = pandacss_project::Project::from_matchers(core_matchers);
         if let Some(dict) = token_dictionary {
             project = project.with_token_dictionary(dict);
         }
-        // Cross-file resolver always shares the WasmFileSystem so imports
-        // fold through whatever the JS host populated.
-        project = project.with_cross_file(CrossFileResolver::with_fs(fs.inner.clone()));
 
-        Ok(Self { inner: project })
+        Ok(Self {
+            inner: with_wasm_fs(project, fs),
+        })
+    }
+
+    /// Construct a project from the resolved, JSON-safe Panda config snapshot.
+    ///
+    /// # Errors
+    /// Returns a JS error when `config` doesn't deserialize into JSON.
+    #[wasm_bindgen(js_name = fromConfig)]
+    pub fn from_config(
+        fs: &WasmFileSystem,
+        config: JsValue,
+        options: JsValue,
+    ) -> Result<WasmProject, JsValue> {
+        let token_dictionary_input = if options.is_undefined() || options.is_null() {
+            None
+        } else {
+            let opts: ProjectOptionsInput = serde_wasm_bindgen::from_value(options)
+                .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?;
+            opts.token_dictionary
+        };
+
+        let config = serde_wasm_bindgen::from_value(config)
+            .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        let mut project = pandacss_project::Project::from_serialized_config(config);
+        if let Some(dict) = token_dictionary_input.map(to_core_token_dictionary) {
+            project = project.with_token_dictionary(dict);
+        }
+
+        Ok(Self {
+            inner: with_wasm_fs(project, fs),
+        })
     }
 
     /// Extract + encode a single file. Replaces any prior contribution
@@ -102,6 +132,30 @@ impl WasmProject {
     /// cross-file resolver intact.
     pub fn clear(&mut self) {
         self.inner.clear();
+    }
+
+    /// Return the serialized config snapshot this project was constructed
+    /// with, or `null` for matcher-based construction.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    pub fn config(&self) -> Result<JsValue, JsValue> {
+        let value = self
+            .inner
+            .serialized_config()
+            .and_then(|config| serde_json::to_value(config).ok())
+            .unwrap_or(serde_json::Value::Null);
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        value
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Returns `true` when the project has no files and no accumulated output.
+    #[wasm_bindgen(js_name = isEmpty)]
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
     }
 
     /// Deduplicated atoms across every currently-known file, sorted by
@@ -190,6 +244,15 @@ struct RecipeEntrySerde {
     file: String,
     span_start: u32,
     recipe: serde_json::Value,
+}
+
+fn with_wasm_fs(
+    project: pandacss_project::Project,
+    fs: &WasmFileSystem,
+) -> pandacss_project::Project {
+    // Cross-file resolver always shares the WasmFileSystem so imports
+    // fold through whatever the JS host populated.
+    project.with_cross_file(CrossFileResolver::with_fs(fs.inner.clone()))
 }
 
 fn collect_sorted_atoms<S: std::hash::BuildHasher>(

@@ -81,8 +81,12 @@ pub(crate) fn to_core_record(r: crate::ImportRecord) -> pandacss_extractor::Impo
             .map(|s| pandacss_extractor::ImportSpecifier {
                 kind: match s.kind {
                     ImportSpecifierKind::Named => pandacss_extractor::ImportSpecifierKind::Named,
-                    ImportSpecifierKind::Default => pandacss_extractor::ImportSpecifierKind::Default,
-                    ImportSpecifierKind::Namespace => pandacss_extractor::ImportSpecifierKind::Namespace,
+                    ImportSpecifierKind::Default => {
+                        pandacss_extractor::ImportSpecifierKind::Default
+                    }
+                    ImportSpecifierKind::Namespace => {
+                        pandacss_extractor::ImportSpecifierKind::Namespace
+                    }
                 },
                 imported: s.imported,
                 local: s.local,

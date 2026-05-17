@@ -37,7 +37,7 @@ sibling tiers — different axes of work, neither depends on the other.
 
 `pandacss_project`.
 
-The `PandaProject` crate wires everything together. It's the primary entry point for `@pandacss/binding` and the
+The `Project` crate wires everything together. It's the primary entry point for `@pandacss/binding` and the
 recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to this, not to the lower tiers
 directly. See [project-lifecycle](./project-lifecycle.md).
 

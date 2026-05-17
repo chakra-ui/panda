@@ -26,7 +26,8 @@ impl WasmFileSystem {
     /// Write or overwrite a file. Parent dirs auto-register.
     #[wasm_bindgen(js_name = addFile)]
     pub fn add_file(&self, path: String, content: String) {
-        self.inner.add_file(PathBuf::from(path), content.into_bytes());
+        self.inner
+            .add_file(PathBuf::from(path), content.into_bytes());
     }
 
     /// `true` when the file existed and was removed.
@@ -79,8 +80,7 @@ impl WasmFileSystem {
             .into_iter()
             .map(|p| p.to_string_lossy().into_owned())
             .collect();
-        serde_wasm_bindgen::to_value(&strings)
-            .map_err(|err| JsValue::from_str(&err.to_string()))
+        serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
     /// Number of files stored. Convenience for diagnostics / tests.
@@ -104,4 +104,3 @@ struct GlobInput {
     cwd: Option<String>,
     absolute: Option<bool>,
 }
-

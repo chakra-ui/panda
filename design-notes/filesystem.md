@@ -221,22 +221,22 @@ meaningfully.
 
 ## Injection pattern
 
-`CrossFileResolver` and `PandaProject` take an `Arc<dyn FileSystem>` via constructor:
+`CrossFileResolver` and `Project` take an `Arc<dyn FileSystem>` via constructor:
 
 ```rust
 // Native
 let fs: Arc<dyn FileSystem> = Arc::new(OsFileSystem::default());
-let project = PandaProject::with_fs(fs, matchers);
+let project = Project::with_fs(fs, matchers);
 
 // Tests / wasm
 let fs: Arc<dyn FileSystem> = Arc::new(MemoryFileSystem::from_iter([
     ("/src/Button.tsx", source),
     ("/src/tokens.ts", tokens_source),
 ]));
-let project = PandaProject::with_fs(fs, matchers);
+let project = Project::with_fs(fs, matchers);
 ```
 
-`PandaProject::new(matchers)` is the convenience constructor — defaults to `OsFileSystem` on native targets. On wasm
+`Project::from_matchers(matchers)` is the convenience constructor — defaults to `OsFileSystem` on native targets. On wasm
 builds the `os` feature isn't enabled and `new` resolves to a compile error (the type doesn't exist), forcing callers to
 `with_fs`.
 
@@ -272,6 +272,6 @@ up (current behavior). When `Some`, it threads down to `CrossFileResolver`.
 
 - [crate-layering](./crate-layering.md) — Tier 0 entry for `pandacss_fs`.
 - [cross-file-resolution](./cross-file-resolution.md) — first consumer; gets the injection seam.
-- [project-lifecycle](./project-lifecycle.md) — `PandaProject::with_fs` constructor.
+- [project-lifecycle](./project-lifecycle.md) — `Project::with_fs` constructor.
 - [bindings](./bindings.md) — both NAPI and WASM cdylibs that consume `pandacss_fs`.
 - [scope-and-boundaries](./scope-and-boundaries.md) — revised: glob is now in Rust, file discovery still isn't.

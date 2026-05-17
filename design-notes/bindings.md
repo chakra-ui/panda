@@ -166,6 +166,57 @@ The TS wrapper (`packages/binding/src/index.ts`) defines the public API and a no
 `src/load-binary.ts` looks for `binding.node` next to the package root, then falls back to `@pandacss/binding-native`.
 The native artifact and its auto-generated `native.d.ts` are gitignored.
 
+## JS-host config callbacks
+
+Resolved config snapshots can carry callback references for config entries that cannot be represented as plain JSON.
+The serialized config stores a stable id, and the live JS function is kept in a sidecar callback map:
+
+```ts
+{
+  config: {
+    utilities: {
+      size: {
+        transform: { kind: "js-callback", id: "utilities.size.transform" },
+      },
+    },
+  },
+  callbacks: {
+    "utility.transform": {
+      "utilities.size.transform": (value, args) => ({ width: value, height: value }),
+    },
+  },
+}
+```
+
+The callback kinds are intentionally different:
+
+- `utility.transform` maps one utility atom to direct CSS declaration objects. The original atom's condition chain is
+  preserved after expansion; returned keys such as `sm`, `tablet`, or `_hover` are **not** interpreted as conditions.
+- `pattern.transform` runs before atomic encoding and returns a full system style object. Pattern output can contain
+  nested config-derived conditions and breakpoints because it flows back through the normal style encoder.
+- `utility.values` affects utility metadata and type/value availability. Prefer serializing resolved data when
+  possible; only keep it executable if the JS config model truly requires it.
+
+Current support:
+
+- NAPI registers `utility.transform` callbacks on the native `Project` when the binary exposes
+  `registerUtilityTransform`.
+- NAPI registers `pattern.transform` callbacks on the native `Project` when the binary exposes
+  `registerPatternTransform`.
+- Utility transform results are cached by callback id, property, and raw value. The cached result is condition-free;
+  the original atom's conditions are applied after expansion.
+- The TS wrapper keeps a compatibility fallback for older native binaries and uses the same cache shape.
+- WASM executes `utility.transform` in the JS host wrapper because browser callbacks are already JS-owned.
+
+Remaining work:
+
+- Fill out `TransformArgs`: real `token(path)`, `token.raw(path)`, and `utils.colorMix(value)` instead of stubs.
+- Add WASM/browser support for `pattern.transform`. The native shape is in place, but the browser wrapper still needs a
+  pre-encoding host callback path.
+- Decide whether `utility.values` should stay callback-based or become resolved data in the serialized config.
+- Add diagnostics for lazy utility callback failures. Native `pattern.transform` failures are attached to `parseFile()`;
+  utility transform diagnostics may need to live on `atoms()` or move callback execution into `parseFile()`.
+
 ## Loader (WASM)
 
 `packages/binding-wasm/src/index.ts` exposes `loadWasm()` (lazy, cached) for Node consumers and `createExtractor()` for
@@ -176,5 +227,5 @@ wasm-bindgen's `init()` themselves when they need control over the wasm fetch.
 
 - [filesystem](./filesystem.md) — the FS abstraction both bindings consume.
 - [extraction-pipeline](./extraction-pipeline.md) — core extract() flow the bindings wrap.
-- [project-lifecycle](./project-lifecycle.md) — PandaProject contract (currently NAPI-only).
+- [project-lifecycle](./project-lifecycle.md) — Project contract.
 - [publish-namespace](./publish-namespace.md) — naming rules for both bindings.

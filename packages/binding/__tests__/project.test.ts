@@ -36,6 +36,391 @@ describe('Project', () => {
     `)
   })
 
+  it('constructs from a serialized config snapshot', () => {
+    const project = Project.fromConfig(
+      {
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        jsxFactory: 'styled',
+      },
+      { crossFile: false },
+    )
+
+    expect(project.config()).toMatchObject({
+      cwd: '/virtual',
+      outdir: 'styled-system',
+    })
+    expect(project.isEmpty()).toBe(true)
+    project.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ color: 'red' })`,
+    )
+    expect(project.isEmpty()).toBe(false)
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('keeps component props when jsx style props are disabled', () => {
+    const project = Project.fromConfig(
+      {
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        jsxStyleProps: 'none',
+        patterns: {
+          stack: {
+            properties: {
+              gap: {},
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const report = project.parseFile(
+      '/virtual/Stack.tsx',
+      `import { Stack } from '@panda/jsx'
+       const el = <Stack gap="4" color="red" css={{ margin: "8px" }} />`,
+    )
+
+    expect(report.jsxUsages).toBe(1)
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "gap",
+          "value": "4",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies js-backed utility transform callbacks from a config bundle', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ size: '4px', color: 'red' })`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
+        {
+          "prop": "height",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies utility transform callbacks under conditions', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ _hover: { size: '4px' } })`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "height",
+          "value": "4px",
+          "conditions": [
+            "_hover",
+          ],
+        },
+        {
+          "prop": "width",
+          "value": "4px",
+          "conditions": [
+            "_hover",
+          ],
+        },
+      ]
+    `)
+  })
+
+  it('applies utility transform callbacks from JSX props', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Card.tsx',
+      `import { Box } from '@panda/jsx'
+       const el = <Box size="4px" />`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "height",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('caches utility transform callback results', () => {
+    let calls = 0
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => {
+              calls += 1
+              return { width: value, height: value }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ size: '4px', _hover: { size: '4px' } })`,
+    )
+
+    project.atoms()
+    project.atoms()
+    expect(calls).toBe(1)
+  })
+
+  it('applies pattern transform callbacks before encoding', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          theme: {
+            breakpoints: {
+              tablet: '768px',
+            },
+          },
+          patterns: {
+            stack: {
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: string }) => ({
+              display: 'flex',
+              gap: props.gap,
+              tablet: {
+                gap: '8',
+              },
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.tsx',
+      `import { stack } from '@panda/patterns'
+       import { Stack } from '@panda/jsx'
+       stack({ gap: '4' })
+       const el = <Stack gap="6" />`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "6",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "8",
+          "conditions": [
+            "tablet",
+          ],
+        },
+      ]
+    `)
+  })
+
   it('decomposes nested conditions into condition chains', () => {
     const project = new Project(matchers, { crossFile: false })
     project.parseFile(
@@ -135,6 +520,7 @@ describe('Project', () => {
     project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
     expect(project.summary().filesProcessed).toBe(2)
     project.clear()
+    expect(project.isEmpty()).toBe(true)
     expect(project.summary()).toMatchInlineSnapshot(`
       {
         "filesProcessed": 0,

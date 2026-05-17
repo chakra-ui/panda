@@ -2,7 +2,7 @@
 
 ## Summary
 
-`PandaProject` is the Tier-3 façade that owns build / dev-server session state. Source files flow in through
+`Project` is the Tier-3 façade that owns build / dev-server session state. Source files flow in through
 `parse_file`; the project extracts usages, decomposes `cva()` / `sva()` recipes, and feeds the results into a shared
 atomic encoder. The contract is **per-file replacement**: re-adding a path drops its previous contribution before
 re-encoding, so removed or renamed styles can't linger as ghost atoms in watch mode.
@@ -91,17 +91,17 @@ Methods are limited to:
 - Extraction results: `atoms()`, `recipes()`, `slot_recipes()`.
 - Diagnostics: `diagnostics()`.
 
-Re-process via `PandaProject::refresh_file` or `parse_file`.
+Re-process via `Project::refresh_file` or `parse_file`.
 
 ## Builder methods
 
 ```rust
-let project = PandaProject::new(matchers)
+let project = Project::from_matchers(matchers)
     .with_token_dictionary(dict)
     .with_cross_file(resolver);
 ```
 
-Both are optional; the simple "no plugins" case stays simple (`PandaProject::new(matchers)`).
+Both are optional; the simple "no plugins" case stays simple (`Project::from_matchers(matchers)`).
 
 ## Reflection: per-file parallelism
 

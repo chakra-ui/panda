@@ -77,7 +77,7 @@ for file in files {
 }
 ```
 
-The `PandaProject` façade does this automatically — `with_cross_file` on the project plumbs the resolver into the shared
+The `Project` façade does this automatically — `with_cross_file` on the project plumbs the resolver into the shared
 config.
 
 ## I/O failures

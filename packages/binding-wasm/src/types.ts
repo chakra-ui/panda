@@ -87,8 +87,21 @@ export interface ProjectSummary {
   slotRecipeCount: number
 }
 
+export type WasmProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform'
+
+export type WasmProjectCallbacks = Partial<Record<WasmProjectCallbackKind, Record<string, (...args: any[]) => unknown>>>
+
+export interface WasmConfigSnapshot {
+  config: Record<string, unknown>
+  callbacks?: WasmProjectCallbacks
+}
+
 export interface WasmProjectOptions {
   tokenDictionary?: TokenDictionaryInput
+  /** Serialized config snapshot used to resolve callback ids to utility props. */
+  config?: Record<string, unknown>
+  /** Browser/JS-host callbacks referenced by serialized config entries. */
+  callbacks?: WasmProjectCallbacks
 }
 
 /** Stateful project handle over a `WasmFileSystem`. Cross-file
@@ -96,10 +109,13 @@ export interface WasmProjectOptions {
  *  references resolve through whatever the JS host has populated. */
 export declare class WasmProject {
   constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
+  static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
+  config(): Record<string, unknown> | null
   parseFile(path: string, source: string): FileReport
   refreshFile(path: string, source: string): boolean
   removeFile(path: string): boolean
   clear(): void
+  isEmpty(): boolean
   atoms(): Atom[]
   recipes(): RecipeEntry[]
   slotRecipes(): RecipeEntry[]

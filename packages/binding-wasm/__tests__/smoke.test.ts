@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { createExtractor, createProject, loadWasm } from '../src'
+import { createExtractor, createProject, createProjectFromConfig, loadWasm } from '../src'
 import type { Atom, ExtractUsage, MatchersInput } from '../src'
 
 const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'binding_wasm.js')
@@ -207,7 +207,9 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
   describe('WasmProject', () => {
     it('extracts atoms from a css() call', async () => {
       const { project } = await createProject(baseMatchers)
+      expect(project.isEmpty()).toBe(true)
       project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
+      expect(project.isEmpty()).toBe(false)
       expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
@@ -218,6 +220,68 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
           {
             "prop": "color",
             "value": "red",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('constructs from a serialized config snapshot', async () => {
+      const { project } = await createProjectFromConfig({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        jsxFactory: 'styled',
+      })
+
+      expect(project.config()).toMatchObject({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+      })
+      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "color",
+            "value": "red",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('derives JSX pattern matchers from config', async () => {
+      const { project } = await createProjectFromConfig({
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap: {
+          css: ['@panda/css'],
+          recipe: ['@panda/recipes'],
+          pattern: ['@panda/patterns'],
+          jsx: ['@panda/jsx'],
+          tokens: ['@panda/tokens'],
+        },
+        patterns: {
+          stack: {
+            properties: {
+              gap: {},
+            },
+          },
+        },
+      })
+
+      project.parseFile('/Stack.tsx', `import { Stack } from '@panda/jsx'\nconst el = <Stack gap="4" />`)
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "gap",
+            "value": "4",
             "conditions": [],
           },
         ]
@@ -293,11 +357,174 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       `)
     })
 
+    it('applies utility transform callbacks in the JS host', async () => {
+      const { project } = await createProject(baseMatchers, {
+        config: {
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      })
+
+      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', color: 'red' })`)
+
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "color",
+            "value": "red",
+            "conditions": [],
+          },
+          {
+            "prop": "height",
+            "value": "4px",
+            "conditions": [],
+          },
+          {
+            "prop": "width",
+            "value": "4px",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('applies utility transform callbacks under conditions', async () => {
+      const { project } = await createProject(baseMatchers, {
+        config: {
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      })
+
+      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ _hover: { size: '4px' } })`)
+
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "height",
+            "value": "4px",
+            "conditions": [
+              "_hover",
+            ],
+          },
+          {
+            "prop": "width",
+            "value": "4px",
+            "conditions": [
+              "_hover",
+            ],
+          },
+        ]
+      `)
+    })
+
+    it('applies utility transform callbacks from JSX props', async () => {
+      const { project } = await createProject(baseMatchers, {
+        config: {
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({
+              width: value,
+              height: value,
+            }),
+          },
+        },
+      })
+
+      project.parseFile('/Card.tsx', `import { Box } from '@panda/jsx'\nconst el = <Box size="4px" />`)
+
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "height",
+            "value": "4px",
+            "conditions": [],
+          },
+          {
+            "prop": "width",
+            "value": "4px",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('caches utility transform callback results', async () => {
+      let calls = 0
+      const { project } = await createProject(baseMatchers, {
+        config: {
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => {
+              calls += 1
+              return { width: value, height: value }
+            },
+          },
+        },
+      })
+
+      project.parseFile(
+        '/Button.tsx',
+        `import { css } from '@panda/css'\ncss({ size: '4px', _hover: { size: '4px' } })`,
+      )
+
+      project.atoms()
+      project.atoms()
+      expect(calls).toBe(1)
+    })
+
     it('clear drops every file', async () => {
       const { project } = await createProject(baseMatchers)
       project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
       project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
       project.clear()
+      expect(project.isEmpty()).toBe(true)
       expect(project.summary()).toMatchInlineSnapshot(`
         {
           "filesProcessed": 0,

@@ -103,6 +103,7 @@ impl ExtractedArg {
 /// `Project::atoms()`. Mirrors `pandacss_encoder::Atom` but with the
 /// internal `Box<str>` Number form parsed back to a JS-native number.
 #[napi(object)]
+#[derive(Clone)]
 pub struct Atom {
     pub prop: String,
     /// `string | number | boolean | null`.

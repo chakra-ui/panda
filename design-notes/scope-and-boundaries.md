@@ -66,7 +66,7 @@ bodies. Phase-batched hooks call into JS once per phase with the full batch, amo
 for future work.
 
 The current model expects the JS host to own the watcher and route changed-file events through
-`PandaProject::refresh_file`. The contract (see [project-lifecycle](./project-lifecycle.md)) is structured to make this
+`Project::refresh_file`. The contract (see [project-lifecycle](./project-lifecycle.md)) is structured to make this
 trivial: unknown paths are silently filtered.
 
 ### Configuration parsing

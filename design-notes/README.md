@@ -14,7 +14,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
-- [Project lifecycle](./project-lifecycle.md) — `PandaProject` add / replace / remove semantics for watch mode.
+- [Project lifecycle](./project-lifecycle.md) — `Project` add / replace / remove semantics for watch mode.
 - [Scope and boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.
 
 ### Subsystems

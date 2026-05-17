@@ -50,7 +50,9 @@ pub(crate) fn convert_kind(k: pandacss_extractor::ImportKind) -> ImportKind {
     }
 }
 
-pub(crate) fn convert_specifier_kind(k: pandacss_extractor::ImportSpecifierKind) -> ImportSpecifierKind {
+pub(crate) fn convert_specifier_kind(
+    k: pandacss_extractor::ImportSpecifierKind,
+) -> ImportSpecifierKind {
     match k {
         pandacss_extractor::ImportSpecifierKind::Named => ImportSpecifierKind::Named,
         pandacss_extractor::ImportSpecifierKind::Default => ImportSpecifierKind::Default,
@@ -138,6 +140,7 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
     let token_dictionary = m.token_dictionary.clone().map(to_core_token_dictionary);
     pandacss_extractor::ExtractorConfig {
         matchers: to_core_matchers(m),
+        jsx: pandacss_extractor::JsxExtractionConfig::default(),
         token_dictionary,
         // Cross-file resolution isn't on the flat `Matchers` shape — the
         // session class wires it up explicitly. Free-function callers
@@ -159,7 +162,9 @@ pub(crate) fn to_core_matchers(m: Matchers) -> pandacss_extractor::Matchers {
 
 // JS passes two parallel `path → string` maps; re-key them into the
 // structured `Token` records the `tokens` crate uses.
-pub(crate) fn to_core_token_dictionary(d: crate::TokenDictionary) -> pandacss_tokens::TokenDictionary {
+pub(crate) fn to_core_token_dictionary(
+    d: crate::TokenDictionary,
+) -> pandacss_tokens::TokenDictionary {
     pandacss_tokens::TokenDictionary::builder()
         .extend_flat(d.values, &d.vars)
         .build()
