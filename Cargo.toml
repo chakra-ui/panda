@@ -36,6 +36,7 @@ pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
 pandacss_optimizer = { path = "crates/pandacss_optimizer" }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
+pandacss_shared = { path = "crates/pandacss_shared" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
 pandacss_utility = { path = "crates/pandacss_utility" }
 serde = { version = "1.0.228", features = ["derive"] }
@@ -43,9 +44,12 @@ serde_json = { version = "1.0.145", features = ["preserve_order"] }
 insta = { version = "1.47.2", features = ["yaml"] }
 fast-glob = "1"
 indoc = "2.0.7"
+itoa = "1.0"
 rustc-hash = "2.1"
+ryu = "1.0"
 smallvec = { version = "1.13", features = ["serde"] }
 walkdir = "2"
+regex = "1.12.2"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

@@ -1,0 +1,12 @@
+//! Shared helpers used by Panda Rust crates.
+//!
+//! This crate intentionally stays at the bottom of the dependency graph:
+//! no dependencies on other Panda crates.
+
+pub mod regex;
+pub mod strings;
+
+pub use regex::{compile_js_regex, regex_from_serialized_value};
+pub use strings::{
+    MAX_SAFE_INTEGER, capitalize, is_js_safe_integer, number_to_js_string, push_number_to_js_string,
+};

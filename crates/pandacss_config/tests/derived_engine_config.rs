@@ -1,4 +1,4 @@
-use pandacss_config::{DerivedEngineConfig, SerializedConfig};
+use pandacss_config::{DerivedEngineConfig, EngineConfig, SerializedConfig};
 use serde_json::json;
 
 #[test]
@@ -46,7 +46,6 @@ fn derives_import_map_and_jsx_names() {
             "Stack",
             "VStack",
             "Button",
-            "Card",
             "CardRoot",
             "Card.Root"
         ]
@@ -62,12 +61,8 @@ fn derives_condition_names_from_conditions_and_breakpoints() {
         },
         "theme": {
             "breakpoints": {
-                "tablet": "768px"
-            },
-            "extend": {
-                "breakpoints": {
-                    "wide": "1440px"
-                }
+                "tablet": "768px",
+                "wide": "1440px"
             }
         }
     }))
@@ -95,4 +90,72 @@ fn default_import_map_uses_outdir_basename() {
     assert_eq!(derived.import_map.pattern, vec!["styled-system/patterns"]);
     assert_eq!(derived.import_map.jsx, vec!["styled-system/jsx"]);
     assert_eq!(derived.import_map.tokens, vec!["styled-system/tokens"]);
+}
+
+#[test]
+fn engine_config_derives_component_and_recipe_metadata() {
+    let config: SerializedConfig = serde_json::from_value(json!({
+        "patterns": {
+            "stack": {
+                "jsxName": "Stack",
+                "jsx": [{ "kind": "regex", "source": "^PandaStack$", "flags": "" }],
+                "properties": {
+                    "gap": {},
+                    "direction": {}
+                }
+            }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "btn",
+                    "jsx": ["Button", { "kind": "regex", "source": "^Action$", "flags": "" }],
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" }
+                        }
+                    },
+                    "defaultVariants": {
+                        "size": "sm"
+                    }
+                }
+            },
+            "slotRecipes": {
+                "card": {
+                    "jsx": ["Card"],
+                    "slots": ["root"],
+                    "variants": {
+                        "tone": {
+                            "info": {
+                                "root": { "color": "blue" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("valid serialized config");
+
+    let engine = EngineConfig::from_serialized_config(&config);
+
+    assert_eq!(engine.patterns[0].jsx_names, vec!["Stack"]);
+    assert_eq!(engine.patterns[0].props, vec!["gap", "direction"]);
+    assert!(engine.patterns[0].jsx_regexes[0].is_match("PandaStack"));
+
+    assert_eq!(engine.recipes[0].name, "button");
+    assert_eq!(engine.recipes[0].class_name, "btn");
+    assert_eq!(engine.recipes[0].jsx_names, vec!["Button"]);
+    assert_eq!(engine.recipes[0].variant_props, vec!["size"]);
+    assert!(engine.recipes[0].jsx_regexes[0].is_match("Action"));
+    assert_eq!(
+        engine.recipes[0].recipe.default_variants,
+        vec![("size".into(), "sm".into())]
+    );
+
+    assert_eq!(
+        engine.slot_recipes[0].jsx_names,
+        vec!["Card", "Card.Root", "CardRoot"]
+    );
+    assert_eq!(engine.slot_recipes[0].variant_props, vec!["tone"]);
 }

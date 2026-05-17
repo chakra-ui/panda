@@ -1,5 +1,5 @@
 [package]
-name = "pandacss_config"
+name = "pandacss_shared"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,11 +8,9 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-pandacss_recipes = { workspace = true }
-pandacss_shared = { workspace = true }
+itoa = { workspace = true }
 regex = { workspace = true }
-rustc-hash = { workspace = true }
-serde = { workspace = true }
+ryu = { workspace = true }
 serde_json = { workspace = true }
 
 [lints]
