@@ -784,6 +784,38 @@ mod tests {
     }
 
     #[test]
+    fn transform_uses_configured_class_name_for_preset_utility() {
+        let utility = Utility::from_config(&json!({
+            "backgroundColor": {
+                "shorthand": "bgColor",
+                "className": "bg-c",
+                "values": "colors"
+            }
+        }));
+
+        let result = utility
+            .transform("bgColor", &Literal::String("red".into()))
+            .expect("transform");
+
+        assert_debug_snapshot!(result, @r#"
+        UtilityTransformResult {
+            layer: None,
+            class_name: "bg-c_red",
+            styles: Object(
+                [
+                    (
+                        "backgroundColor",
+                        String(
+                            "red",
+                        ),
+                    ),
+                ],
+            ),
+        }
+        "#);
+    }
+
+    #[test]
     fn transform_supports_token_category_values() {
         let tokens = TokenDictionary::builder()
             .insert(Token::new(
