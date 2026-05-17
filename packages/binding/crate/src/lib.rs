@@ -22,7 +22,7 @@ pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
-pub use project::{FileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry};
+pub use project::{ParseFileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry};
 pub use session::Extractor;
 
 use napi_derive::napi;

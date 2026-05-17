@@ -72,9 +72,9 @@ fn to_engine_input(input: CompileInput) -> pandacss_engine::CompileInput {
             content: f.content,
         })
         .collect();
-    // Config is opaque on the binding boundary today. Malformed values
-    // degrade to default silently — `SerializedConfig` is a placeholder
-    // and we don't want a parse failure to break the round trip.
+    // Config is opaque on the compile boundary today. Malformed values
+    // degrade to default silently while the real compile pipeline is
+    // still a placeholder.
     let config = input
         .config
         .and_then(|v| serde_json::from_value(v).ok())

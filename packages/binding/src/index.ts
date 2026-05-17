@@ -260,7 +260,7 @@ export interface RecipeStyleEntry {
 }
 
 /** Per-call telemetry returned by `Project.parseFile()`. */
-export interface FileReport {
+export interface ParseFileReport {
   cssCalls: number
   cvaCalls: number
   svaCalls: number
@@ -280,7 +280,6 @@ export interface ProjectSummary {
  *  resolver is cheap if no imports get followed and lets `token('…')`
  *  and `import { x } from './tokens'` references fold. */
 export interface ProjectOptions {
-  tokenDictionary?: TokenDictionary
   crossFile?: boolean
   callbacks?: ProjectCallbacks
 }
@@ -294,10 +293,6 @@ export interface ConfigSnapshot {
   callbacks?: ProjectCallbacks
 }
 
-type ProjectConfigInput = Record<string, unknown> & {
-  tokenDictionary?: TokenDictionary
-}
-
 /** Stateful project orchestration. Holds a per-file atom registry,
  *  drops a file's contribution on `removeFile` / `refreshFile`, and
  *  runs the encoder over every extracted style so callers see `Atom[]`
@@ -307,7 +302,7 @@ export interface ProjectInstance {
   config(): Record<string, unknown> | null
   registerUtilityTransform?(id: string, callback: (value: unknown, args: Record<string, unknown>) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
-  parseFile(path: string, source: string): FileReport
+  parseFile(path: string, source: string): ParseFileReport
   /** Re-parse `path` *only if* already known. Returns `true` when the
    *  file was present. Filter watch events through this to ignore
    *  changes in unrelated paths. */
@@ -518,7 +513,7 @@ export const Extractor = binding.Extractor
 function createProject(matchers: Matchers, options?: ProjectOptions) {
   const project = new binding.Project(matchers, stripProjectCallbacks(options))
   const callbacks = options?.callbacks ?? {}
-  const tokenDictionary = options?.tokenDictionary ?? matchers.tokenDictionary
+  const tokenDictionary = matchers.tokenDictionary
   if (registerNativeProjectCallbacks(project, callbacks)) return project
   return wrapProjectCallbacks(project, callbacks, tokenDictionary)
 }
@@ -529,19 +524,16 @@ Object.defineProperty(createProject, 'fromConfig', {
   value(configOrSnapshot: Record<string, unknown> | ConfigSnapshot, options?: ProjectOptions) {
     const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
     const nativeOptions = stripProjectCallbacks(options)
-    const configWithRuntime = withProjectRuntimeConfig(config, nativeOptions)
-    const tokenDictionary = configWithRuntime.tokenDictionary
-    assertProjectCallbacks(configWithRuntime, callbacks)
-    const resolvedConfig = resolveUtilityValueCallbacks(configWithRuntime, callbacks, tokenDictionary)
-    const resolvedConfigWithRuntime = withProjectRuntimeConfig(resolvedConfig, nativeOptions)
+    assertProjectCallbacks(config, callbacks)
+    const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, undefined)
     if (nativeProjectFromConfig) {
-      const project = nativeProjectFromConfig(resolvedConfigWithRuntime, nativeOptions)
+      const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
       if (registerNativeProjectCallbacks(project, callbacks)) return project
-      return wrapProjectCallbacks(project, callbacks, tokenDictionary)
+      return wrapProjectCallbacks(project, callbacks, undefined)
     }
-    const project = new binding.Project(matchersFromSerializedConfig(resolvedConfigWithRuntime), nativeOptions)
-    projectConfigs.set(project, resolvedConfigWithRuntime)
-    return wrapProjectCallbacks(project, callbacks, tokenDictionary)
+    const project = new binding.Project(matchersFromConfig(resolvedConfig), nativeOptions)
+    projectConfigs.set(project, resolvedConfig)
+    return wrapProjectCallbacks(project, callbacks, undefined)
   },
 })
 
@@ -553,10 +545,10 @@ export function getBindingInfo() {
   }
 }
 
-function matchersFromSerializedConfig(config: Record<string, unknown>): Matchers {
+function matchersFromConfig(config: Record<string, unknown>): Matchers {
   const importMap = normalizeImportMap(config)
   const jsxFactory = typeof config.jsxFactory === 'string' ? config.jsxFactory : 'styled'
-  const jsxNames = jsxNamesFromSerializedConfig(config, jsxFactory)
+  const jsxNames = jsxNamesFromConfig(config, jsxFactory)
 
   return {
     css: { modules: importMap.css, names: ['css', 'cva', 'sva'] },
@@ -568,7 +560,7 @@ function matchersFromSerializedConfig(config: Record<string, unknown>): Matchers
   }
 }
 
-function jsxNamesFromSerializedConfig(config: Record<string, unknown>, jsxFactory: string) {
+function jsxNamesFromConfig(config: Record<string, unknown>, jsxFactory: string) {
   const names = [jsxFactory, 'Box']
   collectPatternJsxNames(config.patterns, names)
 
@@ -690,14 +682,6 @@ function stripProjectCallbacks(options: ProjectOptions | undefined): ProjectOpti
   if (!options) return undefined
   const { callbacks: _callbacks, ...rest } = options
   return rest
-}
-
-function withProjectRuntimeConfig(
-  config: Record<string, unknown>,
-  options: ProjectOptions | undefined,
-): ProjectConfigInput {
-  const tokenDictionary = options?.tokenDictionary ?? (config as ProjectConfigInput).tokenDictionary
-  return tokenDictionary ? { ...config, tokenDictionary } : config
 }
 
 function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): ProjectCallbacks {

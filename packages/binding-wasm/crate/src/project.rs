@@ -16,7 +16,7 @@ use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
-/// plus matchers + optional token dictionary.
+/// plus matchers.
 ///
 /// ```js
 /// const fs = new WasmFileSystem()
@@ -35,7 +35,6 @@ pub struct WasmProject {
 
 #[wasm_bindgen]
 impl WasmProject {
-    /// `options` is an optional `{ tokenDictionary?: TokenDictionaryInput }`.
     /// Cross-file folding is always enabled and shares the passed FS.
     ///
     /// # Errors
@@ -50,23 +49,17 @@ impl WasmProject {
         let mut input: MatchersInput = serde_wasm_bindgen::from_value(matchers)
             .map_err(|err| JsValue::from_str(&format!("invalid matchers: {err}")))?;
 
-        // `options` is optional — `undefined` / `null` → defaults.
-        let token_dictionary_input = if options.is_undefined() || options.is_null() {
-            input.token_dictionary.take()
-        } else {
-            let opts: ProjectOptionsInput = serde_wasm_bindgen::from_value(options)
+        if !options.is_undefined() && !options.is_null() {
+            serde_wasm_bindgen::from_value::<ProjectOptionsInput>(options)
                 .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?;
-            opts.token_dictionary
-                .or_else(|| input.token_dictionary.take())
-        };
+        }
 
-        let token_dictionary = token_dictionary_input.map(to_core_token_dictionary);
+        let token_dictionary = input.token_dictionary.take().map(to_core_token_dictionary);
         let core_matchers = to_core_matchers(input);
 
-        let mut project = pandacss_project::Project::from_matchers(core_matchers);
-        if let Some(dict) = token_dictionary {
-            project = project.with_token_dictionary(dict);
-        }
+        let mut extractor_config = pandacss_extractor::ExtractorConfig::new(core_matchers);
+        extractor_config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
+        let project = pandacss_project::Project::from_extractor_config(extractor_config);
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
@@ -85,23 +78,18 @@ impl WasmProject {
         config: JsValue,
         options: JsValue,
     ) -> Result<WasmProject, JsValue> {
-        let token_dictionary_input = if options.is_undefined() || options.is_null() {
-            None
-        } else {
-            let opts: ProjectOptionsInput = serde_wasm_bindgen::from_value(options)
+        if !options.is_undefined() && !options.is_null() {
+            serde_wasm_bindgen::from_value::<ProjectOptionsInput>(options)
                 .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?;
-            opts.token_dictionary
-        };
+        }
 
         let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
         let pattern_transform_refs = get_pattern_transform_refs(&config_value);
         let config = serde_json::from_value(config_value)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
-        let mut project = pandacss_project::Project::from_serialized_config(config);
-        if let Some(dict) = token_dictionary_input.map(to_core_token_dictionary) {
-            project = project.with_token_dictionary(dict);
-        }
+        let project = pandacss_project::Project::from_config(config)
+            .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
@@ -265,9 +253,7 @@ impl WasmProject {
 
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", default)]
-struct ProjectOptionsInput {
-    token_dictionary: Option<crate::matcher::TokenDictionaryInput>,
-}
+struct ProjectOptionsInput {}
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]

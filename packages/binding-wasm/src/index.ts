@@ -28,7 +28,7 @@ import {
 
 export type {
   Atom,
-  FileReport,
+  ParseFileReport,
   MatcherInput,
   MatchersInput,
   ProjectSummary,
@@ -140,7 +140,7 @@ export async function createProject(
   const callbacks = options?.callbacks ?? {}
   if (options?.config) assertProjectCallbacks(options.config, callbacks)
   const config = options?.config
-    ? resolveUtilityValueCallbacks(options.config, callbacks, options?.tokenDictionary ?? matchers.tokenDictionary)
+    ? resolveUtilityValueCallbacks(options.config, callbacks, matchers.tokenDictionary)
     : undefined
   const project = new P(fs, matchers as unknown, nativeOptions)
   registerProjectCallbacks(project, callbacks)
@@ -150,7 +150,7 @@ export async function createProject(
       ...options,
       config,
       callbacks,
-      tokenDictionary: options?.tokenDictionary ?? matchers.tokenDictionary,
+      tokenDictionary: matchers.tokenDictionary,
     }),
   }
 }
@@ -169,7 +169,7 @@ export async function createProjectFromConfig(
   const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
   const nativeOptions = stripProjectCallbacks(options)
   assertProjectCallbacks(config, callbacks)
-  const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, nativeOptions?.tokenDictionary)
+  const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, undefined)
   const project = P.fromConfig(fs, resolvedConfig, nativeOptions)
   registerProjectCallbacks(project, callbacks)
   return { fs, project: wrapProjectCallbacks(project, { ...options, config: resolvedConfig, callbacks }) }

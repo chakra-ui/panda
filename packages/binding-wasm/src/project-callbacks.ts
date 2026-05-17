@@ -43,7 +43,11 @@ export function registerProjectCallbacks(project: WasmProject, callbacks: WasmPr
   }
 }
 
-export function wrapProjectCallbacks(project: WasmProject, options: WasmProjectOptions | undefined): WasmProject {
+type ProjectCallbackOptions = WasmProjectOptions & {
+  tokenDictionary?: TokenDictionaryInput
+}
+
+export function wrapProjectCallbacks(project: WasmProject, options: ProjectCallbackOptions | undefined): WasmProject {
   const callbacks = options?.callbacks
   const config = options?.config
   const tokenDictionary = options?.tokenDictionary

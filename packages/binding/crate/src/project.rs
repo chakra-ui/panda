@@ -8,14 +8,14 @@
 use napi_derive::napi;
 use std::collections::HashMap;
 
-use crate::convert::{convert_diagnostic, to_atoms, to_core_matchers};
-use crate::{Diagnostic, Matchers, TokenDictionary};
+use crate::convert::{convert_diagnostic, to_atoms, to_core_config};
+use crate::{Diagnostic, Matchers};
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
 
-/// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::FileReport`.
+/// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
-pub struct FileReport {
+pub struct ParseFileReport {
     pub css_calls: u32,
     pub cva_calls: u32,
     pub sva_calls: u32,
@@ -35,7 +35,6 @@ pub struct ProjectSummary {
 /// Optional project-construction inputs.
 #[napi(object)]
 pub struct ProjectOptions {
-    pub token_dictionary: Option<TokenDictionary>,
     /// When `true` (default), construct a `CrossFileResolver` over the
     /// native filesystem. Set to `false` to disable cross-file folding.
     pub cross_file: Option<bool>,
@@ -78,11 +77,8 @@ impl Project {
         reason = "NAPI requires owned constructor arguments"
     )]
     pub fn new(matchers: Matchers, options: Option<ProjectOptions>) -> Self {
-        let opts = options.unwrap_or(ProjectOptions {
-            token_dictionary: None,
-            cross_file: None,
-        });
-        let project = pandacss_project::Project::from_matchers(to_core_matchers(matchers));
+        let opts = options.unwrap_or(ProjectOptions { cross_file: None });
+        let project = pandacss_project::Project::from_extractor_config(to_core_config(matchers));
         Self {
             inner: apply_project_options(project, opts),
             utility_transform_refs: HashMap::new(),
@@ -104,15 +100,13 @@ impl Project {
         config: serde_json::Value,
         options: Option<ProjectOptions>,
     ) -> napi::Result<Self> {
-        let opts = options.unwrap_or(ProjectOptions {
-            token_dictionary: None,
-            cross_file: None,
-        });
+        let opts = options.unwrap_or(ProjectOptions { cross_file: None });
         let utility_transform_refs = get_utility_transform_refs(&config);
         let pattern_transform_refs = get_pattern_transform_refs(&config);
         let config = serde_json::from_value(config)
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
-        let project = pandacss_project::Project::from_serialized_config(config);
+        let project = pandacss_project::Project::from_config(config)
+            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         Ok(Self {
             inner: apply_project_options(project, opts),
             utility_transform_refs,
@@ -174,7 +168,7 @@ impl Project {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn parse_file(&mut self, env: Env, path: String, source: String) -> FileReport {
+    pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         let report = if self.pattern_transforms.is_empty() {
             self.inner.parse_file(&path, &source)
         } else {
@@ -192,7 +186,7 @@ impl Project {
             self.inner
                 .parse_file_with_pattern_transforms(&path, &source, &mut transform)
         };
-        FileReport {
+        ParseFileReport {
             css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
             cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
             sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),

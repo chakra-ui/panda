@@ -38,7 +38,7 @@ impl WasmExtractor {
         let core_matchers = to_core_matchers(input);
 
         let mut config = ExtractorConfig::new(core_matchers);
-        config.token_dictionary = token_dictionary;
+        config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
         config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
 
         Ok(Self { config })
