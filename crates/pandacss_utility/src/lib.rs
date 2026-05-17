@@ -26,7 +26,7 @@ pub struct UtilityProperty {
 
 impl Utility {
     #[must_use]
-    pub fn from_serialized(value: &Value) -> Self {
+    pub fn from_config(value: &Value) -> Self {
         let Some(entries) = value.as_object() else {
             return Self::default();
         };
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn string_shorthand_maps_to_property() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "padding": { "shorthand": "p" }
         }));
 
@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn array_shorthands_map_to_same_property() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "margin": { "shorthand": ["m", "mg"] }
         }));
 
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn callback_transform_refs_are_exposed() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "size": {
                 "shorthand": "sz",
                 "transform": {
@@ -281,7 +281,7 @@ mod tests {
 
     #[test]
     fn utility_values_normalize_aliases_to_raw_values() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "spacing": {
                 "shorthand": "s",
                 "values": {
@@ -303,7 +303,7 @@ mod tests {
 
     #[test]
     fn utility_values_normalize_nested_conditions() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "spacing": {
                 "values": {
                     "sm": "4px"
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn malformed_entries_are_ignored() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "padding": null,
             "margin": "bad"
         }));
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn normalizes_nested_style_object_keys() {
-        let utility = Utility::from_serialized(&json!({
+        let utility = Utility::from_config(&json!({
             "padding": { "shorthand": "p" },
             "margin": { "shorthand": ["m"] }
         }));

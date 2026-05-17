@@ -44,7 +44,7 @@ use std::sync::Arc;
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use smallvec::SmallVec;
 
-use pandacss_config::{EngineConfig, SerializedConfig};
+use pandacss_config::SerializedConfig;
 use pandacss_encoder::{Atom, Encoder};
 use pandacss_extractor::{
     CrossFileResolver, ExtractorConfig, Literal, MatchCategory, Matchers, TokenDictionary, extract,
@@ -53,21 +53,19 @@ use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::Utility;
 
 pub(crate) use conditions::{ProjectConditionMatcher, ProjectConditions};
-use config::{
-    DerivedProjectConfig, config_recipes_from_engine_config, config_slot_recipes_from_engine_config,
-};
+use config::ProjectConfig;
 pub use parsed_file::ParsedFile;
 pub use recipes::{
     EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
     RecipeStyleGroupSnapshot,
 };
-use recipes::{EncodedRecipesCache, RecipeRegistry, StyleResolver};
+use recipes::{EncodedRecipesCache, RecipeRegistry};
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
 pub struct Project {
     serialized_config: Option<SerializedConfig>,
-    config: ExtractorConfig,
+    extractor_config: ExtractorConfig,
     utility: Option<Utility>,
     conditions: ProjectConditionMatcher,
     recipes: RecipeRegistry,
@@ -106,22 +104,22 @@ pub(crate) struct RecipeKey {
 
 impl Project {
     #[must_use]
-    pub fn new(matchers: Matchers) -> Self {
-        Self::from_matchers(matchers)
+    pub fn new(config: SerializedConfig) -> Self {
+        Self::from_serialized_config(config)
     }
 
     #[must_use]
     pub fn from_matchers(matchers: Matchers) -> Self {
-        Self::from_config(ExtractorConfig::new(matchers))
+        Self::from_extractor_config(ExtractorConfig::new(matchers))
     }
 
     #[must_use]
-    pub fn from_config(config: ExtractorConfig) -> Self {
+    pub fn from_extractor_config(extractor_config: ExtractorConfig) -> Self {
         Self {
             serialized_config: None,
-            config,
+            extractor_config,
             utility: None,
-            conditions: ProjectConditionMatcher::Default(pandacss_encoder::DefaultConditions),
+            conditions: ProjectConditions::from_names([]),
             recipes: RecipeRegistry::default(),
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
@@ -138,29 +136,19 @@ impl Project {
 
     #[must_use]
     pub fn from_serialized_config(config: SerializedConfig) -> Self {
-        let engine = EngineConfig::from_serialized_config(&config);
-        let derived = DerivedProjectConfig::from_engine_config(&config, &engine);
-        let config_recipes = config_recipes_from_engine_config(&engine);
-        let config_slot_recipes = config_slot_recipes_from_engine_config(&engine);
-        let recipes = RecipeRegistry::from_engine_config(
-            &engine,
-            &StyleResolver {
-                utility: derived.utility.as_ref(),
-                conditions: &derived.conditions,
-            },
-        );
+        let project_config = ProjectConfig::from_config(&config);
         Self {
             serialized_config: Some(config),
-            config: derived.extractor,
-            utility: derived.utility,
-            conditions: derived.conditions,
-            recipes,
+            extractor_config: project_config.extractor_config,
+            utility: project_config.utility,
+            conditions: project_config.conditions,
+            recipes: project_config.recipes,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
             encoded_recipes_cache: EncodedRecipesCache::default(),
-            config_recipes,
-            config_slot_recipes,
+            config_recipes: project_config.config_recipes,
+            config_slot_recipes: project_config.config_slot_recipes,
             inline_recipes: BTreeMap::new(),
             inline_slot_recipes: BTreeMap::new(),
             inline_recipe_spans: FxHashMap::default(),
@@ -170,13 +158,13 @@ impl Project {
 
     #[must_use]
     pub fn with_token_dictionary(mut self, dictionary: TokenDictionary) -> Self {
-        self.config.token_dictionary = Some(dictionary);
+        self.extractor_config.token_dictionary = Some(dictionary);
         self
     }
 
     #[must_use]
     pub fn with_cross_file(mut self, resolver: CrossFileResolver) -> Self {
-        self.config.cross_file = Some(resolver);
+        self.extractor_config.cross_file = Some(resolver);
         self
     }
 
@@ -212,7 +200,7 @@ impl Project {
             return self.files.get(path).expect("checked above").report.clone();
         }
 
-        let result = extract(source, path, &self.config);
+        let result = extract(source, path, &self.extractor_config);
         let diagnostics = result.diagnostics;
         let mut report = FileReport {
             css_calls: 0,
@@ -560,7 +548,7 @@ pub struct ProjectSummary {
     pub slot_recipe_count: usize,
 }
 
-pub use pandacss_encoder::{AtomValue, ConditionMatcher, DefaultConditions};
+pub use pandacss_encoder::{AtomValue, ConditionMatcher};
 pub use pandacss_extractor::Literal as ExtractedLiteral;
 pub use pandacss_extractor::{
     Diagnostic, DiagnosticSeverity, Matcher, NameMatcher, SourceLocation, SourceRange, Span,

@@ -98,6 +98,9 @@ fn css_shorthands_are_normalized() {
 #[test]
 fn utility_values_normalize_aliases() {
     let mut project = create_project(json!({
+        "conditions": {
+            "_hover": "&:hover"
+        },
         "utilities": {
             "spacing": {
                 "shorthand": "s",
@@ -183,6 +186,9 @@ fn all_jsx_props_filter_valid_props() {
 #[test]
 fn conditions_survive_shorthand_normalization() {
     let mut project = create_project(json!({
+        "conditions": {
+            "_hover": "&:hover"
+        },
         "utilities": {
             "padding": { "shorthand": "p" }
         }

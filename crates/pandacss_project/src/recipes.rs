@@ -4,13 +4,13 @@ use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
 
-use pandacss_config::{EngineConfig, RecipeMeta, SlotRecipeMeta};
 use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder};
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{number_to_js_string, push_number_to_js_string};
 use pandacss_utility::Utility;
 
+use crate::config::{RecipeDefinition, SlotRecipeDefinition};
 use crate::{ProjectConditionMatcher, literal_entries};
 
 #[derive(Debug, Clone, Default)]
@@ -116,15 +116,19 @@ impl StyleResolver<'_> {
 }
 
 impl RecipeRegistry {
-    pub(crate) fn from_engine_config(config: &EngineConfig, resolver: &StyleResolver<'_>) -> Self {
+    pub(crate) fn from_definitions(
+        recipe_definitions: &[RecipeDefinition],
+        slot_recipe_definitions: &[SlotRecipeDefinition],
+        resolver: &StyleResolver<'_>,
+    ) -> Self {
         let mut recipes = Self::default();
-        recipes.collect_recipes(&config.recipes, resolver);
-        recipes.collect_slot_recipes(&config.slot_recipes, resolver);
+        recipes.collect_recipes(recipe_definitions, resolver);
+        recipes.collect_slot_recipes(slot_recipe_definitions, resolver);
         recipes.rebuild_regex_jsx_set();
         recipes
     }
 
-    fn collect_recipes(&mut self, recipes: &[RecipeMeta], resolver: &StyleResolver<'_>) {
+    fn collect_recipes(&mut self, recipes: &[RecipeDefinition], resolver: &StyleResolver<'_>) {
         for recipe in recipes {
             self.collect_jsx_matchers(&recipe.name, &recipe.jsx_names, &recipe.jsx_regexes);
             self.recipes.insert(
@@ -146,7 +150,11 @@ impl RecipeRegistry {
         }
     }
 
-    fn collect_slot_recipes(&mut self, recipes: &[SlotRecipeMeta], resolver: &StyleResolver<'_>) {
+    fn collect_slot_recipes(
+        &mut self,
+        recipes: &[SlotRecipeDefinition],
+        resolver: &StyleResolver<'_>,
+    ) {
         for recipe in recipes {
             self.collect_jsx_matchers(&recipe.name, &recipe.jsx_names, &recipe.jsx_regexes);
             self.slot_recipes.insert(
