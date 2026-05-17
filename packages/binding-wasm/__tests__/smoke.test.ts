@@ -402,6 +402,70 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       `)
     })
 
+    it('passes token helpers to utility transform callbacks', async () => {
+      const { project } = await createProject(baseMatchers, {
+        config: {
+          utilities: {
+            tint: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.tint.transform',
+              },
+            },
+          },
+        },
+        tokenDictionary: {
+          values: {
+            'colors.red.500': '#f00',
+            'opacity.50': '0.5',
+          },
+          vars: {
+            'colors.red.500': 'var(--colors-red-500)',
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.tint.transform': (value: string, args: any) => {
+              const mix = args.utils.colorMix(value)
+              return {
+                color: args.token('colors.red.500'),
+                opacity: args.token.raw('opacity.50')?.value,
+                backgroundColor: mix.value,
+                '--raw': args.raw,
+              }
+            },
+          },
+        },
+      })
+
+      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ tint: 'red.500/50' })`)
+
+      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "--raw",
+            "value": "red.500/50",
+            "conditions": [],
+          },
+          {
+            "prop": "backgroundColor",
+            "value": "color-mix(in srgb, var(--colors-red-500) 50%, transparent)",
+            "conditions": [],
+          },
+          {
+            "prop": "color",
+            "value": "var(--colors-red-500)",
+            "conditions": [],
+          },
+          {
+            "prop": "opacity",
+            "value": "0.5",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
     it('applies utility transform callbacks under conditions', async () => {
       const { project } = await createProject(baseMatchers, {
         config: {

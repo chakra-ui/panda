@@ -178,6 +178,88 @@ describe('Project', () => {
     `)
   })
 
+  it('passes token helpers to utility transform callbacks', () => {
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap: {
+            css: ['@panda/css'],
+            recipe: ['@panda/recipes'],
+            pattern: ['@panda/patterns'],
+            jsx: ['@panda/jsx'],
+            tokens: ['@panda/tokens'],
+          },
+          utilities: {
+            tint: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.tint.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.tint.transform': (value: string, args: any) => {
+              const mix = args.utils.colorMix(value)
+              return {
+                color: args.token('colors.red.500'),
+                opacity: args.token.raw('opacity.50')?.value,
+                backgroundColor: mix.value,
+                '--raw': args.raw,
+              }
+            },
+          },
+        },
+      },
+      {
+        crossFile: false,
+        tokenDictionary: {
+          values: {
+            'colors.red.500': '#f00',
+            'opacity.50': '0.5',
+          },
+          vars: {
+            'colors.red.500': 'var(--colors-red-500)',
+          },
+        },
+      },
+    )
+
+    project.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ tint: 'red.500/50' })`,
+    )
+
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "--raw",
+          "value": "red.500/50",
+          "conditions": [],
+        },
+        {
+          "prop": "backgroundColor",
+          "value": "color-mix(in srgb, var(--colors-red-500) 50%, transparent)",
+          "conditions": [],
+        },
+        {
+          "prop": "color",
+          "value": "var(--colors-red-500)",
+          "conditions": [],
+        },
+        {
+          "prop": "opacity",
+          "value": "0.5",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
   it('applies utility transform callbacks under conditions', () => {
     const project = Project.fromConfig(
       {
