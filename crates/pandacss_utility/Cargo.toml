@@ -1,5 +1,5 @@
 [package]
-name = "pandacss_config"
+name = "pandacss_utility"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,7 +8,8 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-serde = { workspace = true }
+pandacss_extractor = { workspace = true }
+rustc-hash = { workspace = true }
 serde_json = { workspace = true }
 
 [lints]

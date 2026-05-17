@@ -33,6 +33,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
+ "pandacss_config",
  "pandacss_encoder",
  "pandacss_engine",
  "pandacss_extractor",
@@ -996,6 +997,7 @@ name = "pandacss_config"
 version = "0.0.0"
 dependencies = [
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1066,12 +1068,15 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "insta",
+ "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_recipes",
  "pandacss_tokens",
+ "pandacss_utility",
  "rustc-hash",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1094,6 +1099,15 @@ dependencies = [
  "pandacss_tokens",
  "rustc-hash",
  "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "pandacss_utility"
+version = "0.0.0"
+dependencies = [
+ "pandacss_extractor",
+ "rustc-hash",
  "serde_json",
 ]
 

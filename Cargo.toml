@@ -37,6 +37,7 @@ pandacss_optimizer = { path = "crates/pandacss_optimizer" }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
+pandacss_utility = { path = "crates/pandacss_utility" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 insta = { version = "1.47.2", features = ["yaml"] }
