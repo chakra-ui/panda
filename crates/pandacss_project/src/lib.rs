@@ -1,17 +1,17 @@
 //! High-level project façade — the recommended entry point for Rust
 //! consumers and the binding layer.
 //!
-//! `PandaProject` ties the lower-level pieces (extractor, recipes, encoder)
+//! `Project` ties the lower-level pieces (extractor, recipes, encoder)
 //! into a single stateful object you feed source files to. Each
 //! `parse_file` call extracts usages, decomposes any `cva()` / `sva()`
 //! recipes, and feeds the resulting style objects into a shared atomic
-//! encoder. [`PandaProject::atoms`] returns the deduplicated set the
+//! encoder. [`Project::atoms`] returns the deduplicated set the
 //! emitter consumes; the global view is always the union of every
 //! currently-known file, so removed or replaced files never leave ghost
 //! atoms in watch mode.
 //!
 //! ```rust,ignore
-//! use pandacss_project::PandaProject;
+//! use pandacss_project::Project;
 //! use pandacss_extractor::{Matchers, Matcher, NameMatcher};
 //!
 //! let matchers = Matchers {
@@ -22,7 +22,7 @@
 //!     ..Default::default()
 //! };
 //!
-//! let mut project = PandaProject::new(matchers);
+//! let mut project = Project::from_matchers(matchers);
 //! project.parse_file("button.tsx", "import {{ css }} from '@panda/css'; css({{ color: 'red' }});");
 //! project.parse_file("card.tsx", /* … */);
 //!
@@ -34,15 +34,25 @@
 use std::collections::BTreeMap;
 
 use rustc_hash::{FxHashMap, FxHashSet};
+use serde_json::{Map, Value};
 
+use pandacss_config::{DerivedEngineConfig, SerializedConfig};
 use pandacss_encoder::{Atom, Encoder};
-use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Matchers, TokenDictionary, extract};
+use pandacss_extractor::{
+    CrossFileResolver, ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal, MatchCategory,
+    Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher, TokenDictionary,
+    css_property_names, extract,
+};
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_utility::Utility;
 
-/// One Panda project. Hold one per build / dev-server session and feed
+/// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
-pub struct PandaProject {
+pub struct Project {
+    serialized_config: Option<SerializedConfig>,
     config: ExtractorConfig,
+    utility: Option<Utility>,
+    conditions: ProjectConditionMatcher,
     files: FxHashMap<String, FileEntry>,
     /// Deduplicated union of every value in `files`. Rebuilt eagerly on
     /// every add / remove so [`Self::atoms`] hands out a stable
@@ -67,16 +77,39 @@ struct RecipeKey {
     span_start: u32,
 }
 
-impl PandaProject {
+impl Project {
     #[must_use]
     pub fn new(matchers: Matchers) -> Self {
+        Self::from_matchers(matchers)
+    }
+
+    #[must_use]
+    pub fn from_matchers(matchers: Matchers) -> Self {
         Self::from_config(ExtractorConfig::new(matchers))
     }
 
     #[must_use]
     pub fn from_config(config: ExtractorConfig) -> Self {
         Self {
+            serialized_config: None,
             config,
+            utility: None,
+            conditions: ProjectConditionMatcher::Default(pandacss_encoder::DefaultConditions),
+            files: FxHashMap::default(),
+            atoms_cache: FxHashSet::default(),
+            recipes: BTreeMap::new(),
+            slot_recipes: BTreeMap::new(),
+        }
+    }
+
+    #[must_use]
+    pub fn from_serialized_config(config: SerializedConfig) -> Self {
+        let derived = DerivedProjectConfig::from_serialized_config(&config);
+        Self {
+            serialized_config: Some(config),
+            config: derived.extractor,
+            utility: derived.utility,
+            conditions: derived.conditions,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             recipes: BTreeMap::new(),
@@ -100,6 +133,24 @@ impl PandaProject {
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
     /// and recipes) so stale styles can't linger in watch mode.
     pub fn parse_file(&mut self, path: &str, source: &str) -> FileReport {
+        self.parse_file_inner(path, source, None)
+    }
+
+    pub fn parse_file_with_pattern_transforms(
+        &mut self,
+        path: &str,
+        source: &str,
+        transform: &mut PatternTransformFn<'_>,
+    ) -> FileReport {
+        self.parse_file_inner(path, source, Some(transform))
+    }
+
+    fn parse_file_inner(
+        &mut self,
+        path: &str,
+        source: &str,
+        mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> FileReport {
         let result = extract(source, path, &self.config);
         let mut report = FileReport {
             css_calls: 0,
@@ -113,17 +164,18 @@ impl PandaProject {
         // survive as ghost atoms in the global view.
         self.drop_file_state(path);
 
-        let mut encoder = Encoder::new();
+        let mut encoder = Encoder::with_conditions(self.conditions.clone());
         for call in &result.calls {
             let Some(arg) = call.data.first().and_then(|d| d.as_ref()) else {
                 continue;
             };
-            match call.name.as_str() {
-                "css" => {
-                    encoder.process_atomic(arg);
+            match (call.category, call.name.as_str()) {
+                (MatchCategory::Css, "css") => {
+                    let normalized = self.normalize_style_object(arg);
+                    encoder.process_atomic(&normalized);
                     report.css_calls += 1;
                 }
-                "cva" => {
+                (MatchCategory::Css, "cva") => {
                     if let Some(recipe) = Recipe::from_literal(arg) {
                         encoder.process_atomic_recipe(&recipe);
                         self.recipes.insert(
@@ -136,7 +188,7 @@ impl PandaProject {
                         report.cva_calls += 1;
                     }
                 }
-                "sva" => {
+                (MatchCategory::Css, "sva") => {
                     if let Some(recipe) = SlotRecipe::from_literal(arg) {
                         encoder.process_atomic_slot_recipe(&recipe);
                         self.slot_recipes.insert(
@@ -149,12 +201,37 @@ impl PandaProject {
                         report.sva_calls += 1;
                     }
                 }
+                (MatchCategory::Pattern, _) => {
+                    if let Some(transform) = pattern_transform.as_deref_mut() {
+                        match transform(&call.name, arg) {
+                            Ok(Some(style)) => {
+                                let normalized = self.normalize_style_object(&style);
+                                encoder.process_atomic(&normalized);
+                            }
+                            Ok(None) => {}
+                            Err(diagnostic) => report.diagnostics.push(diagnostic),
+                        }
+                    }
+                }
                 _ => {}
             }
         }
 
         for jsx in &result.jsx {
-            encoder.process_atomic(&jsx.data);
+            let style = if let Some(transform) = pattern_transform.as_deref_mut() {
+                match transform(&jsx.name, &jsx.data) {
+                    Ok(Some(style)) => style,
+                    Ok(None) => jsx.data.clone(),
+                    Err(diagnostic) => {
+                        report.diagnostics.push(diagnostic);
+                        jsx.data.clone()
+                    }
+                }
+            } else {
+                jsx.data.clone()
+            };
+            let normalized = self.normalize_style_object(&style);
+            encoder.process_atomic(&normalized);
             report.jsx_usages += 1;
         }
 
@@ -244,9 +321,24 @@ impl PandaProject {
         }
     }
 
+    fn normalize_style_object(&self, style: &Literal) -> Literal {
+        self.utility.as_ref().map_or_else(
+            || style.clone(),
+            |utility| utility.normalize_style_object(style),
+        )
+    }
+
     #[must_use]
     pub fn atoms(&self) -> &FxHashSet<Atom> {
         &self.atoms_cache
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.files.is_empty()
+            && self.atoms_cache.is_empty()
+            && self.recipes.is_empty()
+            && self.slot_recipes.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order
@@ -275,12 +367,260 @@ impl PandaProject {
             slot_recipe_count: self.slot_recipes.len(),
         }
     }
+
+    #[must_use]
+    pub fn serialized_config(&self) -> Option<&SerializedConfig> {
+        self.serialized_config.as_ref()
+    }
+}
+
+pub type PatternTransformFn<'a> =
+    dyn FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic> + 'a;
+
+struct DerivedProjectConfig {
+    extractor: ExtractorConfig,
+    utility: Option<Utility>,
+    conditions: ProjectConditionMatcher,
+}
+
+impl DerivedProjectConfig {
+    fn from_serialized_config(config: &SerializedConfig) -> Self {
+        let derived = DerivedEngineConfig::from_serialized_config(config);
+        let utility = Utility::from_serialized(&config.utilities);
+        Self {
+            extractor: ExtractorConfig::new(matchers_from_derived_config(&derived)).with_jsx(
+                jsx_extraction_config_from_serialized_config(config, &utility),
+            ),
+            utility: (!utility.is_empty()).then_some(utility),
+            conditions: ProjectConditions::from_derived_config(&derived),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+enum ProjectConditionMatcher {
+    Default(pandacss_encoder::DefaultConditions),
+    Config(ProjectConditions),
+}
+
+impl ConditionMatcher for ProjectConditionMatcher {
+    #[inline]
+    fn is_condition(&self, key: &str) -> bool {
+        match self {
+            Self::Default(matcher) => matcher.is_condition(key),
+            Self::Config(matcher) => matcher.is_condition(key),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+struct ProjectConditions {
+    names: FxHashSet<Box<str>>,
+}
+
+impl ProjectConditions {
+    fn from_derived_config(config: &DerivedEngineConfig) -> ProjectConditionMatcher {
+        let mut conditions = Self::default();
+        conditions.extend(config.condition_names.iter().map(String::as_str));
+        ProjectConditionMatcher::Config(conditions)
+    }
+
+    fn extend<'a>(&mut self, names: impl IntoIterator<Item = &'a str>) {
+        self.names.extend(
+            names
+                .into_iter()
+                .filter(|name| !name.is_empty())
+                .map(Box::<str>::from),
+        );
+    }
+}
+
+impl ConditionMatcher for ProjectConditions {
+    #[inline]
+    fn is_condition(&self, key: &str) -> bool {
+        key.starts_with('_') || self.names.contains(key)
+    }
+}
+
+fn matchers_from_derived_config(config: &DerivedEngineConfig) -> Matchers {
+    Matchers {
+        css: ExtractorMatcher {
+            modules: config.import_map.css.clone(),
+            names: ExtractorNameMatcher::only(["css", "cva", "sva"]),
+        },
+        recipe: ExtractorMatcher {
+            modules: config.import_map.recipe.clone(),
+            names: ExtractorNameMatcher::Any,
+        },
+        pattern: ExtractorMatcher {
+            modules: config.import_map.pattern.clone(),
+            names: ExtractorNameMatcher::Any,
+        },
+        jsx: Some(ExtractorMatcher {
+            modules: config.import_map.jsx.clone(),
+            names: ExtractorNameMatcher::only(config.jsx_names.clone()),
+        }),
+        tokens: ExtractorMatcher {
+            modules: config.import_map.tokens.clone(),
+            names: ExtractorNameMatcher::only(["token"]),
+        },
+        jsx_factories: Some(vec![config.jsx_factory.clone()]),
+    }
+}
+
+fn collect_string_array(value: Option<&Value>, names: &mut Vec<String>) {
+    let Some(items) = value.and_then(Value::as_array) else {
+        return;
+    };
+
+    names.extend(items.iter().filter_map(Value::as_str).map(str::to_owned));
+}
+
+fn jsx_extraction_config_from_serialized_config(
+    config: &SerializedConfig,
+    utility: &Utility,
+) -> JsxExtractionConfig {
+    let mut component_props = FxHashMap::default();
+    collect_pattern_jsx_props(&config.patterns, &mut component_props);
+    let valid_style_props = valid_jsx_style_props_from_serialized_config(utility);
+    let Some(theme) = config.theme.as_object() else {
+        return JsxExtractionConfig {
+            style_props: jsx_style_props_from_serialized_config(config),
+            component_props,
+            valid_style_props,
+        };
+    };
+    collect_recipe_jsx_props(theme.get("recipes"), &mut component_props);
+    collect_slot_recipe_jsx_props(theme.get("slotRecipes"), &mut component_props);
+    if let Some(extend) = theme.get("extend").and_then(Value::as_object) {
+        collect_recipe_jsx_props(extend.get("recipes"), &mut component_props);
+        collect_slot_recipe_jsx_props(extend.get("slotRecipes"), &mut component_props);
+    }
+    JsxExtractionConfig {
+        style_props: jsx_style_props_from_serialized_config(config),
+        component_props,
+        valid_style_props,
+    }
+}
+
+fn valid_jsx_style_props_from_serialized_config(utility: &Utility) -> FxHashSet<String> {
+    let mut props: FxHashSet<String> = css_property_names()
+        .iter()
+        .map(|prop| (*prop).to_owned())
+        .collect();
+    props.extend(utility.known_prop_names().map(str::to_owned));
+    props
+}
+
+fn jsx_style_props_from_serialized_config(config: &SerializedConfig) -> JsxStyleProps {
+    match config.jsx_style_props.as_deref() {
+        Some("minimal") => JsxStyleProps::Minimal,
+        Some("none") => JsxStyleProps::None,
+        _ => JsxStyleProps::All,
+    }
+}
+
+fn collect_pattern_jsx_props(value: &Value, out: &mut FxHashMap<String, FxHashSet<String>>) {
+    let Some(patterns) = value.as_object() else {
+        return;
+    };
+    collect_pattern_map_jsx_props(patterns, out);
+    if let Some(extend) = patterns.get("extend").and_then(Value::as_object) {
+        collect_pattern_map_jsx_props(extend, out);
+    }
+}
+
+fn collect_pattern_map_jsx_props(
+    patterns: &Map<String, Value>,
+    out: &mut FxHashMap<String, FxHashSet<String>>,
+) {
+    for (name, pattern) in patterns {
+        if name == "extend" {
+            continue;
+        }
+        let mut jsx_names = vec![
+            pattern
+                .get("jsxName")
+                .and_then(Value::as_str)
+                .map(str::to_owned)
+                .unwrap_or_else(|| capitalize(name)),
+        ];
+        collect_string_array(pattern.get("jsx"), &mut jsx_names);
+        let props = object_keys(pattern.get("properties"));
+        insert_jsx_props(out, jsx_names, props);
+    }
+}
+
+fn collect_recipe_jsx_props(value: Option<&Value>, out: &mut FxHashMap<String, FxHashSet<String>>) {
+    let Some(recipes) = value.and_then(Value::as_object) else {
+        return;
+    };
+
+    for (name, recipe) in recipes {
+        let mut jsx_names = vec![capitalize(name)];
+        collect_string_array(recipe.get("jsx"), &mut jsx_names);
+        let props = object_keys(recipe.get("variants"));
+        insert_jsx_props(out, jsx_names, props);
+    }
+}
+
+fn collect_slot_recipe_jsx_props(
+    value: Option<&Value>,
+    out: &mut FxHashMap<String, FxHashSet<String>>,
+) {
+    let Some(recipes) = value.and_then(Value::as_object) else {
+        return;
+    };
+
+    for (name, recipe) in recipes {
+        let capitalized = capitalize(name);
+        let mut jsx_names = vec![
+            capitalized.clone(),
+            format!("{capitalized}.Root"),
+            format!("{capitalized}Root"),
+        ];
+        collect_string_array(recipe.get("jsx"), &mut jsx_names);
+        let props = object_keys(recipe.get("variants"));
+        insert_jsx_props(out, jsx_names, props);
+    }
+}
+
+fn object_keys(value: Option<&Value>) -> FxHashSet<String> {
+    value
+        .and_then(Value::as_object)
+        .map(|object| object.keys().cloned().collect())
+        .unwrap_or_default()
+}
+
+fn insert_jsx_props<I>(
+    out: &mut FxHashMap<String, FxHashSet<String>>,
+    jsx_names: I,
+    props: FxHashSet<String>,
+) where
+    I: IntoIterator<Item = String>,
+{
+    if props.is_empty() {
+        return;
+    }
+    for jsx_name in jsx_names {
+        out.entry(jsx_name)
+            .or_default()
+            .extend(props.iter().cloned());
+    }
+}
+
+fn capitalize(value: &str) -> String {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return String::new();
+    };
+    first.to_uppercase().chain(chars).collect()
 }
 
 /// Borrowed read-only view of one parsed file. **Read-only by design** —
 /// unlike ts-morph's `SourceFile`, this view does not mutate, copy, move,
 /// save, or emit; Panda is an extractor, not a codemod toolkit. Re-process
-/// via [`PandaProject::refresh_file`] / [`PandaProject::parse_file`].
+/// via [`Project::refresh_file`] / [`Project::parse_file`].
 pub struct ParsedFile<'a> {
     path: &'a str,
     atoms: &'a FxHashSet<Atom>,
