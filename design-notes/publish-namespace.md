@@ -11,7 +11,7 @@ Rust crates use the `pandacss_*` prefix (e.g. `pandacss_extractor`, `pandacss_en
 ```
 crates/
   pandacss_cache/         (placeholder)
-  pandacss_config/        (placeholder)
+  pandacss_config/
   pandacss_emitter/       (placeholder)
   pandacss_encoder/
   pandacss_engine/        (placeholder)

@@ -221,27 +221,24 @@ meaningfully.
 
 ## Injection pattern
 
-`CrossFileResolver` and `Project` take an `Arc<dyn FileSystem>` via constructor:
+`CrossFileResolver` is the filesystem injection point:
 
 ```rust
 // Native
-let fs: Arc<dyn FileSystem> = Arc::new(OsFileSystem::default());
-let project = Project::with_fs(fs, matchers);
+let resolver = CrossFileResolver::default();
 
 // Tests / wasm
-let fs: Arc<dyn FileSystem> = Arc::new(MemoryFileSystem::from_iter([
+let fs = MemoryFileSystem::from_iter([
     ("/src/Button.tsx", source),
     ("/src/tokens.ts", tokens_source),
-]));
-let project = Project::with_fs(fs, matchers);
+]);
+let resolver = CrossFileResolver::with_fs(fs);
 ```
 
-`Project::from_matchers(matchers)` is the convenience constructor — defaults to `OsFileSystem` on native targets. On wasm
-builds the `os` feature isn't enabled and `new` resolves to a compile error (the type doesn't exist), forcing callers to
-`with_fs`.
-
-`ExtractorConfig` gains an optional `fs: Option<Arc<dyn FileSystem>>`. When `None`, the cross-file resolver isn't wired
-up (current behavior). When `Some`, it threads down to `CrossFileResolver`.
+`ExtractorConfig` stores an optional `CrossFileResolver`. `Project::from_config(config)` is the primary production
+constructor; callers that need cross-file evaluation attach a resolver with `with_cross_file` before parsing files.
+Matcher-only constructors remain lower-level/test entrypoints. On wasm, callers must provide a memory-backed resolver
+because the native `os` feature is not available.
 
 ## Phase plan
 

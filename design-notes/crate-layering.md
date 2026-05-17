@@ -19,11 +19,12 @@ full design.
 
 ### Tier 1 — leaf data + parsing
 
-`pandacss_tokens`, `pandacss_recipes`.
+`pandacss_config`, `pandacss_tokens`, `pandacss_recipes`.
 
-Pure data models with parsing from `pandacss_extractor::Literal` to typed shapes. No traversal, no encoding, no I/O.
-`pandacss_recipes` depends on `pandacss_extractor` for `Literal`, but only as a serializable input shape — not for
-walker machinery.
+Pure data models with parsing from serializable config or `pandacss_extractor::Literal` to typed shapes. No traversal,
+no encoding, no I/O. `pandacss_config::Config` is the canonical resolved config input consumed by project/system
+construction. `pandacss_recipes` depends on `pandacss_extractor` for `Literal`, but only as a serializable input shape —
+not for walker machinery.
 
 ### Tier 2 — process
 
@@ -37,16 +38,16 @@ sibling tiers — different axes of work, neither depends on the other.
 
 `pandacss_project`.
 
-The `Project` crate wires everything together. It's the primary entry point for `@pandacss/binding` and the
-recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to this, not to the lower tiers
-directly. See [project-lifecycle](./project-lifecycle.md).
+The `Project` crate wires everything together. `System` compiles immutable config-derived runtime state from
+`pandacss_config::Config`; `Project` owns mutable build/watch state. This crate is the primary entry point for
+`@pandacss/binding` and the recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to
+this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
 
 ### Placeholders
 
-`pandacss_cache`, `pandacss_config`, `pandacss_emitter`, `pandacss_optimizer`, `pandacss_engine` are skeletons today.
-When they're built out, they'll slot in roughly as:
+`pandacss_cache`, `pandacss_emitter`, `pandacss_optimizer`, `pandacss_engine` are skeletons today. When they're built
+out, they'll slot in roughly as:
 
-- `pandacss_config` — Tier 1 (serializable config).
 - `pandacss_cache`, `pandacss_emitter`, `pandacss_optimizer` — Tier 2 (process atoms into CSS).
 - `pandacss_engine` — Tier 3 (orchestrates the full extract → encode → emit → optimize pipeline).
 
@@ -82,6 +83,7 @@ The crate layout makes that direction visible at the dependency level. When aske
 data direction:
 
 - New parsing of a `Literal` shape → Tier 1 (`pandacss_recipes`, `pandacss_tokens`, or a new sibling).
+- New resolved-config input shape → Tier 1 (`pandacss_config`) plus compilation in Tier 3 (`pandacss_project::System`).
 - New traversal that emits atoms → Tier 2 (extend `pandacss_encoder`).
 - New cross-cutting orchestration that owns multi-file state → Tier 3 (`pandacss_project`).
 - New I/O or mutation → probably a new crate, not any existing one.
