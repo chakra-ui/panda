@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::{ImportRecord, ImportScanResult, ImportSpecifierKind, Resolver};
 use regex::Regex;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -97,7 +95,7 @@ pub struct ExtractorConfig {
     pub matchers: Matchers,
     pub jsx: JsxExtractionConfig,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
-    pub token_dictionary: Option<TokenDictionary>,
+    pub token_dictionary: Option<Arc<TokenDictionary>>,
     /// When `Some`, references to imported `const` exports from local
     /// files are loaded and folded at extraction time. The resolver's
     /// internal cache is shared across every `extract()` call that uses
@@ -124,7 +122,7 @@ impl ExtractorConfig {
 
     #[must_use]
     pub fn with_token_dictionary(mut self, dictionary: TokenDictionary) -> Self {
-        self.token_dictionary = Some(dictionary);
+        self.token_dictionary = Some(Arc::new(dictionary));
         self
     }
 
@@ -150,6 +148,10 @@ pub struct JsxExtractionConfig {
     pub component_regexes: Vec<Regex>,
     pub component_props: FxHashMap<String, FxHashSet<String>>,
     pub component_regex_props: Vec<(Regex, Arc<FxHashSet<String>>)>,
+    pub component_strict: FxHashSet<String>,
+    pub component_regex_strict: Vec<Regex>,
+    pub component_blocklist: FxHashMap<String, FxHashSet<String>>,
+    pub component_regex_blocklist: Vec<(Regex, Arc<FxHashSet<String>>)>,
     pub valid_style_props: FxHashSet<String>,
 }
 
@@ -170,6 +172,10 @@ impl JsxExtractionConfig {
 
     #[must_use]
     pub fn should_extract_prop(&self, tag_name: &str, prop_name: &str) -> bool {
+        if self.is_blocklisted_prop(tag_name, prop_name) {
+            return false;
+        }
+
         let is_component_prop = self
             .component_props
             .get(tag_name)
@@ -178,6 +184,10 @@ impl JsxExtractionConfig {
                 .component_regex_props
                 .iter()
                 .any(|(regex, props)| regex.is_match(tag_name) && props.contains(prop_name));
+
+        if self.is_strict_component(tag_name) {
+            return is_component_prop;
+        }
 
         match self.style_props {
             JsxStyleProps::All => {
@@ -192,6 +202,24 @@ impl JsxExtractionConfig {
             }
             JsxStyleProps::None => is_component_prop,
         }
+    }
+
+    fn is_strict_component(&self, tag_name: &str) -> bool {
+        self.component_strict.contains(tag_name)
+            || self
+                .component_regex_strict
+                .iter()
+                .any(|regex| regex.is_match(tag_name))
+    }
+
+    fn is_blocklisted_prop(&self, tag_name: &str, prop_name: &str) -> bool {
+        self.component_blocklist
+            .get(tag_name)
+            .is_some_and(|props| props.contains(prop_name))
+            || self
+                .component_regex_blocklist
+                .iter()
+                .any(|(regex, props)| regex.is_match(tag_name) && props.contains(prop_name))
     }
 }
 
@@ -316,3 +344,4 @@ pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Ve
 fn mod_matches(module: &str, candidates: &[String]) -> bool {
     candidates.iter().any(|c| module.contains(c.as_str()))
 }
+use std::sync::Arc;

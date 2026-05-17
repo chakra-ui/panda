@@ -296,6 +296,48 @@ fn object_destructure_with_rename_resolves() {
 }
 
 #[test]
+fn object_destructure_rest_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const tokens = { color: 'red', padding: '4px', margin: '8px' };
+        const { color, ...space } = tokens;
+        css(space);
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - padding: 4px
+          margin: 8px
+      span:
+        start: 134
+        end: 144
+    ");
+}
+
+#[test]
+fn object_destructure_computed_key_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const tokens = { primary: 'red' };
+        const key = 'primary';
+        const { [key]: color } = tokens;
+        css({ color });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 125
+        end: 139
+    ");
+}
+
+#[test]
 fn array_destructure_resolves_index() {
     let src = indoc! {r"
         import { css } from '@panda/css';

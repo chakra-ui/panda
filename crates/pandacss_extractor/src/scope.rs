@@ -25,10 +25,10 @@ use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use pandacss_tokens::TokenDictionary;
 use rustc_hash::FxHashMap;
 
-use crate::Literal;
-use crate::cross_file::CrossFileResolver;
+use crate::cross_file::{CrossFileLookup, CrossFileResolver};
 use crate::literal::expression_to_literal;
-use crate::matcher::{MatchCategory, MatchedImport};
+use crate::matcher::{MatchCategory, MatchedImport, Matchers};
+use crate::{ImportSpecifierKind, Literal};
 
 /// Per-file symbol/scope index plus a memo of resolved literal values.
 ///
@@ -40,8 +40,9 @@ pub(crate) struct Resolver<'a> {
     // PERF(port): FxHashMap keys are u32 newtypes — SipHash overhead is waste.
     cache: RefCell<FxHashMap<SymbolId, ResolutionState>>,
     aliases: FxHashMap<&'a str, &'a MatchedImport>,
+    matchers: Option<&'a Matchers>,
     tokens: Option<&'a TokenDictionary>,
-    cross_file: Option<&'a CrossFileResolver>,
+    cross_file: Option<&'a dyn CrossFileLookup>,
     source_path: Option<PathBuf>,
 }
 
@@ -57,6 +58,7 @@ impl<'a> Resolver<'a> {
     pub(crate) fn build(
         program: &'a oxc_ast::ast::Program<'a>,
         matched: &'a [MatchedImport],
+        matchers: Option<&'a Matchers>,
         tokens: Option<&'a TokenDictionary>,
         cross_file: Option<&'a CrossFileResolver>,
         source_path: Option<PathBuf>,
@@ -66,10 +68,39 @@ impl<'a> Resolver<'a> {
             semantic,
             cache: RefCell::default(),
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
+            matchers,
+            tokens,
+            cross_file: cross_file.map(CrossFileResolver::as_lookup),
+            source_path,
+        }
+    }
+
+    pub(crate) fn build_with_cross_file_lookup(
+        program: &'a oxc_ast::ast::Program<'a>,
+        matched: &'a [MatchedImport],
+        tokens: Option<&'a TokenDictionary>,
+        cross_file: Option<&'a dyn CrossFileLookup>,
+        matchers: Option<&'a Matchers>,
+        source_path: Option<PathBuf>,
+    ) -> Self {
+        let semantic = SemanticBuilder::new().build(program).semantic;
+        Self {
+            semantic,
+            cache: RefCell::default(),
+            aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
+            matchers,
             tokens,
             cross_file,
             source_path,
         }
+    }
+
+    pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
+        self.tokens
+    }
+
+    pub(crate) fn matchers(&self) -> Option<&'a Matchers> {
+        self.matchers
     }
 
     /// `Some(symbol_id)` when the identifier binds to a declaration in
@@ -151,6 +182,11 @@ impl<'a> Resolver<'a> {
 
     pub(crate) fn resolve_identifier(&self, ident: &IdentifierReference<'_>) -> Option<Literal> {
         let symbol_id = self.symbol_for_identifier(ident)?;
+        self.resolve_symbol(symbol_id)
+    }
+
+    pub(crate) fn resolve_root_name(&self, name: &str) -> Option<Literal> {
+        let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
         self.resolve_symbol(symbol_id)
     }
 
@@ -239,7 +275,46 @@ impl<'a> Resolver<'a> {
 
         let module = import_module?;
         let name = imported_name?;
-        cross_file.resolve_named_export(from_file, module, name)
+        cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens)
+    }
+
+    pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
+        let matchers = self.matchers?;
+        let Expression::StaticMemberExpression(_) = &call.callee else {
+            return None;
+        };
+        let (object, path) = flatten_static_member_path(&call.callee)?;
+        let matched = self.aliases.get(object.name.as_str())?;
+        if !self.is_import_binding(object) {
+            return None;
+        }
+
+        let name = if matched.kind == ImportSpecifierKind::Named {
+            if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
+                return None;
+            }
+            matched.name.as_str()
+        } else if matched.kind == ImportSpecifierKind::Namespace {
+            let (&property, raw_tail) = path.split_first()?;
+            if raw_tail != ["raw"] || !is_raw_category(matched.category) {
+                return None;
+            }
+            if !matchers.category_accepts_name(matched.category, property) {
+                return None;
+            }
+            property
+        } else {
+            return None;
+        };
+
+        if matched.category != MatchCategory::Css || name != "css" {
+            return None;
+        }
+
+        call.arguments
+            .first()?
+            .as_expression()
+            .and_then(|expr| expression_to_literal(expr, Some(self)))
     }
 
     fn resolve_declarator(
@@ -257,9 +332,36 @@ impl<'a> Resolver<'a> {
             }
             BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
                 let source = expression_to_literal(init, Some(self))?;
-                resolve_pattern_path(&declarator.id, &source, target_symbol)
+                resolve_pattern_path(&declarator.id, &source, target_symbol, Some(self))
             }
             BindingPattern::AssignmentPattern(_) => None,
+        }
+    }
+}
+
+fn is_raw_category(category: MatchCategory) -> bool {
+    matches!(
+        category,
+        MatchCategory::Css | MatchCategory::Recipe | MatchCategory::Pattern
+    )
+}
+
+fn flatten_static_member_path<'a>(
+    expr: &'a Expression<'_>,
+) -> Option<(&'a IdentifierReference<'a>, Vec<&'a str>)> {
+    let mut path = Vec::new();
+    let mut current = expr;
+    loop {
+        match current {
+            Expression::StaticMemberExpression(member) => {
+                path.push(member.property.name.as_str());
+                current = &member.object;
+            }
+            Expression::Identifier(ident) => {
+                path.reverse();
+                return Some((ident, path));
+            }
+            _ => return None,
         }
     }
 }
@@ -270,6 +372,7 @@ fn resolve_pattern_path(
     pattern: &BindingPattern<'_>,
     source: &Literal,
     target: SymbolId,
+    resolver: Option<&Resolver<'_>>,
 ) -> Option<Literal> {
     match pattern {
         BindingPattern::BindingIdentifier(id) => {
@@ -283,13 +386,28 @@ fn resolve_pattern_path(
             let Literal::Object(entries) = source else {
                 return None;
             };
+            let mut consumed = Vec::with_capacity(obj.properties.len());
             for prop in &obj.properties {
-                let key = binding_property_key(&prop.key, prop.computed)?;
+                let key = binding_property_key(&prop.key, prop.computed, resolver)?;
+                consumed.push(key.clone());
                 let slice = entries
                     .iter()
                     .find(|(k, _)| k == &key)
                     .map_or(&Literal::Null, |(_, v)| v);
-                if let Some(found) = resolve_pattern_path(&prop.value, slice, target) {
+                if let Some(found) = resolve_pattern_path(&prop.value, slice, target, resolver) {
+                    return Some(found);
+                }
+            }
+            if let Some(rest) = &obj.rest {
+                let rest_entries = entries
+                    .iter()
+                    .filter(|(key, _)| !consumed.iter().any(|consumed| consumed == key))
+                    .map(|(key, value)| (key.clone(), value.clone()))
+                    .collect();
+                let rest_source = Literal::Object(rest_entries);
+                if let Some(found) =
+                    resolve_pattern_path(&rest.argument, &rest_source, target, resolver)
+                {
                     return Some(found);
                 }
             }
@@ -304,7 +422,16 @@ fn resolve_pattern_path(
                     continue;
                 };
                 let slice = items.get(i).unwrap_or(&Literal::Null);
-                if let Some(found) = resolve_pattern_path(pat, slice, target) {
+                if let Some(found) = resolve_pattern_path(pat, slice, target, resolver) {
+                    return Some(found);
+                }
+            }
+            if let Some(rest) = &arr.rest {
+                let rest_source =
+                    Literal::Array(items.iter().skip(arr.elements.len()).cloned().collect());
+                if let Some(found) =
+                    resolve_pattern_path(&rest.argument, &rest_source, target, resolver)
+                {
                     return Some(found);
                 }
             }
@@ -317,19 +444,20 @@ fn resolve_pattern_path(
             // don't chain — same limitation as the JS extractor outside its
             // main scope walker.
             if matches!(source, Literal::Null) {
-                let default_value = expression_to_literal(&asgn.right, None)?;
-                resolve_pattern_path(&asgn.left, &default_value, target)
+                let default_value = expression_to_literal(&asgn.right, resolver)?;
+                resolve_pattern_path(&asgn.left, &default_value, target, resolver)
             } else {
-                resolve_pattern_path(&asgn.left, source, target)
+                resolve_pattern_path(&asgn.left, source, target, resolver)
             }
         }
     }
 }
 
-// TODO(port): `{ ...rest }` in destructure not yet folded — would need to
-// track consumed keys up the recursion. Rare in style code; drop for now.
-
-fn binding_property_key(key: &PropertyKey<'_>, computed: bool) -> Option<String> {
+fn binding_property_key(
+    key: &PropertyKey<'_>,
+    computed: bool,
+    resolver: Option<&Resolver<'_>>,
+) -> Option<String> {
     if !computed {
         return match key {
             PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
@@ -338,8 +466,12 @@ fn binding_property_key(key: &PropertyKey<'_>, computed: bool) -> Option<String>
             _ => None,
         };
     }
-    // TODO(port): computed binding keys (`const { [k]: v } = ...`) drop.
-    None
+    let expr = key.as_expression()?;
+    match expression_to_literal(expr, resolver)? {
+        Literal::String(value) => Some(value),
+        Literal::Number(value) => Some(value.to_string()),
+        _ => None,
+    }
 }
 
 /// Synthesize a `Literal::Object` from a TS enum's member initializers.

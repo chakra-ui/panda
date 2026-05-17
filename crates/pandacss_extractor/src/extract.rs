@@ -69,7 +69,8 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let resolver = Resolver::build(
         &parser_return.program,
         &matched,
-        config.token_dictionary.as_ref(),
+        Some(&config.matchers),
+        config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );
@@ -98,7 +99,8 @@ pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> Extr
     let resolver = Resolver::build(
         &parser_return.program,
         &matched,
-        config.token_dictionary.as_ref(),
+        Some(&config.matchers),
+        config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );

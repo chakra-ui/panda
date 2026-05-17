@@ -55,7 +55,8 @@ pub fn extract_calls(
     let resolver = crate::Resolver::build(
         &parser_return.program,
         matched,
-        config.token_dictionary.as_ref(),
+        Some(&config.matchers),
+        config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
     );

@@ -334,7 +334,10 @@ fn tagged_template_to_literal(
 }
 
 fn call_to_literal(call: &CallExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
-    resolver?.resolve_token_call(call)
+    let resolver = resolver?;
+    resolver
+        .resolve_token_call(call)
+        .or_else(|| resolver.resolve_raw_style_call(call))
 }
 
 fn number_as_key(value: f64) -> String {

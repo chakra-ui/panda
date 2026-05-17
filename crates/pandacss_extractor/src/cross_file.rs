@@ -25,7 +25,8 @@ use std::sync::Mutex;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, ExportNamedDeclaration, Program, Statement, VariableDeclaration,
+    BindingPattern, Declaration, ExportNamedDeclaration, ModuleExportName, Program, Statement,
+    VariableDeclaration,
 };
 use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric};
@@ -35,6 +36,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
+use crate::{Matchers, TokenDictionary, collect_imports, match_import_records, scope::Resolver};
 
 type FileExports = FxHashMap<String, Literal>;
 
@@ -104,19 +106,28 @@ impl CrossFileResolver {
         from_file: &Path,
         specifier: &str,
         name: &str,
+        matchers: Option<&Matchers>,
+        tokens: Option<&TokenDictionary>,
     ) -> Option<Literal> {
-        self.inner.resolve_named_export(from_file, specifier, name)
+        self.inner
+            .resolve_named_export(from_file, specifier, name, matchers, tokens)
+    }
+
+    pub(crate) fn as_lookup(&self) -> &dyn CrossFileLookup {
+        self.inner.as_ref()
     }
 }
 
 /// Object-safe interface the rest of the crate consumes. Keeps the
 /// `F: FileSystem` parameter contained inside `cross_file.rs`.
-trait CrossFileLookup: Send + Sync {
+pub(crate) trait CrossFileLookup: Send + Sync {
     fn resolve_named_export(
         &self,
         from_file: &Path,
         specifier: &str,
         name: &str,
+        matchers: Option<&Matchers>,
+        tokens: Option<&TokenDictionary>,
     ) -> Option<Literal>;
 
     fn cache_len(&self) -> usize;
@@ -128,7 +139,7 @@ struct ResolverImpl<F: FileSystem + Clone> {
     inner: ResolverGeneric<F>,
     fs: F,
     cache: Mutex<FxHashMap<PathBuf, FileExports>>,
-    in_flight: Mutex<FxHashSet<PathBuf>>,
+    in_flight: Mutex<FxHashSet<(PathBuf, String)>>,
 }
 
 impl<F: FileSystem + Clone> ResolverImpl<F> {
@@ -142,15 +153,37 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         }
     }
 
-    fn extract_exports(&self, path: &Path) -> Option<FileExports> {
+    fn extract_exports(
+        &self,
+        path: &Path,
+        matchers: Option<&Matchers>,
+        tokens: Option<&TokenDictionary>,
+    ) -> Option<FileExports> {
         let source = <F as oxc_resolver::FileSystem>::read_to_string(&self.fs, path).ok()?;
         let allocator = Allocator::default();
         let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
         let parser_return = Parser::new(&allocator, &source, source_type).parse();
+        let matched = matchers.map_or_else(Vec::new, |matchers| {
+            let imports = collect_imports(&parser_return.program);
+            match_import_records(&imports, matchers)
+        });
+        let resolver = Resolver::build_with_cross_file_lookup(
+            &parser_return.program,
+            &matched,
+            tokens,
+            Some(self),
+            matchers,
+            Some(path.to_path_buf()),
+        );
 
         // Oxc returns a partial AST on parse errors; walk what we get,
         // matching the JS extractor's recovery behavior.
-        Some(collect_exports(&parser_return.program))
+        Some(collect_exports(
+            &parser_return.program,
+            path,
+            self,
+            &resolver,
+        ))
     }
 }
 
@@ -160,6 +193,8 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         from_file: &Path,
         specifier: &str,
         name: &str,
+        matchers: Option<&Matchers>,
+        tokens: Option<&TokenDictionary>,
     ) -> Option<Literal> {
         let directory = from_file.parent()?;
         let resolution = self.inner.resolve(directory, specifier).ok()?;
@@ -175,18 +210,21 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         }
 
         // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
+        let guard_key = (path.clone(), name.to_owned());
         {
             let mut in_flight = self.in_flight.lock().expect("cross-file guard poisoned");
-            if !in_flight.insert(path.clone()) {
+            if !in_flight.insert(guard_key.clone()) {
                 return None;
             }
         }
 
-        let exports = self.extract_exports(&path).unwrap_or_default();
+        let exports = self
+            .extract_exports(&path, matchers, tokens)
+            .unwrap_or_default();
         self.in_flight
             .lock()
             .expect("cross-file guard poisoned")
-            .remove(&path);
+            .remove(&guard_key);
 
         let value = exports.get(name).cloned();
         self.cache
@@ -201,43 +239,108 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
     }
 }
 
-fn collect_exports(program: &Program<'_>) -> FileExports {
+fn collect_exports(
+    program: &Program<'_>,
+    path: &Path,
+    lookup: &dyn CrossFileLookup,
+    resolver: &Resolver<'_>,
+) -> FileExports {
     let mut exports = FxHashMap::default();
 
     for stmt in &program.body {
         let Statement::ExportNamedDeclaration(decl) = stmt else {
             continue;
         };
-        collect_from_named(decl, &mut exports);
+        collect_from_named(decl, path, lookup, resolver, &mut exports);
     }
 
     exports
 }
 
-fn collect_from_named(decl: &ExportNamedDeclaration<'_>, out: &mut FileExports) {
-    let Some(Declaration::VariableDeclaration(var)) = &decl.declaration else {
+fn collect_from_named(
+    decl: &ExportNamedDeclaration<'_>,
+    path: &Path,
+    lookup: &dyn CrossFileLookup,
+    resolver: &Resolver<'_>,
+    out: &mut FileExports,
+) {
+    if let Some(Declaration::VariableDeclaration(var)) = &decl.declaration {
+        collect_from_var(var, resolver, out);
         return;
-    };
-    collect_from_var(var, out);
+    }
+
+    for specifier in &decl.specifiers {
+        let exported = module_export_name(&specifier.exported);
+        let local = module_export_name(&specifier.local);
+        let value = if let Some(source) = &decl.source {
+            lookup.resolve_named_export(
+                path,
+                source.value.as_str(),
+                &local,
+                resolver.matchers(),
+                resolver.tokens(),
+            )
+        } else {
+            resolver.resolve_root_name(&local)
+        };
+        if let Some(value) = value {
+            out.insert(exported, value);
+        }
+    }
 }
 
-// TODO(port): destructuring on the LHS is skipped — those patterns need a
-// re-export of the original RHS, which the JS extractor doesn't fold
-// cleanly either.
-fn collect_from_var(var: &VariableDeclaration<'_>, out: &mut FileExports) {
+fn collect_from_var(var: &VariableDeclaration<'_>, resolver: &Resolver<'_>, out: &mut FileExports) {
     for declarator in &var.declarations {
-        let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-            continue;
-        };
         let Some(init) = &declarator.init else {
             continue;
         };
-        // PORT NOTE: pass `None` for the resolver — the loaded file has
-        // no Resolver context here. Chained file-local references need a
-        // per-file Resolver; punt to follow-up. The common
-        // `export const X = <object/string/array>` shape still folds.
-        if let Some(value) = expression_to_literal(init, None) {
-            out.insert(id.name.to_string(), value);
+        match &declarator.id {
+            BindingPattern::BindingIdentifier(id) => {
+                if let Some(value) = expression_to_literal(init, Some(resolver)) {
+                    out.insert(id.name.to_string(), value);
+                }
+            }
+            BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
+                collect_pattern_bindings(&declarator.id, resolver, out);
+            }
+            BindingPattern::AssignmentPattern(_) => {}
         }
     }
+}
+
+fn collect_pattern_bindings(
+    pattern: &BindingPattern<'_>,
+    resolver: &Resolver<'_>,
+    out: &mut FileExports,
+) {
+    match pattern {
+        BindingPattern::BindingIdentifier(id) => {
+            if let Some(value) = resolver.resolve_root_name(id.name.as_str()) {
+                out.insert(id.name.to_string(), value);
+            }
+        }
+        BindingPattern::ObjectPattern(object) => {
+            for prop in &object.properties {
+                collect_pattern_bindings(&prop.value, resolver, out);
+            }
+            if let Some(rest) = &object.rest {
+                collect_pattern_bindings(&rest.argument, resolver, out);
+            }
+        }
+        BindingPattern::ArrayPattern(array) => {
+            for pattern in array.elements.iter().flatten() {
+                collect_pattern_bindings(pattern, resolver, out);
+            }
+            if let Some(rest) = &array.rest {
+                collect_pattern_bindings(&rest.argument, resolver, out);
+            }
+        }
+        BindingPattern::AssignmentPattern(assignment) => {
+            collect_pattern_bindings(&assignment.left, resolver, out);
+        }
+    }
+}
+
+fn module_export_name(name: &ModuleExportName<'_>) -> String {
+    name.name().to_string()
 }

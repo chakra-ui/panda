@@ -98,6 +98,109 @@ fn imported_object_folds_member_access() {
 }
 
 #[test]
+fn exported_object_can_reference_file_local_const() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { button } from './tokens';
+            import { css } from '@panda/css';
+            css(button);
+        "},
+        &[(
+            "tokens.ts",
+            "const base = { color: 'red' };\nexport const button = { ...base, padding: '4px' };\n",
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - color: red
+            padding: 4px
+    ");
+}
+
+#[test]
+fn exported_object_can_reference_imported_const() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { button } from './tokens';
+            import { css } from '@panda/css';
+            css(button);
+        "},
+        &[
+            ("colors.ts", "export const brand = 'red';\n"),
+            (
+                "tokens.ts",
+                "import { brand } from './colors';\nexport const button = { color: brand };\n",
+            ),
+        ],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
+fn exported_css_raw_object_folds_into_importing_css_call() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { button } from './styles';
+            import { css } from '@panda/css';
+            css({ ...button, margin: '8px' });
+        "},
+        &[(
+            "styles.ts",
+            indoc::indoc! {r"
+                import { css } from '@panda/css';
+                export const button = css.raw({ color: 'red', padding: '4px' });
+            "},
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - color: red
+            padding: 4px
+            margin: 8px
+    ");
+}
+
+#[test]
+fn exported_css_raw_object_spreads_under_condition() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { button } from './styles';
+            import { css } from '@panda/css';
+            css({ _hover: { ...button, margin: '8px' } });
+        "},
+        &[(
+            "styles.ts",
+            indoc::indoc! {r"
+                import { css } from '@panda/css';
+                export const button = css.raw({ color: 'red', padding: '4px' });
+            "},
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - _hover:
+              color: red
+              padding: 4px
+              margin: 8px
+    ");
+}
+
+#[test]
 fn aliased_import_resolves_by_exported_name() {
     // `import { brand as primary }` — the resolver tracks the exported
     // name (`brand`), not the local alias (`primary`).
@@ -312,10 +415,9 @@ fn fs_mutation_after_resolver_construction_visible() {
 }
 
 #[test]
-fn deep_import_chain_resolves_at_one_level() {
-    // a.ts re-exports brand from b.ts; we don't yet follow re-exports
-    // through cross-file. Pins current behavior so a future "yes, follow"
-    // change shows up as a diff.
+fn deep_import_chain_resolves_through_re_export() {
+    // a.ts re-exports brand from b.ts; the cross-file resolver follows
+    // the chain and still uses the originally requested exported name.
     let (fs, main) = project(
         indoc::indoc! {r"
             import { brand } from './a';
@@ -328,6 +430,10 @@ fn deep_import_chain_resolves_at_one_level() {
         ],
     );
     let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
-    // Re-exports aren't folded yet → outer call drops.
-    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @"calls: []");
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    calls:
+      - name: css
+        data:
+          - color: "#ef4444"
+    "##);
 }
