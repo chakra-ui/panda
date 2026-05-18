@@ -22,3 +22,5 @@ design note explaining the trade-off.
 
 - [2026-05-16 — extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx) — first comparison of `@pandacss/parser`
   (ts-morph) vs `@pandacss/binding`'s `Extractor` (Oxc + NAPI). 15–37× speedup.
+- [2026-05-17 — token-dictionary-js-vs-rust-design](./2026-05-17-token-dictionary-js-vs-rust-design.mdx) — design
+  comparison and benchmark plan for moving token dictionary construction/middleware parity into Rust.

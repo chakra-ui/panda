@@ -106,6 +106,9 @@ importers:
       '@pandacss/node':
         specifier: workspace:*
         version: link:../packages/node
+      '@pandacss/token-dictionary':
+        specifier: workspace:*
+        version: link:../packages/token-dictionary
 
   packages/astro-plugin-studio:
     dependencies:

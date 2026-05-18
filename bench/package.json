@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "baseline": "tsx --conditions source src/baseline.ts",
-    "extract-compare": "tsx --conditions source src/extract-compare.ts"
+    "extract-compare": "tsx --conditions source src/extract-compare.ts",
+    "token-dictionary-compare": "tsx --tsconfig tsconfig.json --conditions source src/token-dictionary-compare.ts"
   },
   "dependencies": {
     "@pandacss/binding": "workspace:*",
-    "@pandacss/node": "workspace:*"
+    "@pandacss/node": "workspace:*",
+    "@pandacss/token-dictionary": "workspace:*"
   },
   "devDependencies": {}
 }
