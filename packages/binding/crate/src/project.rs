@@ -8,9 +8,10 @@
 use napi_derive::napi;
 use std::collections::HashMap;
 
-use crate::convert::{convert_diagnostic, to_atoms, to_core_config};
-use crate::{Diagnostic, Matchers};
+use crate::Diagnostic;
+use crate::convert::{convert_diagnostic, to_atoms};
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
+use pandacss_config::{CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
 
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
@@ -53,6 +54,7 @@ pub struct RecipeEntry {
 #[napi]
 pub struct Project {
     inner: pandacss_project::Project,
+    config: serde_json::Value,
     utility_transform_refs: HashMap<String, String>,
     pattern_transform_refs: HashMap<String, String>,
     utility_transforms: HashMap<
@@ -68,27 +70,6 @@ pub struct Project {
 
 #[napi]
 impl Project {
-    /// Construct a project bound to a matchers config. Cross-file folding
-    /// is enabled by default.
-    #[napi(constructor)]
-    #[must_use]
-    #[allow(
-        clippy::needless_pass_by_value,
-        reason = "NAPI requires owned constructor arguments"
-    )]
-    pub fn new(matchers: Matchers, options: Option<ProjectOptions>) -> Self {
-        let opts = options.unwrap_or(ProjectOptions { cross_file: None });
-        let project = pandacss_project::Project::from_extractor_config(to_core_config(matchers));
-        Self {
-            inner: apply_project_options(project, opts),
-            utility_transform_refs: HashMap::new(),
-            pattern_transform_refs: HashMap::new(),
-            utility_transforms: HashMap::new(),
-            pattern_transforms: HashMap::new(),
-            utility_transform_cache: HashMap::new(),
-        }
-    }
-
     /// Construct a project from the resolved, JSON-safe Panda config snapshot.
     #[napi(factory)]
     #[must_use]
@@ -101,14 +82,16 @@ impl Project {
         options: Option<ProjectOptions>,
     ) -> napi::Result<Self> {
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
+        let config_snapshot = config.clone();
+        let config: UserConfig = serde_json::from_value(config)
+            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         let utility_transform_refs = get_utility_transform_refs(&config);
         let pattern_transform_refs = get_pattern_transform_refs(&config);
-        let config = serde_json::from_value(config)
-            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         let project = pandacss_project::Project::from_config(config)
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         Ok(Self {
             inner: apply_project_options(project, opts),
+            config: config_snapshot,
             utility_transform_refs,
             pattern_transform_refs,
             utility_transforms: HashMap::new(),
@@ -118,14 +101,11 @@ impl Project {
     }
 
     /// Return the serialized config snapshot this project was constructed
-    /// with, or `null` for legacy matcher-based construction.
+    /// with.
     #[napi]
     #[must_use]
     pub fn config(&self) -> serde_json::Value {
-        self.inner
-            .serialized_config()
-            .and_then(|config| serde_json::to_value(config).ok())
-            .unwrap_or(serde_json::Value::Null)
+        self.config.clone()
     }
 
     /// Register a JS-backed utility transform callback. The config snapshot
@@ -221,8 +201,8 @@ impl Project {
         self.inner.remove_file(&path)
     }
 
-    /// Drop every path's state. Keeps the matchers / token dictionary /
-    /// cross-file resolver intact.
+    /// Drop every path's state. Keeps the config-derived extractor,
+    /// token dictionary, and cross-file resolver intact.
     #[napi]
     pub fn clear(&mut self) {
         self.inner.clear();
@@ -416,30 +396,10 @@ fn apply_pattern_transform(
     })
 }
 
-fn get_utility_transform_refs(config: &serde_json::Value) -> HashMap<String, String> {
+fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {
     let mut refs = HashMap::new();
-    let Some(utilities) = config
-        .get("utilities")
-        .and_then(serde_json::Value::as_object)
-    else {
-        return refs;
-    };
-
-    for (prop, utility) in utilities {
-        let Some(transform) = utility
-            .get("transform")
-            .and_then(serde_json::Value::as_object)
-        else {
-            continue;
-        };
-        let is_callback = transform
-            .get("kind")
-            .and_then(serde_json::Value::as_str)
-            .is_some_and(|kind| kind == "js-callback");
-        let Some(id) = transform.get("id").and_then(serde_json::Value::as_str) else {
-            continue;
-        };
-        if is_callback {
+    for (prop, utility) in &config.utilities {
+        if let Some(id) = utility_callback_id(utility) {
             refs.insert(prop.clone(), id.to_owned());
         }
     }
@@ -447,58 +407,38 @@ fn get_utility_transform_refs(config: &serde_json::Value) -> HashMap<String, Str
     refs
 }
 
-fn get_pattern_transform_refs(config: &serde_json::Value) -> HashMap<String, String> {
+fn get_pattern_transform_refs(config: &UserConfig) -> HashMap<String, String> {
     let mut refs = HashMap::new();
-    collect_pattern_transform_refs(config.get("patterns"), &mut refs);
-    refs
-}
-
-fn collect_pattern_transform_refs(
-    value: Option<&serde_json::Value>,
-    refs: &mut HashMap<String, String>,
-) {
-    let Some(patterns) = value.and_then(serde_json::Value::as_object) else {
-        return;
-    };
-
-    collect_pattern_transform_ref_map(patterns, refs);
-}
-
-fn collect_pattern_transform_ref_map(
-    patterns: &serde_json::Map<String, serde_json::Value>,
-    refs: &mut HashMap<String, String>,
-) {
-    for (name, pattern) in patterns {
-        let Some(pattern) = pattern.as_object() else {
-            continue;
-        };
-        let Some(id) = pattern
-            .get("transform")
-            .and_then(callback_ref_id)
-            .map(str::to_owned)
-        else {
+    for (name, pattern) in &config.patterns {
+        let Some(id) = pattern_callback_id(pattern).map(str::to_owned) else {
             continue;
         };
         refs.insert(name.clone(), id.clone());
         refs.insert(capitalize(name), id.clone());
-        if let Some(jsx_name) = pattern.get("jsxName").and_then(serde_json::Value::as_str) {
+        if let Some(jsx_name) = pattern.jsx_name.as_deref() {
             refs.insert(jsx_name.to_owned(), id.clone());
         }
-        if let Some(items) = pattern.get("jsx").and_then(serde_json::Value::as_array) {
-            for jsx_name in items.iter().filter_map(serde_json::Value::as_str) {
+        for item in &pattern.jsx {
+            if let JsxSpecifier::String(jsx_name) = item {
                 refs.insert(jsx_name.to_owned(), id.clone());
             }
         }
     }
+    refs
 }
 
-fn callback_ref_id(value: &serde_json::Value) -> Option<&str> {
-    let value = value.as_object()?;
-    let kind = value.get("kind").and_then(serde_json::Value::as_str)?;
-    if kind != "js-callback" {
-        return None;
-    }
-    value.get("id").and_then(serde_json::Value::as_str)
+fn utility_callback_id(utility: &UtilityConfig) -> Option<&str> {
+    callback_ref_id(utility.transform.as_ref()?)
+}
+
+fn pattern_callback_id(pattern: &PatternConfig) -> Option<&str> {
+    callback_ref_id(pattern.transform.as_ref()?)
+}
+
+fn callback_ref_id(value: &CallbackRef) -> Option<&str> {
+    (value.kind == "js-callback")
+        .then(|| value.id.as_deref())
+        .flatten()
 }
 
 fn transform_args(value: &serde_json::Value) -> serde_json::Value {

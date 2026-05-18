@@ -12,62 +12,30 @@ use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
 use crate::fs::WasmFileSystem;
-use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
+use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig};
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
-/// plus matchers.
+/// plus a resolved Panda config snapshot.
 ///
 /// ```js
 /// const fs = new WasmFileSystem()
 /// fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444';")
 /// fs.addFile('/proj/main.tsx', "import { brand } from './tokens'\ncss({ color: brand })")
-/// const project = new WasmProject(fs, matchers)
+/// const project = WasmProject.fromConfig(fs, config)
 /// project.parseFile('/proj/main.tsx', fs.readFile('/proj/main.tsx'))
 /// const atoms = project.atoms()
 /// ```
 #[wasm_bindgen]
 pub struct WasmProject {
     inner: pandacss_project::Project,
+    config: serde_json::Value,
     pattern_transform_refs: HashMap<String, String>,
     pattern_transforms: HashMap<String, js_sys::Function>,
 }
 
 #[wasm_bindgen]
 impl WasmProject {
-    /// Cross-file folding is always enabled and shares the passed FS.
-    ///
-    /// # Errors
-    /// Returns a JS error when `matchers` doesn't deserialize into the
-    /// expected `MatchersInput` shape.
-    #[wasm_bindgen(constructor)]
-    pub fn new(
-        fs: &WasmFileSystem,
-        matchers: JsValue,
-        options: JsValue,
-    ) -> Result<WasmProject, JsValue> {
-        let mut input: MatchersInput = serde_wasm_bindgen::from_value(matchers)
-            .map_err(|err| JsValue::from_str(&format!("invalid matchers: {err}")))?;
-
-        if !options.is_undefined() && !options.is_null() {
-            serde_wasm_bindgen::from_value::<ProjectOptionsInput>(options)
-                .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?;
-        }
-
-        let token_dictionary = input.token_dictionary.take().map(to_core_token_dictionary);
-        let core_matchers = to_core_matchers(input);
-
-        let mut extractor_config = pandacss_extractor::ExtractorConfig::new(core_matchers);
-        extractor_config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
-        let project = pandacss_project::Project::from_extractor_config(extractor_config);
-
-        Ok(Self {
-            inner: with_wasm_fs(project, fs),
-            pattern_transform_refs: HashMap::new(),
-            pattern_transforms: HashMap::new(),
-        })
-    }
-
     /// Construct a project from the resolved, JSON-safe Panda config snapshot.
     ///
     /// # Errors
@@ -85,14 +53,16 @@ impl WasmProject {
 
         let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
-        let pattern_transform_refs = get_pattern_transform_refs(&config_value);
-        let config = serde_json::from_value(config_value)
+        let config_snapshot = config_value.clone();
+        let config: UserConfig = serde_json::from_value(config_value)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        let pattern_transform_refs = get_pattern_transform_refs(&config);
         let project = pandacss_project::Project::from_config(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
+            config: config_snapshot,
             pattern_transform_refs,
             pattern_transforms: HashMap::new(),
         })
@@ -144,25 +114,20 @@ impl WasmProject {
         self.inner.remove_file(path)
     }
 
-    /// Drop every path's state. Keeps the matchers / token dictionary /
-    /// cross-file resolver intact.
+    /// Drop every path's state. Keeps the config-derived extractor,
+    /// token dictionary, and cross-file resolver intact.
     pub fn clear(&mut self) {
         self.inner.clear();
     }
 
     /// Return the serialized config snapshot this project was constructed
-    /// with, or `null` for matcher-based construction.
+    /// with.
     ///
     /// # Errors
     /// Returns a JS error if serializing fails.
     pub fn config(&self) -> Result<JsValue, JsValue> {
-        let value = self
-            .inner
-            .serialized_config()
-            .and_then(|config| serde_json::to_value(config).ok())
-            .unwrap_or(serde_json::Value::Null);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-        value
+        self.config
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
@@ -352,58 +317,30 @@ fn apply_pattern_transform(
     })
 }
 
-fn get_pattern_transform_refs(config: &serde_json::Value) -> HashMap<String, String> {
+fn get_pattern_transform_refs(config: &UserConfig) -> HashMap<String, String> {
     let mut refs = HashMap::new();
-    collect_pattern_transform_refs(config.get("patterns"), &mut refs);
-    refs
-}
-
-fn collect_pattern_transform_refs(
-    value: Option<&serde_json::Value>,
-    refs: &mut HashMap<String, String>,
-) {
-    let Some(patterns) = value.and_then(serde_json::Value::as_object) else {
-        return;
-    };
-
-    collect_pattern_transform_ref_map(patterns, refs);
-}
-
-fn collect_pattern_transform_ref_map(
-    patterns: &serde_json::Map<String, serde_json::Value>,
-    refs: &mut HashMap<String, String>,
-) {
-    for (name, pattern) in patterns {
-        let Some(pattern) = pattern.as_object() else {
-            continue;
-        };
-        let Some(id) = pattern
-            .get("transform")
-            .and_then(callback_ref_id)
-            .map(str::to_owned)
-        else {
+    for (name, pattern) in &config.patterns {
+        let Some(id) = pattern.transform.as_ref().and_then(callback_ref_id) else {
             continue;
         };
         refs.insert(name.clone(), id.clone());
         refs.insert(capitalize(name), id.clone());
-        if let Some(jsx_name) = pattern.get("jsxName").and_then(serde_json::Value::as_str) {
-            refs.insert(jsx_name.to_owned(), id.clone());
+        if let Some(jsx_name) = &pattern.jsx_name {
+            refs.insert(jsx_name.clone(), id.clone());
         }
-        if let Some(items) = pattern.get("jsx").and_then(serde_json::Value::as_array) {
-            for jsx_name in items.iter().filter_map(serde_json::Value::as_str) {
-                refs.insert(jsx_name.to_owned(), id.clone());
+        for specifier in &pattern.jsx {
+            if let JsxSpecifier::String(jsx_name) = specifier {
+                refs.insert(jsx_name.clone(), id.clone());
             }
         }
     }
+    refs
 }
 
-fn callback_ref_id(value: &serde_json::Value) -> Option<&str> {
-    let value = value.as_object()?;
-    let kind = value.get("kind").and_then(serde_json::Value::as_str)?;
-    if kind != "js-callback" {
-        return None;
-    }
-    value.get("id").and_then(serde_json::Value::as_str)
+fn callback_ref_id(value: &CallbackRef) -> Option<String> {
+    (value.kind == "js-callback")
+        .then(|| value.id.clone())
+        .flatten()
 }
 
 fn json_value_to_literal(value: &serde_json::Value) -> Option<Literal> {

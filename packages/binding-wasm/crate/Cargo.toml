@@ -13,6 +13,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
+pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["memory"] }
 pandacss_fs = { workspace = true, features = ["memory"] }

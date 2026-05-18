@@ -91,13 +91,8 @@ describe('Project callbacks', () => {
       {
         crossFile: false,
         tokenDictionary: {
-          values: {
-            'colors.red.500': '#f00',
-            'opacity.50': '0.5',
-          },
-          vars: {
-            'colors.red.500': 'var(--colors-red-500)',
-          },
+          values: { 'colors.red.500': '#f00', 'opacity.50': '0.5' },
+          vars: { 'colors.red.500': 'var(--colors-red-500)', 'opacity.50': 'var(--opacity-50)' },
         },
       },
     )
@@ -286,10 +281,8 @@ describe('Project callbacks', () => {
       {
         crossFile: false,
         tokenDictionary: {
-          values: {
-            'spacing.4': '1rem',
-          },
-          vars: {},
+          values: { 'spacing.4': '1rem' },
+          vars: { 'spacing.4': 'var(--spacing-4)' },
         },
       },
     )

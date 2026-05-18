@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { Project } from '../src'
-import { importMap, matchers } from './test-utils'
+import { createProject, importMap } from './test-utils'
 
 describe('Project recipes', () => {
   it('records cva recipes', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     project.parseFile(
       '/Button.tsx',
       `import { cva } from '@panda/css'

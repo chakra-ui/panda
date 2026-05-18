@@ -78,13 +78,12 @@ encoding directly — no equivalent shape needed.
 ## Project class (NAPI)
 
 `Project.fromConfig(config)` is the preferred production entrypoint. The JS side passes the resolved, serialized Panda
-config snapshot; the binding deserializes it into `pandacss_config::Config` and calls
+config snapshot; the binding deserializes it into `pandacss_config::UserConfig` and calls
 `pandacss_project::Project::from_config(config)`. That path is fallible: config compilation errors, such as invalid
 serialized JSX regexes, are mapped to `napi::Error`.
 
-The constructor that accepts explicit matchers remains for lower-level extraction tests and compatibility. It bypasses
-config-derived matchers, utilities, conditions, patterns, and recipes, so new production behavior should be added to the
-config/System path first.
+The matcher-based project constructor was intentionally removed. Raw matcher flows belong to the extractor session
+(`new Extractor(matchers)`) and staged extraction helpers; stateful projects are config-derived only.
 
 ## Extractor session class (NAPI)
 
