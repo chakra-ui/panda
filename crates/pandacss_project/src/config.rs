@@ -326,14 +326,19 @@ fn jsx_extraction_config_from_definitions(
         style_props: jsx_style_props_from_config(config),
         component_names,
         component_regexes,
+        component_regex_set: None,
         component_props,
         component_regex_props,
+        component_regex_prop_set: None,
         component_strict,
         component_regex_strict,
+        component_regex_strict_set: None,
         component_blocklist,
         component_regex_blocklist,
+        component_regex_blocklist_set: None,
         valid_style_props,
     }
+    .with_regex_sets()
 }
 
 fn collect_component_entry(
