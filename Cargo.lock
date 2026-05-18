@@ -994,11 +994,17 @@ dependencies = [
 [[package]]
 name = "pandacss_bench"
 version = "0.0.0"
+dependencies = [
+ "pandacss_config",
+ "pandacss_tokens",
+ "serde_json",
+]
 
 [[package]]
 name = "pandacss_config"
 version = "0.0.0"
 dependencies = [
+ "indexmap",
  "insta",
  "serde",
  "serde_json",
@@ -1093,6 +1099,8 @@ dependencies = [
  "itoa",
  "regex",
  "ryu",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -1101,6 +1109,8 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "insta",
+ "pandacss_config",
+ "pandacss_shared",
  "pandacss_tokens",
  "rustc-hash",
  "serde",

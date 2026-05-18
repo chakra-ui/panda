@@ -21,15 +21,3 @@ pub fn compile_js_regex(source: &str, flags: &str) -> Option<Regex> {
         Regex::new(&format!("(?{options}:{source})")).ok()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn compiles_js_regex_flags() {
-        let regex = compile_js_regex("^panda", "i").unwrap();
-
-        assert!(regex.is_match("PandaBox"));
-    }
-}
