@@ -1,11 +1,4 @@
-import type {
-  Atom,
-  EncodedRecipeStyles,
-  TokenDictionaryInput,
-  WasmProject,
-  WasmProjectCallbacks,
-  WasmProjectOptions,
-} from './types'
+import type { TokenDictionaryInput, WasmProject, WasmProjectCallbacks } from './types'
 
 interface RawToken {
   path: string
@@ -27,59 +20,31 @@ interface TransformArgs {
   }
 }
 
-interface PatternHelpers {
+export interface PatternHelpers {
   map(value: unknown, fn: (value: any) => any): unknown
   isCssUnit(value: unknown): boolean
   isCssVar(value: unknown): boolean
   isCssFunction(value: unknown): boolean
 }
 
-export function registerProjectCallbacks(project: WasmProject, callbacks: WasmProjectCallbacks) {
+export function registerCallbacks(
+  project: WasmProject,
+  callbacks: WasmProjectCallbacks,
+  tokenDictionary: TokenDictionaryInput | undefined,
+) {
+  const utilityTransforms = callbacks['utility.transform']
+  if (project.registerUtilityTransform && utilityTransforms && Object.keys(utilityTransforms).length > 0) {
+    for (const [id, callback] of Object.entries(utilityTransforms)) {
+      project.registerUtilityTransform(id, (value) => callback(value, createTransformArgs(value, tokenDictionary)))
+    }
+  }
+
   const patternTransforms = callbacks['pattern.transform']
   if (project.registerPatternTransform && patternTransforms && Object.keys(patternTransforms).length > 0) {
     for (const [id, callback] of Object.entries(patternTransforms)) {
       project.registerPatternTransform(id, (props) => callback(props, createPatternHelpers()))
     }
   }
-}
-
-type ProjectCallbackOptions = WasmProjectOptions & {
-  tokenDictionary?: TokenDictionaryInput
-}
-
-export function wrapProjectCallbacks(project: WasmProject, options: ProjectCallbackOptions | undefined): WasmProject {
-  const callbacks = options?.callbacks
-  const config = options?.config
-  const tokenDictionary = options?.tokenDictionary
-  if (!callbacks?.['utility.transform'] || Object.keys(callbacks['utility.transform']).length === 0 || !config) {
-    return project
-  }
-  const utilityTransformCache = new Map<string, Atom[]>()
-
-  return {
-    config: () => project.config(),
-    parseFile: (path, source) => project.parseFile(path, source),
-    refreshFile: (path, source) => project.refreshFile(path, source),
-    removeFile: (path) => project.removeFile(path),
-    clear: () => {
-      utilityTransformCache.clear()
-      project.clear()
-    },
-    isEmpty: () => project.isEmpty(),
-    atoms: () =>
-      applyUtilityTransformCallbacks(project.atoms(), config, callbacks, utilityTransformCache, tokenDictionary),
-    encodedRecipes: () =>
-      applyEncodedRecipeTransformCallbacks(
-        project.encodedRecipes(),
-        config,
-        callbacks,
-        utilityTransformCache,
-        tokenDictionary,
-      ),
-    recipes: () => project.recipes(),
-    slotRecipes: () => project.slotRecipes(),
-    summary: () => project.summary(),
-  } as WasmProject
 }
 
 export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: WasmProjectCallbacks) {
@@ -130,57 +95,6 @@ function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: 
     if (!callbacks?.[id]) {
       throw new Error(`Missing ${kind} callback \`${id}\` for \`${name}\``)
     }
-  }
-}
-
-function applyUtilityTransformCallbacks(
-  atoms: Atom[],
-  config: Record<string, unknown>,
-  callbacks: WasmProjectCallbacks,
-  cache: Map<string, Atom[]>,
-  tokenDictionary: TokenDictionaryInput | undefined,
-): Atom[] {
-  const transforms = callbacks['utility.transform']
-  if (!transforms) return atoms
-
-  const utilityTransforms = getUtilityTransformRefs(config)
-  if (utilityTransforms.size === 0) return atoms
-
-  return atoms.flatMap((atom) => {
-    const id = utilityTransforms.get(atom.prop)
-    const transform = id ? transforms[id] : undefined
-    if (!transform) return [atom]
-
-    const cacheKey = `${id}\0${atom.prop}\0${JSON.stringify(atom.value)}`
-    const cached = cache.get(cacheKey)
-    if (cached) return applyConditions(cached, atom.conditions)
-
-    const result = transform(atom.value, createTransformArgs(atom.value, tokenDictionary))
-
-    if (!result || typeof result !== 'object' || Array.isArray(result)) return []
-    const transformed = styleObjectToAtoms(result as Record<string, unknown>, [])
-    cache.set(cacheKey, transformed)
-    return applyConditions(transformed, atom.conditions)
-  })
-}
-
-function applyEncodedRecipeTransformCallbacks(
-  encoded: EncodedRecipeStyles,
-  config: Record<string, unknown>,
-  callbacks: WasmProjectCallbacks,
-  cache: Map<string, Atom[]>,
-  tokenDictionary: TokenDictionaryInput | undefined,
-): EncodedRecipeStyles {
-  return {
-    base: encoded.base.map((group) => ({
-      ...group,
-      entries: applyUtilityTransformCallbacks(group.entries, config, callbacks, cache, tokenDictionary),
-    })),
-    variants: encoded.variants.map((group) => ({
-      ...group,
-      entries: applyUtilityTransformCallbacks(group.entries, config, callbacks, cache, tokenDictionary),
-    })),
-    atomic: applyUtilityTransformCallbacks(encoded.atomic, config, callbacks, cache, tokenDictionary),
   }
 }
 
@@ -340,64 +254,4 @@ function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: stri
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
-}
-
-interface StyleLeaf {
-  prop: string
-  value: unknown
-  conditions: string[]
-}
-
-function styleObjectToAtoms(style: Record<string, unknown>, baseConditions: string[]): Atom[] {
-  const atoms: Atom[] = []
-  walkStyleObject(style, baseConditions, (leaf) => {
-    atoms.push({
-      prop: leaf.prop,
-      value: normalizeAtomValue(leaf.value),
-      conditions: leaf.conditions,
-    })
-  })
-  return atoms.sort(compareAtoms)
-}
-
-function walkStyleObject(
-  value: unknown,
-  baseConditions: string[],
-  visit: (leaf: StyleLeaf) => void,
-  path: string[] = [],
-) {
-  if (isPlainObject(value)) {
-    for (const [key, child] of Object.entries(value)) {
-      walkStyleObject(child, baseConditions, visit, path.concat(key))
-    }
-    return
-  }
-
-  const prop = path[0]
-  if (!prop) return
-  visit({
-    prop,
-    value,
-    conditions: [...baseConditions],
-  })
-}
-
-function normalizeAtomValue(value: unknown): Atom['value'] {
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null)
-    return value
-  if (Array.isArray(value)) return `[${value.join(',')}]`
-  return String(value)
-}
-
-function applyConditions(atoms: Atom[], conditions: string[]): Atom[] {
-  if (conditions.length === 0) return atoms
-  return atoms.map((atom) => ({ ...atom, conditions: [...conditions] }))
-}
-
-function compareAtoms(a: Atom, b: Atom) {
-  return (
-    a.prop.localeCompare(b.prop) ||
-    a.conditions.join('\0').localeCompare(b.conditions.join('\0')) ||
-    String(a.value).localeCompare(String(b.value))
-  )
 }

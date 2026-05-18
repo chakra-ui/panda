@@ -6,6 +6,7 @@
 //!
 //! See `design-notes/filesystem.md` (Phase B) and `design-notes/napi-boundary.md`.
 
+mod cache;
 mod extract;
 mod fs;
 mod matcher;

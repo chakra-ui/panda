@@ -43,7 +43,7 @@ use smallvec::SmallVec;
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder};
-use pandacss_extractor::{CrossFileResolver, Literal, MatchCategory, extract};
+use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Literal, MatchCategory, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::StyleNormalizer;
 
@@ -99,6 +99,33 @@ impl Project {
     #[must_use]
     pub fn new(system: System) -> Self {
         Self::from_system(system)
+    }
+
+    #[must_use]
+    pub fn from_extractor_config(extractor_config: ExtractorConfig) -> Self {
+        let config = Arc::new(Config {
+            extractor_config,
+            utility: None,
+            conditions: conditions::ProjectConditions::from_names([]),
+            breakpoints: Vec::new(),
+            patterns: Default::default(),
+            recipes: Default::default(),
+            config_recipes: BTreeMap::new(),
+            config_slot_recipes: BTreeMap::new(),
+        });
+        Self {
+            config,
+            files: FxHashMap::default(),
+            atoms_cache: FxHashSet::default(),
+            atom_counts: FxHashMap::default(),
+            encoded_recipes_cache: EncodedRecipesCache::default(),
+            config_recipes: BTreeMap::new(),
+            config_slot_recipes: BTreeMap::new(),
+            inline_recipes: BTreeMap::new(),
+            inline_slot_recipes: BTreeMap::new(),
+            inline_recipe_spans: FxHashMap::default(),
+            inline_slot_recipe_spans: FxHashMap::default(),
+        }
     }
 
     #[must_use]

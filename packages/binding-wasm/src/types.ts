@@ -118,6 +118,8 @@ export interface WasmConfigSnapshot {
 export interface WasmProjectOptions {
   /** Serialized config snapshot used to resolve callback ids to utility props. */
   config?: Record<string, unknown>
+  /** Optional JS-side token helpers for callback execution. */
+  tokenDictionary?: TokenDictionaryInput
   /** Browser/JS-host callbacks referenced by serialized config entries. */
   callbacks?: WasmProjectCallbacks
 }
@@ -134,6 +136,7 @@ export declare class WasmProject {
   removeFile(path: string): boolean
   clear(): void
   isEmpty(): boolean
+  registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   atoms(): Atom[]
   recipes(): RecipeEntry[]

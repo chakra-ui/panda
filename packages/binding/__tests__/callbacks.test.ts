@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Project } from '../src'
+import type { PatternHelpers } from '../src'
 import { importMap } from './test-utils'
 
 describe('Project callbacks', () => {
@@ -482,6 +483,55 @@ describe('Project callbacks', () => {
     expect(calls).toBe(1)
   })
 
+  it('shares utility transform cache between atoms and encoded recipes', () => {
+    let calls = 0
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+          theme: {
+            recipes: {
+              button: {
+                base: { size: '4px' },
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => {
+              calls += 1
+              return { width: value, height: value }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       import { button } from '@panda/recipes'
+       css({ size: '4px' })
+       button()`,
+    )
+
+    project.atoms()
+    project.encodedRecipes()
+    expect(calls).toBe(1)
+  })
+
   it('applies pattern transform callbacks before encoding', () => {
     const project = Project.fromConfig(
       {
@@ -511,15 +561,7 @@ describe('Project callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (
-              props: { gap?: unknown },
-              helpers: {
-                map: (value: unknown, fn: (value: string) => string) => unknown
-                isCssUnit: (value: unknown) => boolean
-                isCssVar: (value: unknown) => boolean
-                isCssFunction: (value: unknown) => boolean
-              },
-            ) => ({
+            'patterns.stack.transform': (props: { gap?: unknown }, helpers: PatternHelpers) => ({
               display: 'flex',
               gap: helpers.map(props.gap, (value) =>
                 helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
@@ -687,6 +729,132 @@ describe('Project callbacks', () => {
         {
           "prop": "flexDirection",
           "value": "column",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('caches pattern transform callback results across function calls and JSX components', () => {
+    let calls = 0
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          patterns: {
+            stack: {
+              jsxName: 'Stack',
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => {
+              calls += 1
+              return {
+                display: 'flex',
+                gap: props.gap,
+              }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.tsx',
+      `import { stack } from '@panda/patterns'
+       import { Stack } from '@panda/jsx'
+       stack({ gap: '4px' })
+       stack({ gap: '4px' })
+       const el = <Stack gap="4px" />`,
+    )
+
+    expect(calls).toBe(1)
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('does not cache thrown pattern transform callbacks', () => {
+    let calls = 0
+    const project = Project.fromConfig(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          patterns: {
+            stack: {
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => {
+              calls += 1
+              if (calls === 1) throw new Error('boom')
+              return {
+                display: 'flex',
+                gap: props.gap,
+              }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    project.parseFile(
+      '/virtual/Stack.ts',
+      `import { stack } from '@panda/patterns'
+       stack({ gap: '4px' })`,
+    )
+    project.parseFile(
+      '/virtual/Stack.ts',
+      `import { stack } from '@panda/patterns'
+       stack({ gap: '4px' })`,
+    )
+
+    expect(calls).toBe(2)
+    expect(project.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
           "conditions": [],
         },
         {

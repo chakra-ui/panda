@@ -19,12 +19,8 @@ import type {
   WasmProjectOptions,
   WasmConfigSnapshot,
 } from './types'
-import {
-  assertProjectCallbacks,
-  registerProjectCallbacks,
-  resolveUtilityValueCallbacks,
-  wrapProjectCallbacks,
-} from './project-callbacks'
+import { assertProjectCallbacks, registerCallbacks, resolveUtilityValueCallbacks } from './callbacks'
+export type { PatternHelpers } from './callbacks'
 
 export type {
   Atom,
@@ -136,23 +132,14 @@ export async function createProject(
 ): Promise<{ fs: WasmFileSystem; project: WasmProject }> {
   const { WasmFileSystem: FS, WasmProject: P } = await loadWasm()
   const fs = new FS()
-  const nativeOptions = stripProjectCallbacks(options)
   const callbacks = options?.callbacks ?? {}
+  const tokenDictionary = options?.tokenDictionary ?? matchers.tokenDictionary
   if (options?.config) assertProjectCallbacks(options.config, callbacks)
-  const config = options?.config
-    ? resolveUtilityValueCallbacks(options.config, callbacks, matchers.tokenDictionary)
-    : undefined
+  const config = options?.config ? resolveUtilityValueCallbacks(options.config, callbacks, tokenDictionary) : undefined
+  const nativeOptions = stripProjectCallbacks({ ...options, config })
   const project = new P(fs, matchers as unknown, nativeOptions)
-  registerProjectCallbacks(project, callbacks)
-  return {
-    fs,
-    project: wrapProjectCallbacks(project, {
-      ...options,
-      config,
-      callbacks,
-      tokenDictionary: matchers.tokenDictionary,
-    }),
-  }
+  registerCallbacks(project, callbacks, tokenDictionary)
+  return { fs, project }
 }
 
 /**
@@ -169,15 +156,15 @@ export async function createProjectFromConfig(
   const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
   const nativeOptions = stripProjectCallbacks(options)
   assertProjectCallbacks(config, callbacks)
-  const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, undefined)
+  const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, options?.tokenDictionary)
   const project = P.fromConfig(fs, resolvedConfig, nativeOptions)
-  registerProjectCallbacks(project, callbacks)
-  return { fs, project: wrapProjectCallbacks(project, { ...options, config: resolvedConfig, callbacks }) }
+  registerCallbacks(project, callbacks, options?.tokenDictionary)
+  return { fs, project }
 }
 
 function stripProjectCallbacks(options: WasmProjectOptions | undefined): WasmProjectOptions | undefined {
   if (!options) return undefined
-  const { callbacks: _callbacks, config: _config, ...rest } = options
+  const { callbacks: _callbacks, ...rest } = options
   return rest
 }
 

@@ -2,6 +2,7 @@
 //! `crates/pandacss_extractor`; this crate only mirrors core types into NAPI-shaped
 //! structs and wires up the JS-facing functions.
 
+mod cache;
 mod calls;
 mod compile;
 mod convert;

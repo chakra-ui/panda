@@ -1,11 +1,11 @@
 import { loadNativeBinding } from './load-binary'
 import {
   assertProjectCallbacks,
-  registerNativeProjectCallbacks,
+  registerCallbacks,
   resolveUtilityValueCallbacks,
   wrapProjectCallbacks,
-} from './project-callbacks'
-export type { ColorMixResult, RawToken, TransformArgs } from './project-callbacks'
+} from './callbacks'
+export type { ColorMixResult, PatternHelpers, RawToken, TransformArgs } from './callbacks'
 
 // --- compile (placeholder) ---
 
@@ -306,7 +306,7 @@ export interface ConfigSnapshot {
  *  parity testing), use `Extractor` instead. */
 export interface ProjectInstance {
   config(): UserConfig | null
-  registerUtilityTransform?(id: string, callback: (value: unknown, args: Record<string, unknown>) => unknown): void
+  registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   parseFile(path: string, source: string): ParseFileReport
   /** Re-parse `path` *only if* already known. Returns `true` when the
@@ -501,7 +501,7 @@ export const Project = {
     const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, tokenDictionary)
     if (nativeProjectFromConfig) {
       const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
-      if (registerNativeProjectCallbacks(project, callbacks)) return project
+      if (registerCallbacks(project, callbacks, tokenDictionary)) return project
       return wrapProjectCallbacks(project, callbacks, tokenDictionary)
     }
     throw new Error('Project.fromConfig is not available in this binding')

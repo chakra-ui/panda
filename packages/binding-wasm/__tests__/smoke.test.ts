@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { createExtractor, createProject, createProjectFromConfig, loadWasm } from '../src'
-import type { Atom, ExtractUsage, MatchersInput } from '../src'
+import type { Atom, ExtractUsage, MatchersInput, PatternHelpers } from '../src'
 
 const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'binding_wasm.js')
 const wasmAvailable = existsSync(PKG_NODE)
@@ -1065,6 +1065,61 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
       expect(calls).toBe(1)
     })
 
+    it('shares utility transform cache between atoms and encoded recipes', async () => {
+      let calls = 0
+      const { project } = await createProjectFromConfig(
+        {
+          config: {
+            cwd: '/virtual',
+            outdir: 'styled-system',
+            importMap: {
+              css: ['@panda/css'],
+              recipe: ['@panda/recipes'],
+              pattern: ['@panda/patterns'],
+              jsx: ['@panda/jsx'],
+              tokens: ['@panda/tokens'],
+            },
+            utilities: {
+              size: {
+                transform: {
+                  kind: 'js-callback',
+                  id: 'utilities.size.transform',
+                },
+              },
+            },
+            theme: {
+              recipes: {
+                button: {
+                  base: { size: '4px' },
+                },
+              },
+            },
+          },
+          callbacks: {
+            'utility.transform': {
+              'utilities.size.transform': (value: string) => {
+                calls += 1
+                return { width: value, height: value }
+              },
+            },
+          },
+        },
+        {},
+      )
+
+      project.parseFile(
+        '/Button.tsx',
+        `import { css } from '@panda/css'
+         import { button } from '@panda/recipes'
+         css({ size: '4px' })
+         button()`,
+      )
+
+      project.atoms()
+      project.encodedRecipes()
+      expect(calls).toBe(1)
+    })
+
     it('applies pattern transform callbacks with helpers', async () => {
       const { project } = await createProjectFromConfig({
         config: {
@@ -1094,15 +1149,7 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (
-              props: { gap?: unknown },
-              helpers: {
-                map: (value: unknown, fn: (value: string) => string) => unknown
-                isCssUnit: (value: unknown) => boolean
-                isCssVar: (value: unknown) => boolean
-                isCssFunction: (value: unknown) => boolean
-              },
-            ) => ({
+            'patterns.stack.transform': (props: { gap?: unknown }, helpers: PatternHelpers) => ({
               display: 'flex',
               gap: helpers.map(props.gap, (value) =>
                 helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
