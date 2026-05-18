@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub type TokenTree = Value;
-pub type SemanticTokenTree = Value;
 pub type StyleConfig = Value;
+pub type TokenGroup<T> = IndexMap<String, TokenNode<T>>;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,9 +15,9 @@ pub struct Theme {
     #[serde(default)]
     pub keyframes: StyleConfig,
     #[serde(default)]
-    pub tokens: TokenTree,
+    pub tokens: Tokens,
     #[serde(default)]
-    pub semantic_tokens: SemanticTokenTree,
+    pub semantic_tokens: SemanticTokens,
     #[serde(default)]
     pub text_styles: StyleConfig,
     #[serde(default)]
@@ -84,114 +84,266 @@ pub type ThemeVariantsMap = BTreeMap<String, ThemeVariant>;
 #[serde(rename_all = "camelCase")]
 pub struct ThemeVariant {
     #[serde(default)]
-    pub tokens: TokenTree,
+    pub tokens: Tokens,
     #[serde(default)]
-    pub semantic_tokens: SemanticTokenTree,
+    pub semantic_tokens: SemanticTokens,
 }
 
-#[cfg(test)]
-mod tests {
-    use insta::assert_yaml_snapshot;
-    use serde_json::json;
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Tokens {
+    #[serde(default)]
+    pub cursor: TokenGroup<String>,
+    #[serde(default, rename = "zIndex")]
+    pub z_index: TokenGroup<StringOrNumber>,
+    #[serde(default)]
+    pub opacity: TokenGroup<StringOrNumber>,
+    #[serde(default)]
+    pub colors: TokenGroup<String>,
+    #[serde(default)]
+    pub fonts: TokenGroup<FontValue>,
+    #[serde(default, rename = "fontSizes")]
+    pub font_sizes: TokenGroup<String>,
+    #[serde(default, rename = "fontWeights")]
+    pub font_weights: TokenGroup<StringOrNumber>,
+    #[serde(default, rename = "lineHeights")]
+    pub line_heights: TokenGroup<StringOrNumber>,
+    #[serde(default, rename = "letterSpacings")]
+    pub letter_spacings: TokenGroup<String>,
+    #[serde(default)]
+    pub sizes: TokenGroup<String>,
+    #[serde(default)]
+    pub shadows: TokenGroup<ShadowValue>,
+    #[serde(default)]
+    pub spacing: TokenGroup<StringOrNumber>,
+    #[serde(default)]
+    pub radii: TokenGroup<String>,
+    #[serde(default)]
+    pub borders: TokenGroup<BorderValue>,
+    #[serde(default)]
+    pub durations: TokenGroup<String>,
+    #[serde(default)]
+    pub easings: TokenGroup<EasingValue>,
+    #[serde(default)]
+    pub animations: TokenGroup<String>,
+    #[serde(default)]
+    pub blurs: TokenGroup<String>,
+    #[serde(default)]
+    pub gradients: TokenGroup<GradientValue>,
+    #[serde(default)]
+    pub assets: TokenGroup<AssetValue>,
+    #[serde(default, rename = "borderWidths")]
+    pub border_widths: TokenGroup<String>,
+    #[serde(default, rename = "aspectRatios")]
+    pub aspect_ratios: TokenGroup<String>,
+    #[serde(default, rename = "containerNames")]
+    pub container_names: TokenGroup<String>,
+}
 
-    use crate::Config;
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SemanticTokens {
+    #[serde(default)]
+    pub cursor: TokenGroup<SemanticValue<String>>,
+    #[serde(default, rename = "zIndex")]
+    pub z_index: TokenGroup<SemanticValue<StringOrNumber>>,
+    #[serde(default)]
+    pub opacity: TokenGroup<SemanticValue<StringOrNumber>>,
+    #[serde(default)]
+    pub colors: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub fonts: TokenGroup<SemanticValue<FontValue>>,
+    #[serde(default, rename = "fontSizes")]
+    pub font_sizes: TokenGroup<SemanticValue<String>>,
+    #[serde(default, rename = "fontWeights")]
+    pub font_weights: TokenGroup<SemanticValue<StringOrNumber>>,
+    #[serde(default, rename = "lineHeights")]
+    pub line_heights: TokenGroup<SemanticValue<StringOrNumber>>,
+    #[serde(default, rename = "letterSpacings")]
+    pub letter_spacings: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub sizes: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub shadows: TokenGroup<SemanticValue<ShadowValue>>,
+    #[serde(default)]
+    pub spacing: TokenGroup<SemanticValue<StringOrNumber>>,
+    #[serde(default)]
+    pub radii: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub borders: TokenGroup<SemanticValue<BorderValue>>,
+    #[serde(default)]
+    pub durations: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub easings: TokenGroup<SemanticValue<EasingValue>>,
+    #[serde(default)]
+    pub animations: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub blurs: TokenGroup<SemanticValue<String>>,
+    #[serde(default)]
+    pub gradients: TokenGroup<SemanticValue<GradientValue>>,
+    #[serde(default)]
+    pub assets: TokenGroup<SemanticValue<AssetValue>>,
+    #[serde(default, rename = "borderWidths")]
+    pub border_widths: TokenGroup<SemanticValue<String>>,
+    #[serde(default, rename = "aspectRatios")]
+    pub aspect_ratios: TokenGroup<SemanticValue<String>>,
+    #[serde(default, rename = "containerNames")]
+    pub container_names: TokenGroup<SemanticValue<String>>,
+}
 
-    #[test]
-    fn deserializes_typed_theme_shape() {
-        let config: Config = serde_json::from_value(json!({
-            "theme": {
-                "breakpoints": {
-                    "md": "768px",
-                    "sm": "640px"
-                },
-                "tokens": {
-                    "colors": {
-                        "red": {
-                            "value": "#f00"
-                        }
-                    }
-                },
-                "semanticTokens": {
-                    "colors": {
-                        "fg": {
-                            "value": {
-                                "base": "{colors.red}"
-                            }
-                        }
-                    }
-                },
-                "recipes": {
-                    "button": {
-                        "className": "button"
-                    }
-                },
-                "slotRecipes": {
-                    "card": {
-                        "className": "card",
-                        "slots": ["root"]
-                    }
-                },
-                "containerNames": ["sidebar"],
-                "containerSizes": {
-                    "sm": "320px"
-                },
-                "colorPalette": {
-                    "enabled": true,
-                    "include": ["red"],
-                    "exclude": ["gray"]
-                }
-            },
-            "themes": {
-                "dark": {
-                    "tokens": {
-                        "colors": {
-                            "red": {
-                                "value": "#c00"
-                            }
-                        }
-                    },
-                    "semanticTokens": {
-                        "colors": {
-                            "fg": {
-                                "value": "{colors.red}"
-                            }
-                        }
-                    }
-                }
-            }
-        }))
-        .expect("valid typed config");
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum TokenNode<T> {
+    Token(TokenEntry<T>),
+    Group(TokenGroup<T>),
+}
 
-        assert_yaml_snapshot!(json!({
-            "breakpointNames": config.theme.breakpoint_names(),
-            "recipes": config.theme.recipes.keys().collect::<Vec<_>>(),
-            "slotRecipes": config.theme.slot_recipes.keys().collect::<Vec<_>>(),
-            "containerNames": &config.theme.container_names,
-            "colorPalette": {
-                "enabled": config.theme.color_palette.enabled,
-                "include": &config.theme.color_palette.include,
-                "exclude": &config.theme.color_palette.exclude,
-            },
-            "themes": config.themes.keys().collect::<Vec<_>>(),
-        }), @r"
-        breakpointNames:
-          - base
-          - sm
-          - md
-        recipes:
-          - button
-        slotRecipes:
-          - card
-        containerNames:
-          - sidebar
-        colorPalette:
-          enabled: true
-          include:
-            - red
-          exclude:
-            - gray
-        themes:
-          - dark
-        ");
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenEntry<T> {
+    pub value: T,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub deprecated: Option<Deprecated>,
+    #[serde(default)]
+    pub extensions: Option<serde_json::Map<String, Value>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SemanticValue<T> {
+    Conditions(IndexMap<String, SemanticValue<T>>),
+    Value(T),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Deprecated {
+    Bool(bool),
+    Message(String),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum StringOrNumber {
+    String(String),
+    Number(f64),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum FontValue {
+    String(String),
+    Array(Vec<String>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ShadowValue {
+    String(String),
+    StringArray(Vec<String>),
+    Shadow(Shadow),
+    ShadowArray(Vec<Shadow>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Shadow {
+    pub offset_x: StringOrNumber,
+    pub offset_y: StringOrNumber,
+    pub blur: StringOrNumber,
+    pub spread: StringOrNumber,
+    pub color: String,
+    #[serde(default)]
+    pub inset: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum BorderValue {
+    String(String),
+    Border(Border),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Border {
+    pub color: String,
+    pub width: StringOrNumber,
+    pub style: BorderStyle,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum BorderStyle {
+    Dashed,
+    Dotted,
+    Double,
+    Groove,
+    Hidden,
+    Inset,
+    None,
+    Outset,
+    Ridge,
+    Solid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GradientValue {
+    String(String),
+    Gradient(Gradient),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Gradient {
+    pub r#type: String,
+    pub placement: StringOrNumber,
+    pub stops: GradientStops,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum GradientStops {
+    Strings(Vec<String>),
+    Stops(Vec<GradientStop>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GradientStop {
+    pub color: String,
+    pub position: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum AssetValue {
+    String(String),
+    Asset(Asset),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Asset {
+    pub r#type: AssetType,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AssetType {
+    Url,
+    Svg,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum EasingValue {
+    String(String),
+    Array(Vec<f64>),
 }

@@ -6,8 +6,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub use theme::{
-    ColorPaletteOptions, SemanticTokenTree, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap,
-    TokenTree,
+    Asset, AssetType, AssetValue, Border, BorderStyle, BorderValue, ColorPaletteOptions,
+    Deprecated, EasingValue, FontValue, Gradient, GradientStop, GradientStops, GradientValue,
+    SemanticTokens, SemanticValue, Shadow, ShadowValue, StringOrNumber, StyleConfig, Theme,
+    ThemeVariant, ThemeVariantsMap, TokenEntry, TokenGroup, TokenNode, Tokens,
 };
 
 /// JSON-safe resolved config snapshot produced on the JavaScript side.
