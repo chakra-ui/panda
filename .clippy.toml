@@ -1,0 +1,8 @@
+disallowed-macros = [
+  { path = "std::println", reason = "route through structured diagnostics instead" },
+  { path = "std::eprintln", reason = "route through structured diagnostics instead" },
+]
+
+disallowed-methods = [
+  { path = "std::env::current_dir", reason = "pass cwd explicitly from the TypeScript boundary" },
+]

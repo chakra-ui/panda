@@ -1,5 +1,16 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "eslint.workingDirectories": ["./packages/**", "./sandbox/**", "./sandbox/next-js"],
-  "biome.enabled": false
+  "biome.enabled": false,
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml",
+    "editor.formatOnSave": true
+  },
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.check.extraArgs": ["--workspace", "--all-targets"],
+  "rust-analyzer.cargo.features": "all"
 }

@@ -1,0 +1,10 @@
+[build]
+rustflags = ["-C", "debuginfo=line-tables-only"]
+
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = [
+  "-C",
+  "debuginfo=line-tables-only",
+  "-C",
+  "link-arg=/STACK:8388608",
+]

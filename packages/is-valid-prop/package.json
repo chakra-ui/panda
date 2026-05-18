@@ -31,6 +31,7 @@
   },
   "scripts": {
     "mdn": "tsx scripts/prepare.ts",
+    "mdn:rust": "tsx scripts/rust.ts",
     "build": "tsup src/index.ts --format=esm,cjs --dts && tsx scripts/postbuild.ts",
     "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
     "dev": "tsup src/index.ts --watch --format=esm,cjs --no-dts --onSuccess=\"tsx scripts/postbuild.ts\""

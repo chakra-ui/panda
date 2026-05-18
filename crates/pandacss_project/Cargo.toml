@@ -1,0 +1,29 @@
+[package]
+name = "pandacss_project"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+pandacss_config = { workspace = true }
+pandacss_encoder = { workspace = true }
+pandacss_extractor = { workspace = true }
+pandacss_recipes = { workspace = true }
+pandacss_shared = { workspace = true }
+pandacss_utility = { workspace = true }
+regex = { workspace = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+smallvec = { workspace = true }
+pandacss_tokens = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
+insta = { workspace = true }
+
+[lints]
+workspace = true

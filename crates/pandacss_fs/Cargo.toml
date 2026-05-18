@@ -1,0 +1,26 @@
+[package]
+name = "pandacss_fs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[features]
+default = ["os"]
+os = ["dep:walkdir"]
+memory = []
+
+[dependencies]
+fast-glob = { workspace = true }
+oxc_resolver = { workspace = true }
+rustc-hash = { workspace = true }
+walkdir = { workspace = true, optional = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
+tempfile = "3.13"
+
+[lints]
+workspace = true

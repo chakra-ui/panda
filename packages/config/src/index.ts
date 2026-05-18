@@ -8,5 +8,13 @@ export { loadConfig } from './load-config'
 export { resolveConfig } from './resolve-config'
 export { mergeConfigs } from './merge-config'
 export { mergeHooks } from './merge-hooks'
+export {
+  createConfigSnapshot,
+  createSerializedConfig,
+  type ConfigCallbacks,
+  type ConfigCallbackKind,
+  type ConfigSnapshot,
+  type SerializedConfig,
+} from './serialized-config'
 export { convertTsPathsToRegexes } from './ts-config-paths'
 export type { BundleConfigResult } from './types'
