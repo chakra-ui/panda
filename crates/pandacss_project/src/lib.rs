@@ -38,7 +38,6 @@ mod parsed_file;
 mod patterns;
 mod recipes;
 mod system;
-mod tokens;
 
 use std::borrow::Cow;
 use std::collections::BTreeMap;

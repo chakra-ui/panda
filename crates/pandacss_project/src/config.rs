@@ -12,19 +12,20 @@ use pandacss_extractor::{
 };
 use pandacss_recipes::{Recipe, SlotRecipe, recipe_jsx_names, slot_recipe_jsx_names};
 use pandacss_shared::{capitalize, compile_js_regex};
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
 
 use crate::conditions::ProjectConditions;
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
 use crate::system::System;
-use crate::tokens::create_token_dictionary;
 use crate::{ConfigError, RecipeKey, Result};
 
 pub(crate) fn system_from_config(config: Config) -> Result<System> {
     let entries = ConfigEntries::from_config(&config)?;
-    let token_dictionary = create_token_dictionary(&config).map(Arc::new);
+    let token_dictionary = TokenDictionary::from_config(&config)
+        .map_err(config_error_from_token_error)?
+        .map(Arc::new);
     let utility = Utility::from_config_with_options(
         &config.utilities,
         utility_options_from_config(&config, token_dictionary.clone()),
@@ -58,6 +59,10 @@ pub(crate) fn system_from_config(config: Config) -> Result<System> {
         config_recipes: config_recipes_from_definitions(&entries.recipes),
         config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
     })
+}
+
+fn config_error_from_token_error(error: TokenError) -> ConfigError {
+    ConfigError::config(format!("invalid token config: {error}"))
 }
 
 #[derive(Debug, Clone)]
@@ -502,15 +507,10 @@ fn jsx_regexes(value: Option<&Value>, path: &str) -> Result<Vec<Regex>> {
         let source = object
             .get("source")
             .and_then(Value::as_str)
-            .ok_or_else(|| {
-                ConfigError::new(format!("invalid regex at {path}[{index}]: missing source"))
-            })?;
+            .ok_or_else(|| ConfigError::regex(path, index, "missing source"))?;
         let flags = object.get("flags").and_then(Value::as_str).unwrap_or("");
-        let regex = compile_js_regex(source, flags).ok_or_else(|| {
-            ConfigError::new(format!(
-                "invalid regex at {path}[{index}]: /{source}/{flags}"
-            ))
-        })?;
+        let regex = compile_js_regex(source, flags)
+            .ok_or_else(|| ConfigError::regex(path, index, format!("/{source}/{flags}")))?;
         out.push(regex);
     }
     Ok(out)

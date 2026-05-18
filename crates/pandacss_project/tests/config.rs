@@ -52,7 +52,7 @@ fn invalid_serialized_jsx_regex_returns_error() {
 
     assert_eq!(
         error.to_string(),
-        "invalid regex at patterns.stack.jsx[0]: /[/"
+        "Regex error at patterns.stack.jsx[0]: /[/"
     );
 }
 
