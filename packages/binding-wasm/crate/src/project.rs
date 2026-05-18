@@ -32,11 +32,41 @@ use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig, UtilityConfig};
 pub struct WasmProject {
     inner: pandacss_project::Project,
     config: serde_json::Value,
+    callbacks: CallbackHost,
+}
+
+struct CallbackHost {
     utility_transform_refs: HashMap<String, String>,
     pattern_transform_refs: HashMap<String, String>,
     utility_transforms: HashMap<String, js_sys::Function>,
     pattern_transforms: HashMap<String, js_sys::Function>,
     transform_cache: TransformCache,
+}
+
+impl CallbackHost {
+    fn empty() -> Self {
+        Self {
+            utility_transform_refs: HashMap::new(),
+            pattern_transform_refs: HashMap::new(),
+            utility_transforms: HashMap::new(),
+            pattern_transforms: HashMap::new(),
+            transform_cache: TransformCache::default(),
+        }
+    }
+
+    fn from_config(config: &UserConfig) -> Self {
+        Self {
+            utility_transform_refs: get_utility_transform_refs(config),
+            pattern_transform_refs: get_pattern_transform_refs(config),
+            utility_transforms: HashMap::new(),
+            pattern_transforms: HashMap::new(),
+            transform_cache: TransformCache::default(),
+        }
+    }
+
+    fn has_pattern_transforms(&self) -> bool {
+        !self.pattern_transforms.is_empty()
+    }
 }
 
 #[wasm_bindgen]
@@ -64,28 +94,19 @@ impl WasmProject {
         extractor_config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
         extractor_config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
 
-        let (config_snapshot, utility_transform_refs, pattern_transform_refs) =
-            if let Some(config_value) = opts.config {
-                let config_snapshot = config_value.clone();
-                let config: UserConfig = serde_json::from_value(config_value)
-                    .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
-                (
-                    config_snapshot,
-                    get_utility_transform_refs(&config),
-                    get_pattern_transform_refs(&config),
-                )
-            } else {
-                (serde_json::Value::Null, HashMap::new(), HashMap::new())
-            };
+        let (config_snapshot, callbacks) = if let Some(config_value) = opts.config {
+            let config_snapshot = config_value.clone();
+            let config: UserConfig = serde_json::from_value(config_value)
+                .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+            (config_snapshot, CallbackHost::from_config(&config))
+        } else {
+            (serde_json::Value::Null, CallbackHost::empty())
+        };
 
         Ok(Self {
             inner: pandacss_project::Project::from_extractor_config(extractor_config),
             config: config_snapshot,
-            utility_transform_refs,
-            pattern_transform_refs,
-            utility_transforms: HashMap::new(),
-            pattern_transforms: HashMap::new(),
-            transform_cache: TransformCache::default(),
+            callbacks,
         })
     }
 
@@ -109,19 +130,14 @@ impl WasmProject {
         let config_snapshot = config_value.clone();
         let config: UserConfig = serde_json::from_value(config_value)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
-        let utility_transform_refs = get_utility_transform_refs(&config);
-        let pattern_transform_refs = get_pattern_transform_refs(&config);
+        let callbacks = CallbackHost::from_config(&config);
         let project = pandacss_project::Project::from_config(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
             config: config_snapshot,
-            utility_transform_refs,
-            pattern_transform_refs,
-            utility_transforms: HashMap::new(),
-            pattern_transforms: HashMap::new(),
-            transform_cache: TransformCache::default(),
+            callbacks,
         })
     }
 
@@ -129,16 +145,16 @@ impl WasmProject {
     /// the user callback so Rust only has to pass the raw value.
     #[wasm_bindgen(js_name = registerUtilityTransform)]
     pub fn register_utility_transform(&mut self, id: String, callback: js_sys::Function) {
-        self.utility_transforms.insert(id, callback);
-        self.transform_cache.clear_utility();
+        self.callbacks.utility_transforms.insert(id, callback);
+        self.callbacks.transform_cache.clear_utility();
     }
 
     /// Register a JS-backed pattern transform callback. The wrapper package
     /// installs callbacks referenced by the serialized config snapshot.
     #[wasm_bindgen(js_name = registerPatternTransform)]
     pub fn register_pattern_transform(&mut self, id: String, callback: js_sys::Function) {
-        self.pattern_transforms.insert(id, callback);
-        self.transform_cache.clear_pattern();
+        self.callbacks.pattern_transforms.insert(id, callback);
+        self.callbacks.transform_cache.clear_pattern();
     }
 
     /// Extract + encode a single file. Replaces any prior contribution
@@ -148,23 +164,19 @@ impl WasmProject {
     /// Returns a JS error if serializing the per-call report fails.
     #[wasm_bindgen(js_name = parseFile)]
     pub fn parse_file(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let report = if self.pattern_transforms.is_empty() {
+        let report = if !self.callbacks.has_pattern_transforms() {
             self.inner.parse_file(path, source)
         } else {
             let WasmProject {
-                inner,
-                pattern_transform_refs,
-                pattern_transforms,
-                transform_cache,
-                ..
+                inner, callbacks, ..
             } = self;
             let mut transform = |name: &str, styles: &Literal| {
                 apply_pattern_transform(
                     name,
                     styles,
-                    pattern_transform_refs,
-                    pattern_transforms,
-                    transform_cache,
+                    &callbacks.pattern_transform_refs,
+                    &callbacks.pattern_transforms,
+                    &mut callbacks.transform_cache,
                 )
             };
             inner.parse_file_with_pattern_transforms(path, source, &mut transform)
@@ -194,7 +206,7 @@ impl WasmProject {
     /// token dictionary, and cross-file resolver intact.
     pub fn clear(&mut self) {
         self.inner.clear();
-        self.transform_cache.clear();
+        self.callbacks.transform_cache.clear();
     }
 
     /// Return the serialized config snapshot this project was constructed
@@ -225,9 +237,9 @@ impl WasmProject {
         let atoms = collect_sorted_atoms(self.inner.atoms());
         let atoms = apply_utility_transforms(
             atoms,
-            &self.utility_transform_refs,
-            &self.utility_transforms,
-            &mut self.transform_cache,
+            &self.callbacks.utility_transform_refs,
+            &self.callbacks.utility_transforms,
+            &mut self.callbacks.transform_cache,
         )?;
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         atoms
@@ -286,9 +298,9 @@ impl WasmProject {
             .map_err(|err| JsValue::from_str(&err.to_string()))?;
         let encoded = apply_utility_transforms_to_encoded_recipes(
             snapshot,
-            &self.utility_transform_refs,
-            &self.utility_transforms,
-            &mut self.transform_cache,
+            &self.callbacks.utility_transform_refs,
+            &self.callbacks.utility_transforms,
+            &mut self.callbacks.transform_cache,
         )?;
         let json =
             serde_json::to_string(&encoded).map_err(|err| JsValue::from_str(&err.to_string()))?;

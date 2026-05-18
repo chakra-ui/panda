@@ -56,6 +56,10 @@ pub struct RecipeEntry {
 pub struct Project {
     inner: pandacss_project::Project,
     config: serde_json::Value,
+    callbacks: CallbackHost,
+}
+
+struct CallbackHost {
     utility_transform_refs: HashMap<String, String>,
     pattern_transform_refs: HashMap<String, String>,
     utility_transforms: HashMap<
@@ -67,6 +71,26 @@ pub struct Project {
         FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
     >,
     transform_cache: TransformCache,
+}
+
+impl CallbackHost {
+    fn from_config(config: &UserConfig) -> Self {
+        Self {
+            utility_transform_refs: get_utility_transform_refs(config),
+            pattern_transform_refs: get_pattern_transform_refs(config),
+            utility_transforms: HashMap::new(),
+            pattern_transforms: HashMap::new(),
+            transform_cache: TransformCache::default(),
+        }
+    }
+
+    fn has_pattern_transforms(&self) -> bool {
+        !self.pattern_transforms.is_empty()
+    }
+
+    fn has_utility_transforms(&self) -> bool {
+        !self.utility_transforms.is_empty()
+    }
 }
 
 #[napi]
@@ -86,18 +110,13 @@ impl Project {
         let config_snapshot = config.clone();
         let config: UserConfig = serde_json::from_value(config)
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
-        let utility_transform_refs = get_utility_transform_refs(&config);
-        let pattern_transform_refs = get_pattern_transform_refs(&config);
+        let callbacks = CallbackHost::from_config(&config);
         let project = pandacss_project::Project::from_config(config)
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         Ok(Self {
             inner: apply_project_options(project, opts),
             config: config_snapshot,
-            utility_transform_refs,
-            pattern_transform_refs,
-            utility_transforms: HashMap::new(),
-            pattern_transforms: HashMap::new(),
-            transform_cache: TransformCache::default(),
+            callbacks,
         })
     }
 
@@ -122,8 +141,8 @@ impl Project {
         id: String,
         callback: FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
     ) {
-        self.utility_transforms.insert(id, callback);
-        self.transform_cache.clear_utility();
+        self.callbacks.utility_transforms.insert(id, callback);
+        self.callbacks.transform_cache.clear_utility();
     }
 
     /// Register a JS-backed pattern transform callback. Pattern transforms
@@ -139,8 +158,8 @@ impl Project {
         id: String,
         callback: FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
     ) {
-        self.pattern_transforms.insert(id, callback);
-        self.transform_cache.clear_pattern();
+        self.callbacks.pattern_transforms.insert(id, callback);
+        self.callbacks.transform_cache.clear_pattern();
     }
 
     /// Extract + encode a single file. Re-parsing a path replaces its prior
@@ -151,23 +170,19 @@ impl Project {
         reason = "NAPI requires owned arguments"
     )]
     pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
-        let report = if self.pattern_transforms.is_empty() {
+        let report = if !self.callbacks.has_pattern_transforms() {
             self.inner.parse_file(&path, &source)
         } else {
             let Project {
-                inner,
-                pattern_transform_refs,
-                pattern_transforms,
-                transform_cache,
-                ..
+                inner, callbacks, ..
             } = self;
             let mut transform = |name: &str, styles: &Literal| {
                 apply_pattern_transform(
                     name,
                     styles,
-                    pattern_transform_refs,
-                    pattern_transforms,
-                    transform_cache,
+                    &callbacks.pattern_transform_refs,
+                    &callbacks.pattern_transforms,
+                    &mut callbacks.transform_cache,
                     &env,
                 )
             };
@@ -213,7 +228,7 @@ impl Project {
     #[napi]
     pub fn clear(&mut self) {
         self.inner.clear();
-        self.transform_cache.clear();
+        self.callbacks.transform_cache.clear();
     }
 
     /// Returns `true` when the project has no files and no accumulated output.
@@ -229,14 +244,14 @@ impl Project {
     #[must_use]
     pub fn atoms(&mut self, env: Env) -> napi::Result<Vec<crate::Atom>> {
         let atoms = to_atoms(self.inner.atoms());
-        if self.utility_transforms.is_empty() {
+        if !self.callbacks.has_utility_transforms() {
             return Ok(atoms);
         }
         apply_utility_transforms(
             atoms,
-            &self.utility_transform_refs,
-            &self.utility_transforms,
-            &mut self.transform_cache,
+            &self.callbacks.utility_transform_refs,
+            &self.callbacks.utility_transforms,
+            &mut self.callbacks.transform_cache,
             &env,
         )
     }
@@ -275,14 +290,14 @@ impl Project {
     pub fn encoded_recipes(&mut self, env: Env) -> napi::Result<serde_json::Value> {
         let encoded = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .unwrap_or(serde_json::Value::Null);
-        if self.utility_transforms.is_empty() {
+        if !self.callbacks.has_utility_transforms() {
             return Ok(encoded);
         }
         apply_utility_transforms_to_encoded_recipes(
             encoded,
-            &self.utility_transform_refs,
-            &self.utility_transforms,
-            &mut self.transform_cache,
+            &self.callbacks.utility_transform_refs,
+            &self.callbacks.utility_transforms,
+            &mut self.callbacks.transform_cache,
             &env,
         )
     }
