@@ -11,18 +11,11 @@
 //! atoms in watch mode.
 //!
 //! ```rust,ignore
+//! use pandacss_config::UserConfig;
 //! use pandacss_project::Project;
-//! use pandacss_extractor::{Matchers, Matcher, NameMatcher};
 //!
-//! let matchers = Matchers {
-//!     css: Matcher {
-//!         modules: vec!["@panda/css".into()],
-//!         names: NameMatcher::only(["css", "cva", "sva"]),
-//!     },
-//!     ..Default::default()
-//! };
-//!
-//! let mut project = Project::from_matchers(matchers);
+//! let config = UserConfig::default();
+//! let mut project = Project::from_config(config)?;
 //! project.parse_file("button.tsx", "import {{ css }} from '@panda/css'; css({{ color: 'red' }});");
 //! project.parse_file("card.tsx", /* … */);
 //!
@@ -31,6 +24,7 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
+mod compiled;
 mod conditions;
 mod config;
 mod error;
@@ -47,14 +41,13 @@ use std::sync::Arc;
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use smallvec::SmallVec;
 
-use pandacss_config::Config;
+use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder};
-use pandacss_extractor::{
-    CrossFileResolver, ExtractorConfig, Literal, MatchCategory, Matchers, extract,
-};
+use pandacss_extractor::{CrossFileResolver, Literal, MatchCategory, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::StyleNormalizer;
 
+pub use compiled::Config;
 pub(crate) use conditions::ProjectConditionMatcher;
 pub use error::{ConfigError, Result};
 pub use parsed_file::ParsedFile;
@@ -68,7 +61,7 @@ pub use system::System;
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
 pub struct Project {
-    system: Arc<System>,
+    config: Arc<Config>,
     files: FxHashMap<Arc<str>, FileEntry>,
     /// Deduplicated union of every value in `files`. Updated by reference
     /// counts on add/remove so [`Self::atoms`] hands out a stable
@@ -110,10 +103,11 @@ impl Project {
 
     #[must_use]
     pub fn from_system(system: System) -> Self {
-        let config_recipes = system.config_recipes.clone();
-        let config_slot_recipes = system.config_slot_recipes.clone();
+        let config = system.config_arc();
+        let config_recipes = config.config_recipes.clone();
+        let config_slot_recipes = config.config_slot_recipes.clone();
         Self {
-            system: Arc::new(system),
+            config,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
@@ -127,24 +121,14 @@ impl Project {
         }
     }
 
-    pub fn from_config(config: Config) -> Result<Self> {
+    pub fn from_config(config: UserConfig) -> Result<Self> {
         Ok(Self::from_system(System::new(config)?))
     }
 
     #[must_use]
-    pub fn from_matchers(matchers: Matchers) -> Self {
-        Self::from_extractor_config(ExtractorConfig::new(matchers))
-    }
-
-    #[must_use]
-    pub fn from_extractor_config(extractor_config: ExtractorConfig) -> Self {
-        Self::from_system(System::from_extractor_config(extractor_config))
-    }
-
-    #[must_use]
     pub fn with_cross_file(mut self, resolver: CrossFileResolver) -> Self {
-        Arc::get_mut(&mut self.system)
-            .expect("project system is uniquely owned during construction")
+        Arc::get_mut(&mut self.config)
+            .expect("project config is uniquely owned during construction")
             .extractor_config
             .cross_file = Some(resolver);
         self
@@ -182,7 +166,7 @@ impl Project {
             return self.files.get(path).expect("checked above").report.clone();
         }
 
-        let result = extract(source, path, &self.system.extractor_config);
+        let result = extract(source, path, &self.config.extractor_config);
         let diagnostics = result.diagnostics;
         let mut report = ParseFileReport {
             css_calls: 0,
@@ -197,7 +181,8 @@ impl Project {
         self.drop_file_state(path);
         let path_key: Arc<str> = Arc::from(path);
 
-        let mut encoder = Encoder::with_conditions(self.system.conditions.clone());
+        let compiled = self.config.as_ref();
+        let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
         let mut encoded_recipes = EncodedRecipes::default();
         let empty_object = Literal::Object(Vec::new());
         for call in result.calls {
@@ -255,7 +240,7 @@ impl Project {
                         continue;
                     };
                     if let Some(transform) = pattern_transform.as_deref_mut() {
-                        let pattern = self.system.patterns.transform_input(&call.name, &arg);
+                        let pattern = compiled.patterns.transform_input(&call.name, &arg);
                         match transform(pattern.name, pattern.styles.as_ref()) {
                             Ok(Some(style)) => {
                                 self.process_style_props(&mut encoder, &style);
@@ -268,10 +253,10 @@ impl Project {
                 (MatchCategory::Recipe, _) => {
                     let arg = arg.as_ref().unwrap_or(&empty_object);
                     encoded_recipes.process_usage(
-                        &self.system.recipes,
+                        &compiled.recipes,
                         &call.name,
                         arg,
-                        &self.system.conditions,
+                        &compiled.conditions,
                     );
                 }
                 _ => {}
@@ -279,10 +264,9 @@ impl Project {
         }
 
         for jsx in result.jsx {
-            let recipe_names = self.system.recipes.find_by_jsx(&jsx.name);
+            let recipe_names = compiled.recipes.find_by_jsx(&jsx.name);
             if !recipe_names.is_empty() {
-                if let Some(style_props) = self
-                    .system
+                if let Some(style_props) = compiled
                     .recipes
                     .style_props_for_recipes(&recipe_names, &jsx.data)
                 {
@@ -290,10 +274,10 @@ impl Project {
                 }
                 for recipe_name in &recipe_names {
                     encoded_recipes.process_usage(
-                        &self.system.recipes,
+                        &compiled.recipes,
                         recipe_name,
                         &jsx.data,
-                        &self.system.conditions,
+                        &compiled.conditions,
                     );
                 }
                 report.jsx_usages += 1;
@@ -301,7 +285,7 @@ impl Project {
             }
 
             let style = if let Some(transform) = pattern_transform.as_deref_mut() {
-                let pattern = self.system.patterns.transform_input(&jsx.name, &jsx.data);
+                let pattern = compiled.patterns.transform_input(&jsx.name, &jsx.data);
                 match transform(pattern.name, pattern.styles.as_ref()) {
                     Ok(Some(style)) => style,
                     Ok(None) => jsx.data,
@@ -365,9 +349,8 @@ impl Project {
         }
     }
 
-    /// Clear every path's state in one pass; the [`ExtractorConfig`] is
-    /// kept. Useful when the user's config changes and the project needs
-    /// to be re-fed.
+    /// Clear every path's state in one pass; the compiled [`Config`] is
+    /// kept. Useful when the source graph needs to be re-fed.
     pub fn clear(&mut self) {
         self.files.clear();
         self.atoms_cache.clear();
@@ -435,8 +418,8 @@ impl Project {
 
     fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
         StyleNormalizer {
-            utility: self.system.utility.as_ref(),
-            breakpoints: &self.system.breakpoints,
+            utility: self.config.utility.as_ref(),
+            breakpoints: &self.config.breakpoints,
             shorthand: true,
         }
         .normalize(style)
@@ -538,13 +521,8 @@ impl Project {
     }
 
     #[must_use]
-    pub fn config(&self) -> Option<&Config> {
-        self.system.config()
-    }
-
-    #[must_use]
-    pub fn serialized_config(&self) -> Option<&Config> {
-        self.config()
+    pub fn config(&self) -> &Config {
+        &self.config
     }
 }
 

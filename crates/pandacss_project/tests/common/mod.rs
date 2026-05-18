@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
-use pandacss_config::Config;
+use pandacss_config::UserConfig;
 use pandacss_encoder::Atom;
 use pandacss_project::Project;
 use serde_json::{Value, json};
 
-pub fn create_config(overrides: Value) -> Config {
+pub fn create_config(overrides: Value) -> UserConfig {
     let mut config = json!({
         "outdir": "styled-system",
         "importMap": {

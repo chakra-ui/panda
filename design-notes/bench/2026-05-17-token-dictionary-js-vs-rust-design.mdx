@@ -44,7 +44,7 @@ compact token records, resolve references once, materialize derived records, the
 
 ## Current Rust State
 
-- `pandacss_tokens` owns `TokenDictionary::from_config(&Config)`.
+- `pandacss_tokens` owns `TokenDictionary::from_config(&UserConfig)`.
 - `project` no longer owns config-derived token walking; it asks the token crate during `System::new(config)`.
 - `pandacss_config` now models token categories with typed values derived from `packages/types/src/tokens.ts`
   (`ShadowValue`, `GradientValue`, `BorderValue`, `AssetValue`, etc.) instead of exposing token trees as raw

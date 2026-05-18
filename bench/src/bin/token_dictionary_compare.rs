@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use pandacss_config::Config;
+use pandacss_config::UserConfig;
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use serde_json::{Value, json};
 
@@ -100,7 +100,7 @@ fn parse_args() -> Args {
     args
 }
 
-fn generated_config(tokens: usize) -> Config {
+fn generated_config(tokens: usize) -> UserConfig {
     serde_json::from_value(json!({
         "theme": {
             "tokens": {

@@ -9,11 +9,11 @@
 //! - `__tests__/semantic-token.test.ts` → conditional vs base precedence
 //! - implicit deprecation / extension tests
 //!
-//! Config-derived construction now lives in this crate so project/system
+//! UserConfig-derived construction now lives in this crate so project/system
 //! can treat tokens as an internal compiled domain model.
 
 use insta::assert_yaml_snapshot;
-use pandacss_config::Config;
+use pandacss_config::UserConfig;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use serde_json::json;
 
@@ -550,7 +550,7 @@ fn extend_flat_builds_a_usable_dictionary() {
 
 #[test]
 fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "breakpoints": {
                 "sm": "640px",
@@ -675,7 +675,7 @@ fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
 
 #[test]
 fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -747,7 +747,7 @@ fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
 
 #[test]
 fn from_config_transforms_composite_token_values() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -822,7 +822,7 @@ fn from_config_transforms_composite_token_values() {
 
 #[test]
 fn from_config_expands_color_mix_references() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -867,7 +867,7 @@ fn from_config_expands_color_mix_references() {
 
 #[test]
 fn from_config_uses_css_var_prefix_and_hash_options() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "prefix": {
             "cssVar": "panda"
         },
@@ -912,7 +912,7 @@ fn from_config_uses_css_var_prefix_and_hash_options() {
 
 #[test]
 fn from_config_builds_color_palette_view() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -967,7 +967,7 @@ fn from_config_builds_color_palette_view() {
 
 #[test]
 fn from_config_color_palette_handles_default_keyword() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -1010,7 +1010,7 @@ fn from_config_color_palette_handles_default_keyword() {
 
 #[test]
 fn from_config_color_palette_handles_nested_semantic_defaults() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "semanticTokens": {
                 "colors": {
@@ -1074,7 +1074,7 @@ fn from_config_color_palette_handles_nested_semantic_defaults() {
 
 #[test]
 fn from_config_respects_color_palette_options() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "colorPalette": {
                 "include": ["red*"]
@@ -1114,7 +1114,7 @@ fn from_config_respects_color_palette_options() {
 
 #[test]
 fn from_config_color_palette_include_exclude_match_js_cases() {
-    let include_config: Config = serde_json::from_value(json!({
+    let include_config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "colorPalette": {
                 "include": ["red", "blue"]
@@ -1151,7 +1151,7 @@ fn from_config_color_palette_include_exclude_match_js_cases() {
       "--colors-color-palette-700": var(--colors-red-700)
     "##);
 
-    let exclude_config: Config = serde_json::from_value(json!({
+    let exclude_config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "colorPalette": {
                 "exclude": ["red"]
@@ -1191,7 +1191,7 @@ fn from_config_color_palette_include_exclude_match_js_cases() {
 
 #[test]
 fn from_config_color_palette_include_supports_semantic_tokens() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "colorPalette": {
                 "include": ["primary"]
@@ -1226,7 +1226,7 @@ fn from_config_color_palette_include_supports_semantic_tokens() {
 
 #[test]
 fn from_config_can_disable_color_palette_generation() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "colorPalette": {
                 "enabled": false
@@ -1255,7 +1255,7 @@ fn from_config_can_disable_color_palette_generation() {
 
 #[test]
 fn from_config_resolves_alias_chains_like_js_dictionary() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "colors": {
@@ -1282,7 +1282,7 @@ fn from_config_resolves_alias_chains_like_js_dictionary() {
 
 #[test]
 fn from_config_flattens_deep_semantic_conditions_like_js() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "semanticTokens": {
                 "colors": {
@@ -1331,7 +1331,7 @@ fn from_config_flattens_deep_semantic_conditions_like_js() {
 
 #[test]
 fn from_config_applies_spacing_middlewares() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "tokens": {
                 "spacing": {

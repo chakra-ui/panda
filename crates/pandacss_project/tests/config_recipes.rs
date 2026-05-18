@@ -619,6 +619,55 @@ fn recipe_compound_variants_emit_only_when_selected() {
 }
 
 #[test]
+fn recipe_compound_variants_match_any_selected_value() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "badge": {
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "16px" },
+                            "lg": { "fontSize": "20px" }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": ["sm", "md"],
+                            "css": { "color": "tomato" }
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { badge } from '@panda/recipes';
+            badge({ size: 'md' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: badge
+        slot: ~
+        className: badge--size_md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+    atomic:
+      - prop: color
+        value: tomato
+        conditions: []
+    ");
+}
+
+#[test]
 fn recipe_compound_variants_inherit_selected_conditions() {
     let mut project = create_project(json!({
         "theme": {

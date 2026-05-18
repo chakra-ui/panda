@@ -72,7 +72,7 @@ trivial: unknown paths are silently filtered.
 
 ### Configuration parsing
 
-`pandacss_config::Config` is the Rust-facing resolved config input. Config resolution still lives on the JS side; Rust
+`pandacss_config::UserConfig` is the Rust-facing resolved config input. Config resolution still lives on the JS side; Rust
 does not execute `panda.config.*`, presets, hooks, or plugins. The resolved config flows into
 `pandacss_project::System::new(config)`, which compiles extractor matchers, JSX config, utility metadata, conditions,
 breakpoints, patterns, recipes, and token dictionary data into runtime structures.

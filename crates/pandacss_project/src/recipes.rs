@@ -64,7 +64,7 @@ struct ResolvedSlotVariantGroup {
 
 #[derive(Debug, Clone)]
 struct ResolvedCompoundVariant {
-    conditions: Vec<(Box<str>, Box<str>)>,
+    conditions: Vec<(Box<str>, Vec<Box<str>>)>,
     atoms: FxHashSet<Atom>,
 }
 
@@ -343,7 +343,7 @@ fn resolve_recipe_compounds(
         .compound_variants
         .iter()
         .map(|compound| ResolvedCompoundVariant {
-            conditions: intern_variant_pairs(&compound.conditions),
+            conditions: intern_variant_condition_values(&compound.conditions),
             atoms: resolver.atoms(&compound.css),
         })
         .collect()
@@ -420,20 +420,25 @@ fn resolve_slot_recipe_compounds(
                 atoms.extend(resolver.atoms(style));
             }
             ResolvedCompoundVariant {
-                conditions: intern_variant_pairs(&compound.conditions),
+                conditions: intern_variant_condition_values(&compound.conditions),
                 atoms,
             }
         })
         .collect()
 }
 
-fn intern_variant_pairs(pairs: &[(String, String)]) -> Vec<(Box<str>, Box<str>)> {
+fn intern_variant_condition_values(
+    pairs: &[(String, Vec<String>)],
+) -> Vec<(Box<str>, Vec<Box<str>>)> {
     pairs
         .iter()
-        .map(|(name, value)| {
+        .map(|(name, values)| {
             (
                 name.clone().into_boxed_str(),
-                value.clone().into_boxed_str(),
+                values
+                    .iter()
+                    .map(|value| value.clone().into_boxed_str())
+                    .collect(),
             )
         })
         .collect()
@@ -868,11 +873,13 @@ fn compound_conditions(
     selected: &FxHashMap<Box<str>, Vec<SelectedVariantValue>>,
 ) -> Option<SmallVec<[Box<str>; 2]>> {
     let mut out = SmallVec::new();
-    for (name, value) in &compound.conditions {
+    for (name, values) in &compound.conditions {
         let selected_values = selected.get(name.as_ref())?;
-        let selected_value = selected_values
-            .iter()
-            .find(|selected| selected.key.as_ref() == value.as_ref())?;
+        let selected_value = selected_values.iter().find(|selected| {
+            values
+                .iter()
+                .any(|value| selected.key.as_ref() == value.as_ref())
+        })?;
         extend_unique_conditions(&mut out, &selected_value.conditions);
     }
     Some(out)

@@ -375,7 +375,7 @@ impl TokenDictionary {
         TokenDictionaryBuilder::default()
     }
 
-    pub fn from_config(config: &pandacss_config::Config) -> Result<Option<Self>, TokenError> {
+    pub fn from_config(config: &pandacss_config::UserConfig) -> Result<Option<Self>, TokenError> {
         Self::from_options(TokenDictionaryOptions::from_config(config))
     }
 

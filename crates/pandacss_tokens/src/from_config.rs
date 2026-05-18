@@ -2,12 +2,11 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 use pandacss_config::{
-    ColorPaletteOptions, Config, Deprecated, SemanticTokens, SemanticValue, Theme,
-    ThemeVariantsMap, TokenEntry, TokenGroup, TokenNode, Tokens,
+    ColorPaletteOptions, Deprecated, SemanticTokens, SemanticValue, Theme, ThemeVariantsMap,
+    TokenEntry, TokenGroup, TokenNode, Tokens, UserConfig,
 };
 use pandacss_shared::{capitalize, number_to_js_string, to_hash};
 use rustc_hash::FxHashMap;
-use serde_json::Value;
 
 use crate::{
     Token, TokenCategory, TokenDictionary, TokenDictionaryBuilder, TokenError,
@@ -25,12 +24,12 @@ pub struct TokenDictionaryOptions<'a> {
 
 impl<'a> TokenDictionaryOptions<'a> {
     #[must_use]
-    pub fn from_config(config: &'a Config) -> Self {
+    pub fn from_config(config: &'a UserConfig) -> Self {
         Self {
             theme: &config.theme,
             themes: &config.themes,
-            prefix: css_var_prefix_from_config(config.extra.get("prefix")),
-            hash: css_var_hash_from_config(config.extra.get("hash")),
+            prefix: config.prefix.css_var(),
+            hash: config.hash.css_var(),
             color_palette: &config.theme.color_palette,
         }
     }
@@ -881,23 +880,4 @@ fn color_mix(
     out.push_str(&opacity);
     out.push_str(", transparent)");
     Ok(out)
-}
-
-fn css_var_prefix_from_config(value: Option<&Value>) -> Option<&str> {
-    match value {
-        Some(Value::String(value)) => Some(value.as_str()),
-        Some(Value::Object(value)) => value.get("cssVar").and_then(Value::as_str),
-        _ => None,
-    }
-}
-
-fn css_var_hash_from_config(value: Option<&Value>) -> bool {
-    match value {
-        Some(Value::Bool(value)) => *value,
-        Some(Value::Object(value)) => value
-            .get("cssVar")
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
-        _ => false,
-    }
 }

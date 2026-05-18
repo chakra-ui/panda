@@ -22,7 +22,7 @@ full design.
 `pandacss_config`, `pandacss_tokens`, `pandacss_recipes`.
 
 Pure data models with parsing from serializable config or `pandacss_extractor::Literal` to typed shapes. No traversal,
-no encoding, no I/O. `pandacss_config::Config` is the canonical resolved config input consumed by project/system
+no encoding, no I/O. `pandacss_config::UserConfig` is the canonical resolved config input consumed by project/system
 construction. `pandacss_recipes` depends on `pandacss_extractor` for `Literal`, but only as a serializable input shape —
 not for walker machinery.
 
@@ -39,7 +39,7 @@ sibling tiers — different axes of work, neither depends on the other.
 `pandacss_project`.
 
 The `Project` crate wires everything together. `System` compiles immutable config-derived runtime state from
-`pandacss_config::Config`; `Project` owns mutable build/watch state. This crate is the primary entry point for
+`pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate is the primary entry point for
 `@pandacss/binding` and the recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to
 this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
 

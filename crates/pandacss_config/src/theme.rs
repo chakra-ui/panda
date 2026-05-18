@@ -4,6 +4,8 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::JsxSpecifier;
+
 pub type StyleConfig = Value;
 pub type TokenGroup<T> = IndexMap<String, TokenNode<T>>;
 
@@ -25,9 +27,9 @@ pub struct Theme {
     #[serde(default)]
     pub animation_styles: StyleConfig,
     #[serde(default)]
-    pub recipes: BTreeMap<String, Value>,
+    pub recipes: BTreeMap<String, RecipeConfig>,
     #[serde(default)]
-    pub slot_recipes: BTreeMap<String, Value>,
+    pub slot_recipes: BTreeMap<String, RecipeConfig>,
     #[serde(default)]
     pub container_names: Vec<String>,
     #[serde(default)]
@@ -87,6 +89,47 @@ pub struct ThemeVariant {
     pub tokens: Tokens,
     #[serde(default)]
     pub semantic_tokens: SemanticTokens,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecipeConfig {
+    #[serde(default, rename = "className")]
+    pub class_name: Option<String>,
+    #[serde(default)]
+    pub jsx: Vec<JsxSpecifier>,
+    #[serde(default)]
+    pub slots: Vec<String>,
+    #[serde(default)]
+    pub base: Option<StyleConfig>,
+    #[serde(default)]
+    pub variants: BTreeMap<String, BTreeMap<String, StyleConfig>>,
+    #[serde(default, rename = "defaultVariants")]
+    pub default_variants: BTreeMap<String, VariantSelection>,
+    #[serde(default, rename = "compoundVariants")]
+    pub compound_variants: Vec<CompoundVariantConfig>,
+    #[serde(default)]
+    pub deprecated: Option<Deprecated>,
+    #[serde(default, rename = "staticCss")]
+    pub static_css: Value,
+    #[serde(flatten)]
+    pub extra: serde_json::Map<String, Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum VariantSelection {
+    String(String),
+    Number(f64),
+    Bool(bool),
+    Array(Vec<VariantSelection>),
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CompoundVariantConfig {
+    pub css: StyleConfig,
+    #[serde(flatten)]
+    pub conditions: BTreeMap<String, VariantSelection>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

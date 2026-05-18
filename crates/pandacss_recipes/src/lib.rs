@@ -72,7 +72,7 @@ pub struct VariantOption {
 /// match for `css` to apply on top of base + per-variant styles.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CompoundVariant {
-    pub conditions: Vec<(String, String)>,
+    pub conditions: Vec<(String, Vec<String>)>,
     pub css: Literal,
 }
 
@@ -107,7 +107,7 @@ pub struct SlotVariantOption {
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SlotCompoundVariant {
-    pub conditions: Vec<(String, String)>,
+    pub conditions: Vec<(String, Vec<String>)>,
     pub css: Vec<(String, Literal)>,
 }
 
@@ -287,7 +287,8 @@ fn parse_variants_owned(literal: Literal) -> Vec<VariantGroup> {
     out
 }
 
-/// Entries missing `css` drop; non-scalar condition values drop.
+/// Entries missing `css` drop; condition values support Panda's
+/// `OneOrMore` shape (`"sm"` or `["sm", "md"]`).
 fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
     let Literal::Array(items) = literal else {
         return Vec::new();
@@ -296,12 +297,12 @@ fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
         .into_iter()
         .filter_map(|item| {
             let entries = object_entries_owned(item)?;
-            let mut conditions: Vec<(String, String)> = Vec::new();
+            let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
             let mut css: Option<Literal> = None;
             for (key, value) in entries {
                 if key == "css" {
                     css = Some(value);
-                } else if let Some(value) = variant_condition_value(&value) {
+                } else if let Some(value) = variant_condition_values(&value) {
                     conditions.push((key, value));
                 }
             }
@@ -370,12 +371,12 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
         .into_iter()
         .filter_map(|item| {
             let entries = object_entries_owned(item)?;
-            let mut conditions: Vec<(String, String)> = Vec::new();
+            let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
             let mut css: Vec<(String, Literal)> = Vec::new();
             for (key, value) in entries {
                 if key == "css" {
                     css = parse_slot_styles_owned(value);
-                } else if let Some(value) = variant_condition_value(&value) {
+                } else if let Some(value) = variant_condition_values(&value) {
                     conditions.push((key, value));
                 }
             }
@@ -386,6 +387,19 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
             }
         })
         .collect()
+}
+
+fn variant_condition_values(value: &Literal) -> Option<Vec<String>> {
+    match value {
+        Literal::Array(values) => {
+            let values = values
+                .iter()
+                .map(variant_condition_value)
+                .collect::<Option<Vec<_>>>()?;
+            (!values.is_empty()).then_some(values)
+        }
+        value => variant_condition_value(value).map(|value| vec![value]),
+    }
 }
 
 fn variant_condition_value(value: &Literal) -> Option<String> {

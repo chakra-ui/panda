@@ -1,10 +1,10 @@
 use insta::assert_yaml_snapshot;
-use pandacss_config::Config;
+use pandacss_config::UserConfig;
 use serde_json::json;
 
 #[test]
 fn deserializes_typed_theme_shape() {
-    let config: Config = serde_json::from_value(json!({
+    let config: UserConfig = serde_json::from_value(json!({
         "theme": {
             "breakpoints": {
                 "md": "768px",
@@ -39,7 +39,23 @@ fn deserializes_typed_theme_shape() {
             },
             "recipes": {
                 "button": {
-                    "className": "button"
+                    "className": "button",
+                    "jsx": ["Button"],
+                    "base": { "display": "inline-flex" },
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" }
+                        }
+                    },
+                    "defaultVariants": {
+                        "size": "sm"
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": ["sm", "md"],
+                            "css": { "fontWeight": "bold" }
+                        }
+                    ]
                 }
             },
             "slotRecipes": {
@@ -82,6 +98,14 @@ fn deserializes_typed_theme_shape() {
     assert_yaml_snapshot!(json!({
         "breakpointNames": config.theme.breakpoint_names(),
         "recipes": config.theme.recipes.keys().collect::<Vec<_>>(),
+        "button": config.theme.recipes.get("button").map(|recipe| json!({
+            "className": recipe.class_name.as_deref(),
+            "jsx": recipe.jsx.len(),
+            "base": recipe.base.as_ref(),
+            "variants": recipe.variants.keys().collect::<Vec<_>>(),
+            "defaultVariants": recipe.default_variants.keys().collect::<Vec<_>>(),
+            "compoundVariants": recipe.compound_variants.len(),
+        })),
         "slotRecipes": config.theme.slot_recipes.keys().collect::<Vec<_>>(),
         "containerNames": &config.theme.container_names,
         "colorPalette": {
@@ -97,6 +121,16 @@ fn deserializes_typed_theme_shape() {
       - md
     recipes:
       - button
+    button:
+      className: button
+      jsx: 1
+      base:
+        display: inline-flex
+      variants:
+        - size
+      defaultVariants:
+        - size
+      compoundVariants: 1
     slotRecipes:
       - card
     containerNames:

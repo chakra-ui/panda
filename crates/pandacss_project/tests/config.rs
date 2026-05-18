@@ -1,4 +1,4 @@
-//! Config-derived project construction behavior.
+//! UserConfig-derived project construction behavior.
 
 mod common;
 

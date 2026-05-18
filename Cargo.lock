@@ -42,6 +42,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
+ "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_project",
@@ -56,6 +57,7 @@ version = "0.0.0"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
+ "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_fs",
@@ -1122,6 +1124,7 @@ name = "pandacss_utility"
 version = "0.0.0"
 dependencies = [
  "insta",
+ "pandacss_config",
  "pandacss_extractor",
  "pandacss_shared",
  "pandacss_tokens",
