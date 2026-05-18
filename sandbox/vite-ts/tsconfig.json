@@ -5,6 +5,7 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,

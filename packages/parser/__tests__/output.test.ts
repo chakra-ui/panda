@@ -2640,6 +2640,141 @@ describe('extract to css output pipeline', () => {
     `)
   })
 
+  test('styled recipe component extraction without recipe jsx config', () => {
+    const code = `
+    import { styled } from "styled-system/jsx"
+    import { button } from "styled-system/recipes"
+
+    const ReusableButton = styled("button", button)
+
+    export default function Page() {
+      return <ReusableButton size="md" variant="solid" color="red.300" />
+    }
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'button',
+              base: {
+                color: 'sky.100',
+              },
+              variants: {
+                size: {
+                  sm: { borderRadius: 'sm' },
+                  md: { borderRadius: 'md' },
+                },
+                variant: {
+                  solid: { backgroundColor: 'blue.500' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "styled",
+          "type": "css",
+        },
+        {
+          "data": [
+            {
+              "color": "red.300",
+              "size": "md",
+              "variant": "solid",
+            },
+          ],
+          "name": "ReusableButton",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+  })
+
+  test('styled recipe wrapper component extraction without recipe jsx config', () => {
+    const code = `
+    import { styled } from "styled-system/jsx"
+    import { button } from "styled-system/recipes"
+
+    const BaseButton = styled("button", button)
+
+    export const Button = (props) => {
+      const { children, ...rest } = props
+
+      return <BaseButton {...rest}>{children}</BaseButton>
+    }
+
+    export default function Page() {
+      return <Button size="md" variant="solid" state="hovered" color="red.300" />
+    }
+     `
+    const result = parseAndExtract(code, {
+      theme: {
+        extend: {
+          recipes: {
+            button: {
+              className: 'button',
+              base: {
+                color: 'sky.100',
+              },
+              variants: {
+                size: {
+                  sm: { borderRadius: 'sm' },
+                  md: { borderRadius: 'md' },
+                },
+                variant: {
+                  solid: { backgroundColor: 'blue.500' },
+                },
+                state: {
+                  hovered: { color: 'pink.400' },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    expect(result.json).toMatchInlineSnapshot(`
+      [
+        {
+          "data": [
+            {},
+          ],
+          "name": "styled",
+          "type": "css",
+        },
+        {
+          "data": [
+            {},
+          ],
+          "name": "Button",
+          "type": "jsx",
+        },
+        {
+          "data": [
+            {
+              "color": "red.300",
+              "size": "md",
+              "state": "hovered",
+              "variant": "solid",
+            },
+          ],
+          "name": "Button",
+          "type": "jsx-recipe",
+        },
+      ]
+    `)
+  })
+
   test('array syntax within config recipes', () => {
     const code = `
     import { css } from "styled-system/css"

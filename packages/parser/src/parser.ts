@@ -5,10 +5,69 @@ import { logger } from '@pandacss/logger'
 import { astish } from '@pandacss/shared'
 import type { ParserResultConfigureOptions, ResultItem, JsxFactoryResultTransform } from '@pandacss/types'
 import type { SourceFile } from 'ts-morph'
-import { Node } from 'ts-morph'
+import { Node, SyntaxKind } from 'ts-morph'
 import { match } from 'ts-pattern'
 import { getImportDeclarations } from './get-import-declarations'
 import { ParserResult } from './parser-result'
+
+const getStyledComponentName = (node: Node) => {
+  const variableDeclaration = node.getFirstAncestorByKind(SyntaxKind.VariableDeclaration)
+  if (!variableDeclaration || variableDeclaration.getInitializer() !== node) return
+
+  const nameNode = variableDeclaration.getNameNode()
+  return Node.isIdentifier(nameNode) ? nameNode.getText() : undefined
+}
+
+const getJsxElementName = (node: Node) => {
+  if (Node.isJsxSelfClosingElement(node)) {
+    return node.getTagNameNode().getText()
+  }
+
+  if (Node.isJsxOpeningElement(node)) {
+    return node.getTagNameNode().getText()
+  }
+}
+
+const getWrapperComponentName = (node: Node) => {
+  if (Node.isFunctionDeclaration(node)) {
+    return node.getName()
+  }
+
+  if (Node.isVariableDeclaration(node)) {
+    const nameNode = node.getNameNode()
+    const initializer = node.getInitializer()
+
+    if (!Node.isIdentifier(nameNode)) return
+    if (!initializer || (!Node.isArrowFunction(initializer) && !Node.isFunctionExpression(initializer))) return
+
+    return nameNode.getText()
+  }
+}
+
+const findRenderedComponentName = (node: Node, componentNames: Set<string>) => {
+  let renderedComponentName: string | undefined
+
+  node.forEachDescendant((descendant, traversal) => {
+    if (renderedComponentName) {
+      traversal.stop()
+      return
+    }
+
+    const tagName = getJsxElementName(descendant)
+    if (tagName && componentNames.has(tagName)) {
+      renderedComponentName = tagName
+      traversal.stop()
+    }
+  })
+
+  return renderedComponentName
+}
+
+const getAliasedSymbolDeclarations = (node: Node) => {
+  const symbol = node.getSymbol()
+  const aliasedSymbol = symbol?.getAliasedSymbol()
+  return (aliasedSymbol ?? symbol)?.getDeclarations() ?? []
+}
 
 const combineResult = (unboxed: Unboxed) => {
   return [...unboxed.conditions, unboxed.raw, ...unboxed.spreadConditions]
@@ -50,6 +109,108 @@ export function createParser(context: ParserOptions) {
       return parserResult
     }
 
+    const recipeByComponentCache = new Map<string, Map<string, string>>()
+
+    const getRecipeByComponent = (targetSourceFile: SourceFile) => {
+      const targetFilePath = targetSourceFile.getFilePath()
+      const cached = recipeByComponentCache.get(targetFilePath)
+      if (cached) return cached
+
+      const targetFile = imports.file(getImportDeclarations(context, targetSourceFile))
+      const recipeByComponent = new Map<string, string>()
+
+      targetSourceFile.forEachDescendant((node) => {
+        if (!Node.isCallExpression(node)) return
+
+        const fnName = node.getExpression().getText()
+        if (!targetFile.isJsxFactory(fnName)) return
+
+        const componentName = getStyledComponentName(node)
+        if (!componentName) return
+
+        const recipeArg = node.getArguments()[1]
+        if (!recipeArg) return
+
+        if (!Node.isIdentifier(recipeArg) && !Node.isPropertyAccessExpression(recipeArg)) return
+
+        const recipeName = targetFile.getName(targetFile.normalizeFnName(recipeArg.getText()))
+        if (!targetFile.isValidRecipe(recipeName)) return
+
+        recipeByComponent.set(componentName, recipeName)
+      })
+
+      let shouldResolveRecipeWrappers = true
+      while (shouldResolveRecipeWrappers) {
+        shouldResolveRecipeWrappers = false
+
+        targetSourceFile.forEachDescendant((node) => {
+          const componentName = getWrapperComponentName(node)
+          if (!componentName || recipeByComponent.has(componentName)) return
+
+          const renderedComponentName = findRenderedComponentName(node, new Set(recipeByComponent.keys()))
+          if (!renderedComponentName) return
+
+          recipeByComponent.set(componentName, recipeByComponent.get(renderedComponentName)!)
+          shouldResolveRecipeWrappers = true
+        })
+      }
+
+      recipeByComponentCache.set(targetFilePath, recipeByComponent)
+      return recipeByComponent
+    }
+
+    const recipeByComponent = getRecipeByComponent(sourceFile)
+
+    sourceFile.forEachDescendant((node) => {
+      const tagName = getJsxElementName(node)
+      if (!tagName || recipeByComponent.has(tagName)) return
+
+      const tagNameNode =
+        Node.isJsxSelfClosingElement(node) || Node.isJsxOpeningElement(node) ? node.getTagNameNode() : undefined
+      if (!tagNameNode || !Node.isIdentifier(tagNameNode)) return
+
+      for (const declaration of getAliasedSymbolDeclarations(tagNameNode)) {
+        const declarationFile = declaration.getSourceFile()
+        if (declarationFile === sourceFile) continue
+
+        const importedRecipeByComponent = getRecipeByComponent(declarationFile)
+        const recipeName = importedRecipeByComponent.get(tagName)
+        if (!recipeName) continue
+
+        recipeByComponent.set(tagName, recipeName)
+        break
+      }
+
+      if (recipeByComponent.has(tagName)) return
+
+      for (const importDeclaration of sourceFile.getImportDeclarations()) {
+        const moduleSourceFile = importDeclaration.getModuleSpecifierSourceFile()
+        if (!moduleSourceFile) continue
+
+        for (const namedImport of importDeclaration.getNamedImports()) {
+          const localName = namedImport.getAliasNode()?.getText() ?? namedImport.getName()
+          if (localName !== tagName) continue
+
+          const importedRecipeByComponent = getRecipeByComponent(moduleSourceFile)
+          const recipeName = importedRecipeByComponent.get(namedImport.getName())
+          if (!recipeName) continue
+
+          recipeByComponent.set(tagName, recipeName)
+          break
+        }
+
+        if (recipeByComponent.has(tagName)) break
+      }
+    })
+
+    const isRecipeComponentProp = (tagName: string, propName: string) => {
+      const recipeName = recipeByComponent.get(tagName)
+      if (!recipeName) return false
+
+      const recipe = recipes.getRecipe(recipeName)
+      return recipe?.props.includes(propName) ?? false
+    }
+
     const extractResultByName = extract({
       ast: sourceFile,
       tokens: context.tokens
@@ -71,7 +232,8 @@ export function createParser(context: ParserOptions) {
               return !!file.matchTag(prop.tagName)
             },
             matchProp: (prop) => {
-              const isPandaProp = file.matchTagProp(prop.tagName, prop.propName)
+              const isPandaProp =
+                file.matchTagProp(prop.tagName, prop.propName) || isRecipeComponentProp(prop.tagName, prop.propName)
 
               if (options?.matchTagProp) {
                 return isPandaProp && options.matchTagProp(prop.tagName, prop.propName)
@@ -303,6 +465,24 @@ export function createParser(context: ParserOptions) {
           switch (true) {
             case file.isJsxFactory(name) || file.isJsxFactory(alias): {
               parserResult.setJsx({ type: 'jsx-factory', name: name, box: query.box, data })
+              break
+            }
+            case recipeByComponent.has(name): {
+              parserResult.setRecipe(recipeByComponent.get(name)!, {
+                type: 'jsx-recipe',
+                name: name,
+                box: query.box,
+                data,
+              })
+              break
+            }
+            case recipeByComponent.has(alias): {
+              parserResult.setRecipe(recipeByComponent.get(alias)!, {
+                type: 'jsx-recipe',
+                name: alias,
+                box: query.box,
+                data,
+              })
               break
             }
             case jsx.isJsxTagPattern(name) || jsx.isJsxTagPattern(alias): {

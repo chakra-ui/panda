@@ -4,7 +4,7 @@ import { Circle, HStack, Stack, panda } from '../styled-system/jsx'
 import { circle as circleLike, stack, vstack } from '../styled-system/patterns'
 import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
-import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
+import { AnotherButtonWithRegex, Button, ListedButton, ReusableButton } from './Button'
 import { Card } from './Card'
 
 const SomeRecipe = panda('div', someRecipe)
@@ -80,6 +80,9 @@ function App() {
           AnotherButtonWithRegex
         </AnotherButtonWithRegex>
         <PrimaryButtonLike>Default props override</PrimaryButtonLike>
+        <ReusableButton variant="secondary" size="md" color="red.300">
+          Reusable recipe component
+        </ReusableButton>
       </section>
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>
@@ -93,6 +96,10 @@ function App() {
         <Badge status="success" background="pink.800">
           Welcome
         </Badge>
+
+        <ReusableButton variant="secondary" size="sm" color="red.300">
+          Reusable recipe component
+        </ReusableButton>
       </section>
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>
