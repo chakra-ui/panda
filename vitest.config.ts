@@ -27,6 +27,10 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
       'sandbox/codegen/__tests__/frameworks',
+      // Binding tests need `snapshotFormat.compareKeys: null` to preserve the
+      // JSON key order coming from the Rust binding. Run them via
+      // `pnpm --filter @pandacss/binding test` which picks up the local config.
+      'packages/binding/__tests__/**',
     ],
   },
   resolve: {

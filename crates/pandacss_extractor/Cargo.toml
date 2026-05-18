@@ -1,0 +1,38 @@
+[package]
+name = "pandacss_extractor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[features]
+default = ["os"]
+os = ["pandacss_fs/os"]
+memory = ["pandacss_fs/memory"]
+
+[dependencies]
+oxc_allocator = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_diagnostics = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_resolver = { workspace = true }
+oxc_semantic = { workspace = true }
+oxc_span = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rustc-hash = { workspace = true }
+regex = { workspace = true }
+pandacss_fs = { workspace = true }
+pandacss_shared = { workspace = true }
+pandacss_tokens = { workspace = true }
+
+[dev-dependencies]
+indoc = { workspace = true }
+insta = { workspace = true }
+pandacss_fs = { workspace = true, features = ["memory"] }
+
+[lints]
+workspace = true

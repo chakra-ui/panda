@@ -4,6 +4,7 @@ import type { LoadConfigResult, UserConfig } from '@pandacss/types'
 import { getBundledPreset, presetBase, presetPanda } from './bundled-preset'
 import { getResolvedConfig } from './get-resolved-config'
 import { mergeHooks } from './merge-hooks'
+import { createSerializedConfig } from './serialized-config'
 import type { BundleConfigResult } from './types'
 import { validateConfig } from './validate-config'
 
@@ -75,7 +76,7 @@ export async function resolveConfig(result: BundleConfigResult, cwd: string): Pr
     }
   }
 
-  const serialized = stringifyJson(Object.assign({}, loadConfigResult.config, { name: PANDA_CONFIG_NAME, presets: [] }))
+  const serialized = stringifyJson(createSerializedConfig(loadConfigResult.config))
   const deserialize = () => parseJson(serialized)
 
   return { ...loadConfigResult, serialized, deserialize, hooks }

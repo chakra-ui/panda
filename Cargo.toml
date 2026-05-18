@@ -1,0 +1,72 @@
+[workspace]
+members = [
+  "bench",
+  "crates/*",
+  "packages/binding/crate",
+  "packages/binding-wasm/crate",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/chakra-ui/panda"
+rust-version = "1.93"
+
+[workspace.dependencies]
+napi = { version = "3.3.0", default-features = false, features = ["napi4", "serde-json"] }
+napi-build = "2.2.3"
+napi-derive = "3.3.0"
+oxc_allocator = "0.130.0"
+oxc_ast = "0.130.0"
+oxc_ast_visit = "0.130.0"
+oxc_diagnostics = "0.130.0"
+oxc_parser = "0.130.0"
+oxc_resolver = "11.19.1"
+oxc_semantic = "0.130.0"
+oxc_span = "0.130.0"
+pandacss_cache = { path = "crates/pandacss_cache" }
+pandacss_config = { path = "crates/pandacss_config" }
+pandacss_emitter = { path = "crates/pandacss_emitter" }
+pandacss_encoder = { path = "crates/pandacss_encoder" }
+pandacss_engine = { path = "crates/pandacss_engine" }
+pandacss_extractor = { path = "crates/pandacss_extractor", default-features = false }
+pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
+pandacss_optimizer = { path = "crates/pandacss_optimizer" }
+pandacss_project = { path = "crates/pandacss_project" }
+pandacss_recipes = { path = "crates/pandacss_recipes" }
+pandacss_shared = { path = "crates/pandacss_shared" }
+pandacss_tokens = { path = "crates/pandacss_tokens" }
+pandacss_utility = { path = "crates/pandacss_utility" }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.145", features = ["preserve_order"] }
+insta = { version = "1.47.2", features = ["yaml"] }
+fast-glob = "1"
+indoc = "2.0.7"
+itoa = "1.0"
+rustc-hash = "2.1"
+ryu = "1.0"
+smallvec = { version = "1.13", features = ["serde"] }
+walkdir = "2"
+regex = "1.12.2"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+unused_unsafe = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)"] }
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+panic = "abort"
+strip = "symbols"

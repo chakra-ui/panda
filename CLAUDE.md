@@ -4,7 +4,8 @@ This guide helps AI assistants understand the Panda CSS codebase structure, conv
 
 ## Project Overview
 
-Panda CSS is a CSS-in-JS framework with static extraction capabilities. The project is a monorepo managed by **pnpm** with workspace support.
+Panda CSS is a CSS-in-JS framework with static extraction capabilities. The project is a monorepo managed by **pnpm**
+with workspace support.
 
 ## Key Architecture
 
@@ -20,6 +21,21 @@ Panda CSS is a CSS-in-JS framework with static extraction capabilities. The proj
   /fixture/        # Shared test fixtures and utilities
   /postcss/        # PostCSS plugin
   /preset-*/       # Design system presets
+  /binding/        # @pandacss/binding — NAPI wrapper around Rust engine
+    /crate/        # binding_napi cdylib (NAPI boundary only)
+  /binding-wasm/   # @pandacss/binding-wasm — browser wasm-bindgen wrapper
+    /crate/        # binding_wasm cdylib (wasm32-unknown-unknown)
+
+/crates/           # Rust workspace — the v2 Oxc-based compiler engine
+  /extractor/      # Oxc-based AST scanning + extraction
+  /engine/         # Orchestrator (extract → encode → emit → optimize → cache)
+  /encoder/        # Style usage → atomic rules
+  /emitter/        # Encoded rules → flat CSS
+  /optimizer/      # lightningcss wrapper
+  /cache/          # File/rule caches
+  /config/         # Serializable config types
+
+/bench/            # Rust + TS benchmark harness for the OSS-2400 spike
 
 /sandbox/          # Integration tests and examples
   /codegen/        # Generated code validation tests
@@ -64,6 +80,7 @@ cd packages/core && pnpm test
 ```
 
 **Key test commands:**
+
 ```bash
 pnpm test <path>              # Run tests for specific package/file
 pnpm test packages/core       # Test all core package tests
@@ -74,12 +91,14 @@ pnpm build-fast               # Fast build without type definitions
 ### Package Management
 
 **Use `--ignore-scripts` for dependency updates:**
+
 ```bash
 pnpm install --ignore-scripts
 pnpm update <package> --ignore-scripts
 ```
 
 **When updating PostCSS or browserslist-related packages:**
+
 1. Update package.json versions
 2. Run `pnpm install --ignore-scripts`
 3. Run `pnpm test packages/core` to verify CSS output unchanged
@@ -123,6 +142,7 @@ pnpm update <package> --ignore-scripts
 ```
 
 **Format:**
+
 ```markdown
 ---
 '@pandacss/package-name': patch|minor|major
@@ -135,6 +155,7 @@ Brief description of the change and its impact.
 ```
 
 **Changeset types:**
+
 - `patch`: Bug fixes, dependency updates, non-breaking changes
 - `minor`: New features, backwards-compatible changes
 - `major`: Breaking changes
@@ -142,12 +163,14 @@ Brief description of the change and its impact.
 ## Important Files & Patterns
 
 ### Configuration Flow
+
 1. User config → `packages/config/` → Config resolution
 2. Config hooks → `packages/types/src/config.ts`
 3. Context creation → `packages/node/src/` → `PandaContext`
 4. Code generation → `packages/generator/`
 
 ### CSS Processing Flow
+
 1. Style objects → `packages/core/src/rule-processor.ts`
 2. CSS generation → `packages/core/src/stylesheet.ts`
 3. Optimization → `packages/core/src/optimize.ts`
@@ -155,6 +178,7 @@ Brief description of the change and its impact.
    - LightningCSS path: `optimize-lightningcss.ts`
 
 ### Test Fixtures
+
 - `packages/fixture/` contains shared test utilities
 - `createContext()` and `createRuleProcessor()` are used throughout tests
 - Fixtures provide a base config with design tokens and recipes
@@ -164,12 +188,14 @@ Brief description of the change and its impact.
 ### Understanding Test Failures
 
 **Snapshot mismatches:**
+
 - Compare expected vs received CSS output carefully
 - Look for media query ordering, selector merging, or whitespace changes
 - Identify which dependency update caused the change
 - Common culprits: `postcss-merge-rules`, `postcss-nested`, `browserslist`
 
 **Build failures:**
+
 - Check TypeScript errors in `packages/*/src/`
 - Run `pnpm build-fast` for faster iteration without type checking
 - Use `pnpm typecheck` for type-only validation
@@ -177,6 +203,7 @@ Brief description of the change and its impact.
 ### Finding Code
 
 **Use search tools strategically:**
+
 - Grep for function names, class names, or specific strings
 - Check both `/src/` and `/__tests__/` directories
 - Look in `/packages/types/src/` for type definitions
@@ -190,7 +217,9 @@ Brief description of the change and its impact.
 4. **Workspace protocol**: Internal packages use `workspace:*` in dependencies
 5. **Multiple package.json**: Each package has its own, plus root package.json
 6. **Sandbox warnings**: Even if main packages are fine, check sandbox projects for warnings
-7. **TypeScript version sync**: The TypeScript version in the root `package.json` must match the version used by `ts-morph`'s dependency. Mismatches can cause parsing errors and type issues. Always verify `ts-morph` compatibility when updating TypeScript.
+7. **TypeScript version sync**: The TypeScript version in the root `package.json` must match the version used by
+   `ts-morph`'s dependency. Mismatches can cause parsing errors and type issues. Always verify `ts-morph` compatibility
+   when updating TypeScript.
 
 ## Package Relationships
 
@@ -208,7 +237,117 @@ Brief description of the change and its impact.
   ├─ lightningcss (optional, faster CSS processing)
   ├─ browserslist (browser targets)
   └─ postcss-* plugins (optimization)
+
+@pandacss/binding (v2, NAPI)
+  └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
+      ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
+      ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project
+      ├─ pandacss_engine, pandacss_emitter, pandacss_optimizer, pandacss_cache, pandacss_config (placeholders)
+      ├─ packages/binding/crate (binding_napi cdylib — native NAPI)
+      └─ packages/binding-wasm/crate (binding_wasm cdylib — browser wasm-bindgen)
 ```
+
+## Rust / Oxc Engine (v2 migration)
+
+The repo is in the middle of porting the compiler hot path from `ts-morph` + `ts-evaluator` to a Rust/Oxc engine.
+JS-facing APIs stay stable; Rust ships behind `@pandacss/binding`.
+
+**Read first** before touching Rust:
+
+- `design-notes/README.md` — index of durable Rust architectural decisions (crate layering, extraction pipeline, literal
+  evaluator, project lifecycle, NAPI boundary, performance budget, scope and boundaries, publish namespace). **Skim the
+  index on the first Rust task in any session and consult the specific note before any change in that area.** When you
+  change the underlying design, update the matching note in the same PR.
+- `RUST_OXC_MIGRATION.md` — the master plan, phase breakdown, data contract, hook semantics.
+- `RUST_ENGINE_SPIKE.mdx` — OSS-2400 spike spec + porting rules (crate boundaries, comment markers, unsafe policy,
+  output rules).
+
+### Toolchain
+
+- Rust pinned to `1.93.0` via `rust-toolchain.toml` (matches Oxc 0.130 MSRV).
+- Oxc crates: `oxc_allocator`, `oxc_ast`, `oxc_diagnostics`, `oxc_parser`, `oxc_span` at `0.130.0`.
+- Test deps: `insta` (inline YAML snapshots) + `indoc` (dedented multi-line source fixtures).
+
+### Commands
+
+```sh
+pnpm rust:check      # cargo check --workspace --locked
+pnpm rust:test       # cargo test --workspace --locked
+pnpm rust:fmt        # cargo fmt --all --check
+pnpm rust:clippy     # cargo clippy --all-targets --locked -- -D warnings
+pnpm bench:rust-spike                          # TS baseline benchmark
+pnpm --filter @pandacss/binding build:native   # build the NAPI .node artifact
+pnpm --filter @pandacss/binding test           # binding round-trip Vitest tests
+```
+
+Run these from the repo root via `pnpm`. Cargo binaries live in `~/.cargo/bin`; user shells (zsh) load `.zshenv` which
+adds it to PATH, so pnpm child processes inherit it.
+
+### Test Conventions
+
+- **Public-API tests live in `crates/<name>/tests/<feature>.rs`** as separate integration binaries — not in `src/`.
+  Inline `#[cfg(test)] mod tests` is reserved for private helpers (rare).
+- Use **inline YAML snapshots**: `assert_yaml_snapshot!(value, @"...")` from `insta`. Update with
+  `cargo insta test --accept -p <crate>` or `cargo insta review`.
+- Use `indoc! {"..."}` for multi-line source fixtures so spans match plain unindented source.
+- For tests where output text isn't part of the contract (e.g. Oxc parse error messages), assert shape only.
+
+### Porting Comment Markers
+
+Use these exact strings so audits can run with `rg`:
+
+```rust
+// TODO(port): unsupported or uncertain behavior — must be behind TS fallback.
+// PERF(port): known performance-sensitive translation; needs benchmark before default flip.
+// SAFETY: invariant that makes an unsafe block valid (mandatory next to every unsafe).
+// PORT NOTE: intentional reshaping from the TypeScript implementation.
+```
+
+### Workspace Lints
+
+`Cargo.toml` enables `clippy::all` + `clippy::pedantic` workspace-wide, plus warn on `dbg_macro` / `todo` /
+`unimplemented` / `print_stdout` / `print_stderr`. CI runs with `-D warnings`, so anything clippy flags blocks the
+build. Per-function `#[allow(...)]` is fine when justified — include a `reason = "..."` (e.g. NAPI requires owned
+`String` parameters so `clippy::needless_pass_by_value` must be allowed on `#[napi]` entry points).
+
+### Native Binding (`@pandacss/binding`)
+
+- `packages/binding/crate/src/lib.rs` is the NAPI boundary — thin mirror types only, no compiler logic.
+- TS wrapper `packages/binding/src/index.ts` defines the public API + a no-op fallback for unsupported platforms.
+- Loader `src/load-binary.ts` looks for `binding.node` next to the package root, then falls back to
+  `@pandacss/binding-native`.
+- Native artifact (`binding.node`) and auto-generated `native.d.ts` are gitignored.
+- **NAPI quirks**: `#[napi]` functions can't take `&str` — use owned `String` with
+  `#[allow(clippy::needless_pass_by_value, reason = "...")]`. `Option<T>` accepts `undefined`/omitted in JS but **not
+  `null`** — TS callers should leave the field off, not pass `null`.
+
+### Current State
+
+- ✅ Workspace scaffold, CI, NAPI binding skeleton (OSS-2400/2401).
+- ✅ `scan_imports()` over Oxc — full named/default/namespace/side-effect/type-only coverage.
+- ✅ `match_imports()` — ports `ImportMap.match()` semantics from `packages/core/src/import-map.ts`.
+- ✅ `extract_calls()` — literal object/array/primitive extraction from `css({...})`, namespace member calls
+  (`p.css({...})`), multi-arg patterns. Positional `Option<Literal>` so non-extractable args don't shift indices.
+- ✅ `extract_jsx()` — `<Box>`, `<styled.div>`, `<JSX.Stack>` style-prop extraction with boolean-shorthand +
+  literal-spread merge.
+- ✅ `extract()` (combined hot path) + `extract_debug()` (kitchen-sink) — single parse per file; lean result strips
+  `imports`/`matched` for production callers.
+- ⬜ Next: Phase 5 — same-file static evaluator (identifier resolution, `token()` resolution, conditionals).
+
+### Parse-error contract
+
+Oxc recovers from parse errors and returns a partial AST. All four entrypoints (`scan_imports`, `extract_calls`,
+`extract_jsx`, `extract`) run their visitors on whatever AST Oxc produces, so a result can include extractions **and**
+non-empty `diagnostics` simultaneously. **Treat `diagnostics` as authoritative**: code that needs strict correctness
+should bail when `!diagnostics.is_empty()`. Build pipelines that already tolerate ts-morph's recovery don't need to
+change behaviour.
+
+### Package Naming for Publishing
+
+All Rust crates use the `pandacss_*` prefix (e.g. `pandacss_extractor`, `pandacss_encoder`). Directories and
+`[package] name` both. Underscore, not hyphen — the package name and the `use` path are identical. The `binding_napi`
+cdylib at `packages/binding/crate/` is a deliberate exception (its output `binding.node` is loaded by name on the TS
+side). All crates are `publish = false` today. See `design-notes/publish-namespace.md` for the full rationale.
 
 ## Useful References
 
@@ -216,6 +355,7 @@ Brief description of the change and its impact.
 - **Type definitions**: `packages/types/src/` (comprehensive types)
 - **Integration examples**: `/sandbox/` (real-world usage)
 - **Test patterns**: `packages/fixture/` and `packages/core/__tests__/`
+- **Rust migration**: `RUST_OXC_MIGRATION.md` and `RUST_ENGINE_SPIKE.mdx`
 
 ## Best Practices for AI Assistants
 
@@ -229,6 +369,7 @@ Brief description of the change and its impact.
 ## Emergency Rollback
 
 If a change breaks things:
+
 ```bash
 git checkout packages/          # Revert package.json changes
 pnpm install --ignore-scripts   # Restore dependencies
@@ -237,5 +378,4 @@ pnpm test packages/core         # Verify tests pass
 
 ---
 
-**Last Updated**: 2025-01-17
-**Project Version**: 1.4.2
+**Last Updated**: 2026-05-15 **Project Version**: v2 branch (Rust/Oxc migration in progress)
