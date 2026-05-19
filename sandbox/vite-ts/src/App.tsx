@@ -6,6 +6,7 @@ import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton, ReusableButton } from './Button'
 import { Card } from './Card'
+import { MyButton, PageButton } from './mybutton'
 
 const SomeRecipe = panda('div', someRecipe)
 
@@ -83,6 +84,10 @@ function App() {
         <ReusableButton variant="secondary" size="md" color="red.300">
           Reusable recipe component
         </ReusableButton>
+
+        <MyButton variant="purple" size="md">Click Me</MyButton>
+        <PageButton variant="primary" size="sm">Hello</PageButton>
+
       </section>
 
       <section className={css({ padding: '5', borderWidth: '1px' })}>

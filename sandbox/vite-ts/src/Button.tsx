@@ -10,7 +10,7 @@ interface ButtonProps extends ButtonVariantProps {
   css?: SystemStyleObject
 }
 
-interface BaseButtonProps extends Omit<React.ComponentProps<typeof BaseButton>, 'children'> { 
+export interface BaseButtonProps extends Omit<React.ComponentProps<typeof BaseButton>, 'children'> { 
   children?: React.ReactNode
 }
 
