@@ -28,6 +28,7 @@ pub struct Config {
 
 impl Config {
     pub fn from_user_config(config: &UserConfig) -> Result<Self> {
+        let _span = tracing::debug_span!("config_from_user_config").entered();
         config::compile_config(config)
     }
 }

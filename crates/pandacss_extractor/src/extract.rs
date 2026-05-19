@@ -44,9 +44,14 @@ pub struct ExtractDebugResult {
 /// check `diagnostics.is_empty()` before trusting `calls` / `jsx`.
 #[must_use]
 pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
+    let extraction_span =
+        tracing::trace_span!("extraction", path = path, source_len = source.len()).entered();
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type).parse();
+    let parser_return = {
+        let _span = tracing::trace_span!("oxc_parse", path = path).entered();
+        Parser::new(&allocator, source, source_type).parse()
+    };
 
     let imports = collect_imports(&parser_return.program);
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
@@ -59,6 +64,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     // Parse diagnostics still flow through because they're independent
     // of Panda usage.
     if matched.is_empty() && !config.jsx.has_component_matchers() {
+        drop(extraction_span);
         return ExtractUsage {
             calls: Vec::new(),
             jsx: Vec::new(),
@@ -88,9 +94,14 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
 
 #[must_use]
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
+    let _span =
+        tracing::trace_span!("extraction_debug", path = path, source_len = source.len()).entered();
     let allocator = Allocator::default();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type).parse();
+    let parser_return = {
+        let _span = tracing::trace_span!("oxc_parse", path = path).entered();
+        Parser::new(&allocator, source, source_type).parse()
+    };
 
     let imports = collect_imports(&parser_return.program);
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);

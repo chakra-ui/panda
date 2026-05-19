@@ -209,3 +209,10 @@ async function main() {
 }
 
 main()
+  .catch((error) => {
+    process.exitCode = 1
+    console.error(error)
+  })
+  .finally(() => {
+    binding.shutdownTracing()
+  })

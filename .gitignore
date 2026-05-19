@@ -25,6 +25,7 @@ packages/binding/native.d.ts
 .vercel
 
 ## Panda
+.panda
 styled-system
 styled-system-static
 panda

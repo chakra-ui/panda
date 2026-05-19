@@ -40,6 +40,7 @@ impl Extractor {
         reason = "NAPI requires owned constructor arguments"
     )]
     pub fn new(matchers: Matchers) -> Self {
+        crate::init_tracing();
         Self {
             config: to_core_config(matchers),
         }
@@ -52,6 +53,7 @@ impl Extractor {
         reason = "NAPI requires owned arguments"
     )]
     pub fn extract(&self, source: String, path: String) -> ExtractResult {
+        crate::init_tracing();
         let result = pandacss_extractor::extract(&source, &path, &self.config);
         ExtractResult {
             calls: result.calls.into_iter().map(to_call).collect(),
@@ -71,6 +73,7 @@ impl Extractor {
         reason = "NAPI requires owned arguments"
     )]
     pub fn extract_debug(&self, source: String, path: String) -> ExtractDebugResult {
+        crate::init_tracing();
         let result = pandacss_extractor::extract_debug(&source, &path, &self.config);
         ExtractDebugResult {
             imports: result.imports.into_iter().map(convert_record).collect(),

@@ -31,6 +31,7 @@ pub struct ExtractDebugResult {
     reason = "NAPI requires owned arguments"
 )]
 pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResult {
+    crate::init_tracing();
     let config = to_core_config(matchers);
     let result = pandacss_extractor::extract(&source, &path, &config);
     ExtractResult {
@@ -51,6 +52,7 @@ pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResul
     reason = "NAPI requires owned arguments"
 )]
 pub fn extract_debug(source: String, path: String, matchers: Matchers) -> ExtractDebugResult {
+    crate::init_tracing();
     let config = to_core_config(matchers);
     let result = pandacss_extractor::extract_debug(&source, &path, &config);
     ExtractDebugResult {

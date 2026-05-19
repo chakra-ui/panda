@@ -34,6 +34,7 @@ pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
+pandacss_tracing = { path = "crates/pandacss_tracing" }
 pandacss_utility = { path = "crates/pandacss_utility" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
@@ -48,6 +49,9 @@ ryu = "1.0"
 smallvec = { version = "1.13", features = ["serde"] }
 walkdir = "2"
 regex = "1.12.2"
+tracing = "0.1.44"
+tracing-chrome = "0.7"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

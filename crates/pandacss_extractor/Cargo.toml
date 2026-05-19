@@ -29,6 +29,7 @@ smallvec = { workspace = true }
 pandacss_fs = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_tokens = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 indoc = { workspace = true }

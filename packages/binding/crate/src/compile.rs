@@ -36,6 +36,8 @@ pub struct CompileManifest {
     reason = "NAPI requires owned input on the JS-facing boundary"
 )]
 pub fn compile(input: Option<CompileInput>) -> CompileOutput {
+    crate::init_tracing();
+    let _span = tracing::debug_span!("config_compile", entry = "compile_placeholder").entered();
     let file_count = input
         .as_ref()
         .and_then(|input| input.files.as_ref())

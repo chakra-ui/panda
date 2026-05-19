@@ -25,3 +25,5 @@ design note explaining the trade-off.
   extractor spot check showing 773×.
 - [2026-05-17 — token-dictionary-js-vs-rust-design](./2026-05-17-token-dictionary-js-vs-rust-design.mdx) — design
   comparison and benchmark plan for moving token dictionary construction/middleware parity into Rust.
+- [2026-05-18 — binding-boundary-instrumentation](./2026-05-18-binding-boundary-instrumentation.mdx) — release-mode
+  boundary numbers with tracing disabled vs Chrome JSON trace output enabled.

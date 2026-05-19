@@ -294,6 +294,15 @@ export type ProjectCallbacks = Partial<Record<ProjectCallbackKind, Record<string
 
 export type UserConfig = Record<string, unknown>
 
+export interface TraceOptions {
+  /** Tracing filter, e.g. "trace", "debug", or "pandacss_project=trace". */
+  filter?: string
+  /** `fmt` writes to stderr; `chrome-json` writes a Chrome trace file. */
+  output?: 'fmt' | 'chrome-json'
+  /** Required for useful `chrome-json` output. Defaults to `.panda/trace.json`. */
+  file?: string
+}
+
 export interface ConfigSnapshot {
   config: UserConfig
   callbacks?: ProjectCallbacks
@@ -328,6 +337,9 @@ export interface ProjectConstructor {
 }
 
 export interface NativeBinding {
+  startTracing?(options?: TraceOptions): boolean
+  flushTracing?(): void
+  shutdownTracing?(): boolean
   compile(input?: CompileInput): CompileOutput
   scanImports(source: string, path: string): ImportScanResult
   matchImports(scan: ImportScanResult, matchers: Matchers): MatchedImport[]
@@ -394,6 +406,15 @@ class FallbackProject implements ProjectInstance {
 }
 
 const fallback: NativeBinding = {
+  startTracing() {
+    return false
+  },
+  flushTracing() {
+    /* no-op */
+  },
+  shutdownTracing() {
+    return false
+  },
   compile() {
     return {
       css: '',
@@ -431,6 +452,18 @@ const nativeProjectFromConfig =
 
 export function compile(input: CompileInput = {}): CompileOutput {
   return binding.compile(input)
+}
+
+export function startTracing(options?: TraceOptions): boolean {
+  return binding.startTracing?.(options) ?? false
+}
+
+export function flushTracing(): void {
+  binding.flushTracing?.()
+}
+
+export function shutdownTracing(): boolean {
+  return binding.shutdownTracing?.() ?? false
 }
 
 /** Parse a single source file and return its import declarations.

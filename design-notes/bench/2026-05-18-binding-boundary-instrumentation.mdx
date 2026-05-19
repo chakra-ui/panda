@@ -1,0 +1,55 @@
+---
+title: Binding Boundary Instrumentation
+date: 2026-05-18
+fixtures:
+  - binding-boundary synthetic config/files
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+commit: 4bf03cca plus working-tree instrumentation changes
+mode: release builds only
+---
+
+# Binding Boundary Instrumentation
+
+## TL;DR
+
+Native and WASM bindings still run the existing boundary benchmark after adding tracing spans. The table below records
+release-mode numbers only; debug-mode numbers are intentionally omitted.
+
+| Mode                | NAPI config load | NAPI parse/call | NAPI atoms | NAPI recipes | WASM config load | WASM parse/call | WASM atoms | WASM recipes |
+| ------------------- | ---------------: | --------------: | ---------: | -----------: | ---------------: | --------------: | ---------: | -----------: |
+| tracing disabled    |          4.849 ms |        0.021 ms |   0.344 ms |     0.037 ms |        26.917 ms |        0.057 ms |   1.508 ms |     0.769 ms |
+| `chrome-json` trace |          2.215 ms |        0.029 ms |   0.105 ms |     0.046 ms |        31.527 ms |        0.061 ms |   1.079 ms |     0.810 ms |
+
+The traced run also wrote a Chrome trace at:
+
+```txt
+bench/.panda/traces/binding-boundary.json
+```
+
+That file parsed as valid JSON with 847 trace entries and included the expected span names: `config_compile`,
+`config_from_user_config`, `recipe_resolution`, `token_dictionary_build`, `file_parse`, `extraction`, `oxc_parse`,
+`encoding`, and `boundary_encode`.
+
+## Interpretation
+
+`chrome-json` tracing is for finding where time goes, not for headline throughput. It adds visible overhead to repeated
+native parse calls because those calls emit input-scaled `trace` spans.
+
+Use the disabled row for throughput comparisons. Use the traced row to decide which later micro-optimizations are worth
+investigating.
+
+## Reproduce
+
+```sh
+pnpm --filter @pandacss/binding build:native
+pnpm --filter @pandacss/binding-wasm build:wasm
+
+pnpm --filter @pandacss/bench binding-boundary --files 10 --repeat 10 --warm 2
+
+PANDA_TRACE=trace \
+PANDA_TRACE_OUTPUT=chrome-json \
+PANDA_TRACE_FILE=.panda/traces/binding-boundary.json \
+pnpm --filter @pandacss/bench binding-boundary --files 10 --repeat 10 --warm 2
+```
+
+The benchmark harness calls `shutdownTracing()` in `finally` so Chrome JSON is finalized before Node exits.

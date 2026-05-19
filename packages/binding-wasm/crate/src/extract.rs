@@ -53,6 +53,8 @@ impl WasmExtractor {
     #[wasm_bindgen(js_name = parseFile)]
     pub fn parse_file(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
         let result = extract(source, path, &self.config);
+        let _span =
+            tracing::trace_span!("boundary_encode", method = "extract_parse_file").entered();
         // `serialize_maps_as_objects(true)` turns serde `serialize_map` calls
         // into plain JS objects rather than `Map` instances — matches what
         // JS callers expect from a JSON-shaped result.

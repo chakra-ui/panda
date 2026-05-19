@@ -16,6 +16,7 @@ pub struct System {
 
 impl System {
     pub fn new(config: UserConfig) -> Result<Self> {
+        let _span = tracing::debug_span!("config_compile").entered();
         Ok(Self {
             config: Arc::new(Config::from_user_config(&config)?),
         })

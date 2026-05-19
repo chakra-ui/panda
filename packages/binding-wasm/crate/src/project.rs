@@ -181,6 +181,7 @@ impl WasmProject {
             };
             inner.parse_file_with_pattern_transforms(path, source, &mut transform)
         };
+        let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         report
             .serialize(&serializer)
@@ -234,6 +235,7 @@ impl WasmProject {
     /// # Errors
     /// Returns a JS error if serializing the atom array fails.
     pub fn atoms(&mut self) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
         let atoms = collect_sorted_atoms(self.inner.atoms());
         let atoms = apply_utility_transforms(
             atoms,
@@ -252,6 +254,7 @@ impl WasmProject {
     /// # Errors
     /// Returns a JS error if serializing fails.
     pub fn recipes(&self) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("boundary_encode", method = "recipes").entered();
         let entries: Vec<RecipeEntrySerde> = self
             .inner
             .recipes()
@@ -273,6 +276,7 @@ impl WasmProject {
     /// Returns a JS error if serializing fails.
     #[wasm_bindgen(js_name = slotRecipes)]
     pub fn slot_recipes(&self) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("boundary_encode", method = "slot_recipes").entered();
         let entries: Vec<RecipeEntrySerde> = self
             .inner
             .slot_recipes()
@@ -294,6 +298,7 @@ impl WasmProject {
     /// Returns a JS error if serializing fails.
     #[wasm_bindgen(js_name = encodedRecipes)]
     pub fn encoded_recipes(&mut self) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
         let snapshot = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .map_err(|err| JsValue::from_str(&err.to_string()))?;
         let encoded = apply_utility_transforms_to_encoded_recipes(

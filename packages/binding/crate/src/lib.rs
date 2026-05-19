@@ -30,6 +30,49 @@ use napi_derive::napi;
 
 // Shared cross-module types — submodules reach them via `crate::*`.
 
+pub(crate) fn init_tracing() {
+    pandacss_tracing::init_from_env();
+}
+
+pub(crate) fn flush_tracing() {
+    pandacss_tracing::flush();
+}
+
+#[napi(object)]
+pub struct TraceOptions {
+    pub filter: Option<String>,
+    pub output: Option<String>,
+    pub file: Option<String>,
+}
+
+#[napi]
+pub fn start_tracing(options: Option<TraceOptions>) -> bool {
+    let config = match options {
+        Some(options) => pandacss_tracing::TraceConfig::from_values(
+            options.filter.as_deref().or(Some("trace")),
+            options.output.as_deref(),
+            options.file.as_deref(),
+        ),
+        None => pandacss_tracing::TraceConfig::from_env(),
+    };
+
+    let Some(config) = config else {
+        return false;
+    };
+
+    pandacss_tracing::init(config)
+}
+
+#[napi(js_name = "flushTracing")]
+pub fn flush_tracing_export() {
+    pandacss_tracing::flush();
+}
+
+#[napi]
+pub fn shutdown_tracing() -> bool {
+    pandacss_tracing::shutdown()
+}
+
 #[napi(object)]
 pub struct Span {
     pub start: u32,

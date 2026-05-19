@@ -183,6 +183,13 @@ impl Project {
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> ParseFileReport {
+        let span = tracing::trace_span!(
+            "file_parse",
+            path = path,
+            source_len = source.len(),
+            cache_hit = tracing::field::Empty
+        );
+        let _guard = span.enter();
         let source_hash = hash_source(source);
         if pattern_transform.is_none()
             && self
@@ -190,8 +197,10 @@ impl Project {
                 .get(path)
                 .is_some_and(|entry| entry.source_hash == source_hash)
         {
+            span.record("cache_hit", true);
             return self.files.get(path).expect("checked above").report.clone();
         }
+        span.record("cache_hit", false);
 
         let result = extract(source, path, &self.config.extractor_config);
         let diagnostics = result.diagnostics;
@@ -226,6 +235,7 @@ impl Project {
                     let Some(arg) = arg else {
                         continue;
                     };
+                    let _span = tracing::trace_span!("recipe_resolution", kind = "cva").entered();
                     if let Some(recipe) = Recipe::from_literal_owned(arg) {
                         encoder.process_atomic_recipe(&recipe);
                         self.inline_recipes.insert(
@@ -246,6 +256,7 @@ impl Project {
                     let Some(arg) = arg else {
                         continue;
                     };
+                    let _span = tracing::trace_span!("recipe_resolution", kind = "sva").entered();
                     if let Some(recipe) = SlotRecipe::from_literal_owned(arg) {
                         encoder.process_atomic_slot_recipe(&recipe);
                         self.inline_slot_recipes.insert(
@@ -279,6 +290,12 @@ impl Project {
                 }
                 (MatchCategory::Recipe, _) => {
                     let arg = arg.as_ref().unwrap_or(&empty_object);
+                    let _span = tracing::trace_span!(
+                        "recipe_resolution",
+                        kind = "config_call",
+                        name = call.name.as_str()
+                    )
+                    .entered();
                     encoded_recipes.process_usage(
                         &compiled.recipes,
                         &call.name,
@@ -293,6 +310,13 @@ impl Project {
         for jsx in result.jsx {
             let recipe_names = compiled.recipes.find_by_jsx(&jsx.name);
             if !recipe_names.is_empty() {
+                let _span = tracing::trace_span!(
+                    "recipe_resolution",
+                    kind = "jsx",
+                    name = jsx.name.as_str(),
+                    recipe_count = recipe_names.len()
+                )
+                .entered();
                 if let Some(style_props) = compiled
                     .recipes
                     .style_props_for_recipes(&recipe_names, &jsx.data)
@@ -453,11 +477,13 @@ impl Project {
     }
 
     fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let _span = tracing::trace_span!("encoding", kind = "atomic").entered();
         let normalized = self.normalize_style_object(style);
         encoder.process_atomic(normalized.as_ref());
     }
 
     fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let _span = tracing::trace_span!("encoding", kind = "style_props").entered();
         let Literal::Object(entries) = style else {
             self.process_atomic(encoder, style);
             return;

@@ -106,6 +106,7 @@ impl Project {
         config: serde_json::Value,
         options: Option<ProjectOptions>,
     ) -> napi::Result<Self> {
+        crate::init_tracing();
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
         let config_snapshot = config.clone();
         let config: UserConfig = serde_json::from_value(config)
@@ -170,6 +171,7 @@ impl Project {
         reason = "NAPI requires owned arguments"
     )]
     pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
+        crate::init_tracing();
         let report = if !self.callbacks.has_pattern_transforms() {
             self.inner.parse_file(&path, &source)
         } else {
@@ -188,7 +190,8 @@ impl Project {
             };
             inner.parse_file_with_pattern_transforms(&path, &source, &mut transform)
         };
-        ParseFileReport {
+        let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
+        let report = ParseFileReport {
             css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
             cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
             sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
@@ -198,7 +201,9 @@ impl Project {
                 .into_iter()
                 .map(convert_diagnostic)
                 .collect(),
-        }
+        };
+        crate::flush_tracing();
+        report
     }
 
     /// Re-parse a path *only if* it is already known to the project.
@@ -243,8 +248,11 @@ impl Project {
     #[napi]
     #[must_use]
     pub fn atoms(&mut self, env: Env) -> napi::Result<Vec<crate::Atom>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
         let atoms = to_atoms(self.inner.atoms());
         if !self.callbacks.has_utility_transforms() {
+            crate::flush_tracing();
             return Ok(atoms);
         }
         apply_utility_transforms(
@@ -254,43 +262,57 @@ impl Project {
             &mut self.callbacks.transform_cache,
             &env,
         )
+        .inspect(|_| crate::flush_tracing())
     }
 
     /// Every `cva()` recipe entry, in `(file, span_start)` order.
     #[napi]
     #[must_use]
     pub fn recipes(&self) -> Vec<RecipeEntry> {
-        self.inner
+        crate::init_tracing();
+        let _span = tracing::trace_span!("boundary_encode", method = "recipes").entered();
+        let entries = self
+            .inner
             .recipes()
             .map(|(file, span_start, recipe)| RecipeEntry {
                 file: file.to_owned(),
                 span_start,
                 recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
             })
-            .collect()
+            .collect();
+        crate::flush_tracing();
+        entries
     }
 
     /// Every `sva()` slot recipe entry, in `(file, span_start)` order.
     #[napi]
     #[must_use]
     pub fn slot_recipes(&self) -> Vec<RecipeEntry> {
-        self.inner
+        crate::init_tracing();
+        let _span = tracing::trace_span!("boundary_encode", method = "slot_recipes").entered();
+        let entries = self
+            .inner
             .slot_recipes()
             .map(|(file, span_start, recipe)| RecipeEntry {
                 file: file.to_owned(),
                 span_start,
                 recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
             })
-            .collect()
+            .collect();
+        crate::flush_tracing();
+        entries
     }
 
     /// Encoded config recipe styles, separate from atomic utility atoms.
     #[napi(js_name = encodedRecipes)]
     #[must_use]
     pub fn encoded_recipes(&mut self, env: Env) -> napi::Result<serde_json::Value> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
         let encoded = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .unwrap_or(serde_json::Value::Null);
         if !self.callbacks.has_utility_transforms() {
+            crate::flush_tracing();
             return Ok(encoded);
         }
         apply_utility_transforms_to_encoded_recipes(
@@ -300,6 +322,7 @@ impl Project {
             &mut self.callbacks.transform_cache,
             &env,
         )
+        .inspect(|_| crate::flush_tracing())
     }
 
     /// Aggregate counts.

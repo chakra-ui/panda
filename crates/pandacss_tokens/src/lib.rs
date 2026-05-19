@@ -376,10 +376,12 @@ impl TokenDictionary {
     }
 
     pub fn from_config(config: &pandacss_config::UserConfig) -> Result<Option<Self>, TokenError> {
+        let _span = tracing::debug_span!("token_dictionary_build", source = "config").entered();
         Self::from_options(TokenDictionaryOptions::from_config(config))
     }
 
     pub fn from_options(options: TokenDictionaryOptions<'_>) -> Result<Option<Self>, TokenError> {
+        let _span = tracing::debug_span!("token_dictionary_build", source = "options").entered();
         from_config::create_token_dictionary(options)
     }
 
