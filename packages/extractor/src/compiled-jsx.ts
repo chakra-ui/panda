@@ -1,4 +1,4 @@
-import type { CallExpression, Identifier, Node, SourceFile } from 'ts-morph'
+import type { CallExpression, FunctionDeclaration, Identifier, Node, SourceFile, VariableDeclaration } from 'ts-morph'
 import { Node as MorphNode, SyntaxKind } from 'ts-morph'
 import { unwrapExpression } from './utils'
 
@@ -7,12 +7,15 @@ type ImportEntry = {
   mod: string
 }
 
+type LocalDeclaration = FunctionDeclaration | VariableDeclaration
+
 interface CompiledJsxImportMap {
   named: Map<string, ImportEntry>
   default: Map<string, string>
   namespace: Map<string, string>
   bundledNamed: Map<string, ImportEntry>
   bundledNamespace: Map<string, string>
+  localDeclarations: Map<string, LocalDeclaration>
 }
 
 export interface CompiledJsxCallInfo {
@@ -103,6 +106,7 @@ const collectImports = (sourceFile: SourceFile): CompiledJsxImportMap => {
   const namespace = new Map<string, string>()
   const bundledNamed = new Map<string, ImportEntry>()
   const bundledNamespace = new Map<string, string>()
+  const localDeclarations = new Map<string, LocalDeclaration>()
 
   const getBundledRuntimeModFromName = (name: string) => {
     const normalized = name.replace(/[^a-z]/gi, '').toLowerCase()
@@ -192,6 +196,10 @@ const collectImports = (sourceFile: SourceFile): CompiledJsxImportMap => {
     if (!MorphNode.isIdentifier(declaration.getNameNode())) return
 
     const variableName = declaration.getName()
+    if (!localDeclarations.has(variableName)) {
+      localDeclarations.set(variableName, declaration)
+    }
+
     const initializer = declaration.getInitializer()
     const bundledImport = resolveBundledHelperImport(variableName, initializer)
 
@@ -237,9 +245,14 @@ const collectImports = (sourceFile: SourceFile): CompiledJsxImportMap => {
   })
 
   sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).forEach((declaration) => {
-    const bundledImport = resolveBundledHelperImport(declaration.getName() ?? '', declaration)
-    if (!bundledImport || !declaration.getName()) return
-    bundledNamed.set(declaration.getName()!, bundledImport)
+    const declarationName = declaration.getName()
+    if (declarationName && !localDeclarations.has(declarationName)) {
+      localDeclarations.set(declarationName, declaration)
+    }
+
+    const bundledImport = resolveBundledHelperImport(declarationName ?? '', declaration)
+    if (!bundledImport || !declarationName) return
+    bundledNamed.set(declarationName, bundledImport)
   })
 
   const resolveBundledAliasImport = (node: Node | undefined): ImportEntry | undefined => {
@@ -270,7 +283,7 @@ const collectImports = (sourceFile: SourceFile): CompiledJsxImportMap => {
     bundledNamed.set(declaration.getName(), bundledAlias)
   })
 
-  return { named, default: defaultImports, namespace, bundledNamed, bundledNamespace }
+  return { named, default: defaultImports, namespace, bundledNamed, bundledNamespace, localDeclarations }
 }
 
 const normalizeTagName = (text: string) => {
@@ -397,30 +410,28 @@ export const createCompiledJsxContext = (sourceFile: SourceFile): CompiledJsxCon
       }
     }
 
-    for (const definition of identifier.getDefinitions()) {
-      const declaration = definition.getDeclarationNode()
-      if (!declaration) continue
+    const declaration = imports.localDeclarations.get(name)
+    if (!declaration) return
 
-      if (MorphNode.isFunctionDeclaration(declaration)) {
-        const imported = resolveBundledHelperImport(declaration.getName() ?? name, declaration)
-        if (!imported) continue
+    if (MorphNode.isFunctionDeclaration(declaration)) {
+      const imported = resolveBundledHelperImport(declaration.getName() ?? name, declaration)
+      if (!imported) return
 
-        const resolved = { mod: imported.mod, importedName: imported.importedName }
-        localDefinitionCache.set(name, resolved)
-        return resolved
-      }
+      const resolved = { mod: imported.mod, importedName: imported.importedName }
+      localDefinitionCache.set(name, resolved)
+      return resolved
+    }
 
-      if (MorphNode.isVariableDeclaration(declaration)) {
-        const directImport = resolveBundledHelperImport(declaration.getName(), declaration.getInitializer())
-        const aliasImport = directImport
-          ? { mod: directImport.mod, importedName: directImport.importedName }
-          : resolveLocalAlias(declaration.getInitializer())
+    if (MorphNode.isVariableDeclaration(declaration)) {
+      const directImport = resolveBundledHelperImport(declaration.getName(), declaration.getInitializer())
+      const aliasImport = directImport
+        ? { mod: directImport.mod, importedName: directImport.importedName }
+        : resolveLocalAlias(declaration.getInitializer())
 
-        if (!aliasImport) continue
+      if (!aliasImport) return
 
-        localDefinitionCache.set(name, aliasImport)
-        return aliasImport
-      }
+      localDefinitionCache.set(name, aliasImport)
+      return aliasImport
     }
   }
 
