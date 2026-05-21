@@ -50,9 +50,7 @@ export async function getResolvedConfig(config: ExtendableConfig, cwd: string, h
         manifestKey = manifestPath
       }
       if (visited.has(manifestKey)) {
-        throw new Error(
-          `designSystem chain has a cycle through '${currentName}' (resolved to '${manifestKey}').`,
-        )
+        throw new Error(`designSystem chain has a cycle through '${currentName}' (resolved to '${manifestKey}').`)
       }
       visited.add(manifestKey)
 

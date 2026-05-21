@@ -190,5 +190,4 @@ describe('CLI', () => {
     const debugConfigExists = await fs.access(path.resolve(paths.styledSystem, 'debug/config.json'))
     expect(debugConfigExists).toBeUndefined()
   })
-
 })
