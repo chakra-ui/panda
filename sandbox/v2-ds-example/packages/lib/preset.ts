@@ -12,7 +12,7 @@ export const examplePreset = definePreset({
       },
       recipes: {
         button: {
-          className: 'example-button',
+          className: 'example',
           base: { px: '4', py: '2', borderRadius: '6px', fontWeight: 'bold' },
           variants: {
             visual: {

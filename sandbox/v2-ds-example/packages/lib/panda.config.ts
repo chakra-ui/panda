@@ -6,6 +6,5 @@ export default defineConfig({
   presets: ['@pandacss/dev/presets', examplePreset],
   include: ['./src/**/*.{ts,tsx}'],
   exclude: [],
-  importMap: '@v2-ds-example/styled-system',
-  outdir: '@v2-ds-example/styled-system',
+  outdir: './styled-system',
 })

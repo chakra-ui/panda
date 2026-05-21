@@ -5,7 +5,7 @@ import { logger } from '@pandacss/logger'
 import { ParserResult, Project } from '@pandacss/parser'
 import { uniq } from '@pandacss/shared'
 import type { EncoderJson, LoadConfigResult, Runtime, WatchOptions, WatcherEventType } from '@pandacss/types'
-import { readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join } from 'node:path'
 import { debounce } from 'perfect-debounce'
@@ -20,6 +20,8 @@ export class PandaContext extends Generator {
   output: OutputEngine
   diff: DiffEngine
   explicitDeps: string[] = []
+  /** Absolute paths to design-system artifacts (manifest + buildinfo) that should trigger a rebuild when they change. Populated during designSystem hydration. */
+  designSystemDepFiles: string[] = []
 
   constructor(conf: LoadConfigResult) {
     super(conf)
@@ -46,6 +48,15 @@ export class PandaContext extends Generator {
 
     this.output = new OutputEngine(this)
     this.diff = new DiffEngine(this)
+
+    if (config.outdir && this.looksLikeBareSpecifier(config.outdir)) {
+      logger.warn(
+        'config',
+        `outdir '${config.outdir}' looks like a bare package specifier, but it's interpreted as a relative directory path. ` +
+          `Codegen will create a literal '${config.outdir}/' folder under cwd. ` +
+          `Use a relative path ('./styled-system') and rely on package.json 'exports' / module resolution if you need a bare-specifier import path.`,
+      )
+    }
 
     if (config.designSystem) {
       this.hydrateDesignSystemEncoder(config.designSystem)
@@ -101,12 +112,54 @@ export class PandaContext extends Generator {
     }
 
     this.parserOptions.encoder.fromJSON(parsed as EncoderJson)
+
+    // Register the manifest + buildinfo paths so a `panda --watch` consumer
+    // picks up lib rebuilds (the lib's `panda lib --watch` rewrites these
+    // files), and so `pnpm update @acme/lib` in a non-monorepo standalone app
+    // triggers re-extraction on the next watcher event.
+    this.designSystemDepFiles.push(manifestPath, buildinfoPath)
+
+    this.checkVersionDrift(packageName, manifest.version)
+  }
+
+  /**
+   * Compares the resolved lib version against the version recorded on the previous
+   * codegen and logs a one-line receipt if they differ. Backward-looking only —
+   * never queries any registry, never suggests an upgrade. Honors the consumer's
+   * lockfile as the sole source of truth for which version is "current".
+   */
+  private checkVersionDrift(packageName: string, currentVersion: string) {
+    const root = this.runtime.path.join(...this.paths.root)
+    const stateFile = this.runtime.path.join(root, 'panda.designsystem-state.json')
+
+    let state: { versions?: Record<string, string> } = {}
+    if (existsSync(stateFile)) {
+      try {
+        state = JSON.parse(readFileSync(stateFile, 'utf-8')) ?? {}
+      } catch {
+        // Corrupted state — treat as no prior record. The write below will reset it.
+      }
+    }
+    const versions = state.versions ?? {}
+
+    const previous = versions[packageName]
+    if (previous && previous !== currentVersion) {
+      logger.info('designSystem', `${packageName}: ${previous} → ${currentVersion}`)
+    }
+
+    versions[packageName] = currentVersion
+    try {
+      mkdirSync(root, { recursive: true })
+      writeFileSync(stateFile, JSON.stringify({ versions }, null, 2) + '\n', 'utf-8')
+    } catch (error) {
+      logger.warn('designSystem', `Could not persist version state to '${stateFile}': ${(error as Error).message}`)
+    }
   }
 
   private getExplicitDependencies = () => {
     const { cwd, dependencies } = this.config
-    if (!dependencies) return []
-    return this.runtime.fs.glob({ include: dependencies, cwd })
+    const fromConfig = dependencies ? this.runtime.fs.glob({ include: dependencies, cwd }) : []
+    return uniq([...fromConfig, ...this.designSystemDepFiles])
   }
 
   initMessage = () => {
@@ -130,9 +183,34 @@ export class PandaContext extends Generator {
     }
 
     const globFiles = this.runtime.fs.glob({ include: pathGlobs, exclude, cwd })
-    const specFiles = bareSpecifiers.flatMap((spec) => this.resolveBareSpecifier(spec, cwd ?? this.runtime.cwd()))
+
+    const designSystemSpecs: string[] = []
+    const specFiles: string[] = []
+    const resolveCwd = cwd ?? this.runtime.cwd()
+    for (const spec of bareSpecifiers) {
+      const result = this.resolveBareSpecifier(spec, resolveCwd)
+      if (result.kind === 'designSystem') {
+        designSystemSpecs.push(spec)
+      } else {
+        specFiles.push(...result.files)
+      }
+    }
+
+    if (designSystemSpecs.length > 0) {
+      const list = designSystemSpecs.map((s) => `  - ${s}`).join('\n')
+      const directive = designSystemSpecs.map((s) => `designSystem: ${JSON.stringify(s)}`).join(' / ')
+      throw new Error(
+        `The following packages in 'include' ship a 'panda.lib.json' manifest — they're Panda design systems, not scannable source packages:\n${list}\n` +
+          `Remove them from 'include' and declare via ${directive} instead. ` +
+          `'designSystem' hydrates pre-extracted styles from the lib's buildinfo; 'include' re-scans source files, which is redundant and wrong for a design system.`,
+      )
+    }
 
     return [...globFiles, ...specFiles]
+  }
+
+  private looksLikeBareSpecifier(entry: string): boolean {
+    return this.isBareSpecifier(entry) && (entry.startsWith('@') || /^[a-z][a-z0-9-]*\//i.test(entry))
   }
 
   private isBareSpecifier(entry: string): boolean {
@@ -142,14 +220,19 @@ export class PandaContext extends Generator {
     return true
   }
 
-  private resolveBareSpecifier(spec: string, cwd: string): string[] {
+  private resolveBareSpecifier(
+    spec: string,
+    cwd: string,
+  ): { kind: 'designSystem' } | { kind: 'files'; files: string[] } {
     const require = createRequire(join(cwd, 'package.json'))
 
     try {
       require.resolve(`${spec}/panda.lib.json`)
-      return []
-    } catch {
-      // ignore
+      return { kind: 'designSystem' }
+    } catch (e: any) {
+      if (e?.code !== 'MODULE_NOT_FOUND' && e?.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') {
+        throw e
+      }
     }
 
     let pkgJsonPath: string
@@ -179,7 +262,7 @@ export class PandaContext extends Generator {
           'smartInclude',
           `Cannot resolve bare specifier '${spec}' — neither a panda.lib.json nor a package.json (or main entry) found. Skipping.`,
         )
-        return []
+        return { kind: 'files', files: [] }
       }
     }
 
@@ -203,7 +286,7 @@ export class PandaContext extends Generator {
           })
         : ['dist/**/*.{js,mjs,cjs}']
 
-    return this.runtime.fs.glob({ include: fileGlobs, cwd: pkgRoot })
+    return { kind: 'files', files: this.runtime.fs.glob({ include: fileGlobs, cwd: pkgRoot }) }
   }
 
   parseFile = (filePath: string, styleEncoder?: StyleEncoder) => {

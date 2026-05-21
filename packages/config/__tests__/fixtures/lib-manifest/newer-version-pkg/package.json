@@ -1,0 +1,8 @@
+{
+  "name": "@panda-test/newer-version",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./panda.lib.json": "./dist/panda.lib.json"
+  }
+}

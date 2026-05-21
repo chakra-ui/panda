@@ -9,6 +9,6 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "@v2-ds-example/styled-system": "workspace:*"
+    "@v2-ds-example/lib": "workspace:*"
   }
 }

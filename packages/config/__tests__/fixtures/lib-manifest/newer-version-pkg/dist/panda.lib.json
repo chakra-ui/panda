@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 99,
+  "name": "@panda-test/newer-version",
+  "version": "1.0.0",
+  "panda": "^99.0.0",
+  "preset": "./preset.js",
+  "importMap": {},
+  "buildinfo": "./panda.buildinfo.json"
+}

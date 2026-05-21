@@ -6,21 +6,21 @@
   "files": [
     "src",
     "dist",
+    "styled-system",
     "preset.ts"
   ],
   "exports": {
     ".": "./src/index.ts",
     "./preset": "./dist/preset.mjs",
     "./panda.lib.json": "./dist/panda.lib.json",
-    "./panda.buildinfo.json": "./dist/panda.buildinfo.json"
+    "./panda.buildinfo.json": "./dist/panda.buildinfo.json",
+    "./styled-system/*": "./styled-system/*"
   },
   "scripts": {
     "css:gen": "panda codegen",
     "lib": "panda lib"
   },
-  "dependencies": {
-    "@v2-ds-example/styled-system": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@pandacss/dev": "workspace:*"
   }

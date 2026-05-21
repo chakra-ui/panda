@@ -45,10 +45,15 @@ const makeConf = (include: string[]): any => ({
 })
 
 describe('smart include — bare specifiers', () => {
-  test('package with panda.lib.json is skipped from glob (no error, empty files for that entry)', () => {
-    const ctx = new PandaContext(makeConf(['@panda-test/smart-with-manifest']))
-    const files = ctx.getFiles()
-    expect(files.find((f) => f.includes('with-manifest-pkg/dist'))).toBeUndefined()
+  test('package with panda.lib.json throws — must be declared via designSystem, not include', () => {
+    expect(() => new PandaContext(makeConf(['@panda-test/smart-with-manifest']))).toThrow(/designSystem/)
+  })
+
+  test('multiple panda.lib.json packages in include are batched into a single error', () => {
+    expect(() => {
+      // both entries are design systems — error must name both, not just the first
+      new PandaContext(makeConf(['@panda-test/smart-with-manifest', '@panda-test/smart-with-manifest']))
+    }).toThrow(/smart-with-manifest[\s\S]*smart-with-manifest/)
   })
 
   test('package without panda.lib.json globs its dist files', () => {

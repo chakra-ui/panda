@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { logger } from '@pandacss/logger'
-import type { LibManifest } from '@pandacss/types'
+import { CURRENT_LIB_MANIFEST_VERSION, type LibManifest } from '@pandacss/types'
 
 export interface WriteLibManifestOptions {
   cwd: string
@@ -31,7 +31,7 @@ export interface WriteLibManifestResult {
   manifest: LibManifest
 }
 
-const DEFAULT_SCHEMA_VERSION = 1
+const DEFAULT_SCHEMA_VERSION = CURRENT_LIB_MANIFEST_VERSION
 
 export function writeLibManifest(options: WriteLibManifestOptions): WriteLibManifestResult {
   const { cwd, outdir, preset, buildinfo, importMap, files, schemaVersion } = options

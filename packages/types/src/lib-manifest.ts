@@ -1,3 +1,11 @@
+/**
+ * Current schema version of `panda.lib.json`. Bump when the manifest shape changes
+ * in a way that older readers can't handle, and add a branch to the reader's
+ * version check at the same time. Mismatched versions error rather than silently
+ * misbehave.
+ */
+export const CURRENT_LIB_MANIFEST_VERSION = 1
+
 /** Schema for `panda.lib.json`. All paths inside are relative to the manifest file. */
 export interface LibManifest {
   /** Integer schema version of the manifest itself (distinct from buildinfo's schemaVersion). */

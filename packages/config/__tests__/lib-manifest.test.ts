@@ -27,6 +27,8 @@ beforeAll(() => {
   link('with-preset-export', 'with-preset-export-pkg')
   link('wrong-preset-export', 'wrong-preset-export-pkg')
   link('forward-compat', 'forward-compat-pkg')
+  link('older-version', 'older-version-pkg')
+  link('newer-version', 'newer-version-pkg')
 })
 
 afterAll(() => {
@@ -76,6 +78,18 @@ describe('readLibManifest', () => {
 
   test("throws when 'presetExport' is not a string", () => {
     expect(() => readLibManifest('@panda-test/wrong-preset-export', tmpRoot)).toThrow(/'presetExport' must be a string/)
+  })
+
+  test('throws on older schemaVersion with rebuild-the-lib directive', () => {
+    expect(() => readLibManifest('@panda-test/older-version', tmpRoot)).toThrow(
+      /schemaVersion 0 is incompatible[\s\S]*older Panda[\s\S]*panda lib/,
+    )
+  })
+
+  test('throws on newer schemaVersion with upgrade-this-project directive', () => {
+    expect(() => readLibManifest('@panda-test/newer-version', tmpRoot)).toThrow(
+      /schemaVersion 99 is incompatible[\s\S]*newer Panda[\s\S]*Upgrade '@pandacss\/dev'/,
+    )
   })
 
   test('forward compat: ignores unknown manifest fields without throwing', () => {

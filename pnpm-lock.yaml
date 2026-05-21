@@ -228,7 +228,11 @@ importers:
 
   packages/config/__tests__/fixtures/lib-manifest/malformed-pkg: {}
 
+  packages/config/__tests__/fixtures/lib-manifest/newer-version-pkg: {}
+
   packages/config/__tests__/fixtures/lib-manifest/no-manifest-pkg: {}
+
+  packages/config/__tests__/fixtures/lib-manifest/older-version-pkg: {}
 
   packages/config/__tests__/fixtures/lib-manifest/valid-pkg: {}
 
@@ -1560,9 +1564,6 @@ importers:
       '@v2-ds-example/lib':
         specifier: workspace:*
         version: link:../lib
-      '@v2-ds-example/styled-system':
-        specifier: workspace:*
-        version: link:../styled-system
     devDependencies:
       '@pandacss/dev':
         specifier: workspace:*
@@ -1570,21 +1571,11 @@ importers:
 
   sandbox/v2-ds-example/packages/charts:
     dependencies:
-      '@v2-ds-example/styled-system':
+      '@v2-ds-example/lib':
         specifier: workspace:*
-        version: link:../styled-system
+        version: link:../lib
 
   sandbox/v2-ds-example/packages/lib:
-    dependencies:
-      '@v2-ds-example/styled-system':
-        specifier: workspace:*
-        version: link:../styled-system
-    devDependencies:
-      '@pandacss/dev':
-        specifier: workspace:*
-        version: link:../../../../packages/cli
-
-  sandbox/v2-ds-example/packages/styled-system:
     devDependencies:
       '@pandacss/dev':
         specifier: workspace:*

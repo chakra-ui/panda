@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { isObject } from '@pandacss/shared'
-import type { LibManifest } from '@pandacss/types'
+import { CURRENT_LIB_MANIFEST_VERSION, type LibManifest } from '@pandacss/types'
 
 export interface ReadLibManifestResult {
   manifest: LibManifest
@@ -64,6 +64,15 @@ function validate(value: unknown, path: string): LibManifest {
 
   if (typeof v.schemaVersion !== 'number' || !Number.isInteger(v.schemaVersion)) {
     throw new Error(`Manifest at '${path}': 'schemaVersion' must be an integer.`)
+  }
+  if (v.schemaVersion !== CURRENT_LIB_MANIFEST_VERSION) {
+    const direction =
+      v.schemaVersion > CURRENT_LIB_MANIFEST_VERSION
+        ? `was built with a newer Panda (manifest schema v${v.schemaVersion}). Upgrade '@pandacss/dev' in this project, or rebuild the lib with the matching version.`
+        : `was built with an older Panda (manifest schema v${v.schemaVersion}). Rebuild the lib with the current '@pandacss/dev' (\`panda lib\`), or downgrade this project to match.`
+    throw new Error(
+      `Manifest at '${path}': schemaVersion ${v.schemaVersion} is incompatible with this reader (expects v${CURRENT_LIB_MANIFEST_VERSION}). The lib ${direction}`,
+    )
   }
   if (typeof v.name !== 'string') {
     throw new Error(`Manifest at '${path}': 'name' must be a string.`)
