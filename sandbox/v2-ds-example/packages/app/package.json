@@ -4,14 +4,23 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "css:gen": "panda codegen",
-    "css": "panda"
+    "prepare": "panda codegen",
+    "dev": "rimraf .next && next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@v2-ds-example/charts": "workspace:*",
-    "@v2-ds-example/lib": "workspace:*"
+    "@v2-ds-example/lib": "workspace:*",
+    "next": "15.5.7",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*"
+    "@pandacss/dev": "workspace:*",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "rimraf": "6.0.1",
+    "typescript": "6.0.2"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "v2-ds-example",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "bootstrap": "pnpm --filter @v2-ds-example/lib lib && pnpm --filter @v2-ds-example/lib css:gen && pnpm --filter @v2-ds-example/app prepare",
+    "dev": "pnpm bootstrap && concurrently --names lib,app --prefix-colors blue,magenta \"pnpm --filter @v2-ds-example/lib lib --watch\" \"pnpm --filter @v2-ds-example/app dev\"",
+    "build": "pnpm bootstrap && pnpm --filter @v2-ds-example/app build"
+  },
+  "devDependencies": {
+    "concurrently": "9.2.1"
+  }
+}

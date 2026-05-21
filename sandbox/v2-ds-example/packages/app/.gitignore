@@ -1,0 +1,7 @@
+# next.js
+/.next/
+/out/
+
+# typescript
+next-env.d.ts
+*.tsbuildinfo
