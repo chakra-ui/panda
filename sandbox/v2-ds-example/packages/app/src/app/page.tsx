@@ -8,7 +8,7 @@ const panel = css({
   p: '6',
   borderRadius: '12px',
   borderWidth: '2px',
-  borderColor: "brand",
+  borderColor: "brand2",
   display: 'flex',
   flexDirection: 'column',
   gap: '4',
