@@ -7,5 +7,13 @@ repository.workspace = true
 rust-version.workspace = true
 publish = false
 
+[dependencies]
+pandacss_config = { workspace = true }
+pandacss_extractor = { workspace = true }
+pandacss_tokens = { workspace = true }
+regex = { workspace = true }
+rustc-hash = { workspace = true }
+serde_json = { workspace = true }
+
 [lints]
 workspace = true

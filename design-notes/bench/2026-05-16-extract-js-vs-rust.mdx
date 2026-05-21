@@ -6,6 +6,7 @@ fixtures:
   - sandbox/codegen
   - synth-100
   - synth-1000
+  - jsx-heavy-direct-2000
 hardware: darwin arm64 (local dev machine; not a clean-room CI box)
 ---
 
@@ -26,6 +27,29 @@ second through Rust.
 | `sandbox/codegen` |     2 |      0.7 KB |          2.2 ms |           0.07 ms |    **32.1×** |      0.30 ms |       0.014 ms |    **21.6×** |
 | `synth-100`       |   100 |    173.6 KB |        183.6 ms |           4.93 ms |    **37.3×** |      0.86 ms |        0.05 ms |    **17.4×** |
 | `synth-1000`      |  1000 |      1.7 MB |       1455.8 ms |          48.05 ms |    **30.3×** |      0.77 ms |        0.05 ms |    **15.3×** |
+
+### 2026-05-18 matcher fast-path spot check
+
+After adding matcher fast paths (JSX regex `RegexSet`s, import source/name indexing, and lower-allocation JSX member
+tag resolution), we added a focused direct extractor comparison:
+
+```sh
+pnpm --filter=./bench jsx-heavy-compare -- --elements 2000 --warm 10 --iterations 50
+```
+
+This harness intentionally skips config loading and full `@pandacss/parser` project orchestration. It compares the JS
+extractor package directly against the native Rust `Extractor` over the same generated JSX-heavy TSX string. The local
+NAPI binding was rebuilt before running so the Rust path included the working-tree fast-path changes.
+
+| Fixture                 | Bytes   | Iterations | JS total   | Rust total | JS per iter | Rust per iter | Speedup     |
+| ----------------------- | ------: | ---------: | ---------: | ---------: | ----------: | ------------: | ----------: |
+| `jsx-heavy-direct-2000` | 64.8 KB |         50 | 90020.2 ms |   116.4 ms |   1800.4 ms |        2.3 ms | **773.5×** |
+
+Both paths produced the same checksum (`50050`), so the timed runs counted the same extracted items.
+
+Treat this as a focused stress benchmark, not a headline pipeline result. It intentionally amplifies direct extractor
+cost on a synthetic JSX-heavy file, recreates the ts-morph source file on the JS side, and checks extraction counts
+rather than deep output equivalence.
 
 ## Methodology
 

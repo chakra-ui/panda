@@ -11,18 +11,11 @@
 //! atoms in watch mode.
 //!
 //! ```rust,ignore
+//! use pandacss_config::UserConfig;
 //! use pandacss_project::Project;
-//! use pandacss_extractor::{Matchers, Matcher, NameMatcher};
 //!
-//! let matchers = Matchers {
-//!     css: Matcher {
-//!         modules: vec!["@panda/css".into()],
-//!         names: NameMatcher::only(["css", "cva", "sva"]),
-//!     },
-//!     ..Default::default()
-//! };
-//!
-//! let mut project = Project::from_matchers(matchers);
+//! let config = UserConfig::default();
+//! let mut project = Project::from_config(config)?;
 //! project.parse_file("button.tsx", "import {{ css }} from '@panda/css'; css({{ color: 'red' }});");
 //! project.parse_file("card.tsx", /* … */);
 //!
@@ -31,11 +24,14 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
+mod compiled;
 mod conditions;
 mod config;
+mod error;
 mod parsed_file;
 mod patterns;
 mod recipes;
+mod system;
 
 use std::borrow::Cow;
 use std::collections::BTreeMap;
@@ -45,34 +41,27 @@ use std::sync::Arc;
 use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use smallvec::SmallVec;
 
-use pandacss_config::SerializedConfig;
+use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder};
-use pandacss_extractor::{
-    CrossFileResolver, ExtractorConfig, Literal, MatchCategory, Matchers, extract,
-};
+use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Literal, MatchCategory, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_utility::{StyleNormalizer, Utility};
+use pandacss_utility::StyleNormalizer;
 
-pub(crate) use conditions::{ProjectConditionMatcher, ProjectConditions};
-use config::ProjectConfig;
+pub use compiled::Config;
+pub(crate) use conditions::ProjectConditionMatcher;
+pub use error::{ConfigError, Result};
 pub use parsed_file::ParsedFile;
-use patterns::PatternRegistry;
+use recipes::EncodedRecipesCache;
 pub use recipes::{
     EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
     RecipeStyleGroupSnapshot,
 };
-use recipes::{EncodedRecipesCache, RecipeRegistry};
+pub use system::System;
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
 pub struct Project {
-    serialized_config: Option<SerializedConfig>,
-    extractor_config: ExtractorConfig,
-    utility: Option<Utility>,
-    conditions: ProjectConditionMatcher,
-    breakpoints: Vec<String>,
-    patterns: PatternRegistry,
-    recipes: RecipeRegistry,
+    config: Arc<Config>,
     files: FxHashMap<Arc<str>, FileEntry>,
     /// Deduplicated union of every value in `files`. Updated by reference
     /// counts on add/remove so [`Self::atoms`] hands out a stable
@@ -97,7 +86,7 @@ struct FileEntry {
     atoms: FxHashSet<Atom>,
     encoded_recipes: EncodedRecipes,
     diagnostics: Vec<Diagnostic>,
-    report: FileReport,
+    report: ParseFileReport,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -108,25 +97,24 @@ pub(crate) struct RecipeKey {
 
 impl Project {
     #[must_use]
-    pub fn new(config: SerializedConfig) -> Self {
-        Self::from_serialized_config(config)
-    }
-
-    #[must_use]
-    pub fn from_matchers(matchers: Matchers) -> Self {
-        Self::from_extractor_config(ExtractorConfig::new(matchers))
+    pub fn new(system: System) -> Self {
+        Self::from_system(system)
     }
 
     #[must_use]
     pub fn from_extractor_config(extractor_config: ExtractorConfig) -> Self {
-        Self {
-            serialized_config: None,
+        let config = Arc::new(Config {
             extractor_config,
             utility: None,
-            conditions: ProjectConditions::from_names([]),
+            conditions: conditions::ProjectConditions::from_names([]),
             breakpoints: Vec::new(),
-            patterns: PatternRegistry::default(),
-            recipes: RecipeRegistry::default(),
+            patterns: Default::default(),
+            recipes: Default::default(),
+            config_recipes: BTreeMap::new(),
+            config_slot_recipes: BTreeMap::new(),
+        });
+        Self {
+            config,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
@@ -141,22 +129,18 @@ impl Project {
     }
 
     #[must_use]
-    pub fn from_serialized_config(config: SerializedConfig) -> Self {
-        let project_config = ProjectConfig::from_config(&config);
+    pub fn from_system(system: System) -> Self {
+        let config = system.config_arc();
+        let config_recipes = config.config_recipes.clone();
+        let config_slot_recipes = config.config_slot_recipes.clone();
         Self {
-            serialized_config: Some(config),
-            extractor_config: project_config.extractor_config,
-            utility: project_config.utility,
-            conditions: project_config.conditions,
-            breakpoints: project_config.breakpoints,
-            patterns: project_config.patterns,
-            recipes: project_config.recipes,
+            config,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
             encoded_recipes_cache: EncodedRecipesCache::default(),
-            config_recipes: project_config.config_recipes,
-            config_slot_recipes: project_config.config_slot_recipes,
+            config_recipes,
+            config_slot_recipes,
             inline_recipes: BTreeMap::new(),
             inline_slot_recipes: BTreeMap::new(),
             inline_recipe_spans: FxHashMap::default(),
@@ -164,16 +148,23 @@ impl Project {
         }
     }
 
+    pub fn from_config(config: UserConfig) -> Result<Self> {
+        Ok(Self::from_system(System::new(config)?))
+    }
+
     #[must_use]
     pub fn with_cross_file(mut self, resolver: CrossFileResolver) -> Self {
-        self.extractor_config.cross_file = Some(resolver);
+        Arc::get_mut(&mut self.config)
+            .expect("project config is uniquely owned during construction")
+            .extractor_config
+            .cross_file = Some(resolver);
         self
     }
 
     /// Extract usages, decompose recipes, encode atoms into the per-file
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
     /// and recipes) so stale styles can't linger in watch mode.
-    pub fn parse_file(&mut self, path: &str, source: &str) -> FileReport {
+    pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
         self.parse_file_inner(path, source, None)
     }
 
@@ -182,7 +173,7 @@ impl Project {
         path: &str,
         source: &str,
         transform: &mut PatternTransformFn<'_>,
-    ) -> FileReport {
+    ) -> ParseFileReport {
         self.parse_file_inner(path, source, Some(transform))
     }
 
@@ -191,7 +182,14 @@ impl Project {
         path: &str,
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
-    ) -> FileReport {
+    ) -> ParseFileReport {
+        let span = tracing::trace_span!(
+            "file_parse",
+            path = path,
+            source_len = source.len(),
+            cache_hit = tracing::field::Empty
+        );
+        let _guard = span.enter();
         let source_hash = hash_source(source);
         if pattern_transform.is_none()
             && self
@@ -199,12 +197,14 @@ impl Project {
                 .get(path)
                 .is_some_and(|entry| entry.source_hash == source_hash)
         {
+            span.record("cache_hit", true);
             return self.files.get(path).expect("checked above").report.clone();
         }
+        span.record("cache_hit", false);
 
-        let result = extract(source, path, &self.extractor_config);
+        let result = extract(source, path, &self.config.extractor_config);
         let diagnostics = result.diagnostics;
-        let mut report = FileReport {
+        let mut report = ParseFileReport {
             css_calls: 0,
             cva_calls: 0,
             sva_calls: 0,
@@ -217,7 +217,8 @@ impl Project {
         self.drop_file_state(path);
         let path_key: Arc<str> = Arc::from(path);
 
-        let mut encoder = Encoder::with_conditions(self.conditions.clone());
+        let compiled = self.config.as_ref();
+        let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
         let mut encoded_recipes = EncodedRecipes::default();
         let empty_object = Literal::Object(Vec::new());
         for call in result.calls {
@@ -234,6 +235,7 @@ impl Project {
                     let Some(arg) = arg else {
                         continue;
                     };
+                    let _span = tracing::trace_span!("recipe_resolution", kind = "cva").entered();
                     if let Some(recipe) = Recipe::from_literal_owned(arg) {
                         encoder.process_atomic_recipe(&recipe);
                         self.inline_recipes.insert(
@@ -254,6 +256,7 @@ impl Project {
                     let Some(arg) = arg else {
                         continue;
                     };
+                    let _span = tracing::trace_span!("recipe_resolution", kind = "sva").entered();
                     if let Some(recipe) = SlotRecipe::from_literal_owned(arg) {
                         encoder.process_atomic_slot_recipe(&recipe);
                         self.inline_slot_recipes.insert(
@@ -275,7 +278,7 @@ impl Project {
                         continue;
                     };
                     if let Some(transform) = pattern_transform.as_deref_mut() {
-                        let pattern = self.patterns.transform_input(&call.name, &arg);
+                        let pattern = compiled.patterns.transform_input(&call.name, &arg);
                         match transform(pattern.name, pattern.styles.as_ref()) {
                             Ok(Some(style)) => {
                                 self.process_style_props(&mut encoder, &style);
@@ -287,16 +290,34 @@ impl Project {
                 }
                 (MatchCategory::Recipe, _) => {
                     let arg = arg.as_ref().unwrap_or(&empty_object);
-                    encoded_recipes.process_usage(&self.recipes, &call.name, arg, &self.conditions);
+                    let _span = tracing::trace_span!(
+                        "recipe_resolution",
+                        kind = "config_call",
+                        name = call.name.as_str()
+                    )
+                    .entered();
+                    encoded_recipes.process_usage(
+                        &compiled.recipes,
+                        &call.name,
+                        arg,
+                        &compiled.conditions,
+                    );
                 }
                 _ => {}
             }
         }
 
         for jsx in result.jsx {
-            let recipe_names = self.recipes.find_by_jsx(&jsx.name);
+            let recipe_names = compiled.recipes.find_by_jsx(&jsx.name);
             if !recipe_names.is_empty() {
-                if let Some(style_props) = self
+                let _span = tracing::trace_span!(
+                    "recipe_resolution",
+                    kind = "jsx",
+                    name = jsx.name.as_str(),
+                    recipe_count = recipe_names.len()
+                )
+                .entered();
+                if let Some(style_props) = compiled
                     .recipes
                     .style_props_for_recipes(&recipe_names, &jsx.data)
                 {
@@ -304,10 +325,10 @@ impl Project {
                 }
                 for recipe_name in &recipe_names {
                     encoded_recipes.process_usage(
-                        &self.recipes,
+                        &compiled.recipes,
                         recipe_name,
                         &jsx.data,
-                        &self.conditions,
+                        &compiled.conditions,
                     );
                 }
                 report.jsx_usages += 1;
@@ -315,7 +336,7 @@ impl Project {
             }
 
             let style = if let Some(transform) = pattern_transform.as_deref_mut() {
-                let pattern = self.patterns.transform_input(&jsx.name, &jsx.data);
+                let pattern = compiled.patterns.transform_input(&jsx.name, &jsx.data);
                 match transform(pattern.name, pattern.styles.as_ref()) {
                     Ok(Some(style)) => style,
                     Ok(None) => jsx.data,
@@ -379,9 +400,8 @@ impl Project {
         }
     }
 
-    /// Clear every path's state in one pass; the [`ExtractorConfig`] is
-    /// kept. Useful when the user's config changes and the project needs
-    /// to be re-fed.
+    /// Clear every path's state in one pass; the compiled [`Config`] is
+    /// kept. Useful when the source graph needs to be re-fed.
     pub fn clear(&mut self) {
         self.files.clear();
         self.atoms_cache.clear();
@@ -449,19 +469,21 @@ impl Project {
 
     fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
         StyleNormalizer {
-            utility: self.utility.as_ref(),
-            breakpoints: &self.breakpoints,
+            utility: self.config.utility.as_ref(),
+            breakpoints: &self.config.breakpoints,
             shorthand: true,
         }
         .normalize(style)
     }
 
     fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let _span = tracing::trace_span!("encoding", kind = "atomic").entered();
         let normalized = self.normalize_style_object(style);
         encoder.process_atomic(normalized.as_ref());
     }
 
     fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let _span = tracing::trace_span!("encoding", kind = "style_props").entered();
         let Literal::Object(entries) = style else {
             self.process_atomic(encoder, style);
             return;
@@ -552,8 +574,8 @@ impl Project {
     }
 
     #[must_use]
-    pub fn serialized_config(&self) -> Option<&SerializedConfig> {
-        self.serialized_config.as_ref()
+    pub fn config(&self) -> &Config {
+        &self.config
     }
 }
 
@@ -562,7 +584,7 @@ fn is_css_prop(key: &str) -> bool {
 }
 
 pub type PatternTransformFn<'a> =
-    dyn FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic> + 'a;
+    dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
 
 fn hash_source(source: &str) -> u64 {
     let mut hasher = FxHasher::default();
@@ -580,7 +602,7 @@ pub(crate) fn literal_entries(value: &Literal) -> Option<&[(String, Literal)]> {
 /// What flowed through a single `parse_file` call.
 #[derive(Debug, Clone, PartialEq, Eq, Default, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FileReport {
+pub struct ParseFileReport {
     pub css_calls: usize,
     pub cva_calls: usize,
     pub sva_calls: usize,

@@ -36,53 +36,26 @@ pub struct CompileManifest {
     reason = "NAPI requires owned input on the JS-facing boundary"
 )]
 pub fn compile(input: Option<CompileInput>) -> CompileOutput {
-    let engine_input = input.map(to_engine_input).unwrap_or_default();
-    let output = pandacss_engine::compile(engine_input);
+    crate::init_tracing();
+    let _span = tracing::debug_span!("config_compile", entry = "compile_placeholder").entered();
+    let file_count = input
+        .as_ref()
+        .and_then(|input| input.files.as_ref())
+        .map_or(0, Vec::len);
     CompileOutput {
-        css: output.css,
-        source_map: output.source_map,
+        css: String::new(),
+        source_map: None,
         manifest: CompileManifest {
-            hashes: output.manifest.hashes,
-            tokens: output.manifest.tokens,
+            hashes: Vec::new(),
+            tokens: Vec::new(),
         },
-        diagnostics: output
-            .diagnostics
-            .into_iter()
-            .map(|d| Diagnostic {
-                message: d.message,
-                severity: match d.severity {
-                    pandacss_engine::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
-                    pandacss_engine::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
-                    pandacss_engine::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
-                },
-                span: None,
-                location: None,
-            })
-            .collect(),
-    }
-}
-
-fn to_engine_input(input: CompileInput) -> pandacss_engine::CompileInput {
-    let files = input
-        .files
-        .unwrap_or_default()
-        .into_iter()
-        .map(|f| pandacss_engine::InputFile {
-            path: f.path,
-            content: f.content,
-        })
-        .collect();
-    // Config is opaque on the binding boundary today. Malformed values
-    // degrade to default silently — `SerializedConfig` is a placeholder
-    // and we don't want a parse failure to break the round trip.
-    let config = input
-        .config
-        .and_then(|v| serde_json::from_value(v).ok())
-        .unwrap_or_default();
-    pandacss_engine::CompileInput {
-        files,
-        config,
-        cwd: input.cwd.unwrap_or_default(),
-        cache_dir: input.cache_dir,
+        diagnostics: vec![Diagnostic {
+            message: format!(
+                "compile is a placeholder; received {file_count} file(s) but no CSS was produced",
+            ),
+            severity: DiagnosticSeverity::Warning,
+            span: None,
+            location: None,
+        }],
     }
 }

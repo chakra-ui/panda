@@ -91,7 +91,7 @@ export interface RecipeStyleEntry {
   conditions: string[]
 }
 
-export interface FileReport {
+export interface ParseFileReport {
   cssCalls: number
   cvaCalls: number
   svaCalls: number
@@ -116,9 +116,10 @@ export interface WasmConfigSnapshot {
 }
 
 export interface WasmProjectOptions {
-  tokenDictionary?: TokenDictionaryInput
   /** Serialized config snapshot used to resolve callback ids to utility props. */
   config?: Record<string, unknown>
+  /** Optional JS-side token helpers for callback execution. */
+  tokenDictionary?: TokenDictionaryInput
   /** Browser/JS-host callbacks referenced by serialized config entries. */
   callbacks?: WasmProjectCallbacks
 }
@@ -130,11 +131,12 @@ export declare class WasmProject {
   constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
   static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
   config(): Record<string, unknown> | null
-  parseFile(path: string, source: string): FileReport
+  parseFile(path: string, source: string): ParseFileReport
   refreshFile(path: string, source: string): boolean
   removeFile(path: string): boolean
   clear(): void
   isEmpty(): boolean
+  registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   atoms(): Atom[]
   recipes(): RecipeEntry[]

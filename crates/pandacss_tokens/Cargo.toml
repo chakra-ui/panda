@@ -8,8 +8,12 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
+pandacss_config = { workspace = true }
+pandacss_shared = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true, optional = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 indoc = { workspace = true }

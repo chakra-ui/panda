@@ -12,6 +12,7 @@ itoa = { workspace = true }
 regex = { workspace = true }
 ryu = { workspace = true }
 serde_json = { workspace = true }
+thiserror = { workspace = true }
 
 [lints]
 workspace = true

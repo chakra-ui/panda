@@ -9,7 +9,7 @@ mod common;
 
 use common::panda_config;
 use indoc::indoc;
-use insta::assert_yaml_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
@@ -235,6 +235,39 @@ fn computed_identifier_key_resolves() {
 }
 
 #[test]
+fn computed_style_object_key_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const prop = 'color';
+        css({ [prop]: 'red' });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_snapshot!(serde_json::to_string_pretty(&json).unwrap(), @r#"
+    {
+      "color": "red"
+    }
+    "#);
+}
+
+#[test]
+fn computed_style_object_key_resolves_inside_condition() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const condition = '_hover';
+        const prop = 'color';
+        css({ [condition]: { [prop]: 'red' } });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_snapshot!(serde_json::to_string_pretty(&json).unwrap(), @r#"
+    {
+      "_hover": {
+        "color": "red"
+      }
+    }
+    "#);
+}
+
+#[test]
 fn array_numeric_index_resolves() {
     let src = indoc! {r"
         import { css } from '@panda/css';
@@ -377,6 +410,23 @@ fn object_spread_of_local_identifier_resolves() {
         start: 65
         end: 97
     ");
+}
+
+#[test]
+fn object_alias_chain_resolves_whole_object() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const base = { color: 'red' };
+        const button = base;
+        const primary = button;
+        css(primary);
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_snapshot!(serde_json::to_string_pretty(&json).unwrap(), @r#"
+    {
+      "color": "red"
+    }
+    "#);
 }
 
 // --- function parameter shadowing ---

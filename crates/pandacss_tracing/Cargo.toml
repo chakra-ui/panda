@@ -1,5 +1,5 @@
 [package]
-name = "pandacss_engine"
+name = "pandacss_tracing"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,8 +8,12 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-pandacss_config = { workspace = true }
-serde = { workspace = true }
+tracing = { workspace = true }
+tracing-chrome = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
 
 [lints]
 workspace = true

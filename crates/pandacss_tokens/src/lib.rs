@@ -1,19 +1,25 @@
 //! Design-token dictionary — read-only lookup view over a resolved
-//! Panda theme. Used by the Rust extractor (`token('path')` resolution)
-//! and the future Rust emitter.
+//! Panda theme. Used by the Rust extractor (`token('path')` resolution),
+//! utility transforms, and the future Rust emitter.
 //!
-//! The build-time pipeline (semantic-token expansion, reference resolution,
-//! transformers, color-palette materialization, middleware) stays on the
-//! JS side; resolved values flow in through [`TokenDictionaryBuilder`].
-//! Every read path is O(1) or O(matches), never O(n), backed by
+//! The public project API builds this from config, while this crate owns
+//! the token-domain details: walking theme tokens, semantic tokens,
+//! breakpoint tokens, theme variant tokens, and building the lookup
+//! indexes. Every read path is O(1) or O(matches), never O(n), backed by
 //! `rustc_hash::FxHashMap` indexes built once at construction time.
 
-use std::collections::HashMap;
-
 use rustc_hash::FxHashMap;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
+mod from_config;
+mod transform;
+
+pub use from_config::TokenDictionaryOptions;
+pub use pandacss_shared::PandaError as TokenError;
 
 /// Token category — the top-level bucket a path belongs to.
 ///
@@ -128,19 +134,20 @@ pub type TokenExtensions = FxHashMap<String, String>;
 /// building dictionaries with thousands of plain tokens.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(from = "TokenWire", into = "TokenWire"))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct Token {
-    pub path: String,
-    pub value: String,
-    pub var: String,
+    pub path: Arc<str>,
+    pub value: Arc<str>,
+    pub var: Arc<str>,
     pub category: TokenCategory,
-    pub condition: Option<String>,
+    pub condition: Option<Arc<str>>,
     /// Pre-alias-substitution value. Optional because the JS path strips
     /// it once references are expanded.
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub original_value: Option<String>,
+    pub original_value: Option<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub description: Option<String>,
+    pub description: Option<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: bool,
     #[cfg_attr(
@@ -150,18 +157,72 @@ pub struct Token {
     pub extensions: Option<Box<TokenExtensions>>,
 }
 
+#[cfg(feature = "serde")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct TokenWire {
+    path: String,
+    value: String,
+    var: String,
+    category: TokenCategory,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    condition: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    original_value: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+    #[serde(default)]
+    deprecated: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extensions: Option<Box<TokenExtensions>>,
+}
+
+#[cfg(feature = "serde")]
+impl From<TokenWire> for Token {
+    fn from(value: TokenWire) -> Self {
+        Self {
+            path: Arc::from(value.path),
+            value: Arc::from(value.value),
+            var: Arc::from(value.var),
+            category: value.category,
+            condition: value.condition.map(Arc::from),
+            original_value: value.original_value.map(Arc::from),
+            description: value.description.map(Arc::from),
+            deprecated: value.deprecated,
+            extensions: value.extensions,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl From<Token> for TokenWire {
+    fn from(value: Token) -> Self {
+        Self {
+            path: value.path.to_string(),
+            value: value.value.to_string(),
+            var: value.var.to_string(),
+            category: value.category,
+            condition: value.condition.map(|value| value.to_string()),
+            original_value: value.original_value.map(|value| value.to_string()),
+            description: value.description.map(|value| value.to_string()),
+            deprecated: value.deprecated,
+            extensions: value.extensions,
+        }
+    }
+}
+
 impl Token {
     #[must_use]
     pub fn new(
-        path: impl Into<String>,
-        value: impl Into<String>,
-        var: impl Into<String>,
+        path: impl AsRef<str>,
+        value: impl AsRef<str>,
+        var: impl AsRef<str>,
         category: TokenCategory,
     ) -> Self {
         Self {
-            path: path.into(),
-            value: value.into(),
-            var: var.into(),
+            path: Arc::from(path.as_ref()),
+            value: Arc::from(value.as_ref()),
+            var: Arc::from(var.as_ref()),
             category,
             condition: None,
             original_value: None,
@@ -172,14 +233,14 @@ impl Token {
     }
 
     #[must_use]
-    pub fn with_condition(mut self, condition: impl Into<String>) -> Self {
-        self.condition = Some(condition.into());
+    pub fn with_condition(mut self, condition: impl AsRef<str>) -> Self {
+        self.condition = Some(Arc::from(condition.as_ref()));
         self
     }
 
     #[must_use]
-    pub fn with_description(mut self, description: impl Into<String>) -> Self {
-        self.description = Some(description.into());
+    pub fn with_description(mut self, description: impl AsRef<str>) -> Self {
+        self.description = Some(Arc::from(description.as_ref()));
         self
     }
 
@@ -220,6 +281,40 @@ impl Token {
 /// "deserialized dictionary has empty indexes" hazard a naked derive
 /// would introduce.
 #[derive(Debug, Clone, Default)]
+pub struct ColorPaletteView {
+    palettes: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>>,
+}
+
+impl ColorPaletteView {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.palettes.is_empty()
+    }
+
+    #[must_use]
+    pub fn palettes(&self) -> &FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>> {
+        &self.palettes
+    }
+
+    #[must_use]
+    pub fn get(&self, palette: &str) -> Option<&FxHashMap<Arc<str>, Arc<str>>> {
+        self.palettes.get(palette)
+    }
+
+    pub(crate) fn insert(
+        &mut self,
+        palette: impl AsRef<str>,
+        virtual_var: impl AsRef<str>,
+        token_var: Arc<str>,
+    ) {
+        self.palettes
+            .entry(Arc::from(palette.as_ref()))
+            .or_default()
+            .insert(Arc::from(virtual_var.as_ref()), token_var);
+    }
+}
+
+#[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct TokenDictionary {
     tokens: Vec<Token>,
@@ -227,25 +322,29 @@ pub struct TokenDictionary {
     /// path so `get()` returns the canonical value — matches JS view
     /// semantics where `rawValues` is keyed by name without condition.
     #[cfg_attr(feature = "serde", serde(skip))]
-    by_path: FxHashMap<String, usize>,
+    by_path: FxHashMap<Arc<str>, usize>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    by_var: FxHashMap<String, usize>,
+    by_var: FxHashMap<Arc<str>, usize>,
     #[cfg_attr(feature = "serde", serde(skip))]
     by_category: FxHashMap<TokenCategory, Vec<usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    by_category_key: FxHashMap<TokenCategory, FxHashMap<String, usize>>,
+    by_category_key: FxHashMap<TokenCategory, FxHashMap<Arc<str>, usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    by_condition: FxHashMap<String, Vec<usize>>,
+    category_values_cache: FxHashMap<TokenCategory, FxHashMap<Arc<str>, Arc<str>>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    by_condition: FxHashMap<Arc<str>, Vec<usize>>,
     /// Nested so lookups never allocate (two O(1) hashes); a flat
     /// `(String, String)` key would force a `to_owned` per call.
     #[cfg_attr(feature = "serde", serde(skip))]
-    by_path_condition: FxHashMap<String, FxHashMap<String, usize>>,
+    by_path_condition: FxHashMap<Arc<str>, FxHashMap<Arc<str>, usize>>,
     /// First-seen condition names. Built once so `conditions()` is a
     /// zero-work slice borrow.
     #[cfg_attr(feature = "serde", serde(skip))]
-    conditions_order: Vec<String>,
+    conditions_order: Vec<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(skip))]
-    deprecated_paths_cache: Vec<String>,
+    deprecated_paths_cache: Vec<Arc<str>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    color_palettes: ColorPaletteView,
 }
 
 #[cfg(feature = "serde")]
@@ -259,6 +358,7 @@ impl<'de> Deserialize<'de> for TokenDictionary {
         let wire = Wire::deserialize(deserializer)?;
         Ok(TokenDictionaryBuilder {
             tokens: wire.tokens,
+            color_palettes: None,
         }
         .build())
     }
@@ -273,6 +373,16 @@ impl TokenDictionary {
     #[must_use]
     pub fn builder() -> TokenDictionaryBuilder {
         TokenDictionaryBuilder::default()
+    }
+
+    pub fn from_config(config: &pandacss_config::UserConfig) -> Result<Option<Self>, TokenError> {
+        let _span = tracing::debug_span!("token_dictionary_build", source = "config").entered();
+        Self::from_options(TokenDictionaryOptions::from_config(config))
+    }
+
+    pub fn from_options(options: TokenDictionaryOptions<'_>) -> Result<Option<Self>, TokenError> {
+        let _span = tracing::debug_span!("token_dictionary_build", source = "options").entered();
+        from_config::create_token_dictionary(options)
     }
 
     #[must_use]
@@ -311,7 +421,7 @@ impl TokenDictionary {
 
     /// Distinct condition names in first-seen order; `None` (base) excluded.
     #[must_use]
-    pub fn conditions(&self) -> &[String] {
+    pub fn conditions(&self) -> &[Arc<str>] {
         &self.conditions_order
     }
 
@@ -354,7 +464,7 @@ impl TokenDictionary {
     #[must_use]
     pub fn get_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
         if let Some(token) = self.token(path) {
-            return Some(token.value.as_str());
+            return Some(token.value.as_ref());
         }
         fallback
     }
@@ -363,7 +473,7 @@ impl TokenDictionary {
     #[must_use]
     pub fn get_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
         if let Some(token) = self.token(path) {
-            return Some(token.var.as_str());
+            return Some(token.var.as_ref());
         }
         fallback
     }
@@ -372,10 +482,23 @@ impl TokenDictionary {
     /// are included; conditional variants live under their own indices.
     #[must_use]
     pub fn category_values(&self, category: &TokenCategory) -> FxHashMap<String, String> {
-        self.iter_category(category)
-            .filter(|t| t.condition.is_none())
-            .map(|t| (t.path.clone(), t.value.clone()))
-            .collect()
+        self.category_values_cache
+            .get(category)
+            .map(|values| {
+                values
+                    .iter()
+                    .map(|(key, value)| (key.to_string(), value.to_string()))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    #[must_use]
+    pub fn category_values_str(
+        &self,
+        category: &TokenCategory,
+    ) -> Option<&FxHashMap<Arc<str>, Arc<str>>> {
+        self.category_values_cache.get(category)
     }
 
     #[must_use]
@@ -384,7 +507,7 @@ impl TokenDictionary {
         self.by_category_key
             .get(&category)?
             .get(key)
-            .map(|&i| self.tokens[i].value.as_str())
+            .map(|&i| self.tokens[i].value.as_ref())
     }
 
     #[must_use]
@@ -393,14 +516,20 @@ impl TokenDictionary {
     }
 
     #[must_use]
-    pub fn deprecated_paths(&self) -> &[String] {
+    pub fn deprecated_paths(&self) -> &[Arc<str>] {
         &self.deprecated_paths_cache
+    }
+
+    #[must_use]
+    pub fn color_palettes(&self) -> &ColorPaletteView {
+        &self.color_palettes
     }
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct TokenDictionaryBuilder {
     tokens: Vec<Token>,
+    color_palettes: Option<ColorPaletteView>,
 }
 
 impl TokenDictionaryBuilder {
@@ -415,6 +544,25 @@ impl TokenDictionaryBuilder {
     pub fn push(&mut self, token: Token) -> &mut Self {
         self.tokens.push(token);
         self
+    }
+
+    pub(crate) fn tokens_mut(&mut self) -> &mut [Token] {
+        &mut self.tokens
+    }
+
+    pub(crate) fn retain_tokens(&mut self, mut f: impl FnMut(&Token) -> bool) {
+        self.tokens.retain(|token| f(token));
+    }
+
+    pub(crate) fn add_color_palette_mapping(
+        &mut self,
+        palette: impl AsRef<str>,
+        virtual_var: impl AsRef<str>,
+        token_var: Arc<str>,
+    ) {
+        self.color_palettes
+            .get_or_insert_with(ColorPaletteView::default)
+            .insert(palette, virtual_var, token_var);
     }
 
     #[must_use]
@@ -440,17 +588,8 @@ impl TokenDictionaryBuilder {
                 || TokenCategory::Other(path.clone()),
                 |(c, _)| TokenCategory::from_path_segment(c),
             );
-            self.tokens.push(Token {
-                path,
-                value: value.into(),
-                var,
-                category,
-                condition: None,
-                original_value: None,
-                description: None,
-                deprecated: false,
-                extensions: None,
-            });
+            self.tokens
+                .push(Token::new(path, value.into(), var, category));
         }
         self
     }
@@ -458,18 +597,23 @@ impl TokenDictionaryBuilder {
     #[must_use]
     pub fn build(self) -> TokenDictionary {
         let n = self.tokens.len();
-        let mut by_path: FxHashMap<String, usize> =
+        let mut by_path: FxHashMap<Arc<str>, usize> =
             FxHashMap::with_capacity_and_hasher(n, rustc_hash::FxBuildHasher);
-        let mut by_var: FxHashMap<String, usize> =
+        let mut by_var: FxHashMap<Arc<str>, usize> =
             FxHashMap::with_capacity_and_hasher(n, rustc_hash::FxBuildHasher);
         let mut by_category: FxHashMap<TokenCategory, Vec<usize>> = FxHashMap::default();
-        let mut by_category_key: FxHashMap<TokenCategory, FxHashMap<String, usize>> =
+        let mut by_category_key: FxHashMap<TokenCategory, FxHashMap<Arc<str>, usize>> =
             FxHashMap::default();
-        let mut by_condition: FxHashMap<String, Vec<usize>> = FxHashMap::default();
-        let mut by_path_condition: FxHashMap<String, FxHashMap<String, usize>> =
+        let mut category_values_cache: FxHashMap<TokenCategory, FxHashMap<Arc<str>, Arc<str>>> =
             FxHashMap::default();
-        let mut conditions_order: Vec<String> = Vec::new();
-        let mut deprecated_paths_cache: Vec<String> = Vec::new();
+        let mut by_condition: FxHashMap<Arc<str>, Vec<usize>> = FxHashMap::default();
+        let mut by_path_condition: FxHashMap<Arc<str>, FxHashMap<Arc<str>, usize>> =
+            FxHashMap::default();
+        let mut conditions_order: Vec<Arc<str>> = Vec::new();
+        let mut deprecated_paths_cache: Vec<Arc<str>> = Vec::new();
+        let color_palettes = self
+            .color_palettes
+            .unwrap_or_else(|| build_color_palette_view(&self.tokens));
 
         // Pass 1: condition-agnostic indexes plus base-only path/var
         // entries. Conditional-only paths are filled in by pass 2 so a
@@ -486,44 +630,48 @@ impl TokenDictionaryBuilder {
                 by_category_key
                     .entry(token.category.clone())
                     .or_default()
-                    .insert(key.to_owned(), i);
+                    .insert(Arc::from(key), i);
+                category_values_cache
+                    .entry(token.category.clone())
+                    .or_default()
+                    .insert(Arc::clone(&token.path), Arc::clone(&token.value));
             }
 
             if let Some(condition) = token.condition.as_deref() {
                 if !by_condition.contains_key(condition) {
-                    conditions_order.push(condition.to_owned());
+                    conditions_order.push(Arc::from(condition));
                 }
                 by_condition
-                    .entry(condition.to_owned())
+                    .entry(Arc::from(condition))
                     .or_default()
                     .push(i);
 
                 // Capacity hint of 2 — real themes rarely exceed 3
                 // condition variants per path.
                 by_path_condition
-                    .entry(token.path.clone())
+                    .entry(Arc::clone(&token.path))
                     .or_insert_with(|| {
                         FxHashMap::with_capacity_and_hasher(2, rustc_hash::FxBuildHasher)
                     })
-                    .insert(condition.to_owned(), i);
+                    .insert(Arc::from(condition), i);
             } else {
-                by_path.insert(token.path.clone(), i);
+                by_path.insert(Arc::clone(&token.path), i);
                 if !token.var.is_empty() {
-                    by_var.insert(token.var.clone(), i);
+                    by_var.insert(Arc::clone(&token.var), i);
                 }
             }
 
             if token.deprecated {
-                deprecated_paths_cache.push(token.path.clone());
+                deprecated_paths_cache.push(Arc::clone(&token.path));
             }
         }
 
         // Pass 2: surface conditional-only tokens through `by_path` / `by_var`.
         for (i, token) in self.tokens.iter().enumerate() {
             if token.condition.is_some() {
-                by_path.entry(token.path.clone()).or_insert(i);
+                by_path.entry(Arc::clone(&token.path)).or_insert(i);
                 if !token.var.is_empty() {
-                    by_var.entry(token.var.clone()).or_insert(i);
+                    by_var.entry(Arc::clone(&token.var)).or_insert(i);
                 }
             }
         }
@@ -534,10 +682,101 @@ impl TokenDictionaryBuilder {
             by_var,
             by_category,
             by_category_key,
+            category_values_cache,
             by_condition,
             by_path_condition,
             conditions_order,
             deprecated_paths_cache,
+            color_palettes,
         }
     }
+}
+
+fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
+    let mut virtual_vars: FxHashMap<&str, &str> = FxHashMap::default();
+    for token in tokens {
+        if token.category == TokenCategory::Colors && token.extension("isVirtual") == Some("true") {
+            virtual_vars.insert(token.path.as_ref(), token.var.as_ref());
+        }
+    }
+
+    if virtual_vars.is_empty() {
+        return ColorPaletteView::default();
+    }
+
+    let mut palettes: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>> = FxHashMap::default();
+    for token in tokens {
+        if token.category != TokenCategory::Colors
+            || token.extension("isVirtual") == Some("true")
+            || token.extension("colorPalette").is_none()
+            || token.var.is_empty()
+        {
+            continue;
+        }
+
+        let segments: Vec<&str> = token.path.split('.').collect();
+        let Some(color_path) = color_palette_path_segments(&segments) else {
+            continue;
+        };
+
+        for root_len in 1..=color_path.len() {
+            let root = &color_path[..root_len];
+            let palette_name = join_segments(root);
+            let virtual_path = virtual_color_palette_path(&segments, root_len);
+            let Some(virtual_var) = virtual_vars.get(virtual_path.as_str()) else {
+                continue;
+            };
+            let Some(raw_virtual_var) = raw_css_var(virtual_var) else {
+                continue;
+            };
+
+            palettes
+                .entry(Arc::from(palette_name))
+                .or_default()
+                .insert(Arc::from(raw_virtual_var), Arc::clone(&token.var));
+        }
+    }
+
+    ColorPaletteView { palettes }
+}
+
+fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
+    if segments.first().copied() != Some("colors")
+        || segments.get(1).copied() == Some("colorPalette")
+        || segments.len() < 2
+    {
+        return None;
+    }
+    if segments.len() > 2 {
+        Some(&segments[1..segments.len() - 1])
+    } else {
+        Some(&segments[1..])
+    }
+    .filter(|segments| !segments.is_empty())
+}
+
+fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
+    let mut out = String::from("colors.colorPalette");
+    for segment in &segments[(1 + root_len)..] {
+        out.push('.');
+        out.push_str(segment);
+    }
+    out
+}
+
+fn join_segments(segments: &[&str]) -> String {
+    let total_len = segments.iter().map(|segment| segment.len()).sum::<usize>()
+        + segments.len().saturating_sub(1);
+    let mut out = String::with_capacity(total_len);
+    for (index, segment) in segments.iter().enumerate() {
+        if index > 0 {
+            out.push('.');
+        }
+        out.push_str(segment);
+    }
+    out
+}
+
+fn raw_css_var(value: &str) -> Option<&str> {
+    value.strip_prefix("var(")?.strip_suffix(')')
 }

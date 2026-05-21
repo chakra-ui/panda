@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
 
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub enum ImportSpecifierKind {
     Named,

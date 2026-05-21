@@ -6,8 +6,10 @@
 //! callbacks on the binding side.
 
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
+use pandacss_config::{CallbackRef, StringOrStringArray, UtilityConfig, UtilityValues};
 use pandacss_extractor::Literal;
 use pandacss_shared::number_to_js_string;
 use pandacss_tokens::TokenDictionary;
@@ -49,21 +51,15 @@ pub struct UtilityTransformResult {
 
 impl Utility {
     #[must_use]
-    pub fn from_config(value: &Value) -> Self {
+    pub fn from_config(value: &BTreeMap<String, UtilityConfig>) -> Self {
         Self::from_config_with_options(value, UtilityOptions::default())
     }
 
     #[must_use]
-    pub fn from_config_with_options(value: &Value, options: UtilityOptions) -> Self {
-        let Some(entries) = value.as_object() else {
-            return Self {
-                separator: options.separator.unwrap_or_else(|| "_".to_owned()),
-                prefix: options.prefix.unwrap_or_default(),
-                tokens: options.tokens,
-                ..Self::default()
-            };
-        };
-
+    pub fn from_config_with_options(
+        entries: &BTreeMap<String, UtilityConfig>,
+        options: UtilityOptions,
+    ) -> Self {
         let mut utility = Self {
             separator: options.separator.unwrap_or_else(|| "_".to_owned()),
             prefix: options.prefix.unwrap_or_default(),
@@ -71,33 +67,25 @@ impl Utility {
             ..Self::default()
         };
         for (property, config) in entries {
-            let Some(config) = config.as_object() else {
-                continue;
-            };
-
-            if config.get("deprecated").and_then(Value::as_bool) == Some(true) {
+            if config.deprecated {
                 utility.deprecated.insert(property.clone());
             }
 
-            utility.collect_shorthands(property, config.get("shorthand"));
+            utility.collect_shorthands(property, config.shorthand.as_ref());
             utility.properties.insert(
                 property.clone(),
                 UtilityProperty {
                     class_name: config
-                        .get("className")
-                        .and_then(Value::as_str)
-                        .map(str::to_owned)
-                        .or_else(|| default_class_name(config.get("shorthand"))),
-                    layer: config
-                        .get("layer")
-                        .and_then(Value::as_str)
-                        .map(str::to_owned),
-                    values: values_map(config.get("values")),
-                    values_category: config
-                        .get("values")
-                        .and_then(Value::as_str)
-                        .map(str::to_owned),
-                    transform_callback_id: callback_ref_id(config.get("transform")),
+                        .class_name
+                        .clone()
+                        .or_else(|| default_class_name(config.shorthand.as_ref())),
+                    layer: config.layer.clone(),
+                    values: values_map(config.values.as_ref()),
+                    values_category: match config.values.as_ref() {
+                        Some(UtilityValues::Category(value)) => Some(value.clone()),
+                        _ => None,
+                    },
+                    transform_callback_id: callback_ref_id(config.transform.as_ref()),
                 },
             );
         }
@@ -271,21 +259,21 @@ impl Utility {
         expand_token_references(value, tokens)
     }
 
-    fn collect_shorthands(&mut self, property: &str, value: Option<&Value>) {
+    fn collect_shorthands(&mut self, property: &str, value: Option<&StringOrStringArray>) {
         match value {
-            Some(Value::String(shorthand)) => {
+            Some(StringOrStringArray::String(shorthand)) => {
                 self.shorthands
                     .insert(shorthand.clone(), property.to_owned());
                 if self.deprecated.contains(property) {
                     self.deprecated.insert(shorthand.clone());
                 }
             }
-            Some(Value::Array(items)) => {
-                for shorthand in items.iter().filter_map(Value::as_str) {
+            Some(StringOrStringArray::Array(items)) => {
+                for shorthand in items {
                     self.shorthands
-                        .insert(shorthand.to_owned(), property.to_owned());
+                        .insert(shorthand.clone(), property.to_owned());
                     if self.deprecated.contains(property) {
-                        self.deprecated.insert(shorthand.to_owned());
+                        self.deprecated.insert(shorthand.clone());
                     }
                 }
             }
@@ -376,34 +364,31 @@ impl StyleNormalizer<'_> {
     }
 }
 
-fn default_class_name(shorthand: Option<&Value>) -> Option<String> {
+fn default_class_name(shorthand: Option<&StringOrStringArray>) -> Option<String> {
     match shorthand {
-        Some(Value::String(value)) => Some(value.clone()),
-        Some(Value::Array(items)) => items.first().and_then(Value::as_str).map(str::to_owned),
+        Some(StringOrStringArray::String(value)) => Some(value.clone()),
+        Some(StringOrStringArray::Array(items)) => items.first().cloned(),
         _ => None,
     }
 }
 
-fn callback_ref_id(value: Option<&Value>) -> Option<String> {
-    let value = value?.as_object()?;
-    let kind = value.get("kind").and_then(Value::as_str)?;
-    if kind != "js-callback" {
+fn callback_ref_id(value: Option<&CallbackRef>) -> Option<String> {
+    let value = value?;
+    if value.kind != "js-callback" {
         return None;
     }
-    value.get("id").and_then(Value::as_str).map(str::to_owned)
+    value.id.clone()
 }
 
-fn values_map(value: Option<&Value>) -> FxHashMap<String, Literal> {
+fn values_map(value: Option<&UtilityValues>) -> FxHashMap<String, Literal> {
     let mut out = FxHashMap::default();
     match value {
-        Some(Value::Array(items)) => {
-            for item in items {
-                if let Some(key) = item.as_str() {
-                    out.insert(key.to_owned(), Literal::String(key.to_owned()));
-                }
+        Some(UtilityValues::Array(items)) => {
+            for key in items {
+                out.insert(key.clone(), Literal::String(key.clone()));
             }
         }
-        Some(Value::Object(values)) if !values.contains_key("kind") => {
+        Some(UtilityValues::Map(values)) => {
             for (key, value) in values {
                 if let Some(value) = json_to_literal(value) {
                     out.insert(key.clone(), value);
@@ -587,11 +572,15 @@ mod tests {
     use pandacss_tokens::{Token, TokenCategory};
     use serde_json::json;
 
+    fn utility_config(value: Value) -> BTreeMap<String, UtilityConfig> {
+        serde_json::from_value(value).expect("utility config")
+    }
+
     #[test]
     fn string_shorthand_maps_to_property() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "padding": { "shorthand": "p" }
-        }));
+        })));
 
         assert_eq!(utility.resolve_shorthand("p"), "padding");
         assert_eq!(utility.resolve_shorthand("padding"), "padding");
@@ -601,9 +590,9 @@ mod tests {
 
     #[test]
     fn array_shorthands_map_to_same_property() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "margin": { "shorthand": ["m", "mg"] }
-        }));
+        })));
 
         assert_eq!(utility.resolve_shorthand("m"), "margin");
         assert_eq!(utility.resolve_shorthand("mg"), "margin");
@@ -611,7 +600,7 @@ mod tests {
 
     #[test]
     fn callback_transform_refs_are_exposed() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "size": {
                 "shorthand": "sz",
                 "transform": {
@@ -619,7 +608,7 @@ mod tests {
                     "id": "utilities.size.transform"
                 }
             }
-        }));
+        })));
 
         assert_eq!(
             utility.callback_transform_id("size"),
@@ -633,7 +622,7 @@ mod tests {
 
     #[test]
     fn utility_values_normalize_aliases_to_raw_values() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "spacing": {
                 "shorthand": "s",
                 "values": {
@@ -641,7 +630,7 @@ mod tests {
                     "md": "8px"
                 }
             }
-        }));
+        })));
         let style = Literal::Object(vec![
             ("spacing".into(), Literal::String("sm".into())),
             ("s".into(), Literal::String("md".into())),
@@ -655,13 +644,13 @@ mod tests {
 
     #[test]
     fn utility_values_normalize_nested_conditions() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "spacing": {
                 "values": {
                     "sm": "4px"
                 }
             }
-        }));
+        })));
         let style = Literal::Object(vec![(
             "_hover".into(),
             Literal::Object(vec![("spacing".into(), Literal::String("sm".into()))]),
@@ -678,10 +667,7 @@ mod tests {
 
     #[test]
     fn malformed_entries_are_ignored() {
-        let utility = Utility::from_config(&json!({
-            "padding": null,
-            "margin": "bad"
-        }));
+        let utility = Utility::from_config(&utility_config(json!({})));
 
         assert!(utility.is_empty());
         assert_eq!(utility.resolve_shorthand("p"), "p");
@@ -689,10 +675,10 @@ mod tests {
 
     #[test]
     fn normalizes_nested_style_object_keys() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "padding": { "shorthand": "p" },
             "margin": { "shorthand": ["m"] }
-        }));
+        })));
         let style = Literal::Object(vec![(
             "_hover".into(),
             Literal::Object(vec![
@@ -716,7 +702,7 @@ mod tests {
     #[test]
     fn transform_uses_separator_prefix_and_class_name() {
         let utility = Utility::from_config_with_options(
-            &json!({
+            &utility_config(json!({
                 "spacing": {
                     "shorthand": "s",
                     "className": "sp",
@@ -724,7 +710,7 @@ mod tests {
                         "sm": "4px"
                     }
                 }
-            }),
+            })),
             UtilityOptions {
                 separator: Some("__".into()),
                 prefix: Some("panda".into()),
@@ -759,7 +745,7 @@ mod tests {
 
     #[test]
     fn transform_falls_back_to_hyphenated_property_class_name() {
-        let utility = Utility::from_config(&json!({}));
+        let utility = Utility::from_config(&utility_config(json!({})));
 
         let result = utility
             .transform("backgroundColor", &Literal::String("red".into()))
@@ -785,13 +771,13 @@ mod tests {
 
     #[test]
     fn transform_uses_configured_class_name_for_preset_utility() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "backgroundColor": {
                 "shorthand": "bgColor",
                 "className": "bg-c",
                 "values": "colors"
             }
-        }));
+        })));
 
         let result = utility
             .transform("bgColor", &Literal::String("red".into()))
@@ -826,11 +812,11 @@ mod tests {
             ))
             .build();
         let utility = Utility::from_config_with_options(
-            &json!({
+            &utility_config(json!({
                 "spacing": {
                     "values": "spacing"
                 }
-            }),
+            })),
             UtilityOptions {
                 tokens: Some(Arc::new(tokens)),
                 ..UtilityOptions::default()
@@ -870,7 +856,7 @@ mod tests {
             ))
             .build();
         let utility = Utility::from_config_with_options(
-            &json!({}),
+            &utility_config(json!({})),
             UtilityOptions {
                 tokens: Some(Arc::new(tokens)),
                 ..UtilityOptions::default()
@@ -901,12 +887,12 @@ mod tests {
 
     #[test]
     fn transform_preserves_layer() {
-        let utility = Utility::from_config(&json!({
+        let utility = Utility::from_config(&utility_config(json!({
             "textStyle": {
                 "layer": "recipes",
                 "values": ["body"]
             }
-        }));
+        })));
 
         let result = utility
             .transform("textStyle", &Literal::String("body".into()))

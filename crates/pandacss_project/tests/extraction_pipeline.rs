@@ -96,21 +96,21 @@ fn recipes_iterator_yields_typed_recipe_per_call_site() {
 }
 
 #[test]
-fn builder_attaches_token_dictionary() {
+fn config_theme_tokens_attach_token_dictionary() {
     use pandacss_encoder::AtomValue;
-    use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
-
-    let dict = TokenDictionary::builder()
-        .insert(Token::new(
-            "colors.red.500",
-            "#ef4444",
-            "var(--colors-red-500)",
-            TokenCategory::Colors,
-        ))
-        .build();
 
     let mut project = create_project(json!({
-        "tokenDictionary": dict,
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": {
+                            "value": "#ef4444"
+                        }
+                    }
+                }
+            }
+        }
     }));
     project.parse_file(
         "fixture.tsx",

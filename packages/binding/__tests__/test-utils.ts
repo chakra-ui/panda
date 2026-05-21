@@ -1,4 +1,5 @@
-import type { Matchers } from '../src'
+import type { Matchers, ProjectOptions, UserConfig } from '../src'
+import { Project } from '../src'
 
 export const matchers: Matchers = {
   css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
@@ -14,4 +15,18 @@ export const importMap = {
   pattern: ['@panda/patterns'],
   jsx: ['@panda/jsx'],
   tokens: ['@panda/tokens'],
+}
+
+export function createUserConfig(overrides: UserConfig = {}): UserConfig {
+  return {
+    cwd: '/virtual',
+    outdir: 'styled-system',
+    importMap,
+    jsxFactory: 'styled',
+    ...overrides,
+  }
+}
+
+export function createProject(userConfig: UserConfig = {}, options: ProjectOptions = { crossFile: false }) {
+  return Project.fromConfig(createUserConfig(userConfig), options)
 }

@@ -48,8 +48,11 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 | `TemplateLiteral`                                                                                                                           | Including tagged templates — tag identity is ignored.                                                                |
 | `Identifier`                                                                                                                                | Same-file `const` / `let` / `var` with literal initializer, never mutated.                                           |
 | `StaticMemberExpression`, `ComputedMemberExpression`                                                                                        | After resolving the object to a literal.                                                                             |
+| Computed object keys                                                                                                                        | When the key expression folds to a string or number, including nested condition objects.                              |
+| Object / array destructuring                                                                                                                | Including renamed properties, computed binding keys, defaults, and object/array rest.                                |
 | `ChainExpression` (`a?.b`)                                                                                                                  | Transparent unwrap; short-circuit yields `None`.                                                                     |
 | `CallExpression` for `token(...)` / `token.var(...)`                                                                                        | Resolved via the `TokenDictionary` when the callee binds to a Panda `tokens` import.                                 |
+| Panda `.raw(...)` calls                                                                                                                     | `css.raw`, `cva.raw`, and pattern raw helpers fold when the callee matches the configured import category.           |
 | TS enums                                                                                                                                    | Synthesized into a `Literal::Object` from member initializers. Members without initializers (auto-incremented) drop. |
 | Function-parameter `TSTypeLiteral`                                                                                                          | `function f(x: { color: 'red' })` lets `x.color` fold via the readonly literal type members.                         |
 
@@ -59,9 +62,7 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 - `let` / `var` after any mutation.
 - Function parameters without a `TSTypeLiteral` annotation.
 - Conditional / logical operators where _neither_ side folds.
-- Calls other than `token()` / `token.var()`.
-- Computed binding keys in destructuring (`const { [k]: v } = …`).
-- `...rest` in destructure patterns.
+- Calls other than `token()` / `token.var()` and configured Panda `.raw()` helpers.
 - BigInt, template literal types, unary-prefixed type literals.
 - Anything we don't recognize yet (`typeof`, `Object.keys`, enums whose declaration site isn't a `VariableDeclarator`,
   …).
@@ -113,7 +114,8 @@ downstream alias lookup is authoritative.
 When `resolve_symbol` hits an `Import` flag, it hands off to the `CrossFileResolver` (see
 [cross-file-resolution](./cross-file-resolution.md)). Walking from the symbol's declaration node up to its
 `ImportDeclaration` recovers `(specifier, imported_name)`, then the resolver loads the target file and folds the named
-export. Default and namespace imports drop here.
+export. Re-export chains and file-local alias chains are followed through the target file's own resolver. Default and
+namespace imports drop here.
 
 ## Related
 

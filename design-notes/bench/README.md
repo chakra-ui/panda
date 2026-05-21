@@ -21,4 +21,9 @@ design note explaining the trade-off.
 ## Reports
 
 - [2026-05-16 — extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx) — first comparison of `@pandacss/parser`
-  (ts-morph) vs `@pandacss/binding`'s `Extractor` (Oxc + NAPI). 15–37× speedup.
+  (ts-morph) vs `@pandacss/binding`'s `Extractor` (Oxc + NAPI). 15–37× speedup, plus a 2026-05-18 JSX-heavy direct
+  extractor spot check showing 773×.
+- [2026-05-17 — token-dictionary-js-vs-rust-design](./2026-05-17-token-dictionary-js-vs-rust-design.mdx) — design
+  comparison and benchmark plan for moving token dictionary construction/middleware parity into Rust.
+- [2026-05-18 — binding-boundary-instrumentation](./2026-05-18-binding-boundary-instrumentation.mdx) — release-mode
+  boundary numbers with tracing disabled vs Chrome JSON trace output enabled.

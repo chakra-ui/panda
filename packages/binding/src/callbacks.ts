@@ -121,17 +121,22 @@ function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: 
   }
 }
 
-export function registerNativeProjectCallbacks(project: ProjectInstance, callbacks: ProjectCallbacks) {
-  let registered = false
-  const hasUtilityTransforms =
-    !!callbacks['utility.transform'] && Object.keys(callbacks['utility.transform']).length > 0
+export function registerCallbacks(
+  project: ProjectInstance,
+  callbacks: ProjectCallbacks,
+  tokenDictionary: TokenDictionary | undefined,
+) {
+  const utilityTransforms = callbacks['utility.transform']
+  const hasUtilityTransforms = !!utilityTransforms && Object.keys(utilityTransforms).length > 0
+  const patternTransforms = callbacks['pattern.transform']
+  const hasPatternTransforms = !!patternTransforms && Object.keys(patternTransforms).length > 0
 
   const config = project.config()
   const patternDefaultValues = callbacks['pattern.defaultValues']
   const patternDefaultValueRefs =
     config && patternDefaultValues ? getPatternDefaultValueRefsByTransformId(config) : new Map<string, string>()
-  const patternTransforms = callbacks['pattern.transform']
-  if (project.registerPatternTransform && patternTransforms && Object.keys(patternTransforms).length > 0) {
+  if (hasPatternTransforms && !project.registerPatternTransform) return false
+  if (project.registerPatternTransform && patternTransforms) {
     for (const [id, callback] of Object.entries(patternTransforms)) {
       const defaultValueId = patternDefaultValueRefs.get(id)
       const defaultValue = defaultValueId ? patternDefaultValues?.[defaultValueId] : undefined
@@ -140,10 +145,16 @@ export function registerNativeProjectCallbacks(project: ProjectInstance, callbac
         return callback(nextProps, createPatternHelpers())
       })
     }
-    registered = true
   }
 
-  return registered && !hasUtilityTransforms
+  if (hasUtilityTransforms && !project.registerUtilityTransform) return false
+  if (project.registerUtilityTransform && utilityTransforms) {
+    for (const [id, callback] of Object.entries(utilityTransforms)) {
+      project.registerUtilityTransform(id, (value) => callback(value, createTransformArgs(value, tokenDictionary)))
+    }
+  }
+
+  return true
 }
 
 function applyUtilityTransformCallbacks(

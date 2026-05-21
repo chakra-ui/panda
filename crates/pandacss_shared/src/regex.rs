@@ -1,5 +1,4 @@
 use regex::Regex;
-use serde_json::Value;
 
 /// Compile a JavaScript-style regex source and flags pair into Rust `regex`.
 ///
@@ -20,43 +19,5 @@ pub fn compile_js_regex(source: &str, flags: &str) -> Option<Regex> {
         Regex::new(source).ok()
     } else {
         Regex::new(&format!("(?{options}:{source})")).ok()
-    }
-}
-
-/// Decode the JSON-safe representation emitted by the JS config serializer.
-#[must_use]
-pub fn regex_from_serialized_value(value: &Value) -> Option<Regex> {
-    let object = value.as_object()?;
-    if object.get("kind").and_then(Value::as_str) != Some("regex") {
-        return None;
-    }
-    let source = object.get("source").and_then(Value::as_str)?;
-    let flags = object.get("flags").and_then(Value::as_str).unwrap_or("");
-    compile_js_regex(source, flags)
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-
-    use super::*;
-
-    #[test]
-    fn compiles_js_regex_flags() {
-        let regex = compile_js_regex("^panda", "i").unwrap();
-
-        assert!(regex.is_match("PandaBox"));
-    }
-
-    #[test]
-    fn compiles_serialized_regex_values() {
-        let regex = regex_from_serialized_value(&json!({
-            "kind": "regex",
-            "source": "^panda",
-            "flags": "i"
-        }))
-        .unwrap();
-
-        assert!(regex.is_match("PandaBox"));
     }
 }

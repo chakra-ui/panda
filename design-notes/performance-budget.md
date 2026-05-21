@@ -13,7 +13,7 @@ are used wherever keys are:
 
 - Short well-known strings (`"css"`, `"theme"`, …) — `pandacss_tokens::TokenExtensions`, matcher allowlists.
 - Newtype integer IDs (`SymbolId` u32) — `Resolver::cache`.
-- Atom dedup sets — `Encoder::atoms`, `Project::atoms_cache`.
+- Atom dedup sets — `Encoder::atoms`, `Project::atoms_cache`, `Project::atom_counts`.
 
 The only `std::HashMap` in the workspace is in `CrossFileResolver`'s outer cache, where the key is a `PathBuf` (already
 non-trivial to hash; the SipHash overhead is negligible relative to filesystem cost).
@@ -60,14 +60,15 @@ borrowed slices — but until benches force the change, the simpler shape wins.
 production batching. Use the `Extractor` session class for batches; it amortizes the matcher/dictionary setup across
 calls.
 
-## Eager rebuild of atoms_cache
+## Incremental project atom cache
 
-`Project::rebuild_atoms_cache` runs on every add / remove. The eager rebuild trades allocation churn on each
-mutation for a **zero-work** `&FxHashSet` borrow on every read.
+`Project` keeps a global `atoms_cache` plus `atom_counts`. Adding a parsed file increments each atom's refcount and
+inserts first-seen atoms into the cache; replacing or removing a file decrements the old bucket and removes atoms whose
+count reaches zero.
 
 Read is the hot path — emitters, manifest writers, and tooling all call `project.atoms()` repeatedly between mutations.
-Lazy rebuilding would force the lookup to either re-check a dirty flag or rebuild on read, both worse for the access
-pattern. The current trade is right.
+The incremental cache preserves the cheap borrowed `&FxHashSet` read while making watch-mode updates O(file atoms)
+instead of rebuilding from every file in the project.
 
 ## Fast path: no Panda imports
 

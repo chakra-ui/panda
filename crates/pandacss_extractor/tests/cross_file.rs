@@ -121,6 +121,32 @@ fn exported_object_can_reference_file_local_const() {
 }
 
 #[test]
+fn exported_alias_chain_resolves_whole_object() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { primary } from './tokens';
+            import { css } from '@panda/css';
+            css(primary);
+        "},
+        &[(
+            "tokens.ts",
+            indoc::indoc! {r"
+                const base = { color: 'red' };
+                const button = base;
+                export const primary = button;
+            "},
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - color: red
+    ");
+}
+
+#[test]
 fn exported_object_can_reference_imported_const() {
     let (fs, main) = project(
         indoc::indoc! {r"
@@ -142,6 +168,27 @@ fn exported_object_can_reference_imported_const() {
       - name: css
         data:
           - color: red
+    ");
+}
+
+#[test]
+fn imported_object_spreads_under_condition() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { hover } from './styles';
+            import { css } from '@panda/css';
+            css({ _hover: { ...hover, bg: 'blue' } });
+        "},
+        &[("styles.ts", "export const hover = { color: 'red' };\n")],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - _hover:
+              color: red
+              bg: blue
     ");
 }
 
@@ -169,6 +216,35 @@ fn exported_css_raw_object_folds_into_importing_css_call() {
           - color: red
             padding: 4px
             margin: 8px
+    ");
+}
+
+#[test]
+fn re_exported_css_raw_object_spreads_into_importing_css_call() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { button } from './styles';
+            import { css } from '@panda/css';
+            css({ ...button, bg: 'blue' });
+        "},
+        &[
+            (
+                "base.ts",
+                indoc::indoc! {r"
+                    import { css } from '@panda/css';
+                    export const button = css.raw({ color: 'red' });
+                "},
+            ),
+            ("styles.ts", "export { button } from './base';\n"),
+        ],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r"
+    calls:
+      - name: css
+        data:
+          - color: red
+            bg: blue
     ");
 }
 

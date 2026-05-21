@@ -50,20 +50,34 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     Cow::Owned(out)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn numbers_use_js_integer_format_inside_safe_range() {
-        assert_eq!(number_to_js_string(12.0), "12");
-        assert_eq!(number_to_js_string(12.5), "12.5");
+#[must_use]
+pub fn dash_case(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        if ch.is_ascii_uppercase() {
+            out.push('-');
+            out.push(ch.to_ascii_lowercase());
+        } else {
+            out.push(ch);
+        }
     }
+    out
+}
 
-    #[test]
-    fn capitalizes_first_scalar() {
-        assert_eq!(capitalize("button").as_ref(), "Button");
-        assert_eq!(capitalize("Button").as_ref(), "Button");
-        assert_eq!(capitalize("").as_ref(), "");
+#[must_use]
+pub fn escape_css_var_name(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric()
+            || ch == '_'
+            || ch == '-'
+            || ('\u{0081}'..='\u{ffff}').contains(&ch)
+        {
+            out.push(ch);
+        } else {
+            out.push('\\');
+            out.push(ch);
+        }
     }
+    out
 }

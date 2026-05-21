@@ -2,7 +2,8 @@
 
 ## Summary
 
-The Rust pipeline owns a deliberately narrow slice: parse → extract → encode → emit → optimize. A list of things it
+The Rust pipeline currently owns a deliberately narrow slice: parse → extract → encode. Emission and optimization are
+planned Rust phases, but are intentionally not part of the current project/extractor contract. A list of things it
 explicitly **doesn't** own — and why — is more useful to future contributors than describing what it does. This doc is
 that list.
 
@@ -71,12 +72,20 @@ trivial: unknown paths are silently filtered.
 
 ### Configuration parsing
 
-`pandacss_config::SerializedConfig` is a placeholder. Config resolution still lives on the JS side; the resolved config
-(matchers, design tokens, conditions) flows into the Rust pipeline as serializable structures.
+`pandacss_config::UserConfig` is the Rust-facing resolved config input. Config resolution still lives on the JS side; Rust
+does not execute `panda.config.*`, presets, hooks, or plugins. The resolved config flows into
+`pandacss_project::System::new(config)`, which compiles extractor matchers, JSX config, utility metadata, conditions,
+breakpoints, patterns, recipes, and token dictionary data into runtime structures.
 
 **Why:** Panda's config supports recipes, hooks, presets, conditions, and a long tail of advanced features.
 Reimplementing the resolution semantics in Rust would multiply the surface for parity bugs, and the cost it avoids (one
 JSON serialization per session) isn't on the hot path.
+
+Config compilation is fallible. Invalid runtime structures that Rust must compile, such as serialized JSX regexes,
+return `pandacss_project::ConfigError` through `System::new(config)` / `Project::from_config(config)` instead of being
+silently ignored or panicking. `pandacss_config::Theme` is typed for the structural fields Rust consumes today
+(`breakpoints`, recipes, slot recipes, theme variants, containers, color palette). Nested style/token trees still use
+`serde_json::Value` where the Rust port has not claimed the full semantic shape yet.
 
 ### Hooks executing arbitrary JS
 
@@ -90,8 +99,8 @@ the Rust engine surfacing extraction results that JS-side hooks transform betwee
 - Import matching against Panda category rules
 - Recipe (`cva` / `sva`) parsing into typed shapes
 - Atomic encoding (one atom per `(prop, value, condition_chain)`)
-- CSS emission (planned — `pandacss_emitter` crate)
-- CSS optimization via `lightningcss` (planned — `pandacss_optimizer` crate)
+- CSS emission later
+- CSS optimization later via `lightningcss`
 
 Each of those is a closed system with a serializable input and output shape. JS calls in with a config + sources, Rust
 hands back CSS + manifest + diagnostics. Anything outside that contract lives on the JS side or in a separate crate.

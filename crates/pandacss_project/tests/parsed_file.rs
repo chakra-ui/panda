@@ -45,7 +45,7 @@ fn parsed_file_surfaces_diagnostics_per_file() {
     let report = project.parse_file("broken.tsx", "import { css } from");
     assert!(
         !report.diagnostics.is_empty(),
-        "FileReport carries the list"
+        "ParseFileReport carries the list"
     );
     assert_eq!(report.diagnostics[0].severity, DiagnosticSeverity::Error);
 
@@ -53,7 +53,7 @@ fn parsed_file_surfaces_diagnostics_per_file() {
     assert_eq!(
         view.diagnostics().len(),
         report.diagnostics.len(),
-        "ParsedFile mirrors the FileReport list"
+        "ParsedFile mirrors the ParseFileReport list"
     );
     assert_eq!(view.diagnostics()[0].severity, DiagnosticSeverity::Error);
 }

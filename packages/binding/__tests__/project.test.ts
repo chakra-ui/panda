@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Project } from '../src'
-import { importMap, matchers } from './test-utils'
+import { createProject, importMap } from './test-utils'
 
 describe('Project', () => {
   it('extracts atoms from a css() call', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     project.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
@@ -149,7 +149,7 @@ describe('Project', () => {
   })
 
   it('extracts JSX attributes as atoms', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     project.parseFile(
       '/Card.tsx',
       `import { Box } from '@panda/jsx'
@@ -183,7 +183,7 @@ describe('Project', () => {
          css({ color: brand })`,
       )
 
-      const project = new Project(matchers, { crossFile: true })
+      const project = createProject({}, { crossFile: true })
       project.parseFile(
         mainPath,
         `import { brand } from './tokens'
@@ -205,7 +205,7 @@ describe('Project', () => {
   })
 
   it('parseFile reports per-call counts', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     const report = project.parseFile(
       '/mixed.tsx',
       `import { css, cva } from '@panda/css'

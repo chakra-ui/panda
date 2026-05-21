@@ -10,7 +10,7 @@ the batch.
 ## Cache shape
 
 ```rust
-RefCell<HashMap<PathBuf, FxHashMap<String, Literal>>>
+Mutex<FxHashMap<PathBuf, FxHashMap<String, Literal>>>
 ```
 
 `path → (exported_name → folded literal)`.
@@ -19,21 +19,30 @@ Each file is parsed once. The AST is dropped after exports are extracted — we 
 `Program`, so the resolver doesn't pin every imported file's allocator. For a medium-sized app with hundreds of imports,
 this is the difference between a few MB and tens of MB of live AST memory at steady state.
 
+The cache is behind a `Mutex`, not `RefCell`, so the resolver can be shared by `ExtractorConfig` in future
+parallel/bulk-file paths. The public type is `Send + Sync`.
+
 ## What folds
 
-Top-level `export const X = <foldable>` only. The `<foldable>` expression goes through the standard
-`expression_to_literal` path with **no** resolver — see "Resolver hand-off" below for why.
+Top-level named exports where the exported value resolves to a static literal:
+
+- `export const x = <foldable>`
+- `export let x = <foldable>` / `export var x = <foldable>` when the binding is not mutated
+- exported aliases, e.g. `const button = base; export { button }`
+- re-exports, e.g. `export { button } from './base'`
+- file-local alias chains, e.g. `const button = base; export const primary = button`
+- imported aliases inside the exported file
+- `css.raw(...)`, `cva.raw(...)`, and pattern raw calls when their imports match the configured Panda matchers
+
+The loaded file gets its own `Resolver`, so export collection uses the same identifier/member/spread/destructuring
+semantics as same-file extraction.
 
 ## What doesn't fold (yet)
 
-- `export { x } from './other'` re-exports — the resolver doesn't recurse through them. Add when the common case proves
-  out.
 - `export default …` — same surface as named exports but currently skipped to keep the v1 contract narrow.
-- Destructuring on the LHS (`export const { a, b } = obj`) — those patterns would need a re-export of the original RHS
-  too, which the JS extractor doesn't fold cleanly either.
-- Anything beyond `export const` (functions, classes, enums).
-- Chained file-local references in the imported file — `export const brand = primary` doesn't follow the inner
-  identifier.
+- Namespace/default imports in the importing file — they don't map cleanly to one named export.
+- Dynamic values: function calls other than Panda `.raw()` helpers, runtime-computed keys that don't fold, functions,
+  classes, and anything the literal evaluator intentionally rejects.
 
 ## Resolver hand-off
 
@@ -49,20 +58,19 @@ to the enclosing `ImportDeclaration`:
 Only named import specifiers reach the cross-file path. Default and namespace specifiers return `None` immediately —
 they don't map cleanly to a single named export and our common case is `import { token } from '…'` style.
 
-Inside the loaded file, `collect_exports` runs **without** a per-file `Resolver`. Building one would require a full
-semantic pass on every imported file, and the common shape (`export const X = <object / string / array>`) folds without
-scope context. Chained file-local references are a follow-up — punt with a `// PORT NOTE:` rather than do the work
-eagerly.
+Inside the loaded file, `collect_exports` builds a per-file `Resolver`. This costs one semantic pass per imported file,
+but the file is cached after that pass and the AST is dropped. That tradeoff buys parity for local aliases, computed
+keys, destructuring, imported values in the exported file, and Panda `.raw()` helpers without keeping AST memory alive.
 
 ## Cycle guard
 
 ```rust
-in_flight: RefCell<HashSet<PathBuf>>
+in_flight: Mutex<FxHashSet<(PathBuf, String)>>
 ```
 
 `a.ts` re-exports from `b.ts` which re-exports from `a.ts` would otherwise overflow the stack. The guard is best-effort:
-when we're already mid-load for a path, return `None`. The pending entry is inserted into the cache before recursion and
-removed after, so subsequent hits get the partial-or-complete result depending on what the recursion produced.
+when the same `(path, export_name)` is already being resolved, return `None`. The guard is removed after the file's
+exports are collected.
 
 ## Lifecycle and sharing
 

@@ -4,9 +4,9 @@
 
 `pandacss_fs` is a Tier-0 crate that abstracts every filesystem touch in the Rust pipeline behind a `FileSystem` trait.
 Two impls ship behind cargo features: `OsFileSystem` (the `os` feature, default on native) and `MemoryFileSystem` (the
-`memory` feature, default on all targets). Core crates (`pandacss_extractor`, `pandacss_project`, future
-`pandacss_emitter`/`pandacss_discover`) call only through the trait — never `std::fs` directly — so the same code
-compiles to `wasm32-unknown-unknown` for the browser playground with `--no-default-features --features memory`.
+`memory` feature, default on all targets). Core crates (`pandacss_extractor`, `pandacss_project`, and future crates that
+need I/O) call only through the trait — never `std::fs` directly — so the same code compiles to
+`wasm32-unknown-unknown` for the browser playground with `--no-default-features --features memory`.
 
 ## Why a new crate, why now
 
@@ -221,27 +221,24 @@ meaningfully.
 
 ## Injection pattern
 
-`CrossFileResolver` and `Project` take an `Arc<dyn FileSystem>` via constructor:
+`CrossFileResolver` is the filesystem injection point:
 
 ```rust
 // Native
-let fs: Arc<dyn FileSystem> = Arc::new(OsFileSystem::default());
-let project = Project::with_fs(fs, matchers);
+let resolver = CrossFileResolver::default();
 
 // Tests / wasm
-let fs: Arc<dyn FileSystem> = Arc::new(MemoryFileSystem::from_iter([
+let fs = MemoryFileSystem::from_iter([
     ("/src/Button.tsx", source),
     ("/src/tokens.ts", tokens_source),
-]));
-let project = Project::with_fs(fs, matchers);
+]);
+let resolver = CrossFileResolver::with_fs(fs);
 ```
 
-`Project::from_matchers(matchers)` is the convenience constructor — defaults to `OsFileSystem` on native targets. On wasm
-builds the `os` feature isn't enabled and `new` resolves to a compile error (the type doesn't exist), forcing callers to
-`with_fs`.
-
-`ExtractorConfig` gains an optional `fs: Option<Arc<dyn FileSystem>>`. When `None`, the cross-file resolver isn't wired
-up (current behavior). When `Some`, it threads down to `CrossFileResolver`.
+`ExtractorConfig` stores an optional `CrossFileResolver`. `Project::from_config(config)` is the primary production
+constructor; callers that need cross-file evaluation attach a resolver with `with_cross_file` before parsing files.
+Matcher-only constructors remain lower-level/test entrypoints. On wasm, callers must provide a memory-backed resolver
+because the native `os` feature is not available.
 
 ## Phase plan
 
@@ -265,8 +262,8 @@ up (current behavior). When `Some`, it threads down to `CrossFileResolver`.
   `pandacss_fs` for the walk + `ignore` for `.gitignore` semantics. Out of scope for Phase A/B.
 - **Native file watching.** `notify-debouncer-full` style. Stays out of v2.x per
   [scope-and-boundaries](./scope-and-boundaries.md).
-- **Cache crate FS integration.** When `pandacss_cache` becomes more than a placeholder, it'll use `pandacss_fs` for
-  persistence.
+- **Persistent cache.** Add a crate only when cache behavior is implemented; it should use `pandacss_fs` for
+  persistence rather than direct `std::fs` calls.
 
 ## Related
 

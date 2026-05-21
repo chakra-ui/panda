@@ -1,11 +1,60 @@
-//! Config-derived project construction behavior.
+//! UserConfig-derived project construction behavior.
 
 mod common;
 
-use common::{create_project, sorted_atoms};
+use common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_project::{Project, System};
 use serde_json::json;
+
+#[test]
+fn config_builds_system_and_project() {
+    let config = create_config(json!({
+        "theme": {
+            "breakpoints": {
+                "sm": "640px"
+            }
+        }
+    }));
+
+    let system = System::new(config.clone()).expect("valid system config");
+    let project = Project::new(system);
+
+    assert!(project.is_empty());
+    assert!(
+        Project::from_config(config)
+            .expect("valid project config")
+            .is_empty()
+    );
+}
+
+#[test]
+fn invalid_serialized_jsx_regex_returns_error() {
+    let config = create_config(json!({
+        "patterns": {
+            "stack": {
+                "jsx": [
+                    {
+                        "kind": "regex",
+                        "source": "[",
+                        "flags": ""
+                    }
+                ]
+            }
+        }
+    }));
+
+    let error = match Project::from_config(config) {
+        Ok(_) => panic!("invalid regex should fail config build"),
+        Err(error) => error,
+    };
+
+    assert_eq!(
+        error.to_string(),
+        "Regex error at patterns.stack.jsx[0]: /[/"
+    );
+}
 
 #[test]
 fn jsx_names_include_patterns_and_recipes() {

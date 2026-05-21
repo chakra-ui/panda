@@ -11,6 +11,7 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
+use smallvec::SmallVec;
 
 /// Member-chain tags like `<styled.div>` are accepted only when the root
 /// name is configured as a JSX factory; otherwise a named import like
@@ -139,10 +140,10 @@ impl Extractor<'_, '_> {
                 {
                     return None;
                 }
-                let Some(matched) = self.ctx.aliases.get(root.as_str()) else {
-                    let display = format!("{}.{}", root, path.join("."));
+                let Some(matched) = self.ctx.aliases.get(root) else {
+                    let display = member_display(root, &path);
                     if self.ctx.config.jsx.is_component_tag(&display) {
-                        return Some((MatchCategory::Jsx, display, root));
+                        return Some((MatchCategory::Jsx, display, root.to_owned()));
                     }
                     return None;
                 };
@@ -163,7 +164,7 @@ impl Extractor<'_, '_> {
                         {
                             return None;
                         }
-                        let display = format!("{}.{}", matched.name, path.join("."));
+                        let display = member_display(&matched.name, &path);
                         Some((matched.category, display, matched.alias.clone()))
                     }
                     ImportSpecifierKind::Namespace => {
@@ -176,7 +177,7 @@ impl Extractor<'_, '_> {
                         {
                             return None;
                         }
-                        Some((matched.category, path.join("."), matched.alias.clone()))
+                        Some((matched.category, join_path(&path), matched.alias.clone()))
                     }
                     ImportSpecifierKind::Default => None,
                 }
@@ -211,23 +212,51 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
 /// root is actually an imported binding.
 fn flatten_member<'a>(
     member: &'a JSXMemberExpression<'_>,
-) -> Option<(String, &'a IdentifierReference<'a>, Vec<String>)> {
-    let mut path = vec![member.property.name.to_string()];
+) -> Option<(&'a str, &'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
+    let mut path = SmallVec::new();
+    path.push(member.property.name.as_str());
     let mut current = &member.object;
     loop {
         match current {
             JSXMemberExpressionObject::IdentifierReference(id) => {
-                let root_name = id.name.to_string();
                 path.reverse();
-                return Some((root_name, id, path));
+                return Some((id.name.as_str(), id, path));
             }
             JSXMemberExpressionObject::MemberExpression(inner) => {
-                path.push(inner.property.name.to_string());
+                path.push(inner.property.name.as_str());
                 current = &inner.object;
             }
             JSXMemberExpressionObject::ThisExpression(_) => return None,
         }
     }
+}
+
+fn member_display(root: &str, path: &[&str]) -> String {
+    let mut out = String::with_capacity(
+        root.len()
+            + 1
+            + path.iter().map(|part| part.len()).sum::<usize>()
+            + path.len().saturating_sub(1),
+    );
+    out.push_str(root);
+    for part in path {
+        out.push('.');
+        out.push_str(part);
+    }
+    out
+}
+
+fn join_path(path: &[&str]) -> String {
+    let mut out = String::with_capacity(
+        path.iter().map(|part| part.len()).sum::<usize>() + path.len().saturating_sub(1),
+    );
+    for (index, part) in path.iter().enumerate() {
+        if index > 0 {
+            out.push('.');
+        }
+        out.push_str(part);
+    }
+    out
 }
 
 fn merge_attribute(

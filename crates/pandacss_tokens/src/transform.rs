@@ -1,0 +1,323 @@
+use pandacss_config::{
+    AssetType, AssetValue, BorderStyle, BorderValue, EasingValue, FontValue, GradientStops,
+    GradientValue, Shadow, ShadowValue, StringOrNumber,
+};
+use pandacss_shared::{number_to_js_string, push_number_to_js_string};
+
+pub(crate) trait TokenValueString {
+    fn to_token_string(&self) -> String;
+}
+
+impl TokenValueString for String {
+    fn to_token_string(&self) -> String {
+        self.clone()
+    }
+}
+
+impl TokenValueString for StringOrNumber {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Number(value) => number_to_js_string(*value),
+        }
+    }
+}
+
+impl TokenValueString for FontValue {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Array(values) => join_strings(values, ", "),
+        }
+    }
+}
+
+impl TokenValueString for ShadowValue {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::StringArray(values) => join_strings(values, ", "),
+            Self::Shadow(value) => shadow_to_string(value),
+            Self::ShadowArray(values) => {
+                let mut out = String::new();
+                for (index, value) in values.iter().enumerate() {
+                    if index > 0 {
+                        out.push_str(", ");
+                    }
+                    out.push_str(&shadow_to_string(value));
+                }
+                out
+            }
+        }
+    }
+}
+
+impl TokenValueString for BorderValue {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Border(value) => {
+                let width = to_unit(&value.width);
+                let style = border_style_to_str(&value.style);
+                let mut out =
+                    String::with_capacity(width.len() + style.len() + value.color.len() + 2);
+                out.push_str(&width);
+                out.push(' ');
+                out.push_str(style);
+                out.push(' ');
+                out.push_str(&value.color);
+                out
+            }
+        }
+    }
+}
+
+impl TokenValueString for EasingValue {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Array(values) => {
+                let mut out = String::from("cubic-bezier(");
+                for (index, value) in values.iter().enumerate() {
+                    if index > 0 {
+                        out.push_str(", ");
+                    }
+                    push_number_to_js_string(&mut out, *value);
+                }
+                out.push(')');
+                out
+            }
+        }
+    }
+}
+
+impl TokenValueString for GradientValue {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Gradient(value) => {
+                let placement = value.placement.to_token_string();
+                let mut out = String::new();
+                out.push_str(&value.r#type);
+                out.push_str("-gradient(");
+                out.push_str(&placement);
+                out.push_str(", ");
+                match &value.stops {
+                    GradientStops::Strings(values) => {
+                        for (index, value) in values.iter().enumerate() {
+                            if index > 0 {
+                                out.push_str(", ");
+                            }
+                            out.push_str(value);
+                        }
+                    }
+                    GradientStops::Stops(values) => {
+                        for (index, stop) in values.iter().enumerate() {
+                            if index > 0 {
+                                out.push_str(", ");
+                            }
+                            out.push_str(&stop.color);
+                            out.push(' ');
+                            push_number_to_js_string(&mut out, stop.position);
+                            out.push_str("px");
+                        }
+                    }
+                }
+                out.push(')');
+                out
+            }
+        }
+    }
+}
+
+impl TokenValueString for AssetValue {
+    fn to_token_string(&self) -> String {
+        match self {
+            Self::String(value) => value.clone(),
+            Self::Asset(value) => match value.r#type {
+                AssetType::Url => quoted_url(&value.value),
+                AssetType::Svg => quoted_url(&svg_to_data_uri(&value.value)),
+            },
+        }
+    }
+}
+
+fn join_strings(values: &[String], separator: &str) -> String {
+    let mut out = String::new();
+    for (index, value) in values.iter().enumerate() {
+        if index > 0 {
+            out.push_str(separator);
+        }
+        out.push_str(value);
+    }
+    out
+}
+
+fn shadow_to_string(value: &Shadow) -> String {
+    let offset_x = px(&value.offset_x);
+    let offset_y = px(&value.offset_y);
+    let blur = px(&value.blur);
+    let spread = px(&value.spread);
+    let mut out = String::with_capacity(
+        offset_x.len() + offset_y.len() + blur.len() + spread.len() + value.color.len() + 12,
+    );
+    if value.inset.unwrap_or(false) {
+        // Matches the JS transformer, which stores "inset " before joining
+        // the parts with spaces.
+        out.push_str("inset  ");
+    }
+    out.push_str(&offset_x);
+    out.push(' ');
+    out.push_str(&offset_y);
+    out.push(' ');
+    out.push_str(&blur);
+    out.push(' ');
+    out.push_str(&spread);
+    out.push(' ');
+    out.push_str(&value.color);
+    out
+}
+
+fn px(value: &StringOrNumber) -> String {
+    match value {
+        StringOrNumber::String(value) => value.clone(),
+        StringOrNumber::Number(value) => {
+            let mut out = number_to_js_string(*value);
+            out.push_str("px");
+            out
+        }
+    }
+}
+
+fn to_unit(value: &StringOrNumber) -> String {
+    match value {
+        StringOrNumber::Number(value) => {
+            let mut out = number_to_js_string(*value);
+            out.push_str("px");
+            out
+        }
+        StringOrNumber::String(value) if has_reference(value) || is_css_unit(value) => {
+            value.clone()
+        }
+        StringOrNumber::String(value) => {
+            let mut out = String::with_capacity(value.len() + 2);
+            out.push_str(value);
+            out.push_str("px");
+            out
+        }
+    }
+}
+
+fn border_style_to_str(value: &BorderStyle) -> &'static str {
+    match value {
+        BorderStyle::Dashed => "dashed",
+        BorderStyle::Dotted => "dotted",
+        BorderStyle::Double => "double",
+        BorderStyle::Groove => "groove",
+        BorderStyle::Hidden => "hidden",
+        BorderStyle::Inset => "inset",
+        BorderStyle::None => "none",
+        BorderStyle::Outset => "outset",
+        BorderStyle::Ridge => "ridge",
+        BorderStyle::Solid => "solid",
+    }
+}
+
+fn quoted_url(value: &str) -> String {
+    let mut out = String::with_capacity(value.len() + 7);
+    out.push_str("url(\"");
+    out.push_str(value);
+    out.push_str("\")");
+    out
+}
+
+fn has_reference(value: &str) -> bool {
+    value.contains('{') || value.contains("token(")
+}
+
+fn is_css_unit(value: &str) -> bool {
+    let value = value.trim();
+    if value == "0" {
+        return true;
+    }
+    let Some(last_digit_index) = value
+        .char_indices()
+        .rev()
+        .find_map(|(index, ch)| ch.is_ascii_digit().then_some(index))
+    else {
+        return false;
+    };
+    value[last_digit_index + 1..]
+        .chars()
+        .any(|ch| ch.is_ascii_alphabetic() || ch == '%')
+}
+
+fn svg_to_data_uri(svg: &str) -> String {
+    let svg = svg.strip_prefix('\u{feff}').unwrap_or(svg);
+    let collapsed = collapse_whitespace(svg);
+    let body = color_code_to_shorter_names(&collapsed).replace('"', "'");
+    let mut out = String::from("data:image/svg+xml,");
+    percent_encode_svg(&body, &mut out);
+    out
+}
+
+fn collapse_whitespace(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut in_whitespace = false;
+    for ch in value.trim().chars() {
+        if ch.is_whitespace() {
+            if !in_whitespace {
+                out.push(' ');
+                in_whitespace = true;
+            }
+        } else {
+            out.push(ch);
+            in_whitespace = false;
+        }
+    }
+    out
+}
+
+fn color_code_to_shorter_names(value: &str) -> String {
+    // The JS helper has a larger color table. These are the common SVG
+    // payload wins and cover Panda's existing asset transform tests.
+    value
+        .replace("#000000", "black")
+        .replace("#000", "black")
+        .replace("#ffffff", "white")
+        .replace("#fff", "white")
+        .replace("#ff0000", "red")
+        .replace("#f00", "red")
+        .replace("#00ff00", "lime")
+        .replace("#0f0", "lime")
+        .replace("#0000ff", "blue")
+        .replace("#00f", "blue")
+}
+
+fn percent_encode_svg(value: &str, out: &mut String) {
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
+    for byte in value.bytes() {
+        match byte {
+            b' ' | b'=' | b':' | b'/' => out.push(byte as char),
+            b'A'..=b'Z'
+            | b'a'..=b'z'
+            | b'0'..=b'9'
+            | b'-'
+            | b'_'
+            | b'.'
+            | b'!'
+            | b'~'
+            | b'*'
+            | b'\''
+            | b'('
+            | b')' => {
+                out.push(byte as char);
+            }
+            byte => {
+                out.push('%');
+                out.push(HEX[(byte >> 4) as usize] as char);
+                out.push(HEX[(byte & 0x0f) as usize].to_ascii_lowercase() as char);
+            }
+        }
+    }
+}

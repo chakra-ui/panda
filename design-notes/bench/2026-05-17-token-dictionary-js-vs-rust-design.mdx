@@ -1,0 +1,145 @@
+---
+title: Token Dictionary — JS vs Rust Design
+date: 2026-05-17
+fixtures:
+  - synth-token-1000
+  - synth-token-10000
+  - synth-token-50000
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+---
+
+# Token Dictionary: JS pipeline vs Rust compiled model
+
+> First measured comparison for token dictionary construction. This is a core algorithm comparison, not a binding
+> comparison: JS calls `packages/token-dictionary` source through `tsx`; Rust calls
+> `pandacss_tokens::TokenDictionary::from_config` natively through a Cargo bench binary.
+
+## TL;DR
+
+The current Rust implementation is already **~7-14x faster than JS full `TokenDictionary.init()`** on synthetic themes
+when measured as an optimized Rust binary with parity-level derived token counts. This is despite Rust still walking some
+config trees and allocating path strings. Rust also now serves cached category values in effectively constant time and
+includes native value transforms for shadows, gradients, fonts, easings, borders, assets, and color-mix references.
+
+| Input tokens | JS full build | Rust build | Rust vs JS full | JS register-only | Rust vs register-only |
+| ------------ | ------------: | ---------: | ---------------: | ---------------: | --------------------: |
+| 1,000        |       14.4 ms |     1.9 ms |          **7.5x** |           3.3 ms |                  1.7x |
+| 10,000       |      206.6 ms |    14.6 ms |         **14.1x** |          36.1 ms |                  2.5x |
+| 50,000       |     1007.3 ms |    83.5 ms |         **12.1x** |         227.9 ms |                  2.7x |
+
+`JS full` means `new TokenDictionary(config).init()`. `JS register-only` means `registerTokens()` plus
+`setComputedView()`; it is included as a lower-bound baseline for raw token walking, not as feature parity.
+
+The JS token dictionary is mutation-oriented: register tokens, run middleware, run transforms, expand conditionals,
+resolve references, then build computed views. The Rust design should become graph-oriented: parse config once into
+compact token records, resolve references once, materialize derived records, then build read indexes.
+
+| Area           | JS today                                        | Rust target                                         |
+| -------------- | ----------------------------------------------- | --------------------------------------------------- |
+| Construction   | Multiple `allTokens` walks with object mutation | Mostly linear passes over `Vec<Token>`              |
+| References     | Regex/string replacement during mutation        | Parsed dependency graph with cached resolved values |
+| Derived tokens | Clone `Token` objects for negatives/conditions  | Append derived records using source indexes         |
+| Paths          | Repeated string arrays and dot joins            | Interned path/condition/category strings later      |
+| Views          | Rebuilt `Map` structures after mutation         | Dense `FxHashMap` indexes built once                |
+
+## Current Rust State
+
+- `pandacss_tokens` owns `TokenDictionary::from_config(&UserConfig)`.
+- `project` no longer owns config-derived token walking; it asks the token crate during `System::new(config)`.
+- `pandacss_config` now models token categories with typed values derived from `packages/types/src/tokens.ts`
+  (`ShadowValue`, `GradientValue`, `BorderValue`, `AssetValue`, etc.) instead of exposing token trees as raw
+  `serde_json::Value`.
+- Shared string helpers (`dash_case`, CSS-var escaping, JS-compatible `to_hash`) live in `pandacss_shared`.
+- Shared errors use `pandacss_shared::PandaError` instead of crate-local one-off error types.
+- Current Rust dictionary construction covers config tokens, semantic token conditions, breakpoints, theme variants,
+  prefix/hash CSS var naming, lookup indexes, native composite value transforms, color-mix token references, negative
+  spacing tokens, empty-token removal, and virtual color palette tokens.
+- Batch 1 allocation cleanup replaced the temporary `path -> (value, var)` reference map with `path -> token index`,
+  makes reference expansion allocate only when a token value actually changes, and direct-writes several composite
+  transform strings instead of building temporary vectors.
+- Batch 2 interns hot token strings (`path`, `value`, `var`, condition, original value, description) behind `Arc<str>`
+  and reuses those arcs across dictionary indexes. The public API still accepts borrowed paths and returns borrowed
+  lookup values, but internal maps no longer duplicate every path/var string.
+- Batch 3 passes token categories from the typed config walker, builds dotted paths and CSS-var names in one pass, and
+  direct-writes CSS custom property names instead of allocating temporary vectors for `join`/`replace`.
+- Current parity work adds virtual color palette generation and a cached color palette view. Include/exclude/enabled
+  config is supported with simple wildcard matching, and the synthetic fixture token counts now match JS full counts.
+- The token CSS variable writer is now single-pass for the non-hashed path. This replaced an escape pass plus a dash-case
+  pass, recovering a meaningful part of the cost added by virtual color palette parity.
+
+## Measured Results
+
+### Build Time
+
+| Input tokens | JS full dictionary tokens | Rust dictionary tokens | JS full build | Rust build | Speedup |
+| ------------ | ------------------------: | ---------------------: | ------------: | ---------: | ------: |
+| 1,000        |                     2,008 |                  2,008 |       14.4 ms |     1.9 ms |    7.5x |
+| 10,000       |                    20,008 |                 20,008 |      206.6 ms |    14.6 ms |   14.1x |
+| 50,000       |                   100,008 |                100,008 |     1007.3 ms |    83.5 ms |   12.1x |
+
+Token counts now match the JS full synthetic fixture because Rust ports the derived tokens used by this bench: negative
+spacing, empty-token removal, and virtual color palette generation. Rust still intentionally skips metadata-only
+`pixelValue` generation for now.
+
+### Register-Only Lower Bound
+
+| Input tokens | JS register-only tokens | JS register-only build | Rust build | Rust / register-only |
+| ------------ | ----------------------: | ---------------------: | ---------: | -------------------: |
+| 1,000        |                   1,506 |                 3.3 ms |     1.3 ms |                 2.6x |
+| 10,000       |                  15,006 |                36.1 ms |    13.9 ms |                 2.6x |
+| 50,000       |                  75,006 |               227.9 ms |    87.7 ms |                 2.6x |
+
+This is not the parity target. It tells us where raw walking/indexing overhead sits. Rust is still faster here, but only
+~2.6x because this JS baseline skips middleware, transforms, reference expansion, and conditional token expansion.
+
+### Lookup Time
+
+100,000 repeated lookups:
+
+| Input tokens | JS full `get` | Rust `get_str` | JS full `getVar` | Rust `get_var_str` |
+| ------------ | ------------: | -------------: | ---------------: | -----------------: |
+| 1,000        |       19.6 ms |         5.8 ms |          18.8 ms |             5.7 ms |
+| 10,000       |       42.5 ms |         9.6 ms |          23.1 ms |             8.8 ms |
+| 50,000       |       49.8 ms |        15.3 ms |          43.9 ms |            13.6 ms |
+
+Large dictionaries favor Rust lookups because the indexes remain flat `FxHashMap`s and the lookup APIs return borrowed
+strings. Small dictionaries are dominated by harness overhead and dynamic path formatting in the loop.
+
+### Category Values
+
+| Input tokens | JS full category values | Rust category values |
+| ------------ | ----------------------: | -------------------: |
+| 1,000        |                  0.1 ms |             0.0004 ms |
+| 10,000       |                  1.0 ms |             0.0005 ms |
+| 50,000       |                  6.1 ms |             0.0005 ms |
+
+Rust was initially slower here because `category_values()` cloned a fresh map per call. The dictionary now builds a
+category-values cache once and the bench uses the borrowed `category_values_str()` view.
+
+## Performance Hypothesis
+
+The 10-20x target comes from avoiding the JS pipeline shape, not just from rewriting TypeScript in Rust:
+
+- one config walk for raw token discovery,
+- fixed native passes instead of dynamic middleware callbacks in the hot path,
+- no per-token JS object allocation,
+- no repeated `path.join('.')` work after initial construction,
+- no full-token cloning for middleware outputs,
+- O(1) lookup indexes built once at the end.
+
+## Benchmark Harness
+
+Commands used:
+
+```sh
+pnpm --filter @pandacss/bench token-dictionary-compare -- --tokens 1000 --warm 10 --lookup 100000 --mode full
+pnpm --filter @pandacss/bench token-dictionary-compare -- --tokens 1000 --warm 10 --lookup 100000 --mode register
+cargo run --release -q -p pandacss_bench --bin token_dictionary_compare -- --tokens 1000 --warm 20 --lookup 100000
+```
+
+The 10,000 and 50,000 Rust runs use the same command shape with `--tokens 10000 --warm 20` and
+`--tokens 50000 --warm 10`. Rust timings must be release-mode; debug-mode Rust was only ~3x faster and is not a fair
+comparison against optimized V8.
+
+The JS bench imports package source with the same default-wrapper pattern used by `bench/src/extract-compare.ts`,
+because repo packages are not `"type": "module"` and `tsx` exposes their source modules as CJS-shaped default wrappers.

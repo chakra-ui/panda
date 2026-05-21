@@ -26,30 +26,32 @@ oxc_parser = "0.130.0"
 oxc_resolver = "11.19.1"
 oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
-pandacss_cache = { path = "crates/pandacss_cache" }
 pandacss_config = { path = "crates/pandacss_config" }
-pandacss_emitter = { path = "crates/pandacss_emitter" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }
-pandacss_engine = { path = "crates/pandacss_engine" }
 pandacss_extractor = { path = "crates/pandacss_extractor", default-features = false }
 pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
-pandacss_optimizer = { path = "crates/pandacss_optimizer" }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
+pandacss_tracing = { path = "crates/pandacss_tracing" }
 pandacss_utility = { path = "crates/pandacss_utility" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
+thiserror = "2.0.17"
 insta = { version = "1.47.2", features = ["yaml"] }
 fast-glob = "1"
 indoc = "2.0.7"
 itoa = "1.0"
+indexmap = { version = "2.14.0", features = ["serde"] }
 rustc-hash = "2.1"
 ryu = "1.0"
 smallvec = { version = "1.13", features = ["serde"] }
 walkdir = "2"
 regex = "1.12.2"
+tracing = "0.1.44"
+tracing-chrome = "0.7"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"

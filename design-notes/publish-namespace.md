@@ -10,16 +10,14 @@ Rust crates use the `pandacss_*` prefix (e.g. `pandacss_extractor`, `pandacss_en
 
 ```
 crates/
-  pandacss_cache/         (placeholder)
-  pandacss_config/        (placeholder)
-  pandacss_emitter/       (placeholder)
+  pandacss_config/
   pandacss_encoder/
-  pandacss_engine/        (placeholder)
   pandacss_extractor/
-  pandacss_optimizer/     (placeholder)
   pandacss_project/
   pandacss_recipes/
+  pandacss_shared/
   pandacss_tokens/
+  pandacss_utility/
 ```
 
 Each has `[package] name = "pandacss_<x>"` and `publish = false`. The `pandacss_` prefix uses an underscore, not a

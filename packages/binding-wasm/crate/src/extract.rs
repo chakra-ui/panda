@@ -38,7 +38,7 @@ impl WasmExtractor {
         let core_matchers = to_core_matchers(input);
 
         let mut config = ExtractorConfig::new(core_matchers);
-        config.token_dictionary = token_dictionary;
+        config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
         config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
 
         Ok(Self { config })
@@ -53,6 +53,8 @@ impl WasmExtractor {
     #[wasm_bindgen(js_name = parseFile)]
     pub fn parse_file(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
         let result = extract(source, path, &self.config);
+        let _span =
+            tracing::trace_span!("boundary_encode", method = "extract_parse_file").entered();
         // `serialize_maps_as_objects(true)` turns serde `serialize_map` calls
         // into plain JS objects rather than `Map` instances — matches what
         // JS callers expect from a JSON-shaped result.

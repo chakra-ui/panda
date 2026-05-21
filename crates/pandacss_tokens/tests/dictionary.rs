@@ -9,11 +9,13 @@
 //! - `__tests__/semantic-token.test.ts` → conditional vs base precedence
 //! - implicit deprecation / extension tests
 //!
-//! Build-time pipeline (transforms, middleware, semantic-token expansion,
-//! color-palette resolution) lives on the JS side for now — the lookup
-//! API is what the extractor needs and what this crate guarantees.
+//! UserConfig-derived construction now lives in this crate so project/system
+//! can treat tokens as an internal compiled domain model.
 
+use insta::assert_yaml_snapshot;
+use pandacss_config::UserConfig;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
+use serde_json::json;
 
 fn t(path: &str, value: &str, var: &str, category: TokenCategory) -> Token {
     Token::new(path, value, var, category)
@@ -25,12 +27,15 @@ fn t(path: &str, value: &str, var: &str, category: TokenCategory) -> Token {
 fn empty_dictionary_is_inert() {
     let dict = TokenDictionary::new();
     assert!(dict.is_empty());
-    assert_eq!(dict.len(), 0);
-    assert_eq!(dict.get("colors.red.500", None), None);
-    assert_eq!(
-        dict.get("colors.red.500", Some("#000")),
-        Some("#000".into())
-    );
+    assert_yaml_snapshot!(json!({
+        "len": dict.len(),
+        "missing": dict.get("colors.red.500", None),
+        "fallback": dict.get("colors.red.500", Some("#000")),
+    }), @r##"
+    len: 0
+    missing: ~
+    fallback: "#000"
+    "##);
 }
 
 #[test]
@@ -44,24 +49,25 @@ fn basic_get_and_get_var() {
         ))
         .build();
 
-    assert_eq!(dict.get("colors.red.500", None), Some("#ef4444".into()));
-    assert_eq!(
-        dict.get_var("colors.red.500", None),
-        Some("var(--colors-red-500)".into()),
-    );
+    assert_yaml_snapshot!(json!({
+        "value": dict.get("colors.red.500", None),
+        "var": dict.get_var("colors.red.500", None),
+    }), @r##"
+    value: "#ef4444"
+    var: var(--colors-red-500)
+    "##);
 }
 
 #[test]
 fn fallback_used_when_path_missing() {
     let dict = TokenDictionary::new();
-    assert_eq!(
-        dict.get("colors.red.500", Some("#000")),
-        Some("#000".into())
-    );
-    assert_eq!(
-        dict.get_var("colors.red.500", Some("var(--fallback)")),
-        Some("var(--fallback)".into()),
-    );
+    assert_yaml_snapshot!(json!({
+        "value": dict.get("colors.red.500", Some("#000")),
+        "var": dict.get_var("colors.red.500", Some("var(--fallback)")),
+    }), @r##"
+    value: "#000"
+    var: var(--fallback)
+    "##);
 }
 
 // --- JS parity: format-flat.test.ts ---
@@ -107,20 +113,13 @@ fn flat_path_to_var_map_matches_js() {
         ])
         .build();
 
-    let expected = [
-        ("colors.red", "var(--colors-red)"),
-        ("colors.blue", "var(--colors-blue)"),
-        ("colors.green", "var(--colors-green)"),
-        ("colors.pink.50", "var(--colors-pink-50)"),
-        ("colors.pink.100", "var(--colors-pink-100)"),
-    ];
-    for (path, var) in expected {
-        assert_eq!(
-            dict.get_var(path, None).as_deref(),
-            Some(var),
-            "path={path}"
-        );
-    }
+    assert_yaml_snapshot!(snapshot_token_vars(&dict), @r##"
+    colors.blue: var(--colors-blue)
+    colors.green: var(--colors-green)
+    colors.pink.100: var(--colors-pink-100)
+    colors.pink.50: var(--colors-pink-50)
+    colors.red: var(--colors-red)
+    "##);
 }
 
 // --- JS parity: format-by-category.test.ts ---
@@ -136,14 +135,17 @@ fn category_values_grouped_by_category() {
         ])
         .build();
 
-    let colors = dict.category_values(&TokenCategory::Colors);
-    assert_eq!(colors.len(), 2);
-    assert_eq!(colors.get("colors.red"), Some(&"#f00".to_string()));
-    assert_eq!(colors.get("colors.blue"), Some(&"#00f".to_string()));
-
-    let sizes = dict.category_values(&TokenCategory::Sizes);
-    assert_eq!(sizes.len(), 2);
-    assert_eq!(sizes.get("sizes.sm"), Some(&"4px".to_string()));
+    assert_yaml_snapshot!(json!({
+        "colors": snapshot_category_values(&dict, &TokenCategory::Colors),
+        "sizes": snapshot_category_values(&dict, &TokenCategory::Sizes),
+    }), @r##"
+    colors:
+      colors.blue: "#00f"
+      colors.red: "#f00"
+    sizes:
+      sizes.md: 8px
+      sizes.sm: 4px
+    "##);
 }
 
 // --- JS parity: format-vars.test.ts (reverse var lookup) ---
@@ -161,8 +163,15 @@ fn reverse_var_lookup() {
     let token = dict
         .token_by_var("var(--colors-red-500)")
         .expect("reverse lookup");
-    assert_eq!(token.path, "colors.red.500");
-    assert_eq!(token.value, "#ef4444");
+    assert_yaml_snapshot!(json!({
+        "path": token.path.as_ref(),
+        "value": token.value.as_ref(),
+        "missing": dict.token_by_var("var(--nonexistent)").is_some(),
+    }), @r##"
+    path: colors.red.500
+    value: "#ef4444"
+    missing: false
+    "##);
     assert!(dict.token_by_var("var(--nonexistent)").is_none());
 }
 
@@ -189,12 +198,17 @@ fn unconditional_token_wins_over_conditional_via_get() {
             .with_condition("_dark"),
         )
         .build();
-    assert_eq!(dict.get("colors.bg", None), Some("#fff".into()));
     // The dark variant is still reachable through the conditional lookup.
     let dark = dict
         .token_with_condition("colors.bg", "_dark")
         .expect("conditional present");
-    assert_eq!(dark.value, "#000");
+    assert_yaml_snapshot!(json!({
+        "base": dict.get("colors.bg", None),
+        "dark": dark.value.as_ref(),
+    }), @r##"
+    base: "#fff"
+    dark: "#000"
+    "##);
 }
 
 #[test]
@@ -213,8 +227,13 @@ fn conditional_only_token_is_reachable_via_token() {
         )
         .build();
     let token = dict.token("colors.accent").expect("reachable");
-    assert_eq!(token.condition.as_deref(), Some("_dark"));
-    assert_eq!(dict.get("colors.accent", None), Some("tomato".into()));
+    assert_yaml_snapshot!(json!({
+        "condition": token.condition.as_deref(),
+        "value": dict.get("colors.accent", None),
+    }), @r##"
+    condition: _dark
+    value: tomato
+    "##);
 }
 
 #[test]
@@ -226,8 +245,15 @@ fn distinct_conditions_are_enumerated() {
         .insert(t("colors.fg", "#999", "v", TokenCategory::Colors).with_condition("_hover"))
         .build();
 
-    let conds = dict.conditions();
-    assert_eq!(conds, vec!["_dark", "_hover"]);
+    let conds: Vec<&str> = dict
+        .conditions()
+        .iter()
+        .map(std::convert::AsRef::as_ref)
+        .collect();
+    assert_yaml_snapshot!(conds, @r##"
+    - _dark
+    - _hover
+    "##);
 }
 
 #[test]
@@ -240,9 +266,12 @@ fn iter_condition_filters_tokens() {
 
     let dark_paths: Vec<&str> = dict
         .iter_condition("_dark")
-        .map(|t| t.path.as_str())
+        .map(|t| t.path.as_ref())
         .collect();
-    assert_eq!(dark_paths, vec!["colors.bg", "colors.fg"]);
+    assert_yaml_snapshot!(dark_paths, @r##"
+    - colors.bg
+    - colors.fg
+    "##);
 }
 
 // --- iteration ---
@@ -254,8 +283,12 @@ fn iter_preserves_insertion_order() {
         .insert(t("b", "2", "v2", TokenCategory::Other("x".into())))
         .insert(t("c", "3", "v3", TokenCategory::Other("x".into())))
         .build();
-    let paths: Vec<&str> = dict.iter().map(|t| t.path.as_str()).collect();
-    assert_eq!(paths, vec!["a", "b", "c"]);
+    let paths: Vec<&str> = dict.iter().map(|t| t.path.as_ref()).collect();
+    assert_yaml_snapshot!(paths, @r##"
+    - a
+    - b
+    - c
+    "##);
 }
 
 #[test]
@@ -267,9 +300,12 @@ fn iter_category_filters_by_category() {
         .build();
     let color_paths: Vec<&str> = dict
         .iter_category(&TokenCategory::Colors)
-        .map(|t| t.path.as_str())
+        .map(|t| t.path.as_ref())
         .collect();
-    assert_eq!(color_paths, vec!["colors.red.500", "colors.blue.500"]);
+    assert_yaml_snapshot!(color_paths, @r##"
+    - colors.red.500
+    - colors.blue.500
+    "##);
 }
 
 // --- deprecation ---
@@ -283,7 +319,23 @@ fn deprecated_paths_are_flagged() {
     assert!(dict.is_deprecated("colors.red"));
     assert!(!dict.is_deprecated("colors.blue"));
     assert!(!dict.is_deprecated("colors.fake"));
-    assert_eq!(dict.deprecated_paths(), vec!["colors.red"]);
+    let deprecated_paths: Vec<&str> = dict
+        .deprecated_paths()
+        .iter()
+        .map(std::convert::AsRef::as_ref)
+        .collect();
+    assert_yaml_snapshot!(json!({
+        "red": dict.is_deprecated("colors.red"),
+        "blue": dict.is_deprecated("colors.blue"),
+        "fake": dict.is_deprecated("colors.fake"),
+        "paths": deprecated_paths,
+    }), @r##"
+    red: true
+    blue: false
+    fake: false
+    paths:
+      - colors.red
+    "##);
 }
 
 // --- extensions / metadata ---
@@ -301,9 +353,15 @@ fn description_and_extensions_round_trip() {
 
     let dict = TokenDictionary::builder().insert(token).build();
     let got = dict.token("colors.brand").unwrap();
-    assert_eq!(got.description.as_deref(), Some("Primary brand color"));
-    assert_eq!(got.extension("theme"), Some("light"));
-    assert_eq!(got.extension("missing"), None);
+    assert_yaml_snapshot!(json!({
+        "description": got.description.as_deref(),
+        "theme": got.extension("theme"),
+        "missing": got.extension("missing"),
+    }), @r##"
+    description: Primary brand color
+    theme: light
+    missing: ~
+    "##);
 }
 
 #[test]
@@ -329,17 +387,21 @@ fn serde_roundtrip_rebuilds_indexes() {
     let wire = serde_json::to_string(&original).expect("serialize");
     let restored: TokenDictionary = serde_json::from_str(&wire).expect("deserialize");
 
-    // Indexed lookups work on the restored dictionary.
-    assert_eq!(restored.get("colors.red.500", None), Some("#ef4444".into()));
-    assert_eq!(
-        restored.get_var("sizes.sm", None),
-        Some("var(--sizes-sm)".into()),
-    );
-    // Reverse var lookup works (would be empty if indexes weren't rebuilt).
-    assert!(restored.token_by_var("var(--colors-red-500)").is_some());
-    // Category iteration works.
-    assert_eq!(restored.iter_category(&TokenCategory::Colors).count(), 1);
-    assert_eq!(restored.len(), original.len());
+    assert_yaml_snapshot!(json!({
+        "value": restored.get("colors.red.500", None),
+        "var": restored.get_var("sizes.sm", None),
+        "reverseVar": restored.token_by_var("var(--colors-red-500)").is_some(),
+        "colorCount": restored.iter_category(&TokenCategory::Colors).count(),
+        "len": restored.len(),
+        "originalLen": original.len(),
+    }), @r##"
+    value: "#ef4444"
+    var: var(--sizes-sm)
+    reverseVar: true
+    colorCount: 1
+    len: 2
+    originalLen: 2
+    "##);
 }
 
 #[test]
@@ -352,8 +414,29 @@ fn builder_push_supports_imperative_construction() {
         builder.push(t(path, value, "v", TokenCategory::Colors));
     }
     let dict = builder.build();
-    assert_eq!(dict.len(), 2);
-    assert_eq!(dict.get("colors.red", None).as_deref(), Some("#f00"));
+    assert_yaml_snapshot!(json!({
+        "len": dict.len(),
+        "red": dict.get("colors.red", None),
+        "tokens": snapshot_tokens(&dict),
+    }), @r##"
+    len: 2
+    red: "#f00"
+    tokens:
+      - path: colors.red
+        value: "#f00"
+        var: v
+        category: colors
+        condition: ~
+        deprecated: false
+        description: ~
+      - path: colors.blue
+        value: "#00f"
+        var: v
+        category: colors
+        condition: ~
+        deprecated: false
+        description: ~
+    "##);
 }
 
 #[test]
@@ -379,12 +462,18 @@ fn get_str_returns_borrows_without_cloning() {
         ))
         .build();
     let v: Option<&str> = dict.get_str("colors.red.500", None);
-    assert_eq!(v, Some("#ef4444"));
     let var: Option<&str> = dict.get_var_str("colors.red.500", None);
-    assert_eq!(var, Some("var(--colors-red-500)"));
     // Fallback path returns the supplied borrow verbatim.
     let fallback: Option<&str> = dict.get_str("colors.missing", Some("#000"));
-    assert_eq!(fallback, Some("#000"));
+    assert_yaml_snapshot!(json!({
+        "value": v,
+        "var": var,
+        "fallback": fallback,
+    }), @r##"
+    value: "#ef4444"
+    var: var(--colors-red-500)
+    fallback: "#000"
+    "##);
 }
 
 // --- category parsing ---
@@ -446,10 +535,987 @@ fn extend_flat_builds_a_usable_dictionary() {
         .extend_flat(values, &vars)
         .build();
 
-    assert_eq!(dict.get("colors.red.500", None), Some("#ef4444".into()));
-    assert_eq!(dict.get_var("sizes.sm", None), Some("var(--sz-sm)".into()));
-    assert_eq!(
-        dict.token("colors.red.500").map(|t| &t.category),
-        Some(&TokenCategory::Colors),
-    );
+    assert_yaml_snapshot!(json!({
+        "red": dict.get("colors.red.500", None),
+        "sizeVar": dict.get_var("sizes.sm", None),
+        "redCategory": dict.token("colors.red.500").map(|t| t.category.as_str()),
+    }), @r##"
+    red: "#ef4444"
+    sizeVar: var(--sz-sm)
+    redCategory: colors
+    "##);
+}
+
+// --- config-derived construction ---
+
+#[test]
+fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "breakpoints": {
+                "sm": "640px",
+                "md": "768px"
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": {
+                            "value": "#f00",
+                            "description": "Red 500",
+                            "deprecated": true
+                        }
+                    }
+                },
+                "spacing": {
+                    "DEFAULT": {
+                        "value": "1rem"
+                    }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.red.500}",
+                            "_dark": "#fff"
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
+    - path: colors.red.500
+      value: "#f00"
+      var: var(--colors-red-500)
+      category: colors
+      condition: ~
+      deprecated: true
+      description: Red 500
+    - path: spacing
+      value: 1rem
+      var: var(--spacing)
+      category: spacing
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: breakpoints.sm
+      value: 640px
+      var: var(--breakpoints-sm)
+      category: breakpoints
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: sizes.breakpoint-sm
+      value: 640px
+      var: var(--sizes-breakpoint-sm)
+      category: sizes
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: breakpoints.md
+      value: 768px
+      var: var(--breakpoints-md)
+      category: breakpoints
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: sizes.breakpoint-md
+      value: 768px
+      var: var(--sizes-breakpoint-md)
+      category: sizes
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: colors.fg
+      value: "#f00"
+      var: var(--colors-fg)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: colors.fg
+      value: "#fff"
+      var: var(--colors-fg)
+      category: colors
+      condition: _dark
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette
+      value: colors.colorPalette
+      var: var(--colors-color-palette)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette.500
+      value: colors.colorPalette.500
+      var: var(--colors-color-palette-500)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    "##);
+    assert_yaml_snapshot!(json!({
+        "redDeprecated": dict.is_deprecated("colors.red.500"),
+        "darkFg": dict
+            .token_with_condition("colors.fg", "_dark")
+            .map(|token| token.value.as_ref()),
+    }), @r##"
+    redDeprecated: true
+    darkFg: "#fff"
+    "##);
+}
+
+#[test]
+fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "bg": { "value": "#fff" }
+                }
+            }
+        },
+        "themes": {
+            "dark": {
+                "tokens": {
+                    "colors": {
+                        "bg": { "value": "#000" }
+                    }
+                },
+                "semanticTokens": {
+                    "colors": {
+                        "fg": { "value": "{colors.bg}" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
+    - path: colors.bg
+      value: "#fff"
+      var: var(--colors-bg)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: colors.bg
+      value: "#000"
+      var: var(--colors-bg)
+      category: colors
+      condition: _themeDark
+      deprecated: false
+      description: ~
+    - path: colors.fg
+      value: "#fff"
+      var: var(--colors-fg)
+      category: colors
+      condition: _themeDark
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette
+      value: colors.colorPalette
+      var: var(--colors-color-palette)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    "##);
+    let conditions: Vec<&str> = dict
+        .conditions()
+        .iter()
+        .map(std::convert::AsRef::as_ref)
+        .collect();
+    assert_yaml_snapshot!(json!({ "conditions": conditions }), @r##"
+    conditions:
+      - _themeDark
+    "##);
+}
+
+#[test]
+fn from_config_transforms_composite_token_values() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" }
+                },
+                "shadows": {
+                    "sm": {
+                        "value": {
+                            "offsetX": 4,
+                            "offsetY": 10,
+                            "blur": 4,
+                            "spread": 0,
+                            "color": "{colors.red}"
+                        }
+                    },
+                    "ring": {
+                        "value": [
+                            { "offsetX": 0, "offsetY": 1, "blur": 2, "spread": 0, "color": "rgb(0 0 0 / 0.1)" },
+                            { "offsetX": 0, "offsetY": 0, "blur": 0, "spread": 1, "color": "{colors.red}" }
+                        ]
+                    }
+                },
+                "gradients": {
+                    "brand": {
+                        "value": {
+                            "type": "linear",
+                            "placement": "to right",
+                            "stops": [
+                                { "color": "{colors.red}", "position": 0 },
+                                { "color": "blue", "position": 100 }
+                            ]
+                        }
+                    }
+                },
+                "fonts": {
+                    "body": { "value": ["Inter", "sans-serif"] }
+                },
+                "easings": {
+                    "smooth": { "value": [0.4, 0, 0.2, 1] }
+                },
+                "borders": {
+                    "base": {
+                        "value": { "width": 1, "style": "solid", "color": "{colors.red}" }
+                    }
+                },
+                "assets": {
+                    "logo": { "value": { "type": "url", "value": "/logo.svg" } },
+                    "mark": { "value": { "type": "svg", "value": "<svg viewBox=\"0 0 1 1\"><path fill=\"#000\"/></svg>" } }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    assets.logo: "url(\"/logo.svg\")"
+    assets.mark: "url(\"data:image/svg+xml,%3csvg viewBox='0 0 1 1'%3e%3cpath fill='black'/%3e%3c/svg%3e\")"
+    borders.base: "1px solid #f00"
+    colors.colorPalette: colors.colorPalette
+    colors.red: "#f00"
+    easings.smooth: "cubic-bezier(0.4, 0, 0.2, 1)"
+    fonts.body: "Inter, sans-serif"
+    gradients.brand: "linear-gradient(to right, #f00 0px, blue 100px)"
+    shadows.ring: "0px 1px 2px 0px rgb(0 0 0 / 0.1), 0px 0px 0px 1px #f00"
+    shadows.sm: "4px 10px 4px 0px #f00"
+    "##);
+}
+
+#[test]
+fn from_config_expands_color_mix_references() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "pink": { "value": "#ff00ff" },
+                    "border": { "value": "{colors.pink/30}" },
+                    "ref": { "value": "{colors.border/40}" },
+                    "overlay": { "value": "{colors.border/half}" }
+                },
+                "opacity": {
+                    "half": { "value": 0.5 }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.pink/87}",
+                            "_dark": "{colors.border}"
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.border: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
+    colors.colorPalette: colors.colorPalette
+    colors.fg: "color-mix(in srgb, var(--colors-pink) 87%, transparent)"
+    colors.fg@_dark: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
+    colors.overlay: "color-mix(in srgb, var(--colors-border) 50%, transparent)"
+    colors.pink: "#ff00ff"
+    colors.ref: "color-mix(in srgb, var(--colors-border) 40%, transparent)"
+    opacity.half: "0.5"
+    "##);
+}
+
+#[test]
+fn from_config_uses_css_var_prefix_and_hash_options() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "prefix": {
+            "cssVar": "panda"
+        },
+        "hash": {
+            "cssVar": true
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": {
+                            "value": "#f00"
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
+    - path: colors.red.500
+      value: "#f00"
+      var: var(--panda-iYfRb)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette.500
+      value: colors.colorPalette.500
+      var: var(--panda-iOGEjQ)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    "##);
+}
+
+#[test]
+fn from_config_builds_color_palette_view() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "primary": { "value": "#111" },
+                    "red": {
+                        "300": { "value": "#fca5a5" },
+                        "500": { "value": "#ef4444" }
+                    },
+                    "button": {
+                        "light": {
+                            "accent": {
+                                "secondary": { "value": "#123456" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.button.light.accent.secondary: "#123456"
+    colors.colorPalette: colors.colorPalette
+    colors.colorPalette.300: colors.colorPalette.300
+    colors.colorPalette.500: colors.colorPalette.500
+    colors.colorPalette.accent.secondary: colors.colorPalette.accent.secondary
+    colors.colorPalette.light.accent.secondary: colors.colorPalette.light.accent.secondary
+    colors.colorPalette.secondary: colors.colorPalette.secondary
+    colors.primary: "#111"
+    colors.red.300: "#fca5a5"
+    colors.red.500: "#ef4444"
+    "##);
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
+    button:
+      "--colors-color-palette-light-accent-secondary": var(--colors-button-light-accent-secondary)
+    button.light:
+      "--colors-color-palette-accent-secondary": var(--colors-button-light-accent-secondary)
+    button.light.accent:
+      "--colors-color-palette-secondary": var(--colors-button-light-accent-secondary)
+    primary:
+      "--colors-color-palette": var(--colors-primary)
+    red:
+      "--colors-color-palette-300": var(--colors-red-300)
+      "--colors-color-palette-500": var(--colors-red-500)
+    "##);
+}
+
+#[test]
+fn from_config_color_palette_handles_default_keyword() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "brand": {
+                        "DEFAULT": { "value": "green" },
+                        "hot": {
+                            "DEFAULT": { "value": "blue" },
+                            "er": { "value": "#FF0000" }
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.brand: green
+    colors.brand.hot: blue
+    colors.brand.hot.er: "#FF0000"
+    colors.colorPalette: colors.colorPalette
+    colors.colorPalette.er: colors.colorPalette.er
+    colors.colorPalette.hot: colors.colorPalette.hot
+    colors.colorPalette.hot.er: colors.colorPalette.hot.er
+    "##);
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
+    brand:
+      "--colors-color-palette": var(--colors-brand)
+      "--colors-color-palette-hot": var(--colors-brand-hot)
+      "--colors-color-palette-hot-er": var(--colors-brand-hot-er)
+    brand.hot:
+      "--colors-color-palette": var(--colors-brand-hot)
+      "--colors-color-palette-er": var(--colors-brand-hot-er)
+    "##);
+}
+
+#[test]
+fn from_config_color_palette_handles_nested_semantic_defaults() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "semanticTokens": {
+                "colors": {
+                    "button": {
+                        "dark": {
+                            "value": "navy"
+                        },
+                        "light": {
+                            "DEFAULT": {
+                                "value": "skyblue"
+                            },
+                            "accent": {
+                                "DEFAULT": {
+                                    "value": "cyan"
+                                },
+                                "secondary": {
+                                    "value": "blue"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.button.dark: navy
+    colors.button.light: skyblue
+    colors.button.light.accent: cyan
+    colors.button.light.accent.secondary: blue
+    colors.colorPalette: colors.colorPalette
+    colors.colorPalette.accent: colors.colorPalette.accent
+    colors.colorPalette.accent.secondary: colors.colorPalette.accent.secondary
+    colors.colorPalette.dark: colors.colorPalette.dark
+    colors.colorPalette.light: colors.colorPalette.light
+    colors.colorPalette.light.accent: colors.colorPalette.light.accent
+    colors.colorPalette.light.accent.secondary: colors.colorPalette.light.accent.secondary
+    colors.colorPalette.secondary: colors.colorPalette.secondary
+    "##);
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
+    button:
+      "--colors-color-palette-dark": var(--colors-button-dark)
+      "--colors-color-palette-light": var(--colors-button-light)
+      "--colors-color-palette-light-accent": var(--colors-button-light-accent)
+      "--colors-color-palette-light-accent-secondary": var(--colors-button-light-accent-secondary)
+    button.light:
+      "--colors-color-palette": var(--colors-button-light)
+      "--colors-color-palette-accent": var(--colors-button-light-accent)
+      "--colors-color-palette-accent-secondary": var(--colors-button-light-accent-secondary)
+    button.light.accent:
+      "--colors-color-palette": var(--colors-button-light-accent)
+      "--colors-color-palette-secondary": var(--colors-button-light-accent-secondary)
+    "##);
+}
+
+#[test]
+fn from_config_respects_color_palette_options() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "colorPalette": {
+                "include": ["red*"]
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#ef4444" },
+                        "muted": { "value": "#fee2e2" }
+                    },
+                    "blue": {
+                        "500": { "value": "#3b82f6" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.blue.500: "#3b82f6"
+    colors.colorPalette.500: colors.colorPalette.500
+    colors.colorPalette.muted: colors.colorPalette.muted
+    colors.red.500: "#ef4444"
+    colors.red.muted: "#fee2e2"
+    "##);
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
+    red:
+      "--colors-color-palette-500": var(--colors-red-500)
+      "--colors-color-palette-muted": var(--colors-red-muted)
+    "##);
+}
+
+#[test]
+fn from_config_color_palette_include_exclude_match_js_cases() {
+    let include_config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "colorPalette": {
+                "include": ["red", "blue"]
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#red500" },
+                        "700": { "value": "#red700" }
+                    },
+                    "blue": {
+                        "500": { "value": "#blue500" },
+                        "700": { "value": "#blue700" }
+                    },
+                    "green": {
+                        "500": { "value": "#green500" },
+                        "700": { "value": "#green700" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let include_dict = TokenDictionary::from_config(&include_config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_color_palettes(&include_dict), @r##"
+    blue:
+      "--colors-color-palette-500": var(--colors-blue-500)
+      "--colors-color-palette-700": var(--colors-blue-700)
+    red:
+      "--colors-color-palette-500": var(--colors-red-500)
+      "--colors-color-palette-700": var(--colors-red-700)
+    "##);
+
+    let exclude_config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "colorPalette": {
+                "exclude": ["red"]
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#red500" },
+                        "700": { "value": "#red700" }
+                    },
+                    "blue": {
+                        "500": { "value": "#blue500" },
+                        "700": { "value": "#blue700" }
+                    },
+                    "green": {
+                        "500": { "value": "#green500" },
+                        "700": { "value": "#green700" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let exclude_dict = TokenDictionary::from_config(&exclude_config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_color_palettes(&exclude_dict), @r##"
+    blue:
+      "--colors-color-palette-500": var(--colors-blue-500)
+      "--colors-color-palette-700": var(--colors-blue-700)
+    green:
+      "--colors-color-palette-500": var(--colors-green-500)
+      "--colors-color-palette-700": var(--colors-green-700)
+    "##);
+}
+
+#[test]
+fn from_config_color_palette_include_supports_semantic_tokens() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "colorPalette": {
+                "include": ["primary"]
+            },
+            "tokens": {
+                "colors": {
+                    "blue": { "500": { "value": "#blue500" } },
+                    "red": { "500": { "value": "#red500" } },
+                    "green": { "500": { "value": "#green500" } }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "primary": { "value": "{colors.blue.500}" },
+                    "secondary": { "value": "{colors.red.500}" },
+                    "accent": { "value": "{colors.green.500}" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
+    primary:
+      "--colors-color-palette": var(--colors-primary)
+    "##);
+}
+
+#[test]
+fn from_config_can_disable_color_palette_generation() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "colorPalette": {
+                "enabled": false
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#ef4444" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(json!({ "values": snapshot_token_values(&dict) }), @r##"
+    values:
+      colors.red.500: "#ef4444"
+    "##);
+    assert!(dict.color_palettes().is_empty());
+}
+
+#[test]
+fn from_config_resolves_alias_chains_like_js_dictionary() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "pink": { "value": "#ff00ff" },
+                    "border": { "value": "{colors.pink}" },
+                    "disabled": { "value": "{colors.border}" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.border: "#ff00ff"
+    colors.colorPalette: colors.colorPalette
+    colors.disabled: "#ff00ff"
+    colors.pink: "#ff00ff"
+    "##);
+}
+
+#[test]
+fn from_config_flattens_deep_semantic_conditions_like_js() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "semanticTokens": {
+                "colors": {
+                    "pink": {
+                        "value": {
+                            "base": "#fff",
+                            "osDark": {
+                                "highCon": "sdfdfsd"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_tokens(&dict), @r##"
+    - path: colors.pink
+      value: "#fff"
+      var: var(--colors-pink)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: colors.pink
+      value: sdfdfsd
+      var: var(--colors-pink)
+      category: colors
+      condition: "osDark:highCon"
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette
+      value: colors.colorPalette
+      var: var(--colors-color-palette)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    "##);
+}
+
+#[test]
+fn from_config_applies_spacing_middlewares() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "0": { "value": "0rem" },
+                    "sm": { "value": "0.25rem" },
+                    "empty": { "value": "" }
+                },
+                "sizes": {
+                    "full": { "value": "100%" }
+                }
+            },
+            "semanticTokens": {
+                "spacing": {
+                    "gutter": {
+                        "value": {
+                            "base": "{spacing.sm}",
+                            "_wide": "2rem"
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_token_details(&dict), @r##"
+    - path: sizes.full
+      value: 100%
+      var: var(--sizes-full)
+      category: sizes
+      condition: ~
+      originalValue: ~
+      extensions: {}
+    - path: spacing.0
+      value: 0rem
+      var: var(--spacing-0)
+      category: spacing
+      condition: ~
+      originalValue: ~
+      extensions: {}
+    - path: spacing.sm
+      value: 0.25rem
+      var: var(--spacing-sm)
+      category: spacing
+      condition: ~
+      originalValue: ~
+      extensions: {}
+    - path: spacing.gutter
+      value: 0.25rem
+      var: var(--spacing-gutter)
+      category: spacing
+      condition: ~
+      originalValue: "{spacing.sm}"
+      extensions: {}
+    - path: spacing.gutter
+      value: 2rem
+      var: var(--spacing-gutter)
+      category: spacing
+      condition: _wide
+      originalValue: ~
+      extensions: {}
+    - path: spacing.-sm
+      value: calc(var(--spacing-sm) * -1)
+      var: ""
+      category: spacing
+      condition: ~
+      originalValue: 0.25rem
+      extensions:
+        isNegative: "true"
+        originalPath: spacing.sm
+        prop: "-sm"
+    - path: spacing.-empty
+      value: calc(var(--spacing-empty) * -1)
+      var: ""
+      category: spacing
+      condition: ~
+      originalValue: ""
+      extensions:
+        isNegative: "true"
+        originalPath: spacing.empty
+        prop: "-empty"
+    - path: spacing.-gutter
+      value: calc(var(--spacing-gutter) * -1)
+      var: ""
+      category: spacing
+      condition: ~
+      originalValue: "{spacing.sm}"
+      extensions:
+        isNegative: "true"
+        originalPath: spacing.gutter
+        prop: "-gutter"
+    - path: spacing.-gutter
+      value: calc(var(--spacing-gutter) * -1)
+      var: ""
+      category: spacing
+      condition: _wide
+      originalValue: 2rem
+      extensions:
+        isNegative: "true"
+        originalPath: spacing.gutter
+        prop: "-gutter"
+    "##);
+}
+
+fn snapshot_tokens(dict: &TokenDictionary) -> Vec<serde_json::Value> {
+    dict.iter()
+        .map(|token| {
+            json!({
+                "path": token.path.as_ref(),
+                "value": token.value.as_ref(),
+                "var": token.var.as_ref(),
+                "category": token.category.as_str(),
+                "condition": token.condition.as_deref(),
+                "deprecated": token.deprecated,
+                "description": token.description.as_deref(),
+            })
+        })
+        .collect()
+}
+
+fn snapshot_token_details(dict: &TokenDictionary) -> Vec<serde_json::Value> {
+    dict.iter()
+        .map(|token| {
+            json!({
+                "path": token.path.as_ref(),
+                "value": token.value.as_ref(),
+                "var": token.var.as_ref(),
+                "category": token.category.as_str(),
+                "condition": token.condition.as_deref(),
+                "originalValue": token.original_value.as_deref(),
+                "extensions": token
+                    .extension_entries()
+                    .collect::<std::collections::BTreeMap<_, _>>(),
+            })
+        })
+        .collect()
+}
+
+fn snapshot_token_values(
+    dict: &TokenDictionary,
+) -> std::collections::BTreeMap<String, serde_json::Value> {
+    dict.iter()
+        .map(|token| {
+            let key = if let Some(condition) = token.condition.as_deref() {
+                format!("{}@{condition}", token.path)
+            } else {
+                token.path.to_string()
+            };
+            (key, json!(token.value.as_ref()))
+        })
+        .collect()
+}
+
+fn snapshot_token_vars(dict: &TokenDictionary) -> std::collections::BTreeMap<String, String> {
+    dict.iter()
+        .map(|token| (token.path.to_string(), token.var.to_string()))
+        .collect()
+}
+
+fn snapshot_category_values(
+    dict: &TokenDictionary,
+    category: &TokenCategory,
+) -> std::collections::BTreeMap<String, String> {
+    dict.category_values(category).into_iter().collect()
+}
+
+fn snapshot_color_palettes(
+    dict: &TokenDictionary,
+) -> std::collections::BTreeMap<String, std::collections::BTreeMap<String, String>> {
+    dict.color_palettes()
+        .palettes()
+        .iter()
+        .map(|(palette, values)| {
+            (
+                palette.to_string(),
+                values
+                    .iter()
+                    .map(|(key, value)| (key.to_string(), value.to_string()))
+                    .collect(),
+            )
+        })
+        .collect()
 }

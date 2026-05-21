@@ -96,9 +96,9 @@ fn parses_full_cva_shape() {
     compoundVariants:
       - conditions:
           - - size
-            - sm
+            - - sm
           - - intent
-            - danger
+            - - danger
         css:
           fontWeight: bold
     defaultVariants:
@@ -297,7 +297,7 @@ fn sva_compound_variant_targets_slot_specific_css() {
     assert_yaml_snapshot!(recipe.compound_variants, @r"
     - conditions:
         - - size
-          - sm
+          - - sm
       css:
         - - root
           - border: 1px solid

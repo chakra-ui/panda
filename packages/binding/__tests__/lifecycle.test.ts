@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { Project } from '../src'
-import { matchers } from './test-utils'
+import { createProject } from './test-utils'
 
 describe('Project lifecycle', () => {
   it('refresh and remove update the atom set', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     expect(project.atoms()).toMatchInlineSnapshot(`
       [
@@ -35,7 +34,7 @@ describe('Project lifecycle', () => {
   })
 
   it('dedups atoms across files', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
     project.parseFile('/c.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
@@ -56,7 +55,7 @@ describe('Project lifecycle', () => {
   })
 
   it('clear drops every file', () => {
-    const project = new Project(matchers, { crossFile: false })
+    const project = createProject()
     project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
     expect(project.summary().filesProcessed).toBe(2)

@@ -26,6 +26,7 @@ packages/binding/crate/src/                  # NAPI
   jsx.rs        ExtractedJsx mirror + extract_jsx
   extract.rs    ExtractResult / ExtractDebugResult + extract / extract_debug
   compile.rs    CompileInput / Output mirrors + compile (placeholder)
+  project.rs    Project class; config-based construction, parseFile, atoms, recipes
   session.rs    Extractor class (recommended batch entrypoint)
   convert.rs    pandacss_extractor::X ↔ X conversion helpers
 
@@ -73,6 +74,16 @@ _which_ argument was non-literal.
 
 The wasm binding uses raw JSON via `serde-wasm-bindgen` so positional `null` vs `undefined` is unambiguous through the
 encoding directly — no equivalent shape needed.
+
+## Project class (NAPI)
+
+`Project.fromConfig(config)` is the preferred production entrypoint. The JS side passes the resolved, serialized Panda
+config snapshot; the binding deserializes it into `pandacss_config::UserConfig` and calls
+`pandacss_project::Project::from_config(config)`. That path is fallible: config compilation errors, such as invalid
+serialized JSX regexes, are mapped to `napi::Error`.
+
+The matcher-based project constructor was intentionally removed. Raw matcher flows belong to the extractor session
+(`new Extractor(matchers)`) and staged extraction helpers; stateful projects are config-derived only.
 
 ## Extractor session class (NAPI)
 
