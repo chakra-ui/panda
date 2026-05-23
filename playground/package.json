@@ -6,6 +6,7 @@
     "css:codegen": "pnpm panda codegen --silent",
     "types:codegen": "tsx scripts/bundle-types.mts",
     "prepare": "pnpm db:generate && pnpm css:codegen",
+    "prebuild": "pnpm --filter=../packages/** build && pnpm db:generate && pnpm css:codegen",
     "build": "pnpm types:codegen && next build",
     "start": "next start",
     "lint": "eslint .",
