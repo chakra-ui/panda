@@ -196,6 +196,14 @@ export class Builder {
     ctx.appendBaselineCss(sheet)
     const css = ctx.getCss(sheet)
 
+    // Panda's emitted CSS is already polyfilled, so the user's bare layer
+    // order declaration would force downstream tools to re-polyfill.
+    if (ctx.config.polyfill) {
+      root.walkAtRules('layer', (rule) => {
+        if (!rule.nodes && ctx.isValidLayerParams(rule.params)) rule.remove()
+      })
+    }
+
     root.append(css)
   }
 

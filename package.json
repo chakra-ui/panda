@@ -27,6 +27,7 @@
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "prepare-studio": "pnpm --filter=./packages/studio codegen",
     "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
+    "predeploy-studio": "pnpm build-fast",
     "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
     "serve-studio": "npx serve ./sandbox/vite-ts/styled-system-studio",
     "website": "pnpm --filter=./website",

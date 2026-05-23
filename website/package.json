@@ -11,7 +11,7 @@
     "build:content": "velite --clean",
     "build:next": "next build",
     "build": "run-s build:*",
-    "prebuild": "pnpm --filter=../packages/** build",
+    "prebuild": "pnpm --filter=../packages/** build && panda codegen",
     "lint": "eslint . --max-warnings 0",
     "start": "next start"
   },
