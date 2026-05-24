@@ -82,4 +82,18 @@ describe('style context - vue', () => {
       </div>
     `)
   })
+
+  test('forwardProps exposes the variant to the component', () => {
+    const RootWithForward = withProvider('div', 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(<RootWithForward visual="outline" />)
+    const { firstChild } = container as HTMLElement
+
+    expect(firstChild).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_outline"
+        visual="outline"
+      />
+    `)
+  })
 })

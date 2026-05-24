@@ -90,6 +90,9 @@ export function generateVueCreateStyleContext(ctx: Context) {
             })
             const res = computed(() => {
               const [variantProps, restProps] = svaFn.splitVariantProps(props.value)
+              options?.forwardProps?.forEach((key) => {
+                if (key in variantProps) restProps[key] = variantProps[key]
+              })
               return { variantProps, restProps }
             })
             

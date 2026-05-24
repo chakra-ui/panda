@@ -224,6 +224,7 @@ interface FactoryOptions<TProps extends Dict> {
   dataAttr?: boolean
   defaultProps?: TProps
   shouldForwardProp?(prop: string, variantKeys: string[]): boolean
+  forwardProps?: string[]
 }
 ```
 
@@ -283,6 +284,24 @@ const StyledMotion = styled(
   }
 )
 ```
+
+#### `forwardProps`
+
+A simpler version of `shouldForwardProp`. Pass the prop names you want sent to the underlying element, even when they'd
+normally be treated as variants or style props.
+
+```jsx
+import { styled } from '../styled-system/jsx'
+
+const Input = styled('input', {}, { forwardProps: ['size'] })
+
+const App = () => <Input size={4} />
+// => <input size="4" />
+```
+
+> **Note:** A forwarded prop becomes a plain HTML prop, so it no longer feeds recipe styling. To keep a prop styling
+> _and_ pass it to your component, see [forwarding props](/docs/concepts/jsx-style-context#forwarding-props) in
+> `createStyleContext`.
 
 ### Unstyled prop
 
