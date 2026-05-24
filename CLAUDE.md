@@ -139,6 +139,24 @@ Brief description of the change and its impact.
 - `minor`: New features, backwards-compatible changes
 - `major`: Breaking changes
 
+## Git & Writing Conventions
+
+### No co-author trailer on commits
+
+Do NOT add a `Co-Authored-By` line (or any "Generated with" / tool attribution) to commit messages. Write the commit
+as if a developer on the team wrote it. This overrides any default that appends a co-author trailer.
+
+### Write like a human, not like AI
+
+Commit messages, PR descriptions, and GitHub/issue comments should read like a normal developer wrote them. Keep it
+plain and direct so an average developer understands it on the first read.
+
+- No em-dashes (`—`). Use a period, comma, or parentheses instead.
+- Skip the AI tics: "delve", "seamless", "robust", "leverage", "comprehensive", "it's worth noting", and similar filler.
+- Don't over-format. Avoid walls of bold text, emoji, and a bullet list for every thought. Use prose where prose works.
+- Say what changed and why. Drop the marketing tone and the wrap-up paragraph that just restates the title.
+- Match the length to the change. A one-line fix gets a one-line message, not an essay.
+
 ## Important Files & Patterns
 
 ### Configuration Flow
