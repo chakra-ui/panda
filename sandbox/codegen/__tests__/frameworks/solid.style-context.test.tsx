@@ -1,6 +1,7 @@
 /** @jsxImportSource solid-js */
 import { render } from '@solidjs/testing-library'
 import { describe, expect, test } from 'vitest'
+import { createSignal } from 'solid-js'
 import { createStyleContext } from '../../styled-system-solid/jsx/create-style-context'
 import { slotButton } from '../../styled-system-solid/recipes'
 
@@ -107,5 +108,31 @@ describe('style context - solid', () => {
         </span>
       </div>
     `)
+  })
+
+  test('forwardProps exposes the variant to the component', () => {
+    const RootWithForward = withProvider('div', 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(() => <RootWithForward visual="outline" />)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_outline"
+        visual="outline"
+      />
+    `)
+  })
+
+  test('forwardProps stays reactive', () => {
+    const [visual, setVisual] = createSignal<'outline' | 'solid'>('outline')
+    const RootWithForward = withProvider('div', 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(() => <RootWithForward visual={visual()} />)
+    const div = () => container.firstChild as HTMLElement
+
+    expect(div().getAttribute('visual')).toBe('outline')
+
+    setVisual('solid')
+    expect(div().getAttribute('visual')).toBe('solid')
   })
 })

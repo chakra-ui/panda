@@ -210,3 +210,43 @@ export const CardHeader = withContext('header', 'header', {
   }
 })
 ```
+
+### Forwarding props
+
+`withProvider` uses variant props to style the slots, but doesn't pass them to your component. When you need a variant
+value inside the component, list it in `forwardProps`. It still styles the slot, and now your component receives it too.
+
+```tsx
+const tabs = sva({
+  slots: ['root', 'tab'],
+  base: { root: { display: 'flex' } },
+  variants: {
+    orientation: {
+      horizontal: { root: { flexDirection: 'row' } },
+      vertical: { root: { flexDirection: 'column' } }
+    }
+  }
+})
+
+const { withProvider } = createStyleContext(tabs)
+
+function TabsRoot({ orientation, ...rest }: TabsRootProps) {
+  // `orientation` is available here, so we can mirror it as an aria attribute
+  return <div aria-orientation={orientation} {...rest} />
+}
+
+export const Tabs = withProvider(TabsRoot, 'root', {
+  forwardProps: ['orientation']
+})
+```
+
+`forwardProps` works on `withContext` too. Since context consumers don't take variant props, it's mainly useful for
+forwarding props that share a name with a CSS property — otherwise they'd be turned into styles instead of reaching your
+component.
+
+```tsx
+// `width` would normally become a style — forward it to the component instead
+const TabIndicator = withContext(Indicator, 'indicator', {
+  forwardProps: ['width']
+})
+```

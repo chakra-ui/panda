@@ -57,6 +57,29 @@ describe('style context - react', () => {
     `)
   })
 
+  test('forwardProps', () => {
+    type RootProps = React.ComponentProps<'div'> & { visual?: string }
+    const ForwardRoot = React.forwardRef<HTMLDivElement, RootProps>(function ForwardRoot(
+      { visual, ...rest },
+      ref,
+    ) {
+      return <div ref={ref} data-visual={visual} {...rest} />
+    })
+
+    const RootWithForward = withProvider(ForwardRoot, 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(<RootWithForward visual="outline">Hello</RootWithForward>)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_outline"
+        data-visual="outline"
+      >
+        Hello
+      </div>
+    `)
+  })
+
   test('default props', () => {
     const RootWithDefaults = withProvider('div', 'root', { defaultProps: { 'data-testid': 'button-root' } })
 

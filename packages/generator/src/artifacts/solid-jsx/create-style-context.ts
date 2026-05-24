@@ -101,6 +101,14 @@ export function generateSolidCreateStyleContext(ctx: Context) {
           const [variantProps, restProps] = svaFn.splitVariantProps(props)
           const [local, propsWithoutChildren] = splitProps(restProps, ["children"])
 
+          // forward selected variant props to the component without losing reactivity
+          const forwardedProps = {}
+          options?.forwardProps?.forEach((key) => {
+            if (key in variantProps) {
+              Object.defineProperty(forwardedProps, key, { get: () => variantProps[key], enumerable: true })
+            }
+          })
+
           const slotStyles = createMemo(() => {
             const styles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
             styles._classNameMap = svaFn.classNameMap
@@ -124,7 +132,7 @@ export function generateSolidCreateStyleContext(ctx: Context) {
             get children() {
               return createComponent(
                 StyledComponent,
-                mergeProps(resolvedProps, {
+                mergeProps(resolvedProps, forwardedProps, {
                   get children() {
                     return local.children
                   },
