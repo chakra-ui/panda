@@ -33,19 +33,19 @@ library crate. Consistency for grep + workspace tooling.
 Both binding cdylibs keep load-bearing names that mirror their JS-side output filenames. These are deliberate exceptions
 to the `pandacss_*` rule because the cdylib name flows through to the JS loader path.
 
-- **`packages/binding/crate/Cargo.toml`** — `[package] name = "binding_napi"`. Produces `binding.node` consumed by
-  `@pandacss/binding`. `packages/binding/src/load-binary.ts` requires the file at that exact name.
-- **`packages/binding-wasm/crate/Cargo.toml`** — `[package] name = "binding_wasm"`. wasm-pack produces
-  `binding_wasm_bg.wasm` + `binding_wasm.js` under `pkg-node/` and `pkg-web/`, consumed by `@pandacss/binding-wasm`. The
-  TS wrapper imports from `../pkg-node/binding_wasm.js`; renaming the crate would invalidate that path.
+- **`packages/compiler/crate/Cargo.toml`** — `[package] name = "compiler_napi"`. Produces `compiler.node` consumed by
+  `@pandacss/compiler`. `packages/compiler/src/load-binary.ts` requires the file at that exact name.
+- **`packages/compiler-wasm/crate/Cargo.toml`** — `[package] name = "compiler_wasm"`. wasm-pack produces
+  `compiler_wasm_bg.wasm` + `compiler_wasm.js` under `pkg-node/` and `pkg-web/`, consumed by `@pandacss/compiler-wasm`. The
+  TS wrapper imports from `../pkg-node/compiler_wasm.js`; renaming the crate would invalidate that path.
 
 Neither cdylib publishes to crates.io. Both ship only via npm.
 
 ## NPM packages
 
-- `@pandacss/binding` — already namespaced. The per-platform native packages produced by `@napi-rs/cli` (darwin-arm64,
-  linux-x64-gnu, win32-x64-msvc, …) should also be `@pandacss/binding-<platform>`.
-- `@pandacss/binding-wasm` — single npm package shipping both Node and browser wasm bundles. No per-platform split
+- `@pandacss/compiler` — already namespaced. The per-platform native packages produced by `@napi-rs/cli` (darwin-arm64,
+  linux-x64-gnu, win32-x64-msvc, …) should also be `@pandacss/compiler-<platform>`.
+- `@pandacss/compiler-wasm` — single npm package shipping both Node and browser wasm bundles. No per-platform split
   needed (wasm is portable).
 
 Set NAPI per-platform naming via `packageName` in the binding's `package.json` or `napi.binaryName` / `napi.npmClient`

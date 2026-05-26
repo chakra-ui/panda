@@ -14,7 +14,7 @@ on:
       - "deny.toml"
       - "bench/**"
       - "crates/**"
-      - "packages/binding/**"
+      - "packages/compiler/**"
   pull_request:
     branches:
       - main
@@ -28,7 +28,7 @@ on:
       - "deny.toml"
       - "bench/**"
       - "crates/**"
-      - "packages/binding/**"
+      - "packages/compiler/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

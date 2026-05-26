@@ -38,7 +38,7 @@ function build(target: 'web' | 'nodejs', outDir: string) {
     '--out-dir',
     resolve(packageRoot, outDir),
     '--out-name',
-    'binding_wasm',
+    'compiler_wasm',
     '--release',
     // Strip the generated package.json so consumers see ours instead.
     '--no-pack',

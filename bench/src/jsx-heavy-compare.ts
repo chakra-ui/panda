@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks'
-import bindingDefault from '../../packages/binding/src/index.ts'
-import type * as bindingTypes from '../../packages/binding/src/index.ts'
+import bindingDefault from '../../packages/compiler/src/index.ts'
+import type * as bindingTypes from '../../packages/compiler/src/index.ts'
 import * as extractor from '../../packages/extractor/src/index.ts'
 import { Project, ts } from 'ts-morph'
 

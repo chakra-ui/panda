@@ -1,6 +1,6 @@
-# @pandacss/binding
+# @pandacss/compiler
 
-Native Rust binding for the Panda compiler engine.
+The Panda compiler engine (Rust/Oxc), exposed to Node through a thin NAPI binding.
 
 This package is intentionally a skeleton during `OSS-2401`. It exports a no-op `compile()` function and falls back to
 the same no-op shape when the native `.node` file has not been built yet.

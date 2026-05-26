@@ -21,10 +21,10 @@ with workspace support.
   /fixture/        # Shared test fixtures and utilities
   /postcss/        # PostCSS plugin
   /preset-*/       # Design system presets
-  /binding/        # @pandacss/binding — NAPI wrapper around Rust engine
-    /crate/        # binding_napi cdylib (NAPI boundary only)
-  /binding-wasm/   # @pandacss/binding-wasm — browser wasm-bindgen wrapper
-    /crate/        # binding_wasm cdylib (wasm32-unknown-unknown)
+  /compiler/       # @pandacss/compiler — NAPI wrapper around Rust engine
+    /crate/        # compiler_napi cdylib (NAPI boundary only)
+  /compiler-wasm/  # @pandacss/compiler-wasm — browser wasm-bindgen wrapper
+    /crate/        # compiler_wasm cdylib (wasm32-unknown-unknown)
 
 /crates/           # Rust workspace — the v2 Oxc-based compiler engine
   /extractor/      # Oxc-based AST scanning + extraction
@@ -238,19 +238,19 @@ Brief description of the change and its impact.
   ├─ browserslist (browser targets)
   └─ postcss-* plugins (optimization)
 
-@pandacss/binding (v2, NAPI)
+@pandacss/compiler (v2, NAPI)
   └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
       ├─ pandacss_extractor (Oxc parsing + scan_imports + match_imports)
       ├─ pandacss_encoder, pandacss_recipes, pandacss_tokens, pandacss_project
       ├─ pandacss_engine, pandacss_emitter, pandacss_optimizer, pandacss_cache, pandacss_config (placeholders)
-      ├─ packages/binding/crate (binding_napi cdylib — native NAPI)
-      └─ packages/binding-wasm/crate (binding_wasm cdylib — browser wasm-bindgen)
+      ├─ packages/compiler/crate (compiler_napi cdylib — native NAPI)
+      └─ packages/compiler-wasm/crate (compiler_wasm cdylib — browser wasm-bindgen)
 ```
 
 ## Rust / Oxc Engine (v2 migration)
 
 The repo is in the middle of porting the compiler hot path from `ts-morph` + `ts-evaluator` to a Rust/Oxc engine.
-JS-facing APIs stay stable; Rust ships behind `@pandacss/binding`.
+JS-facing APIs stay stable; Rust ships behind `@pandacss/compiler`.
 
 **Read first** before touching Rust:
 
@@ -276,8 +276,8 @@ pnpm rust:test       # cargo test --workspace --locked
 pnpm rust:fmt        # cargo fmt --all --check
 pnpm rust:clippy     # cargo clippy --all-targets --locked -- -D warnings
 pnpm bench:rust-spike                          # TS baseline benchmark
-pnpm --filter @pandacss/binding build:native   # build the NAPI .node artifact
-pnpm --filter @pandacss/binding test           # binding round-trip Vitest tests
+pnpm --filter @pandacss/compiler build:native   # build the NAPI .node artifact
+pnpm --filter @pandacss/compiler test           # binding round-trip Vitest tests
 ```
 
 Run these from the repo root via `pnpm`. Cargo binaries live in `~/.cargo/bin`; user shells (zsh) load `.zshenv` which
@@ -310,13 +310,13 @@ Use these exact strings so audits can run with `rg`:
 build. Per-function `#[allow(...)]` is fine when justified — include a `reason = "..."` (e.g. NAPI requires owned
 `String` parameters so `clippy::needless_pass_by_value` must be allowed on `#[napi]` entry points).
 
-### Native Binding (`@pandacss/binding`)
+### Native Binding (`@pandacss/compiler`)
 
-- `packages/binding/crate/src/lib.rs` is the NAPI boundary — thin mirror types only, no compiler logic.
-- TS wrapper `packages/binding/src/index.ts` defines the public API + a no-op fallback for unsupported platforms.
-- Loader `src/load-binary.ts` looks for `binding.node` next to the package root, then falls back to
-  `@pandacss/binding-native`.
-- Native artifact (`binding.node`) and auto-generated `native.d.ts` are gitignored.
+- `packages/compiler/crate/src/lib.rs` is the NAPI boundary — thin mirror types only, no compiler logic.
+- TS wrapper `packages/compiler/src/index.ts` defines the public API + a no-op fallback for unsupported platforms.
+- Loader `src/load-binary.ts` looks for `compiler.node` next to the package root, then falls back to
+  `@pandacss/compiler-native`.
+- Native artifact (`compiler.node`) and auto-generated `native.d.ts` are gitignored.
 - **NAPI quirks**: `#[napi]` functions can't take `&str` — use owned `String` with
   `#[allow(clippy::needless_pass_by_value, reason = "...")]`. `Option<T>` accepts `undefined`/omitted in JS but **not
   `null`** — TS callers should leave the field off, not pass `null`.
@@ -345,8 +345,8 @@ change behaviour.
 ### Package Naming for Publishing
 
 All Rust crates use the `pandacss_*` prefix (e.g. `pandacss_extractor`, `pandacss_encoder`). Directories and
-`[package] name` both. Underscore, not hyphen — the package name and the `use` path are identical. The `binding_napi`
-cdylib at `packages/binding/crate/` is a deliberate exception (its output `binding.node` is loaded by name on the TS
+`[package] name` both. Underscore, not hyphen — the package name and the `use` path are identical. The `compiler_napi`
+cdylib at `packages/compiler/crate/` is a deliberate exception (its output `compiler.node` is loaded by name on the TS
 side). All crates are `publish = false` today. See `design-notes/publish-namespace.md` for the full rationale.
 
 ## Useful References

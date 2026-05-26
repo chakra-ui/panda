@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest'
 import { createExtractor, createProject, createProjectFromConfig, loadWasm } from '../src'
 import type { Atom, ExtractUsage, MatchersInput, PatternHelpers } from '../src'
 
-const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'binding_wasm.js')
+const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'compiler_wasm.js')
 const wasmAvailable = existsSync(PKG_NODE)
 
 // Skip the suite if the wasm bundle hasn't been built. The CI / dev
-// workflow is: `pnpm --filter @pandacss/binding-wasm build:wasm` first,
+// workflow is: `pnpm --filter @pandacss/compiler-wasm build:wasm` first,
 // then run tests.
 const describeIfBuilt = wasmAvailable ? describe : describe.skip
 
@@ -35,7 +35,7 @@ function withoutSpans(result: ExtractUsage): unknown {
   }
 }
 
-describeIfBuilt('@pandacss/binding-wasm', () => {
+describeIfBuilt('@pandacss/compiler-wasm', () => {
   describe('WasmFileSystem', () => {
     it('round-trips file content', async () => {
       const { WasmFileSystem } = await loadWasm()
@@ -1286,8 +1286,8 @@ describeIfBuilt('@pandacss/binding-wasm', () => {
 })
 
 if (!wasmAvailable) {
-  describe('@pandacss/binding-wasm', () => {
-    it.skip('wasm bundle not built — run `pnpm --filter @pandacss/binding-wasm build:wasm` first', () => {
+  describe('@pandacss/compiler-wasm', () => {
+    it.skip('wasm bundle not built — run `pnpm --filter @pandacss/compiler-wasm build:wasm` first', () => {
       // placeholder body — the test is skipped; this is only here so the
       // skipped name shows up in CI output as a build prerequisite hint.
     })

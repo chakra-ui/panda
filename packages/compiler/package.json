@@ -1,5 +1,5 @@
 {
-  "name": "@pandacss/binding",
+  "name": "@pandacss/compiler",
   "version": "0.0.0",
   "description": "Native Rust binding for the Panda compiler engine",
   "main": "dist/index.js",
@@ -24,7 +24,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
-    "directory": "packages/binding"
+    "directory": "packages/compiler"
   },
   "publishConfig": {
     "access": "public"
@@ -41,7 +41,7 @@
     "*.node"
   ],
   "napi": {
-    "binaryName": "binding"
+    "binaryName": "compiler"
   },
   "dependencies": {},
   "devDependencies": {

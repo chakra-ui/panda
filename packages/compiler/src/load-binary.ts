@@ -7,8 +7,8 @@ import type { NativeBinding } from './index'
 const require = createRequire(import.meta.url)
 const currentDir = dirname(fileURLToPath(import.meta.url))
 
-// `dist/` and `src/` both sit next to `binding.node` in the package root.
-const localBinding = join(currentDir, '..', 'binding.node')
+// `dist/` and `src/` both sit next to `compiler.node` in the package root.
+const localBinding = join(currentDir, '..', 'compiler.node')
 
 export function loadNativeBinding(): NativeBinding | undefined {
   if (existsSync(localBinding)) {
@@ -16,7 +16,7 @@ export function loadNativeBinding(): NativeBinding | undefined {
   }
 
   try {
-    return require('@pandacss/binding-native') as NativeBinding
+    return require('@pandacss/compiler-native') as NativeBinding
   } catch {
     return undefined
   }

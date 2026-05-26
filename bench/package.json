@@ -11,8 +11,8 @@
     "token-dictionary-compare": "tsx --tsconfig tsconfig.json --conditions source src/token-dictionary-compare.ts"
   },
   "dependencies": {
-    "@pandacss/binding": "workspace:*",
-    "@pandacss/binding-wasm": "workspace:*",
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-wasm": "workspace:*",
     "@pandacss/node": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*"
   },

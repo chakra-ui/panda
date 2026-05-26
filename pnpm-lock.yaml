@@ -100,9 +100,12 @@ importers:
 
   bench:
     dependencies:
-      '@pandacss/binding':
+      '@pandacss/compiler':
         specifier: workspace:*
-        version: link:../packages/binding
+        version: link:../packages/compiler
+      '@pandacss/compiler-wasm':
+        specifier: workspace:*
+        version: link:../packages/compiler-wasm
       '@pandacss/node':
         specifier: workspace:*
         version: link:../packages/node
@@ -128,14 +131,6 @@ importers:
       vite:
         specifier: 7.2.6
         version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-
-  packages/binding:
-    devDependencies:
-      '@napi-rs/cli':
-        specifier: ^3.0.0
-        version: 3.6.2(@emnapi/runtime@1.10.0)(@types/node@24.10.1)(node-addon-api@7.1.1)
-
-  packages/binding-wasm: {}
 
   packages/cli:
     dependencies:
@@ -185,6 +180,14 @@ importers:
       update-notifier:
         specifier: 7.3.1
         version: 7.3.1
+
+  packages/compiler:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.0.0
+        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@24.10.1)(node-addon-api@7.1.1)
+
+  packages/compiler-wasm: {}
 
   packages/config:
     dependencies:
@@ -1114,7 +1117,7 @@ importers:
         version: link:../css-lib
       nuxt:
         specifier: 4.2.1
-        version: 4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+        version: 4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
       postcss:
         specifier: 8.5.6
         version: 8.5.6
@@ -1251,7 +1254,7 @@ importers:
         version: link:../../packages/cli
       nuxt:
         specifier: 4.2.1
-        version: 4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+        version: 4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
       postcss:
         specifier: 8.5.6
         version: 8.5.6
@@ -5318,9 +5321,6 @@ packages:
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
-
-  '@napi-rs/wasm-runtime@1.0.7':
-    resolution: {integrity: sha512-SeDnOO0Tk7Okiq6DbXmmBODgOAb9dp9gjlphokTUxmt8U3liIP1ZsozBahH69j/RJv+Rfs6IwUKHTgQYJ/HBAw==}
 
   '@napi-rs/wasm-runtime@1.1.4':
     resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
@@ -20103,7 +20103,7 @@ snapshots:
       outdent: 0.5.0
       prettier: 2.8.8
       resolve-from: 5.0.0
-      semver: 7.7.3
+      semver: 7.7.4
 
   '@changesets/assemble-release-plan@6.0.9':
     dependencies:
@@ -20112,7 +20112,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
-      semver: 7.7.3
+      semver: 7.7.4
 
   '@changesets/changelog-git@0.2.1':
     dependencies:
@@ -20178,7 +20178,7 @@ snapshots:
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
       picocolors: 1.1.1
-      semver: 7.7.3
+      semver: 7.7.4
 
   '@changesets/get-github-info@0.7.0':
     dependencies:
@@ -22382,7 +22382,7 @@ snapshots:
   '@inquirer/external-editor@1.0.3(@types/node@24.10.1)':
     dependencies:
       chardet: 2.1.1
-      iconv-lite: 0.7.0
+      iconv-lite: 0.7.2
     optionalDependencies:
       '@types/node': 24.10.1
 
@@ -22877,11 +22877,11 @@ snapshots:
       nanostores: 1.1.0
       react: 19.2.0
 
-  '@napi-rs/cli@3.6.2(@emnapi/runtime@1.10.0)(@types/node@24.10.1)(node-addon-api@7.1.1)':
+  '@napi-rs/cli@3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@24.10.1)(node-addon-api@7.1.1)':
     dependencies:
       '@inquirer/prompts': 8.4.3(@types/node@24.10.1)
-      '@napi-rs/cross-toolchain': 1.0.3
-      '@napi-rs/wasm-tools': 1.0.1
+      '@napi-rs/cross-toolchain': 1.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-tools': 1.0.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@octokit/rest': 22.0.1
       clipanion: 4.0.0-rc.4(typanion@3.14.0)
       colorette: 2.0.20
@@ -22894,6 +22894,7 @@ snapshots:
     optionalDependencies:
       '@emnapi/runtime': 1.10.0
     transitivePeerDependencies:
+      - '@emnapi/core'
       - '@napi-rs/cross-toolchain-arm64-target-aarch64'
       - '@napi-rs/cross-toolchain-arm64-target-armv7'
       - '@napi-rs/cross-toolchain-arm64-target-ppc64le'
@@ -22908,12 +22909,14 @@ snapshots:
       - node-addon-api
       - supports-color
 
-  '@napi-rs/cross-toolchain@1.0.3':
+  '@napi-rs/cross-toolchain@1.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/lzma': 1.4.5
-      '@napi-rs/tar': 1.1.0
+      '@napi-rs/lzma': 1.4.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/tar': 1.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       debug: 4.4.3
     transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
       - supports-color
 
   '@napi-rs/lzma-android-arm-eabi@1.4.5':
@@ -22955,9 +22958,12 @@ snapshots:
   '@napi-rs/lzma-linux-x64-musl@1.4.5':
     optional: true
 
-  '@napi-rs/lzma-wasm32-wasi@1.4.5':
+  '@napi-rs/lzma-wasm32-wasi@1.4.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.7
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@napi-rs/lzma-win32-arm64-msvc@1.4.5':
@@ -22969,7 +22975,7 @@ snapshots:
   '@napi-rs/lzma-win32-x64-msvc@1.4.5':
     optional: true
 
-  '@napi-rs/lzma@1.4.5':
+  '@napi-rs/lzma@1.4.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     optionalDependencies:
       '@napi-rs/lzma-android-arm-eabi': 1.4.5
       '@napi-rs/lzma-android-arm64': 1.4.5
@@ -22984,10 +22990,13 @@ snapshots:
       '@napi-rs/lzma-linux-s390x-gnu': 1.4.5
       '@napi-rs/lzma-linux-x64-gnu': 1.4.5
       '@napi-rs/lzma-linux-x64-musl': 1.4.5
-      '@napi-rs/lzma-wasm32-wasi': 1.4.5
+      '@napi-rs/lzma-wasm32-wasi': 1.4.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@napi-rs/lzma-win32-arm64-msvc': 1.4.5
       '@napi-rs/lzma-win32-ia32-msvc': 1.4.5
       '@napi-rs/lzma-win32-x64-msvc': 1.4.5
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
   '@napi-rs/tar-android-arm-eabi@1.1.0':
     optional: true
@@ -23025,9 +23034,12 @@ snapshots:
   '@napi-rs/tar-linux-x64-musl@1.1.0':
     optional: true
 
-  '@napi-rs/tar-wasm32-wasi@1.1.0':
+  '@napi-rs/tar-wasm32-wasi@1.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.7
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@napi-rs/tar-win32-arm64-msvc@1.1.0':
@@ -23039,7 +23051,7 @@ snapshots:
   '@napi-rs/tar-win32-x64-msvc@1.1.0':
     optional: true
 
-  '@napi-rs/tar@1.1.0':
+  '@napi-rs/tar@1.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     optionalDependencies:
       '@napi-rs/tar-android-arm-eabi': 1.1.0
       '@napi-rs/tar-android-arm64': 1.1.0
@@ -23053,19 +23065,15 @@ snapshots:
       '@napi-rs/tar-linux-s390x-gnu': 1.1.0
       '@napi-rs/tar-linux-x64-gnu': 1.1.0
       '@napi-rs/tar-linux-x64-musl': 1.1.0
-      '@napi-rs/tar-wasm32-wasi': 1.1.0
+      '@napi-rs/tar-wasm32-wasi': 1.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@napi-rs/tar-win32-arm64-msvc': 1.1.0
       '@napi-rs/tar-win32-ia32-msvc': 1.1.0
       '@napi-rs/tar-win32-x64-msvc': 1.1.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
   '@napi-rs/wasm-runtime@0.2.12':
-    dependencies:
-      '@emnapi/core': 1.7.0
-      '@emnapi/runtime': 1.7.0
-      '@tybys/wasm-util': 0.10.1
-    optional: true
-
-  '@napi-rs/wasm-runtime@1.0.7':
     dependencies:
       '@emnapi/core': 1.7.0
       '@emnapi/runtime': 1.7.0
@@ -23106,9 +23114,12 @@ snapshots:
   '@napi-rs/wasm-tools-linux-x64-musl@1.0.1':
     optional: true
 
-  '@napi-rs/wasm-tools-wasm32-wasi@1.0.1':
+  '@napi-rs/wasm-tools-wasm32-wasi@1.0.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.7
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@napi-rs/wasm-tools-win32-arm64-msvc@1.0.1':
@@ -23120,7 +23131,7 @@ snapshots:
   '@napi-rs/wasm-tools-win32-x64-msvc@1.0.1':
     optional: true
 
-  '@napi-rs/wasm-tools@1.0.1':
+  '@napi-rs/wasm-tools@1.0.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     optionalDependencies:
       '@napi-rs/wasm-tools-android-arm-eabi': 1.0.1
       '@napi-rs/wasm-tools-android-arm64': 1.0.1
@@ -23131,10 +23142,13 @@ snapshots:
       '@napi-rs/wasm-tools-linux-arm64-musl': 1.0.1
       '@napi-rs/wasm-tools-linux-x64-gnu': 1.0.1
       '@napi-rs/wasm-tools-linux-x64-musl': 1.0.1
-      '@napi-rs/wasm-tools-wasm32-wasi': 1.0.1
+      '@napi-rs/wasm-tools-wasm32-wasi': 1.0.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@napi-rs/wasm-tools-win32-arm64-msvc': 1.0.1
       '@napi-rs/wasm-tools-win32-ia32-msvc': 1.0.1
       '@napi-rs/wasm-tools-win32-x64-msvc': 1.0.1
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
   '@next/bundle-analyzer@15.5.6':
     dependencies:
@@ -23193,7 +23207,7 @@ snapshots:
 
   '@npmcli/fs@3.1.1':
     dependencies:
-      semver: 7.7.3
+      semver: 7.7.4
 
   '@npmcli/git@4.1.0':
     dependencies:
@@ -23203,7 +23217,7 @@ snapshots:
       proc-log: 3.0.0
       promise-inflight: 1.0.1
       promise-retry: 2.0.1
-      semver: 7.7.3
+      semver: 7.7.4
       which: 3.0.1
     transitivePeerDependencies:
       - bluebird
@@ -23216,7 +23230,7 @@ snapshots:
       json-parse-even-better-errors: 3.0.2
       normalize-package-data: 5.0.0
       proc-log: 3.0.0
-      semver: 7.7.3
+      semver: 7.7.4
     transitivePeerDependencies:
       - bluebird
 
@@ -23244,7 +23258,7 @@ snapshots:
       perfect-debounce: 2.0.0
       pkg-types: 2.3.0
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       srvx: 0.9.5
       std-env: 3.10.0
       tinyexec: 1.0.2
@@ -23273,7 +23287,7 @@ snapshots:
       perfect-debounce: 2.0.0
       pkg-types: 2.3.0
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       srvx: 0.9.5
       std-env: 3.10.0
       tinyexec: 1.0.2
@@ -23301,7 +23315,7 @@ snapshots:
       pathe: 2.0.3
       pkg-types: 2.3.0
       prompts: 2.4.2
-      semver: 7.7.3
+      semver: 7.7.4
 
   '@nuxt/devtools@3.1.1(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.25(typescript@6.0.2))':
     dependencies:
@@ -23328,7 +23342,7 @@ snapshots:
       pathe: 2.0.3
       perfect-debounce: 2.0.0
       pkg-types: 2.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       simple-git: 3.30.0
       sirv: 3.0.2
       structured-clone-es: 1.0.0
@@ -23362,7 +23376,7 @@ snapshots:
       pkg-types: 2.3.0
       rc9: 2.1.2
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ufo: 1.6.1
       unctx: 2.4.1
@@ -23388,7 +23402,7 @@ snapshots:
       pkg-types: 2.3.0
       rc9: 2.1.2
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ufo: 1.6.1
       unctx: 2.4.1
@@ -23413,7 +23427,7 @@ snapshots:
       pkg-types: 2.3.0
       rc9: 2.1.2
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ufo: 1.6.1
       unctx: 2.4.1
@@ -23438,7 +23452,7 @@ snapshots:
       pkg-types: 2.3.0
       rc9: 2.1.2
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ufo: 1.6.1
       unctx: 2.4.1
@@ -23446,7 +23460,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/nitro-server@4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.3.5)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)':
+  '@nuxt/nitro-server@4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.3.5)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)':
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 4.2.1(magicast@0.3.5)
@@ -23464,7 +23478,7 @@ snapshots:
       klona: 2.0.6
       mocked-exports: 0.1.1
       nitropack: 2.12.9(rolldown@1.0.0-rc.17)
-      nuxt: 4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+      nuxt: 4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
       pathe: 2.0.3
       pkg-types: 2.3.0
       radix3: 1.1.2
@@ -23510,7 +23524,7 @@ snapshots:
       - uploadthing
       - xml2js
 
-  '@nuxt/nitro-server@4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.5.1)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)':
+  '@nuxt/nitro-server@4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.5.1)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)':
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 4.2.1(magicast@0.5.1)
@@ -23528,7 +23542,7 @@ snapshots:
       klona: 2.0.6
       mocked-exports: 0.1.1
       nitropack: 2.12.9(rolldown@1.0.0-rc.17)
-      nuxt: 4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+      nuxt: 4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
       pathe: 2.0.3
       pkg-types: 2.3.0
       radix3: 1.1.2
@@ -23616,7 +23630,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/vite-builder@4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)':
+  '@nuxt/vite-builder@4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)':
     dependencies:
       '@nuxt/kit': 4.2.1(magicast@0.3.5)
       '@rollup/plugin-replace': 6.0.3(rollup@4.53.1)
@@ -23636,7 +23650,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.0
       mocked-exports: 0.1.1
-      nuxt: 4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+      nuxt: 4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
       pathe: 2.0.3
       pkg-types: 2.3.0
       postcss: 8.5.6
@@ -23677,7 +23691,7 @@ snapshots:
       - vue-tsc
       - yaml
 
-  '@nuxt/vite-builder@4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)':
+  '@nuxt/vite-builder@4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)':
     dependencies:
       '@nuxt/kit': 4.2.1(magicast@0.5.1)
       '@rollup/plugin-replace': 6.0.3(rollup@4.53.1)
@@ -23697,7 +23711,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.0
       mocked-exports: 0.1.1
-      nuxt: 4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
+      nuxt: 4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1)
       pathe: 2.0.3
       pkg-types: 2.3.0
       postcss: 8.5.6
@@ -23844,9 +23858,12 @@ snapshots:
   '@oxc-minify/binding-linux-x64-musl@0.96.0':
     optional: true
 
-  '@oxc-minify/binding-wasm32-wasi@0.96.0':
+  '@oxc-minify/binding-wasm32-wasi@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.7
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@oxc-minify/binding-win32-arm64-msvc@0.96.0':
@@ -23891,9 +23908,12 @@ snapshots:
   '@oxc-parser/binding-linux-x64-musl@0.96.0':
     optional: true
 
-  '@oxc-parser/binding-wasm32-wasi@0.96.0':
+  '@oxc-parser/binding-wasm32-wasi@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.7
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@oxc-parser/binding-win32-arm64-msvc@0.96.0':
@@ -23942,9 +23962,12 @@ snapshots:
   '@oxc-transform/binding-linux-x64-musl@0.96.0':
     optional: true
 
-  '@oxc-transform/binding-wasm32-wasi@0.96.0':
+  '@oxc-transform/binding-wasm32-wasi@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.7
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
     optional: true
 
   '@oxc-transform/binding-win32-arm64-msvc@0.96.0':
@@ -25754,7 +25777,7 @@ snapshots:
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare-lite: 1.4.0
-      semver: 7.7.3
+      semver: 7.7.4
       tsutils: 3.21.0(typescript@6.0.2)
     optionalDependencies:
       typescript: 6.0.2
@@ -25977,7 +26000,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.3
+      semver: 7.7.4
       ts-api-utils: 2.1.0(typescript@6.0.2)
       typescript: 6.0.2
     transitivePeerDependencies:
@@ -25991,7 +26014,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.48.0
       debug: 4.4.3
       minimatch: 9.0.5
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ts-api-utils: 2.1.0(typescript@6.0.2)
       typescript: 6.0.2
@@ -26006,7 +26029,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.48.1
       debug: 4.4.3
       minimatch: 9.0.5
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ts-api-utils: 2.1.0(typescript@6.0.2)
       typescript: 6.0.2
@@ -28837,7 +28860,7 @@ snapshots:
       postcss-modules-values: 4.0.0(postcss@8.5.6)
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       webpack: 5.98.0(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)
 
   css-loader@6.11.0(webpack@5.102.1(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)):
@@ -28849,7 +28872,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
       postcss-value-parser: 4.2.0
-      semver: 7.7.3
+      semver: 7.7.4
     optionalDependencies:
       webpack: 5.102.1(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)
 
@@ -30348,7 +30371,7 @@ snapshots:
       optionator: 0.9.4
       progress: 2.0.3
       regexpp: 3.2.0
-      semver: 7.7.3
+      semver: 7.7.4
       strip-ansi: 6.0.1
       strip-json-comments: 3.1.1
       table: 6.9.0
@@ -31046,7 +31069,7 @@ snapshots:
       prompts: 2.4.2
       redux: 4.2.1
       resolve-cwd: 3.0.0
-      semver: 7.7.3
+      semver: 7.7.4
       signal-exit: 3.0.7
       stack-trace: 0.0.10
       strip-ansi: 6.0.1
@@ -34432,7 +34455,7 @@ snapshots:
       rollup: 4.53.1
       rollup-plugin-visualizer: 6.0.5(rolldown@1.0.0-rc.17)(rollup@4.53.1)
       scule: 1.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       serve-placeholder: 2.0.2
       serve-static: 2.2.0
       source-map: 0.7.6
@@ -34561,7 +34584,7 @@ snapshots:
     dependencies:
       hosted-git-info: 6.1.3
       is-core-module: 2.16.1
-      semver: 7.7.3
+      semver: 7.7.4
       validate-npm-package-license: 3.0.4
 
   normalize-path@2.1.1:
@@ -34641,16 +34664,16 @@ snapshots:
 
   nullthrows@1.1.1: {}
 
-  nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1):
+  nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1):
     dependencies:
       '@dxup/nuxt': 0.2.2(magicast@0.3.5)
       '@nuxt/cli': 3.30.0(magicast@0.3.5)
       '@nuxt/devtools': 3.1.1(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.25(typescript@6.0.2))
       '@nuxt/kit': 4.2.1(magicast@0.3.5)
-      '@nuxt/nitro-server': 4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.3.5)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)
+      '@nuxt/nitro-server': 4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.3.5)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)
       '@nuxt/schema': 4.2.1
       '@nuxt/telemetry': 2.6.6(magicast@0.3.5)
-      '@nuxt/vite-builder': 4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)
+      '@nuxt/vite-builder': 4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)
       '@unhead/vue': 2.0.19(vue@3.5.25(typescript@6.0.2))
       '@vue/shared': 3.5.25
       c12: 3.3.1(magicast@0.3.5)
@@ -34678,10 +34701,10 @@ snapshots:
       ofetch: 1.5.1
       ohash: 2.0.11
       on-change: 6.0.1
-      oxc-minify: 0.96.0
-      oxc-parser: 0.96.0
-      oxc-transform: 0.96.0
-      oxc-walker: 0.5.2(oxc-parser@0.96.0)
+      oxc-minify: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-parser: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-transform: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-walker: 0.5.2(oxc-parser@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))
       pathe: 2.0.3
       perfect-debounce: 2.0.0
       pkg-types: 2.3.0
@@ -34714,6 +34737,8 @@ snapshots:
       - '@capacitor/preferences'
       - '@deno/kv'
       - '@electric-sql/pglite'
+      - '@emnapi/core'
+      - '@emnapi/runtime'
       - '@libsql/client'
       - '@netlify/blobs'
       - '@planetscale/database'
@@ -34762,16 +34787,16 @@ snapshots:
       - xml2js
       - yaml
 
-  nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1):
+  nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1):
     dependencies:
       '@dxup/nuxt': 0.2.2(magicast@0.5.1)
       '@nuxt/cli': 3.30.0(magicast@0.5.1)
       '@nuxt/devtools': 3.1.1(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.25(typescript@6.0.2))
       '@nuxt/kit': 4.2.1(magicast@0.5.1)
-      '@nuxt/nitro-server': 4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.5.1)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)
+      '@nuxt/nitro-server': 4.2.1(db0@0.3.4)(ioredis@5.8.2)(magicast@0.5.1)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(rolldown@1.0.0-rc.17)(typescript@6.0.2)
       '@nuxt/schema': 4.2.1
       '@nuxt/telemetry': 2.6.6(magicast@0.5.1)
-      '@nuxt/vite-builder': 4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(nuxt@4.2.1(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)
+      '@nuxt/vite-builder': 4.2.1(@types/node@24.10.1)(eslint@9.39.1(jiti@2.6.1))(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(nuxt@4.2.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@parcel/watcher@2.5.1)(@types/node@24.10.1)(@vue/compiler-sfc@3.5.25)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.8.2)(less@4.4.2)(lightningcss@1.31.1)(magicast@0.5.1)(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vite@7.3.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(yaml@2.8.1))(optionator@0.9.4)(rolldown@1.0.0-rc.17)(rollup@4.53.1)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.2)(vue@3.5.25(typescript@6.0.2))(yaml@2.8.1)
       '@unhead/vue': 2.0.19(vue@3.5.25(typescript@6.0.2))
       '@vue/shared': 3.5.25
       c12: 3.3.1(magicast@0.5.1)
@@ -34799,10 +34824,10 @@ snapshots:
       ofetch: 1.5.1
       ohash: 2.0.11
       on-change: 6.0.1
-      oxc-minify: 0.96.0
-      oxc-parser: 0.96.0
-      oxc-transform: 0.96.0
-      oxc-walker: 0.5.2(oxc-parser@0.96.0)
+      oxc-minify: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-parser: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-transform: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      oxc-walker: 0.5.2(oxc-parser@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))
       pathe: 2.0.3
       perfect-debounce: 2.0.0
       pkg-types: 2.3.0
@@ -34835,6 +34860,8 @@ snapshots:
       - '@capacitor/preferences'
       - '@deno/kv'
       - '@electric-sql/pglite'
+      - '@emnapi/core'
+      - '@emnapi/runtime'
       - '@libsql/client'
       - '@netlify/blobs'
       - '@planetscale/database'
@@ -35049,7 +35076,7 @@ snapshots:
       object-keys: 1.1.1
       safe-push-apply: 1.0.0
 
-  oxc-minify@0.96.0:
+  oxc-minify@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
     optionalDependencies:
       '@oxc-minify/binding-android-arm64': 0.96.0
       '@oxc-minify/binding-darwin-arm64': 0.96.0
@@ -35063,11 +35090,14 @@ snapshots:
       '@oxc-minify/binding-linux-s390x-gnu': 0.96.0
       '@oxc-minify/binding-linux-x64-gnu': 0.96.0
       '@oxc-minify/binding-linux-x64-musl': 0.96.0
-      '@oxc-minify/binding-wasm32-wasi': 0.96.0
+      '@oxc-minify/binding-wasm32-wasi': 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@oxc-minify/binding-win32-arm64-msvc': 0.96.0
       '@oxc-minify/binding-win32-x64-msvc': 0.96.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
-  oxc-parser@0.96.0:
+  oxc-parser@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
     dependencies:
       '@oxc-project/types': 0.96.0
     optionalDependencies:
@@ -35083,11 +35113,14 @@ snapshots:
       '@oxc-parser/binding-linux-s390x-gnu': 0.96.0
       '@oxc-parser/binding-linux-x64-gnu': 0.96.0
       '@oxc-parser/binding-linux-x64-musl': 0.96.0
-      '@oxc-parser/binding-wasm32-wasi': 0.96.0
+      '@oxc-parser/binding-wasm32-wasi': 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@oxc-parser/binding-win32-arm64-msvc': 0.96.0
       '@oxc-parser/binding-win32-x64-msvc': 0.96.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
-  oxc-transform@0.96.0:
+  oxc-transform@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
     optionalDependencies:
       '@oxc-transform/binding-android-arm64': 0.96.0
       '@oxc-transform/binding-darwin-arm64': 0.96.0
@@ -35101,14 +35134,17 @@ snapshots:
       '@oxc-transform/binding-linux-s390x-gnu': 0.96.0
       '@oxc-transform/binding-linux-x64-gnu': 0.96.0
       '@oxc-transform/binding-linux-x64-musl': 0.96.0
-      '@oxc-transform/binding-wasm32-wasi': 0.96.0
+      '@oxc-transform/binding-wasm32-wasi': 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@oxc-transform/binding-win32-arm64-msvc': 0.96.0
       '@oxc-transform/binding-win32-x64-msvc': 0.96.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
-  oxc-walker@0.5.2(oxc-parser@0.96.0):
+  oxc-walker@0.5.2(oxc-parser@0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)):
     dependencies:
       magic-regexp: 0.10.0
-      oxc-parser: 0.96.0
+      oxc-parser: 0.96.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
 
   p-cancelable@2.1.1: {}
 
@@ -35206,7 +35242,7 @@ snapshots:
       ky: 1.14.0
       registry-auth-token: 5.1.0
       registry-url: 6.0.1
-      semver: 7.7.3
+      semver: 7.7.4
 
   package-json@8.1.1:
     dependencies:
@@ -35694,7 +35730,7 @@ snapshots:
       cosmiconfig: 7.1.0
       klona: 2.0.6
       postcss: 8.5.6
-      semver: 7.7.3
+      semver: 7.7.4
       webpack: 5.98.0(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)
 
   postcss-loader@7.3.4(postcss@8.5.6)(typescript@6.0.2)(webpack@5.102.1(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)):
@@ -35702,7 +35738,7 @@ snapshots:
       cosmiconfig: 8.3.6(typescript@6.0.2)
       jiti: 1.21.7
       postcss: 8.5.6
-      semver: 7.7.3
+      semver: 7.7.4
       webpack: 5.102.1(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)
     transitivePeerDependencies:
       - typescript
@@ -37363,7 +37399,7 @@ snapshots:
 
   semver-diff@4.0.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.7.4
 
   semver@5.7.2: {}
 
@@ -37519,7 +37555,7 @@ snapshots:
       detect-libc: 2.1.2
       node-addon-api: 6.1.0
       prebuild-install: 7.1.3
-      semver: 7.7.3
+      semver: 7.7.4
       simple-get: 4.0.1
       tar-fs: 3.1.1
       tunnel-agent: 0.6.0
@@ -37532,7 +37568,7 @@ snapshots:
     dependencies:
       '@img/colour': 1.0.0
       detect-libc: 2.1.2
-      semver: 7.7.3
+      semver: 7.7.4
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.5
       '@img/sharp-darwin-x64': 0.34.5
@@ -39157,7 +39193,7 @@ snapshots:
       is-yarn-global: 0.4.1
       latest-version: 7.0.0
       pupa: 3.3.0
-      semver: 7.7.3
+      semver: 7.7.4
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
 

@@ -1,11 +1,11 @@
 /**
- * `@pandacss/binding-wasm` — WebAssembly binding for the Panda Rust engine.
+ * `@pandacss/compiler-wasm` — WebAssembly binding for the Panda Rust engine.
  *
  * Two output targets are bundled:
  * - `./pkg-node/*` — CommonJS, for Node / Vitest / SSR.
  * - `./pkg-web/*` — ESM with `fetch`-based init, for browser playgrounds.
  *
- * Consumers in Node should `import { createExtractor } from '@pandacss/binding-wasm'`.
+ * Consumers in Node should `import { createExtractor } from '@pandacss/compiler-wasm'`.
  * Browser consumers should call `init()` first (returns a promise), then construct
  * a `WasmFileSystem` + `WasmExtractor`.
  */
@@ -97,7 +97,7 @@ interface WasmModule {
 export async function loadWasm(): Promise<WasmModule> {
   if (cached) return cached
   // pkg-node ships CommonJS that auto-initializes the wasm module on require.
-  const mod = (await import('../pkg-node/binding_wasm.js')) as any
+  const mod = (await import('../pkg-node/compiler_wasm.js')) as any
   cached = mod
   if (typeof mod.installPanicHook === 'function') {
     mod.installPanicHook()
@@ -144,7 +144,7 @@ export async function createProject(
 
 /**
  * Convenience factory for config-derived projects. This mirrors
- * `@pandacss/binding`'s `Project.fromConfig` path so callers don't have to
+ * `@pandacss/compiler`'s `Project.fromConfig` path so callers don't have to
  * construct matchers by hand.
  */
 export async function createProjectFromConfig(

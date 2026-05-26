@@ -1,4 +1,4 @@
-//! `@pandacss/binding-wasm` — WebAssembly binding for the Panda Rust engine.
+//! `@pandacss/compiler-wasm` — WebAssembly binding for the Panda Rust engine.
 //!
 //! Mirrors the napi binding's shape (`WasmExtractor` ↔ `Extractor`,
 //! `WasmFileSystem` over `MemoryFileSystem`) but targets `wasm32-unknown-unknown`

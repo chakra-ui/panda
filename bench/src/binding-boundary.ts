@@ -2,11 +2,11 @@ import { performance } from 'node:perf_hooks'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 // @ts-expect-error Bench scripts run through tsx with `--conditions source`.
-import bindingDefault from '../../packages/binding/src/index.ts'
-import type * as bindingTypes from '../../packages/binding/src/index.ts'
+import bindingDefault from '../../packages/compiler/src/index.ts'
+import type * as bindingTypes from '../../packages/compiler/src/index.ts'
 // @ts-expect-error Bench scripts run through tsx with `--conditions source`.
-import wasmBindingDefault from '../../packages/binding-wasm/src/index.ts'
-import type * as wasmBindingTypes from '../../packages/binding-wasm/src/index.ts'
+import wasmBindingDefault from '../../packages/compiler-wasm/src/index.ts'
+import type * as wasmBindingTypes from '../../packages/compiler-wasm/src/index.ts'
 
 const binding = bindingDefault as unknown as typeof bindingTypes
 const wasmBinding = wasmBindingDefault as unknown as typeof wasmBindingTypes
@@ -186,7 +186,7 @@ async function main() {
     },
   }
 
-  const wasmBundle = resolve(repoRoot, 'packages/binding-wasm/pkg-node/binding_wasm.js')
+  const wasmBundle = resolve(repoRoot, 'packages/compiler-wasm/pkg-node/compiler_wasm.js')
   if (args.wasm && existsSync(wasmBundle)) {
     const wasmLoad = await measureAsync(() =>
       wasmBinding.createProjectFromConfig(

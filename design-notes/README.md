@@ -1,6 +1,6 @@
 # Rust Design Notes
 
-Architectural decisions for the Panda v2 Rust pipeline (`crates/*` and `packages/binding/crate`). Each doc captures
+Architectural decisions for the Panda v2 Rust pipeline (`crates/*` and `packages/compiler/crate`). Each doc captures
 _why_ something is shaped the way it is, not how to use it — for usage, read the rustdoc.
 
 These docs are point-in-time records. When you change the underlying design, update the doc in the same PR. Borrow

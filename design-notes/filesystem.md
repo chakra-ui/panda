@@ -251,7 +251,7 @@ because the native `os` feature is not available.
 
 **Phase B (shipped):**
 
-5. `packages/binding-wasm/` cdylib + wasm-bindgen wrapper.
+5. `packages/compiler-wasm/` cdylib + wasm-bindgen wrapper.
 6. `WasmFileSystem` + `WasmExtractor` exposed; `glob` at the JS surface.
 7. Vitest smoke tests against the wasm artifact running in Node.
 8. Bundle size measured: **~490 KB gzipped**, under 500 KB target.

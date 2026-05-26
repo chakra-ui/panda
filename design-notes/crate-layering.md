@@ -40,7 +40,7 @@ sibling tiers — different axes of work, neither depends on the other.
 
 The `Project` crate wires everything together. `System` compiles immutable config-derived runtime state from
 `pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate is the primary entry point for
-`@pandacss/binding` and the recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to
+`@pandacss/compiler` and the recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to
 this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
 
 ### Future crates
