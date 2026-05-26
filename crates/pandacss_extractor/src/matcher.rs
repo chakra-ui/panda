@@ -359,17 +359,26 @@ pub fn match_imports(scan: &ImportScanResult, matchers: &Matchers) -> Vec<Matche
 /// Type-only imports (declaration or specifier level) are skipped.
 #[must_use]
 pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Vec<MatchedImport> {
-    let index = ImportMatcherIndex::new(records, matchers);
+    let categories = active_categories(matchers);
     let mut out = Vec::new();
     for record in records {
         if record.type_only {
+            continue;
+        }
+        let source_categories: SmallVec<[(MatchCategory, &Matcher); 5]> = categories
+            .iter()
+            .copied()
+            .filter(|(_, matcher)| matcher.accepts_module(&record.module))
+            .collect();
+        if source_categories.is_empty() {
             continue;
         }
         for specifier in &record.specifiers {
             if specifier.type_only || specifier.kind == ImportSpecifierKind::Default {
                 continue;
             }
-            let Some(category) = index.category_for(record, specifier) else {
+            let Some(category) = matching_category_for_specifier(specifier, &source_categories)
+            else {
                 continue;
             };
             out.push(MatchedImport {
@@ -384,67 +393,15 @@ pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Ve
     out
 }
 
-struct ImportMatcherIndex<'a> {
-    source_name_categories: FxHashMap<(&'a str, &'a str, ImportSpecifierKind), MatchCategory>,
-}
-
-impl<'a> ImportMatcherIndex<'a> {
-    fn new(records: &'a [ImportRecord], matchers: &'a Matchers) -> Self {
-        let categories = active_categories(matchers);
-        let mut source_name_categories = FxHashMap::default();
-        for record in records {
-            if record.type_only {
-                continue;
-            }
-            let source_categories: SmallVec<[(MatchCategory, &Matcher); 5]> = categories
-                .iter()
-                .copied()
-                .filter(|(_, matcher)| matcher.accepts_module(&record.module))
-                .collect();
-            if source_categories.is_empty() {
-                continue;
-            }
-            for specifier in &record.specifiers {
-                if specifier.type_only || specifier.kind == ImportSpecifierKind::Default {
-                    continue;
-                }
-                let name = match specifier.kind {
-                    ImportSpecifierKind::Namespace => "*",
-                    ImportSpecifierKind::Named | ImportSpecifierKind::Default => {
-                        specifier.imported.as_str()
-                    }
-                };
-                let Some((category, _)) = source_categories.iter().find(|(_, matcher)| {
-                    specifier.kind == ImportSpecifierKind::Namespace
-                        || matcher.names.accepts(&specifier.imported)
-                }) else {
-                    continue;
-                };
-                source_name_categories
-                    .entry((record.module.as_str(), name, specifier.kind))
-                    .or_insert(*category);
-            }
-        }
-        Self {
-            source_name_categories,
-        }
-    }
-
-    fn category_for(
-        &self,
-        record: &'a ImportRecord,
-        specifier: &'a ImportSpecifier,
-    ) -> Option<MatchCategory> {
-        let name = match specifier.kind {
-            ImportSpecifierKind::Namespace => "*",
-            ImportSpecifierKind::Named | ImportSpecifierKind::Default => {
-                specifier.imported.as_str()
-            }
-        };
-        self.source_name_categories
-            .get(&(record.module.as_str(), name, specifier.kind))
-            .copied()
-    }
+fn matching_category_for_specifier(
+    specifier: &ImportSpecifier,
+    source_categories: &[(MatchCategory, &Matcher)],
+) -> Option<MatchCategory> {
+    source_categories.iter().find_map(|(category, matcher)| {
+        (specifier.kind == ImportSpecifierKind::Namespace
+            || matcher.names.accepts(&specifier.imported))
+        .then_some(*category)
+    })
 }
 
 fn active_categories(matchers: &Matchers) -> SmallVec<[(MatchCategory, &Matcher); 5]> {

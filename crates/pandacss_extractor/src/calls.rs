@@ -10,6 +10,7 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
+use smallvec::SmallVec;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -179,8 +180,8 @@ fn is_raw_category(category: MatchCategory) -> bool {
 
 fn flatten_static_member_path<'a>(
     expr: &'a Expression<'_>,
-) -> Option<(&'a IdentifierReference<'a>, Vec<&'a str>)> {
-    let mut path = Vec::new();
+) -> Option<(&'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
+    let mut path = SmallVec::new();
     let mut current = expr;
     loop {
         match current {
