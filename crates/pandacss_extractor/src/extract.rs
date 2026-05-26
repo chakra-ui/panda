@@ -2,8 +2,9 @@ use crate::calls::collect_calls;
 use crate::jsx::collect_jsx;
 use crate::scope::Resolver;
 use crate::{
-    Diagnostic, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, MatchedImport,
-    VisitorContext, collect_imports, collect_parser_diagnostics, match_import_records,
+    Diagnostic, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, MatchCategory,
+    MatchedImport, VisitorContext, collect_imports, collect_parser_diagnostics,
+    match_import_records,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -57,13 +58,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let matched = match_import_records(&imports, &config.matchers);
 
-    // PERF(port): fast path — no Panda imports and no configured JSX
-    // component names means no extractable calls or JSX. Config recipe /
-    // pattern components are tag-name matched, so they can still be
-    // extracted when imported from user modules.
-    // Parse diagnostics still flow through because they're independent
-    // of Panda usage.
-    if matched.is_empty() && !config.jsx.has_component_matchers() {
+    if should_skip_extraction(&matched, config) {
         drop(extraction_span);
         return ExtractUsage {
             calls: Vec::new(),
@@ -82,8 +77,16 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
     );
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let calls = collect_calls(&parser_return.program, &ctx);
-    let jsx = collect_jsx(&parser_return.program, &ctx);
+    let calls = if should_collect_calls(&matched) {
+        collect_calls(&parser_return.program, &ctx)
+    } else {
+        Vec::new()
+    };
+    let jsx = if should_collect_jsx(&matched, config) {
+        collect_jsx(&parser_return.program, &ctx)
+    } else {
+        Vec::new()
+    };
 
     ExtractUsage {
         calls,
@@ -107,6 +110,16 @@ pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> Extr
     let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let matched = match_import_records(&imports, &config.matchers);
 
+    if should_skip_extraction(&matched, config) {
+        return ExtractDebugResult {
+            imports,
+            matched,
+            calls: Vec::new(),
+            jsx: Vec::new(),
+            diagnostics,
+        };
+    }
+
     let resolver = Resolver::build(
         &parser_return.program,
         &matched,
@@ -117,8 +130,16 @@ pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> Extr
     );
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let calls = collect_calls(&parser_return.program, &ctx);
-    let jsx = collect_jsx(&parser_return.program, &ctx);
+    let calls = if should_collect_calls(&matched) {
+        collect_calls(&parser_return.program, &ctx)
+    } else {
+        Vec::new()
+    };
+    let jsx = if should_collect_jsx(&matched, config) {
+        collect_jsx(&parser_return.program, &ctx)
+    } else {
+        Vec::new()
+    };
 
     ExtractDebugResult {
         imports,
@@ -127,4 +148,19 @@ pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> Extr
         jsx,
         diagnostics,
     }
+}
+
+fn should_collect_calls(matched: &[MatchedImport]) -> bool {
+    !matched.is_empty()
+}
+
+fn should_skip_extraction(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
+    matched.is_empty() && !config.jsx.has_component_matchers()
+}
+
+fn should_collect_jsx(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
+    config.jsx.has_component_matchers()
+        || matched
+            .iter()
+            .any(|import| import.category == MatchCategory::Jsx)
 }

@@ -1,11 +1,13 @@
 //! Tagged template literal folding.
 //!
-//! A tagged template like ``css`color: red` `` is a
-//! `TaggedTemplateExpression` — different AST node from a plain call. We
-//! unwrap the tag and fold the template literal itself, matching the JS
-//! extractor's `isTaggedTemplateExpression` handling. The downstream
-//! consumer interprets the resulting string; the extractor just hands it
-//! back.
+//! A tagged template like ``gql`...` `` is a `TaggedTemplateExpression` —
+//! different AST node from a plain call. As an expression *value* its quasi
+//! folds to a string (tag-agnostic), matching the JS extractor's
+//! `isTaggedTemplateExpression` handling.
+//!
+//! The Panda CSS-in-template forms — ``css`color: red` `` and
+//! ``styled.div`...` `` — are a separate thing: their bodies parse into a
+//! style object and they extract as usages (see `calls.rs` / `jsx.rs`).
 
 mod common;
 
@@ -18,18 +20,17 @@ fn run(source: &str) -> ExtractUsage {
 }
 
 #[test]
-fn tagged_template_in_arg_resolves_to_string() {
-    // Tagged-template-as-statement isn't a Panda call site itself — the
-    // CallExpression visitor only sees real CallExpressions. But the
-    // template's *value* still folds when referenced via an identifier
-    // inside a real css() call.
+fn tagged_template_value_folds_to_string_when_referenced() {
+    // A non-Panda tag (`gql`) used as a value: its quasi folds to a string
+    // (tag-agnostic) when referenced via an identifier inside a real css()
+    // call. Only the outer css() extracts.
     let src = indoc! {r"
         import { css } from '@panda/css';
-        const block = css`color: red; padding: 4px;`;
+        const block = gql`color: red; padding: 4px;`;
         css({ display: block });
     "};
     let calls = run(src).calls;
-    assert_eq!(calls.len(), 1, "outer css() folds via tagged template");
+    assert_eq!(calls.len(), 1, "only the outer css() extracts");
     let lit = calls[0].data[0].as_ref().expect("data present");
     let json = serde_json::to_value(lit).unwrap();
     assert_eq!(json["display"], "color: red; padding: 4px;");
@@ -54,11 +55,16 @@ fn tagged_template_with_identifier_interpolation_folds() {
 }
 
 #[test]
-fn tagged_template_call_site_alone_is_not_a_calls_entry() {
-    // The tag itself isn't a CallExpression; nothing to extract on its own.
+fn css_tagged_template_extracts_as_css_in_template() {
+    // `css`color: red;`` is the css helper as a tagged template — it parses
+    // into a style object and extracts as a css usage (CSS-in-template). The
+    // declaration parsing detail is pinned in `calls.rs`.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const styles = css`color: red;`;
     "};
-    assert_eq!(run(src).calls.len(), 0);
+    let calls = run(src).calls;
+    assert_eq!(calls.len(), 1, "css`...` extracts as CSS-in-template");
+    let json = serde_json::to_value(calls[0].data[0].as_ref().unwrap()).unwrap();
+    assert_eq!(json["color"], "red");
 }

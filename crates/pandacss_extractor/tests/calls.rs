@@ -453,6 +453,29 @@ fn finds_calls_inside_jsx() {
 }
 
 #[test]
+fn finds_panda_call_nested_in_non_panda_call_args() {
+    // Grounded in css-2.test.ts:547 — `cx('card', css({ background: 'white' }),
+    // className)`. `cx` isn't a Panda call, but the visitor descends into its
+    // arguments and still extracts the inner `css()`. Mirrors ts-morph's
+    // exhaustive `getDescendantsOfKind(CallExpression)`.
+    assert_yaml_snapshot!(
+        extract("cx('card', css({ background: 'white' }), className)", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: white
+        span:
+          start: 11
+          end: 39
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
 fn finds_calls_inside_function_body() {
     assert_yaml_snapshot!(
         extract(
@@ -1661,4 +1684,61 @@ fn non_null_assertion_unwraps_through_member_access() {
     );
     let json = serde_json::to_value(&result.calls[0].data[0]).unwrap();
     assert_eq!(json["color"], "red");
+}
+
+// --- CSS-in-template via the `css` helper (`css`...``) ---
+
+#[test]
+fn css_tagged_template_folds_to_style_object() {
+    // `css`background: red; color: blue;`` — the css helper as a tagged
+    // template desugars to a css call; the body parses (via the astish port)
+    // into a kebab-keyed style object. Declarations terminate with `;`, as the
+    // astish regex requires.
+    assert_yaml_snapshot!(
+        extract("css`background: red; color: blue;`", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: red
+            color: blue
+        span:
+          start: 0
+          end: 34
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn css_tagged_template_supports_native_nesting() {
+    assert_yaml_snapshot!(
+        extract(
+            "css`color: red; p { color: blue; } .box & { background-color: red; }`",
+            &[css("css")],
+        )
+        .calls[0]
+            .data,
+        @r#"
+    - color: red
+      "& p":
+        color: blue
+      ".box &":
+        background-color: red
+    "#,
+    );
+}
+
+#[test]
+fn cva_tagged_template_is_not_css_in_template() {
+    // Only `css` qualifies as CSS-in-template; `cva` takes a config object, so
+    // `cva`...`` extracts nothing.
+    let result = extract("cva`color: red`", &[cva("cva")]);
+    assert!(
+        result.calls.is_empty(),
+        "cva`...` must not parse as CSS-in-template: {:#?}",
+        result.calls
+    );
 }

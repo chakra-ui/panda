@@ -3,6 +3,7 @@
 mod calls;
 mod cross_file;
 mod css_property;
+mod css_template;
 mod extract;
 mod generated {
     pub(crate) mod css_properties;

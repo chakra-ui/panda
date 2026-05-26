@@ -78,6 +78,126 @@ fn chained_identifiers_resolve_transitively() {
 }
 
 #[test]
+fn chained_css_raw_spreads_resolve_transitively() {
+    // Grounded in JS `css-raw-spread.test.ts` › "handles spreading across
+    // multiple files": sharedStyles → buttonStyles (spreads shared) → button
+    // (spreads buttonStyles, incl. a nested `_hover` re-spread). Each `css.raw`
+    // const folds and merges through the chain.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const sharedStyles = css.raw({
+          fontFamily: 'sans-serif',
+          lineHeight: 1.5
+        })
+        export const buttonStyles = css.raw({
+          ...sharedStyles,
+          padding: '8px 16px',
+          borderRadius: '4px'
+        })
+        const button = css({
+          ...buttonStyles,
+          backgroundColor: 'blue.500',
+          _hover: {
+            ...buttonStyles,
+            backgroundColor: 'blue.600'
+          }
+        })
+    "};
+    // Assert the final css() call's merged data (the JS fixture's 3rd entry).
+    // Key order is source-insertion order here vs. the JS snapshot's sorted
+    // keys — same keys/values.
+    let calls = run(src).calls;
+    let last = calls.last().expect("final css() call");
+    assert_yaml_snapshot!(last.data, @"
+    - fontFamily: sans-serif
+      lineHeight: 1.5
+      padding: 8px 16px
+      borderRadius: 4px
+      backgroundColor: blue.500
+      _hover:
+        fontFamily: sans-serif
+        lineHeight: 1.5
+        padding: 8px 16px
+        borderRadius: 4px
+        backgroundColor: blue.600
+    ");
+}
+
+#[test]
+fn css_raw_spread_in_cva_base_folds() {
+    // Grounded in JS `css-raw-variants.test.ts` › "spreads css.raw in cva base
+    // styles": the css.raw const spreads into the cva `base` before extraction.
+    let src = indoc! {r"
+        import { css, cva } from '@panda/css';
+        const baseStyles = css.raw({ display: 'flex', alignItems: 'center', gap: '2' });
+        const button = cva({
+          base: { ...baseStyles, padding: '2', borderRadius: 'md' },
+          variants: { size: { sm: { fontSize: 'sm' }, lg: { fontSize: 'lg' } } }
+        });
+    "};
+    let calls = run(src).calls;
+    let recipe = calls.iter().find(|c| c.name == "cva").expect("cva call");
+    assert_yaml_snapshot!(recipe.data, @r#"
+    - base:
+        display: flex
+        alignItems: center
+        gap: "2"
+        padding: "2"
+        borderRadius: md
+      variants:
+        size:
+          sm:
+            fontSize: sm
+          lg:
+            fontSize: lg
+    "#);
+}
+
+#[test]
+fn css_raw_spread_in_arbitrary_selectors_folds() {
+    // Grounded in JS `css-raw-spread.test.ts` › "handles spreading css.raw in
+    // arbitrary selectors": resetStyles spreads at top level and into `& li`,
+    // a nested `&:hover`, and a `[data-selected]` selector object.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const resetStyles = css.raw({ margin: 0, padding: 0, boxSizing: 'border-box' });
+        const listStyles = css({
+          ...resetStyles,
+          listStyle: 'none',
+          '& li': {
+            ...resetStyles,
+            display: 'block',
+            '&:hover': { ...resetStyles, background: 'gray.50' }
+          },
+          '[data-selected]': { ...resetStyles, fontWeight: 'bold' }
+        });
+    "};
+    let calls = run(src).calls;
+    let last = calls.last().expect("final css() call");
+    assert_yaml_snapshot!(last.data, @r#"
+    - margin: 0
+      padding: 0
+      boxSizing: border-box
+      listStyle: none
+      "& li":
+        margin: 0
+        padding: 0
+        boxSizing: border-box
+        display: block
+        "&:hover":
+          margin: 0
+          padding: 0
+          boxSizing: border-box
+          background: gray.50
+      "[data-selected]":
+        margin: 0
+        padding: 0
+        boxSizing: border-box
+        fontWeight: bold
+    "#);
+}
+
+#[test]
 fn let_unmutated_resolves() {
     // `let` is fine for static folding when not reassigned — same call
     // ts-evaluator makes.

@@ -45,6 +45,24 @@ fn sample_tokens() -> TokenDictionary {
             "var(--sizes-sm)",
             TokenCategory::Sizes,
         ))
+        .insert(Token::new(
+            "spacing.4",
+            "1rem",
+            "var(--spacing-4)",
+            TokenCategory::Spacing,
+        ))
+        .insert(Token::new(
+            "colors.primary",
+            "var(--colors-primary)",
+            "var(--colors-primary)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "colors.colorPalette.500",
+            "var(--colors-color-palette-500)",
+            "var(--colors-color-palette-500)",
+            TokenCategory::Colors,
+        ))
         .build()
 }
 
@@ -248,10 +266,9 @@ fn token_folds_inside_template_literal_interpolation() {
         import { css } from '@panda/css';
         css({ border: `1px solid ${token('colors.red.500')}` });
     "#};
-    assert_eq!(
-        css_string_prop(&run_with_tokens(src), "border").as_deref(),
-        Some("1px solid #ef4444"),
-        "token() inside a template literal should fold (JS parity)"
+    assert_yaml_snapshot!(
+        css_string_prop(&run_with_tokens(src), "border"),
+        @r#""1px solid #ef4444""#
     );
 }
 
@@ -262,10 +279,9 @@ fn multiple_token_calls_in_one_template_fold() {
         import { css } from '@panda/css';
         css({ font: `${token('sizes.sm')} / ${token('colors.red.500')}` });
     "#};
-    assert_eq!(
-        css_string_prop(&run_with_tokens(src), "font").as_deref(),
-        Some("4px / #ef4444"),
-        "every token() call in one template literal should fold"
+    assert_yaml_snapshot!(
+        css_string_prop(&run_with_tokens(src), "font"),
+        @r#""4px / #ef4444""#
     );
 }
 
@@ -279,9 +295,83 @@ fn known_token_ignores_fallback_argument() {
         import { css } from '@panda/css';
         css({ color: token('colors.red.500', '#000') });
     "};
-    assert_eq!(
-        css_string_prop(&run_with_tokens(src), "color").as_deref(),
-        Some("#ef4444"),
-        "a known token path must ignore the fallback arg"
+    assert_yaml_snapshot!(css_string_prop(&run_with_tokens(src), "color"), @r##""#ef4444""##);
+}
+
+#[test]
+fn token_var_known_path_ignores_fallback_argument() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({
+          color: token.var('colors.red.500', 'var(--ignored)'),
+          margin: token.var('spacing.4', 'var(--also-ignored)')
+        });
+    "};
+    assert_yaml_snapshot!(
+        run_with_tokens(src)
+            .calls
+            .iter()
+            .find(|c| c.name == "css")
+            .expect("css call")
+            .data,
+        @r#"
+    - color: var(--colors-red-500)
+      margin: var(--spacing-4)
+    "#
     );
+}
+
+#[test]
+fn semantic_token_like_value_resolves_to_css_variable() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token('colors.primary') });
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: var(--colors-primary)
+      span:
+        start: 73
+        end: 112
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.primary
+      span:
+        start: 86
+        end: 109
+    "#);
+}
+
+#[test]
+fn color_palette_token_like_value_resolves_to_css_variable() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token('colors.colorPalette.500') });
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: var(--colors-color-palette-500)
+      span:
+        start: 73
+        end: 121
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.colorPalette.500
+      span:
+        start: 86
+        end: 118
+    "#);
 }

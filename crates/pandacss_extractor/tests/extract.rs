@@ -1,9 +1,9 @@
 mod common;
 
-use common::panda_config;
+use common::{panda_config, panda_config_with_jsx};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{extract, extract_debug};
+use pandacss_extractor::{JsxExtractionConfig, extract, extract_debug};
 
 #[test]
 fn single_pass_extract_combines_calls_and_jsx() {
@@ -181,6 +181,68 @@ fn extract_surfaces_parse_errors_even_with_no_panda_imports() {
 }
 
 #[test]
+fn extract_debug_skips_work_but_keeps_unmatched_imports() {
+    assert_yaml_snapshot!(
+        extract_debug(
+            indoc! {r#"
+                import { useState } from "react"
+                const value = useState(0)
+            "#},
+            "fixture.tsx",
+            &panda_config(),
+        ),
+        @r#"
+    imports:
+      - module: react
+        kind: value
+        typeOnly: false
+        specifiers:
+          - kind: named
+            imported: useState
+            local: useState
+            typeOnly: false
+            span:
+              start: 9
+              end: 17
+        span:
+          start: 0
+          end: 32
+    matched: []
+    calls: []
+    jsx: []
+    diagnostics: []
+    "#
+    );
+}
+
+#[test]
+fn configured_jsx_components_still_extract_without_imports() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.component_names.insert("Card".into());
+
+    assert_yaml_snapshot!(
+        extract(
+            "<Card color='red' onClick={handler} />",
+            "fixture.tsx",
+            &panda_config_with_jsx(jsx),
+        ),
+        @r#"
+    calls: []
+    jsx:
+      - category: jsx
+        name: Card
+        alias: Card
+        data:
+          color: red
+        span:
+          start: 0
+          end: 38
+    diagnostics: []
+    "#
+    );
+}
+
+#[test]
 fn extract_surfaces_parse_errors() {
     let result = extract_debug("import { css } from", "fixture.tsx", &panda_config());
     assert!(result.calls.is_empty());
@@ -216,10 +278,7 @@ fn parse_error_contract_diagnostics_and_partial_extractions() {
         !result.diagnostics.is_empty(),
         "parse error must surface as a diagnostic"
     );
-    assert_eq!(
-        result.diagnostics[0].severity,
-        pandacss_extractor::DiagnosticSeverity::Error,
-    );
+    assert_yaml_snapshot!(result.diagnostics[0].severity, @"error");
     // No assertion on `result.calls` — Oxc's recovery may or may not
     // expose the pre-error css() call depending on parser behaviour.
     // The point is that the API doesn't crash and surfaces the error.

@@ -549,7 +549,7 @@ fn conditional_from_branches(
     Some(Literal::Conditional(vec![left, right]))
 }
 
-fn template_literal_to_literal(
+pub(crate) fn template_literal_to_literal(
     t: &TemplateLiteral<'_>,
     resolver: Option<&Resolver<'_>>,
 ) -> Option<Literal> {
