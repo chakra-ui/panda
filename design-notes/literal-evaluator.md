@@ -39,7 +39,8 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 | Form                                                                                                                                        | Notes                                                                                                                |
 | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | String / number / boolean / null literals                                                                                                   | Primitive cases.                                                                                                     |
-| `ObjectExpression` / `ArrayExpression`                                                                                                      | Including spreads when the source resolves to a matching literal.                                                    |
+| `ObjectExpression`                                                                                                                          | Lenient per-member: an unresolvable property (dynamic value, computed key, getter/method) or spread is _skipped_, keeping the static siblings — `css({ color: 'red', w: props.w })` still folds `color`. Drops to `None` only when **every** member is unresolvable, so a fully-dynamic object emits no phantom style. |
+| `ArrayExpression`                                                                                                                           | Strict: an unresolvable element or spread drops the whole array. Responsive arrays are position-sensitive (`[base, sm, md]`), so a partial array would silently shift breakpoints — better to skip the whole property at the object level. |
 | `ParenthesizedExpression`, `TSAsExpression`, `TSSatisfiesExpression`, `TSNonNullExpression`, `TSTypeAssertion`, `TSInstantiationExpression` | Syntactic no-ops — recurse on the inner expression.                                                                  |
 | `UnaryExpression`                                                                                                                           | `+`, `-`, `!`, `~`. Skips `typeof`, `void`, `delete`.                                                                |
 | `BinaryExpression`                                                                                                                          | Arithmetic, comparison, equality. JS `+` keeps the string-vs-number split.                                           |
@@ -62,6 +63,9 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 - `let` / `var` after any mutation.
 - Function parameters without a `TSTypeLiteral` annotation.
 - Conditional / logical operators where _neither_ side folds.
+- Objects where _every_ member is unresolvable (a partially-static object keeps the static members; see the lenient
+  `ObjectExpression` rule above — this matches the JS extractor, e.g. `sva({ slots: [...anatomy.keys()], base })` keeps
+  `base` and infers slots).
 - Calls other than `token()` / `token.var()` and configured Panda `.raw()` helpers.
 - BigInt, template literal types, unary-prefixed type literals.
 - Anything we don't recognize yet (`typeof`, `Object.keys`, enums whose declaration site isn't a `VariableDeclarator`,

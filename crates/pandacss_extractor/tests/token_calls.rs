@@ -12,8 +12,22 @@ use insta::assert_yaml_snapshot;
 mod common;
 
 use common::{panda_config, panda_config_with_token_dictionary};
-use pandacss_extractor::{ExtractUsage, TokenDictionary, extract};
+use pandacss_extractor::{ExtractUsage, Literal, TokenDictionary, extract};
 use pandacss_tokens::{Token, TokenCategory};
+
+/// Pull a string-valued property out of the first `css({...})` argument.
+/// Returns `None` if the `css` call dropped, the arg isn't an object, or the
+/// property isn't a folded string — so a divergence fails the assertion.
+fn css_string_prop(usage: &ExtractUsage, prop: &str) -> Option<String> {
+    let css = usage.calls.iter().find(|c| c.name == "css")?;
+    let Some(Literal::Object(entries)) = css.data.first().and_then(Option::as_ref) else {
+        return None;
+    };
+    entries.iter().find_map(|(key, value)| match value {
+        Literal::String(text) if key == prop => Some(text.clone()),
+        _ => None,
+    })
+}
 
 /// A small token dictionary mirroring what the Panda runtime would emit
 /// for a tiny theme.
@@ -222,4 +236,52 @@ fn token_path_from_identifier_resolves() {
         start: 117
         end: 128
     "##);
+}
+
+#[test]
+fn token_folds_inside_template_literal_interpolation() {
+    // `border: `1px solid ${token('colors.red.500')}`` — the token() call inside
+    // the template interpolation folds and the whole literal concatenates,
+    // matching the JS extractor's token-in-template handling.
+    let src = indoc! {r#"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ border: `1px solid ${token('colors.red.500')}` });
+    "#};
+    assert_eq!(
+        css_string_prop(&run_with_tokens(src), "border").as_deref(),
+        Some("1px solid #ef4444"),
+        "token() inside a template literal should fold (JS parity)"
+    );
+}
+
+#[test]
+fn multiple_token_calls_in_one_template_fold() {
+    let src = indoc! {r#"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ font: `${token('sizes.sm')} / ${token('colors.red.500')}` });
+    "#};
+    assert_eq!(
+        css_string_prop(&run_with_tokens(src), "font").as_deref(),
+        Some("4px / #ef4444"),
+        "every token() call in one template literal should fold"
+    );
+}
+
+#[test]
+fn known_token_ignores_fallback_argument() {
+    // `token('colors.red.500', '#000')` with a *known* path resolves to the
+    // dictionary value; the fallback is ignored (JS parity — fallback only
+    // kicks in for unknown paths).
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token('colors.red.500', '#000') });
+    "};
+    assert_eq!(
+        css_string_prop(&run_with_tokens(src), "color").as_deref(),
+        Some("#ef4444"),
+        "a known token path must ignore the fallback arg"
+    );
 }

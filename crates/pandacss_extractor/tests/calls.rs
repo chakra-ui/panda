@@ -412,10 +412,20 @@ fn keeps_no_arg_recipe_calls() {
 }
 
 #[test]
-fn rejects_spread_in_object() {
-    // Spread requires static evaluation; skip until Phase 5.
+fn unresolvable_spread_is_skipped_keeping_static_props() {
+    // `...base` can't fold (unresolvable identifier, no resolver in this stage
+    // harness), so the spread is skipped and the static `color` still extracts —
+    // lenient per-member folding, matching the JS extractor.
     assert_yaml_snapshot!(extract("css({ ...base, color: 'red' })", &[css("css")]), @"
-    calls: []
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 30
     diagnostics: []
     ");
 }
@@ -1419,6 +1429,135 @@ fn merge_two_inline_object_spreads_second_wins() {
         span:
           start: 0
           end: 81
+    diagnostics: []
+    ",
+    );
+}
+
+// --- raw spread composition (JS `css-raw-edge-cases` parity) ---
+
+#[test]
+fn raw_inside_raw_folds() {
+    // `css.raw` spread into another `css.raw`, then extended — both raw
+    // helpers fold and merge in source order.
+    assert_yaml_snapshot!(
+        extract(
+            "css.raw({ ...css.raw({ color: 'red' }), fontSize: 'lg' })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+            fontSize: lg
+        span:
+          start: 0
+          end: 57
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 13
+          end: 38
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn multiple_raw_spreads_in_one_object_merge() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...css.raw({ color: 'red' }), ...css.raw({ background: 'blue' }) })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+            background: blue
+        span:
+          start: 0
+          end: 73
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 9
+          end: 34
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: blue
+        span:
+          start: 39
+          end: 70
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn raw_spread_inside_nested_selector() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ '& > div': { ...css.raw({ color: 'red' }) } })",
+            &[css("css")],
+        ),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - "& > div":
+              color: red
+        span:
+          start: 0
+          end: 52
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 22
+          end: 47
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn conditional_spread_with_literal_test_folds_branch() {
+    // `...(false ? {...} : {...})` — the literal test picks the else branch,
+    // then the resulting object spreads in.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...(false ? { color: 'red' } : { background: 'blue' }) })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: blue
+        span:
+          start: 0
+          end: 63
     diagnostics: []
     ",
     );
