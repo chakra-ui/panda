@@ -34,8 +34,7 @@ import type * as bindingTypes from '../../packages/compiler/src/index.ts'
 // The binding's source is CJS-style (uses `require()` for the native node
 // addon) and the bench package is `"type": "module"`. tsx wraps the CJS
 // module under `default`, so destructure from there.
-type RustMatchers = bindingTypes.Matchers
-const RustExtractor = (bindingDefault as unknown as typeof bindingTypes).Extractor
+const { createCompiler } = bindingDefault as unknown as typeof bindingTypes
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 
@@ -71,29 +70,22 @@ function pct(numerator: number, denominator: number): string {
   return `${(numerator / denominator).toFixed(2)}×`
 }
 
-/// Hardcoded matchers for the Rust binding, broad enough to match every
-/// sandbox project that uses Panda's default codegen layout. `modules` is
-/// substring-matched so `'styled-system/css'` catches `../styled-system/css`,
-/// `~/styled-system/css`, etc.
-const rustMatchers: RustMatchers = {
-  css: {
-    modules: ['styled-system/css'],
-    names: ['css', 'cva', 'sva', 'cx'],
+/// Config for the Rust compiler, with an import map broad enough to match
+/// every sandbox project that uses Panda's default codegen layout. `modules`
+/// are substring-matched so `'styled-system/css'` catches `../styled-system/css`,
+/// `~/styled-system/css`, etc. `createCompiler` derives the matchers + token
+/// dictionary from this config (one-time setup cost).
+const rustConfig = {
+  cwd: repoRoot,
+  outdir: 'styled-system',
+  importMap: {
+    css: ['styled-system/css'],
+    recipe: ['styled-system/recipes'],
+    pattern: ['styled-system/patterns'],
+    jsx: ['styled-system/jsx'],
+    tokens: ['styled-system/tokens'],
   },
-  recipe: {
-    modules: ['styled-system/recipes'],
-  },
-  pattern: {
-    modules: ['styled-system/patterns'],
-  },
-  jsx: {
-    modules: ['styled-system/jsx'],
-    names: ['panda', 'styled', 'Box'],
-  },
-  tokens: {
-    modules: ['styled-system/tokens'],
-    names: ['token'],
-  },
+  jsxFactory: 'styled',
 }
 
 interface Source {
@@ -236,7 +228,7 @@ async function main() {
   const jsSetupMs = performance.now() - jsSetupStart
 
   const rustSetupStart = performance.now()
-  const rustExtractor = new RustExtractor(rustMatchers)
+  const rustExtractor = createCompiler(rustConfig)
   void rustExtractor.extract(largest.source, largest.path)
   const rustSetupMs = performance.now() - rustSetupStart
 
@@ -249,7 +241,7 @@ async function main() {
   }
   const jsColdMs = performance.now() - jsColdStart
 
-  const freshRustExtractor = new RustExtractor(rustMatchers)
+  const freshRustExtractor = createCompiler(rustConfig)
   const rustColdStart = performance.now()
   for (const { source, path } of sources) {
     freshRustExtractor.extract(source, path)

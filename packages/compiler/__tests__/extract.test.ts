@@ -1,13 +1,8 @@
 import { describe, expect, test } from 'vitest'
-import { extract, extractDebug, type Matchers } from '../src'
+import { getBindingInfo } from '../src'
+import { createProject } from './test-utils'
 
-const matchers: Matchers = {
-  css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
-  recipe: { modules: ['@panda/recipes'] },
-  pattern: { modules: ['@panda/patterns'] },
-  jsx: { modules: ['@panda/jsx'], names: ['styled', 'Box'] },
-  tokens: { modules: ['@panda/tokens'], names: ['token'] },
-}
+const compiler = createProject()
 
 const source = [
   "import { css } from '@panda/css'",
@@ -16,9 +11,17 @@ const source = [
   "const el = <Box fontSize='lg' />",
 ].join('\n')
 
-describe('extract (lean)', () => {
-  test('returns only calls + jsx + diagnostics', () => {
-    const result = extract(source, 'fixture.tsx', matchers)
+describe('compiler.extract', () => {
+  test('native binding is loaded', () => {
+    expect(getBindingInfo()).toMatchInlineSnapshot(`
+      {
+        "native": true,
+      }
+    `)
+  })
+
+  test('returns calls + jsx + diagnostics', () => {
+    const result = compiler.extract(source, 'fixture.tsx')
     expect(Object.keys(result).sort()).toMatchInlineSnapshot(`
       [
         "calls",
@@ -41,40 +44,27 @@ describe('extract (lean)', () => {
     `)
   })
 
+  test('is stateless — extract does not register into the compiler', () => {
+    const peek = createProject()
+    peek.extract(source, 'fixture.tsx')
+    expect(peek.isEmpty()).toBe(true)
+  })
+
   test('surfaces parse errors with no extractions', () => {
-    const result = extract('import { css } from', 'fixture.tsx', matchers)
+    const result = compiler.extract('import { css } from', 'fixture.tsx')
     expect(result.calls).toEqual([])
     expect(result.jsx).toEqual([])
     expect(result.diagnostics).toHaveLength(1)
     expect(result.diagnostics[0].severity).toBe('error')
   })
-})
 
-describe('extractDebug', () => {
-  test('returns full kitchen sink including imports + matched', () => {
-    const result = extractDebug(source, 'fixture.tsx', matchers)
-    expect({
-      importModules: result.imports.map((i) => i.module),
-      matchedNames: result.matched.map((m) => `${m.category}:${m.name}`),
-      callNames: result.calls.map((c) => c.name),
-      jsxNames: result.jsx.map((j) => j.name),
-    }).toMatchInlineSnapshot(`
-      {
-        "importModules": [
-          "@panda/css",
-          "@panda/jsx",
-        ],
-        "matchedNames": [
-          "css:css",
-          "jsx:Box",
-        ],
-        "callNames": [
-          "css",
-        ],
-        "jsxNames": [
-          "Box",
-        ],
-      }
-    `)
+  test('diagnostics carry byte spans and line/column location', () => {
+    // Parse error on the second line — confirm the diagnostic surfaces both
+    // the byte span and the human-readable line/column.
+    const src = ["import { css } from '@panda/css';", 'const x = ;'].join('\n')
+    const [diag] = compiler.extract(src, 'fixture.tsx').diagnostics
+    expect(diag.severity).toBe('error')
+    expect(diag.span).toBeDefined()
+    expect(diag.location?.start.line).toBe(2)
   })
 })

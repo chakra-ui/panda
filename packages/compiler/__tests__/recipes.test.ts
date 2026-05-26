@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Project } from '../src'
+import { createCompiler } from '../src'
 import { createProject, importMap } from './test-utils'
 
-describe('Project recipes', () => {
+describe('Compiler recipes', () => {
   it('records cva recipes', () => {
-    const project = createProject()
-    project.parseFile(
+    const compiler = createProject()
+    compiler.parseFile(
       '/Button.tsx',
       `import { cva } from '@panda/css'
        export const button = cva({
@@ -14,7 +14,7 @@ describe('Project recipes', () => {
          defaultVariants: { size: 'sm' },
        })`,
     )
-    const recipes = project.recipes()
+    const recipes = compiler.recipes()
     expect(recipes).toHaveLength(1)
     expect(recipes[0].file).toBe('/Button.tsx')
     expect(recipes[0].spanStart).toBeGreaterThan(0)
@@ -53,7 +53,7 @@ describe('Project recipes', () => {
   })
 
   it('tracks config recipes and slot recipes', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -79,7 +79,7 @@ describe('Project recipes', () => {
       { crossFile: false },
     )
 
-    expect(project.summary()).toMatchInlineSnapshot(`
+    expect(compiler.summary()).toMatchInlineSnapshot(`
       {
         "filesProcessed": 0,
         "atomCount": 0,
@@ -87,15 +87,15 @@ describe('Project recipes', () => {
         "slotRecipeCount": 1,
       }
     `)
-    expect(project.recipes().map(({ file }) => file)).toEqual(['theme.recipes.button'])
-    expect(project.slotRecipes().map(({ file }) => file)).toEqual(['theme.slotRecipes.card'])
+    expect(compiler.recipes().map(({ file }) => file)).toEqual(['theme.recipes.button'])
+    expect(compiler.slotRecipes().map(({ file }) => file)).toEqual(['theme.slotRecipes.card'])
 
-    project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
-    project.clear()
-    expect(project.summary().recipeCount).toBe(1)
-    expect(project.summary().slotRecipeCount).toBe(1)
-    expect(project.atoms()).toEqual([])
-    expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
+    compiler.clear()
+    expect(compiler.summary().recipeCount).toBe(1)
+    expect(compiler.summary().slotRecipeCount).toBe(1)
+    expect(compiler.atoms()).toEqual([])
+    expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
       {
         "base": [],
         "variants": [],
@@ -105,7 +105,7 @@ describe('Project recipes', () => {
   })
 
   it('splits config recipe component props from style props', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -134,7 +134,7 @@ describe('Project recipes', () => {
       { crossFile: false },
     )
 
-    const report = project.parseFile(
+    const report = compiler.parseFile(
       '/Button.tsx',
       `import { Action, Tabs, TabsRoot } from './components'
        const el = <>
@@ -145,7 +145,7 @@ describe('Project recipes', () => {
     )
 
     expect(report.jsxUsages).toBe(3)
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "color",
@@ -164,7 +164,7 @@ describe('Project recipes', () => {
         },
       ]
     `)
-    expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+    expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
       {
         "base": [
           {
@@ -212,7 +212,7 @@ describe('Project recipes', () => {
   })
 
   it('tracks config recipe function calls', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -239,7 +239,7 @@ describe('Project recipes', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/recipes.ts',
       `import { button } from '@panda/recipes'
        import * as recipes from '@panda/recipes'
@@ -247,8 +247,8 @@ describe('Project recipes', () => {
        recipes.tabs({ size: 'sm', margin: '8px' })`,
     )
 
-    expect(project.atoms()).toEqual([])
-    expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toEqual([])
+    expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
       {
         "base": [
           {
@@ -296,7 +296,7 @@ describe('Project recipes', () => {
   })
 
   it('tracks conditional config recipe variants', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -320,13 +320,13 @@ describe('Project recipes', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/recipes.ts',
       `import { button } from '@panda/recipes'
        button({ size: { base: 'sm', md: 'md' } })`,
     )
 
-    expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+    expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
       {
         "base": [],
         "variants": [

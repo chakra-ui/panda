@@ -1,21 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import { extractJsx, matchImports, scanImports, type Matchers } from '../src'
+import { createProject } from './test-utils'
 
-const matchers: Matchers = {
-  css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
-  recipe: { modules: ['@panda/recipes'] },
-  pattern: { modules: ['@panda/patterns'] },
-  jsx: { modules: ['@panda/jsx'], names: ['styled', 'Box', 'Stack', 'Grid'] },
-  tokens: { modules: ['@panda/tokens'], names: ['token'] },
-}
+const compiler = createProject()
 
 function pipeline(source: string) {
-  const scan = scanImports(source, 'fixture.tsx')
-  const matched = matchImports(scan, matchers)
-  return extractJsx(source, 'fixture.tsx', matched, matchers)
+  return compiler.extract(source, 'fixture.tsx')
 }
 
-describe('extractJsx', () => {
+describe('compiler.extract → jsx', () => {
   test('styled factory member: <styled.div color="red" />', () => {
     const source = "import { styled } from '@panda/jsx';\n<styled.div color='red' fontSize='lg' />"
     expect(pipeline(source).jsx).toMatchInlineSnapshot(`
@@ -57,8 +49,11 @@ describe('extractJsx', () => {
     `)
   })
 
-  test('namespace chain: <JSX.styled.div /> and <JSX.Stack />', () => {
+  test('namespace chain: <JSX.styled.div /> (config-unknown <JSX.Stack /> filtered)', () => {
     // Wrapped in fragment because adjacent self-closing JSX confuses ASI.
+    // `<JSX.Stack />` is not a configured component, so config-aware
+    // extraction drops it (the raw namespace-chain mechanics live in the
+    // Rust `jsx.rs` parity tests).
     const source = [
       "import * as JSX from '@panda/jsx'",
       '<>',
@@ -80,18 +75,6 @@ describe('extractJsx', () => {
             "end": 69,
           },
         },
-        {
-          "category": "jsx",
-          "name": "Stack",
-          "alias": "JSX",
-          "data": {
-            "color": "blue",
-          },
-          "span": {
-            "start": 72,
-            "end": 98,
-          },
-        },
       ]
     `)
   })
@@ -105,11 +88,13 @@ describe('extractJsx', () => {
     `)
   })
 
-  test('boolean shorthand + literal object spread merge', () => {
+  test('literal object spread merges into props (config-unknown boolean prop filtered)', () => {
+    // The spread `{ color: 'red' }` merges in; `rounded` is not a known
+    // style prop in this config so config-aware extraction drops it (raw
+    // boolean-shorthand handling is covered by the Rust `jsx.rs` tests).
     const source = "import { Box } from '@panda/jsx';\n<Box rounded {...{ color: 'red' }} fontSize='lg' />"
     expect(pipeline(source).jsx[0].data).toMatchInlineSnapshot(`
       {
-        "rounded": true,
         "color": "red",
         "fontSize": "lg",
       }

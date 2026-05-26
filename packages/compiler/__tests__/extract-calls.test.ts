@@ -1,21 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { extractCalls, matchImports, scanImports, type Matchers } from '../src'
+import { createProject } from './test-utils'
 
-const matchers: Matchers = {
-  css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
-  recipe: { modules: ['@panda/recipes'] },
-  pattern: { modules: ['@panda/patterns'] },
-  jsx: { modules: ['@panda/jsx'], names: ['styled', 'Box'] },
-  tokens: { modules: ['@panda/tokens'], names: ['token'] },
-}
+const compiler = createProject()
 
 function pipeline(source: string) {
-  const scan = scanImports(source, 'fixture.tsx')
-  const matched = matchImports(scan, matchers)
-  return extractCalls(source, 'fixture.tsx', matched, matchers)
+  const { calls, diagnostics } = compiler.extract(source, 'fixture.tsx')
+  return { calls, diagnostics }
 }
 
-describe('extractCalls', () => {
+describe('compiler.extract → calls', () => {
   test('full pipeline: scan → match → extract', () => {
     const source = [
       "import { css as nCss } from '@panda/css'",

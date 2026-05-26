@@ -5,9 +5,9 @@
  * - `./pkg-node/*` — CommonJS, for Node / Vitest / SSR.
  * - `./pkg-web/*` — ESM with `fetch`-based init, for browser playgrounds.
  *
- * Consumers in Node should `import { createExtractor } from '@pandacss/compiler-wasm'`.
- * Browser consumers should call `init()` first (returns a promise), then construct
- * a `WasmFileSystem` + `WasmExtractor`.
+ * Consumers should `import { createCompiler } from '@pandacss/compiler-wasm'`.
+ * It loads the wasm module, returns `{ fs, compiler }`, and the compiler
+ * exposes `extract` / `parseFile` / `atoms` / … just like the native binding.
  */
 
 import type {
@@ -37,6 +37,8 @@ export type {
 export type WasmFileSystem = WasmFileSystemClass
 export type WasmExtractor = WasmExtractorClass
 export type WasmProject = WasmProjectClass
+export type WasmCompiler = WasmProjectClass
+export type CompilerOptions = WasmProjectOptions
 
 export interface GlobOptions {
   include: string[]
@@ -71,7 +73,7 @@ export interface Diagnostic {
   }
 }
 
-export interface ExtractUsage {
+export interface ExtractResult {
   calls: ExtractedCall[]
   jsx: ExtractedJsx[]
   diagnostics: Diagnostic[]
@@ -108,58 +110,23 @@ export async function loadWasm(): Promise<WasmModule> {
 let cached: WasmModule | null = null
 
 /**
- * Convenience factory: load wasm, create an FS, create an extractor.
- * Most Node-side callers want this; advanced callers can call `loadWasm()`
- * and construct the classes themselves.
+ * Build a compiler from a config (or `WasmConfigSnapshot`). Returns the shared
+ * `WasmFileSystem` too — populate it (`fs.addFile(...)`) so cross-file imports
+ * fold during extraction.
  */
-export async function createExtractor(matchers: import('./types').MatchersInput): Promise<{
-  fs: WasmFileSystem
-  extractor: WasmExtractor
-}> {
-  const { WasmFileSystem: FS, WasmExtractor: EX } = await loadWasm()
-  const fs = new FS()
-  const extractor = new EX(fs, matchers as unknown)
-  return { fs, extractor }
-}
-
-/**
- * Convenience factory for the stateful `WasmProject`. Holds a per-file
- * atom registry; cross-file resolution shares the returned FS handle.
- */
-export async function createProject(
-  matchers: import('./types').MatchersInput,
-  options?: WasmProjectOptions,
-): Promise<{ fs: WasmFileSystem; project: WasmProject }> {
-  const { WasmFileSystem: FS, WasmProject: P } = await loadWasm()
-  const fs = new FS()
-  const callbacks = options?.callbacks ?? {}
-  const tokenDictionary = options?.tokenDictionary ?? matchers.tokenDictionary
-  if (options?.config) assertProjectCallbacks(options.config, callbacks)
-  const config = options?.config ? resolveUtilityValueCallbacks(options.config, callbacks, tokenDictionary) : undefined
-  const nativeOptions = stripProjectCallbacks({ ...options, config })
-  const project = new P(fs, matchers as unknown, nativeOptions)
-  registerCallbacks(project, callbacks, tokenDictionary)
-  return { fs, project }
-}
-
-/**
- * Convenience factory for config-derived projects. This mirrors
- * `@pandacss/compiler`'s `Project.fromConfig` path so callers don't have to
- * construct matchers by hand.
- */
-export async function createProjectFromConfig(
+export async function createCompiler(
   configOrSnapshot: Record<string, unknown> | WasmConfigSnapshot,
-  options?: WasmProjectOptions,
-): Promise<{ fs: WasmFileSystem; project: WasmProject }> {
+  options?: CompilerOptions,
+): Promise<{ fs: WasmFileSystem; compiler: WasmCompiler }> {
   const { WasmFileSystem: FS, WasmProject: P } = await loadWasm()
   const fs = new FS()
   const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
   const nativeOptions = stripProjectCallbacks(options)
   assertProjectCallbacks(config, callbacks)
   const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, options?.tokenDictionary)
-  const project = P.fromConfig(fs, resolvedConfig, nativeOptions)
-  registerCallbacks(project, callbacks, options?.tokenDictionary)
-  return { fs, project }
+  const compiler = P.fromConfig(fs, resolvedConfig, nativeOptions)
+  registerCallbacks(compiler, callbacks, options?.tokenDictionary)
+  return { fs, compiler }
 }
 
 function stripProjectCallbacks(options: WasmProjectOptions | undefined): WasmProjectOptions | undefined {

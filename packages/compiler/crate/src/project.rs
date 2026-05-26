@@ -10,7 +10,8 @@ use std::collections::HashMap;
 
 use crate::Diagnostic;
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
-use crate::convert::{convert_diagnostic, to_atoms};
+use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
+use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
 use pandacss_config::{CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
@@ -204,6 +205,29 @@ impl Project {
         };
         crate::flush_tracing();
         report
+    }
+
+    /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
+    /// using the project's configured matchers + token dictionary. Unlike
+    /// `parseFile`, it registers nothing; it's the read-only peek companion.
+    #[napi]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn extract(&self, source: String, path: String) -> ExtractResult {
+        crate::init_tracing();
+        let result = self.inner.extract(&source, &path);
+        ExtractResult {
+            calls: result.calls.into_iter().map(to_call).collect(),
+            jsx: result.jsx.into_iter().map(to_jsx).collect(),
+            diagnostics: result
+                .diagnostics
+                .into_iter()
+                .map(convert_diagnostic)
+                .collect(),
+        }
     }
 
     /// Re-parse a path *only if* it is already known to the project.

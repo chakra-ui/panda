@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { Project } from '../src'
+import { createCompiler } from '../src'
 import type { PatternHelpers } from '../src'
 import { importMap } from './test-utils'
 
-describe('Project callbacks', () => {
+describe('Compiler callbacks', () => {
   it('applies js-backed utility transform callbacks from a config bundle', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -32,13 +32,13 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px', color: 'red' })`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "color",
@@ -60,7 +60,7 @@ describe('Project callbacks', () => {
   })
 
   it('passes token helpers to utility transform callbacks', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -98,13 +98,13 @@ describe('Project callbacks', () => {
       },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ tint: 'red.500/50' })`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "--raw",
@@ -131,7 +131,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies utility transform callbacks to encoded config recipes', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -180,7 +180,7 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/recipes.ts',
       `import { button } from '@panda/recipes'
        import * as recipes from '@panda/recipes'
@@ -188,8 +188,8 @@ describe('Project callbacks', () => {
        recipes.tabs({ size: 'sm' })`,
     )
 
-    expect(project.atoms()).toEqual([])
-    expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toEqual([])
+    expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
       {
         "base": [
           {
@@ -252,7 +252,7 @@ describe('Project callbacks', () => {
   })
 
   it('resolves utility values callbacks from a config bundle', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -288,13 +288,13 @@ describe('Project callbacks', () => {
       },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ space: '4', _hover: { space: 'compact' } })`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "space",
@@ -314,7 +314,7 @@ describe('Project callbacks', () => {
 
   it('throws when serialized callback refs are missing callbacks', () => {
     expect(() =>
-      Project.fromConfig(
+      createCompiler(
         {
           config: {
             cwd: '/virtual',
@@ -337,7 +337,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies utility transform callbacks under conditions', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -367,13 +367,13 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ _hover: { size: '4px' } })`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "height",
@@ -394,7 +394,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies utility transform callbacks from JSX props', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -421,13 +421,13 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Card.tsx',
       `import { Box } from '@panda/jsx'
        const el = <Box size="4px" />`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "height",
@@ -445,7 +445,7 @@ describe('Project callbacks', () => {
 
   it('caches utility transform callback results', () => {
     let calls = 0
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -472,20 +472,20 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px', _hover: { size: '4px' } })`,
     )
 
-    project.atoms()
-    project.atoms()
+    compiler.atoms()
+    compiler.atoms()
     expect(calls).toBe(1)
   })
 
   it('shares utility transform cache between atoms and encoded recipes', () => {
     let calls = 0
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -519,7 +519,7 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        import { button } from '@panda/recipes'
@@ -527,13 +527,13 @@ describe('Project callbacks', () => {
        button()`,
     )
 
-    project.atoms()
-    project.encodedRecipes()
+    compiler.atoms()
+    compiler.encodedRecipes()
     expect(calls).toBe(1)
   })
 
   it('applies pattern transform callbacks before encoding', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -575,7 +575,7 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -583,7 +583,7 @@ describe('Project callbacks', () => {
        const el = <Stack gap="var(--gap)" />`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",
@@ -612,7 +612,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies pattern transform callbacks from pattern function calls', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -646,13 +646,13 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: { base: '4px', _hover: '8px' } })`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",
@@ -681,7 +681,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies pattern transform callbacks from JSX pattern components', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -713,13 +713,13 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.tsx',
       `import { Stack } from '@panda/jsx'
        const el = <Stack gap="4px" />`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",
@@ -742,7 +742,7 @@ describe('Project callbacks', () => {
 
   it('caches pattern transform callback results across function calls and JSX components', () => {
     let calls = 0
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -776,7 +776,7 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -786,7 +786,7 @@ describe('Project callbacks', () => {
     )
 
     expect(calls).toBe(1)
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",
@@ -804,7 +804,7 @@ describe('Project callbacks', () => {
 
   it('does not cache thrown pattern transform callbacks', () => {
     let calls = 0
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -838,19 +838,19 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: '4px' })`,
     )
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: '4px' })`,
     )
 
     expect(calls).toBe(2)
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",
@@ -867,7 +867,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies object defaultValues before pattern transform callbacks', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -901,7 +901,7 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -909,7 +909,7 @@ describe('Project callbacks', () => {
        const el = <Stack />`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",
@@ -926,7 +926,7 @@ describe('Project callbacks', () => {
   })
 
   it('applies function defaultValues before pattern transform callbacks', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         config: {
           cwd: '/virtual',
@@ -966,7 +966,7 @@ describe('Project callbacks', () => {
       { crossFile: false },
     )
 
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -974,7 +974,7 @@ describe('Project callbacks', () => {
        const el = <Stack gap="8px" />`,
     )
 
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "display",

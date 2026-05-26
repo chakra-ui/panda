@@ -131,6 +131,7 @@ export declare class WasmProject {
   constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
   static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
   config(): Record<string, unknown> | null
+  extract(source: string, path: string): unknown
   parseFile(path: string, source: string): ParseFileReport
   refreshFile(path: string, source: string): boolean
   removeFile(path: string): boolean

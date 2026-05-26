@@ -4,8 +4,7 @@ import type * as bindingTypes from '../../packages/compiler/src/index.ts'
 import * as extractor from '../../packages/extractor/src/index.ts'
 import { Project, ts } from 'ts-morph'
 
-type RustMatchers = bindingTypes.Matchers
-const RustExtractor = (bindingDefault as unknown as typeof bindingTypes).Extractor
+const { createCompiler } = bindingDefault as unknown as typeof bindingTypes
 const jsExtract = (
   extractor as unknown as {
     default: { extract: typeof import('../../packages/extractor/src/index.ts').extract }
@@ -18,12 +17,17 @@ interface Args {
   iterations: number
 }
 
-const rustMatchers: RustMatchers = {
-  css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
-  recipe: { modules: ['@panda/recipes'] },
-  pattern: { modules: ['@panda/patterns'] },
-  jsx: { modules: ['@panda/jsx'], names: ['styled', 'Box', 'Stack', 'Grid'] },
-  tokens: { modules: ['@panda/tokens'], names: ['token'] },
+const rustConfig = {
+  cwd: '/virtual',
+  outdir: 'styled-system',
+  importMap: {
+    css: ['@panda/css'],
+    recipe: ['@panda/recipes'],
+    pattern: ['@panda/patterns'],
+    jsx: ['@panda/jsx'],
+    tokens: ['@panda/tokens'],
+  },
+  jsxFactory: 'styled',
 }
 
 const componentNames = new Set(['Box', 'Stack', 'Grid', 'styled.div'])
@@ -50,7 +54,7 @@ function main() {
     useVirtualFileSystem: true,
   })
 
-  const rustExtractor = new RustExtractor(rustMatchers)
+  const rustExtractor = createCompiler(rustConfig)
 
   for (let i = 0; i < args.warm; i++) {
     runJs(project, source, path)

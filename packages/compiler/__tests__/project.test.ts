@@ -2,18 +2,18 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { Project } from '../src'
+import { createCompiler } from '../src'
 import { createProject, importMap } from './test-utils'
 
-describe('Project', () => {
+describe('Compiler', () => {
   it('extracts atoms from a css() call', () => {
-    const project = createProject()
-    project.parseFile(
+    const compiler = createProject()
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red', bg: 'blue' })`,
     )
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "bg",
@@ -30,7 +30,7 @@ describe('Project', () => {
   })
 
   it('constructs from a serialized config snapshot', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -40,18 +40,18 @@ describe('Project', () => {
       { crossFile: false },
     )
 
-    expect(project.config()).toMatchObject({
+    expect(compiler.config()).toMatchObject({
       cwd: '/virtual',
       outdir: 'styled-system',
     })
-    expect(project.isEmpty()).toBe(true)
-    project.parseFile(
+    expect(compiler.isEmpty()).toBe(true)
+    compiler.parseFile(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red' })`,
     )
-    expect(project.isEmpty()).toBe(false)
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.isEmpty()).toBe(false)
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "color",
@@ -63,7 +63,7 @@ describe('Project', () => {
   })
 
   it('keeps component props when jsx style props are disabled', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -80,14 +80,14 @@ describe('Project', () => {
       { crossFile: false },
     )
 
-    const report = project.parseFile(
+    const report = compiler.parseFile(
       '/virtual/Stack.tsx',
       `import { Stack } from '@panda/jsx'
        const el = <Stack gap="4" color="red" css={{ margin: "8px" }} />`,
     )
 
     expect(report.jsxUsages).toBe(1)
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "gap",
@@ -99,7 +99,7 @@ describe('Project', () => {
   })
 
   it('decomposes nested conditions into condition chains', () => {
-    const project = Project.fromConfig(
+    const compiler = createCompiler(
       {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -115,12 +115,12 @@ describe('Project', () => {
       },
       { crossFile: false },
     )
-    project.parseFile(
+    compiler.parseFile(
       '/virtual/Card.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red', _hover: { color: 'blue', md: { color: 'green' } } })`,
     )
-    const atoms = project.atoms()
+    const atoms = compiler.atoms()
     const colorAtoms = atoms.filter((a) => a.prop === 'color')
     expect(colorAtoms).toMatchInlineSnapshot(`
       [
@@ -149,13 +149,13 @@ describe('Project', () => {
   })
 
   it('extracts JSX attributes as atoms', () => {
-    const project = createProject()
-    project.parseFile(
+    const compiler = createProject()
+    compiler.parseFile(
       '/Card.tsx',
       `import { Box } from '@panda/jsx'
        const X = () => <Box color="red" padding="4" />`,
     )
-    expect(project.atoms()).toMatchInlineSnapshot(`
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "color",
@@ -183,14 +183,14 @@ describe('Project', () => {
          css({ color: brand })`,
       )
 
-      const project = createProject({}, { crossFile: true })
-      project.parseFile(
+      const compiler = createProject({}, { crossFile: true })
+      compiler.parseFile(
         mainPath,
         `import { brand } from './tokens'
          import { css } from '@panda/css'
          css({ color: brand })`,
       )
-      expect(project.atoms()).toMatchInlineSnapshot(`
+      expect(compiler.atoms()).toMatchInlineSnapshot(`
         [
           {
             "prop": "color",
@@ -205,8 +205,8 @@ describe('Project', () => {
   })
 
   it('parseFile reports per-call counts', () => {
-    const project = createProject()
-    const report = project.parseFile(
+    const compiler = createProject()
+    const report = compiler.parseFile(
       '/mixed.tsx',
       `import { css, cva } from '@panda/css'
        import { Box } from '@panda/jsx'

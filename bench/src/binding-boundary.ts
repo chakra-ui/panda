@@ -134,7 +134,7 @@ async function measureAsync<T>(fn: () => Promise<T>): Promise<{ value: T; ms: nu
   return { value, ms: performance.now() - start }
 }
 
-function runProject(project: bindingTypes.ProjectInstance, sources: Array<{ path: string; source: string }>, repeat: number) {
+function runProject(project: bindingTypes.Compiler, sources: Array<{ path: string; source: string }>, repeat: number) {
   const cold = measure(() => {
     for (const item of sources) project.parseFile(item.path, item.source)
   })
@@ -166,7 +166,7 @@ async function main() {
   }))
 
   const napiLoad = measure(() =>
-    binding.Project.fromConfig(
+    binding.createCompiler(
       {
         config: createConfig(),
         callbacks: createCallbacks(),
@@ -189,7 +189,7 @@ async function main() {
   const wasmBundle = resolve(repoRoot, 'packages/compiler-wasm/pkg-node/compiler_wasm.js')
   if (args.wasm && existsSync(wasmBundle)) {
     const wasmLoad = await measureAsync(() =>
-      wasmBinding.createProjectFromConfig(
+      wasmBinding.createCompiler(
         {
           config: createConfig(),
           callbacks: createCallbacks(),
@@ -197,11 +197,11 @@ async function main() {
         {},
       ),
     )
-    for (let i = 0; i < args.warm; i++) wasmLoad.value.project.parseFile(sources[0].path, sources[0].source)
+    for (let i = 0; i < args.warm; i++) wasmLoad.value.compiler.parseFile(sources[0].path, sources[0].source)
 
     result.wasm = {
       configLoadMs: ms(wasmLoad.ms),
-      ...runProject(wasmLoad.value.project as unknown as bindingTypes.ProjectInstance, sources, args.repeat),
+      ...runProject(wasmLoad.value.compiler as unknown as bindingTypes.Compiler, sources, args.repeat),
     }
   }
 

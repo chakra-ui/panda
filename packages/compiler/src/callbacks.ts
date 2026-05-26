@@ -39,6 +39,7 @@ export function wrapProjectCallbacks(
 
   return {
     config: () => project.config(),
+    extract: (source, path) => project.extract(source, path),
     parseFile: (path, source) => project.parseFile(path, source),
     refreshFile: (path, source) => project.refreshFile(path, source),
     removeFile: (path) => project.removeFile(path),

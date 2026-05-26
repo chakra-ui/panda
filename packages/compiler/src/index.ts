@@ -279,7 +279,7 @@ export interface ProjectSummary {
 /** Optional construction inputs. `crossFile` defaults to `true` — the
  *  resolver is cheap if no imports get followed and lets `token('…')`
  *  and `import { x } from './tokens'` references fold. */
-export interface ProjectOptions {
+export interface CompilerOptions {
   crossFile?: boolean
   /** Optional JS-side token helpers for callback execution. The Rust
    *  project builds its own dictionary from `UserConfig`; this only
@@ -317,6 +317,7 @@ export interface ProjectInstance {
   config(): UserConfig | null
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
+  extract(source: string, path: string): ExtractResult
   parseFile(path: string, source: string): ParseFileReport
   /** Re-parse `path` *only if* already known. Returns `true` when the
    *  file was present. Filter watch events through this to ignore
@@ -333,7 +334,7 @@ export interface ProjectInstance {
 }
 
 export interface ProjectConstructor {
-  fromConfig(config: UserConfig | ConfigSnapshot, options?: ProjectOptions): ProjectInstance
+  fromConfig(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): ProjectInstance
 }
 
 export interface NativeBinding {
@@ -372,6 +373,9 @@ class FallbackProject implements ProjectInstance {
   }
   config() {
     return null
+  }
+  extract() {
+    return { calls: [], jsx: [], diagnostics: [] }
   }
   parseFile() {
     return { cssCalls: 0, cvaCalls: 0, svaCalls: 0, jsxUsages: 0, diagnostics: [] }
@@ -450,10 +454,6 @@ const nativeProjectFromConfig =
     ? binding.Project.fromConfig.bind(binding.Project)
     : undefined
 
-export function compile(input: CompileInput = {}): CompileOutput {
-  return binding.compile(input)
-}
-
 export function startTracing(options?: TraceOptions): boolean {
   return binding.startTracing?.(options) ?? false
 }
@@ -466,80 +466,58 @@ export function shutdownTracing(): boolean {
   return binding.shutdownTracing?.() ?? false
 }
 
-/** Parse a single source file and return its import declarations.
- *
- *  Mostly useful for tooling that wants to inspect imports without
- *  running full extraction. For production extraction, prefer
- *  `new Extractor(matchers)` which folds scanning into a single parse. */
-export function scanImports(source: string, path: string): ImportScanResult {
-  return binding.scanImports(source, path)
+/** A configured compiler instance. `extract` is a stateless peek; `parseFile`
+ *  registers into the incremental atom/recipe registry. */
+export interface Compiler {
+  extract(source: string, path: string): ExtractResult
+  parseFile(path: string, source: string): ParseFileReport
+  refreshFile(path: string, source: string): boolean
+  removeFile(path: string): boolean
+  clear(): void
+  isEmpty(): boolean
+  atoms(): Atom[]
+  recipes(): RecipeEntry[]
+  slotRecipes(): RecipeEntry[]
+  encodedRecipes(): EncodedRecipeStyles
+  summary(): ProjectSummary
+  config(): UserConfig | null
+  /** Placeholder today — empty stylesheet until the emit pipeline lands. */
+  compile(): CompileOutput
 }
 
-/** Filter a scan result against Panda import-map rules.
- *
- *  Re-parses internally each call. For batch extraction, build an
- *  `Extractor` and call `session.matchImports(scan)` instead — same
- *  matchers config, no rebuild per file. */
-export function matchImports(scan: ImportScanResult, matchers: Matchers): MatchedImport[] {
-  return binding.matchImports(scan, matchers)
+export function createCompiler(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): Compiler {
+  const { config: resolved, callbacks } = normalizeProjectConfigInput(config, options)
+  const nativeOptions = stripProjectCallbacks(options)
+  const tokenDictionary = options?.tokenDictionary
+  assertProjectCallbacks(resolved, callbacks)
+  const resolvedConfig = resolveUtilityValueCallbacks(resolved, callbacks, tokenDictionary)
+  if (!nativeProjectFromConfig) {
+    throw new Error('createCompiler is not available in this binding')
+  }
+  const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
+  const wired = registerCallbacks(project, callbacks, tokenDictionary)
+    ? project
+    : wrapProjectCallbacks(project, callbacks, tokenDictionary)
+  return toCompiler(wired)
 }
 
-/** Stage-only call extraction. Re-parses and rebuilds the semantic
- *  table on every invocation, so production batch flows should use
- *  `Extractor.extract(...)` instead. Kept for unit tests and one-off
- *  parity comparisons against the JS extractor. */
-export function extractCalls(
-  source: string,
-  path: string,
-  matched: MatchedImport[],
-  matchers: Matchers,
-): ExtractedCallsResult {
-  return binding.extractCalls(source, path, matched, matchers)
+function toCompiler(project: ProjectInstance): Compiler {
+  return {
+    extract: (source, path) => project.extract(source, path),
+    parseFile: (path, source) => project.parseFile(path, source),
+    refreshFile: (path, source) => project.refreshFile(path, source),
+    removeFile: (path) => project.removeFile(path),
+    clear: () => project.clear(),
+    isEmpty: () => project.isEmpty(),
+    atoms: () => project.atoms(),
+    recipes: () => project.recipes(),
+    slotRecipes: () => project.slotRecipes(),
+    encodedRecipes: () => project.encodedRecipes(),
+    summary: () => project.summary(),
+    config: () => project.config(),
+    compile: () => binding.compile({}),
+  }
 }
-
-/** Stage-only JSX extraction. Same testing-only intent as
- *  {@link extractCalls}; prefer `Extractor.extract(...)` in production. */
-export function extractJsx(
-  source: string,
-  path: string,
-  matched: MatchedImport[],
-  matchers: Matchers,
-): ExtractedJsxResult {
-  return binding.extractJsx(source, path, matched, matchers)
-}
-
-/** Single-pass extract for one file. Rebuilds the token dictionary on
- *  every call. For batch / build-time extraction across many files,
- *  prefer `new Extractor(matchers)` and reuse the instance — the
- *  dictionary is materialized once at construction. */
-export function extract(source: string, path: string, matchers: Matchers): ExtractResult {
-  return binding.extract(source, path, matchers)
-}
-
-export function extractDebug(source: string, path: string, matchers: Matchers): ExtractDebugResult {
-  return binding.extractDebug(source, path, matchers)
-}
-
-/** Build a reusable extractor session. The native class wraps a
- *  prebuilt token dictionary so per-file `extract` calls don't pay the
- *  dictionary-build cost. */
-export const Extractor = binding.Extractor
-
-export const Project = {
-  fromConfig(configOrSnapshot: UserConfig | ConfigSnapshot, options?: ProjectOptions) {
-    const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
-    const nativeOptions = stripProjectCallbacks(options)
-    const tokenDictionary = options?.tokenDictionary
-    assertProjectCallbacks(config, callbacks)
-    const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, tokenDictionary)
-    if (nativeProjectFromConfig) {
-      const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
-      if (registerCallbacks(project, callbacks, tokenDictionary)) return project
-      return wrapProjectCallbacks(project, callbacks, tokenDictionary)
-    }
-    throw new Error('Project.fromConfig is not available in this binding')
-  },
-} satisfies ProjectConstructor
 
 export function getBindingInfo() {
   return {
@@ -549,7 +527,7 @@ export function getBindingInfo() {
 
 function normalizeProjectConfigInput(
   input: UserConfig | ConfigSnapshot,
-  options?: ProjectOptions,
+  options?: CompilerOptions,
 ): { config: UserConfig; callbacks: ProjectCallbacks } {
   if (isConfigSnapshot(input)) {
     return {
@@ -568,7 +546,7 @@ function isConfigSnapshot(input: UserConfig | ConfigSnapshot): input is ConfigSn
   return !!input.config && typeof input.config === 'object' && !Array.isArray(input.config)
 }
 
-function stripProjectCallbacks(options: ProjectOptions | undefined): ProjectOptions | undefined {
+function stripProjectCallbacks(options: CompilerOptions | undefined): CompilerOptions | undefined {
   if (!options) return undefined
   const { callbacks: _callbacks, tokenDictionary: _tokenDictionary, ...rest } = options
   return rest

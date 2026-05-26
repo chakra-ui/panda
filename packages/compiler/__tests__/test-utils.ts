@@ -1,13 +1,5 @@
-import type { Matchers, ProjectOptions, UserConfig } from '../src'
-import { Project } from '../src'
-
-export const matchers: Matchers = {
-  css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
-  recipe: { modules: ['@panda/recipes'] },
-  pattern: { modules: ['@panda/patterns'] },
-  jsx: { modules: ['@panda/jsx'], names: ['styled', 'Box'] },
-  tokens: { modules: ['@panda/tokens'], names: ['token'] },
-}
+import type { CompilerOptions, UserConfig } from '../src'
+import { createCompiler } from '../src'
 
 export const importMap = {
   css: ['@panda/css'],
@@ -27,6 +19,8 @@ export function createUserConfig(overrides: UserConfig = {}): UserConfig {
   }
 }
 
-export function createProject(userConfig: UserConfig = {}, options: ProjectOptions = { crossFile: false }) {
-  return Project.fromConfig(createUserConfig(userConfig), options)
+/** Build a compiler from the shared virtual config. Returns a {@link Compiler}
+ *  (named `createProject` historically — it's the project/compiler test handle). */
+export function createProject(userConfig: UserConfig = {}, options: CompilerOptions = { crossFile: false }) {
+  return createCompiler(createUserConfig(userConfig), options)
 }

@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { createExtractor, createProject, createProjectFromConfig, loadWasm } from '../src'
-import type { Atom, ExtractUsage, MatchersInput, PatternHelpers } from '../src'
+import { createCompiler, loadWasm } from '../src'
+import type { Atom, ExtractResult, PatternHelpers } from '../src'
 
 const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'compiler_wasm.js')
 const wasmAvailable = existsSync(PKG_NODE)
@@ -13,18 +13,26 @@ const wasmAvailable = existsSync(PKG_NODE)
 // then run tests.
 const describeIfBuilt = wasmAvailable ? describe : describe.skip
 
-const baseMatchers: MatchersInput = {
-  css: { modules: ['@panda/css'], names: ['css', 'cva', 'sva'] },
-  recipe: { modules: ['@panda/css'], names: null },
-  pattern: { modules: ['@panda/css'], names: null },
-  jsx: { modules: ['@panda/jsx'], names: ['styled', 'Box'] },
-  tokens: { modules: ['@panda/css'], names: ['token'] },
+// Shared virtual config — the public `createCompiler` derives matchers from a
+// config (not hand-built matchers), so the extraction/project tests build one
+// compiler from this and the callback tests spread their utilities/patterns in.
+const baseConfig = {
+  cwd: '/virtual',
+  outdir: 'styled-system',
+  importMap: {
+    css: ['@panda/css'],
+    recipe: ['@panda/recipes'],
+    pattern: ['@panda/patterns'],
+    jsx: ['@panda/jsx'],
+    tokens: ['@panda/tokens'],
+  },
+  jsxFactory: 'styled',
 }
 
 /// Strip span offsets from a result so snapshots don't churn when the
 /// source string changes whitespace. Use when the test is about extraction
 /// shape (calls/jsx/data) rather than precise byte locations.
-function withoutSpans(result: ExtractUsage): unknown {
+function withoutSpans(result: ExtractResult): unknown {
   return {
     calls: result.calls.map(({ span: _span, ...rest }) => rest),
     jsx: result.jsx.map(({ span: _span, ...rest }) => rest),
@@ -100,14 +108,14 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
   })
 
-  describe('WasmExtractor', () => {
+  describe('compiler.extract', () => {
     it('extracts a css() call to a literal object', async () => {
-      const { extractor } = await createExtractor(baseMatchers)
-      const raw = extractor.parseFile(
-        '/src/code.tsx',
+      const { compiler } = await createCompiler(baseConfig)
+      const raw = compiler.extract(
         `import { css } from '@panda/css';\ncss({ color: 'red', bg: 'blue' });\n`,
+        '/src/code.tsx',
       )
-      expect(withoutSpans(raw as ExtractUsage)).toMatchInlineSnapshot(`
+      expect(withoutSpans(raw as ExtractResult)).toMatchInlineSnapshot(`
         {
           "calls": [
             {
@@ -129,12 +137,12 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('extracts a <styled.div> JSX usage', async () => {
-      const { extractor } = await createExtractor(baseMatchers)
-      const raw = extractor.parseFile(
-        '/src/code.tsx',
+      const { compiler } = await createCompiler(baseConfig)
+      const raw = compiler.extract(
         `import { styled } from '@panda/jsx';\nconst X = () => <styled.div color="red" />;\n`,
+        '/src/code.tsx',
       )
-      expect(withoutSpans(raw as ExtractUsage)).toMatchInlineSnapshot(`
+      expect(withoutSpans(raw as ExtractResult)).toMatchInlineSnapshot(`
         {
           "calls": [],
           "jsx": [
@@ -153,13 +161,13 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('cross-file imports fold through the shared memory FS', async () => {
-      const { fs, extractor } = await createExtractor(baseMatchers)
+      const { fs, compiler } = await createCompiler(baseConfig)
       fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444';\n")
-      const raw = extractor.parseFile(
-        '/proj/main.tsx',
+      const raw = compiler.extract(
         `import { brand } from './tokens';\nimport { css } from '@panda/css';\ncss({ color: brand });\n`,
+        '/proj/main.tsx',
       )
-      expect(withoutSpans(raw as ExtractUsage)).toMatchInlineSnapshot(`
+      expect(withoutSpans(raw as ExtractResult)).toMatchInlineSnapshot(`
         {
           "calls": [
             {
@@ -180,12 +188,12 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('extract reports parse-error diagnostics', async () => {
-      const { extractor } = await createExtractor(baseMatchers)
-      const raw = extractor.parseFile(
-        '/src/code.tsx',
+      const { compiler } = await createCompiler(baseConfig)
+      const raw = compiler.extract(
         `import { css } from '@panda/css';\ncss({ color: }) // syntax error\n`,
+        '/src/code.tsx',
       )
-      const result = raw as ExtractUsage
+      const result = raw as ExtractResult
       // Just message + severity — exact text comes from oxc and isn't part
       // of our contract, but the shape should be stable.
       expect(result.diagnostics.map((d) => ({ severity: d.severity }))).toMatchInlineSnapshot(`
@@ -204,13 +212,13 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
   })
 
-  describe('WasmProject', () => {
+  describe('WasmCompiler', () => {
     it('extracts atoms from a css() call', async () => {
-      const { project } = await createProject(baseMatchers)
-      expect(project.isEmpty()).toBe(true)
-      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
-      expect(project.isEmpty()).toBe(false)
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      const { compiler } = await createCompiler(baseConfig)
+      expect(compiler.isEmpty()).toBe(true)
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
+      expect(compiler.isEmpty()).toBe(false)
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "bg",
@@ -227,7 +235,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('constructs from a serialized config snapshot', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap: {
@@ -240,12 +248,12 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         jsxFactory: 'styled',
       })
 
-      expect(project.config()).toMatchObject({
+      expect(compiler.config()).toMatchObject({
         cwd: '/virtual',
         outdir: 'styled-system',
       })
-      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "color",
@@ -257,7 +265,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('derives JSX pattern matchers from config', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap: {
@@ -276,8 +284,8 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile('/Stack.tsx', `import { Stack } from '@panda/jsx'\nconst el = <Stack gap="4" />`)
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      compiler.parseFile('/Stack.tsx', `import { Stack } from '@panda/jsx'\nconst el = <Stack gap="4" />`)
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "gap",
@@ -289,13 +297,13 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('cross-file imports fold via the shared WasmFileSystem', async () => {
-      const { fs, project } = await createProject(baseMatchers)
+      const { fs, compiler } = await createCompiler(baseConfig)
       fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444'\n")
-      project.parseFile(
+      compiler.parseFile(
         '/proj/main.tsx',
         `import { brand } from './tokens'\nimport { css } from '@panda/css'\ncss({ color: brand })`,
       )
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "color",
@@ -307,12 +315,12 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('dedups atoms across files', async () => {
-      const { project } = await createProject(baseMatchers)
-      project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
-      project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
-      project.parseFile('/c.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
-      expect((project.atoms() as Atom[]).length).toBe(2)
-      const summary = project.summary()
+      const { compiler } = await createCompiler(baseConfig)
+      compiler.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      compiler.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
+      compiler.parseFile('/c.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      expect((compiler.atoms() as Atom[]).length).toBe(2)
+      const summary = compiler.summary()
       expect(summary).toMatchInlineSnapshot(`
         {
           "filesProcessed": 3,
@@ -324,10 +332,10 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('refresh and remove update the atom set', async () => {
-      const { project } = await createProject(baseMatchers)
-      project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
-      expect(project.refreshFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'blue' })`)).toBe(true)
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      const { compiler } = await createCompiler(baseConfig)
+      compiler.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      expect(compiler.refreshFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'blue' })`)).toBe(true)
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "color",
@@ -336,16 +344,19 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
           },
         ]
       `)
-      expect(project.refreshFile('/unknown.tsx', 'whatever')).toBe(false)
-      expect(project.removeFile('/a.tsx')).toBe(true)
-      expect(project.removeFile('/a.tsx')).toBe(false)
-      expect(project.atoms() as Atom[]).toEqual([])
+      expect(compiler.refreshFile('/unknown.tsx', 'whatever')).toBe(false)
+      expect(compiler.removeFile('/a.tsx')).toBe(true)
+      expect(compiler.removeFile('/a.tsx')).toBe(false)
+      expect(compiler.atoms() as Atom[]).toEqual([])
     })
 
     it('records cva recipes', async () => {
-      const { project } = await createProject(baseMatchers)
-      project.parseFile('/Button.tsx', `import { cva } from '@panda/css'\nexport const btn = cva({ base: { p: '2' } })`)
-      const recipes = project.recipes()
+      const { compiler } = await createCompiler(baseConfig)
+      compiler.parseFile(
+        '/Button.tsx',
+        `import { cva } from '@panda/css'\nexport const btn = cva({ base: { p: '2' } })`,
+      )
+      const recipes = compiler.recipes()
       expect(recipes).toHaveLength(1)
       expect(recipes[0].file).toBe('/Button.tsx')
       expect(recipes[0].recipe).toMatchInlineSnapshot(`
@@ -358,7 +369,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('tracks config recipes and slot recipes', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap: {
@@ -387,7 +398,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      expect(project.summary()).toMatchInlineSnapshot(`
+      expect(compiler.summary()).toMatchInlineSnapshot(`
         {
           "filesProcessed": 0,
           "atomCount": 0,
@@ -395,15 +406,15 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
           "slotRecipeCount": 1,
         }
       `)
-      expect(project.recipes().map(({ file }) => file)).toEqual(['theme.recipes.button'])
-      expect(project.slotRecipes().map(({ file }) => file)).toEqual(['theme.slotRecipes.card'])
+      expect(compiler.recipes().map(({ file }) => file)).toEqual(['theme.recipes.button'])
+      expect(compiler.slotRecipes().map(({ file }) => file)).toEqual(['theme.slotRecipes.card'])
 
-      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
-      project.clear()
-      expect(project.summary().recipeCount).toBe(1)
-      expect(project.summary().slotRecipeCount).toBe(1)
-      expect(project.atoms() as Atom[]).toEqual([])
-      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
+      compiler.clear()
+      expect(compiler.summary().recipeCount).toBe(1)
+      expect(compiler.summary().slotRecipeCount).toBe(1)
+      expect(compiler.atoms() as Atom[]).toEqual([])
+      expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
         {
           "base": [],
           "variants": [],
@@ -413,7 +424,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('splits config recipe component props from style props', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap: {
@@ -445,7 +456,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      const report = project.parseFile(
+      const report = compiler.parseFile(
         '/Button.tsx',
         `import { Action, Tabs, TabsRoot } from './components'
          const el = <>
@@ -456,7 +467,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
       )
 
       expect(report.jsxUsages).toBe(3)
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "color",
@@ -475,7 +486,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
           },
         ]
       `)
-      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+      expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
         {
           "base": [
             {
@@ -523,7 +534,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('tracks config recipe function calls', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap: {
@@ -553,7 +564,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile(
+      compiler.parseFile(
         '/recipes.ts',
         `import { button } from '@panda/recipes'
          import * as recipes from '@panda/recipes'
@@ -561,8 +572,8 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
          recipes.tabs({ size: 'sm', margin: '8px' })`,
       )
 
-      expect(project.atoms() as Atom[]).toEqual([])
-      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toEqual([])
+      expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
         {
           "base": [
             {
@@ -610,8 +621,9 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('applies utility transform callbacks in the JS host', async () => {
-      const { project } = await createProject(baseMatchers, {
+      const { compiler } = await createCompiler({
         config: {
+          ...baseConfig,
           utilities: {
             size: {
               transform: {
@@ -631,9 +643,9 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', color: 'red' })`)
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', color: 'red' })`)
 
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "color",
@@ -655,44 +667,49 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('passes token helpers to utility transform callbacks', async () => {
-      const { project } = await createProject(baseMatchers, {
-        config: {
-          utilities: {
-            tint: {
-              transform: {
-                kind: 'js-callback',
-                id: 'utilities.tint.transform',
+      const { compiler } = await createCompiler(
+        {
+          config: {
+            ...baseConfig,
+            utilities: {
+              tint: {
+                transform: {
+                  kind: 'js-callback',
+                  id: 'utilities.tint.transform',
+                },
+              },
+            },
+          },
+          callbacks: {
+            'utility.transform': {
+              'utilities.tint.transform': (value: string, args: any) => {
+                const mix = args.utils.colorMix(value)
+                return {
+                  color: args.token('colors.red.500'),
+                  opacity: args.token.raw('opacity.50')?.value,
+                  backgroundColor: mix.value,
+                  '--raw': args.raw,
+                }
               },
             },
           },
         },
-        tokenDictionary: {
-          values: {
-            'colors.red.500': '#f00',
-            'opacity.50': '0.5',
-          },
-          vars: {
-            'colors.red.500': 'var(--colors-red-500)',
-          },
-        },
-        callbacks: {
-          'utility.transform': {
-            'utilities.tint.transform': (value: string, args: any) => {
-              const mix = args.utils.colorMix(value)
-              return {
-                color: args.token('colors.red.500'),
-                opacity: args.token.raw('opacity.50')?.value,
-                backgroundColor: mix.value,
-                '--raw': args.raw,
-              }
+        {
+          tokenDictionary: {
+            values: {
+              'colors.red.500': '#f00',
+              'opacity.50': '0.5',
+            },
+            vars: {
+              'colors.red.500': 'var(--colors-red-500)',
             },
           },
         },
-      })
+      )
 
-      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ tint: 'red.500/50' })`)
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ tint: 'red.500/50' })`)
 
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "--raw",
@@ -719,7 +736,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('applies utility transform callbacks to encoded config recipes', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
@@ -771,7 +788,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile(
+      compiler.parseFile(
         '/recipes.ts',
         `import { button } from '@panda/recipes'
          import * as recipes from '@panda/recipes'
@@ -779,8 +796,8 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
          recipes.tabs({ size: 'sm' })`,
       )
 
-      expect(project.atoms() as Atom[]).toEqual([])
-      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toEqual([])
+      expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
         {
           "base": [
             {
@@ -843,7 +860,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('resolves utility values callbacks in config-derived projects', async () => {
-      const { project } = await createProjectFromConfig(
+      const { compiler } = await createCompiler(
         {
           config: {
             cwd: '/virtual',
@@ -886,12 +903,12 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       )
 
-      project.parseFile(
+      compiler.parseFile(
         '/Button.tsx',
         `import { css } from '@panda/css'\ncss({ space: '4', _hover: { space: 'compact' } })`,
       )
 
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "space",
@@ -911,7 +928,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
 
     it('throws when serialized callback refs are missing callbacks', async () => {
       await expect(
-        createProjectFromConfig({
+        createCompiler({
           config: {
             cwd: '/virtual',
             outdir: 'styled-system',
@@ -937,7 +954,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('applies utility transform callbacks under conditions', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
@@ -970,9 +987,9 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ _hover: { size: '4px' } })`)
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ _hover: { size: '4px' } })`)
 
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "height",
@@ -993,8 +1010,9 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('applies utility transform callbacks from JSX props', async () => {
-      const { project } = await createProject(baseMatchers, {
+      const { compiler } = await createCompiler({
         config: {
+          ...baseConfig,
           utilities: {
             size: {
               transform: {
@@ -1014,9 +1032,9 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile('/Card.tsx', `import { Box } from '@panda/jsx'\nconst el = <Box size="4px" />`)
+      compiler.parseFile('/Card.tsx', `import { Box } from '@panda/jsx'\nconst el = <Box size="4px" />`)
 
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "height",
@@ -1034,8 +1052,9 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
 
     it('caches utility transform callback results', async () => {
       let calls = 0
-      const { project } = await createProject(baseMatchers, {
+      const { compiler } = await createCompiler({
         config: {
+          ...baseConfig,
           utilities: {
             size: {
               transform: {
@@ -1055,19 +1074,19 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile(
+      compiler.parseFile(
         '/Button.tsx',
         `import { css } from '@panda/css'\ncss({ size: '4px', _hover: { size: '4px' } })`,
       )
 
-      project.atoms()
-      project.atoms()
+      compiler.atoms()
+      compiler.atoms()
       expect(calls).toBe(1)
     })
 
     it('shares utility transform cache between atoms and encoded recipes', async () => {
       let calls = 0
-      const { project } = await createProjectFromConfig(
+      const { compiler } = await createCompiler(
         {
           config: {
             cwd: '/virtual',
@@ -1107,7 +1126,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         {},
       )
 
-      project.parseFile(
+      compiler.parseFile(
         '/Button.tsx',
         `import { css } from '@panda/css'
          import { button } from '@panda/recipes'
@@ -1115,13 +1134,13 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
          button()`,
       )
 
-      project.atoms()
-      project.encodedRecipes()
+      compiler.atoms()
+      compiler.encodedRecipes()
       expect(calls).toBe(1)
     })
 
     it('applies pattern transform callbacks with helpers', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
@@ -1161,7 +1180,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile(
+      compiler.parseFile(
         '/Stack.tsx',
         `import { stack } from '@panda/patterns'
          import { Stack } from '@panda/jsx'
@@ -1169,7 +1188,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
          const el = <Stack gap="var(--gap)" />`,
       )
 
-      expect(project.atoms() as Atom[]).toMatchInlineSnapshot(`
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
           {
             "prop": "display",
@@ -1198,12 +1217,12 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('clear drops every file', async () => {
-      const { project } = await createProject(baseMatchers)
-      project.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
-      project.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
-      project.clear()
-      expect(project.isEmpty()).toBe(true)
-      expect(project.summary()).toMatchInlineSnapshot(`
+      const { compiler } = await createCompiler(baseConfig)
+      compiler.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
+      compiler.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
+      compiler.clear()
+      expect(compiler.isEmpty()).toBe(true)
+      expect(compiler.summary()).toMatchInlineSnapshot(`
         {
           "filesProcessed": 0,
           "atomCount": 0,
@@ -1214,7 +1233,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
     })
 
     it('tracks conditional config recipe variants', async () => {
-      const { project } = await createProjectFromConfig({
+      const { compiler } = await createCompiler({
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap: {
@@ -1241,13 +1260,13 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
         },
       })
 
-      project.parseFile(
+      compiler.parseFile(
         '/recipes.ts',
         `import { button } from '@panda/recipes'
          button({ size: { base: 'sm', md: 'md' } })`,
       )
 
-      expect(project.encodedRecipes()).toMatchInlineSnapshot(`
+      expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
         {
           "base": [],
           "variants": [

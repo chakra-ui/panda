@@ -188,6 +188,21 @@ impl WasmProject {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Stateless single-file extraction — raw `{ calls, jsx, diagnostics }`,
+    /// using the project's configured matchers + token dictionary. Unlike
+    /// `parseFile`, it registers nothing; it's the read-only peek companion.
+    ///
+    /// # Errors
+    /// Returns a JS error string when serializing the result fails.
+    pub fn extract(&self, source: &str, path: &str) -> Result<JsValue, JsValue> {
+        let result = self.inner.extract(source, path);
+        let _span = tracing::trace_span!("boundary_encode", method = "extract").entered();
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Re-parse `path` *only if* already known. Returns `true` when the
     /// file was present and got re-parsed.
     #[wasm_bindgen(js_name = refreshFile)]
