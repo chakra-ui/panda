@@ -5,7 +5,7 @@
 /// common case (`colors-red-500`, `spacing-sm`, ...).
 #[must_use]
 pub fn to_hash(value: &str) -> String {
-    to_name(to_phash(5381, value) as u32)
+    to_name(to_phash(5381, value).cast_unsigned())
 }
 
 fn to_phash(mut h: i32, value: &str) -> i32 {
@@ -44,5 +44,7 @@ fn to_name(code: u32) -> String {
 }
 
 fn to_char(code: u32) -> u8 {
-    (code + if code > 25 { 39 } else { 97 }) as u8
+    debug_assert!(code < 52);
+    let byte = code + if code > 25 { 39 } else { 97 };
+    u8::try_from(byte).expect("base52 hash character fits in ASCII")
 }

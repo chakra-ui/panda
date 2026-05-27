@@ -6,7 +6,7 @@ use pandacss_config::{
     TokenEntry, TokenGroup, TokenNode, Tokens, UserConfig,
 };
 use pandacss_shared::{capitalize, number_to_js_string, to_hash};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::{
     Token, TokenCategory, TokenDictionary, TokenDictionaryBuilder, TokenError,
@@ -129,7 +129,7 @@ fn collect_tokens(
 ) {
     macro_rules! collect {
         ($name:literal, $category:expr, $group:expr) => {
-            collect_token_category(builder, context, $name, $category, $group, condition);
+            collect_token_category(builder, context, $name, &$category, $group, condition);
         };
     }
 
@@ -190,7 +190,14 @@ fn collect_semantic_tokens(
 ) {
     macro_rules! collect {
         ($name:literal, $category:expr, $group:expr) => {
-            collect_semantic_category(builder, context, $name, $category, $group, forced_condition);
+            collect_semantic_category(
+                builder,
+                context,
+                $name,
+                &$category,
+                $group,
+                forced_condition,
+            );
         };
     }
 
@@ -247,7 +254,7 @@ fn collect_token_category<T: TokenValueString>(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
     category: &'static str,
-    token_category: TokenCategory,
+    token_category: &TokenCategory,
     group: &TokenGroup<T>,
     condition: Option<&str>,
 ) {
@@ -270,7 +277,7 @@ fn collect_semantic_category<T: TokenValueString>(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
     category: &'static str,
-    token_category: TokenCategory,
+    token_category: &TokenCategory,
     group: &TokenGroup<SemanticValue<T>>,
     forced_condition: Option<&str>,
 ) {
@@ -593,11 +600,11 @@ fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
         value.push_str(" * -1)");
 
         let mut negative = Token::new(path, value, "", TokenCategory::Spacing);
-        negative.condition = token.condition.clone();
+        negative.condition.clone_from(&token.condition);
         negative.original_value = Some(Arc::clone(&token.value));
-        negative.description = token.description.clone();
+        negative.description.clone_from(&token.description);
         negative.deprecated = token.deprecated;
-        negative.extensions = token.extensions.clone();
+        negative.extensions.clone_from(&token.extensions);
         negative.set_extension("isNegative", "true");
         negative.set_extension("prop", format!("-{last}"));
         negative.set_extension("originalPath", token.path.as_ref());
@@ -623,7 +630,7 @@ fn add_virtual_color_palette_tokens(
         return;
     }
 
-    let mut virtual_paths = FxHashMap::<String, ()>::default();
+    let mut virtual_paths = FxHashSet::<String>::default();
     let mut palette_mappings: Vec<(String, String, Arc<str>)> = Vec::new();
     for token in builder.tokens_mut().iter_mut() {
         if token.category != TokenCategory::Colors
@@ -648,7 +655,7 @@ fn add_virtual_color_palette_tokens(
             let raw_virtual_var = css_var_variable(&virtual_css_var_name, context);
             let palette_name = join_segments(&color_path[..root_len]);
 
-            virtual_paths.insert(virtual_path, ());
+            virtual_paths.insert(virtual_path);
             palette_mappings.push((palette_name, raw_virtual_var, Arc::clone(&token.var)));
 
             if root_len == 1 && token.extension("isDefault") == Some("true") {
@@ -660,7 +667,7 @@ fn add_virtual_color_palette_tokens(
                     let raw_base_virtual_var =
                         css_var_variable(&base_virtual_css_var_name, context);
 
-                    virtual_paths.insert(base_virtual_path.to_owned(), ());
+                    virtual_paths.insert(base_virtual_path.to_owned());
                     palette_mappings.push((
                         special_palette,
                         raw_base_virtual_var,
@@ -672,7 +679,7 @@ fn add_virtual_color_palette_tokens(
         token.set_extension("colorPalette", &color_path_string);
     }
 
-    let mut virtual_paths: Vec<String> = virtual_paths.into_keys().collect();
+    let mut virtual_paths: Vec<String> = virtual_paths.into_iter().collect();
     virtual_paths.sort();
     for path in virtual_paths {
         let token_path = TokenPath::from_owned_path(path);
@@ -848,8 +855,7 @@ fn color_mix(
 
     let color = by_path
         .get(color_path)
-        .map(|index| tokens[*index].var.as_ref())
-        .unwrap_or(color_path);
+        .map_or(color_path, |index| tokens[*index].var.as_ref());
     let mut opacity_path = String::with_capacity("opacity.".len() + raw_opacity.len());
     opacity_path.push_str("opacity.");
     opacity_path.push_str(raw_opacity);
