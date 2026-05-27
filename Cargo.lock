@@ -112,6 +112,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "smallvec",
  "tracing",
  "wasm-bindgen",
 ]

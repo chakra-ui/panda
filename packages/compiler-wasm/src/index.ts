@@ -86,7 +86,7 @@ export interface ExtractResult {
  * Node consumers (Vitest, SSR) should prefer this entrypoint. For
  * browser, use the `./pkg-web/*` exports directly with `init()`.
  */
-interface WasmModule {
+export interface WasmModule {
   WasmFileSystem: new () => WasmFileSystem
   WasmExtractor: new (fs: WasmFileSystem, matchers: unknown) => WasmExtractor
   WasmProject: {
@@ -118,7 +118,21 @@ export async function createCompiler(
   configOrSnapshot: Record<string, unknown> | WasmConfigSnapshot,
   options?: CompilerOptions,
 ): Promise<{ fs: WasmFileSystem; compiler: WasmCompiler }> {
-  const { WasmFileSystem: FS, WasmProject: P } = await loadWasm()
+  return createCompilerFromWasmModule(await loadWasm(), configOrSnapshot, options)
+}
+
+/**
+ * Build a compiler from an already-loaded wasm module. Browser callers that
+ * import `./pkg-web/compiler_wasm.js` should call its default `init()` first,
+ * then pass the initialized module here so host callbacks are registered
+ * before `parseFile()` encodes pattern usage.
+ */
+export function createCompilerFromWasmModule(
+  mod: WasmModule,
+  configOrSnapshot: Record<string, unknown> | WasmConfigSnapshot,
+  options?: CompilerOptions,
+): { fs: WasmFileSystem; compiler: WasmCompiler } {
+  const { WasmFileSystem: FS, WasmProject: P } = mod
   const fs = new FS()
   const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
   const nativeOptions = stripProjectCallbacks(options)
@@ -131,7 +145,7 @@ export async function createCompiler(
 
 function stripProjectCallbacks(options: WasmProjectOptions | undefined): WasmProjectOptions | undefined {
   if (!options) return undefined
-  const { callbacks: _callbacks, ...rest } = options
+  const { callbacks: _callbacks, tokenDictionary: _tokenDictionary, ...rest } = options
   return rest
 }
 

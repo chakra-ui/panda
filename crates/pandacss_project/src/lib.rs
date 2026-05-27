@@ -165,7 +165,7 @@ impl Project {
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
     /// and recipes) so stale styles can't linger in watch mode.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        self.parse_file_inner(path, source, None)
+        self.parse_file_inner(path, source, None, None)
     }
 
     pub fn parse_file_with_pattern_transforms(
@@ -174,7 +174,17 @@ impl Project {
         source: &str,
         transform: &mut PatternTransformFn<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(path, source, Some(transform))
+        self.parse_file_inner(path, source, Some(transform), None)
+    }
+
+    pub fn parse_file_with_transforms(
+        &mut self,
+        path: &str,
+        source: &str,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+        utility_transform: Option<&mut UtilityTransformFn<'_>>,
+    ) -> ParseFileReport {
+        self.parse_file_inner(path, source, pattern_transform, utility_transform)
     }
 
     /// Stateless single-file extraction using this project's configured
@@ -191,6 +201,7 @@ impl Project {
         path: &str,
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
+        mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
     ) -> ParseFileReport {
         let span = tracing::trace_span!(
             "file_parse",
@@ -201,6 +212,7 @@ impl Project {
         let _guard = span.enter();
         let source_hash = hash_source(source);
         if pattern_transform.is_none()
+            && utility_transform.is_none()
             && self
                 .files
                 .get(path)
@@ -361,9 +373,15 @@ impl Project {
             report.jsx_usages += 1;
         }
 
+        let mut atoms = encoder.into_atoms();
+        if let Some(transform) = utility_transform.as_deref_mut() {
+            atoms = transform_atoms(atoms, transform, &mut report.diagnostics);
+            encoded_recipes.transform_utilities(transform, &mut report.diagnostics);
+        }
+
         let entry = FileEntry {
             source_hash,
-            atoms: encoder.into_atoms(),
+            atoms,
             encoded_recipes,
             diagnostics,
             report: report.clone(),
@@ -381,6 +399,20 @@ impl Project {
             return false;
         }
         self.parse_file(path, source);
+        true
+    }
+
+    pub fn refresh_file_with_transforms(
+        &mut self,
+        path: &str,
+        source: &str,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+        utility_transform: Option<&mut UtilityTransformFn<'_>>,
+    ) -> bool {
+        if !self.files.contains_key(path) {
+            return false;
+        }
+        self.parse_file_with_transforms(path, source, pattern_transform, utility_transform);
         true
     }
 
@@ -606,6 +638,37 @@ fn is_css_prop(key: &str) -> bool {
 
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
+
+pub type UtilityTransformFn<'a> =
+    dyn FnMut(&str, &AtomValue) -> std::result::Result<Option<Vec<Atom>>, Diagnostic> + 'a;
+
+fn transform_atoms(
+    atoms: FxHashSet<Atom>,
+    transform: &mut UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> FxHashSet<Atom> {
+    let mut out = FxHashSet::default();
+    for atom in atoms {
+        match transform(atom.prop(), atom.value()) {
+            Ok(Some(transformed)) => {
+                let conditions: SmallVec<[Box<str>; 2]> =
+                    atom.conditions().iter().cloned().collect();
+                out.extend(
+                    transformed
+                        .into_iter()
+                        .map(|next| next.with_prefixed_conditions(&conditions)),
+                );
+            }
+            Ok(None) => {
+                out.insert(atom);
+            }
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+            }
+        }
+    }
+    out
+}
 
 fn hash_source(source: &str) -> u64 {
     let mut hasher = FxHasher::default();

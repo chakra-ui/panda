@@ -106,7 +106,11 @@ export interface ProjectSummary {
   slotRecipeCount: number
 }
 
-export type WasmProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform'
+export type WasmProjectCallbackKind =
+  | 'utility.transform'
+  | 'utility.values'
+  | 'pattern.transform'
+  | 'pattern.defaultValues'
 
 export type WasmProjectCallbacks = Partial<Record<WasmProjectCallbackKind, Record<string, (...args: any[]) => unknown>>>
 

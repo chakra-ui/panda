@@ -1,10 +1,5 @@
 import { loadNativeBinding } from './load-binary'
-import {
-  assertProjectCallbacks,
-  registerCallbacks,
-  resolveUtilityValueCallbacks,
-  wrapProjectCallbacks,
-} from './callbacks'
+import { assertProjectCallbacks, registerCallbacks, resolveUtilityValueCallbacks } from './callbacks'
 export type { ColorMixResult, PatternHelpers, RawToken, TransformArgs } from './callbacks'
 
 // --- compile (placeholder) ---
@@ -498,10 +493,8 @@ export function createCompiler(config: UserConfig | ConfigSnapshot, options?: Co
     throw new Error('createCompiler is not available in this binding')
   }
   const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
-  const wired = registerCallbacks(project, callbacks, tokenDictionary)
-    ? project
-    : wrapProjectCallbacks(project, callbacks, tokenDictionary)
-  return toCompiler(wired)
+  registerCallbacks(project, callbacks, tokenDictionary)
+  return toCompiler(project)
 }
 
 function toCompiler(project: ProjectInstance): Compiler {

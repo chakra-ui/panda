@@ -5,16 +5,19 @@
 //! the same in-memory FS so `import { x } from './tokens'` resolves
 //! through whatever the JS host has populated.
 
+use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{CrossFileResolver, ExtractorConfig};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
 use serde::Serialize as _;
 use std::collections::HashMap;
+use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
 use crate::fs::WasmFileSystem;
 use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
 use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig, UtilityConfig};
+use smallvec::SmallVec;
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
@@ -66,6 +69,10 @@ impl CallbackHost {
 
     fn has_pattern_transforms(&self) -> bool {
         !self.pattern_transforms.is_empty()
+    }
+
+    fn has_utility_transforms(&self) -> bool {
+        !self.utility_transforms.is_empty()
     }
 }
 
@@ -164,22 +171,43 @@ impl WasmProject {
     /// Returns a JS error if serializing the per-call report fails.
     #[wasm_bindgen(js_name = parseFile)]
     pub fn parse_file(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let report = if !self.callbacks.has_pattern_transforms() {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        let report = if !has_pattern_transforms && !has_utility_transforms {
             self.inner.parse_file(path, source)
         } else {
             let WasmProject {
                 inner, callbacks, ..
             } = self;
+            let pattern_cache = &mut callbacks.transform_cache.pattern;
+            let utility_cache = &mut callbacks.transform_cache.utility;
             let mut transform = |name: &str, styles: &Literal| {
                 apply_pattern_transform(
                     name,
                     styles,
                     &callbacks.pattern_transform_refs,
                     &callbacks.pattern_transforms,
-                    &mut callbacks.transform_cache,
+                    pattern_cache,
                 )
             };
-            inner.parse_file_with_pattern_transforms(path, source, &mut transform)
+            let mut utility_transform = |prop: &str, value: &AtomValue| {
+                apply_utility_transform(
+                    prop,
+                    value,
+                    &callbacks.utility_transform_refs,
+                    &callbacks.utility_transforms,
+                    utility_cache,
+                )
+            };
+            inner.parse_file_with_transforms(
+                path,
+                source,
+                has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            )
         };
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
@@ -208,7 +236,43 @@ impl WasmProject {
     #[wasm_bindgen(js_name = refreshFile)]
     #[must_use]
     pub fn refresh_file(&mut self, path: &str, source: &str) -> bool {
-        self.inner.refresh_file(path, source)
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_pattern_transforms && !has_utility_transforms {
+            return self.inner.refresh_file(path, source);
+        }
+
+        let WasmProject {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut transform = |name: &str, styles: &Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+            )
+        };
+        let mut utility_transform = |prop: &str, value: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                value,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+            )
+        };
+        inner.refresh_file_with_transforms(
+            path,
+            source,
+            has_pattern_transforms
+                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+        )
     }
 
     /// Drop a file's contribution. Returns `true` if the path was known.
@@ -252,12 +316,6 @@ impl WasmProject {
     pub fn atoms(&mut self) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
         let atoms = collect_sorted_atoms(self.inner.atoms());
-        let atoms = apply_utility_transforms(
-            atoms,
-            &self.callbacks.utility_transform_refs,
-            &self.callbacks.utility_transforms,
-            &mut self.callbacks.transform_cache,
-        )?;
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         atoms
             .serialize(&serializer)
@@ -316,14 +374,8 @@ impl WasmProject {
         let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
         let snapshot = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let encoded = apply_utility_transforms_to_encoded_recipes(
-            snapshot,
-            &self.callbacks.utility_transform_refs,
-            &self.callbacks.utility_transforms,
-            &mut self.callbacks.transform_cache,
-        )?;
         let json =
-            serde_json::to_string(&encoded).map_err(|err| JsValue::from_str(&err.to_string()))?;
+            serde_json::to_string(&snapshot).map_err(|err| JsValue::from_str(&err.to_string()))?;
         js_sys::JSON::parse(&json)
     }
 
@@ -398,164 +450,70 @@ fn collect_sorted_atoms<S: std::hash::BuildHasher>(
         .collect()
 }
 
-fn apply_utility_transforms(
-    atoms: Vec<AtomSerde>,
+fn apply_utility_transform(
+    prop: &str,
+    value: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut TransformCache,
-) -> Result<Vec<AtomSerde>, JsValue> {
-    if utility_transform_refs.is_empty() {
-        return Ok(atoms);
-    }
-
-    let mut out = Vec::with_capacity(atoms.len());
-    for atom in atoms {
-        let Some(id) = utility_transform_refs.get(&atom.prop) else {
-            out.push(atom);
-            continue;
-        };
-        let Some(callback) = callbacks.get(id) else {
-            return Err(JsValue::from_str(&format!(
-                "Missing utility transform callback `{id}` for `{}`",
-                atom.prop
-            )));
-        };
-
-        let cache_key = UtilityTransformCacheKey {
-            id: id.clone(),
-            prop: atom.prop.clone(),
-            value: atom.value.to_string(),
-        };
-        if let Some(cached) = cache.utility.get(&cache_key) {
-            out.extend(apply_conditions(cached, &atom.conditions));
-            continue;
-        }
-
-        let value = serde_wasm_bindgen::to_value(&atom.value)
-            .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let result = callback.call1(&JsValue::NULL, &value)?;
-        if result.is_null() || result.is_undefined() {
-            continue;
-        }
-        let style: serde_json::Value = serde_wasm_bindgen::from_value(result)
-            .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let Some(style) = style.as_object() else {
-            continue;
-        };
-        if style.is_empty() {
-            continue;
-        }
-        let transformed = style_object_to_atoms(style, &[]);
-        out.extend(apply_conditions(&transformed, &atom.conditions));
-        cache.utility.insert(cache_key, transformed);
-    }
-
-    Ok(out)
-}
-
-fn apply_utility_transforms_to_encoded_recipes(
-    mut encoded: serde_json::Value,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut TransformCache,
-) -> Result<serde_json::Value, JsValue> {
-    transform_recipe_groups(
-        encoded.get_mut("base"),
-        utility_transform_refs,
-        callbacks,
-        cache,
-    )?;
-    transform_recipe_groups(
-        encoded.get_mut("variants"),
-        utility_transform_refs,
-        callbacks,
-        cache,
-    )?;
-    if let Some(atomic) = encoded.get_mut("atomic") {
-        let atoms = json_atoms_to_atoms(atomic);
-        *atomic = serde_json::to_value(apply_utility_transforms(
-            atoms,
-            utility_transform_refs,
-            callbacks,
-            cache,
-        )?)
-        .unwrap_or(serde_json::Value::Array(Vec::new()));
-    }
-    Ok(encoded)
-}
-
-fn transform_recipe_groups(
-    groups: Option<&mut serde_json::Value>,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut TransformCache,
-) -> Result<(), JsValue> {
-    let Some(serde_json::Value::Array(groups)) = groups else {
-        return Ok(());
+    cache: &mut HashMap<UtilityTransformCacheKey, Vec<AtomSerde>>,
+) -> Result<Option<Vec<CoreAtom>>, pandacss_extractor::Diagnostic> {
+    let Some(id) = utility_transform_refs.get(prop) else {
+        return Ok(None);
     };
-    for group in groups {
-        let Some(entries) = group.get_mut("entries") else {
-            continue;
-        };
-        let atoms = json_atoms_to_atoms(entries);
-        *entries = serde_json::to_value(apply_utility_transforms(
-            atoms,
-            utility_transform_refs,
-            callbacks,
-            cache,
-        )?)
-        .unwrap_or(serde_json::Value::Array(Vec::new()));
-    }
-    Ok(())
-}
-
-fn json_atoms_to_atoms(value: &serde_json::Value) -> Vec<AtomSerde> {
-    let serde_json::Value::Array(items) = value else {
-        return Vec::new();
+    let Some(callback) = callbacks.get(id) else {
+        return Err(callback_diagnostic(format!(
+            "Missing utility transform callback `{id}` for `{prop}`"
+        )));
     };
-    items
-        .iter()
-        .filter_map(|item| {
-            let serde_json::Value::Object(entry) = item else {
-                return None;
-            };
-            let prop = entry.get("prop")?.as_str()?.to_owned();
-            let value = entry
-                .get("value")
-                .cloned()
-                .unwrap_or(serde_json::Value::Null);
-            let conditions = entry
-                .get("conditions")
-                .and_then(serde_json::Value::as_array)
-                .map(|items| {
-                    items
-                        .iter()
-                        .filter_map(serde_json::Value::as_str)
-                        .map(str::to_owned)
-                        .collect()
-                })
-                .unwrap_or_default();
-            Some(AtomSerde {
-                prop,
-                value,
-                conditions,
-            })
-        })
-        .collect()
-}
 
-fn apply_conditions(atoms: &[AtomSerde], conditions: &[String]) -> Vec<AtomSerde> {
-    if conditions.is_empty() {
-        return atoms.to_vec();
+    let value = atom_value_to_json(value);
+    let cache_key = UtilityTransformCacheKey {
+        id: id.clone(),
+        prop: prop.to_owned(),
+        value: value.to_string(),
+    };
+    if let Some(cached) = cache.get(&cache_key) {
+        return Ok(Some(
+            cached
+                .iter()
+                .filter_map(core_atom_from_atom_serde)
+                .collect(),
+        ));
     }
-    atoms
+
+    let value = serde_wasm_bindgen::to_value(&value).map_err(|err| {
+        callback_diagnostic(format!(
+            "Failed to serialize utility transform value for `{prop}`: {err}"
+        ))
+    })?;
+    let result = callback.call1(&JsValue::NULL, &value).map_err(|err| {
+        callback_diagnostic(format!(
+            "Utility transform callback `{id}` for `{prop}` threw: {}",
+            js_error_message(&err)
+        ))
+    })?;
+    if result.is_null() || result.is_undefined() {
+        return Ok(Some(Vec::new()));
+    }
+    let style: serde_json::Value = serde_wasm_bindgen::from_value(result).map_err(|err| {
+        callback_diagnostic(format!(
+            "Utility transform callback `{id}` for `{prop}` returned an invalid style object: {err}"
+        ))
+    })?;
+    let Some(style) = style.as_object() else {
+        return Ok(Some(Vec::new()));
+    };
+    if style.is_empty() {
+        cache.insert(cache_key, Vec::new());
+        return Ok(Some(Vec::new()));
+    }
+    let transformed = style_object_to_atoms(style, &[]);
+    let core = transformed
         .iter()
-        .map(|atom| {
-            let mut atom = atom.clone();
-            atom.conditions = conditions.to_vec();
-            atom
-        })
-        .collect()
+        .filter_map(core_atom_from_atom_serde)
+        .collect();
+    cache.insert(cache_key, transformed);
+    Ok(Some(core))
 }
 
 fn style_object_to_atoms(
@@ -631,7 +589,7 @@ fn apply_pattern_transform(
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut TransformCache,
+    cache: &mut HashMap<PatternTransformCacheKey, Option<Literal>>,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
     let Some(id) = pattern_transform_refs.get(name) else {
         return Ok(None);
@@ -655,7 +613,7 @@ fn apply_pattern_transform(
         name: name.to_owned(),
         props: props_key,
     };
-    if let Some(cached) = cache.pattern.get(&cache_key) {
+    if let Some(cached) = cache.get(&cache_key) {
         return Ok(cached.clone());
     }
 
@@ -669,7 +627,8 @@ fn apply_pattern_transform(
         .call2(&JsValue::NULL, &props, &JsValue::NULL)
         .map_err(|err| {
             callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` threw: {err:?}"
+                "Pattern transform callback `{id}` for `{name}` threw: {}",
+                js_error_message(&err)
             ))
         })?;
     let transformed = if result.is_null() || result.is_undefined() {
@@ -686,7 +645,7 @@ fn apply_pattern_transform(
             ))
         })?
     };
-    cache.pattern.insert(cache_key, transformed.clone());
+    cache.insert(cache_key, transformed.clone());
     Ok(transformed)
 }
 
@@ -761,6 +720,13 @@ fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
     }
 }
 
+fn js_error_message(value: &JsValue) -> String {
+    if let Some(error) = value.dyn_ref::<js_sys::Error>() {
+        return error.message().into();
+    }
+    value.as_string().unwrap_or_else(|| format!("{value:?}"))
+}
+
 fn capitalize(value: &str) -> String {
     let mut chars = value.chars();
     let Some(first) = chars.next() else {
@@ -775,6 +741,34 @@ fn atom_value_to_json(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
         pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
         pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
         pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
+    }
+}
+
+fn core_atom_from_atom_serde(atom: &AtomSerde) -> Option<CoreAtom> {
+    let value = atom_value_from_json(&atom.value)?;
+    let conditions: SmallVec<[Box<str>; 2]> = atom
+        .conditions
+        .iter()
+        .cloned()
+        .map(String::into_boxed_str)
+        .collect();
+    Some(CoreAtom::new(
+        atom.prop.clone().into_boxed_str(),
+        value,
+        conditions,
+        false,
+    ))
+}
+
+fn atom_value_from_json(value: &serde_json::Value) -> Option<AtomValue> {
+    match value {
+        serde_json::Value::String(value) => Some(AtomValue::String(value.clone().into_boxed_str())),
+        serde_json::Value::Number(value) => {
+            Some(AtomValue::Number(value.to_string().into_boxed_str()))
+        }
+        serde_json::Value::Bool(value) => Some(AtomValue::Bool(*value)),
+        serde_json::Value::Null => Some(AtomValue::Null),
+        serde_json::Value::Array(_) | serde_json::Value::Object(_) => None,
     }
 }
 

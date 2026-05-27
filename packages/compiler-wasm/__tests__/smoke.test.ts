@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { createCompiler, loadWasm } from '../src'
+import { createCompiler, createCompilerFromWasmModule, loadWasm } from '../src'
 import type { Atom, ExtractResult, PatternHelpers } from '../src'
 
 const PKG_NODE = resolve(__dirname, '..', 'pkg-node', 'compiler_wasm.js')
@@ -1084,6 +1084,145 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
       expect(calls).toBe(1)
     })
 
+    it('reports utility transform callback failures during parseFile', async () => {
+      const { compiler } = await createCompiler({
+        config: {
+          ...baseConfig,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': () => {
+              throw new Error('boom')
+            },
+          },
+        },
+      })
+
+      const report = compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px' })`)
+
+      expect(
+        report.diagnostics.map((diagnostic: any) => ({
+          message: diagnostic.message,
+          severity: diagnostic.severity,
+        })),
+      ).toMatchInlineSnapshot(`
+        [
+          {
+            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: boom",
+            "severity": "warning",
+          },
+        ]
+      `)
+      expect(compiler.atoms()).toMatchInlineSnapshot(`[]`)
+    })
+
+    it('does not cache failed utility transform callbacks', async () => {
+      let calls = 0
+      const { compiler } = await createCompiler({
+        config: {
+          ...baseConfig,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => {
+              calls += 1
+              if (calls === 1) throw new Error('boom')
+              return { width: value, height: value }
+            },
+          },
+        },
+      })
+
+      const source = `import { css } from '@panda/css'\ncss({ size: '4px' })`
+      const failed = compiler.parseFile('/Button.tsx', source)
+      const retried = compiler.parseFile('/Button.tsx', source)
+
+      expect(
+        failed.diagnostics.map((diagnostic: any) => ({
+          message: diagnostic.message,
+          severity: diagnostic.severity,
+        })),
+      ).toMatchInlineSnapshot(`
+        [
+          {
+            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: boom",
+            "severity": "warning",
+          },
+        ]
+      `)
+      expect(retried.diagnostics).toMatchInlineSnapshot(`[]`)
+      expect(calls).toBe(2)
+      expect(compiler.atoms()).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "height",
+            "value": "4px",
+            "conditions": [],
+          },
+          {
+            "prop": "width",
+            "value": "4px",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('applies utility transform callbacks during refreshFile', async () => {
+      const { compiler } = await createCompiler({
+        config: {
+          ...baseConfig,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({ width: value, height: value }),
+          },
+        },
+      })
+
+      compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px' })`)
+      expect(compiler.refreshFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '8px' })`)).toBe(true)
+
+      expect(compiler.atoms()).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "height",
+            "value": "8px",
+            "conditions": [],
+          },
+          {
+            "prop": "width",
+            "value": "8px",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
     it('shares utility transform cache between atoms and encoded recipes', async () => {
       let calls = 0
       const { compiler } = await createCompiler(
@@ -1211,6 +1350,114 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
             "conditions": [
               "_hover",
             ],
+          },
+        ]
+      `)
+    })
+
+    it('wires pattern transform callbacks through an initialized wasm module', async () => {
+      const mod = await loadWasm()
+      const { compiler } = createCompilerFromWasmModule(mod, {
+        config: {
+          ...baseConfig,
+          patterns: {
+            stack: {
+              properties: {
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              gap: props.gap,
+            }),
+          },
+        },
+      })
+
+      compiler.parseFile('/Stack.tsx', `import { stack } from '@panda/patterns'\nstack({ gap: '4px' })`)
+
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "display",
+            "value": "flex",
+            "conditions": [],
+          },
+          {
+            "prop": "gap",
+            "value": "4px",
+            "conditions": [],
+          },
+        ]
+      `)
+    })
+
+    it('applies pattern defaultValues before wasm pattern transform callbacks', async () => {
+      const { compiler } = await createCompiler({
+        config: {
+          ...baseConfig,
+          patterns: {
+            stack: {
+              properties: {
+                gap: {},
+              },
+              defaultValues: {
+                kind: 'js-callback',
+                id: 'patterns.stack.defaultValues',
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.defaultValues': {
+            'patterns.stack.defaultValues': () => ({
+              gap: '2px',
+            }),
+          },
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              gap: props.gap,
+            }),
+          },
+        },
+      })
+
+      compiler.parseFile(
+        '/Stack.tsx',
+        `import { stack } from '@panda/patterns'
+         stack({})
+         stack({ gap: '4px' })`,
+      )
+
+      expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
+        [
+          {
+            "prop": "display",
+            "value": "flex",
+            "conditions": [],
+          },
+          {
+            "prop": "gap",
+            "value": "2px",
+            "conditions": [],
+          },
+          {
+            "prop": "gap",
+            "value": "4px",
+            "conditions": [],
           },
         ]
       `)

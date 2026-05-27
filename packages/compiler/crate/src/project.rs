@@ -16,8 +16,6 @@ use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
 use pandacss_config::{CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig};
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
-use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot};
-use serde::Deserialize;
 use smallvec::SmallVec;
 
 use crate::compile::{CompileManifest, CompileOutput};
@@ -70,14 +68,10 @@ pub struct Project {
 struct CallbackHost {
     utility_transform_refs: HashMap<String, String>,
     pattern_transform_refs: HashMap<String, String>,
-    utility_transforms: HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    pattern_transforms: HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
+    utility_transforms:
+        HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    pattern_transforms:
+        HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
     transform_cache: TransformCache,
 }
 
@@ -150,7 +144,7 @@ impl Project {
     pub fn register_utility_transform(
         &mut self,
         id: String,
-        callback: FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
+        callback: FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>,
     ) {
         self.callbacks.utility_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_utility();
@@ -167,7 +161,7 @@ impl Project {
     pub fn register_pattern_transform(
         &mut self,
         id: String,
-        callback: FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
+        callback: FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>,
     ) {
         self.callbacks.pattern_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_pattern();
@@ -182,23 +176,45 @@ impl Project {
     )]
     pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         crate::init_tracing();
-        let report = if !self.callbacks.has_pattern_transforms() {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        let report = if !has_pattern_transforms && !has_utility_transforms {
             self.inner.parse_file(&path, &source)
         } else {
             let Project {
                 inner, callbacks, ..
             } = self;
+            let pattern_cache = &mut callbacks.transform_cache.pattern;
+            let utility_cache = &mut callbacks.transform_cache.utility;
             let mut transform = |name: &str, styles: &Literal| {
                 apply_pattern_transform(
                     name,
                     styles,
                     &callbacks.pattern_transform_refs,
                     &callbacks.pattern_transforms,
-                    &mut callbacks.transform_cache,
+                    pattern_cache,
                     &env,
                 )
             };
-            inner.parse_file_with_pattern_transforms(&path, &source, &mut transform)
+            let mut utility_transform = |prop: &str, value: &AtomValue| {
+                apply_utility_transform(
+                    prop,
+                    value,
+                    &callbacks.utility_transform_refs,
+                    &callbacks.utility_transforms,
+                    utility_cache,
+                    &env,
+                )
+            };
+            inner.parse_file_with_transforms(
+                &path,
+                &source,
+                has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            )
         };
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
         let report = ParseFileReport {
@@ -247,8 +263,46 @@ impl Project {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn refresh_file(&mut self, path: String, source: String) -> bool {
-        self.inner.refresh_file(&path, &source)
+    pub fn refresh_file(&mut self, env: Env, path: String, source: String) -> bool {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_pattern_transforms && !has_utility_transforms {
+            return self.inner.refresh_file(&path, &source);
+        }
+
+        let Project {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut transform = |name: &str, styles: &Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+                &env,
+            )
+        };
+        let mut utility_transform = |prop: &str, value: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                value,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                &env,
+            )
+        };
+        inner.refresh_file_with_transforms(
+            &path,
+            &source,
+            has_pattern_transforms
+                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+        )
     }
 
     /// Drop a file's contribution. Returns `true` if the path was known.
@@ -283,19 +337,10 @@ impl Project {
     pub fn atoms(&mut self, env: Env) -> napi::Result<Vec<crate::Atom>> {
         crate::init_tracing();
         let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
+        let _ = env;
         let atoms = to_atoms(self.inner.atoms());
-        if !self.callbacks.has_utility_transforms() {
-            crate::flush_tracing();
-            return Ok(atoms);
-        }
-        apply_utility_transforms(
-            atoms,
-            &self.callbacks.utility_transform_refs,
-            &self.callbacks.utility_transforms,
-            &mut self.callbacks.transform_cache,
-            &env,
-        )
-        .inspect(|_| crate::flush_tracing())
+        crate::flush_tracing();
+        Ok(atoms)
     }
 
     /// Every `cva()` recipe entry, in `(file, span_start)` order.
@@ -342,44 +387,20 @@ impl Project {
     pub fn encoded_recipes(&mut self, env: Env) -> napi::Result<serde_json::Value> {
         crate::init_tracing();
         let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
+        let _ = env;
         let encoded = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .unwrap_or(serde_json::Value::Null);
-        if !self.callbacks.has_utility_transforms() {
-            crate::flush_tracing();
-            return Ok(encoded);
-        }
-        apply_utility_transforms_to_encoded_recipes(
-            encoded,
-            &self.callbacks.utility_transform_refs,
-            &self.callbacks.utility_transforms,
-            &mut self.callbacks.transform_cache,
-            &env,
-        )
-        .inspect(|_| crate::flush_tracing())
+        crate::flush_tracing();
+        Ok(encoded)
     }
 
     #[napi]
     pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
         crate::init_tracing();
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
-        let has_utility_transforms = self.callbacks.has_utility_transforms();
-        let encoded_recipes = if has_utility_transforms {
-            let encoded = self.encoded_recipes(env)?;
-            encoded_recipes_from_json(encoded)?
-        } else {
-            self.inner.encoded_recipes().snapshot()
-        };
-        let transformed_atoms;
-        let atoms = if has_utility_transforms {
-            transformed_atoms = self
-                .atoms(env)?
-                .into_iter()
-                .filter_map(core_atom_from_js_atom)
-                .collect::<Vec<_>>();
-            transformed_atoms.iter().collect::<Vec<_>>()
-        } else {
-            self.inner.atoms().iter().collect::<Vec<_>>()
-        };
+        let _ = env;
+        let encoded_recipes = self.inner.encoded_recipes().snapshot();
+        let atoms = self.inner.atoms().iter().collect::<Vec<_>>();
         let static_encoded_recipes = self.inner.static_encoded_recipes(&self.user_config);
         let options = pandacss_stylesheet::StylesheetOptions {
             minify: self
@@ -469,105 +490,25 @@ fn atom_value_from_json(value: serde_json::Value) -> Option<AtomValue> {
     }
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct JsonEncodedRecipes {
-    #[serde(default)]
-    base: Vec<JsonRecipeStyleGroup>,
-    #[serde(default)]
-    variants: Vec<JsonRecipeStyleGroup>,
-    #[serde(default)]
-    atomic: Vec<JsonAtom>,
+fn atom_value_to_json(value: &AtomValue) -> serde_json::Value {
+    match value {
+        AtomValue::String(value) => serde_json::Value::String(value.to_string()),
+        AtomValue::Number(value) => parse_number_string(value),
+        AtomValue::Bool(value) => serde_json::Value::Bool(*value),
+        AtomValue::Null => serde_json::Value::Null,
+    }
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct JsonRecipeStyleGroup {
-    recipe: String,
-    #[serde(default)]
-    slot: serde_json::Value,
-    class_name: String,
-    #[serde(default)]
-    entries: Vec<JsonRecipeStyleEntry>,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct JsonRecipeStyleEntry {
-    prop: String,
-    value: serde_json::Value,
-    #[serde(default)]
-    conditions: Vec<String>,
-    #[serde(default)]
-    important: bool,
-}
-
-#[derive(Deserialize)]
-struct JsonAtom {
-    prop: String,
-    value: serde_json::Value,
-    #[serde(default)]
-    conditions: Vec<String>,
-}
-
-fn encoded_recipes_from_json(value: serde_json::Value) -> napi::Result<EncodedRecipesSnapshot> {
-    let decoded: JsonEncodedRecipes = serde_json::from_value(value)
-        .map_err(|err| napi::Error::from_reason(format!("invalid encoded recipe CSS: {err}")))?;
-    Ok(EncodedRecipesSnapshot {
-        base: decoded
-            .base
-            .into_iter()
-            .map(recipe_group_from_json)
-            .collect::<napi::Result<_>>()?,
-        variants: decoded
-            .variants
-            .into_iter()
-            .map(recipe_group_from_json)
-            .collect::<napi::Result<_>>()?,
-        atomic: decoded
-            .atomic
-            .into_iter()
-            .filter_map(|atom| {
-                core_atom_from_js_atom(crate::Atom {
-                    prop: atom.prop,
-                    value: atom.value,
-                    conditions: atom.conditions,
-                })
-            })
-            .collect(),
-    })
-}
-
-fn recipe_group_from_json(group: JsonRecipeStyleGroup) -> napi::Result<RecipeStyleGroupSnapshot> {
-    Ok(RecipeStyleGroupSnapshot {
-        recipe: group.recipe.into_boxed_str(),
-        slot: group.slot,
-        class_name: group.class_name.into_boxed_str(),
-        entries: group
-            .entries
-            .into_iter()
-            .map(recipe_entry_from_json)
-            .collect::<napi::Result<_>>()?,
-    })
-}
-
-fn recipe_entry_from_json(entry: JsonRecipeStyleEntry) -> napi::Result<RecipeStyleEntry> {
-    let Some(value) = atom_value_from_json(entry.value) else {
-        return Err(napi::Error::from_reason(format!(
-            "invalid recipe CSS value for `{}`",
-            entry.prop
-        )));
-    };
-    Ok(RecipeStyleEntry {
-        prop: entry.prop.into_boxed_str(),
-        value,
-        conditions: entry
-            .conditions
-            .into_iter()
-            .map(String::into_boxed_str)
-            .collect(),
-        important: entry.important,
-    })
+fn parse_number_string(value: &str) -> serde_json::Value {
+    if let Ok(value) = value.parse::<i64>() {
+        return serde_json::Value::from(value);
+    }
+    if let Ok(value) = value.parse::<f64>() {
+        if let Some(value) = serde_json::Number::from_f64(value) {
+            return serde_json::Value::Number(value);
+        }
+    }
+    serde_json::Value::String(value.to_owned())
 }
 
 fn apply_project_options(
@@ -580,195 +521,73 @@ fn apply_project_options(
     project
 }
 
-fn apply_utility_transforms(
-    atoms: Vec<crate::Atom>,
+fn apply_utility_transform(
+    prop: &str,
+    value: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
+    callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    cache: &mut HashMap<UtilityTransformCacheKey, Vec<crate::Atom>>,
     env: &Env,
-) -> napi::Result<Vec<crate::Atom>> {
-    if utility_transform_refs.is_empty() {
-        return Ok(atoms);
-    }
-
-    let mut out = Vec::with_capacity(atoms.len());
-    for atom in atoms {
-        let Some(id) = utility_transform_refs.get(&atom.prop) else {
-            out.push(atom);
-            continue;
-        };
-        let Some(callback) = callbacks.get(id) else {
-            return Err(napi::Error::from_reason(format!(
-                "Missing utility transform callback `{id}` for `{}`",
-                atom.prop
-            )));
-        };
-
-        let cache_key = UtilityTransformCacheKey {
-            id: id.clone(),
-            prop: atom.prop.clone(),
-            value: atom.value.to_string(),
-        };
-        if let Some(cached) = cache.utility.get(&cache_key) {
-            out.extend(apply_conditions(cached, &atom.conditions));
-            continue;
-        }
-
-        let transform = callback.borrow_back(env)?;
-        let result = transform.call(FnArgs::from((
-            atom.value.clone(),
-            transform_args(&atom.value),
-        )))?;
-        let Some(style) = result.as_object() else {
-            continue;
-        };
-        if style.is_empty() {
-            continue;
-        }
-        let transformed = style_object_to_atoms(style, &[]);
-        out.extend(apply_conditions(&transformed, &atom.conditions));
-        cache.utility.insert(cache_key, transformed);
-    }
-
-    Ok(out)
-}
-
-fn apply_utility_transforms_to_encoded_recipes(
-    mut encoded: serde_json::Value,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
-    env: &Env,
-) -> napi::Result<serde_json::Value> {
-    transform_recipe_groups(
-        encoded.get_mut("base"),
-        utility_transform_refs,
-        callbacks,
-        cache,
-        env,
-    )?;
-    transform_recipe_groups(
-        encoded.get_mut("variants"),
-        utility_transform_refs,
-        callbacks,
-        cache,
-        env,
-    )?;
-    if let Some(atomic) = encoded.get_mut("atomic") {
-        let atoms = json_atoms_to_atoms(atomic);
-        *atomic = atoms_to_json(apply_utility_transforms(
-            atoms,
-            utility_transform_refs,
-            callbacks,
-            cache,
-            env,
-        )?);
-    }
-    Ok(encoded)
-}
-
-fn transform_recipe_groups(
-    groups: Option<&mut serde_json::Value>,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
-    env: &Env,
-) -> napi::Result<()> {
-    let Some(serde_json::Value::Array(groups)) = groups else {
-        return Ok(());
+) -> Result<Option<Vec<CoreAtom>>, pandacss_extractor::Diagnostic> {
+    let Some(id) = utility_transform_refs.get(prop) else {
+        return Ok(None);
     };
-    for group in groups {
-        let Some(entries) = group.get_mut("entries") else {
-            continue;
-        };
-        let atoms = json_atoms_to_atoms(entries);
-        *entries = atoms_to_json(apply_utility_transforms(
-            atoms,
-            utility_transform_refs,
-            callbacks,
-            cache,
-            env,
-        )?);
-    }
-    Ok(())
-}
-
-fn json_atoms_to_atoms(value: &serde_json::Value) -> Vec<crate::Atom> {
-    let serde_json::Value::Array(items) = value else {
-        return Vec::new();
+    let Some(callback) = callbacks.get(id) else {
+        return Err(callback_diagnostic(format!(
+            "Missing utility transform callback `{id}` for `{prop}`"
+        )));
     };
-    items
-        .iter()
-        .filter_map(|item| {
-            let serde_json::Value::Object(entry) = item else {
-                return None;
-            };
-            let prop = entry.get("prop")?.as_str()?.to_owned();
-            let value = entry
-                .get("value")
+
+    let value = atom_value_to_json(value);
+    let cache_key = UtilityTransformCacheKey {
+        id: id.clone(),
+        prop: prop.to_owned(),
+        value: value.to_string(),
+    };
+    if let Some(cached) = cache.get(&cache_key) {
+        return Ok(Some(
+            cached
+                .iter()
                 .cloned()
-                .unwrap_or(serde_json::Value::Null);
-            let conditions = entry
-                .get("conditions")
-                .and_then(serde_json::Value::as_array)
-                .map(|items| {
-                    items
-                        .iter()
-                        .filter_map(serde_json::Value::as_str)
-                        .map(str::to_owned)
-                        .collect()
-                })
-                .unwrap_or_default();
-            Some(crate::Atom {
-                prop,
-                value,
-                conditions,
-            })
-        })
-        .collect()
-}
+                .filter_map(core_atom_from_js_atom)
+                .collect(),
+        ));
+    }
 
-fn atoms_to_json(atoms: Vec<crate::Atom>) -> serde_json::Value {
-    serde_json::Value::Array(
-        atoms
-            .into_iter()
-            .map(|atom| {
-                let mut entry = serde_json::Map::new();
-                entry.insert("prop".to_owned(), serde_json::Value::String(atom.prop));
-                entry.insert("value".to_owned(), atom.value);
-                entry.insert(
-                    "conditions".to_owned(),
-                    serde_json::Value::Array(
-                        atom.conditions
-                            .into_iter()
-                            .map(serde_json::Value::String)
-                            .collect(),
-                    ),
-                );
-                serde_json::Value::Object(entry)
-            })
-            .collect(),
-    )
+    let transform = callback.borrow_back(env).map_err(|err| {
+        callback_diagnostic(format!(
+            "Failed to borrow utility transform callback `{id}` for `{prop}`: {err}"
+        ))
+    })?;
+    let result = transform.call(FnArgs::from((value,))).map_err(|err| {
+        callback_diagnostic(format!(
+            "Utility transform callback `{id}` for `{prop}` threw: {}",
+            err.reason
+        ))
+    })?;
+    let Some(style) = result.as_object() else {
+        return Ok(Some(Vec::new()));
+    };
+    if style.is_empty() {
+        cache.insert(cache_key, Vec::new());
+        return Ok(Some(Vec::new()));
+    }
+    let transformed = style_object_to_atoms(style, &[]);
+    let core = transformed
+        .iter()
+        .cloned()
+        .filter_map(core_atom_from_js_atom)
+        .collect();
+    cache.insert(cache_key, transformed);
+    Ok(Some(core))
 }
 
 fn apply_pattern_transform(
     name: &str,
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
+    callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    cache: &mut HashMap<PatternTransformCacheKey, Option<Literal>>,
     env: &Env,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
     let Some(id) = pattern_transform_refs.get(name) else {
@@ -793,7 +612,7 @@ fn apply_pattern_transform(
         name: name.to_owned(),
         props: props_key,
     };
-    if let Some(cached) = cache.pattern.get(&cache_key) {
+    if let Some(cached) = cache.get(&cache_key) {
         return Ok(cached.clone());
     }
 
@@ -802,13 +621,12 @@ fn apply_pattern_transform(
             "Failed to borrow pattern transform callback `{id}` for `{name}`: {err}"
         ))
     })?;
-    let result = transform
-        .call(FnArgs::from((props, pattern_transform_args())))
-        .map_err(|err| {
-            callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` threw: {err}"
-            ))
-        })?;
+    let result = transform.call(FnArgs::from((props,))).map_err(|err| {
+        callback_diagnostic(format!(
+            "Pattern transform callback `{id}` for `{name}` threw: {}",
+            err.reason
+        ))
+    })?;
     let transformed = if result.is_null() {
         None
     } else {
@@ -818,7 +636,7 @@ fn apply_pattern_transform(
             ))
         })?
     };
-    cache.pattern.insert(cache_key, transformed.clone());
+    cache.insert(cache_key, transformed.clone());
     Ok(transformed)
 }
 
@@ -865,38 +683,6 @@ fn callback_ref_id(value: &CallbackRef) -> Option<&str> {
     (value.kind == "js-callback")
         .then(|| value.id.as_deref())
         .flatten()
-}
-
-fn transform_args(value: &serde_json::Value) -> serde_json::Value {
-    serde_json::json!({
-        "raw": value,
-        "token": null,
-        "utils": {
-            "colorMix": null
-        }
-    })
-}
-
-fn pattern_transform_args() -> serde_json::Value {
-    serde_json::json!({
-        "map": null,
-        "isCssUnit": null,
-        "isCssVar": null
-    })
-}
-
-fn apply_conditions(atoms: &[crate::Atom], conditions: &[String]) -> Vec<crate::Atom> {
-    if conditions.is_empty() {
-        return atoms.to_vec();
-    }
-    atoms
-        .iter()
-        .map(|atom| {
-            let mut atom = atom.clone();
-            atom.conditions = conditions.to_vec();
-            atom
-        })
-        .collect()
 }
 
 fn style_object_to_atoms(

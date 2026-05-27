@@ -33,6 +33,9 @@ export function registerCallbacks(
   tokenDictionary: TokenDictionaryInput | undefined,
 ) {
   const utilityTransforms = callbacks['utility.transform']
+  if (utilityTransforms && Object.keys(utilityTransforms).length > 0 && !project.registerUtilityTransform) {
+    throw new Error('WASM project does not support utility.transform callbacks')
+  }
   if (project.registerUtilityTransform && utilityTransforms && Object.keys(utilityTransforms).length > 0) {
     for (const [id, callback] of Object.entries(utilityTransforms)) {
       project.registerUtilityTransform(id, (value) => callback(value, createTransformArgs(value, tokenDictionary)))
@@ -40,9 +43,21 @@ export function registerCallbacks(
   }
 
   const patternTransforms = callbacks['pattern.transform']
+  if (patternTransforms && Object.keys(patternTransforms).length > 0 && !project.registerPatternTransform) {
+    throw new Error('WASM project does not support pattern.transform callbacks')
+  }
+  const config = project.config()
+  const patternDefaultValues = callbacks['pattern.defaultValues']
+  const patternDefaultValueRefs =
+    config && patternDefaultValues ? getPatternDefaultValueRefsByTransformId(config) : new Map<string, string>()
   if (project.registerPatternTransform && patternTransforms && Object.keys(patternTransforms).length > 0) {
     for (const [id, callback] of Object.entries(patternTransforms)) {
-      project.registerPatternTransform(id, (props) => callback(props, createPatternHelpers()))
+      const defaultValueId = patternDefaultValueRefs.get(id)
+      const defaultValue = defaultValueId ? patternDefaultValues?.[defaultValueId] : undefined
+      project.registerPatternTransform(id, (props) => {
+        const nextProps = defaultValue ? mergePatternDefaultValues(defaultValue(props), props) : props
+        return callback(nextProps, createPatternHelpers())
+      })
     }
   }
 }
@@ -51,6 +66,7 @@ export function assertProjectCallbacks(config: Record<string, unknown>, callback
   assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])
   assertCallbackRefs('utility.transform', getUtilityTransformRefs(config), callbacks['utility.transform'])
   assertCallbackRefs('pattern.transform', getPatternTransformRefs(config), callbacks['pattern.transform'])
+  assertCallbackRefs('pattern.defaultValues', getPatternDefaultValueRefs(config), callbacks['pattern.defaultValues'])
 }
 
 export function resolveUtilityValueCallbacks(
@@ -229,6 +245,29 @@ function getPatternTransformRefs(config: Record<string, unknown>) {
   return refs
 }
 
+function getPatternDefaultValueRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  collectPatternDefaultValueRefs(config.patterns, refs)
+  return refs
+}
+
+function getPatternDefaultValueRefsByTransformId(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  const patterns = config.patterns
+  if (!patterns || typeof patterns !== 'object' || Array.isArray(patterns)) return refs
+
+  for (const pattern of Object.values(patterns as Record<string, unknown>)) {
+    if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    const transform = (pattern as Record<string, unknown>).transform
+    const defaultValues = (pattern as Record<string, unknown>).defaultValues
+    if (isCallbackRef(transform) && isCallbackRef(defaultValues)) {
+      refs.set(transform.id, defaultValues.id)
+    }
+  }
+
+  return refs
+}
+
 function collectPatternTransformRefs(value: unknown, refs: Map<string, string>) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return
   collectPatternTransformRefMap(value as Record<string, unknown>, refs)
@@ -240,6 +279,24 @@ function collectPatternTransformRefMap(patterns: Record<string, unknown>, refs: 
     const transform = (pattern as Record<string, unknown>).transform
     if (isCallbackRef(transform)) refs.set(name, transform.id)
   }
+}
+
+function collectPatternDefaultValueRefs(value: unknown, refs: Map<string, string>) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  for (const [name, pattern] of Object.entries(value as Record<string, unknown>)) {
+    if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    const defaultValues = (pattern as Record<string, unknown>).defaultValues
+    if (isCallbackRef(defaultValues)) refs.set(name, defaultValues.id)
+  }
+}
+
+function mergePatternDefaultValues(defaults: unknown, props: unknown) {
+  if (!isPlainObject(defaults) || !isPlainObject(props)) return props
+  return { ...defaults, ...compactObject(props) }
+}
+
+function compactObject(value: Record<string, unknown>) {
+  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined))
 }
 
 function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: string } {

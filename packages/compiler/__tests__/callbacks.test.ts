@@ -483,6 +483,166 @@ describe('Compiler callbacks', () => {
     expect(calls).toBe(1)
   })
 
+  it('reports utility transform callback failures during parseFile', () => {
+    const compiler = createCompiler(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': () => {
+              throw new Error('boom')
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const report = compiler.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ size: '4px' })`,
+    )
+
+    expect(report.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
+      [
+        {
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+          "severity": "warning",
+        },
+      ]
+    `)
+    expect(compiler.atoms()).toMatchInlineSnapshot(`[]`)
+  })
+
+  it('does not cache failed utility transform callbacks', () => {
+    let calls = 0
+    const compiler = createCompiler(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => {
+              calls += 1
+              if (calls === 1) throw new Error('boom')
+              return { width: value, height: value }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const source = `import { css } from '@panda/css'
+       css({ size: '4px' })`
+
+    const failed = compiler.parseFile('/virtual/Button.tsx', source)
+    const retried = compiler.parseFile('/virtual/Button.tsx', source)
+
+    expect(failed.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
+      [
+        {
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+          "severity": "warning",
+        },
+      ]
+    `)
+    expect(retried.diagnostics).toMatchInlineSnapshot(`[]`)
+    expect(calls).toBe(2)
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "height",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies utility transform callbacks during refreshFile', () => {
+    const compiler = createCompiler(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value: string) => ({ width: value, height: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ size: '4px' })`,
+    )
+    expect(
+      compiler.refreshFile(
+        '/virtual/Button.tsx',
+        `import { css } from '@panda/css'
+       css({ size: '8px' })`,
+      ),
+    ).toBe(true)
+
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "height",
+          "value": "8px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "8px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
   it('shares utility transform cache between atoms and encoded recipes', () => {
     let calls = 0
     const compiler = createCompiler(

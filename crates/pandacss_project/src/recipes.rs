@@ -7,8 +7,10 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::Literal;
+use pandacss_encoder::{
+    Atom, AtomValue, ConditionMatcher, Encoder, atom_value_sort_key, compare_atoms_by_emit_order,
+};
+use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
 use pandacss_utility::{StyleNormalizer, Utility};
@@ -915,6 +917,82 @@ impl EncodedRecipes {
             atomic: sorted_atoms_vec(&self.atomic),
         }
     }
+
+    pub(crate) fn transform_utilities(
+        &mut self,
+        transform: &mut crate::UtilityTransformFn<'_>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        transform_recipe_groups(&mut self.base, transform, diagnostics);
+        transform_recipe_groups(&mut self.variants, transform, diagnostics);
+        self.atomic = transform_atoms(std::mem::take(&mut self.atomic), transform, diagnostics);
+    }
+}
+
+fn transform_atoms(
+    atoms: FxHashSet<Atom>,
+    transform: &mut crate::UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> FxHashSet<Atom> {
+    let mut out = FxHashSet::default();
+    for atom in atoms {
+        match transform(atom.prop(), atom.value()) {
+            Ok(Some(transformed)) => {
+                let conditions: SmallVec<[Box<str>; 2]> =
+                    atom.conditions().iter().cloned().collect();
+                out.extend(
+                    transformed
+                        .into_iter()
+                        .map(|next| next.with_prefixed_conditions(&conditions)),
+                );
+            }
+            Ok(None) => {
+                out.insert(atom);
+            }
+            Err(diagnostic) => diagnostics.push(diagnostic),
+        }
+    }
+    out
+}
+
+fn transform_recipe_groups<K: Eq + std::hash::Hash>(
+    groups: &mut FxHashMap<K, RecipeStyleGroup>,
+    transform: &mut crate::UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for group in groups.values_mut() {
+        group.entries =
+            transform_recipe_entries(std::mem::take(&mut group.entries), transform, diagnostics);
+    }
+}
+
+fn transform_recipe_entries(
+    entries: FxHashSet<RecipeStyleEntry>,
+    transform: &mut crate::UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> FxHashSet<RecipeStyleEntry> {
+    let mut out = FxHashSet::default();
+    for entry in entries {
+        match transform(entry.prop.as_ref(), &entry.value) {
+            Ok(Some(transformed)) => {
+                for atom in transformed {
+                    let mut conditions = entry.conditions.clone();
+                    conditions.extend(atom.conditions().iter().cloned());
+                    out.insert(RecipeStyleEntry {
+                        prop: atom.prop().into(),
+                        value: atom.value().clone(),
+                        conditions,
+                        important: entry.important || atom.important(),
+                    });
+                }
+            }
+            Ok(None) => {
+                out.insert(entry);
+            }
+            Err(diagnostic) => diagnostics.push(diagnostic),
+        }
+    }
+    out
 }
 
 impl EncodedRecipesCache {
@@ -1391,7 +1469,7 @@ fn sorted_recipe_part_group_snapshots(
                 serde_json::Value::String(slot.to_string())
             }),
             class_name: group.class_name.clone(),
-            entries: group.entries.iter().cloned().collect(),
+            entries: sorted_recipe_entries(&group.entries),
         })
         .collect();
     out.sort_by(|a, b| {
@@ -1414,7 +1492,7 @@ fn sorted_recipe_variant_group_snapshots(
                 serde_json::Value::String(slot.to_string())
             }),
             class_name: group.class_name.clone(),
-            entries: group.entries.iter().cloned().collect(),
+            entries: sorted_recipe_entries(&group.entries),
         })
         .collect();
     out.sort_by(|a, b| {
@@ -1433,5 +1511,16 @@ fn slot_sort_key(slot: &serde_json::Value) -> &str {
 fn sorted_atoms_vec(atoms: &FxHashSet<Atom>) -> Vec<Atom> {
     let mut out: Vec<_> = atoms.iter().cloned().collect();
     out.sort_by(compare_atoms_by_emit_order);
+    out
+}
+
+fn sorted_recipe_entries(entries: &FxHashSet<RecipeStyleEntry>) -> Vec<RecipeStyleEntry> {
+    let mut out: Vec<_> = entries.iter().cloned().collect();
+    out.sort_by(|a, b| {
+        a.conditions
+            .cmp(&b.conditions)
+            .then_with(|| a.prop.cmp(&b.prop))
+            .then_with(|| atom_value_sort_key(&a.value).cmp(&atom_value_sort_key(&b.value)))
+    });
     out
 }
