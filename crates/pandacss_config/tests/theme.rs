@@ -145,3 +145,50 @@ fn deserializes_typed_theme_shape() {
       - dark
     ");
 }
+
+#[test]
+fn preserves_global_css_in_serialized_config() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "globalCss": {
+            "html, body": {
+                "margin": 0,
+                "_hover": {
+                    "color": "red"
+                }
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    let serialized = serde_json::to_value(&config).expect("serialized config");
+    assert_yaml_snapshot!(serialized.get("globalCss"), @r#"
+    "html, body":
+      margin: 0
+      _hover:
+        color: red
+    "#);
+}
+
+#[test]
+fn preserves_global_vars_in_serialized_config() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "globalVars": {
+            "--random-color": "red",
+            "--button-color": {
+                "syntax": "<color>",
+                "inherits": false,
+                "initialValue": "blue"
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    let serialized = serde_json::to_value(&config).expect("serialized config");
+    assert_yaml_snapshot!(serialized.get("globalVars"), @r#"
+    "--random-color": red
+    "--button-color":
+      syntax: "<color>"
+      inherits: false
+      initialValue: blue
+    "#);
+}

@@ -459,7 +459,8 @@ fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
-fn hyphenate_property(property: &str) -> String {
+#[must_use]
+pub fn hyphenate_property(property: &str) -> String {
     if property.starts_with("--") {
         return property.to_owned();
     }

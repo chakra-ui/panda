@@ -17,6 +17,11 @@ The stylesheet crate owns:
 
 - Dynamic atomic CSS emission from `Atom` records.
 - Config recipe and slot recipe CSS emission from `EncodedRecipesSnapshot`.
+- Base-layer config CSS emission from serialized `globalCss`.
+- Base-layer `globalVars` emission:
+  - string values become custom property declarations under `cssVarRoot`, defaulting to `:where(html)`
+  - object values become top-level `@property` registrations
+  - malformed entries are ignored rather than diagnosed
 - The supported native `staticCss` subset:
   - `staticCss.css`
   - `staticCss.recipes`
@@ -33,11 +38,16 @@ The stylesheet crate owns:
 
 The stylesheet crate does **not** own:
 
-- Token `:root` CSS, reset, base/global CSS, keyframes, or theme token artifacts.
+- Token `:root` CSS, reset CSS, keyframes, or theme token artifacts.
 - `staticCss.patterns` or `staticCss.themes`; unsupported native paths report diagnostics instead of silently emitting
   partial CSS.
 - CSS parsing, rule merging, prefixing, shorthand folding, or AST minification.
 - Incremental stylesheet patching for watch mode.
+
+`globalVars` intentionally remains regular CSS variable output. It does not emit Tailwind-style `@theme`, does not
+create utility namespaces, and does not generate utility classes. For `@property` registrations, `syntax` and `inherits`
+are required. `initialValue` is required unless `syntax` is the universal syntax (`"*"`); typed registrations missing an
+initial value are skipped because the resulting CSS rule would be invalid.
 
 ## Ordering
 

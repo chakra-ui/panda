@@ -4,8 +4,9 @@ use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, AtomValue};
 use pandacss_extractor::Literal;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry};
-use pandacss_shared::split_important;
-use pandacss_utility::{Utility, UtilityTransformResult};
+use pandacss_shared::{number_to_js_string, split_important};
+use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};
+use serde_json::Value;
 
 use crate::sort::{SortContext, condition_raw_parts};
 use crate::writer::CssWriter;
@@ -21,6 +22,12 @@ pub fn emit(
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     writer.write_str("@layer reset, base, tokens, recipes, utilities;");
     writer.newline();
+    if has_base_layer(config) {
+        writer.layer("base", |writer| {
+            cx.serialize_styles(writer, &config.global_css);
+            cx.serialize_global_vars(writer);
+        });
+    }
     if has_recipe_rules(recipes) {
         writer.layer("recipes", |writer| {
             for group in &recipes.base {
@@ -48,6 +55,26 @@ fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
         .iter()
         .chain(&recipes.variants)
         .any(|group| !group.entries.is_empty())
+}
+
+fn has_base_layer(config: &UserConfig) -> bool {
+    is_non_empty_object(&config.global_css) || has_global_vars(&config.global_vars)
+}
+
+fn is_non_empty_object(value: &Value) -> bool {
+    matches!(value, Value::Object(entries) if !entries.is_empty())
+}
+
+fn has_global_vars(value: &Value) -> bool {
+    let Value::Object(entries) = value else {
+        return false;
+    };
+
+    entries.iter().any(|(key, value)| match value {
+        Value::String(_) => true,
+        Value::Object(config) => global_var_property(key, config).is_some(),
+        Value::Null | Value::Bool(_) | Value::Number(_) | Value::Array(_) => false,
+    })
 }
 
 fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
@@ -95,6 +122,207 @@ impl<'a> EmitContext<'a> {
         self.write_style_rule(writer, &rule, &result.styles);
     }
 
+    fn serialize_styles(&self, writer: &mut CssWriter, value: &Value) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+        let mut conditions = Vec::new();
+        for (selector, styles) in entries {
+            if let Some(condition) = resolved_condition_parts(self.config, selector) {
+                self.serialize_scope(writer, styles, &mut conditions, condition);
+            } else {
+                self.serialize_style_object(writer, selector, styles, &mut conditions);
+            }
+        }
+    }
+
+    fn serialize_scope(
+        &self,
+        writer: &mut CssWriter,
+        value: &Value,
+        conditions: &mut Vec<ConditionParts>,
+        condition: ConditionParts,
+    ) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+
+        conditions.push(condition);
+        for (selector, styles) in entries {
+            if let Some(condition) = resolved_condition_parts(self.config, selector) {
+                self.serialize_scope(writer, styles, conditions, condition);
+            } else {
+                self.serialize_style_object(writer, selector, styles, conditions);
+            }
+        }
+        conditions.pop();
+    }
+
+    fn serialize_style_object(
+        &self,
+        writer: &mut CssWriter,
+        selector: &str,
+        value: &Value,
+        conditions: &mut Vec<ConditionParts>,
+    ) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+
+        let mut declarations = Vec::with_capacity(entries.len());
+        let mut nested_rules = Vec::new();
+        let mut conditional_declarations = Vec::new();
+        for (key, value) in entries {
+            if let Value::Object(_) = value {
+                if let Some(condition) = resolved_condition_parts(self.config, key) {
+                    nested_rules.push(NestedStyleRule {
+                        selector: selector.to_owned(),
+                        value,
+                        condition: Some(condition),
+                    });
+                    continue;
+                }
+                if is_nested_selector_key(key) {
+                    nested_rules.push(NestedStyleRule {
+                        selector: nested_selector(selector, key),
+                        value,
+                        condition: None,
+                    });
+                    continue;
+                }
+                if self.collect_conditional_declarations(
+                    key,
+                    value,
+                    &mut declarations,
+                    &mut conditional_declarations,
+                ) {
+                    continue;
+                }
+            }
+
+            if let Some(entry_declarations) = self.serialized_property_declarations(key, value) {
+                append_recipe_declarations(&mut declarations, entry_declarations);
+            }
+        }
+
+        if !declarations.is_empty() {
+            let rule = self.rule_target_with_base_parts(selector, conditions);
+            self.write_recipe_rule(writer, &rule, &declarations);
+        }
+
+        for conditional in conditional_declarations {
+            conditions.push(conditional.condition);
+            let rule = self.rule_target_with_base_parts(selector, conditions);
+            self.write_recipe_rule(writer, &rule, &conditional.declarations);
+            conditions.pop();
+        }
+
+        for nested in nested_rules {
+            if let Some(condition) = nested.condition {
+                conditions.push(condition);
+                self.serialize_style_object(writer, &nested.selector, nested.value, conditions);
+                conditions.pop();
+            } else {
+                self.serialize_style_object(writer, &nested.selector, nested.value, conditions);
+            }
+        }
+    }
+
+    fn collect_conditional_declarations(
+        &self,
+        prop: &str,
+        value: &Value,
+        declarations: &mut Vec<RecipeDeclaration>,
+        conditional_declarations: &mut Vec<ConditionalDeclarations>,
+    ) -> bool {
+        let Value::Object(entries) = value else {
+            return false;
+        };
+
+        let mut base_declarations = Vec::with_capacity(entries.len());
+        let mut condition_declarations = Vec::new();
+        for (condition, value) in entries {
+            let condition = if condition == "base" {
+                None
+            } else {
+                let Some(condition) = resolved_condition_parts(self.config, condition) else {
+                    return false;
+                };
+                Some(condition)
+            };
+            let Some(entry_declarations) = self.serialized_property_declarations(prop, value)
+            else {
+                continue;
+            };
+            if entry_declarations.is_empty() {
+                continue;
+            }
+
+            if let Some(condition) = condition {
+                condition_declarations.push(ConditionalDeclarations {
+                    condition,
+                    declarations: entry_declarations,
+                });
+            } else {
+                append_recipe_declarations(&mut base_declarations, entry_declarations);
+            }
+        }
+
+        append_recipe_declarations(declarations, base_declarations);
+        conditional_declarations.extend(condition_declarations);
+        true
+    }
+
+    fn serialized_property_declarations(
+        &self,
+        prop: &str,
+        value: &Value,
+    ) -> Option<Vec<RecipeDeclaration>> {
+        let value = value_to_atom_value(value)?;
+        self.property_declarations(prop, &value, false)
+    }
+
+    fn serialize_global_vars(&self, writer: &mut CssWriter) {
+        let Value::Object(entries) = &self.config.global_vars else {
+            return;
+        };
+
+        let mut declarations = Vec::new();
+        let mut properties = Vec::new();
+        for (key, value) in entries {
+            match value {
+                Value::String(value) => {
+                    declarations.push(GlobalVarDeclaration { prop: key, value })
+                }
+                Value::Object(config) => {
+                    if let Some(property) = global_var_property(key, config) {
+                        properties.push(property);
+                    }
+                }
+                Value::Null | Value::Bool(_) | Value::Number(_) | Value::Array(_) => {}
+            }
+        }
+
+        if !declarations.is_empty() {
+            writer.rule(css_var_root(self.config), |writer| {
+                for declaration in declarations {
+                    writer.declaration(declaration.prop, declaration.value, false);
+                }
+            });
+        }
+
+        for property in properties {
+            let rule = format!("@property {}", property.name);
+            writer.at_rule(&rule, |writer| {
+                writer.declaration("syntax", &format!("'{}'", property.syntax), false);
+                writer.declaration("inherits", property.inherits, false);
+                if let Some(initial_value) = property.initial_value {
+                    writer.declaration("initial-value", initial_value, false);
+                }
+            });
+        }
+    }
+
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
@@ -137,9 +365,18 @@ impl<'a> EmitContext<'a> {
         &self,
         entry: &RecipeStyleEntry,
     ) -> Option<Vec<RecipeDeclaration>> {
-        let raw = atom_value_to_string(&entry.value);
+        self.property_declarations(entry.prop.as_ref(), &entry.value, entry.important)
+    }
+
+    fn property_declarations(
+        &self,
+        prop: &str,
+        value: &AtomValue,
+        important: bool,
+    ) -> Option<Vec<RecipeDeclaration>> {
+        let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
-        let result = self.transform_atom(entry.prop.as_ref(), raw)?;
+        let result = self.transform_atom(prop, raw)?;
         let Literal::Object(entries) = &result.styles else {
             return None;
         };
@@ -147,13 +384,13 @@ impl<'a> EmitContext<'a> {
         let mut declarations = Vec::with_capacity(entries.len());
         for (prop, value) in entries {
             if let Some(value) = literal_to_css(value) {
-                let (value, important) = split_important(&value);
+                let (value, value_important) = split_important(&value);
                 append_recipe_declaration(
                     &mut declarations,
                     RecipeDeclaration {
-                        prop: hyphenate(prop),
+                        prop: hyphenate_property(prop),
                         value: value.into_owned(),
-                        important: entry.important || important,
+                        important: important || value_important,
                     },
                 );
             }
@@ -196,7 +433,7 @@ impl<'a> EmitContext<'a> {
                 for (prop, value) in entries {
                     if let Some(value) = literal_to_css(value) {
                         let (value, important) = split_important(&value);
-                        writer.declaration(&hyphenate(prop), value.as_ref(), important);
+                        writer.declaration(&hyphenate_property(prop), value.as_ref(), important);
                     }
                 }
             });
@@ -220,7 +457,20 @@ impl<'a> EmitContext<'a> {
         }
         RuleTarget { selector, wrappers }
     }
+
+    fn rule_target_with_base_parts(&self, base: &str, conditions: &[ConditionParts]) -> RuleTarget {
+        let mut selector = base.to_owned();
+        let mut wrappers = Vec::with_capacity(conditions.len());
+        for parts in conditions {
+            for raw in parts {
+                apply_raw_condition(&mut selector, &mut wrappers, raw);
+            }
+        }
+        RuleTarget { selector, wrappers }
+    }
 }
+
+type ConditionParts = Vec<String>;
 
 struct PendingRecipeRule {
     rule: RuleTarget,
@@ -231,6 +481,29 @@ struct RecipeDeclaration {
     prop: String,
     value: String,
     important: bool,
+}
+
+struct NestedStyleRule<'a> {
+    selector: String,
+    value: &'a Value,
+    condition: Option<ConditionParts>,
+}
+
+struct ConditionalDeclarations {
+    condition: ConditionParts,
+    declarations: Vec<RecipeDeclaration>,
+}
+
+struct GlobalVarDeclaration<'a> {
+    prop: &'a str,
+    value: &'a str,
+}
+
+struct GlobalVarProperty<'a> {
+    name: &'a str,
+    syntax: &'a str,
+    inherits: &'a str,
+    initial_value: Option<&'a str>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -249,11 +522,12 @@ fn append_recipe_declarations(
 }
 
 fn append_recipe_declaration(target: &mut Vec<RecipeDeclaration>, declaration: RecipeDeclaration) {
-    if let Some(index) = target
-        .iter()
-        .position(|existing| existing.prop == declaration.prop)
+    if let Some(existing) = target
+        .iter_mut()
+        .find(|existing| existing.prop == declaration.prop)
     {
-        target.remove(index);
+        *existing = declaration;
+        return;
     }
     target.push(declaration);
 }
@@ -279,7 +553,7 @@ fn write_with_wrappers(
 }
 
 fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
-    let class_name = format!("{}_{}", hyphenate(prop), without_space(raw));
+    let class_name = format!("{}_{}", hyphenate_property(prop), without_space(raw));
     UtilityTransformResult {
         layer: None,
         class_name,
@@ -357,7 +631,7 @@ fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &
     if raw.starts_with('@') {
         wrappers.push(raw.to_owned());
     } else if raw.contains('&') {
-        *selector = raw.replace('&', selector);
+        *selector = replace_selector_parent(raw, selector);
     } else {
         *selector = format!("{raw} {selector}");
     }
@@ -365,21 +639,6 @@ fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &
 
 fn without_space(value: &str) -> String {
     value.chars().filter(|ch| !ch.is_whitespace()).collect()
-}
-
-fn hyphenate(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    for (index, ch) in value.chars().enumerate() {
-        if ch.is_ascii_uppercase() {
-            if index > 0 {
-                out.push('-');
-            }
-            out.push(ch.to_ascii_lowercase());
-        } else {
-            out.push(ch);
-        }
-    }
-    out
 }
 
 fn escape_selector(value: &str) -> String {
@@ -394,4 +653,128 @@ fn escape_selector(value: &str) -> String {
         }
     }
     out
+}
+
+fn resolved_condition_parts(config: &UserConfig, key: &str) -> Option<ConditionParts> {
+    let parts = condition_raw_parts(config, key);
+    (!parts.is_empty()).then_some(parts)
+}
+
+fn is_nested_selector_key(key: &str) -> bool {
+    key.contains('&')
+        || key.contains(',')
+        || key.contains(' ')
+        || key.contains('>')
+        || key.contains('+')
+        || key.contains('~')
+        || matches!(
+            key.as_bytes().first(),
+            Some(b'.' | b'#' | b':' | b'[' | b'*')
+        )
+}
+
+fn nested_selector(parent: &str, nested: &str) -> String {
+    if nested.contains('&') {
+        replace_selector_parent(nested, parent)
+    } else {
+        format!("{parent} {nested}")
+    }
+}
+
+fn replace_selector_parent(raw: &str, parent: &str) -> String {
+    let parent_selectors = split_selector_list(parent);
+    let raw_selectors = split_selector_list(raw);
+    let mut out = Vec::new();
+    for parent in &parent_selectors {
+        for raw in &raw_selectors {
+            out.push(raw.replace('&', parent));
+        }
+    }
+    out.join(", ")
+}
+
+fn split_selector_list(selector: &str) -> Vec<&str> {
+    let mut out = Vec::new();
+    let mut depth = 0u32;
+    let mut start = 0usize;
+    let mut escaped = false;
+
+    for (index, ch) in selector.char_indices() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+
+        match ch {
+            '(' => depth += 1,
+            ')' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => {
+                let item = selector[start..index].trim();
+                if !item.is_empty() {
+                    out.push(item);
+                }
+                start = index + ch.len_utf8();
+            }
+            _ => {}
+        }
+    }
+
+    let item = selector[start..].trim();
+    if !item.is_empty() {
+        out.push(item);
+    }
+    out
+}
+
+fn value_to_atom_value(value: &Value) -> Option<AtomValue> {
+    match value {
+        Value::String(value) => Some(AtomValue::String(value.clone().into_boxed_str())),
+        Value::Number(value) => Some(AtomValue::Number(
+            value
+                .as_f64()
+                .map(number_to_js_string)
+                .unwrap_or_else(|| value.to_string())
+                .into_boxed_str(),
+        )),
+        Value::Bool(value) => Some(AtomValue::Bool(*value)),
+        Value::Null => Some(AtomValue::Null),
+        Value::Array(_) | Value::Object(_) => None,
+    }
+}
+
+fn global_var_property<'a>(
+    name: &'a str,
+    config: &'a serde_json::Map<String, Value>,
+) -> Option<GlobalVarProperty<'a>> {
+    let syntax = config.get("syntax")?.as_str()?;
+    let inherits = match config.get("inherits")? {
+        Value::Bool(true) => "true",
+        Value::Bool(false) => "false",
+        Value::String(value) if value == "true" || value == "false" => value,
+        _ => return None,
+    };
+    let initial_value = config.get("initialValue").and_then(Value::as_str);
+
+    if syntax != "*" && initial_value.is_none() {
+        return None;
+    }
+
+    Some(GlobalVarProperty {
+        name,
+        syntax,
+        inherits,
+        initial_value,
+    })
+}
+
+fn css_var_root(config: &UserConfig) -> &str {
+    config
+        .extra
+        .get("cssVarRoot")
+        .and_then(Value::as_str)
+        .unwrap_or(":where(html)")
 }
