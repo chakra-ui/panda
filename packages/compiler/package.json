@@ -1,0 +1,50 @@
+{
+  "name": "@pandacss/compiler",
+  "version": "0.0.0",
+  "description": "Native Rust binding for the Panda compiler engine",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/compiler"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "build:native": "tsx build-binding.ts",
+    "dev": "pnpm build-fast --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist",
+    "*.node"
+  ],
+  "napi": {
+    "binaryName": "compiler"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@napi-rs/cli": "^3.0.0"
+  }
+}

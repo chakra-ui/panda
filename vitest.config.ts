@@ -29,8 +29,8 @@ export default defineConfig({
       'sandbox/codegen/__tests__/frameworks',
       // Binding tests need `snapshotFormat.compareKeys: null` to preserve the
       // JSON key order coming from the Rust binding. Run them via
-      // `pnpm --filter @pandacss/binding test` which picks up the local config.
-      'packages/binding/__tests__/**',
+      // `pnpm --filter @pandacss/compiler test` which picks up the local config.
+      'packages/compiler/__tests__/**',
     ],
   },
   resolve: {

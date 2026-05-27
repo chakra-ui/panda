@@ -4,7 +4,8 @@ mod common;
 
 use common::jsx_config;
 use pandacss_extractor::{
-    ExtractedJsxResult, ImportSpecifierKind, MatchCategory, MatchedImport, extract_jsx,
+    ExtractedJsxResult, ImportSpecifierKind, JsxExtractionConfig, JsxStyleProps, MatchCategory,
+    MatchedImport, extract_jsx,
 };
 
 fn styled(alias: &str) -> MatchedImport {
@@ -43,6 +44,19 @@ fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
         "fixture.tsx",
         matched,
         &jsx_config(["styled", "Box", "Stack", "Grid"]),
+    )
+}
+
+fn extract_with_jsx_config(
+    source: &str,
+    matched: &[MatchedImport],
+    jsx: JsxExtractionConfig,
+) -> ExtractedJsxResult {
+    extract_jsx(
+        source,
+        "fixture.tsx",
+        matched,
+        &jsx_config(["styled", "Box", "Stack", "Grid"]).with_jsx(jsx),
     )
 }
 
@@ -750,6 +764,84 @@ fn nested_folding_inside_attribute() {
     );
 }
 
+#[test]
+fn css_prop_aliases_extract_like_js_parser_fixture() {
+    assert_yaml_snapshot!(
+        extract(
+            "<styled.div css={{ bg: 'red.200' }} inputCss={{ color: 'blue.300' }} />",
+            &[styled("styled")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: styled.div
+        alias: styled
+        data:
+          css:
+            bg: red.200
+          inputCss:
+            color: blue.300
+        span:
+          start: 0
+          end: 71
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn css_prop_aliases_with_array_values_extract_like_js_parser_fixture() {
+    assert_yaml_snapshot!(
+        extract(
+            "<styled.div inputCss={[{ bg: 'red.200' }, { color: 'blue.300' }]} />",
+            &[styled("styled")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: styled.div
+        alias: styled
+        data:
+          inputCss:
+            - bg: red.200
+            - color: blue.300
+        span:
+          start: 0
+          end: 68
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn css_prop_aliases_extract_in_minimal_mode_like_js_parser_fixture() {
+    assert_yaml_snapshot!(
+        extract_with_jsx_config(
+            "<styled.div color='red' css={{ bg: 'red.200' }} wrapperCss={{ p: '4' }} />",
+            &[styled("styled")],
+            JsxExtractionConfig {
+                style_props: JsxStyleProps::Minimal,
+                ..Default::default()
+            },
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        name: styled.div
+        alias: styled
+        data:
+          css:
+            bg: red.200
+          wrapperCss:
+            p: "4"
+        span:
+          start: 0
+          end: 74
+    diagnostics: []
+    "#,
+    );
+}
+
 // --- attribute overwrite & spread interleaving ---
 
 #[test]
@@ -829,4 +921,189 @@ fn spread_with_nested_jsx_element_drops_the_spread() {
     diagnostics: []
     ",
     );
+}
+
+// --- CSS-in-template (`styled.div`...``), parity with string-literal.test.ts ---
+
+#[test]
+fn styled_factory_tagged_template_css() {
+    // The template body parses into a kebab-keyed style object, recorded like a
+    // `<styled.div>` usage.
+    let source = indoc! {r"
+        const baseStyle = styled.div`
+            background: transparent;
+            border-radius: 3px;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            display: inline-block;
+            margin: 0.5rem 1rem;
+            padding: 0.5rem 0;
+            transition: all 200ms ease-in-out;
+            width: 11rem;
+        `
+    "};
+    assert_yaml_snapshot!(extract(source, &[styled("styled")]).jsx, @"
+    - category: jsx
+      name: styled.div
+      alias: styled
+      data:
+        background: transparent
+        border-radius: 3px
+        border: 1px solid var(--accent-color)
+        color: var(--accent-color)
+        display: inline-block
+        margin: 0.5rem 1rem
+        padding: 0.5rem 0
+        transition: all 200ms ease-in-out
+        width: 11rem
+      span:
+        start: 18
+        end: 291
+    ");
+}
+
+#[test]
+fn tagged_template_css_splits_value_on_first_colon() {
+    // A value keeping a colon (`url(http://…)`) survives — the astish value
+    // group stops at the first `;`, not the inner `:`. Each declaration is
+    // `;`-terminated, as the astish regex requires.
+    assert_yaml_snapshot!(
+        extract(
+            "const x = styled.div`background: url(http://x.png); color: red;`",
+            &[styled("styled")],
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        name: styled.div
+        alias: styled
+        data:
+          background: "url(http://x.png)"
+          color: red
+        span:
+          start: 10
+          end: 64
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn tagged_template_css_nests_at_rules_and_selectors() {
+    // Nested at-rules / selectors fold into nested objects via the astish port
+    // (no flat-only limitation). Grounded in `astish.test.ts` › "should work
+    // with media queries": a bare `@media` block nests under its full
+    // condition key; flat declarations stay at the top level.
+    assert_yaml_snapshot!(
+        extract(
+            "const x = styled.div`width: 500px; height: 500px; background: red; @media (min-width: 700px) { background: blue; }`",
+            &[styled("styled")],
+        ),
+        @r#"
+    jsx:
+      - category: jsx
+        name: styled.div
+        alias: styled
+        data:
+          width: 500px
+          height: 500px
+          background: red
+          "@media (min-width: 700px)":
+            background: blue
+        span:
+          start: 10
+          end: 115
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn tagged_template_css_joins_multiline_selectors() {
+    // Grounded in `astish.test.ts` › "with multiline selectors": a selector
+    // split across lines (`& span,\n& p`) collapses to one key (`& span, & p`)
+    // and its block nests. Selectors already containing `&` keep no extra
+    // prefix.
+    let source = indoc! {r"
+        const x = styled.div`
+            background: pink;
+            & span,
+            & p {
+                color: blue;
+            }
+        `
+    "};
+    assert_yaml_snapshot!(extract(source, &[styled("styled")]).jsx, @r#"
+    - category: jsx
+      name: styled.div
+      alias: styled
+      data:
+        background: pink
+        "& span, & p":
+          color: blue
+      span:
+        start: 10
+        end: 94
+    "#);
+}
+
+#[test]
+fn tagged_template_css_matches_shared_astish_fixture() {
+    let source = indoc! {r"
+        const x = styled.div`
+            display: flex;
+            align-items: center;
+            -webkit-align-items: center;
+            @media (min-width: 400) {
+                color: red;
+                justify-content: center;
+            }
+            @container (min-inline-width: 600px) {
+                background: pink;
+            }
+        `
+    "};
+    let result = extract(source, &[styled("styled")]);
+    assert_yaml_snapshot!(result.jsx[0].data, @r#"
+    display: flex
+    align-items: center
+    "-webkit-align-items": center
+    "@media (min-width: 400)":
+      color: red
+      justify-content: center
+    "@container (min-inline-width: 600px)":
+      background: pink
+    "#);
+}
+
+#[test]
+fn tagged_template_css_supports_native_nesting_and_custom_props() {
+    let source = indoc! {r"
+        const x = styled.div`
+            color: red;
+            --test: 4px;
+            p {
+                color: blue;
+            }
+            h1,
+            h2,
+            h3,
+            h4 {
+                color: pink;
+                font-weight: bold;
+                margin-bottom: 1rem;
+            }
+        `
+    "};
+    let result = extract(source, &[styled("styled")]);
+    assert_yaml_snapshot!(result.jsx[0].data, @r#"
+    color: red
+    "--test": 4px
+    "& p":
+      color: blue
+    "& h1, h2, h3, h4":
+      color: pink
+      font-weight: bold
+      margin-bottom: 1rem
+    "#);
 }

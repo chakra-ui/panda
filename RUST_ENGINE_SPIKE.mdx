@@ -140,7 +140,7 @@ Do not redesign and port in the same PR. If a better architecture is needed, lan
 | `optimizer` | `lightningcss` minification and prefixing |
 | `cache` | File, config, buildinfo, and rule caches |
 | `config` | Serialized config structures for Rust |
-| `packages/binding/crate` | NAPI boundary only |
+| `packages/compiler/crate` | NAPI boundary only |
 
 The NAPI crate should be thin. Compiler logic belongs in `crates/*`.
 
@@ -219,4 +219,4 @@ Fill this table before moving to `OSS-2401`.
 
 ## Initial Recommendation
 
-Start with measurement and audit only. Do not create `@pandacss/binding` or a Cargo workspace until the baseline benchmark and type-checker audit are in place.
+Start with measurement and audit only. Do not create `@pandacss/compiler` or a Cargo workspace until the baseline benchmark and type-checker audit are in place.

@@ -36,43 +36,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
-name = "binding_napi"
-version = "0.0.0"
-dependencies = [
- "napi",
- "napi-build",
- "napi-derive",
- "pandacss_config",
- "pandacss_encoder",
- "pandacss_extractor",
- "pandacss_project",
- "pandacss_recipes",
- "pandacss_tokens",
- "pandacss_tracing",
- "serde_json",
- "tracing",
-]
-
-[[package]]
-name = "binding_wasm"
-version = "0.0.0"
-dependencies = [
- "console_error_panic_hook",
- "js-sys",
- "pandacss_config",
- "pandacss_encoder",
- "pandacss_extractor",
- "pandacss_fs",
- "pandacss_project",
- "pandacss_recipes",
- "serde",
- "serde-wasm-bindgen",
- "serde_json",
- "tracing",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "bitflags"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -111,6 +74,43 @@ dependencies = [
  "rustversion",
  "ryu",
  "static_assertions",
+]
+
+[[package]]
+name = "compiler_napi"
+version = "0.0.0"
+dependencies = [
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "pandacss_config",
+ "pandacss_encoder",
+ "pandacss_extractor",
+ "pandacss_project",
+ "pandacss_recipes",
+ "pandacss_tokens",
+ "pandacss_tracing",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "compiler_wasm"
+version = "0.0.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "pandacss_config",
+ "pandacss_encoder",
+ "pandacss_extractor",
+ "pandacss_fs",
+ "pandacss_project",
+ "pandacss_recipes",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
+ "tracing",
+ "wasm-bindgen",
 ]
 
 [[package]]

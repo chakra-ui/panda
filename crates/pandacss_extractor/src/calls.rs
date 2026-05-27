@@ -1,13 +1,16 @@
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
-    literal::expression_to_literal,
+    css_template::css_template_to_object, literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
+use oxc_ast::ast::{
+    Argument, CallExpression, Expression, IdentifierReference, TaggedTemplateExpression,
+};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
+use smallvec::SmallVec;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -92,7 +95,11 @@ struct ResolvedCallee<'a> {
 
 impl Extractor<'_, '_> {
     fn resolve_callee<'a>(&'a self, call: &'a CallExpression<'_>) -> Option<ResolvedCallee<'a>> {
-        match &call.callee {
+        self.resolve_callee_expr(&call.callee)
+    }
+
+    fn resolve_callee_expr<'a>(&'a self, callee: &'a Expression<'_>) -> Option<ResolvedCallee<'a>> {
+        match callee {
             Expression::Identifier(ident) => {
                 let matched = self.ctx.aliases.get(ident.name.as_str())?;
                 // `p({...})` where `p` is a namespace alias isn't a Panda call.
@@ -115,7 +122,7 @@ impl Extractor<'_, '_> {
                 })
             }
             Expression::StaticMemberExpression(_) => {
-                let (object, path) = flatten_static_member_path(&call.callee)?;
+                let (object, path) = flatten_static_member_path(callee)?;
                 let matched = self.ctx.aliases.get(object.name.as_str())?;
                 if let Some(resolver) = self.ctx.resolver
                     && !resolver.is_import_binding(object)
@@ -173,8 +180,8 @@ fn is_raw_category(category: MatchCategory) -> bool {
 
 fn flatten_static_member_path<'a>(
     expr: &'a Expression<'_>,
-) -> Option<(&'a IdentifierReference<'a>, Vec<&'a str>)> {
-    let mut path = Vec::new();
+) -> Option<(&'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
+    let mut path = SmallVec::new();
     let mut current = expr;
     loop {
         match current {
@@ -216,6 +223,24 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
             }
         }
         walk::walk_call_expression(self, call);
+    }
+
+    fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
+        if let Some(resolved) = self.resolve_callee_expr(&tagged.tag)
+            && resolved.category == MatchCategory::Css
+            && resolved.name.as_ref() == "css"
+            && let Some(object @ Literal::Object(_)) =
+                css_template_to_object(&tagged.quasi, self.ctx.resolver)
+        {
+            self.out.push(ExtractedCall {
+                category: resolved.category,
+                name: resolved.name.into_owned(),
+                alias: resolved.alias.to_owned(),
+                data: vec![Some(object)],
+                span: Span::from(tagged.span),
+            });
+        }
+        walk::walk_tagged_template_expression(self, tagged);
     }
 }
 

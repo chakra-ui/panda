@@ -1,0 +1,30 @@
+[package]
+name = "compiler_napi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+pandacss_encoder = { workspace = true }
+pandacss_extractor = { workspace = true, features = ["os"] }
+pandacss_config = { workspace = true }
+pandacss_project = { workspace = true }
+pandacss_recipes = { workspace = true }
+pandacss_tokens = { workspace = true }
+pandacss_tracing = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+[build-dependencies]
+napi-build = { workspace = true }
+
+[lints]
+workspace = true

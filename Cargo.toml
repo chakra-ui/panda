@@ -2,8 +2,8 @@
 members = [
   "bench",
   "crates/*",
-  "packages/binding/crate",
-  "packages/binding-wasm/crate",
+  "packages/compiler/crate",
+  "packages/compiler-wasm/crate",
 ]
 resolver = "2"
 

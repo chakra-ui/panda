@@ -412,10 +412,20 @@ fn keeps_no_arg_recipe_calls() {
 }
 
 #[test]
-fn rejects_spread_in_object() {
-    // Spread requires static evaluation; skip until Phase 5.
+fn unresolvable_spread_is_skipped_keeping_static_props() {
+    // `...base` can't fold (unresolvable identifier, no resolver in this stage
+    // harness), so the spread is skipped and the static `color` still extracts —
+    // lenient per-member folding, matching the JS extractor.
     assert_yaml_snapshot!(extract("css({ ...base, color: 'red' })", &[css("css")]), @"
-    calls: []
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 30
     diagnostics: []
     ");
 }
@@ -437,6 +447,29 @@ fn finds_calls_inside_jsx() {
         span:
           start: 27
           end: 48
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn finds_panda_call_nested_in_non_panda_call_args() {
+    // Grounded in css-2.test.ts:547 — `cx('card', css({ background: 'white' }),
+    // className)`. `cx` isn't a Panda call, but the visitor descends into its
+    // arguments and still extracts the inner `css()`. Mirrors ts-morph's
+    // exhaustive `getDescendantsOfKind(CallExpression)`.
+    assert_yaml_snapshot!(
+        extract("cx('card', css({ background: 'white' }), className)", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: white
+        span:
+          start: 11
+          end: 39
     diagnostics: []
     ",
     );
@@ -1424,6 +1457,135 @@ fn merge_two_inline_object_spreads_second_wins() {
     );
 }
 
+// --- raw spread composition (JS `css-raw-edge-cases` parity) ---
+
+#[test]
+fn raw_inside_raw_folds() {
+    // `css.raw` spread into another `css.raw`, then extended — both raw
+    // helpers fold and merge in source order.
+    assert_yaml_snapshot!(
+        extract(
+            "css.raw({ ...css.raw({ color: 'red' }), fontSize: 'lg' })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+            fontSize: lg
+        span:
+          start: 0
+          end: 57
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 13
+          end: 38
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn multiple_raw_spreads_in_one_object_merge() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...css.raw({ color: 'red' }), ...css.raw({ background: 'blue' }) })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+            background: blue
+        span:
+          start: 0
+          end: 73
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 9
+          end: 34
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: blue
+        span:
+          start: 39
+          end: 70
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn raw_spread_inside_nested_selector() {
+    assert_yaml_snapshot!(
+        extract(
+            "css({ '& > div': { ...css.raw({ color: 'red' }) } })",
+            &[css("css")],
+        ),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - "& > div":
+              color: red
+        span:
+          start: 0
+          end: 52
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color: red
+        span:
+          start: 22
+          end: 47
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
+fn conditional_spread_with_literal_test_folds_branch() {
+    // `...(false ? {...} : {...})` — the literal test picks the else branch,
+    // then the resulting object spreads in.
+    assert_yaml_snapshot!(
+        extract(
+            "css({ ...(false ? { color: 'red' } : { background: 'blue' }) })",
+            &[css("css")],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: blue
+        span:
+          start: 0
+          end: 63
+    diagnostics: []
+    ",
+    );
+}
+
 // --- arrays preserve nulls ---
 
 #[test]
@@ -1522,4 +1684,61 @@ fn non_null_assertion_unwraps_through_member_access() {
     );
     let json = serde_json::to_value(&result.calls[0].data[0]).unwrap();
     assert_eq!(json["color"], "red");
+}
+
+// --- CSS-in-template via the `css` helper (`css`...``) ---
+
+#[test]
+fn css_tagged_template_folds_to_style_object() {
+    // `css`background: red; color: blue;`` — the css helper as a tagged
+    // template desugars to a css call; the body parses (via the astish port)
+    // into a kebab-keyed style object. Declarations terminate with `;`, as the
+    // astish regex requires.
+    assert_yaml_snapshot!(
+        extract("css`background: red; color: blue;`", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - background: red
+            color: blue
+        span:
+          start: 0
+          end: 34
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn css_tagged_template_supports_native_nesting() {
+    assert_yaml_snapshot!(
+        extract(
+            "css`color: red; p { color: blue; } .box & { background-color: red; }`",
+            &[css("css")],
+        )
+        .calls[0]
+            .data,
+        @r#"
+    - color: red
+      "& p":
+        color: blue
+      ".box &":
+        background-color: red
+    "#,
+    );
+}
+
+#[test]
+fn cva_tagged_template_is_not_css_in_template() {
+    // Only `css` qualifies as CSS-in-template; `cva` takes a config object, so
+    // `cva`...`` extracts nothing.
+    let result = extract("cva`color: red`", &[cva("cva")]);
+    assert!(
+        result.calls.is_empty(),
+        "cva`...` must not parse as CSS-in-template: {:#?}",
+        result.calls
+    );
 }

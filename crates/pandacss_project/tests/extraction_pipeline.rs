@@ -66,6 +66,92 @@ fn jsx_style_props_feed_the_encoder() {
 }
 
 #[test]
+fn jsx_css_prop_object_feeds_styles() {
+    // The `css` prop's object value is treated as nested styles, not a flat
+    // `css`-named atom.
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "a.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box css={{ color: 'red', fontSize: 'lg' }} />;
+        "},
+    );
+    assert_yaml_snapshot!(sorted_atoms(&project), @"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: fontSize
+      value: lg
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_css_prop_array_merges_each_object() {
+    // Array form `css={[{...}, {...}]}` — each entry contributes atoms.
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "a.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box css={[{ color: 'red' }, { background: 'blue' }]} />;
+        "},
+    );
+    assert_yaml_snapshot!(sorted_atoms(&project), @"
+    - prop: background
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn wildcard_css_prop_feeds_styles() {
+    // `*Css` props (e.g. `inputCss`) are treated as nested style objects, the
+    // same as the bare `css` prop.
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "a.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box inputCss={{ color: 'red' }} />;
+        "},
+    );
+    assert_yaml_snapshot!(sorted_atoms(&project), @"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn sva_with_unresolvable_spread_slots_infers_from_base() {
+    // Ark UI pattern: `slots: [...anatomy.keys()]` — the spread source is a
+    // non-foldable call, so the slots array can't resolve. The unresolvable
+    // `slots` property is skipped, `base` survives, and slots infer from the
+    // base keys so decomposition still produces atoms.
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "tabs.tsx",
+        indoc! {r"
+            import { sva } from '@panda/css';
+            sva({ slots: [...anatomy.keys()], base: { root: { color: 'red' }, trigger: { padding: '4px' } } });
+        "},
+    );
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: padding
+      value: 4px
+      conditions: []
+    ");
+}
+
+#[test]
 fn recipes_iterator_yields_typed_recipe_per_call_site() {
     let mut project = create_project(json!({}));
     project.parse_file(

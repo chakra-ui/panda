@@ -1,7 +1,7 @@
 /**
  * JS extractor vs Rust extractor — same fixtures, same matchers, two
  * paths. The JS path goes through `@pandacss/parser`'s `Project` (ts-morph
- * + custom visitor). The Rust path goes through `@pandacss/binding`'s
+ * + custom visitor). The Rust path goes through `@pandacss/compiler`'s
  * `Extractor` session class (Oxc + native NAPI).
  *
  * Two modes:
@@ -29,13 +29,12 @@ import { performance } from 'node:perf_hooks'
 import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import pandaNode from '../../packages/node/src/index.ts'
-import bindingDefault from '../../packages/binding/src/index.ts'
-import type * as bindingTypes from '../../packages/binding/src/index.ts'
+import bindingDefault from '../../packages/compiler/src/index.ts'
+import type * as bindingTypes from '../../packages/compiler/src/index.ts'
 // The binding's source is CJS-style (uses `require()` for the native node
 // addon) and the bench package is `"type": "module"`. tsx wraps the CJS
 // module under `default`, so destructure from there.
-type RustMatchers = bindingTypes.Matchers
-const RustExtractor = (bindingDefault as unknown as typeof bindingTypes).Extractor
+const { createCompiler } = bindingDefault as unknown as typeof bindingTypes
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 
@@ -71,29 +70,22 @@ function pct(numerator: number, denominator: number): string {
   return `${(numerator / denominator).toFixed(2)}×`
 }
 
-/// Hardcoded matchers for the Rust binding, broad enough to match every
-/// sandbox project that uses Panda's default codegen layout. `modules` is
-/// substring-matched so `'styled-system/css'` catches `../styled-system/css`,
-/// `~/styled-system/css`, etc.
-const rustMatchers: RustMatchers = {
-  css: {
-    modules: ['styled-system/css'],
-    names: ['css', 'cva', 'sva', 'cx'],
+/// Config for the Rust compiler, with an import map broad enough to match
+/// every sandbox project that uses Panda's default codegen layout. `modules`
+/// are substring-matched so `'styled-system/css'` catches `../styled-system/css`,
+/// `~/styled-system/css`, etc. `createCompiler` derives the matchers + token
+/// dictionary from this config (one-time setup cost).
+const rustConfig = {
+  cwd: repoRoot,
+  outdir: 'styled-system',
+  importMap: {
+    css: ['styled-system/css'],
+    recipe: ['styled-system/recipes'],
+    pattern: ['styled-system/patterns'],
+    jsx: ['styled-system/jsx'],
+    tokens: ['styled-system/tokens'],
   },
-  recipe: {
-    modules: ['styled-system/recipes'],
-  },
-  pattern: {
-    modules: ['styled-system/patterns'],
-  },
-  jsx: {
-    modules: ['styled-system/jsx'],
-    names: ['panda', 'styled', 'Box'],
-  },
-  tokens: {
-    modules: ['styled-system/tokens'],
-    names: ['token'],
-  },
+  jsxFactory: 'styled',
 }
 
 interface Source {
@@ -217,8 +209,11 @@ async function loadSynthetic(n: number): Promise<{
 async function main() {
   const args = parseArgs(process.argv.slice(2))
 
-  const { sources, context, encoder: jsEncoder } =
-    args.synth !== null ? await loadSynthetic(args.synth) : await loadFromCwd(resolve(repoRoot, args.cwd))
+  const {
+    sources,
+    context,
+    encoder: jsEncoder,
+  } = args.synth !== null ? await loadSynthetic(args.synth) : await loadFromCwd(resolve(repoRoot, args.cwd))
 
   const totalBytes = sources.reduce((acc, s) => acc + s.bytes, 0)
   const largest = sources.slice().sort((a, b) => b.bytes - a.bytes)[0]
@@ -233,7 +228,7 @@ async function main() {
   const jsSetupMs = performance.now() - jsSetupStart
 
   const rustSetupStart = performance.now()
-  const rustExtractor = new RustExtractor(rustMatchers)
+  const rustExtractor = createCompiler(rustConfig)
   void rustExtractor.extract(largest.source, largest.path)
   const rustSetupMs = performance.now() - rustSetupStart
 
@@ -246,7 +241,7 @@ async function main() {
   }
   const jsColdMs = performance.now() - jsColdStart
 
-  const freshRustExtractor = new RustExtractor(rustMatchers)
+  const freshRustExtractor = createCompiler(rustConfig)
   const rustColdStart = performance.now()
   for (const { source, path } of sources) {
     freshRustExtractor.extract(source, path)
@@ -309,9 +304,7 @@ async function main() {
 
   console.log(JSON.stringify(summary, null, 2))
 
-  console.error(
-    `\nspeedup (rust vs js): cold ${summary.speedup.coldTotal} • warm/file ${summary.speedup.warmPerCall}`,
-  )
+  console.error(`\nspeedup (rust vs js): cold ${summary.speedup.coldTotal} • warm/file ${summary.speedup.warmPerCall}`)
 }
 
 main().catch((error: unknown) => {

@@ -375,11 +375,23 @@ impl TokenDictionary {
         TokenDictionaryBuilder::default()
     }
 
+    /// Build a token dictionary from a Panda user config.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when token transforms encounter invalid configured
+    /// values, such as malformed color-mix opacity expressions.
     pub fn from_config(config: &pandacss_config::UserConfig) -> Result<Option<Self>, TokenError> {
         let _span = tracing::debug_span!("token_dictionary_build", source = "config").entered();
         Self::from_options(TokenDictionaryOptions::from_config(config))
     }
 
+    /// Build a token dictionary from normalized token dictionary options.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when token transforms encounter invalid configured
+    /// values, such as malformed color-mix opacity expressions.
     pub fn from_options(options: TokenDictionaryOptions<'_>) -> Result<Option<Self>, TokenError> {
         let _span = tracing::debug_span!("token_dictionary_build", source = "options").entered();
         from_config::create_token_dictionary(options)

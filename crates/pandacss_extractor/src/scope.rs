@@ -24,6 +24,7 @@ use oxc_ast::ast::{
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use pandacss_tokens::TokenDictionary;
 use rustc_hash::FxHashMap;
+use smallvec::SmallVec;
 
 use crate::cross_file::{CrossFileLookup, CrossFileResolver};
 use crate::literal::expression_to_literal;
@@ -348,8 +349,8 @@ fn is_raw_category(category: MatchCategory) -> bool {
 
 fn flatten_static_member_path<'a>(
     expr: &'a Expression<'_>,
-) -> Option<(&'a IdentifierReference<'a>, Vec<&'a str>)> {
-    let mut path = Vec::new();
+) -> Option<(&'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
+    let mut path = SmallVec::new();
     let mut current = expr;
     loop {
         match current {

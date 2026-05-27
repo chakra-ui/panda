@@ -13,7 +13,7 @@ hardware: darwin arm64 (local dev machine; not a clean-room CI box)
 # Extractor: JS (ts-morph) vs Rust (Oxc + NAPI)
 
 > First measured comparison between Panda's JS extractor (`@pandacss/parser` over ts-morph) and the new Rust extractor
-> (`@pandacss/binding`'s `Extractor` session class over Oxc). Same fixtures, same matchers, two paths.
+> (`@pandacss/compiler`'s `Extractor` session class over Oxc). Same fixtures, same matchers, two paths.
 
 ## TL;DR
 
@@ -90,7 +90,7 @@ pnpm --filter @pandacss/bench extract-compare -- --synth 1000 --warm 200
 - **JS**: `context.project.parseSourceFile(path, encoder)` from `@pandacss/parser`'s `Project` class. This is the exact
   call `context.parseFile()` makes in production. ts-morph parses, the custom visitor walks, the encoder collects
   styles.
-- **Rust**: `new Extractor(matchers).extract(source, path)` from `@pandacss/binding`. Oxc parses, the Rust visitor
+- **Rust**: `new Extractor(matchers).extract(source, path)` from `@pandacss/compiler`. Oxc parses, the Rust visitor
   walks, the result crosses the NAPI boundary as a JSON object.
 
 ## Detailed results
@@ -218,7 +218,7 @@ cache to warm up; each `extract()` is independent.
 
 ```sh
 # 1. Build the native binding
-PATH="$HOME/.cargo/bin:$PATH" pnpm --filter @pandacss/binding build:native
+PATH="$HOME/.cargo/bin:$PATH" pnpm --filter @pandacss/compiler build:native
 
 # 2. Run the harness
 pnpm --filter @pandacss/bench extract-compare                       # default: sandbox/vite-ts
@@ -235,7 +235,7 @@ numbers.
 - **What does the gap look like with the Rust encoder wired in?** Phase C goal. The Rust encoder turns extracted
   literals into atoms; that work currently happens JS-side too, so the comparison should remain favorable to Rust but
   might tighten by 10-20%.
-- **What's the WASM equivalent?** The wasm binding (`@pandacss/binding-wasm`) uses `serde-wasm-bindgen` instead of NAPI;
+- **What's the WASM equivalent?** The wasm binding (`@pandacss/compiler-wasm`) uses `serde-wasm-bindgen` instead of NAPI;
   expect 1.5-3× slower than NAPI based on rolldown's published numbers. Worth measuring before Phase C.
 - **What's the memory footprint?** ts-morph retains the AST graph; Rust drops the allocator per call. Significant for
   long-running watch processes. Needs a separate harness (RSS / heap delta across the 1000-file run).

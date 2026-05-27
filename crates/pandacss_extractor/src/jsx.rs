@@ -1,17 +1,20 @@
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
-    Matchers, Span, VisitorContext, literal::expression_to_literal,
+    Matchers, Span, VisitorContext, css_template::css_template_to_object,
+    literal::expression_to_literal,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    IdentifierReference, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXElementName,
-    JSXExpression, JSXMemberExpression, JSXMemberExpressionObject, JSXOpeningElement,
+    Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName, JSXAttributeValue,
+    JSXElementName, JSXExpression, JSXMemberExpression, JSXMemberExpressionObject,
+    JSXOpeningElement, StaticMemberExpression, TaggedTemplateExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
 use smallvec::SmallVec;
+use std::borrow::Cow;
 
 /// Member-chain tags like `<styled.div>` are accepted only when the root
 /// name is configured as a JSX factory; otherwise a named import like
@@ -97,8 +100,14 @@ struct Extractor<'walk, 'ctx> {
     out: &'walk mut Vec<ExtractedJsx>,
 }
 
+struct ResolvedTag<'a> {
+    category: MatchCategory,
+    name: Cow<'a, str>,
+    alias: Cow<'a, str>,
+}
+
 impl Extractor<'_, '_> {
-    fn resolve_tag(&self, name: &JSXElementName<'_>) -> Option<(MatchCategory, String, String)> {
+    fn resolve_tag<'a>(&'a self, name: &'a JSXElementName<'_>) -> Option<ResolvedTag<'a>> {
         // Lowercase HTML idents, `JSXNamespacedName` (`<svg:circle>`),
         // and `ThisExpression` (`<this.X>`) are never Panda usages.
         match name {
@@ -120,90 +129,144 @@ impl Extractor<'_, '_> {
                     {
                         return None;
                     }
-                    return Some((
-                        matched.category,
-                        matched.name.clone(),
-                        matched.alias.clone(),
-                    ));
+                    return Some(ResolvedTag {
+                        category: matched.category,
+                        name: Cow::Borrowed(&matched.name),
+                        alias: Cow::Borrowed(&matched.alias),
+                    });
                 }
 
                 let tag_name = id.name.as_str();
                 if !self.ctx.config.jsx.is_component_tag(tag_name) {
                     return None;
                 }
-                Some((MatchCategory::Jsx, tag_name.to_owned(), tag_name.to_owned()))
+                Some(ResolvedTag {
+                    category: MatchCategory::Jsx,
+                    name: Cow::Borrowed(tag_name),
+                    alias: Cow::Borrowed(tag_name),
+                })
             }
             JSXElementName::MemberExpression(member) => {
                 let (root, root_ident, path) = flatten_member(member)?;
-                if let Some(resolver) = self.ctx.resolver
-                    && !resolver.is_import_binding(root_ident)
-                {
-                    return None;
-                }
-                let Some(matched) = self.ctx.aliases.get(root) else {
-                    let display = member_display(root, &path);
-                    if self.ctx.config.jsx.is_component_tag(&display) {
-                        return Some((MatchCategory::Jsx, display, root.to_owned()));
-                    }
-                    return None;
-                };
-                match matched.kind {
-                    ImportSpecifierKind::Named => {
-                        // `<X.Y>` on a named import is only a Panda usage
-                        // when X is a JSX factory like `styled.div`. For
-                        // a recipe Component, `Box.Item` is plain dot
-                        // access — skip.
-                        if !is_jsx_factory(&self.ctx.config.matchers, &matched.name) {
-                            return None;
-                        }
-                        if !self
-                            .ctx
-                            .config
-                            .matchers
-                            .category_accepts_name(matched.category, &matched.name)
-                        {
-                            return None;
-                        }
-                        let display = member_display(&matched.name, &path);
-                        Some((matched.category, display, matched.alias.clone()))
-                    }
-                    ImportSpecifierKind::Namespace => {
-                        let first = path.first()?;
-                        if !self
-                            .ctx
-                            .config
-                            .matchers
-                            .category_accepts_name(matched.category, first)
-                        {
-                            return None;
-                        }
-                        Some((matched.category, join_path(&path), matched.alias.clone()))
-                    }
-                    ImportSpecifierKind::Default => None,
-                }
+                self.resolve_member(root, root_ident, &path)
             }
             _ => None,
         }
+    }
+
+    fn resolve_member<'a>(
+        &'a self,
+        root: &'a str,
+        root_ident: &'a IdentifierReference<'_>,
+        path: &[&str],
+    ) -> Option<ResolvedTag<'a>> {
+        if let Some(resolver) = self.ctx.resolver
+            && !resolver.is_import_binding(root_ident)
+        {
+            return None;
+        }
+        let Some(matched) = self.ctx.aliases.get(root) else {
+            let display = member_display(root, path);
+            if self.ctx.config.jsx.is_component_tag(&display) {
+                return Some(ResolvedTag {
+                    category: MatchCategory::Jsx,
+                    name: Cow::Owned(display),
+                    alias: Cow::Borrowed(root),
+                });
+            }
+            return None;
+        };
+        match matched.kind {
+            ImportSpecifierKind::Named => {
+                // `X.Y` on a named import is only a Panda usage when X is a
+                // JSX factory like `styled.div`. For a recipe Component,
+                // `Box.Item` is plain dot access — skip.
+                if !is_jsx_factory(&self.ctx.config.matchers, &matched.name) {
+                    return None;
+                }
+                if !self
+                    .ctx
+                    .config
+                    .matchers
+                    .category_accepts_name(matched.category, &matched.name)
+                {
+                    return None;
+                }
+                let display = member_display(&matched.name, path);
+                Some(ResolvedTag {
+                    category: matched.category,
+                    name: Cow::Owned(display),
+                    alias: Cow::Borrowed(&matched.alias),
+                })
+            }
+            ImportSpecifierKind::Namespace => {
+                let first = path.first()?;
+                if !self
+                    .ctx
+                    .config
+                    .matchers
+                    .category_accepts_name(matched.category, first)
+                {
+                    return None;
+                }
+                Some(ResolvedTag {
+                    category: matched.category,
+                    name: Cow::Owned(join_path(path)),
+                    alias: Cow::Borrowed(&matched.alias),
+                })
+            }
+            ImportSpecifierKind::Default => None,
+        }
+    }
+
+    fn resolve_tagged_tag<'a>(&'a self, tag: &'a Expression<'_>) -> Option<ResolvedTag<'a>> {
+        let Expression::StaticMemberExpression(member) = tag else {
+            return None;
+        };
+        let (root, root_ident, path) = flatten_expr_member(member)?;
+        self.resolve_member(root, root_ident, &path)
     }
 }
 
 impl<'a> Visit<'a> for Extractor<'_, '_> {
     fn visit_jsx_opening_element(&mut self, element: &JSXOpeningElement<'a>) {
-        if let Some((category, name, alias)) = self.resolve_tag(&element.name) {
-            let mut entries: Vec<(String, Literal)> = Vec::new();
+        if let Some(resolved) = self.resolve_tag(&element.name) {
+            let tag_name = resolved.name.as_ref();
+            let mut entries: Vec<(String, Literal)> = Vec::with_capacity(element.attributes.len());
             for item in &element.attributes {
-                merge_attribute(item, &mut entries, self.ctx.resolver);
+                merge_attribute(
+                    item,
+                    &mut entries,
+                    self.ctx.resolver,
+                    &self.ctx.config.jsx,
+                    tag_name,
+                );
             }
-            entries.retain(|(prop, _)| self.ctx.config.jsx.should_extract_prop(&name, prop));
             self.out.push(ExtractedJsx {
-                category,
-                name,
-                alias,
+                category: resolved.category,
+                name: resolved.name.into_owned(),
+                alias: resolved.alias.into_owned(),
                 data: Literal::Object(entries),
                 span: Span::from(element.span),
             });
         }
         walk::walk_jsx_opening_element(self, element);
+    }
+
+    fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
+        if let Some(resolved) = self.resolve_tagged_tag(&tagged.tag)
+            && let Some(data @ Literal::Object(_)) =
+                css_template_to_object(&tagged.quasi, self.ctx.resolver)
+        {
+            self.out.push(ExtractedJsx {
+                category: resolved.category,
+                name: resolved.name.into_owned(),
+                alias: resolved.alias.into_owned(),
+                data,
+                span: Span::from(tagged.span),
+            });
+        }
+        walk::walk_tagged_template_expression(self, tagged);
     }
 }
 
@@ -227,6 +290,27 @@ fn flatten_member<'a>(
                 current = &inner.object;
             }
             JSXMemberExpressionObject::ThisExpression(_) => return None,
+        }
+    }
+}
+
+fn flatten_expr_member<'a>(
+    member: &'a StaticMemberExpression<'a>,
+) -> Option<(&'a str, &'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
+    let mut path = SmallVec::new();
+    path.push(member.property.name.as_str());
+    let mut current = &member.object;
+    loop {
+        match current {
+            Expression::Identifier(id) => {
+                path.reverse();
+                return Some((id.name.as_str(), id, path));
+            }
+            Expression::StaticMemberExpression(inner) => {
+                path.push(inner.property.name.as_str());
+                current = &inner.object;
+            }
+            _ => return None,
         }
     }
 }
@@ -263,32 +347,35 @@ fn merge_attribute(
     item: &JSXAttributeItem<'_>,
     out: &mut Vec<(String, Literal)>,
     resolver: Option<&crate::Resolver<'_>>,
+    jsx: &crate::JsxExtractionConfig,
+    tag_name: &str,
 ) {
     match item {
         JSXAttributeItem::Attribute(attr) => {
-            // Namespaced attribute names (`foo:bar`) — skip.
             let JSXAttributeName::Identifier(name) = &attr.name else {
                 return;
             };
-            let key = name.name.to_string();
+            let key = name.name.as_str();
+            if !jsx.should_extract_prop(tag_name, key) {
+                return;
+            }
             let value = match attr.value.as_ref() {
-                None => Literal::Bool(true), // boolean shorthand: `<Box hidden />`
+                None => Literal::Bool(true),
                 Some(v) => match attribute_value(v, resolver) {
                     Some(v) => v,
                     None => return,
                 },
             };
-            Literal::upsert_object_entry(out, key, value);
+            Literal::upsert_object_entry(out, key.to_owned(), value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
-            // With a resolver, `{...local}` folds when `local` binds to
-            // a const object literal. Without one, only inline object
-            // spreads merge.
             if let Some(Literal::Object(entries)) =
                 expression_to_literal(&spread.argument, resolver)
             {
                 for (k, v) in entries {
-                    Literal::upsert_object_entry(out, k, v);
+                    if jsx.should_extract_prop(tag_name, &k) {
+                        Literal::upsert_object_entry(out, k, v);
+                    }
                 }
             }
         }

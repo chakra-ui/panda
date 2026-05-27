@@ -206,27 +206,44 @@ pub(crate) fn object_to_literal(
     obj: &ObjectExpression<'_>,
     resolver: Option<&Resolver<'_>>,
 ) -> Option<Literal> {
+    // PORT NOTE: lenient per-member folding to match the JS extractor. A
+    // property whose key or value doesn't fold (a dynamic value, an
+    // unresolvable spread) is *skipped*, not fatal — the static siblings still
+    // extract. e.g. `css({ color: 'red', width: props.w })` keeps `color`, and
+    // `sva({ slots: [...anatomy.keys()], base })` keeps `base` (slots infer).
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(obj.properties.len());
     for prop in &obj.properties {
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
+                // Getters / setters / methods can't be statically evaluated — skip.
                 if prop.method || prop.kind != PropertyKind::Init {
-                    return None;
+                    continue;
                 }
-                let key = property_key_to_string(&prop.key, prop.computed, resolver)?;
-                let value = expression_to_literal(&prop.value, resolver)?;
+                let Some(key) = property_key_to_string(&prop.key, prop.computed, resolver) else {
+                    continue;
+                };
+                let Some(value) = expression_to_literal(&prop.value, resolver) else {
+                    continue;
+                };
                 Literal::upsert_object_entry(&mut entries, key, value);
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
-                let inner = expression_to_literal(&spread.argument, resolver)?;
-                let Literal::Object(inner_entries) = inner else {
-                    return None;
-                };
-                for (k, v) in inner_entries {
-                    Literal::upsert_object_entry(&mut entries, k, v);
+                if let Some(Literal::Object(inner_entries)) =
+                    expression_to_literal(&spread.argument, resolver)
+                {
+                    for (k, v) in inner_entries {
+                        Literal::upsert_object_entry(&mut entries, k, v);
+                    }
                 }
             }
         }
+    }
+
+    // An object whose members were *all* unresolvable carries nothing static to
+    // extract: drop it so a fully-dynamic call doesn't emit a phantom empty
+    // style. An explicitly-empty `{}` (no properties) still resolves to `{}`.
+    if entries.is_empty() && !obj.properties.is_empty() {
+        return None;
     }
     Some(Literal::Object(entries))
 }
@@ -532,7 +549,7 @@ fn conditional_from_branches(
     Some(Literal::Conditional(vec![left, right]))
 }
 
-fn template_literal_to_literal(
+pub(crate) fn template_literal_to_literal(
     t: &TemplateLiteral<'_>,
     resolver: Option<&Resolver<'_>>,
 ) -> Option<Literal> {

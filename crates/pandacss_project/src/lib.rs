@@ -177,6 +177,15 @@ impl Project {
         self.parse_file_inner(path, source, Some(transform))
     }
 
+    /// Stateless single-file extraction using this project's configured
+    /// matchers + token dictionary. Unlike [`Self::parse_file`], it does not
+    /// encode, decompose recipes, or register anything — it returns the raw
+    /// extracted usages directly. Backs `compiler.extract(...)` on the bindings.
+    #[must_use]
+    pub fn extract(&self, source: &str, path: &str) -> pandacss_extractor::ExtractUsage {
+        extract(source, path, &self.config.extractor_config)
+    }
+
     fn parse_file_inner(
         &mut self,
         path: &str,

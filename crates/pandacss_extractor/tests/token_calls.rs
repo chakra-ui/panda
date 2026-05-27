@@ -12,8 +12,22 @@ use insta::assert_yaml_snapshot;
 mod common;
 
 use common::{panda_config, panda_config_with_token_dictionary};
-use pandacss_extractor::{ExtractUsage, TokenDictionary, extract};
+use pandacss_extractor::{ExtractUsage, Literal, TokenDictionary, extract};
 use pandacss_tokens::{Token, TokenCategory};
+
+/// Pull a string-valued property out of the first `css({...})` argument.
+/// Returns `None` if the `css` call dropped, the arg isn't an object, or the
+/// property isn't a folded string — so a divergence fails the assertion.
+fn css_string_prop(usage: &ExtractUsage, prop: &str) -> Option<String> {
+    let css = usage.calls.iter().find(|c| c.name == "css")?;
+    let Some(Literal::Object(entries)) = css.data.first().and_then(Option::as_ref) else {
+        return None;
+    };
+    entries.iter().find_map(|(key, value)| match value {
+        Literal::String(text) if key == prop => Some(text.clone()),
+        _ => None,
+    })
+}
 
 /// A small token dictionary mirroring what the Panda runtime would emit
 /// for a tiny theme.
@@ -30,6 +44,24 @@ fn sample_tokens() -> TokenDictionary {
             "4px",
             "var(--sizes-sm)",
             TokenCategory::Sizes,
+        ))
+        .insert(Token::new(
+            "spacing.4",
+            "1rem",
+            "var(--spacing-4)",
+            TokenCategory::Spacing,
+        ))
+        .insert(Token::new(
+            "colors.primary",
+            "var(--colors-primary)",
+            "var(--colors-primary)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "colors.colorPalette.500",
+            "var(--colors-color-palette-500)",
+            "var(--colors-color-palette-500)",
+            TokenCategory::Colors,
         ))
         .build()
 }
@@ -222,4 +254,124 @@ fn token_path_from_identifier_resolves() {
         start: 117
         end: 128
     "##);
+}
+
+#[test]
+fn token_folds_inside_template_literal_interpolation() {
+    // `border: `1px solid ${token('colors.red.500')}`` — the token() call inside
+    // the template interpolation folds and the whole literal concatenates,
+    // matching the JS extractor's token-in-template handling.
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ border: `1px solid ${token('colors.red.500')}` });
+    "};
+    assert_yaml_snapshot!(
+        css_string_prop(&run_with_tokens(src), "border"),
+        @r#""1px solid #ef4444""#
+    );
+}
+
+#[test]
+fn multiple_token_calls_in_one_template_fold() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ font: `${token('sizes.sm')} / ${token('colors.red.500')}` });
+    "};
+    assert_yaml_snapshot!(
+        css_string_prop(&run_with_tokens(src), "font"),
+        @r#""4px / #ef4444""#
+    );
+}
+
+#[test]
+fn known_token_ignores_fallback_argument() {
+    // `token('colors.red.500', '#000')` with a *known* path resolves to the
+    // dictionary value; the fallback is ignored (JS parity — fallback only
+    // kicks in for unknown paths).
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token('colors.red.500', '#000') });
+    "};
+    assert_yaml_snapshot!(css_string_prop(&run_with_tokens(src), "color"), @r##""#ef4444""##);
+}
+
+#[test]
+fn token_var_known_path_ignores_fallback_argument() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({
+          color: token.var('colors.red.500', 'var(--ignored)'),
+          margin: token.var('spacing.4', 'var(--also-ignored)')
+        });
+    "};
+    assert_yaml_snapshot!(
+        run_with_tokens(src)
+            .calls
+            .iter()
+            .find(|c| c.name == "css")
+            .expect("css call")
+            .data,
+        @r#"
+    - color: var(--colors-red-500)
+      margin: var(--spacing-4)
+    "#
+    );
+}
+
+#[test]
+fn semantic_token_like_value_resolves_to_css_variable() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token('colors.primary') });
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: var(--colors-primary)
+      span:
+        start: 73
+        end: 112
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.primary
+      span:
+        start: 86
+        end: 109
+    "#);
+}
+
+#[test]
+fn color_palette_token_like_value_resolves_to_css_variable() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token('colors.colorPalette.500') });
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: var(--colors-color-palette-500)
+      span:
+        start: 73
+        end: 121
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.colorPalette.500
+      span:
+        start: 86
+        end: 118
+    "#);
 }

@@ -9,8 +9,8 @@ load-bearing on the JS side.
 
 | Crate                                          | Target                                  | Output                                                           | JS package               |
 | ---------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------- | ------------------------ |
-| `packages/binding/crate` (`binding_napi`)      | Native (NAPI)                           | `binding.node`                                                   | `@pandacss/binding`      |
-| `packages/binding-wasm/crate` (`binding_wasm`) | `wasm32-unknown-unknown` (wasm-bindgen) | `pkg-node/binding_wasm_bg.wasm` + `pkg-web/binding_wasm_bg.wasm` | `@pandacss/binding-wasm` |
+| `packages/compiler/crate` (`compiler_napi`)      | Native (NAPI)                           | `compiler.node`                                                   | `@pandacss/compiler`      |
+| `packages/compiler-wasm/crate` (`compiler_wasm`) | `wasm32-unknown-unknown` (wasm-bindgen) | `pkg-node/compiler_wasm_bg.wasm` + `pkg-web/compiler_wasm_bg.wasm` | `@pandacss/compiler-wasm` |
 
 Both depend on `pandacss_fs` with a single feature toggled (`os` for NAPI, `memory` for wasm) plus the rest of the core
 crates with `default-features = false` to keep wasm bundles lean.
@@ -18,7 +18,7 @@ crates with `default-features = false` to keep wasm bundles lean.
 ## What lives in the binding crates
 
 ```
-packages/binding/crate/src/                  # NAPI
+packages/compiler/crate/src/                  # NAPI
   lib.rs        shared cross-module types (Span, SourceLocation, Diagnostic, ExtractedArg)
   matcher.rs    Matchers / Matcher / MatchCategory mirrors + match_imports
   imports.rs    ImportRecord mirrors + scan_imports
@@ -30,7 +30,7 @@ packages/binding/crate/src/                  # NAPI
   session.rs    Extractor class (recommended batch entrypoint)
   convert.rs    pandacss_extractor::X ↔ X conversion helpers
 
-packages/binding-wasm/crate/src/             # WASM
+packages/compiler-wasm/crate/src/             # WASM
   lib.rs        re-exports + installPanicHook
   fs.rs         WasmFileSystem (handle over MemoryFileSystem)
   matcher.rs    MatchersInput shape + to_core_matchers / to_core_token_dictionary
@@ -111,7 +111,7 @@ The wasm binding takes a different shape because source discovery lives in JS (R
 that same FS internally.
 
 ```ts
-import { createExtractor } from '@pandacss/binding-wasm'
+import { createExtractor } from '@pandacss/compiler-wasm'
 
 const { fs, extractor } = await createExtractor(matchers)
 fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444';")
@@ -149,7 +149,7 @@ Why a shared FS handle:
 
 ## Bundle size
 
-Current wasm bundle: **~1.3 MB raw, ~490 KB gzipped** for `pkg-web/binding_wasm_bg.wasm`. Under the 500 KB gzipped
+Current wasm bundle: **~1.3 MB raw, ~490 KB gzipped** for `pkg-web/compiler_wasm_bg.wasm`. Under the 500 KB gzipped
 playground target. Composition:
 
 - Bulk of size is `oxc_parser` + `oxc_semantic` (AST + scope resolution).
@@ -173,8 +173,8 @@ serializing `Literal` to `JsValue` walks the same tree. Same constraint applies:
 
 ## Loader and fallback (NAPI)
 
-The TS wrapper (`packages/binding/src/index.ts`) defines the public API and a no-op fallback for unsupported platforms.
-`src/load-binary.ts` looks for `binding.node` next to the package root, then falls back to `@pandacss/binding-native`.
+The TS wrapper (`packages/compiler/src/index.ts`) defines the public API and a no-op fallback for unsupported platforms.
+`src/load-binary.ts` looks for `compiler.node` next to the package root, then falls back to `@pandacss/compiler-native`.
 The native artifact and its auto-generated `native.d.ts` are gitignored.
 
 ## JS-host config callbacks
@@ -230,8 +230,8 @@ Remaining work:
 
 ## Loader (WASM)
 
-`packages/binding-wasm/src/index.ts` exposes `loadWasm()` (lazy, cached) for Node consumers and `createExtractor()` for
-the common case. Browser consumers can also import directly from `@pandacss/binding-wasm/pkg-web/*` and call
+`packages/compiler-wasm/src/index.ts` exposes `loadWasm()` (lazy, cached) for Node consumers and `createExtractor()` for
+the common case. Browser consumers can also import directly from `@pandacss/compiler-wasm/pkg-web/*` and call
 wasm-bindgen's `init()` themselves when they need control over the wasm fetch.
 
 ## Related
