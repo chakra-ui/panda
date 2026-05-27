@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use pandacss_config::{ConditionQuery, UserConfig};
-use pandacss_encoder::{Atom, AtomValue};
+use pandacss_encoder::{Atom, AtomValue, atom_value_sort_key, compare_atoms_by_emit_order};
 use pandacss_extractor::Literal;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry};
 use pandacss_shared::split_important;
@@ -32,11 +32,9 @@ pub fn emit(
     }
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
         writer.layer("utilities", |writer| {
-            sort_atoms(&mut atoms);
+            atoms.extend(recipes.atomic.iter());
+            atoms.sort_by(|a, b| compare_atoms_by_emit_order(a, b));
             for atom in atoms {
-                cx.write_atom(writer, atom);
-            }
-            for atom in &recipes.atomic {
                 cx.write_atom(writer, atom);
             }
         });
@@ -59,7 +57,11 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
         .chain(&recipes.variants)
         .map(|group| group.entries.len())
         .sum::<usize>();
-    64 + atoms.len().saturating_mul(96) + recipe_entries.saturating_mul(64)
+    64 + atoms
+        .len()
+        .saturating_add(recipes.atomic.len())
+        .saturating_mul(96)
+        + recipe_entries.saturating_mul(64)
 }
 
 struct EmitContext<'a> {
@@ -80,11 +82,11 @@ impl<'a> EmitContext<'a> {
         let Some(result) = self.transform_atom(atom.prop(), raw) else {
             return;
         };
-        let mut class_name = self.utility.format_class_name(&result.class_name);
+        let mut class_name = self.utility.format_class_name_owned(result.class_name);
         if atom.important() {
             class_name.push('!');
         }
-        let rule = self.rule_target(&class_name, atom.conditions());
+        let rule = self.rule_target_owned(class_name, atom.conditions());
         self.write_style_rule(writer, &rule, &result.styles);
     }
 
@@ -107,7 +109,7 @@ impl<'a> EmitContext<'a> {
         rule: &RuleTarget,
         entry: &RecipeStyleEntry,
     ) {
-        let raw = atom_value_to_string(&entry.value).map(|value| value.into_owned());
+        let raw = atom_value_to_string(&entry.value);
         let Some(raw) = raw.as_deref() else {
             return;
         };
@@ -156,14 +158,21 @@ impl<'a> EmitContext<'a> {
         });
     }
 
-    fn rule_target(&self, class_name: &str, conditions: &[Box<str>]) -> RuleTarget {
-        let finalized = finalized_class_name(class_name, conditions);
-        let base = format!(".{}", escape_selector(&finalized));
-        self.rule_target_with_base(&base, conditions)
+    fn rule_target_with_base(&self, base: &str, conditions: &[Box<str>]) -> RuleTarget {
+        self.rule_target_with_base_owned(base.to_owned(), conditions)
     }
 
-    fn rule_target_with_base(&self, base: &str, conditions: &[Box<str>]) -> RuleTarget {
-        let mut selector = base.to_owned();
+    fn rule_target_owned(&self, class_name: String, conditions: &[Box<str>]) -> RuleTarget {
+        let finalized = finalized_class_name_owned(class_name, conditions);
+        let base = format!(".{}", escape_selector(&finalized));
+        self.rule_target_with_base_owned(base, conditions)
+    }
+
+    fn rule_target_with_base_owned(
+        &self,
+        mut selector: String,
+        conditions: &[Box<str>],
+    ) -> RuleTarget {
         let mut wrappers = Vec::new();
         for condition in conditions {
             apply_condition(self.config, &mut selector, &mut wrappers, condition);
@@ -206,15 +215,6 @@ fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
     }
 }
 
-fn sort_atoms(atoms: &mut [&Atom]) {
-    atoms.sort_by(|a, b| {
-        a.conditions()
-            .cmp(b.conditions())
-            .then_with(|| a.prop().cmp(b.prop()))
-            .then_with(|| atom_value_sort_key(a.value()).cmp(&atom_value_sort_key(b.value())))
-    });
-}
-
 fn sorted_recipe_entries(entries: &[RecipeStyleEntry]) -> Vec<&RecipeStyleEntry> {
     let mut out: Vec<_> = entries.iter().collect();
     out.sort_by(|a, b| {
@@ -226,16 +226,6 @@ fn sorted_recipe_entries(entries: &[RecipeStyleEntry]) -> Vec<&RecipeStyleEntry>
     out
 }
 
-fn atom_value_sort_key(value: &AtomValue) -> (u8, &str) {
-    match value {
-        AtomValue::Bool(false) => (0, "false"),
-        AtomValue::Bool(true) => (0, "true"),
-        AtomValue::Number(value) => (1, value),
-        AtomValue::String(value) => (2, value),
-        AtomValue::Null => (3, ""),
-    }
-}
-
 fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
     match value {
         AtomValue::String(value) | AtomValue::Number(value) => Some(Cow::Borrowed(value)),
@@ -244,25 +234,42 @@ fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
     }
 }
 
-fn literal_to_css(value: &Literal) -> Option<String> {
+fn literal_to_css(value: &Literal) -> Option<Cow<'_, str>> {
     match value {
-        Literal::String(value) => Some(value.clone()),
-        Literal::Number(value) => Some(pandacss_shared::number_to_js_string(*value)),
-        Literal::Bool(true) => Some("true".to_owned()),
+        Literal::String(value) => Some(Cow::Borrowed(value)),
+        Literal::Number(value) => Some(Cow::Owned(pandacss_shared::number_to_js_string(*value))),
+        Literal::Bool(true) => Some(Cow::Borrowed("true")),
         Literal::Bool(false) | Literal::Null | Literal::Object(_) => None,
         Literal::Array(items) => {
             let values: Vec<_> = items.iter().filter_map(literal_to_css).collect();
-            (!values.is_empty()).then(|| values.join(" "))
+            (!values.is_empty()).then(|| Cow::Owned(join_css_values(&values)))
         }
         Literal::Conditional(_) => None,
     }
 }
 
-fn finalized_class_name(class_name: &str, conditions: &[Box<str>]) -> String {
-    if conditions.is_empty() {
-        return class_name.to_owned();
+fn join_css_values(values: &[Cow<'_, str>]) -> String {
+    let len =
+        values.iter().map(|value| value.len()).sum::<usize>() + values.len().saturating_sub(1);
+    let mut out = String::with_capacity(len);
+    for (index, value) in values.iter().enumerate() {
+        if index > 0 {
+            out.push(' ');
+        }
+        out.push_str(value);
     }
-    let mut out = String::new();
+    out
+}
+
+fn finalized_class_name_owned(class_name: String, conditions: &[Box<str>]) -> String {
+    if conditions.is_empty() {
+        return class_name;
+    }
+    let condition_len = conditions
+        .iter()
+        .map(|condition| condition.trim_start_matches('_').len() + 1)
+        .sum::<usize>();
+    let mut out = String::with_capacity(condition_len + class_name.len());
     for condition in conditions {
         if !out.is_empty() {
             out.push(':');
@@ -270,7 +277,7 @@ fn finalized_class_name(class_name: &str, conditions: &[Box<str>]) -> String {
         out.push_str(condition.trim_start_matches('_'));
     }
     out.push(':');
-    out.push_str(class_name);
+    out.push_str(&class_name);
     out
 }
 

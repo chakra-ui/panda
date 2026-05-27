@@ -178,7 +178,7 @@ pub(crate) fn to_core_token_dictionary(
 // that crosses the NAPI boundary. This is fine for the tooling-shaped
 // `extract*()` APIs (JS callers want JSON), but the production hot path
 // (`compile()`) must never reach here — the engine keeps Literal → encoder
-// → emitter → optimizer in Rust and returns compact CSS/manifest. Keep
+// → stylesheet emitter in Rust and returns compact CSS/manifest. Keep
 // this conversion confined to the tooling APIs; do not call it from
 // inside `compile()` when the real pipeline lands.
 pub(crate) fn to_call(c: pandacss_extractor::ExtractedCall) -> ExtractedCall {

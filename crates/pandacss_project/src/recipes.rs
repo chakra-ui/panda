@@ -7,7 +7,7 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder};
+use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
@@ -1385,22 +1385,13 @@ fn sorted_recipe_part_group_snapshots(
 ) -> Vec<RecipeStyleGroupSnapshot> {
     let mut out: Vec<_> = groups
         .iter()
-        .map(|(key, group)| {
-            let mut entries: Vec<_> = group.entries.iter().cloned().collect();
-            entries.sort_by(|a, b| {
-                a.prop
-                    .cmp(&b.prop)
-                    .then_with(|| a.conditions.cmp(&b.conditions))
-                    .then_with(|| format!("{:?}", a.value).cmp(&format!("{:?}", b.value)))
-            });
-            RecipeStyleGroupSnapshot {
-                recipe: key.recipe.clone(),
-                slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
-                    serde_json::Value::String(slot.to_string())
-                }),
-                class_name: group.class_name.clone(),
-                entries,
-            }
+        .map(|(key, group)| RecipeStyleGroupSnapshot {
+            recipe: key.recipe.clone(),
+            slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
+                serde_json::Value::String(slot.to_string())
+            }),
+            class_name: group.class_name.clone(),
+            entries: group.entries.iter().cloned().collect(),
         })
         .collect();
     out.sort_by(|a, b| {
@@ -1417,22 +1408,13 @@ fn sorted_recipe_variant_group_snapshots(
 ) -> Vec<RecipeStyleGroupSnapshot> {
     let mut out: Vec<_> = groups
         .iter()
-        .map(|(key, group)| {
-            let mut entries: Vec<_> = group.entries.iter().cloned().collect();
-            entries.sort_by(|a, b| {
-                a.prop
-                    .cmp(&b.prop)
-                    .then_with(|| a.conditions.cmp(&b.conditions))
-                    .then_with(|| format!("{:?}", a.value).cmp(&format!("{:?}", b.value)))
-            });
-            RecipeStyleGroupSnapshot {
-                recipe: key.recipe.clone(),
-                slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
-                    serde_json::Value::String(slot.to_string())
-                }),
-                class_name: group.class_name.clone(),
-                entries,
-            }
+        .map(|(key, group)| RecipeStyleGroupSnapshot {
+            recipe: key.recipe.clone(),
+            slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
+                serde_json::Value::String(slot.to_string())
+            }),
+            class_name: group.class_name.clone(),
+            entries: group.entries.iter().cloned().collect(),
         })
         .collect();
     out.sort_by(|a, b| {
@@ -1450,11 +1432,6 @@ fn slot_sort_key(slot: &serde_json::Value) -> &str {
 
 fn sorted_atoms_vec(atoms: &FxHashSet<Atom>) -> Vec<Atom> {
     let mut out: Vec<_> = atoms.iter().cloned().collect();
-    out.sort_by(|a, b| {
-        a.prop()
-            .cmp(b.prop())
-            .then_with(|| a.conditions().cmp(b.conditions()))
-            .then_with(|| format!("{:?}", a.value()).cmp(&format!("{:?}", b.value())))
-    });
+    out.sort_by(compare_atoms_by_emit_order);
     out
 }

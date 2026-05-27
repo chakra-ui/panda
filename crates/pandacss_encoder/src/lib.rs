@@ -17,6 +17,7 @@
 //! - `FxHashSet<Atom>` for dedup — non-cryptographic hash for internal
 //!   trusted data.
 
+use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
 use rustc_hash::{FxHashSet, FxHasher};
@@ -256,6 +257,25 @@ impl<C: ConditionMatcher> Encoder<C> {
         let leaf = leaf_to_atom_value(leaf)?;
         Some(Atom::new(prop, leaf.value, conditions, leaf.important))
     }
+}
+
+#[must_use]
+pub fn atom_value_sort_key(value: &AtomValue) -> (u8, &str) {
+    match value {
+        AtomValue::Bool(false) => (0, "false"),
+        AtomValue::Bool(true) => (0, "true"),
+        AtomValue::Number(value) => (1, value),
+        AtomValue::String(value) => (2, value),
+        AtomValue::Null => (3, ""),
+    }
+}
+
+#[must_use]
+pub fn compare_atoms_by_emit_order(a: &Atom, b: &Atom) -> Ordering {
+    a.conditions()
+        .cmp(b.conditions())
+        .then_with(|| a.prop().cmp(b.prop()))
+        .then_with(|| atom_value_sort_key(a.value()).cmp(&atom_value_sort_key(b.value())))
 }
 
 fn hash_atom_parts(

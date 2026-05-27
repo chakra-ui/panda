@@ -8,6 +8,14 @@ fn config(value: serde_json::Value) -> UserConfig {
 }
 
 fn compile_css(config: &UserConfig, source: &str) -> String {
+    compile_css_with_options(config, source, StylesheetOptions::default())
+}
+
+fn compile_css_with_options(
+    config: &UserConfig,
+    source: &str,
+    options: StylesheetOptions,
+) -> String {
     let mut project = Project::from_config(config.clone()).expect("valid project");
     project.parse_file("/style.ts", source);
     let snapshot = project.encoded_recipes().snapshot();
@@ -21,9 +29,8 @@ fn compile_css(config: &UserConfig, source: &str) -> String {
             static_encoded_recipes: Some(&static_snapshot),
         },
         &StylesheetOptions {
-            optimize: false,
             include_static: true,
-            ..StylesheetOptions::default()
+            ..options
         },
     )
     .css
@@ -85,6 +92,29 @@ fn emits_conditions_and_breakpoints() {
   }
 }
 ");
+}
+
+#[test]
+fn minified_output_preserves_significant_spaces() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "descendantHover": "& :hover"
+        },
+        "utilities": {
+            "margin": { "className": "m" },
+            "content": { "className": "content" }
+        }
+    }));
+    let css = compile_css_with_options(
+        &config,
+        "import { css } from '@panda/css'; css({ margin: '1px 2px', content: '\"a  b\"', _descendantHover: { margin: '3px 4px' } })",
+        StylesheetOptions {
+            minify: true,
+            ..StylesheetOptions::default()
+        },
+    );
+    assert_snapshot!(css, @r#"@layer reset, base, tokens, recipes, utilities;@layer utilities{.content_"a__b"{content:"a  b";}.m_1px_2px{margin:1px 2px;}.descendantHover\:m_3px_4px :hover{margin:3px 4px;}}"#);
 }
 
 #[test]

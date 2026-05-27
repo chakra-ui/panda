@@ -176,13 +176,18 @@ impl Utility {
 
     #[must_use]
     pub fn format_class_name(&self, class_name: &str) -> String {
+        self.format_class_name_owned(class_name.to_owned())
+    }
+
+    #[must_use]
+    pub fn format_class_name_owned(&self, class_name: String) -> String {
         if self.prefix.is_empty() {
-            return class_name.to_owned();
+            return class_name;
         }
         let mut out = String::with_capacity(self.prefix.len() + class_name.len() + 1);
         out.push_str(&self.prefix);
         out.push('-');
-        out.push_str(class_name);
+        out.push_str(&class_name);
         out
     }
 

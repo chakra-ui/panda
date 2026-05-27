@@ -388,7 +388,6 @@ impl Project {
                 .get("minify")
                 .and_then(serde_json::Value::as_bool)
                 .unwrap_or(false),
-            optimize: true,
             include_static: true,
             source_map: false,
         };

@@ -4,7 +4,7 @@ mod writer;
 
 use std::sync::Arc;
 
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::Atom;
@@ -16,7 +16,6 @@ use serde::Serialize;
 #[derive(Debug, Clone, Default)]
 pub struct StylesheetOptions {
     pub minify: bool,
-    pub optimize: bool,
     pub include_static: bool,
     pub source_map: bool,
 }
@@ -72,17 +71,15 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
                     .to_owned(),
             });
         }
-        input
-            .static_encoded_recipes
-            .map(|static_recipes| merge_encoded_recipes(input.encoded_recipes, static_recipes))
+        input.static_encoded_recipes.and_then(|static_recipes| {
+            (!is_empty_encoded_recipes(static_recipes))
+                .then(|| merge_encoded_recipes(input.encoded_recipes, static_recipes))
+        })
     } else {
         None
     };
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
-    let mut css = emitter::emit(input.config, &utility, atoms, recipes, options.minify);
-    if options.optimize {
-        css = optimize(css, options.minify);
-    }
+    let css = emitter::emit(input.config, &utility, atoms, recipes, options.minify);
 
     StylesheetOutput {
         css,
@@ -113,17 +110,20 @@ fn merge_encoded_recipes(
     let mut merged = base.clone();
     extend_recipe_groups(&mut merged.base, &static_recipes.base);
     extend_recipe_groups(&mut merged.variants, &static_recipes.variants);
-    let mut atom_set = FxHashMap::default();
-    for (index, atom) in merged.atomic.iter().enumerate() {
-        atom_set.insert(atom.clone(), index);
+    let mut atom_set = FxHashSet::default();
+    for atom in &merged.atomic {
+        atom_set.insert(atom.clone());
     }
     for atom in &static_recipes.atomic {
-        if !atom_set.contains_key(atom) {
-            atom_set.insert(atom.clone(), merged.atomic.len());
+        if atom_set.insert(atom.clone()) {
             merged.atomic.push(atom.clone());
         }
     }
     merged
+}
+
+fn is_empty_encoded_recipes(recipes: &EncodedRecipesSnapshot) -> bool {
+    recipes.base.is_empty() && recipes.variants.is_empty() && recipes.atomic.is_empty()
 }
 
 fn extend_recipe_groups(
@@ -152,25 +152,4 @@ fn recipe_group_key(group: &RecipeStyleGroupSnapshot) -> (Box<str>, String, Box<
         group.slot.to_string(),
         group.class_name.clone(),
     )
-}
-
-fn optimize(css: String, minify: bool) -> String {
-    if !minify {
-        return css;
-    }
-
-    let mut out = String::with_capacity(css.len());
-    let mut prev_space = false;
-    for ch in css.chars() {
-        if ch.is_whitespace() {
-            prev_space = true;
-            continue;
-        }
-        if prev_space && !matches!(ch, '{' | '}' | ':' | ';' | ',') {
-            out.push(' ');
-        }
-        prev_space = false;
-        out.push(ch);
-    }
-    out
 }
