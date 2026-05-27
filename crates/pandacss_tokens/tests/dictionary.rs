@@ -549,6 +549,10 @@ fn extend_flat_builds_a_usable_dictionary() {
 // --- config-derived construction ---
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "fixture-heavy config test keeps related token assertions together"
+)]
 fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {
@@ -1330,6 +1334,10 @@ fn from_config_flattens_deep_semantic_conditions_like_js() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "fixture-heavy middleware test keeps related spacing assertions together"
+)]
 fn from_config_applies_spacing_middlewares() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {

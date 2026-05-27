@@ -261,11 +261,11 @@ fn token_folds_inside_template_literal_interpolation() {
     // `border: `1px solid ${token('colors.red.500')}`` — the token() call inside
     // the template interpolation folds and the whole literal concatenates,
     // matching the JS extractor's token-in-template handling.
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { token } from '@panda/tokens';
         import { css } from '@panda/css';
         css({ border: `1px solid ${token('colors.red.500')}` });
-    "#};
+    "};
     assert_yaml_snapshot!(
         css_string_prop(&run_with_tokens(src), "border"),
         @r#""1px solid #ef4444""#
@@ -274,11 +274,11 @@ fn token_folds_inside_template_literal_interpolation() {
 
 #[test]
 fn multiple_token_calls_in_one_template_fold() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { token } from '@panda/tokens';
         import { css } from '@panda/css';
         css({ font: `${token('sizes.sm')} / ${token('colors.red.500')}` });
-    "#};
+    "};
     assert_yaml_snapshot!(
         css_string_prop(&run_with_tokens(src), "font"),
         @r#""4px / #ef4444""#

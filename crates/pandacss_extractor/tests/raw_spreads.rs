@@ -11,7 +11,7 @@ fn run(source: &str) -> ExtractUsage {
 
 #[test]
 fn css_raw_spread_with_computed_property_name_matches_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({
           color: 'red',
@@ -25,7 +25,7 @@ fn css_raw_spread_with_computed_property_name_matches_js_fixture() {
             opacity: 0.8
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
     - color: red
@@ -66,7 +66,7 @@ fn css_raw_spread_deeply_nested_conditions_match_js_fixture() {
 
 #[test]
 fn css_raw_conditional_spreads_with_static_test_match_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ color: 'blue', padding: '8px' });
         const isActive = true;
@@ -77,7 +77,7 @@ fn css_raw_conditional_spreads_with_static_test_match_js_fixture() {
             opacity: 0.9
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
     - color: blue
@@ -91,7 +91,7 @@ fn css_raw_conditional_spreads_with_static_test_match_js_fixture() {
 
 #[test]
 fn css_raw_spread_inside_array_value_matches_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ color: 'green', fontSize: '16px' });
         const component = css({
@@ -103,7 +103,7 @@ fn css_raw_spread_inside_array_value_matches_js_fixture() {
             }
           ]
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
     - color: green
@@ -117,7 +117,7 @@ fn css_raw_spread_inside_array_value_matches_js_fixture() {
 
 #[test]
 fn css_raw_spread_with_renamed_import_matches_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css as pandaCss } from '@panda/css';
         const baseStyles = pandaCss.raw({
           color: 'purple',
@@ -130,7 +130,7 @@ fn css_raw_spread_with_renamed_import_matches_js_fixture() {
             transform: 'scale(0.98)'
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
     - color: purple
@@ -144,7 +144,7 @@ fn css_raw_spread_with_renamed_import_matches_js_fixture() {
 
 #[test]
 fn css_raw_nullish_spreads_are_ignored_match_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = undefined;
         const nullStyles = null;
@@ -158,7 +158,7 @@ fn css_raw_nullish_spreads_are_ignored_match_js_fixture() {
             opacity: 0.7
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
     - color: orange
@@ -172,7 +172,7 @@ fn css_raw_nullish_spreads_are_ignored_match_js_fixture() {
 
 #[test]
 fn css_raw_function_return_spread_degrades_like_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css } from '@panda/css';
         const baseStyles = css.raw({ display: 'flex', gap: '10px' });
         const getStyles = () => ({
@@ -186,7 +186,7 @@ fn css_raw_function_return_spread_degrades_like_js_fixture() {
             background: 'gray.100'
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("final css call").data, @"
     - _hover:
@@ -198,7 +198,7 @@ fn css_raw_function_return_spread_degrades_like_js_fixture() {
 
 #[test]
 fn css_raw_spread_in_cva_variant_matches_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css, cva } from '@panda/css';
         const hoverStyles = css.raw({ bg: 'blue.500', color: 'white' });
         const button = cva({
@@ -211,7 +211,7 @@ fn css_raw_spread_in_cva_variant_matches_js_fixture() {
             }
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     let cva = calls
         .iter()
@@ -229,7 +229,7 @@ fn css_raw_spread_in_cva_variant_matches_js_fixture() {
 
 #[test]
 fn css_raw_spread_in_sva_slot_matches_js_fixture() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css, sva } from '@panda/css';
         const rootStyles = css.raw({ display: 'flex', gap: '2' });
         const recipe = sva({
@@ -242,7 +242,7 @@ fn css_raw_spread_in_sva_slot_matches_js_fixture() {
             label: { color: 'gray.700' }
           }
         });
-    "#};
+    "};
     let calls = run(src).calls;
     let sva = calls
         .iter()
