@@ -1,4 +1,5 @@
 mod emitter;
+mod sort;
 mod static_css;
 mod writer;
 

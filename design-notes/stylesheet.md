@@ -41,17 +41,37 @@ The stylesheet crate does **not** own:
 
 ## Ordering
 
-Atom ordering is shared through `pandacss_encoder::compare_atoms_by_emit_order`:
+Final CSS ordering is owned by `pandacss_stylesheet::sort`. The model is based on cascade priority, not on extraction
+or insertion order:
 
-1. condition chain
-2. property
-3. value sort key
+1. Rule bucket: base/unconditional rules, selector-only variants, then at-rule and mixed at-rule variants.
+2. At-rule priority: supports, media, container, print, then other at-rules. Width queries are normalized for sorting:
+   max-width style queries sort before min-width style queries; max-width sorts descending and min-width sorts
+   ascending.
+3. Selector priority: configured pseudo selectors use a broad pseudo-class priority table. Unknown pseudo-classes sort
+   early, structural and form states sort before interactive states, and the core interactive sequence is
+   `:focus-within`, `:hover`, `:focus`, `:focus-visible`, `:active`.
+4. Property priority: broad shorthands sort before shorthand groups, which sort before longhands, so more specific
+   declarations can win inside the same condition bucket. Axis shorthands use inline/x before block/y as a deterministic
+   tie-breaker.
+5. Deterministic ties: property name, atom value key, then condition names.
 
-The value key is allocation-free: `(discriminant, &str)`. This comparator is used by both `pandacss_project` snapshots
-and final stylesheet emission so dynamic atoms and recipe atomic atoms share one cascade order.
+The output order is an explicit priority key instead of an incidental extraction order. It keeps Panda's variant
+semantics: responsive/at-rule rules still come after base rules, pseudo selectors keep predictable state ordering, and
+utility shorthand/longhand conflicts are handled within each condition bucket.
 
-Recipe group entries are sorted at final emission time. `Project::snapshot()` does not sort each group's entries because
-the emitter is the last CSS-output boundary and would otherwise re-sort them.
+Pseudo-elements are a selector-construction concern, not just a sort concern: pseudo-classes are emitted before
+pseudo-elements. Panda follows that rule during condition application because CSS pseudo-elements must appear after the
+other components of the compound selector; `.x:hover::before` is valid, while `.x::before:hover` is not the selector
+shape we want for normal utility variants.
+
+The sort key is precomputed once per atom or recipe entry, so the `O(N log N)` comparator does not repeatedly parse
+conditions or allocate. The atom value tie-breaker remains allocation-free: `(discriminant, &str)`.
+
+Condition application has a separate ordering concern from rule sorting. Mixed conditions such as
+`["@media (hover: hover)", "&:hover"]` emit every condition part, with wrappers applied before selector modifiers and
+pseudo-elements applied after pseudo-classes. This keeps selectors such as `:hover::before` valid while preserving
+deterministic class names.
 
 ## Performance Shape
 

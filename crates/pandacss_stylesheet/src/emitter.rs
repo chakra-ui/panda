@@ -1,12 +1,13 @@
 use std::borrow::Cow;
 
-use pandacss_config::{ConditionQuery, UserConfig};
-use pandacss_encoder::{Atom, AtomValue, atom_value_sort_key, compare_atoms_by_emit_order};
+use pandacss_config::UserConfig;
+use pandacss_encoder::{Atom, AtomValue};
 use pandacss_extractor::Literal;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry};
 use pandacss_shared::split_important;
 use pandacss_utility::{Utility, UtilityTransformResult};
 
+use crate::sort::{SortContext, condition_raw_parts};
 use crate::writer::CssWriter;
 
 pub fn emit(
@@ -33,9 +34,8 @@ pub fn emit(
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
         writer.layer("utilities", |writer| {
             atoms.extend(recipes.atomic.iter());
-            atoms.sort_by(|a, b| compare_atoms_by_emit_order(a, b));
-            for atom in atoms {
-                cx.write_atom(writer, atom);
+            for atom in cx.sort.sorted_atoms(atoms) {
+                cx.write_atom(writer, atom.atom, &atom.conditions);
             }
         });
     }
@@ -66,15 +66,20 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
 
 struct EmitContext<'a> {
     config: &'a UserConfig,
+    sort: SortContext<'a>,
     utility: &'a Utility,
 }
 
 impl<'a> EmitContext<'a> {
     fn new(config: &'a UserConfig, utility: &'a Utility) -> Self {
-        Self { config, utility }
+        Self {
+            config,
+            sort: SortContext::new(config),
+            utility,
+        }
     }
 
-    fn write_atom(&self, writer: &mut CssWriter, atom: &Atom) {
+    fn write_atom(&self, writer: &mut CssWriter, atom: &Atom, conditions: &[&str]) {
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
@@ -86,7 +91,7 @@ impl<'a> EmitContext<'a> {
         if atom.important() {
             class_name.push('!');
         }
-        let rule = self.rule_target_owned(class_name, atom.conditions());
+        let rule = self.rule_target_owned(class_name, conditions);
         self.write_style_rule(writer, &rule, &result.styles);
     }
 
@@ -97,9 +102,9 @@ impl<'a> EmitContext<'a> {
         entries: &[RecipeStyleEntry],
     ) {
         let selector_base = format!(".{}", escape_selector(class_name));
-        for entry in sorted_recipe_entries(entries) {
+        for entry in self.sort.sorted_recipe_entries(entries) {
             let rule = self.rule_target_with_base(&selector_base, &entry.conditions);
-            self.write_recipe_entry_rule(writer, &rule, entry);
+            self.write_recipe_entry_rule(writer, &rule, entry.entry);
         }
     }
 
@@ -158,21 +163,17 @@ impl<'a> EmitContext<'a> {
         });
     }
 
-    fn rule_target_with_base(&self, base: &str, conditions: &[Box<str>]) -> RuleTarget {
+    fn rule_target_with_base(&self, base: &str, conditions: &[&str]) -> RuleTarget {
         self.rule_target_with_base_owned(base.to_owned(), conditions)
     }
 
-    fn rule_target_owned(&self, class_name: String, conditions: &[Box<str>]) -> RuleTarget {
+    fn rule_target_owned(&self, class_name: String, conditions: &[&str]) -> RuleTarget {
         let finalized = finalized_class_name_owned(class_name, conditions);
         let base = format!(".{}", escape_selector(&finalized));
         self.rule_target_with_base_owned(base, conditions)
     }
 
-    fn rule_target_with_base_owned(
-        &self,
-        mut selector: String,
-        conditions: &[Box<str>],
-    ) -> RuleTarget {
+    fn rule_target_with_base_owned(&self, mut selector: String, conditions: &[&str]) -> RuleTarget {
         let mut wrappers = Vec::new();
         for condition in conditions {
             apply_condition(self.config, &mut selector, &mut wrappers, condition);
@@ -215,17 +216,6 @@ fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
     }
 }
 
-fn sorted_recipe_entries(entries: &[RecipeStyleEntry]) -> Vec<&RecipeStyleEntry> {
-    let mut out: Vec<_> = entries.iter().collect();
-    out.sort_by(|a, b| {
-        a.conditions
-            .cmp(&b.conditions)
-            .then_with(|| a.prop.cmp(&b.prop))
-            .then_with(|| atom_value_sort_key(&a.value).cmp(&atom_value_sort_key(&b.value)))
-    });
-    out
-}
-
 fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
     match value {
         AtomValue::String(value) | AtomValue::Number(value) => Some(Cow::Borrowed(value)),
@@ -261,7 +251,7 @@ fn join_css_values(values: &[Cow<'_, str>]) -> String {
     out
 }
 
-fn finalized_class_name_owned(class_name: String, conditions: &[Box<str>]) -> String {
+fn finalized_class_name_owned(class_name: String, conditions: &[&str]) -> String {
     if conditions.is_empty() {
         return class_name;
     }
@@ -287,35 +277,18 @@ fn apply_condition(
     wrappers: &mut Vec<String>,
     condition: &str,
 ) {
-    if let Some(value) = breakpoint_query(config, condition) {
-        wrappers.push(format!("@media (width >= {value})"));
-        return;
-    }
-    let key = condition.trim_start_matches('_');
-    let query = config
-        .conditions
-        .get(condition)
-        .or_else(|| config.conditions.get(key));
-    let Some(query) = query else {
-        return;
-    };
-    match condition_query_to_string(query) {
-        Some(raw) if raw.starts_with('@') => wrappers.push(raw),
-        Some(raw) if raw.contains('&') => *selector = raw.replace('&', selector),
-        Some(raw) => *selector = format!("{raw} {selector}"),
-        None => {}
+    for raw in condition_raw_parts(config, condition) {
+        apply_raw_condition(selector, wrappers, &raw);
     }
 }
 
-fn breakpoint_query(config: &UserConfig, condition: &str) -> Option<String> {
-    config.theme.breakpoints.get(condition).cloned()
-}
-
-fn condition_query_to_string(query: &ConditionQuery) -> Option<String> {
-    match query {
-        ConditionQuery::String(value) => Some(value.clone()),
-        ConditionQuery::Array(items) => items.first().cloned(),
-        ConditionQuery::Nested(_) => None,
+fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &str) {
+    if raw.starts_with('@') {
+        wrappers.push(raw.to_owned());
+    } else if raw.contains('&') {
+        *selector = raw.replace('&', selector);
+    } else {
+        *selector = format!("{raw} {selector}");
     }
 }
 
