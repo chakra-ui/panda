@@ -25,8 +25,8 @@ packages/compiler/crate/src/                  # NAPI
   calls.rs      ExtractedCall mirror + extract_calls
   jsx.rs        ExtractedJsx mirror + extract_jsx
   extract.rs    ExtractResult / ExtractDebugResult + extract / extract_debug
-  compile.rs    CompileInput / Output mirrors + compile (placeholder)
-  project.rs    Project class; config-based construction, parseFile, atoms, recipes
+  compile.rs    legacy CompileInput / Output mirrors
+  project.rs    Project class; config-based construction, parseFile, atoms, recipes, compile
   session.rs    Extractor class (recommended batch entrypoint)
   convert.rs    pandacss_extractor::X ↔ X conversion helpers
 
@@ -159,13 +159,30 @@ playground target. Composition:
 Future budget: keeping under 500 KB gzipped means no big new dep gets added casually. Anything that doubles size needs
 benchmarks first.
 
+## Native compile path
+
+`Project.compile()` is the production native CSS path. It stays on the Rust side after callbacks have been applied:
+
+1. borrow the project-wide dynamic atom set from `pandacss_project::Project`
+2. materialize callback-expanded atoms only when JS utility transforms are registered
+3. snapshot dynamic recipes
+4. compute a static recipe snapshot from the compiled project/config
+5. call `pandacss_stylesheet::compile()`
+
+The binding caches the parsed `UserConfig` on `Project` construction so each compile does not clone and deserialize the
+entire JSON config again. The current output is `{ css, sourceMap, manifest, diagnostics }`; `sourceMap` and manifest
+hashes are still placeholders.
+
+`pandacss_stylesheet` emits and writer-minifies CSS. It does not run a CSS optimizer. The old `optimize` knob was removed
+from the native API so the boundary is explicit.
+
 ## Performance: serialization cost is real
 
 Every `Literal::to_json()` materializes a `serde_json::Value` that crosses the NAPI boundary. For tooling APIs
 (`extract*()` returns JSON for JS consumption), this is unavoidable — JS callers want JSON.
 
 **The production hot path (`compile()`) must never reach this conversion.** When the real pipeline lands, the engine
-keeps `Literal` → encoder → emitter → optimizer entirely in Rust and returns compact CSS plus a manifest. Don't call
+keeps `Literal` → encoder → stylesheet emitter entirely in Rust and returns compact CSS plus a manifest. Don't call
 `to_json()` from inside `compile()`. There's a `PERF(port)` marker on `to_call` in `convert.rs` calling this out.
 
 The wasm binding sidesteps the JSON intermediate by using `serde-wasm-bindgen` directly, but the cost is similar —

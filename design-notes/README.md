@@ -12,11 +12,12 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 ### Architecture
 
 - [Compiler lifecycle](./compiler-lifecycle.md) — end-to-end `createCompiler(config)` flow (construct → ingest →
-  extract → encode → emit → optimize → output), build vs watch modes, and which phases are built vs stubbed.
+  extract → encode → emit → output), build vs watch modes, and which phases are built vs deferred.
 - [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
 - [Project lifecycle](./project-lifecycle.md) — `Project` add / replace / remove semantics for watch mode.
+- [Native stylesheet compiler](./stylesheet.md) — CSS emission, static CSS support, ordering, and minification boundary.
 - [Scope and boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.
 
 ### Subsystems

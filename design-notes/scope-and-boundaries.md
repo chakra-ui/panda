@@ -2,10 +2,10 @@
 
 ## Summary
 
-The Rust pipeline currently owns a deliberately narrow slice: parse → extract → encode. Emission and optimization are
-planned Rust phases, but are intentionally not part of the current project/extractor contract. A list of things it
-explicitly **doesn't** own — and why — is more useful to future contributors than describing what it does. This doc is
-that list.
+The Rust pipeline currently owns parse → extract → encode → emit for the native compiler path. Optimization, persistent
+cache, file discovery beyond globbing, and framework preprocessing remain deliberately outside the current
+project/extractor contract. A list of things it explicitly **doesn't** own — and why — is more useful to future
+contributors than describing what it does. This doc is that list.
 
 ## Not in scope
 
@@ -36,13 +36,17 @@ the natural seam when batch input lands — parallelism can opt in there without
 The current `parse_file(path, source)` shape is already correct for parallel callers: hold the project behind a mutex,
 fan out reads, fan in writes. Single-threaded for now keeps the encoder's path buffer and the resolver caches simple.
 
-### CSS parsing
+### CSS parsing / optimization
 
-Hand-rolled emitter — **no CSS parser dependency**. Only `lightningcss` parses CSS, and only during the optimize phase.
-The emitter produces CSS strings directly from `Atom` records; it doesn't read CSS back in.
+Hand-rolled emitter — **no CSS parser dependency** in the current native stylesheet path. `pandacss_stylesheet` produces
+CSS strings directly from `Atom` and recipe records; it doesn't read CSS back in.
 
 **Why:** pulling in a full CSS parser for emission would be a bus-factor risk and a build-time cost the project doesn't
 need. The output shape is determined by Panda's own rules, not by re-parsing user CSS.
+
+There is also no raw string optimizer. A previous whitespace post-pass was removed because it could corrupt significant
+CSS whitespace in descendant selectors and quoted values. If optimization lands, it must be CSS-aware (for example
+`lightningcss`) and live behind an explicit optimizer boundary.
 
 ### Framework-specific source preprocessing
 
@@ -66,14 +70,14 @@ bodies. Phase-batched hooks call into JS once per phase with the full batch, amo
 `notify-debouncer-full` + mpsc + oneshot pattern is **out of scope for v2.x**. Footnoted on the migration cleanup phase
 for future work.
 
-The current model expects the JS host to own the watcher and route changed-file events through
-`Project::refresh_file`. The contract (see [project-lifecycle](./project-lifecycle.md)) is structured to make this
-trivial: unknown paths are silently filtered.
+The current model expects the JS host to own the watcher and route changed-file events through `Project::refresh_file`.
+The contract (see [project-lifecycle](./project-lifecycle.md)) is structured to make this trivial: unknown paths are
+silently filtered.
 
 ### Configuration parsing
 
-`pandacss_config::UserConfig` is the Rust-facing resolved config input. Config resolution still lives on the JS side; Rust
-does not execute `panda.config.*`, presets, hooks, or plugins. The resolved config flows into
+`pandacss_config::UserConfig` is the Rust-facing resolved config input. Config resolution still lives on the JS side;
+Rust does not execute `panda.config.*`, presets, hooks, or plugins. The resolved config flows into
 `pandacss_project::System::new(config)`, which compiles extractor matchers, JSX config, utility metadata, conditions,
 breakpoints, patterns, recipes, and token dictionary data into runtime structures.
 
@@ -99,8 +103,8 @@ the Rust engine surfacing extraction results that JS-side hooks transform betwee
 - Import matching against Panda category rules
 - Recipe (`cva` / `sva`) parsing into typed shapes
 - Atomic encoding (one atom per `(prop, value, condition_chain)`)
-- CSS emission later
-- CSS optimization later via `lightningcss`
+- CSS emission through `pandacss_stylesheet`
+- CSS optimization later via a CSS-aware optimizer such as `lightningcss`
 
 Each of those is a closed system with a serializable input and output shape. JS calls in with a config + sources, Rust
 hands back CSS + manifest + diagnostics. Anything outside that contract lives on the JS side or in a separate crate.
