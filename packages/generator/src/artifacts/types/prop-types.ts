@@ -1,9 +1,8 @@
-import { createVisibilityFilter, type Context } from '@pandacss/core'
+import type { Context } from '@pandacss/core'
 import { outdent } from 'outdent'
 
 export function generatePropTypes(ctx: Context) {
-  const { utility, tokens } = ctx
-  const isHidden = createVisibilityFilter(ctx.config)
+  const { utility } = ctx
 
   const result = [
     outdent`
@@ -14,42 +13,10 @@ export function generatePropTypes(ctx: Context) {
     export interface UtilityValues {`,
   ]
 
-  // Match `generateTokenTypes`: a palette is hidden only when EVERY real member
-  // is hidden. Mirror the same membership logic so the `colorPalette` prop
-  // union stays in sync with the `ColorPalette` token type.
-  const colorsCategory = tokens.view.categoryMap.get('colors' as any)
-  const tokenBelongsToPalette = (token: any, paletteKey: string): boolean => {
-    const ext = token?.extensions
-    if (!ext || ext.isVirtual) return false
-    const roots: string[][] | undefined = ext.colorPaletteRoots
-    if (!roots) return false
-    return roots.some((root) => root.join('.') === paletteKey)
-  }
-  const isHiddenPalette = (paletteKey: string): boolean => {
-    if (!colorsCategory) return false
-    let hasMember = false
-    for (const [tokenKey, token] of colorsCategory.entries()) {
-      if (!tokenBelongsToPalette(token, paletteKey)) continue
-      hasMember = true
-      const field = token.extensions?.isSemantic ? 'semanticTokens' : 'tokens'
-      if (!isHidden(field, `colors.${tokenKey}`)) return false
-    }
-    return hasMember
-  }
-
   const types = utility.getTypes()
 
   for (const [prop, values] of types.entries()) {
-    let propValues = values
-    if (prop === 'colorPalette') {
-      propValues = values.filter((value) => {
-        // Values are JSON-stringified literal unions like `"accent"`.
-        if (value.length < 2 || value[0] !== '"') return true
-        return !isHiddenPalette(value.slice(1, -1))
-      })
-      if (propValues.length === 0) continue
-    }
-    result.push(`\t${prop}: ${propValues.join(' | ')};`)
+    result.push(`\t${prop}: ${values.join(' | ')};`)
   }
 
   result.push('}', '\n')

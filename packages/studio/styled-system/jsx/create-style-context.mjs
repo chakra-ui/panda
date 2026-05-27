@@ -67,7 +67,10 @@ export function createStyleContext(recipe) {
     
     const WithProvider = forwardRef((props, ref) => {
       const [variantProps, restProps] = svaFn.splitVariantProps(props)
-      
+      options?.forwardProps?.forEach((key) => {
+        if (key in variantProps) restProps[key] = variantProps[key]
+      })
+
       const slotStyles = isConfigRecipe ? svaFn(variantProps) : svaFn.raw(variantProps)
       slotStyles._classNameMap = svaFn.classNameMap
 

@@ -225,8 +225,6 @@ importers:
 
   packages/config/__tests__/fixtures/lib-manifest/broken-buildinfo-pkg: {}
 
-  packages/config/__tests__/fixtures/lib-manifest/chain-pkg: {}
-
   packages/config/__tests__/fixtures/lib-manifest/forward-compat-pkg: {}
 
   packages/config/__tests__/fixtures/lib-manifest/incomplete-pkg: {}
