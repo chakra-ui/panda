@@ -1,7 +1,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { logger } from '@pandacss/logger'
-import { CURRENT_LIB_MANIFEST_VERSION, type LibManifest } from '@pandacss/types'
+import type { LibManifest } from '@pandacss/types'
+
+const CURRENT_LIB_MANIFEST_VERSION = 1
 
 export interface WriteLibManifestOptions {
   cwd: string

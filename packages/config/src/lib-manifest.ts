@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { isObject } from '@pandacss/shared'
-import { CURRENT_LIB_MANIFEST_VERSION, type LibManifest } from '@pandacss/types'
+import type { LibManifest } from '@pandacss/types'
+
+const CURRENT_LIB_MANIFEST_VERSION = 1
 
 export interface ReadLibManifestResult {
   manifest: LibManifest
