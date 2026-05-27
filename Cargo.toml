@@ -33,6 +33,7 @@ pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }
+pandacss_stylesheet = { path = "crates/pandacss_stylesheet" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
 pandacss_tracing = { path = "crates/pandacss_tracing" }
 pandacss_utility = { path = "crates/pandacss_utility" }

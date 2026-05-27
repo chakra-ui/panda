@@ -88,9 +88,12 @@ dependencies = [
  "pandacss_extractor",
  "pandacss_project",
  "pandacss_recipes",
+ "pandacss_stylesheet",
  "pandacss_tokens",
  "pandacss_tracing",
+ "serde",
  "serde_json",
+ "smallvec",
  "tracing",
 ]
 
@@ -1137,6 +1140,26 @@ dependencies = [
  "regex",
  "ryu",
  "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "pandacss_stylesheet"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "pandacss_config",
+ "pandacss_encoder",
+ "pandacss_extractor",
+ "pandacss_project",
+ "pandacss_shared",
+ "pandacss_tokens",
+ "pandacss_utility",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "smallvec",
  "thiserror",
 ]
 

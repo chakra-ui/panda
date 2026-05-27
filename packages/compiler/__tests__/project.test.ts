@@ -29,6 +29,39 @@ describe('Compiler', () => {
     `)
   })
 
+  it('compiles parsed atoms to layered css', () => {
+    const compiler = createProject({
+      utilities: {
+        color: { className: 'c' },
+        backgroundColor: { className: 'bg', shorthand: 'bg' },
+      },
+    })
+    compiler.parseFile(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ color: 'red', bg: 'blue' })`,
+    )
+    expect(compiler.compile()).toMatchInlineSnapshot(`
+      {
+        "css": "@layer reset, base, tokens, recipes, utilities;
+      @layer utilities {
+        .bg_blue {
+          background-color: blue;
+        }
+        .c_red {
+          color: red;
+        }
+      }
+      ",
+        "manifest": {
+          "hashes": [],
+          "tokens": [],
+        },
+        "diagnostics": [],
+      }
+    `)
+  })
+
   it('constructs from a serialized config snapshot', () => {
     const compiler = createCompiler(
       {

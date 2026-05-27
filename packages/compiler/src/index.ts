@@ -331,6 +331,7 @@ export interface ProjectInstance {
   slotRecipes(): RecipeEntry[]
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
+  compile(): CompileOutput
 }
 
 export interface ProjectConstructor {
@@ -403,6 +404,9 @@ class FallbackProject implements ProjectInstance {
   }
   encodedRecipes() {
     return { base: [], variants: [], atomic: [] } as EncodedRecipeStyles
+  }
+  compile() {
+    return { css: '', manifest: { hashes: [], tokens: [] }, diagnostics: [] }
   }
   summary() {
     return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
@@ -481,7 +485,6 @@ export interface Compiler {
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
   config(): UserConfig | null
-  /** Placeholder today — empty stylesheet until the emit pipeline lands. */
   compile(): CompileOutput
 }
 
@@ -515,7 +518,7 @@ function toCompiler(project: ProjectInstance): Compiler {
     encodedRecipes: () => project.encodedRecipes(),
     summary: () => project.summary(),
     config: () => project.config(),
-    compile: () => binding.compile({}),
+    compile: () => project.compile(),
   }
 }
 

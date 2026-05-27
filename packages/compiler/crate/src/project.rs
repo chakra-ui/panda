@@ -14,7 +14,13 @@ use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
 use pandacss_config::{CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig};
+use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal};
+use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot};
+use serde::Deserialize;
+use smallvec::SmallVec;
+
+use crate::compile::{CompileManifest, CompileOutput};
 
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
@@ -349,6 +355,72 @@ impl Project {
         .inspect(|_| crate::flush_tracing())
     }
 
+    #[napi]
+    pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
+        let atoms = if self.callbacks.has_utility_transforms() {
+            self.atoms(env)?
+                .into_iter()
+                .filter_map(core_atom_from_js_atom)
+                .collect::<Vec<_>>()
+        } else {
+            self.inner.atoms().iter().cloned().collect::<Vec<_>>()
+        };
+        let encoded_recipes = if self.callbacks.has_utility_transforms() {
+            let encoded = self.encoded_recipes(env)?;
+            encoded_recipes_from_json(encoded)?
+        } else {
+            self.inner.encoded_recipes().snapshot()
+        };
+        let config: UserConfig = serde_json::from_value(self.config.clone())
+            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let options = pandacss_stylesheet::StylesheetOptions {
+            minify: config
+                .extra
+                .get("minify")
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(false),
+            optimize: true,
+            include_static: true,
+            source_map: false,
+        };
+        let output = pandacss_stylesheet::compile(
+            pandacss_stylesheet::StylesheetInput {
+                config: &config,
+                atoms: &atoms,
+                encoded_recipes: &encoded_recipes,
+            },
+            &options,
+        );
+        crate::flush_tracing();
+        Ok(CompileOutput {
+            css: output.css,
+            source_map: output.source_map,
+            manifest: CompileManifest {
+                hashes: Vec::new(),
+                tokens: Vec::new(),
+            },
+            diagnostics: output
+                .diagnostics
+                .into_iter()
+                .map(|diagnostic| Diagnostic {
+                    message: diagnostic.message,
+                    severity: match diagnostic.severity {
+                        pandacss_stylesheet::StylesheetDiagnosticSeverity::Warning => {
+                            crate::DiagnosticSeverity::Warning
+                        }
+                        pandacss_stylesheet::StylesheetDiagnosticSeverity::Error => {
+                            crate::DiagnosticSeverity::Error
+                        }
+                    },
+                    span: None,
+                    location: None,
+                })
+                .collect(),
+        })
+    }
+
     /// Aggregate counts.
     #[napi]
     #[must_use]
@@ -361,6 +433,134 @@ impl Project {
             slot_recipe_count: u32::try_from(s.slot_recipe_count).unwrap_or(u32::MAX),
         }
     }
+}
+
+fn core_atom_from_js_atom(atom: crate::Atom) -> Option<CoreAtom> {
+    let value = atom_value_from_json(atom.value)?;
+    let conditions: SmallVec<[Box<str>; 2]> = atom
+        .conditions
+        .into_iter()
+        .map(String::into_boxed_str)
+        .collect();
+    Some(CoreAtom::new(
+        atom.prop.into_boxed_str(),
+        value,
+        conditions,
+        false,
+    ))
+}
+
+fn atom_value_from_json(value: serde_json::Value) -> Option<AtomValue> {
+    match value {
+        serde_json::Value::String(value) => Some(AtomValue::String(value.into_boxed_str())),
+        serde_json::Value::Number(value) => {
+            Some(AtomValue::Number(value.to_string().into_boxed_str()))
+        }
+        serde_json::Value::Bool(value) => Some(AtomValue::Bool(value)),
+        serde_json::Value::Null => Some(AtomValue::Null),
+        serde_json::Value::Array(_) | serde_json::Value::Object(_) => None,
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct JsonEncodedRecipes {
+    #[serde(default)]
+    base: Vec<JsonRecipeStyleGroup>,
+    #[serde(default)]
+    variants: Vec<JsonRecipeStyleGroup>,
+    #[serde(default)]
+    atomic: Vec<JsonAtom>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct JsonRecipeStyleGroup {
+    recipe: String,
+    #[serde(default)]
+    slot: serde_json::Value,
+    class_name: String,
+    #[serde(default)]
+    entries: Vec<JsonRecipeStyleEntry>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct JsonRecipeStyleEntry {
+    prop: String,
+    value: serde_json::Value,
+    #[serde(default)]
+    conditions: Vec<String>,
+    #[serde(default)]
+    important: bool,
+}
+
+#[derive(Deserialize)]
+struct JsonAtom {
+    prop: String,
+    value: serde_json::Value,
+    #[serde(default)]
+    conditions: Vec<String>,
+}
+
+fn encoded_recipes_from_json(value: serde_json::Value) -> napi::Result<EncodedRecipesSnapshot> {
+    let decoded: JsonEncodedRecipes = serde_json::from_value(value)
+        .map_err(|err| napi::Error::from_reason(format!("invalid encoded recipe CSS: {err}")))?;
+    Ok(EncodedRecipesSnapshot {
+        base: decoded
+            .base
+            .into_iter()
+            .map(recipe_group_from_json)
+            .collect::<napi::Result<_>>()?,
+        variants: decoded
+            .variants
+            .into_iter()
+            .map(recipe_group_from_json)
+            .collect::<napi::Result<_>>()?,
+        atomic: decoded
+            .atomic
+            .into_iter()
+            .filter_map(|atom| {
+                core_atom_from_js_atom(crate::Atom {
+                    prop: atom.prop,
+                    value: atom.value,
+                    conditions: atom.conditions,
+                })
+            })
+            .collect(),
+    })
+}
+
+fn recipe_group_from_json(group: JsonRecipeStyleGroup) -> napi::Result<RecipeStyleGroupSnapshot> {
+    Ok(RecipeStyleGroupSnapshot {
+        recipe: group.recipe.into_boxed_str(),
+        slot: group.slot,
+        class_name: group.class_name.into_boxed_str(),
+        entries: group
+            .entries
+            .into_iter()
+            .map(recipe_entry_from_json)
+            .collect::<napi::Result<_>>()?,
+    })
+}
+
+fn recipe_entry_from_json(entry: JsonRecipeStyleEntry) -> napi::Result<RecipeStyleEntry> {
+    let Some(value) = atom_value_from_json(entry.value) else {
+        return Err(napi::Error::from_reason(format!(
+            "invalid recipe CSS value for `{}`",
+            entry.prop
+        )));
+    };
+    Ok(RecipeStyleEntry {
+        prop: entry.prop.into_boxed_str(),
+        value,
+        conditions: entry
+            .conditions
+            .into_iter()
+            .map(String::into_boxed_str)
+            .collect(),
+        important: entry.important,
+    })
 }
 
 fn apply_project_options(

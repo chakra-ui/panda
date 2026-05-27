@@ -18,8 +18,11 @@ pandacss_extractor = { workspace = true, features = ["os"] }
 pandacss_config = { workspace = true }
 pandacss_project = { workspace = true }
 pandacss_recipes = { workspace = true }
+pandacss_stylesheet = { workspace = true }
 pandacss_tokens = { workspace = true }
 pandacss_tracing = { workspace = true }
+serde = { workspace = true }
+smallvec = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 

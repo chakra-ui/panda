@@ -12,7 +12,7 @@ use std::sync::Arc;
 use pandacss_config::{CallbackRef, StringOrStringArray, UtilityConfig, UtilityValues};
 use pandacss_extractor::Literal;
 use pandacss_shared::number_to_js_string;
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
@@ -114,6 +114,34 @@ impl Utility {
             .keys()
             .map(String::as_str)
             .chain(self.shorthands.keys().map(String::as_str))
+    }
+
+    #[must_use]
+    pub fn property_keys(&self, prop: &str) -> Vec<String> {
+        let key = self.resolve_shorthand(prop);
+        let Some(config) = self.properties.get(key) else {
+            return Vec::new();
+        };
+        if !config.values.is_empty() {
+            let mut keys: Vec<_> = config.values.keys().cloned().collect();
+            keys.sort();
+            return keys;
+        }
+        let Some(category) = &config.values_category else {
+            return Vec::new();
+        };
+        let Some(tokens) = &self.tokens else {
+            return Vec::new();
+        };
+        let category = TokenCategory::from_path_segment(category);
+        tokens
+            .category_values_str(&category)
+            .map(|values| {
+                let mut keys: Vec<_> = values.keys().map(ToString::to_string).collect();
+                keys.sort();
+                keys
+            })
+            .unwrap_or_default()
     }
 
     #[must_use]
