@@ -18,11 +18,10 @@ use pandacss_shared::{capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
 
-use crate::compiled::Config;
-use crate::conditions::ProjectConditions;
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
-use crate::{ConfigError, RecipeKey, Result};
+use crate::runtime_config::Config;
+use crate::{ConfigError, ProjectConditionMatcher, RecipeKey, Result};
 
 pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Config> {
     let entries = ConfigDefinitions::from_config(&config)?;
@@ -34,7 +33,7 @@ pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Con
         utility_options_from_config(&config, token_dictionary.clone()),
     );
     let conditions =
-        ProjectConditions::from_names(entries.condition_names.iter().map(String::as_str));
+        ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
         jsx_extraction_config_from_definitions(&config, &entries, &utility),
     );
@@ -130,7 +129,7 @@ impl ConfigDefinitions {
             import_map,
             jsx_factory,
             jsx_names,
-            condition_names: condition_names_from_config(config),
+            condition_names: config.condition_names(),
             breakpoints,
             patterns,
             recipes,
@@ -429,28 +428,6 @@ fn utility_options_from_config(
         separator: config.separator.clone(),
         prefix: config.prefix.class_name().map(str::to_owned),
         tokens: token_dictionary,
-    }
-}
-
-fn condition_names_from_config(config: &pandacss_config::UserConfig) -> Vec<String> {
-    let mut names = BTreeSet::new();
-    names.insert("base".to_owned());
-    collect_condition_keys(config.conditions.keys(), &mut names);
-    for name in config.theme.breakpoint_names() {
-        names.insert(name);
-    }
-    names.into_iter().collect()
-}
-
-fn collect_condition_keys<'a>(
-    keys: impl Iterator<Item = &'a String>,
-    names: &mut BTreeSet<String>,
-) {
-    for key in keys.filter(|key| !key.is_empty()) {
-        names.insert(key.clone());
-        if !key.starts_with('_') {
-            names.insert(format!("_{key}"));
-        }
     }
 }
 

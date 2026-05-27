@@ -1,5 +1,5 @@
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, Encoder};
+use pandacss_encoder::{Atom, ConditionSet, Encoder};
 use pandacss_extractor::Literal;
 use pandacss_utility::{StyleNormalizer, Utility};
 use serde_json::Value;
@@ -15,7 +15,9 @@ pub fn expand(
     let Some(css_rules) = config.static_css.get("css").and_then(Value::as_array) else {
         return Vec::new();
     };
-    let mut encoder = Encoder::new();
+    let mut encoder = Encoder::with_conditions(ConditionSet::from_names(
+        config.condition_names().iter().map(String::as_str),
+    ));
     let breakpoints = config.theme.breakpoint_names();
     let responsive = config
         .theme

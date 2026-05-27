@@ -5,11 +5,10 @@ use pandacss_extractor::ExtractorConfig;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::Utility;
 
-use crate::conditions::ProjectConditionMatcher;
 use crate::config;
 use crate::patterns::PatternRegistry;
 use crate::recipes::RecipeRegistry;
-use crate::{RecipeKey, Result};
+use crate::{ProjectConditionMatcher, RecipeKey, Result};
 
 /// Immutable, read-optimized runtime config derived from a Panda user config.
 ///

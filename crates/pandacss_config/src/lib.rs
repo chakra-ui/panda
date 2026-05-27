@@ -2,7 +2,7 @@
 
 mod theme;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -69,6 +69,21 @@ pub struct UserConfig {
     pub themes: ThemeVariantsMap,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
+}
+
+impl UserConfig {
+    #[must_use]
+    pub fn condition_names(&self) -> Vec<String> {
+        let mut names = BTreeSet::new();
+        names.insert("base".to_owned());
+
+        for key in self.conditions.keys().filter(|key| !key.is_empty()) {
+            names.insert(format!("_{key}"));
+        }
+
+        names.extend(self.theme.breakpoint_names());
+        names.into_iter().collect()
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

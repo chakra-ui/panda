@@ -30,7 +30,7 @@ Three perf choices worth noting:
 The encoder is stateful — `Encoder<C>` owns a `path` buffer reused across walks:
 
 ```rust
-pub struct Encoder<C: ConditionMatcher = DefaultConditions> {
+pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
     path: SmallVec<[PathSegment; 8]>,
@@ -84,8 +84,14 @@ pub trait ConditionMatcher {
 }
 ```
 
-`DefaultConditions` recognizes `_*` plus the built-in breakpoint names (`base`, `sm`, `md`, `lg`, `xl`, `2xl`). The
-trait lets the user's Panda config plug in extra named conditions without modifying the encoder.
+There is no built-in default condition set in the encoder. Callers must derive condition names from the resolved Panda
+config and pass a matcher explicitly. In practice that means `base`, underscore-prefixed aliases for configured
+condition keys (`hover` → `_hover`), and configured breakpoint names. Test fixtures that rely on the standard breakpoint
+names provide `base`, `sm`, `md`, `lg`, `xl`, and `2xl` explicitly.
+
+`ConditionSet` is the shared matcher for callers that only need name lookup. It also treats raw selector / at-rule
+keys as conditions (`&:hover`, `@media ...`), matching Panda's inline condition behavior without hard-coding named
+conditions into the encoder.
 
 ## Recipe decomposition
 
@@ -107,9 +113,9 @@ slices — but until benches force the change, the simpler shape wins.
 
 ## Encoder is single-pass per file
 
-`Encoder::new()` per file, fed every style / recipe extracted from that file, then `into_atoms()` to hand the set off to
-the project. The project's `parse_file` does exactly this. `into_atoms()` is cheaper than `atoms().clone()` — the inner
-set moves out, no re-hash.
+The project creates `Encoder::with_conditions(config_conditions)` per file, feeds every style / recipe extracted from
+that file, then calls `into_atoms()` to hand the set off to the project. The project's `parse_file` does exactly this.
+`into_atoms()` is cheaper than `atoms().clone()` — the inner set moves out, no re-hash.
 
 ## Related
 

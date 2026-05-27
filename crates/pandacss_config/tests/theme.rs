@@ -147,6 +147,31 @@ fn deserializes_typed_theme_shape() {
 }
 
 #[test]
+fn condition_names_are_derived_from_config() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "conditions": {
+            "hover": "&:hover",
+            "supportsGrid": "@supports (display: grid)"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "768px",
+                "sm": "640px"
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    assert_yaml_snapshot!(config.condition_names(), @r"
+    - _hover
+    - _supportsGrid
+    - base
+    - md
+    - sm
+    ");
+}
+
+#[test]
 fn preserves_global_css_in_serialized_config() {
     let config: UserConfig = serde_json::from_value(json!({
         "globalCss": {

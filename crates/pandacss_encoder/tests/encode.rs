@@ -3,7 +3,7 @@
 
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_encoder::{Atom, Encoder};
+use pandacss_encoder::{Atom, ConditionSet, Encoder};
 use pandacss_extractor::{ExtractorConfig, Matcher, Matchers, NameMatcher, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
 
@@ -41,13 +41,25 @@ fn sorted(atoms: &rustc_hash::FxHashSet<Atom>) -> Vec<&Atom> {
     out
 }
 
+fn encoder(names: &'static [&'static str]) -> Encoder<ConditionSet> {
+    Encoder::with_conditions(ConditionSet::from_names(names.iter().copied()))
+}
+
+const STANDARD_CONDITIONS: &[&str] = &["base", "sm", "md", "lg", "xl", "2xl"];
+
+fn encoder_with(extra: &'static [&'static str]) -> Encoder<ConditionSet> {
+    let mut names = STANDARD_CONDITIONS.to_vec();
+    names.extend(extra);
+    Encoder::with_conditions(ConditionSet::from_names(names))
+}
+
 #[test]
 fn flat_style_object_emits_one_atom_per_property() {
     let lit = first_arg(
         "import { css } from '@panda/css';\ncss({ color: 'red', padding: '4px' });",
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -68,7 +80,7 @@ fn nested_condition_creates_condition_chain() {
         "},
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&["_hover"]);
     encoder.process_atomic(&lit);
     // `base` drops from the condition chain (it's the unconditional
     // fallback); `_hover` and `md` stay.
@@ -100,7 +112,7 @@ fn important_string_values_are_structural_metadata() {
         "},
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: background
@@ -132,7 +144,7 @@ fn absolute_url_string_values_are_skipped() {
         "},
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -150,7 +162,7 @@ fn deeply_nested_conditions_stack_in_order() {
         "},
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&["_hover"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -170,7 +182,7 @@ fn dedup_keeps_only_one_atom_for_repeated_pairs() {
         "import { css } from '@panda/css';\ncss({ color: 'red', padding: '4px' });",
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&[]);
     encoder.process_atomic(&lit);
     encoder.process_atomic(&lit);
     encoder.process_atomic(&lit);
@@ -197,7 +209,7 @@ fn process_atomic_recipe_emits_base_plus_variants_plus_compound() {
         "cva",
     );
     let recipe = Recipe::from_literal(&lit).expect("Recipe");
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&[]);
     encoder.process_atomic_recipe(&recipe);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: color
@@ -233,7 +245,7 @@ fn process_atomic_slot_recipe_emits_atoms_across_slots() {
         "sva",
     );
     let recipe = SlotRecipe::from_literal(&lit).expect("SlotRecipe");
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&[]);
     encoder.process_atomic_slot_recipe(&recipe);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: padding
@@ -252,13 +264,6 @@ fn process_atomic_slot_recipe_emits_atoms_across_slots() {
 
 #[test]
 fn custom_condition_matcher_recognizes_named_conditions() {
-    struct Custom;
-    impl pandacss_encoder::ConditionMatcher for Custom {
-        fn is_condition(&self, key: &str) -> bool {
-            key.starts_with('_') || matches!(key, "base" | "small" | "medium")
-        }
-    }
-
     let lit = first_arg(
         indoc! {r"
             import { css } from '@panda/css';
@@ -266,7 +271,7 @@ fn custom_condition_matcher_recognizes_named_conditions() {
         "},
         "css",
     );
-    let mut encoder = Encoder::with_conditions(Custom);
+    let mut encoder = encoder(&["base", "small", "medium"]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
     - prop: color
@@ -280,6 +285,26 @@ fn custom_condition_matcher_recognizes_named_conditions() {
     ");
 }
 
+#[test]
+fn raw_selector_and_at_rule_keys_are_conditions() {
+    let lit = first_arg(
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ color: { '&:hover': { '@media (hover: hover)': 'red' } } });
+        "},
+        "css",
+    );
+    let mut encoder = encoder_with(&[]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
+    - prop: color
+      value: red
+      conditions:
+        - "&:hover"
+        - "@media (hover: hover)"
+    "#);
+}
+
 // --- composite leaf values ---
 
 #[test]
@@ -290,7 +315,7 @@ fn array_value_serializes_as_joined_repr() {
         "import { css } from '@panda/css';\ncss({ color: ['red', 'blue', 'green'] });",
         "css",
     );
-    let mut encoder = Encoder::new();
+    let mut encoder = encoder_with(&[]);
     encoder.process_atomic(&lit);
     assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
     - prop: color

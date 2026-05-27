@@ -128,42 +128,42 @@ impl Hash for Atom {
     }
 }
 
-/// Decides which object keys are *conditions* vs CSS properties. Pass a
-/// custom impl when the user's Panda config defines extra named conditions.
+/// Decides which object keys are *conditions* vs CSS properties.
+///
+/// Callers must derive this from the resolved Panda config so condition
+/// recognition matches the user's configured conditions and breakpoints.
 pub trait ConditionMatcher {
     fn is_condition(&self, key: &str) -> bool;
 }
 
-/// `_*` prefix plus built-in breakpoint names.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct DefaultConditions;
+#[derive(Debug, Clone, Default)]
+pub struct ConditionSet {
+    names: FxHashSet<Box<str>>,
+}
 
-impl ConditionMatcher for DefaultConditions {
+impl ConditionSet {
+    #[must_use]
+    pub fn from_names<'a>(names: impl IntoIterator<Item = &'a str>) -> Self {
+        Self {
+            names: names
+                .into_iter()
+                .filter(|name| !name.is_empty())
+                .map(Box::<str>::from)
+                .collect(),
+        }
+    }
+}
+
+impl ConditionMatcher for ConditionSet {
     #[inline]
     fn is_condition(&self, key: &str) -> bool {
-        if key.starts_with('_') {
-            return true;
-        }
-        matches!(key, "base" | "sm" | "md" | "lg" | "xl" | "2xl")
+        self.names.contains(key) || is_raw_condition(key)
     }
 }
 
-pub struct Encoder<C: ConditionMatcher = DefaultConditions> {
+pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
-}
-
-impl Encoder<DefaultConditions> {
-    #[must_use]
-    pub fn new() -> Self {
-        Self::with_conditions(DefaultConditions)
-    }
-}
-
-impl Default for Encoder<DefaultConditions> {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl<C: ConditionMatcher> Encoder<C> {
@@ -359,6 +359,10 @@ fn is_false(value: &bool) -> bool {
 
 fn is_absolute_url(value: &str) -> bool {
     value.starts_with("http://") || value.starts_with("https://")
+}
+
+fn is_raw_condition(key: &str) -> bool {
+    key.starts_with('@') || key.contains('&')
 }
 
 fn append_joined_literal_repr(out: &mut String, items: &[Literal], sep: &str) {

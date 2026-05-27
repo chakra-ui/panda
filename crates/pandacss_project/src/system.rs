@@ -3,7 +3,7 @@ use std::sync::Arc;
 use pandacss_config::UserConfig;
 
 use crate::Result;
-use crate::compiled::Config;
+use crate::runtime_config::Config;
 
 /// Immutable runtime model derived from a Panda config.
 ///

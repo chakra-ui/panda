@@ -148,7 +148,7 @@ fn css_shorthands_are_normalized() {
 fn utility_values_normalize_aliases() {
     let mut project = create_project(json!({
         "conditions": {
-            "_hover": "&:hover"
+            "hover": "&:hover"
         },
         "utilities": {
             "spacing": {
@@ -236,7 +236,7 @@ fn all_jsx_props_filter_valid_props() {
 fn conditions_survive_shorthand_normalization() {
     let mut project = create_project(json!({
         "conditions": {
-            "_hover": "&:hover"
+            "hover": "&:hover"
         },
         "utilities": {
             "padding": { "shorthand": "p" }
@@ -276,8 +276,8 @@ fn config_conditions_are_encoded_as_conditions() {
         indoc! {r"
             import { css } from '@panda/css';
             css({
-              cqSm: { color: 'red' },
-              supportsGrid: { display: 'grid' }
+              _cqSm: { color: 'red' },
+              _supportsGrid: { display: 'grid' }
             });
         "},
     );
@@ -286,11 +286,11 @@ fn config_conditions_are_encoded_as_conditions() {
     - prop: color
       value: red
       conditions:
-        - cqSm
+        - _cqSm
     - prop: display
       value: grid
       conditions:
-        - supportsGrid
+        - _supportsGrid
     "#);
 }
 

@@ -24,13 +24,12 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
-mod compiled;
-mod conditions;
 mod config;
 mod error;
 mod parsed_file;
 mod patterns;
 mod recipes;
+mod runtime_config;
 mod system;
 
 use std::borrow::Cow;
@@ -47,8 +46,6 @@ use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Literal, MatchCateg
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::StyleNormalizer;
 
-pub use compiled::Config;
-pub(crate) use conditions::ProjectConditionMatcher;
 pub use error::{ConfigError, Result};
 pub use parsed_file::ParsedFile;
 use recipes::EncodedRecipesCache;
@@ -56,7 +53,10 @@ pub use recipes::{
     EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
     RecipeStyleGroupSnapshot,
 };
+pub use runtime_config::Config;
 pub use system::System;
+
+pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
@@ -106,7 +106,7 @@ impl Project {
         let config = Arc::new(Config {
             extractor_config,
             utility: None,
-            conditions: conditions::ProjectConditions::from_names([]),
+            conditions: ProjectConditionMatcher::from_names([]),
             breakpoints: Vec::new(),
             patterns: Default::default(),
             recipes: Default::default(),
