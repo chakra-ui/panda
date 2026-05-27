@@ -102,39 +102,79 @@ impl<'a> EmitContext<'a> {
         entries: &[RecipeStyleEntry],
     ) {
         let selector_base = format!(".{}", escape_selector(class_name));
+        let mut pending: Option<PendingRecipeRule> = None;
+
         for entry in self.sort.sorted_recipe_entries(entries) {
             let rule = self.rule_target_with_base(&selector_base, &entry.conditions);
-            self.write_recipe_entry_rule(writer, &rule, entry.entry);
+            let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
+                continue;
+            };
+            if declarations.is_empty() {
+                continue;
+            }
+
+            match &mut pending {
+                Some(pending) if pending.rule == rule => {
+                    append_recipe_declarations(&mut pending.declarations, declarations);
+                }
+                Some(_) => {
+                    let previous = pending.take().expect("pending recipe rule");
+                    self.write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                    pending = Some(PendingRecipeRule { rule, declarations });
+                }
+                None => {
+                    pending = Some(PendingRecipeRule { rule, declarations });
+                }
+            }
+        }
+
+        if let Some(pending) = pending {
+            self.write_recipe_rule(writer, &pending.rule, &pending.declarations);
         }
     }
 
-    fn write_recipe_entry_rule(
+    fn recipe_entry_declarations(
+        &self,
+        entry: &RecipeStyleEntry,
+    ) -> Option<Vec<RecipeDeclaration>> {
+        let raw = atom_value_to_string(&entry.value);
+        let raw = raw.as_deref()?;
+        let result = self.transform_atom(entry.prop.as_ref(), raw)?;
+        let Literal::Object(entries) = &result.styles else {
+            return None;
+        };
+
+        let mut declarations = Vec::with_capacity(entries.len());
+        for (prop, value) in entries {
+            if let Some(value) = literal_to_css(value) {
+                let (value, important) = split_important(&value);
+                append_recipe_declaration(
+                    &mut declarations,
+                    RecipeDeclaration {
+                        prop: hyphenate(prop),
+                        value: value.into_owned(),
+                        important: entry.important || important,
+                    },
+                );
+            }
+        }
+        Some(declarations)
+    }
+
+    fn write_recipe_rule(
         &self,
         writer: &mut CssWriter,
         rule: &RuleTarget,
-        entry: &RecipeStyleEntry,
+        declarations: &[RecipeDeclaration],
     ) {
-        let raw = atom_value_to_string(&entry.value);
-        let Some(raw) = raw.as_deref() else {
-            return;
-        };
-        let Some(result) = self.transform_atom(entry.prop.as_ref(), raw) else {
-            return;
-        };
         write_with_wrappers(writer, &rule.wrappers, |writer| {
             writer.rule(&rule.selector, |writer| {
-                let Literal::Object(entries) = &result.styles else {
-                    return;
-                };
-                for (prop, value) in entries {
-                    if let Some(value) = literal_to_css(value) {
-                        let (value, important) = split_important(&value);
-                        writer.declaration(
-                            &hyphenate(prop),
-                            value.as_ref(),
-                            entry.important || important,
-                        );
-                    }
+                for declaration in declarations {
+                    writer.declaration(
+                        &declaration.prop,
+                        &declaration.value,
+                        declaration.important,
+                    );
                 }
             });
         });
@@ -182,9 +222,40 @@ impl<'a> EmitContext<'a> {
     }
 }
 
+struct PendingRecipeRule {
+    rule: RuleTarget,
+    declarations: Vec<RecipeDeclaration>,
+}
+
+struct RecipeDeclaration {
+    prop: String,
+    value: String,
+    important: bool,
+}
+
+#[derive(PartialEq, Eq)]
 struct RuleTarget {
     selector: String,
     wrappers: Vec<String>,
+}
+
+fn append_recipe_declarations(
+    target: &mut Vec<RecipeDeclaration>,
+    declarations: Vec<RecipeDeclaration>,
+) {
+    for declaration in declarations {
+        append_recipe_declaration(target, declaration);
+    }
+}
+
+fn append_recipe_declaration(target: &mut Vec<RecipeDeclaration>, declaration: RecipeDeclaration) {
+    if let Some(index) = target
+        .iter()
+        .position(|existing| existing.prop == declaration.prop)
+    {
+        target.remove(index);
+    }
+    target.push(declaration);
 }
 
 fn write_with_wrappers(

@@ -621,9 +621,192 @@ fn sorts_recipe_entries_with_the_same_priority_model() {
 @layer recipes {
   .button {
     padding: 8px;
-  }
-  .button {
     padding-top: 4px;
+  }
+}
+");
+}
+
+#[test]
+fn coalesces_recipe_entries_with_matching_pseudo_targets() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "recipes": {
+                "button": [{ "conditions": ["hover"], "size": ["sm"] }]
+            }
+        },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "utilities": {
+            "padding": { "className": "p" },
+            "paddingTop": { "className": "pt" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "paddingTop": "4px",
+                                "padding": "8px"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(&config, "");
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes {
+  .button--size_sm {
+    padding: 8px;
+    padding-top: 4px;
+  }
+  .button--size_sm:hover {
+    padding: 8px;
+    padding-top: 4px;
+  }
+}
+");
+}
+
+#[test]
+fn coalesces_recipe_entries_with_matching_at_rule_targets() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "recipes": {
+                "button": [{ "responsive": true, "size": ["sm"] }]
+            }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "paddingTop": "4px",
+                                "padding": "8px"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "padding": { "className": "p" },
+            "paddingTop": { "className": "pt" }
+        }
+    }));
+    let css = compile_css(&config, "");
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes {
+  .button--size_sm {
+    padding: 8px;
+    padding-top: 4px;
+  }
+  @media (width >= 48rem) {
+    .button--size_sm {
+      padding: 8px;
+      padding-top: 4px;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "recipes": {
+                "button": [{ "conditions": ["hover"], "responsive": true, "size": ["sm"] }]
+            }
+        },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "paddingTop": "4px",
+                                "padding": "8px"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "padding": { "className": "p" },
+            "paddingTop": { "className": "pt" }
+        }
+    }));
+    let css = compile_css(&config, "");
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes {
+  .button--size_sm {
+    padding: 8px;
+    padding-top: 4px;
+  }
+  .button--size_sm:hover {
+    padding: 8px;
+    padding-top: 4px;
+  }
+  @media (width >= 48rem) {
+    .button--size_sm {
+      padding: 8px;
+      padding-top: 4px;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn coalesces_duplicate_recipe_declarations_by_css_property() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "backgroundColor": { "className": "bg-c", "shorthand": "bgColor" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": {
+                        "bgColor": "red",
+                        "backgroundColor": "blue"
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(&config, "import { button } from '@panda/recipes'; button()");
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes {
+  .button {
+    background-color: blue;
   }
 }
 ");

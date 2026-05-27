@@ -118,7 +118,7 @@ impl StyleResolver<'_> {
         StyleNormalizer {
             utility: self.utility,
             breakpoints: self.breakpoints,
-            shorthand: false,
+            shorthand: true,
         }
         .normalize(style)
     }
