@@ -1,9 +1,12 @@
 use regex::RegexSet;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::Serialize;
+use serde_json::Value;
 use smallvec::SmallVec;
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 
+use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder};
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
@@ -278,6 +281,262 @@ impl RecipeRegistry {
     fn slot_class_name(class_name: &str, slot: &str) -> String {
         format!("{class_name}__{slot}")
     }
+
+    pub(crate) fn process_static_css(
+        &self,
+        encoded: &mut EncodedRecipes,
+        config: &UserConfig,
+        conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
+    ) {
+        let Some(rules_by_recipe) = static_recipe_rules(config) else {
+            return;
+        };
+
+        let responsive = breakpoints
+            .iter()
+            .filter(|key| key.as_str() != "base")
+            .cloned()
+            .collect::<Vec<_>>();
+
+        for (name, rules) in rules_by_recipe {
+            if !self.has_recipe(&name) {
+                continue;
+            }
+            encoded.process_usage(self, &name, &Literal::Object(Vec::new()), conditions);
+            self.extend_compound_atoms(&name, &mut encoded.atomic);
+            let options = self.variant_options(&name);
+            for rule in rules {
+                for selected in self.static_rule_selections(&rule, &responsive, &options) {
+                    encoded.process_usage(self, &name, &selected, conditions);
+                }
+            }
+        }
+    }
+
+    fn has_recipe(&self, name: &str) -> bool {
+        self.recipes.contains_key(name) || self.slot_recipes.contains_key(name)
+    }
+
+    fn extend_compound_atoms(&self, name: &str, target: &mut FxHashSet<Atom>) {
+        if let Some(node) = self.recipes.get(name) {
+            target.extend(
+                node.compounds
+                    .iter()
+                    .flat_map(|compound| compound.atoms.iter().cloned()),
+            );
+        }
+        if let Some(node) = self.slot_recipes.get(name) {
+            target.extend(
+                node.compounds
+                    .iter()
+                    .flat_map(|compound| compound.atoms.iter().cloned()),
+            );
+        }
+    }
+
+    fn static_rule_selections(
+        &self,
+        rule: &Literal,
+        breakpoints: &[String],
+        options: &FxHashMap<Box<str>, Vec<String>>,
+    ) -> Vec<Literal> {
+        if matches!(rule, Literal::String(value) if value == "*") {
+            return options
+                .into_iter()
+                .flat_map(|(variant, values)| {
+                    values.into_iter().map(move |value| {
+                        Literal::Object(vec![(variant.to_string(), Literal::String(value.clone()))])
+                    })
+                })
+                .collect();
+        }
+
+        let Literal::Object(entries) = rule else {
+            return Vec::new();
+        };
+        let mut conditions = Vec::new();
+        let mut responsive = false;
+        for (key, value) in entries {
+            match key.as_str() {
+                "conditions" => conditions.extend(string_literals(value)),
+                "responsive" => responsive = matches!(value, Literal::Bool(true)),
+                _ => {}
+            }
+        }
+        if responsive {
+            conditions.extend(breakpoints.iter().cloned());
+        }
+
+        let mut out = Vec::new();
+        for (variant, value) in entries {
+            if matches!(variant.as_str(), "conditions" | "responsive") {
+                continue;
+            }
+            let values = static_variant_values(value, options.get(variant.as_str()));
+            out.extend(values.into_iter().map(|value| {
+                let value = if conditions.is_empty() {
+                    value
+                } else {
+                    conditional_static_value(&conditions, breakpoints, value)
+                };
+                Literal::Object(vec![(variant.clone(), value)])
+            }));
+        }
+        out
+    }
+
+    fn variant_options(&self, name: &str) -> FxHashMap<Box<str>, Vec<String>> {
+        if let Some(node) = self.recipes.get(name) {
+            return node
+                .variants
+                .iter()
+                .map(|group| {
+                    let mut values = group
+                        .options
+                        .keys()
+                        .map(|value| value.to_string())
+                        .collect::<Vec<_>>();
+                    values.sort();
+                    (group.name.clone(), values)
+                })
+                .collect();
+        }
+        if let Some(node) = self.slot_recipes.get(name) {
+            return node
+                .variants
+                .iter()
+                .map(|group| {
+                    let mut values = group
+                        .options
+                        .keys()
+                        .map(|value| value.to_string())
+                        .collect::<Vec<_>>();
+                    values.sort();
+                    (group.name.clone(), values)
+                })
+                .collect();
+        }
+        FxHashMap::default()
+    }
+}
+
+fn static_recipe_rules(config: &UserConfig) -> Option<BTreeMap<String, Vec<Literal>>> {
+    let recipes = config.static_css.get("recipes");
+    if recipes.is_none()
+        && config
+            .theme
+            .recipes
+            .values()
+            .chain(config.theme.slot_recipes.values())
+            .all(|recipe| recipe.static_css.is_null())
+    {
+        return None;
+    }
+
+    let use_all = matches!(recipes, Some(Value::String(value)) if value == "*");
+    let mut out = BTreeMap::new();
+    if let Some(Value::Object(entries)) = recipes {
+        for (name, rules) in entries {
+            out.insert(name.clone(), static_rule_array(rules));
+        }
+    }
+
+    for (name, recipe) in config
+        .theme
+        .recipes
+        .iter()
+        .chain(config.theme.slot_recipes.iter())
+    {
+        if use_all {
+            out.insert(name.clone(), vec![Literal::String("*".to_owned())]);
+        } else if !recipe.static_css.is_null() {
+            out.insert(name.clone(), static_rule_array(&recipe.static_css));
+        }
+    }
+
+    Some(out)
+}
+
+fn static_rule_array(value: &Value) -> Vec<Literal> {
+    match value {
+        Value::Array(items) => items.iter().filter_map(json_value_to_literal).collect(),
+        _ => json_value_to_literal(value).into_iter().collect(),
+    }
+}
+
+fn json_value_to_literal(value: &Value) -> Option<Literal> {
+    match value {
+        Value::String(value) => Some(Literal::String(value.clone())),
+        Value::Number(value) => value.as_f64().map(Literal::Number),
+        Value::Bool(value) => Some(Literal::Bool(*value)),
+        Value::Null => Some(Literal::Null),
+        Value::Array(items) => Some(Literal::Array(
+            items.iter().filter_map(json_value_to_literal).collect(),
+        )),
+        Value::Object(entries) => Some(Literal::Object(
+            entries
+                .iter()
+                .filter_map(|(key, value)| Some((key.clone(), json_value_to_literal(value)?)))
+                .collect(),
+        )),
+    }
+}
+
+fn string_literals(value: &Literal) -> Vec<String> {
+    match value {
+        Literal::Array(items) => items
+            .iter()
+            .filter_map(|item| match item {
+                Literal::String(value) => Some(value.clone()),
+                _ => None,
+            })
+            .collect(),
+        Literal::String(value) => vec![value.clone()],
+        _ => Vec::new(),
+    }
+}
+
+fn static_variant_values(value: &Literal, wildcard_values: Option<&Vec<String>>) -> Vec<Literal> {
+    match value {
+        Literal::Array(items) => items
+            .iter()
+            .flat_map(|item| match item {
+                Literal::String(value) if value == "*" => wildcard_values
+                    .into_iter()
+                    .flatten()
+                    .cloned()
+                    .map(Literal::String)
+                    .collect(),
+                _ => vec![item.clone()],
+            })
+            .collect(),
+        Literal::String(value) if value == "*" => wildcard_values
+            .into_iter()
+            .flatten()
+            .cloned()
+            .map(Literal::String)
+            .collect(),
+        Literal::Bool(true) => vec![Literal::String("true".to_owned())],
+        _ => vec![value.clone()],
+    }
+}
+
+fn conditional_static_value(
+    conditions: &[String],
+    breakpoints: &[String],
+    value: Literal,
+) -> Literal {
+    let mut entries = vec![("base".to_owned(), value.clone())];
+    entries.extend(conditions.iter().map(|condition| {
+        let key = if condition.starts_with('_') || breakpoints.iter().any(|key| key == condition) {
+            condition.clone()
+        } else {
+            format!("_{condition}")
+        };
+        (key, value.clone())
+    }));
+    Literal::Object(entries)
 }
 
 fn resolve_recipe_base(

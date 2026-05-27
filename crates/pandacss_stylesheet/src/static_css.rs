@@ -10,6 +10,7 @@ use serde_json::Value;
 use crate::{StylesheetDiagnostic, StylesheetDiagnosticSeverity};
 
 pub fn expand(config: &UserConfig, diagnostics: &mut Vec<StylesheetDiagnostic>) -> Vec<Atom> {
+    diagnose_static_css_scope(config, diagnostics);
     let Some(css_rules) = config.static_css.get("css").and_then(Value::as_array) else {
         return Vec::new();
     };
@@ -53,6 +54,33 @@ pub fn expand(config: &UserConfig, diagnostics: &mut Vec<StylesheetDiagnostic>) 
     let mut atoms: Vec<_> = encoder.into_atoms().into_iter().collect();
     atoms.sort_by(|a, b| a.prop().cmp(b.prop()));
     atoms
+}
+
+pub(crate) fn has_static_recipes(config: &UserConfig) -> bool {
+    config.static_css.get("recipes").is_some()
+        || config
+            .theme
+            .recipes
+            .values()
+            .chain(config.theme.slot_recipes.values())
+            .any(|recipe| !recipe.static_css.is_null())
+}
+
+fn diagnose_static_css_scope(config: &UserConfig, diagnostics: &mut Vec<StylesheetDiagnostic>) {
+    if config.static_css.get("patterns").is_some() {
+        diagnostics.push(StylesheetDiagnostic {
+            severity: StylesheetDiagnosticSeverity::Warning,
+            message: "staticCss.patterns is not supported by the native stylesheet compiler yet"
+                .to_owned(),
+        });
+    }
+    if config.static_css.get("themes").is_some() {
+        diagnostics.push(StylesheetDiagnostic {
+            severity: StylesheetDiagnosticSeverity::Warning,
+            message: "staticCss.themes is handled by token artifact generation, not native stylesheet compile"
+                .to_owned(),
+        });
+    }
 }
 
 fn expand_css_rule(

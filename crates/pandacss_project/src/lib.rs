@@ -541,6 +541,18 @@ impl Project {
     }
 
     #[must_use]
+    pub fn static_encoded_recipes(&self, user_config: &UserConfig) -> EncodedRecipesSnapshot {
+        let mut encoded = EncodedRecipes::default();
+        self.config.recipes.process_static_css(
+            &mut encoded,
+            user_config,
+            &self.config.conditions,
+            &self.config.breakpoints,
+        );
+        encoded.snapshot()
+    }
+
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.files.is_empty()
             && self.atoms_cache.is_empty()

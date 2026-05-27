@@ -375,6 +375,7 @@ impl Project {
         };
         let config: UserConfig = serde_json::from_value(self.config.clone())
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let static_encoded_recipes = self.inner.static_encoded_recipes(&config);
         let options = pandacss_stylesheet::StylesheetOptions {
             minify: config
                 .extra
@@ -390,6 +391,7 @@ impl Project {
                 config: &config,
                 atoms: &atoms,
                 encoded_recipes: &encoded_recipes,
+                static_encoded_recipes: Some(&static_encoded_recipes),
             },
             &options,
         );
