@@ -1,24 +1,23 @@
 use std::borrow::Cow;
-use std::sync::Arc;
 
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, AtomValue};
 use pandacss_extractor::Literal;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry};
 use pandacss_shared::split_important;
-use pandacss_tokens::TokenDictionary;
-use pandacss_utility::{Utility, UtilityOptions, UtilityTransformResult};
+use pandacss_utility::{Utility, UtilityTransformResult};
 
 use crate::writer::CssWriter;
 
 pub fn emit(
     config: &UserConfig,
-    atoms: &[Atom],
+    utility: &Utility,
+    mut atoms: Vec<&Atom>,
     recipes: &EncodedRecipesSnapshot,
     minify: bool,
 ) -> String {
-    let cx = EmitContext::new(config, minify);
-    let mut writer = CssWriter::new(minify, capacity_hint(atoms, recipes));
+    let cx = EmitContext::new(config, utility);
+    let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     writer.write_str("@layer reset, base, tokens, recipes, utilities;");
     writer.newline();
     if has_recipe_rules(recipes) {
@@ -33,7 +32,8 @@ pub fn emit(
     }
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
         writer.layer("utilities", |writer| {
-            for atom in sorted_atoms(atoms) {
+            sort_atoms(&mut atoms);
+            for atom in atoms {
                 cx.write_atom(writer, atom);
             }
             for atom in &recipes.atomic {
@@ -52,7 +52,7 @@ fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
         .any(|group| !group.entries.is_empty())
 }
 
-fn capacity_hint(atoms: &[Atom], recipes: &EncodedRecipesSnapshot) -> usize {
+fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
     let recipe_entries = recipes
         .base
         .iter()
@@ -64,26 +64,12 @@ fn capacity_hint(atoms: &[Atom], recipes: &EncodedRecipesSnapshot) -> usize {
 
 struct EmitContext<'a> {
     config: &'a UserConfig,
-    utility: Utility,
+    utility: &'a Utility,
 }
 
 impl<'a> EmitContext<'a> {
-    fn new(config: &'a UserConfig, _minify: bool) -> Self {
-        let dictionary = TokenDictionary::from_config(config)
-            .ok()
-            .flatten()
-            .map(Arc::new);
-        Self {
-            config,
-            utility: Utility::from_config_with_options(
-                &config.utilities,
-                UtilityOptions {
-                    separator: config.separator.clone(),
-                    prefix: config.prefix.class_name().map(str::to_owned),
-                    tokens: dictionary,
-                },
-            ),
-        }
+    fn new(config: &'a UserConfig, utility: &'a Utility) -> Self {
+        Self { config, utility }
     }
 
     fn write_atom(&self, writer: &mut CssWriter, atom: &Atom) {
@@ -149,9 +135,7 @@ impl<'a> EmitContext<'a> {
 
     fn transform_atom(&self, prop: &str, raw: &str) -> Option<UtilityTransformResult> {
         if !self.utility.is_empty() {
-            return self
-                .utility
-                .transform(prop, &Literal::String(raw.to_owned()));
+            return Some(self.utility.transform_str(prop, raw));
         }
         Some(default_transform(prop, raw))
     }
@@ -222,38 +206,33 @@ fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
     }
 }
 
-fn sorted_atoms(atoms: &[Atom]) -> Vec<&Atom> {
-    let mut out: Vec<_> = atoms.iter().collect();
-    out.sort_by(|a, b| {
-        let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
-        let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
-        a_conds
-            .cmp(&b_conds)
+fn sort_atoms(atoms: &mut [&Atom]) {
+    atoms.sort_by(|a, b| {
+        a.conditions()
+            .cmp(b.conditions())
             .then_with(|| a.prop().cmp(b.prop()))
             .then_with(|| atom_value_sort_key(a.value()).cmp(&atom_value_sort_key(b.value())))
     });
-    out
 }
 
 fn sorted_recipe_entries(entries: &[RecipeStyleEntry]) -> Vec<&RecipeStyleEntry> {
     let mut out: Vec<_> = entries.iter().collect();
     out.sort_by(|a, b| {
-        let a_conds: Vec<&str> = a.conditions.iter().map(AsRef::as_ref).collect();
-        let b_conds: Vec<&str> = b.conditions.iter().map(AsRef::as_ref).collect();
-        a_conds
-            .cmp(&b_conds)
+        a.conditions
+            .cmp(&b.conditions)
             .then_with(|| a.prop.cmp(&b.prop))
             .then_with(|| atom_value_sort_key(&a.value).cmp(&atom_value_sort_key(&b.value)))
     });
     out
 }
 
-fn atom_value_sort_key(value: &AtomValue) -> String {
+fn atom_value_sort_key(value: &AtomValue) -> (u8, &str) {
     match value {
-        AtomValue::String(value) => format!("s:{value}"),
-        AtomValue::Number(value) => format!("n:{value}"),
-        AtomValue::Bool(value) => format!("b:{value}"),
-        AtomValue::Null => "z:".to_owned(),
+        AtomValue::Bool(false) => (0, "false"),
+        AtomValue::Bool(true) => (0, "true"),
+        AtomValue::Number(value) => (1, value),
+        AtomValue::String(value) => (2, value),
+        AtomValue::Null => (3, ""),
     }
 }
 

@@ -12,10 +12,11 @@ fn compile_css(config: &UserConfig, source: &str) -> String {
     project.parse_file("/style.ts", source);
     let snapshot = project.encoded_recipes().snapshot();
     let static_snapshot = project.static_encoded_recipes(config);
+    let atoms = project.atoms().iter().collect::<Vec<_>>();
     pandacss_stylesheet::compile(
         StylesheetInput {
             config,
-            atoms: &project.atoms().iter().cloned().collect::<Vec<_>>(),
+            atoms,
             encoded_recipes: &snapshot,
             static_encoded_recipes: Some(&static_snapshot),
         },

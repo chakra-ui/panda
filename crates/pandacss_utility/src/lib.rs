@@ -200,18 +200,23 @@ impl Utility {
     #[must_use]
     pub fn transform(&self, prop: &str, value: &Literal) -> Option<UtilityTransformResult> {
         let value = literal_to_class_value(value)?;
+        Some(self.transform_str(prop, &value))
+    }
+
+    #[must_use]
+    pub fn transform_str(&self, prop: &str, value: &str) -> UtilityTransformResult {
         let key = self.resolve_shorthand(prop);
-        let class_value = without_space(&value);
-        let style_value = self.expand_reference_in_value(&arbitrary_value(&value));
+        let class_value = without_space(value);
+        let style_value = self.expand_reference_in_value(&arbitrary_value(value));
         let styles = self.default_style(key, &self.raw_property_value(key, &style_value));
-        Some(UtilityTransformResult {
+        UtilityTransformResult {
             layer: self
                 .properties
                 .get(key)
                 .and_then(|config| config.layer.clone()),
             class_name: self.get_class_name(key, &class_value),
             styles,
-        })
+        }
     }
 
     #[must_use]

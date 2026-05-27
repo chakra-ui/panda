@@ -63,6 +63,7 @@ pub struct RecipeEntry {
 pub struct Project {
     inner: pandacss_project::Project,
     config: serde_json::Value,
+    user_config: UserConfig,
     callbacks: CallbackHost,
 }
 
@@ -119,11 +120,13 @@ impl Project {
         let config: UserConfig = serde_json::from_value(config)
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         let callbacks = CallbackHost::from_config(&config);
+        let user_config = config.clone();
         let project = pandacss_project::Project::from_config(config)
             .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         Ok(Self {
             inner: apply_project_options(project, opts),
             config: config_snapshot,
+            user_config,
             callbacks,
         })
     }
@@ -359,25 +362,28 @@ impl Project {
     pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
         crate::init_tracing();
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
-        let atoms = if self.callbacks.has_utility_transforms() {
-            self.atoms(env)?
-                .into_iter()
-                .filter_map(core_atom_from_js_atom)
-                .collect::<Vec<_>>()
-        } else {
-            self.inner.atoms().iter().cloned().collect::<Vec<_>>()
-        };
-        let encoded_recipes = if self.callbacks.has_utility_transforms() {
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        let encoded_recipes = if has_utility_transforms {
             let encoded = self.encoded_recipes(env)?;
             encoded_recipes_from_json(encoded)?
         } else {
             self.inner.encoded_recipes().snapshot()
         };
-        let config: UserConfig = serde_json::from_value(self.config.clone())
-            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
-        let static_encoded_recipes = self.inner.static_encoded_recipes(&config);
+        let transformed_atoms;
+        let atoms = if has_utility_transforms {
+            transformed_atoms = self
+                .atoms(env)?
+                .into_iter()
+                .filter_map(core_atom_from_js_atom)
+                .collect::<Vec<_>>();
+            transformed_atoms.iter().collect::<Vec<_>>()
+        } else {
+            self.inner.atoms().iter().collect::<Vec<_>>()
+        };
+        let static_encoded_recipes = self.inner.static_encoded_recipes(&self.user_config);
         let options = pandacss_stylesheet::StylesheetOptions {
-            minify: config
+            minify: self
+                .user_config
                 .extra
                 .get("minify")
                 .and_then(serde_json::Value::as_bool)
@@ -388,8 +394,8 @@ impl Project {
         };
         let output = pandacss_stylesheet::compile(
             pandacss_stylesheet::StylesheetInput {
-                config: &config,
-                atoms: &atoms,
+                config: &self.user_config,
+                atoms,
                 encoded_recipes: &encoded_recipes,
                 static_encoded_recipes: Some(&static_encoded_recipes),
             },

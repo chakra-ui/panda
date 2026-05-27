@@ -2,11 +2,15 @@ mod emitter;
 mod static_css;
 mod writer;
 
+use std::sync::Arc;
+
 use rustc_hash::FxHashMap;
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::Atom;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
+use pandacss_tokens::TokenDictionary;
+use pandacss_utility::{Utility, UtilityOptions};
 use serde::Serialize;
 
 #[derive(Debug, Clone, Default)]
@@ -40,7 +44,7 @@ pub struct StylesheetOutput {
 
 pub struct StylesheetInput<'a> {
     pub config: &'a UserConfig,
-    pub atoms: &'a [Atom],
+    pub atoms: Vec<&'a Atom>,
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
 }
@@ -48,11 +52,16 @@ pub struct StylesheetInput<'a> {
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
-    let mut atoms = input.atoms.to_vec();
-
-    if options.include_static {
-        let generated = static_css::expand(input.config, &mut diagnostics);
-        atoms.extend(generated);
+    let utility = utility_from_config(input.config);
+    let mut atoms = input.atoms;
+    let generated = if options.include_static {
+        static_css::expand(input.config, &utility, &mut diagnostics)
+    } else {
+        Vec::new()
+    };
+    if !generated.is_empty() {
+        atoms.reserve(generated.len());
+        atoms.extend(generated.iter());
     }
 
     let encoded_recipes = if options.include_static {
@@ -70,7 +79,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         None
     };
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
-    let mut css = emitter::emit(input.config, &atoms, recipes, options.minify);
+    let mut css = emitter::emit(input.config, &utility, atoms, recipes, options.minify);
     if options.optimize {
         css = optimize(css, options.minify);
     }
@@ -80,6 +89,21 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         source_map: options.source_map.then(String::new),
         diagnostics,
     }
+}
+
+fn utility_from_config(config: &UserConfig) -> Utility {
+    let dictionary = TokenDictionary::from_config(config)
+        .ok()
+        .flatten()
+        .map(Arc::new);
+    Utility::from_config_with_options(
+        &config.utilities,
+        UtilityOptions {
+            separator: config.separator.clone(),
+            prefix: config.prefix.class_name().map(str::to_owned),
+            tokens: dictionary,
+        },
+    )
 }
 
 fn merge_encoded_recipes(

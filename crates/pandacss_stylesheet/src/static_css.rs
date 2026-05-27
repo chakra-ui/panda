@@ -1,31 +1,20 @@
-use std::sync::Arc;
-
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder};
 use pandacss_extractor::Literal;
-use pandacss_tokens::TokenDictionary;
-use pandacss_utility::{StyleNormalizer, Utility, UtilityOptions};
+use pandacss_utility::{StyleNormalizer, Utility};
 use serde_json::Value;
 
 use crate::{StylesheetDiagnostic, StylesheetDiagnosticSeverity};
 
-pub fn expand(config: &UserConfig, diagnostics: &mut Vec<StylesheetDiagnostic>) -> Vec<Atom> {
+pub fn expand(
+    config: &UserConfig,
+    utility: &Utility,
+    diagnostics: &mut Vec<StylesheetDiagnostic>,
+) -> Vec<Atom> {
     diagnose_static_css_scope(config, diagnostics);
     let Some(css_rules) = config.static_css.get("css").and_then(Value::as_array) else {
         return Vec::new();
     };
-    let dictionary = TokenDictionary::from_config(config)
-        .ok()
-        .flatten()
-        .map(Arc::new);
-    let utility = Utility::from_config_with_options(
-        &config.utilities,
-        UtilityOptions {
-            separator: config.separator.clone(),
-            prefix: config.prefix.class_name().map(str::to_owned),
-            tokens: dictionary,
-        },
-    );
     let mut encoder = Encoder::new();
     let breakpoints = config.theme.breakpoint_names();
     let responsive = config
@@ -36,13 +25,13 @@ pub fn expand(config: &UserConfig, diagnostics: &mut Vec<StylesheetDiagnostic>) 
         .collect::<Vec<_>>();
 
     for rule in css_rules {
-        let styles = expand_css_rule(rule, config, &utility, &responsive, diagnostics);
+        let styles = expand_css_rule(rule, config, utility, &responsive, diagnostics);
         if styles.is_empty() {
             continue;
         }
         for style in styles {
             let normalized = StyleNormalizer {
-                utility: Some(&utility),
+                utility: Some(utility),
                 breakpoints: &breakpoints,
                 shorthand: true,
             }
