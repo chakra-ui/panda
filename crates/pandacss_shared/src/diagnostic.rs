@@ -13,6 +13,7 @@ pub mod codes {
     pub const CONFIG_TOKEN_SELF_REFERENCE: &str = "config_token_self_reference";
     pub const CONFIG_TOKEN_UNKNOWN_REFERENCE: &str = "config_token_unknown_reference";
     pub const JS_PARSE_ERROR: &str = "js_parse_error";
+    pub const LAYER_NAME_COLLISION: &str = "layer_name_collision";
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";
     pub const STATIC_CSS_PATTERNS_UNSUPPORTED: &str = "static_css_patterns_unsupported";
     pub const STATIC_CSS_RECIPES_MISSING_SNAPSHOT: &str = "static_css_recipes_missing_snapshot";

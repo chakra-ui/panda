@@ -72,6 +72,8 @@ pub struct UserConfig {
     #[serde(default)]
     pub themes: ThemeVariantsMap,
     #[serde(default)]
+    pub layers: CascadeLayers,
+    #[serde(default)]
     pub preflight: PreflightConfig,
     #[serde(default)]
     pub validation: ValidationMode,
@@ -95,6 +97,59 @@ impl UserConfig {
 
         names.extend(self.theme.breakpoint_names());
         names.into_iter().collect()
+    }
+}
+
+/// User-facing names for the five cascade layers. Matches v1's
+/// `config.layers: Partial<CascadeLayers>` — any field a user omits keeps
+/// its default. The semantic identity (`StylesheetLayer::*`) is fixed; only
+/// the emitted name changes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CascadeLayers {
+    #[serde(default = "CascadeLayers::default_reset")]
+    pub reset: String,
+    #[serde(default = "CascadeLayers::default_base")]
+    pub base: String,
+    #[serde(default = "CascadeLayers::default_tokens")]
+    pub tokens: String,
+    #[serde(default = "CascadeLayers::default_recipes")]
+    pub recipes: String,
+    #[serde(default = "CascadeLayers::default_utilities")]
+    pub utilities: String,
+}
+
+impl Default for CascadeLayers {
+    fn default() -> Self {
+        Self {
+            reset: Self::default_reset(),
+            base: Self::default_base(),
+            tokens: Self::default_tokens(),
+            recipes: Self::default_recipes(),
+            utilities: Self::default_utilities(),
+        }
+    }
+}
+
+impl CascadeLayers {
+    fn default_reset() -> String { "reset".to_owned() }
+    fn default_base() -> String { "base".to_owned() }
+    fn default_tokens() -> String { "tokens".to_owned() }
+    fn default_recipes() -> String { "recipes".to_owned() }
+    fn default_utilities() -> String { "utilities".to_owned() }
+
+    /// Single source of truth for the fixed emit order: each pair is
+    /// `(semantic_field_name, user_facing_name)`. Used both for emission
+    /// and collision detection so the order is never duplicated.
+    #[must_use]
+    pub fn ordered(&self) -> [(&'static str, &str); 5] {
+        [
+            ("reset", &self.reset),
+            ("base", &self.base),
+            ("tokens", &self.tokens),
+            ("recipes", &self.recipes),
+            ("utilities", &self.utilities),
+        ]
     }
 }
 
