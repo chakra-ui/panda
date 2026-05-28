@@ -17,12 +17,12 @@ pub struct EmitOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
-pub fn emit(
-    config: &UserConfig,
-    utility: &Utility,
+pub fn emit<'a>(
+    config: &'a UserConfig,
+    utility: &'a Utility,
     token_dictionary: Option<&TokenDictionary>,
-    mut atoms: Vec<&Atom>,
-    recipes: &EncodedRecipesSnapshot,
+    mut atoms: Vec<&'a Atom>,
+    recipes: &'a EncodedRecipesSnapshot,
     minify: bool,
 ) -> EmitOutput {
     let cx = EmitContext::new(config, utility);
@@ -66,17 +66,51 @@ pub fn emit(
         }));
     }
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
-        layer_ranges.utilities = Some(write_layer(&mut writer, &layers.utilities, |writer| {
-            atoms.extend(recipes.atomic.iter());
-            for atom in cx.sort.sorted_atoms(atoms) {
-                cx.write_atom(writer, atom.atom, &atom.conditions);
-            }
-        }));
+        atoms.extend(recipes.atomic.iter());
+        let sorted = cx.sort.sorted_atoms(atoms);
+        let buckets = bucket_atoms_by_layer(&cx, sorted);
+        if !buckets.default.is_empty() || !buckets.custom.is_empty() {
+            layer_ranges.utilities = Some(write_layer(&mut writer, &layers.utilities, |writer| {
+                for atom in &buckets.default {
+                    cx.write_atom(writer, atom.atom, &atom.conditions);
+                }
+                for (name, atoms) in &buckets.custom {
+                    writer.layer(name, |writer| {
+                        for atom in atoms {
+                            cx.write_atom(writer, atom.atom, &atom.conditions);
+                        }
+                    });
+                }
+            }));
+        }
     }
     EmitOutput {
         css: writer.finish(),
         layer_ranges,
     }
+}
+
+/// `IndexMap` keeps custom-layer emit order deterministic (first-seen).
+struct LayeredAtoms<'a> {
+    default: Vec<crate::sort::SortedAtom<'a>>,
+    custom: indexmap::IndexMap<&'a str, Vec<crate::sort::SortedAtom<'a>>>,
+}
+
+fn bucket_atoms_by_layer<'a>(
+    cx: &EmitContext<'a>,
+    sorted: Vec<crate::sort::SortedAtom<'a>>,
+) -> LayeredAtoms<'a> {
+    let mut buckets = LayeredAtoms {
+        default: Vec::new(),
+        custom: indexmap::IndexMap::default(),
+    };
+    for atom in sorted {
+        match cx.utility.layer(atom.atom.prop()) {
+            None => buckets.default.push(atom),
+            Some(name) => buckets.custom.entry(name).or_default().push(atom),
+        }
+    }
+    buckets
 }
 
 fn write_layer(

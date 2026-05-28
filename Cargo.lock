@@ -1158,6 +1158,7 @@ dependencies = [
 name = "pandacss_stylesheet"
 version = "0.0.0"
 dependencies = [
+ "indexmap",
  "indoc",
  "insta",
  "pandacss_config",
