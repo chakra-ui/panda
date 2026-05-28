@@ -28,10 +28,11 @@ pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Con
     let token_dictionary = TokenDictionary::from_config(&config)
         .map_err(config_error_from_token_error)?
         .map(Arc::new);
-    let utility = Utility::from_config_with_options(
+    let mut utility = Utility::from_config_with_options(
         &config.utilities,
         utility_options_from_config(&config, token_dictionary.clone()),
     );
+    utility.register_compositions(&config.theme);
     let conditions =
         ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(

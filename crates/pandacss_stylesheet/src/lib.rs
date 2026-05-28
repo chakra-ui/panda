@@ -197,14 +197,16 @@ fn push_layer_collision_diagnostics(
 }
 
 fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictionary>>) -> Utility {
-    Utility::from_config_with_options(
+    let mut utility = Utility::from_config_with_options(
         &config.utilities,
         UtilityOptions {
             separator: config.separator.clone(),
             prefix: config.prefix.class_name().map(str::to_owned),
             tokens: dictionary,
         },
-    )
+    );
+    utility.register_compositions(&config.theme);
+    utility
 }
 
 fn merge_encoded_recipes(
