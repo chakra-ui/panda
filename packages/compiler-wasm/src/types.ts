@@ -185,10 +185,8 @@ export interface StaticPatternResult {
  *  resolution always shares the same FS — `import { x } from './tokens'`
  *  references resolve through whatever the JS host has populated. */
 export declare class WasmProject {
-  constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
   static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
   config(): Record<string, unknown> | null
-  tokenDictionary?(): TokenDictionaryInput | undefined
   extract(source: string, path: string): unknown
   parseFile(path: string, source: string): ParseFileReport
   refreshFile(path: string, source: string): boolean

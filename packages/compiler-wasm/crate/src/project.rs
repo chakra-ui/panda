@@ -6,7 +6,7 @@
 //! through whatever the JS host has populated.
 
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
-use pandacss_extractor::{CrossFileResolver, ExtractorConfig};
+use pandacss_extractor::CrossFileResolver;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use serde::Serialize as _;
 use std::collections::{BTreeSet, HashMap};
@@ -16,9 +16,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
 use crate::fs::WasmFileSystem;
-use crate::matcher::{
-    MatchersInput, from_core_token_dictionary, to_core_matchers, to_core_token_dictionary,
-};
+use crate::matcher::from_core_token_dictionary;
 use pandacss_config::{
     CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues, ValidationMode,
     validate_config_value, validation_mode_from_value,
@@ -53,16 +51,6 @@ struct CallbackHost {
 }
 
 impl CallbackHost {
-    fn empty() -> Self {
-        Self {
-            utility_transform_refs: HashMap::new(),
-            pattern_transform_refs: HashMap::new(),
-            utility_transforms: HashMap::new(),
-            pattern_transforms: HashMap::new(),
-            transform_cache: TransformCache::default(),
-        }
-    }
-
     fn from_config(config: &UserConfig) -> Self {
         Self {
             utility_transform_refs: get_utility_transform_refs(config),
@@ -84,54 +72,6 @@ impl CallbackHost {
 
 #[wasm_bindgen]
 impl WasmProject {
-    /// Construct from explicit matchers. This mirrors `WasmExtractor` but keeps
-    /// project-level file state.
-    #[wasm_bindgen(constructor)]
-    pub fn new(
-        fs: &WasmFileSystem,
-        matchers: JsValue,
-        options: JsValue,
-    ) -> Result<WasmProject, JsValue> {
-        let mut input: MatchersInput = serde_wasm_bindgen::from_value(matchers)
-            .map_err(|err| JsValue::from_str(&format!("invalid matchers: {err}")))?;
-        let opts = if options.is_undefined() || options.is_null() {
-            ProjectOptionsInput::default()
-        } else {
-            serde_wasm_bindgen::from_value::<ProjectOptionsInput>(options)
-                .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?
-        };
-
-        let token_dictionary = input.token_dictionary.take().map(to_core_token_dictionary);
-        let core_matchers = to_core_matchers(input);
-        let mut extractor_config = ExtractorConfig::new(core_matchers);
-        extractor_config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
-        extractor_config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
-
-        let (config_snapshot, callbacks) = if let Some(config_value) = opts.config {
-            let config_snapshot = config_value.clone();
-            let raw_diagnostics = validate_config_value(&config_snapshot);
-            if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
-                && !raw_diagnostics.is_empty()
-            {
-                return Err(JsValue::from_str(&format_config_diagnostics(
-                    &raw_diagnostics,
-                )));
-            }
-            let config: UserConfig = serde_json::from_value(config_value).map_err(|err| {
-                JsValue::from_str(&format_deserialize_error(err, &raw_diagnostics))
-            })?;
-            (config_snapshot, CallbackHost::from_config(&config))
-        } else {
-            (serde_json::Value::Null, CallbackHost::empty())
-        };
-
-        Ok(Self {
-            inner: pandacss_project::Project::from_extractor_config(extractor_config),
-            config: config_snapshot,
-            callbacks,
-        })
-    }
-
     /// Construct a project from the resolved, JSON-safe Panda config snapshot.
     ///
     /// # Errors
@@ -336,7 +276,7 @@ impl WasmProject {
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
-    #[wasm_bindgen(js_name = tokenDictionary)]
+    #[wasm_bindgen(js_name = token_dictionary)]
     pub fn token_dictionary(&self) -> Result<JsValue, JsValue> {
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         match self.inner.config().token_dictionary() {
@@ -575,12 +515,6 @@ impl WasmProject {
             inner.static_pattern_atoms(&user_config, None)
         }
     }
-}
-
-#[derive(Default, serde::Deserialize)]
-#[serde(rename_all = "camelCase", default)]
-struct ProjectOptionsInput {
-    config: Option<serde_json::Value>,
 }
 
 #[derive(serde::Serialize)]

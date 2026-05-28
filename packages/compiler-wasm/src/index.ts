@@ -63,6 +63,10 @@ interface WasmNativeProjectOptions extends WasmProjectOptions {
   }
 }
 
+interface InternalWasmProject extends WasmProjectClass {
+  token_dictionary?(): TokenDictionaryInput | undefined
+}
+
 export interface ExtractedCall {
   category: 'css' | 'recipe' | 'pattern' | 'jsx' | 'tokens'
   name: string
@@ -96,8 +100,11 @@ export interface WasmModule {
   WasmFileSystem: new () => WasmFileSystem
   WasmExtractor: new (fs: WasmFileSystem, matchers: unknown) => WasmExtractor
   WasmProject: {
-    new (fs: WasmFileSystem, matchers: unknown, options?: WasmProjectOptions): WasmProject
-    fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmNativeProjectOptions): WasmProject
+    fromConfig(
+      fs: WasmFileSystem,
+      config: Record<string, unknown>,
+      options?: WasmNativeProjectOptions,
+    ): InternalWasmProject
   }
   installPanicHook: () => void
 }
@@ -140,12 +147,29 @@ export function createCompilerFromWasmModule(
 ): { fs: WasmFileSystem; compiler: WasmCompiler } {
   const { WasmFileSystem: FS, WasmProject: P } = mod
   const fs = new FS()
-  const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
-  const nativeOptions = createWasmProjectOptions(options, callbacks)
-  assertProjectCallbacks(config, callbacks)
-  const compiler = P.fromConfig(fs, config, nativeOptions)
-  registerCallbacks(compiler, callbacks, compiler.tokenDictionary?.())
+  const prepared = prepareProjectConfig(configOrSnapshot, options)
+  assertProjectCallbacks(prepared.config, prepared.callbacks)
+  const compiler = P.fromConfig(fs, prepared.config, prepared.options)
+  registerCallbacks(compiler, prepared.callbacks, compiler.token_dictionary?.())
   return { fs, compiler }
+}
+
+interface PreparedProjectConfig {
+  config: Record<string, unknown>
+  options?: WasmNativeProjectOptions
+  callbacks: WasmProjectCallbacks
+}
+
+function prepareProjectConfig(
+  input: Record<string, unknown> | WasmConfigSnapshot,
+  options?: WasmProjectOptions,
+): PreparedProjectConfig {
+  const { config, callbacks } = normalizeProjectConfigInput(input, options)
+  return {
+    config,
+    callbacks,
+    options: createWasmProjectOptions(options, callbacks),
+  }
 }
 
 function createWasmProjectOptions(

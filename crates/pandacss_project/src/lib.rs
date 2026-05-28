@@ -44,8 +44,7 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileResolver, ExtractedCall, ExtractedJsx, ExtractorConfig, LineIndex, Literal,
-    MatchCategory, extract,
+    CrossFileResolver, ExtractedCall, ExtractedJsx, LineIndex, Literal, MatchCategory, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::diagnostic_codes;
@@ -133,37 +132,6 @@ impl Project {
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
             config_diagnostics,
-        }
-    }
-
-    #[must_use]
-    pub fn from_extractor_config(extractor_config: ExtractorConfig) -> Self {
-        let config = Arc::new(Config {
-            extractor_config,
-            utility: None,
-            conditions: ProjectConditionMatcher::from_names([]),
-            breakpoints: Vec::new(),
-            patterns: Default::default(),
-            recipes: Default::default(),
-            config_recipes: BTreeMap::new(),
-            config_slot_recipes: BTreeMap::new(),
-        });
-        Self {
-            config,
-            files: FxHashMap::default(),
-            atoms_cache: FxHashSet::default(),
-            atom_counts: FxHashMap::default(),
-            encoded_recipes_cache: EncodedRecipesCache::default(),
-            atoms_snapshot_cache: None,
-            encoded_recipes_snapshot_cache: None,
-            static_encoded_recipes_snapshot_cache: None,
-            config_recipes: BTreeMap::new(),
-            config_slot_recipes: BTreeMap::new(),
-            inline_recipes: BTreeMap::new(),
-            inline_slot_recipes: BTreeMap::new(),
-            inline_recipe_spans: FxHashMap::default(),
-            inline_slot_recipe_spans: FxHashMap::default(),
-            config_diagnostics: Vec::new(),
         }
     }
 

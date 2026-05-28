@@ -341,7 +341,6 @@ export interface ConfigSnapshot {
  *  parity testing), use `Extractor` instead. */
 export interface ProjectInstance {
   config(): UserConfig | null
-  tokenDictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   extract(source: string, path: string): ExtractResult
@@ -366,12 +365,16 @@ export interface ProjectInstance {
   staticPatternAtoms(): StaticPatternResult
 }
 
+interface InternalProjectInstance extends ProjectInstance {
+  token_dictionary?(): TokenDictionary | undefined
+}
+
 export interface ProjectConstructor {
   fromConfig(
     config: UserConfig | ConfigSnapshot,
     options?: CompilerOptions,
     utilityValuesCallbacks?: Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown>,
-  ): ProjectInstance
+  ): InternalProjectInstance
 }
 
 export interface NativeBinding {
@@ -411,7 +414,7 @@ class FallbackProject implements ProjectInstance {
   config() {
     return null
   }
-  tokenDictionary() {
+  token_dictionary() {
     return undefined
   }
   extract() {
@@ -559,15 +562,13 @@ export interface Compiler {
 }
 
 export function createCompiler(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): Compiler {
-  const { config: resolved, callbacks } = normalizeProjectConfigInput(config, options)
-  const nativeOptions = stripProjectCallbacks(options)
-  const utilityValuesCallbacks = createUtilityValuesCallbacks(callbacks)
-  assertProjectCallbacks(resolved, callbacks)
+  const prepared = prepareProjectConfig(config, options)
+  assertProjectCallbacks(prepared.config, prepared.callbacks)
   if (!nativeProjectFromConfig) {
     throw new Error('createCompiler is not available in this binding')
   }
-  const project = nativeProjectFromConfig(resolved, nativeOptions, utilityValuesCallbacks)
-  registerCallbacks(project, callbacks, project.tokenDictionary?.())
+  const project = nativeProjectFromConfig(prepared.config, prepared.options, prepared.utilityValuesCallbacks)
+  registerCallbacks(project, prepared.callbacks, project.token_dictionary?.())
   return toCompiler(project)
 }
 
@@ -596,6 +597,23 @@ function toCompiler(project: ProjectInstance): Compiler {
 export function getBindingInfo() {
   return {
     native: binding !== fallback,
+  }
+}
+
+interface PreparedProjectConfig {
+  config: UserConfig
+  options?: CompilerOptions
+  callbacks: ProjectCallbacks
+  utilityValuesCallbacks?: Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown>
+}
+
+function prepareProjectConfig(input: UserConfig | ConfigSnapshot, options?: CompilerOptions): PreparedProjectConfig {
+  const { config, callbacks } = normalizeProjectConfigInput(input, options)
+  return {
+    config,
+    callbacks,
+    options: stripProjectCallbacks(options),
+    utilityValuesCallbacks: createUtilityValuesCallbacks(callbacks),
   }
 }
 

@@ -191,7 +191,7 @@ impl Project {
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
-    #[napi(js_name = tokenDictionary)]
+    #[napi(js_name = token_dictionary)]
     #[must_use]
     pub fn token_dictionary(&self) -> Option<TokenDictionary> {
         self.inner
