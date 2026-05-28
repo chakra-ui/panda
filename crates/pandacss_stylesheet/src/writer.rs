@@ -50,6 +50,16 @@ impl CssWriter {
         self.block(write);
     }
 
+    /// Write an at-rule whose head is a fixed prefix + dynamic identifier
+    /// (`@keyframes spin`, `@property --x`). Saves the `format!`
+    /// allocation a caller would otherwise pay per invocation.
+    pub fn at_rule_named(&mut self, prefix: &str, name: &str, write: impl FnOnce(&mut Self)) {
+        self.write_indent();
+        self.out.push_str(prefix);
+        self.out.push_str(name);
+        self.block(write);
+    }
+
     fn block(&mut self, write: impl FnOnce(&mut Self)) {
         if !self.minify {
             self.out.push(' ');
