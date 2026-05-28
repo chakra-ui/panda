@@ -95,14 +95,38 @@ conditions into the encoder.
 
 ## Recipe decomposition
 
-`Recipe` and `SlotRecipe` (the `pandacss_recipes` crate) decompose into the same `Atom` shape via three entry points:
+`Recipe` and `SlotRecipe` (the `pandacss_recipes` crate) decompose into the same `Atom` shape via four entry points:
 
-- `process_atomic(style)` — one style object.
+- `process_atomic(style)` — one style object, no normalization.
+- `process_atomic_with(style, &normalizer)` — fused walker: applies inline key resolution + leaf normalization +
+  responsive-array expansion in a single pass over the input. Avoids the upfront `StyleNormalizer.normalize` call and
+  the `Cow<Literal>` it produces. The project layer drives this with `pandacss_utility::StyleNormalizer`.
 - `process_atomic_recipe(recipe)` — every style across `base`, variant options, and compound variants.
 - `process_atomic_slot_recipe(slot_recipe)` — same, per slot.
 
 `atomic_styles` and `atomic_styles_per_slot` return lazy iterators — no intermediate `Vec` allocation. The encoder
 consumes lazily so the caller never pays for a full materialization.
+
+## Inline normalization — `NormalizeAtomic`
+
+`process_atomic_with` takes any `&N` where `N: NormalizeAtomic`. The trait has three method hooks with no-op defaults:
+
+```rust
+pub trait NormalizeAtomic {
+    fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str { key }
+    fn normalize_leaf<'a>(&self, _prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
+        Cow::Borrowed(value)
+    }
+    fn array_condition(&self, _index: usize) -> Option<&str> { None }
+}
+```
+
+Encoder doesn't depend on `pandacss_utility`; `StyleNormalizer` implements the trait inside `pandacss_utility` (the
+one sibling-Tier-2 dep utility takes on encoder). Callers that don't need normalization can pass the zero-cost
+`NoNormalize` marker or just call `process_atomic` instead.
+
+The fusion eliminates the prior "normalize tree → walk normalized tree" double walk; on the sandbox bench it dropped
+the `encoding_atomic` span from ~3.47 ms to ~1.67 ms (-52%), ~12 % of cold path at 500 unique files.
 
 ## Atomic styles per slot — PERF tradeoff
 

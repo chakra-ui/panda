@@ -17,9 +17,17 @@ The stylesheet crate owns:
 
 - Dynamic atomic CSS emission from `Atom` records.
 - Config recipe and slot recipe CSS emission from `EncodedRecipesSnapshot`.
+- Reset CSS emission via `preflight.rs` when `config.preflight.enabled()`. Rules live as `&'static` data in `.rodata`,
+  walked straight into the writer with zero per-emit allocation. `preflight.scope` and `preflight.level` are not yet
+  honored; the emitter still writes the default block and surfaces a `preflight_options_unsupported` warning.
+- Tokens-layer emission:
+  - Token CSS variable declarations from the resolved `TokenDictionary`, including condition-scoped variants.
+  - `theme.keyframes` blocks as `@keyframes name { selector { decl } }` via a purpose-built walker (not the
+    `serialize_styles` path) — flat selector→declarations with no condition resolution, nested rules, or shorthand
+    expansion.
 - Base-layer config CSS emission from serialized `globalCss`.
 - Base-layer `globalVars` emission:
-  - string values become custom property declarations under `cssVarRoot`, defaulting to `:where(html)`
+  - string values become custom property declarations under `cssVarRoot`, defaulting to `:where(:root, :host)`
   - object values become top-level `@property` registrations
   - malformed entries are ignored rather than diagnosed
 - The supported native `staticCss` subset:
@@ -33,14 +41,23 @@ The stylesheet crate owns:
   - compound variant CSS
   - static responsive and configured condition expansion
 - Layer declarations and non-empty layer blocks.
+- Custom cascade layer names via `config.layers` (rename-only — same five layers in the same fixed order, just
+  user-controllable strings). Collisions between renamed layers surface a `layer_name_collision` warning per
+  unique colliding name.
+- Custom utility sub-layers via `utilities.<prop>.layer: "X"`. Atoms with an override are bucketed at emit and
+  emitted as `@layer X { ... }` **nested inside** the `@layer utilities` wrapper — matches v1's
+  `Layers.getLayerRoot('utilities')` shape (default atoms first, then each sub-layer). The user's chosen name
+  appears verbatim in the output; no `utilities.` prefix synthesis. Custom sub-layers are not yet declared in the
+  `@layer ...;` order preamble (they cascade implicitly inside the utilities slot).
 - Modern breakpoint media syntax (`@media (width >= 48rem)`).
 - Writer-level minification: omit indentation/newlines/optional declaration spaces.
 
 The stylesheet crate does **not** own:
 
-- Token `:root` CSS, reset CSS, keyframes, or theme token artifacts.
+- Theme token artifact files (only the runtime token CSS layer is emitted here; codegen output stays on the JS side).
 - `staticCss.patterns` or `staticCss.themes`; unsupported native paths report diagnostics instead of silently emitting
   partial CSS.
+- `preflight.scope` / `preflight.level` rewriting; flagged as unsupported with a warning diagnostic.
 - CSS parsing, rule merging, prefixing, shorthand folding, or AST minification.
 - Incremental stylesheet patching for watch mode.
 

@@ -49,9 +49,12 @@ incremental, refcounted union.
 Atoms + recipes → CSS rules: conditions → selectors / media queries, class names, cascade layers, and the supported
 native static CSS subset. The crate emits formatted CSS or writer-minified CSS directly; it does not parse CSS.
 
-Covered static CSS today: `staticCss.css`, `staticCss.recipes`, global `recipes: "*"`, recipe-level `recipe.staticCss`,
-slot recipes, compound variant CSS, and responsive/configured condition expansion. Token `:root`, reset, base/global,
-keyframes, `staticCss.patterns`, and `staticCss.themes` remain outside this native emission path.
+Covered today: `globalCss` + `globalVars` (base layer), `theme.tokens` + `theme.semanticTokens` + `theme.keyframes`
+(tokens layer), reset CSS when `preflight` is enabled, configured cascade-layer names + custom per-utility sub-layers
+(nested in utilities), and the supported `staticCss` subset (`staticCss.css`, `staticCss.recipes`, global
+`recipes: "*"`, recipe-level `recipe.staticCss`, slot recipes, compound variant CSS, responsive/configured condition
+expansion). Still outside the native path: `staticCss.patterns`, `staticCss.themes`, `preflight.scope`/`level`
+rewriting, and theme token artifact files (codegen output owned by the JS host).
 
 ### 5 · Optimization — ❌ unbuilt
 
@@ -105,8 +108,9 @@ re-extraction of unchanged files. It's the seam where phase 6 meets the (future)
 - **Batch ingestion + parallelism.** Phase 1 is single-file. A `parseFiles(iter)` seam (with `rayon`) is the natural
   place for per-file parallelism without disturbing the single-file API (noted in
   [project-lifecycle](./project-lifecycle.md)).
-- **Static CSS ownership.** `pandacss_stylesheet` owns utility and recipe static CSS. Reset/base/global/token-`:root`/
-  keyframes and theme token artifacts are still config-derived outputs owned outside this native stylesheet pass.
+- **Static CSS ownership.** `pandacss_stylesheet` owns utility and recipe static CSS, reset/preflight, base/global
+  CSS + vars, token vars, and keyframes. Theme token artifact files (the `styled-system/tokens/*` codegen) remain on
+  the JS host side.
 - **Incremental CSS emission.** `Project` updates its atom registry incrementally, but `compile()` still sorts and emits
   from the whole project-wide atom set. A cached per-file/per-bucket emitter is a separate design, not a hidden behavior
   of the current crate.

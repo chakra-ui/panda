@@ -47,11 +47,22 @@ writer guard; benchmark harnesses should call it once at the end of the process.
 - `config_compile` wraps system/config construction.
 - `token_dictionary_build` wraps token dictionary construction.
 - `file_parse` wraps `Project::parse_file_inner`, including `path`, `source_len`, and `cache_hit`.
-- `extraction` wraps Oxc extraction.
-- `oxc_parse` wraps the parser call inside extraction.
-- `encoding` wraps project and encoder atomic/recipe processing.
+- `extraction` wraps Oxc extraction. Inside it: `oxc_parse`, `collect_imports`, `match_imports`, `semantic_build`,
+  `visit_calls`, `visit_jsx` — added for per-phase profiling inside the extractor.
+- `encoding_atomic` / `encoding_style_props` wrap the project-side `process_atomic` / `process_style_props`. Inside
+  the atomic path: `encoder_atomic` covers the fused walker (`Encoder::process_atomic_with`).
 - `recipe_resolution` wraps inline and config recipe parsing/resolution.
 - `boundary_encode` wraps Rust-to-JS serialization for NAPI and WASM outputs.
+
+## In-process aggregator
+
+`pandacss_tracing::SpanTimings` is a `tracing-subscriber` layer that aggregates `(span_name → total_nanos, count)`
+in-process — a lossy complement to the chrome-json export, cheap enough to use inside benchmark harnesses without
+parsing JSON. The bench (`bench/src/bin/sandbox_vite_ts.rs`) installs it and reports per-span totals alongside its
+phase timings.
+
+Use chrome-json for timeline / per-call drill-down (flame graphs, slowest 1%). Use `SpanTimings` for budget checks
+("how much time goes into encoding total?").
 
 ## WASM
 

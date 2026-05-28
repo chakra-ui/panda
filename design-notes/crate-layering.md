@@ -34,9 +34,13 @@ not for walker machinery.
 `pandacss_encoder` consumes Tier 1 types (`Recipe`, `SlotRecipe`, `Literal`) and produces atomic `Atom` records. They're
 sibling tiers — different axes of work, neither depends on the other.
 
+`pandacss_utility` carries config-derived utility metadata (shorthands, value aliases, per-property layer overrides) and
+the `StyleNormalizer` consumed by `process_atomic_with`. It depends on `pandacss_encoder` for the `NormalizeAtomic`
+trait it implements — the one documented sibling-Tier-2 dep, in service of fusing the normalize+walk passes.
+
 `pandacss_stylesheet` consumes encoded atoms, recipe snapshots, utility metadata, and the supported static CSS config
-subset to produce CSS strings. It depends on `pandacss_project` only for snapshot data types, not for mutable project
-state. It is an emitter/minifying writer, not a CSS optimizer.
+subset to produce CSS strings. It depends on `pandacss_encoder` for snapshot/atom types (not on `pandacss_project` —
+the project is a dev-dep used only for test wiring). It is an emitter/minifying writer, not a CSS optimizer.
 
 ### Tier 3 — façade
 
