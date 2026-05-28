@@ -72,6 +72,8 @@ pub struct UserConfig {
     #[serde(default)]
     pub themes: ThemeVariantsMap,
     #[serde(default)]
+    pub preflight: PreflightConfig,
+    #[serde(default)]
     pub validation: ValidationMode,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
@@ -94,6 +96,56 @@ impl UserConfig {
         names.extend(self.theme.breakpoint_names());
         names.into_iter().collect()
     }
+}
+
+/// Reset / preflight CSS configuration. Matches JS shape:
+/// `preflight: true | false | { scope?: string; level?: 'parent' | 'element' }`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PreflightConfig {
+    Bool(bool),
+    Options(PreflightOptions),
+}
+
+impl Default for PreflightConfig {
+    fn default() -> Self {
+        Self::Bool(false)
+    }
+}
+
+impl PreflightConfig {
+    #[must_use]
+    pub fn enabled(&self) -> bool {
+        match self {
+            Self::Bool(value) => *value,
+            Self::Options(_) => true,
+        }
+    }
+
+    #[must_use]
+    pub fn options(&self) -> Option<&PreflightOptions> {
+        match self {
+            Self::Options(options) => Some(options),
+            Self::Bool(_) => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PreflightOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub level: Option<PreflightLevel>,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PreflightLevel {
+    #[default]
+    Parent,
+    Element,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
