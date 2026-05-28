@@ -21,7 +21,7 @@ use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use smallvec::SmallVec;
 
-use crate::compile::{CompileManifest, CompileOutput};
+use crate::compile::{CompileFileManifest, CompileOutput};
 
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
@@ -58,6 +58,21 @@ pub struct RecipeEntry {
     pub file: String,
     pub span_start: u32,
     pub recipe: serde_json::Value,
+}
+
+#[napi(object)]
+pub struct ParsedFileView {
+    pub path: String,
+    pub atoms: Vec<crate::Atom>,
+    pub diagnostics: Vec<Diagnostic>,
+    pub recipes: Vec<RecipeEntry>,
+    pub slot_recipes: Vec<RecipeEntry>,
+}
+
+#[napi(object)]
+pub struct StaticPatternResult {
+    pub atoms: Vec<crate::Atom>,
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 #[napi]
@@ -419,47 +434,131 @@ impl Project {
     pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
         crate::init_tracing();
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
-        let _ = env;
-        let token_dictionary = self.inner.config().token_dictionary();
-        let snapshots = self.inner.stylesheet_snapshots(&self.user_config);
-        let options = pandacss_stylesheet::StylesheetOptions {
-            minify: self
-                .user_config
-                .extra
-                .get("minify")
-                .and_then(serde_json::Value::as_bool)
-                .unwrap_or(false),
-            include_static: true,
-            source_map: false,
-        };
-        let output = pandacss_stylesheet::compile(
-            pandacss_stylesheet::StylesheetInput {
-                config: &self.user_config,
-                token_dictionary,
-                atoms: snapshots.atoms,
-                encoded_recipes: snapshots.encoded_recipes,
-                static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-                static_pattern_atoms: &[],
-            },
-            &options,
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms(env);
+        let Project {
+            inner, user_config, ..
+        } = self;
+        let output = crate::compile::build_compile_output(
+            inner,
+            user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
         );
         crate::flush_tracing();
-        Ok(CompileOutput {
-            css: output.css,
-            source_map: output.source_map,
-            manifest: CompileManifest {
-                hashes: Vec::new(),
-                tokens: Vec::new(),
-            },
-            diagnostics: self
-                .inner
+        Ok(output)
+    }
+
+    /// Config validation diagnostics from construction. Per-file and
+    /// compile diagnostics live on [`ParseFileReport`] / [`CompileOutput`].
+    #[napi]
+    #[must_use]
+    pub fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.inner
+            .diagnostics()
+            .iter()
+            .cloned()
+            .map(crate::convert::convert_diagnostic)
+            .collect()
+    }
+
+    /// `(path, hex source_hash)` for every known file, sorted by path.
+    /// The hash matches the one the re-parse short-circuit uses.
+    #[napi(js_name = fileManifest)]
+    #[must_use]
+    pub fn file_manifest(&self) -> Vec<CompileFileManifest> {
+        self.inner
+            .file_manifest()
+            .into_iter()
+            .map(|(path, hash)| CompileFileManifest {
+                path: path.as_ref().to_owned(),
+                hash: format!("{hash:016x}"),
+            })
+            .collect()
+    }
+
+    /// Per-file view; returns `null` when `path` isn't known.
+    #[napi(js_name = getFile)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn get_file(&self, path: String) -> Option<ParsedFileView> {
+        let file = self.inner.get_file(&path)?;
+        Some(ParsedFileView {
+            path: file.path().to_owned(),
+            atoms: crate::convert::to_atoms(file.atoms()),
+            diagnostics: file
                 .diagnostics()
                 .iter()
                 .cloned()
-                .chain(output.diagnostics)
+                .map(crate::convert::convert_diagnostic)
+                .collect(),
+            recipes: file
+                .recipes()
+                .map(|(span_start, recipe)| RecipeEntry {
+                    file: file.path().to_owned(),
+                    span_start,
+                    recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
+                })
+                .collect(),
+            slot_recipes: file
+                .slot_recipes()
+                .map(|(span_start, recipe)| RecipeEntry {
+                    file: file.path().to_owned(),
+                    span_start,
+                    recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
+                })
+                .collect(),
+        })
+    }
+
+    /// `staticCss.patterns` expansion as raw atoms, without compiling.
+    /// Routes through the same callback host as `parseFile`.
+    #[napi(js_name = staticPatternAtoms)]
+    pub fn static_pattern_atoms(&mut self, env: Env) -> napi::Result<StaticPatternResult> {
+        crate::init_tracing();
+        let (atoms, diagnostics) = self.collect_static_pattern_atoms(env);
+        crate::flush_tracing();
+        Ok(StaticPatternResult {
+            atoms: crate::convert::slice_to_atoms(&atoms),
+            diagnostics: diagnostics
+                .into_iter()
                 .map(crate::convert::convert_diagnostic)
                 .collect(),
         })
+    }
+
+    fn collect_static_pattern_atoms(
+        &mut self,
+        env: Env,
+    ) -> (Vec<pandacss_encoder::Atom>, Vec<pandacss_extractor::Diagnostic>) {
+        let Project {
+            inner,
+            user_config,
+            callbacks,
+            ..
+        } = self;
+        if callbacks.has_pattern_transforms() {
+            let pattern_cache = &mut callbacks.transform_cache.pattern;
+            let mut transform = |name: &str, styles: &Literal| {
+                apply_pattern_transform(
+                    name,
+                    styles,
+                    &callbacks.pattern_transform_refs,
+                    &callbacks.pattern_transforms,
+                    pattern_cache,
+                    &env,
+                )
+            };
+            inner.static_pattern_atoms(
+                user_config,
+                Some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            )
+        } else {
+            inner.static_pattern_atoms(user_config, None)
+        }
     }
 
     /// Aggregate counts.

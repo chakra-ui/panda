@@ -14,7 +14,10 @@ mod project;
 mod session;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
-pub use compile::{CompileInput, CompileManifest, CompileOutput, InputFile, compile};
+pub use compile::{
+    CompileFileManifest, CompileInput, CompileLayerRange, CompileLayerRanges, CompileManifest,
+    CompileOutput, InputFile, compile,
+};
 pub use extract::{ExtractDebugResult, ExtractResult, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
@@ -23,7 +26,10 @@ pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
-pub use project::{ParseFileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry};
+pub use project::{
+    ParsedFileView, ParseFileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry,
+    StaticPatternResult,
+};
 pub use session::Extractor;
 
 use napi_derive::napi;

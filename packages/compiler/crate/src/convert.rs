@@ -239,12 +239,23 @@ fn parse_number_string(s: &str) -> serde_json::Value {
     serde_json::Value::String(s.to_string())
 }
 
-/// Build a stable-ordered JS array of atoms. Sort by `(prop, conditions,
-/// value)` so snapshot tests don't depend on hash-set iteration order.
+/// Sort by `(prop, conditions, value)` so snapshot tests don't depend on
+/// hash-set iteration order.
 pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
     atoms: &std::collections::HashSet<pandacss_encoder::Atom, S>,
 ) -> Vec<crate::Atom> {
     let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
+    sort_atoms(&mut sorted);
+    sorted.into_iter().map(serialize_atom).collect()
+}
+
+pub(crate) fn slice_to_atoms(atoms: &[pandacss_encoder::Atom]) -> Vec<crate::Atom> {
+    let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
+    sort_atoms(&mut sorted);
+    sorted.into_iter().map(serialize_atom).collect()
+}
+
+fn sort_atoms(sorted: &mut [&pandacss_encoder::Atom]) {
     sorted.sort_by(|a, b| {
         a.prop()
             .cmp(b.prop())
@@ -255,18 +266,18 @@ pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
             })
             .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
     });
-    sorted
-        .into_iter()
-        .map(|atom| crate::Atom {
-            prop: atom.prop().to_string(),
-            value: to_atom_value(atom.value()),
-            conditions: atom
-                .conditions()
-                .iter()
-                .map(std::string::ToString::to_string)
-                .collect::<Vec<String>>(),
-        })
-        .collect()
+}
+
+fn serialize_atom(atom: &pandacss_encoder::Atom) -> crate::Atom {
+    crate::Atom {
+        prop: atom.prop().to_string(),
+        value: to_atom_value(atom.value()),
+        conditions: atom
+            .conditions()
+            .iter()
+            .map(std::string::ToString::to_string)
+            .collect::<Vec<String>>(),
+    }
 }
 
 // Lexicographic sort key over the variant tag + raw bytes — stable, cheap.

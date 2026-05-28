@@ -766,6 +766,19 @@ impl Project {
             .map(|(k, v)| (k.file.as_ref(), k.span_start, v))
     }
 
+    /// `(path, source_hash)` per known file, sorted by path. Hash is
+    /// the same one the re-parse short-circuit uses.
+    #[must_use]
+    pub fn file_manifest(&self) -> Vec<(Arc<str>, u64)> {
+        let mut entries: Vec<(Arc<str>, u64)> = self
+            .files
+            .iter()
+            .map(|(path, entry)| (Arc::clone(path), entry.source_hash))
+            .collect();
+        entries.sort_by(|a, b| a.0.cmp(&b.0));
+        entries
+    }
+
     /// Aggregate counts; cheap, doesn't recompute. `files_processed` is
     /// the current unique file count — `remove_file` decrements it and
     /// re-parsing the same path doesn't double-count.

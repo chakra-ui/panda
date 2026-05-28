@@ -111,6 +111,8 @@ dependencies = [
  "pandacss_project",
  "pandacss_recipes",
  "pandacss_shared",
+ "pandacss_stylesheet",
+ "pandacss_tokens",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",

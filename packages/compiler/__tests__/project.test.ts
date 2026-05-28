@@ -2,8 +2,8 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { createCompiler } from '../src'
-import { createProject, importMap } from './test-utils'
+import { compile, createCompiler } from '../src'
+import { createProject, createUserConfig, importMap } from './test-utils'
 
 describe('Compiler', () => {
   it('extracts atoms from a css() call', () => {
@@ -54,11 +54,44 @@ describe('Compiler', () => {
       }
       ",
         "manifest": {
-          "hashes": [],
+          "files": [
+            {
+              "path": "/virtual/Button.tsx",
+              "hash": "659fa58fc04d3693",
+            },
+          ],
           "tokens": [],
+        },
+        "layerRanges": {
+          "utilities": {
+            "start": 48,
+            "end": 145,
+          },
         },
         "diagnostics": [],
       }
+    `)
+  })
+
+  it('expands staticCss.patterns through compile()', () => {
+    const compiler = createProject({
+      patterns: {
+        flex: {
+          properties: { display: { type: 'enum', value: ['flex'] } },
+        },
+      },
+      staticCss: {
+        patterns: { flex: [{ properties: { display: ['flex'] } }] },
+      },
+    })
+    expect(compiler.compile().css).toMatchInlineSnapshot(`
+      "@layer reset, base, tokens, recipes, utilities;
+      @layer utilities {
+        .display_flex {
+          display: flex;
+        }
+      }
+      "
     `)
   })
 
@@ -75,6 +108,127 @@ describe('Compiler', () => {
           "code": "config_condition_selector_invalid",
           "message": "Selectors should contain the \`&\` character: \`[data-theme=pink]\`",
           "severity": "warning",
+        },
+      ]
+    `)
+  })
+
+  it('exposes config validation diagnostics standalone via diagnostics()', () => {
+    const compiler = createProject({
+      conditions: { pinkTheme: '[data-theme=pink]' },
+    })
+    expect(compiler.diagnostics()).toMatchInlineSnapshot(`
+      [
+        {
+          "code": "config_condition_selector_invalid",
+          "message": "Selectors should contain the \`&\` character: \`[data-theme=pink]\`",
+          "severity": "warning",
+        },
+      ]
+    `)
+  })
+
+  it('lists parsed files via fileManifest()', () => {
+    const compiler = createProject()
+    compiler.parseFile('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
+    compiler.parseFile('/virtual/B.tsx', "import { css } from '@panda/css'; css({ color: 'blue' })")
+    const manifest = compiler.fileManifest()
+    expect(manifest.map((entry) => entry.path)).toEqual(['/virtual/A.tsx', '/virtual/B.tsx'])
+    expect(manifest.every((entry) => /^[0-9a-f]{16}$/.test(entry.hash))).toBe(true)
+  })
+
+  it('returns a per-file ParsedFileView via getFile()', () => {
+    const compiler = createProject()
+    compiler.parseFile('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red', bg: 'blue' })")
+    expect(compiler.getFile('/virtual/missing.tsx')).toBeNull()
+    const view = compiler.getFile('/virtual/A.tsx')
+    expect(view?.path).toBe('/virtual/A.tsx')
+    expect(view?.atoms).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "bg",
+          "value": "blue",
+          "conditions": [],
+        },
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('exposes static pattern atoms standalone via staticPatternAtoms()', () => {
+    const compiler = createProject({
+      patterns: {
+        flex: { properties: { display: { type: 'enum', value: ['flex'] } } },
+      },
+      staticCss: {
+        patterns: { flex: [{ properties: { display: ['flex'] } }] },
+      },
+    })
+    const result = compiler.staticPatternAtoms()
+    expect(result.diagnostics).toEqual([])
+    expect(result.atoms).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('returns layer byte ranges in compile output', () => {
+    const compiler = createProject()
+    compiler.parseFile('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
+    const output = compiler.compile()
+    const utilities = output.layerRanges.utilities
+    expect(utilities).toBeDefined()
+    expect(output.css.slice(utilities!.start, utilities!.end)).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color_red {
+          color: red;
+        }
+      }
+      "
+    `)
+  })
+
+  it('runs a one-shot compile() over a file set + config', () => {
+    const output = compile({
+      config: createUserConfig() as unknown as Record<string, unknown>,
+      files: [
+        {
+          path: '/virtual/App.tsx',
+          content: "import { css } from '@panda/css'; css({ color: 'red' })",
+        },
+      ],
+    })
+    expect(output.css).toMatchInlineSnapshot(`
+      "@layer reset, base, tokens, recipes, utilities;
+      @layer utilities {
+        .color_red {
+          color: red;
+        }
+      }
+      "
+    `)
+    expect(output.manifest.files[0]?.path).toBe('/virtual/App.tsx')
+    expect(output.diagnostics).toEqual([])
+  })
+
+  it('top-level compile() with no config surfaces an error diagnostic', () => {
+    const output = compile()
+    expect(output.css).toBe('')
+    expect(output.diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "code": "compile_placeholder",
+          "message": "compile() requires a \`config\`",
+          "severity": "error",
         },
       ]
     `)

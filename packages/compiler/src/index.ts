@@ -11,9 +11,40 @@ export interface CompileInput {
   cacheDir?: string
 }
 
+export interface CompileFileManifest {
+  path: string
+  hash: string
+}
+
 export interface CompileManifest {
-  hashes: string[]
+  files: CompileFileManifest[]
   tokens: string[]
+}
+
+export interface CompileLayerRange {
+  start: number
+  end: number
+}
+
+export interface CompileLayerRanges {
+  reset?: CompileLayerRange
+  base?: CompileLayerRange
+  tokens?: CompileLayerRange
+  recipes?: CompileLayerRange
+  utilities?: CompileLayerRange
+}
+
+export interface ParsedFileView {
+  path: string
+  atoms: Atom[]
+  diagnostics: Diagnostic[]
+  recipes: RecipeEntry[]
+  slotRecipes: RecipeEntry[]
+}
+
+export interface StaticPatternResult {
+  atoms: Atom[]
+  diagnostics: Diagnostic[]
 }
 
 export type DiagnosticSeverity = 'info' | 'warning' | 'error'
@@ -45,6 +76,7 @@ export interface CompileOutput {
   css: string
   sourceMap?: string
   manifest: CompileManifest
+  layerRanges: CompileLayerRanges
   diagnostics: Diagnostic[]
 }
 
@@ -329,6 +361,11 @@ export interface ProjectInstance {
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
   compile(): CompileOutput
+  diagnostics(): Diagnostic[]
+  fileManifest(): CompileFileManifest[]
+  /** Per-file view, or `null` when `path` isn't known to the project. */
+  getFile(path: string): ParsedFileView | null
+  staticPatternAtoms(): StaticPatternResult
 }
 
 export interface ProjectConstructor {
@@ -403,10 +440,27 @@ class FallbackProject implements ProjectInstance {
     return { base: [], variants: [], atomic: [] } as EncodedRecipeStyles
   }
   compile() {
-    return { css: '', manifest: { hashes: [], tokens: [] }, diagnostics: [] }
+    return {
+      css: '',
+      manifest: { files: [], tokens: [] },
+      layerRanges: {},
+      diagnostics: [],
+    }
   }
   summary() {
     return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
+  }
+  diagnostics() {
+    return [] as Diagnostic[]
+  }
+  fileManifest() {
+    return [] as CompileFileManifest[]
+  }
+  getFile() {
+    return null
+  }
+  staticPatternAtoms() {
+    return { atoms: [], diagnostics: [] }
   }
 }
 
@@ -423,7 +477,8 @@ const fallback: NativeBinding = {
   compile() {
     return {
       css: '',
-      manifest: { hashes: [], tokens: [] },
+      manifest: { files: [], tokens: [] },
+      layerRanges: {},
       diagnostics: [],
     }
   },
@@ -455,6 +510,15 @@ const nativeProjectFromConfig =
     ? binding.Project.fromConfig.bind(binding.Project)
     : undefined
 
+/** One-shot stateless compile: build a project from `config`, parse
+ *  every input file, and emit the stylesheet. Callback-bearing configs
+ *  (`utilities.*.transform`, `patterns.*.transform`) are *not* supported
+ *  through this entry point — use [`createCompiler`] + `registerPatternTransform`
+ *  / `registerUtilityTransform` instead. */
+export function compile(input?: CompileInput): CompileOutput {
+  return binding.compile(input)
+}
+
 export function startTracing(options?: TraceOptions): boolean {
   return binding.startTracing?.(options) ?? false
 }
@@ -483,6 +547,10 @@ export interface Compiler {
   summary(): ProjectSummary
   config(): UserConfig | null
   compile(): CompileOutput
+  diagnostics(): Diagnostic[]
+  fileManifest(): CompileFileManifest[]
+  getFile(path: string): ParsedFileView | null
+  staticPatternAtoms(): StaticPatternResult
 }
 
 export function createCompiler(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): Compiler {
@@ -514,6 +582,10 @@ function toCompiler(project: ProjectInstance): Compiler {
     summary: () => project.summary(),
     config: () => project.config(),
     compile: () => project.compile(),
+    diagnostics: () => project.diagnostics(),
+    fileManifest: () => project.fileManifest(),
+    getFile: (path) => project.getFile(path),
+    staticPatternAtoms: () => project.staticPatternAtoms(),
   }
 }
 
