@@ -86,7 +86,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
         let _span = tracing::trace_span!("oxc_parse", path = path).entered();
         Parser::new(&allocator, source, source_type).parse()
     };
-    let diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
+    let mut diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let imports = {
         let _span = tracing::trace_span!("collect_imports").entered();
         collect_imports(&parser_return.program)
@@ -106,6 +106,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
         };
     }
 
+    let line_index = crate::LineIndex::new(source);
     let resolver = {
         let _span = tracing::trace_span!("semantic_build").entered();
         Resolver::build(
@@ -115,6 +116,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
             config.token_dictionary.as_deref(),
             config.cross_file.as_ref(),
             Some(std::path::PathBuf::from(path)),
+            Some(&line_index),
         )
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
@@ -131,6 +133,8 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     } else {
         Vec::new()
     };
+
+    diagnostics.extend(resolver.take_deprecations());
 
     ExtractResult {
         imports,

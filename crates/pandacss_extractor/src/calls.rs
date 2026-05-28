@@ -62,6 +62,7 @@ pub fn extract_calls(
         config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
+        None,
     );
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     ExtractedCallsResult {

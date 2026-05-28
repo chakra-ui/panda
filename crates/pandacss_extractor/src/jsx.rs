@@ -77,6 +77,7 @@ pub fn extract_jsx(
         config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
+        None,
     );
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
     ExtractedJsxResult {

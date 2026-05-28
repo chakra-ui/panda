@@ -45,6 +45,8 @@ pub(crate) struct Resolver<'a> {
     tokens: Option<&'a TokenDictionary>,
     cross_file: Option<&'a dyn CrossFileLookup>,
     source_path: Option<PathBuf>,
+    line_index: Option<&'a crate::LineIndex<'a>>,
+    deprecations: RefCell<Vec<crate::Diagnostic>>,
 }
 
 /// `InProgress` guards against cycles like `const a = b; const b = a;`.
@@ -63,6 +65,7 @@ impl<'a> Resolver<'a> {
         tokens: Option<&'a TokenDictionary>,
         cross_file: Option<&'a CrossFileResolver>,
         source_path: Option<PathBuf>,
+        line_index: Option<&'a crate::LineIndex<'a>>,
     ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -73,6 +76,8 @@ impl<'a> Resolver<'a> {
             tokens,
             cross_file: cross_file.map(CrossFileResolver::as_lookup),
             source_path,
+            line_index,
+            deprecations: RefCell::default(),
         }
     }
 
@@ -83,6 +88,7 @@ impl<'a> Resolver<'a> {
         cross_file: Option<&'a dyn CrossFileLookup>,
         matchers: Option<&'a Matchers>,
         source_path: Option<PathBuf>,
+        line_index: Option<&'a crate::LineIndex<'a>>,
     ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -93,7 +99,13 @@ impl<'a> Resolver<'a> {
             tokens,
             cross_file,
             source_path,
+            line_index,
+            deprecations: RefCell::default(),
         }
+    }
+
+    pub(crate) fn take_deprecations(&self) -> Vec<crate::Diagnostic> {
+        std::mem::take(&mut self.deprecations.borrow_mut())
     }
 
     pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
@@ -173,12 +185,30 @@ impl<'a> Resolver<'a> {
                 _ => None,
             });
 
+        if dict.is_deprecated(&path) {
+            self.record_deprecated_token(&path, call.span);
+        }
+
         let resolved = if is_var {
             dict.get_var(&path, fallback.as_deref())
         } else {
             dict.get(&path, fallback.as_deref())
         };
         resolved.map(Literal::String)
+    }
+
+    fn record_deprecated_token(&self, path: &str, span: oxc_span::Span) {
+        let span = crate::span_from_oxc(span);
+        let location = self
+            .line_index
+            .map(|idx| idx.locate_range(span.start, span.end));
+        let mut diagnostic = crate::Diagnostic::warning(
+            crate::diagnostic_codes::DEPRECATED_TOKEN_USED,
+            format!("token \"{path}\" is deprecated"),
+        );
+        diagnostic.span = Some(span);
+        diagnostic.location = location;
+        self.deprecations.borrow_mut().push(diagnostic);
     }
 
     pub(crate) fn resolve_identifier(&self, ident: &IdentifierReference<'_>) -> Option<Literal> {

@@ -41,9 +41,13 @@ use smallvec::SmallVec;
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
-use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Literal, MatchCategory, extract};
+use pandacss_extractor::{
+    CrossFileResolver, ExtractedCall, ExtractedJsx, ExtractorConfig, LineIndex, Literal,
+    MatchCategory, extract,
+};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_utility::StyleNormalizer;
+use pandacss_shared::diagnostic_codes;
+use pandacss_utility::{StyleNormalizer, Utility};
 
 pub use error::{ConfigError, Result};
 pub use pandacss_encoder::{
@@ -252,7 +256,19 @@ impl Project {
         span.record("cache_hit", false);
 
         let result = extract(source, path, &self.config.extractor_config);
-        let diagnostics = result.diagnostics;
+        let mut diagnostics = result.diagnostics;
+        if let Some(utility) = self.config.utility.as_ref()
+            && !utility.deprecated_props().is_empty()
+        {
+            let line_index = LineIndex::new(source);
+            push_deprecated_utility_diagnostics(
+                &result.calls,
+                &result.jsx,
+                utility,
+                &line_index,
+                &mut diagnostics,
+            );
+        }
         let mut report = ParseFileReport {
             css_calls: 0,
             cva_calls: 0,
@@ -760,6 +776,77 @@ pub type PatternTransformFn<'a> =
 
 pub type UtilityTransformFn<'a> =
     dyn FnMut(&str, &AtomValue) -> std::result::Result<Option<Vec<Atom>>, Diagnostic> + 'a;
+
+fn push_deprecated_utility_diagnostics(
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    utility: &Utility,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let deprecated = utility.deprecated_props();
+    let mut seen: Vec<String> = Vec::new();
+    for call in calls {
+        seen.clear();
+        for arg in &call.data {
+            if let Some(lit) = arg {
+                collect_deprecated_props(lit, utility, deprecated, &mut seen);
+            }
+        }
+        for prop in seen.drain(..) {
+            out.push(deprecated_utility_diagnostic(&prop, call.span, line_index));
+        }
+    }
+    for entry in jsx {
+        seen.clear();
+        collect_deprecated_props(&entry.data, utility, deprecated, &mut seen);
+        for prop in seen.drain(..) {
+            out.push(deprecated_utility_diagnostic(&prop, entry.span, line_index));
+        }
+    }
+}
+
+fn collect_deprecated_props(
+    value: &Literal,
+    utility: &Utility,
+    deprecated: &FxHashSet<String>,
+    out: &mut Vec<String>,
+) {
+    match value {
+        Literal::Object(entries) => {
+            for (key, child) in entries {
+                let canonical = utility.resolve_shorthand(key);
+                if deprecated.contains(canonical) {
+                    let name = canonical.to_owned();
+                    if !out.contains(&name) {
+                        out.push(name);
+                    }
+                }
+                collect_deprecated_props(child, utility, deprecated, out);
+            }
+        }
+        Literal::Array(items) | Literal::Conditional(items) => {
+            for item in items {
+                collect_deprecated_props(item, utility, deprecated, out);
+            }
+        }
+        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+    }
+}
+
+fn deprecated_utility_diagnostic(
+    prop: &str,
+    span: pandacss_extractor::Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    let mut diagnostic = Diagnostic::warning(
+        diagnostic_codes::DEPRECATED_UTILITY_USED,
+        format!("utility \"{prop}\" is deprecated"),
+    );
+    diagnostic.span = Some(span);
+    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    diagnostic
+}
 
 fn transform_atoms(
     atoms: FxHashSet<Atom>,
