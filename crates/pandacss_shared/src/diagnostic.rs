@@ -17,7 +17,8 @@ pub mod codes {
     pub const JS_PARSE_ERROR: &str = "js_parse_error";
     pub const LAYER_NAME_COLLISION: &str = "layer_name_collision";
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";
-    pub const STATIC_CSS_PATTERNS_UNSUPPORTED: &str = "static_css_patterns_unsupported";
+    pub const STATIC_CSS_PATTERN_MISSING_TRANSFORM: &str = "static_css_pattern_missing_transform";
+    pub const STATIC_CSS_PATTERN_UNKNOWN: &str = "static_css_pattern_unknown";
     pub const STATIC_CSS_RECIPES_MISSING_SNAPSHOT: &str = "static_css_recipes_missing_snapshot";
     pub const STATIC_CSS_THEMES_UNSUPPORTED: &str = "static_css_themes_unsupported";
     pub const STATIC_CSS_WILDCARD_EMPTY: &str = "static_css_wildcard_empty";
