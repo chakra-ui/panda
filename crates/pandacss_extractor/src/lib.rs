@@ -39,7 +39,7 @@ pub use pandacss_shared::{
 // of the public API.
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
-pub(crate) use source::LineIndex;
+pub use source::LineIndex;
 
 pub(crate) fn span_from_oxc(span: oxc_span::Span) -> Span {
     Span {

@@ -12,6 +12,8 @@ pub mod codes {
     pub const CONFIG_TOKEN_NESTED_VALUE: &str = "config_token_nested_value";
     pub const CONFIG_TOKEN_SELF_REFERENCE: &str = "config_token_self_reference";
     pub const CONFIG_TOKEN_UNKNOWN_REFERENCE: &str = "config_token_unknown_reference";
+    pub const DEPRECATED_TOKEN_USED: &str = "deprecated_token_used";
+    pub const DEPRECATED_UTILITY_USED: &str = "deprecated_utility_used";
     pub const JS_PARSE_ERROR: &str = "js_parse_error";
     pub const LAYER_NAME_COLLISION: &str = "layer_name_collision";
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";

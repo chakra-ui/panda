@@ -10,13 +10,14 @@ use pandacss_shared::{SourceLocation, SourceRange};
 
 /// Pre-computed byte offsets of every line start. Construct once per
 /// source file; lookup is O(log lines).
-pub(crate) struct LineIndex<'a> {
+pub struct LineIndex<'a> {
     source: &'a str,
     line_starts: Vec<u32>,
 }
 
 impl<'a> LineIndex<'a> {
-    pub(crate) fn new(source: &'a str) -> Self {
+    #[must_use]
+    pub fn new(source: &'a str) -> Self {
         let mut line_starts = vec![0];
         for (i, b) in source.bytes().enumerate() {
             if b == b'\n' {
@@ -30,7 +31,8 @@ impl<'a> LineIndex<'a> {
     }
 
     /// Offsets past end clamp to the end (matches ts-morph behavior).
-    pub(crate) fn locate(&self, byte_offset: u32) -> SourceLocation {
+    #[must_use]
+    pub fn locate(&self, byte_offset: u32) -> SourceLocation {
         let offset = (byte_offset as usize).min(self.source.len());
         let line_idx = self
             .line_starts
@@ -52,7 +54,8 @@ impl<'a> LineIndex<'a> {
         }
     }
 
-    pub(crate) fn locate_range(&self, start: u32, end: u32) -> SourceRange {
+    #[must_use]
+    pub fn locate_range(&self, start: u32, end: u32) -> SourceRange {
         SourceRange {
             start: self.locate(start),
             end: self.locate(end),

@@ -150,6 +150,11 @@ impl Utility {
     }
 
     #[must_use]
+    pub fn deprecated_props(&self) -> &FxHashSet<String> {
+        &self.deprecated
+    }
+
+    #[must_use]
     pub fn resolve_shorthand<'a>(&'a self, prop: &'a str) -> &'a str {
         self.shorthands
             .get(prop)
