@@ -1,9 +1,9 @@
 mod common;
 
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetOptions;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css, compile_css_with_options, config};
+use common::{compile_css_with_options, compile_layer_css, config};
 
 #[test]
 fn emits_dynamic_atomic_css() {
@@ -14,12 +14,12 @@ fn emits_dynamic_atomic_css() {
             "backgroundColor": { "className": "bg", "shorthand": "bg" }
         }
     }));
-    let css = compile_css(
+    let css = compile_layer_css(
         &config,
         "import { css } from '@panda/css'; css({ color: 'red', bg: 'blue' })",
+        &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   .bg_blue {
     background-color: blue;
@@ -47,12 +47,12 @@ fn emits_conditions_and_breakpoints() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_layer_css(
         &config,
         "import { css } from '@panda/css'; css({ _hover: { md: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   @media (width >= 48rem) {
     .hover\:md\:c_red:hover {

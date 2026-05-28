@@ -17,6 +17,7 @@ pub mod codes {
     pub const STATIC_CSS_RECIPES_MISSING_SNAPSHOT: &str = "static_css_recipes_missing_snapshot";
     pub const STATIC_CSS_THEMES_UNSUPPORTED: &str = "static_css_themes_unsupported";
     pub const STATIC_CSS_WILDCARD_EMPTY: &str = "static_css_wildcard_empty";
+    pub const TOKEN_DICTIONARY_BUILD_FAILED: &str = "token_dictionary_build_failed";
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
 }
 

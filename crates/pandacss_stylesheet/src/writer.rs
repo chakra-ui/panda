@@ -17,6 +17,10 @@ impl CssWriter {
         self.out
     }
 
+    pub fn len(&self) -> usize {
+        self.out.len()
+    }
+
     pub fn write_str(&mut self, value: &str) {
         self.out.push_str(value);
     }

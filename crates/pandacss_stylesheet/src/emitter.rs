@@ -1,52 +1,83 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, ops::Range};
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, AtomValue};
 use pandacss_extractor::Literal;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry};
 use pandacss_shared::{number_to_js_string, split_important};
+use pandacss_tokens::{TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};
 use serde_json::Value;
 
+use crate::StylesheetLayerRanges;
 use crate::sort::{SortContext, condition_raw_parts};
 use crate::writer::CssWriter;
+
+pub struct EmitOutput {
+    pub css: String,
+    pub layer_ranges: StylesheetLayerRanges,
+}
 
 pub fn emit(
     config: &UserConfig,
     utility: &Utility,
+    token_dictionary: Option<&TokenDictionary>,
     mut atoms: Vec<&Atom>,
     recipes: &EncodedRecipesSnapshot,
     minify: bool,
-) -> String {
+) -> EmitOutput {
     let cx = EmitContext::new(config, utility);
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
+    let mut layer_ranges = StylesheetLayerRanges::default();
     writer.write_str("@layer reset, base, tokens, recipes, utilities;");
     writer.newline();
     if has_base_layer(config) {
-        writer.layer("base", |writer| {
+        layer_ranges.base = Some(write_layer(&mut writer, "base", |writer| {
             cx.serialize_styles(writer, &config.global_css);
             cx.serialize_global_vars(writer);
-        });
+        }));
+    }
+    if let Some(dictionary) = token_dictionary {
+        let token_vars = dictionary.css_vars();
+        if let Some(token_vars) = cx.prepare_token_vars(&token_vars) {
+            layer_ranges.tokens = Some(write_layer(&mut writer, "tokens", |writer| {
+                cx.serialize_token_vars(writer, &token_vars);
+            }));
+        }
     }
     if has_recipe_rules(recipes) {
-        writer.layer("recipes", |writer| {
+        layer_ranges.recipes = Some(write_layer(&mut writer, "recipes", |writer| {
             for group in &recipes.base {
                 cx.write_recipe_group(writer, &group.class_name, &group.entries);
             }
             for group in &recipes.variants {
                 cx.write_recipe_group(writer, &group.class_name, &group.entries);
             }
-        });
+        }));
     }
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
-        writer.layer("utilities", |writer| {
+        layer_ranges.utilities = Some(write_layer(&mut writer, "utilities", |writer| {
             atoms.extend(recipes.atomic.iter());
             for atom in cx.sort.sorted_atoms(atoms) {
                 cx.write_atom(writer, atom.atom, &atom.conditions);
             }
-        });
+        }));
     }
-    writer.finish()
+    EmitOutput {
+        css: writer.finish(),
+        layer_ranges,
+    }
+}
+
+fn write_layer(
+    writer: &mut CssWriter,
+    name: &str,
+    write: impl FnOnce(&mut CssWriter),
+) -> Range<usize> {
+    let start = writer.len();
+    writer.layer(name, write);
+    let end = writer.len();
+    start..end
 }
 
 fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
@@ -323,6 +354,70 @@ impl<'a> EmitContext<'a> {
         }
     }
 
+    fn prepare_token_vars<'b>(&self, vars: &'b TokenCssVars<'b>) -> Option<PreparedTokenVars<'b>> {
+        let conditions = vars
+            .conditions
+            .iter()
+            .filter_map(|group| {
+                self.resolve_token_condition(group.condition)
+                    .map(|conditions| PreparedTokenCondition {
+                        vars: group.vars.as_slice(),
+                        conditions,
+                    })
+            })
+            .collect::<Vec<_>>();
+
+        (!vars.base.is_empty() || !conditions.is_empty()).then_some(PreparedTokenVars {
+            base: vars.base.as_slice(),
+            conditions,
+        })
+    }
+
+    fn serialize_token_vars(&self, writer: &mut CssWriter, vars: &PreparedTokenVars<'_>) {
+        let root = css_var_root(self.config);
+
+        if !vars.base.is_empty() {
+            write_token_var_rule(writer, root, vars.base);
+        }
+
+        for group in &vars.conditions {
+            let rule = self.token_rule_target_with_base_parts(root, &group.conditions);
+            write_with_wrappers(writer, &rule.wrappers, |writer| {
+                write_token_var_rule(writer, &rule.selector, group.vars);
+            });
+        }
+    }
+
+    /// Semantic token condition keys are produced by
+    /// `pandacss_tokens::from_config::visit_semantic_values`, where nested
+    /// conditions are joined with `:` (for example `_dark:md`).
+    fn resolve_token_condition(&self, condition: &str) -> Option<Vec<ConditionParts>> {
+        let mut conditions = Vec::new();
+        for segment in condition.split(':') {
+            let segment = segment.trim();
+            if segment.is_empty() || segment == "base" {
+                return None;
+            }
+            conditions.push(resolved_condition_parts(self.config, segment)?);
+        }
+        (!conditions.is_empty()).then_some(conditions)
+    }
+
+    fn token_rule_target_with_base_parts(
+        &self,
+        base: &str,
+        conditions: &[ConditionParts],
+    ) -> RuleTarget {
+        let mut selector = base.to_owned();
+        let mut wrappers = Vec::new();
+        for parts in conditions {
+            for raw in parts {
+                apply_token_raw_condition(base, &mut selector, &mut wrappers, raw);
+            }
+        }
+        RuleTarget { selector, wrappers }
+    }
+
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
@@ -506,6 +601,16 @@ struct GlobalVarProperty<'a> {
     initial_value: Option<&'a str>,
 }
 
+struct PreparedTokenVars<'a> {
+    base: &'a [TokenCssVar<'a>],
+    conditions: Vec<PreparedTokenCondition<'a>>,
+}
+
+struct PreparedTokenCondition<'a> {
+    vars: &'a [TokenCssVar<'a>],
+    conditions: Vec<ConditionParts>,
+}
+
 #[derive(PartialEq, Eq)]
 struct RuleTarget {
     selector: String,
@@ -550,6 +655,14 @@ fn write_with_wrappers(
         }
     }
     inner(writer, wrappers, 0, write);
+}
+
+fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCssVar<'_>]) {
+    writer.rule(selector, |writer| {
+        for var in vars {
+            writer.declaration(var.name, var.value, false);
+        }
+    });
 }
 
 fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
@@ -634,6 +747,78 @@ fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &
         *selector = replace_selector_parent(raw, selector);
     } else {
         *selector = format!("{raw} {selector}");
+    }
+}
+
+fn apply_token_raw_condition(
+    css_var_root: &str,
+    selector: &mut String,
+    wrappers: &mut Vec<String>,
+    raw: &str,
+) {
+    if raw.starts_with('@') {
+        wrappers.push(raw.to_owned());
+        return;
+    }
+
+    if let Some(parent) = token_parent_selector(raw) {
+        *selector = if selector == css_var_root {
+            parent
+        } else if parent.contains('&') {
+            replace_selector_parent(&parent, selector)
+        } else {
+            format!("{selector}{parent}")
+        };
+        return;
+    }
+
+    if raw.contains('&') {
+        *selector = replace_selector_parent(raw, selector);
+        cleanup_token_selector(css_var_root, selector);
+    } else if selector == css_var_root {
+        *selector = raw.to_owned();
+    } else {
+        *selector = format!("{selector} {raw}");
+    }
+}
+
+fn token_parent_selector(raw: &str) -> Option<String> {
+    let selectors = split_selector_list(raw)
+        .into_iter()
+        .filter_map(|selector| {
+            let selector = selector.trim();
+            selector
+                .contains(" &")
+                .then(|| selector.replace(" &", "").trim().to_owned())
+        })
+        .filter(|selector| !selector.is_empty())
+        .collect::<Vec<_>>();
+
+    match selectors.len() {
+        0 => None,
+        1 => selectors.into_iter().next(),
+        _ => Some(format!(":where({})", selectors.join(", "))),
+    }
+}
+
+fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
+    if selector == css_var_root {
+        return;
+    }
+    let cleaned = split_selector_list(selector)
+        .into_iter()
+        .filter_map(|selector| {
+            let selector = selector.trim();
+            if selector == css_var_root {
+                None
+            } else {
+                let cleaned = selector.replace(css_var_root, "").trim().to_owned();
+                (!cleaned.is_empty()).then_some(cleaned)
+            }
+        })
+        .collect::<Vec<_>>();
+    if !cleaned.is_empty() {
+        *selector = cleaned.join(", ");
     }
 }
 
@@ -772,9 +957,9 @@ fn global_var_property<'a>(
 }
 
 fn css_var_root(config: &UserConfig) -> &str {
-    config
-        .extra
-        .get("cssVarRoot")
-        .and_then(Value::as_str)
-        .unwrap_or(":where(html)")
+    if config.css_var_root.is_empty() {
+        ":where(:root, :host)"
+    } else {
+        config.css_var_root.as_str()
+    }
 }

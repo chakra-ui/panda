@@ -63,6 +63,8 @@ pub struct UserConfig {
     pub global_css: Value,
     #[serde(default)]
     pub global_vars: Value,
+    #[serde(default = "default_css_var_root")]
+    pub css_var_root: String,
     #[serde(default)]
     pub global_fontface: Value,
     #[serde(default)]
@@ -73,6 +75,10 @@ pub struct UserConfig {
     pub validation: ValidationMode,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
+}
+
+fn default_css_var_root() -> String {
+    ":where(:root, :host)".to_owned()
 }
 
 impl UserConfig {

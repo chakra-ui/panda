@@ -423,6 +423,7 @@ impl Project {
         let encoded_recipes = self.inner.encoded_recipes().snapshot();
         let atoms = self.inner.atoms().iter().collect::<Vec<_>>();
         let static_encoded_recipes = self.inner.static_encoded_recipes(&self.user_config);
+        let token_dictionary = self.inner.config().token_dictionary();
         let options = pandacss_stylesheet::StylesheetOptions {
             minify: self
                 .user_config
@@ -436,6 +437,7 @@ impl Project {
         let output = pandacss_stylesheet::compile(
             pandacss_stylesheet::StylesheetInput {
                 config: &self.user_config,
+                token_dictionary,
                 atoms,
                 encoded_recipes: &encoded_recipes,
                 static_encoded_recipes: Some(&static_encoded_recipes),

@@ -9,7 +9,7 @@
 //! `rustc_hash::FxHashMap` indexes built once at construction time.
 
 use rustc_hash::FxHashMap;
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map::Entry};
 use std::sync::Arc;
 
 #[cfg(feature = "serde")]
@@ -411,6 +411,49 @@ impl TokenDictionary {
         self.tokens.iter()
     }
 
+    #[must_use]
+    pub fn css_vars(&self) -> TokenCssVars<'_> {
+        let mut view = TokenCssVars::default();
+        let mut condition_indexes: FxHashMap<&str, usize> = FxHashMap::default();
+        for token in &self.tokens {
+            let Some(name) = raw_css_var(token.var.as_ref()) else {
+                continue;
+            };
+            if token.extension("isNegative") == Some("true")
+                || token.extension("isVirtual") == Some("true")
+            {
+                continue;
+            }
+
+            let var = TokenCssVar {
+                name,
+                value: token.value.as_ref(),
+            };
+            let Some(condition) = token.condition.as_deref() else {
+                view.base.push(var);
+                continue;
+            };
+            if is_theme_condition(condition) {
+                continue;
+            }
+
+            match condition_indexes.entry(condition) {
+                Entry::Occupied(entry) => {
+                    view.conditions[*entry.get()].vars.push(var);
+                }
+                Entry::Vacant(entry) => {
+                    let index = view.conditions.len();
+                    entry.insert(index);
+                    view.conditions.push(TokenCssConditionVars {
+                        condition,
+                        vars: vec![var],
+                    });
+                }
+            }
+        }
+        view
+    }
+
     pub fn iter_category<'a>(
         &'a self,
         category: &'a TokenCategory,
@@ -536,6 +579,42 @@ impl TokenDictionary {
     pub fn color_palettes(&self) -> &ColorPaletteView {
         &self.color_palettes
     }
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct TokenCssVars<'a> {
+    pub base: Vec<TokenCssVar<'a>>,
+    pub conditions: Vec<TokenCssConditionVars<'a>>,
+}
+
+impl TokenCssVars<'_> {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.base.is_empty() && self.conditions.iter().all(|group| group.vars.is_empty())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TokenCssVar<'a> {
+    pub name: &'a str,
+    pub value: &'a str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TokenCssConditionVars<'a> {
+    pub condition: &'a str,
+    pub vars: Vec<TokenCssVar<'a>>,
+}
+
+fn is_theme_condition(condition: &str) -> bool {
+    // Theme variant tokens are collected under `_theme{CapitalizedName}` in
+    // `from_config::create_token_dictionary`; native token CSS intentionally
+    // leaves `config.themes` / `staticCss.themes` emission to a later pass.
+    let first_segment = condition.split(':').next().unwrap_or(condition);
+    first_segment
+        .strip_prefix("_theme")
+        .and_then(|suffix| suffix.chars().next())
+        .is_some_and(char::is_uppercase)
 }
 
 #[derive(Debug, Clone, Default)]

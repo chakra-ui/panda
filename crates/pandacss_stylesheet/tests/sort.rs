@@ -1,8 +1,9 @@
 mod common;
 
 use insta::assert_snapshot;
+use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_css, config};
+use common::{compile_css, compile_layer_css, config};
 
 #[test]
 fn sorts_pseudo_selectors_by_cascade_priority() {
@@ -83,12 +84,12 @@ fn sorts_breakpoints_by_resolved_width() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_layer_css(
         &config,
         "import { css } from '@panda/css'; css({ lg: { color: 'red' }, sm: { color: 'red' } })",
+        &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   @media (width >= 40rem) {
     .sm\:c_red {
@@ -113,12 +114,12 @@ fn sorts_shorthands_before_longhands_within_same_condition() {
             "paddingTop": { "className": "pt" }
         }
     }));
-    let css = compile_css(
+    let css = compile_layer_css(
         &config,
         "import { css } from '@panda/css'; css({ paddingTop: '4px', padding: '8px' })",
+        &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   .p_8px {
     padding: 8px;
@@ -505,12 +506,12 @@ fn sorts_breakpoint_units_by_resolved_length() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_layer_css(
         &config,
         "import { css } from '@panda/css'; css({ widePx: { color: 'red' }, narrowRem: { color: 'red' } })",
+        &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   @media (width >= 40rem) {
     .narrowRem\:c_red {
@@ -710,6 +711,12 @@ fn coalesces_recipe_entries_with_matching_at_rule_targets() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --breakpoints-md: 48rem;
+    --sizes-breakpoint-md: 48rem;
+  }
+}
 @layer recipes {
   .button--size_sm {
     padding: 8px;
@@ -763,6 +770,12 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --breakpoints-md: 48rem;
+    --sizes-breakpoint-md: 48rem;
+  }
+}
 @layer recipes {
   .button--size_sm {
     padding: 8px;

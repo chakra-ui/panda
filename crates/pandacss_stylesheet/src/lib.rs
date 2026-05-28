@@ -3,7 +3,7 @@ mod sort;
 mod static_css;
 mod writer;
 
-use std::sync::Arc;
+use std::{ops::Range, sync::Arc};
 
 use rustc_hash::{FxHashMap, FxHashSet};
 
@@ -26,10 +26,66 @@ pub struct StylesheetOutput {
     pub css: String,
     pub source_map: Option<String>,
     pub diagnostics: Vec<Diagnostic>,
+    pub layer_ranges: StylesheetLayerRanges,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum StylesheetLayer {
+    // TODO(port): reset CSS is declared in the cascade preamble, but native
+    // reset emission is not wired through this crate yet.
+    Reset,
+    Base,
+    Tokens,
+    Recipes,
+    Utilities,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct StylesheetLayerRanges {
+    pub reset: Option<Range<usize>>,
+    pub base: Option<Range<usize>>,
+    pub tokens: Option<Range<usize>>,
+    pub recipes: Option<Range<usize>>,
+    pub utilities: Option<Range<usize>>,
+}
+
+impl StylesheetOutput {
+    #[must_use]
+    pub fn get_layer_css(&self, layers: &[StylesheetLayer]) -> String {
+        let mut out = String::new();
+        for layer in layers {
+            let Some(css) = self.layer_css(*layer) else {
+                continue;
+            };
+            out.push_str(css);
+        }
+        out
+    }
+
+    #[must_use]
+    pub fn layer_css(&self, layer: StylesheetLayer) -> Option<&str> {
+        self.layer_ranges
+            .get(layer)
+            .and_then(|range| self.css.get(range.clone()))
+    }
+}
+
+impl StylesheetLayerRanges {
+    #[must_use]
+    pub fn get(&self, layer: StylesheetLayer) -> Option<&Range<usize>> {
+        match layer {
+            StylesheetLayer::Reset => self.reset.as_ref(),
+            StylesheetLayer::Base => self.base.as_ref(),
+            StylesheetLayer::Tokens => self.tokens.as_ref(),
+            StylesheetLayer::Recipes => self.recipes.as_ref(),
+            StylesheetLayer::Utilities => self.utilities.as_ref(),
+        }
+    }
 }
 
 pub struct StylesheetInput<'a> {
     pub config: &'a UserConfig,
+    pub token_dictionary: Option<Arc<TokenDictionary>>,
     pub atoms: Vec<&'a Atom>,
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
@@ -38,7 +94,20 @@ pub struct StylesheetInput<'a> {
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
-    let utility = utility_from_config(input.config);
+    let token_dictionary = match input.token_dictionary {
+        Some(dictionary) => Some(dictionary),
+        None => match TokenDictionary::from_config(input.config) {
+            Ok(dictionary) => dictionary.map(Arc::new),
+            Err(error) => {
+                diagnostics.push(Diagnostic::error(
+                    diagnostic_codes::TOKEN_DICTIONARY_BUILD_FAILED,
+                    format!("Failed to build token dictionary: {error}"),
+                ));
+                None
+            }
+        },
+    };
+    let utility = utility_from_config(input.config, token_dictionary.clone());
     let mut atoms = input.atoms;
     let generated = if options.include_static {
         static_css::expand(input.config, &utility, &mut diagnostics)
@@ -65,20 +134,24 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         None
     };
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
-    let css = emitter::emit(input.config, &utility, atoms, recipes, options.minify);
+    let emitted = emitter::emit(
+        input.config,
+        &utility,
+        token_dictionary.as_deref(),
+        atoms,
+        recipes,
+        options.minify,
+    );
 
     StylesheetOutput {
-        css,
+        css: emitted.css,
         source_map: options.source_map.then(String::new),
         diagnostics,
+        layer_ranges: emitted.layer_ranges,
     }
 }
 
-fn utility_from_config(config: &UserConfig) -> Utility {
-    let dictionary = TokenDictionary::from_config(config)
-        .ok()
-        .flatten()
-        .map(Arc::new);
+fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictionary>>) -> Utility {
     Utility::from_config_with_options(
         &config.utilities,
         UtilityOptions {

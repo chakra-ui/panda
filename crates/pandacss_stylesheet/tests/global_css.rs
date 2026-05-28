@@ -1,8 +1,9 @@
 mod common;
 
 use insta::assert_snapshot;
+use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_css, config};
+use common::{compile_layer_css, config};
 
 #[test]
 fn emits_global_css_from_serialized_config() {
@@ -39,9 +40,8 @@ fn emits_global_css_from_serialized_config() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer base {
   html, body {
     padding: 0;
@@ -106,9 +106,8 @@ fn emits_global_css_direct_nesting_and_conditions() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer base {
   .btn {
     width: 40px;
@@ -181,9 +180,8 @@ fn emits_global_css_recursive_nesting_and_important() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer base {
   html {
     scroll-padding-top: 80px;
@@ -240,9 +238,8 @@ fn emits_global_css_at_rules() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer base {
   @media (min-width: 640px) {
     body, :root {

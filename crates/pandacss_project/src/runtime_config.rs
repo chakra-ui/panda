@@ -1,8 +1,9 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::Arc};
 
 use pandacss_config::UserConfig;
 use pandacss_extractor::ExtractorConfig;
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_tokens::TokenDictionary;
 use pandacss_utility::Utility;
 
 use crate::config;
@@ -29,5 +30,10 @@ impl Config {
     pub fn from_user_config(config: &UserConfig) -> Result<Self> {
         let _span = tracing::debug_span!("config_from_user_config").entered();
         config::compile_config(config)
+    }
+
+    #[must_use]
+    pub fn token_dictionary(&self) -> Option<Arc<TokenDictionary>> {
+        self.extractor_config.token_dictionary.clone()
     }
 }

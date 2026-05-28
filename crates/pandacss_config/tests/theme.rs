@@ -172,6 +172,23 @@ fn condition_names_are_derived_from_config() {
 }
 
 #[test]
+fn css_var_root_defaults_and_overrides() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let override_config: UserConfig = serde_json::from_value(json!({
+        "cssVarRoot": ":where(html)"
+    }))
+    .expect("override config");
+
+    assert_yaml_snapshot!(json!({
+        "default": default_config.css_var_root,
+        "override": override_config.css_var_root,
+    }), @r##"
+    default: ":where(:root, :host)"
+    override: ":where(html)"
+    "##);
+}
+
+#[test]
 fn preserves_global_css_in_serialized_config() {
     let config: UserConfig = serde_json::from_value(json!({
         "globalCss": {

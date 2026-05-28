@@ -1,8 +1,9 @@
 mod common;
 
 use insta::assert_snapshot;
+use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_css, config};
+use common::{compile_css, compile_layer_css, config};
 
 #[test]
 fn expands_static_css_utilities() {
@@ -25,9 +26,8 @@ fn expands_static_css_utilities() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   .c_blue {
     color: blue;
@@ -68,9 +68,8 @@ fn expands_static_css_responsive_breakpoints() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer utilities {
   .c_red {
     color: red;
@@ -115,9 +114,8 @@ fn expands_static_css_recipe_wildcard() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer recipes {
   .button {
     display: inline-flex;
@@ -160,9 +158,8 @@ fn expands_recipe_level_static_css() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer recipes {
   .button--size_sm {
     padding: 8px;
@@ -196,9 +193,8 @@ fn global_recipe_wildcard_overrides_recipe_level_static_css() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer recipes {
   .button--size_md {
     padding: 12px;
@@ -241,9 +237,8 @@ fn expands_static_css_recipe_conditions_and_responsive() {
             "padding": { "className": "p" }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
 @layer recipes {
   .button--size_sm {
     padding: 8px;

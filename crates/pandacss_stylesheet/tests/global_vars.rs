@@ -21,7 +21,7 @@ fn emits_global_vars_from_serialized_config() {
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
 @layer base {
-  :where(html) {
+  :where(:root, :host) {
     --random-color: red;
   }
   @property --button-color {
@@ -44,7 +44,7 @@ fn emits_global_vars_without_global_css() {
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
 @layer base {
-  :where(html) {
+  :where(:root, :host) {
     --random-color: red;
   }
 }
@@ -74,7 +74,7 @@ fn emits_global_css_before_global_vars_in_base_layer() {
   body {
     color: red;
   }
-  :where(html) {
+  :where(:root, :host) {
     --random-color: red;
   }
 }
@@ -139,5 +139,5 @@ fn minified_output_preserves_global_vars_syntax() {
             ..StylesheetOptions::default()
         },
     );
-    assert_snapshot!(css, @r"@layer reset, base, tokens, recipes, utilities;@layer base{:where(html){--random-color:red;}@property --button-color{syntax:'<color>';inherits:false;initial-value:blue;}}");
+    assert_snapshot!(css, @r"@layer reset, base, tokens, recipes, utilities;@layer base{:where(:root, :host){--random-color:red;}@property --button-color{syntax:'<color>';inherits:false;initial-value:blue;}}");
 }
