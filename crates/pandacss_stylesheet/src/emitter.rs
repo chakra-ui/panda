@@ -26,17 +26,18 @@ pub fn emit(
     minify: bool,
 ) -> EmitOutput {
     let cx = EmitContext::new(config, utility);
+    let layers = &config.layers;
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
-    writer.write_str("@layer reset, base, tokens, recipes, utilities;");
+    write_layer_order(&mut writer, layers);
     writer.newline();
     if config.preflight.enabled() {
-        layer_ranges.reset = Some(write_layer(&mut writer, "reset", |writer| {
+        layer_ranges.reset = Some(write_layer(&mut writer, &layers.reset, |writer| {
             crate::preflight::write(writer);
         }));
     }
     if has_base_layer(config) {
-        layer_ranges.base = Some(write_layer(&mut writer, "base", |writer| {
+        layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
             cx.serialize_styles(writer, &config.global_css);
             cx.serialize_global_vars(writer);
         }));
@@ -45,7 +46,7 @@ pub fn emit(
     let prepared_token_vars = token_vars.as_ref().and_then(|vars| cx.prepare_token_vars(vars));
     let keyframes = as_non_empty_object(&config.theme.keyframes);
     if prepared_token_vars.is_some() || keyframes.is_some() {
-        layer_ranges.tokens = Some(write_layer(&mut writer, "tokens", |writer| {
+        layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
             if let Some(token_vars) = prepared_token_vars.as_ref() {
                 cx.serialize_token_vars(writer, token_vars);
             }
@@ -55,7 +56,7 @@ pub fn emit(
         }));
     }
     if has_recipe_rules(recipes) {
-        layer_ranges.recipes = Some(write_layer(&mut writer, "recipes", |writer| {
+        layer_ranges.recipes = Some(write_layer(&mut writer, &layers.recipes, |writer| {
             for group in &recipes.base {
                 cx.write_recipe_group(writer, &group.class_name, &group.entries);
             }
@@ -65,7 +66,7 @@ pub fn emit(
         }));
     }
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
-        layer_ranges.utilities = Some(write_layer(&mut writer, "utilities", |writer| {
+        layer_ranges.utilities = Some(write_layer(&mut writer, &layers.utilities, |writer| {
             atoms.extend(recipes.atomic.iter());
             for atom in cx.sort.sorted_atoms(atoms) {
                 cx.write_atom(writer, atom.atom, &atom.conditions);
@@ -87,6 +88,19 @@ fn write_layer(
     writer.layer(name, write);
     let end = writer.len();
     start..end
+}
+
+/// Writes the `@layer …;` order declaration using the user-configured names
+/// from `CascadeLayers::ordered()` — single source of truth for the order.
+fn write_layer_order(writer: &mut CssWriter, layers: &pandacss_config::CascadeLayers) {
+    writer.write_str("@layer ");
+    for (index, (_, name)) in layers.ordered().into_iter().enumerate() {
+        if index > 0 {
+            writer.write_str(", ");
+        }
+        writer.write_str(name);
+    }
+    writer.write_str(";");
 }
 
 fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>> {

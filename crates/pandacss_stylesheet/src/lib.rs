@@ -94,6 +94,7 @@ pub struct StylesheetInput<'a> {
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
+    push_layer_collision_diagnostics(&input.config.layers, &mut diagnostics);
     if let Some(options) = input.config.preflight.options()
         && (options.scope.is_some() || options.level.is_some())
     {
@@ -156,6 +157,37 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         source_map: options.source_map.then(String::new),
         diagnostics,
         layer_ranges: emitted.layer_ranges,
+    }
+}
+
+/// Emits one warning per duplicate name when two or more semantic layers
+/// map to the same string (e.g. `{reset: "x", base: "x"}`). The output
+/// still emits each block under the colliding name — matches v1's
+/// permissive behavior. With only five layers a linear scan is faster
+/// (and clearer) than a HashMap.
+fn push_layer_collision_diagnostics(
+    layers: &pandacss_config::CascadeLayers,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let entries = layers.ordered();
+    for (i, (semantic_a, name)) in entries.iter().enumerate() {
+        // Only report a name once, on its first collision. Skip if any
+        // earlier slot already used the same name (handled in the prior
+        // iteration's `j` loop).
+        if entries[..i].iter().any(|(_, prior)| prior == name) {
+            continue;
+        }
+        if let Some((semantic_b, _)) = entries[i + 1..]
+            .iter()
+            .find(|(_, other)| other == name)
+        {
+            diagnostics.push(Diagnostic::warning(
+                diagnostic_codes::LAYER_NAME_COLLISION,
+                format!(
+                    "layers.{semantic_a} and layers.{semantic_b} both resolve to \"{name}\"; the cascade order becomes ambiguous"
+                ),
+            ));
+        }
     }
 }
 
