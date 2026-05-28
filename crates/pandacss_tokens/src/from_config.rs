@@ -698,49 +698,7 @@ fn add_virtual_color_palette_tokens(
     }
 }
 
-fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
-    if segments.first().copied() != Some("colors")
-        || segments.get(1).copied() == Some("colorPalette")
-        || segments.len() < 2
-    {
-        return None;
-    }
-    if segments.len() > 2 {
-        Some(&segments[1..segments.len() - 1])
-    } else {
-        Some(&segments[1..])
-    }
-    .filter(|segments| !segments.is_empty())
-}
-
-fn join_segments(segments: &[&str]) -> String {
-    let total_len = segments.iter().map(|segment| segment.len()).sum::<usize>()
-        + segments.len().saturating_sub(1);
-    let mut out = String::with_capacity(total_len);
-    for (index, segment) in segments.iter().enumerate() {
-        if index > 0 {
-            out.push('.');
-        }
-        out.push_str(segment);
-    }
-    out
-}
-
-fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
-    let suffix = &segments[(1 + root_len)..];
-    if suffix.is_empty() {
-        return "colors.colorPalette".to_owned();
-    }
-
-    let suffix_len = suffix.iter().map(|segment| segment.len()).sum::<usize>() + suffix.len();
-    let mut out = String::with_capacity("colors.colorPalette".len() + suffix_len);
-    out.push_str("colors.colorPalette");
-    for segment in suffix {
-        out.push('.');
-        out.push_str(segment);
-    }
-    out
-}
+use super::{color_palette_path_segments, join_segments, virtual_color_palette_path};
 
 fn matches_color_palette_options(path: &str, options: &ColorPaletteOptions) -> bool {
     if options

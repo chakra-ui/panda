@@ -706,27 +706,14 @@ impl TokenDictionaryBuilder {
             .color_palettes
             .unwrap_or_else(|| build_color_palette_view(&self.tokens));
 
-        // Pass 1: condition-agnostic indexes plus base-only path/var
-        // entries. Conditional-only paths are filled in by pass 2 so a
-        // dictionary with no base entry still exposes its values through
-        // `by_path` — matches Panda's "use whatever is defined" fallback.
+        // Single pass: unconditional tokens overwrite `by_path` / `by_var`;
+        // conditional tokens only fill those entries when no unconditional
+        // sibling did — matches Panda's "use whatever is defined" fallback.
         for (i, token) in self.tokens.iter().enumerate() {
             by_category
                 .entry(token.category.clone())
                 .or_default()
                 .push(i);
-            if token.condition.is_none()
-                && let Some(key) = token.path.split_once('.').map(|(_, key)| key)
-            {
-                by_category_key
-                    .entry(token.category.clone())
-                    .or_default()
-                    .insert(Arc::from(key), i);
-                category_values_cache
-                    .entry(token.category.clone())
-                    .or_default()
-                    .insert(Arc::clone(&token.path), Arc::clone(&token.value));
-            }
 
             if let Some(condition) = token.condition.as_deref() {
                 if !by_condition.contains_key(condition) {
@@ -736,7 +723,6 @@ impl TokenDictionaryBuilder {
                     .entry(Arc::from(condition))
                     .or_default()
                     .push(i);
-
                 // Capacity hint of 2 — real themes rarely exceed 3
                 // condition variants per path.
                 by_path_condition
@@ -745,7 +731,21 @@ impl TokenDictionaryBuilder {
                         FxHashMap::with_capacity_and_hasher(2, rustc_hash::FxBuildHasher)
                     })
                     .insert(Arc::from(condition), i);
+                by_path.entry(Arc::clone(&token.path)).or_insert(i);
+                if !token.var.is_empty() {
+                    by_var.entry(Arc::clone(&token.var)).or_insert(i);
+                }
             } else {
+                if let Some(key) = token.path.split_once('.').map(|(_, key)| key) {
+                    by_category_key
+                        .entry(token.category.clone())
+                        .or_default()
+                        .insert(Arc::from(key), i);
+                    category_values_cache
+                        .entry(token.category.clone())
+                        .or_default()
+                        .insert(Arc::clone(&token.path), Arc::clone(&token.value));
+                }
                 by_path.insert(Arc::clone(&token.path), i);
                 if !token.var.is_empty() {
                     by_var.insert(Arc::clone(&token.var), i);
@@ -754,16 +754,6 @@ impl TokenDictionaryBuilder {
 
             if token.deprecated {
                 deprecated_paths_cache.push(Arc::clone(&token.path));
-            }
-        }
-
-        // Pass 2: surface conditional-only tokens through `by_path` / `by_var`.
-        for (i, token) in self.tokens.iter().enumerate() {
-            if token.condition.is_some() {
-                by_path.entry(Arc::clone(&token.path)).or_insert(i);
-                if !token.var.is_empty() {
-                    by_var.entry(Arc::clone(&token.var)).or_insert(i);
-                }
             }
         }
 
@@ -831,7 +821,9 @@ fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
     ColorPaletteView { palettes }
 }
 
-fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
+pub(crate) fn color_palette_path_segments<'a>(
+    segments: &'a [&'a str],
+) -> Option<&'a [&'a str]> {
     if segments.first().copied() != Some("colors")
         || segments.get(1).copied() == Some("colorPalette")
         || segments.len() < 2
@@ -846,16 +838,22 @@ fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a s
     .filter(|segments| !segments.is_empty())
 }
 
-fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
-    let mut out = String::from("colors.colorPalette");
-    for segment in &segments[(1 + root_len)..] {
+pub(crate) fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
+    let suffix = &segments[(1 + root_len)..];
+    if suffix.is_empty() {
+        return "colors.colorPalette".to_owned();
+    }
+    let suffix_len = suffix.iter().map(|segment| segment.len()).sum::<usize>() + suffix.len();
+    let mut out = String::with_capacity("colors.colorPalette".len() + suffix_len);
+    out.push_str("colors.colorPalette");
+    for segment in suffix {
         out.push('.');
         out.push_str(segment);
     }
     out
 }
 
-fn join_segments(segments: &[&str]) -> String {
+pub(crate) fn join_segments(segments: &[&str]) -> String {
     let total_len = segments.iter().map(|segment| segment.len()).sum::<usize>()
         + segments.len().saturating_sub(1);
     let mut out = String::with_capacity(total_len);
