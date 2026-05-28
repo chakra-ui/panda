@@ -156,6 +156,13 @@ impl Utility {
             .map_or(prop, std::string::String::as_str)
     }
 
+    /// Resolves shorthand defensively before looking up the override.
+    #[must_use]
+    pub fn layer(&self, prop: &str) -> Option<&str> {
+        let prop = self.resolve_shorthand(prop);
+        self.properties.get(prop)?.layer.as_deref()
+    }
+
     #[must_use]
     pub fn callback_transform_id(&self, prop: &str) -> Option<&str> {
         let prop = self.resolve_shorthand(prop);
