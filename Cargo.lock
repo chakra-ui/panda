@@ -88,6 +88,7 @@ dependencies = [
  "pandacss_extractor",
  "pandacss_project",
  "pandacss_recipes",
+ "pandacss_shared",
  "pandacss_stylesheet",
  "pandacss_tokens",
  "pandacss_tracing",
@@ -109,6 +110,7 @@ dependencies = [
  "pandacss_fs",
  "pandacss_project",
  "pandacss_recipes",
+ "pandacss_shared",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
@@ -1042,6 +1044,7 @@ version = "0.0.0"
 dependencies = [
  "indexmap",
  "insta",
+ "pandacss_shared",
  "serde",
  "serde_json",
 ]
@@ -1140,6 +1143,7 @@ dependencies = [
  "itoa",
  "regex",
  "ryu",
+ "serde",
  "serde_json",
  "thiserror",
 ]

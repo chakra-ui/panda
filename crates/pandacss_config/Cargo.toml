@@ -9,6 +9,7 @@ publish = false
 
 [dependencies]
 indexmap = { workspace = true }
+pandacss_shared = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

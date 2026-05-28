@@ -10,9 +10,9 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use pandacss_config::UserConfig;
 use pandacss_encoder::Atom;
 use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
+use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
-use serde::Serialize;
 
 #[derive(Debug, Clone, Default)]
 pub struct StylesheetOptions {
@@ -21,25 +21,11 @@ pub struct StylesheetOptions {
     pub source_map: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StylesheetDiagnostic {
-    pub message: String,
-    pub severity: StylesheetDiagnosticSeverity,
-}
-
-#[derive(Debug, Clone, Copy, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum StylesheetDiagnosticSeverity {
-    Warning,
-    Error,
-}
-
 #[derive(Debug, Clone, Default)]
 pub struct StylesheetOutput {
     pub css: String,
     pub source_map: Option<String>,
-    pub diagnostics: Vec<StylesheetDiagnostic>,
+    pub diagnostics: Vec<Diagnostic>,
 }
 
 pub struct StylesheetInput<'a> {
@@ -66,11 +52,10 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
 
     let encoded_recipes = if options.include_static {
         if input.static_encoded_recipes.is_none() && static_css::has_static_recipes(input.config) {
-            diagnostics.push(StylesheetDiagnostic {
-                severity: StylesheetDiagnosticSeverity::Warning,
-                message: "staticCss.recipes requires a precomputed Project static recipe snapshot"
-                    .to_owned(),
-            });
+            diagnostics.push(Diagnostic::warning(
+                diagnostic_codes::STATIC_CSS_RECIPES_MISSING_SNAPSHOT,
+                "staticCss.recipes requires a precomputed Project static recipe snapshot",
+            ));
         }
         input.static_encoded_recipes.and_then(|static_recipes| {
             (!is_empty_encoded_recipes(static_recipes))

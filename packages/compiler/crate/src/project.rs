@@ -13,9 +13,12 @@ use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCac
 use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
-use pandacss_config::{CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig};
+use pandacss_config::{
+    CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, ValidationMode,
+    validate_config_value, validation_mode_from_value,
+};
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
-use pandacss_extractor::{DiagnosticSeverity, Literal};
+use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use smallvec::SmallVec;
 
 use crate::compile::{CompileManifest, CompileOutput};
@@ -111,12 +114,30 @@ impl Project {
         crate::init_tracing();
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
         let config_snapshot = config.clone();
-        let config: UserConfig = serde_json::from_value(config)
-            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let raw_diagnostics = validate_config_value(&config_snapshot);
+        if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
+            && !raw_diagnostics.is_empty()
+        {
+            return Err(napi::Error::from_reason(format_config_diagnostics(
+                &raw_diagnostics,
+            )));
+        }
+        let config: UserConfig = serde_json::from_value(config).map_err(|err| {
+            let reason = if raw_diagnostics.is_empty() {
+                format!("invalid config: {err}")
+            } else {
+                format!(
+                    "invalid config: {err}\n{}",
+                    format_config_diagnostics(&raw_diagnostics)
+                )
+            };
+            napi::Error::from_reason(reason)
+        })?;
         let callbacks = CallbackHost::from_config(&config);
         let user_config = config.clone();
-        let project = pandacss_project::Project::from_config(config)
-            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let project =
+            pandacss_project::Project::from_config_and_diagnostics(config, raw_diagnostics)
+                .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         Ok(Self {
             inner: apply_project_options(project, opts),
             config: config_snapshot,
@@ -429,22 +450,13 @@ impl Project {
                 hashes: Vec::new(),
                 tokens: Vec::new(),
             },
-            diagnostics: output
-                .diagnostics
-                .into_iter()
-                .map(|diagnostic| Diagnostic {
-                    message: diagnostic.message,
-                    severity: match diagnostic.severity {
-                        pandacss_stylesheet::StylesheetDiagnosticSeverity::Warning => {
-                            crate::DiagnosticSeverity::Warning
-                        }
-                        pandacss_stylesheet::StylesheetDiagnosticSeverity::Error => {
-                            crate::DiagnosticSeverity::Error
-                        }
-                    },
-                    span: None,
-                    location: None,
-                })
+            diagnostics: self
+                .inner
+                .diagnostics()
+                .iter()
+                .cloned()
+                .chain(output.diagnostics)
+                .map(crate::convert::convert_diagnostic)
                 .collect(),
         })
     }
@@ -776,11 +788,23 @@ fn json_value_to_literal(value: &serde_json::Value) -> Option<Literal> {
 
 fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
     pandacss_extractor::Diagnostic {
+        code: diagnostic_codes::TRANSFORM_CALLBACK_FAILED.to_owned(),
         message,
         severity: DiagnosticSeverity::Warning,
         span: None,
         location: None,
     }
+}
+
+fn format_config_diagnostics(diagnostics: &[pandacss_shared::Diagnostic]) -> String {
+    let mut message = String::from("Invalid config:");
+    for diagnostic in diagnostics {
+        message.push_str("\n- [");
+        message.push_str(&diagnostic.code);
+        message.push_str("] ");
+        message.push_str(&diagnostic.message);
+    }
+    message
 }
 
 fn capitalize(value: &str) -> String {

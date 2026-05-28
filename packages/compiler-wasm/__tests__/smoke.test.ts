@@ -873,7 +873,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
               tokens: ['@panda/tokens'],
             },
             conditions: {
-              _hover: '&:hover',
+              hover: '&:hover',
             },
             utilities: {
               space: {
@@ -966,7 +966,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
             tokens: ['@panda/tokens'],
           },
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           utilities: {
             size: {
@@ -1291,7 +1291,7 @@ describeIfBuilt('@pandacss/compiler-wasm', () => {
             tokens: ['@panda/tokens'],
           },
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           patterns: {
             stack: {

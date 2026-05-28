@@ -259,7 +259,7 @@ describe('Compiler callbacks', () => {
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           utilities: {
             space: {
@@ -344,7 +344,7 @@ describe('Compiler callbacks', () => {
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           utilities: {
             size: {
@@ -700,7 +700,7 @@ describe('Compiler callbacks', () => {
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           theme: {
             breakpoints: {
@@ -779,7 +779,7 @@ describe('Compiler callbacks', () => {
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           patterns: {
             stack: {

@@ -101,6 +101,7 @@ pub enum DiagnosticSeverity {
 
 #[napi(object)]
 pub struct Diagnostic {
+    pub code: String,
     pub message: String,
     pub severity: DiagnosticSeverity,
     /// UTF-8 byte offsets.

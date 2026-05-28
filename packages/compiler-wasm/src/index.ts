@@ -64,8 +64,9 @@ export interface ExtractedJsx {
 }
 
 export interface Diagnostic {
+  code: string
   message: string
-  severity: 'error' | 'warning'
+  severity: 'info' | 'warning' | 'error'
   span?: { start: number; end: number }
   location?: {
     start: { line: number; column: number }

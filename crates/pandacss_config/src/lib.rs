@@ -1,6 +1,7 @@
 //! Serialized configuration types consumed by the Panda Rust runtime.
 
 mod theme;
+mod validate;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -14,6 +15,7 @@ pub use theme::{
     StringOrNumber, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap, TokenEntry, TokenGroup,
     TokenNode, Tokens, VariantSelection,
 };
+pub use validate::{validate_config, validate_config_value, validation_mode_from_value};
 
 pub type Conditions = BTreeMap<String, ConditionQuery>;
 pub type PatternMap = BTreeMap<String, PatternConfig>;
@@ -67,6 +69,8 @@ pub struct UserConfig {
     pub global_position_try: Value,
     #[serde(default)]
     pub themes: ThemeVariantsMap,
+    #[serde(default)]
+    pub validation: ValidationMode,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
 }
@@ -84,6 +88,15 @@ impl UserConfig {
         names.extend(self.theme.breakpoint_names());
         names.into_iter().collect()
     }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ValidationMode {
+    None,
+    #[default]
+    Warn,
+    Error,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

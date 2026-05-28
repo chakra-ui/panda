@@ -31,6 +31,8 @@ export interface SourceRange {
 }
 
 export interface Diagnostic {
+  /** Stable machine-readable identifier. */
+  code: string
   message: string
   severity: DiagnosticSeverity
   /** UTF-8 byte offsets — useful for slicing the source. */

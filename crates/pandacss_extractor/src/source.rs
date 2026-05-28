@@ -6,22 +6,7 @@
 //! to match TypeScript / `ts-morph` — the format every Panda user already
 //! sees in their editor and `tsc` output.
 
-use serde::Serialize;
-
-/// 1-indexed line, 1-indexed UTF-16 column.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SourceLocation {
-    pub line: u32,
-    pub column: u32,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SourceRange {
-    pub start: SourceLocation,
-    pub end: SourceLocation,
-}
+use pandacss_shared::{SourceLocation, SourceRange};
 
 /// Pre-computed byte offsets of every line start. Construct once per
 /// source file; lookup is O(log lines).

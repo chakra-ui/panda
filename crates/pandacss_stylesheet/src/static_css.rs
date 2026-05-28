@@ -1,15 +1,14 @@
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, ConditionSet, Encoder};
 use pandacss_extractor::Literal;
+use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_utility::{StyleNormalizer, Utility};
 use serde_json::Value;
-
-use crate::{StylesheetDiagnostic, StylesheetDiagnosticSeverity};
 
 pub fn expand(
     config: &UserConfig,
     utility: &Utility,
-    diagnostics: &mut Vec<StylesheetDiagnostic>,
+    diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Atom> {
     diagnose_static_css_scope(config, diagnostics);
     let Some(css_rules) = config.static_css.get("css").and_then(Value::as_array) else {
@@ -57,20 +56,18 @@ pub(crate) fn has_static_recipes(config: &UserConfig) -> bool {
             .any(|recipe| !recipe.static_css.is_null())
 }
 
-fn diagnose_static_css_scope(config: &UserConfig, diagnostics: &mut Vec<StylesheetDiagnostic>) {
+fn diagnose_static_css_scope(config: &UserConfig, diagnostics: &mut Vec<Diagnostic>) {
     if config.static_css.get("patterns").is_some() {
-        diagnostics.push(StylesheetDiagnostic {
-            severity: StylesheetDiagnosticSeverity::Warning,
-            message: "staticCss.patterns is not supported by the native stylesheet compiler yet"
-                .to_owned(),
-        });
+        diagnostics.push(Diagnostic::warning(
+            diagnostic_codes::STATIC_CSS_PATTERNS_UNSUPPORTED,
+            "staticCss.patterns is not supported by the native stylesheet compiler yet",
+        ));
     }
     if config.static_css.get("themes").is_some() {
-        diagnostics.push(StylesheetDiagnostic {
-            severity: StylesheetDiagnosticSeverity::Warning,
-            message: "staticCss.themes is handled by token artifact generation, not native stylesheet compile"
-                .to_owned(),
-        });
+        diagnostics.push(Diagnostic::warning(
+            diagnostic_codes::STATIC_CSS_THEMES_UNSUPPORTED,
+            "staticCss.themes is handled by token artifact generation, not native stylesheet compile",
+        ));
     }
 }
 
@@ -79,7 +76,7 @@ fn expand_css_rule(
     config: &UserConfig,
     utility: &Utility,
     breakpoints: &[String],
-    diagnostics: &mut Vec<StylesheetDiagnostic>,
+    diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Literal> {
     let Some(properties) = rule.get("properties").unwrap_or(rule).as_object() else {
         return Vec::new();
@@ -107,10 +104,10 @@ fn expand_css_rule(
             if value == Literal::String("*".to_owned()) {
                 let keys = utility.property_keys(property);
                 if keys.is_empty() {
-                    diagnostics.push(StylesheetDiagnostic {
-                        severity: StylesheetDiagnosticSeverity::Warning,
-                        message: format!("staticCss wildcard for `{property}` has no values"),
-                    });
+                    diagnostics.push(Diagnostic::warning(
+                        diagnostic_codes::STATIC_CSS_WILDCARD_EMPTY,
+                        format!("staticCss wildcard for `{property}` has no values"),
+                    ));
                 }
                 expanded.extend(keys.into_iter().map(Literal::String));
             } else {

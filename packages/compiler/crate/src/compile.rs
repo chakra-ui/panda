@@ -1,5 +1,6 @@
 use crate::{Diagnostic, DiagnosticSeverity};
 use napi_derive::napi;
+use pandacss_shared::diagnostic_codes;
 
 #[napi(object)]
 pub struct CompileInput {
@@ -50,6 +51,7 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
             tokens: Vec::new(),
         },
         diagnostics: vec![Diagnostic {
+            code: diagnostic_codes::COMPILE_PLACEHOLDER.to_owned(),
             message: format!(
                 "compile is a placeholder; received {file_count} file(s) but no CSS was produced",
             ),

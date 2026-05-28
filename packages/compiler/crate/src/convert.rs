@@ -15,6 +15,7 @@ pub(crate) fn convert_span(span: pandacss_extractor::Span) -> Span {
 
 pub(crate) fn convert_severity(s: pandacss_extractor::DiagnosticSeverity) -> DiagnosticSeverity {
     match s {
+        pandacss_extractor::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
         pandacss_extractor::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
         pandacss_extractor::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
     }
@@ -22,6 +23,7 @@ pub(crate) fn convert_severity(s: pandacss_extractor::DiagnosticSeverity) -> Dia
 
 pub(crate) fn convert_diagnostic(d: pandacss_extractor::Diagnostic) -> Diagnostic {
     Diagnostic {
+        code: d.code,
         message: d.message,
         severity: convert_severity(d.severity),
         span: d.span.map(convert_span),

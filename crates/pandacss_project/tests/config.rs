@@ -4,7 +4,7 @@ mod common;
 
 use common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
-use insta::assert_yaml_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_project::{Project, System};
 use serde_json::json;
 
@@ -292,6 +292,44 @@ fn config_conditions_are_encoded_as_conditions() {
       conditions:
         - _supportsGrid
     "#);
+}
+
+#[test]
+fn config_validation_warnings_are_project_diagnostics() {
+    let project = create_project(json!({
+        "conditions": {
+            "pinkTheme": "[data-theme=pink]"
+        }
+    }));
+
+    assert_yaml_snapshot!(project.diagnostics(), @r#"
+    - code: config_condition_selector_invalid
+      message: "Selectors should contain the `&` character: `[data-theme=pink]`"
+      severity: warning
+      span: ~
+      location: ~
+    "#);
+}
+
+#[test]
+fn config_validation_error_fails_project_construction() {
+    let result = pandacss_project::Project::from_config(
+        serde_json::from_value(json!({
+            "validation": "error",
+            "conditions": {
+                "pinkTheme": "[data-theme=pink]"
+            }
+        }))
+        .expect("valid typed config"),
+    );
+
+    let Err(error) = result else {
+        panic!("expected validation error");
+    };
+    assert_snapshot!(error.to_string(), @r"
+Config error: Invalid config:
+- [config_condition_selector_invalid] Selectors should contain the `&` character: `[data-theme=pink]`
+");
 }
 
 #[test]

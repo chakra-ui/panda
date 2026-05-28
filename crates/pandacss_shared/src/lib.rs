@@ -3,12 +3,16 @@
 //! This crate intentionally stays at the bottom of the dependency graph:
 //! no dependencies on other Panda crates.
 
+pub mod diagnostic;
 pub mod error;
 pub mod hash;
 pub mod important;
 pub mod regex;
 pub mod strings;
 
+pub use diagnostic::{
+    Diagnostic, DiagnosticSeverity, SourceLocation, SourceRange, Span, codes as diagnostic_codes,
+};
 pub use error::{PandaError, PandaResult};
 pub use hash::to_hash;
 pub use important::{is_important, split_important, without_important};

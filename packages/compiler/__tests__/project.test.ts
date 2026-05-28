@@ -62,6 +62,24 @@ describe('Compiler', () => {
     `)
   })
 
+  it('includes config validation diagnostics in compile output', () => {
+    const compiler = createProject({
+      conditions: {
+        pinkTheme: '[data-theme=pink]',
+      },
+    })
+
+    expect(compiler.compile().diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "code": "config_condition_selector_invalid",
+          "message": "Selectors should contain the \`&\` character: \`[data-theme=pink]\`",
+          "severity": "warning",
+        },
+      ]
+    `)
+  })
+
   it('constructs from a serialized config snapshot', () => {
     const compiler = createCompiler(
       {
@@ -138,7 +156,7 @@ describe('Compiler', () => {
         outdir: 'styled-system',
         importMap,
         conditions: {
-          _hover: '&:hover',
+          hover: '&:hover',
         },
         theme: {
           breakpoints: {

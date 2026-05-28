@@ -77,6 +77,7 @@ pub struct Project {
     inline_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
     inline_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     inline_slot_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    config_diagnostics: Vec<Diagnostic>,
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
@@ -125,12 +126,14 @@ impl Project {
             inline_slot_recipes: BTreeMap::new(),
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
+            config_diagnostics: Vec::new(),
         }
     }
 
     #[must_use]
     pub fn from_system(system: System) -> Self {
         let config = system.config_arc();
+        let config_diagnostics = system.diagnostics().to_vec();
         let config_recipes = config.config_recipes.clone();
         let config_slot_recipes = config.config_slot_recipes.clone();
         Self {
@@ -145,11 +148,22 @@ impl Project {
             inline_slot_recipes: BTreeMap::new(),
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
+            config_diagnostics,
         }
     }
 
     pub fn from_config(config: UserConfig) -> Result<Self> {
         Ok(Self::from_system(System::new(config)?))
+    }
+
+    pub fn from_config_and_diagnostics(
+        config: UserConfig,
+        diagnostics: Vec<Diagnostic>,
+    ) -> Result<Self> {
+        Ok(Self::from_system(System::from_config_and_diagnostics(
+            config,
+            diagnostics,
+        )?))
     }
 
     #[must_use]
@@ -582,6 +596,11 @@ impl Project {
             &self.config.breakpoints,
         );
         encoded.snapshot()
+    }
+
+    #[must_use]
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.config_diagnostics
     }
 
     #[must_use]

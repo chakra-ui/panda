@@ -7,7 +7,7 @@
 
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{CrossFileResolver, ExtractorConfig};
-use pandacss_extractor::{DiagnosticSeverity, Literal};
+use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use serde::Serialize as _;
 use std::collections::HashMap;
 use wasm_bindgen::JsCast;
@@ -16,7 +16,10 @@ use wasm_bindgen::prelude::*;
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
 use crate::fs::WasmFileSystem;
 use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
-use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig, UtilityConfig};
+use pandacss_config::{
+    CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, ValidationMode, validate_config_value,
+    validation_mode_from_value,
+};
 use smallvec::SmallVec;
 
 /// JS-facing project handle. Constructed once per session with a
@@ -103,8 +106,17 @@ impl WasmProject {
 
         let (config_snapshot, callbacks) = if let Some(config_value) = opts.config {
             let config_snapshot = config_value.clone();
-            let config: UserConfig = serde_json::from_value(config_value)
-                .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+            let raw_diagnostics = validate_config_value(&config_snapshot);
+            if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
+                && !raw_diagnostics.is_empty()
+            {
+                return Err(JsValue::from_str(&format_config_diagnostics(
+                    &raw_diagnostics,
+                )));
+            }
+            let config: UserConfig = serde_json::from_value(config_value).map_err(|err| {
+                JsValue::from_str(&format_deserialize_error(err, &raw_diagnostics))
+            })?;
             (config_snapshot, CallbackHost::from_config(&config))
         } else {
             (serde_json::Value::Null, CallbackHost::empty())
@@ -135,11 +147,20 @@ impl WasmProject {
         let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
         let config_snapshot = config_value.clone();
+        let raw_diagnostics = validate_config_value(&config_snapshot);
+        if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
+            && !raw_diagnostics.is_empty()
+        {
+            return Err(JsValue::from_str(&format_config_diagnostics(
+                &raw_diagnostics,
+            )));
+        }
         let config: UserConfig = serde_json::from_value(config_value)
-            .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+            .map_err(|err| JsValue::from_str(&format_deserialize_error(err, &raw_diagnostics)))?;
         let callbacks = CallbackHost::from_config(&config);
-        let project = pandacss_project::Project::from_config(config)
-            .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        let project =
+            pandacss_project::Project::from_config_and_diagnostics(config, raw_diagnostics)
+                .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
@@ -713,11 +734,37 @@ fn json_value_to_literal(value: &serde_json::Value) -> Option<Literal> {
 
 fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
     pandacss_extractor::Diagnostic {
+        code: diagnostic_codes::TRANSFORM_CALLBACK_FAILED.to_owned(),
         message,
         severity: DiagnosticSeverity::Warning,
         span: None,
         location: None,
     }
+}
+
+fn format_deserialize_error(
+    error: serde_json::Error,
+    diagnostics: &[pandacss_shared::Diagnostic],
+) -> String {
+    if diagnostics.is_empty() {
+        format!("invalid config: {error}")
+    } else {
+        format!(
+            "invalid config: {error}\n{}",
+            format_config_diagnostics(diagnostics)
+        )
+    }
+}
+
+fn format_config_diagnostics(diagnostics: &[pandacss_shared::Diagnostic]) -> String {
+    let mut message = String::from("Invalid config:");
+    for diagnostic in diagnostics {
+        message.push_str("\n- [");
+        message.push_str(&diagnostic.code);
+        message.push_str("] ");
+        message.push_str(&diagnostic.message);
+    }
+    message
 }
 
 fn js_error_message(value: &JsValue) -> String {
