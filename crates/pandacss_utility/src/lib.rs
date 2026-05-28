@@ -168,6 +168,16 @@ impl Utility {
         self.properties.get(prop)?.layer.as_deref()
     }
 
+    pub fn register_property(&mut self, name: String, property: UtilityProperty) {
+        self.properties.insert(name, property);
+    }
+
+    pub fn register_compositions(&mut self, theme: &pandacss_config::Theme) {
+        register_composition_group(self, "textStyle", &theme.text_styles);
+        register_composition_group(self, "layerStyle", &theme.layer_styles);
+        register_composition_group(self, "animationStyle", &theme.animation_styles);
+    }
+
     #[must_use]
     pub fn callback_transform_id(&self, prop: &str) -> Option<&str> {
         let prop = self.resolve_shorthand(prop);
@@ -276,7 +286,15 @@ impl Utility {
                 None
             }
         };
-        mapped.map_or(Cow::Borrowed(value), |mapped| Cow::Owned(mapped.clone()))
+        // Only substitute scalar → scalar mappings here. Object/Array/Conditional
+        // mappings (e.g. composition utilities) keep the original lookup key on
+        // the atom; the substitution happens at emit time in `default_style`.
+        match mapped {
+            Some(Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null) => {
+                Cow::Owned(mapped.expect("matched scalar").clone())
+            }
+            _ => Cow::Borrowed(value),
+        }
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
@@ -299,6 +317,15 @@ impl Utility {
     }
 
     fn default_style(&self, prop: &str, value: &Literal) -> Literal {
+        // Composition-style values (Object/Array/Conditional from a values
+        // map) are already the final style shape — pass through with token
+        // refs expanded, no extra `prop: value` wrap.
+        if matches!(
+            value,
+            Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_)
+        ) {
+            return self.expand_styles_tree(value);
+        }
         let value = if prop.starts_with("--") {
             if let Literal::String(value) = value
                 && let Some(tokens) = &self.tokens
@@ -312,6 +339,25 @@ impl Utility {
             value.clone()
         };
         Literal::Object(vec![(prop.to_owned(), value)])
+    }
+
+    fn expand_styles_tree(&self, value: &Literal) -> Literal {
+        match value {
+            Literal::Object(entries) => Literal::Object(
+                entries
+                    .iter()
+                    .map(|(k, v)| (k.clone(), self.expand_styles_tree(v)))
+                    .collect(),
+            ),
+            Literal::Array(items) => {
+                Literal::Array(items.iter().map(|v| self.expand_styles_tree(v)).collect())
+            }
+            Literal::Conditional(branches) => Literal::Conditional(
+                branches.iter().map(|v| self.expand_styles_tree(v)).collect(),
+            ),
+            Literal::String(s) => Literal::String(self.expand_reference_in_value(s)),
+            Literal::Number(_) | Literal::Bool(_) | Literal::Null => value.clone(),
+        }
     }
 
     fn expand_reference_in_value(&self, value: &str) -> String {
@@ -446,6 +492,77 @@ impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
 
     fn array_condition(&self, index: usize) -> Option<&str> {
         self.breakpoints.get(index).map(String::as_str)
+    }
+}
+
+const COMPOSITIONS_LAYER: &str = "compositions";
+
+fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &Value) {
+    let Value::Object(root) = source else {
+        return;
+    };
+    let mut values: FxHashMap<String, Literal> = FxHashMap::default();
+    walk_composition_tree(root, String::new(), &mut values);
+    if values.is_empty() {
+        return;
+    }
+    utility.register_property(
+        prop_name.to_owned(),
+        UtilityProperty {
+            class_name: Some(prop_name.to_owned()),
+            layer: Some(COMPOSITIONS_LAYER.to_owned()),
+            values,
+            values_category: None,
+            transform_callback_id: None,
+        },
+    );
+}
+
+fn walk_composition_tree(
+    node: &serde_json::Map<String, Value>,
+    prefix: String,
+    out: &mut FxHashMap<String, Literal>,
+) {
+    for (key, value) in node {
+        let path = if prefix.is_empty() {
+            key.clone()
+        } else {
+            format!("{prefix}.{key}")
+        };
+        match value {
+            Value::Object(entries) => {
+                if let Some(styles) = entries.get("value") {
+                    if let Some(literal) = value_to_literal(styles) {
+                        out.insert(path, literal);
+                    }
+                } else {
+                    walk_composition_tree(entries, path, out);
+                }
+            }
+            _ => {
+                if let Some(literal) = value_to_literal(value) {
+                    out.insert(path, literal);
+                }
+            }
+        }
+    }
+}
+
+fn value_to_literal(value: &Value) -> Option<Literal> {
+    match value {
+        Value::String(s) => Some(Literal::String(s.clone())),
+        Value::Number(n) => n.as_f64().map(Literal::Number),
+        Value::Bool(b) => Some(Literal::Bool(*b)),
+        Value::Null => Some(Literal::Null),
+        Value::Array(items) => Some(Literal::Array(
+            items.iter().filter_map(value_to_literal).collect(),
+        )),
+        Value::Object(entries) => Some(Literal::Object(
+            entries
+                .iter()
+                .filter_map(|(k, v)| Some((k.clone(), value_to_literal(v)?)))
+                .collect(),
+        )),
     }
 }
 
