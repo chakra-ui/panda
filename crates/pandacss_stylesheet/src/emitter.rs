@@ -30,6 +30,11 @@ pub fn emit(
     let mut layer_ranges = StylesheetLayerRanges::default();
     writer.write_str("@layer reset, base, tokens, recipes, utilities;");
     writer.newline();
+    if config.preflight.enabled() {
+        layer_ranges.reset = Some(write_layer(&mut writer, "reset", |writer| {
+            crate::preflight::write(writer);
+        }));
+    }
     if has_base_layer(config) {
         layer_ranges.base = Some(write_layer(&mut writer, "base", |writer| {
             cx.serialize_styles(writer, &config.global_css);

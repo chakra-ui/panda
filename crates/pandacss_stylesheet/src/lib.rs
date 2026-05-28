@@ -1,4 +1,5 @@
 mod emitter;
+mod preflight;
 mod sort;
 mod static_css;
 mod writer;
@@ -93,6 +94,14 @@ pub struct StylesheetInput<'a> {
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
+    if let Some(options) = input.config.preflight.options()
+        && (options.scope.is_some() || options.level.is_some())
+    {
+        diagnostics.push(Diagnostic::warning(
+            diagnostic_codes::PREFLIGHT_OPTIONS_UNSUPPORTED,
+            "preflight.scope and preflight.level are not yet supported by the native compiler — emitting the default preflight",
+        ));
+    }
     let token_dictionary = match input.token_dictionary {
         Some(dictionary) => Some(dictionary),
         None => match TokenDictionary::from_config(input.config) {
