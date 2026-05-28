@@ -9,7 +9,7 @@ use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{CrossFileResolver, ExtractorConfig};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use serde::Serialize as _;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
@@ -410,12 +410,317 @@ impl WasmProject {
         s.serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
+
+    /// Config validation diagnostics from construction.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    pub fn diagnostics(&self) -> Result<JsValue, JsValue> {
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        self.inner
+            .diagnostics()
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// `(path, hex source_hash)` for every known file, sorted by path.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    #[wasm_bindgen(js_name = fileManifest)]
+    pub fn file_manifest(&self) -> Result<JsValue, JsValue> {
+        let entries: Vec<CompileFileManifestSerde> = self
+            .inner
+            .file_manifest()
+            .into_iter()
+            .map(|(path, hash)| CompileFileManifestSerde {
+                path: path.as_ref().to_owned(),
+                hash: format!("{hash:016x}"),
+            })
+            .collect();
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        entries
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Per-file view; returns `null` when `path` isn't known.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    #[wasm_bindgen(js_name = getFile)]
+    pub fn get_file(&self, path: &str) -> Result<JsValue, JsValue> {
+        let Some(file) = self.inner.get_file(path) else {
+            return Ok(JsValue::NULL);
+        };
+        let view = ParsedFileViewSerde {
+            path: file.path().to_owned(),
+            atoms: collect_sorted_atoms(file.atoms()),
+            diagnostics: file.diagnostics().to_vec(),
+            recipes: file
+                .recipes()
+                .map(|(span_start, recipe)| RecipeEntrySerde {
+                    file: file.path().to_owned(),
+                    span_start,
+                    recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
+                })
+                .collect(),
+            slot_recipes: file
+                .slot_recipes()
+                .map(|(span_start, recipe)| RecipeEntrySerde {
+                    file: file.path().to_owned(),
+                    span_start,
+                    recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
+                })
+                .collect(),
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        view.serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// `staticCss.patterns` expansion as raw atoms, without compiling.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    #[wasm_bindgen(js_name = staticPatternAtoms)]
+    pub fn static_pattern_atoms(&mut self) -> Result<JsValue, JsValue> {
+        let (atoms, diagnostics) = self.collect_static_pattern_atoms();
+        let result = StaticPatternResultSerde {
+            atoms: slice_to_atom_serde(&atoms),
+            diagnostics,
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Compile to CSS. Mirrors the NAPI `Project.compile()`.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails, or if the configured
+    /// user-config can't be reconstructed from the snapshot.
+    pub fn compile(&mut self) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("css_compile", method = "wasm_project_compile").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms();
+        let user_config: pandacss_config::UserConfig =
+            serde_json::from_value(self.config.clone())
+                .map_err(|err| JsValue::from_str(&format!("invalid config snapshot: {err}")))?;
+        let output = build_compile_output(
+            &mut self.inner,
+            &user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+        );
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        output
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    fn collect_static_pattern_atoms(
+        &mut self,
+    ) -> (Vec<CoreAtom>, Vec<pandacss_extractor::Diagnostic>) {
+        let WasmProject {
+            inner,
+            config,
+            callbacks,
+        } = self;
+        let Ok(user_config) =
+            serde_json::from_value::<pandacss_config::UserConfig>(config.clone())
+        else {
+            return (Vec::new(), Vec::new());
+        };
+        if callbacks.has_pattern_transforms() {
+            let pattern_cache = &mut callbacks.transform_cache.pattern;
+            let mut transform = |name: &str, styles: &Literal| {
+                apply_pattern_transform(
+                    name,
+                    styles,
+                    &callbacks.pattern_transform_refs,
+                    &callbacks.pattern_transforms,
+                    pattern_cache,
+                )
+            };
+            inner.static_pattern_atoms(
+                &user_config,
+                Some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            )
+        } else {
+            inner.static_pattern_atoms(&user_config, None)
+        }
+    }
 }
 
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 struct ProjectOptionsInput {
     config: Option<serde_json::Value>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileOutputSerde {
+    css: String,
+    source_map: Option<String>,
+    manifest: CompileManifestSerde,
+    layer_ranges: CompileLayerRangesSerde,
+    diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileManifestSerde {
+    files: Vec<CompileFileManifestSerde>,
+    tokens: Vec<String>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileFileManifestSerde {
+    path: String,
+    hash: String,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileLayerRangesSerde {
+    reset: Option<CompileLayerRangeSerde>,
+    base: Option<CompileLayerRangeSerde>,
+    tokens: Option<CompileLayerRangeSerde>,
+    recipes: Option<CompileLayerRangeSerde>,
+    utilities: Option<CompileLayerRangeSerde>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileLayerRangeSerde {
+    start: u32,
+    end: u32,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ParsedFileViewSerde {
+    path: String,
+    atoms: Vec<AtomSerde>,
+    diagnostics: Vec<pandacss_shared::Diagnostic>,
+    recipes: Vec<RecipeEntrySerde>,
+    slot_recipes: Vec<RecipeEntrySerde>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StaticPatternResultSerde {
+    atoms: Vec<AtomSerde>,
+    diagnostics: Vec<pandacss_extractor::Diagnostic>,
+}
+
+fn build_compile_output(
+    project: &mut pandacss_project::Project,
+    user_config: &pandacss_config::UserConfig,
+    static_pattern_atoms: &[CoreAtom],
+    static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+) -> CompileOutputSerde {
+    let token_dictionary = project.config().token_dictionary();
+    let manifest_files: Vec<CompileFileManifestSerde> = project
+        .file_manifest()
+        .into_iter()
+        .map(|(path, hash)| CompileFileManifestSerde {
+            path: path.as_ref().to_owned(),
+            hash: format!("{hash:016x}"),
+        })
+        .collect();
+    let manifest_tokens: Vec<String> = token_dictionary.as_ref().map_or_else(Vec::new, |dict| {
+        let mut paths: BTreeSet<String> = BTreeSet::new();
+        for token in dict.iter() {
+            paths.insert(token.path.to_string());
+        }
+        paths.into_iter().collect()
+    });
+    let snapshots = project.stylesheet_snapshots(user_config);
+    let options = pandacss_stylesheet::StylesheetOptions {
+        minify: user_config
+            .extra
+            .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false),
+        include_static: true,
+        source_map: false,
+    };
+    let output = pandacss_stylesheet::compile(
+        pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+        },
+        &options,
+    );
+    let diagnostics: Vec<pandacss_shared::Diagnostic> = project
+        .diagnostics()
+        .iter()
+        .cloned()
+        .chain(static_pattern_diagnostics)
+        .chain(output.diagnostics)
+        .collect();
+    CompileOutputSerde {
+        css: output.css,
+        source_map: output.source_map,
+        manifest: CompileManifestSerde {
+            files: manifest_files,
+            tokens: manifest_tokens,
+        },
+        layer_ranges: layer_ranges_from(&output.layer_ranges),
+        diagnostics,
+    }
+}
+
+fn layer_ranges_from(r: &pandacss_stylesheet::StylesheetLayerRanges) -> CompileLayerRangesSerde {
+    CompileLayerRangesSerde {
+        reset: r.reset.as_ref().map(to_serde_range),
+        base: r.base.as_ref().map(to_serde_range),
+        tokens: r.tokens.as_ref().map(to_serde_range),
+        recipes: r.recipes.as_ref().map(to_serde_range),
+        utilities: r.utilities.as_ref().map(to_serde_range),
+    }
+}
+
+fn to_serde_range(range: &std::ops::Range<usize>) -> CompileLayerRangeSerde {
+    CompileLayerRangeSerde {
+        start: u32::try_from(range.start).unwrap_or(u32::MAX),
+        end: u32::try_from(range.end).unwrap_or(u32::MAX),
+    }
+}
+
+fn slice_to_atom_serde(atoms: &[CoreAtom]) -> Vec<AtomSerde> {
+    let mut sorted: Vec<&CoreAtom> = atoms.iter().collect();
+    sorted.sort_by(|a, b| {
+        a.prop()
+            .cmp(b.prop())
+            .then_with(|| {
+                let a_conds: Vec<&str> = a.conditions().iter().map(AsRef::as_ref).collect();
+                let b_conds: Vec<&str> = b.conditions().iter().map(AsRef::as_ref).collect();
+                a_conds.cmp(&b_conds)
+            })
+            .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
+    });
+    sorted
+        .into_iter()
+        .map(|atom| AtomSerde {
+            prop: atom.prop().to_string(),
+            value: atom_value_to_json(atom.value()),
+            conditions: atom
+                .conditions()
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect::<Vec<String>>(),
+        })
+        .collect()
 }
 
 #[derive(Clone, serde::Serialize)]

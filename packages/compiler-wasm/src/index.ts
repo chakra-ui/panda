@@ -11,6 +11,7 @@
  */
 
 import type {
+  Diagnostic,
   WasmExtractor as WasmExtractorClass,
   WasmFileSystem as WasmFileSystemClass,
   WasmProject as WasmProjectClass,
@@ -24,11 +25,19 @@ export type { PatternHelpers } from './callbacks'
 
 export type {
   Atom,
+  CompileFileManifest,
+  CompileLayerRange,
+  CompileLayerRanges,
+  CompileManifest,
+  CompileOutput,
+  Diagnostic,
   ParseFileReport,
+  ParsedFileView,
   MatcherInput,
   MatchersInput,
   ProjectSummary,
   RecipeEntry,
+  StaticPatternResult,
   TokenDictionaryInput,
   WasmConfigSnapshot,
   WasmProjectCallbacks,
@@ -61,17 +70,6 @@ export interface ExtractedJsx {
   alias: string
   data: unknown
   span: { start: number; end: number }
-}
-
-export interface Diagnostic {
-  code: string
-  message: string
-  severity: 'info' | 'warning' | 'error'
-  span?: { start: number; end: number }
-  location?: {
-    start: { line: number; column: number }
-    end: { line: number; column: number }
-  }
 }
 
 export interface ExtractResult {

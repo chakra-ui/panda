@@ -20,6 +20,8 @@ pandacss_fs = { workspace = true, features = ["memory"] }
 pandacss_project = { workspace = true }
 pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
+pandacss_stylesheet = { workspace = true }
+pandacss_tokens = { workspace = true }
 serde = { workspace = true }
 serde-wasm-bindgen = "0.6"
 serde_json = { workspace = true }

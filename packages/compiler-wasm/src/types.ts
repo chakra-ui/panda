@@ -128,6 +128,61 @@ export interface WasmProjectOptions {
   callbacks?: WasmProjectCallbacks
 }
 
+export interface Diagnostic {
+  code: string
+  message: string
+  severity: 'info' | 'warning' | 'error'
+  span?: { start: number; end: number }
+  location?: {
+    start: { line: number; column: number }
+    end: { line: number; column: number }
+  }
+}
+
+export interface CompileFileManifest {
+  path: string
+  hash: string
+}
+
+export interface CompileManifest {
+  files: CompileFileManifest[]
+  tokens: string[]
+}
+
+export interface CompileLayerRange {
+  start: number
+  end: number
+}
+
+export interface CompileLayerRanges {
+  reset?: CompileLayerRange
+  base?: CompileLayerRange
+  tokens?: CompileLayerRange
+  recipes?: CompileLayerRange
+  utilities?: CompileLayerRange
+}
+
+export interface CompileOutput {
+  css: string
+  sourceMap?: string
+  manifest: CompileManifest
+  layerRanges: CompileLayerRanges
+  diagnostics: Diagnostic[]
+}
+
+export interface ParsedFileView {
+  path: string
+  atoms: Atom[]
+  diagnostics: Diagnostic[]
+  recipes: RecipeEntry[]
+  slotRecipes: RecipeEntry[]
+}
+
+export interface StaticPatternResult {
+  atoms: Atom[]
+  diagnostics: Diagnostic[]
+}
+
 /** Stateful project handle over a `WasmFileSystem`. Cross-file
  *  resolution always shares the same FS — `import { x } from './tokens'`
  *  references resolve through whatever the JS host has populated. */
@@ -148,4 +203,10 @@ export declare class WasmProject {
   slotRecipes(): RecipeEntry[]
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
+  compile(): CompileOutput
+  diagnostics(): Diagnostic[]
+  fileManifest(): CompileFileManifest[]
+  /** Per-file view, or `null` when `path` isn't known. */
+  getFile(path: string): ParsedFileView | null
+  staticPatternAtoms(): StaticPatternResult
 }
