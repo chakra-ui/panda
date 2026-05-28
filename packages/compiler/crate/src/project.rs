@@ -7,6 +7,7 @@
 
 use napi_derive::napi;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::Diagnostic;
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
@@ -14,14 +15,15 @@ use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
 use pandacss_config::{
-    CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, ValidationMode,
-    validate_config_value, validation_mode_from_value,
+    CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
+    ValidationMode, validate_config_value, validation_mode_from_value,
 };
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use smallvec::SmallVec;
 
 use crate::compile::{CompileFileManifest, CompileOutput};
+use crate::matcher::{TokenDictionary, from_core_token_dictionary};
 
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
@@ -123,8 +125,12 @@ impl Project {
         reason = "NAPI requires owned constructor arguments"
     )]
     pub fn from_config(
+        env: Env,
         config: serde_json::Value,
         options: Option<ProjectOptions>,
+        utility_values_callbacks: Option<
+            HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+        >,
     ) -> napi::Result<Self> {
         crate::init_tracing();
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
@@ -137,7 +143,7 @@ impl Project {
                 &raw_diagnostics,
             )));
         }
-        let config: UserConfig = serde_json::from_value(config).map_err(|err| {
+        let mut config: UserConfig = serde_json::from_value(config).map_err(|err| {
             let reason = if raw_diagnostics.is_empty() {
                 format!("invalid config: {err}")
             } else {
@@ -148,11 +154,26 @@ impl Project {
             };
             napi::Error::from_reason(reason)
         })?;
+        let token_dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
+            .map_err(|err| napi::Error::from_reason(format!("invalid token config: {err}")))?
+            .map(Arc::new);
+        resolve_utility_values_callbacks(
+            &mut config,
+            token_dictionary.as_deref(),
+            utility_values_callbacks.as_ref(),
+            &env,
+        )?;
         let callbacks = CallbackHost::from_config(&config);
         let user_config = config.clone();
-        let project =
-            pandacss_project::Project::from_config_and_diagnostics(config, raw_diagnostics)
-                .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let config_snapshot =
+            serde_json::to_value(&config).unwrap_or_else(|_| config_snapshot.clone());
+        let system = pandacss_project::System::new(pandacss_project::SystemInput {
+            config,
+            diagnostics: Some(raw_diagnostics),
+            token_dictionary,
+        })
+        .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let project = pandacss_project::Project::new(system);
         Ok(Self {
             inner: apply_project_options(project, opts),
             config: config_snapshot,
@@ -167,6 +188,17 @@ impl Project {
     #[must_use]
     pub fn config(&self) -> serde_json::Value {
         self.config.clone()
+    }
+
+    /// Rust-built token dictionary projected into the small JS interop shape.
+    #[napi(js_name = tokenDictionary)]
+    #[must_use]
+    pub fn token_dictionary(&self) -> Option<TokenDictionary> {
+        self.inner
+            .config()
+            .token_dictionary()
+            .as_deref()
+            .map(from_core_token_dictionary)
     }
 
     /// Register a JS-backed utility transform callback. The config snapshot
@@ -533,7 +565,10 @@ impl Project {
     fn collect_static_pattern_atoms(
         &mut self,
         env: Env,
-    ) -> (Vec<pandacss_encoder::Atom>, Vec<pandacss_extractor::Diagnostic>) {
+    ) -> (
+        Vec<pandacss_encoder::Atom>,
+        Vec<pandacss_extractor::Diagnostic>,
+    ) {
         let Project {
             inner,
             user_config,
@@ -631,6 +666,65 @@ fn apply_project_options(
         project = project.with_cross_file(pandacss_extractor::CrossFileResolver::new());
     }
     project
+}
+
+fn resolve_utility_values_callbacks(
+    config: &mut UserConfig,
+    token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
+    callbacks: Option<
+        &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    >,
+    env: &Env,
+) -> napi::Result<()> {
+    let Some(callbacks) = callbacks else {
+        return Ok(());
+    };
+    if callbacks.is_empty() {
+        return Ok(());
+    }
+
+    let token_dictionary = token_dictionary.map(from_core_token_dictionary);
+    for (prop, utility) in &mut config.utilities {
+        let Some(id) = utility_values_callback_id(utility).map(str::to_owned) else {
+            continue;
+        };
+        let Some(callback) = callbacks.get(&id) else {
+            continue;
+        };
+        let token_dictionary_json =
+            serde_json::to_value(&token_dictionary).unwrap_or(serde_json::Value::Null);
+        let result = callback
+            .borrow_back(env)
+            .map_err(|err| {
+                napi::Error::from_reason(format!(
+                    "Failed to borrow utility values callback `{id}` for `{prop}`: {err}"
+                ))
+            })?
+            .call(FnArgs::from((token_dictionary_json,)))
+            .map_err(|err| {
+                napi::Error::from_reason(format!(
+                    "Utility values callback `{id}` for `{prop}` threw: {}",
+                    err.reason
+                ))
+            })?;
+        utility.values = Some(serde_json::from_value(result).map_err(|err| {
+            napi::Error::from_reason(format!(
+                "Utility values callback `{id}` for `{prop}` returned invalid values: {err}"
+            ))
+        })?);
+    }
+    Ok(())
+}
+
+fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
+    let UtilityValues::Map(values) = utility.values.as_ref()? else {
+        return None;
+    };
+    let kind = values.get("kind")?.as_str()?;
+    if kind != "js-callback" {
+        return None;
+    }
+    values.get("id")?.as_str()
 }
 
 fn apply_utility_transform(

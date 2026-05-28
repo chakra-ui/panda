@@ -1,5 +1,5 @@
 import { loadNativeBinding } from './load-binary'
-import { assertProjectCallbacks, registerCallbacks, resolveUtilityValueCallbacks } from './callbacks'
+import { assertProjectCallbacks, registerCallbacks } from './callbacks'
 export type { ColorMixResult, PatternHelpers, RawToken, TransformArgs } from './callbacks'
 
 // --- compile (placeholder) ---
@@ -130,7 +130,8 @@ export interface Matchers {
   tokens: Matcher
   /** Resolved Panda token dictionary. When present, `token('path')` and
    *  `token.var('path')` calls fold to their dictionary value during
-   *  extraction. Omit to disable token resolution. */
+   *  extraction. This is an interop projection for matcher-only APIs;
+   *  config-based compiler construction builds the dictionary in Rust. */
   tokenDictionary?: TokenDictionary
   /** JSX factory names that accept member-chain tags (`<styled.div>`).
    *  Omit to use the built-in default `["styled"]`; provide an array to
@@ -141,8 +142,8 @@ export interface Matchers {
 /** Two parallel `path → string` maps backing `token()` resolution.
  *  - `values['colors.red.500']` → raw value, e.g. `'#ef4444'`
  *  - `vars['colors.red.500']` → CSS-var form, e.g. `'var(--colors-red-500)'`
- *  The Panda token-dictionary build pipeline lives on the JS side; the
- *  Rust extractor consumes the resolved maps. */
+ *  This is the JS interop projection of the Rust token dictionary, also
+ *  accepted by matcher-only APIs that do not receive a Panda config. */
 export interface TokenDictionary {
   values: Record<string, string>
   vars: Record<string, string>
@@ -310,10 +311,6 @@ export interface ProjectSummary {
  *  and `import { x } from './tokens'` references fold. */
 export interface CompilerOptions {
   crossFile?: boolean
-  /** Optional JS-side token helpers for callback execution. The Rust
-   *  project builds its own dictionary from `UserConfig`; this only
-   *  feeds JS `utility.values` / `utility.transform` callbacks. */
-  tokenDictionary?: TokenDictionary
   callbacks?: ProjectCallbacks
 }
 
@@ -344,6 +341,7 @@ export interface ConfigSnapshot {
  *  parity testing), use `Extractor` instead. */
 export interface ProjectInstance {
   config(): UserConfig | null
+  tokenDictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   extract(source: string, path: string): ExtractResult
@@ -369,7 +367,11 @@ export interface ProjectInstance {
 }
 
 export interface ProjectConstructor {
-  fromConfig(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): ProjectInstance
+  fromConfig(
+    config: UserConfig | ConfigSnapshot,
+    options?: CompilerOptions,
+    utilityValuesCallbacks?: Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown>,
+  ): ProjectInstance
 }
 
 export interface NativeBinding {
@@ -408,6 +410,9 @@ class FallbackProject implements ProjectInstance {
   }
   config() {
     return null
+  }
+  tokenDictionary() {
+    return undefined
   }
   extract() {
     return { calls: [], jsx: [], diagnostics: [] }
@@ -556,14 +561,13 @@ export interface Compiler {
 export function createCompiler(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): Compiler {
   const { config: resolved, callbacks } = normalizeProjectConfigInput(config, options)
   const nativeOptions = stripProjectCallbacks(options)
-  const tokenDictionary = options?.tokenDictionary
+  const utilityValuesCallbacks = createUtilityValuesCallbacks(callbacks)
   assertProjectCallbacks(resolved, callbacks)
-  const resolvedConfig = resolveUtilityValueCallbacks(resolved, callbacks, tokenDictionary)
   if (!nativeProjectFromConfig) {
     throw new Error('createCompiler is not available in this binding')
   }
-  const project = nativeProjectFromConfig(resolvedConfig, nativeOptions)
-  registerCallbacks(project, callbacks, tokenDictionary)
+  const project = nativeProjectFromConfig(resolved, nativeOptions, utilityValuesCallbacks)
+  registerCallbacks(project, callbacks, project.tokenDictionary?.())
   return toCompiler(project)
 }
 
@@ -618,8 +622,35 @@ function isConfigSnapshot(input: UserConfig | ConfigSnapshot): input is ConfigSn
 
 function stripProjectCallbacks(options: CompilerOptions | undefined): CompilerOptions | undefined {
   if (!options) return undefined
-  const { callbacks: _callbacks, tokenDictionary: _tokenDictionary, ...rest } = options
-  return rest
+  const { callbacks: _callbacks, ...rest } = options
+  return Object.keys(rest).length > 0 ? rest : undefined
+}
+
+function createUtilityValuesCallbacks(
+  callbacks: ProjectCallbacks,
+): Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown> | undefined {
+  const utilityValues = callbacks['utility.values']
+  if (!utilityValues || Object.keys(utilityValues).length === 0) return undefined
+
+  return Object.fromEntries(
+    Object.entries(utilityValues).map(([id, callback]) => [
+      id,
+      (tokenDictionary: TokenDictionary | undefined) =>
+        callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
+    ]),
+  )
+}
+
+function getTokenCategoryValues(category: string, tokenDictionary: TokenDictionary | undefined) {
+  if (!tokenDictionary) return undefined
+
+  const prefix = `${category}.`
+  const out: Record<string, string> = {}
+  for (const [path, value] of Object.entries(tokenDictionary.values)) {
+    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined
 }
 
 function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): ProjectCallbacks {

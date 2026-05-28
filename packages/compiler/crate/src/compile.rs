@@ -1,6 +1,8 @@
 use crate::{Diagnostic, DiagnosticSeverity};
 use napi_derive::napi;
-use pandacss_config::{UserConfig, ValidationMode, validate_config_value, validation_mode_from_value};
+use pandacss_config::{
+    UserConfig, ValidationMode, validate_config_value, validation_mode_from_value,
+};
 use pandacss_encoder::Atom as CoreAtom;
 use pandacss_shared::diagnostic_codes;
 use std::collections::BTreeSet;
@@ -100,11 +102,12 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         }
     };
 
-    let mut project = match pandacss_project::Project::from_config_and_diagnostics(
-        user_config.clone(),
-        raw_diagnostics,
-    ) {
-        Ok(project) => project,
+    let mut project = match pandacss_project::System::new(pandacss_project::SystemInput {
+        config: user_config.clone(),
+        diagnostics: Some(raw_diagnostics),
+        token_dictionary: None,
+    }) {
+        Ok(system) => pandacss_project::Project::new(system),
         Err(err) => {
             return error_output(
                 diagnostic_codes::COMPILE_PLACEHOLDER,

@@ -1,5 +1,5 @@
 use pandacss_config::UserConfig;
-use pandacss_project::Project;
+use pandacss_project::{Project, System};
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 
 pub fn config(value: serde_json::Value) -> UserConfig {
@@ -31,7 +31,8 @@ pub fn compile_output(
     source: &str,
     options: StylesheetOptions,
 ) -> pandacss_stylesheet::StylesheetOutput {
-    let mut project = Project::from_config(config.clone()).expect("valid project");
+    let system = System::new(config.clone()).expect("valid project");
+    let mut project = Project::new(system);
     project.parse_file("/style.ts", source);
     let snapshots = project.stylesheet_snapshots(config);
     pandacss_stylesheet::compile(

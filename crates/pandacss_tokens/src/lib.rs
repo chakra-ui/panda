@@ -9,7 +9,7 @@
 //! `rustc_hash::FxHashMap` indexes built once at construction time.
 
 use rustc_hash::FxHashMap;
-use std::collections::{HashMap, hash_map::Entry};
+use std::collections::{BTreeMap, HashMap, hash_map::Entry};
 use std::sync::Arc;
 
 #[cfg(feature = "serde")]
@@ -513,6 +513,27 @@ impl TokenDictionary {
     #[must_use]
     pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_var_str(path, fallback).map(str::to_owned)
+    }
+
+    /// JSON-safe projection for JS interop. Keys are token paths; values are
+    /// the canonical token value / CSS-var string that [`Self::token`] would
+    /// resolve for each path.
+    #[must_use]
+    pub fn flat_maps(&self) -> (BTreeMap<String, String>, BTreeMap<String, String>) {
+        let mut indexes: Vec<usize> = self.by_path.values().copied().collect();
+        indexes.sort_unstable();
+        indexes.dedup();
+
+        let mut values = BTreeMap::new();
+        let mut vars = BTreeMap::new();
+        for index in indexes {
+            let token = &self.tokens[index];
+            values.insert(token.path.to_string(), token.value.to_string());
+            if !token.var.is_empty() {
+                vars.insert(token.path.to_string(), token.var.to_string());
+            }
+        }
+        (values, vars)
     }
 
     /// Zero-allocation `token('path', fallback)` lookup.

@@ -8,7 +8,7 @@ mod common;
 use common::config;
 use insta::assert_snapshot;
 use pandacss_extractor::Literal;
-use pandacss_project::{Diagnostic, Project};
+use pandacss_project::{Diagnostic, Project, System};
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 use serde_json::json;
 
@@ -43,7 +43,8 @@ fn static_pattern_atoms_flow_into_utilities_layer() {
         )))
     };
 
-    let mut project = Project::from_config(cfg.clone()).expect("project");
+    let system = System::new(cfg.clone()).expect("project");
+    let mut project = Project::new(system);
     let (pattern_atoms, diagnostics) =
         project.static_pattern_atoms(&cfg, Some(&mut transform));
     assert!(diagnostics.is_empty(), "no expansion diagnostics expected");

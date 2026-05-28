@@ -12,10 +12,11 @@
 //!
 //! ```rust,ignore
 //! use pandacss_config::UserConfig;
-//! use pandacss_project::Project;
+//! use pandacss_project::{Project, System};
 //!
 //! let config = UserConfig::default();
-//! let mut project = Project::from_config(config)?;
+//! let system = System::new(config)?;
+//! let mut project = Project::new(system);
 //! project.parse_file("button.tsx", "import {{ css }} from '@panda/css'; css({{ color: 'red' }});");
 //! project.parse_file("card.tsx", /* … */);
 //!
@@ -58,7 +59,7 @@ pub use parsed_file::ParsedFile;
 pub use recipes::EncodedRecipes;
 use recipes::EncodedRecipesCache;
 pub use runtime_config::Config;
-pub use system::System;
+pub use system::{System, SystemInput};
 
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 
@@ -112,7 +113,27 @@ pub(crate) struct RecipeKey {
 impl Project {
     #[must_use]
     pub fn new(system: System) -> Self {
-        Self::from_system(system)
+        let config = system.config_arc();
+        let config_diagnostics = system.diagnostics().to_vec();
+        let config_recipes = config.config_recipes.clone();
+        let config_slot_recipes = config.config_slot_recipes.clone();
+        Self {
+            config,
+            files: FxHashMap::default(),
+            atoms_cache: FxHashSet::default(),
+            atom_counts: FxHashMap::default(),
+            encoded_recipes_cache: EncodedRecipesCache::default(),
+            atoms_snapshot_cache: None,
+            encoded_recipes_snapshot_cache: None,
+            static_encoded_recipes_snapshot_cache: None,
+            config_recipes,
+            config_slot_recipes,
+            inline_recipes: BTreeMap::new(),
+            inline_slot_recipes: BTreeMap::new(),
+            inline_recipe_spans: FxHashMap::default(),
+            inline_slot_recipe_spans: FxHashMap::default(),
+            config_diagnostics,
+        }
     }
 
     #[must_use]
@@ -144,45 +165,6 @@ impl Project {
             inline_slot_recipe_spans: FxHashMap::default(),
             config_diagnostics: Vec::new(),
         }
-    }
-
-    #[must_use]
-    pub fn from_system(system: System) -> Self {
-        let config = system.config_arc();
-        let config_diagnostics = system.diagnostics().to_vec();
-        let config_recipes = config.config_recipes.clone();
-        let config_slot_recipes = config.config_slot_recipes.clone();
-        Self {
-            config,
-            files: FxHashMap::default(),
-            atoms_cache: FxHashSet::default(),
-            atom_counts: FxHashMap::default(),
-            encoded_recipes_cache: EncodedRecipesCache::default(),
-            atoms_snapshot_cache: None,
-            encoded_recipes_snapshot_cache: None,
-            static_encoded_recipes_snapshot_cache: None,
-            config_recipes,
-            config_slot_recipes,
-            inline_recipes: BTreeMap::new(),
-            inline_slot_recipes: BTreeMap::new(),
-            inline_recipe_spans: FxHashMap::default(),
-            inline_slot_recipe_spans: FxHashMap::default(),
-            config_diagnostics,
-        }
-    }
-
-    pub fn from_config(config: UserConfig) -> Result<Self> {
-        Ok(Self::from_system(System::new(config)?))
-    }
-
-    pub fn from_config_and_diagnostics(
-        config: UserConfig,
-        diagnostics: Vec<Diagnostic>,
-    ) -> Result<Self> {
-        Ok(Self::from_system(System::from_config_and_diagnostics(
-            config,
-            diagnostics,
-        )?))
     }
 
     #[must_use]

@@ -69,43 +69,6 @@ export function assertProjectCallbacks(config: Record<string, unknown>, callback
   assertCallbackRefs('pattern.defaultValues', getPatternDefaultValueRefs(config), callbacks['pattern.defaultValues'])
 }
 
-export function resolveUtilityValueCallbacks(
-  config: Record<string, unknown>,
-  callbacks: WasmProjectCallbacks,
-  tokenDictionary: TokenDictionaryInput | undefined,
-): Record<string, unknown> {
-  const valuesCallbacks = callbacks['utility.values']
-  if (!valuesCallbacks || Object.keys(valuesCallbacks).length === 0) return config
-
-  const utilities = config.utilities
-  if (!utilities || typeof utilities !== 'object' || Array.isArray(utilities)) return config
-
-  let changed = false
-  const nextUtilities: Record<string, unknown> = {}
-  for (const [prop, utility] of Object.entries(utilities as Record<string, unknown>)) {
-    if (!utility || typeof utility !== 'object' || Array.isArray(utility)) {
-      nextUtilities[prop] = utility
-      continue
-    }
-
-    const values = (utility as Record<string, unknown>).values
-    const id = isCallbackRef(values) ? values.id : undefined
-    const callback = id ? valuesCallbacks[id] : undefined
-    if (!callback) {
-      nextUtilities[prop] = utility
-      continue
-    }
-
-    nextUtilities[prop] = {
-      ...(utility as Record<string, unknown>),
-      values: callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
-    }
-    changed = true
-  }
-
-  return changed ? { ...config, utilities: nextUtilities } : config
-}
-
 function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: Record<string, Function> | undefined) {
   for (const [name, id] of refs) {
     if (!callbacks?.[id]) {
@@ -197,18 +160,6 @@ function isCssVar(value: unknown) {
 
 function isCssFunction(value: unknown) {
   return typeof value === 'string' && /^(min|max|clamp|calc)\(.*\)/.test(value)
-}
-
-function getTokenCategoryValues(category: string, tokenDictionary: TokenDictionaryInput | undefined) {
-  if (!tokenDictionary) return undefined
-
-  const prefix = `${category}.`
-  const out: Record<string, string> = {}
-  for (const [path, value] of Object.entries(tokenDictionary.values)) {
-    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
-  }
-
-  return Object.keys(out).length > 0 ? out : undefined
 }
 
 function getUtilityTransformRefs(config: Record<string, unknown>) {

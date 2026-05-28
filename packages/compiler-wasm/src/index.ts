@@ -19,8 +19,9 @@ import type {
   WasmProjectCallbacks,
   WasmProjectOptions,
   WasmConfigSnapshot,
+  TokenDictionaryInput,
 } from './types'
-import { assertProjectCallbacks, registerCallbacks, resolveUtilityValueCallbacks } from './callbacks'
+import { assertProjectCallbacks, registerCallbacks } from './callbacks'
 export type { PatternHelpers } from './callbacks'
 
 export type {
@@ -54,6 +55,12 @@ export interface GlobOptions {
   exclude?: string[]
   cwd?: string
   absolute?: boolean
+}
+
+interface WasmNativeProjectOptions extends WasmProjectOptions {
+  configCallbacks?: {
+    utilityValues?: Record<string, (tokenDictionary: TokenDictionaryInput | undefined) => unknown>
+  }
 }
 
 export interface ExtractedCall {
@@ -90,7 +97,7 @@ export interface WasmModule {
   WasmExtractor: new (fs: WasmFileSystem, matchers: unknown) => WasmExtractor
   WasmProject: {
     new (fs: WasmFileSystem, matchers: unknown, options?: WasmProjectOptions): WasmProject
-    fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
+    fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmNativeProjectOptions): WasmProject
   }
   installPanicHook: () => void
 }
@@ -134,18 +141,45 @@ export function createCompilerFromWasmModule(
   const { WasmFileSystem: FS, WasmProject: P } = mod
   const fs = new FS()
   const { config, callbacks } = normalizeProjectConfigInput(configOrSnapshot, options)
-  const nativeOptions = stripProjectCallbacks(options)
+  const nativeOptions = createWasmProjectOptions(options, callbacks)
   assertProjectCallbacks(config, callbacks)
-  const resolvedConfig = resolveUtilityValueCallbacks(config, callbacks, options?.tokenDictionary)
-  const compiler = P.fromConfig(fs, resolvedConfig, nativeOptions)
-  registerCallbacks(compiler, callbacks, options?.tokenDictionary)
+  const compiler = P.fromConfig(fs, config, nativeOptions)
+  registerCallbacks(compiler, callbacks, compiler.tokenDictionary?.())
   return { fs, compiler }
 }
 
-function stripProjectCallbacks(options: WasmProjectOptions | undefined): WasmProjectOptions | undefined {
-  if (!options) return undefined
-  const { callbacks: _callbacks, tokenDictionary: _tokenDictionary, ...rest } = options
-  return rest
+function createWasmProjectOptions(
+  options: WasmProjectOptions | undefined,
+  callbacks: WasmProjectCallbacks,
+): WasmNativeProjectOptions | undefined {
+  const { callbacks: _callbacks, ...rest } = options ?? {}
+  const utilityValues = callbacks['utility.values']
+  if (!utilityValues || Object.keys(utilityValues).length === 0) return Object.keys(rest).length > 0 ? rest : undefined
+
+  return {
+    ...rest,
+    configCallbacks: {
+      utilityValues: Object.fromEntries(
+        Object.entries(utilityValues).map(([id, callback]) => [
+          id,
+          (tokenDictionary: TokenDictionaryInput | undefined) =>
+            callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
+        ]),
+      ),
+    },
+  }
+}
+
+function getTokenCategoryValues(category: string, tokenDictionary: TokenDictionaryInput | undefined) {
+  if (!tokenDictionary) return undefined
+
+  const prefix = `${category}.`
+  const out: Record<string, string> = {}
+  for (const [path, value] of Object.entries(tokenDictionary.values)) {
+    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined
 }
 
 function normalizeProjectConfigInput(

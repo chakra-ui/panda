@@ -24,10 +24,20 @@ use crate::runtime_config::Config;
 use crate::{ConfigError, ProjectConditionMatcher, RecipeKey, Result};
 
 pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Config> {
+    compile_config_with_token_dictionary(config, None)
+}
+
+pub(crate) fn compile_config_with_token_dictionary(
+    config: &pandacss_config::UserConfig,
+    token_dictionary: Option<Arc<TokenDictionary>>,
+) -> Result<Config> {
     let entries = ConfigDefinitions::from_config(&config)?;
-    let token_dictionary = TokenDictionary::from_config(&config)
-        .map_err(config_error_from_token_error)?
-        .map(Arc::new);
+    let token_dictionary = match token_dictionary {
+        Some(dictionary) => Some(dictionary),
+        None => TokenDictionary::from_config(&config)
+            .map_err(config_error_from_token_error)?
+            .map(Arc::new),
+    };
     let mut utility = Utility::from_config_with_options(
         &config.utilities,
         utility_options_from_config(&config, token_dictionary.clone()),

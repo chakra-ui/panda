@@ -101,7 +101,9 @@ impl<'a> ExpansionCtx<'a> {
         diagnostics: &mut Vec<Diagnostic>,
     ) {
         let (per_property_values, conditions) = match rule {
-            Value::String(s) if s == "*" => (self.wildcard_pattern_values(pattern_config), Vec::new()),
+            Value::String(s) if s == "*" => {
+                (self.wildcard_pattern_values(pattern_config), Vec::new())
+            }
             Value::Object(obj) => match self.parse_object_rule(obj, pattern_config) {
                 Some(parsed) => parsed,
                 None => return,
@@ -140,7 +142,10 @@ impl<'a> ExpansionCtx<'a> {
         }
     }
 
-    fn wildcard_pattern_values(&self, pattern_config: &PatternConfig) -> Vec<(String, Vec<String>)> {
+    fn wildcard_pattern_values(
+        &self,
+        pattern_config: &PatternConfig,
+    ) -> Vec<(String, Vec<String>)> {
         pattern_config
             .properties
             .iter()

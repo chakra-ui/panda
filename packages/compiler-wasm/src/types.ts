@@ -122,8 +122,6 @@ export interface WasmConfigSnapshot {
 export interface WasmProjectOptions {
   /** Serialized config snapshot used to resolve callback ids to utility props. */
   config?: Record<string, unknown>
-  /** Optional JS-side token helpers for callback execution. */
-  tokenDictionary?: TokenDictionaryInput
   /** Browser/JS-host callbacks referenced by serialized config entries. */
   callbacks?: WasmProjectCallbacks
 }
@@ -190,6 +188,7 @@ export declare class WasmProject {
   constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
   static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
   config(): Record<string, unknown> | null
+  tokenDictionary?(): TokenDictionaryInput | undefined
   extract(source: string, path: string): unknown
   parseFile(path: string, source: string): ParseFileReport
   refreshFile(path: string, source: string): boolean

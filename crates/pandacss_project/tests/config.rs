@@ -22,11 +22,8 @@ fn config_builds_system_and_project() {
     let project = Project::new(system);
 
     assert!(project.is_empty());
-    assert!(
-        Project::from_config(config)
-            .expect("valid project config")
-            .is_empty()
-    );
+    let system = System::new(config).expect("valid project config");
+    assert!(Project::new(system).is_empty());
 }
 
 #[test]
@@ -45,8 +42,11 @@ fn invalid_serialized_jsx_regex_returns_error() {
         }
     }));
 
-    let error = match Project::from_config(config) {
-        Ok(_) => panic!("invalid regex should fail config build"),
+    let error = match System::new(config) {
+        Ok(system) => {
+            let _project = Project::new(system);
+            panic!("invalid regex should fail config build")
+        }
         Err(error) => error,
     };
 
@@ -313,8 +313,8 @@ fn config_validation_warnings_are_project_diagnostics() {
 
 #[test]
 fn config_validation_error_fails_project_construction() {
-    let result = pandacss_project::Project::from_config(
-        serde_json::from_value(json!({
+    let result = System::new(
+        serde_json::from_value::<pandacss_config::UserConfig>(json!({
             "validation": "error",
             "conditions": {
                 "pinkTheme": "[data-theme=pink]"

@@ -4,12 +4,13 @@ use common::create_config;
 use insta::assert_snapshot;
 use pandacss_encoder::{Atom, AtomValue};
 use pandacss_extractor::Literal;
-use pandacss_project::{Diagnostic, Project};
+use pandacss_project::{Diagnostic, Project, System};
 use serde_json::json;
 
 fn build(overrides: serde_json::Value) -> (Project, pandacss_config::UserConfig) {
     let config = create_config(overrides);
-    let project = Project::from_config(config.clone()).expect("project");
+    let system = System::new(config.clone()).expect("project");
+    let project = Project::new(system);
     (project, config)
 }
 
@@ -302,8 +303,7 @@ fn default_values_are_merged_before_transform_runs() {
             "patterns": { "stack": [{ "properties": { "align": ["center"] } }] }
         }
     }));
-    let (_atoms, _diagnostics) =
-        project.static_pattern_atoms(&config, Some(&mut transform));
+    let (_atoms, _diagnostics) = project.static_pattern_atoms(&config, Some(&mut transform));
     let captured = captured.borrow().clone().expect("transform was invoked");
     assert_snapshot!(format!("{captured:?}"), @r#"Object([("gap", String("4")), ("align", String("center"))])"#);
 }

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use pandacss_config::{UserConfig, ValidationMode, validate_config};
 use pandacss_shared::Diagnostic;
+use pandacss_tokens::TokenDictionary;
 
 use crate::Result;
 use crate::runtime_config::Config;
@@ -16,24 +17,39 @@ pub struct System {
     diagnostics: Vec<Diagnostic>,
 }
 
-impl System {
-    pub fn new(config: UserConfig) -> Result<Self> {
-        let _span = tracing::debug_span!("config_compile").entered();
-        let diagnostics = validate_config(&config);
-        Self::from_config_and_diagnostics(config, diagnostics)
-    }
+pub struct SystemInput {
+    pub config: UserConfig,
+    pub diagnostics: Option<Vec<Diagnostic>>,
+    pub token_dictionary: Option<Arc<TokenDictionary>>,
+}
 
-    pub fn from_config_and_diagnostics(
-        config: UserConfig,
-        diagnostics: Vec<Diagnostic>,
-    ) -> Result<Self> {
-        if config.validation == ValidationMode::Error && !diagnostics.is_empty() {
+impl From<UserConfig> for SystemInput {
+    fn from(config: UserConfig) -> Self {
+        Self {
+            config,
+            diagnostics: None,
+            token_dictionary: None,
+        }
+    }
+}
+
+impl System {
+    pub fn new(input: impl Into<SystemInput>) -> Result<Self> {
+        let _span = tracing::debug_span!("config_compile").entered();
+        let input = input.into();
+        let diagnostics = input
+            .diagnostics
+            .unwrap_or_else(|| validate_config(&input.config));
+        if input.config.validation == ValidationMode::Error && !diagnostics.is_empty() {
             return Err(crate::ConfigError::config(format_config_diagnostics(
                 &diagnostics,
             )));
         }
         Ok(Self {
-            config: Arc::new(Config::from_user_config(&config)?),
+            config: Arc::new(crate::config::compile_config_with_token_dictionary(
+                &input.config,
+                input.token_dictionary,
+            )?),
             diagnostics,
         })
     }

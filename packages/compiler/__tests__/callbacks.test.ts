@@ -74,6 +74,18 @@ describe('Compiler callbacks', () => {
               },
             },
           },
+          theme: {
+            tokens: {
+              colors: {
+                red: {
+                  500: { value: '#f00' },
+                },
+              },
+              opacity: {
+                50: { value: '0.5' },
+              },
+            },
+          },
         },
         callbacks: {
           'utility.transform': {
@@ -89,13 +101,7 @@ describe('Compiler callbacks', () => {
           },
         },
       },
-      {
-        crossFile: false,
-        tokenDictionary: {
-          values: { 'colors.red.500': '#f00', 'opacity.50': '0.5' },
-          vars: { 'colors.red.500': 'var(--colors-red-500)', 'opacity.50': 'var(--opacity-50)' },
-        },
-      },
+      { crossFile: false },
     )
 
     compiler.parseFile(
@@ -269,6 +275,13 @@ describe('Compiler callbacks', () => {
               },
             },
           },
+          theme: {
+            tokens: {
+              spacing: {
+                4: { value: '1rem' },
+              },
+            },
+          },
         },
         callbacks: {
           'utility.values': {
@@ -279,13 +292,7 @@ describe('Compiler callbacks', () => {
           },
         },
       },
-      {
-        crossFile: false,
-        tokenDictionary: {
-          values: { 'spacing.4': '1rem' },
-          vars: { 'spacing.4': 'var(--spacing-4)' },
-        },
-      },
+      { crossFile: false },
     )
 
     compiler.parseFile(

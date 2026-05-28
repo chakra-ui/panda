@@ -214,7 +214,8 @@ fn identical_source_parse_is_a_noop() {
 #[test]
 fn stylesheet_snapshots_update_after_project_changes() {
     let config = create_config(json!({}));
-    let mut project = pandacss_project::Project::from_config(config.clone()).unwrap();
+    let system = pandacss_project::System::new(config.clone()).unwrap();
+    let mut project = pandacss_project::Project::new(system);
 
     project.parse_file(
         "button.tsx",

@@ -10,15 +10,18 @@ use pandacss_extractor::{CrossFileResolver, ExtractorConfig};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use serde::Serialize as _;
 use std::collections::{BTreeSet, HashMap};
+use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
 use crate::fs::WasmFileSystem;
-use crate::matcher::{MatchersInput, to_core_matchers, to_core_token_dictionary};
+use crate::matcher::{
+    MatchersInput, from_core_token_dictionary, to_core_matchers, to_core_token_dictionary,
+};
 use pandacss_config::{
-    CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, ValidationMode, validate_config_value,
-    validation_mode_from_value,
+    CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues, ValidationMode,
+    validate_config_value, validation_mode_from_value,
 };
 use smallvec::SmallVec;
 
@@ -139,10 +142,7 @@ impl WasmProject {
         config: JsValue,
         options: JsValue,
     ) -> Result<WasmProject, JsValue> {
-        if !options.is_undefined() && !options.is_null() {
-            serde_wasm_bindgen::from_value::<ProjectOptionsInput>(options)
-                .map_err(|err| JsValue::from_str(&format!("invalid options: {err}")))?;
-        }
+        let utility_values_callbacks = utility_value_callbacks_from_options(&options)?;
 
         let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
@@ -155,12 +155,25 @@ impl WasmProject {
                 &raw_diagnostics,
             )));
         }
-        let config: UserConfig = serde_json::from_value(config_value)
+        let mut config: UserConfig = serde_json::from_value(config_value)
             .map_err(|err| JsValue::from_str(&format_deserialize_error(err, &raw_diagnostics)))?;
+        let token_dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
+            .map_err(|err| JsValue::from_str(&format!("invalid token config: {err}")))?
+            .map(Arc::new);
+        resolve_utility_values_callbacks(
+            &mut config,
+            token_dictionary.as_deref(),
+            &utility_values_callbacks,
+        )?;
         let callbacks = CallbackHost::from_config(&config);
-        let project =
-            pandacss_project::Project::from_config_and_diagnostics(config, raw_diagnostics)
-                .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        let config_snapshot = serde_json::to_value(&config).unwrap_or(config_snapshot);
+        let system = pandacss_project::System::new(pandacss_project::SystemInput {
+            config,
+            diagnostics: Some(raw_diagnostics),
+            token_dictionary,
+        })
+        .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
+        let project = pandacss_project::Project::new(system);
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
@@ -320,6 +333,18 @@ impl WasmProject {
         self.config
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Rust-built token dictionary projected into the small JS interop shape.
+    #[wasm_bindgen(js_name = tokenDictionary)]
+    pub fn token_dictionary(&self) -> Result<JsValue, JsValue> {
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        match self.inner.config().token_dictionary() {
+            Some(dictionary) => from_core_token_dictionary(dictionary.as_ref())
+                .serialize(&serializer)
+                .map_err(|err| JsValue::from_str(&err.to_string())),
+            None => Ok(JsValue::UNDEFINED),
+        }
     }
 
     /// Returns `true` when the project has no files and no accumulated output.
@@ -505,9 +530,8 @@ impl WasmProject {
         let _span = tracing::trace_span!("css_compile", method = "wasm_project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms();
-        let user_config: pandacss_config::UserConfig =
-            serde_json::from_value(self.config.clone())
-                .map_err(|err| JsValue::from_str(&format!("invalid config snapshot: {err}")))?;
+        let user_config: pandacss_config::UserConfig = serde_json::from_value(self.config.clone())
+            .map_err(|err| JsValue::from_str(&format!("invalid config snapshot: {err}")))?;
         let output = build_compile_output(
             &mut self.inner,
             &user_config,
@@ -528,8 +552,7 @@ impl WasmProject {
             config,
             callbacks,
         } = self;
-        let Ok(user_config) =
-            serde_json::from_value::<pandacss_config::UserConfig>(config.clone())
+        let Ok(user_config) = serde_json::from_value::<pandacss_config::UserConfig>(config.clone())
         else {
             return (Vec::new(), Vec::new());
         };
@@ -774,6 +797,90 @@ fn collect_sorted_atoms<S: std::hash::BuildHasher>(
                 .collect::<Vec<String>>(),
         })
         .collect()
+}
+
+fn utility_value_callbacks_from_options(
+    options: &JsValue,
+) -> Result<HashMap<String, js_sys::Function>, JsValue> {
+    if options.is_undefined() || options.is_null() {
+        return Ok(HashMap::new());
+    }
+    let config_callbacks = js_sys::Reflect::get(options, &JsValue::from_str("configCallbacks"))?;
+    if config_callbacks.is_undefined() || config_callbacks.is_null() {
+        return Ok(HashMap::new());
+    }
+    let utility_values =
+        js_sys::Reflect::get(&config_callbacks, &JsValue::from_str("utilityValues"))?;
+    if utility_values.is_undefined() || utility_values.is_null() {
+        return Ok(HashMap::new());
+    }
+    let utility_values = js_sys::Object::from(utility_values);
+    let entries = js_sys::Object::entries(&utility_values);
+    let mut callbacks = HashMap::new();
+    for entry in entries.iter() {
+        let pair = js_sys::Array::from(&entry);
+        let Some(id) = pair.get(0).as_string() else {
+            continue;
+        };
+        let callback = pair
+            .get(1)
+            .dyn_into::<js_sys::Function>()
+            .map_err(|_| JsValue::from_str(&format!("invalid utility.values callback `{id}`")))?;
+        callbacks.insert(id, callback);
+    }
+    Ok(callbacks)
+}
+
+fn resolve_utility_values_callbacks(
+    config: &mut UserConfig,
+    token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
+    callbacks: &HashMap<String, js_sys::Function>,
+) -> Result<(), JsValue> {
+    if callbacks.is_empty() {
+        return Ok(());
+    }
+
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+    let token_dictionary = match token_dictionary {
+        Some(dictionary) => from_core_token_dictionary(dictionary)
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?,
+        None => JsValue::UNDEFINED,
+    };
+
+    for (prop, utility) in &mut config.utilities {
+        let Some(id) = utility_values_callback_id(utility).map(str::to_owned) else {
+            continue;
+        };
+        let Some(callback) = callbacks.get(&id) else {
+            continue;
+        };
+        let result = callback
+            .call1(&JsValue::UNDEFINED, &token_dictionary)
+            .map_err(|err| {
+                JsValue::from_str(&format!(
+                    "Utility values callback `{id}` for `{prop}` threw: {err:?}"
+                ))
+            })?;
+        utility.values = Some(serde_wasm_bindgen::from_value(result).map_err(|err| {
+            JsValue::from_str(&format!(
+                "Utility values callback `{id}` for `{prop}` returned invalid values: {err}"
+            ))
+        })?);
+    }
+
+    Ok(())
+}
+
+fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
+    let UtilityValues::Map(values) = utility.values.as_ref()? else {
+        return None;
+    };
+    let kind = values.get("kind")?.as_str()?;
+    if kind != "js-callback" {
+        return None;
+    }
+    values.get("id")?.as_str()
 }
 
 fn apply_utility_transform(

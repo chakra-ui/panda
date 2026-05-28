@@ -27,7 +27,7 @@ pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
 pub use project::{
-    ParsedFileView, ParseFileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry,
+    ParseFileReport, ParsedFileView, Project, ProjectOptions, ProjectSummary, RecipeEntry,
     StaticPatternResult,
 };
 pub use session::Extractor;

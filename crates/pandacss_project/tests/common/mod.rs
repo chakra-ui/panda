@@ -2,7 +2,7 @@
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::Atom;
-use pandacss_project::Project;
+use pandacss_project::{Project, System};
 use serde_json::{Value, json};
 
 pub fn create_config(overrides: Value) -> UserConfig {
@@ -21,7 +21,8 @@ pub fn create_config(overrides: Value) -> UserConfig {
 }
 
 pub fn create_project(overrides: Value) -> Project {
-    Project::from_config(create_config(overrides)).expect("valid project config")
+    let system = System::new(create_config(overrides)).expect("valid project config");
+    Project::new(system)
 }
 
 fn merge_json(target: &mut Value, source: Value) {
