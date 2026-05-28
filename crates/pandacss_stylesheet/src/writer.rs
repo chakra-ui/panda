@@ -17,7 +17,7 @@ impl CssWriter {
         self.out
     }
 
-    pub fn len(&self) -> usize {
+    pub(crate) fn len(&self) -> usize {
         self.out.len()
     }
 

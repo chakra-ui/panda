@@ -1,6 +1,5 @@
 use regex::RegexSet;
 use rustc_hash::{FxHashMap, FxHashSet};
-use serde::Serialize;
 use serde_json::Value;
 use smallvec::SmallVec;
 use std::borrow::Cow;
@@ -8,7 +7,8 @@ use std::collections::BTreeMap;
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{
-    Atom, AtomValue, ConditionMatcher, Encoder, atom_value_sort_key, compare_atoms_by_emit_order,
+    Atom, AtomValue, ConditionMatcher, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
+    RecipeStyleGroup, RecipeStyleGroupSnapshot, atom_value_sort_key, compare_atoms_by_emit_order,
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
@@ -739,39 +739,6 @@ struct RecipeVariantKey {
     class_name: Box<str>,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct RecipeStyleGroup {
-    pub class_name: Box<str>,
-    pub entries: FxHashSet<RecipeStyleEntry>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RecipeStyleEntry {
-    pub prop: Box<str>,
-    pub value: AtomValue,
-    pub conditions: SmallVec<[Box<str>; 2]>,
-    #[serde(skip_serializing_if = "is_false")]
-    pub important: bool,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EncodedRecipesSnapshot {
-    pub base: Vec<RecipeStyleGroupSnapshot>,
-    pub variants: Vec<RecipeStyleGroupSnapshot>,
-    pub atomic: Vec<Atom>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RecipeStyleGroupSnapshot {
-    pub recipe: Box<str>,
-    pub slot: serde_json::Value,
-    pub class_name: Box<str>,
-    pub entries: Vec<RecipeStyleEntry>,
-}
-
 impl EncodedRecipes {
     pub(crate) fn clear(&mut self) {
         self.base.clear();
@@ -1422,10 +1389,6 @@ fn literal_to_recipe_value(value: &Literal) -> Option<RecipeValue> {
         }
         Literal::Object(_) => None,
     }
-}
-
-fn is_false(value: &bool) -> bool {
-    !*value
 }
 
 fn is_absolute_url(value: &str) -> bool {

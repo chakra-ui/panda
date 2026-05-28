@@ -33,16 +33,14 @@ pub fn compile_output(
 ) -> pandacss_stylesheet::StylesheetOutput {
     let mut project = Project::from_config(config.clone()).expect("valid project");
     project.parse_file("/style.ts", source);
-    let snapshot = project.encoded_recipes().snapshot();
-    let static_snapshot = project.static_encoded_recipes(config);
-    let atoms = project.atoms().iter().collect::<Vec<_>>();
+    let snapshots = project.stylesheet_snapshots(config);
     pandacss_stylesheet::compile(
         StylesheetInput {
             config,
             token_dictionary: None,
-            atoms,
-            encoded_recipes: &snapshot,
-            static_encoded_recipes: Some(&static_snapshot),
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
         },
         &StylesheetOptions {
             include_static: true,

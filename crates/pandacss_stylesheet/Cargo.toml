@@ -11,7 +11,6 @@ publish = false
 pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true }
-pandacss_project = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_tokens = { workspace = true }
 pandacss_utility = { workspace = true }
@@ -24,6 +23,7 @@ thiserror = { workspace = true }
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }
+pandacss_project = { workspace = true }
 
 [lints]
 workspace = true

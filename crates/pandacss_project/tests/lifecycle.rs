@@ -3,7 +3,7 @@
 
 mod common;
 
-use common::{create_project, sorted_atoms};
+use common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use serde_json::json;
@@ -209,4 +209,28 @@ fn identical_source_parse_is_a_noop() {
       value: red
       conditions: []
     ");
+}
+
+#[test]
+fn stylesheet_snapshots_update_after_project_changes() {
+    let config = create_config(json!({}));
+    let mut project = pandacss_project::Project::from_config(config.clone()).unwrap();
+
+    project.parse_file(
+        "button.tsx",
+        "import { css } from '@panda/css';\ncss({ color: 'red' });",
+    );
+    {
+        let snapshots = project.stylesheet_snapshots(&config);
+        assert_eq!(snapshots.atoms.len(), 1);
+        assert_eq!(snapshots.atoms[0].prop(), "color");
+    }
+
+    project.parse_file(
+        "button.tsx",
+        "import { css } from '@panda/css';\ncss({ padding: '4px' });",
+    );
+    let snapshots = project.stylesheet_snapshots(&config);
+    assert_eq!(snapshots.atoms.len(), 1);
+    assert_eq!(snapshots.atoms[0].prop(), "padding");
 }

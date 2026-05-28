@@ -1032,10 +1032,15 @@ version = "0.0.0"
 dependencies = [
  "pandacss_config",
  "pandacss_extractor",
+ "pandacss_project",
+ "pandacss_stylesheet",
  "pandacss_tokens",
+ "pandacss_tracing",
  "regex",
  "rustc-hash",
  "serde_json",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1060,6 +1065,7 @@ dependencies = [
  "pandacss_shared",
  "rustc-hash",
  "serde",
+ "serde_json",
  "smallvec",
  "tracing",
 ]
@@ -1199,6 +1205,7 @@ version = "0.0.0"
 dependencies = [
  "insta",
  "pandacss_config",
+ "pandacss_encoder",
  "pandacss_extractor",
  "pandacss_shared",
  "pandacss_tokens",

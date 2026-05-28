@@ -32,7 +32,6 @@ mod recipes;
 mod runtime_config;
 mod system;
 
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -41,18 +40,18 @@ use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use smallvec::SmallVec;
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, Encoder};
+use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Literal, MatchCategory, extract};
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_utility::StyleNormalizer;
 
 pub use error::{ConfigError, Result};
-pub use parsed_file::ParsedFile;
-use recipes::EncodedRecipesCache;
-pub use recipes::{
-    EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
-    RecipeStyleGroupSnapshot,
+pub use pandacss_encoder::{
+    EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
 };
+pub use parsed_file::ParsedFile;
+pub use recipes::EncodedRecipes;
+use recipes::EncodedRecipesCache;
 pub use runtime_config::Config;
 pub use system::System;
 
@@ -69,6 +68,9 @@ pub struct Project {
     atoms_cache: FxHashSet<Atom>,
     atom_counts: FxHashMap<Atom, u32>,
     encoded_recipes_cache: EncodedRecipesCache,
+    atoms_snapshot_cache: Option<Vec<Atom>>,
+    encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
+    static_encoded_recipes_snapshot_cache: Option<(serde_json::Value, EncodedRecipesSnapshot)>,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -78,6 +80,12 @@ pub struct Project {
     inline_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     inline_slot_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     config_diagnostics: Vec<Diagnostic>,
+}
+
+pub struct ProjectStylesheetSnapshots<'a> {
+    pub atoms: &'a [Atom],
+    pub encoded_recipes: &'a EncodedRecipesSnapshot,
+    pub static_encoded_recipes: &'a EncodedRecipesSnapshot,
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
@@ -120,6 +128,9 @@ impl Project {
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
             encoded_recipes_cache: EncodedRecipesCache::default(),
+            atoms_snapshot_cache: None,
+            encoded_recipes_snapshot_cache: None,
+            static_encoded_recipes_snapshot_cache: None,
             config_recipes: BTreeMap::new(),
             config_slot_recipes: BTreeMap::new(),
             inline_recipes: BTreeMap::new(),
@@ -142,6 +153,9 @@ impl Project {
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
             encoded_recipes_cache: EncodedRecipesCache::default(),
+            atoms_snapshot_cache: None,
+            encoded_recipes_snapshot_cache: None,
+            static_encoded_recipes_snapshot_cache: None,
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
@@ -462,6 +476,7 @@ impl Project {
         self.atoms_cache.clear();
         self.atom_counts.clear();
         self.encoded_recipes_cache.clear();
+        self.invalidate_stylesheet_snapshots();
         self.inline_recipes.clear();
         self.inline_slot_recipes.clear();
         self.inline_recipe_spans.clear();
@@ -474,6 +489,7 @@ impl Project {
     }
 
     fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
+        self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let count = self.atom_counts.entry(atom.clone()).or_insert(0);
             *count += 1;
@@ -487,6 +503,7 @@ impl Project {
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
         let entry = self.files.remove(path)?;
+        self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             if let Some(count) = self.atom_counts.get_mut(atom) {
                 *count -= 1;
@@ -499,6 +516,11 @@ impl Project {
         self.encoded_recipes_cache
             .remove_from(&entry.encoded_recipes);
         Some(entry)
+    }
+
+    fn invalidate_stylesheet_snapshots(&mut self) {
+        self.atoms_snapshot_cache = None;
+        self.encoded_recipes_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
@@ -522,23 +544,18 @@ impl Project {
         before != self.inline_recipes.len() + self.inline_slot_recipes.len()
     }
 
-    fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
-        StyleNormalizer {
+    fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let _span = tracing::trace_span!("encoding_atomic").entered();
+        let normalizer = StyleNormalizer {
             utility: self.config.utility.as_ref(),
             breakpoints: &self.config.breakpoints,
             shorthand: true,
-        }
-        .normalize(style)
-    }
-
-    fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
-        let _span = tracing::trace_span!("encoding", kind = "atomic").entered();
-        let normalized = self.normalize_style_object(style);
-        encoder.process_atomic(normalized.as_ref());
+        };
+        encoder.process_atomic_with(style, &normalizer);
     }
 
     fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
-        let _span = tracing::trace_span!("encoding", kind = "style_props").entered();
+        let _span = tracing::trace_span!("encoding_style_props").entered();
         let Literal::Object(entries) = style else {
             self.process_atomic(encoder, style);
             return;
@@ -582,8 +599,28 @@ impl Project {
     }
 
     #[must_use]
+    pub fn atoms_snapshot(&mut self) -> &[Atom] {
+        self.atoms_snapshot_cache.get_or_insert_with(|| {
+            let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
+            atoms.sort_by(compare_atoms_by_emit_order);
+            atoms
+        })
+    }
+
+    #[must_use]
     pub fn encoded_recipes(&self) -> &EncodedRecipes {
         self.encoded_recipes_cache.view()
+    }
+
+    #[must_use]
+    pub fn encoded_recipes_snapshot(&mut self) -> &EncodedRecipesSnapshot {
+        if self.encoded_recipes_snapshot_cache.is_none() {
+            self.encoded_recipes_snapshot_cache =
+                Some(self.encoded_recipes_cache.view().snapshot());
+        }
+        self.encoded_recipes_snapshot_cache
+            .as_ref()
+            .expect("encoded recipe snapshot was initialized")
     }
 
     #[must_use]
@@ -596,6 +633,69 @@ impl Project {
             &self.config.breakpoints,
         );
         encoded.snapshot()
+    }
+
+    #[must_use]
+    pub fn static_encoded_recipes_snapshot(
+        &mut self,
+        user_config: &UserConfig,
+    ) -> &EncodedRecipesSnapshot {
+        let cache_matches = self
+            .static_encoded_recipes_snapshot_cache
+            .as_ref()
+            .is_some_and(|(static_css, _)| static_css == &user_config.static_css);
+        if !cache_matches {
+            self.static_encoded_recipes_snapshot_cache = Some((
+                user_config.static_css.clone(),
+                self.static_encoded_recipes(user_config),
+            ));
+        }
+        self.static_encoded_recipes_snapshot_cache
+            .as_ref()
+            .map(|(_, snapshot)| snapshot)
+            .expect("static recipe snapshot was initialized")
+    }
+
+    #[must_use]
+    pub fn stylesheet_snapshots(
+        &mut self,
+        user_config: &UserConfig,
+    ) -> ProjectStylesheetSnapshots<'_> {
+        if self.atoms_snapshot_cache.is_none() {
+            let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
+            atoms.sort_by(compare_atoms_by_emit_order);
+            self.atoms_snapshot_cache = Some(atoms);
+        }
+        if self.encoded_recipes_snapshot_cache.is_none() {
+            self.encoded_recipes_snapshot_cache =
+                Some(self.encoded_recipes_cache.view().snapshot());
+        }
+        let static_cache_matches = self
+            .static_encoded_recipes_snapshot_cache
+            .as_ref()
+            .is_some_and(|(static_css, _)| static_css == &user_config.static_css);
+        if !static_cache_matches {
+            self.static_encoded_recipes_snapshot_cache = Some((
+                user_config.static_css.clone(),
+                self.static_encoded_recipes(user_config),
+            ));
+        }
+
+        ProjectStylesheetSnapshots {
+            atoms: self
+                .atoms_snapshot_cache
+                .as_deref()
+                .expect("atom snapshot was initialized"),
+            encoded_recipes: self
+                .encoded_recipes_snapshot_cache
+                .as_ref()
+                .expect("encoded recipe snapshot was initialized"),
+            static_encoded_recipes: self
+                .static_encoded_recipes_snapshot_cache
+                .as_ref()
+                .map(|(_, snapshot)| snapshot)
+                .expect("static recipe snapshot was initialized"),
+        }
     }
 
     #[must_use]

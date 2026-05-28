@@ -17,6 +17,7 @@
 //! - `FxHashSet<Atom>` for dedup — non-cryptographic hash for internal
 //!   trusted data.
 
+use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
@@ -57,6 +58,39 @@ pub enum AtomValue {
     Number(Box<str>),
     Bool(bool),
     Null,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct RecipeStyleGroup {
+    pub class_name: Box<str>,
+    pub entries: FxHashSet<RecipeStyleEntry>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecipeStyleEntry {
+    pub prop: Box<str>,
+    pub value: AtomValue,
+    pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    #[serde(skip_serializing_if = "is_false")]
+    pub important: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EncodedRecipesSnapshot {
+    pub base: Vec<RecipeStyleGroupSnapshot>,
+    pub variants: Vec<RecipeStyleGroupSnapshot>,
+    pub atomic: Vec<Atom>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecipeStyleGroupSnapshot {
+    pub recipe: Box<str>,
+    pub slot: serde_json::Value,
+    pub class_name: Box<str>,
+    pub entries: Vec<RecipeStyleEntry>,
 }
 
 impl Atom {
@@ -161,6 +195,36 @@ impl ConditionMatcher for ConditionSet {
     }
 }
 
+/// Inline normalization the encoder applies during a single walk over the
+/// input style — avoids the upfront `StyleNormalizer.normalize` pass and the
+/// `Cow<Literal>` it produces. Default impls are no-ops; the project layer
+/// supplies a real impl via `pandacss_utility::StyleNormalizer`.
+pub trait NormalizeAtomic {
+    /// Canonical key for an Object entry (shorthand expansion).
+    /// May borrow from `self` (e.g. utility-owned strings) or pass the input through.
+    fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
+        key
+    }
+
+    /// Normalize a leaf value before atom construction.
+    /// Returns `Cow::Borrowed(value)` when nothing changes — no alloc.
+    fn normalize_leaf<'a>(&self, _prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
+        Cow::Borrowed(value)
+    }
+
+    /// For `Literal::Array` items at responsive positions: the synthetic
+    /// condition name to attach (e.g. `"sm"`). `None` → arrays don't encode
+    /// (matches the pre-fusion default-walker behavior).
+    fn array_condition(&self, _index: usize) -> Option<&str> {
+        None
+    }
+}
+
+/// Zero-cost "do nothing" implementation. Use when the caller has already
+/// normalized the input.
+pub struct NoNormalize;
+impl NormalizeAtomic for NoNormalize {}
+
 pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
@@ -205,6 +269,15 @@ impl<C: ConditionMatcher> Encoder<C> {
         self.walk(style, &mut path);
     }
 
+    /// Fused variant: walks `style` once while applying `norm` inline (key
+    /// resolution, leaf normalization, responsive-array expansion). Caller
+    /// avoids the upfront `StyleNormalizer.normalize` allocation pass.
+    pub fn process_atomic_with<'a, N: NormalizeAtomic>(&mut self, style: &'a Literal, norm: &'a N) {
+        let _span = tracing::trace_span!("encoder_atomic").entered();
+        let mut path = SmallVec::new();
+        self.walk_with(style, norm, &mut path);
+    }
+
     pub fn process_atomic_recipe(&mut self, recipe: &Recipe) {
         let _span = tracing::trace_span!("encoding", kind = "encoder_recipe").entered();
         for style in recipe.atomic_styles() {
@@ -242,6 +315,58 @@ impl<C: ConditionMatcher> Encoder<C> {
         }
         if let Some(atom) = Self::atom_from_path(path, value) {
             self.atoms.insert(atom);
+        }
+    }
+
+    fn walk_with<'a, N: NormalizeAtomic>(
+        &mut self,
+        value: &'a Literal,
+        norm: &'a N,
+        path: &mut SmallVec<[PathSegment<'a>; INLINE_PATH]>,
+    ) {
+        match value {
+            Literal::Object(entries) => {
+                for (key, child) in entries {
+                    let resolved = norm.resolve_key(key);
+                    let is_condition = self.conditions.is_condition(resolved);
+                    path.push(PathSegment {
+                        name: resolved,
+                        is_condition,
+                    });
+                    self.walk_with(child, norm, path);
+                    path.pop();
+                }
+            }
+            Literal::Array(items) => {
+                for (index, item) in items.iter().enumerate() {
+                    let Some(cond) = norm.array_condition(index) else {
+                        continue;
+                    };
+                    if matches!(item, Literal::Null) {
+                        continue;
+                    }
+                    path.push(PathSegment {
+                        name: cond,
+                        is_condition: true,
+                    });
+                    self.walk_with(item, norm, path);
+                    path.pop();
+                }
+            }
+            Literal::Conditional(_) => {
+                // Match the unfused walker: `leaf_to_atom_value` rejects
+                // Conditional, so it emits no atom and does not recurse.
+            }
+            _ => {
+                let prop = path.iter().find(|s| !s.is_condition).map(|s| s.name);
+                let normalized = match prop {
+                    Some(prop) => norm.normalize_leaf(prop, value),
+                    None => Cow::Borrowed(value),
+                };
+                if let Some(atom) = Self::atom_from_path(path, normalized.as_ref()) {
+                    self.atoms.insert(atom);
+                }
+            }
         }
     }
 

@@ -237,8 +237,20 @@ impl Utility {
 
     #[must_use]
     pub fn normalize_property_value(&self, prop: &str, value: &Literal) -> Literal {
+        self.normalize_property_value_cow(prop, value).into_owned()
+    }
+
+    /// Borrow-preserving variant — returns `Cow::Borrowed(value)` when no
+    /// alias maps, avoiding the unconditional clone of the input Literal.
+    /// Hot path: the fused encoder walker calls this per leaf.
+    #[must_use]
+    pub fn normalize_property_value_cow<'a>(
+        &self,
+        prop: &str,
+        value: &'a Literal,
+    ) -> Cow<'a, Literal> {
         let Some(config) = self.properties.get(prop) else {
-            return value.clone();
+            return Cow::Borrowed(value);
         };
         let mapped = match value {
             Literal::String(value) => config.values.get(value.as_str()),
@@ -252,7 +264,7 @@ impl Utility {
                 None
             }
         };
-        mapped.cloned().unwrap_or_else(|| value.clone())
+        mapped.map_or(Cow::Borrowed(value), |mapped| Cow::Owned(mapped.clone()))
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
@@ -399,6 +411,29 @@ impl StyleNormalizer<'_> {
             Literal::upsert_object_entry(&mut out, key.clone(), self.normalize_owned(item));
         }
         Literal::Object(out)
+    }
+}
+
+/// Drives the encoder's fused walker — no upfront normalization pass, no
+/// `Cow<Literal>` allocation when nothing actually changes.
+impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
+    fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
+        if self.shorthand {
+            self.utility
+                .map_or(key, |utility| utility.resolve_shorthand(key))
+        } else {
+            key
+        }
+    }
+
+    fn normalize_leaf<'a>(&self, prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
+        self.utility.map_or(Cow::Borrowed(value), |utility| {
+            utility.normalize_property_value_cow(prop, value)
+        })
+    }
+
+    fn array_condition(&self, index: usize) -> Option<&str> {
+        self.breakpoints.get(index).map(String::as_str)
     }
 }
 

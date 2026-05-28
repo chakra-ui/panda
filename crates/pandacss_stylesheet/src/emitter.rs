@@ -1,9 +1,8 @@
 use std::{borrow::Cow, ops::Range};
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, AtomValue};
+use pandacss_encoder::{Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry};
 use pandacss_extractor::Literal;
-use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleEntry};
 use pandacss_shared::{number_to_js_string, split_important};
 use pandacss_tokens::{TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};

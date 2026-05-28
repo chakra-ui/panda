@@ -1,7 +1,7 @@
 mod common;
 
 use insta::assert_snapshot;
-use pandacss_project::EncodedRecipesSnapshot;
+use pandacss_encoder::EncodedRecipesSnapshot;
 use pandacss_shared::DiagnosticSeverity;
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 
@@ -164,7 +164,7 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
         StylesheetInput {
             config: &config,
             token_dictionary: None,
-            atoms: Vec::new(),
+            atoms: &[],
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
         },
@@ -206,7 +206,7 @@ fn token_build_errors_are_reported_as_diagnostics() {
         StylesheetInput {
             config: &config,
             token_dictionary: None,
-            atoms: Vec::new(),
+            atoms: &[],
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
         },

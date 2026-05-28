@@ -8,8 +8,7 @@ use std::{ops::Range, sync::Arc};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::Atom;
-use pandacss_project::{EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
+use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
 use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
@@ -86,7 +85,7 @@ impl StylesheetLayerRanges {
 pub struct StylesheetInput<'a> {
     pub config: &'a UserConfig,
     pub token_dictionary: Option<Arc<TokenDictionary>>,
-    pub atoms: Vec<&'a Atom>,
+    pub atoms: &'a [Atom],
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
 }
@@ -108,7 +107,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         },
     };
     let utility = utility_from_config(input.config, token_dictionary.clone());
-    let mut atoms = input.atoms;
+    let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
         static_css::expand(input.config, &utility, &mut diagnostics)
     } else {

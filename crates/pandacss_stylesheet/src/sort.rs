@@ -1,8 +1,7 @@
 use std::cmp::Ordering;
 
 use pandacss_config::{ConditionQuery, UserConfig};
-use pandacss_encoder::{Atom, atom_value_sort_key};
-use pandacss_project::RecipeStyleEntry;
+use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
 
 const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":is", 40),
