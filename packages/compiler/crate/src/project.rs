@@ -439,6 +439,7 @@ impl Project {
                 atoms: snapshots.atoms,
                 encoded_recipes: snapshots.encoded_recipes,
                 static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+                static_pattern_atoms: &[],
             },
             &options,
         );

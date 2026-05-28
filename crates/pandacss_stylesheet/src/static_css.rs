@@ -57,12 +57,6 @@ pub(crate) fn has_static_recipes(config: &UserConfig) -> bool {
 }
 
 fn diagnose_static_css_scope(config: &UserConfig, diagnostics: &mut Vec<Diagnostic>) {
-    if config.static_css.get("patterns").is_some() {
-        diagnostics.push(Diagnostic::warning(
-            diagnostic_codes::STATIC_CSS_PATTERNS_UNSUPPORTED,
-            "staticCss.patterns is not supported by the native stylesheet compiler yet",
-        ));
-    }
     if config.static_css.get("themes").is_some() {
         diagnostics.push(Diagnostic::warning(
             diagnostic_codes::STATIC_CSS_THEMES_UNSUPPORTED,

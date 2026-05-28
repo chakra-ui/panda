@@ -89,6 +89,7 @@ pub struct StylesheetInput<'a> {
     pub atoms: &'a [Atom],
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
+    pub static_pattern_atoms: &'a [Atom],
 }
 
 #[must_use]
@@ -126,6 +127,10 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     if !generated.is_empty() {
         atoms.reserve(generated.len());
         atoms.extend(generated.iter());
+    }
+    if options.include_static && !input.static_pattern_atoms.is_empty() {
+        atoms.reserve(input.static_pattern_atoms.len());
+        atoms.extend(input.static_pattern_atoms.iter());
     }
 
     let encoded_recipes = if options.include_static {

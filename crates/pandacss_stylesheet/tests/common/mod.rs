@@ -41,6 +41,7 @@ pub fn compile_output(
             atoms: snapshots.atoms,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &[],
         },
         &StylesheetOptions {
             include_static: true,

@@ -268,6 +268,7 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
             atoms: snapshots.atoms,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &[],
         },
         &StylesheetOptions {
             minify: false,
@@ -322,6 +323,7 @@ fn run_watch(config: &UserConfig, sources: &[(PathBuf, String)]) -> WatchRun {
             atoms: snapshots.atoms,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &[],
         },
         &StylesheetOptions {
             minify: false,

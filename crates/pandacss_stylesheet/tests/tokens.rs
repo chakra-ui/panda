@@ -167,6 +167,7 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
             atoms: &[],
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
+            static_pattern_atoms: &[],
         },
         &StylesheetOptions::default(),
     );
@@ -209,6 +210,7 @@ fn token_build_errors_are_reported_as_diagnostics() {
             atoms: &[],
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
+            static_pattern_atoms: &[],
         },
         &StylesheetOptions::default(),
     );

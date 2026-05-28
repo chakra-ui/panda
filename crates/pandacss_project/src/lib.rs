@@ -30,6 +30,7 @@ mod parsed_file;
 mod patterns;
 mod recipes;
 mod runtime_config;
+mod static_patterns;
 mod system;
 
 use std::collections::BTreeMap;
@@ -637,6 +638,23 @@ impl Project {
         self.encoded_recipes_snapshot_cache
             .as_ref()
             .expect("encoded recipe snapshot was initialized")
+    }
+
+    pub fn static_pattern_atoms(
+        &self,
+        user_config: &UserConfig,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> (Vec<Atom>, Vec<Diagnostic>) {
+        let mut diagnostics = Vec::new();
+        let atoms = static_patterns::expand_static_patterns(
+            user_config,
+            &self.config.patterns,
+            self.config.utility.as_ref(),
+            self.config.token_dictionary().as_deref(),
+            pattern_transform,
+            &mut diagnostics,
+        );
+        (atoms, diagnostics)
     }
 
     #[must_use]
