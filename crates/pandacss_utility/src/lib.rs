@@ -6,12 +6,15 @@
 //! callbacks on the binding side.
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
-use pandacss_config::{CallbackRef, StringOrStringArray, UtilityConfig, UtilityValues};
+use pandacss_config::{
+    CallbackRef, PrimitiveType, StringOrStringArray, UtilityConfig, UtilityPropertyTypeData,
+    UtilityTypeData, UtilityValues, ValueAliasTypeData, ValueTypePart, value_alias_name,
+};
 use pandacss_extractor::Literal;
-use pandacss_shared::number_to_js_string;
+use pandacss_shared::{number_to_js_string, pascal_case};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
@@ -198,6 +201,56 @@ impl Utility {
     #[must_use]
     pub fn prefix(&self) -> &str {
         &self.prefix
+    }
+
+    #[must_use]
+    pub fn type_data(&self) -> UtilityTypeData {
+        let mut properties = BTreeMap::new();
+        let mut aliases = BTreeMap::new();
+
+        // This is a codegen snapshot, not an extraction hot path. Sort once so
+        // generated types are stable across runs.
+        let mut property_entries = self.properties.iter().collect::<Vec<_>>();
+        property_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+
+        for (name, property) in property_entries {
+            let data = property_type_data(name, name, property);
+
+            aliases
+                .entry(data.alias.clone())
+                .or_insert_with(|| value_alias_type_data(&data));
+
+            properties.insert(name.clone(), data);
+        }
+
+        let mut shorthands = BTreeMap::new();
+        let mut shorthand_entries = self.shorthands.iter().collect::<Vec<_>>();
+        shorthand_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+
+        for (name, target) in shorthand_entries {
+            shorthands.insert(name.clone(), target.clone());
+
+            let Some(property) = self.properties.get(target) else {
+                continue;
+            };
+
+            let data = property_type_data(name, target, property);
+
+            // Many shorthands share the same value alias as their longhand.
+            // Keep one alias body and let properties reference it by name.
+            aliases
+                .entry(data.alias.clone())
+                .or_insert_with(|| value_alias_type_data(&data));
+
+            properties.insert(name.clone(), data);
+        }
+
+        UtilityTypeData {
+            properties,
+            shorthands,
+            deprecated: self.deprecated.iter().cloned().collect::<BTreeSet<_>>(),
+            aliases,
+        }
     }
 
     #[must_use]
@@ -405,6 +458,67 @@ impl Utility {
             }
             _ => {}
         }
+    }
+}
+
+fn property_type_data(
+    name: &str,
+    css_property: &str,
+    property: &UtilityProperty,
+) -> UtilityPropertyTypeData {
+    let mut literals = property.values.keys().cloned().collect::<Vec<_>>();
+    literals.sort();
+    let alias = property.values_category.as_deref().map_or_else(
+        || format!("{}Value", pascal_case(css_property)),
+        value_alias_name,
+    );
+
+    UtilityPropertyTypeData {
+        name: name.to_owned(),
+        css_property: Some(css_property.to_owned()),
+        token_category: property.values_category.clone(),
+        literals,
+        primitive: None,
+        alias,
+    }
+}
+
+fn value_alias_type_data(property: &UtilityPropertyTypeData) -> ValueAliasTypeData {
+    let capacity = property.literals.len()
+        + usize::from(property.token_category.is_some())
+        + usize::from(property.css_property.is_some())
+        + 4;
+    let mut parts = Vec::with_capacity(capacity);
+
+    if let Some(category) = &property.token_category {
+        parts.push(ValueTypePart::TokenCategory(category.clone()));
+    }
+
+    if let Some(css_property) = &property.css_property {
+        parts.push(ValueTypePart::CssProperty(css_property.clone()));
+    }
+
+    parts.extend(
+        property
+            .literals
+            .iter()
+            .cloned()
+            .map(ValueTypePart::Literal),
+    );
+
+    if let Some(primitive) = property.primitive {
+        parts.push(ValueTypePart::Primitive(primitive));
+    } else if property.token_category.is_none() && property.literals.is_empty() {
+        parts.push(ValueTypePart::Primitive(PrimitiveType::String));
+        parts.push(ValueTypePart::Primitive(PrimitiveType::Number));
+    }
+
+    parts.push(ValueTypePart::CssVars);
+    parts.push(ValueTypePart::AnyString);
+
+    ValueAliasTypeData {
+        name: property.alias.clone(),
+        parts,
     }
 }
 

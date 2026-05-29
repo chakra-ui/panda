@@ -12,6 +12,7 @@ pub enum ArtifactId {
     Helpers,
     Patterns,
     Selectors,
+    Types,
 }
 
 impl ArtifactId {
@@ -24,6 +25,7 @@ impl ArtifactId {
             Self::Helpers => "helpers",
             Self::Patterns => "patterns",
             Self::Selectors => "selectors",
+            Self::Types => "types",
         }
     }
 }
@@ -138,6 +140,22 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::Patterns,
+                ConfigDependency::Tokens,
+                ConfigDependency::Utilities,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::Types,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::Conditions,
+                ConfigDependency::JsxStyleProps,
+                ConfigDependency::Patterns,
+                ConfigDependency::Recipes,
+                ConfigDependency::Syntax,
+                ConfigDependency::Themes,
+                ConfigDependency::Tokens,
+                ConfigDependency::Utilities,
             ]),
         },
         ArtifactNode {
@@ -301,6 +319,7 @@ fn generate_node(
             crate::generators::patterns::generate(ctx, options, node.dependencies)
         }
         ArtifactId::Selectors => crate::generators::selectors::generate(options, node.dependencies),
+        ArtifactId::Types => crate::generators::types::generate(ctx, options, node.dependencies),
     }
 }
 

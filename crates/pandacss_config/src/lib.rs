@@ -1,6 +1,7 @@
 //! Serialized configuration types consumed by the Panda Rust runtime.
 
 mod theme;
+mod type_data;
 mod validate;
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -14,6 +15,13 @@ pub use theme::{
     GradientStops, GradientValue, RecipeConfig, SemanticTokens, SemanticValue, Shadow, ShadowValue,
     StringOrNumber, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap, TokenEntry, TokenGroup,
     TokenNode, Tokens, VariantSelection,
+};
+pub use type_data::{
+    ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind, PatternTypeData,
+    PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition, SelectorTypeData,
+    SlotRecipeTypeDefinition, TokenCategoryTypeData, TokenTypeData, TypeData, TypegenOptions,
+    UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart, VariantTypeData,
+    token_category_type_name, value_alias_name,
 };
 pub use validate::{validate_config, validate_config_value, validation_mode_from_value};
 
@@ -77,6 +85,10 @@ pub struct UserConfig {
     pub preflight: PreflightConfig,
     #[serde(default)]
     pub codegen_format: CodegenFormat,
+    #[serde(default, rename = "strictTokens")]
+    pub strict_tokens: bool,
+    #[serde(default, rename = "strictPropertyValues")]
+    pub strict_property_values: bool,
     #[serde(default)]
     pub validation: ValidationMode,
     #[serde(flatten)]

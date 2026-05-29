@@ -279,6 +279,11 @@ Config loading is covered in [Config Loading Design](./config-loading-design.md)
 JavaScript loads and resolves user config, then passes Rust a serialized `CodegenInput` with any source strings needed by
 generated artifacts.
 
+## Generated Types
+
+Generated type strategy is covered in [Generated Types Design](./generated-types-design.md). The key direction is to
+preserve autocomplete and recursive CSS nesting while replacing repeated inline unions with stable generated aliases.
+
 ## Pattern Transforms
 
 The existing JavaScript generator does not use callback registry files for pattern transforms. It embeds trusted config

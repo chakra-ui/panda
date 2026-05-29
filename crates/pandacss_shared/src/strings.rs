@@ -52,3 +52,22 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     out.push_str(chars.as_str());
     Cow::Owned(out)
 }
+
+#[must_use]
+pub fn pascal_case(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut uppercase = true;
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() {
+            if uppercase {
+                out.push(ch.to_ascii_uppercase());
+                uppercase = false;
+            } else {
+                out.push(ch);
+            }
+        } else {
+            uppercase = true;
+        }
+    }
+    if out.is_empty() { "_".into() } else { out }
+}
