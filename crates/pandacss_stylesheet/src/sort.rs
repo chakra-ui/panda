@@ -1,3 +1,12 @@
+//! Deterministic cascade ordering for emitted rules.
+//!
+//! Atoms/recipe entries are sorted by a composite [`CssRuleKey`] so the output
+//! cascade is stable and correct regardless of extraction order: unconditional
+//! rules first, then selector-conditioned, then at-rule-conditioned; within
+//! those, by media-query width, pseudo-class priority, and finally property
+//! specificity (longhands after shorthands so they win the cascade). Mirrors
+//! the JS sort in `packages/core`.
+
 use std::cmp::Ordering;
 
 use pandacss_config::{ConditionQuery, UserConfig};
@@ -132,6 +141,9 @@ impl<'a> SortContext<'a> {
     }
 }
 
+/// Total sort key for one rule. Fields are compared in declaration order
+/// (`bucket` → `at_rules` → `selectors` → `property_priority` → `property_axis`)
+/// via the `Ord` impl below — earlier fields dominate.
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct CssRuleKey {
     bucket: RuleBucket,
@@ -177,6 +189,8 @@ impl PartialOrd for CssRuleKey {
     }
 }
 
+/// Top-level grouping: unconditional rules emit before selector-conditioned,
+/// which emit before at-rule-conditioned. Variant order = cascade order.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 enum RuleBucket {
     Base,
@@ -303,6 +317,9 @@ struct QueryWidth {
 }
 
 impl QueryWidth {
+    /// Sort weight: `min-width` ascends (mobile-first), `max-width` descends
+    /// (negated) so the larger breakpoint comes first — matching how each
+    /// direction must cascade.
     fn sort_value(self) -> f64 {
         match self.direction {
             QueryDirection::Min | QueryDirection::Unknown => self.value,
@@ -498,6 +515,9 @@ fn length_after(query: &str, needle: &str) -> Option<f64> {
     parse_length_px(&query[index..])
 }
 
+/// Parse a leading length into px-equivalent so different units sort
+/// comparably. `em`/`rem`/`ch`/`ex` use default-font-metric approximations;
+/// unknown units sort last (`INFINITY`).
 fn parse_length_px(input: &str) -> Option<f64> {
     let input = input.trim_start_matches(|ch: char| ch.is_whitespace() || ch == '(');
     let number_len = input
@@ -537,6 +557,8 @@ fn pseudo_priority(pseudo: &str) -> u16 {
         .unwrap_or(40)
 }
 
+/// Iterate the pseudo-*classes* (`:hover`, `:focus`, …) in a selector,
+/// skipping pseudo-*elements* (`::before`) which don't affect class priority.
 fn pseudo_classes(selector: &str) -> PseudoClasses<'_> {
     PseudoClasses {
         selector,
@@ -586,6 +608,10 @@ fn is_pseudo_element(selector: &str) -> bool {
     selector.contains("::")
 }
 
+/// Cascade weight by property breadth: `all` and custom props first, then
+/// shorthands-of-shorthands → shorthands → logical longhands → physical
+/// longhands. Longhands rank highest so they override the shorthands they
+/// expand within the same layer.
 fn property_priority(prop: &str) -> u16 {
     if prop == "all" {
         return 0;

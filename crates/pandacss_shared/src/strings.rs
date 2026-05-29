@@ -36,6 +36,9 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     let Some(first) = chars.next() else {
         return Cow::Borrowed(value);
     };
+
+    // Borrow unchanged when the first char already uppercases to itself (the
+    // common case for class names) — avoids an allocation.
     let mut uppercase = first.to_uppercase();
     let Some(first_upper) = uppercase.next() else {
         return Cow::Borrowed(value);
@@ -48,36 +51,4 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     out.extend(first.to_uppercase());
     out.push_str(chars.as_str());
     Cow::Owned(out)
-}
-
-#[must_use]
-pub fn dash_case(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    for ch in value.chars() {
-        if ch.is_ascii_uppercase() {
-            out.push('-');
-            out.push(ch.to_ascii_lowercase());
-        } else {
-            out.push(ch);
-        }
-    }
-    out
-}
-
-#[must_use]
-pub fn escape_css_var_name(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    for ch in value.chars() {
-        if ch.is_ascii_alphanumeric()
-            || ch == '_'
-            || ch == '-'
-            || ('\u{0081}'..='\u{ffff}').contains(&ch)
-        {
-            out.push(ch);
-        } else {
-            out.push('\\');
-            out.push(ch);
-        }
-    }
-    out
 }

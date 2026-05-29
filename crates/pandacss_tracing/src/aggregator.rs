@@ -74,6 +74,7 @@ impl SpanTimings {
                 count: accum.count,
             })
             .collect();
+
         out.sort_by(|a, b| b.total_nanos.cmp(&a.total_nanos));
         out
     }
@@ -114,6 +115,7 @@ where
     fn on_new_span(&self, _attrs: &Attributes<'_>, _id: &Id, _ctx: Context<'_, S>) {}
 
     fn on_enter(&self, id: &Id, ctx: Context<'_, S>) {
+        // Stamp the entry time on the span itself so re-entry nests correctly.
         if let Some(span) = ctx.span(id) {
             span.extensions_mut().insert(EnteredAt(Instant::now()));
         }
@@ -121,10 +123,13 @@ where
 
     fn on_exit(&self, id: &Id, ctx: Context<'_, S>) {
         let Some(span) = ctx.span(id) else { return };
+
+        // Pair with the `on_enter` stamp; absent means we never saw the enter.
         let entered = span.extensions_mut().remove::<EnteredAt>();
         let Some(EnteredAt(start)) = entered else {
             return;
         };
+
         let elapsed = start.elapsed().as_nanos();
         let name = span.metadata().name();
         self.timings.add(name, elapsed);

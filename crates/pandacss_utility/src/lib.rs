@@ -122,17 +122,21 @@ impl Utility {
         let Some(config) = self.properties.get(key) else {
             return Vec::new();
         };
+
+        // Explicit value keys win; otherwise fall back to the token category.
         if !config.values.is_empty() {
             let mut keys: Vec<_> = config.values.keys().cloned().collect();
             keys.sort();
             return keys;
         }
+
         let Some(category) = &config.values_category else {
             return Vec::new();
         };
         let Some(tokens) = &self.tokens else {
             return Vec::new();
         };
+
         let category = TokenCategory::from_path_segment(category);
         tokens
             .category_values_str(&category)
@@ -206,6 +210,7 @@ impl Utility {
         if self.prefix.is_empty() {
             return class_name;
         }
+
         let mut out = String::with_capacity(self.prefix.len() + class_name.len() + 1);
         out.push_str(&self.prefix);
         out.push('-');
@@ -236,6 +241,7 @@ impl Utility {
         let class_value = without_space(value);
         let style_value = self.expand_reference_in_value(&arbitrary_value(value));
         let styles = self.default_style(key, &self.raw_property_value(key, &style_value));
+
         UtilityTransformResult {
             layer: self
                 .properties
@@ -304,14 +310,17 @@ impl Utility {
         let Some(config) = self.properties.get(prop) else {
             return Literal::String(value.to_owned());
         };
+
         if let Some(value) = config.values.get(value) {
             return value.clone();
         }
+
         if let Some(category) = &config.values_category
             && let Some(value) = self.token_category_value(category, value)
         {
             return Literal::String(value.to_owned());
         }
+
         Literal::String(value.to_owned())
     }
 
@@ -329,6 +338,8 @@ impl Utility {
         ) {
             return self.expand_styles_tree(value);
         }
+
+        // A `--custom-prop` string value may itself reference a token var.
         let value = if prop.starts_with("--") {
             if let Literal::String(value) = value
                 && let Some(tokens) = &self.tokens
@@ -341,6 +352,7 @@ impl Utility {
         } else {
             value.clone()
         };
+
         Literal::Object(vec![(prop.to_owned(), value)])
     }
 
@@ -464,6 +476,8 @@ impl StyleNormalizer<'_> {
             );
         }
 
+        // With breakpoints, a positional array becomes a keyed object
+        // (`["a", "b"]` -> `{ sm: "a", md: "b" }`); `null` slots are skipped.
         let mut out = Vec::with_capacity(items.len().min(self.breakpoints.len()));
         for (index, item) in items.iter().enumerate() {
             let Some(key) = self.breakpoints.get(index) else {
@@ -472,8 +486,10 @@ impl StyleNormalizer<'_> {
             if matches!(item, Literal::Null) {
                 continue;
             }
+
             Literal::upsert_object_entry(&mut out, key.clone(), self.normalize_owned(item));
         }
+
         Literal::Object(out)
     }
 }
@@ -646,15 +662,21 @@ pub fn hyphenate_property(property: &str) -> String {
             out.push(ch);
         }
     }
+
+    // `msTransform` hyphenates to `ms-transform`, but the vendor prefix needs
+    // a leading dash: `-ms-transform`.
     if let Some(rest) = out.strip_prefix("ms-") {
         let mut prefixed = String::with_capacity(out.len() + 1);
         prefixed.push_str("-ms-");
         prefixed.push_str(rest);
         return prefixed;
     }
+
     out
 }
 
+/// Unwrap the `[arbitrary]` escape hatch (`[2px]` -> `2px`), but only when the
+/// brackets balance — a stray inner `]` leaves the value untouched.
 fn arbitrary_value(value: &str) -> String {
     let value = value.trim();
     if !value.starts_with('[') || !value.ends_with(']') {
@@ -684,6 +706,8 @@ fn expand_token_references(value: &str, tokens: &TokenDictionary) -> String {
     replace_token_functions(&with_braces, tokens)
 }
 
+/// Replace each `{token.path}` occurrence with its CSS-var form, leaving an
+/// unterminated `{` (no closing brace) and the rest of the string verbatim.
 fn replace_wrapped_references(
     value: &str,
     open: char,
@@ -707,6 +731,9 @@ fn replace_wrapped_references(
     out
 }
 
+/// Replace each `token(path, fallback?)` call with the resolved var, using the
+/// fallback (or the raw path) when the token is unknown. Paren-matched so
+/// nested `token(...)` args don't truncate early.
 fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;

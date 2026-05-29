@@ -1,3 +1,7 @@
+//! Serialize typed token values (shadows, borders, gradients, assets, …) to
+//! their final CSS string form. Ports the per-category transformers from
+//! `packages/core`'s token pipeline; output must match the JS strings byte-for-byte.
+
 use pandacss_config::{
     AssetType, AssetValue, BorderStyle, BorderValue, EasingValue, FontValue, GradientStops,
     GradientValue, Shadow, ShadowValue, StringOrNumber,
@@ -189,6 +193,9 @@ fn px(value: &StringOrNumber) -> String {
     }
 }
 
+/// Coerce a border-width value to a CSS length. Unlike [`px`], a string that
+/// already carries a unit (or a token reference) passes through untouched;
+/// only bare numbers get `px` appended.
 fn to_unit(value: &StringOrNumber) -> String {
     match value {
         StringOrNumber::Number(value) => {
@@ -235,11 +242,14 @@ fn has_reference(value: &str) -> bool {
     value.contains('{') || value.contains("token(")
 }
 
+/// Heuristic: does `value` already end in a unit? `0` counts; otherwise there
+/// must be a trailing alphabetic/`%` run after the last digit (`12px`, `50%`).
 fn is_css_unit(value: &str) -> bool {
     let value = value.trim();
     if value == "0" {
         return true;
     }
+
     let Some(last_digit_index) = value
         .char_indices()
         .rev()
@@ -247,6 +257,7 @@ fn is_css_unit(value: &str) -> bool {
     else {
         return false;
     };
+
     value[last_digit_index + 1..]
         .chars()
         .any(|ch| ch.is_ascii_alphabetic() || ch == '%')

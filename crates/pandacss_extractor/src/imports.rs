@@ -1,3 +1,7 @@
+//! Scan a file's `import` statements into [`ImportRecord`]s (named / default /
+//! namespace / side-effect, with type-only flags and spans) — the raw input
+//! the [`crate::matcher`] later filters against the configured import map.
+
 use crate::{Diagnostic, Span, diagnostic_codes, span_from_oxc};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{

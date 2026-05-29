@@ -92,6 +92,10 @@ pub struct StylesheetInput<'a> {
     pub static_pattern_atoms: &'a [Atom],
 }
 
+/// Compile the project's atoms + recipes (plus the static-CSS subset when
+/// `include_static` is set) into a single stylesheet. Diagnostics for
+/// unsupported config (`preflight.scope`, layer-name collisions, …) are
+/// collected alongside the CSS rather than failing the compile.
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
@@ -104,6 +108,9 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
             "preflight.scope and preflight.level are not yet supported by the native compiler — emitting the default preflight",
         ));
     }
+
+    // Use the caller's token dictionary, else build one from config (a build
+    // failure degrades to no tokens + a diagnostic rather than aborting).
     let token_dictionary = match input.token_dictionary {
         Some(dictionary) => Some(dictionary),
         None => match TokenDictionary::from_config(input.config) {
@@ -118,6 +125,9 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         },
     };
     let utility = utility_from_config(input.config, token_dictionary.clone());
+
+    // Assemble the atom set: extracted atoms + (optionally) static-CSS and
+    // static-pattern atoms.
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
         static_css::expand(input.config, &utility, &mut diagnostics)
@@ -133,6 +143,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         atoms.extend(input.static_pattern_atoms.iter());
     }
 
+    // Fold any precomputed static recipe snapshot into the dynamic recipes.
     let encoded_recipes = if options.include_static {
         if input.static_encoded_recipes.is_none() && static_css::has_static_recipes(input.config) {
             diagnostics.push(Diagnostic::warning(
@@ -206,6 +217,9 @@ fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictiona
     utility
 }
 
+/// Merge a static recipe snapshot into the dynamic one: recipe groups with the
+/// same `(recipe, slot, class)` key have their entries concatenated; atoms are
+/// unioned (deduped).
 fn merge_encoded_recipes(
     base: &EncodedRecipesSnapshot,
     static_recipes: &EncodedRecipesSnapshot,
@@ -229,6 +243,8 @@ fn is_empty_encoded_recipes(recipes: &EncodedRecipesSnapshot) -> bool {
     recipes.base.is_empty() && recipes.variants.is_empty() && recipes.atomic.is_empty()
 }
 
+/// Append `source` groups into `target`, merging entries into an existing
+/// group when their `(recipe, slot, class)` key already exists.
 fn extend_recipe_groups(
     target: &mut Vec<RecipeStyleGroupSnapshot>,
     source: &[RecipeStyleGroupSnapshot],

@@ -1,3 +1,7 @@
+//! Extract JSX style-prop usages (`<Box mt="4" />`, `<styled.div color="red" />`,
+//! `<JSX.Stack>`) into a single style object per element, merging literal
+//! `{...spread}` attributes in source order.
+
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
     Matchers, Span, VisitorContext, css_template::css_template_to_object,

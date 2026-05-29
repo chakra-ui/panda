@@ -93,6 +93,7 @@ impl FileSystem for OsFileSystem {
             });
 
         for entry in walker {
+            // Tolerate permission errors mid-walk; fail on anything else.
             let entry = match entry {
                 Ok(e) => e,
                 Err(err)
@@ -104,12 +105,15 @@ impl FileSystem for OsFileSystem {
                 }
                 Err(err) => return Err(io::Error::other(err)),
             };
+
             if !entry.file_type().is_file() {
                 continue;
             }
+
             let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
             let rel_str = rel.to_string_lossy();
             let rel_bytes = rel_str.as_bytes();
+
             if opts
                 .include
                 .iter()

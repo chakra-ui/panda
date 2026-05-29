@@ -1,3 +1,15 @@
+//! Recipe compilation, resolution, and the incremental encoded-recipe cache.
+//!
+//! Three layers:
+//! - [`RecipeRegistry`] compiles config recipe/slot-recipe definitions into
+//!   resolved nodes (`base`, `variants`, `compoundVariants` pre-encoded to
+//!   atoms / style entries) and indexes them for JSX-name lookup.
+//! - Usage resolution (`process_usage`) takes a call/JSX usage's props, picks
+//!   the selected variants (with config defaults), and emits the matching
+//!   style groups.
+//! - `EncodedRecipesCache` keeps a refcounted union of encoded groups across
+//!   files so watch-mode add/remove is O(changed), mirroring the atom cache.
+
 use regex::RegexSet;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
@@ -18,6 +30,9 @@ use pandacss_utility::{StyleNormalizer, Utility};
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
 use crate::{ProjectConditionMatcher, literal_entries};
 
+/// Compiled config recipes, indexed for resolution and JSX-tag lookup.
+/// `jsx_to_recipes` handles exact tag matches; `regex_jsx_*` handle the
+/// regex-specifier matches via a single combined [`RegexSet`].
 #[derive(Debug, Clone, Default)]
 pub(crate) struct RecipeRegistry {
     recipes: FxHashMap<Box<str>, RecipeNode>,
@@ -49,6 +64,9 @@ struct SlotRecipeNode {
     compounds: Vec<ResolvedCompoundVariant>,
 }
 
+/// A `base` block or one variant option, pre-resolved: its class name plus the
+/// style entries it contributes. `Resolved*` types are the compiled form the
+/// registry holds so usage resolution is a lookup, not a re-parse.
 #[derive(Debug, Clone)]
 struct ResolvedRecipePart {
     class_name: Box<str>,
@@ -747,6 +765,9 @@ impl EncodedRecipes {
         self.base.is_empty() && self.variants.is_empty() && self.atomic.is_empty()
     }
 
+    /// Record the style groups one recipe usage contributes: its `base` plus
+    /// every selected variant option (and matching compound variants). Dispatches
+    /// to the recipe vs slot-recipe path; unknown names are no-ops.
     pub(crate) fn process_usage(
         &mut self,
         recipes: &RecipeRegistry,
@@ -1198,6 +1219,10 @@ struct SelectedVariantValue {
     conditions: SmallVec<[Box<str>; 2]>,
 }
 
+/// Resolve which variant value(s) a usage selects per variant prop, starting
+/// from the recipe's `defaultVariants` and overriding with the usage's props.
+/// A value may be responsive/conditional (`size={{ base: 'sm', md: 'lg' }}`),
+/// so each selection carries the conditions under which it applies.
 fn selected_variants(
     defaults: &FxHashMap<Box<str>, Box<str>>,
     selected: &Literal,
@@ -1229,6 +1254,9 @@ fn selected_variants(
     out
 }
 
+/// Walk a variant value, descending through condition keys (`base`, `md`, …)
+/// while accumulating the condition `path`, and record each leaf variant key
+/// with the conditions it was found under.
 fn collect_selected_variant_values(
     value: &Literal,
     conditions: &ProjectConditionMatcher,
@@ -1288,6 +1316,10 @@ struct StyleLeaf<'a> {
     conditions: SmallVec<[Box<str>; 2]>,
 }
 
+/// Visit each leaf of a recipe style object, handing the callback the property
+/// name (first non-condition segment) and the condition chain *below* it.
+/// Recipe-specific cousin of the encoder's atom walker, emitting
+/// [`RecipeStyleEntry`] rather than atoms.
 fn walk_style_object<F>(value: &Literal, conditions: &ProjectConditionMatcher, mut visit: F)
 where
     F: FnMut(StyleLeaf<'_>),

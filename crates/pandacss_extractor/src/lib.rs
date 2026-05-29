@@ -1,4 +1,12 @@
 //! Oxc-based source extractor for Panda usages.
+//!
+//! Per file, one parse drives the pipeline: [`scan_imports`] reads imports →
+//! [`match_imports`] matches them against the configured import map →
+//! [`extract_calls`]/[`extract_jsx`] find `css()`/`cva()`/styled-prop usages →
+//! the [`literal`] evaluator folds each argument to a static [`Literal`], using
+//! [`scope`] for same-file identifier resolution and [`cross_file`] for
+//! imported references. [`extract`] runs the whole thing; the individual
+//! entrypoints exist for tooling and parity tests.
 
 mod calls;
 mod cross_file;

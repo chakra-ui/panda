@@ -116,8 +116,10 @@ impl Atom {
         if prefix.is_empty() {
             return self.clone();
         }
+
         let mut conditions = prefix.clone();
         conditions.extend(self.conditions.iter().cloned());
+
         Self::new(
             self.prop.clone(),
             self.value.clone(),
@@ -313,6 +315,8 @@ impl<C: ConditionMatcher> Encoder<C> {
             }
             return;
         }
+
+        // Leaf: the accumulated path becomes one atom.
         if let Some(atom) = Self::atom_from_path(path, value) {
             self.atoms.insert(atom);
         }
@@ -363,6 +367,7 @@ impl<C: ConditionMatcher> Encoder<C> {
                     Some(prop) => norm.normalize_leaf(prop, value),
                     None => Cow::Borrowed(value),
                 };
+
                 if let Some(atom) = Self::atom_from_path(path, normalized.as_ref()) {
                     self.atoms.insert(atom);
                 }
@@ -379,6 +384,7 @@ impl<C: ConditionMatcher> Encoder<C> {
             .filter(|s| s.is_condition && s.name != "base")
             .map(|s| s.name.into())
             .collect();
+
         let leaf = leaf_to_atom_value(leaf)?;
         Some(Atom::new(prop, leaf.value, conditions, leaf.important))
     }

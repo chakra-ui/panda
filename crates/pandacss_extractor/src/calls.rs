@@ -1,3 +1,6 @@
+//! Extract Panda function-call usages (`css({…})`, `cva({…})`, `p.css({…})`,
+//! pattern/recipe calls) and fold each argument to a [`Literal`].
+
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
     css_template::css_template_to_object, literal::expression_to_literal, span_from_oxc,
