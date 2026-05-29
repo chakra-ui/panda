@@ -49,7 +49,7 @@ incremental, refcounted union.
 Atoms + recipes → CSS rules: conditions → selectors / media queries, class names, cascade layers, and the supported
 native static CSS subset. The crate emits formatted CSS or writer-minified CSS directly; it does not parse CSS.
 
-Covered today: `globalCss` + `globalVars` (base layer), `theme.tokens` + `theme.semanticTokens` + `theme.keyframes`
+Covered today: `globalCss` + `globalVars` + `globalFontface` + `globalPositionTry` (base layer), `theme.tokens` + `theme.semanticTokens` + `theme.keyframes`
 (tokens layer), reset CSS when `preflight` is enabled, configured cascade-layer names + custom per-utility sub-layers
 (nested in utilities), and the supported `staticCss` subset (`staticCss.css`, `staticCss.recipes`, global
 `recipes: "*"`, recipe-level `recipe.staticCss`, slot recipes, compound variant CSS, responsive/configured condition

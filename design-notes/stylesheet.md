@@ -30,6 +30,11 @@ The stylesheet crate owns:
   - string values become custom property declarations under `cssVarRoot`, defaulting to `:where(:root, :host)`
   - object values become top-level `@property` registrations
   - malformed entries are ignored rather than diagnosed
+- Base-layer `globalFontface` (`@font-face`) and `globalPositionTry` (`@position-try`) emission:
+  - each entry's value may be a single rule object or an array (one block per rule)
+  - `globalFontface` writes `font-family` from the key, then the rule's descriptors
+  - `globalPositionTry` dashed-ident-normalizes the key (`flip` → `--flip`)
+  - array-valued descriptors (e.g. multi-source `src`) join with `,`, matching v1
 - The supported native `staticCss` subset:
   - `staticCss.css`
   - `staticCss.recipes`

@@ -40,6 +40,8 @@ pub fn emit<'a>(
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
             cx.serialize_styles(writer, &config.global_css);
             cx.serialize_global_vars(writer);
+            serialize_global_fontface(writer, &config.global_fontface);
+            serialize_global_position_try(writer, &config.global_position_try);
         }));
     }
     let token_vars = token_dictionary.map(TokenDictionary::css_vars);
@@ -53,7 +55,7 @@ pub fn emit<'a>(
                 cx.serialize_token_vars(writer, token_vars);
             }
             if let Some(keyframes) = keyframes {
-                EmitContext::serialize_keyframes(writer, keyframes);
+                serialize_keyframes(writer, keyframes);
             }
         }));
     }
@@ -146,6 +148,23 @@ fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>>
     (!entries.is_empty()).then_some(entries)
 }
 
+/// Emits `@keyframes name { selector { declarations } ... }` for each entry.
+/// Purpose-built walker — the body is flat `(selector -> declarations)`, no
+/// condition resolution, nested rules, or shorthand expansion, so we skip the
+/// `serialize_styles` machinery and write a primitive-only declaration loop.
+fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<String, Value>) {
+    for (name, body) in keyframes {
+        let Some(selectors) = as_non_empty_object(body) else {
+            continue;
+        };
+        writer.at_rule_named("@keyframes ", name, |writer| {
+            for (selector, declarations) in selectors {
+                write_keyframe_selector(writer, selector, declarations);
+            }
+        });
+    }
+}
+
 /// Write one keyframe selector block (`0%` / `from` / `to` etc.). Skips
 /// non-primitive leaves silently — matches v1's lenient stringify.
 fn write_keyframe_selector(writer: &mut CssWriter, selector: &str, declarations: &Value) {
@@ -161,6 +180,81 @@ fn write_keyframe_selector(writer: &mut CssWriter, selector: &str, declarations:
             writer.declaration(&hyphenate_property(prop), value.as_ref(), important);
         }
     });
+}
+
+/// Emit `@font-face` blocks from `globalFontface`
+/// (`{ family: FontfaceRule | FontfaceRule[] }`). `font-family` is written
+/// first; an array value produces one block per rule (e.g. per weight).
+fn serialize_global_fontface(writer: &mut CssWriter, value: &Value) {
+    let Some(families) = as_non_empty_object(value) else {
+        return;
+    };
+    for (family, rules) in families {
+        for rule in at_rule_variants(rules) {
+            let Value::Object(body) = rule else {
+                continue;
+            };
+            writer.at_rule("@font-face", |writer| {
+                writer.declaration("font-family", family, false);
+                write_at_rule_descriptors(writer, body);
+            });
+        }
+    }
+}
+
+/// Emit `@position-try` blocks from `globalPositionTry`. The name is
+/// dashed-ident-normalized (`foo` -> `--foo`), matching v1.
+fn serialize_global_position_try(writer: &mut CssWriter, value: &Value) {
+    let Some(entries) = as_non_empty_object(value) else {
+        return;
+    };
+    for (name, rules) in entries {
+        let ident = if name.starts_with("--") {
+            Cow::Borrowed(name.as_str())
+        } else {
+            Cow::Owned(format!("--{name}"))
+        };
+        for rule in at_rule_variants(rules) {
+            let Value::Object(body) = rule else {
+                continue;
+            };
+            writer.at_rule_named("@position-try ", &ident, |writer| {
+                write_at_rule_descriptors(writer, body);
+            });
+        }
+    }
+}
+
+/// A single rule object or an array of them, as one slice — the
+/// `FontfaceRule | FontfaceRule[]` shape both globals share.
+fn at_rule_variants(value: &Value) -> &[Value] {
+    match value {
+        Value::Array(items) => items.as_slice(),
+        _ => std::slice::from_ref(value),
+    }
+}
+
+/// Write a flat at-rule descriptor block (no nesting): hyphenated property,
+/// rendered value. `false` and structural values are skipped.
+fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<String, Value>) {
+    for (prop, value) in body {
+        if let Some(rendered) = render_descriptor_value(value) {
+            writer.declaration(&hyphenate_property(prop), &rendered, false);
+        }
+    }
+}
+
+/// Render an at-rule descriptor value. Scalars defer to
+/// [`render_primitive_value`]; arrays join with `,` (matching v1's
+/// `String(array)` for multi-source `src`).
+fn render_descriptor_value(value: &Value) -> Option<String> {
+    match value {
+        Value::Array(items) => {
+            let parts: Vec<String> = items.iter().filter_map(render_descriptor_value).collect();
+            (!parts.is_empty()).then(|| parts.join(","))
+        }
+        _ => render_primitive_value(value).map(Cow::into_owned),
+    }
 }
 
 /// Render a JSON value as a CSS-safe string. `Cow::Borrowed` for strings
@@ -185,7 +279,10 @@ fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
 }
 
 fn has_base_layer(config: &UserConfig) -> bool {
-    as_non_empty_object(&config.global_css).is_some() || has_global_vars(&config.global_vars)
+    as_non_empty_object(&config.global_css).is_some()
+        || has_global_vars(&config.global_vars)
+        || as_non_empty_object(&config.global_fontface).is_some()
+        || as_non_empty_object(&config.global_position_try).is_some()
 }
 
 fn has_global_vars(value: &Value) -> bool {
@@ -460,24 +557,6 @@ impl<'a> EmitContext<'a> {
             base: vars.base.as_slice(),
             conditions,
         })
-    }
-
-    /// Emits `@keyframes name { selector { declarations } ... }` for each
-    /// entry. Purpose-built walker — the body is flat
-    /// `(selector -> declarations)`, no condition resolution, no nested
-    /// rules, no shorthand expansion, so we skip the `serialize_styles`
-    /// machinery and write a primitive-only declaration loop.
-    fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<String, Value>) {
-        for (name, body) in keyframes {
-            let Some(selectors) = as_non_empty_object(body) else {
-                continue;
-            };
-            writer.at_rule_named("@keyframes ", name, |writer| {
-                for (selector, declarations) in selectors {
-                    write_keyframe_selector(writer, selector, declarations);
-                }
-            });
-        }
     }
 
     fn serialize_token_vars(&self, writer: &mut CssWriter, vars: &PreparedTokenVars<'_>) {
