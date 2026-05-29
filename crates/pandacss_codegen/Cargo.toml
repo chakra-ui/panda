@@ -10,6 +10,7 @@ publish = false
 [dependencies]
 indoc = { workspace = true }
 pandacss_config = { workspace = true }
+pandacss_shared = { workspace = true }
 serde_json = { workspace = true }
 
 [dev-dependencies]

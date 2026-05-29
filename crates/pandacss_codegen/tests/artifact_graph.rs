@@ -23,6 +23,7 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Helpers,
             ArtifactId::Selectors,
             ArtifactId::Patterns,
+            ArtifactId::Types,
             ArtifactId::Cx,
             ArtifactId::CssIndex,
             ArtifactId::Conditions
@@ -38,14 +39,20 @@ fn filters_artifacts_by_config_dependencies() {
             .iter()
             .map(|artifact| artifact.id)
             .collect::<Vec<_>>(),
-        vec![ArtifactId::Conditions]
+        vec![ArtifactId::Types, ArtifactId::Conditions]
     );
 
     let unaffected = graph.generate_affected(
         DependencySet::one(ConfigDependency::Recipes),
         GenerateOptions::default(),
     );
-    assert!(unaffected.is_empty());
+    assert_eq!(
+        unaffected
+            .iter()
+            .map(|artifact| artifact.id)
+            .collect::<Vec<_>>(),
+        vec![ArtifactId::Types]
+    );
 
     let pattern_changes = graph.generate_affected(
         DependencySet::one(ConfigDependency::Patterns),
@@ -56,7 +63,7 @@ fn filters_artifacts_by_config_dependencies() {
             .iter()
             .map(|artifact| artifact.id)
             .collect::<Vec<_>>(),
-        vec![ArtifactId::Patterns]
+        vec![ArtifactId::Patterns, ArtifactId::Types]
     );
 }
 
@@ -90,4 +97,18 @@ fn emitted_files_carry_config_dependencies() {
     let dependencies = file_dependencies(patterns, "patterns/stack.mjs");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Patterns));
+    assert!(dependencies.contains(ConfigDependency::Tokens));
+    assert!(dependencies.contains(ConfigDependency::Utilities));
+
+    let types = artifact(&artifacts, ArtifactId::Types);
+    let dependencies = file_dependencies(types, "types/tokens.d.mts");
+    assert!(dependencies.contains(ConfigDependency::CodegenFormat));
+    assert!(dependencies.contains(ConfigDependency::Tokens));
+    assert!(dependencies.contains(ConfigDependency::Themes));
+
+    let dependencies = file_dependencies(types, "types/properties.d.mts");
+    assert!(dependencies.contains(ConfigDependency::CodegenFormat));
+    assert!(dependencies.contains(ConfigDependency::Tokens));
+    assert!(dependencies.contains(ConfigDependency::Utilities));
+    assert!(dependencies.contains(ConfigDependency::Syntax));
 }

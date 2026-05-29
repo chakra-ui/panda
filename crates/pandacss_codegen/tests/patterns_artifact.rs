@@ -6,7 +6,10 @@ use pandacss_codegen::{
     ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
     PatternCodegenMeta,
 };
-use pandacss_config::{CodegenFormat, UserConfig};
+use pandacss_config::{
+    CodegenFormat, PrimitiveType, TypeData, UserConfig, UtilityPropertyTypeData, UtilityTypeData,
+    ValueAliasTypeData, ValueTypePart,
+};
 use std::collections::BTreeMap;
 
 fn config() -> UserConfig {
@@ -27,6 +30,7 @@ fn config() -> UserConfig {
 }
 
 fn input() -> CodegenInput {
+    let config = config();
     let mut patterns = BTreeMap::new();
     patterns.insert(
         "stack".into(),
@@ -51,8 +55,73 @@ fn input() -> CodegenInput {
     );
 
     CodegenInput {
-        config: config(),
+        types: type_data(&config),
+        config,
         patterns,
+    }
+}
+
+fn type_data(config: &UserConfig) -> TypeData {
+    TypeData {
+        patterns: config.pattern_type_data(),
+        utilities: utility_type_data(),
+        ..TypeData::default()
+    }
+}
+
+fn utility_type_data() -> UtilityTypeData {
+    let string_value = ValueAliasTypeData {
+        name: "StringValue".into(),
+        parts: vec![
+            ValueTypePart::Primitive(PrimitiveType::String),
+            ValueTypePart::CssVars,
+            ValueTypePart::AnyString,
+        ],
+    };
+
+    let spacing_value = ValueAliasTypeData {
+        name: "SpacingValue".into(),
+        parts: vec![
+            ValueTypePart::TokenCategory("spacing".into()),
+            ValueTypePart::CssProperty("gap".into()),
+            ValueTypePart::CssVars,
+            ValueTypePart::AnyString,
+            ValueTypePart::AnyNumber,
+        ],
+    };
+
+    let properties = ["alignItems", "flexDirection", "justifyContent"]
+        .into_iter()
+        .map(|name| {
+            (
+                name.to_owned(),
+                UtilityPropertyTypeData {
+                    name: name.to_owned(),
+                    css_property: Some(name.to_owned()),
+                    alias: "StringValue".into(),
+                    ..UtilityPropertyTypeData::default()
+                },
+            )
+        })
+        .chain(std::iter::once((
+            "gap".into(),
+            UtilityPropertyTypeData {
+                name: "gap".into(),
+                css_property: Some("gap".into()),
+                token_category: Some("spacing".into()),
+                alias: "SpacingValue".into(),
+                ..UtilityPropertyTypeData::default()
+            },
+        )))
+        .collect();
+
+    UtilityTypeData {
+        properties,
+        aliases: BTreeMap::from([
+            ("SpacingValue".into(), spacing_value),
+            ("StringValue".into(), string_value),
+        ]),
+        ..UtilityTypeData::default()
     }
 }
 
@@ -77,7 +146,9 @@ fn emits_ts_source() {
         indoc! {r#"
         import { getPatternStyles, patternFns } from '../helpers';
 
-        const stackConfig: Record<string, any> = {
+        import type { PatternRuntimeConfig, SystemProperties, SystemStyleObject } from '../types';
+
+        const stackConfig: PatternRuntimeConfig<StackProperties> = {
           transform(props, helpers) {
             return {
               display: "flex",
@@ -94,21 +165,23 @@ fn emits_ts_source() {
           /**
            * Align items
            */
-          align?: any
-          direction?: any
-          gap?: any
-          justify?: any
+          align?: SystemProperties["alignItems"]
+          direction?: SystemProperties["flexDirection"]
+          gap?: SystemProperties["gap"]
+          justify?: SystemProperties["justifyContent"]
           className?: string
         }
 
-        interface StackStyles extends StackProperties, Record<string, any> {}
+        type StackRestStyles = Omit<SystemStyleObject, keyof StackProperties>
+
+        interface StackStyles extends StackProperties, StackRestStyles {}
 
         interface StackPatternFn {
-          (styles?: StackStyles): Record<string, any>
-          raw: (styles?: StackStyles) => Record<string, any>
+          (styles?: StackStyles): SystemStyleObject
+          raw: (styles?: StackStyles) => SystemStyleObject
         }
 
-        export function stackRaw(styles?: StackProperties): Record<string, any> {
+        export function stackRaw(styles?: StackStyles): SystemStyleObject {
           const s = getPatternStyles(stackConfig, styles || {})
           return stackConfig.transform(s, patternFns)
         }
@@ -180,29 +253,33 @@ fn emits_js_runtime_and_declarations() {
     );
     assert_eq!(
         file(patterns, "patterns/stack.d.ts"),
-        indoc! {r"
+        indoc! {r#"
+        import type { PatternRuntimeConfig, SystemProperties, SystemStyleObject } from '../types';
+
         export interface StackProperties {
           /**
            * Align items
            */
-          align?: any
-          direction?: any
-          gap?: any
-          justify?: any
+          align?: SystemProperties["alignItems"]
+          direction?: SystemProperties["flexDirection"]
+          gap?: SystemProperties["gap"]
+          justify?: SystemProperties["justifyContent"]
           className?: string
         }
 
-        interface StackStyles extends StackProperties, Record<string, any> {}
+        type StackRestStyles = Omit<SystemStyleObject, keyof StackProperties>
+
+        interface StackStyles extends StackProperties, StackRestStyles {}
 
         interface StackPatternFn {
-          (styles?: StackStyles): Record<string, any>
-          raw: (styles?: StackStyles) => Record<string, any>
+          (styles?: StackStyles): SystemStyleObject
+          raw: (styles?: StackStyles) => SystemStyleObject
         }
 
-        export declare function stackRaw(styles?: StackProperties): Record<string, any>;
+        export declare function stackRaw(styles?: StackStyles): SystemStyleObject;
 
         export declare const stack: StackPatternFn;
-        "}
+        "#}
         .trim()
     );
 }

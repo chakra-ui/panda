@@ -1,4 +1,9 @@
-use pandacss_config::{PatternConfig, PatternPropertyConfig};
+use std::collections::BTreeSet;
+
+use pandacss_config::{
+    PatternConfig, PatternPropertyConfig, PatternPropertyTypeKind, PatternTypeDefinition,
+};
+use pandacss_shared::pascal_case;
 use serde_json::{Map, Value};
 
 use crate::{
@@ -33,9 +38,10 @@ pub fn files(
     for (name, pattern) in &ctx.config.patterns {
         names.push(file_stem(name));
         let meta = ctx.patterns.get(name);
+        let definition = ctx.types.patterns.patterns.get(name);
         files.extend(emit_module_files(
             &format!("patterns/{}", file_stem(name)),
-            &module(name, pattern, meta),
+            &module_with_type_data(name, pattern, definition, meta),
             options.format,
             false,
             options.specifiers,
@@ -58,7 +64,12 @@ pub fn files(
 }
 
 #[must_use]
-pub fn module(name: &str, pattern: &PatternConfig, meta: Option<&PatternCodegenMeta>) -> Module {
+pub fn module_with_type_data(
+    name: &str,
+    pattern: &PatternConfig,
+    definition: Option<&PatternTypeDefinition>,
+    meta: Option<&PatternCodegenMeta>,
+) -> Module {
     let function_name = ident(name);
     let raw_name = format!("{function_name}Raw");
     let config_name = format!("{function_name}Config");
@@ -66,16 +77,31 @@ pub fn module(name: &str, pattern: &PatternConfig, meta: Option<&PatternCodegenM
     let styles_name = format!("{}Styles", pascal_case(name));
     let fn_type_name = format!("{}PatternFn", pascal_case(name));
 
+    let type_imports = type_imports(pattern, definition);
+
     Module::new()
         .with_import(ImportDecl::value(
             ["getPatternStyles", "patternFns"],
             "../helpers",
         ))
-        .with_item(config_const(&config_name, pattern, meta))
-        .with_item(properties_interface(&type_name, pattern))
-        .with_item(styles_interface(&styles_name, &type_name))
+        .with_import(ImportDecl {
+            kind: crate::ImportKind::Type,
+            specifiers: type_imports
+                .into_iter()
+                .map(crate::ImportSpecifier::Named)
+                .collect(),
+            source: "../types".into(),
+        })
+        .with_item(config_const(&config_name, &type_name, pattern, meta))
+        .with_item(properties_interface(&type_name, pattern, definition))
+        .with_item(styles_interface(
+            &styles_name,
+            &type_name,
+            pattern,
+            definition,
+        ))
         .with_item(pattern_fn_interface(&fn_type_name, &styles_name))
-        .with_item(raw_function(&raw_name, &config_name, &type_name))
+        .with_item(raw_function(&raw_name, &config_name, &styles_name))
         .with_item(public_function_const(
             &function_name,
             &raw_name,
@@ -91,32 +117,114 @@ fn index_module(names: &[String]) -> Module {
     })
 }
 
-fn config_const(name: &str, pattern: &PatternConfig, meta: Option<&PatternCodegenMeta>) -> Item {
+fn type_imports(
+    pattern: &PatternConfig,
+    definition: Option<&PatternTypeDefinition>,
+) -> BTreeSet<String> {
+    let mut imports = BTreeSet::from(["PatternRuntimeConfig".into(), "SystemStyleObject".into()]);
+
+    if let Some(definition) = definition {
+        for property in definition.properties.values() {
+            add_property_type_imports(&mut imports, &property.kind);
+        }
+    } else {
+        for property in pattern.properties.values() {
+            add_fallback_property_type_imports(&mut imports, property);
+        }
+    }
+
+    imports
+}
+
+fn add_property_type_imports(imports: &mut BTreeSet<String>, kind: &PatternPropertyTypeKind) {
+    match kind {
+        PatternPropertyTypeKind::Enum { .. }
+        | PatternPropertyTypeKind::Primitive { .. }
+        | PatternPropertyTypeKind::Unknown => {
+            imports.insert("ConditionalValue".into());
+        }
+        PatternPropertyTypeKind::Token { property, .. } => {
+            imports.insert("ConditionalValue".into());
+            imports.insert("TokenValue".into());
+            if property.is_some() {
+                imports.insert("SystemProperties".into());
+            }
+        }
+        PatternPropertyTypeKind::Property { .. } => {
+            imports.insert("SystemProperties".into());
+        }
+    }
+}
+
+fn add_fallback_property_type_imports(
+    imports: &mut BTreeSet<String>,
+    property: &PatternPropertyConfig,
+) {
+    match property.r#type.as_deref() {
+        Some("string" | "number" | "boolean") | None if property.property.is_none() => {
+            imports.insert("ConditionalValue".into());
+        }
+        _ => {
+            imports.insert("SystemProperties".into());
+        }
+    }
+}
+
+fn config_const(
+    name: &str,
+    properties_name: &str,
+    pattern: &PatternConfig,
+    meta: Option<&PatternCodegenMeta>,
+) -> Item {
     Item::runtime(ItemNode::Const(ConstDecl {
         exported: false,
         declare: false,
         name: name.into(),
-        type_annotation: Some(TsType::Raw("Record<string, any>".into())),
+        type_annotation: Some(TsType::Raw(format!(
+            "PatternRuntimeConfig<{properties_name}>"
+        ))),
         init: Some(crate::Expr::Raw(pattern_config_source(pattern, meta))),
         js_doc: None,
     }))
 }
 
-fn properties_interface(name: &str, pattern: &PatternConfig) -> Item {
-    let mut members = pattern
-        .properties
-        .iter()
-        .map(|(name, property)| TsMember {
+fn properties_interface(
+    name: &str,
+    pattern: &PatternConfig,
+    definition: Option<&PatternTypeDefinition>,
+) -> Item {
+    let mut members = Vec::with_capacity(pattern.properties.len() + 1);
+
+    if let Some(definition) = definition {
+        members.extend(
+            definition
+                .properties
+                .iter()
+                .map(|(name, property)| TsMember {
+                    name: member_name(name),
+                    optional: true,
+                    ty: TsType::Raw(crate::generators::types::pattern_property_type(
+                        &property.kind,
+                    )),
+                    js_doc: property.description.as_ref().map(|description| JsDoc {
+                        text: Some(description.clone()),
+                        deprecated: None,
+                        default: None,
+                    }),
+                }),
+        );
+    } else {
+        members.extend(pattern.properties.iter().map(|(name, property)| TsMember {
             name: member_name(name),
             optional: true,
-            ty: property_type(property),
+            ty: fallback_property_type(property),
             js_doc: property.description.as_ref().map(|description| JsDoc {
                 text: Some(description.clone()),
                 deprecated: None,
                 default: None,
             }),
-        })
-        .collect::<Vec<_>>();
+        }));
+    }
 
     members.push(TsMember {
         name: TsMemberName::Ident("className".into()),
@@ -134,17 +242,35 @@ fn properties_interface(name: &str, pattern: &PatternConfig) -> Item {
     })
 }
 
-fn styles_interface(name: &str, properties_name: &str) -> Item {
-    Item::interface_decl(InterfaceDecl {
-        exported: false,
-        name: name.into(),
-        extends: vec![
-            TsType::Ref(properties_name.into()),
-            TsType::Raw("Record<string, any>".into()),
-        ],
-        members: Vec::new(),
-        js_doc: None,
-    })
+fn styles_interface(
+    name: &str,
+    properties_name: &str,
+    pattern: &PatternConfig,
+    definition: Option<&PatternTypeDefinition>,
+) -> Item {
+    let strict = definition.map_or(pattern.strict, |definition| definition.strict);
+    let blocklist = definition.map_or(pattern.blocklist.as_slice(), |definition| {
+        definition.blocklist.as_slice()
+    });
+
+    let mut omitted_keys = vec![format!("keyof {properties_name}")];
+    omitted_keys.extend(blocklist.iter().map(|key| format!("{key:?}")));
+
+    if strict {
+        return Item::ty(ItemNode::RawStmt(format!(
+            "interface {name} extends {properties_name} {{}}"
+        )));
+    }
+
+    let rest_name = name.replace("Styles", "RestStyles");
+    let rest = format!(
+        "type {rest_name} = Omit<SystemStyleObject, {}>",
+        omitted_keys.join(" | ")
+    );
+
+    Item::ty(ItemNode::RawStmt(format!(
+        "{rest}\n\ninterface {name} extends {properties_name}, {rest_name} {{}}"
+    )))
 }
 
 fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
@@ -156,7 +282,7 @@ fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
             TsMember {
                 name: TsMemberName::Raw(format!("(styles?: {styles_name})")),
                 optional: false,
-                ty: TsType::Raw("Record<string, any>".into()),
+                ty: TsType::Ref("SystemStyleObject".into()),
                 js_doc: None,
             },
             TsMember {
@@ -164,7 +290,7 @@ fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
                 optional: false,
                 ty: TsType::Function {
                     params: vec![Param::optional("styles", TsType::Ref(styles_name.into()))],
-                    ret: Box::new(TsType::Raw("Record<string, any>".into())),
+                    ret: Box::new(TsType::Ref("SystemStyleObject".into())),
                 },
                 js_doc: None,
             },
@@ -173,17 +299,14 @@ fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
     })
 }
 
-fn raw_function(name: &str, config_name: &str, properties_name: &str) -> Item {
+fn raw_function(name: &str, config_name: &str, styles_name: &str) -> Item {
     Item::both(ItemNode::Function(FunctionDecl {
         exported: true,
         declare: false,
         name: name.into(),
         generic_params: Vec::new(),
-        params: vec![Param::optional(
-            "styles",
-            TsType::Ref(properties_name.into()),
-        )],
-        return_type: Some(TsType::Raw("Record<string, any>".into())),
+        params: vec![Param::optional("styles", TsType::Ref(styles_name.into()))],
+        return_type: Some(TsType::Ref("SystemStyleObject".into())),
         body: Some(Block::new(vec![Stmt::Raw(raw_function_body(config_name))])),
         js_doc: None,
     }))
@@ -232,12 +355,15 @@ fn value_to_code(value: &Value) -> String {
     serde_json::to_string(value).expect("pattern config values should serialize")
 }
 
-fn property_type(property: &PatternPropertyConfig) -> TsType {
+fn fallback_property_type(property: &PatternPropertyConfig) -> TsType {
     match property.r#type.as_deref() {
-        Some("string") => TsType::Ref("string".into()),
-        Some("number") => TsType::Ref("number".into()),
-        Some("boolean") => TsType::Ref("boolean".into()),
-        _ => TsType::Raw("any".into()),
+        Some("string") => TsType::Raw("ConditionalValue<string>".into()),
+        Some("number") => TsType::Raw("ConditionalValue<number>".into()),
+        Some("boolean") => TsType::Raw("ConditionalValue<boolean>".into()),
+        _ => property.property.as_ref().map_or_else(
+            || TsType::Raw("ConditionalValue<unknown>".into()),
+            |property| TsType::Raw(format!("SystemProperties[{property:?}]")),
+        ),
     }
 }
 
@@ -251,24 +377,6 @@ fn ident(value: &str) -> String {
             out.push(ch);
         } else {
             out.push('_');
-        }
-    }
-    if out.is_empty() { "_".into() } else { out }
-}
-
-fn pascal_case(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut uppercase = true;
-    for ch in value.chars() {
-        if ch.is_ascii_alphanumeric() {
-            if uppercase {
-                out.push(ch.to_ascii_uppercase());
-                uppercase = false;
-            } else {
-                out.push(ch);
-            }
-        } else {
-            uppercase = true;
         }
     }
     if out.is_empty() { "_".into() } else { out }

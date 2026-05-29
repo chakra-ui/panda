@@ -12,6 +12,8 @@ use rustc_hash::FxHashMap;
 use std::collections::{BTreeMap, HashMap, hash_map::Entry};
 use std::sync::Arc;
 
+use pandacss_config::{TokenCategoryTypeData, TokenTypeData, token_category_type_name};
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -601,6 +603,52 @@ impl TokenDictionary {
     #[must_use]
     pub fn color_palettes(&self) -> &ColorPaletteView {
         &self.color_palettes
+    }
+
+    #[must_use]
+    pub fn type_data(&self) -> TokenTypeData {
+        let mut categories = BTreeMap::new();
+
+        for (category, values) in &self.category_values_cache {
+            let category_name = category.as_str();
+            let name = category_name.to_owned();
+
+            // Token unions are category-relative: `red.500`, not
+            // `colors.red.500`, matching legacy generated token types.
+            let mut values = values
+                .keys()
+                .map(|key| {
+                    let key = key.as_ref();
+                    key.strip_prefix(category_name)
+                        .and_then(|rest| rest.strip_prefix('.'))
+                        .map_or_else(|| key.to_owned(), ToOwned::to_owned)
+                })
+                .collect::<Vec<_>>();
+            values.sort();
+            values.shrink_to_fit();
+
+            categories.insert(
+                name.clone(),
+                TokenCategoryTypeData {
+                    type_name: token_category_type_name(&name),
+                    name,
+                    values,
+                },
+            );
+        }
+
+        let mut color_palettes = self
+            .color_palettes
+            .palettes()
+            .keys()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>();
+        color_palettes.sort();
+
+        TokenTypeData {
+            categories,
+            color_palettes,
+        }
     }
 }
 

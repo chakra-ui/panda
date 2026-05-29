@@ -1051,6 +1051,7 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "pandacss_config",
+ "pandacss_shared",
  "serde_json",
 ]
 
