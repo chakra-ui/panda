@@ -37,6 +37,7 @@ fn summary(atoms: &[Atom], diagnostics: &[Diagnostic]) -> String {
     out
 }
 
+#[allow(clippy::format_collect, reason = "test display helper")]
 fn format_atom(atom: &Atom) -> String {
     let value = match atom.value() {
         AtomValue::String(s) | AtomValue::Number(s) => s.to_string(),
@@ -52,6 +53,10 @@ fn format_atom(atom: &Atom) -> String {
     format!("{}: {value}{conditions}", atom.prop())
 }
 
+#[allow(
+    clippy::unnecessary_wraps,
+    reason = "matches the PatternTransformFn callback signature"
+)]
 fn shorthand_to_css(_name: &str, styles: &Literal) -> Result<Option<Literal>, Diagnostic> {
     let Literal::Object(entries) = styles else {
         return Ok(Some(styles.clone()));

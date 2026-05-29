@@ -31,22 +31,22 @@ pub(crate) fn compile_config_with_token_dictionary(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
 ) -> Result<Config> {
-    let entries = ConfigDefinitions::from_config(&config)?;
+    let entries = ConfigDefinitions::from_config(config)?;
     let token_dictionary = match token_dictionary {
         Some(dictionary) => Some(dictionary),
-        None => TokenDictionary::from_config(&config)
+        None => TokenDictionary::from_config(config)
             .map_err(config_error_from_token_error)?
             .map(Arc::new),
     };
     let mut utility = Utility::from_config_with_options(
         &config.utilities,
-        utility_options_from_config(&config, token_dictionary.clone()),
+        utility_options_from_config(config, token_dictionary.clone()),
     );
     utility.register_compositions(&config.theme);
     let conditions =
         ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
-        jsx_extraction_config_from_definitions(&config, &entries, &utility),
+        jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
     extractor_config.token_dictionary = token_dictionary;
     let utility = (!utility.is_empty()).then_some(utility);
@@ -73,6 +73,7 @@ pub(crate) fn compile_config_with_token_dictionary(
     })
 }
 
+#[allow(clippy::needless_pass_by_value, reason = "used as a map_err callback")]
 fn config_error_from_token_error(error: TokenError) -> ConfigError {
     ConfigError::config(format!("invalid token config: {error}"))
 }

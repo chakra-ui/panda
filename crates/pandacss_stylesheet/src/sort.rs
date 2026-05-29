@@ -125,7 +125,7 @@ impl<'a> SortContext<'a> {
     fn sorted_condition_names<'b>(&self, conditions: &'b [Box<str>]) -> Vec<&'b str> {
         let mut out = conditions
             .iter()
-            .map(|condition| condition.as_ref())
+            .map(std::convert::AsRef::as_ref)
             .collect::<Vec<_>>();
         out.sort_by(|a, b| compare_condition_names(self.config, a, b));
         out
@@ -262,15 +262,16 @@ struct QueryKey {
 
 impl QueryKey {
     fn new(raw: &str) -> Self {
-        query_width(raw)
-            .map(|query| Self {
-                direction: query.direction,
-                value: OrderedLength(query.sort_value()),
-            })
-            .unwrap_or(Self {
+        query_width(raw).map_or(
+            Self {
                 direction: QueryDirection::Unknown,
                 value: OrderedLength(f64::INFINITY),
-            })
+            },
+            |query| Self {
+                direction: query.direction,
+                value: OrderedLength(query.sort_value()),
+            },
+        )
     }
 }
 

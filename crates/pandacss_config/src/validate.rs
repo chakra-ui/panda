@@ -52,6 +52,10 @@ struct ArtifactNames {
 }
 
 #[derive(Default)]
+#[allow(
+    clippy::struct_field_names,
+    reason = "the *_path suffix documents the keying scheme"
+)]
 struct TokenData {
     value_at_path: TokenMap,
     refs_by_path: RefMap,

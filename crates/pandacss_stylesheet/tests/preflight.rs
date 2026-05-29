@@ -20,6 +20,10 @@ fn preflight_false_emits_no_reset_layer() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "exhaustive preflight reset-CSS fixture"
+)]
 fn preflight_true_emits_full_reset_layer() {
     let config = config(serde_json::json!({ "preflight": true }));
     let reset = compile_layer_css(&config, "", &[StylesheetLayer::Reset]);
@@ -240,5 +244,8 @@ fn preflight_minified_strips_whitespace() {
     // ~3KB minified blob; the rest is exercised by the pretty snapshot above.
     let window = &css[..200.min(css.len())];
     assert_snapshot!(window, @"@layer reset, base, tokens, recipes, utilities;@layer reset{html, :host{line-height:1.5;--font-fallback:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue");
-    assert!(!css.contains('\n'), "minified output must not contain newlines");
+    assert!(
+        !css.contains('\n'),
+        "minified output must not contain newlines"
+    );
 }

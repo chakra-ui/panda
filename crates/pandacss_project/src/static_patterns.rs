@@ -9,6 +9,9 @@ use serde_json::Value;
 use crate::PatternTransformFn;
 use crate::patterns::PatternRegistry;
 
+/// `(property → selected values, conditions)` parsed from one static-pattern rule object.
+type ParsedObjectRule = (Vec<(String, Vec<String>)>, Vec<String>);
+
 pub(crate) fn expand_static_patterns(
     config: &UserConfig,
     pattern_registry: &PatternRegistry,
@@ -90,7 +93,7 @@ struct ExpansionCtx<'a> {
     responsive: &'a [String],
 }
 
-impl<'a> ExpansionCtx<'a> {
+impl ExpansionCtx<'_> {
     fn emit_rule(
         &self,
         pattern_name: &str,
@@ -157,7 +160,7 @@ impl<'a> ExpansionCtx<'a> {
         &self,
         rule_obj: &serde_json::Map<String, Value>,
         pattern_config: &PatternConfig,
-    ) -> Option<(Vec<(String, Vec<String>)>, Vec<String>)> {
+    ) -> Option<ParsedObjectRule> {
         let properties = rule_obj.get("properties").and_then(Value::as_object)?;
         let mut conditions = string_array(rule_obj.get("conditions"));
         if rule_obj

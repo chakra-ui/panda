@@ -169,7 +169,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
 /// map to the same string (e.g. `{reset: "x", base: "x"}`). The output
 /// still emits each block under the colliding name — matches v1's
 /// permissive behavior. With only five layers a linear scan is faster
-/// (and clearer) than a HashMap.
+/// (and clearer) than a `HashMap`.
 fn push_layer_collision_diagnostics(
     layers: &pandacss_config::CascadeLayers,
     diagnostics: &mut Vec<Diagnostic>,
@@ -182,10 +182,7 @@ fn push_layer_collision_diagnostics(
         if entries[..i].iter().any(|(_, prior)| prior == name) {
             continue;
         }
-        if let Some((semantic_b, _)) = entries[i + 1..]
-            .iter()
-            .find(|(_, other)| other == name)
-        {
+        if let Some((semantic_b, _)) = entries[i + 1..].iter().find(|(_, other)| other == name) {
             diagnostics.push(Diagnostic::warning(
                 diagnostic_codes::LAYER_NAME_COLLISION,
                 format!(

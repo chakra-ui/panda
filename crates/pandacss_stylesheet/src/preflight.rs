@@ -58,7 +58,10 @@ static RULES: &[PreflightRule] = &[
             ("-moz-osx-font-smoothing", "grayscale"),
             ("-moz-tab-size", "4"),
             ("tab-size", "4"),
-            ("font-family", "var(--global-font-body, var(--font-fallback))"),
+            (
+                "font-family",
+                "var(--global-font-body, var(--font-fallback))",
+            ),
             ("-webkit-tap-highlight-color", "transparent"),
         ],
     },
@@ -206,7 +209,10 @@ static RULES: &[PreflightRule] = &[
                 "--font-mono-fallback",
                 "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New'",
             ),
-            ("font-family", "var(--global-font-mono, var(--font-mono-fallback))"),
+            (
+                "font-family",
+                "var(--global-font-mono, var(--font-mono-fallback))",
+            ),
             ("font-size", "1em"),
             ("font-feature-settings", "normal"),
             ("font-variation-settings", "normal"),

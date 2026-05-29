@@ -26,6 +26,10 @@ pub struct SpanStat {
 
 impl SpanStat {
     #[must_use]
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "ms display tolerates f64 precision loss"
+    )]
     pub fn total_ms(&self) -> f64 {
         (self.total_nanos as f64) / 1_000_000.0
     }

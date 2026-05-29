@@ -1,7 +1,7 @@
-//! Wire-up smoke test: project's static_pattern_atoms feeds into
-//! StylesheetInput.static_pattern_atoms and ends up in the utilities layer.
-//! Unit coverage for the expansion itself lives in pandacss_project's
-//! tests/static_patterns.rs.
+//! Wire-up smoke test: project's `static_pattern_atoms` feeds into
+//! `StylesheetInput.static_pattern_atoms` and ends up in the utilities layer.
+//! Unit coverage for the expansion itself lives in `pandacss_project`'s
+//! `tests/static_patterns.rs`.
 
 mod common;
 
@@ -36,7 +36,11 @@ fn static_pattern_atoms_flow_into_utilities_layer() {
             entries
                 .iter()
                 .map(|(k, v)| {
-                    let mapped = if k == "align" { "alignItems".to_owned() } else { k.clone() };
+                    let mapped = if k == "align" {
+                        "alignItems".to_owned()
+                    } else {
+                        k.clone()
+                    };
                     (mapped, v.clone())
                 })
                 .collect(),
@@ -45,8 +49,7 @@ fn static_pattern_atoms_flow_into_utilities_layer() {
 
     let system = System::new(cfg.clone()).expect("project");
     let mut project = Project::new(system);
-    let (pattern_atoms, diagnostics) =
-        project.static_pattern_atoms(&cfg, Some(&mut transform));
+    let (pattern_atoms, diagnostics) = project.static_pattern_atoms(&cfg, Some(&mut transform));
     assert!(diagnostics.is_empty(), "no expansion diagnostics expected");
 
     let snapshots = project.stylesheet_snapshots(&cfg);
