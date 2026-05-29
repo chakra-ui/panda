@@ -56,6 +56,37 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
       `)
   })
 
+  it('generates codegen artifacts from resolved state', async () => {
+    const compiler = await createCompiler({
+      ...baseConfig,
+      theme: {
+        tokens: {
+          colors: {
+            red: { 500: { value: '#f00' } },
+          },
+        },
+      },
+      utilities: {
+        color: { className: 'c', values: 'colors' },
+      },
+    })
+    const artifact = compiler.generateArtifact('types')
+
+    expect(artifact?.files.map((file) => file.path)).toMatchInlineSnapshot(`
+        [
+          "types/conditions.d.mts",
+          "types/selectors.d.mts",
+          "types/csstype.d.mts",
+          "types/tokens.d.mts",
+          "types/values.d.mts",
+          "types/properties.d.mts",
+          "types/system-types.d.mts",
+          "types/pattern.d.mts",
+          "types/index.d.mts",
+        ]
+      `)
+  })
+
   it('derives JSX pattern matchers from config', async () => {
     const compiler = await createCompiler({
       cwd: '/virtual',

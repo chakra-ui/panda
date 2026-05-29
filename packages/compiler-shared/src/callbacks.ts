@@ -1,40 +1,7 @@
 // Binding-agnostic callback runtime. Only `registerCallbacks` (which talks to a
 // native vs wasm instance) lives in each binding package.
 
-import type { ProjectCallbacks } from './index'
-
-/** Common subset of the native `TokenDictionary` / wasm `TokenDictionaryInput`. */
-export interface TokenLookup {
-  values: Record<string, string>
-  vars: Record<string, string>
-}
-
-export interface RawToken {
-  path: string
-  value: string
-  var?: string
-}
-
-export interface ColorMixResult {
-  invalid: boolean
-  value: string
-  color?: string
-}
-
-export interface TransformArgs {
-  token: ((path: string) => string | undefined) & { raw: (path: string) => RawToken | undefined }
-  raw: unknown
-  utils: {
-    colorMix(value: string): ColorMixResult
-  }
-}
-
-export interface PatternHelpers {
-  map(value: unknown, fn: (value: any) => any): unknown
-  isCssUnit(value: unknown): boolean
-  isCssVar(value: unknown): boolean
-  isCssFunction(value: unknown): boolean
-}
+import type { ColorMixResult, PatternHelpers, ProjectCallbacks, RawToken, TokenLookup, TransformArgs } from './index'
 
 export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: ProjectCallbacks) {
   assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])
@@ -245,12 +212,22 @@ export function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): P
   const result: ProjectCallbacks = {}
   for (const item of items) {
     for (const [kind, callbacks] of Object.entries(item ?? {}) as Array<
-      [keyof ProjectCallbacks, Record<string, Function>]
+      {
+        [K in keyof ProjectCallbacks]-?: [K, NonNullable<ProjectCallbacks[K]>]
+      }[keyof ProjectCallbacks]
     >) {
-      result[kind] = { ...result[kind], ...callbacks } as Record<string, (...args: any[]) => unknown>
+      assignCallbacks(result, kind, callbacks)
     }
   }
   return result
+}
+
+function assignCallbacks<K extends keyof ProjectCallbacks>(
+  result: ProjectCallbacks,
+  kind: K,
+  callbacks: NonNullable<ProjectCallbacks[K]>,
+) {
+  result[kind] = { ...result[kind], ...callbacks } as ProjectCallbacks[K]
 }
 
 /** Project a token dictionary down to a single category's `name → value` map

@@ -42,4 +42,9 @@ impl Config {
     pub fn token_dictionary(&self) -> Option<Arc<TokenDictionary>> {
         self.extractor_config.token_dictionary.clone()
     }
+
+    #[must_use]
+    pub fn utility(&self) -> Option<&Utility> {
+        self.utility.as_ref()
+    }
 }

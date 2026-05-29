@@ -34,7 +34,11 @@ export function registerCallbacks(
       const defaultValueId = patternDefaultValueRefs.get(id)
       const defaultValue = defaultValueId ? patternDefaultValues?.[defaultValueId] : undefined
       project.registerPatternTransform(id, (props) => {
-        const nextProps = defaultValue ? mergePatternDefaultValues(defaultValue(props), props) : props
+        const input = props as Record<string, any>
+        const nextProps = (defaultValue ? mergePatternDefaultValues(defaultValue(input), input) : input) as Record<
+          string,
+          any
+        >
         return callback(nextProps, createPatternHelpers())
       })
     }
@@ -45,7 +49,10 @@ export function registerCallbacks(
   }
   if (project.registerUtilityTransform && utilityTransforms) {
     for (const [id, callback] of Object.entries(utilityTransforms)) {
-      project.registerUtilityTransform(id, (value) => callback(value, createTransformArgs(value, tokenDictionary)))
+      project.registerUtilityTransform(id, (value) => {
+        const raw = value as string
+        return callback(raw, createTransformArgs(raw, tokenDictionary))
+      })
     }
   }
 }

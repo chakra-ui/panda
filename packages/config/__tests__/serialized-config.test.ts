@@ -30,6 +30,35 @@ describe('serialized config', () => {
     expect(snapshot.callbacks['utility.transform']?.['utilities.size.transform']).toBe(transform)
   })
 
+  test('keeps utility values functions as callback references', () => {
+    const values = () => ({ sm: '1rem', md: '2rem' })
+
+    const snapshot = createConfigSnapshot({
+      cwd: '/project',
+      include: [],
+      outdir: 'styled-system',
+      utilities: {
+        fluidSize: {
+          property: 'width',
+          values,
+        },
+      },
+    })
+
+    expect(snapshot.config.utilities).toMatchInlineSnapshot(`
+      {
+        "fluidSize": {
+          "property": "width",
+          "values": {
+            "id": "utilities.fluidSize.values",
+            "kind": "js-callback",
+          },
+        },
+      }
+    `)
+    expect(snapshot.callbacks['utility.values']?.['utilities.fluidSize.values']).toBe(values)
+  })
+
   test('createSerializedConfig returns only the JSON-safe config payload', () => {
     const config = createSerializedConfig({
       cwd: '/project',
@@ -106,7 +135,7 @@ describe('serialized config', () => {
           },
         },
       },
-    })
+    } as any)
 
     expect(config).not.toHaveProperty('name')
     expect(config).not.toHaveProperty('hooks')
@@ -138,6 +167,7 @@ describe('serialized config', () => {
       theme: {
         recipes: {
           button: {
+            className: 'button',
             jsx: ['Button', /WithRegex$/i],
             variants: {
               size: {

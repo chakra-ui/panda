@@ -423,6 +423,8 @@ pub struct UtilityConfig {
     pub values: Option<UtilityValues>,
     #[serde(default)]
     pub transform: Option<CallbackRef>,
+    #[serde(default)]
+    pub property: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
 }

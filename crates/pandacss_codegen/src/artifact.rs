@@ -1,4 +1,5 @@
 use pandacss_config::{CodegenFormat, UserConfig};
+use std::str::FromStr;
 
 use crate::{
     CodegenContext, CodegenInput, EmitMode, Module, ModuleSpecifierPolicy, SourceExt, emit_module,
@@ -16,6 +17,16 @@ pub enum ArtifactId {
 }
 
 impl ArtifactId {
+    pub const ALL: &'static [Self] = &[
+        Self::Conditions,
+        Self::CssIndex,
+        Self::Cx,
+        Self::Helpers,
+        Self::Patterns,
+        Self::Selectors,
+        Self::Types,
+    ];
+
     #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
@@ -27,6 +38,18 @@ impl ArtifactId {
             Self::Selectors => "selectors",
             Self::Types => "types",
         }
+    }
+}
+
+impl FromStr for ArtifactId {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::ALL
+            .iter()
+            .copied()
+            .find(|id| id.as_str() == value)
+            .ok_or(())
     }
 }
 
@@ -47,6 +70,57 @@ pub enum ConfigDependency {
     Themes,
     Tokens,
     Utilities,
+}
+
+impl ConfigDependency {
+    pub const ALL: &'static [Self] = &[
+        Self::CodegenFormat,
+        Self::Conditions,
+        Self::Hash,
+        Self::JsxFactory,
+        Self::JsxFramework,
+        Self::JsxStyleProps,
+        Self::Patterns,
+        Self::Prefix,
+        Self::Recipes,
+        Self::Separator,
+        Self::Syntax,
+        Self::Themes,
+        Self::Tokens,
+        Self::Utilities,
+    ];
+
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::CodegenFormat => "codegenFormat",
+            Self::Conditions => "conditions",
+            Self::Hash => "hash",
+            Self::JsxFactory => "jsxFactory",
+            Self::JsxFramework => "jsxFramework",
+            Self::JsxStyleProps => "jsxStyleProps",
+            Self::Patterns => "patterns",
+            Self::Prefix => "prefix",
+            Self::Recipes => "recipes",
+            Self::Separator => "separator",
+            Self::Syntax => "syntax",
+            Self::Themes => "themes",
+            Self::Tokens => "tokens",
+            Self::Utilities => "utilities",
+        }
+    }
+}
+
+impl FromStr for ConfigDependency {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::ALL
+            .iter()
+            .copied()
+            .find(|dependency| dependency.as_str() == value)
+            .ok_or(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -84,6 +158,15 @@ impl DependencySet {
     #[must_use]
     pub const fn union(self, other: Self) -> Self {
         Self(self.0 | other.0)
+    }
+
+    #[must_use]
+    pub fn to_vec(self) -> Vec<ConfigDependency> {
+        ConfigDependency::ALL
+            .iter()
+            .copied()
+            .filter(|dependency| self.contains(*dependency))
+            .collect()
     }
 }
 

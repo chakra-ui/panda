@@ -73,6 +73,59 @@ describe('Compiler', () => {
     `)
   })
 
+  it('generates codegen artifacts from the resolved project', () => {
+    const compiler = createProject({
+      theme: {
+        tokens: {
+          colors: {
+            red: { 500: { value: '#f00' } },
+          },
+        },
+      },
+      utilities: {
+        color: { className: 'c', values: 'colors' },
+      },
+    })
+    const artifact = compiler.generateArtifact('types')
+
+    expect(artifact?.files.map((file) => file.path)).toMatchInlineSnapshot(`
+      [
+        "types/conditions.d.mts",
+        "types/selectors.d.mts",
+        "types/csstype.d.mts",
+        "types/tokens.d.mts",
+        "types/values.d.mts",
+        "types/properties.d.mts",
+        "types/system-types.d.mts",
+        "types/pattern.d.mts",
+        "types/index.d.mts",
+      ]
+    `)
+    expect(artifact?.files.find((file) => file.path === 'types/tokens.d.mts')?.code).toMatchInlineSnapshot(`
+      "export type ColorToken = "colorPalette.500" | "red.500"
+
+      export interface Tokens {
+        colors: ColorToken
+      }
+
+      export type ColorPalette = "red"
+
+      export type TokenValue<T extends keyof Tokens> = Tokens[T]"
+    `)
+  })
+
+  it('generates affected codegen artifacts from dependency names', () => {
+    const compiler = createProject()
+
+    expect(compiler.generateAffectedArtifacts(['tokens']).map((artifact) => artifact.id)).toMatchInlineSnapshot(`
+      [
+        "patterns",
+        "types",
+        "conditions",
+      ]
+    `)
+  })
+
   it('expands staticCss.patterns through compile()', () => {
     const compiler = createProject({
       patterns: {

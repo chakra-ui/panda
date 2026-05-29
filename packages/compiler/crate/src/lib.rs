@@ -36,8 +36,8 @@ pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
 pub use project::{
-    Compiler, ParseFileReport, ParsedFileView, ProjectOptions, ProjectSummary, RecipeEntry,
-    StaticPatternResult,
+    CodegenArtifact, CodegenFile, Compiler, GenerateArtifactOptions, ParseFileReport,
+    ParsedFileView, ProjectOptions, ProjectSummary, RecipeEntry, StaticPatternResult,
 };
 pub use session::Extractor;
 
