@@ -1,3 +1,6 @@
+/// Indentation-aware CSS string builder. In `minify` mode every method skips
+/// the cosmetic whitespace (newlines, indents, the space after `:`), so the
+/// same emit code produces pretty or minified output without branching.
 pub struct CssWriter {
     out: String,
     minify: bool,

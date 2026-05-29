@@ -124,6 +124,7 @@ impl Recipe {
     pub fn from_literal_owned(literal: Literal) -> Option<Self> {
         let _span = tracing::trace_span!("recipe_resolution", kind = "recipe_parse").entered();
         let entries = object_entries_owned(literal)?;
+
         let mut recipe = Recipe::default();
         for (key, value) in entries {
             match key.as_str() {
@@ -136,6 +137,7 @@ impl Recipe {
                 _ => {}
             }
         }
+
         Some(recipe)
     }
 
@@ -165,6 +167,7 @@ impl SlotRecipe {
     pub fn from_literal_owned(literal: Literal) -> Option<Self> {
         let _span = tracing::trace_span!("recipe_resolution", kind = "slot_recipe_parse").entered();
         let entries = object_entries_owned(literal)?;
+
         let mut slots: Vec<String> = Vec::new();
         let mut base: Vec<(String, Literal)> = Vec::new();
         let mut variants: Vec<SlotVariantGroup> = Vec::new();
@@ -214,6 +217,7 @@ impl SlotRecipe {
         for (slot, _) in base {
             push(slot, &mut seen, &mut order);
         }
+
         for group in variants {
             for option in &group.options {
                 for (slot, _) in &option.styles {
@@ -221,6 +225,7 @@ impl SlotRecipe {
                 }
             }
         }
+
         order
     }
 
@@ -247,6 +252,7 @@ impl SlotRecipe {
             .base
             .iter()
             .filter_map(move |(s, lit)| (s == slot).then_some(lit));
+
         let from_variants = self.variants.iter().flat_map(move |g| {
             g.options.iter().flat_map(move |o| {
                 o.styles
@@ -254,11 +260,13 @@ impl SlotRecipe {
                     .filter_map(move |(s, lit)| (s == slot).then_some(lit))
             })
         });
+
         let from_compounds = self.compound_variants.iter().flat_map(move |c| {
             c.css
                 .iter()
                 .filter_map(move |(s, lit)| (s == slot).then_some(lit))
         });
+
         from_base.chain(from_variants).chain(from_compounds)
     }
 }

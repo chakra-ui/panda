@@ -1,3 +1,8 @@
+//! Expand `staticCss.patterns` into atoms. Each entry names a configured
+//! pattern and a set of prop rules; the pattern's transform callback (when it
+//! has one) runs per rule, and the resulting styles are encoded like any other
+//! static CSS. Unknown patterns / missing transforms surface as diagnostics.
+
 use pandacss_config::{PatternConfig, PatternPropertyConfig, UserConfig};
 use pandacss_encoder::{Atom, ConditionSet, Encoder};
 use pandacss_extractor::Literal;

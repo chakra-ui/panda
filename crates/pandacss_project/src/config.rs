@@ -27,6 +27,9 @@ pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Con
     compile_config_with_token_dictionary(config, None)
 }
 
+/// Compile a user config into the immutable runtime [`Config`]: the extractor
+/// matchers + JSX config, utility metadata, condition matcher, pattern/recipe
+/// registries, and the token dictionary (reused if the caller already built one).
 pub(crate) fn compile_config_with_token_dictionary(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
@@ -38,17 +41,20 @@ pub(crate) fn compile_config_with_token_dictionary(
             .map_err(config_error_from_token_error)?
             .map(Arc::new),
     };
+
     let mut utility = Utility::from_config_with_options(
         &config.utilities,
         utility_options_from_config(config, token_dictionary.clone()),
     );
     utility.register_compositions(&config.theme);
+
     let conditions =
         ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
         jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
     extractor_config.token_dictionary = token_dictionary;
+
     let utility = (!utility.is_empty()).then_some(utility);
     let patterns = PatternRegistry::from_definitions(&entries.patterns);
     let recipes = RecipeRegistry::from_definitions(
@@ -279,6 +285,10 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     }
 }
 
+/// Flatten patterns + recipes + slot recipes into the extractor's JSX config:
+/// the set of component names/regexes to match, plus each component's prop
+/// allowlist, strict flag, and blocklist (keyed separately for name vs regex
+/// matches).
 fn jsx_extraction_config_from_definitions(
     config: &pandacss_config::UserConfig,
     entries: &ConfigDefinitions,

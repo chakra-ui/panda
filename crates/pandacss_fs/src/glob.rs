@@ -64,8 +64,8 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
         for entry in entries {
             let rel = entry.strip_prefix(&opts.cwd).unwrap_or(&entry);
             let rel_str = rel.to_string_lossy();
-
             let rel_bytes = rel_str.as_bytes();
+
             if excludes
                 .iter()
                 .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
@@ -73,6 +73,7 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
                 continue;
             }
 
+            // Recurse into directories; collect files matching any include.
             let meta = fs.metadata(&entry)?;
             if meta.is_dir() {
                 stack.push(entry);

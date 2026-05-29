@@ -51,7 +51,9 @@ impl TraceConfig {
         output: Option<&str>,
         file: Option<&str>,
     ) -> Option<Self> {
+        // An empty/whitespace filter means tracing is off — bail without a config.
         let filter = filter.filter(|value| !value.trim().is_empty())?;
+
         let output = match output.unwrap_or("fmt") {
             "fmt" | "stderr" => TraceOutput::Fmt,
             "chrome-json" => TraceOutput::ChromeJson {
@@ -59,6 +61,7 @@ impl TraceConfig {
             },
             _ => return None,
         };
+
         Some(Self {
             filter: filter.to_owned(),
             output,
@@ -83,6 +86,7 @@ pub fn init(config: TraceConfig) -> bool {
 }
 
 fn install(config: TraceConfig) -> bool {
+    // Fall back to a sane default rather than failing if the filter is malformed.
     let filter =
         EnvFilter::try_new(&config.filter).unwrap_or_else(|_| EnvFilter::new(DEFAULT_FILTER));
     let registry = tracing_subscriber::registry().with(filter);
@@ -90,25 +94,34 @@ fn install(config: TraceConfig) -> bool {
     match config.output {
         TraceOutput::Fmt => {
             let subscriber = registry.with(fmt::layer().with_writer(std::io::stderr));
+
             try_init(subscriber)
         }
+
         TraceOutput::ChromeJson { file } => {
+            // Create the trace file's parent dir before the writer opens it.
             if let Some(parent) = file
                 .parent()
                 .filter(|parent| !parent.as_os_str().is_empty())
             {
                 let _ = std::fs::create_dir_all(parent);
             }
+
             let (chrome_layer, guard) =
                 tracing_chrome::ChromeLayerBuilder::new().file(file).build();
             let subscriber = registry.with(chrome_layer);
+
             if try_init(subscriber) {
+                // Park the flush guard in a static — dropping it would truncate
+                // the trace. `shutdown`/`flush` reach it from there.
                 let guard_slot = CHROME_GUARD.get_or_init(|| Mutex::new(None));
                 if let Ok(mut slot) = guard_slot.lock() {
                     *slot = Some(guard);
                 }
+
                 true
             } else {
+                // Another subscriber won the race; flush what we built and bail.
                 guard.flush();
                 false
             }

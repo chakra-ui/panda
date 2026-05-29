@@ -1,8 +1,16 @@
+//! Parse a `css` tagged-template *string* into a nested style object, so
+//! `` css`color: red; &:hover { color: blue }` `` extracts like the object form
+//! `{ color: 'red', '&:hover': { color: 'blue' } }`. The `astish` parser is a
+//! Rust port of the small JS library Panda uses for the same job: a flat scan
+//! that builds a tree of selector/declaration nodes via a parent stack.
+
 use crate::{Literal, Resolver, literal::template_literal_to_literal};
 use oxc_ast::ast::TemplateLiteral;
 use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 
+/// Fold a template literal to a string (interpolations resolved), then parse
+/// that CSS text into a style object. `None` if the template isn't static.
 pub(crate) fn css_template_to_object(
     t: &TemplateLiteral<'_>,
     resolver: Option<&Resolver<'_>>,
@@ -13,6 +21,9 @@ pub(crate) fn css_template_to_object(
     Some(astish(&text))
 }
 
+/// Scan cleaned CSS token-by-token, maintaining a stack of open selector
+/// nodes: a selector opens a child node (auto-prefixed `& ` when bare), `}`
+/// pops, and each `prop: value` declaration writes into the current node.
 fn astish(val: &str) -> Literal {
     let cleaned = clean_css(val);
     let css = cleaned.as_ref();
@@ -51,6 +62,9 @@ fn astish(val: &str) -> Literal {
     builder.into_literal()
 }
 
+/// Arena of style nodes (index-linked rather than `Box`ed) built during the
+/// scan, flattened to a [`Literal::Object`] tree at the end. Each node keeps a
+/// key→entry index so repeated selectors/props merge instead of duplicating.
 #[derive(Default)]
 struct AstishBuilder {
     nodes: Vec<AstishNode>,

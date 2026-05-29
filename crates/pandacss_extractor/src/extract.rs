@@ -1,3 +1,8 @@
+//! Combined single-parse entrypoint: one Oxc parse feeds import scanning,
+//! import-map matching, and both the call and JSX collectors, sharing a single
+//! [`Resolver`]. [`extract`] returns the lean production result; `extract_debug`
+//! additionally surfaces raw + matched imports for tooling/parity tests.
+
 use crate::calls::collect_calls;
 use crate::jsx::collect_jsx;
 use crate::scope::Resolver;

@@ -159,16 +159,19 @@ impl FileSystem for MemoryFileSystem {
         // path set instead of maintaining a children index; production OS
         // traversal uses `OsFileSystem`.
         let mut entries: Vec<PathBuf> = Vec::new();
+
         for p in state.files.keys() {
             if p.parent() == Some(path) {
                 entries.push(p.clone());
             }
         }
+
         for d in &state.dirs {
             if d.parent() == Some(path) {
                 entries.push(d.clone());
             }
         }
+
         entries.sort();
         entries.dedup();
         Ok(entries)

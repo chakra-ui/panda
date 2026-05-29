@@ -600,6 +600,9 @@ impl<'a> EmitContext<'a> {
         RuleTarget { selector, wrappers }
     }
 
+    /// Emit one recipe class's rules. Entries are sorted then coalesced:
+    /// consecutive entries that resolve to the same rule target (selector +
+    /// wrappers) are merged into a single block rather than re-opening it.
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
@@ -920,6 +923,9 @@ fn apply_condition(
     }
 }
 
+/// Apply one resolved condition to a rule: at-rules (`@media …`) become
+/// wrappers; `&`-bearing selectors substitute the current selector for `&`;
+/// anything else becomes an ancestor (`raw selector`).
 fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &str) {
     if raw.starts_with('@') {
         wrappers.push(raw.to_owned());
@@ -930,6 +936,10 @@ fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &
     }
 }
 
+/// Like [`apply_raw_condition`] but for token-var rules, which start from the
+/// `cssVarRoot` selector. A ` &` parent condition replaces the root outright
+/// (or nests into it); plain conditions append as descendants and the stray
+/// root is cleaned up afterward.
 fn apply_token_raw_condition(
     css_var_root: &str,
     selector: &mut String,
@@ -962,6 +972,8 @@ fn apply_token_raw_condition(
     }
 }
 
+/// Extract the parent part of a ` &` condition (`.dark &` -> `.dark`). Multiple
+/// such selectors collapse into a single `:where(a, b)` group.
 fn token_parent_selector(raw: &str) -> Option<String> {
     let selectors = split_selector_list(raw)
         .into_iter()
@@ -981,6 +993,8 @@ fn token_parent_selector(raw: &str) -> Option<String> {
     }
 }
 
+/// Strip the now-redundant `cssVarRoot` left behind after a `&` substitution
+/// nested a condition into the root selector.
 fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
     if selector == css_var_root {
         return;

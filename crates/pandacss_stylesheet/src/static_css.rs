@@ -1,3 +1,8 @@
+//! Expand the `staticCss.css` config into atoms — the always-emit rules a
+//! project wants regardless of what the extractor finds. Wildcards (`"*"`)
+//! fan out to every value a utility knows; `conditions`/`responsive` wrap each
+//! value so it emits under the requested states.
+
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, ConditionSet, Encoder};
 use pandacss_extractor::Literal;
@@ -5,6 +10,7 @@ use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_utility::{StyleNormalizer, Utility};
 use serde_json::Value;
 
+/// Encode every `staticCss.css` rule into a sorted atom set.
 pub fn expand(
     config: &UserConfig,
     utility: &Utility,
@@ -95,6 +101,8 @@ fn expand_css_rule(
         let values = static_values(values);
         let mut expanded = Vec::new();
         for value in values {
+            // `"*"` means "every value this utility defines" (enum keys or
+            // token-category keys); anything else is a literal value.
             if value == Literal::String("*".to_owned()) {
                 let keys = utility.property_keys(property);
                 if keys.is_empty() {
@@ -123,6 +131,9 @@ fn expand_css_rule(
     styles
 }
 
+/// Wrap a value as `{ base: value, <cond>: value, … }` so it emits both
+/// unconditionally and under each condition. Bare names are prefixed with `_`
+/// unless they're a breakpoint.
 fn conditional_value(config: &UserConfig, conditions: &[String], value: &Literal) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];
     for condition in conditions {

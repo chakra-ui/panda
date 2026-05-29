@@ -35,6 +35,10 @@ impl<'a> TokenDictionaryOptions<'a> {
     }
 }
 
+/// Build the full token dictionary from config in fixed phases: base tokens →
+/// breakpoints → semantic tokens → per-theme-variant tokens → derived negative
+/// spacing → virtual `colorPalette` tokens → resolve `{…}` references → drop
+/// empties. Returns `None` when the config contributes no tokens.
 pub(crate) fn create_token_dictionary(
     options: TokenDictionaryOptions<'_>,
 ) -> Result<Option<TokenDictionary>, TokenError> {
@@ -314,6 +318,9 @@ fn collect_semantic_category<T: TokenValueString>(
     });
 }
 
+/// Flatten a (possibly nested) semantic value, invoking `visit` once per
+/// concrete value with its condition. Nested conditions are colon-joined
+/// (`_dark` inside `md` -> `md:_dark`); a top-level `base` carries `None`.
 fn visit_semantic_values<T>(
     value: &SemanticValue<T>,
     condition: Option<&str>,
@@ -388,6 +395,9 @@ struct TokenPath {
 }
 
 impl TokenPath {
+    /// Build the dotted path (`colors.red.500`) and CSS-var name
+    /// (`colors-red-500`) from segments, dropping any `DEFAULT` segment. Two
+    /// passes: precompute lengths to size the buffers exactly, then fill them.
     fn from_segments(segments: &[&str]) -> Self {
         let mut dotted_len = 0;
         let mut css_var_len = 0;
@@ -535,6 +545,8 @@ fn expand_token_references(builder: &mut TokenDictionaryBuilder) -> Result<(), T
         return Ok(());
     }
 
+    // Index path -> token, base tokens first so an unconditional value wins;
+    // a second pass fills paths that only have conditional variants.
     let mut by_path: FxHashMap<Arc<str>, usize> =
         FxHashMap::with_capacity_and_hasher(tokens.len(), rustc_hash::FxBuildHasher);
     for (index, token) in tokens.iter().enumerate() {
@@ -567,6 +579,9 @@ fn expand_token_references(builder: &mut TokenDictionaryBuilder) -> Result<(), T
     Ok(())
 }
 
+/// For every positive spacing token, synthesize a negative sibling
+/// (`spacing.4` -> `spacing.-4`) whose value is `calc(var(--…) * -1)`, carrying
+/// over the source token's condition/metadata.
 fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
     let tokens = builder.tokens_mut();
     if tokens.is_empty() {
@@ -621,6 +636,11 @@ fn remove_empty_tokens(builder: &mut TokenDictionaryBuilder) {
     builder.retain_tokens(|token| !token.value.is_empty());
 }
 
+/// Generate the `colorPalette` machinery. For each concrete color token, this
+/// (1) emits virtual `colors.colorPalette.*` placeholder tokens for every
+/// ancestor palette root, and (2) records palette → (virtual var → token var)
+/// mappings so `colorPalette="…"` can later swap a whole palette in. Honors the
+/// `include`/`exclude` glob filters.
 fn add_virtual_color_palette_tokens(
     builder: &mut TokenDictionaryBuilder,
     context: &BuildContext<'_>,
@@ -630,13 +650,12 @@ fn add_virtual_color_palette_tokens(
         return;
     }
 
-    let mut virtual_paths = FxHashSet::<String>::default();
-    let mut palette_mappings: Vec<(String, String, Arc<str>)> = Vec::new();
+    let mut palette = PaletteAccumulator::default();
+
+    // Collect roots from every concrete (non-virtual, unconditional) color
+    // token, tagging each with the palette it belongs to.
     for token in builder.tokens_mut().iter_mut() {
-        if token.category != TokenCategory::Colors
-            || token.extension("isVirtual") == Some("true")
-            || token.condition.is_some()
-        {
+        if !is_concrete_color(token) {
             continue;
         }
 
@@ -644,57 +663,103 @@ fn add_virtual_color_palette_tokens(
         let Some(color_path) = color_palette_path_segments(&segments) else {
             continue;
         };
+
         let color_path_string = join_segments(color_path);
         if !matches_color_palette_options(&color_path_string, options) {
             continue;
         }
 
-        for root_len in 1..=color_path.len() {
-            let virtual_path = virtual_color_palette_path(&segments, root_len);
-            let virtual_css_var_name = virtual_path.replace('.', "-");
-            let raw_virtual_var = css_var_variable(&virtual_css_var_name, context);
-            let palette_name = join_segments(&color_path[..root_len]);
-
-            virtual_paths.insert(virtual_path);
-            palette_mappings.push((palette_name, raw_virtual_var, Arc::clone(&token.var)));
-
-            if root_len == 1 && token.extension("isDefault") == Some("true") {
-                let key_path = &segments[(1 + root_len)..];
-                if !key_path.is_empty() {
-                    let special_palette = join_segments(&segments[1..]);
-                    let base_virtual_path = "colors.colorPalette";
-                    let base_virtual_css_var_name = base_virtual_path.replace('.', "-");
-                    let raw_base_virtual_var =
-                        css_var_variable(&base_virtual_css_var_name, context);
-
-                    virtual_paths.insert(base_virtual_path.to_owned());
-                    palette_mappings.push((
-                        special_palette,
-                        raw_base_virtual_var,
-                        Arc::clone(&token.var),
-                    ));
-                }
-            }
-        }
+        palette.collect_token(token, &segments, color_path, context);
         token.set_extension("colorPalette", &color_path_string);
     }
 
-    let mut virtual_paths: Vec<String> = virtual_paths.into_iter().collect();
-    virtual_paths.sort();
-    for path in virtual_paths {
-        let token_path = TokenPath::from_owned_path(path);
-        let mut token = Token::new(
-            token_path.dotted.as_str(),
-            token_path.dotted.as_str(),
-            css_var(token_path.css_var_name.as_str(), context),
-            TokenCategory::Colors,
-        );
-        token.set_extension("isVirtual", "true");
-        builder.push(token);
+    palette.emit(builder, context);
+}
+
+fn is_concrete_color(token: &Token) -> bool {
+    token.category == TokenCategory::Colors
+        && token.extension("isVirtual") != Some("true")
+        && token.condition.is_none()
+}
+
+/// Accumulates the virtual palette tokens + palette mappings discovered while
+/// scanning color tokens, then [`Self::emit`]s them into the builder.
+#[derive(Default)]
+struct PaletteAccumulator {
+    virtual_paths: FxHashSet<String>,
+    mappings: Vec<(String, String, Arc<str>)>,
+}
+
+impl PaletteAccumulator {
+    /// Register one color token against every ancestor palette root
+    /// (`button.primary.500` -> roots `button`, `button.primary`).
+    fn collect_token(
+        &mut self,
+        token: &Token,
+        segments: &[&str],
+        color_path: &[&str],
+        context: &BuildContext<'_>,
+    ) {
+        for root_len in 1..=color_path.len() {
+            let virtual_path = virtual_color_palette_path(segments, root_len);
+            let raw_virtual_var = css_var_variable(&virtual_path.replace('.', "-"), context);
+            let palette_name = join_segments(&color_path[..root_len]);
+
+            self.virtual_paths.insert(virtual_path);
+            self.mappings
+                .push((palette_name, raw_virtual_var, Arc::clone(&token.var)));
+
+            if root_len == 1 && token.extension("isDefault") == Some("true") {
+                self.collect_default_root(token, segments, context);
+            }
+        }
     }
 
-    for (palette, virtual_var, token_var) in palette_mappings {
-        builder.add_color_palette_mapping(palette, virtual_var, token_var);
+    /// A `DEFAULT` color also maps the bare `colors.colorPalette` root, so
+    /// `colorPalette="button"` resolves to the default shade directly.
+    fn collect_default_root(
+        &mut self,
+        token: &Token,
+        segments: &[&str],
+        context: &BuildContext<'_>,
+    ) {
+        // Only reached with `root_len == 1`, so the key path is everything past
+        // `colors.<root>`.
+        if segments[2..].is_empty() {
+            return;
+        }
+
+        let special_palette = join_segments(&segments[1..]);
+        let raw_base_virtual_var = css_var_variable("colors-colorPalette", context);
+
+        self.virtual_paths.insert("colors.colorPalette".to_owned());
+        self.mappings.push((
+            special_palette,
+            raw_base_virtual_var,
+            Arc::clone(&token.var),
+        ));
+    }
+
+    fn emit(self, builder: &mut TokenDictionaryBuilder, context: &BuildContext<'_>) {
+        // Sorted so virtual-token emission order is deterministic.
+        let mut virtual_paths: Vec<String> = self.virtual_paths.into_iter().collect();
+        virtual_paths.sort();
+
+        for path in virtual_paths {
+            let token_path = TokenPath::from_owned_path(path);
+            let mut token = Token::new(
+                token_path.dotted.as_str(),
+                token_path.dotted.as_str(),
+                css_var(token_path.css_var_name.as_str(), context),
+                TokenCategory::Colors,
+            );
+            token.set_extension("isVirtual", "true");
+            builder.push(token);
+        }
+
+        for (palette, virtual_var, token_var) in self.mappings {
+            builder.add_color_palette_mapping(palette, virtual_var, token_var);
+        }
     }
 }
 
@@ -715,6 +780,8 @@ fn matches_color_palette_options(path: &str, options: &ColorPaletteOptions) -> b
             .any(|pattern| wildcard_match(pattern, path))
 }
 
+/// Glob match supporting `*` (any run) and `?` (one char), with backtracking
+/// on the last `*` so patterns like `button.*` match greedily but correctly.
 fn wildcard_match(pattern: &str, value: &str) -> bool {
     if pattern == value || pattern == "*" {
         return true;
@@ -795,6 +862,9 @@ fn expand_references(
     Ok(Some(out))
 }
 
+/// Resolve a `{color/opacity}` reference into a `color-mix(...)` expression.
+/// `opacity` may be a token (`opacity.50` -> 50%) or a bare number; either way
+/// the color mixes with `transparent` at that percentage.
 fn color_mix(
     value: &str,
     tokens: &[Token],
