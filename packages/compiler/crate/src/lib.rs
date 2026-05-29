@@ -2,6 +2,15 @@
 //! `crates/pandacss_extractor`; this crate only mirrors core types into NAPI-shaped
 //! structs and wires up the JS-facing functions.
 
+// NAPI boundary conventions trip several pedantic lints: fallible entry points
+// surface errors as thrown JS exceptions (documented on the TS surface, not in
+// rustdoc), and internal helpers borrow the `Env` handle.
+#![allow(
+    clippy::missing_errors_doc,
+    clippy::trivially_copy_pass_by_ref,
+    reason = "NAPI boundary: JS-exception error reporting; helpers borrow Env"
+)]
+
 mod cache;
 mod calls;
 mod compile;
@@ -27,7 +36,7 @@ pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
 pub use project::{
-    ParseFileReport, ParsedFileView, Project, ProjectOptions, ProjectSummary, RecipeEntry,
+    Compiler, ParseFileReport, ParsedFileView, ProjectOptions, ProjectSummary, RecipeEntry,
     StaticPatternResult,
 };
 pub use session::Extractor;
@@ -52,6 +61,7 @@ pub struct TraceOptions {
 }
 
 #[napi]
+#[must_use]
 pub fn start_tracing(options: Option<TraceOptions>) -> bool {
     let config = match options {
         Some(options) => pandacss_tracing::TraceConfig::from_values(
@@ -75,6 +85,7 @@ pub fn flush_tracing_export() {
 }
 
 #[napi]
+#[must_use]
 pub fn shutdown_tracing() -> bool {
     pandacss_tracing::shutdown()
 }
@@ -151,7 +162,7 @@ impl ExtractedArg {
 }
 
 /// One atomic style declaration: `(prop, value, conditions)`. Returned by
-/// `Project::atoms()`. Mirrors `pandacss_encoder::Atom` but with the
+/// `Compiler::atoms()`. Mirrors `pandacss_encoder::Atom` but with the
 /// internal `Box<str>` Number form parsed back to a JS-native number.
 #[napi(object)]
 #[derive(Clone)]

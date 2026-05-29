@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { createCompiler } from '../src'
+import { createCompilerFromSnapshot } from '../src'
 import type { PatternHelpers } from '../src'
 import { importMap } from './test-utils'
 
 describe('Compiler callbacks', () => {
   it('applies js-backed utility transform callbacks from a config bundle', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -60,7 +60,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('passes token helpers to utility transform callbacks', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -137,7 +137,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks to encoded config recipes', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -258,7 +258,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('resolves utility values callbacks from a config bundle', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -321,7 +321,7 @@ describe('Compiler callbacks', () => {
 
   it('throws when serialized callback refs are missing callbacks', () => {
     expect(() =>
-      createCompiler(
+      createCompilerFromSnapshot(
         {
           config: {
             cwd: '/virtual',
@@ -344,7 +344,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks under conditions', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -401,7 +401,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks from JSX props', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -452,7 +452,7 @@ describe('Compiler callbacks', () => {
 
   it('caches utility transform callback results', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -491,7 +491,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('reports utility transform callback failures during parseFile', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -536,7 +536,7 @@ describe('Compiler callbacks', () => {
 
   it('does not cache failed utility transform callbacks', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -597,7 +597,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks during refreshFile', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -652,7 +652,7 @@ describe('Compiler callbacks', () => {
 
   it('shares utility transform cache between atoms and encoded recipes', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -700,7 +700,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks before encoding', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -779,7 +779,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from pattern function calls', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -848,7 +848,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from JSX pattern components', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -909,7 +909,7 @@ describe('Compiler callbacks', () => {
 
   it('caches pattern transform callback results across function calls and JSX components', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -971,7 +971,7 @@ describe('Compiler callbacks', () => {
 
   it('does not cache thrown pattern transform callbacks', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -1034,7 +1034,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies object defaultValues before pattern transform callbacks', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -1093,7 +1093,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies function defaultValues before pattern transform callbacks', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',

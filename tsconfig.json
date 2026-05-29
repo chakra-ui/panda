@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "@pandacss/fixture": ["./packages/fixture/src/index.ts"],
-      "@pandacss/types": ["./packages/types/src/index.ts"]
+      "@pandacss/types": ["./packages/types/src/index.ts"],
+      "@pandacss/compiler-shared": ["./packages/compiler-shared/src/index.ts"]
     }
   },
   "include": ["packages/**/*.ts"],

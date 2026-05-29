@@ -1,90 +1,29 @@
+import type {
+  Atom,
+  Compiler,
+  CompileOutput,
+  CompilerOptions,
+  ConfigSnapshot,
+  Diagnostic,
+  ExtractedCall,
+  ExtractedJsx,
+  ExtractResult,
+  MatchCategory,
+  ProjectCallbacks,
+  SerializedConfig,
+  Span,
+} from '@pandacss/compiler-shared'
+import { assertProjectCallbacks, getTokenCategoryValues, mergeCallbacks } from '@pandacss/compiler-shared'
+import { registerCallbacks } from './callbacks'
 import { loadNativeBinding } from './load-binary'
-import { assertProjectCallbacks, registerCallbacks } from './callbacks'
-export type { ColorMixResult, PatternHelpers, RawToken, TransformArgs } from './callbacks'
 
-// --- compile (placeholder) ---
+export type * from '@pandacss/compiler-shared'
 
 export interface CompileInput {
   files?: Array<{ path: string; content: string }>
-  config?: Record<string, unknown>
+  config?: SerializedConfig
   cwd?: string
   cacheDir?: string
-}
-
-export interface CompileFileManifest {
-  path: string
-  hash: string
-}
-
-export interface CompileManifest {
-  files: CompileFileManifest[]
-  tokens: string[]
-}
-
-export interface CompileLayerRange {
-  start: number
-  end: number
-}
-
-export interface CompileLayerRanges {
-  reset?: CompileLayerRange
-  base?: CompileLayerRange
-  tokens?: CompileLayerRange
-  recipes?: CompileLayerRange
-  utilities?: CompileLayerRange
-}
-
-export interface ParsedFileView {
-  path: string
-  atoms: Atom[]
-  diagnostics: Diagnostic[]
-  recipes: RecipeEntry[]
-  slotRecipes: RecipeEntry[]
-}
-
-export interface StaticPatternResult {
-  atoms: Atom[]
-  diagnostics: Diagnostic[]
-}
-
-export type DiagnosticSeverity = 'info' | 'warning' | 'error'
-
-/** 1-indexed line, 1-indexed UTF-16 column. Matches what `tsc` and editors
- *  report so error messages line up with the source the user sees. */
-export interface SourceLocation {
-  line: number
-  column: number
-}
-
-export interface SourceRange {
-  start: SourceLocation
-  end: SourceLocation
-}
-
-export interface Diagnostic {
-  /** Stable machine-readable identifier. */
-  code: string
-  message: string
-  severity: DiagnosticSeverity
-  /** UTF-8 byte offsets — useful for slicing the source. */
-  span?: Span
-  /** Human-readable line/column range covering `span`. */
-  location?: SourceRange
-}
-
-export interface CompileOutput {
-  css: string
-  sourceMap?: string
-  manifest: CompileManifest
-  layerRanges: CompileLayerRanges
-  diagnostics: Diagnostic[]
-}
-
-// --- scanImports ---
-
-export interface Span {
-  start: number
-  end: number
 }
 
 export type ImportSpecifierKind = 'named' | 'default' | 'namespace'
@@ -112,10 +51,6 @@ export interface ImportScanResult {
   diagnostics: Diagnostic[]
 }
 
-// --- matchImports ---
-
-export type MatchCategory = 'css' | 'recipe' | 'pattern' | 'jsx' | 'tokens'
-
 export interface Matcher {
   modules: string[]
   /** Omit to match any imported name (used for recipes/patterns). */
@@ -130,8 +65,7 @@ export interface Matchers {
   tokens: Matcher
   /** Resolved Panda token dictionary. When present, `token('path')` and
    *  `token.var('path')` calls fold to their dictionary value during
-   *  extraction. This is an interop projection for matcher-only APIs;
-   *  config-based compiler construction builds the dictionary in Rust. */
+   *  extraction. */
   tokenDictionary?: TokenDictionary
   /** JSX factory names that accept member-chain tags (`<styled.div>`).
    *  Omit to use the built-in default `["styled"]`; provide an array to
@@ -141,9 +75,7 @@ export interface Matchers {
 
 /** Two parallel `path → string` maps backing `token()` resolution.
  *  - `values['colors.red.500']` → raw value, e.g. `'#ef4444'`
- *  - `vars['colors.red.500']` → CSS-var form, e.g. `'var(--colors-red-500)'`
- *  This is the JS interop projection of the Rust token dictionary, also
- *  accepted by matcher-only APIs that do not receive a Panda config. */
+ *  - `vars['colors.red.500']` → CSS-var form, e.g. `'var(--colors-red-500)'` */
 export interface TokenDictionary {
   values: Record<string, string>
   vars: Record<string, string>
@@ -157,55 +89,9 @@ export interface MatchedImport {
   kind: ImportSpecifierKind
 }
 
-// --- extractCalls ---
-
-export interface ExtractedCall {
-  category: MatchCategory
-  /** Canonical Panda name (e.g. `"css"`, `"cardStyle"`). For namespace
-   * callees like `p.css(...)`, this is the property name. */
-  name: string
-  /** Local binding at the call site. For namespace calls this is the
-   * namespace alias (e.g. `"p"` in `p.css(...)`). */
-  alias: string
-  /** One entry per source argument, in order. Each entry is tagged so a
-   * literal `null` argument (`{ kind: 'value', value: null }`) is
-   * distinguishable from a non-extractable one (`{ kind: 'missing' }`).
-   * `data.length` always matches the source arity. */
-  data: ExtractedArg[]
-  span: Span
-}
-
-/** Tagged shape for one extracted call argument. */
-export type ExtractedArg = { kind: 'value'; value: unknown } | { kind: 'missing'; value?: undefined }
-
-/** Alternatives emitted by a ternary (`a ? b : c`) or logical
- *  (`a && b`, `a || b`, `a ?? b`) expression whose deciding side isn't
- *  statically foldable. The downstream encoder treats each branch as
- *  an alternative output applied under different runtime conditions
- *  (atomic-CSS style). Both branches are themselves any extractable
- *  value — strings, numbers, objects, nested conditionals, etc. */
-export interface ExtractedConditional {
-  kind: 'conditional'
-  branches: unknown[]
-}
-
 export interface ExtractedCallsResult {
   calls: ExtractedCall[]
   diagnostics: Diagnostic[]
-}
-
-// --- extractJsx ---
-
-export interface ExtractedJsx {
-  category: MatchCategory
-  /** Canonical Panda element name (e.g. `"Box"`, `"styled.div"`). */
-  name: string
-  /** Local root binding (`"styled"` for `<styled.div>`, `"JSX"` for `<JSX.Stack>`). */
-  alias: string
-  /** Extracted props as a single object. Non-literal values are skipped;
-   * literal `{...spread}` attributes are merged in source order. */
-  data: Record<string, unknown>
-  span: Span
 }
 
 export interface ExtractedJsxResult {
@@ -213,17 +99,7 @@ export interface ExtractedJsxResult {
   diagnostics: Diagnostic[]
 }
 
-// --- extract (combined single-parse entrypoint) ---
-
-/** Lean result returned by `extract()` — production hot path. */
-export interface ExtractResult {
-  calls: ExtractedCall[]
-  jsx: ExtractedJsx[]
-  diagnostics: Diagnostic[]
-}
-
-/** Full result returned by `extractDebug()` — includes raw + matched imports
- *  for tooling, docs, and parity-compare flows. */
+/** Full result including raw + matched imports, for tooling / parity flows. */
 export interface ExtractDebugResult {
   imports: ImportRecord[]
   matched: MatchedImport[]
@@ -232,93 +108,17 @@ export interface ExtractDebugResult {
   diagnostics: Diagnostic[]
 }
 
-/** Reusable extractor session.
- *
- *  Built once from a `Matchers` config (including the resolved token
- *  dictionary), then called per file. The token dictionary is
- *  materialized at construction time, so each `extract` call skips the
- *  rebuild cost — for batch / build-time extraction this is the
- *  recommended path. The free `extract` / `extractDebug` functions stay
- *  for one-off CLI use and tests. */
+/** Reusable extractor session — built once from a `Matchers` config, then
+ *  called per file. For one-off use, prefer a `Compiler` + `extract`. */
 export interface ExtractorSession {
-  extract(source: string, path: string): ExtractResult
-  extractDebug(source: string, path: string): ExtractDebugResult
+  extract(path: string, source: string): ExtractResult
+  extractDebug(path: string, source: string): ExtractDebugResult
   matchImports(scan: ImportScanResult): MatchedImport[]
 }
 
 export interface ExtractorSessionConstructor {
   new (matchers: Matchers): ExtractorSession
 }
-
-// --- Project (stateful) ---
-
-/** One atomic style declaration: `(prop, value, conditions)`. Returned
- *  by `Project.atoms()`. Conditions are outer→inner; an unconditional
- *  atom has an empty array. */
-export interface Atom {
-  prop: string
-  value: string | number | boolean | null
-  conditions: string[]
-}
-
-/** One `(file, spanStart, recipe)` entry from `Project.recipes()` /
- *  `slotRecipes()`. The `recipe` value is the serialized shape of
- *  `pandacss_recipes::Recipe` / `SlotRecipe`. */
-export interface RecipeEntry {
-  file: string
-  spanStart: number
-  recipe: unknown
-}
-
-export interface EncodedRecipeStyles {
-  base: RecipeStyleGroup[]
-  variants: RecipeStyleGroup[]
-  atomic: Atom[]
-}
-
-export interface RecipeStyleGroup {
-  recipe: string
-  slot?: string | null
-  className: string
-  entries: RecipeStyleEntry[]
-}
-
-export interface RecipeStyleEntry {
-  prop: string
-  value: string | number | boolean | null
-  conditions: string[]
-}
-
-/** Per-call telemetry returned by `Project.parseFile()`. */
-export interface ParseFileReport {
-  cssCalls: number
-  cvaCalls: number
-  svaCalls: number
-  jsxUsages: number
-  diagnostics: Diagnostic[]
-}
-
-/** Aggregate counts across the project. Returned by `Project.summary()`. */
-export interface ProjectSummary {
-  filesProcessed: number
-  atomCount: number
-  recipeCount: number
-  slotRecipeCount: number
-}
-
-/** Optional construction inputs. `crossFile` defaults to `true` — the
- *  resolver is cheap if no imports get followed and lets `token('…')`
- *  and `import { x } from './tokens'` references fold. */
-export interface CompilerOptions {
-  crossFile?: boolean
-  callbacks?: ProjectCallbacks
-}
-
-export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'
-
-export type ProjectCallbacks = Partial<Record<ProjectCallbackKind, Record<string, (...args: any[]) => unknown>>>
-
-export type UserConfig = Record<string, unknown>
 
 export interface TraceOptions {
   /** Tracing filter, e.g. "trace", "debug", or "pandacss_project=trace". */
@@ -329,52 +129,24 @@ export interface TraceOptions {
   file?: string
 }
 
-export interface ConfigSnapshot {
-  config: UserConfig
-  callbacks?: ProjectCallbacks
+interface NativeCompilerOptions {
+  crossFile?: boolean
 }
 
-/** Stateful project orchestration. Holds a per-file atom registry,
- *  drops a file's contribution on `removeFile` / `refreshFile`, and
- *  runs the encoder over every extracted style so callers see `Atom[]`
- *  directly. For raw `ExtractedCall` / `ExtractedJsx` records (linting,
- *  parity testing), use `Extractor` instead. */
-export interface ProjectInstance {
-  config(): UserConfig | null
+/** The raw native instance — superset of {@link Compiler} carrying the internal
+ *  methods the facade hides. */
+export interface RawCompiler extends Compiler {
+  token_dictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
-  extract(source: string, path: string): ExtractResult
-  parseFile(path: string, source: string): ParseFileReport
-  /** Re-parse `path` *only if* already known. Returns `true` when the
-   *  file was present. Filter watch events through this to ignore
-   *  changes in unrelated paths. */
-  refreshFile(path: string, source: string): boolean
-  removeFile(path: string): boolean
-  clear(): void
-  isEmpty(): boolean
-  atoms(): Atom[]
-  recipes(): RecipeEntry[]
-  slotRecipes(): RecipeEntry[]
-  encodedRecipes(): EncodedRecipeStyles
-  summary(): ProjectSummary
-  compile(): CompileOutput
-  diagnostics(): Diagnostic[]
-  fileManifest(): CompileFileManifest[]
-  /** Per-file view, or `null` when `path` isn't known to the project. */
-  getFile(path: string): ParsedFileView | null
-  staticPatternAtoms(): StaticPatternResult
 }
 
-interface InternalProjectInstance extends ProjectInstance {
-  token_dictionary?(): TokenDictionary | undefined
-}
-
-export interface ProjectConstructor {
+export interface CompilerConstructor {
   fromConfig(
-    config: UserConfig | ConfigSnapshot,
-    options?: CompilerOptions,
+    config: SerializedConfig,
+    options?: NativeCompilerOptions,
     utilityValuesCallbacks?: Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown>,
-  ): InternalProjectInstance
+  ): RawCompiler
 }
 
 export interface NativeBinding {
@@ -382,17 +154,14 @@ export interface NativeBinding {
   flushTracing?(): void
   shutdownTracing?(): boolean
   compile(input?: CompileInput): CompileOutput
-  scanImports(source: string, path: string): ImportScanResult
+  scanImports(path: string, source: string): ImportScanResult
   matchImports(scan: ImportScanResult, matchers: Matchers): MatchedImport[]
-  extractCalls(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedCallsResult
-  extractJsx(source: string, path: string, matched: MatchedImport[], matchers: Matchers): ExtractedJsxResult
-  extract(source: string, path: string, matchers: Matchers): ExtractResult
-  extractDebug(source: string, path: string, matchers: Matchers): ExtractDebugResult
-  /** Native class export. Construct once via `new binding.Extractor(matchers)`
-   *  then reuse the instance across files. */
+  extractCalls(path: string, source: string, matched: MatchedImport[], matchers: Matchers): ExtractedCallsResult
+  extractJsx(path: string, source: string, matched: MatchedImport[], matchers: Matchers): ExtractedJsxResult
+  extract(path: string, source: string, matchers: Matchers): ExtractResult
+  extractDebug(path: string, source: string, matchers: Matchers): ExtractDebugResult
   Extractor: ExtractorSessionConstructor
-  /** Stateful project orchestration. See `ProjectInstance`. */
-  Project: ProjectConstructor
+  Compiler: CompilerConstructor
 }
 
 class FallbackExtractor implements ExtractorSession {
@@ -407,15 +176,12 @@ class FallbackExtractor implements ExtractorSession {
   }
 }
 
-class FallbackProject implements ProjectInstance {
+class FallbackCompiler implements Compiler {
   static fromConfig() {
-    return new FallbackProject()
+    return new FallbackCompiler()
   }
   config() {
-    return null
-  }
-  token_dictionary() {
-    return undefined
+    return {}
   }
   extract() {
     return { calls: [], jsx: [], diagnostics: [] }
@@ -439,13 +205,25 @@ class FallbackProject implements ProjectInstance {
     return [] as Atom[]
   }
   recipes() {
-    return [] as RecipeEntry[]
+    return []
   }
   slotRecipes() {
-    return [] as RecipeEntry[]
+    return []
   }
   encodedRecipes() {
-    return { base: [], variants: [], atomic: [] } as EncodedRecipeStyles
+    return { base: [], variants: [], atomic: [] }
+  }
+  staticPatternAtoms() {
+    return { atoms: [], diagnostics: [] }
+  }
+  getFile() {
+    return null
+  }
+  fileManifest() {
+    return []
+  }
+  summary() {
+    return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
   }
   compile() {
     return {
@@ -455,20 +233,8 @@ class FallbackProject implements ProjectInstance {
       diagnostics: [],
     }
   }
-  summary() {
-    return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
-  }
   diagnostics() {
     return [] as Diagnostic[]
-  }
-  fileManifest() {
-    return [] as CompileFileManifest[]
-  }
-  getFile() {
-    return null
-  }
-  staticPatternAtoms() {
-    return { atoms: [], diagnostics: [] }
   }
 }
 
@@ -509,20 +275,19 @@ const fallback: NativeBinding = {
     return { imports: [], matched: [], calls: [], jsx: [], diagnostics: [] }
   },
   Extractor: FallbackExtractor as unknown as ExtractorSessionConstructor,
-  Project: FallbackProject as unknown as ProjectConstructor,
+  Compiler: FallbackCompiler as unknown as CompilerConstructor,
 }
 
 const binding = loadNativeBinding() ?? fallback
-const nativeProjectFromConfig =
-  'fromConfig' in binding.Project && typeof binding.Project.fromConfig === 'function'
-    ? binding.Project.fromConfig.bind(binding.Project)
+const nativeCompilerFromConfig =
+  'fromConfig' in binding.Compiler && typeof binding.Compiler.fromConfig === 'function'
+    ? binding.Compiler.fromConfig.bind(binding.Compiler)
     : undefined
 
-/** One-shot stateless compile: build a project from `config`, parse
- *  every input file, and emit the stylesheet. Callback-bearing configs
- *  (`utilities.*.transform`, `patterns.*.transform`) are *not* supported
- *  through this entry point — use [`createCompiler`] + `registerPatternTransform`
- *  / `registerUtilityTransform` instead. */
+/** One-shot stateless compile: build a compiler from `config`, parse every
+ *  input file, and emit the stylesheet. Callback-bearing configs
+ *  (`utilities.*.transform`, `patterns.*.transform`) are *not* supported here —
+ *  use [`createCompiler`] + `options.callbacks` for those. */
 export function compile(input?: CompileInput): CompileOutput {
   return binding.compile(input)
 }
@@ -539,59 +304,15 @@ export function shutdownTracing(): boolean {
   return binding.shutdownTracing?.() ?? false
 }
 
-/** A configured compiler instance. `extract` is a stateless peek; `parseFile`
- *  registers into the incremental atom/recipe registry. */
-export interface Compiler {
-  extract(source: string, path: string): ExtractResult
-  parseFile(path: string, source: string): ParseFileReport
-  refreshFile(path: string, source: string): boolean
-  removeFile(path: string): boolean
-  clear(): void
-  isEmpty(): boolean
-  atoms(): Atom[]
-  recipes(): RecipeEntry[]
-  slotRecipes(): RecipeEntry[]
-  encodedRecipes(): EncodedRecipeStyles
-  summary(): ProjectSummary
-  config(): UserConfig | null
-  compile(): CompileOutput
-  diagnostics(): Diagnostic[]
-  fileManifest(): CompileFileManifest[]
-  getFile(path: string): ParsedFileView | null
-  staticPatternAtoms(): StaticPatternResult
+export function createCompiler(config: SerializedConfig, options?: CompilerOptions): Compiler {
+  return build(config, options?.callbacks ?? {}, options)
 }
 
-export function createCompiler(config: UserConfig | ConfigSnapshot, options?: CompilerOptions): Compiler {
-  const prepared = prepareProjectConfig(config, options)
-  assertProjectCallbacks(prepared.config, prepared.callbacks)
-  if (!nativeProjectFromConfig) {
-    throw new Error('createCompiler is not available in this binding')
-  }
-  const project = nativeProjectFromConfig(prepared.config, prepared.options, prepared.utilityValuesCallbacks)
-  registerCallbacks(project, prepared.callbacks, project.token_dictionary?.())
-  return toCompiler(project)
-}
-
-function toCompiler(project: ProjectInstance): Compiler {
-  return {
-    extract: (source, path) => project.extract(source, path),
-    parseFile: (path, source) => project.parseFile(path, source),
-    refreshFile: (path, source) => project.refreshFile(path, source),
-    removeFile: (path) => project.removeFile(path),
-    clear: () => project.clear(),
-    isEmpty: () => project.isEmpty(),
-    atoms: () => project.atoms(),
-    recipes: () => project.recipes(),
-    slotRecipes: () => project.slotRecipes(),
-    encodedRecipes: () => project.encodedRecipes(),
-    summary: () => project.summary(),
-    config: () => project.config(),
-    compile: () => project.compile(),
-    diagnostics: () => project.diagnostics(),
-    fileManifest: () => project.fileManifest(),
-    getFile: (path) => project.getFile(path),
-    staticPatternAtoms: () => project.staticPatternAtoms(),
-  }
+/** Like {@link createCompiler}, but takes a snapshot; its callbacks merge under
+ *  any in `options.callbacks`. */
+export function createCompilerFromSnapshot(snapshot: ConfigSnapshot, options?: CompilerOptions): Compiler {
+  const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
+  return build(snapshot.config, callbacks, options)
 }
 
 export function getBindingInfo() {
@@ -600,48 +321,19 @@ export function getBindingInfo() {
   }
 }
 
-interface PreparedProjectConfig {
-  config: UserConfig
-  options?: CompilerOptions
-  callbacks: ProjectCallbacks
-  utilityValuesCallbacks?: Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown>
-}
-
-function prepareProjectConfig(input: UserConfig | ConfigSnapshot, options?: CompilerOptions): PreparedProjectConfig {
-  const { config, callbacks } = normalizeProjectConfigInput(input, options)
-  return {
-    config,
-    callbacks,
-    options: stripProjectCallbacks(options),
-    utilityValuesCallbacks: createUtilityValuesCallbacks(callbacks),
+function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: CompilerOptions): Compiler {
+  assertProjectCallbacks(config, callbacks)
+  if (!nativeCompilerFromConfig) {
+    throw new Error('createCompiler is not available in this binding')
   }
+  const compiler = nativeCompilerFromConfig(config, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
+  registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
+  return compiler
 }
 
-function normalizeProjectConfigInput(
-  input: UserConfig | ConfigSnapshot,
-  options?: CompilerOptions,
-): { config: UserConfig; callbacks: ProjectCallbacks } {
-  if (isConfigSnapshot(input)) {
-    return {
-      config: input.config,
-      callbacks: mergeCallbacks(input.callbacks, options?.callbacks),
-    }
-  }
-
-  return {
-    config: input,
-    callbacks: options?.callbacks ?? {},
-  }
-}
-
-function isConfigSnapshot(input: UserConfig | ConfigSnapshot): input is ConfigSnapshot {
-  return !!input.config && typeof input.config === 'object' && !Array.isArray(input.config)
-}
-
-function stripProjectCallbacks(options: CompilerOptions | undefined): CompilerOptions | undefined {
-  if (!options) return undefined
-  const { callbacks: _callbacks, ...rest } = options
-  return Object.keys(rest).length > 0 ? rest : undefined
+function toNativeOptions(options: CompilerOptions | undefined): NativeCompilerOptions | undefined {
+  if (!options || options.crossFile === undefined) return undefined
+  return { crossFile: options.crossFile }
 }
 
 function createUtilityValuesCallbacks(
@@ -657,28 +349,4 @@ function createUtilityValuesCallbacks(
         callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
     ]),
   )
-}
-
-function getTokenCategoryValues(category: string, tokenDictionary: TokenDictionary | undefined) {
-  if (!tokenDictionary) return undefined
-
-  const prefix = `${category}.`
-  const out: Record<string, string> = {}
-  for (const [path, value] of Object.entries(tokenDictionary.values)) {
-    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
-  }
-
-  return Object.keys(out).length > 0 ? out : undefined
-}
-
-function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): ProjectCallbacks {
-  const result: ProjectCallbacks = {}
-  for (const item of items) {
-    for (const [kind, callbacks] of Object.entries(item ?? {}) as Array<
-      [ProjectCallbackKind, Record<string, Function>]
-    >) {
-      result[kind] = { ...result[kind], ...callbacks } as Record<string, (...args: any[]) => unknown>
-    }
-  }
-  return result
 }

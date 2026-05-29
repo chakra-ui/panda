@@ -111,6 +111,10 @@ pub(crate) struct RecipeKey {
 
 impl Project {
     #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "Project conceptually takes ownership of the System"
+    )]
     pub fn new(system: System) -> Self {
         let config = system.config_arc();
         let config_diagnostics = system.diagnostics().to_vec();
@@ -135,6 +139,9 @@ impl Project {
         }
     }
 
+    /// # Panics
+    /// Panics if the config `Arc` is already shared — only valid immediately
+    /// after [`Self::new`], before any clone of the config escapes.
     #[must_use]
     pub fn with_cross_file(mut self, resolver: CrossFileResolver) -> Self {
         Arc::get_mut(&mut self.config)
@@ -151,23 +158,16 @@ impl Project {
         self.parse_file_inner(path, source, None, None)
     }
 
-    pub fn parse_file_with_pattern_transforms(
+    /// [`Self::parse_file`] with transform callbacks. The binding layer
+    /// builds `transforms` fresh per call — the closures capture the
+    /// per-call JS environment, so they can't be stored on the project.
+    pub fn parse_file_with(
         &mut self,
         path: &str,
         source: &str,
-        transform: &mut PatternTransformFn<'_>,
+        transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(path, source, Some(transform), None)
-    }
-
-    pub fn parse_file_with_transforms(
-        &mut self,
-        path: &str,
-        source: &str,
-        pattern_transform: Option<&mut PatternTransformFn<'_>>,
-        utility_transform: Option<&mut UtilityTransformFn<'_>>,
-    ) -> ParseFileReport {
-        self.parse_file_inner(path, source, pattern_transform, utility_transform)
+        self.parse_file_inner(path, source, transforms.pattern, transforms.utility)
     }
 
     /// Stateless single-file extraction using this project's configured
@@ -175,16 +175,20 @@ impl Project {
     /// encode, decompose recipes, or register anything — it returns the raw
     /// extracted usages directly. Backs `compiler.extract(...)` on the bindings.
     #[must_use]
-    pub fn extract(&self, source: &str, path: &str) -> pandacss_extractor::ExtractUsage {
+    pub fn extract(&self, path: &str, source: &str) -> pandacss_extractor::ExtractUsage {
         extract(source, path, &self.config.extractor_config)
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "single-pass dispatch over every extracted call/jsx kind"
+    )]
     fn parse_file_inner(
         &mut self,
         path: &str,
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
-        mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        utility_transform: Option<&mut UtilityTransformFn<'_>>,
     ) -> ParseFileReport {
         let span = tracing::trace_span!(
             "file_parse",
@@ -369,7 +373,7 @@ impl Project {
         }
 
         let mut atoms = encoder.into_atoms();
-        if let Some(transform) = utility_transform.as_deref_mut() {
+        if let Some(transform) = utility_transform {
             atoms = transform_atoms(atoms, transform, &mut report.diagnostics);
             encoded_recipes.transform_utilities(transform, &mut report.diagnostics);
         }
@@ -397,17 +401,16 @@ impl Project {
         true
     }
 
-    pub fn refresh_file_with_transforms(
+    pub fn refresh_file_with(
         &mut self,
         path: &str,
         source: &str,
-        pattern_transform: Option<&mut PatternTransformFn<'_>>,
-        utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        transforms: ParseTransforms<'_>,
     ) -> bool {
         if !self.files.contains_key(path) {
             return false;
         }
-        self.parse_file_with_transforms(path, source, pattern_transform, utility_transform);
+        self.parse_file_with(path, source, transforms);
         true
     }
 
@@ -566,30 +569,11 @@ impl Project {
     }
 
     #[must_use]
-    pub fn atoms_snapshot(&mut self) -> &[Atom] {
-        self.atoms_snapshot_cache.get_or_insert_with(|| {
-            let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
-            atoms.sort_by(compare_atoms_by_emit_order);
-            atoms
-        })
-    }
-
-    #[must_use]
     pub fn encoded_recipes(&self) -> &EncodedRecipes {
         self.encoded_recipes_cache.view()
     }
 
     #[must_use]
-    pub fn encoded_recipes_snapshot(&mut self) -> &EncodedRecipesSnapshot {
-        if self.encoded_recipes_snapshot_cache.is_none() {
-            self.encoded_recipes_snapshot_cache =
-                Some(self.encoded_recipes_cache.view().snapshot());
-        }
-        self.encoded_recipes_snapshot_cache
-            .as_ref()
-            .expect("encoded recipe snapshot was initialized")
-    }
-
     pub fn static_pattern_atoms(
         &self,
         user_config: &UserConfig,
@@ -608,7 +592,10 @@ impl Project {
     }
 
     #[must_use]
-    pub fn static_encoded_recipes(&self, user_config: &UserConfig) -> EncodedRecipesSnapshot {
+    pub(crate) fn static_encoded_recipes(
+        &self,
+        user_config: &UserConfig,
+    ) -> EncodedRecipesSnapshot {
         let mut encoded = EncodedRecipes::default();
         self.config.recipes.process_static_css(
             &mut encoded,
@@ -620,27 +607,10 @@ impl Project {
     }
 
     #[must_use]
-    pub fn static_encoded_recipes_snapshot(
-        &mut self,
-        user_config: &UserConfig,
-    ) -> &EncodedRecipesSnapshot {
-        let cache_matches = self
-            .static_encoded_recipes_snapshot_cache
-            .as_ref()
-            .is_some_and(|(static_css, _)| static_css == &user_config.static_css);
-        if !cache_matches {
-            self.static_encoded_recipes_snapshot_cache = Some((
-                user_config.static_css.clone(),
-                self.static_encoded_recipes(user_config),
-            ));
-        }
-        self.static_encoded_recipes_snapshot_cache
-            .as_ref()
-            .map(|(_, snapshot)| snapshot)
-            .expect("static recipe snapshot was initialized")
-    }
-
-    #[must_use]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "snapshot caches are populated immediately above the expects"
+    )]
     pub fn stylesheet_snapshots(
         &mut self,
         user_config: &UserConfig,
@@ -758,6 +728,16 @@ pub type PatternTransformFn<'a> =
 pub type UtilityTransformFn<'a> =
     dyn FnMut(&str, &AtomValue) -> std::result::Result<Option<Vec<Atom>>, Diagnostic> + 'a;
 
+/// Per-call transform callbacks for [`Project::parse_file_with`] /
+/// [`Project::refresh_file_with`]. The binding layer builds these fresh per
+/// call (the closures capture the per-call JS environment), so they're passed
+/// in rather than stored on the project.
+#[derive(Default)]
+pub struct ParseTransforms<'a> {
+    pub pattern: Option<&'a mut PatternTransformFn<'a>>,
+    pub utility: Option<&'a mut UtilityTransformFn<'a>>,
+}
+
 fn push_deprecated_utility_diagnostics(
     calls: &[ExtractedCall],
     jsx: &[ExtractedJsx],
@@ -769,10 +749,8 @@ fn push_deprecated_utility_diagnostics(
     let mut seen: Vec<String> = Vec::new();
     for call in calls {
         seen.clear();
-        for arg in &call.data {
-            if let Some(lit) = arg {
-                collect_deprecated_props(lit, utility, deprecated, &mut seen);
-            }
+        for lit in call.data.iter().flatten() {
+            collect_deprecated_props(lit, utility, deprecated, &mut seen);
         }
         for prop in seen.drain(..) {
             out.push(deprecated_utility_diagnostic(&prop, call.span, line_index));

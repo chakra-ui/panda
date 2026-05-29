@@ -43,7 +43,9 @@
   "napi": {
     "binaryName": "compiler"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@pandacss/compiler-shared": "workspace:*"
+  },
   "devDependencies": {
     "@napi-rs/cli": "^3.0.0"
   }

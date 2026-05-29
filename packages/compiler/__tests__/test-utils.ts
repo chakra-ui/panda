@@ -1,4 +1,4 @@
-import type { CompilerOptions, UserConfig } from '../src'
+import type { CompilerOptions, SerializedConfig } from '../src'
 import { createCompiler } from '../src'
 
 export const importMap = {
@@ -9,7 +9,7 @@ export const importMap = {
   tokens: ['@panda/tokens'],
 }
 
-export function createUserConfig(overrides: UserConfig = {}): UserConfig {
+export function createUserConfig(overrides: SerializedConfig = {}): SerializedConfig {
   return {
     cwd: '/virtual',
     outdir: 'styled-system',
@@ -21,6 +21,6 @@ export function createUserConfig(overrides: UserConfig = {}): UserConfig {
 
 /** Build a compiler from the shared virtual config. Returns a {@link Compiler}
  *  (named `createProject` historically — it's the project/compiler test handle). */
-export function createProject(userConfig: UserConfig = {}, options: CompilerOptions = { crossFile: false }) {
+export function createProject(userConfig: SerializedConfig = {}, options: CompilerOptions = { crossFile: false }) {
   return createCompiler(createUserConfig(userConfig), options)
 }

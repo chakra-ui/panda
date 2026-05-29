@@ -24,8 +24,8 @@ pub struct ExtractedJsxResult {
     reason = "NAPI requires owned arguments"
 )]
 pub fn extract_jsx(
-    source: String,
     path: String,
+    source: String,
     matched: Vec<MatchedImport>,
     matchers: Matchers,
 ) -> ExtractedJsxResult {

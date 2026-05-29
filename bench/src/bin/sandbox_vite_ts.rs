@@ -218,10 +218,7 @@ struct ExtractOnlyRun {
     diagnostics: usize,
 }
 
-fn run_extract_only(
-    config: &ExtractorConfig,
-    sources: &[(PathBuf, String)],
-) -> ExtractOnlyRun {
+fn run_extract_only(config: &ExtractorConfig, sources: &[(PathBuf, String)]) -> ExtractOnlyRun {
     let mut extract_calls = 0usize;
     let mut jsx = 0usize;
     let mut diagnostics = 0usize;
@@ -244,7 +241,8 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
     let total_start = Instant::now();
 
     let t0 = Instant::now();
-    let mut project = Project::from_config(config.clone()).expect("project");
+    let system = pandacss_project::System::new(config.clone()).expect("system");
+    let mut project = Project::new(system);
     let from_config = t0.elapsed();
 
     let t0 = Instant::now();
@@ -291,7 +289,8 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
 
 fn run_watch(config: &UserConfig, sources: &[(PathBuf, String)]) -> WatchRun {
     // Set up a steady-state project once per watch run.
-    let mut project = Project::from_config(config.clone()).expect("project");
+    let system = pandacss_project::System::new(config.clone()).expect("system");
+    let mut project = Project::new(system);
     for (path, source) in sources {
         project.parse_file(path.to_str().expect("utf8"), source);
     }
@@ -362,12 +361,11 @@ fn parse_flag(flag: &str) -> bool {
 fn parse_usize_arg(flag: &str, default: usize) -> usize {
     let mut it = env::args().skip(1);
     while let Some(arg) = it.next() {
-        if arg == flag {
-            if let Some(value) = it.next() {
-                if let Ok(parsed) = value.parse() {
-                    return parsed;
-                }
-            }
+        if arg == flag
+            && let Some(value) = it.next()
+            && let Ok(parsed) = value.parse()
+        {
+            return parsed;
         }
     }
     default
@@ -383,10 +381,7 @@ fn sandbox_dir() -> PathBuf {
 
 /// Make each amplified copy slightly different so atom dedup doesn't collapse
 /// everything to the base set — exercises the encoder + atom-merge hot paths.
-fn synthesize_unique(
-    base: &[(PathBuf, String)],
-    multiplier: usize,
-) -> Vec<(PathBuf, String)> {
+fn synthesize_unique(base: &[(PathBuf, String)], multiplier: usize) -> Vec<(PathBuf, String)> {
     let mut out = Vec::with_capacity(base.len() * multiplier.max(1));
     for i in 0..multiplier.max(1) {
         for (path, source) in base {
@@ -394,17 +389,23 @@ fn synthesize_unique(
                 .file_stem()
                 .and_then(|s| s.to_str())
                 .unwrap_or("source");
-            let ext = path
-                .extension()
-                .and_then(|s| s.to_str())
-                .unwrap_or("tsx");
+            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("tsx");
             let new_path = path.with_file_name(format!("{stem}_{i}.{ext}"));
             // Append a unique css() call so each file emits at least one new atom.
             let unique = format!(
                 "\n// uniquify\nimport {{ css as __css_{i} }} from '../styled-system/css';\n\
                  __css_{i}({{ color: '{color}', padding: '{pad}' }});\n",
-                color = match i % 4 { 0 => "red.300", 1 => "blue.500", 2 => "green.100", _ => "yellow.300" },
-                pad = match i % 3 { 0 => "2", 1 => "4", _ => "5" },
+                color = match i % 4 {
+                    0 => "red.300",
+                    1 => "blue.500",
+                    2 => "green.100",
+                    _ => "yellow.300",
+                },
+                pad = match i % 3 {
+                    0 => "2",
+                    1 => "4",
+                    _ => "5",
+                },
             );
             out.push((new_path, format!("{source}{unique}")));
         }
@@ -423,10 +424,7 @@ fn amplify(base: &[(PathBuf, String)], multiplier: usize) -> Vec<(PathBuf, Strin
                 .file_stem()
                 .and_then(|s| s.to_str())
                 .unwrap_or("source");
-            let ext = path
-                .extension()
-                .and_then(|s| s.to_str())
-                .unwrap_or("tsx");
+            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("tsx");
             let new_path = path.with_file_name(format!("{stem}_{i}.{ext}"));
             out.push((new_path, source.clone()));
         }
@@ -457,16 +455,43 @@ fn load_sources(src_dir: &Path) -> Vec<(PathBuf, String)> {
 /// Build an `ExtractorConfig` whose matchers line up with the `UserConfig` so the
 /// extract-only timing reflects what `Project::parse_file` actually runs.
 fn extractor_config_matching(_config: &UserConfig) -> ExtractorConfig {
-    let component_names = ["Button", "Card", "Stack", "Grid", "Circle", "HStack", "VStack", "Badge"]
-        .into_iter()
-        .map(str::to_owned)
-        .collect::<FxHashSet<_>>();
+    let component_names = [
+        "Button", "Card", "Stack", "Grid", "Circle", "HStack", "VStack", "Badge",
+    ]
+    .into_iter()
+    .map(str::to_owned)
+    .collect::<FxHashSet<_>>();
     let valid_style_props = [
-        "color", "bg", "background", "padding", "margin", "marginBottom", "marginTop", "marginX",
-        "paddingX", "paddingY", "display", "gap", "css", "fontSize", "fontWeight", "borderRadius",
-        "letterSpacing", "width", "height", "alignItems", "justifyContent", "alignSelf",
-        "borderWidth", "textAlign", "flexGrow", "lineHeight", "maxWidth", "animation",
-        "animationName", "fontFamily",
+        "color",
+        "bg",
+        "background",
+        "padding",
+        "margin",
+        "marginBottom",
+        "marginTop",
+        "marginX",
+        "paddingX",
+        "paddingY",
+        "display",
+        "gap",
+        "css",
+        "fontSize",
+        "fontWeight",
+        "borderRadius",
+        "letterSpacing",
+        "width",
+        "height",
+        "alignItems",
+        "justifyContent",
+        "alignSelf",
+        "borderWidth",
+        "textAlign",
+        "flexGrow",
+        "lineHeight",
+        "maxWidth",
+        "animation",
+        "animationName",
+        "fontFamily",
     ]
     .into_iter()
     .map(str::to_owned)
@@ -487,7 +512,9 @@ fn extractor_config_matching(_config: &UserConfig) -> ExtractorConfig {
         },
         jsx: Some(Matcher {
             modules: vec!["../styled-system/jsx".to_owned()],
-            names: NameMatcher::only(["panda", "styled", "Box", "Stack", "Grid", "Circle", "HStack", "VStack"]),
+            names: NameMatcher::only([
+                "panda", "styled", "Box", "Stack", "Grid", "Circle", "HStack", "VStack",
+            ]),
         }),
         tokens: Matcher {
             modules: vec!["../styled-system/tokens".to_owned()],

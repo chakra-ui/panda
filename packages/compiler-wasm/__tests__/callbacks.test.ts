@@ -1,12 +1,12 @@
 import { expect, it } from 'vitest'
 
-import { createCompiler, createCompilerFromWasmModule, loadWasm } from '../src'
+import { createCompilerFromSnapshot, createCompilerFromWasmModule, loadWasm } from '../src'
 import type { Atom, PatternHelpers } from '../src'
 import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
 
 describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   it('applies utility transform callbacks in the JS host', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -52,7 +52,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('passes token helpers to utility transform callbacks', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -120,7 +120,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('applies utility transform callbacks to encoded config recipes', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -244,7 +244,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('resolves utility values callbacks in config-derived projects', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -309,7 +309,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
 
   it('throws when serialized callback refs are missing callbacks', async () => {
     await expect(
-      createCompiler({
+      createCompilerFromSnapshot({
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
@@ -335,7 +335,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('applies utility transform callbacks under conditions', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -391,7 +391,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('applies utility transform callbacks from JSX props', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -433,7 +433,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
 
   it('caches utility transform callback results', async () => {
     let calls = 0
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -463,7 +463,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('reports utility transform callback failures during parseFile', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -504,7 +504,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
 
   it('does not cache failed utility transform callbacks', async () => {
     let calls = 0
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -563,7 +563,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('applies utility transform callbacks during refreshFile', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         utilities: {
@@ -603,7 +603,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
 
   it('shares utility transform cache between atoms and encoded recipes', async () => {
     let calls = 0
-    const { compiler } = await createCompiler(
+    const compiler = await createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -657,7 +657,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('applies pattern transform callbacks with helpers', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         cwd: '/virtual',
         outdir: 'styled-system',
@@ -735,8 +735,9 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
 
   it('wires pattern transform callbacks through an initialized wasm module', async () => {
     const mod = await loadWasm()
-    const { compiler } = createCompilerFromWasmModule(mod, {
-      config: {
+    const compiler = createCompilerFromWasmModule(
+      mod,
+      {
         ...baseConfig,
         patterns: {
           stack: {
@@ -750,15 +751,17 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
           },
         },
       },
-      callbacks: {
-        'pattern.transform': {
-          'patterns.stack.transform': (props: { gap?: unknown }) => ({
-            display: 'flex',
-            gap: props.gap,
-          }),
+      {
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+              display: 'flex',
+              gap: props.gap,
+            }),
+          },
         },
       },
-    })
+    )
 
     compiler.parseFile('/Stack.tsx', `import { stack } from '@panda/patterns'\nstack({ gap: '4px' })`)
 
@@ -779,7 +782,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
   })
 
   it('applies pattern defaultValues before wasm pattern transform callbacks', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompilerFromSnapshot({
       config: {
         ...baseConfig,
         patterns: {
