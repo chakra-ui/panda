@@ -1,3 +1,9 @@
+#![allow(
+    clippy::disallowed_macros,
+    clippy::print_stdout,
+    reason = "benchmark binary intentionally prints comparison output"
+)]
+
 use std::time::Instant;
 
 use pandacss_config::UserConfig;

@@ -132,11 +132,21 @@ impl Default for CascadeLayers {
 }
 
 impl CascadeLayers {
-    fn default_reset() -> String { "reset".to_owned() }
-    fn default_base() -> String { "base".to_owned() }
-    fn default_tokens() -> String { "tokens".to_owned() }
-    fn default_recipes() -> String { "recipes".to_owned() }
-    fn default_utilities() -> String { "utilities".to_owned() }
+    fn default_reset() -> String {
+        "reset".to_owned()
+    }
+    fn default_base() -> String {
+        "base".to_owned()
+    }
+    fn default_tokens() -> String {
+        "tokens".to_owned()
+    }
+    fn default_recipes() -> String {
+        "recipes".to_owned()
+    }
+    fn default_utilities() -> String {
+        "utilities".to_owned()
+    }
 
     /// Single source of truth for the fixed emit order: each pair is
     /// `(semantic_field_name, user_facing_name)`. Used both for emission

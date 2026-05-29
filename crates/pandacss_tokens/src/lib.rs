@@ -842,9 +842,7 @@ fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
     ColorPaletteView { palettes }
 }
 
-pub(crate) fn color_palette_path_segments<'a>(
-    segments: &'a [&'a str],
-) -> Option<&'a [&'a str]> {
+pub(crate) fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
     if segments.first().copied() != Some("colors")
         || segments.get(1).copied() == Some("colorPalette")
         || segments.len() < 2

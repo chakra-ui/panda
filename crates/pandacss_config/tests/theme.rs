@@ -3,6 +3,7 @@ use pandacss_config::UserConfig;
 use serde_json::json;
 
 #[test]
+#[allow(clippy::too_many_lines, reason = "single end-to-end theme fixture")]
 fn deserializes_typed_theme_shape() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {

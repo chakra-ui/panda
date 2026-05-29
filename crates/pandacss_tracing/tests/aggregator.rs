@@ -34,8 +34,8 @@ fn clear_resets_totals() {
     let subscriber = tracing_subscriber::registry().with(timings.layer());
     let _guard = subscriber.set_default();
 
-    let _e = tracing::trace_span!("gamma").entered();
-    drop(_e);
+    let entered = tracing::trace_span!("gamma").entered();
+    drop(entered);
     assert!(!timings.snapshot().is_empty());
     timings.clear();
     assert!(timings.snapshot().is_empty());

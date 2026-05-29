@@ -240,9 +240,7 @@ impl RecipeRegistry {
         recipe_names: &[&str],
         props: &Literal,
     ) -> Option<Literal> {
-        let Some(entries) = literal_entries(props) else {
-            return None;
-        };
+        let entries = literal_entries(props)?;
 
         let mut recipe_props = FxHashSet::default();
         for recipe_name in recipe_names {
@@ -309,7 +307,7 @@ impl RecipeRegistry {
             self.extend_compound_atoms(&name, &mut encoded.atomic);
             let options = self.variant_options(&name);
             for rule in rules {
-                for selected in self.static_rule_selections(&rule, &responsive, &options) {
+                for selected in Self::static_rule_selections(&rule, &responsive, &options) {
                     encoded.process_usage(self, &name, &selected, conditions);
                 }
             }
@@ -338,16 +336,15 @@ impl RecipeRegistry {
     }
 
     fn static_rule_selections(
-        &self,
         rule: &Literal,
         breakpoints: &[String],
         options: &FxHashMap<Box<str>, Vec<String>>,
     ) -> Vec<Literal> {
         if matches!(rule, Literal::String(value) if value == "*") {
             return options
-                .into_iter()
+                .iter()
                 .flat_map(|(variant, values)| {
-                    values.into_iter().map(move |value| {
+                    values.iter().map(move |value| {
                         Literal::Object(vec![(variant.to_string(), Literal::String(value.clone()))])
                     })
                 })
@@ -380,7 +377,7 @@ impl RecipeRegistry {
                 let value = if conditions.is_empty() {
                     value
                 } else {
-                    conditional_static_value(&conditions, breakpoints, value)
+                    conditional_static_value(&conditions, breakpoints, &value)
                 };
                 Literal::Object(vec![(variant.clone(), value)])
             }));
@@ -397,7 +394,7 @@ impl RecipeRegistry {
                     let mut values = group
                         .options
                         .keys()
-                        .map(|value| value.to_string())
+                        .map(std::string::ToString::to_string)
                         .collect::<Vec<_>>();
                     values.sort();
                     (group.name.clone(), values)
@@ -412,7 +409,7 @@ impl RecipeRegistry {
                     let mut values = group
                         .options
                         .keys()
-                        .map(|value| value.to_string())
+                        .map(std::string::ToString::to_string)
                         .collect::<Vec<_>>();
                     values.sort();
                     (group.name.clone(), values)
@@ -527,7 +524,7 @@ fn static_variant_values(value: &Literal, wildcard_values: Option<&Vec<String>>)
 fn conditional_static_value(
     conditions: &[String],
     breakpoints: &[String],
-    value: Literal,
+    value: &Literal,
 ) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];
     entries.extend(conditions.iter().map(|condition| {
@@ -772,15 +769,10 @@ impl EncodedRecipes {
     ) {
         if let Some(base) = node.base.as_ref() {
             let key = recipe_part_key(&node.name, None);
-            if !self.base.contains_key(&key) {
-                self.base.insert(
-                    key,
-                    RecipeStyleGroup {
-                        class_name: base.class_name.clone(),
-                        entries: base.entries.clone(),
-                    },
-                );
-            }
+            self.base.entry(key).or_insert_with(|| RecipeStyleGroup {
+                class_name: base.class_name.clone(),
+                entries: base.entries.clone(),
+            });
         }
 
         let selected = selected_variants(&node.default_variants, selected, conditions);

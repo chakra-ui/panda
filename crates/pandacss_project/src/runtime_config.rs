@@ -15,6 +15,10 @@ use crate::{ProjectConditionMatcher, RecipeKey, Result};
 ///
 /// `UserConfig` is the deserialized resolved input shape. This `Config`
 /// is the compiled model consumed by extraction and project state.
+#[allow(
+    clippy::struct_field_names,
+    reason = "field names mirror the config sections they hold"
+)]
 pub struct Config {
     pub(crate) extractor_config: ExtractorConfig,
     pub(crate) utility: Option<Utility>,
@@ -27,6 +31,8 @@ pub struct Config {
 }
 
 impl Config {
+    /// # Errors
+    /// Returns a `ConfigError` when the config has invalid tokens or recipes.
     pub fn from_user_config(config: &UserConfig) -> Result<Self> {
         let _span = tracing::debug_span!("config_from_user_config").entered();
         config::compile_config(config)

@@ -43,7 +43,9 @@ pub fn emit<'a>(
         }));
     }
     let token_vars = token_dictionary.map(TokenDictionary::css_vars);
-    let prepared_token_vars = token_vars.as_ref().and_then(|vars| cx.prepare_token_vars(vars));
+    let prepared_token_vars = token_vars
+        .as_ref()
+        .and_then(|vars| cx.prepare_token_vars(vars));
     let keyframes = as_non_empty_object(&config.theme.keyframes);
     if prepared_token_vars.is_some() || keyframes.is_some() {
         layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
@@ -51,7 +53,7 @@ pub fn emit<'a>(
                 cx.serialize_token_vars(writer, token_vars);
             }
             if let Some(keyframes) = keyframes {
-                cx.serialize_keyframes(writer, keyframes);
+                EmitContext::serialize_keyframes(writer, keyframes);
             }
         }));
     }
@@ -232,15 +234,13 @@ impl<'a> EmitContext<'a> {
         let Some(raw) = raw.as_deref() else {
             return;
         };
-        let Some(result) = self.transform_atom(atom.prop(), raw) else {
-            return;
-        };
+        let result = self.transform_atom(atom.prop(), raw);
         let mut class_name = self.utility.format_class_name_owned(result.class_name);
         if atom.important() {
             class_name.push('!');
         }
         let rule = self.rule_target_owned(class_name, conditions);
-        self.write_style_rule(writer, &rule, &result.styles);
+        Self::write_style_rule(writer, &rule, &result.styles);
     }
 
     fn serialize_styles(&self, writer: &mut CssWriter, value: &Value) {
@@ -327,14 +327,14 @@ impl<'a> EmitContext<'a> {
         }
 
         if !declarations.is_empty() {
-            let rule = self.rule_target_with_base_parts(selector, conditions);
-            self.write_recipe_rule(writer, &rule, &declarations);
+            let rule = Self::rule_target_with_base_parts(selector, conditions);
+            Self::write_recipe_rule(writer, &rule, &declarations);
         }
 
         for conditional in conditional_declarations {
             conditions.push(conditional.condition);
-            let rule = self.rule_target_with_base_parts(selector, conditions);
-            self.write_recipe_rule(writer, &rule, &conditional.declarations);
+            let rule = Self::rule_target_with_base_parts(selector, conditions);
+            Self::write_recipe_rule(writer, &rule, &conditional.declarations);
             conditions.pop();
         }
 
@@ -413,7 +413,7 @@ impl<'a> EmitContext<'a> {
         for (key, value) in entries {
             match value {
                 Value::String(value) => {
-                    declarations.push(GlobalVarDeclaration { prop: key, value })
+                    declarations.push(GlobalVarDeclaration { prop: key, value });
                 }
                 Value::Object(config) => {
                     if let Some(property) = global_var_property(key, config) {
@@ -467,11 +467,7 @@ impl<'a> EmitContext<'a> {
     /// `(selector -> declarations)`, no condition resolution, no nested
     /// rules, no shorthand expansion, so we skip the `serialize_styles`
     /// machinery and write a primitive-only declaration loop.
-    fn serialize_keyframes(
-        &self,
-        writer: &mut CssWriter,
-        keyframes: &serde_json::Map<String, Value>,
-    ) {
+    fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<String, Value>) {
         for (name, body) in keyframes {
             let Some(selectors) = as_non_empty_object(body) else {
                 continue;
@@ -492,7 +488,7 @@ impl<'a> EmitContext<'a> {
         }
 
         for group in &vars.conditions {
-            let rule = self.token_rule_target_with_base_parts(root, &group.conditions);
+            let rule = Self::token_rule_target_with_base_parts(root, &group.conditions);
             write_with_wrappers(writer, &rule.wrappers, |writer| {
                 write_token_var_rule(writer, &rule.selector, group.vars);
             });
@@ -514,11 +510,7 @@ impl<'a> EmitContext<'a> {
         (!conditions.is_empty()).then_some(conditions)
     }
 
-    fn token_rule_target_with_base_parts(
-        &self,
-        base: &str,
-        conditions: &[ConditionParts],
-    ) -> RuleTarget {
+    fn token_rule_target_with_base_parts(base: &str, conditions: &[ConditionParts]) -> RuleTarget {
         let mut selector = base.to_owned();
         let mut wrappers = Vec::new();
         for parts in conditions {
@@ -553,7 +545,7 @@ impl<'a> EmitContext<'a> {
                 }
                 Some(_) => {
                     let previous = pending.take().expect("pending recipe rule");
-                    self.write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                    Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
                     pending = Some(PendingRecipeRule { rule, declarations });
                 }
                 None => {
@@ -563,7 +555,7 @@ impl<'a> EmitContext<'a> {
         }
 
         if let Some(pending) = pending {
-            self.write_recipe_rule(writer, &pending.rule, &pending.declarations);
+            Self::write_recipe_rule(writer, &pending.rule, &pending.declarations);
         }
     }
 
@@ -582,7 +574,7 @@ impl<'a> EmitContext<'a> {
     ) -> Option<Vec<RecipeDeclaration>> {
         let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
-        let result = self.transform_atom(prop, raw)?;
+        let result = self.transform_atom(prop, raw);
         let Literal::Object(entries) = &result.styles else {
             return None;
         };
@@ -605,7 +597,6 @@ impl<'a> EmitContext<'a> {
     }
 
     fn write_recipe_rule(
-        &self,
         writer: &mut CssWriter,
         rule: &RuleTarget,
         declarations: &[RecipeDeclaration],
@@ -623,14 +614,14 @@ impl<'a> EmitContext<'a> {
         });
     }
 
-    fn transform_atom(&self, prop: &str, raw: &str) -> Option<UtilityTransformResult> {
+    fn transform_atom(&self, prop: &str, raw: &str) -> UtilityTransformResult {
         if !self.utility.is_empty() {
-            return Some(self.utility.transform_str(prop, raw));
+            return self.utility.transform_str(prop, raw);
         }
-        Some(default_transform(prop, raw))
+        default_transform(prop, raw)
     }
 
-    fn write_style_rule(&self, writer: &mut CssWriter, rule: &RuleTarget, styles: &Literal) {
+    fn write_style_rule(writer: &mut CssWriter, rule: &RuleTarget, styles: &Literal) {
         let Literal::Object(entries) = styles else {
             return;
         };
@@ -664,7 +655,7 @@ impl<'a> EmitContext<'a> {
         RuleTarget { selector, wrappers }
     }
 
-    fn rule_target_with_base_parts(&self, base: &str, conditions: &[ConditionParts]) -> RuleTarget {
+    fn rule_target_with_base_parts(base: &str, conditions: &[ConditionParts]) -> RuleTarget {
         let mut selector = base.to_owned();
         let mut wrappers = Vec::with_capacity(conditions.len());
         for parts in conditions {
@@ -798,12 +789,11 @@ fn literal_to_css(value: &Literal) -> Option<Cow<'_, str>> {
         Literal::String(value) => Some(Cow::Borrowed(value)),
         Literal::Number(value) => Some(Cow::Owned(pandacss_shared::number_to_js_string(*value))),
         Literal::Bool(true) => Some(Cow::Borrowed("true")),
-        Literal::Bool(false) | Literal::Null | Literal::Object(_) => None,
+        Literal::Bool(false) | Literal::Null | Literal::Object(_) | Literal::Conditional(_) => None,
         Literal::Array(items) => {
             let values: Vec<_> = items.iter().filter_map(literal_to_css).collect();
             (!values.is_empty()).then(|| Cow::Owned(join_css_values(&values)))
         }
-        Literal::Conditional(_) => None,
     }
 }
 
@@ -887,7 +877,7 @@ fn apply_token_raw_condition(
         *selector = replace_selector_parent(raw, selector);
         cleanup_token_selector(css_var_root, selector);
     } else if selector == css_var_root {
-        *selector = raw.to_owned();
+        raw.clone_into(selector);
     } else {
         *selector = format!("{selector} {raw}");
     }
@@ -1032,8 +1022,7 @@ fn value_to_atom_value(value: &Value) -> Option<AtomValue> {
         Value::Number(value) => Some(AtomValue::Number(
             value
                 .as_f64()
-                .map(number_to_js_string)
-                .unwrap_or_else(|| value.to_string())
+                .map_or_else(|| value.to_string(), number_to_js_string)
                 .into_boxed_str(),
         )),
         Value::Bool(value) => Some(AtomValue::Bool(*value)),

@@ -290,9 +290,12 @@ impl Utility {
         // mappings (e.g. composition utilities) keep the original lookup key on
         // the atom; the substitution happens at emit time in `default_style`.
         match mapped {
-            Some(Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null) => {
-                Cow::Owned(mapped.expect("matched scalar").clone())
-            }
+            Some(
+                scalar @ (Literal::String(_)
+                | Literal::Number(_)
+                | Literal::Bool(_)
+                | Literal::Null),
+            ) => Cow::Owned(scalar.clone()),
             _ => Cow::Borrowed(value),
         }
     }
@@ -353,7 +356,10 @@ impl Utility {
                 Literal::Array(items.iter().map(|v| self.expand_styles_tree(v)).collect())
             }
             Literal::Conditional(branches) => Literal::Conditional(
-                branches.iter().map(|v| self.expand_styles_tree(v)).collect(),
+                branches
+                    .iter()
+                    .map(|v| self.expand_styles_tree(v))
+                    .collect(),
             ),
             Literal::String(s) => Literal::String(self.expand_reference_in_value(s)),
             Literal::Number(_) | Literal::Bool(_) | Literal::Null => value.clone(),
@@ -502,7 +508,7 @@ fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &V
         return;
     };
     let mut values: FxHashMap<String, Literal> = FxHashMap::default();
-    walk_composition_tree(root, String::new(), &mut values);
+    walk_composition_tree(root, "", &mut values);
     if values.is_empty() {
         return;
     }
@@ -520,7 +526,7 @@ fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &V
 
 fn walk_composition_tree(
     node: &serde_json::Map<String, Value>,
-    prefix: String,
+    prefix: &str,
     out: &mut FxHashMap<String, Literal>,
 ) {
     for (key, value) in node {
@@ -536,7 +542,7 @@ fn walk_composition_tree(
                         out.insert(path, literal);
                     }
                 } else {
-                    walk_composition_tree(entries, path, out);
+                    walk_composition_tree(entries, &path, out);
                 }
             }
             _ => {
@@ -715,7 +721,7 @@ fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
         let (path, fallback) = split_token_args(args);
         let resolved = tokens
             .get_var_str(path.trim(), None)
-            .unwrap_or_else(|| fallback.map(str::trim).unwrap_or_else(|| path.trim()));
+            .unwrap_or_else(|| fallback.map_or_else(|| path.trim(), str::trim));
         out.push_str(resolved);
         rest = &after_open[end + 1..];
     }

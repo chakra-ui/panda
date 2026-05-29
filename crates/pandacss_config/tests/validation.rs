@@ -2,6 +2,10 @@ use insta::assert_yaml_snapshot;
 use pandacss_config::{UserConfig, ValidationMode, validate_config, validate_config_value};
 use serde_json::json;
 
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "test helper takes owned json! values"
+)]
 fn diagnostics(value: serde_json::Value) -> Vec<serde_json::Value> {
     validate_config_value(&value)
         .into_iter()

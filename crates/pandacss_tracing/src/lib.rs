@@ -144,4 +144,3 @@ where
 {
     subscriber.try_init().is_ok()
 }
-

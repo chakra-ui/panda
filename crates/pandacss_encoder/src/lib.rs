@@ -478,6 +478,10 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
     }
 }
 
+#[allow(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde skip_serializing_if predicate signature"
+)]
 fn is_false(value: &bool) -> bool {
     !*value
 }

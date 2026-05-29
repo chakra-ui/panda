@@ -7,6 +7,7 @@ use pandacss_encoder::AtomValue;
 use pandacss_project::Project;
 use serde_json::json;
 
+#[allow(clippy::format_collect, reason = "test display helper")]
 fn atoms(project: &Project) -> String {
     let mut lines: Vec<String> = project
         .atoms()

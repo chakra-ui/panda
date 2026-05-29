@@ -34,6 +34,9 @@ impl From<UserConfig> for SystemInput {
 }
 
 impl System {
+    /// # Errors
+    /// Returns a `ConfigError` when validation fails in error mode or the
+    /// config can't be compiled (invalid tokens/recipes).
     pub fn new(input: impl Into<SystemInput>) -> Result<Self> {
         let _span = tracing::debug_span!("config_compile").entered();
         let input = input.into();

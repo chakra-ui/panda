@@ -114,7 +114,7 @@ fn expand_css_rule(
             } else {
                 styles.push(Literal::Object(vec![(
                     property.clone(),
-                    conditional_value(config, &conditions, value),
+                    conditional_value(config, &conditions, &value),
                 )]));
             }
         }
@@ -123,7 +123,7 @@ fn expand_css_rule(
     styles
 }
 
-fn conditional_value(config: &UserConfig, conditions: &[String], value: Literal) -> Literal {
+fn conditional_value(config: &UserConfig, conditions: &[String], value: &Literal) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];
     for condition in conditions {
         let key = if condition.starts_with('_') || config.theme.breakpoints.contains_key(condition)

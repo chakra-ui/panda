@@ -26,6 +26,10 @@ pub fn compile_layer_css(config: &UserConfig, source: &str, layers: &[Stylesheet
 }
 
 #[allow(dead_code)]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "test helper; owned options read more naturally at call sites"
+)]
 pub fn compile_output(
     config: &UserConfig,
     source: &str,
