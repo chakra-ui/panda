@@ -1,0 +1,27 @@
+use pandacss_codegen::strip_typescript;
+
+#[test]
+fn strips_generated_type_annotations() {
+    assert_eq!(
+        strip_typescript(
+            "const out: any[] = []\nconst fn: (...values: any[]) => any = function() {}\nconst arrow = (value: any, paths: string[]) => value"
+        ),
+        "const out = []\nconst fn = function() {}\nconst arrow = (value, paths) => value"
+    );
+}
+
+#[test]
+fn strips_generated_casts_and_constructor_generics() {
+    assert_eq!(
+        strip_typescript("const set = new Set<string>()\nreturn value as T"),
+        "const set = new Set()\nreturn value"
+    );
+}
+
+#[test]
+fn preserves_strings_that_look_like_types() {
+    assert_eq!(
+        strip_typescript(r#"const value = "x: string as T""#),
+        r#"const value = "x: string as T""#
+    );
+}

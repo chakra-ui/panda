@@ -76,6 +76,8 @@ pub struct UserConfig {
     #[serde(default)]
     pub preflight: PreflightConfig,
     #[serde(default)]
+    pub codegen_format: CodegenFormat,
+    #[serde(default)]
     pub validation: ValidationMode,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
@@ -220,6 +222,45 @@ pub enum ValidationMode {
     #[default]
     Warn,
     Error,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CodegenFormat {
+    Js,
+    #[default]
+    Mjs,
+    Ts,
+}
+
+impl CodegenFormat {
+    #[must_use]
+    pub fn is_source_ts(self) -> bool {
+        matches!(self, Self::Ts)
+    }
+
+    #[must_use]
+    pub fn is_split(self) -> bool {
+        !self.is_source_ts()
+    }
+
+    #[must_use]
+    pub fn runtime_extension(self) -> &'static str {
+        match self {
+            Self::Js => "js",
+            Self::Mjs => "mjs",
+            Self::Ts => "ts",
+        }
+    }
+
+    #[must_use]
+    pub fn declaration_extension(self) -> Option<&'static str> {
+        match self {
+            Self::Js => Some("d.ts"),
+            Self::Mjs => Some("d.mts"),
+            Self::Ts => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

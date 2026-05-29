@@ -1046,6 +1046,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "pandacss_codegen"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "pandacss_config",
+ "serde_json",
+]
+
+[[package]]
 name = "pandacss_config"
 version = "0.0.0"
 dependencies = [
