@@ -27,8 +27,8 @@ pub struct ExtractedCallsResult {
     reason = "NAPI requires owned arguments"
 )]
 pub fn extract_calls(
-    source: String,
     path: String,
+    source: String,
     matched: Vec<MatchedImport>,
     matchers: Matchers,
 ) -> ExtractedCallsResult {

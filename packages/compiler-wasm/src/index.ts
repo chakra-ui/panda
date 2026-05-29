@@ -6,109 +6,62 @@
  * - `./pkg-web/*` — ESM with `fetch`-based init, for browser playgrounds.
  *
  * Consumers should `import { createCompiler } from '@pandacss/compiler-wasm'`.
- * It loads the wasm module, returns `{ fs, compiler }`, and the compiler
- * exposes `extract` / `parseFile` / `atoms` / … just like the native binding.
+ * It loads the wasm module and resolves to a `Compiler` — the same flat shape
+ * as the native binding, with the shared in-memory FS exposed as `compiler.fs`.
  */
 
+import { assertProjectCallbacks, getTokenCategoryValues, mergeCallbacks } from '@pandacss/compiler-shared'
 import type {
-  Diagnostic,
-  WasmExtractor as WasmExtractorClass,
-  WasmFileSystem as WasmFileSystemClass,
-  WasmProject as WasmProjectClass,
-  WasmProjectCallbackKind,
-  WasmProjectCallbacks,
-  WasmProjectOptions,
-  WasmConfigSnapshot,
-  TokenDictionaryInput,
-} from './types'
-import { assertProjectCallbacks, registerCallbacks } from './callbacks'
-export type { PatternHelpers } from './callbacks'
+  Compiler,
+  CompilerOptions,
+  ConfigSnapshot,
+  ProjectCallbacks,
+  SerializedConfig,
+} from '@pandacss/compiler-shared'
+import { registerCallbacks } from './callbacks'
+import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
 
+export type { PatternHelpers } from './callbacks'
 export type {
-  Atom,
-  CompileFileManifest,
-  CompileLayerRange,
-  CompileLayerRanges,
-  CompileManifest,
-  CompileOutput,
-  Diagnostic,
-  ParseFileReport,
-  ParsedFileView,
   MatcherInput,
   MatchersInput,
-  ProjectSummary,
-  RecipeEntry,
-  StaticPatternResult,
   TokenDictionaryInput,
-  WasmConfigSnapshot,
-  WasmProjectCallbacks,
-  WasmProjectOptions,
+  WasmCompiler,
+  WasmExtractor,
+  WasmFileSystem,
 } from './types'
-export type WasmFileSystem = WasmFileSystemClass
-export type WasmExtractor = WasmExtractorClass
-export type WasmProject = WasmProjectClass
-export type WasmCompiler = WasmProjectClass
-export type CompilerOptions = WasmProjectOptions
+// Re-export the shared contract so consumers get one import surface.
+export type * from '@pandacss/compiler-shared'
 
-export interface GlobOptions {
-  include: string[]
-  exclude?: string[]
-  cwd?: string
-  absolute?: boolean
-}
-
-interface WasmNativeProjectOptions extends WasmProjectOptions {
+/** `configCallbacks` carry construction-time `utility.values` resolvers. */
+interface WasmFromConfigOptions {
   configCallbacks?: {
     utilityValues?: Record<string, (tokenDictionary: TokenDictionaryInput | undefined) => unknown>
   }
 }
 
-interface InternalWasmProject extends WasmProjectClass {
+/** The raw wasm instance — superset of {@link Compiler} carrying the internal
+ *  `token_dictionary` the facade hides. */
+interface RawWasmCompiler extends WasmCompiler {
   token_dictionary?(): TokenDictionaryInput | undefined
 }
 
-export interface ExtractedCall {
-  category: 'css' | 'recipe' | 'pattern' | 'jsx' | 'tokens'
-  name: string
-  alias: string
-  data: Array<unknown | null>
-  span: { start: number; end: number }
-}
-
-export interface ExtractedJsx {
-  category: 'css' | 'recipe' | 'pattern' | 'jsx' | 'tokens'
-  name: string
-  alias: string
-  data: unknown
-  span: { start: number; end: number }
-}
-
-export interface ExtractResult {
-  calls: ExtractedCall[]
-  jsx: ExtractedJsx[]
-  diagnostics: Diagnostic[]
-}
-
-/**
- * Load the Node-targeted wasm module. Idempotent — a single shared
- * binding handle is cached after first call.
- *
- * Node consumers (Vitest, SSR) should prefer this entrypoint. For
- * browser, use the `./pkg-web/*` exports directly with `init()`.
- */
 export interface WasmModule {
   WasmFileSystem: new () => WasmFileSystem
-  WasmExtractor: new (fs: WasmFileSystem, matchers: unknown) => WasmExtractor
-  WasmProject: {
-    fromConfig(
-      fs: WasmFileSystem,
-      config: Record<string, unknown>,
-      options?: WasmNativeProjectOptions,
-    ): InternalWasmProject
+  WasmExtractor: new (fs: WasmFileSystem, matchers: unknown) => unknown
+  WasmCompiler: {
+    fromConfig(fs: WasmFileSystem, config: SerializedConfig, options?: WasmFromConfigOptions): RawWasmCompiler
   }
   installPanicHook: () => void
 }
 
+let cached: WasmModule | null = null
+
+/**
+ * Load the Node-targeted wasm module. Idempotent — a single shared binding
+ * handle is cached after first call. Browser consumers should import
+ * `./pkg-web/*` directly and call its `init()`.
+ */
 export async function loadWasm(): Promise<WasmModule> {
   if (cached) return cached
   // pkg-node ships CommonJS that auto-initializes the wasm module on require.
@@ -120,68 +73,53 @@ export async function loadWasm(): Promise<WasmModule> {
   return mod
 }
 
-let cached: WasmModule | null = null
-
 /**
- * Build a compiler from a config (or `WasmConfigSnapshot`). Returns the shared
- * `WasmFileSystem` too — populate it (`fs.addFile(...)`) so cross-file imports
- * fold during extraction.
+ * Build a compiler from a resolved, JSON-safe Panda config. Resolves to a
+ * `Compiler` whose `fs` is the shared in-memory filesystem — populate it
+ * (`compiler.fs.addFile(...)`) so cross-file imports fold during extraction.
  */
-export async function createCompiler(
-  configOrSnapshot: Record<string, unknown> | WasmConfigSnapshot,
+export async function createCompiler(config: SerializedConfig, options?: CompilerOptions): Promise<Compiler> {
+  return createCompilerFromWasmModule(await loadWasm(), config, options)
+}
+
+/** Like {@link createCompiler}, but takes a `{ config, callbacks }` snapshot.
+ *  Snapshot callbacks merge under any passed in `options.callbacks`. */
+export async function createCompilerFromSnapshot(
+  snapshot: ConfigSnapshot,
   options?: CompilerOptions,
-): Promise<{ fs: WasmFileSystem; compiler: WasmCompiler }> {
-  return createCompilerFromWasmModule(await loadWasm(), configOrSnapshot, options)
+): Promise<Compiler> {
+  const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
+  return build(await loadWasm(), snapshot.config, callbacks)
 }
 
 /**
  * Build a compiler from an already-loaded wasm module. Browser callers that
  * import `./pkg-web/compiler_wasm.js` should call its default `init()` first,
- * then pass the initialized module here so host callbacks are registered
- * before `parseFile()` encodes pattern usage.
+ * then pass the initialized module here.
  */
 export function createCompilerFromWasmModule(
   mod: WasmModule,
-  configOrSnapshot: Record<string, unknown> | WasmConfigSnapshot,
+  config: SerializedConfig,
   options?: CompilerOptions,
-): { fs: WasmFileSystem; compiler: WasmCompiler } {
-  const { WasmFileSystem: FS, WasmProject: P } = mod
-  const fs = new FS()
-  const prepared = prepareProjectConfig(configOrSnapshot, options)
-  assertProjectCallbacks(prepared.config, prepared.callbacks)
-  const compiler = P.fromConfig(fs, prepared.config, prepared.options)
-  registerCallbacks(compiler, prepared.callbacks, compiler.token_dictionary?.())
-  return { fs, compiler }
+): Compiler {
+  return build(mod, config, options?.callbacks ?? {})
 }
 
-interface PreparedProjectConfig {
-  config: Record<string, unknown>
-  options?: WasmNativeProjectOptions
-  callbacks: WasmProjectCallbacks
+function build(mod: WasmModule, config: SerializedConfig, callbacks: ProjectCallbacks): Compiler {
+  const fs = new mod.WasmFileSystem()
+  assertProjectCallbacks(config, callbacks)
+  const compiler = mod.WasmCompiler.fromConfig(fs, config, buildFromConfigOptions(callbacks))
+  registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
+  // Expose the shared FS as a field so the return shape matches native.
+  ;(compiler as unknown as { fs: WasmFileSystem }).fs = fs
+  return compiler as unknown as Compiler
 }
 
-function prepareProjectConfig(
-  input: Record<string, unknown> | WasmConfigSnapshot,
-  options?: WasmProjectOptions,
-): PreparedProjectConfig {
-  const { config, callbacks } = normalizeProjectConfigInput(input, options)
-  return {
-    config,
-    callbacks,
-    options: createWasmProjectOptions(options, callbacks),
-  }
-}
-
-function createWasmProjectOptions(
-  options: WasmProjectOptions | undefined,
-  callbacks: WasmProjectCallbacks,
-): WasmNativeProjectOptions | undefined {
-  const { callbacks: _callbacks, ...rest } = options ?? {}
+function buildFromConfigOptions(callbacks: ProjectCallbacks): WasmFromConfigOptions | undefined {
   const utilityValues = callbacks['utility.values']
-  if (!utilityValues || Object.keys(utilityValues).length === 0) return Object.keys(rest).length > 0 ? rest : undefined
+  if (!utilityValues || Object.keys(utilityValues).length === 0) return undefined
 
   return {
-    ...rest,
     configCallbacks: {
       utilityValues: Object.fromEntries(
         Object.entries(utilityValues).map(([id, callback]) => [
@@ -192,56 +130,4 @@ function createWasmProjectOptions(
       ),
     },
   }
-}
-
-function getTokenCategoryValues(category: string, tokenDictionary: TokenDictionaryInput | undefined) {
-  if (!tokenDictionary) return undefined
-
-  const prefix = `${category}.`
-  const out: Record<string, string> = {}
-  for (const [path, value] of Object.entries(tokenDictionary.values)) {
-    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
-  }
-
-  return Object.keys(out).length > 0 ? out : undefined
-}
-
-function normalizeProjectConfigInput(
-  input: Record<string, unknown> | WasmConfigSnapshot,
-  options?: WasmProjectOptions,
-): { config: Record<string, unknown>; callbacks: WasmProjectCallbacks } {
-  if (isConfigSnapshot(input)) {
-    return {
-      config: input.config,
-      callbacks: mergeCallbacks(input.callbacks, options?.callbacks),
-    }
-  }
-  return {
-    config: input,
-    callbacks: options?.callbacks ?? {},
-  }
-}
-
-function isConfigSnapshot(value: Record<string, unknown> | WasmConfigSnapshot): value is WasmConfigSnapshot {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    'config' in value &&
-    !!(value as WasmConfigSnapshot).config &&
-    typeof (value as WasmConfigSnapshot).config === 'object' &&
-    !Array.isArray((value as WasmConfigSnapshot).config)
-  )
-}
-
-function mergeCallbacks(...items: Array<WasmProjectCallbacks | undefined>): WasmProjectCallbacks {
-  const result: WasmProjectCallbacks = {}
-  for (const item of items) {
-    for (const [kind, callbacks] of Object.entries(item ?? {}) as Array<
-      [WasmProjectCallbackKind, Record<string, Function>]
-    >) {
-      result[kind] = { ...result[kind], ...callbacks } as Record<string, (...args: any[]) => unknown>
-    }
-  }
-  return result
 }

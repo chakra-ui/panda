@@ -25,6 +25,10 @@ use smallvec::SmallVec;
 use crate::compile::{CompileFileManifest, CompileOutput};
 use crate::matcher::{TokenDictionary, from_core_token_dictionary};
 
+/// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.
+type UtilityValueCallbacks =
+    HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>;
+
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
 pub struct ParseFileReport {
@@ -78,7 +82,7 @@ pub struct StaticPatternResult {
 }
 
 #[napi]
-pub struct Project {
+pub struct Compiler {
     inner: pandacss_project::Project,
     config: serde_json::Value,
     user_config: UserConfig,
@@ -116,10 +120,9 @@ impl CallbackHost {
 }
 
 #[napi]
-impl Project {
-    /// Construct a project from the resolved, JSON-safe Panda config snapshot.
+impl Compiler {
+    /// Construct a compiler from the resolved, JSON-safe Panda config snapshot.
     #[napi(factory)]
-    #[must_use]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned constructor arguments"
@@ -128,9 +131,7 @@ impl Project {
         env: Env,
         config: serde_json::Value,
         options: Option<ProjectOptions>,
-        utility_values_callbacks: Option<
-            HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
-        >,
+        utility_values_callbacks: Option<UtilityValueCallbacks>,
     ) -> napi::Result<Self> {
         crate::init_tracing();
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
@@ -175,7 +176,7 @@ impl Project {
         .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         let project = pandacss_project::Project::new(system);
         Ok(Self {
-            inner: apply_project_options(project, opts),
+            inner: apply_project_options(project, &opts),
             config: config_snapshot,
             user_config,
             callbacks,
@@ -249,7 +250,7 @@ impl Project {
         let report = if !has_pattern_transforms && !has_utility_transforms {
             self.inner.parse_file(&path, &source)
         } else {
-            let Project {
+            let Compiler {
                 inner, callbacks, ..
             } = self;
             let pattern_cache = &mut callbacks.transform_cache.pattern;
@@ -274,14 +275,16 @@ impl Project {
                     &env,
                 )
             };
-            inner.parse_file_with_transforms(
+            inner.parse_file_with(
                 &path,
                 &source,
-                has_pattern_transforms
-                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-                has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
-                ),
+                pandacss_project::ParseTransforms {
+                    pattern: has_pattern_transforms
+                        .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                    utility: has_utility_transforms.then_some(
+                        &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                    ),
+                },
             )
         };
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
@@ -309,9 +312,9 @@ impl Project {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn extract(&self, source: String, path: String) -> ExtractResult {
+    pub fn extract(&self, path: String, source: String) -> ExtractResult {
         crate::init_tracing();
-        let result = self.inner.extract(&source, &path);
+        let result = self.inner.extract(&path, &source);
         ExtractResult {
             calls: result.calls.into_iter().map(to_call).collect(),
             jsx: result.jsx.into_iter().map(to_jsx).collect(),
@@ -338,7 +341,7 @@ impl Project {
             return self.inner.refresh_file(&path, &source);
         }
 
-        let Project {
+        let Compiler {
             inner, callbacks, ..
         } = self;
         let pattern_cache = &mut callbacks.transform_cache.pattern;
@@ -363,13 +366,16 @@ impl Project {
                 &env,
             )
         };
-        inner.refresh_file_with_transforms(
+        inner.refresh_file_with(
             &path,
             &source,
-            has_pattern_transforms
-                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-            has_utility_transforms
-                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            pandacss_project::ParseTransforms {
+                pattern: has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
         )
     }
 
@@ -401,7 +407,6 @@ impl Project {
     /// Deduplicated atoms across every currently-known file. Sorted by
     /// `(prop, conditions, value)` for stable iteration / snapshot tests.
     #[napi]
-    #[must_use]
     pub fn atoms(&mut self, env: Env) -> napi::Result<Vec<crate::Atom>> {
         crate::init_tracing();
         let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
@@ -451,7 +456,6 @@ impl Project {
 
     /// Encoded config recipe styles, separate from atomic utility atoms.
     #[napi(js_name = encodedRecipes)]
-    #[must_use]
     pub fn encoded_recipes(&mut self, env: Env) -> napi::Result<serde_json::Value> {
         crate::init_tracing();
         let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
@@ -468,7 +472,7 @@ impl Project {
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms(env);
-        let Project {
+        let Compiler {
             inner, user_config, ..
         } = self;
         let output = crate::compile::build_compile_output(
@@ -569,7 +573,7 @@ impl Project {
         Vec<pandacss_encoder::Atom>,
         Vec<pandacss_extractor::Diagnostic>,
     ) {
-        let Project {
+        let Compiler {
             inner,
             user_config,
             callbacks,
@@ -650,17 +654,17 @@ fn parse_number_string(value: &str) -> serde_json::Value {
     if let Ok(value) = value.parse::<i64>() {
         return serde_json::Value::from(value);
     }
-    if let Ok(value) = value.parse::<f64>() {
-        if let Some(value) = serde_json::Number::from_f64(value) {
-            return serde_json::Value::Number(value);
-        }
+    if let Ok(value) = value.parse::<f64>()
+        && let Some(value) = serde_json::Number::from_f64(value)
+    {
+        return serde_json::Value::Number(value);
     }
     serde_json::Value::String(value.to_owned())
 }
 
 fn apply_project_options(
     mut project: pandacss_project::Project,
-    opts: ProjectOptions,
+    opts: &ProjectOptions,
 ) -> pandacss_project::Project {
     if opts.cross_file.unwrap_or(true) {
         project = project.with_cross_file(pandacss_extractor::CrossFileResolver::new());
@@ -671,9 +675,7 @@ fn apply_project_options(
 fn resolve_utility_values_callbacks(
     config: &mut UserConfig,
     token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
-    callbacks: Option<
-        &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
-    >,
+    callbacks: Option<&UtilityValueCallbacks>,
     env: &Env,
 ) -> napi::Result<()> {
     let Some(callbacks) = callbacks else {
@@ -887,7 +889,7 @@ fn pattern_callback_id(pattern: &PatternConfig) -> Option<&str> {
 
 fn callback_ref_id(value: &CallbackRef) -> Option<&str> {
     (value.kind == "js-callback")
-        .then(|| value.id.as_deref())
+        .then_some(value.id.as_deref())
         .flatten()
 }
 

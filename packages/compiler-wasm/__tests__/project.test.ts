@@ -6,7 +6,7 @@ import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
 
 describeIfBuilt('@pandacss/compiler-wasm project', () => {
   it('extracts atoms from a css() call', async () => {
-    const { compiler } = await createCompiler(baseConfig)
+    const compiler = await createCompiler(baseConfig)
     expect(compiler.isEmpty()).toBe(true)
     compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
     expect(compiler.isEmpty()).toBe(false)
@@ -27,7 +27,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('constructs from a serialized config snapshot', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
       importMap: {
@@ -57,7 +57,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('derives JSX pattern matchers from config', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
       importMap: {
@@ -89,8 +89,8 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('cross-file imports fold via the shared WasmFileSystem', async () => {
-    const { fs, compiler } = await createCompiler(baseConfig)
-    fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444'\n")
+    const compiler = await createCompiler(baseConfig)
+    compiler.fs!.addFile('/proj/tokens.ts', "export const brand = '#ef4444'\n")
     compiler.parseFile(
       '/proj/main.tsx',
       `import { brand } from './tokens'\nimport { css } from '@panda/css'\ncss({ color: brand })`,
@@ -107,7 +107,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('dedups atoms across files', async () => {
-    const { compiler } = await createCompiler(baseConfig)
+    const compiler = await createCompiler(baseConfig)
     compiler.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     compiler.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ color: 'red', bg: 'blue' })`)
     compiler.parseFile('/c.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
@@ -124,7 +124,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('refresh and remove update the atom set', async () => {
-    const { compiler } = await createCompiler(baseConfig)
+    const compiler = await createCompiler(baseConfig)
     compiler.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     expect(compiler.refreshFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'blue' })`)).toBe(true)
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
@@ -143,7 +143,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('records cva recipes', async () => {
-    const { compiler } = await createCompiler(baseConfig)
+    const compiler = await createCompiler(baseConfig)
     compiler.parseFile('/Button.tsx', `import { cva } from '@panda/css'\nexport const btn = cva({ base: { p: '2' } })`)
     const recipes = compiler.recipes()
     expect(recipes).toHaveLength(1)
@@ -158,7 +158,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('tracks config recipes and slot recipes', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
       importMap: {
@@ -213,7 +213,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('splits config recipe component props from style props', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
       importMap: {
@@ -323,7 +323,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('tracks config recipe function calls', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
       importMap: {
@@ -410,7 +410,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('clear drops every file', async () => {
-    const { compiler } = await createCompiler(baseConfig)
+    const compiler = await createCompiler(baseConfig)
     compiler.parseFile('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     compiler.parseFile('/b.tsx', `import { css } from '@panda/css'\ncss({ bg: 'blue' })`)
     compiler.clear()
@@ -426,7 +426,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
   })
 
   it('tracks conditional config recipe variants', async () => {
-    const { compiler } = await createCompiler({
+    const compiler = await createCompiler({
       cwd: '/virtual',
       outdir: 'styled-system',
       importMap: {

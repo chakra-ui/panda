@@ -1,7 +1,7 @@
 {
-  "name": "@pandacss/compiler-wasm",
+  "name": "@pandacss/compiler-shared",
   "version": "0.0.0",
-  "description": "WebAssembly binding for the Panda compiler engine (browser/playground target)",
+  "description": "Shared TypeScript contract for the Panda compiler bindings (native + wasm)",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -15,8 +15,6 @@
       },
       "require": "./dist/index.js"
     },
-    "./pkg-node/*": "./pkg-node/*",
-    "./pkg-web/*": "./pkg-web/*",
     "./package.json": "./package.json"
   },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -26,7 +24,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
-    "directory": "packages/compiler-wasm"
+    "directory": "packages/compiler-shared"
   },
   "publishConfig": {
     "access": "public"
@@ -34,16 +32,12 @@
   "scripts": {
     "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
     "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
-    "build:wasm": "tsx build-wasm.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
   },
   "files": [
-    "dist",
-    "pkg-node",
-    "pkg-web"
+    "dist"
   ],
-  "dependencies": {
-    "@pandacss/compiler-shared": "workspace:*"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

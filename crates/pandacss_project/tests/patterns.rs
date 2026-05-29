@@ -6,6 +6,7 @@ use common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::Literal;
+use pandacss_project::ParseTransforms;
 use serde_json::json;
 
 #[test]
@@ -35,7 +36,7 @@ fn pattern_defaults_apply_before_transform() {
         ])))
     };
 
-    let report = project.parse_file_with_pattern_transforms(
+    let report = project.parse_file_with(
         "fixture.tsx",
         indoc! {r"
             import { stack } from '@panda/patterns';
@@ -44,7 +45,10 @@ fn pattern_defaults_apply_before_transform() {
             stack({});
             const el = <Stack />;
         "},
-        &mut transform,
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
     );
 
     assert_eq!(report.jsx_usages, 1);
@@ -80,13 +84,16 @@ fn pattern_props_override_default_values() {
         )])))
     };
 
-    project.parse_file_with_pattern_transforms(
+    project.parse_file_with(
         "fixture.ts",
         indoc! {r"
             import { stack } from '@panda/patterns';
             stack({ gap: '8px' });
         "},
-        &mut transform,
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
     );
 
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
@@ -111,13 +118,16 @@ fn strict_pattern_components_only_extract_pattern_props() {
     }));
     let mut transform = |_name: &str, styles: &Literal| Ok(Some(styles.clone()));
 
-    project.parse_file_with_pattern_transforms(
+    project.parse_file_with(
         "fixture.tsx",
         indoc! {r"
             import { Panel } from '@panda/jsx';
             const el = <Panel tone='info' color='red' css={{ bg: 'blue' }} />;
         "},
-        &mut transform,
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
     );
 
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
@@ -142,13 +152,16 @@ fn pattern_blocklist_filters_style_props() {
     }));
     let mut transform = |_name: &str, styles: &Literal| Ok(Some(styles.clone()));
 
-    project.parse_file_with_pattern_transforms(
+    project.parse_file_with(
         "fixture.tsx",
         indoc! {r"
             import { Panel } from '@panda/jsx';
             const el = <Panel tone='info' color='red' backgroundColor='blue' />;
         "},
-        &mut transform,
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
     );
 
     assert_yaml_snapshot!(sorted_atoms(&project), @r"

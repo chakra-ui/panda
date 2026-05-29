@@ -60,7 +60,7 @@ pub struct CompileLayerRange {
 }
 
 /// One-shot stateless compile. Callback-bearing configs are not
-/// supported — use `Project.fromConfig(...)` + `registerPatternTransform`
+/// supported — use `Compiler.fromConfig(...)` + `registerPatternTransform`
 /// / `registerUtilityTransform` for that.
 #[napi]
 #[must_use]

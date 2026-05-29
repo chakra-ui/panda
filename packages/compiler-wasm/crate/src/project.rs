@@ -31,12 +31,12 @@ use smallvec::SmallVec;
 /// const fs = new WasmFileSystem()
 /// fs.addFile('/proj/tokens.ts', "export const brand = '#ef4444';")
 /// fs.addFile('/proj/main.tsx', "import { brand } from './tokens'\ncss({ color: brand })")
-/// const project = WasmProject.fromConfig(fs, config)
+/// const compiler = WasmCompiler.fromConfig(fs, config)
 /// project.parseFile('/proj/main.tsx', fs.readFile('/proj/main.tsx'))
 /// const atoms = project.atoms()
 /// ```
 #[wasm_bindgen]
-pub struct WasmProject {
+pub struct WasmCompiler {
     inner: pandacss_project::Project,
     config: serde_json::Value,
     callbacks: CallbackHost,
@@ -71,8 +71,8 @@ impl CallbackHost {
 }
 
 #[wasm_bindgen]
-impl WasmProject {
-    /// Construct a project from the resolved, JSON-safe Panda config snapshot.
+impl WasmCompiler {
+    /// Construct a compiler from the resolved, JSON-safe Panda config snapshot.
     ///
     /// # Errors
     /// Returns a JS error when `config` doesn't deserialize into JSON.
@@ -80,9 +80,9 @@ impl WasmProject {
     pub fn from_config(
         fs: &WasmFileSystem,
         config: JsValue,
-        options: JsValue,
-    ) -> Result<WasmProject, JsValue> {
-        let utility_values_callbacks = utility_value_callbacks_from_options(&options)?;
+        options: &JsValue,
+    ) -> Result<WasmCompiler, JsValue> {
+        let utility_values_callbacks = utility_value_callbacks_from_options(options)?;
 
         let config_value: serde_json::Value = serde_wasm_bindgen::from_value(config)
             .map_err(|err| JsValue::from_str(&format!("invalid config: {err}")))?;
@@ -96,7 +96,7 @@ impl WasmProject {
             )));
         }
         let mut config: UserConfig = serde_json::from_value(config_value)
-            .map_err(|err| JsValue::from_str(&format_deserialize_error(err, &raw_diagnostics)))?;
+            .map_err(|err| JsValue::from_str(&format_deserialize_error(&err, &raw_diagnostics)))?;
         let token_dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
             .map_err(|err| JsValue::from_str(&format!("invalid token config: {err}")))?
             .map(Arc::new);
@@ -150,7 +150,7 @@ impl WasmProject {
         let report = if !has_pattern_transforms && !has_utility_transforms {
             self.inner.parse_file(path, source)
         } else {
-            let WasmProject {
+            let WasmCompiler {
                 inner, callbacks, ..
             } = self;
             let pattern_cache = &mut callbacks.transform_cache.pattern;
@@ -173,14 +173,16 @@ impl WasmProject {
                     utility_cache,
                 )
             };
-            inner.parse_file_with_transforms(
+            inner.parse_file_with(
                 path,
                 source,
-                has_pattern_transforms
-                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-                has_utility_transforms.then_some(
-                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
-                ),
+                pandacss_project::ParseTransforms {
+                    pattern: has_pattern_transforms
+                        .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                    utility: has_utility_transforms.then_some(
+                        &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                    ),
+                },
             )
         };
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
@@ -196,8 +198,8 @@ impl WasmProject {
     ///
     /// # Errors
     /// Returns a JS error string when serializing the result fails.
-    pub fn extract(&self, source: &str, path: &str) -> Result<JsValue, JsValue> {
-        let result = self.inner.extract(source, path);
+    pub fn extract(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
+        let result = self.inner.extract(path, source);
         let _span = tracing::trace_span!("boundary_encode", method = "extract").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
@@ -216,7 +218,7 @@ impl WasmProject {
             return self.inner.refresh_file(path, source);
         }
 
-        let WasmProject {
+        let WasmCompiler {
             inner, callbacks, ..
         } = self;
         let pattern_cache = &mut callbacks.transform_cache.pattern;
@@ -239,13 +241,16 @@ impl WasmProject {
                 utility_cache,
             )
         };
-        inner.refresh_file_with_transforms(
+        inner.refresh_file_with(
             path,
             source,
-            has_pattern_transforms
-                .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-            has_utility_transforms
-                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            pandacss_project::ParseTransforms {
+                pattern: has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
         )
     }
 
@@ -487,7 +492,7 @@ impl WasmProject {
     fn collect_static_pattern_atoms(
         &mut self,
     ) -> (Vec<CoreAtom>, Vec<pandacss_extractor::Diagnostic>) {
-        let WasmProject {
+        let WasmCompiler {
             inner,
             config,
             callbacks,
@@ -1089,7 +1094,7 @@ fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
 }
 
 fn format_deserialize_error(
-    error: serde_json::Error,
+    error: &serde_json::Error,
     diagnostics: &[pandacss_shared::Diagnostic],
 ) -> String {
     if diagnostics.is_empty() {
@@ -1169,10 +1174,10 @@ fn parse_number_string(s: &str) -> serde_json::Value {
     if let Ok(n) = s.parse::<i64>() {
         return serde_json::Value::from(n);
     }
-    if let Ok(f) = s.parse::<f64>() {
-        if let Some(num) = serde_json::Number::from_f64(f) {
-            return serde_json::Value::Number(num);
-        }
+    if let Ok(f) = s.parse::<f64>()
+        && let Some(num) = serde_json::Number::from_f64(f)
+    {
+        return serde_json::Value::Number(num);
     }
     serde_json::Value::String(s.to_string())
 }

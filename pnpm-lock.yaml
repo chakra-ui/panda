@@ -182,12 +182,22 @@ importers:
         version: 7.3.1
 
   packages/compiler:
+    dependencies:
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.0.0
         version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@24.10.1)(node-addon-api@7.1.1)
 
-  packages/compiler-wasm: {}
+  packages/compiler-shared: {}
+
+  packages/compiler-wasm:
+    dependencies:
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
 
   packages/config:
     dependencies:

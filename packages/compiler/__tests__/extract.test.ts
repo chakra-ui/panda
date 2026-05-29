@@ -21,7 +21,7 @@ describe('compiler.extract', () => {
   })
 
   test('returns calls + jsx + diagnostics', () => {
-    const result = compiler.extract(source, 'fixture.tsx')
+    const result = compiler.extract('fixture.tsx', source)
     expect(Object.keys(result).sort()).toMatchInlineSnapshot(`
       [
         "calls",
@@ -46,12 +46,12 @@ describe('compiler.extract', () => {
 
   test('is stateless — extract does not register into the compiler', () => {
     const peek = createProject()
-    peek.extract(source, 'fixture.tsx')
+    peek.extract('fixture.tsx', source)
     expect(peek.isEmpty()).toBe(true)
   })
 
   test('surfaces parse errors with no extractions', () => {
-    const result = compiler.extract('import { css } from', 'fixture.tsx')
+    const result = compiler.extract('fixture.tsx', 'import { css } from')
     expect(result.calls).toEqual([])
     expect(result.jsx).toEqual([])
     expect(result.diagnostics).toHaveLength(1)
@@ -62,7 +62,7 @@ describe('compiler.extract', () => {
     // Parse error on the second line — confirm the diagnostic surfaces both
     // the byte span and the human-readable line/column.
     const src = ["import { css } from '@panda/css';", 'const x = ;'].join('\n')
-    const [diag] = compiler.extract(src, 'fixture.tsx').diagnostics
+    const [diag] = compiler.extract('fixture.tsx', src).diagnostics
     expect(diag.severity).toBe('error')
     expect(diag.span).toBeDefined()
     expect(diag.location?.start.line).toBe(2)
