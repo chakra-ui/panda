@@ -233,6 +233,15 @@ class FallbackCompiler implements Compiler {
       diagnostics: [],
     }
   }
+  generateArtifacts() {
+    return []
+  }
+  generateArtifact() {
+    return undefined
+  }
+  generateAffectedArtifacts() {
+    return []
+  }
   diagnostics() {
     return [] as Diagnostic[]
   }

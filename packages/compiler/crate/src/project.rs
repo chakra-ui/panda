@@ -14,6 +14,9 @@ use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCac
 use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
+use pandacss_codegen::{
+    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
+};
 use pandacss_config::{
     CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
     ValidationMode, validate_config_value, validation_mode_from_value,
@@ -79,6 +82,25 @@ pub struct ParsedFileView {
 pub struct StaticPatternResult {
     pub atoms: Vec<crate::Atom>,
     pub diagnostics: Vec<Diagnostic>,
+}
+
+#[napi(object)]
+pub struct GenerateArtifactOptions {
+    /// "extensionless" (default) or "runtime-and-types".
+    pub specifiers: Option<String>,
+}
+
+#[napi(object)]
+pub struct CodegenFile {
+    pub path: String,
+    pub code: String,
+    pub dependencies: Vec<String>,
+}
+
+#[napi(object)]
+pub struct CodegenArtifact {
+    pub id: String,
+    pub files: Vec<CodegenFile>,
 }
 
 #[napi]
@@ -485,6 +507,73 @@ impl Compiler {
         Ok(output)
     }
 
+    #[napi(js_name = generateArtifacts)]
+    pub fn generate_artifacts(
+        &self,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Vec<CodegenArtifact>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("codegen", method = "generate_artifacts").entered();
+        let options = generate_options(&self.user_config, options)?;
+        let artifacts = self
+            .inner
+            .generate_artifacts(&self.user_config, options)
+            .into_iter()
+            .map(to_codegen_artifact)
+            .collect();
+        crate::flush_tracing();
+        Ok(artifacts)
+    }
+
+    #[napi(js_name = generateArtifact)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn generate_artifact(
+        &self,
+        id: String,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Option<CodegenArtifact>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("codegen", method = "generate_artifact", id).entered();
+        let id = id
+            .parse::<ArtifactId>()
+            .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
+        let options = generate_options(&self.user_config, options)?;
+        let artifact = self
+            .inner
+            .generate_artifact(&self.user_config, id, options)
+            .map(to_codegen_artifact);
+        crate::flush_tracing();
+        Ok(artifact)
+    }
+
+    #[napi(js_name = generateAffectedArtifacts)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn generate_affected_artifacts(
+        &self,
+        dependencies: Vec<String>,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Vec<CodegenArtifact>> {
+        crate::init_tracing();
+        let _span =
+            tracing::trace_span!("codegen", method = "generate_affected_artifacts").entered();
+        let changed = dependency_set_from_strings(dependencies)?;
+        let options = generate_options(&self.user_config, options)?;
+        let artifacts = self
+            .inner
+            .generate_affected_artifacts(&self.user_config, changed, options)
+            .into_iter()
+            .map(to_codegen_artifact)
+            .collect();
+        crate::flush_tracing();
+        Ok(artifacts)
+    }
+
     /// Config validation diagnostics from construction. Per-file and
     /// compile diagnostics live on [`ParseFileReport`] / [`CompileOutput`].
     #[napi]
@@ -670,6 +759,61 @@ fn apply_project_options(
         project = project.with_cross_file(pandacss_extractor::CrossFileResolver::new());
     }
     project
+}
+
+fn generate_options(
+    user_config: &UserConfig,
+    options: Option<GenerateArtifactOptions>,
+) -> napi::Result<GenerateOptions> {
+    let specifiers = match options.and_then(|options| options.specifiers) {
+        None => ModuleSpecifierPolicy::Extensionless,
+        Some(value) if value == "extensionless" => ModuleSpecifierPolicy::Extensionless,
+        Some(value) if value == "runtime-and-types" => ModuleSpecifierPolicy::RuntimeAndTypes,
+        Some(value) => {
+            return Err(napi::Error::from_reason(format!(
+                "unknown codegen specifier policy `{value}`"
+            )));
+        }
+    };
+
+    Ok(GenerateOptions {
+        format: user_config.codegen_format,
+        specifiers,
+    })
+}
+
+fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {
+    CodegenArtifact {
+        id: artifact.id.as_str().to_owned(),
+        files: artifact
+            .files
+            .into_iter()
+            .map(|file| CodegenFile {
+                path: file.path,
+                code: file.code,
+                dependencies: dependency_names(file.dependencies),
+            })
+            .collect(),
+    }
+}
+
+fn dependency_names(dependencies: DependencySet) -> Vec<String> {
+    dependencies
+        .to_vec()
+        .into_iter()
+        .map(|dependency| dependency.as_str().to_owned())
+        .collect()
+}
+
+fn dependency_set_from_strings(dependencies: Vec<String>) -> napi::Result<DependencySet> {
+    let mut set = DependencySet::EMPTY;
+    for dependency in dependencies {
+        let dependency = dependency.parse::<ConfigDependency>().map_err(|()| {
+            napi::Error::from_reason(format!("unknown config dependency `{dependency}`"))
+        })?;
+        set = set.union(DependencySet::one(dependency));
+    }
+    Ok(set)
 }
 
 fn resolve_utility_values_callbacks(

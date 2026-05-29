@@ -32,6 +32,7 @@ pub struct Utility {
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct UtilityProperty {
     pub class_name: Option<String>,
+    pub css_property: Option<String>,
     pub layer: Option<String>,
     pub values: FxHashMap<String, Literal>,
     pub values_category: Option<String>,
@@ -82,6 +83,7 @@ impl Utility {
                         .class_name
                         .clone()
                         .or_else(|| default_class_name(config.shorthand.as_ref())),
+                    css_property: Some(config.property.clone().unwrap_or_else(|| property.clone())),
                     layer: config.layer.clone(),
                     values: values_map(config.values.as_ref()),
                     values_category: match config.values.as_ref() {
@@ -214,7 +216,7 @@ impl Utility {
         property_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
 
         for (name, property) in property_entries {
-            let data = property_type_data(name, name, property);
+            let data = property_type_data(name, property);
 
             aliases
                 .entry(data.alias.clone())
@@ -234,7 +236,7 @@ impl Utility {
                 continue;
             };
 
-            let data = property_type_data(name, target, property);
+            let data = property_type_data(name, property);
 
             // Many shorthands share the same value alias as their longhand.
             // Keep one alias body and let properties reference it by name.
@@ -293,7 +295,12 @@ impl Utility {
         let key = self.resolve_shorthand(prop);
         let class_value = without_space(value);
         let style_value = self.expand_reference_in_value(&arbitrary_value(value));
-        let styles = self.default_style(key, &self.raw_property_value(key, &style_value));
+        let style_prop = self
+            .properties
+            .get(key)
+            .and_then(|config| config.css_property.as_deref())
+            .unwrap_or(key);
+        let styles = self.default_style(style_prop, &self.raw_property_value(key, &style_value));
 
         UtilityTransformResult {
             layer: self
@@ -461,21 +468,18 @@ impl Utility {
     }
 }
 
-fn property_type_data(
-    name: &str,
-    css_property: &str,
-    property: &UtilityProperty,
-) -> UtilityPropertyTypeData {
+fn property_type_data(name: &str, property: &UtilityProperty) -> UtilityPropertyTypeData {
     let mut literals = property.values.keys().cloned().collect::<Vec<_>>();
     literals.sort();
+    let alias_property = property.css_property.as_deref().unwrap_or(name);
     let alias = property.values_category.as_deref().map_or_else(
-        || format!("{}Value", pascal_case(css_property)),
+        || format!("{}Value", pascal_case(alias_property)),
         value_alias_name,
     );
 
     UtilityPropertyTypeData {
         name: name.to_owned(),
-        css_property: Some(css_property.to_owned()),
+        css_property: property.css_property.clone(),
         token_category: property.values_category.clone(),
         literals,
         primitive: None,
@@ -646,6 +650,7 @@ fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &V
         prop_name.to_owned(),
         UtilityProperty {
             class_name: Some(prop_name.to_owned()),
+            css_property: None,
             layer: Some(COMPOSITIONS_LAYER.to_owned()),
             values,
             values_category: None,

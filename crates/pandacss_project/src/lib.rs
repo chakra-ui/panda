@@ -25,6 +25,7 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
+mod codegen;
 mod config;
 mod error;
 mod parsed_file;

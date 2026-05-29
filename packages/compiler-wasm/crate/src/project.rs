@@ -17,6 +17,9 @@ use wasm_bindgen::prelude::*;
 use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
 use crate::fs::WasmFileSystem;
 use crate::matcher::from_core_token_dictionary;
+use pandacss_codegen::{
+    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
+};
 use pandacss_config::{
     CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues, ValidationMode,
     validate_config_value, validation_mode_from_value,
@@ -39,6 +42,7 @@ use smallvec::SmallVec;
 pub struct WasmCompiler {
     inner: pandacss_project::Project,
     config: serde_json::Value,
+    user_config: UserConfig,
     callbacks: CallbackHost,
 }
 
@@ -106,6 +110,7 @@ impl WasmCompiler {
             &utility_values_callbacks,
         )?;
         let callbacks = CallbackHost::from_config(&config);
+        let user_config = config.clone();
         let config_snapshot = serde_json::to_value(&config).unwrap_or(config_snapshot);
         let system = pandacss_project::System::new(pandacss_project::SystemInput {
             config,
@@ -118,6 +123,7 @@ impl WasmCompiler {
         Ok(Self {
             inner: with_wasm_fs(project, fs),
             config: config_snapshot,
+            user_config,
             callbacks,
         })
     }
@@ -469,17 +475,14 @@ impl WasmCompiler {
     /// Compile to CSS. Mirrors the NAPI `Project.compile()`.
     ///
     /// # Errors
-    /// Returns a JS error if serializing fails, or if the configured
-    /// user-config can't be reconstructed from the snapshot.
+    /// Returns a JS error if serializing fails.
     pub fn compile(&mut self) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("css_compile", method = "wasm_project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms();
-        let user_config: pandacss_config::UserConfig = serde_json::from_value(self.config.clone())
-            .map_err(|err| JsValue::from_str(&format!("invalid config snapshot: {err}")))?;
         let output = build_compile_output(
             &mut self.inner,
-            &user_config,
+            &self.user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
         );
@@ -489,18 +492,69 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Generate every codegen artifact from the resolved project state.
+    ///
+    /// # Errors
+    /// Returns a JS error if options are invalid or serializing fails.
+    #[wasm_bindgen(js_name = generateArtifacts)]
+    pub fn generate_artifacts(&self, options: &JsValue) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("codegen", method = "wasm_generate_artifacts").entered();
+        let options = generate_options(&self.user_config, options)?;
+        serialize_codegen_artifacts(self.inner.generate_artifacts(&self.user_config, options))
+    }
+
+    /// Generate one codegen artifact by id.
+    ///
+    /// # Errors
+    /// Returns a JS error if the id/options are invalid or serializing fails.
+    #[wasm_bindgen(js_name = generateArtifact)]
+    pub fn generate_artifact(&self, id: &str, options: &JsValue) -> Result<JsValue, JsValue> {
+        let _span =
+            tracing::trace_span!("codegen", method = "wasm_generate_artifact", id).entered();
+        let id = id
+            .parse::<ArtifactId>()
+            .map_err(|()| JsValue::from_str(&format!("unknown codegen artifact `{id}`")))?;
+        let options = generate_options(&self.user_config, options)?;
+        let artifact = self.inner.generate_artifact(&self.user_config, id, options);
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        artifact
+            .map(to_codegen_artifact)
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Generate artifacts affected by the provided config dependency names.
+    ///
+    /// # Errors
+    /// Returns a JS error if dependencies/options are invalid or serializing fails.
+    #[wasm_bindgen(js_name = generateAffectedArtifacts)]
+    pub fn generate_affected_artifacts(
+        &self,
+        dependencies: JsValue,
+        options: &JsValue,
+    ) -> Result<JsValue, JsValue> {
+        let _span =
+            tracing::trace_span!("codegen", method = "wasm_generate_affected_artifacts").entered();
+        let dependencies: Vec<String> = serde_wasm_bindgen::from_value(dependencies)
+            .map_err(|err| JsValue::from_str(&format!("invalid dependencies: {err}")))?;
+        let changed = dependency_set_from_strings(dependencies)?;
+        let options = generate_options(&self.user_config, options)?;
+        serialize_codegen_artifacts(self.inner.generate_affected_artifacts(
+            &self.user_config,
+            changed,
+            options,
+        ))
+    }
+
     fn collect_static_pattern_atoms(
         &mut self,
     ) -> (Vec<CoreAtom>, Vec<pandacss_extractor::Diagnostic>) {
         let WasmCompiler {
             inner,
-            config,
+            user_config,
             callbacks,
+            ..
         } = self;
-        let Ok(user_config) = serde_json::from_value::<pandacss_config::UserConfig>(config.clone())
-        else {
-            return (Vec::new(), Vec::new());
-        };
         if callbacks.has_pattern_transforms() {
             let pattern_cache = &mut callbacks.transform_cache.pattern;
             let mut transform = |name: &str, styles: &Literal| {
@@ -513,11 +567,11 @@ impl WasmCompiler {
                 )
             };
             inner.static_pattern_atoms(
-                &user_config,
+                user_config,
                 Some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
             )
         } else {
-            inner.static_pattern_atoms(&user_config, None)
+            inner.static_pattern_atoms(user_config, None)
         }
     }
 }
@@ -578,6 +632,102 @@ struct ParsedFileViewSerde {
 struct StaticPatternResultSerde {
     atoms: Vec<AtomSerde>,
     diagnostics: Vec<pandacss_extractor::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CodegenArtifactSerde {
+    id: String,
+    files: Vec<CodegenFileSerde>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CodegenFileSerde {
+    path: String,
+    code: String,
+    dependencies: Vec<String>,
+}
+
+fn serialize_codegen_artifacts(artifacts: Vec<Artifact>) -> Result<JsValue, JsValue> {
+    let _span = tracing::trace_span!("boundary_encode", method = "codegen_artifacts").entered();
+    let artifacts = artifacts
+        .into_iter()
+        .map(to_codegen_artifact)
+        .collect::<Vec<_>>();
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+    artifacts
+        .serialize(&serializer)
+        .map_err(|err| JsValue::from_str(&err.to_string()))
+}
+
+fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifactSerde {
+    CodegenArtifactSerde {
+        id: artifact.id.as_str().to_owned(),
+        files: artifact
+            .files
+            .into_iter()
+            .map(|file| CodegenFileSerde {
+                path: file.path,
+                code: file.code,
+                dependencies: dependency_names(file.dependencies),
+            })
+            .collect(),
+    }
+}
+
+fn dependency_names(dependencies: DependencySet) -> Vec<String> {
+    dependencies
+        .to_vec()
+        .into_iter()
+        .map(|dependency| dependency.as_str().to_owned())
+        .collect()
+}
+
+fn dependency_set_from_strings(dependencies: Vec<String>) -> Result<DependencySet, JsValue> {
+    let mut set = DependencySet::EMPTY;
+    for dependency in dependencies {
+        let dependency = dependency.parse::<ConfigDependency>().map_err(|()| {
+            JsValue::from_str(&format!("unknown config dependency `{dependency}`"))
+        })?;
+        set = set.union(DependencySet::one(dependency));
+    }
+    Ok(set)
+}
+
+fn generate_options(
+    user_config: &UserConfig,
+    options: &JsValue,
+) -> Result<GenerateOptions, JsValue> {
+    let specifiers = option_string(options, "specifiers")?;
+    let specifiers = match specifiers.as_deref() {
+        None | Some("extensionless") => ModuleSpecifierPolicy::Extensionless,
+        Some("runtime-and-types") => ModuleSpecifierPolicy::RuntimeAndTypes,
+        Some(value) => {
+            return Err(JsValue::from_str(&format!(
+                "unknown codegen specifier policy `{value}`"
+            )));
+        }
+    };
+
+    Ok(GenerateOptions {
+        format: user_config.codegen_format,
+        specifiers,
+    })
+}
+
+fn option_string(options: &JsValue, key: &str) -> Result<Option<String>, JsValue> {
+    if options.is_undefined() || options.is_null() {
+        return Ok(None);
+    }
+    let value = js_sys::Reflect::get(options, &JsValue::from_str(key))?;
+    if value.is_undefined() || value.is_null() {
+        return Ok(None);
+    }
+    value
+        .as_string()
+        .map(Some)
+        .ok_or_else(|| JsValue::from_str(&format!("`{key}` must be a string")))
 }
 
 fn build_compile_output(

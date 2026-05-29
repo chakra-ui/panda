@@ -97,6 +97,39 @@ export interface StaticPatternResult {
   diagnostics: Diagnostic[]
 }
 
+export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 'patterns' | 'selectors' | 'types'
+
+export type CodegenDependency =
+  | 'codegenFormat'
+  | 'conditions'
+  | 'hash'
+  | 'jsxFactory'
+  | 'jsxFramework'
+  | 'jsxStyleProps'
+  | 'patterns'
+  | 'prefix'
+  | 'recipes'
+  | 'separator'
+  | 'syntax'
+  | 'themes'
+  | 'tokens'
+  | 'utilities'
+
+export interface GenerateArtifactOptions {
+  specifiers?: 'extensionless' | 'runtime-and-types'
+}
+
+export interface CodegenFile {
+  path: string
+  code: string
+  dependencies: CodegenDependency[]
+}
+
+export interface CodegenArtifact {
+  id: CodegenArtifactId
+  files: CodegenFile[]
+}
+
 export interface CompileFileManifest {
   path: string
   hash: string
@@ -172,7 +205,53 @@ export type SerializedConfig = Record<string, unknown>
 
 export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'
 
-export type ProjectCallbacks = Partial<Record<ProjectCallbackKind, Record<string, (...args: any[]) => unknown>>>
+/** Common subset of the native `TokenDictionary` / wasm `TokenDictionaryInput`. */
+export interface TokenLookup {
+  values: Record<string, string>
+  vars: Record<string, string>
+}
+
+export interface RawToken {
+  path: string
+  value: string
+  var?: string
+}
+
+export interface ColorMixResult {
+  invalid: boolean
+  value: string
+  color?: string
+}
+
+export interface TransformArgs {
+  token: ((path: string) => string | undefined) & { raw: (path: string) => RawToken | undefined }
+  raw: unknown
+  utils: {
+    colorMix(value: string): ColorMixResult
+  }
+}
+
+export interface PatternHelpers {
+  map(value: unknown, fn: (value: any) => any): unknown
+  isCssUnit(value: unknown): boolean
+  isCssVar(value: unknown): boolean
+  isCssFunction(value: unknown): boolean
+}
+
+export type UtilityValuesTheme = (category: string) => Record<string, string> | undefined
+export type UtilityValuesCallback = (theme: UtilityValuesTheme) => Record<string, string> | string[] | undefined
+export type UtilityTransformCallback = (value: string, args: TransformArgs) => unknown
+export type PatternTransformCallback = (props: Record<string, any>, helpers: PatternHelpers) => unknown
+export type PatternDefaultValuesCallback = (props: Record<string, any>) => unknown
+
+export interface ProjectCallbackMap {
+  'utility.transform': Record<string, UtilityTransformCallback>
+  'utility.values': Record<string, UtilityValuesCallback>
+  'pattern.transform': Record<string, PatternTransformCallback>
+  'pattern.defaultValues': Record<string, PatternDefaultValuesCallback>
+}
+
+export type ProjectCallbacks = Partial<ProjectCallbackMap>
 
 /** Serialized config paired with its live callbacks, as produced by the host's
  *  `createConfigSnapshot`. */
@@ -219,6 +298,9 @@ export interface Compiler {
   removeFile(path: string): boolean
   clear(): void
   compile(): CompileOutput
+  generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
+  generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
+  generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]
   /** Stateless peek — returns raw calls/jsx, registers nothing. */
   extract(path: string, source: string): ExtractResult
 

@@ -12,6 +12,9 @@
 
 import type {
   Atom,
+  CodegenArtifact,
+  CodegenArtifactId,
+  CodegenDependency,
   CompileFileManifest,
   CompileOutput,
   Diagnostic,
@@ -22,6 +25,7 @@ import type {
   ProjectSummary,
   RecipeEntry,
   StaticPatternResult,
+  GenerateArtifactOptions,
 } from '@pandacss/compiler-shared'
 
 export interface MatcherInput {
@@ -92,6 +96,9 @@ export declare class WasmCompiler {
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
   compile(): CompileOutput
+  generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
+  generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
+  generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]
   diagnostics(): Diagnostic[]
   fileManifest(): CompileFileManifest[]
   /** Per-file view, or `null` when `path` isn't known. */

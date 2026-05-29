@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { createCompilerFromSnapshot } from '../src'
-import type { PatternHelpers } from '../src'
 import { importMap } from './test-utils'
 
 describe('Compiler callbacks', () => {
@@ -22,7 +21,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -89,7 +88,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.tint.transform': (value: string, args: any) => {
+            'utilities.tint.transform': (value, args) => {
               const mix = args.utils.colorMix(value)
               return {
                 color: args.token('colors.red.500'),
@@ -176,7 +175,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -285,7 +284,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.values': {
-            'utilities.space.values': (theme: (category: string) => Record<string, string> | undefined) => ({
+            'utilities.space.values': (theme) => ({
               ...(theme('spacing') ?? {}),
               compact: '2px',
             }),
@@ -317,6 +316,102 @@ describe('Compiler callbacks', () => {
         },
       ]
     `)
+
+    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/values.d.mts')?.code)
+      .toMatchInlineSnapshot(`
+        "import type { CssProperties } from './csstype';
+
+        import type { TokenValue } from './tokens';
+
+        export type AnyString = string & {}
+
+        export type AnyNumber = number & {}
+
+        export type CssVars = \`var(--\${string})\`
+
+        export type WithEscapeHatch<T> = T | \`[\${string}]\`
+
+        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends \`\${infer _}\` ? Value : never
+
+        export type SpaceValue = CssProperties["space"] | "-4" | "4" | "compact" | CssVars | AnyString"
+      `)
+  })
+
+  it('resolves utility values functions from a config snapshot', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            inset: {
+              property: 'inset',
+              values: {
+                kind: 'js-callback',
+                id: 'utilities.inset.values',
+              },
+            },
+          },
+          theme: {
+            tokens: {
+              spacing: {
+                2: { value: '0.5rem' },
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.values': {
+            'utilities.inset.values': (theme) => ({
+              ...(theme('spacing') ?? {}),
+              full: '100%',
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFile(
+      '/virtual/Dialog.tsx',
+      `import { css } from '@panda/css'
+       css({ inset: '2' })
+       css({ inset: 'full' })`,
+    )
+
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "inset",
+          "value": "0.5rem",
+          "conditions": [],
+        },
+        {
+          "prop": "inset",
+          "value": "100%",
+          "conditions": [],
+        },
+      ]
+    `)
+    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/values.d.mts')?.code)
+      .toMatchInlineSnapshot(`
+        "import type { CssProperties } from './csstype';
+
+        import type { TokenValue } from './tokens';
+
+        export type AnyString = string & {}
+
+        export type AnyNumber = number & {}
+
+        export type CssVars = \`var(--\${string})\`
+
+        export type WithEscapeHatch<T> = T | \`[\${string}]\`
+
+        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends \`\${infer _}\` ? Value : never
+
+        export type InsetValue = CssProperties["inset"] | "-2" | "2" | "full" | CssVars | AnyString"
+      `)
   })
 
   it('throws when serialized callback refs are missing callbacks', () => {
@@ -364,7 +459,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -418,7 +513,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -469,7 +564,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => {
+            'utilities.size.transform': (value) => {
               calls += 1
               return { width: value, height: value }
             },
@@ -553,7 +648,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => {
+            'utilities.size.transform': (value) => {
               calls += 1
               if (calls === 1) throw new Error('boom')
               return { width: value, height: value }
@@ -614,7 +709,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({ width: value, height: value }),
+            'utilities.size.transform': (value) => ({ width: value, height: value }),
           },
         },
       },
@@ -676,7 +771,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => {
+            'utilities.size.transform': (value) => {
               calls += 1
               return { width: value, height: value }
             },
@@ -728,7 +823,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }, helpers: PatternHelpers) => ({
+            'patterns.stack.transform': (props, helpers) => ({
               display: 'flex',
               gap: helpers.map(props.gap, (value) =>
                 helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
@@ -802,7 +897,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               flexDirection: 'column',
               gap: props.gap,
@@ -869,7 +964,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               flexDirection: 'column',
               gap: props.gap,
@@ -930,7 +1025,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => {
+            'patterns.stack.transform': (props) => {
               calls += 1
               return {
                 display: 'flex',
@@ -991,7 +1086,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => {
+            'patterns.stack.transform': (props) => {
               calls += 1
               if (calls === 1) throw new Error('boom')
               return {
@@ -1058,7 +1153,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               gap: props.gap,
             }),
@@ -1118,12 +1213,12 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.defaultValues': {
-            'patterns.stack.defaultValues': (props: { dense?: boolean }) => ({
+            'patterns.stack.defaultValues': (props) => ({
               gap: props.dense ? '2px' : '4px',
             }),
           },
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               gap: props.gap,
             }),

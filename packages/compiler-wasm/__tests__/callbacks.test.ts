@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest'
 
 import { createCompilerFromSnapshot, createCompilerFromWasmModule, loadWasm } from '../src'
-import type { Atom, PatternHelpers } from '../src'
+import type { Atom } from '../src'
 import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
 
 describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
@@ -20,7 +20,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => ({
+          'utilities.size.transform': (value) => ({
             width: value,
             height: value,
           }),
@@ -78,7 +78,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.tint.transform': (value: string, args: any) => {
+          'utilities.tint.transform': (value, args) => {
             const mix = args.utils.colorMix(value)
             return {
               color: args.token('colors.red.500'),
@@ -164,7 +164,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => ({
+          'utilities.size.transform': (value) => ({
             width: value,
             height: value,
           }),
@@ -276,7 +276,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.values': {
-          'utilities.space.values': (theme: (category: string) => Record<string, string> | undefined) => ({
+          'utilities.space.values': (theme) => ({
             ...(theme('spacing') ?? {}),
             compact: '2px',
           }),
@@ -360,7 +360,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => ({
+          'utilities.size.transform': (value) => ({
             width: value,
             height: value,
           }),
@@ -405,7 +405,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => ({
+          'utilities.size.transform': (value) => ({
             width: value,
             height: value,
           }),
@@ -447,7 +447,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => {
+          'utilities.size.transform': (value) => {
             calls += 1
             return { width: value, height: value }
           },
@@ -518,7 +518,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => {
+          'utilities.size.transform': (value) => {
             calls += 1
             if (calls === 1) throw new Error('boom')
             return { width: value, height: value }
@@ -577,7 +577,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'utility.transform': {
-          'utilities.size.transform': (value: string) => ({ width: value, height: value }),
+          'utilities.size.transform': (value) => ({ width: value, height: value }),
         },
       },
     })
@@ -633,7 +633,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => {
+            'utilities.size.transform': (value) => {
               calls += 1
               return { width: value, height: value }
             },
@@ -685,7 +685,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
       callbacks: {
         'pattern.transform': {
-          'patterns.stack.transform': (props: { gap?: unknown }, helpers: PatternHelpers) => ({
+          'patterns.stack.transform': (props, helpers) => ({
             display: 'flex',
             gap: helpers.map(props.gap, (value) =>
               helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
@@ -754,7 +754,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       {
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               gap: props.gap,
             }),
@@ -808,7 +808,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
           }),
         },
         'pattern.transform': {
-          'patterns.stack.transform': (props: { gap?: unknown }) => ({
+          'patterns.stack.transform': (props) => ({
             display: 'flex',
             gap: props.gap,
           }),
