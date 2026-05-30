@@ -69,6 +69,68 @@ fn generates_artifacts_from_resolved_project_state() {
 }
 
 #[test]
+fn embeds_pattern_codegen_source_from_config() {
+    let config = create_config(json!({
+        "patterns": {
+            "stack": {
+                "defaultValues": { "gap": "4" },
+                "properties": { "gap": { "property": "gap" } },
+                "codegenSource": "{ transform(props) { return { display: \"flex\", gap: props.gap } }, defaultValues: {\"gap\":\"4\"} }"
+            }
+        }
+    }));
+    let system = System::new(config.clone()).expect("valid project config");
+    let project = Project::new(system);
+
+    let code = pattern_runtime_code(&project, &config);
+    assert!(
+        code.contains("display: \"flex\""),
+        "expected the user transform body, got:\n{code}"
+    );
+    assert!(
+        code.contains("gap: props.gap"),
+        "expected the user transform body, got:\n{code}"
+    );
+    assert!(
+        !code.contains("(s) => s"),
+        "should not fall back to the identity transform:\n{code}"
+    );
+}
+
+#[test]
+fn falls_back_to_identity_transform_without_codegen_source() {
+    let config = create_config(json!({
+        "patterns": {
+            "stack": {
+                "defaultValues": { "gap": "4" },
+                "properties": { "gap": { "property": "gap" } }
+            }
+        }
+    }));
+    let system = System::new(config.clone()).expect("valid project config");
+    let project = Project::new(system);
+
+    let code = pattern_runtime_code(&project, &config);
+    assert!(
+        code.contains("(s) => s"),
+        "expected the identity fallback, got:\n{code}"
+    );
+}
+
+/// The generated `patterns/stack` runtime module (skips the `.d.ts` declaration).
+fn pattern_runtime_code(project: &Project, config: &pandacss_config::UserConfig) -> String {
+    let artifact = project
+        .generate_artifact(config, ArtifactId::Patterns, GenerateOptions::default())
+        .expect("patterns artifact");
+    artifact
+        .files
+        .into_iter()
+        .find(|file| file.path.starts_with("patterns/stack") && !file.path.ends_with(".d.ts"))
+        .expect("patterns/stack runtime file")
+        .code
+}
+
+#[test]
 fn generates_affected_artifacts_by_dependency() {
     let config = create_config(json!({}));
     let system = System::new(config.clone()).expect("valid project config");

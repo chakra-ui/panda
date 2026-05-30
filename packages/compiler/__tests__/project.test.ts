@@ -98,6 +98,7 @@ describe('Compiler', () => {
         "types/properties.d.mts",
         "types/system-types.d.mts",
         "types/pattern.d.mts",
+        "types/recipe.d.mts",
         "types/index.d.mts",
       ]
     `)
@@ -121,6 +122,7 @@ describe('Compiler', () => {
       [
         "patterns",
         "types",
+        "tokens",
         "conditions",
       ]
     `)

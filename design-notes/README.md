@@ -19,6 +19,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Project lifecycle](./project-lifecycle.md) — `Project` add / replace / remove semantics for watch mode.
 - [Native stylesheet compiler](./stylesheet.md) — CSS emission, static CSS support, ordering, and minification boundary.
 - [Scope and boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.
+- [Output & host layer (Driver)](./output-and-host-layer.md) — the JS orchestration layer above the pure compiler:
+  `Driver` taxonomy (Node vs Browser), CSS-vs-artifact cadence, sink routing, and the config-diff algorithm. _Draft —
+  not yet built._
 
 ### Subsystems
 
@@ -30,6 +33,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 ### Boundary
 
 - [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
+- [Config loading](./config-loading-design.md) — `@pandacss/config-loader`: bundle + serialize a user config into the
+  `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 
 ### Performance & operations
 
