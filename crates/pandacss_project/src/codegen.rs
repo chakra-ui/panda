@@ -17,7 +17,7 @@ impl Project {
         CodegenInput {
             config: user_config.clone(),
             types: self.type_data(user_config),
-            patterns: BTreeMap::<String, PatternCodegenMeta>::new(),
+            patterns: pattern_codegen_meta(user_config),
         }
     }
 
@@ -81,4 +81,24 @@ impl Project {
             options,
         )
     }
+}
+
+/// Pattern transform/defaultValues source, prepared by the JS config loader and
+/// embedded verbatim by the pattern generator. Patterns without a source fall
+/// back to the generator's identity transform.
+fn pattern_codegen_meta(config: &UserConfig) -> BTreeMap<String, PatternCodegenMeta> {
+    config
+        .patterns
+        .iter()
+        .filter_map(|(name, pattern)| {
+            pattern.codegen_source.as_ref().map(|source| {
+                (
+                    name.clone(),
+                    PatternCodegenMeta {
+                        config_source: source.clone(),
+                    },
+                )
+            })
+        })
+        .collect()
 }

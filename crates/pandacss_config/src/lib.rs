@@ -396,6 +396,11 @@ pub struct PatternConfig {
     pub default_values: Option<Value>,
     #[serde(default)]
     pub transform: Option<CallbackRef>,
+    /// Pre-stringified `{ transform, defaultValues }` source for codegen, prepared
+    /// by the JS config loader (Rust never stringifies a JS function). Embedded
+    /// verbatim into the generated pattern module.
+    #[serde(default, rename = "codegenSource")]
+    pub codegen_source: Option<String>,
     #[serde(default)]
     pub strict: bool,
     #[serde(default)]
