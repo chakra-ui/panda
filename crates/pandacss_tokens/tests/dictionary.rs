@@ -1684,3 +1684,86 @@ fn snapshot_css_vars(dict: &TokenDictionary) -> serde_json::Value {
             .collect::<Vec<_>>(),
     })
 }
+
+// --- runtime `toVar` parity ---
+//
+// The generated `tokens/index` runtime derives every var-ref from the path via
+// a `toVar` helper instead of storing it. This mirrors that helper in Rust and
+// asserts it reproduces the dictionary's real `token.var` for tricky names
+// (uppercase, escape-needing `/`) across prefix + hash settings. If the runtime
+// JS drifts from `css_var_variable`/`push_css_var_name`, this fails.
+
+fn mirror_sanitize(out: &mut String, value: &str) {
+    for ch in value.chars() {
+        if ch.is_ascii_uppercase() {
+            out.push('-');
+            out.push(ch.to_ascii_lowercase());
+        } else if ch.is_ascii_alphanumeric()
+            || ch == '_'
+            || ch == '-'
+            || ('\u{0081}'..='\u{ffff}').contains(&ch)
+        {
+            out.push(ch);
+        } else {
+            out.push('\\');
+            out.push(ch);
+        }
+    }
+}
+
+fn mirror_to_var(path: &str, prefix: &str, hash: bool) -> String {
+    let name = path.replace('.', "-");
+    let body = if hash {
+        pandacss_shared::to_hash(&name)
+    } else {
+        let mut sanitized = String::new();
+        mirror_sanitize(&mut sanitized, &name);
+        sanitized
+    };
+
+    let mut out = String::from("var(--");
+    if !prefix.is_empty() {
+        if hash {
+            out.push_str(prefix);
+        } else {
+            mirror_sanitize(&mut out, prefix);
+        }
+        out.push('-');
+    }
+    out.push_str(&body);
+    out.push(')');
+    out
+}
+
+#[test]
+fn runtime_to_var_reproduces_every_token_var() {
+    for (prefix, hash) in [("", false), ("pd", false), ("panda", true)] {
+        let config: UserConfig = serde_json::from_value(json!({
+            "prefix": { "cssVar": prefix },
+            "hash": { "cssVar": hash },
+            "theme": {
+                "tokens": {
+                    "colors": {
+                        "red": { "500": { "value": "#f00" } },
+                        "brandPrimary": { "value": "#111" }
+                    },
+                    "sizes": { "1/2": { "value": "50%" } }
+                }
+            }
+        }))
+        .expect("config");
+
+        let dict = TokenDictionary::from_config(&config)
+            .expect("token dictionary")
+            .expect("non-empty dictionary");
+
+        for token in dict.iter() {
+            assert_eq!(
+                mirror_to_var(&token.path, prefix, hash),
+                token.var.as_ref(),
+                "path={} prefix={prefix:?} hash={hash}",
+                token.path,
+            );
+        }
+    }
+}

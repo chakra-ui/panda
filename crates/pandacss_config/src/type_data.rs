@@ -46,6 +46,11 @@ pub struct SelectorTypeData {
 pub struct TokenTypeData {
     pub categories: BTreeMap<String, TokenCategoryTypeData>,
     pub color_palettes: Vec<String>,
+    /// Runtime `token()` map: `path -> value`. The value is empty when it
+    /// equals the token's CSS var, which the runtime `token.var` reproduces
+    /// via `toVar(path)` — so var-refs are derived, not stored.
+    #[serde(default)]
+    pub values: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

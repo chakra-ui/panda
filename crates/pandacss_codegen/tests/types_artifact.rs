@@ -60,6 +60,7 @@ fn token_type_data() -> TokenTypeData {
             ),
         ]),
         color_palettes: vec!["red".into(), "blue".into()],
+        ..TokenTypeData::default()
     }
 }
 
