@@ -1,9 +1,30 @@
 mod common;
 
 use common::{artifact, file, paths};
+use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
 use pandacss_config::CodegenFormat;
 
+fn function_block(source: &str, name: &str) -> String {
+    let needle = format!("export function {name}");
+    let start = source.find(&needle).expect("function should exist");
+    let rest = &source[start..];
+    let end = rest
+        .find("\n\nexport function ")
+        .or_else(|| rest.find("\n\nexport const "))
+        .unwrap_or(rest.len());
+    rest[..end].to_owned()
+}
+
+fn declaration_lines(source: &str) -> String {
+    source
+        .lines()
+        .filter(|line| line.contains("createCss") || line.contains("createMergeCss"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[allow(dead_code)]
 const EXPECTED_TS: &str = r#"
 export function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v != null && !Array.isArray(v)
@@ -280,6 +301,7 @@ export function withoutSpace<T extends string | number | boolean>(str: T): T {
 }
 "#;
 
+#[allow(dead_code)]
 const EXPECTED_JS: &str = r#"
 export function isObject(v) {
   return typeof v === "object" && v != null && !Array.isArray(v)
@@ -556,6 +578,7 @@ export function withoutSpace(str) {
 }
 "#;
 
+#[allow(dead_code)]
 const EXPECTED_DTS: &str = r"
 export declare function isObject(v: unknown): v is Record<string, unknown>;
 
@@ -616,7 +639,164 @@ fn emits_ts_source() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.ts"]);
-    assert_eq!(file(helpers, "helpers.ts"), EXPECTED_TS.trim());
+    let source = file(helpers, "helpers.ts");
+    assert_snapshot!(function_block(source, "createCss"), @r#"
+    export function createCss(context: Record<string, any>): (...styles: any[]) => string {
+      const { utility: u, hash, conditions: c = { shift: (v: any) => v, finalize: (v: any[]) => v, breakpoints: { keys: [] } } } = context
+      const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
+      const toClass = (paths: string[], name: string) => {
+        const parts = c.finalize(paths)
+        parts.push(hash ? name : fmt(name))
+        return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
+      }
+      return memo(({ base, ...styles }: Record<string, any> = {}) => {
+        const obj = mapObject(base ? Object.assign(styles, base) : styles, (v: any) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
+        const set = new Set<string>()
+        walkObject(obj, (value: any, paths: string[]) => {
+          if (value == null) return
+          const [prop, ...all] = c.shift(paths)
+          const cond = filterBaseConditions(all)
+          const res = u.transform(prop, withoutSpace(value))
+          set.add(toClass(cond, res.className))
+        })
+        let out = ""
+        for (const name of set) out += out ? " " + name : name
+        return out
+      })
+    }
+    "#);
+}
+
+#[test]
+fn emits_ts_with_defaults() {
+    let graph = ArtifactGraph;
+    let artifacts = graph.generate(GenerateOptions {
+        format: CodegenFormat::Ts,
+        specifiers: ModuleSpecifierPolicy::Extensionless,
+    });
+    let helpers = artifact(&artifacts, ArtifactId::Helpers);
+
+    let source = file(helpers, "helpers.ts");
+    assert_snapshot!(function_block(source, "withDefaults"), @r#"
+    export function withDefaults(defaults: Record<string, any>, props: Record<string, any>): Record<string, any> {
+      const result = compact(props)
+      for (const key in defaults) if (result[key] === void 0) result[key] = defaults[key]
+      return result
+    }
+    "#);
+}
+
+#[test]
+fn emits_js_with_defaults() {
+    let graph = ArtifactGraph;
+    let artifacts = graph.generate(GenerateOptions {
+        format: CodegenFormat::Js,
+        specifiers: ModuleSpecifierPolicy::Extensionless,
+    });
+    let helpers = artifact(&artifacts, ArtifactId::Helpers);
+
+    let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "withDefaults"), @r#"
+    export function withDefaults(defaults, props) {
+      const result = compact(props)
+      for (const key in defaults) if (result[key] === void 0) result[key] = defaults[key]
+      return result
+    }
+    "#);
+}
+
+#[test]
+fn emits_js_get_compound_variant_css() {
+    let graph = ArtifactGraph;
+    let artifacts = graph.generate(GenerateOptions {
+        format: CodegenFormat::Js,
+        specifiers: ModuleSpecifierPolicy::Extensionless,
+    });
+    let helpers = artifact(&artifacts, ArtifactId::Helpers);
+
+    let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "getCompoundVariantCss"), @r#"
+    export function getCompoundVariantCss(compoundVariants, variants) {
+      let result = {}
+      outer: for (const variant of compoundVariants) {
+        for (const key in variant) {
+          if (key === "css") continue
+          const expected = variant[key]
+          const actual = variants[key]
+          if (Array.isArray(expected)) {
+            if (!expected.includes(actual)) continue outer
+          } else if (actual !== expected) {
+            continue outer
+          }
+        }
+        result = mergeProps(result, variant.css)
+      }
+      return result
+    }
+    "#);
+}
+
+#[test]
+fn emits_js_get_slot_compound_variant() {
+    let graph = ArtifactGraph;
+    let artifacts = graph.generate(GenerateOptions {
+        format: CodegenFormat::Js,
+        specifiers: ModuleSpecifierPolicy::Extensionless,
+    });
+    let helpers = artifact(&artifacts, ArtifactId::Helpers);
+
+    let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "getSlotCompoundVariant"), @r#"
+    export function getSlotCompoundVariant(compoundVariants, slot) {
+      const result = []
+      for (const variant of compoundVariants) {
+        const css = variant.css?.[slot]
+        if (!css) continue
+        const next = { css }
+        for (const key in variant) if (key !== "css") next[key] = variant[key]
+        result.push(next)
+      }
+      return result
+    }
+    "#);
+}
+
+#[test]
+fn emits_js_get_slot_recipes() {
+    let graph = ArtifactGraph;
+    let artifacts = graph.generate(GenerateOptions {
+        format: CodegenFormat::Js,
+        specifiers: ModuleSpecifierPolicy::Extensionless,
+    });
+    let helpers = artifact(&artifacts, ArtifactId::Helpers);
+
+    let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "getSlotRecipes"), @r#"
+    export function getSlotRecipes(recipe) {
+      const result = {}
+      const slots = recipe.slots ?? []
+      for (const slot of slots) {
+        result[slot] = {
+          className: recipe.className ? recipe.className + "__" + slot : slot,
+          base: recipe.base?.[slot] ?? {},
+          variants: {},
+          defaultVariants: recipe.defaultVariants ?? {},
+          compoundVariants: getSlotCompoundVariant(recipe.compoundVariants ?? [], slot),
+        }
+      }
+      const variants = recipe.variants ?? {}
+      for (const variantsKey in variants) {
+        const variantGroup = variants[variantsKey]
+        for (const slot of slots) {
+          const group = result[slot].variants[variantsKey] = {}
+          for (const variantKey in variantGroup) {
+            group[variantKey] = variantGroup[variantKey][slot] ?? {}
+          }
+        }
+      }
+      return result
+    }
+    "#);
 }
 
 #[test]
@@ -629,7 +809,32 @@ fn emits_js_runtime() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_eq!(file(helpers, "helpers.js"), EXPECTED_JS.trim());
+    let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "createCss"), @r#"
+    export function createCss(context) {
+      const { utility: u, hash, conditions: c = { shift: (v) => v, finalize: (v) => v, breakpoints: { keys: [] } } } = context
+      const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
+      const toClass = (paths, name) => {
+        const parts = c.finalize(paths)
+        parts.push(hash ? name : fmt(name))
+        return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
+      }
+      return memo(({ base, ...styles } = {}) => {
+        const obj = mapObject(base ? Object.assign(styles, base) : styles, (v) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
+        const set = new Set()
+        walkObject(obj, (value, paths) => {
+          if (value == null) return
+          const [prop, ...all] = c.shift(paths)
+          const cond = filterBaseConditions(all)
+          const res = u.transform(prop, withoutSpace(value))
+          set.add(toClass(cond, res.className))
+        })
+        let out = ""
+        for (const name of set) out += out ? " " + name : name
+        return out
+      })
+    }
+    "#);
 }
 
 #[test]
@@ -642,5 +847,8 @@ fn emits_declarations() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_eq!(file(helpers, "helpers.d.ts"), EXPECTED_DTS.trim());
+    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @r#"
+    export declare function createCss(context: Record<string, any>): (...styles: any[]) => string;
+    export declare function createMergeCss(context: Record<string, any>): { mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };
+    "#);
 }

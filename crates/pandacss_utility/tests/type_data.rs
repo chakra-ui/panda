@@ -22,7 +22,7 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
         }
     })));
 
-    assert_yaml_snapshot!(json!(utility.type_data()), @r#"
+    assert_yaml_snapshot!(json!(utility.type_data()), @"
     properties:
       display:
         name: display
@@ -72,5 +72,8 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
             value: gap
           - kind: cssVars
           - kind: anyString
-    "#);
+    classNames:
+      display: display
+      gap: g
+    ");
 }

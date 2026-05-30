@@ -225,8 +225,26 @@ fn print_item(
         ItemNode::TypeAlias(decl) => print_type_alias(decl),
         ItemNode::Assignment(assignment) => print_assignment(assignment),
         ItemNode::Export(decl) => print_export(decl, target, specifiers, format),
-        ItemNode::RawStmt(code) => code.clone(),
+        ItemNode::RawStmt(code) => {
+            if matches!(target, EmitTarget::RuntimeJs) {
+                strip_typescript_fixpoint(code)
+            } else {
+                code.clone()
+            }
+        }
     }
+}
+
+fn strip_typescript_fixpoint(code: &str) -> String {
+    let mut current = code.to_owned();
+    for _ in 0..8 {
+        let next = strip_typescript(&current);
+        if next == current {
+            return next;
+        }
+        current = next;
+    }
+    current
 }
 
 fn print_export(
@@ -274,9 +292,15 @@ fn print_const(decl: &ConstDecl, target: EmitTarget) -> String {
     let init = if matches!(target, EmitTarget::Dts) {
         String::new()
     } else {
-        decl.init
-            .as_ref()
-            .map_or_else(String::new, |expr| format!(" = {}", print_expr(expr)))
+        decl.init.as_ref().map_or_else(String::new, |expr| {
+            let code = print_expr(expr);
+            let code = if matches!(target, EmitTarget::RuntimeJs) {
+                strip_typescript(&code)
+            } else {
+                code
+            };
+            format!(" = {code}")
+        })
     };
     let suffix = if matches!(target, EmitTarget::Dts) {
         ";"

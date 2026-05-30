@@ -18,6 +18,6 @@ pub use hash::to_hash;
 pub use important::{is_important, split_important, without_important};
 pub use regex::compile_js_regex;
 pub use strings::{
-    MAX_SAFE_INTEGER, capitalize, is_js_safe_integer, number_to_js_string, pascal_case,
-    push_number_to_js_string,
+    MAX_SAFE_INTEGER, capitalize, file_stem, is_js_safe_integer, js_ident, number_to_js_string,
+    pascal_case, push_number_to_js_string,
 };

@@ -65,6 +65,11 @@ pub fn strip_typescript(code: &str) -> String {
             continue;
         }
 
+        if ch == ':' && should_strip_return_type(&chars, index) {
+            index = skip_return_type_annotation(&chars, index + 1);
+            continue;
+        }
+
         if ch == ':' && should_strip_variable_type(&chars, index) {
             index = skip_until_top_level(&chars, index + 1, '=');
             push_space_before_delimiter(&mut out, chars.get(index).copied());
@@ -89,6 +94,23 @@ pub fn strip_typescript(code: &str) -> String {
     }
 
     out
+}
+
+fn should_strip_return_type(chars: &[char], colon: usize) -> bool {
+    if previous_significant(chars, colon) != Some(')') {
+        return false;
+    }
+
+    let candidate_end = skip_return_type_annotation(chars, colon + 1);
+
+    // A genuine return type is immediately followed by the function body `{`.
+    // Without this guard a ternary whose `:` also follows a `)` — e.g.
+    // `cond ? foo(x) : bar` — looks identical and would be wrongly stripped.
+    if chars.get(candidate_end) != Some(&'{') {
+        return false;
+    }
+
+    is_type_annotation_candidate(&chars[colon + 1..candidate_end])
 }
 
 fn should_strip_param_type(
@@ -146,6 +168,27 @@ fn skip_type_annotation(chars: &[char], mut index: usize) -> usize {
             '{' => brace += 1,
             '}' => brace = brace.saturating_sub(1),
             ',' | ')' | '=' if angle == 0 && bracket == 0 && brace == 0 => break,
+            _ => {}
+        }
+        index += 1;
+    }
+    index
+}
+
+fn skip_return_type_annotation(chars: &[char], mut index: usize) -> usize {
+    let mut angle = 0usize;
+    let mut bracket = 0usize;
+    let mut brace = 0usize;
+
+    while index < chars.len() {
+        match chars[index] {
+            '{' | '\n' if angle == 0 && bracket == 0 && brace == 0 => break,
+            '<' => angle += 1,
+            '>' => angle = angle.saturating_sub(1),
+            '[' => bracket += 1,
+            ']' => bracket = bracket.saturating_sub(1),
+            '{' => brace += 1,
+            '}' => brace = brace.saturating_sub(1),
             _ => {}
         }
         index += 1;

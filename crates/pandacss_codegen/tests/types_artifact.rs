@@ -4,13 +4,15 @@ use std::collections::BTreeMap;
 
 use common::{artifact, file, paths};
 use indoc::indoc;
+use insta::assert_snapshot;
 use pandacss_codegen::{
     ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
 };
 use pandacss_config::{
     CodegenFormat, ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind,
-    PatternTypeData, PatternTypeDefinition, PrimitiveType, TokenCategoryTypeData, TokenTypeData,
-    TypeData, UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart,
+    PatternTypeData, PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition,
+    SlotRecipeTypeDefinition, TokenCategoryTypeData, TokenTypeData, TypeData,
+    UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart, VariantTypeData,
 };
 
 fn input() -> CodegenInput {
@@ -23,6 +25,7 @@ fn input() -> CodegenInput {
             tokens: token_type_data(),
             utilities: utility_type_data(),
             patterns: pattern_type_data(),
+            recipes: recipe_type_data(),
             ..TypeData::default()
         },
         ..CodegenInput::default()
@@ -161,7 +164,54 @@ fn pattern_type_data() -> PatternTypeData {
     }
 }
 
+fn recipe_type_data() -> RecipeTypeData {
+    RecipeTypeData {
+        recipes: BTreeMap::from([(
+            "button".into(),
+            RecipeTypeDefinition {
+                name: "button".into(),
+                type_name: "Button".into(),
+                variants: BTreeMap::from([
+                    (
+                        "size".into(),
+                        VariantTypeData {
+                            values: vec!["sm".into(), "md".into()],
+                            allows_boolean: false,
+                        },
+                    ),
+                    (
+                        "disabled".into(),
+                        VariantTypeData {
+                            values: vec!["true".into(), "false".into()],
+                            allows_boolean: true,
+                        },
+                    ),
+                ]),
+            },
+        )]),
+        slot_recipes: BTreeMap::from([(
+            "card".into(),
+            SlotRecipeTypeDefinition {
+                name: "card".into(),
+                type_name: "Card".into(),
+                slots: vec!["root".into(), "label".into()],
+                variants: BTreeMap::from([(
+                    "tone".into(),
+                    VariantTypeData {
+                        values: vec!["info".into(), "danger".into()],
+                        allows_boolean: false,
+                    },
+                )]),
+            },
+        )]),
+    }
+}
+
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "inline snapshot for the full types artifact"
+)]
 fn emits_ts_source_types() {
     let artifacts = ArtifactGraph.generate_with_input(
         &input(),
@@ -183,6 +233,7 @@ fn emits_ts_source_types() {
             "types/properties.ts",
             "types/system-types.ts",
             "types/pattern.ts",
+            "types/recipe.ts",
             "types/index.ts"
         ]
     );
@@ -249,6 +300,74 @@ fn emits_ts_source_types() {
         "}
         .trim()
     );
+
+    assert_snapshot!(file(types, "types/recipe.ts"), @"
+    import type { Pretty, SystemStyleObject } from './system-types';
+
+    export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
+
+    export type RecipeVariant<T> = Pretty<Required<NonNullable<RecipeVariantProps<T>>>>
+
+    export type RecipeVariantMap<Variant extends object> = {
+      [K in keyof Variant]-?: Array<Variant[K]>
+    }
+
+    export type RecipeRuntimeFn<Props extends object = object, Map extends object = object> = ((props?: Props) => string) & {
+      __type: Props
+      variantMap: Map
+      variantKeys: Array<keyof Props>
+      raw: (props?: Props) => SystemStyleObject
+      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
+      getVariantProps: (props?: Props) => Props
+      merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
+    }
+
+    export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
+
+    export type SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = ((props?: Props) => SlotRecord<Slot, string>) & {
+      __type: Props
+      __slot: Slot
+      variantMap: Map
+      variantKeys: Array<keyof Props>
+      raw: (props?: Props) => Record<Slot, SystemStyleObject>
+      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
+      getVariantProps: (props?: Props) => Props
+    }
+
+    export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
+
+    export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
+
+    export type RecipeSelection<T extends RecipeVariantRecord> = {
+      [K in keyof T]?: StringToBoolean<keyof T[K]>
+    }
+
+    export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
+      base?: SystemStyleObject
+      variants?: T
+      defaultVariants?: RecipeSelection<T>
+      compoundVariants?: Array<RecipeSelection<T> & { css: SystemStyleObject }>
+    }
+
+    export type RecipeCreatorFn = <T extends RecipeVariantRecord>(
+      config: RecipeDefinition<T>,
+    ) => RecipeRuntimeFn<RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>
+
+    export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
+
+    export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
+      className?: string
+      slots: Slot[]
+      base?: SlotRecord<Slot, SystemStyleObject>
+      variants?: T
+      defaultVariants?: RecipeSelection<T>
+      compoundVariants?: Array<RecipeSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
+    }
+
+    export type SlotRecipeCreatorFn = <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(
+      config: SlotRecipeDefinition<Slot, T>,
+    ) => SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>
+    ");
 }
 
 #[test]
@@ -312,6 +431,8 @@ fn emits_ts_system_and_index_types() {
         export type * from './system-types';
 
         export type * from './pattern';
+
+        export type * from './recipe';
         "}
         .trim()
     );
@@ -339,6 +460,7 @@ fn emits_js_declaration_types() {
             "types/properties.d.ts",
             "types/system-types.d.ts",
             "types/pattern.d.ts",
+            "types/recipe.d.ts",
             "types/index.d.ts"
         ]
     );
@@ -515,6 +637,8 @@ fn can_emit_extensioned_type_specifiers() {
         export * from './system-types.d.mts';
 
         export * from './pattern.d.mts';
+
+        export * from './recipe.d.mts';
         "}
         .trim()
     );

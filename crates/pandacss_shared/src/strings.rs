@@ -71,3 +71,44 @@ pub fn pascal_case(value: &str) -> String {
     }
     if out.is_empty() { "_".into() } else { out }
 }
+
+#[must_use]
+pub fn js_ident(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for (index, ch) in value.chars().enumerate() {
+        if ch.is_ascii_alphanumeric() || ch == '_' || ch == '$' {
+            if index == 0 && ch.is_ascii_digit() {
+                out.push('_');
+            }
+            out.push(ch);
+        } else {
+            out.push('_');
+        }
+    }
+    if out.is_empty() { "_".into() } else { out }
+}
+
+#[must_use]
+pub fn file_stem(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut prev_dash = false;
+    for ch in value.chars() {
+        if ch.is_ascii_uppercase() {
+            if !out.is_empty() && !prev_dash {
+                out.push('-');
+            }
+            out.push(ch.to_ascii_lowercase());
+            prev_dash = false;
+        } else if ch.is_ascii_alphanumeric() {
+            out.push(ch);
+            prev_dash = false;
+        } else if !prev_dash && !out.is_empty() {
+            out.push('-');
+            prev_dash = true;
+        }
+    }
+    if out.ends_with('-') {
+        out.pop();
+    }
+    if out.is_empty() { "_".into() } else { out }
+}

@@ -23,7 +23,11 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Helpers,
             ArtifactId::Selectors,
             ArtifactId::Patterns,
+            ArtifactId::Recipes,
             ArtifactId::Types,
+            ArtifactId::Css,
+            ArtifactId::Cva,
+            ArtifactId::Sva,
             ArtifactId::Cx,
             ArtifactId::CssIndex,
             ArtifactId::Conditions
@@ -39,7 +43,12 @@ fn filters_artifacts_by_config_dependencies() {
             .iter()
             .map(|artifact| artifact.id)
             .collect::<Vec<_>>(),
-        vec![ArtifactId::Types, ArtifactId::Conditions]
+        vec![
+            ArtifactId::Recipes,
+            ArtifactId::Types,
+            ArtifactId::Css,
+            ArtifactId::Conditions
+        ]
     );
 
     let unaffected = graph.generate_affected(
@@ -51,7 +60,7 @@ fn filters_artifacts_by_config_dependencies() {
             .iter()
             .map(|artifact| artifact.id)
             .collect::<Vec<_>>(),
-        vec![ArtifactId::Types]
+        vec![ArtifactId::Recipes, ArtifactId::Types]
     );
 
     let pattern_changes = graph.generate_affected(

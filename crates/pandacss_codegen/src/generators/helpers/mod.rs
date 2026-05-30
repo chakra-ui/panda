@@ -1,8 +1,6 @@
 mod css;
 mod misc;
 mod object;
-mod patterns;
-mod recipes;
 mod shared;
 mod split_props;
 
@@ -20,6 +18,11 @@ pub fn module() -> Module {
         .with_item(misc::filter_base_conditions())
         .with_item(misc::to_hash())
         .with_item(object::compact())
+        .with_item(object::with_defaults())
+        .with_item(object::to_variant_map())
+        .with_item(object::get_compound_variant_css())
+        .with_item(object::get_slot_compound_variant())
+        .with_item(object::get_slot_recipes())
         .with_item(css::to_responsive_object())
         .with_item(object::walk_object())
         .with_item(object::map_object())
@@ -29,13 +32,6 @@ pub fn module() -> Module {
         .with_item(css::create_css())
         .with_item(css::create_merge_css())
         .with_item(css::hypenate_property())
-        .with_item(patterns::is_css_function())
-        .with_item(patterns::is_css_var())
-        .with_item(patterns::is_css_unit())
-        .with_item(patterns::pattern_fns())
-        .with_item(patterns::get_pattern_styles())
-        .with_item(recipes::get_slot_recipes())
-        .with_item(recipes::get_slot_compound_variant())
         .with_item(split_props::split_props())
         .with_item(misc::uniq())
         .with_item(misc::without_space())

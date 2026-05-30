@@ -3,13 +3,13 @@ use std::collections::BTreeSet;
 use pandacss_config::{
     PatternConfig, PatternPropertyConfig, PatternPropertyTypeKind, PatternTypeDefinition,
 };
-use pandacss_shared::pascal_case;
+use pandacss_shared::{file_stem, js_ident, pascal_case};
 use serde_json::{Map, Value};
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConstDecl, DependencySet,
-    ExportDecl, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module, Param,
-    PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
+    Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConfigDependency, ConstDecl,
+    DependencySet, ExportDecl, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode,
+    JsDoc, Module, Param, PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
     artifact::{GenerateOptions, emit_module_files},
 };
 
@@ -34,6 +34,17 @@ pub fn files(
 ) -> Vec<ArtifactFile> {
     let mut files = Vec::new();
     let mut names = Vec::new();
+
+    if !ctx.config.patterns.is_empty() {
+        files.extend(emit_module_files(
+            "patterns/runtime",
+            &runtime_module(),
+            options.format,
+            false,
+            options.specifiers,
+            DependencySet::one(ConfigDependency::CodegenFormat),
+        ));
+    }
 
     for (name, pattern) in &ctx.config.patterns {
         names.push(file_stem(name));
@@ -70,7 +81,7 @@ pub fn module_with_type_data(
     definition: Option<&PatternTypeDefinition>,
     meta: Option<&PatternCodegenMeta>,
 ) -> Module {
-    let function_name = ident(name);
+    let function_name = js_ident(name);
     let raw_name = format!("{function_name}Raw");
     let config_name = format!("{function_name}Config");
     let type_name = format!("{}Properties", pascal_case(name));
@@ -82,7 +93,7 @@ pub fn module_with_type_data(
     Module::new()
         .with_import(ImportDecl::value(
             ["getPatternStyles", "patternFns"],
-            "../helpers",
+            "./runtime",
         ))
         .with_import(ImportDecl {
             kind: crate::ImportKind::Type,
@@ -107,6 +118,71 @@ pub fn module_with_type_data(
             &raw_name,
             &fn_type_name,
         ))
+}
+
+/// Pattern runtime shared by every generated pattern file — the analogue of
+/// `recipes/runtime`. Holds the value-resolution helpers (`getPatternStyles`,
+/// `patternFns`) so they live with patterns rather than in the global helpers.
+fn runtime_module() -> Module {
+    Module::new()
+        .with_import(ImportDecl::value(["mapObject", "withDefaults"], "../helpers"))
+        .with_item(runtime_function(
+            "isCssFunction",
+            vec![Param::typed("v", TsType::Unknown)],
+            TsType::Bool,
+            r#"return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)"#,
+        ))
+        .with_item(runtime_function(
+            "isCssVar",
+            vec![Param::typed("v", TsType::Unknown)],
+            TsType::Bool,
+            r#"return typeof v === "string" && /^var\(--.+\)$/.test(v)"#,
+        ))
+        .with_item(runtime_function(
+            "isCssUnit",
+            vec![Param::typed("v", TsType::Unknown)],
+            TsType::Bool,
+            r#"return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)"#,
+        ))
+        .with_item(Item::runtime(ItemNode::Const(ConstDecl {
+            exported: true,
+            declare: false,
+            name: "patternFns".into(),
+            type_annotation: Some(TsType::Raw(
+                "Record<string, (...args: any[]) => any>".into(),
+            )),
+            init: Some(Expr::Raw(
+                "{ map: mapObject, isCssFunction, isCssVar, isCssUnit }".into(),
+            )),
+            js_doc: None,
+        })))
+        .with_item(runtime_function(
+            "getPatternStyles",
+            vec![
+                Param::typed("pattern", TsType::Raw("Record<string, any>".into())),
+                Param::typed("styles", TsType::Raw("Record<string, any>".into())),
+            ],
+            TsType::Raw("Record<string, any>".into()),
+            indoc::indoc! {r#"
+                if (!pattern?.defaultValues) return styles
+                const defaults = typeof pattern.defaultValues === "function" ? pattern.defaultValues(styles) : pattern.defaultValues
+                return withDefaults(defaults, styles)
+            "#}
+            .trim(),
+        ))
+}
+
+fn runtime_function(name: &str, params: Vec<Param>, return_type: TsType, body: &str) -> Item {
+    Item::runtime(ItemNode::Function(FunctionDecl {
+        exported: true,
+        declare: false,
+        name: name.into(),
+        generic_params: Vec::new(),
+        params,
+        return_type: Some(return_type),
+        body: Some(Block::new(vec![Stmt::Raw(body.into())])),
+        js_doc: None,
+    }))
 }
 
 fn index_module(names: &[String]) -> Module {
@@ -365,45 +441,6 @@ fn fallback_property_type(property: &PatternPropertyConfig) -> TsType {
             |property| TsType::Raw(format!("SystemProperties[{property:?}]")),
         ),
     }
-}
-
-fn ident(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    for (index, ch) in value.chars().enumerate() {
-        if ch.is_ascii_alphanumeric() || ch == '_' || ch == '$' {
-            if index == 0 && ch.is_ascii_digit() {
-                out.push('_');
-            }
-            out.push(ch);
-        } else {
-            out.push('_');
-        }
-    }
-    if out.is_empty() { "_".into() } else { out }
-}
-
-fn file_stem(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut prev_dash = false;
-    for ch in value.chars() {
-        if ch.is_ascii_uppercase() {
-            if !out.is_empty() && !prev_dash {
-                out.push('-');
-            }
-            out.push(ch.to_ascii_lowercase());
-            prev_dash = false;
-        } else if ch.is_ascii_alphanumeric() {
-            out.push(ch);
-            prev_dash = false;
-        } else if !prev_dash && !out.is_empty() {
-            out.push('-');
-            prev_dash = true;
-        }
-    }
-    if out.ends_with('-') {
-        out.pop();
-    }
-    if out.is_empty() { "_".into() } else { out }
 }
 
 fn member_name(value: &str) -> TsMemberName {

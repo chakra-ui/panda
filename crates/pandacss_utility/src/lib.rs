@@ -209,6 +209,7 @@ impl Utility {
     pub fn type_data(&self) -> UtilityTypeData {
         let mut properties = BTreeMap::new();
         let mut aliases = BTreeMap::new();
+        let mut class_names = BTreeMap::new();
 
         // This is a codegen snapshot, not an extraction hot path. Sort once so
         // generated types are stable across runs.
@@ -221,6 +222,14 @@ impl Utility {
             aliases
                 .entry(data.alias.clone())
                 .or_insert_with(|| value_alias_type_data(&data));
+
+            class_names.insert(
+                name.clone(),
+                property
+                    .class_name
+                    .clone()
+                    .unwrap_or_else(|| hyphenate_property(name)),
+            );
 
             properties.insert(name.clone(), data);
         }
@@ -252,6 +261,7 @@ impl Utility {
             shorthands,
             deprecated: self.deprecated.iter().cloned().collect::<BTreeSet<_>>(),
             aliases,
+            class_names,
         }
     }
 

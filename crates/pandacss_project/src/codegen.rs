@@ -4,7 +4,7 @@ use pandacss_codegen::{
     Artifact, ArtifactGraph, ArtifactId, CodegenInput, DependencySet, GenerateOptions,
     PatternCodegenMeta,
 };
-use pandacss_config::{RecipeTypeData, SelectorTypeData, TypeData, UserConfig};
+use pandacss_config::{SelectorTypeData, TypeData, UserConfig};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::Utility;
 
@@ -40,7 +40,7 @@ impl Project {
                 .map(Utility::type_data)
                 .unwrap_or_default(),
             patterns: user_config.pattern_type_data(),
-            recipes: RecipeTypeData::default(),
+            recipes: user_config.recipe_type_data(),
         }
     }
 
