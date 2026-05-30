@@ -85,7 +85,11 @@ const SVA_IMPL: &str = r"(config) => {
     variantMap,
     variantKeys,
     classNameMap,
-    splitVariantProps: (props: Record<string, any>) => splitProps(props, variantKeys),
-    getVariantProps: (props: Record<string, any>) => withDefaults(defaultVariants, props),
+    splitVariantProps(props: Record<string, any>) {
+      return splitProps(props, variantKeys)
+    },
+    getVariantProps(props: Record<string, any>) {
+      return withDefaults(defaultVariants, props)
+    },
   })
 }";

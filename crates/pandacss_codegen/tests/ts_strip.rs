@@ -41,3 +41,19 @@ fn keeps_ternary_colon_after_call() {
         "const x = cond ? foo(a) : bar"
     );
 }
+
+#[test]
+fn strips_optional_parameter() {
+    assert_eq!(
+        strip_typescript("const f = (path: string, fallback?: string) => path"),
+        "const f = (path, fallback) => path"
+    );
+}
+
+#[test]
+fn keeps_regex_non_capturing_group() {
+    assert_eq!(
+        strip_typescript("return /^[0-9]+(?:px|em)?(?:!)?$/.test(v)"),
+        "return /^[0-9]+(?:px|em)?(?:!)?$/.test(v)"
+    );
+}

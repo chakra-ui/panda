@@ -59,6 +59,27 @@ pub fn strip_typescript(code: &str) -> String {
             continue;
         }
 
+        // Optional-parameter marker: `name?: T` → drop the `?` and its type. The
+        // `?` must follow an identifier (the param name): this excludes regex
+        // non-capturing groups `(?:…)` and conditional types, while a ternary
+        // `a ? b : c` never has `?` directly adjacent to `:`.
+        if ch == '?'
+            && previous_significant(&chars, index)
+                .is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$')
+        {
+            let colon = index
+                + 1
+                + chars[index + 1..]
+                    .iter()
+                    .take_while(|c| c.is_whitespace())
+                    .count();
+            if chars.get(colon) == Some(&':') {
+                index = skip_type_annotation(&chars, colon + 1);
+                push_space_before_delimiter(&mut out, chars.get(index).copied());
+                continue;
+            }
+        }
+
         if ch == ':' && should_strip_param_type(&chars, index, &paren_brace_depths, brace_depth) {
             index = skip_type_annotation(&chars, index + 1);
             push_space_before_delimiter(&mut out, chars.get(index).copied());

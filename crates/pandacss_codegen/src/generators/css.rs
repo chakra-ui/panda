@@ -183,7 +183,16 @@ interface CssFunction {
   raw: CssRawFunction
 }";
 
-const CSS_EXPORT: &str = "/* @__PURE__ */ Object.assign(\n  (...styles: any[]) => cssFn(mergeCss(...styles)),\n  { raw: (...styles: any[]) => mergeCss(...styles) },\n)";
+const CSS_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
+  function css(...styles: any[]) {
+    return cssFn(mergeCss(...styles))
+  },
+  {
+    raw: function cssRaw(...styles: any[]) {
+      return mergeCss(...styles)
+    },
+  },
+)";
 
 const CSS_RUNTIME_TEMPLATE: &str = r#"const utilities = "__UTILITIES__"
 
@@ -211,8 +220,10 @@ const context = {
   utility: {
     prefix: __PREFIX__,
     hasShorthand: __HAS_SHORTHAND__,
-    toHash: (path: string[], hashFn: any) => hashFn(path.join(":")),
-    transform: (prop: string, value: string) => {
+    toHash(path: string[], hashFn: any) {
+      return hashFn(path.join(":"))
+    },
+    transform(prop: string, value: string) {
       const key = resolveShorthand(prop)
       const propKey = classNameByProp.get(key) || hypenateProperty(key)
       return { className: `${propKey}__SEPARATOR__${withoutSpace(value)}` }

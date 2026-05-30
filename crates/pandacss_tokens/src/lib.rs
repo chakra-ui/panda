@@ -645,9 +645,24 @@ impl TokenDictionary {
             .collect::<Vec<_>>();
         color_palettes.sort();
 
+        let (raw_values, vars) = self.flat_maps();
+        let values = raw_values
+            .into_iter()
+            .map(|(path, value)| {
+                // Empty when the value is just the token's var-ref; the runtime
+                // `token.var` derives it via `toVar(path)` instead of storing it.
+                if vars.get(&path).is_some_and(|var| *var == value) {
+                    (path, String::new())
+                } else {
+                    (path, value)
+                }
+            })
+            .collect();
+
         TokenTypeData {
             categories,
             color_palettes,
+            values,
         }
     }
 }

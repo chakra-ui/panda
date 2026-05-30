@@ -52,14 +52,18 @@ fn emits_ts_source_cva() {
         })
       }
 
-      return Object.assign(memo((props: Record<string, any>) => css(resolve(props))), {
+      return Object.assign(memo(function cvaFn(props: Record<string, any>) {
+        return css(resolve(props))
+      }), {
         __cva__: true,
         variantMap,
         variantKeys,
         raw: resolve,
         config,
         merge,
-        splitVariantProps: (props: Record<string, any>) => splitProps(props, variantKeys),
+        splitVariantProps(props: Record<string, any>) {
+          return splitProps(props, variantKeys)
+        },
         getVariantProps,
       })
     }
@@ -111,14 +115,18 @@ fn emits_js_runtime_and_declarations() {
         })
       }
 
-      return Object.assign(memo((props) => css(resolve(props))), {
+      return Object.assign(memo(function cvaFn(props) {
+        return css(resolve(props))
+      }), {
         __cva__: true,
         variantMap,
         variantKeys,
         raw: resolve,
         config,
         merge,
-        splitVariantProps: (props) => splitProps(props, variantKeys),
+        splitVariantProps(props) {
+          return splitProps(props, variantKeys)
+        },
         getVariantProps,
       })
     }

@@ -19,7 +19,7 @@ fn token_dictionary_exposes_type_data() {
         ))
         .build();
 
-    assert_yaml_snapshot!(json!(dict.type_data()), @r#"
+    assert_yaml_snapshot!(json!(dict.type_data()), @r##"
     categories:
       colors:
         name: colors
@@ -32,5 +32,8 @@ fn token_dictionary_exposes_type_data() {
         values:
           - "4"
     colorPalettes: []
-    "#);
+    values:
+      colors.red.500: "#ef4444"
+      spacing.4: 1rem
+    "##);
 }

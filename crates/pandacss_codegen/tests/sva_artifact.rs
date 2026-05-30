@@ -58,8 +58,12 @@ fn emits_ts_source_sva() {
         variantMap,
         variantKeys,
         classNameMap,
-        splitVariantProps: (props: Record<string, any>) => splitProps(props, variantKeys),
-        getVariantProps: (props: Record<string, any>) => withDefaults(defaultVariants, props),
+        splitVariantProps(props: Record<string, any>) {
+          return splitProps(props, variantKeys)
+        },
+        getVariantProps(props: Record<string, any>) {
+          return withDefaults(defaultVariants, props)
+        },
       })
     }
     ");
@@ -116,8 +120,12 @@ fn emits_js_runtime_and_declarations() {
         variantMap,
         variantKeys,
         classNameMap,
-        splitVariantProps: (props) => splitProps(props, variantKeys),
-        getVariantProps: (props) => withDefaults(defaultVariants, props),
+        splitVariantProps(props) {
+          return splitProps(props, variantKeys)
+        },
+        getVariantProps(props) {
+          return withDefaults(defaultVariants, props)
+        },
       })
     }
     ");

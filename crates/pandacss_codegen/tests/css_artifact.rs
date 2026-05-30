@@ -112,8 +112,10 @@ fn emits_ts_source_css() {
       utility: {
         prefix: null,
         hasShorthand: true,
-        toHash: (path: string[], hashFn: any) => hashFn(path.join(":")),
-        transform: (prop: string, value: string) => {
+        toHash(path: string[], hashFn: any) {
+          return hashFn(path.join(":"))
+        },
+        transform(prop: string, value: string) {
           const key = resolveShorthand(prop)
           const propKey = classNameByProp.get(key) || hypenateProperty(key)
           return { className: `${propKey}_${withoutSpace(value)}` }
@@ -125,8 +127,14 @@ fn emits_ts_source_css() {
     const cssFn = createCss(context)
 
     export const css: CssFunction = /* @__PURE__ */ Object.assign(
-      (...styles: any[]) => cssFn(mergeCss(...styles)),
-      { raw: (...styles: any[]) => mergeCss(...styles) },
+      function css(...styles: any[]) {
+        return cssFn(mergeCss(...styles))
+      },
+      {
+        raw: function cssRaw(...styles: any[]) {
+          return mergeCss(...styles)
+        },
+      },
     )
 
     export const { mergeCss, assignCss } = createMergeCss(context)
@@ -176,8 +184,10 @@ fn emits_js_runtime_and_declarations() {
       utility: {
         prefix: null,
         hasShorthand: true,
-        toHash: (path, hashFn) => hashFn(path.join(":")),
-        transform: (prop, value) => {
+        toHash(path, hashFn) {
+          return hashFn(path.join(":"))
+        },
+        transform(prop, value) {
           const key = resolveShorthand(prop)
           const propKey = classNameByProp.get(key) || hypenateProperty(key)
           return { className: `${propKey}_${withoutSpace(value)}` }
@@ -189,8 +199,14 @@ fn emits_js_runtime_and_declarations() {
     const cssFn = createCss(context)
 
     export const css = /* @__PURE__ */ Object.assign(
-      (...styles) => cssFn(mergeCss(...styles)),
-      { raw: (...styles) => mergeCss(...styles) },
+      function css(...styles) {
+        return cssFn(mergeCss(...styles))
+      },
+      {
+        raw: function cssRaw(...styles) {
+          return mergeCss(...styles)
+        },
+      },
     )
 
     export const { mergeCss, assignCss } = createMergeCss(context)

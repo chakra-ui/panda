@@ -82,14 +82,18 @@ const CVA_IMPL: &str = r"(config) => {
     })
   }
 
-  return Object.assign(memo((props: Record<string, any>) => css(resolve(props))), {
+  return Object.assign(memo(function cvaFn(props: Record<string, any>) {
+    return css(resolve(props))
+  }), {
     __cva__: true,
     variantMap,
     variantKeys,
     raw: resolve,
     config,
     merge,
-    splitVariantProps: (props: Record<string, any>) => splitProps(props, variantKeys),
+    splitVariantProps(props: Record<string, any>) {
+      return splitProps(props, variantKeys)
+    },
     getVariantProps,
   })
 }";
