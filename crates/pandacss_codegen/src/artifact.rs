@@ -8,22 +8,30 @@ use crate::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ArtifactId {
     Conditions,
+    Css,
     CssIndex,
+    Cva,
     Cx,
     Helpers,
     Patterns,
+    Recipes,
     Selectors,
+    Sva,
     Types,
 }
 
 impl ArtifactId {
     pub const ALL: &'static [Self] = &[
         Self::Conditions,
+        Self::Css,
         Self::CssIndex,
+        Self::Cva,
         Self::Cx,
         Self::Helpers,
         Self::Patterns,
+        Self::Recipes,
         Self::Selectors,
+        Self::Sva,
         Self::Types,
     ];
 
@@ -31,11 +39,15 @@ impl ArtifactId {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Conditions => "conditions",
+            Self::Css => "css",
             Self::CssIndex => "css-index",
+            Self::Cva => "cva",
             Self::Cx => "cx",
             Self::Helpers => "helpers",
             Self::Patterns => "patterns",
+            Self::Recipes => "recipes",
             Self::Selectors => "selectors",
+            Self::Sva => "sva",
             Self::Types => "types",
         }
     }
@@ -228,6 +240,17 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            id: ArtifactId::Recipes,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::Conditions,
+                ConfigDependency::Hash,
+                ConfigDependency::Prefix,
+                ConfigDependency::Recipes,
+                ConfigDependency::Separator,
+            ]),
+        },
+        ArtifactNode {
             id: ArtifactId::Types,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
@@ -240,6 +263,25 @@ impl ArtifactGraph {
                 ConfigDependency::Tokens,
                 ConfigDependency::Utilities,
             ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::Css,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::Conditions,
+                ConfigDependency::Hash,
+                ConfigDependency::Prefix,
+                ConfigDependency::Separator,
+                ConfigDependency::Utilities,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::Cva,
+            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
+        },
+        ArtifactNode {
+            id: ArtifactId::Sva,
+            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
         },
         ArtifactNode {
             id: ArtifactId::Cx,
@@ -395,11 +437,17 @@ fn generate_node(
         ArtifactId::Conditions => {
             crate::generators::conditions::generate(ctx, options, node.dependencies)
         }
+        ArtifactId::Css => crate::generators::css::generate(ctx, options, node.dependencies),
         ArtifactId::CssIndex => crate::generators::css_index::generate(options, node.dependencies),
+        ArtifactId::Cva => crate::generators::cva::generate(options, node.dependencies),
+        ArtifactId::Sva => crate::generators::sva::generate(options, node.dependencies),
         ArtifactId::Cx => crate::generators::cx::generate(options, node.dependencies),
         ArtifactId::Helpers => crate::generators::helpers::generate(options, node.dependencies),
         ArtifactId::Patterns => {
             crate::generators::patterns::generate(ctx, options, node.dependencies)
+        }
+        ArtifactId::Recipes => {
+            crate::generators::recipes::generate(ctx, options, node.dependencies)
         }
         ArtifactId::Selectors => crate::generators::selectors::generate(options, node.dependencies),
         ArtifactId::Types => crate::generators::types::generate(ctx, options, node.dependencies),

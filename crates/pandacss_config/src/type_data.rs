@@ -5,7 +5,7 @@ use serde_json::Value;
 
 use pandacss_shared::pascal_case;
 
-use crate::{JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, UserConfig};
+use crate::{JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, RecipeConfig, UserConfig};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -63,6 +63,10 @@ pub struct UtilityTypeData {
     pub shorthands: BTreeMap<String, String>,
     pub deprecated: BTreeSet<String>,
     pub aliases: BTreeMap<String, ValueAliasTypeData>,
+    /// Unprefixed class name for each real property (`prop -> className`),
+    /// used by the runtime `css` transform. Excludes shorthand aliases.
+    #[serde(default)]
+    pub class_names: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -206,6 +210,65 @@ impl UserConfig {
                 .map(|(name, pattern)| (name.clone(), pattern.type_definition(name)))
                 .collect(),
         }
+    }
+
+    #[must_use]
+    pub fn recipe_type_data(&self) -> RecipeTypeData {
+        RecipeTypeData {
+            recipes: self
+                .theme
+                .recipes
+                .iter()
+                .map(|(name, recipe)| (name.clone(), recipe.type_definition(name)))
+                .collect(),
+            slot_recipes: self
+                .theme
+                .slot_recipes
+                .iter()
+                .map(|(name, recipe)| (name.clone(), recipe.slot_type_definition(name)))
+                .collect(),
+        }
+    }
+}
+
+impl RecipeConfig {
+    #[must_use]
+    pub fn type_definition(&self, name: &str) -> RecipeTypeDefinition {
+        RecipeTypeDefinition {
+            name: name.to_owned(),
+            type_name: pascal_case(name),
+            variants: self.variant_type_data(),
+        }
+    }
+
+    #[must_use]
+    pub fn slot_type_definition(&self, name: &str) -> SlotRecipeTypeDefinition {
+        SlotRecipeTypeDefinition {
+            name: name.to_owned(),
+            type_name: pascal_case(name),
+            slots: self.slots.clone(),
+            variants: self.variant_type_data(),
+        }
+    }
+
+    fn variant_type_data(&self) -> BTreeMap<String, VariantTypeData> {
+        self.variants
+            .iter()
+            .map(|(name, values)| {
+                let mut values = values.keys().cloned().collect::<Vec<_>>();
+                values.sort();
+                let allows_boolean = values
+                    .iter()
+                    .any(|value| value == "true" || value == "false");
+                (
+                    name.clone(),
+                    VariantTypeData {
+                        values,
+                        allows_boolean,
+                    },
+                )
+            })
+            .collect()
     }
 }
 

@@ -2,6 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use indoc::indoc;
+use insta::assert_snapshot;
 use pandacss_codegen::{
     ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
     PatternCodegenMeta,
@@ -139,12 +140,39 @@ fn emits_ts_source() {
 
     assert_eq!(
         paths(patterns),
-        vec!["patterns/stack.ts", "patterns/index.ts"]
+        vec![
+            "patterns/runtime.ts",
+            "patterns/stack.ts",
+            "patterns/index.ts"
+        ]
     );
+    assert_snapshot!(file(patterns, "patterns/runtime.ts"), @r#"
+    import { mapObject, withDefaults } from '../helpers';
+
+    export function isCssFunction(v: unknown): boolean {
+      return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)
+    }
+
+    export function isCssVar(v: unknown): boolean {
+      return typeof v === "string" && /^var\(--.+\)$/.test(v)
+    }
+
+    export function isCssUnit(v: unknown): boolean {
+      return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)
+    }
+
+    export const patternFns: Record<string, (...args: any[]) => any> = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
+
+    export function getPatternStyles(pattern: Record<string, any>, styles: Record<string, any>): Record<string, any> {
+      if (!pattern?.defaultValues) return styles
+      const defaults = typeof pattern.defaultValues === "function" ? pattern.defaultValues(styles) : pattern.defaultValues
+      return withDefaults(defaults, styles)
+    }
+    "#);
     assert_eq!(
         file(patterns, "patterns/stack.ts"),
         indoc! {r#"
-        import { getPatternStyles, patternFns } from '../helpers';
+        import { getPatternStyles, patternFns } from './runtime';
 
         import type { PatternRuntimeConfig, SystemProperties, SystemStyleObject } from '../types';
 
@@ -216,16 +244,40 @@ fn emits_js_runtime_and_declarations() {
     assert_eq!(
         paths(patterns),
         vec![
+            "patterns/runtime.js",
             "patterns/stack.js",
             "patterns/stack.d.ts",
             "patterns/index.js",
             "patterns/index.d.ts"
         ]
     );
+    assert_snapshot!(file(patterns, "patterns/runtime.js"), @r#"
+    import { mapObject, withDefaults } from '../helpers';
+
+    export function isCssFunction(v) {
+      return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)
+    }
+
+    export function isCssVar(v) {
+      return typeof v === "string" && /^var\(--.+\)$/.test(v)
+    }
+
+    export function isCssUnit(v) {
+      return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)
+    }
+
+    export const patternFns = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
+
+    export function getPatternStyles(pattern, styles) {
+      if (!pattern?.defaultValues) return styles
+      const defaults = typeof pattern.defaultValues === "function" ? pattern.defaultValues(styles) : pattern.defaultValues
+      return withDefaults(defaults, styles)
+    }
+    "#);
     assert_eq!(
         file(patterns, "patterns/stack.js"),
         indoc! {r#"
-        import { getPatternStyles, patternFns } from '../helpers';
+        import { getPatternStyles, patternFns } from './runtime';
 
         const stackConfig = {
           transform(props, helpers) {
@@ -299,7 +351,7 @@ fn can_emit_extensioned_specifiers() {
     assert_eq!(
         file(patterns, "patterns/stack.mjs"),
         indoc! {r#"
-        import { getPatternStyles, patternFns } from '../helpers.mjs';
+        import { getPatternStyles, patternFns } from './runtime.mjs';
 
         const stackConfig = {
           transform(props, helpers) {

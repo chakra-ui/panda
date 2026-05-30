@@ -1052,6 +1052,7 @@ name = "pandacss_codegen"
 version = "0.0.0"
 dependencies = [
  "indoc",
+ "insta",
  "pandacss_config",
  "pandacss_shared",
  "serde_json",

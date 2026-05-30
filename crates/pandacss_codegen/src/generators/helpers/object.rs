@@ -39,6 +39,139 @@ pub(super) fn compact() -> Item {
     )
 }
 
+pub(super) fn with_defaults() -> Item {
+    helper_function(
+        "withDefaults",
+        vec![
+            Param::typed("defaults", TsType::Raw("Record<string, any>".into())),
+            Param::typed("props", TsType::Raw("Record<string, any>".into())),
+        ],
+        TsType::Raw("Record<string, any>".into()),
+        indoc! {r"
+            const result = compact(props)
+            for (const key in defaults) if (result[key] === void 0) result[key] = defaults[key]
+            return result
+        "}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn to_variant_map() -> Item {
+    helper_function(
+        "toVariantMap",
+        vec![Param::typed(
+            "variants",
+            TsType::Raw("Record<string, any>".into()),
+        )],
+        TsType::Raw("Record<string, any>".into()),
+        indoc! {r"
+            const map: Record<string, any> = {}
+            for (const key in variants) map[key] = Object.keys(variants[key])
+            return map
+        "}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn get_compound_variant_css() -> Item {
+    helper_function(
+        "getCompoundVariantCss",
+        vec![
+            Param::typed(
+                "compoundVariants",
+                TsType::Raw("Array<Record<string, any>>".into()),
+            ),
+            Param::typed("variants", TsType::Raw("Record<string, any>".into())),
+        ],
+        TsType::Raw("Record<string, any>".into()),
+        indoc! {r#"
+            let result = {}
+            outer: for (const variant of compoundVariants) {
+              for (const key in variant) {
+                if (key === "css") continue
+                const expected = variant[key]
+                const actual = variants[key]
+                if (Array.isArray(expected)) {
+                  if (!expected.includes(actual)) continue outer
+                } else if (actual !== expected) {
+                  continue outer
+                }
+              }
+              result = mergeProps(result, variant.css)
+            }
+            return result
+        "#}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn get_slot_compound_variant() -> Item {
+    helper_function(
+        "getSlotCompoundVariant",
+        vec![
+            Param::typed(
+                "compoundVariants",
+                TsType::Raw("Array<Record<string, any>>".into()),
+            ),
+            Param::typed("slot", TsType::Ref("string".into())),
+        ],
+        TsType::Raw("Array<Record<string, any>>".into()),
+        indoc! {r#"
+            const result = []
+            for (const variant of compoundVariants) {
+              const css = variant.css?.[slot]
+              if (!css) continue
+              const next: Record<string, any> = { css }
+              for (const key in variant) if (key !== "css") next[key] = variant[key]
+              result.push(next)
+            }
+            return result
+        "#}
+        .trim(),
+        [],
+    )
+}
+
+pub(super) fn get_slot_recipes() -> Item {
+    helper_function(
+        "getSlotRecipes",
+        vec![Param::typed(
+            "recipe",
+            TsType::Raw("Record<string, any>".into()),
+        )],
+        TsType::Raw("Record<string, any>".into()),
+        indoc! {r#"
+            const result: Record<string, any> = {}
+            const slots = recipe.slots ?? []
+            for (const slot of slots) {
+              result[slot] = {
+                className: recipe.className ? recipe.className + "__" + slot : slot,
+                base: recipe.base?.[slot] ?? {},
+                variants: {},
+                defaultVariants: recipe.defaultVariants ?? {},
+                compoundVariants: getSlotCompoundVariant(recipe.compoundVariants ?? [], slot),
+              }
+            }
+            const variants = recipe.variants ?? {}
+            for (const variantsKey in variants) {
+              const variantGroup = variants[variantsKey]
+              for (const slot of slots) {
+                const group: Record<string, any> = result[slot].variants[variantsKey] = {}
+                for (const variantKey in variantGroup) {
+                  group[variantKey] = variantGroup[variantKey][slot] ?? {}
+                }
+              }
+            }
+            return result
+        "#}
+        .trim(),
+        [],
+    )
+}
+
 pub(super) fn walk_object() -> Item {
     helper_function(
         "walkObject",

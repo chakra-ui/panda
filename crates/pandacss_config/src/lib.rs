@@ -355,6 +355,15 @@ impl HashConfig {
             Self::None => false,
         }
     }
+
+    #[must_use]
+    pub fn class_name(&self) -> bool {
+        match self {
+            Self::Bool(value) => *value,
+            Self::Object(value) => value.class_name,
+            Self::None => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -362,6 +371,8 @@ impl HashConfig {
 pub struct HashOptions {
     #[serde(default)]
     pub css_var: bool,
+    #[serde(default)]
+    pub class_name: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

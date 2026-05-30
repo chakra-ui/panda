@@ -25,3 +25,19 @@ fn preserves_strings_that_look_like_types() {
         r#"const value = "x: string as T""#
     );
 }
+
+#[test]
+fn strips_function_return_type() {
+    assert_eq!(
+        strip_typescript("function f(a: string): Foo {\n  return a\n}"),
+        "function f(a){\n  return a\n}"
+    );
+}
+
+#[test]
+fn keeps_ternary_colon_after_call() {
+    assert_eq!(
+        strip_typescript("const x = cond ? foo(a) : bar"),
+        "const x = cond ? foo(a) : bar"
+    );
+}

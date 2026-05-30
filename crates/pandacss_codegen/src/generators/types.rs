@@ -1,5 +1,8 @@
+use std::collections::BTreeMap;
+
 use pandacss_config::{
     ConditionTypeData, PatternPropertyTypeKind, TokenTypeData, UtilityTypeData, ValueTypePart,
+    VariantTypeData,
 };
 
 use crate::{
@@ -104,6 +107,13 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
             ConfigDependency::Tokens,
             ConfigDependency::Utilities,
         ]),
+    ));
+
+    files.extend(emit_type_file(
+        "types/recipe",
+        &recipe_module(),
+        options,
+        DependencySet::from_slice(&[ConfigDependency::CodegenFormat]),
     ));
 
     files.extend(emit_type_file(
@@ -361,6 +371,156 @@ export interface PatternRuntimeConfig<Props extends object = object> extends Pat
         ))
 }
 
+fn recipe_module() -> Module {
+    let generics = r"export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
+
+export type RecipeVariant<T> = Pretty<Required<NonNullable<RecipeVariantProps<T>>>>
+
+export type RecipeVariantMap<Variant extends object> = {
+  [K in keyof Variant]-?: Array<Variant[K]>
+}
+
+export type RecipeRuntimeFn<Props extends object = object, Map extends object = object> = ((props?: Props) => string) & {
+  __type: Props
+  variantMap: Map
+  variantKeys: Array<keyof Props>
+  raw: (props?: Props) => SystemStyleObject
+  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
+  getVariantProps: (props?: Props) => Props
+  merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
+}
+
+export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
+
+export type SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = ((props?: Props) => SlotRecord<Slot, string>) & {
+  __type: Props
+  __slot: Slot
+  variantMap: Map
+  variantKeys: Array<keyof Props>
+  raw: (props?: Props) => Record<Slot, SystemStyleObject>
+  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
+  getVariantProps: (props?: Props) => Props
+}
+
+export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
+
+export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
+
+export type RecipeSelection<T extends RecipeVariantRecord> = {
+  [K in keyof T]?: StringToBoolean<keyof T[K]>
+}
+
+export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
+  base?: SystemStyleObject
+  variants?: T
+  defaultVariants?: RecipeSelection<T>
+  compoundVariants?: Array<RecipeSelection<T> & { css: SystemStyleObject }>
+}
+
+export type RecipeCreatorFn = <T extends RecipeVariantRecord>(
+  config: RecipeDefinition<T>,
+) => RecipeRuntimeFn<RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>
+
+export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
+
+export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
+  className?: string
+  slots: Slot[]
+  base?: SlotRecord<Slot, SystemStyleObject>
+  variants?: T
+  defaultVariants?: RecipeSelection<T>
+  compoundVariants?: Array<RecipeSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
+}
+
+export type SlotRecipeCreatorFn = <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(
+  config: SlotRecipeDefinition<Slot, T>,
+) => SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>";
+
+    Module::new()
+        .with_import(ImportDecl::ty(
+            ["Pretty", "SystemStyleObject"],
+            "./system-types",
+        ))
+        .with_item(type_raw(generics))
+}
+
+pub(crate) fn concrete_recipe_types(
+    type_name: &str,
+    slots: Option<&[String]>,
+    variants: &BTreeMap<String, VariantTypeData>,
+) -> Vec<String> {
+    let variant_name = format!("{type_name}Variant");
+    let props_name = format!("{type_name}VariantProps");
+    let map_name = format!("{type_name}VariantMap");
+    let mut out = vec![
+        variant_type(&variant_name, variants),
+        variant_props_type(&props_name, &variant_name),
+        variant_map_type(&map_name, &variant_name),
+    ];
+
+    if let Some(slots) = slots {
+        let slot_name = format!("{type_name}Slot");
+        out.push(format!(
+            "export type {slot_name} = {}",
+            string_union(slots, "string")
+        ));
+        out.push(format!(
+            "export type {type_name}Recipe = SlotRecipeRuntimeFn<{slot_name}, {props_name}, {map_name}>"
+        ));
+    } else {
+        out.push(format!(
+            "export type {type_name}Recipe = RecipeRuntimeFn<{props_name}, {map_name}>"
+        ));
+    }
+
+    out
+}
+
+fn variant_type(type_name: &str, variants: &BTreeMap<String, VariantTypeData>) -> String {
+    if variants.is_empty() {
+        return format!("export type {type_name} = {{}}");
+    }
+
+    let members = variants
+        .iter()
+        .map(|(name, data)| format!("  {}?: {}", quote_member(name), variant_value_type(data)))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    format!("export type {type_name} = {{\n{members}\n}}")
+}
+
+fn variant_props_type(props_name: &str, variant_name: &str) -> String {
+    format!(
+        "export type {props_name} = {{\n  [K in keyof {variant_name}]?: ConditionalValue<{variant_name}[K]>\n}}"
+    )
+}
+
+fn variant_map_type(map_name: &str, variant_name: &str) -> String {
+    format!("export type {map_name} = RecipeVariantMap<{variant_name}>")
+}
+
+fn variant_value_type(data: &VariantTypeData) -> String {
+    let mut parts = Vec::with_capacity(data.values.len() + usize::from(data.allows_boolean));
+
+    if data.allows_boolean {
+        parts.push("boolean".to_owned());
+    }
+
+    parts.extend(
+        data.values
+            .iter()
+            .filter(|value| !(data.allows_boolean && (*value == "true" || *value == "false")))
+            .map(|value| string_literal(value)),
+    );
+
+    if parts.is_empty() {
+        "string".into()
+    } else {
+        parts.join(" | ")
+    }
+}
+
 fn index_module() -> Module {
     [
         "./conditions",
@@ -371,6 +531,7 @@ fn index_module() -> Module {
         "./properties",
         "./system-types",
         "./pattern",
+        "./recipe",
     ]
     .into_iter()
     .fold(Module::new(), |module, source| {

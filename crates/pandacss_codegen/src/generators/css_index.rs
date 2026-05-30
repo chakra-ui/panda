@@ -5,9 +5,13 @@ use crate::{
 
 #[must_use]
 pub fn module() -> Module {
-    Module::new().with_item(Item::both(ItemNode::Export(ExportDecl::Star {
-        source: "./cx".into(),
-    })))
+    ["./css", "./cva", "./cx", "./sva"]
+        .into_iter()
+        .fold(Module::new(), |module, source| {
+            module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
+                source: source.into(),
+            })))
+        })
 }
 
 #[must_use]
