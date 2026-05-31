@@ -35,6 +35,15 @@ class FallbackCompiler implements Compiler {
   clear() {
     /* no-op */
   }
+  scan() {
+    return { count: 0, diagnostics: [] }
+  }
+  glob() {
+    return []
+  }
+  layers() {
+    return { reset: 'reset', base: 'base', tokens: 'tokens', recipes: 'recipes', utilities: 'utilities' }
+  }
   isEmpty() {
     return true
   }

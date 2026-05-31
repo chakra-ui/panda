@@ -18,8 +18,10 @@ The stylesheet crate owns:
 - Dynamic atomic CSS emission from `Atom` records.
 - Config recipe and slot recipe CSS emission from `EncodedRecipesSnapshot`.
 - Reset CSS emission via `preflight.rs` when `config.preflight.enabled()`. Rules live as `&'static` data in `.rodata`,
-  walked straight into the writer with zero per-emit allocation. `preflight.scope` and `preflight.level` are not yet
-  honored; the emitter still writes the default block and surfaces a `preflight_options_unsupported` warning.
+  walked straight into the writer with zero per-emit allocation when unscoped. `preflight.scope` / `preflight.level` are
+  honored: `parent` (default) descendant-prefixes each selector (`{scope} {sel}`), `element` compound-appends
+  (`{sel}{scope}`) except standalone pseudo-elements (`::placeholder`) which fall back to descendant. Scoping rewrites
+  selectors at emit time (allocating); the unscoped path stays zero-alloc.
 - Tokens-layer emission:
   - Token CSS variable declarations from the resolved `TokenDictionary`, including condition-scoped variants.
   - `theme.keyframes` blocks as `@keyframes name { selector { decl } }` via a purpose-built walker (not the
@@ -62,7 +64,6 @@ The stylesheet crate does **not** own:
 - Theme token artifact files (only the runtime token CSS layer is emitted here; codegen output stays on the JS side).
 - `staticCss.patterns` or `staticCss.themes`; unsupported native paths report diagnostics instead of silently emitting
   partial CSS.
-- `preflight.scope` / `preflight.level` rewriting; flagged as unsupported with a warning diagnostic.
 - CSS parsing, rule merging, prefixing, shorthand folding, or AST minification.
 - Incremental stylesheet patching for watch mode.
 

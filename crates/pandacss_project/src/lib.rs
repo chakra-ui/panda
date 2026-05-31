@@ -723,6 +723,39 @@ fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
 }
 
+/// Scan source files via the platform filesystem engine and hand each
+/// `(path, source)` to `parse`. Globs `opts` through `fs`, reads every match,
+/// and skips files that fail to read. Returns the number of files handed to
+/// `parse`.
+///
+/// The caller supplies `parse` (rather than this fn owning a [`Project`]) so the
+/// binding layer can wire its per-call transform callbacks, or — when it needs
+/// to interleave with `&mut self` — collect `(path, source)` pairs first and
+/// parse them in a second pass.
+///
+/// # Errors
+/// Propagates an I/O error from the initial glob (e.g. a non-existent `cwd`).
+pub fn scan_files<F, P>(
+    fs: &F,
+    opts: &pandacss_fs::GlobOptions,
+    mut parse: P,
+) -> std::io::Result<usize>
+where
+    F: pandacss_fs::FileSystem,
+    P: FnMut(&str, &str),
+{
+    let _span = tracing::trace_span!("scan").entered();
+    let mut count = 0;
+    for path in fs.glob(opts)? {
+        let Ok(source) = fs.read_to_string(&path) else {
+            continue;
+        };
+        parse(path.to_string_lossy().as_ref(), &source);
+        count += 1;
+    }
+    Ok(count)
+}
+
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
 

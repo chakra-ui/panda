@@ -20,6 +20,9 @@ import type {
   Diagnostic,
   EncodedRecipeStyles,
   GlobOptions,
+  LayerNames,
+  ScanOptions,
+  ScanReport,
   ParseFileReport,
   ParsedFileView,
   ProjectSummary,
@@ -87,6 +90,9 @@ export declare class WasmCompiler {
   refreshFile(path: string, source: string): boolean
   removeFile(path: string): boolean
   clear(): void
+  scan(options?: ScanOptions): ScanReport
+  glob(options?: ScanOptions): string[]
+  layers(): LayerNames
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void

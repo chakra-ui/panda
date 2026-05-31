@@ -201,31 +201,13 @@ fn preflight_options_with_defaults_emit_default_block_without_diagnostics() {
 }
 
 #[test]
-fn preflight_scope_emits_warning_diagnostic() {
+fn preflight_scope_emits_no_diagnostic() {
+    // scope/level are supported now — no "unsupported" warning.
     let config = config(serde_json::json!({
         "preflight": { "scope": ".pd-reset" }
     }));
     let output = compile_output(&config, "", StylesheetOptions::default());
-    let summary: Vec<String> = output
-        .diagnostics
-        .iter()
-        .map(|d| format!("{:?} {} {}", d.severity, d.code, d.message))
-        .collect();
-    assert_snapshot!(summary.join("\n"), @"Warning preflight_options_unsupported preflight.scope and preflight.level are not yet supported by the native compiler — emitting the default preflight");
-}
-
-#[test]
-fn preflight_level_emits_warning_diagnostic() {
-    let config = config(serde_json::json!({
-        "preflight": { "level": "element" }
-    }));
-    let output = compile_output(&config, "", StylesheetOptions::default());
-    let summary: Vec<String> = output
-        .diagnostics
-        .iter()
-        .map(|d| format!("{:?} {}", d.severity, d.code))
-        .collect();
-    assert_snapshot!(summary.join("\n"), @"Warning preflight_options_unsupported");
+    assert_snapshot!(format!("{} diagnostics", output.diagnostics.len()), @"0 diagnostics");
 }
 
 #[test]
@@ -247,5 +229,64 @@ fn preflight_minified_strips_whitespace() {
     assert!(
         !css.contains('\n'),
         "minified output must not contain newlines"
+    );
+}
+
+#[test]
+fn preflight_parent_scope_prefixes_descendant_selectors() {
+    let config = config(serde_json::json!({ "preflight": { "scope": ".pd-reset" } }));
+    let reset = compile_layer_css(&config, "", &[StylesheetLayer::Reset]);
+
+    // Root rule collapses to the scope; no bare html/:host.
+    assert!(reset.contains(".pd-reset {"), "root rule scoped:\n{reset}");
+    assert!(
+        !reset.contains("html, :host"),
+        "no bare root rule:\n{reset}"
+    );
+    // Other rules are descendant-prefixed, distributed over each comma part.
+    assert!(
+        reset.contains(".pd-reset *, .pd-reset ::before, .pd-reset ::after"),
+        "descendant prefix:\n{reset}",
+    );
+    // Internal commas (`:where([type='button'], …)`) are preserved.
+    assert!(
+        reset.contains(".pd-reset input:where([type='button'], [type='reset'], [type='submit'])"),
+        "paren-aware split:\n{reset}",
+    );
+    // The @supports placeholder carve-out is scoped too.
+    assert!(
+        reset.contains(".pd-reset ::placeholder"),
+        "supports placeholder:\n{reset}"
+    );
+}
+
+#[test]
+fn preflight_element_scope_compounds_except_standalone_pseudo_elements() {
+    let config =
+        config(serde_json::json!({ "preflight": { "scope": ".pd-reset", "level": "element" } }));
+    let reset = compile_layer_css(&config, "", &[StylesheetLayer::Reset]);
+
+    assert!(reset.contains(".pd-reset {"), "root rule scoped:\n{reset}");
+    // Compound-append for the universal rule (a multi-part list).
+    assert!(
+        reset.contains("*.pd-reset, ::before.pd-reset, ::after.pd-reset"),
+        "compound append:\n{reset}",
+    );
+    // Standalone pseudo-element rules fall back to descendant (a pseudo-element
+    // can't carry a trailing compound).
+    assert!(
+        reset.contains(".pd-reset ::placeholder"),
+        "placeholder descendant:\n{reset}"
+    );
+    assert!(
+        reset.contains(".pd-reset ::selection"),
+        "selection descendant:\n{reset}"
+    );
+    // …but a multi-part pseudo-element list stays compound.
+    assert!(
+        reset.contains(
+            "::-webkit-search-decoration.pd-reset, ::-webkit-search-cancel-button.pd-reset"
+        ),
+        "multi pseudo compound:\n{reset}",
     );
 }

@@ -31,8 +31,6 @@ pub struct StylesheetOutput {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum StylesheetLayer {
-    // TODO(port): reset CSS is declared in the cascade preamble, but native
-    // reset emission is not wired through this crate yet.
     Reset,
     Base,
     Tokens,
@@ -100,14 +98,6 @@ pub struct StylesheetInput<'a> {
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();
     push_layer_collision_diagnostics(&input.config.layers, &mut diagnostics);
-    if let Some(options) = input.config.preflight.options()
-        && (options.scope.is_some() || options.level.is_some())
-    {
-        diagnostics.push(Diagnostic::warning(
-            diagnostic_codes::PREFLIGHT_OPTIONS_UNSUPPORTED,
-            "preflight.scope and preflight.level are not yet supported by the native compiler — emitting the default preflight",
-        ));
-    }
 
     // Use the caller's token dictionary, else build one from config (a build
     // failure degrades to no tokens + a diagnostic rather than aborting).

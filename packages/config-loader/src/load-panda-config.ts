@@ -24,6 +24,7 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
     throw new PandaError('CONFIG_ERROR', '💥 Config must export or return an object.')
   }
 
+  config.cwd ??= cwd
   config.outdir ??= 'styled-system'
   config.validation ??= 'warn'
 

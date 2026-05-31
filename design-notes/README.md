@@ -20,8 +20,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Native stylesheet compiler](./stylesheet.md) — CSS emission, static CSS support, ordering, and minification boundary.
 - [Scope and boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.
 - [Output & host layer (Driver)](./output-and-host-layer.md) — the JS orchestration layer above the pure compiler:
-  `Driver` taxonomy (Node vs Browser), CSS-vs-artifact cadence, sink routing, and the config-diff algorithm. _Draft —
-  not yet built._
+  the `Driver` contract (`@pandacss/driver` node / `@pandacss/driver-wasm` browser), CSS-vs-artifact cadence, sink
+  routing, fs-engine `scan`, and the config-diff algorithm.
 
 ### Subsystems
 

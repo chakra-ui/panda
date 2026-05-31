@@ -119,6 +119,30 @@ export interface GenerateArtifactOptions {
   specifiers?: 'extensionless' | 'runtime-and-types'
 }
 
+/** Glob overrides for `Compiler.glob`/`scan`. Omitted fields fall back to the
+ *  config's `include`/`exclude`/`cwd`. */
+export interface ScanOptions {
+  include?: string[]
+  exclude?: string[]
+  cwd?: string
+}
+
+/** Result of `Compiler.scan`: how many files were parsed + their aggregated
+ *  diagnostics. */
+export interface ScanReport {
+  count: number
+  diagnostics: Diagnostic[]
+}
+
+/** Resolved cascade-layer names (config overrides merged over defaults). */
+export interface LayerNames {
+  reset: string
+  base: string
+  tokens: string
+  recipes: string
+  utilities: string
+}
+
 export interface CodegenFile {
   path: string
   code: string
@@ -297,6 +321,16 @@ export interface Compiler {
   refreshFile(path: string, source: string): boolean
   removeFile(path: string): boolean
   clear(): void
+  /** Discover + parse every source file matching the config's `include`/
+   *  `exclude` (overridable) using the platform filesystem engine — disk on
+   *  native, the in-memory `fs` on wasm. The host neither globs nor reads. */
+  scan(options?: ScanOptions): ScanReport
+  /** Source paths matching the config's `include`/`exclude` (overridable) via
+   *  the filesystem engine — for the host's watch dependency list. */
+  glob(options?: ScanOptions): string[]
+  /** Resolved cascade-layer names (config overrides merged over defaults) — so
+   *  the host can recognize the user's `@layer …;` directive. */
+  layers(): LayerNames
   compile(): CompileOutput
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
@@ -314,4 +348,68 @@ export interface Compiler {
   summary(): ProjectSummary
   diagnostics(): Diagnostic[]
   isEmpty(): boolean
+}
+
+// ── Host layer (Driver) ─────────────────────────────────────────────────────
+// The orchestration contract above the `Compiler`. Lives here so both the node
+// (`@pandacss/driver`) and browser (`@pandacss/driver-wasm`) implementations
+// share one interface without depending on each other. See
+// `design-notes/output-and-host-layer.md`.
+
+/** Result of diffing two serialized configs — produced by config-loader's
+ *  `diffConfig`, consumed by `Driver.reload`. */
+export interface ConfigDiff {
+  /** `true` when the configs differ (or there is no previous config). */
+  hasChanged: boolean
+  /** Coarse dependencies to feed `generateAffectedArtifacts(...)`. */
+  dependencies: CodegenDependency[]
+  /** Names of the specific recipes that changed — for per-entry file scoping. */
+  recipes: string[]
+  /** Names of the specific patterns that changed — for per-entry file scoping. */
+  patterns: string[]
+  /** Raw `microdiff` `Difference[]`, for the `config:change` hook / telemetry. */
+  changes: unknown[]
+}
+
+/** A single source-file change routed in from a watcher. */
+export interface SourceChange {
+  path: string
+  kind: 'add' | 'change' | 'unlink'
+  /** File contents. Optional on node (the driver reads disk); required on the
+   *  browser driver (no disk). */
+  content?: string
+}
+
+/** Which artifacts to (re)generate. Omit for the full set. */
+export interface ArtifactFilter {
+  dependencies?: CodegenDependency[]
+}
+
+/** Host orchestrator above the pure {@link Compiler}: owns config lifecycle,
+ *  source scanning (via the engine's fs), output cadence, and watch wiring.
+ *  `@pandacss/driver` (node) and `@pandacss/driver-wasm` (browser) implement it,
+ *  split only by environment. */
+export interface Driver {
+  /** The live engine handle (swapped on a config reload). */
+  readonly compiler: Compiler
+  /** The serialized config the current compiler was built from. */
+  readonly config: SerializedConfig
+  /** Resolved config path (node only). */
+  readonly configPath?: string
+  /** Module ids to watch for config invalidation. */
+  readonly configDependencies: string[]
+
+  /** Re-load the config, diff it against the current one, and rebuild the
+   *  compiler when it changed. Browser drivers are snapshot-fed → no-change. */
+  reload(): Promise<ConfigDiff>
+  /** Discover + parse every source file via the engine's fs. */
+  scan(): ScanReport
+  /** Route one watcher event into the engine. `false` = unknown path / no-op. */
+  applyChange(change: SourceChange): boolean
+  /** Codegen artifacts — full set, or only those affected by a diff. */
+  artifacts(filter?: ArtifactFilter): CodegenArtifact[]
+  /** Compile the stylesheet → `CompileOutput`; the caller routes the `css` string. */
+  compile(): CompileOutput
+  /** Glob targets the host watcher should track. */
+  watchTargets(): { sources: string[]; config: string[] }
 }
