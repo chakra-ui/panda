@@ -29,7 +29,7 @@ use smallvec::SmallVec;
 use crate::cross_file::{CrossFileLookup, CrossFileResolver};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
-use crate::{ImportSpecifierKind, Literal};
+use crate::{ImportSpecifierKind, Literal, TokenRef};
 
 /// Per-file symbol/scope index plus a memo of resolved literal values.
 ///
@@ -47,6 +47,7 @@ pub(crate) struct Resolver<'a> {
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
     deprecations: RefCell<Vec<crate::Diagnostic>>,
+    token_refs: RefCell<Vec<TokenRef>>,
 }
 
 /// `InProgress` guards against cycles like `const a = b; const b = a;`.
@@ -78,6 +79,7 @@ impl<'a> Resolver<'a> {
             source_path,
             line_index,
             deprecations: RefCell::default(),
+            token_refs: RefCell::default(),
         }
     }
 
@@ -101,11 +103,20 @@ impl<'a> Resolver<'a> {
             source_path,
             line_index,
             deprecations: RefCell::default(),
+            token_refs: RefCell::default(),
         }
     }
 
     pub(crate) fn take_deprecations(&self) -> Vec<crate::Diagnostic> {
         std::mem::take(&mut self.deprecations.borrow_mut())
+    }
+
+    /// Token paths resolved from `token()` / `token.var()` calls, with spans.
+    /// Resolution lowers these calls to their value/var, so the path is only
+    /// recoverable here — consumed by on-demand tooling (`usages`), not the
+    /// build path.
+    pub(crate) fn take_token_refs(&self) -> Vec<TokenRef> {
+        std::mem::take(&mut self.token_refs.borrow_mut())
     }
 
     pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
@@ -194,6 +205,12 @@ impl<'a> Resolver<'a> {
         } else {
             dict.get(&path, fallback.as_deref())
         };
+        if resolved.is_some() {
+            self.token_refs.borrow_mut().push(TokenRef {
+                path,
+                span: crate::span_from_oxc(call.span),
+            });
+        }
         resolved.map(Literal::String)
     }
 

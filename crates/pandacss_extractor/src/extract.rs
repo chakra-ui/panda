@@ -8,13 +8,23 @@ use crate::jsx::collect_jsx;
 use crate::scope::Resolver;
 use crate::{
     Diagnostic, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, MatchCategory,
-    MatchedImport, VisitorContext, collect_imports, collect_parser_diagnostics,
+    MatchedImport, Span, VisitorContext, collect_imports, collect_parser_diagnostics,
     match_import_records,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde::Serialize;
+
+/// A resolved `token()` / `token.var()` call site: the referenced token path and
+/// its span. Token-call resolution lowers the call to its value/var, erasing the
+/// path, so it is captured at resolution time for on-demand tooling (`usages`).
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenRef {
+    pub path: String,
+    pub span: Span,
+}
 
 /// Lean extraction result for the production hot path — strips `imports`
 /// and `matched` so callers don't pay serialization cost for fields they
@@ -25,6 +35,10 @@ pub struct ExtractUsage {
     pub calls: Vec<ExtractedCall>,
     pub jsx: Vec<ExtractedJsx>,
     pub diagnostics: Vec<Diagnostic>,
+    /// `token()` call sites, captured for on-demand tooling. Not serialized —
+    /// it never crosses the binding boundary and stays off the hot path's wire.
+    #[serde(skip)]
+    pub token_refs: Vec<TokenRef>,
 }
 
 /// Kitchen-sink extraction result — includes raw imports and matched
@@ -57,6 +71,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
         calls: outcome.calls,
         jsx: outcome.jsx,
         diagnostics: outcome.diagnostics,
+        token_refs: outcome.token_refs,
     }
 }
 
@@ -82,6 +97,7 @@ struct ExtractResult {
     calls: Vec<ExtractedCall>,
     jsx: Vec<ExtractedJsx>,
     diagnostics: Vec<Diagnostic>,
+    token_refs: Vec<TokenRef>,
 }
 
 fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractResult {
@@ -108,6 +124,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
             calls: Vec::new(),
             jsx: Vec::new(),
             diagnostics,
+            token_refs: Vec::new(),
         };
     }
 
@@ -140,6 +157,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     };
 
     diagnostics.extend(resolver.take_deprecations());
+    let token_refs = resolver.take_token_refs();
 
     ExtractResult {
         imports,
@@ -147,6 +165,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
         calls,
         jsx,
         diagnostics,
+        token_refs,
     }
 }
 

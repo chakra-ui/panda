@@ -76,6 +76,12 @@ pub(crate) fn compile_config_with_token_dictionary(
         recipes,
         config_recipes: config_recipes_from_definitions(&entries.recipes),
         config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
+        keyframes: config
+            .theme
+            .keyframes
+            .as_object()
+            .map(|frames| frames.keys().cloned().collect())
+            .unwrap_or_default(),
     })
 }
 

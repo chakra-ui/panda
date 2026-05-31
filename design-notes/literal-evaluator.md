@@ -121,6 +121,16 @@ When `resolve_symbol` hits an `Import` flag, it hands off to the `CrossFileResol
 export. Re-export chains and file-local alias chains are followed through the target file's own resolver. Default and
 namespace imports drop here.
 
+## Token-call capture for tooling
+
+`resolve_token_call` lowers `token('colors.red.500')` to the token's value and `token.var('…')` to its `var(--…)` — so
+once folded, the **path is erased** from the extracted literal. The `Resolver` therefore records each resolved call's
+`(path, span)` into a `token_refs` side-channel (sibling to the deprecation channel), surfaced on `ExtractUsage` behind
+`#[serde(skip)]` so it stays in-process and never crosses the binding boundary or the hot path's wire. On-demand tooling
+(`Project::usages`) consumes it to attribute `token()` usage back to a token path; the build path ignores it. The other
+reference forms — bare category values (`color: 'red.300'`, incl. `/opacity` modifiers), curly `{colors.red.200}`, and
+whole-value token paths — survive folding as text and are classified directly from the extracted value.
+
 ## Related
 
 - [extraction-pipeline](./extraction-pipeline.md)
