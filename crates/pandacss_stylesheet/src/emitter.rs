@@ -32,8 +32,13 @@ pub fn emit<'a>(
     write_layer_order(&mut writer, layers);
     writer.newline();
     if config.preflight.enabled() {
+        let options = config.preflight.options();
+        let scope = options.and_then(|options| options.scope.as_deref());
+        let level = options
+            .and_then(|options| options.level)
+            .unwrap_or_default();
         layer_ranges.reset = Some(write_layer(&mut writer, &layers.reset, |writer| {
-            crate::preflight::write(writer);
+            crate::preflight::write(writer, scope, level);
         }));
     }
     if has_base_layer(config) {

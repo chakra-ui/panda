@@ -1,7 +1,7 @@
 {
-  "name": "@pandacss/config-loader",
+  "name": "@pandacss/driver-wasm",
   "version": "0.0.0",
-  "description": "Self-contained loader that bundles and serializes a Panda config for the Rust compiler",
+  "description": "Browser host orchestrator that drives the wasm Panda compiler over an in-memory filesystem",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
-    "directory": "packages/config-loader"
+    "directory": "packages/driver-wasm"
   },
   "publishConfig": {
     "access": "public"
@@ -40,10 +40,10 @@
   ],
   "dependencies": {
     "@pandacss/compiler-shared": "workspace:*",
-    "@pandacss/types": "workspace:*",
-    "javascript-stringify": "2.1.0",
-    "microdiff": "1.5.0",
-    "rolldown": "1.0.0-rc.17"
+    "@pandacss/compiler-wasm": "workspace:*",
+    "@pandacss/types": "workspace:*"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@pandacss/config-loader": "workspace:*"
+  }
 }

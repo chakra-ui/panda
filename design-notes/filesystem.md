@@ -240,6 +240,21 @@ constructor; callers that need cross-file evaluation attach a resolver with `wit
 Matcher-only constructors remain lower-level/test entrypoints. On wasm, callers must provide a memory-backed resolver
 because the native `os` feature is not available.
 
+## Source scanning (`scan` / `glob`)
+
+The fs engine is no longer just the cross-file resolver's read backend — it also powers **source discovery**. The binding
+`Compiler` holds a clone of the same fs instance it gives the resolver (`OsFileSystem` on native, the host's
+`MemoryFileSystem` on wasm) and exposes two entrypoints, backed by the generic
+`pandacss_project::scan_files(fs, opts, parse)` helper:
+
+- `glob(opts)` → `Vec<PathBuf>` — discovery only (the host's watch list).
+- `scan(opts)` → `{ count, diagnostics }` — glob + `read_to_string` + `parse_file` each, entirely in Rust.
+
+`opts` defaults to the config's `include`/`exclude`/`cwd`. This is what lets the JS host (the
+[Driver](./output-and-host-layer.md)) avoid a JS glob dependency and reading files itself. `GlobOptions` is generic over
+the concrete fs, so no `dyn` is needed — each binding monomorphizes over its one platform fs. See
+[output-and-host-layer](./output-and-host-layer.md) for how the Driver drives this.
+
 ## Phase plan
 
 **Phase A (shipped):**

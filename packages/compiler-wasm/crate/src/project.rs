@@ -8,8 +8,10 @@
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::CrossFileResolver;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
-use serde::Serialize as _;
+use pandacss_fs::{GlobOptions, MemoryFileSystem};
+use serde::{Deserialize, Serialize as _};
 use std::collections::{BTreeSet, HashMap};
+use std::path::PathBuf;
 use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
@@ -44,6 +46,10 @@ pub struct WasmCompiler {
     config: serde_json::Value,
     user_config: UserConfig,
     callbacks: CallbackHost,
+    /// In-memory filesystem engine, shared with the cross-file resolver and the
+    /// JS-facing `WasmFileSystem` handle. Used by `glob`/`scan` to discover +
+    /// read the source files the host staged via `addFile`.
+    fs: MemoryFileSystem,
 }
 
 struct CallbackHost {
@@ -125,6 +131,7 @@ impl WasmCompiler {
             config: config_snapshot,
             user_config,
             callbacks,
+            fs: fs.inner.clone(),
         })
     }
 
@@ -151,51 +158,105 @@ impl WasmCompiler {
     /// Returns a JS error if serializing the per-call report fails.
     #[wasm_bindgen(js_name = parseFile)]
     pub fn parse_file(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
-        let has_utility_transforms = self.callbacks.has_utility_transforms();
-        let report = if !has_pattern_transforms && !has_utility_transforms {
-            self.inner.parse_file(path, source)
-        } else {
-            let WasmCompiler {
-                inner, callbacks, ..
-            } = self;
-            let pattern_cache = &mut callbacks.transform_cache.pattern;
-            let utility_cache = &mut callbacks.transform_cache.utility;
-            let mut transform = |name: &str, styles: &Literal| {
-                apply_pattern_transform(
-                    name,
-                    styles,
-                    &callbacks.pattern_transform_refs,
-                    &callbacks.pattern_transforms,
-                    pattern_cache,
-                )
-            };
-            let mut utility_transform = |prop: &str, value: &AtomValue| {
-                apply_utility_transform(
-                    prop,
-                    value,
-                    &callbacks.utility_transform_refs,
-                    &callbacks.utility_transforms,
-                    utility_cache,
-                )
-            };
-            inner.parse_file_with(
-                path,
-                source,
-                pandacss_project::ParseTransforms {
-                    pattern: has_pattern_transforms
-                        .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-                    utility: has_utility_transforms.then_some(
-                        &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
-                    ),
-                },
-            )
-        };
+        let report = self.parse_inner(path, source);
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         report
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Discover + parse every source file matching the config's
+    /// `include`/`exclude` (overridable via `options`) from the in-memory
+    /// filesystem the host populated via `WasmFileSystem.addFile`. Returns
+    /// `{ count, diagnostics }`.
+    ///
+    /// # Errors
+    /// Returns a JS error when `options` is malformed, the glob fails, or
+    /// serializing the report fails.
+    pub fn scan(&mut self, options: JsValue) -> Result<JsValue, JsValue> {
+        let opts = glob_options(&self.user_config, options)?;
+        let mut sources: Vec<(String, String)> = Vec::new();
+        pandacss_project::scan_files(&self.fs, &opts, |path, source| {
+            sources.push((path.to_owned(), source.to_owned()));
+        })
+        .map_err(|err| JsValue::from_str(&format!("scan glob failed: {err}")))?;
+
+        let mut count: u32 = 0;
+        let mut diagnostics = Vec::new();
+        for (path, source) in sources {
+            let report = self.parse_inner(&path, &source);
+            count = count.saturating_add(1);
+            diagnostics.extend(report.diagnostics);
+        }
+        let _span = tracing::trace_span!("boundary_encode", method = "scan").entered();
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        ScanReportSerde { count, diagnostics }
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Source paths matching the config's `include`/`exclude` (overridable via
+    /// `options`) from the in-memory filesystem. For the host's watch list.
+    ///
+    /// # Errors
+    /// Returns a JS error when `options` is malformed or the glob fails.
+    pub fn glob(&self, options: JsValue) -> Result<JsValue, JsValue> {
+        use pandacss_fs::FileSystem;
+        let opts = glob_options(&self.user_config, options)?;
+        let paths = self
+            .fs
+            .glob(&opts)
+            .map_err(|err| JsValue::from_str(&format!("glob failed: {err}")))?;
+        let strings: Vec<String> = paths
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect();
+        serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Shared parse path used by `parse_file` and `scan` — wires the
+    /// registered transform callbacks (if any) and returns the core report.
+    fn parse_inner(&mut self, path: &str, source: &str) -> pandacss_project::ParseFileReport {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_pattern_transforms && !has_utility_transforms {
+            return self.inner.parse_file(path, source);
+        }
+        let WasmCompiler {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut transform = |name: &str, styles: &Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+            )
+        };
+        let mut utility_transform = |prop: &str, value: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                value,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+            )
+        };
+        inner.parse_file_with(
+            path,
+            source,
+            pandacss_project::ParseTransforms {
+                pattern: has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
+        )
     }
 
     /// Stateless single-file extraction — raw `{ calls, jsx, diagnostics }`,
@@ -282,6 +343,25 @@ impl WasmCompiler {
     pub fn config(&self) -> Result<JsValue, JsValue> {
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         self.config
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// The resolved cascade-layer names (config overrides merged over defaults).
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    pub fn layers(&self) -> Result<JsValue, JsValue> {
+        let layers = &self.user_config.layers;
+        let names = LayerNamesSerde {
+            reset: &layers.reset,
+            base: &layers.base,
+            tokens: &layers.tokens,
+            recipes: &layers.recipes,
+            utilities: &layers.utilities,
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        names
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
@@ -858,6 +938,52 @@ fn with_wasm_fs(
     // Cross-file resolver always shares the WasmFileSystem so imports
     // fold through whatever the JS host populated.
     project.with_cross_file(CrossFileResolver::with_fs(fs.inner.clone()))
+}
+
+/// Serialized `scan` result. Mirrors the native `ScanReport`.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ScanReportSerde {
+    count: u32,
+    diagnostics: Vec<pandacss_project::Diagnostic>,
+}
+
+/// Serialized resolved cascade-layer names. Mirrors the native `LayerNames`.
+#[derive(serde::Serialize)]
+struct LayerNamesSerde<'a> {
+    reset: &'a str,
+    base: &'a str,
+    tokens: &'a str,
+    recipes: &'a str,
+    utilities: &'a str,
+}
+
+/// Glob overrides accepted by `scan`/`glob`; omitted fields fall back to the
+/// config's `include`/`exclude`/`cwd`.
+#[derive(Default, Deserialize)]
+struct GlobOverrides {
+    include: Option<Vec<String>>,
+    exclude: Option<Vec<String>>,
+    cwd: Option<String>,
+}
+
+fn glob_options(user_config: &UserConfig, options: JsValue) -> Result<GlobOptions, JsValue> {
+    let overrides: GlobOverrides = if options.is_undefined() || options.is_null() {
+        GlobOverrides::default()
+    } else {
+        serde_wasm_bindgen::from_value(options)
+            .map_err(|err| JsValue::from_str(&format!("invalid scan options: {err}")))?
+    };
+    Ok(GlobOptions {
+        include: overrides
+            .include
+            .unwrap_or_else(|| user_config.include.clone()),
+        exclude: overrides
+            .exclude
+            .unwrap_or_else(|| user_config.exclude.clone()),
+        cwd: PathBuf::from(overrides.cwd.unwrap_or_else(|| user_config.cwd.clone())),
+        absolute: true,
+    })
 }
 
 fn collect_sorted_atoms<S: std::hash::BuildHasher>(

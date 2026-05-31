@@ -59,6 +59,33 @@ pub struct ProjectOptions {
     pub cross_file: Option<bool>,
 }
 
+/// Glob overrides for `scan`/`glob`. Omitted fields fall back to the
+/// config's `include`/`exclude`/`cwd`.
+#[napi(object)]
+pub struct ScanOptions {
+    pub include: Option<Vec<String>>,
+    pub exclude: Option<Vec<String>>,
+    pub cwd: Option<String>,
+}
+
+/// Result of `scan`: how many files were parsed + their aggregated
+/// diagnostics.
+#[napi(object)]
+pub struct ScanReport {
+    pub count: u32,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+/// The resolved cascade-layer names (config overrides + defaults applied).
+#[napi(object)]
+pub struct LayerNames {
+    pub reset: String,
+    pub base: String,
+    pub tokens: String,
+    pub recipes: String,
+    pub utilities: String,
+}
+
 /// One `(file, span_start, value)` entry for the recipe and slot-recipe
 /// iterators. `value` is the serialized recipe shape (matches
 /// `pandacss_recipes::Recipe` / `SlotRecipe`).
@@ -109,6 +136,9 @@ pub struct Compiler {
     config: serde_json::Value,
     user_config: UserConfig,
     callbacks: CallbackHost,
+    /// Platform filesystem engine (real disk). Shared with the cross-file
+    /// resolver and used by `glob`/`scan` to discover + read source files.
+    fs: pandacss_fs::OsFileSystem,
 }
 
 struct CallbackHost {
@@ -197,11 +227,13 @@ impl Compiler {
         })
         .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
         let project = pandacss_project::Project::new(system);
+        let fs = pandacss_fs::OsFileSystem::default();
         Ok(Self {
-            inner: apply_project_options(project, &opts),
+            inner: apply_project_options(project, &opts, &fs),
             config: config_snapshot,
             user_config,
             callbacks,
+            fs,
         })
     }
 
@@ -211,6 +243,22 @@ impl Compiler {
     #[must_use]
     pub fn config(&self) -> serde_json::Value {
         self.config.clone()
+    }
+
+    /// The resolved cascade-layer names (config overrides merged over defaults).
+    /// The host needs these to recognize the user's `@layer …;` directive
+    /// without re-deriving the Rust defaults.
+    #[napi]
+    #[must_use]
+    pub fn layers(&self) -> LayerNames {
+        let layers = &self.user_config.layers;
+        LayerNames {
+            reset: layers.reset.clone(),
+            base: layers.base.clone(),
+            tokens: layers.tokens.clone(),
+            recipes: layers.recipes.clone(),
+            utilities: layers.utilities.clone(),
+        }
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
@@ -267,62 +315,121 @@ impl Compiler {
     )]
     pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         crate::init_tracing();
-        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
-        let has_utility_transforms = self.callbacks.has_utility_transforms();
-        let report = if !has_pattern_transforms && !has_utility_transforms {
-            self.inner.parse_file(&path, &source)
-        } else {
-            let Compiler {
-                inner, callbacks, ..
-            } = self;
-            let pattern_cache = &mut callbacks.transform_cache.pattern;
-            let utility_cache = &mut callbacks.transform_cache.utility;
-            let mut transform = |name: &str, styles: &Literal| {
-                apply_pattern_transform(
-                    name,
-                    styles,
-                    &callbacks.pattern_transform_refs,
-                    &callbacks.pattern_transforms,
-                    pattern_cache,
-                    &env,
-                )
-            };
-            let mut utility_transform = |prop: &str, value: &AtomValue| {
-                apply_utility_transform(
-                    prop,
-                    value,
-                    &callbacks.utility_transform_refs,
-                    &callbacks.utility_transforms,
-                    utility_cache,
-                    &env,
-                )
-            };
-            inner.parse_file_with(
-                &path,
-                &source,
-                pandacss_project::ParseTransforms {
-                    pattern: has_pattern_transforms
-                        .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
-                    utility: has_utility_transforms.then_some(
-                        &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
-                    ),
-                },
-            )
-        };
+        let report = self.parse_inner(&env, &path, &source);
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
-        let report = ParseFileReport {
-            css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
-            cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
-            sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
-            jsx_usages: u32::try_from(report.jsx_usages).unwrap_or(u32::MAX),
-            diagnostics: report
-                .diagnostics
-                .into_iter()
-                .map(convert_diagnostic)
-                .collect(),
-        };
+        let report = convert_report(report);
         crate::flush_tracing();
         report
+    }
+
+    /// Shared parse path used by `parse_file` and `scan` — wires the
+    /// registered pattern/utility transform callbacks (if any) and returns the
+    /// core `ParseFileReport`.
+    fn parse_inner(
+        &mut self,
+        env: &Env,
+        path: &str,
+        source: &str,
+    ) -> pandacss_project::ParseFileReport {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_pattern_transforms && !has_utility_transforms {
+            return self.inner.parse_file(path, source);
+        }
+        let Compiler {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut transform = |name: &str, styles: &Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+                env,
+            )
+        };
+        let mut utility_transform = |prop: &str, value: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                value,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                env,
+            )
+        };
+        inner.parse_file_with(
+            path,
+            source,
+            pandacss_project::ParseTransforms {
+                pattern: has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
+        )
+    }
+
+    /// Discover + parse every source file matching the config's
+    /// `include`/`exclude` (overridable via `options`) using the platform
+    /// filesystem engine. Reads happen in Rust — the JS host does not glob or
+    /// read files. Returns the parsed file count + aggregated diagnostics.
+    ///
+    /// # Errors
+    /// Returns an error when the glob itself fails (e.g. a non-existent `cwd`).
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn scan(&mut self, env: Env, options: Option<ScanOptions>) -> napi::Result<ScanReport> {
+        crate::init_tracing();
+        let opts = glob_options(&self.user_config, options.as_ref());
+        // Collect (path, source) via the fs engine first, then parse — keeps
+        // the `&self.fs` borrow disjoint from the `&mut self` parse pass.
+        let mut sources: Vec<(String, String)> = Vec::new();
+        pandacss_project::scan_files(&self.fs, &opts, |path, source| {
+            sources.push((path.to_owned(), source.to_owned()));
+        })
+        .map_err(|err| napi::Error::from_reason(format!("scan glob failed: {err}")))?;
+
+        let mut count: u32 = 0;
+        let mut diagnostics = Vec::new();
+        for (path, source) in sources {
+            let report = self.parse_inner(&env, &path, &source);
+            count = count.saturating_add(1);
+            diagnostics.extend(report.diagnostics.into_iter().map(convert_diagnostic));
+        }
+        crate::flush_tracing();
+        Ok(ScanReport { count, diagnostics })
+    }
+
+    /// Source paths matching the config's `include`/`exclude` (overridable via
+    /// `options`), via the platform filesystem engine. Useful for the host's
+    /// watch dependency list without parsing.
+    ///
+    /// # Errors
+    /// Returns an error when the glob fails (e.g. a non-existent `cwd`).
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn glob(&self, options: Option<ScanOptions>) -> napi::Result<Vec<String>> {
+        use pandacss_fs::FileSystem;
+        let opts = glob_options(&self.user_config, options.as_ref());
+        let paths = self
+            .fs
+            .glob(&opts)
+            .map_err(|err| napi::Error::from_reason(format!("glob failed: {err}")))?;
+        Ok(paths
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect())
     }
 
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
@@ -751,12 +858,50 @@ fn parse_number_string(value: &str) -> serde_json::Value {
     serde_json::Value::String(value.to_owned())
 }
 
+fn convert_report(report: pandacss_project::ParseFileReport) -> ParseFileReport {
+    ParseFileReport {
+        css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
+        cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
+        sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
+        jsx_usages: u32::try_from(report.jsx_usages).unwrap_or(u32::MAX),
+        diagnostics: report
+            .diagnostics
+            .into_iter()
+            .map(convert_diagnostic)
+            .collect(),
+    }
+}
+
+fn glob_options(
+    user_config: &UserConfig,
+    options: Option<&ScanOptions>,
+) -> pandacss_fs::GlobOptions {
+    pandacss_fs::GlobOptions {
+        include: options
+            .and_then(|opts| opts.include.clone())
+            .unwrap_or_else(|| user_config.include.clone()),
+        exclude: options
+            .and_then(|opts| opts.exclude.clone())
+            .unwrap_or_else(|| user_config.exclude.clone()),
+        cwd: std::path::PathBuf::from(
+            options
+                .and_then(|opts| opts.cwd.clone())
+                .unwrap_or_else(|| user_config.cwd.clone()),
+        ),
+        absolute: true,
+    }
+}
+
 fn apply_project_options(
     mut project: pandacss_project::Project,
     opts: &ProjectOptions,
+    fs: &pandacss_fs::OsFileSystem,
 ) -> pandacss_project::Project {
     if opts.cross_file.unwrap_or(true) {
-        project = project.with_cross_file(pandacss_extractor::CrossFileResolver::new());
+        // Share the same fs instance with the resolver so cross-file reads and
+        // `glob`/`scan` see one consistent view.
+        project =
+            project.with_cross_file(pandacss_extractor::CrossFileResolver::with_fs(fs.clone()));
     }
     project
 }

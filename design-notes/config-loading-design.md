@@ -152,6 +152,16 @@ This gives watch mode two layers of invalidation:
 2. Once the resolved config changes, compute the affected `ConfigDependency` bits and regenerate only the impacted
    artifacts.
 
+`loadPandaConfig` also injects `config.cwd ??= options.cwd` so the Rust engine's `scan`/`glob` (which default their
+`GlobOptions` from `config.cwd`/`include`/`exclude`) resolve against the project root.
+
+The second layer is `diffConfig(prev, next)`, exported from this package — a structural `microdiff` over two
+`SerializedConfig`s that maps each change to the coarse `CodegenDependency` bits the engine regenerates by (plus the
+specific recipe/pattern names that changed). Because the diff runs on the serialized config, a `utilities.*.transform`
+*body* edit is invisible (the lowered `{ kind:'js-callback', id }` ref is unchanged); pattern transform bodies escape
+this via their `codegenSource` string. Precise callback-change detection (hashing lowered sources) is deferred. The diff
+feeds the host orchestrator — see [output-and-host-layer](./output-and-host-layer.md).
+
 ## Compiler Integration
 
 `loadPandaConfig` is Node-only (it bundles with Rolldown and dynamically imports a `data:` URL). To keep
