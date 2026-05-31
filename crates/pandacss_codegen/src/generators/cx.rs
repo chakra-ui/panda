@@ -1,3 +1,5 @@
+//! The `cx` artifact: the `cx()` class-name concatenation helper.
+
 use indoc::indoc;
 
 use crate::{

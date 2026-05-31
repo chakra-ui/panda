@@ -1,3 +1,12 @@
+//! Strip TypeScript type syntax from emitted source to produce the runtime
+//! `.js`. A single-pass character scanner, *not* a parser — it tracks string
+//! and paren/brace state to find param/return type annotations and remove them.
+//!
+//! This is safe only because the input is always generator-emitted code (the
+//! [`crate::emit`] printer drops whole type-only items first), so the surface
+//! is a constrained subset — no arbitrary TS, no edge cases a real parser would
+//! need to handle.
+
 #[must_use]
 pub fn strip_typescript(code: &str) -> String {
     let chars = code.chars().collect::<Vec<_>>();

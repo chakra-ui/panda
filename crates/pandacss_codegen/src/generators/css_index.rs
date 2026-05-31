@@ -1,3 +1,5 @@
+//! The `css/index` barrel: re-exports `css`, `cva`, `cx`, and `sva`.
+
 use crate::{
     Artifact, ArtifactFile, ArtifactId, DependencySet, ExportDecl, Item, ItemNode, Module,
     artifact::{GenerateOptions, emit_module_files},

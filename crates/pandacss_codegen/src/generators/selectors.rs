@@ -1,3 +1,6 @@
+//! The `selectors` artifact: the `.d.ts` types for ARIA/data-attribute and
+//! pseudo selectors used in condition keys (types-only, no runtime).
+
 use crate::{
     Artifact, ArtifactFile, ArtifactId, DependencySet, ImportDecl, Item, Module, TsType,
     TypeAliasDecl,

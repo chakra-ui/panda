@@ -1,3 +1,6 @@
+//! CSS-related runtime helpers: style-object normalize/merge, responsive-array
+//! expansion, property hyphenation, and the `css`/`mergeCss` factories.
+
 use indoc::indoc;
 
 use crate::{Item, Param, TsType};

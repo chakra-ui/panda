@@ -1,3 +1,6 @@
+//! The `recipes/*` artifacts: one runtime + type per configured recipe / slot
+//! recipe, wiring each to the `cva`/`sva` factories with its variant config.
+
 use std::collections::BTreeMap;
 
 use pandacss_config::{RecipeConfig, VariantTypeData};

@@ -53,6 +53,9 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     Cow::Owned(out)
 }
 
+/// `PascalCase` an identifier, treating any non-alphanumeric run as a word
+/// break (`button-group` -> `ButtonGroup`). Empty results fall back to `_` so
+/// callers always get a valid identifier.
 #[must_use]
 pub fn pascal_case(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
@@ -72,6 +75,8 @@ pub fn pascal_case(value: &str) -> String {
     if out.is_empty() { "_".into() } else { out }
 }
 
+/// Coerce a string into a valid JS identifier: non-`[A-Za-z0-9_$]` chars
+/// become `_`, and a leading digit is prefixed with `_`. Falls back to `_`.
 #[must_use]
 pub fn js_ident(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
@@ -88,6 +93,9 @@ pub fn js_ident(value: &str) -> String {
     if out.is_empty() { "_".into() } else { out }
 }
 
+/// Kebab-case a name for use as a file stem: camelCase boundaries and
+/// non-alphanumeric runs both become single dashes, no leading/trailing dash
+/// (`ButtonGroup` -> `button-group`). Falls back to `_`.
 #[must_use]
 pub fn file_stem(value: &str) -> String {
     let mut out = String::with_capacity(value.len());

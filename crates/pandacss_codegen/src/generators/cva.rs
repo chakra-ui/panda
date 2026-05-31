@@ -1,3 +1,6 @@
+//! The `cva` artifact: the recipe-creator factory `cva()`. Config-independent —
+//! the runtime impl is a fixed string; recipe data lives in the `recipes` artifact.
+
 use crate::{
     Artifact, ArtifactFile, ArtifactId, ConstDecl, DependencySet, Expr, ImportDecl, Item, ItemNode,
     Module, TsType,

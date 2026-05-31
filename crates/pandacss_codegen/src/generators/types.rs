@@ -1,3 +1,7 @@
+//! The `types/*` artifacts: the `.d.ts` surface users' editors see — token
+//! paths, condition keys, property values, and the system style-object types,
+//! derived from the config's [`TypeData`](pandacss_config::TypeData).
+
 use std::collections::BTreeMap;
 
 use pandacss_config::{

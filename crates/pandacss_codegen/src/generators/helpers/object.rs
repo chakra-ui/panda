@@ -1,3 +1,7 @@
+//! Object-shaped runtime helpers: `isObject`/`hasOwn`/`compact`, deep
+//! walk/map, prop merging, and the variant/compound-variant resolution used by
+//! the recipe factories.
+
 use indoc::indoc;
 
 use crate::{Item, Param, TsType};

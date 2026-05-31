@@ -1,3 +1,6 @@
+//! The `conditions` artifact: the configured condition keys plus the
+//! `isCondition` / `sortConditions` runtime helpers and their types.
+
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, DependencySet, FunctionDecl,
     ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module, Param, Stmt, TsMember, TsMemberName,

@@ -1,3 +1,12 @@
+//! Generates the `styled-system/*` artifacts (the runtime + types the user's
+//! code imports) from a resolved config.
+//!
+//! Flow: a [`generators`] builds a typed TS [`ast::Module`] for each artifact
+//! → [`emit`] prints it, either as source `.ts` or split into runtime `.js` +
+//! `.d.ts` (via [`ts_strip`]) → [`artifact`] wires modules into a dependency
+//! graph of files. [`context::CodegenContext`] carries the config + derived
+//! type data every generator reads.
+
 mod artifact;
 mod ast;
 mod context;

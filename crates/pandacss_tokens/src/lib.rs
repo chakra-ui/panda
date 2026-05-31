@@ -605,6 +605,9 @@ impl TokenDictionary {
         &self.color_palettes
     }
 
+    /// Project the dictionary into the codegen [`TokenTypeData`]: per-category
+    /// value keys/types, color palettes, the flat `path -> value` runtime map,
+    /// and deprecated paths.
     #[must_use]
     pub fn type_data(&self) -> TokenTypeData {
         let mut categories = BTreeMap::new();
