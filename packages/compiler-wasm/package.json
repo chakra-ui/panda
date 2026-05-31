@@ -41,8 +41,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/web.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts src/web.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup",
+    "build-fast": "tsup --no-dts",
     "build:wasm": "tsx build-wasm.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
