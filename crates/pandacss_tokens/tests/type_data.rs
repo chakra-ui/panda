@@ -35,5 +35,6 @@ fn token_dictionary_exposes_type_data() {
     values:
       colors.red.500: "#ef4444"
       spacing.4: 1rem
+    deprecated: []
     "##);
 }

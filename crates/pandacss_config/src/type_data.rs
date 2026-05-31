@@ -5,7 +5,21 @@ use serde_json::Value;
 
 use pandacss_shared::pascal_case;
 
-use crate::{JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, RecipeConfig, UserConfig};
+use crate::{
+    ImportMap, JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, RecipeConfig, UserConfig,
+};
+
+/// Tooling introspection snapshot: `TypeData` plus the bits it lacks
+/// (canonical property order, jsx factory, import map).
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Spec {
+    #[serde(flatten)]
+    pub types: TypeData,
+    pub property_order: Vec<String>,
+    pub jsx_factory: Option<String>,
+    pub import_map: Option<ImportMap>,
+}
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -51,6 +65,9 @@ pub struct TokenTypeData {
     /// via `toVar(path)` — so var-refs are derived, not stored.
     #[serde(default)]
     pub values: BTreeMap<String, String>,
+    /// Deprecated token paths.
+    #[serde(default)]
+    pub deprecated: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

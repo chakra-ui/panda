@@ -4,6 +4,8 @@ mod sort;
 mod static_css;
 mod writer;
 
+pub use sort::order_properties;
+
 use std::{ops::Range, sync::Arc};
 
 use rustc_hash::{FxHashMap, FxHashSet};

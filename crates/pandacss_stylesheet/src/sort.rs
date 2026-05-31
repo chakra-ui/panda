@@ -608,6 +608,21 @@ fn is_pseudo_element(selector: &str) -> bool {
     selector.contains("::")
 }
 
+/// Order property names by the canonical emit cascade (breadth → axis → name).
+/// Stable + deterministic; used by tooling to present a consistent property
+/// order (e.g. a formatter sorting style-object keys).
+#[must_use]
+pub fn order_properties<'a>(props: impl IntoIterator<Item = &'a str>) -> Vec<String> {
+    let mut props: Vec<&str> = props.into_iter().collect();
+    props.sort_by(|a, b| {
+        property_priority(a)
+            .cmp(&property_priority(b))
+            .then_with(|| property_axis(a).cmp(&property_axis(b)))
+            .then_with(|| a.cmp(b))
+    });
+    props.into_iter().map(ToOwned::to_owned).collect()
+}
+
 /// Cascade weight by property breadth: `all` and custom props first, then
 /// shorthands-of-shorthands → shorthands → logical longhands → physical
 /// longhands. Longhands rank highest so they override the shorthands they
