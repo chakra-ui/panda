@@ -19,7 +19,7 @@ pub use theme::{
 pub use type_data::{
     ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind, PatternTypeData,
     PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition, SelectorTypeData,
-    SlotRecipeTypeDefinition, TokenCategoryTypeData, TokenTypeData, TypeData, TypegenOptions,
+    SlotRecipeTypeDefinition, Spec, TokenCategoryTypeData, TokenTypeData, TypeData, TypegenOptions,
     UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart, VariantTypeData,
     token_category_type_name, value_alias_name,
 };

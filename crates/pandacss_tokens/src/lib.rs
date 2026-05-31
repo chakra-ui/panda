@@ -663,6 +663,11 @@ impl TokenDictionary {
             categories,
             color_palettes,
             values,
+            deprecated: self
+                .deprecated_paths()
+                .iter()
+                .map(ToString::to_string)
+                .collect(),
         }
     }
 }
