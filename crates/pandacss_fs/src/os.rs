@@ -74,55 +74,63 @@ impl FileSystem for OsFileSystem {
 
         let mut results: Vec<PathBuf> = Vec::new();
 
-        // `walkdir`'s `filter_entry` prunes a directory before descending — same
-        // semantics as the default walker but one syscall path per directory instead
-        // of per file.
-        let walker = WalkDir::new(&opts.cwd)
-            .follow_links(true)
-            .into_iter()
-            .filter_entry(|entry| {
-                let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
-                let rel_str = rel.to_string_lossy();
-                if rel_str.is_empty() {
-                    return true; // root
-                }
-                let rel_bytes = rel_str.as_bytes();
-                !excludes
-                    .iter()
-                    .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
-            });
+        // Scope the walk to each include's hoisted base dir instead of all of `cwd`.
+        // Roots are disjoint (nested ones are dropped), so no path is visited twice.
+        for root in crate::glob::walk_roots(opts) {
+            // `walkdir`'s `filter_entry` prunes a directory before descending — same
+            // semantics as the default walker but one syscall path per directory instead
+            // of per file.
+            let walker = WalkDir::new(&root)
+                .follow_links(true)
+                .into_iter()
+                .filter_entry(|entry| {
+                    let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
+                    let rel_str = rel.to_string_lossy();
+                    if rel_str.is_empty() {
+                        return true; // root
+                    }
+                    let rel_bytes = rel_str.as_bytes();
+                    !excludes
+                        .iter()
+                        .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+                });
 
-        for entry in walker {
-            // Tolerate permission errors mid-walk; fail on anything else.
-            let entry = match entry {
-                Ok(e) => e,
-                Err(err)
-                    if err
-                        .io_error()
-                        .is_some_and(|e| e.kind() == io::ErrorKind::PermissionDenied) =>
-                {
+            for entry in walker {
+                // Tolerate permission errors and missing base dirs mid-walk; fail on
+                // anything else.
+                let entry = match entry {
+                    Ok(e) => e,
+                    Err(err)
+                        if err.io_error().is_some_and(|e| {
+                            matches!(
+                                e.kind(),
+                                io::ErrorKind::PermissionDenied | io::ErrorKind::NotFound
+                            )
+                        }) =>
+                    {
+                        continue;
+                    }
+                    Err(err) => return Err(io::Error::other(err)),
+                };
+
+                if !entry.file_type().is_file() {
                     continue;
                 }
-                Err(err) => return Err(io::Error::other(err)),
-            };
 
-            if !entry.file_type().is_file() {
-                continue;
-            }
+                let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
+                let rel_str = rel.to_string_lossy();
+                let rel_bytes = rel_str.as_bytes();
 
-            let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
-            let rel_str = rel.to_string_lossy();
-            let rel_bytes = rel_str.as_bytes();
-
-            if opts
-                .include
-                .iter()
-                .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
-            {
-                if opts.absolute {
-                    results.push(entry.path().to_path_buf());
-                } else {
-                    results.push(rel.to_path_buf());
+                if opts
+                    .include
+                    .iter()
+                    .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+                {
+                    if opts.absolute {
+                        results.push(entry.path().to_path_buf());
+                    } else {
+                        results.push(rel.to_path_buf());
+                    }
                 }
             }
         }

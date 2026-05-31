@@ -126,25 +126,37 @@ pub struct GlobOptions {
 
 Default `exclude` when the field is empty: `["**/*.d.ts"]`. The JS side auto-injects the same. **Adding
 `**/node_modules/**` to the default is tempting but rejected** — JS doesn't do it, and a user who actually wants
-`node_modules` scanned would be surprised.
+`node_modules` scanned would be surprised. Walk-scoping (below) already keeps the common `src/**/*.tsx`-style patterns
+from ever descending into `node_modules`, so the default buys nothing for the typical case and would only diverge from
+JS for explicit `**/*`-rooted patterns.
+
+**Walk-scoping via `base_dir`.** `base_dir(pattern)` returns a pattern's static prefix — the part before the first glob
+token (`src/**/*.tsx` → `src`, `**/*.tsx` → `""`). `walk_roots(opts)` hoists each include into a concrete start
+directory (`cwd.join(base_dir)`), so `src/**/*.tsx` walks from `cwd/src` instead of all of `cwd`. Roots nested under a
+shallower root are dropped (the ancestor covers them); an empty base collapses everything back to `cwd`. This mirrors
+what JS `fast-glob` does internally and is the main traversal win — unrelated sibling trees (including `node_modules`
+for scoped patterns) are never entered. `base_dir` is also exposed at the binding layer as `sources()` for the host's
+watch list — see [output-and-host-layer](./output-and-host-layer.md).
 
 **Walker algorithm** (the default `glob` impl, in `glob.rs`):
 
 1. If `include` is empty → return `[]`. Matches JS.
-2. For each entry from `self.read_dir(cwd)`, walked breadth-first:
-   - Compute path relative to `cwd`.
+2. Seed the queue with `walk_roots(opts)` rather than `cwd`. A root whose `read_dir` fails with `NotFound` or
+   `PermissionDenied` is skipped (a hoisted base may not exist; missing dirs yield `[]`, matching `fast-glob`).
+3. For each entry, walked breadth-first:
+   - Compute path relative to `cwd` (patterns stay `cwd`-relative regardless of the start root).
    - If any `exclude` pattern matches → prune. **Important: pruning at the dir level skips descending entirely**, so
      `node_modules/**` in `exclude` never enters the directory.
    - If entry is a dir → push to queue.
    - Else if any `include` pattern matches → add to results.
-3. Sort results for determinism.
+4. Sort results for determinism.
 
 The directory-pruning rule matters for performance. Without it, an exclude pattern for `node_modules/**` would still
 call `read_dir` on every nested directory before filtering — orders of magnitude slower on real projects.
 
-**`OsFileSystem` overrides `glob`** to use `walkdir` instead of recursive `read_dir`. Same `fast-glob` matchers, faster
-directory traversal on native. The default walker stays in place for `MemoryFileSystem` (read_dir on a HashMap is
-already O(1) per dir).
+**`OsFileSystem` overrides `glob`** to run one `walkdir` per hoisted root instead of recursive `read_dir`. Same
+`fast-glob` matchers, faster directory traversal on native. The default walker stays in place for `MemoryFileSystem`
+(read_dir on a HashMap is already O(1) per dir).
 
 ## Crate layout
 
@@ -163,7 +175,7 @@ crates/pandacss_fs/
   src/
     lib.rs            re-exports + feature gates
     file_system.rs    FileSystem trait + GlobOptions type
-    glob.rs           default walker + brace-expansion helpers (none — fast-glob handles it)
+    glob.rs           GlobOptions + base_dir/walk_roots scoping + default walker (fast-glob matches)
     os.rs             #[cfg(feature = "os")] OsFileSystem
     memory.rs         #[cfg(feature = "memory")] MemoryFileSystem
 ```

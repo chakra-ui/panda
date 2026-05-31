@@ -153,15 +153,16 @@ mod basics {
     }
 
     #[test]
-    fn nonexistent_cwd_returns_io_error() {
+    fn nonexistent_cwd_returns_empty() {
+        // A missing root contributes nothing rather than failing the walk —
+        // matches `fast-glob`, where globbing a nonexistent cwd yields `[]`.
         let fs = fixture();
         let opts = GlobOptions {
             include: vec!["**/*.ts".into()],
             cwd: PathBuf::from("/does-not-exist"),
             ..Default::default()
         };
-        let err = fs.glob(&opts).unwrap_err();
-        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        assert!(fs.glob(&opts).unwrap().is_empty());
     }
 
     #[test]
@@ -702,6 +703,26 @@ mod walker {
             MemoryFileSystem::from_entries(entries.iter().map(|(p, c)| (p.clone(), c.to_string())));
         let results = glob_filtered(&fs, "/proj", &["**/*.{js,tsx}"], &["**/node_modules/**"]);
         assert_eq!(results, vec![PathBuf::from("/proj/src/Button.tsx")]);
+    }
+
+    // ---- walk scoping ------------------------------------------------------------
+
+    #[test]
+    fn base_scoped_pattern_returns_only_its_subtree() {
+        let fs = MemoryFileSystem::from_entries([
+            ("/proj/src/Button.tsx", ""),
+            ("/proj/other/Ignore.tsx", ""),
+        ]);
+        let results = glob_abs(&fs, "/proj", &["src/**/*.tsx"]);
+        assert_eq!(results, vec![PathBuf::from("/proj/src/Button.tsx")]);
+    }
+
+    #[test]
+    fn missing_base_dir_in_union_is_tolerated() {
+        // `pkgs/` doesn't exist; its hoisted root is skipped, the rest still match.
+        let fs = MemoryFileSystem::from_entries([("/proj/src/a.tsx", "")]);
+        let results = glob_abs(&fs, "/proj", &["src/**/*.tsx", "pkgs/**/*.tsx"]);
+        assert_eq!(results, vec![PathBuf::from("/proj/src/a.tsx")]);
     }
 
     // ---- default exclude (`**/*.d.ts`) -------------------------------------------
