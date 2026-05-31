@@ -30,9 +30,47 @@ impl Default for GlobOptions {
     }
 }
 
+/// The static directory prefix of a glob pattern — the part before the first
+/// glob token. `src/**/*.tsx` → `src`; `**/*.tsx` → `""`. A watcher subscribes
+/// to these directories instead of every matched file.
+#[must_use]
+pub fn base_dir(pattern: &str) -> &str {
+    let glob_at = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
+    match pattern[..glob_at].rfind('/') {
+        Some(slash) => &pattern[..slash],
+        None => "",
+    }
+}
+
+/// Concrete directories the walk should start from — `cwd` joined with each
+/// include's [`base_dir`]. Scoping the walk to `cwd/src` for `src/**/*.tsx`
+/// avoids traversing unrelated trees. Roots nested under a shallower root are
+/// dropped (the ancestor already covers them); an empty base (`**/*.tsx`)
+/// collapses everything back to `cwd`.
+#[must_use]
+pub fn walk_roots(opts: &GlobOptions) -> Vec<PathBuf> {
+    let mut roots: Vec<PathBuf> = opts
+        .include
+        .iter()
+        .map(|pattern| opts.cwd.join(base_dir(pattern)))
+        .collect();
+    roots.sort();
+    roots.dedup();
+
+    let mut scoped: Vec<PathBuf> = Vec::new();
+    for root in roots {
+        // `sort` placed every ancestor before its descendants, so checking the
+        // roots already kept is enough to drop nested ones.
+        if !scoped.iter().any(|kept| root.starts_with(kept)) {
+            scoped.push(root);
+        }
+    }
+    scoped
+}
+
 /// Default glob walker. BFS via `fs.read_dir`, prunes directories whose relative path
 /// matches any `exclude` pattern, collects files whose relative path matches any
-/// `include` pattern.
+/// `include` pattern. The walk starts from the hoisted [`walk_roots`], not `cwd`.
 pub(crate) fn default_walk<F: FileSystem + ?Sized>(
     fs: &F,
     opts: &GlobOptions,
@@ -50,14 +88,22 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
     };
 
     let mut results: Vec<PathBuf> = Vec::new();
-    let mut stack: Vec<PathBuf> = vec![opts.cwd.clone()];
+    let mut stack: Vec<PathBuf> = walk_roots(opts);
 
     while let Some(dir) = stack.pop() {
         let entries = match fs.read_dir(&dir) {
             Ok(entries) => entries,
-            // Skip unreadable directories rather than fail the whole walk.
-            // Matches `fast-glob`'s behavior on permission errors.
-            Err(err) if err.kind() == io::ErrorKind::PermissionDenied => continue,
+            // Skip unreadable or missing directories rather than fail the whole
+            // walk — a hoisted base dir may not exist, and permission errors
+            // mirror `fast-glob`'s behavior.
+            Err(err)
+                if matches!(
+                    err.kind(),
+                    io::ErrorKind::PermissionDenied | io::ErrorKind::NotFound
+                ) =>
+            {
+                continue;
+            }
             Err(err) => return Err(err),
         };
 
