@@ -25,7 +25,7 @@ mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use css_property::{css_property_names, is_css_property};
-pub use extract::{ExtractDebugResult, ExtractUsage, extract, extract_debug};
+pub use extract::{ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
 };

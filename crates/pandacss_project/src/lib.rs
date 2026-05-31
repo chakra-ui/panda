@@ -34,6 +34,7 @@ mod recipes;
 mod runtime_config;
 mod static_patterns;
 mod system;
+mod usages;
 
 use std::collections::BTreeMap;
 use std::hash::{Hash, Hasher};
@@ -60,6 +61,7 @@ pub use recipes::EncodedRecipes;
 use recipes::EncodedRecipesCache;
 pub use runtime_config::Config;
 pub use system::{System, SystemInput};
+pub use usages::{UsageKind, UsageSite};
 
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 

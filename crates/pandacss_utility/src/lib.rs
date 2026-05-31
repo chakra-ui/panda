@@ -170,6 +170,16 @@ impl Utility {
             .map_or(prop, std::string::String::as_str)
     }
 
+    /// Token category a property's values resolve against (e.g. `colors`).
+    /// Resolves shorthands first.
+    #[must_use]
+    pub fn token_category(&self, prop: &str) -> Option<&str> {
+        self.properties
+            .get(self.resolve_shorthand(prop))?
+            .values_category
+            .as_deref()
+    }
+
     /// Resolves shorthand defensively before looking up the override.
     #[must_use]
     pub fn layer(&self, prop: &str) -> Option<&str> {

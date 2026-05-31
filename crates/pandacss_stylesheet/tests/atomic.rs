@@ -32,6 +32,34 @@ fn emits_dynamic_atomic_css() {
 }
 
 #[test]
+fn resolves_token_references_interpolated_in_longhand_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": { "tokens": { "colors": { "red": { "300": { "value": "#f00" } } } } },
+        "utilities": { "border": { "className": "border" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css'\n",
+            "css({ border: '1px solid {colors.red.300}' })\n",
+            "css({ border: '2px solid token(colors.red.300)' })",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .border_1px_solid_{colors\.red\.300} {
+        border: 1px solid var(--colors-red-300);
+      }
+      .border_2px_solid_token\(colors\.red\.300\) {
+        border: 2px solid var(--colors-red-300);
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_conditions_and_breakpoints() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
