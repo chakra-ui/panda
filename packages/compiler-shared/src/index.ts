@@ -4,7 +4,11 @@
  * public surface and the callback runtime live in exactly one place.
  */
 
+import type { Introspection } from './introspect'
+
 export * from './callbacks'
+export { introspect } from './introspect'
+export type { Introspection } from './introspect'
 
 export interface Span {
   start: number
@@ -141,6 +145,63 @@ export interface LayerNames {
   tokens: string
   recipes: string
   utilities: string
+}
+
+/** A source glob with its static base directory (the dir a watcher subscribes to). */
+export interface SourceEntry {
+  base: string
+  pattern: string
+}
+
+export type UsageKind = 'token' | 'property' | 'recipe' | 'pattern' | 'keyframe'
+
+/** One classified Panda usage with its source range — for reporting, lint, IDE.
+ *  `name` is a token path, canonical property, or recipe/pattern name. */
+export interface UsageSite {
+  kind: UsageKind
+  name: string
+  range: SourceRange
+}
+
+export interface SpecUtilityProperty {
+  name: string
+  cssProperty?: string
+  tokenCategory?: string
+  literals: string[]
+  alias: string
+}
+
+export interface SpecTokenCategory {
+  name: string
+  typeName: string
+  values: string[]
+}
+
+/** Tooling introspection snapshot — read once, index on the host (never query
+ *  the engine per-item in a hot loop). Powers reporting / formatting / linting. */
+export interface Spec {
+  conditions: { keys: string[]; breakpoints: string[] }
+  tokens: {
+    categories: Record<string, SpecTokenCategory>
+    colorPalettes: string[]
+    /** `path -> value` (empty value means it equals the token's CSS var). */
+    values: Record<string, string>
+    deprecated: string[]
+  }
+  utilities: {
+    properties: Record<string, SpecUtilityProperty>
+    /** `shorthand -> canonical property`. */
+    shorthands: Record<string, string>
+    deprecated: string[]
+  }
+  /** Keyed by pattern name. */
+  patterns: { patterns: Record<string, unknown> }
+  /** Keyed by recipe name. */
+  recipes: { recipes: Record<string, unknown>; slotRecipes: Record<string, unknown> }
+  /** Canonical emit order for property names (for a stable property sort). */
+  propertyOrder: string[]
+  jsxFactory?: string
+  importMap?: { css: string[]; recipe: string[]; pattern: string[]; jsx: string[]; tokens: string[] }
 }
 
 export interface CodegenFile {
@@ -328,9 +389,19 @@ export interface Compiler {
   /** Source paths matching the config's `include`/`exclude` (overridable) via
    *  the filesystem engine — for the host's watch dependency list. */
   glob(options?: ScanOptions): string[]
+  /** Classified usage sites (token/property/recipe/pattern + ranges) for a file
+   *  — the primitive for reporting, lint, and IDE tooling. */
+  usages(path: string, source: string): UsageSite[]
   /** Resolved cascade-layer names (config overrides merged over defaults) — so
    *  the host can recognize the user's `@layer …;` directive. */
   layers(): LayerNames
+  /** Tooling introspection snapshot — read once, index on the host. */
+  spec(): Spec
+  /** Source globs + their static base dirs (for the host watcher). */
+  sources(): SourceEntry[]
+  /** Generate + write artifacts under `outdir` via the platform fs (disk on
+   *  native, in-memory on wasm). Returns the written paths. */
+  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   compile(): CompileOutput
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
@@ -398,6 +469,8 @@ export interface Driver {
   readonly configPath?: string
   /** Module ids to watch for config invalidation. */
   readonly configDependencies: string[]
+  /** Introspection over the current config (cached; rebuilt on `reload`). */
+  readonly introspect: Introspection
 
   /** Re-load the config, diff it against the current one, and rebuild the
    *  compiler when it changed. Browser drivers are snapshot-fed → no-change. */
@@ -406,10 +479,14 @@ export interface Driver {
   scan(): ScanReport
   /** Route one watcher event into the engine. `false` = unknown path / no-op. */
   applyChange(change: SourceChange): boolean
+  /** Route a batch of watcher events; returns each one's result. */
+  applyChanges(changes: SourceChange[]): boolean[]
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
+  /** Generate + write artifacts under `outdir` via the engine fs. Returns paths. */
+  writeArtifacts(outdir: string, cwd?: string): string[]
   /** Compile the stylesheet → `CompileOutput`; the caller routes the `css` string. */
   compile(): CompileOutput
-  /** Glob targets the host watcher should track. */
-  watchTargets(): { sources: string[]; config: string[] }
+  /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
+  watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
 }

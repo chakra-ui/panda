@@ -44,6 +44,25 @@ class FallbackCompiler implements Compiler {
   layers() {
     return { reset: 'reset', base: 'base', tokens: 'tokens', recipes: 'recipes', utilities: 'utilities' }
   }
+  spec() {
+    return {
+      conditions: { keys: [], breakpoints: [] },
+      tokens: { categories: {}, colorPalettes: [], values: {}, deprecated: [] },
+      utilities: { properties: {}, shorthands: {}, deprecated: [] },
+      patterns: { patterns: {} },
+      recipes: { recipes: {}, slotRecipes: {} },
+      propertyOrder: [],
+    }
+  }
+  sources() {
+    return []
+  }
+  usages() {
+    return []
+  }
+  writeArtifacts() {
+    return []
+  }
   isEmpty() {
     return true
   }
