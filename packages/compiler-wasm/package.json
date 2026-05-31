@@ -45,5 +45,8 @@
   ],
   "dependencies": {
     "@pandacss/compiler-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@pandacss/config-loader": "workspace:*"
   }
 }

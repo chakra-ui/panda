@@ -1,4 +1,4 @@
-import type { Spec } from './index'
+import type { Spec } from './types'
 
 /** Ergonomic, O(1) queries over a {@link Spec} — the shared surface tooling
  *  (linters, formatters, reporters) builds on. Index the spec once, query hot. */

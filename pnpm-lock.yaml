@@ -201,6 +201,10 @@ importers:
       '@pandacss/compiler-shared':
         specifier: workspace:*
         version: link:../compiler-shared
+    devDependencies:
+      '@pandacss/config-loader':
+        specifier: workspace:*
+        version: link:../config-loader
 
   packages/config:
     dependencies:
@@ -381,37 +385,6 @@ importers:
       '@types/lodash.merge':
         specifier: 4.6.9
         version: 4.6.9
-
-  packages/driver:
-    dependencies:
-      '@pandacss/compiler':
-        specifier: workspace:*
-        version: link:../compiler
-      '@pandacss/compiler-shared':
-        specifier: workspace:*
-        version: link:../compiler-shared
-      '@pandacss/config-loader':
-        specifier: workspace:*
-        version: link:../config-loader
-      '@pandacss/types':
-        specifier: workspace:*
-        version: link:../types
-
-  packages/driver-wasm:
-    dependencies:
-      '@pandacss/compiler-shared':
-        specifier: workspace:*
-        version: link:../compiler-shared
-      '@pandacss/compiler-wasm':
-        specifier: workspace:*
-        version: link:../compiler-wasm
-      '@pandacss/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      '@pandacss/config-loader':
-        specifier: workspace:*
-        version: link:../config-loader
 
   packages/extractor:
     dependencies:

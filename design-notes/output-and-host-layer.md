@@ -2,10 +2,9 @@
 title: Output & Host Layer (Driver)
 status: current
 scope:
-  - packages/driver
-  - packages/driver-wasm
   - packages/compiler
   - packages/compiler-wasm
+  - packages/compiler-shared
   - packages/config-loader
 ---
 
@@ -22,12 +21,14 @@ This note pins down that layer's shape so we don't smear write/sink policy back 
 by *environment*, and consumers are thin *adapters*, not Driver subtypes. It also specifies the **config diffing
 algorithm** the Driver needs on reload.
 
-The shared `Driver` contract (the interface + `ConfigDiff` / `SourceChange` / `ArtifactFilter`) lives in
-**`@pandacss/compiler-shared`**, so the two implementations share it without depending on each other. It is split into
-two packages mirroring the binding split (so a browser bundle never pulls the native binding / Rolldown / `node:fs`):
+The shared `Driver` contract (the interface + `ConfigDiff` / `SourceChange` / `ArtifactFilter`) **and the shared
+orchestration** (`BaseDriver` + `selectArtifacts`) live in **`@pandacss/compiler-shared`**. Each platform's host ships
+*inside* its binding package — there is no separate driver package — and a thin `BaseDriver` subclass supplies only what
+differs by environment (config access, `reload`, single-change IO); everything identical (introspection caching, `scan`,
+batched changes, artifact selection, `compile`, watch-target derivation) lives in `BaseDriver`:
 
-- **`@pandacss/driver`** (node) — `createNodeDriver`, `writeArtifacts`. Deps: `@pandacss/compiler` + `@pandacss/config-loader`.
-- **`@pandacss/driver-wasm`** (browser) — `createBrowserDriver`. Dep: `@pandacss/compiler-wasm` only.
+- **`@pandacss/compiler`** (node) — the native binding **and** `createNodeDriver` / `writeArtifacts`. Adds `@pandacss/config-loader`.
+- **`@pandacss/compiler-wasm`** (browser) — the wasm binding **and** `createBrowserDriver`.
 
 Both are backed by the engine's `scan`/`glob` (see [filesystem](./filesystem.md)) and config-loader's `diffConfig`. The
 v1 analog is `packages/node/src/builder.ts` (`Builder`); v2's Driver is thinner because the Rust `Project` absorbed the
@@ -48,7 +49,7 @@ Layer 3 — Consumers / sinks  (per-tool policy: WHERE output goes)
   Studio        read-only: atoms()/tokens()/reports, no output
         │  thin adapters
         ▼
-Layer 2 — Driver  (host orchestrator — @pandacss/driver[-wasm])
+Layer 2 — Driver  (host orchestrator — ships in @pandacss/compiler[-wasm])
   • load config (config-loader) + build Compiler · reload + diff on config change
   • scan() → engine globs + reads + parses (no JS glob); applyChange routes single events
   • cadence: artifacts (config-change gated) vs CSS (every build) are DISTINCT operations
@@ -120,21 +121,24 @@ cadence + sink routing + watch wiring.
 ## Two Driver types — split only by environment
 
 Exactly one axis warrants distinct types: *where Panda runs*, because the `Compiler` and the config source are
-entangled with it.
+entangled with it. Each host is a `BaseDriver` subclass living in its platform binding package.
 
-| | **`@pandacss/driver`** | **`@pandacss/driver-wasm`** |
+| | **`@pandacss/compiler`** (node host) | **`@pandacss/compiler-wasm`** (browser host) |
 | --- | --- | --- |
-| Compiler | native NAPI binding (`@pandacss/compiler`) | wasm binding (`@pandacss/compiler-wasm`) |
+| Compiler | native NAPI binding (same package) | wasm binding (same package) |
 | Filesystem | `OsFileSystem` (real disk) | `MemoryFileSystem` (`Compiler.fs`) |
 | Config source | `@pandacss/config-loader` (Rolldown bundles `panda.config.ts` from disk) | a pre-built `ConfigSnapshot` handed in — Rolldown is Node-only, the browser can't bundle the config the same way |
 | Sources | `scan()` globs + reads real disk | host stages files into `Compiler.fs` (the driver's `sources` option / `applyChange`), then `scan()` globs the in-memory tree |
 | wasm init | n/a | real browsers pass an initialized `pkg-web` `module`; omitting it falls back to the `pkg-node` `loadWasm` path (Node/SSR/tests) |
 
 `createNodeDriver({ cwd })` and `createBrowserDriver({ snapshot, sources, module? })` implement the same `Driver`
-interface (from `@pandacss/compiler-shared`); only construction + the IO adapter differ. **Why two packages, not a
-subpath:** a browser bundle of `createBrowserDriver` must not pull the native binding loader (`@pandacss/compiler` runs
-`loadNativeBinding()` at module top-level), Rolldown, or `node:fs` — all transitive deps of the node driver. A subpath
-would still list `@pandacss/compiler` in the package's deps; separate packages keep the browser dependency set honest.
+interface (from `@pandacss/compiler-shared`); only construction + the IO adapter differ. **Why the host lives in its
+binding package (not its own):** the host and its binding co-vary 1:1 — the node host only ever wraps the native
+compiler, the browser host only ever wraps wasm — so a separate driver package bought no swappability, only an extra
+hop and a duplicated implementation. The browser-dependency split is already enforced at the binding-package boundary:
+`@pandacss/compiler` runs `loadNativeBinding()` at module top-level and pulls Rolldown / `node:fs`, while
+`@pandacss/compiler-wasm` pulls neither — so folding each host into its platform package keeps the browser dependency
+set honest, and the shared `BaseDriver` keeps the two from duplicating orchestration.
 
 ### Consumers are adapters, not Driver subtypes
 
@@ -239,8 +243,8 @@ Resolution options:
   `SerializedConfig` deserialize to tolerate the extra `hash` field on the callback ref.
 - **`writeArtifacts` clean step** — current helper writes full-or-affected sets; it does **not** delete stale files
   (renamed/removed recipes/patterns leave orphans). Add a clean pass when watch cadence needs it.
-- **CLI / plugin adapters** — `@pandacss/driver` exists; the consumer adapters (CLI commands, PostCSS plugin, bundler
-  plugins) that drive it aren't built yet. The Driver interface is the shared seam.
+- **CLI / plugin adapters** — `createNodeDriver` (in `@pandacss/compiler`) exists; the consumer adapters (CLI commands,
+  PostCSS plugin, bundler plugins) that drive it aren't built yet. The Driver interface is the shared seam.
 - **`applyChange` reads** — the node driver reads a single changed file via `node:fs` when `content` is omitted (the
   bulk `scan` uses the engine fs). Acceptable, but a single-file engine read would keep it fully uniform.
 - **Browser `pkg-web` path is untested in CI** — `createBrowserDriver`'s tests run in Node and exercise the `pkg-node`
