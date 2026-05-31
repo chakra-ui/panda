@@ -31,8 +31,12 @@ describe('createBrowserDriver', () => {
       sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })" },
     })
 
-    const report = driver.scan()
-    expect(report.count).toBe(1)
+    expect(driver.scan()).toMatchInlineSnapshot(`
+      {
+        "count": 1,
+        "diagnostics": [],
+      }
+    `)
     expect(driver.compile().css).toContain('blue')
   })
 
@@ -54,7 +58,7 @@ describe('createBrowserDriver', () => {
       content: "import { css } from '@panda/css'; css({ color: 'green' })",
     })
 
-    expect(applied).toBe(true)
+    expect(applied).toMatchInlineSnapshot(`true`)
     expect(driver.compile().css).toContain('green')
   })
 })

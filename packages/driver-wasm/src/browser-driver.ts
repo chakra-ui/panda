@@ -1,10 +1,12 @@
-import type {
-  ArtifactFilter,
-  Compiler,
-  ConfigDiff,
-  Driver,
-  SerializedConfig,
-  SourceChange,
+import {
+  type ArtifactFilter,
+  type Compiler,
+  type ConfigDiff,
+  type Driver,
+  type Introspection,
+  type SerializedConfig,
+  type SourceChange,
+  introspect,
 } from '@pandacss/compiler-shared'
 import { createCompilerFromSnapshot, createCompilerFromWasmModule } from '@pandacss/compiler-wasm'
 import { selectArtifacts } from './select'
@@ -39,6 +41,7 @@ export async function createBrowserDriver(options: BrowserDriverOptions): Promis
 class BrowserDriver implements Driver {
   #compiler: Compiler
   #config: SerializedConfig
+  #introspect: Introspection | undefined
 
   constructor(compiler: Compiler, config: SerializedConfig) {
     this.#compiler = compiler
@@ -59,6 +62,10 @@ class BrowserDriver implements Driver {
 
   get configDependencies() {
     return []
+  }
+
+  get introspect(): Introspection {
+    return (this.#introspect ??= introspect(this.#compiler.spec()))
   }
 
   // Browser drivers are snapshot-fed; reloading happens by constructing a fresh
@@ -82,8 +89,16 @@ class BrowserDriver implements Driver {
     return true
   }
 
+  applyChanges(changes: SourceChange[]): boolean[] {
+    return changes.map((change) => this.applyChange(change))
+  }
+
   artifacts(filter?: ArtifactFilter) {
     return selectArtifacts(this.#compiler, filter)
+  }
+
+  writeArtifacts(outdir: string, cwd?: string) {
+    return this.#compiler.writeArtifacts(outdir, cwd)
   }
 
   compile() {
@@ -91,6 +106,11 @@ class BrowserDriver implements Driver {
   }
 
   watchTargets() {
-    return { sources: this.#compiler.glob(), config: [] as string[] }
+    const sources = this.#compiler.sources()
+    return {
+      sources: sources.map((source) => source.pattern),
+      dirs: [...new Set(sources.map((source) => source.base))],
+      config: [] as string[],
+    }
   }
 }

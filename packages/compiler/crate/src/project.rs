@@ -76,6 +76,13 @@ pub struct ScanReport {
     pub diagnostics: Vec<Diagnostic>,
 }
 
+/// A source glob with its static base directory (the dir a watcher subscribes to).
+#[napi(object)]
+pub struct SourceEntry {
+    pub base: String,
+    pub pattern: String,
+}
+
 /// The resolved cascade-layer names (config overrides + defaults applied).
 #[napi(object)]
 pub struct LayerNames {
@@ -259,6 +266,93 @@ impl Compiler {
             recipes: layers.recipes.clone(),
             utilities: layers.utilities.clone(),
         }
+    }
+
+    /// Tooling introspection snapshot (read once, index on the host).
+    ///
+    /// # Errors
+    /// Returns an error if the snapshot fails to serialize.
+    #[napi]
+    pub fn spec(&self) -> napi::Result<serde_json::Value> {
+        let types = self.inner.type_data(&self.user_config);
+        let property_order = pandacss_stylesheet::order_properties(
+            types.utilities.properties.keys().map(String::as_str),
+        );
+        let spec = pandacss_config::Spec {
+            types,
+            property_order,
+            jsx_factory: self.user_config.jsx_factory.clone(),
+            import_map: self.user_config.import_map.clone(),
+        };
+        serde_json::to_value(&spec).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
+    /// Classified usage sites (token / property / recipe / pattern) with ranges,
+    /// for tooling (reporting, lint, IDE). On-demand — not on the build path.
+    ///
+    /// # Errors
+    /// Returns an error if the result fails to serialize.
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn usages(&self, path: String, source: String) -> napi::Result<serde_json::Value> {
+        let sites = self.inner.usages(&path, &source);
+        serde_json::to_value(&sites).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
+    /// Source globs + their static base dirs (for the host watcher).
+    #[napi]
+    #[must_use]
+    pub fn sources(&self) -> Vec<SourceEntry> {
+        self.user_config
+            .include
+            .iter()
+            .map(|pattern| SourceEntry {
+                base: resolve_base(&self.user_config.cwd, pattern),
+                pattern: pattern.clone(),
+            })
+            .collect()
+    }
+
+    /// Generate artifacts and write them under `outdir` via the platform fs
+    /// (real disk on native). Returns the written paths.
+    ///
+    /// # Errors
+    /// Returns an error if a file fails to write.
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_artifacts(
+        &self,
+        outdir: String,
+        cwd: Option<String>,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Vec<String>> {
+        use pandacss_fs::FileSystem;
+        let generate = generate_options(&self.user_config, options)?;
+        let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
+        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
+            .join(&outdir);
+        let mut written = Vec::new();
+        for artifact in artifacts {
+            for file in artifact.files {
+                let target = base.join(&file.path);
+                if let Some(parent) = target.parent() {
+                    self.fs
+                        .create_dir_all(parent)
+                        .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+                }
+                self.fs
+                    .write(&target, file.code.as_bytes())
+                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+                written.push(target.to_string_lossy().into_owned());
+            }
+        }
+        Ok(written)
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
@@ -856,6 +950,18 @@ fn parse_number_string(value: &str) -> serde_json::Value {
         return serde_json::Value::Number(value);
     }
     serde_json::Value::String(value.to_owned())
+}
+
+/// Resolve a glob's watch base dir against `cwd` (empty base → `cwd` itself,
+/// avoiding a trailing-slash artifact).
+fn resolve_base(cwd: &str, pattern: &str) -> String {
+    let cwd = std::path::Path::new(cwd);
+    let base = pandacss_fs::base_dir(pattern);
+    if base.is_empty() {
+        cwd.to_string_lossy().into_owned()
+    } else {
+        cwd.join(base).to_string_lossy().into_owned()
+    }
 }
 
 fn convert_report(report: pandacss_project::ParseFileReport) -> ParseFileReport {

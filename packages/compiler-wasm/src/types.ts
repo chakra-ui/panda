@@ -27,7 +27,10 @@ import type {
   ParsedFileView,
   ProjectSummary,
   RecipeEntry,
+  SourceEntry,
+  Spec,
   StaticPatternResult,
+  UsageSite,
   GenerateArtifactOptions,
 } from '@pandacss/compiler-shared'
 
@@ -93,6 +96,10 @@ export declare class WasmCompiler {
   scan(options?: ScanOptions): ScanReport
   glob(options?: ScanOptions): string[]
   layers(): LayerNames
+  spec(): Spec
+  sources(): SourceEntry[]
+  usages(path: string, source: string): UsageSite[]
+  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void

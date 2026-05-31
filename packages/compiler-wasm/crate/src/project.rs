@@ -347,6 +347,96 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Tooling introspection snapshot (read once, index on the host).
+    ///
+    /// # Errors
+    /// Returns a JS error if the snapshot fails to serialize.
+    pub fn spec(&self) -> Result<JsValue, JsValue> {
+        let types = self.inner.type_data(&self.user_config);
+        let property_order = pandacss_stylesheet::order_properties(
+            types.utilities.properties.keys().map(String::as_str),
+        );
+        let spec = pandacss_config::Spec {
+            types,
+            property_order,
+            jsx_factory: self.user_config.jsx_factory.clone(),
+            import_map: self.user_config.import_map.clone(),
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        spec.serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Classified usage sites (token / property / recipe / pattern) with ranges.
+    ///
+    /// # Errors
+    /// Returns a JS error if serialization fails.
+    pub fn usages(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
+        let sites = self.inner.usages(path, source);
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        sites
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Source globs + their static base dirs (for the host watcher).
+    ///
+    /// # Errors
+    /// Returns a JS error if serialization fails.
+    pub fn sources(&self) -> Result<JsValue, JsValue> {
+        let entries: Vec<SourceEntrySerde> = self
+            .user_config
+            .include
+            .iter()
+            .map(|pattern| SourceEntrySerde {
+                base: resolve_base(&self.user_config.cwd, pattern),
+                pattern: pattern.clone(),
+            })
+            .collect();
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        entries
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Generate artifacts and write them under `outdir` via the in-memory fs.
+    /// Returns the written paths.
+    ///
+    /// # Errors
+    /// Returns a JS error if a file fails to write or results fail to serialize.
+    #[wasm_bindgen(js_name = writeArtifacts)]
+    pub fn write_artifacts(
+        &self,
+        outdir: &str,
+        cwd: Option<String>,
+        options: &JsValue,
+    ) -> Result<JsValue, JsValue> {
+        use pandacss_fs::FileSystem;
+        let generate = generate_options(&self.user_config, options)?;
+        let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
+        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
+            .join(outdir);
+        let mut written = Vec::new();
+        for artifact in artifacts {
+            for file in artifact.files {
+                let target = base.join(&file.path);
+                if let Some(parent) = target.parent() {
+                    self.fs
+                        .create_dir_all(parent)
+                        .map_err(|err| JsValue::from_str(&err.to_string()))?;
+                }
+                self.fs
+                    .write(&target, file.code.as_bytes())
+                    .map_err(|err| JsValue::from_str(&err.to_string()))?;
+                written.push(target.to_string_lossy().into_owned());
+            }
+        }
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        written
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// The resolved cascade-layer names (config overrides merged over defaults).
     ///
     /// # Errors
@@ -946,6 +1036,24 @@ fn with_wasm_fs(
 struct ScanReportSerde {
     count: u32,
     diagnostics: Vec<pandacss_project::Diagnostic>,
+}
+
+/// Serialized source entry. Mirrors the native `SourceEntry`.
+#[derive(serde::Serialize)]
+struct SourceEntrySerde {
+    base: String,
+    pattern: String,
+}
+
+/// Resolve a glob's watch base dir against `cwd` (empty base → `cwd` itself).
+fn resolve_base(cwd: &str, pattern: &str) -> String {
+    let cwd = std::path::Path::new(cwd);
+    let base = pandacss_fs::base_dir(pattern);
+    if base.is_empty() {
+        cwd.to_string_lossy().into_owned()
+    } else {
+        cwd.join(base).to_string_lossy().into_owned()
+    }
 }
 
 /// Serialized resolved cascade-layer names. Mirrors the native `LayerNames`.

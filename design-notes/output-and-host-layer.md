@@ -74,45 +74,41 @@ Three principles fall out of this:
 2. **CSS gen and artifact gen are distinct operations on distinct cadences** — mirroring v1's `panda cssgen` vs
    `panda codegen`. Artifacts regenerate rarely (config change); CSS regenerates every build. The Driver exposes them as
    separate methods, never a combined "build everything."
-3. **Reads via the engine, writes via the host.** Source discovery + reading run through the Rust `pandacss_fs` engine
-   (`scan`/`glob`) — one code path, fast, no JS glob dependency. Writing (artifacts to disk, CSS to its sink) stays
-   host-side, because the sink is polymorphic (principle 1) and write policy (outdir, clean, prettier, dry-run) is a host
-   concern. The fs trait's write side stays available for a future engine-side artifact writer, but isn't used today.
+3. **Reads + artifact writes via the engine; CSS routing via the host.** Source discovery + reading run through the
+   Rust `pandacss_fs` engine (`scan`/`glob`/`sources`). Artifact *writing* also goes through the engine fs
+   (`compiler.writeArtifacts(outdir)` — disk on native, the in-memory fs on wasm), so there's no JS `node:fs` and the
+   browser gets artifact-writing for free. **CSS stays a returned string** the consumer routes (file / postcss
+   `root.append` / virtual module) — it's the polymorphic sink. `generateArtifacts()` still returns the `{path,code}[]`
+   for hosts that want a custom/virtual artifact sink.
+
+## Introspection (`spec` + `introspect`)
+
+The engine exposes one **`compiler.spec()`** snapshot — `TypeData` (conditions, tokens incl. `deprecated`, utilities
+incl. `shorthands`/`deprecated`, patterns, recipes) plus `propertyOrder`, `jsxFactory`, `importMap`. It crosses the
+boundary once. **`introspect(spec)`** (in `@pandacss/compiler-shared`) indexes it into O(1) queries —
+`isValidProperty`, `resolveShorthand`, `getPropCategory`, `isColorProperty`, `isValidToken`/`isDeprecatedToken`/
+`isColorToken`, `conditions`, `patterns`/`recipes`, `jsxFactory`, and `sortProps`/`compareProps` (canonical property
+order). The Driver caches it as `driver.introspect` (rebuilt on `reload`). This is the shared surface a linter,
+formatter, or reporter builds on — never a per-item engine call in a hot loop.
 
 ## The Driver interface (sketch)
 
 ```ts
-interface DriverOptions {
-  cwd: string
-  configPath?: string // else findConfig({ cwd })
-}
-
 interface Driver {
-  readonly compiler: Compiler // Layer-1 engine handle (live)
+  readonly compiler: Compiler // engine handle (swapped on reload)
   readonly config: SerializedConfig
-  readonly configPath: string
-  readonly configDependencies: string[] // config + imported modules → watch these
+  readonly configPath?: string
+  readonly configDependencies: string[]
+  readonly introspect: Introspection // cached query surface over spec()
 
-  // ── Config lifecycle ──────────────────────────────────────────
-  /** Re-load config, diff vs current, rebuild the compiler if changed.
-   *  Returns the diff so the caller decides what to regen + which hooks to fire. */
-  reload(): Promise<ConfigDiff>
-
-  // ── Source scanning (engine globs + reads + parses) ───────────
-  /** Engine globs include/exclude, reads, parses each. → { count, diagnostics }. */
-  scan(): ScanReport
-  /** Route ONE change event into the engine. false = unknown path, ignored. */
-  applyChange(change: { path: string; kind: 'add' | 'change' | 'unlink'; content?: string }): boolean
-
-  // ── Outputs: distinct operations, distinct cadence ────────────
-  /** Codegen. Full set, or only artifacts affected by a config diff.
-   *  Returns strings; the sink writes. */
-  artifacts(filter?: Pick<ConfigDiff, 'dependencies'>): CodegenArtifact[]
-  /** Compile the stylesheet → CompileOutput; the caller routes the `css` string. */
-  compile(): CompileOutput
-
-  // ── Watch wiring ──────────────────────────────────────────────
-  watchTargets(): { sources: string[]; config: string[] }
+  reload(): Promise<ConfigDiff> // re-load + diff; rebuild compiler if changed
+  scan(): ScanReport // engine globs + reads + parses
+  applyChange(change: SourceChange): boolean // one watcher event
+  applyChanges(changes: SourceChange[]): boolean[] // batch
+  artifacts(filter?: ArtifactFilter): CodegenArtifact[] // {path,code}[] for custom sinks
+  writeArtifacts(outdir: string, cwd?: string): string[] // engine-fs sink (disk/memory)
+  compile(): CompileOutput // CSS string + manifest; caller routes css
+  watchTargets(): { sources: string[]; dirs: string[]; config: string[] } // patterns, base dirs, config deps
 }
 ```
 
