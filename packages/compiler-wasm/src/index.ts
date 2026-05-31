@@ -33,6 +33,9 @@ export type {
 // Re-export the shared contract so consumers get one import surface.
 export type * from '@pandacss/compiler-shared'
 
+export { createBrowserDriver } from './driver'
+export type { BrowserDriverOptions } from './driver'
+
 /** `configCallbacks` carry construction-time `utility.values` resolvers. */
 interface WasmFromConfigOptions {
   configCallbacks?: {

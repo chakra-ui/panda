@@ -15,6 +15,9 @@ import type { CompileInput, NativeCompilerOptions, TokenDictionary, TraceOptions
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
 
+export { createNodeDriver } from './driver'
+export type { NodeDriverOptions } from './driver'
+
 const binding = loadNativeBinding() ?? fallback
 const nativeCompilerFromConfig =
   'fromConfig' in binding.Compiler && typeof binding.Compiler.fromConfig === 'function'

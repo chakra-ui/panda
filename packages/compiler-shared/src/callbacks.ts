@@ -1,7 +1,7 @@
 // Binding-agnostic callback runtime. Only `registerCallbacks` (which talks to a
 // native vs wasm instance) lives in each binding package.
 
-import type { ColorMixResult, PatternHelpers, ProjectCallbacks, RawToken, TokenLookup, TransformArgs } from './index'
+import type { ColorMixResult, PatternHelpers, ProjectCallbacks, RawToken, TokenLookup, TransformArgs } from './types'
 
 export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: ProjectCallbacks) {
   assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])

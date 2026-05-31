@@ -136,10 +136,10 @@ describe('createNodeDriver reload', () => {
     expect({ hasChanged: diff.hasChanged, dependencies: diff.dependencies, patterns: diff.patterns })
       .toMatchInlineSnapshot(`
         {
+          "hasChanged": true,
           "dependencies": [
             "patterns",
           ],
-          "hasChanged": true,
           "patterns": [
             "stack",
           ],
