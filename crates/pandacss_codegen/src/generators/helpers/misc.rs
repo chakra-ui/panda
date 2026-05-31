@@ -1,3 +1,6 @@
+//! Miscellaneous runtime helpers: `memo`, `uniq`, `withoutSpace`, the JS
+//! `toHash`, and base-condition filtering.
+
 use indoc::indoc;
 
 use crate::{Item, Param, TsType};

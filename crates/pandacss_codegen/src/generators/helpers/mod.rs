@@ -1,3 +1,8 @@
+//! The `helpers` artifact: the shared runtime functions the other artifacts
+//! import (`memo`, `splitProps`, css normalize/merge, object utils, `cx`'s
+//! `uniq`, …). [`module`] fixes their emit order; the submodules group them by
+//! concern (`css`, `object`, `misc`, `split_props`).
+
 mod css;
 mod misc;
 mod object;

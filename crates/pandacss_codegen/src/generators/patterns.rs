@@ -1,3 +1,7 @@
+//! The `patterns/*` artifacts: one runtime function + type per configured
+//! pattern (`stack`, `grid`, …), generated from each pattern's prop set and
+//! transform source.
+
 use std::collections::BTreeSet;
 
 use pandacss_config::{

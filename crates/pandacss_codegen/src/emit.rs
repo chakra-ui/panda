@@ -1,3 +1,8 @@
+//! Print an [`ast::Module`](crate::ast) to source text. Two modes: emit a
+//! single `.ts` source file, or *split* into a runtime file (`.js`/`.mjs`, with
+//! TS types stripped via [`strip_typescript`]) plus a `.d.ts`. [`EmitTarget`]
+//! selects which projection a given print pass produces.
+
 use crate::ast::{
     Assignment, Block, ConstDecl, ExportDecl, Expr, FunctionDecl, ImportDecl, ImportKind,
     ImportSpecifier, InterfaceDecl, Item, ItemNode, ItemRole, JsDoc, JsxAttr, JsxElement, JsxName,
@@ -125,6 +130,8 @@ fn print_module_with_format(
             .map(|item| print_item(item, target, specifiers, format)),
     );
 
+    // Drop blank lines only for the `.d.ts` (where a type-stripped runtime item
+    // leaves an empty slot); the `.ts`/`.js` keep them as intentional spacing.
     lines
         .into_iter()
         .filter(|line| !line.is_empty() || !matches!(target, EmitTarget::Dts))
@@ -142,6 +149,9 @@ fn should_print_import(import: &ImportDecl, target: EmitTarget) -> bool {
     }
 }
 
+/// Item visibility per target: `Both` everywhere, `Runtime` items only in the
+/// `.ts`/`.js`, `Type` items only in the `.ts`/`.d.ts`. This is what splits one
+/// AST into the runtime + types projections.
 fn should_print_item(item: &Item, target: EmitTarget) -> bool {
     match (item.role, target) {
         (ItemRole::Both, _)

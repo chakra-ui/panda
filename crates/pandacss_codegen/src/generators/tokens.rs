@@ -1,3 +1,6 @@
+//! The `tokens` artifact: the `token()` runtime (a flat `path -> value` map
+//! plus `var` lookups) generated from the config's token dictionary.
+
 use crate::{
     Artifact, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl, Item,
     ItemNode, Module, TsType,

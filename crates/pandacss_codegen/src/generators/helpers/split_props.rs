@@ -1,3 +1,6 @@
+//! The `splitProps` runtime helper: partition a props object by key lists,
+//! used by recipes/patterns to peel variant props off the rest.
+
 use indoc::indoc;
 
 use crate::{Item, Param, TsType};

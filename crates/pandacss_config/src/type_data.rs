@@ -1,3 +1,11 @@
+//! Config-derived type information for codegen and tooling.
+//!
+//! [`TypeData`] distills a resolved config into the shapes the `.d.ts`
+//! generators need — condition keys, token categories/values, utility property
+//! types, pattern/recipe variant types — built via the `*_type_data` methods on
+//! [`UserConfig`]. [`Spec`] wraps it with the extra bits an external introspector
+//! wants (property order, jsx factory, import map).
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
@@ -21,6 +29,8 @@ pub struct Spec {
     pub import_map: Option<ImportMap>,
 }
 
+/// The full derived type surface, one field per config section the `.d.ts`
+/// generators consume.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeData {

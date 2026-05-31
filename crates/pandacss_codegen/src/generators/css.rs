@@ -1,3 +1,5 @@
+//! The `css` artifact: the `css()` / `mergeCss()` runtime + its types.
+
 use std::collections::BTreeMap;
 
 use crate::{

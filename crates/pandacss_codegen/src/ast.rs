@@ -1,3 +1,8 @@
+//! A minimal TypeScript AST — just the node kinds the generators emit, built
+//! fluently and printed by [`crate::emit`]. Each [`Item`] is tagged with an
+//! [`ItemRole`] (runtime vs type-only) so the split-output path can drop the
+//! type items from the `.js` and keep them in the `.d.ts`.
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Module {
     pub imports: Vec<ImportDecl>,

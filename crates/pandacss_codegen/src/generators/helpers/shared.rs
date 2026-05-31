@@ -1,3 +1,6 @@
+//! Small AST builders shared by the helper generators — wrap a raw-body
+//! function in an `Item` so each helper module reads as a list of declarations.
+
 use crate::{Block, FunctionDecl, Item, ItemNode, Param, Stmt, TsType};
 
 pub(super) fn helper_function<const N: usize>(

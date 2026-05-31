@@ -236,6 +236,9 @@ pub enum ValidationMode {
     Error,
 }
 
+/// Output format for generated artifacts. `Ts` emits source `.ts` directly;
+/// `Js`/`Mjs` split each module into a runtime file (`CommonJS` / ESM) plus a
+/// `.d.ts`. Drives the consumer codegen emit mode + file extensions.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CodegenFormat {

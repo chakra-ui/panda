@@ -1,3 +1,6 @@
+//! The `sva` artifact: the slot-recipe-creator factory `sva()`. Like `cva`,
+//! a fixed runtime impl independent of config.
+
 use crate::{
     Artifact, ArtifactFile, ArtifactId, ConstDecl, DependencySet, Expr, ImportDecl, Item, ItemNode,
     Module, TsType,

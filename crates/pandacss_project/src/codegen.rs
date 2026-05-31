@@ -21,6 +21,8 @@ impl Project {
         }
     }
 
+    /// Assemble the full [`TypeData`] from the project's compiled state (token
+    /// dictionary, utilities) plus config-derived sections.
     #[must_use]
     pub fn type_data(&self, user_config: &UserConfig) -> TypeData {
         let _span = tracing::trace_span!("type_data").entered();
@@ -67,6 +69,8 @@ impl Project {
             .find(|artifact| artifact.id == id)
     }
 
+    /// Regenerate only the artifacts whose declared config dependencies
+    /// intersect `changed` — the incremental-codegen path for config edits.
     #[must_use]
     pub fn generate_affected_artifacts(
         &self,

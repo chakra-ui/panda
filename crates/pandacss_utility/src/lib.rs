@@ -215,6 +215,8 @@ impl Utility {
         &self.prefix
     }
 
+    /// Project the utility metadata into the codegen [`UtilityTypeData`]
+    /// (property value types, shorthands, value aliases, class names).
     #[must_use]
     pub fn type_data(&self) -> UtilityTypeData {
         let mut properties = BTreeMap::new();
@@ -488,6 +490,9 @@ impl Utility {
     }
 }
 
+/// Type info for one utility property: its literal value keys (sorted) and the
+/// name of the value-alias type its values resolve to (a token category alias,
+/// or `<Prop>Value`).
 fn property_type_data(name: &str, property: &UtilityProperty) -> UtilityPropertyTypeData {
     let mut literals = property.values.keys().cloned().collect::<Vec<_>>();
     literals.sort();
@@ -507,6 +512,9 @@ fn property_type_data(name: &str, property: &UtilityProperty) -> UtilityProperty
     }
 }
 
+/// Build the union of value-type parts a property's alias accepts — token
+/// category, raw CSS property values, configured literals, and an optional
+/// primitive fallback — in the order they should appear in the generated type.
 fn value_alias_type_data(property: &UtilityPropertyTypeData) -> ValueAliasTypeData {
     let capacity = property.literals.len()
         + usize::from(property.token_category.is_some())
