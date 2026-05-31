@@ -98,6 +98,12 @@ class FallbackCompiler implements Compiler {
       diagnostics: [],
     }
   }
+  layerCss() {
+    return ''
+  }
+  splitCss() {
+    return []
+  }
   generateArtifacts() {
     return []
   }

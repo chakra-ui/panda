@@ -708,6 +708,50 @@ impl Compiler {
         Ok(output)
     }
 
+    /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
+    /// (byte offsets stay valid); unknown layer names are skipped.
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn layer_css(&mut self, env: Env, layers: Vec<String>) -> napi::Result<String> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("layer_css").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let Compiler {
+            inner, user_config, ..
+        } = self;
+        let token_dictionary = inner.config().token_dictionary();
+        let output = crate::compile::build_stylesheet_output(
+            inner,
+            user_config,
+            token_dictionary,
+            &static_pattern_atoms,
+        );
+        let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
+            .iter()
+            .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
+            .collect();
+        crate::flush_tracing();
+        Ok(output.get_layer_css(&selected))
+    }
+
+    /// Split the stylesheet into per-file outputs (one per layer + per recipe,
+    /// plus `recipes.css` / `styles.css` index files) for `--splitting`.
+    #[napi]
+    pub fn split_css(&mut self, env: Env) -> napi::Result<Vec<crate::compile::SplitCssFile>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("split_css").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let Compiler {
+            inner, user_config, ..
+        } = self;
+        let files = crate::compile::build_split_css(inner, user_config, &static_pattern_atoms);
+        crate::flush_tracing();
+        Ok(files)
+    }
+
     #[napi(js_name = generateArtifacts)]
     pub fn generate_artifacts(
         &self,

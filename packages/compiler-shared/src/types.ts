@@ -141,6 +141,17 @@ export interface LayerNames {
   utilities: string
 }
 
+/** The five cascade layers, in emit order. */
+export type StylesheetLayerName = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
+
+/** One file in a `--splitting` output set — a relative path (`tokens.css`,
+ *  `recipes/button.css`, `styles.css`, …) and its CSS. Written verbatim by the
+ *  host, the same model as a codegen artifact file. */
+export interface CssFile {
+  path: string
+  code: string
+}
+
 /** A source glob with its static base directory (the dir a watcher subscribes to). */
 export interface SourceEntry {
   base: string
@@ -397,6 +408,14 @@ export interface Compiler {
    *  native, in-memory on wasm). Returns the written paths. */
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   compile(): CompileOutput
+  /** CSS for the named layers only, concatenated in order — sliced in Rust so
+   *  byte offsets stay valid. Pairs with `layers()` (names). Backs
+   *  `cssgen <layer>` / `--minimal`. */
+  layerCss(layers: StylesheetLayerName[]): string
+  /** The stylesheet as a set of writable files (one per layer + per recipe,
+   *  plus `recipes.css` / `styles.css` index files) — backs `cssgen --splitting`.
+   *  The host writes each `path -> code`, the same model as `writeArtifacts`. */
+  splitCss(): CssFile[]
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
   generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]

@@ -1,7 +1,9 @@
 use std::{borrow::Cow, ops::Range};
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry};
+use pandacss_encoder::{
+    Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot,
+};
 use pandacss_extractor::Literal;
 use pandacss_shared::{number_to_js_string, split_important};
 use pandacss_tokens::{TokenCssVar, TokenCssVars, TokenDictionary};
@@ -97,6 +99,40 @@ pub fn emit<'a>(
         css: writer.finish(),
         layer_ranges,
     }
+}
+
+/// Per-recipe CSS for split output: groups the recipe layer's base + variant
+/// groups by recipe name (first-seen order) and re-emits each as its own
+/// `@layer recipes { … }` block. Returns `(recipe_name, css)`.
+#[must_use]
+pub fn emit_recipe_split<'a>(
+    config: &'a UserConfig,
+    utility: &'a Utility,
+    recipes: &'a EncodedRecipesSnapshot,
+    minify: bool,
+) -> Vec<(String, String)> {
+    let cx = EmitContext::new(config, utility);
+    let recipes_layer = &config.layers.recipes;
+    let mut grouped: indexmap::IndexMap<&str, Vec<&RecipeStyleGroupSnapshot>> =
+        indexmap::IndexMap::new();
+    for group in recipes.base.iter().chain(recipes.variants.iter()) {
+        grouped
+            .entry(group.recipe.as_ref())
+            .or_default()
+            .push(group);
+    }
+    grouped
+        .into_iter()
+        .map(|(name, groups)| {
+            let mut writer = CssWriter::new(minify, 256);
+            write_layer(&mut writer, recipes_layer, |writer| {
+                for group in groups {
+                    cx.write_recipe_group(writer, &group.class_name, &group.entries);
+                }
+            });
+            (name.to_owned(), writer.finish())
+        })
+        .collect()
 }
 
 /// `IndexMap` keeps custom-layer emit order deterministic (first-seen).

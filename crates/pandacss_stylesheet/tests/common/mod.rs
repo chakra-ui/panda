@@ -54,3 +54,25 @@ pub fn compile_output(
         },
     )
 }
+
+#[allow(dead_code)]
+pub fn split_output(config: &UserConfig, source: &str) -> Vec<pandacss_stylesheet::SplitCssFile> {
+    let system = System::new(config.clone()).expect("valid project");
+    let mut project = Project::new(system);
+    project.parse_file("/style.ts", source);
+    let snapshots = project.stylesheet_snapshots(config);
+    pandacss_stylesheet::split_css(
+        &StylesheetInput {
+            config,
+            token_dictionary: None,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &[],
+        },
+        &StylesheetOptions {
+            include_static: true,
+            ..Default::default()
+        },
+    )
+}

@@ -662,6 +662,47 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
+    /// (byte offsets stay valid); unknown layer names are skipped.
+    #[wasm_bindgen(js_name = layerCss)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "wasm-bindgen requires owned Vec<String>"
+    )]
+    pub fn layer_css(&mut self, layers: Vec<String>) -> String {
+        let _span = tracing::trace_span!("layer_css", method = "wasm").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms();
+        let token_dictionary = self.inner.config().token_dictionary();
+        let output = build_stylesheet_output(
+            &mut self.inner,
+            &self.user_config,
+            token_dictionary,
+            &static_pattern_atoms,
+        );
+        let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
+            .iter()
+            .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
+            .collect();
+        output.get_layer_css(&selected)
+    }
+
+    /// Split the stylesheet into per-file outputs (one per layer + per recipe,
+    /// plus `recipes.css` / `styles.css` index files) for `--splitting`.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing fails.
+    #[wasm_bindgen(js_name = splitCss)]
+    pub fn split_css(&mut self) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("split_css", method = "wasm").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms();
+        let files = build_split_css(&mut self.inner, &self.user_config, &static_pattern_atoms);
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        files
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Generate every codegen artifact from the resolved project state.
     ///
     /// # Errors
@@ -922,27 +963,8 @@ fn build_compile_output(
         }
         paths.into_iter().collect()
     });
-    let snapshots = project.stylesheet_snapshots(user_config);
-    let options = pandacss_stylesheet::StylesheetOptions {
-        minify: user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false),
-        include_static: true,
-        source_map: false,
-    };
-    let output = pandacss_stylesheet::compile(
-        pandacss_stylesheet::StylesheetInput {
-            config: user_config,
-            token_dictionary,
-            atoms: snapshots.atoms,
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms,
-        },
-        &options,
-    );
+    let output =
+        build_stylesheet_output(project, user_config, token_dictionary, static_pattern_atoms);
     let diagnostics: Vec<pandacss_shared::Diagnostic> = project
         .diagnostics()
         .iter()
@@ -960,6 +982,80 @@ fn build_compile_output(
         layer_ranges: layer_ranges_from(&output.layer_ranges),
         diagnostics,
     }
+}
+
+/// One file in a `--splitting` output set. Host writes `path -> code`.
+#[derive(serde::Serialize)]
+struct SplitCssFileSerde {
+    path: String,
+    code: String,
+}
+
+/// Split the stylesheet into per-file outputs (layers + recipes + indexes).
+fn build_split_css(
+    project: &mut pandacss_project::Project,
+    user_config: &pandacss_config::UserConfig,
+    static_pattern_atoms: &[CoreAtom],
+) -> Vec<SplitCssFileSerde> {
+    let token_dictionary = project.config().token_dictionary();
+    let snapshots = project.stylesheet_snapshots(user_config);
+    let options = pandacss_stylesheet::StylesheetOptions {
+        minify: user_config
+            .extra
+            .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false),
+        include_static: true,
+        source_map: false,
+    };
+    pandacss_stylesheet::split_css(
+        &pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+        },
+        &options,
+    )
+    .into_iter()
+    .map(|file| SplitCssFileSerde {
+        path: file.path,
+        code: file.code,
+    })
+    .collect()
+}
+
+/// Raw stylesheet (css + layer ranges); shared by `build_compile_output` and
+/// `css_for_layers`.
+fn build_stylesheet_output(
+    project: &mut pandacss_project::Project,
+    user_config: &pandacss_config::UserConfig,
+    token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
+    static_pattern_atoms: &[CoreAtom],
+) -> pandacss_stylesheet::StylesheetOutput {
+    let snapshots = project.stylesheet_snapshots(user_config);
+    let options = pandacss_stylesheet::StylesheetOptions {
+        minify: user_config
+            .extra
+            .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false),
+        include_static: true,
+        source_map: false,
+    };
+    pandacss_stylesheet::compile(
+        pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+        },
+        &options,
+    )
 }
 
 fn layer_ranges_from(r: &pandacss_stylesheet::StylesheetLayerRanges) -> CompileLayerRangesSerde {

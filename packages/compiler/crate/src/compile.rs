@@ -151,27 +151,8 @@ pub(crate) fn build_compile_output(
         }
         paths.into_iter().collect()
     });
-    let snapshots = project.stylesheet_snapshots(user_config);
-    let options = pandacss_stylesheet::StylesheetOptions {
-        minify: user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false),
-        include_static: true,
-        source_map: false,
-    };
-    let output = pandacss_stylesheet::compile(
-        pandacss_stylesheet::StylesheetInput {
-            config: user_config,
-            token_dictionary,
-            atoms: snapshots.atoms,
-            encoded_recipes: snapshots.encoded_recipes,
-            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
-            static_pattern_atoms,
-        },
-        &options,
-    );
+    let output =
+        build_stylesheet_output(project, user_config, token_dictionary, static_pattern_atoms);
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
@@ -189,6 +170,80 @@ pub(crate) fn build_compile_output(
             .map(crate::convert::convert_diagnostic)
             .collect(),
     }
+}
+
+/// One file in a `--splitting` output set. Host writes `path -> code`.
+#[napi(object)]
+pub struct SplitCssFile {
+    pub path: String,
+    pub code: String,
+}
+
+/// Split the stylesheet into per-file outputs (layers + recipes + indexes).
+pub(crate) fn build_split_css(
+    project: &mut pandacss_project::Project,
+    user_config: &UserConfig,
+    static_pattern_atoms: &[CoreAtom],
+) -> Vec<SplitCssFile> {
+    let token_dictionary = project.config().token_dictionary();
+    let snapshots = project.stylesheet_snapshots(user_config);
+    let options = pandacss_stylesheet::StylesheetOptions {
+        minify: user_config
+            .extra
+            .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false),
+        include_static: true,
+        source_map: false,
+    };
+    pandacss_stylesheet::split_css(
+        &pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+        },
+        &options,
+    )
+    .into_iter()
+    .map(|file| SplitCssFile {
+        path: file.path,
+        code: file.code,
+    })
+    .collect()
+}
+
+/// Compile the project's atoms + recipes into a raw stylesheet (css + layer
+/// ranges). Shared by `build_compile_output` and `css_for_layers`.
+pub(crate) fn build_stylesheet_output(
+    project: &mut pandacss_project::Project,
+    user_config: &UserConfig,
+    token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
+    static_pattern_atoms: &[CoreAtom],
+) -> pandacss_stylesheet::StylesheetOutput {
+    let snapshots = project.stylesheet_snapshots(user_config);
+    let options = pandacss_stylesheet::StylesheetOptions {
+        minify: user_config
+            .extra
+            .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false),
+        include_static: true,
+        source_map: false,
+    };
+    pandacss_stylesheet::compile(
+        pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+        },
+        &options,
+    )
 }
 
 fn layer_ranges_from(r: &pandacss_stylesheet::StylesheetLayerRanges) -> CompileLayerRanges {
