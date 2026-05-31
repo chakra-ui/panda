@@ -132,6 +132,26 @@ There is deliberately no `optimize` option. A previous raw character whitespace 
 valid CSS, for example descendant selectors (`.x :hover`) and quoted values (`content: "a  b"`). Any future optimizer
 must parse CSS and preserve CSS semantics.
 
+## Merged vs split output
+
+The stylesheet has two rendering modes, both off the same encoded atoms/recipes:
+
+- **Merged** — `compile()` → one cascade string (the common sink). It also returns `StylesheetLayerRanges` (UTF-8 **byte**
+  offsets into `css`, one per layer). `StylesheetOutput::get_layer_css(&[StylesheetLayer])` slices those ranges **in
+  Rust** — JS must not slice the byte offsets (it counts UTF-16 units; non-ASCII CSS would corrupt). The binding exposes
+  this as `compiler.layerCss(layers)` for `cssgen <type>` / `--minimal` (a merged subset string).
+- **Split** — `split_css()` → `Vec<SplitCssFile { path, code }>`, the `--splitting` file set: one file per non-recipe
+  layer (`reset.css`/`global.css`/`tokens.css`/`utilities.css`), one per recipe (`recipes/<name>.css`), and the
+  `recipes.css` / `styles.css` index files. The host writes each `path → code` — the same model as a codegen artifact,
+  not a CSS string. Themes will slot in as more `SplitCssFile`s when per-theme emission lands.
+
+The recipes layer is why split is a **separate emit pass, not a slice** of the merged output: `compile()` writes all
+recipes into one `@layer recipes {…}` block, while `emit_recipe_split()` regroups the base+variant groups by recipe name
+(first-seen) and re-emits each as its own `@layer recipes {…}` block. The two are CSS-equivalent (browsers merge
+same-named layers) but byte-different, so `compile()` stays the canonical merged renderer and `split_css` owns the
+multi-file form. Only the five layers are isolable; `keyframes`/`static` share a layer and would need their own
+sub-ranges to split (deferred).
+
 ## Related
 
 - [Compiler lifecycle](./compiler-lifecycle.md)

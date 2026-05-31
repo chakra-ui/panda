@@ -31,6 +31,15 @@ pub struct StylesheetOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
+/// One file in a `--splitting` output set: a relative path (`tokens.css`,
+/// `recipes/button.css`, `styles.css`, …) and its CSS. The host writes each
+/// `path -> code` verbatim — same shape as a codegen artifact file.
+#[derive(Debug, Clone)]
+pub struct SplitCssFile {
+    pub path: String,
+    pub code: String,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum StylesheetLayer {
     Reset,
@@ -38,6 +47,22 @@ pub enum StylesheetLayer {
     Tokens,
     Recipes,
     Utilities,
+}
+
+impl StylesheetLayer {
+    /// Map a cascade-layer name (`"reset"`, `"tokens"`, …) to its variant.
+    /// Unknown names return `None` so callers can skip them.
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "reset" => Some(Self::Reset),
+            "base" => Some(Self::Base),
+            "tokens" => Some(Self::Tokens),
+            "recipes" => Some(Self::Recipes),
+            "utilities" => Some(Self::Utilities),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -166,6 +191,124 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         diagnostics,
         layer_ranges: emitted.layer_ranges,
     }
+}
+
+/// Split the compiled stylesheet into per-file outputs for `--splitting`: one
+/// file per layer, one per recipe, plus `recipes.css` / `styles.css` index
+/// files. Each file is written verbatim by the host (same model as artifacts).
+#[must_use]
+pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Vec<SplitCssFile> {
+    let mut diagnostics = Vec::new();
+    let token_dictionary = match input.token_dictionary.clone() {
+        Some(dictionary) => Some(dictionary),
+        None => TokenDictionary::from_config(input.config)
+            .ok()
+            .flatten()
+            .map(Arc::new),
+    };
+    let utility = utility_from_config(input.config, token_dictionary.clone());
+
+    let mut atoms = input.atoms.iter().collect::<Vec<_>>();
+    let generated = if options.include_static {
+        static_css::expand(input.config, &utility, &mut diagnostics)
+    } else {
+        Vec::new()
+    };
+    atoms.extend(generated.iter());
+    if options.include_static {
+        atoms.extend(input.static_pattern_atoms.iter());
+    }
+
+    let merged_recipes = if options.include_static {
+        input.static_encoded_recipes.and_then(|static_recipes| {
+            (!is_empty_encoded_recipes(static_recipes))
+                .then(|| merge_encoded_recipes(input.encoded_recipes, static_recipes))
+        })
+    } else {
+        None
+    };
+    let recipes = merged_recipes.as_ref().unwrap_or(input.encoded_recipes);
+
+    let full = emitter::emit(
+        input.config,
+        &utility,
+        token_dictionary.as_deref(),
+        atoms,
+        recipes,
+        options.minify,
+    );
+
+    let mut files: Vec<SplitCssFile> = Vec::new();
+    let mut imports: Vec<String> = Vec::new();
+
+    // One file per (non-recipe) layer.
+    for (layer, file) in [
+        (StylesheetLayer::Reset, "reset.css"),
+        (StylesheetLayer::Base, "global.css"),
+        (StylesheetLayer::Tokens, "tokens.css"),
+        (StylesheetLayer::Utilities, "utilities.css"),
+    ] {
+        let css = full
+            .layer_ranges
+            .get(layer)
+            .and_then(|range| full.css.get(range.clone()))
+            .unwrap_or("");
+        if !css.is_empty() {
+            files.push(SplitCssFile {
+                path: file.to_owned(),
+                code: ensure_trailing_newline(css),
+            });
+            imports.push(format!("@import './{file}';"));
+        }
+    }
+
+    // One file per recipe, plus the `recipes.css` import index.
+    let recipe_files = emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
+    if !recipe_files.is_empty() {
+        let mut recipe_imports = Vec::with_capacity(recipe_files.len());
+        for (name, css) in &recipe_files {
+            recipe_imports.push(format!("@import './recipes/{name}.css';"));
+            files.push(SplitCssFile {
+                path: format!("recipes/{name}.css"),
+                code: ensure_trailing_newline(css),
+            });
+        }
+        files.push(SplitCssFile {
+            path: "recipes.css".to_owned(),
+            code: format!("{}\n", recipe_imports.join("\n")),
+        });
+        imports.push("@import './recipes.css';".to_owned());
+    }
+
+    // `styles.css` entry: the @layer order declaration + the imports above.
+    let mut index = layer_order_line(&input.config.layers);
+    index.push('\n');
+    if !imports.is_empty() {
+        index.push_str(&imports.join("\n"));
+        index.push('\n');
+    }
+    files.insert(
+        0,
+        SplitCssFile {
+            path: "styles.css".to_owned(),
+            code: index,
+        },
+    );
+
+    files
+}
+
+fn ensure_trailing_newline(css: &str) -> String {
+    if css.ends_with('\n') {
+        css.to_owned()
+    } else {
+        format!("{css}\n")
+    }
+}
+
+fn layer_order_line(layers: &pandacss_config::CascadeLayers) -> String {
+    let names: Vec<&str> = layers.ordered().into_iter().map(|(_, name)| name).collect();
+    format!("@layer {};", names.join(", "))
 }
 
 /// Emits one warning per duplicate name when two or more semantic layers
