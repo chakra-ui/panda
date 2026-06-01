@@ -421,8 +421,6 @@ fn emits_ts_system_and_index_types() {
 
         export type * from './selectors';
 
-        export type * from './csstype';
-
         export type * from './tokens';
 
         export type * from './values';
@@ -434,6 +432,8 @@ fn emits_ts_system_and_index_types() {
         export type * from './pattern';
 
         export type * from './recipe';
+
+        export type { CssProperties } from './csstype';
         "}
         .trim()
     );
@@ -627,8 +627,6 @@ fn can_emit_extensioned_type_specifiers() {
 
         export * from './selectors.d.mts';
 
-        export * from './csstype.d.mts';
-
         export * from './tokens.d.mts';
 
         export * from './values.d.mts';
@@ -640,7 +638,47 @@ fn can_emit_extensioned_type_specifiers() {
         export * from './pattern.d.mts';
 
         export * from './recipe.d.mts';
+
+        export { CssProperties } from './csstype.d.mts';
         "}
         .trim()
     );
+}
+
+#[test]
+fn csstype_module_exposes_keyword_unions_and_pseudos() {
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input(),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    let types = artifact(&artifacts, ArtifactId::Types);
+    let csstype = file(types, "types/csstype.ts");
+
+    // Public surface the rest of the generated types depend on: `properties`
+    // indexes `CssProperties["..."]` and `selectors` imports `Pseudos`.
+    assert!(csstype.contains("export interface CssProperties"));
+    assert!(csstype.contains("export type Pseudos"));
+    assert!(csstype.contains("export namespace Property"));
+    assert!(csstype.contains("export namespace DataType"));
+
+    // Per-property keyword unions survive, so `CssProperties["display"]` keeps
+    // autocomplete instead of collapsing to a primitive.
+    assert!(csstype.contains("export type Display ="));
+
+    // `DataType` members must be exported. Upstream leaves them bare, which only
+    // type-checks because csstype ships as a `.d.ts` consumed under skipLibCheck.
+    assert!(csstype.contains("export type Color ="));
+
+    // The duplicate families Panda never consumes are dropped from the output.
+    assert!(!csstype.contains("PropertiesHyphen"));
+    assert!(!csstype.contains("PropertiesFallback"));
+    assert!(!csstype.contains("HtmlAttributes"));
+    assert!(!csstype.contains("namespace AtRule"));
+
+    // The asset's provenance header stays on disk but never reaches the artifact.
+    assert!(csstype.starts_with("export "));
+    assert!(!csstype.contains("vendor-csstype"));
 }
