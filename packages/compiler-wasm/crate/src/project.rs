@@ -5,18 +5,22 @@
 //! the same in-memory FS so `import { x } from './tokens'` resolves
 //! through whatever the JS host has populated.
 
+use lru::LruCache;
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::CrossFileResolver;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
-use pandacss_fs::{GlobOptions, MemoryFileSystem};
+use pandacss_fs::{FileSystem, GlobOptions, MemoryFileSystem, OxcResolverFileSystem};
 use serde::{Deserialize, Serialize as _};
 use std::collections::{BTreeSet, HashMap};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
-use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
+use crate::cache::{
+    MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, TransformCache,
+    UtilityTransformCacheKey,
+};
 use crate::fs::WasmFileSystem;
 use crate::matcher::from_core_token_dictionary;
 use pandacss_codegen::{
@@ -141,6 +145,7 @@ impl WasmCompiler {
     pub fn register_utility_transform(&mut self, id: String, callback: js_sys::Function) {
         self.callbacks.utility_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_utility();
+        self.inner.bump_parse_epoch();
     }
 
     /// Register a JS-backed pattern transform callback. The wrapper package
@@ -149,65 +154,45 @@ impl WasmCompiler {
     pub fn register_pattern_transform(&mut self, id: String, callback: js_sys::Function) {
         self.callbacks.pattern_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_pattern();
+        self.inner.bump_parse_epoch();
     }
 
-    /// Extract + encode a single file. Replaces any prior contribution
-    /// from `path`.
+    /// Read a source file from the in-memory filesystem and parse it.
     ///
     /// # Errors
     /// Returns a JS error if serializing the per-call report fails.
     #[wasm_bindgen(js_name = parseFile)]
-    pub fn parse_file(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
+    pub fn parse_file(&mut self, path: &str) -> Result<JsValue, JsValue> {
+        let source = self
+            .fs
+            .read_to_string(Path::new(path))
+            .map_err(|err| JsValue::from_str(&format!("failed to read `{path}`: {err}")))?;
+        self.parse_file_source(path, &source)
+    }
+
+    /// Extract + encode provided source text. Replaces any prior contribution
+    /// from `path`.
+    ///
+    /// # Errors
+    /// Returns a JS error if serializing the per-call report fails.
+    #[wasm_bindgen(js_name = parseFileSource)]
+    pub fn parse_file_source(&mut self, path: &str, source: &str) -> Result<JsValue, JsValue> {
         let report = self.parse_inner(path, source);
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-        report
-            .serialize(&serializer)
-            .map_err(|err| JsValue::from_str(&err.to_string()))
-    }
-
-    /// Discover + parse every source file matching the config's
-    /// `include`/`exclude` (overridable via `options`) from the in-memory
-    /// filesystem the host populated via `WasmFileSystem.addFile`. Returns
-    /// `{ count, diagnostics }`.
-    ///
-    /// # Errors
-    /// Returns a JS error when `options` is malformed, the glob fails, or
-    /// serializing the report fails.
-    pub fn scan(&mut self, options: JsValue) -> Result<JsValue, JsValue> {
-        let opts = glob_options(&self.user_config, options)?;
-        let mut sources: Vec<(String, String)> = Vec::new();
-        pandacss_project::scan_files(&self.fs, &opts, |path, source| {
-            sources.push((path.to_owned(), source.to_owned()));
-        })
-        .map_err(|err| JsValue::from_str(&format!("scan glob failed: {err}")))?;
-
-        let mut count: u32 = 0;
-        let mut diagnostics = Vec::new();
-        for (path, source) in sources {
-            let report = self.parse_inner(&path, &source);
-            count = count.saturating_add(1);
-            diagnostics.extend(report.diagnostics);
-        }
-        let _span = tracing::trace_span!("boundary_encode", method = "scan").entered();
-        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-        ScanReportSerde { count, diagnostics }
+        parse_file_report(path, report)
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
     /// Source paths matching the config's `include`/`exclude` (overridable via
-    /// `options`) from the in-memory filesystem. For the host's watch list.
+    /// `options`) from the in-memory filesystem. For discovery and the host's
+    /// watch list.
     ///
     /// # Errors
-    /// Returns a JS error when `options` is malformed or the glob fails.
-    pub fn glob(&self, options: JsValue) -> Result<JsValue, JsValue> {
-        use pandacss_fs::FileSystem;
-        let opts = glob_options(&self.user_config, options)?;
-        let paths = self
-            .fs
-            .glob(&opts)
-            .map_err(|err| JsValue::from_str(&format!("glob failed: {err}")))?;
+    /// Returns a JS error when `options` is malformed or the scan fails.
+    pub fn scan(&self, options: JsValue) -> Result<JsValue, JsValue> {
+        let paths = self.scan_paths(options)?;
         let strings: Vec<String> = paths
             .into_iter()
             .map(|path| path.to_string_lossy().into_owned())
@@ -215,7 +200,40 @@ impl WasmCompiler {
         serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
-    /// Shared parse path used by `parse_file` and `scan` — wires the
+    /// Read + parse source paths returned from `scan()`. Returns one report per
+    /// successfully parsed path.
+    ///
+    /// # Errors
+    /// Returns a JS error when `paths` is malformed or serializing the report fails.
+    #[wasm_bindgen(js_name = parseFiles)]
+    pub fn parse_files(&mut self, paths: JsValue) -> Result<JsValue, JsValue> {
+        let paths: Vec<String> = serde_wasm_bindgen::from_value(paths)
+            .map_err(|err| JsValue::from_str(&format!("invalid source paths: {err}")))?;
+        let mut reports = Vec::with_capacity(paths.len());
+        for path in paths {
+            let path = PathBuf::from(path);
+            let Ok(source) = self.fs.read_to_string(&path) else {
+                continue;
+            };
+            let path = path.to_string_lossy();
+            let report = self.parse_inner(&path, &source);
+            reports.push(parse_file_report(&path, report));
+        }
+        let _span = tracing::trace_span!("boundary_encode", method = "parse_files").entered();
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        reports
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    fn scan_paths(&self, options: JsValue) -> Result<Vec<PathBuf>, JsValue> {
+        let opts = glob_options(&self.user_config, options)?;
+        self.fs
+            .glob(&opts)
+            .map_err(|err| JsValue::from_str(&format!("scan failed: {err}")))
+    }
+
+    /// Shared parse path used by `parse_file` and `parseFiles` — wires the
     /// registered transform callbacks (if any) and returns the core report.
     fn parse_inner(&mut self, path: &str, source: &str) -> pandacss_project::ParseFileReport {
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
@@ -265,20 +283,33 @@ impl WasmCompiler {
     ///
     /// # Errors
     /// Returns a JS error string when serializing the result fails.
-    pub fn extract(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
+    #[wasm_bindgen(js_name = extractFileSource)]
+    pub fn extract_file_source(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
         let result = self.inner.extract(path, source);
-        let _span = tracing::trace_span!("boundary_encode", method = "extract").entered();
+        let _span =
+            tracing::trace_span!("boundary_encode", method = "extract_file_source").entered();
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
-    /// Re-parse `path` *only if* already known. Returns `true` when the
-    /// file was present and got re-parsed.
+    /// Re-read `path` from the in-memory filesystem and re-parse it only if
+    /// already known. Returns `true` when the file was present and got
+    /// re-parsed.
     #[wasm_bindgen(js_name = refreshFile)]
+    pub fn refresh_file(&mut self, path: &str) -> Result<bool, JsValue> {
+        let source = self
+            .fs
+            .read_to_string(Path::new(path))
+            .map_err(|err| JsValue::from_str(&format!("failed to read `{path}`: {err}")))?;
+        Ok(self.refresh_file_source(path, &source))
+    }
+
+    /// Re-parse provided source text only if `path` is already known.
+    #[wasm_bindgen(js_name = refreshFileSource)]
     #[must_use]
-    pub fn refresh_file(&mut self, path: &str, source: &str) -> bool {
+    pub fn refresh_file_source(&mut self, path: &str, source: &str) -> bool {
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_pattern_transforms && !has_utility_transforms {
@@ -367,14 +398,16 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
-    /// Classified usage sites (token / property / recipe / pattern) with ranges.
+    /// Stateless source inspection for tooling (reporting, lint, IDE). Returns
+    /// classified Panda usage sites plus file-local extraction diagnostics.
     ///
     /// # Errors
     /// Returns a JS error if serialization fails.
-    pub fn usages(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let sites = self.inner.usages(path, source);
+    #[wasm_bindgen(js_name = inspectFileSource)]
+    pub fn inspect_file_source(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
+        let result = self.inner.inspect_file_source(path, source);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
-        sites
+        result
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
@@ -1126,12 +1159,30 @@ fn with_wasm_fs(
     project.with_cross_file(CrossFileResolver::with_fs(fs.inner.clone()))
 }
 
-/// Serialized `scan` result. Mirrors the native `ScanReport`.
+/// Serialized per-file parse report. Mirrors the native `ParseFileReport`.
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-struct ScanReportSerde {
-    count: u32,
+struct ParseFileReportSerde {
+    path: String,
+    css_calls: u32,
+    cva_calls: u32,
+    sva_calls: u32,
+    jsx_usages: u32,
     diagnostics: Vec<pandacss_project::Diagnostic>,
+}
+
+fn parse_file_report(
+    path: &str,
+    report: pandacss_project::ParseFileReport,
+) -> ParseFileReportSerde {
+    ParseFileReportSerde {
+        path: path.to_owned(),
+        css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
+        cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
+        sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
+        jsx_usages: u32::try_from(report.jsx_usages).unwrap_or(u32::MAX),
+        diagnostics: report.diagnostics,
+    }
 }
 
 /// Serialized source entry. Mirrors the native `SourceEntry`.
@@ -1307,7 +1358,7 @@ fn apply_utility_transform(
     value: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut HashMap<UtilityTransformCacheKey, Vec<AtomSerde>>,
+    cache: &mut LruCache<UtilityTransformCacheKey, Vec<AtomSerde>>,
 ) -> Result<Option<Vec<CoreAtom>>, pandacss_extractor::Diagnostic> {
     let Some(id) = utility_transform_refs.get(prop) else {
         return Ok(None);
@@ -1318,13 +1369,18 @@ fn apply_utility_transform(
         )));
     };
 
-    let value = atom_value_to_json(value);
     let cache_key = UtilityTransformCacheKey {
         id: id.clone(),
         prop: prop.to_owned(),
-        value: value.to_string(),
+        value: pandacss_project::atom_value_cache_key(value),
     };
-    if let Some(cached) = cache.get(&cache_key) {
+    if let Some(cached) = cache.get(&cache_key).cloned() {
+        tracing::trace!(
+            cache = "utility_transform",
+            action = "hit",
+            target = prop,
+            entries = cache.len()
+        );
         return Ok(Some(
             cached
                 .iter()
@@ -1332,7 +1388,14 @@ fn apply_utility_transform(
                 .collect(),
         ));
     }
+    tracing::trace!(
+        cache = "utility_transform",
+        action = "miss",
+        target = prop,
+        entries = cache.len()
+    );
 
+    let value = atom_value_to_json(value);
     let value = serde_wasm_bindgen::to_value(&value).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to serialize utility transform value for `{prop}`: {err}"
@@ -1356,7 +1419,8 @@ fn apply_utility_transform(
         return Ok(Some(Vec::new()));
     };
     if style.is_empty() {
-        cache.insert(cache_key, Vec::new());
+        trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
+        cache.put(cache_key, Vec::new());
         return Ok(Some(Vec::new()));
     }
     let transformed = style_object_to_atoms(style, &[]);
@@ -1364,7 +1428,8 @@ fn apply_utility_transform(
         .iter()
         .filter_map(core_atom_from_atom_serde)
         .collect();
-    cache.insert(cache_key, transformed);
+    trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
+    cache.put(cache_key, transformed);
     Ok(Some(core))
 }
 
@@ -1441,7 +1506,7 @@ fn apply_pattern_transform(
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut HashMap<PatternTransformCacheKey, Option<Literal>>,
+    cache: &mut LruCache<PatternTransformCacheKey, Option<Literal>>,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
     let Some(id) = pattern_transform_refs.get(name) else {
         return Ok(None);
@@ -1452,22 +1517,39 @@ fn apply_pattern_transform(
         )));
     };
 
+    let cache_key =
+        pandacss_project::literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
+            PatternTransformCacheKey {
+                id: id.clone(),
+                name: name.to_owned(),
+                props,
+            }
+        });
+    if let Some(cached) = cache_key.as_ref().and_then(|key| cache.get(key)).cloned() {
+        tracing::trace!(
+            cache = "pattern_transform",
+            action = "hit",
+            target = name,
+            entries = cache.len()
+        );
+        return Ok(cached);
+    }
+    tracing::trace!(
+        cache = "pattern_transform",
+        action = if cache_key.is_some() {
+            "miss"
+        } else {
+            "skip_oversized_key"
+        },
+        target = name,
+        entries = cache.len()
+    );
+
     let props_value = serde_json::to_value(styles).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to serialize pattern props for `{name}`: {err}"
         ))
     })?;
-    let props_key = serde_json::to_string(&props_value).map_err(|err| {
-        callback_diagnostic(format!("Failed to cache pattern props for `{name}`: {err}"))
-    })?;
-    let cache_key = PatternTransformCacheKey {
-        id: id.clone(),
-        name: name.to_owned(),
-        props: props_key,
-    };
-    if let Some(cached) = cache.get(&cache_key) {
-        return Ok(cached.clone());
-    }
 
     let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
     let props = props_value.serialize(&serializer).map_err(|err| {
@@ -1497,8 +1579,21 @@ fn apply_pattern_transform(
             ))
         })?
     };
-    cache.insert(cache_key, transformed.clone());
+    if let Some(cache_key) = cache_key {
+        trace_cache_store("pattern_transform", name, cache.len(), cache.cap().get());
+        cache.put(cache_key, transformed.clone());
+    }
     Ok(transformed)
+}
+
+fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
+    tracing::trace!(
+        cache,
+        action = "store",
+        target,
+        entries = len.saturating_add(1).min(capacity),
+        evicted = len == capacity
+    );
 }
 
 fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {

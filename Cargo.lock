@@ -80,6 +80,7 @@ dependencies = [
 name = "compiler_napi"
 version = "0.0.0"
 dependencies = [
+ "lru",
  "napi",
  "napi-build",
  "napi-derive",
@@ -106,6 +107,7 @@ version = "0.0.0"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
+ "lru",
  "pandacss_codegen",
  "pandacss_config",
  "pandacss_encoder",
@@ -372,6 +374,8 @@ version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 dependencies = [
+ "allocator-api2",
+ "equivalent",
  "foldhash 0.1.5",
 ]
 
@@ -625,6 +629,15 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "lru"
+version = "0.12.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "234cf4f4a04dc1f57e24b96cc0cd600cf2af460d4161ac5ecdd0af8e1f3b2a38"
+dependencies = [
+ "hashbrown 0.15.5",
+]
 
 [[package]]
 name = "matchers"

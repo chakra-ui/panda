@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use pandacss_fs::{FileSystem, GlobOptions, MemoryFileSystem};
-use serde::Deserialize;
+use pandacss_fs::{FileSystem, MemoryFileSystem};
 use wasm_bindgen::prelude::*;
 
 /// JS-facing handle over [`MemoryFileSystem`]. Cheap to clone — shares
@@ -56,33 +55,6 @@ impl WasmFileSystem {
         .ok()
     }
 
-    /// Glob discovery. Mirrors `Runtime.fs.glob` from `@pandacss/types`.
-    /// `opts` shape: `{ include: string[], exclude?: string[], cwd?: string, absolute?: boolean }`.
-    ///
-    /// # Errors
-    /// Returns a JS error string when `opts` isn't a valid `GlobOptions`
-    /// shape or when an I/O error bubbles up from the walker (e.g.
-    /// non-existent `cwd`).
-    pub fn glob(&self, opts: JsValue) -> Result<JsValue, JsValue> {
-        let parsed: GlobInput = serde_wasm_bindgen::from_value(opts)
-            .map_err(|err| JsValue::from_str(&format!("invalid GlobOptions: {err}")))?;
-        let options = GlobOptions {
-            include: parsed.include,
-            exclude: parsed.exclude.unwrap_or_default(),
-            cwd: parsed.cwd.map_or_else(|| PathBuf::from("/"), PathBuf::from),
-            absolute: parsed.absolute.unwrap_or(true),
-        };
-        let paths = self
-            .inner
-            .glob(&options)
-            .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let strings: Vec<String> = paths
-            .into_iter()
-            .map(|p| p.to_string_lossy().into_owned())
-            .collect();
-        serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
-    }
-
     /// Number of files stored. Convenience for diagnostics / tests.
     #[wasm_bindgen(js_name = fileCount)]
     #[must_use]
@@ -95,12 +67,4 @@ impl Default for WasmFileSystem {
     fn default() -> Self {
         Self::new()
     }
-}
-
-#[derive(Deserialize)]
-struct GlobInput {
-    include: Vec<String>,
-    exclude: Option<Vec<String>>,
-    cwd: Option<String>,
-    absolute: Option<bool>,
 }

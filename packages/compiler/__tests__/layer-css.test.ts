@@ -9,7 +9,7 @@ function build() {
     },
     utilities: { color: { className: 'c', values: 'colors' } },
   })
-  compiler.parseFile('app.tsx', "import { css } from '@panda/css'\ncss({ color: 'red' })")
+  compiler.parseFileSource('app.tsx', "import { css } from '@panda/css'\ncss({ color: 'red' })")
   return compiler
 }
 

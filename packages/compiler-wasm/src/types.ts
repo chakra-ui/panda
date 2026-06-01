@@ -21,10 +21,9 @@ import type {
   CompileOutput,
   Diagnostic,
   EncodedRecipeStyles,
-  GlobOptions,
+  FileInspectionResult,
   LayerNames,
   ScanOptions,
-  ScanReport,
   ParseFileReport,
   ParsedFileView,
   ProjectSummary,
@@ -32,7 +31,6 @@ import type {
   SourceEntry,
   Spec,
   StaticPatternResult,
-  UsageSite,
   GenerateArtifactOptions,
 } from '@pandacss/compiler-shared'
 
@@ -71,7 +69,6 @@ export declare class WasmFileSystem {
   removeFile(path: string): boolean
   readFile(path: string): string | undefined
   exists(path: string): boolean
-  glob(opts: GlobOptions): string[]
   fileCount(): number
 }
 
@@ -90,17 +87,19 @@ export declare class WasmExtractor {
 export declare class WasmCompiler {
   static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: unknown): WasmCompiler
   config(): Record<string, unknown> | null
-  extract(path: string, source: string): unknown
-  parseFile(path: string, source: string): ParseFileReport
-  refreshFile(path: string, source: string): boolean
+  extractFileSource(path: string, source: string): unknown
+  parseFile(path: string): ParseFileReport
+  parseFileSource(path: string, source: string): ParseFileReport
+  refreshFile(path: string): boolean
+  refreshFileSource(path: string, source: string): boolean
   removeFile(path: string): boolean
   clear(): void
-  scan(options?: ScanOptions): ScanReport
-  glob(options?: ScanOptions): string[]
+  scan(options?: ScanOptions): string[]
+  parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
   spec(): Spec
   sources(): SourceEntry[]
-  usages(path: string, source: string): UsageSite[]
+  inspectFileSource(path: string, source: string): FileInspectionResult
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void

@@ -53,7 +53,7 @@ describe('compiler.spec()', () => {
   })
 })
 
-describe('compiler.usages()', () => {
+describe('compiler.inspectFileSource()', () => {
   it('classifies token / property / keyframe usages with ranges', () => {
     const compiler = createProject({
       theme: {
@@ -63,70 +63,87 @@ describe('compiler.usages()', () => {
       utilities: { color: { className: 'c', values: 'colors' } },
     })
     const source = "import { css } from '@panda/css'\ncss({ color: 'red.500', animationName: 'spin' })"
-    expect(compiler.usages('app.tsx', source)).toMatchInlineSnapshot(`
+    expect(compiler.inspectFileSource('app.tsx', source)).toMatchInlineSnapshot(`
+      {
+        "usages": [
+          {
+            "kind": "property",
+            "name": "color",
+            "range": {
+              "start": {
+                "line": 2,
+                "column": 1,
+              },
+              "end": {
+                "line": 2,
+                "column": 49,
+              },
+            },
+          },
+          {
+            "kind": "token",
+            "name": "colors.red.500",
+            "range": {
+              "start": {
+                "line": 2,
+                "column": 1,
+              },
+              "end": {
+                "line": 2,
+                "column": 49,
+              },
+            },
+          },
+          {
+            "kind": "property",
+            "name": "animationName",
+            "range": {
+              "start": {
+                "line": 2,
+                "column": 1,
+              },
+              "end": {
+                "line": 2,
+                "column": 49,
+              },
+            },
+          },
+          {
+            "kind": "keyframe",
+            "name": "spin",
+            "range": {
+              "start": {
+                "line": 2,
+                "column": 1,
+              },
+              "end": {
+                "line": 2,
+                "column": 49,
+              },
+            },
+          },
+        ],
+        "diagnostics": [],
+      }
+    `)
+  })
+
+  it('returns file-local diagnostics', () => {
+    const compiler = createProject()
+    const result = compiler.inspectFileSource('app.tsx', "import { css } from '@panda/css'\ncss({ color: })")
+
+    expect(result.usages).toMatchInlineSnapshot(`[]`)
+    expect(result.diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
       [
         {
-          "kind": "property",
-          "name": "color",
-          "range": {
-            "start": {
-              "line": 2,
-              "column": 1,
-            },
-            "end": {
-              "line": 2,
-              "column": 49,
-            },
-          },
-        },
-        {
-          "kind": "token",
-          "name": "colors.red.500",
-          "range": {
-            "start": {
-              "line": 2,
-              "column": 1,
-            },
-            "end": {
-              "line": 2,
-              "column": 49,
-            },
-          },
-        },
-        {
-          "kind": "property",
-          "name": "animationName",
-          "range": {
-            "start": {
-              "line": 2,
-              "column": 1,
-            },
-            "end": {
-              "line": 2,
-              "column": 49,
-            },
-          },
-        },
-        {
-          "kind": "keyframe",
-          "name": "spin",
-          "range": {
-            "start": {
-              "line": 2,
-              "column": 1,
-            },
-            "end": {
-              "line": 2,
-              "column": 49,
-            },
-          },
+          "severity": "error",
         },
       ]
     `)
   })
 })
 
-describe('compiler.usages() — token reference forms', () => {
+describe('compiler.inspectFileSource() — token reference forms', () => {
   it('captures token() calls, curly refs, and opacity modifiers through the binding', () => {
     const compiler = createProject({
       theme: { tokens: { colors: { red: { 300: { value: '#f00' }, 500: { value: '#e00' } } } } },
@@ -139,7 +156,7 @@ describe('compiler.usages() — token reference forms', () => {
       "css({ color: 'red.300/40' })",
       "css({ '--ring': '{colors.red.500}' })",
     ].join('\n')
-    const kinds = compiler.usages('app.tsx', source).map(({ kind, name }) => `${kind} ${name}`)
+    const kinds = compiler.inspectFileSource('app.tsx', source).usages.map(({ kind, name }) => `${kind} ${name}`)
     expect(kinds).toMatchInlineSnapshot(`
       [
         "property color",

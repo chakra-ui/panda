@@ -28,7 +28,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', color: 'red' })`)
+    compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', color: 'red' })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
@@ -91,7 +91,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ tint: 'red.500/50' })`)
+    compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ tint: 'red.500/50' })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
@@ -172,7 +172,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/recipes.ts',
       `import { button } from '@panda/recipes'
          import * as recipes from '@panda/recipes'
@@ -284,7 +284,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/Button.tsx',
       `import { css } from '@panda/css'\ncss({ space: '4', _hover: { space: 'compact' } })`,
     )
@@ -368,7 +368,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ _hover: { size: '4px' } })`)
+    compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ _hover: { size: '4px' } })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
@@ -413,7 +413,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile('/Card.tsx', `import { Box } from '@panda/jsx'\nconst el = <Box size="4px" />`)
+    compiler.parseFileSource('/Card.tsx', `import { Box } from '@panda/jsx'\nconst el = <Box size="4px" />`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
@@ -455,7 +455,10 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', _hover: { size: '4px' } })`)
+    compiler.parseFileSource(
+      '/Button.tsx',
+      `import { css } from '@panda/css'\ncss({ size: '4px', _hover: { size: '4px' } })`,
+    )
 
     compiler.atoms()
     compiler.atoms()
@@ -484,7 +487,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    const report = compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px' })`)
+    const report = compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px' })`)
 
     expect(
       report.diagnostics.map((diagnostic: any) => ({
@@ -528,8 +531,8 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     })
 
     const source = `import { css } from '@panda/css'\ncss({ size: '4px' })`
-    const failed = compiler.parseFile('/Button.tsx', source)
-    const retried = compiler.parseFile('/Button.tsx', source)
+    const failed = compiler.parseFileSource('/Button.tsx', source)
+    const retried = compiler.parseFileSource('/Button.tsx', source)
 
     expect(
       failed.diagnostics.map((diagnostic: any) => ({
@@ -582,8 +585,10 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px' })`)
-    expect(compiler.refreshFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '8px' })`)).toBe(true)
+    compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px' })`)
+    expect(compiler.refreshFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '8px' })`)).toBe(
+      true,
+    )
 
     expect(compiler.atoms()).toMatchInlineSnapshot(`
         [
@@ -643,7 +648,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       {},
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/Button.tsx',
       `import { css } from '@panda/css'
          import { button } from '@panda/recipes'
@@ -697,7 +702,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/Stack.tsx',
       `import { stack } from '@panda/patterns'
          import { Stack } from '@panda/jsx'
@@ -763,7 +768,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     )
 
-    compiler.parseFile('/Stack.tsx', `import { stack } from '@panda/patterns'\nstack({ gap: '4px' })`)
+    compiler.parseFileSource('/Stack.tsx', `import { stack } from '@panda/patterns'\nstack({ gap: '4px' })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
         [
@@ -816,7 +821,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       },
     })
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/Stack.tsx',
       `import { stack } from '@panda/patterns'
          stack({})

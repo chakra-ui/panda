@@ -4,7 +4,7 @@ import { createProject } from './test-utils'
 const compiler = createProject()
 
 function pipeline(source: string) {
-  const { calls, diagnostics } = compiler.extract('fixture.tsx', source)
+  const { calls, diagnostics } = compiler.extractFileSource('fixture.tsx', source)
   return { calls, diagnostics }
 }
 

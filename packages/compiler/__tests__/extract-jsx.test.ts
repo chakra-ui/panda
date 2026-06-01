@@ -4,7 +4,7 @@ import { createProject } from './test-utils'
 const compiler = createProject()
 
 function pipeline(source: string) {
-  return compiler.extract('fixture.tsx', source)
+  return compiler.extractFileSource('fixture.tsx', source)
 }
 
 describe('compiler.extract → jsx', () => {

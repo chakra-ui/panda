@@ -32,10 +32,21 @@ describe('createBrowserDriver', () => {
     })
 
     expect(driver.scan()).toMatchInlineSnapshot(`
-      {
-        "count": 1,
-        "diagnostics": [],
-      }
+      [
+        "/proj/App.tsx",
+      ]
+    `)
+    expect(driver.parseFiles()).toMatchInlineSnapshot(`
+      [
+        {
+          "path": "/proj/App.tsx",
+          "cssCalls": 1,
+          "cvaCalls": 0,
+          "svaCalls": 0,
+          "jsxUsages": 0,
+          "diagnostics": [],
+        },
+      ]
     `)
     expect(driver.compile().css).toContain('blue')
   })

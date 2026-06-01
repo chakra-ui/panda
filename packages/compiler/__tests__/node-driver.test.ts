@@ -42,18 +42,26 @@ describe('createNodeDriver', () => {
   it('scans the project via the fs engine and compiles the stylesheet', async () => {
     const driver = await createNodeDriver({ cwd: dir })
 
-    expect(driver.scan()).toMatchInlineSnapshot(`
-      {
-        "count": 1,
-        "diagnostics": [],
-      }
-    `)
+    expect(driver.scan()).toHaveLength(1)
+    expect(driver.parseFiles().map((report) => ({ ...report, path: report.path.replace(`${dir}/`, '') })))
+      .toMatchInlineSnapshot(`
+        [
+          {
+            "path": "App.tsx",
+            "cssCalls": 1,
+            "cvaCalls": 0,
+            "svaCalls": 0,
+            "jsxUsages": 0,
+            "diagnostics": [],
+          },
+        ]
+      `)
     expect(driver.compile().css).toContain('red')
   })
 
   it('writes artifacts under outdir via the engine fs, embedding the user transform', async () => {
     const driver = await createNodeDriver({ cwd: dir })
-    driver.scan()
+    driver.parseFiles()
 
     const written = driver.writeArtifacts('styled-system')
     expect(written.some((path) => path.endsWith(join('patterns', 'stack.mjs')))).toBe(true)
@@ -109,6 +117,19 @@ describe('createNodeDriver', () => {
     `)
     expect(driver.compile().css).toContain('blue')
     expect(driver.compile().css).toContain('green')
+  })
+
+  it('reads source changes from disk when content is omitted', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const file = join(dir, 'DiskChange.tsx')
+
+    writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'purple' })")
+    expect(driver.applyChange({ path: file, kind: 'add' })).toBe(true)
+    expect(driver.compile().css).toContain('purple')
+
+    writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'orange' })")
+    expect(driver.applyChange({ path: file, kind: 'change' })).toBe(true)
+    expect(driver.compile().css).toContain('orange')
   })
 })
 

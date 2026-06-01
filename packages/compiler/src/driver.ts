@@ -1,6 +1,5 @@
 import { BaseDriver, type Compiler, type ConfigDiff, type Driver, type SourceChange } from '@pandacss/compiler-shared'
 import { type LoadedPandaConfig, diffConfig, loadPandaConfig } from '@pandacss/config-loader'
-import { readFileSync } from 'node:fs'
 import { createCompilerFromSnapshot } from './index'
 
 export interface NodeDriverOptions {
@@ -58,8 +57,11 @@ class NodeDriver extends BaseDriver {
     if (change.kind === 'unlink') {
       return this.compiler.removeFile(change.path)
     }
-    const content = change.content ?? readFileSync(change.path, 'utf8')
-    this.compiler.parseFile(change.path, content)
+    if (change.content == null) {
+      this.compiler.parseFile(change.path)
+      return true
+    }
+    this.compiler.parseFileSource(change.path, change.content)
     return true
   }
 }
