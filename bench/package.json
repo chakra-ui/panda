@@ -7,6 +7,7 @@
     "baseline": "tsx --conditions source src/baseline.ts",
     "binding-boundary": "tsx --conditions source src/binding-boundary.ts",
     "extract-compare": "tsx --conditions source src/extract-compare.ts",
+    "generated-types-perf": "tsx --conditions source src/generated-types-perf.ts",
     "jsx-heavy-compare": "tsx --conditions source src/jsx-heavy-compare.ts",
     "token-dictionary-compare": "tsx --tsconfig tsconfig.json --conditions source src/token-dictionary-compare.ts"
   },

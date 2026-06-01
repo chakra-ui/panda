@@ -1048,6 +1048,7 @@ dependencies = [
 name = "pandacss_bench"
 version = "0.0.0"
 dependencies = [
+ "pandacss_codegen",
  "pandacss_config",
  "pandacss_extractor",
  "pandacss_project",

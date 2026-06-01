@@ -27,3 +27,6 @@ design note explaining the trade-off.
   comparison and benchmark plan for moving token dictionary construction/middleware parity into Rust.
 - [2026-05-18 — binding-boundary-instrumentation](./2026-05-18-binding-boundary-instrumentation.mdx) — release-mode
   boundary numbers with tracing disabled vs Chrome JSON trace output enabled.
+- [2026-06-01 — generated-types-js-vs-rust](./2026-06-01-generated-types-js-vs-rust.mdx) — `tsc --extendedDiagnostics`
+  comparison of the Rust codegen vs legacy generator type graph (both `.d.ts`, `skipLibCheck`). Rust wins everything:
+  **−88 to −98% instantiations**, −66 to −88% `Types`, −13 to −16% memory. (Lesson: measure `.d.ts`, not `.ts` source.)
