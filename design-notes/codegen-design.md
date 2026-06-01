@@ -184,14 +184,14 @@ pub enum ModuleSpecifierPolicy {
 
 ```ts
 import { css } from '../css';
-import type { Conditions } from './conditions';
+import type { Conditions } from './types/system';
 ```
 
 `RuntimeAndTypes` is intended for runtimes that require exact specifiers, especially Deno:
 
 ```ts
 import { css } from '../css.ts';
-import type { Conditions } from './conditions.ts';
+import type { Conditions } from './types/system.ts';
 ```
 
 For split JS output, runtime imports should point at `.js` or `.mjs`, while declaration imports should point at `.d.ts`

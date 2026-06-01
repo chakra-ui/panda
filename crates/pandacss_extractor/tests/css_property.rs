@@ -1,4 +1,4 @@
-use pandacss_extractor::{css_property_names, is_css_property};
+use pandacss_shared::css_properties::{css_property_names, is_css_property};
 
 #[test]
 fn mdn_props_are_sorted() {

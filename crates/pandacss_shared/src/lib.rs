@@ -3,6 +3,7 @@
 //! This crate intentionally stays at the bottom of the dependency graph:
 //! no dependencies on other Panda crates.
 
+pub mod css_properties;
 pub mod diagnostic;
 pub mod error;
 pub mod hash;

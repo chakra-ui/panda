@@ -11,9 +11,10 @@ use pandacss_config::{
 };
 use pandacss_extractor::{
     ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal, Matcher as ExtractorMatcher,
-    Matchers, NameMatcher as ExtractorNameMatcher, css_property_names,
+    Matchers, NameMatcher as ExtractorNameMatcher,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_shared::css_properties::css_property_names;
 use pandacss_shared::{capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};

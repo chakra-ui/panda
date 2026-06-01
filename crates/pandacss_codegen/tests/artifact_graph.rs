@@ -116,7 +116,7 @@ fn emitted_files_carry_config_dependencies() {
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Themes));
 
-    let dependencies = file_dependencies(types, "types/properties.d.mts");
+    let dependencies = file_dependencies(types, "types/system.d.mts");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Tokens));
     assert!(dependencies.contains(ConfigDependency::Utilities));

@@ -34,11 +34,11 @@ fn generates_artifacts_from_resolved_project_state() {
         .iter()
         .find(|file| file.path == "types/tokens.d.mts")
         .expect("tokens file");
-    let properties = artifact
+    let system = artifact
         .files
         .iter()
-        .find(|file| file.path == "types/properties.d.mts")
-        .expect("properties file");
+        .find(|file| file.path == "types/system.d.mts")
+        .expect("system file");
 
     assert_snapshot!(tokens.code, @r#"
     export type ColorToken = "colorPalette.500" | "red.500"
@@ -51,21 +51,18 @@ fn generates_artifacts_from_resolved_project_state() {
 
     export type TokenValue<T extends keyof Tokens> = Tokens[T]
     "#);
-    assert_snapshot!(properties.code, @r#"
-    import type { ConditionalValue } from './conditions';
 
-    import type { AnyNumber, AnyString, CssVars, ColorsValue } from './values';
-
-    export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>
-
-    export type CssVarProperties = {
-      [K in `--${string}`]?: CssVarValue
-    }
-
-    export interface SystemProperties {
-      color?: ConditionalValue<ColorsValue>
-    }
-    "#);
+    // `types/system` is the merged surface (own csstype + properties + selectors +
+    // system-types) — ~540 members, so assert its shape rather than full content.
+    let code = &system.code;
+    assert!(code.contains("export type CssValue = Globals | (string & {}) | number"));
+    assert!(code.contains("export interface CssProperties {"));
+    assert!(code.contains("  cursor?: ConditionalValue<CssValue>"));
+    assert!(code.contains("export interface SystemProperties extends CssProperties {"));
+    assert!(code.contains("  color?: ConditionalValue<ColorsValue>"));
+    assert!(code.contains(
+        "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
+    ));
 }
 
 #[test]

@@ -42,7 +42,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Instrumentation](./instrumentation.md) — `tracing` spans, native trace output, and release-only benchmark policy.
 - [Publish namespace](./publish-namespace.md) — placeholder crate names + rename plan before publish.
 - [Benchmarks](./bench/) — dated reports comparing implementations. Latest:
-  [generated-types-js-vs-rust](./bench/2026-06-01-generated-types-js-vs-rust.mdx) (−88 to −98% type instantiations vs legacy).
+  [generated-types-js-vs-rust](./bench/2026-06-01-generated-types-js-vs-rust.mdx) (−99% type instantiations, −21 to −25% memory vs legacy).
 
 ## Migration plan vs design notes
 
