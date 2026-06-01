@@ -126,7 +126,7 @@ fn recipe_module(
 
     Module::new()
         .with_import(ImportDecl::value([factory], "./runtime"))
-        .with_import(ImportDecl::ty(["ConditionalValue"], "../types/conditions"))
+        .with_import(ImportDecl::ty(["ConditionalValue"], "../types/system"))
         .with_import(ImportDecl::ty(
             [runtime_fn, "RecipeVariantMap"],
             "../types/recipe",

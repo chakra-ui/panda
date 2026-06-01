@@ -2,15 +2,38 @@
 //! `isCondition` / `sortConditions` runtime helpers and their types.
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, DependencySet, FunctionDecl,
-    ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module, Param, Stmt, TsMember, TsMemberName,
-    TsType, TypeAliasDecl,
+    Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, DependencySet, ExportDecl,
+    FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module, Param, Stmt, TsMember,
+    TsMemberName, TsType, TypeAliasDecl,
     artifact::{GenerateOptions, emit_module_files},
 };
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
     let keys = ctx.condition_keys();
+    runtime_module(&keys)
+        .with_item(Item::interface_decl(conditions_interface(ctx, &keys)))
+        .with_item(Item::type_alias(conditional_value_type()))
+        .with_item(Item::type_alias(nested_type()))
+}
+
+#[must_use]
+pub fn declaration_module(keys: &[String]) -> Module {
+    runtime_module(keys)
+        .with_import(ImportDecl::ty(["Conditions"], "./types/system"))
+        .with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
+            names: vec![
+                "Breakpoints".into(),
+                "Condition".into(),
+                "ConditionalValue".into(),
+                "Conditions".into(),
+            ],
+            source: "./types/system".into(),
+        })))
+        .with_item(Item::type_alias(nested_type()))
+}
+
+fn runtime_module(keys: &[String]) -> Module {
     Module::new()
         .with_import(ImportDecl::value(["withoutSpace"], "../helpers"))
         .with_import(ImportDecl::ty(["AnySelector", "Selectors"], "./selectors"))
@@ -45,9 +68,6 @@ pub fn module(ctx: CodegenContext<'_>) -> Module {
   return aa && !bb ? 1 : !aa && bb ? -1 : 0
 })",
         ))
-        .with_item(Item::interface_decl(conditions_interface(ctx, &keys)))
-        .with_item(Item::type_alias(conditional_value_type()))
-        .with_item(Item::type_alias(nested_type()))
 }
 
 #[must_use]
@@ -56,6 +76,17 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
+    if !options.format.is_source_ts() {
+        return emit_module_files(
+            "conditions",
+            &declaration_module(&ctx.condition_keys()),
+            options.format,
+            false,
+            options.specifiers,
+            dependencies,
+        );
+    }
+
     emit_module_files(
         "conditions",
         &module(ctx),

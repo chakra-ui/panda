@@ -11,11 +11,16 @@ accidentally coupling a leaf crate to walker machinery.
 
 ### Tier 0 — infrastructure
 
-`pandacss_fs`.
+`pandacss_fs`, `pandacss_shared`.
 
-Filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the `FileSystem` trait, never
-`std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See [filesystem](./filesystem.md) for the
-full design.
+`pandacss_fs` is the filesystem abstraction with `os` / `memory` feature-gated impls. Core crates depend on the
+`FileSystem` trait, never `std::fs` directly, so the same code compiles to `wasm32-unknown-unknown`. See
+[filesystem](./filesystem.md) for the full design.
+
+`pandacss_shared` holds dependency-free helpers and the **single source of truth for CSS property names**
+(`css_properties::CSS_PROPERTY_NAMES`, `@generated` from mdn-data). Both the extractor (`is_css_property` membership)
+and the codegen (`CssProperties` interface members) read it, so "valid to extract" and "offered in the types" can't
+diverge.
 
 ### Tier 1 — leaf data + parsing
 

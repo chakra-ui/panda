@@ -10,12 +10,8 @@
 
 mod calls;
 mod cross_file;
-mod css_property;
 mod css_template;
 mod extract;
-mod generated {
-    pub(crate) mod css_properties;
-}
 mod imports;
 mod jsx;
 mod literal;
@@ -24,7 +20,6 @@ mod scope;
 mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
-pub use css_property::{css_property_names, is_css_property};
 pub use extract::{ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,

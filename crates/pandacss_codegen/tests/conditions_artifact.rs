@@ -171,35 +171,15 @@ fn emits_js_runtime_and_declarations() {
         indoc! {r#"
         import type { AnySelector, Selectors } from './selectors';
 
+        import type { Conditions } from './types/system';
+
         export declare function isCondition(v: string): boolean;
 
         export declare function finalizeConditions(paths: string[]): string[];
 
         export declare function sortConditions(paths: string[]): string[];
 
-        export interface Conditions {
-          /**
-           * `&:hover`
-           */
-          "_hover": string
-          /**
-           * `@supports (display: grid)`
-           */
-          "_supportsGrid": string
-          /**
-           * The base (=no conditions) styles to apply 
-           */
-          "base": string
-          "md": string
-          "sm": string
-        }
-
-        export type ConditionalValue<V> =
-          | V
-          | Array<V | null>
-          | {
-              [K in keyof Conditions]?: ConditionalValue<V>
-            }
+        export { Breakpoints, Condition, ConditionalValue, Conditions } from './types/system';
 
         export type Nested<P> = P & {
           [K in Selectors]?: Nested<P>

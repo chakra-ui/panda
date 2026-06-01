@@ -226,40 +226,12 @@ fn emits_ts_source_types() {
     assert_eq!(
         paths(types),
         vec![
-            "types/conditions.ts",
-            "types/selectors.ts",
-            "types/csstype.ts",
             "types/tokens.ts",
-            "types/values.ts",
-            "types/properties.ts",
-            "types/system-types.ts",
+            "types/system.ts",
             "types/pattern.ts",
             "types/recipe.ts",
             "types/index.ts"
         ]
-    );
-
-    assert_eq!(
-        file(types, "types/conditions.ts"),
-        indoc! {r#"
-        export interface Conditions {
-          "base": string
-          "_hover": string
-        }
-
-        export interface Breakpoints {
-          "base": string
-          "sm": string
-        }
-
-        export type Condition = keyof Conditions
-
-        export type ConditionalValue<T> =
-          | T
-          | Array<T | null>
-          | { [K in Condition]?: ConditionalValue<T> }
-        "#}
-        .trim()
     );
 
     assert_eq!(
@@ -281,29 +253,50 @@ fn emits_ts_source_types() {
         .trim()
     );
 
-    assert_eq!(
-        file(types, "types/properties.ts"),
-        indoc! {r"
-        import type { ConditionalValue } from './conditions';
-
-        import type { AnyNumber, AnyString, CssVars, ColorValue, SpacingValue } from './values';
-
-        export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>
-
-        export type CssVarProperties = {
-          [K in `--${string}`]?: CssVarValue
-        }
-
-        export interface SystemProperties {
-          color?: ConditionalValue<ColorValue>
-          gap?: ConditionalValue<SpacingValue>
-        }
-        "}
-        .trim()
+    // `types/system` is the merged surface (own csstype + properties + selectors +
+    // system-types). It's ~825 members, so assert its shape rather than full content.
+    let system = file(types, "types/system.ts");
+    assert!(system.contains("export interface Conditions {"));
+    assert!(system.contains("  \"base\": string"));
+    assert!(system.contains("  \"_hover\": string"));
+    assert!(system.contains("export interface Breakpoints {"));
+    assert!(system.contains("export type Condition = keyof Conditions"));
+    assert!(system.contains("export type ConditionalValue<T> ="));
+    // value aliases live in system because they are only used by system properties
+    assert!(system.contains("import type { TokenValue } from './tokens';"));
+    assert!(system.contains("export type AnyString = string & {}"));
+    assert!(system.contains("export type AnyNumber = number & {}"));
+    assert!(system.contains("export type CssVars = `var(--${string})`"));
+    assert!(
+        system.contains("export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString")
     );
+    assert!(system.contains(
+        "export type SpacingValue = TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
+    ));
+    // own csstype: globals + the single shared CssValue
+    assert!(system.contains(
+        r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#
+    ));
+    assert!(system.contains("export type CssValue = Globals | (string & {}) | number"));
+    // own CssProperties (native props share CssValue) + a vendor-prefixed variant
+    assert!(system.contains("export interface CssProperties {"));
+    assert!(system.contains("  cursor?: ConditionalValue<CssValue>"));
+    assert!(system.contains("  WebkitLineClamp?: ConditionalValue<CssValue>"));
+    // SystemProperties extends CssProperties, overriding configured utilities with their alias
+    assert!(system.contains("export interface SystemProperties extends CssProperties {"));
+    assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
+    assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
+    // selectors + the recursive style object live here too
+    assert!(system.contains("export type Selector = `&${string}` | `@${string}`"));
+    assert!(system.contains(
+        "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
+    ));
+    // dead vendor prefixes are not emitted
+    assert!(!system.contains("OAnimation"));
+    assert!(!system.contains("KhtmlBoxAlign"));
 
     assert_snapshot!(file(types, "types/recipe.ts"), @"
-    import type { Pretty, SystemStyleObject } from './system-types';
+    import type { ConditionalValue, Pretty, SystemStyleObject } from './system';
 
     export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
 
@@ -388,80 +381,39 @@ fn emits_ts_system_and_index_types() {
     );
     let types = artifact(&artifacts, ArtifactId::Types);
 
-    assert_eq!(
-        file(types, "types/system-types.ts"),
-        indoc! {r#"
-        import type { Condition } from './conditions';
-
-        import type { Selector } from './selectors';
-
-        import type { CssProperties } from './csstype';
-
-        import type { CssVarProperties, SystemProperties } from './properties';
-
-        export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
-        export type NestedStyles = {
-          [K in Selector | Condition]?: SystemStyleObject
-        }
-
-        export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}
-
-        export interface GlobalStyleObject {
-          [selector: string]: SystemStyleObject
-        }
-
-        export interface CssKeyframes {
-          [name: string]: {
-            [time: string]: CssProperties
-          }
-        }
-
-        export interface GlobalFontfaceRule {
-          fontFamily: string
-          src: string
-          fontStyle?: string
-          fontWeight?: string | number
-          fontDisplay?: "auto" | "block" | "swap" | "fallback" | "optional"
-          unicodeRange?: string
-          fontFeatureSettings?: string
-          fontVariationSettings?: string
-          fontStretch?: string
-          ascentOverride?: string
-          descentOverride?: string
-          lineGapOverride?: string
-          sizeAdjust?: string
-        }
-
-        export type FontfaceRule = Omit<GlobalFontfaceRule, "fontFamily">
-
-        export interface GlobalFontface {
-          [name: string]: FontfaceRule | FontfaceRule[]
-        }
-        "#}
-        .trim()
+    // The former `system-types` content now lives in the merged `types/system`.
+    let system = file(types, "types/system.ts");
+    assert!(
+        system.contains(
+            "export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never"
+        )
     );
+    assert!(system.contains(
+        "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}"
+    ));
+    assert!(system.contains(
+        "export interface GlobalStyleObject {\n  [selector: string]: SystemStyleObject\n}"
+    ));
+    assert!(system.contains("export interface CssKeyframes {"));
+    assert!(
+        system.contains(r#"export type FontfaceRule = Omit<GlobalFontfaceRule, "fontFamily">"#)
+    );
+    // imports pulled from the sibling modules, none from removed csstype/properties/system-types/values/conditions
+    assert!(!system.contains("./csstype"));
+    assert!(!system.contains("./system-types"));
+    assert!(!system.contains("./values"));
+    assert!(!system.contains("./conditions"));
 
     assert_eq!(
         file(types, "types/index.ts"),
         indoc! {r"
-        export type * from './conditions';
-
-        export type * from './selectors';
-
         export type * from './tokens';
 
-        export type * from './values';
-
-        export type * from './properties';
-
-        export type * from './system-types';
+        export type * from './system';
 
         export type * from './pattern';
 
         export type * from './recipe';
-
-        export type { CssProperties } from './csstype';
         "}
         .trim()
     );
@@ -481,51 +433,27 @@ fn emits_js_declaration_types() {
     assert_eq!(
         paths(types),
         vec![
-            "types/conditions.d.ts",
-            "types/selectors.d.ts",
-            "types/csstype.d.ts",
             "types/tokens.d.ts",
-            "types/values.d.ts",
-            "types/properties.d.ts",
-            "types/system-types.d.ts",
+            "types/system.d.ts",
             "types/pattern.d.ts",
             "types/recipe.d.ts",
             "types/index.d.ts"
         ]
     );
 
-    assert_eq!(
-        file(types, "types/values.d.ts"),
-        indoc! {r#"
-        import type { CssProperties } from './csstype';
-
-        import type { TokenValue } from './tokens';
-
-        export type AnyString = string & {}
-
-        export type AnyNumber = number & {}
-
-        export type CssVars = `var(--${string})`
-
-        export type WithEscapeHatch<T> = T | `[${string}]`
-
-        export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
-
-        export type ColorValue = TokenValue<"colors"> | CssProperties["color"] | CssVars | AnyString
-
-        export type SpacingValue = TokenValue<"spacing"> | CssProperties["gap"] | CssVars | AnyString | AnyNumber
-        "#}
-        .trim()
+    let system = file(types, "types/system.d.ts");
+    assert!(system.contains("import type { TokenValue } from './tokens';"));
+    assert!(
+        system.contains("export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString")
     );
+    assert!(system.contains(
+        "export type SpacingValue = TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
+    ));
 
     assert_eq!(
         file(types, "types/pattern.d.ts"),
         indoc! {r"
-        import type { ConditionalValue } from './conditions';
-
-        import type { SystemProperties } from './properties';
-
-        import type { SystemStyleObject } from './system-types';
+        import type { ConditionalValue, SystemProperties, SystemStyleObject } from './system';
 
         export type PatternPrimitive = string | number | boolean
 
@@ -567,50 +495,22 @@ fn emits_strict_value_types_without_repeating_large_unions() {
     );
     let types = artifact(&artifacts, ArtifactId::Types);
 
-    assert_eq!(
-        file(types, "types/values.ts"),
-        indoc! {r#"
-        import type { CssProperties } from './csstype';
-
-        import type { TokenValue } from './tokens';
-
-        export type AnyString = string & {}
-
-        export type AnyNumber = number & {}
-
-        export type CssVars = `var(--${string})`
-
-        export type WithEscapeHatch<T> = T | `[${string}]`
-
-        export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
-
-        export type ColorValue = WithEscapeHatch<TokenValue<"colors"> | CssVars>
-
-        export type SpacingValue = WithEscapeHatch<TokenValue<"spacing"> | CssVars>
-        "#}
-        .trim()
+    // Strict aliases carry the WithEscapeHatch wrapper; configured props in the merged
+    // `system` file reference them, native props still share `CssValue`.
+    let system = file(types, "types/system.ts");
+    assert!(
+        system
+            .contains("export type ColorValue = WithEscapeHatch<TokenValue<\"colors\"> | CssVars>")
     );
-
-    assert_eq!(
-        file(types, "types/properties.ts"),
-        indoc! {r"
-        import type { ConditionalValue } from './conditions';
-
-        import type { AnyNumber, AnyString, CssVars, ColorValue, SpacingValue } from './values';
-
-        export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>
-
-        export type CssVarProperties = {
-          [K in `--${string}`]?: CssVarValue
-        }
-
-        export interface SystemProperties {
-          color?: ConditionalValue<ColorValue>
-          gap?: ConditionalValue<SpacingValue>
-        }
-        "}
-        .trim()
+    assert!(
+        system.contains(
+            "export type SpacingValue = WithEscapeHatch<TokenValue<\"spacing\"> | CssVars>"
+        )
     );
+    assert!(system.contains("export interface SystemProperties extends CssProperties {"));
+    assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
+    assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
+    assert!(system.contains("  cursor?: ConditionalValue<CssValue>"));
 }
 
 #[test]
@@ -624,89 +524,26 @@ fn can_emit_extensioned_type_specifiers() {
     );
     let types = artifact(&artifacts, ArtifactId::Types);
 
-    assert_eq!(
-        file(types, "types/values.d.mts"),
-        indoc! {r#"
-        import type { CssProperties } from './csstype.d.mts';
-
-        import type { TokenValue } from './tokens.d.mts';
-
-        export type AnyString = string & {}
-
-        export type AnyNumber = number & {}
-
-        export type CssVars = `var(--${string})`
-
-        export type WithEscapeHatch<T> = T | `[${string}]`
-
-        export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
-
-        export type ColorValue = TokenValue<"colors"> | CssProperties["color"] | CssVars | AnyString
-
-        export type SpacingValue = TokenValue<"spacing"> | CssProperties["gap"] | CssVars | AnyString | AnyNumber
-        "#}
-        .trim()
+    let system = file(types, "types/system.d.mts");
+    assert!(system.contains("import type { TokenValue } from './tokens.d.mts';"));
+    assert!(
+        system.contains("export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString")
     );
+    assert!(system.contains(
+        "export type SpacingValue = TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
+    ));
 
     assert_eq!(
         file(types, "types/index.d.mts"),
         indoc! {r"
-        export * from './conditions.d.mts';
-
-        export * from './selectors.d.mts';
-
         export * from './tokens.d.mts';
 
-        export * from './values.d.mts';
-
-        export * from './properties.d.mts';
-
-        export * from './system-types.d.mts';
+        export * from './system.d.mts';
 
         export * from './pattern.d.mts';
 
         export * from './recipe.d.mts';
-
-        export { CssProperties } from './csstype.d.mts';
         "}
         .trim()
     );
-}
-
-#[test]
-fn csstype_module_exposes_keyword_unions_and_pseudos() {
-    let artifacts = ArtifactGraph.generate_with_input(
-        &input(),
-        GenerateOptions {
-            format: CodegenFormat::Ts,
-            ..GenerateOptions::default()
-        },
-    );
-    let types = artifact(&artifacts, ArtifactId::Types);
-    let csstype = file(types, "types/csstype.ts");
-
-    // Public surface the rest of the generated types depend on: `properties`
-    // indexes `CssProperties["..."]` and `selectors` imports `Pseudos`.
-    assert!(csstype.contains("export interface CssProperties"));
-    assert!(csstype.contains("export type Pseudos"));
-    assert!(csstype.contains("export namespace Property"));
-    assert!(csstype.contains("export namespace DataType"));
-
-    // Per-property keyword unions survive, so `CssProperties["display"]` keeps
-    // autocomplete instead of collapsing to a primitive.
-    assert!(csstype.contains("export type Display ="));
-
-    // `DataType` members must be exported. Upstream leaves them bare, which only
-    // type-checks because csstype ships as a `.d.ts` consumed under skipLibCheck.
-    assert!(csstype.contains("export type Color ="));
-
-    // The duplicate families Panda never consumes are dropped from the output.
-    assert!(!csstype.contains("PropertiesHyphen"));
-    assert!(!csstype.contains("PropertiesFallback"));
-    assert!(!csstype.contains("HtmlAttributes"));
-    assert!(!csstype.contains("namespace AtRule"));
-
-    // The asset's provenance header stays on disk but never reaches the artifact.
-    assert!(csstype.starts_with("export "));
-    assert!(!csstype.contains("vendor-csstype"));
 }
