@@ -411,7 +411,12 @@ export type RecipeVariantMap<Variant extends object> = {
   [K in keyof Variant]-?: Array<Variant[K]>
 }
 
-export type RecipeRuntimeFn<Props extends object = object, Map extends object = object> = ((props?: Props) => string) & {
+export type RecipeConfigVariantMap<T> = {
+  [K in keyof T]: Array<keyof T[K]>
+}
+
+export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
+  (props?: Props): string
   __type: Props
   variantMap: Map
   variantKeys: Array<keyof Props>
@@ -423,7 +428,8 @@ export type RecipeRuntimeFn<Props extends object = object, Map extends object = 
 
 export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
-export type SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = ((props?: Props) => SlotRecord<Slot, string>) & {
+export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
+  (props?: Props): SlotRecord<Slot, string>
   __type: Props
   __slot: Slot
   variantMap: Map
@@ -448,9 +454,9 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
   compoundVariants?: Array<RecipeSelection<T> & { css: SystemStyleObject }>
 }
 
-export type RecipeCreatorFn = <T extends RecipeVariantRecord>(
-  config: RecipeDefinition<T>,
-) => RecipeRuntimeFn<RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>
+export interface RecipeCreatorFn {
+  <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+}
 
 export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
 
@@ -463,9 +469,9 @@ export interface SlotRecipeDefinition<Slot extends string = string, T extends Sl
   compoundVariants?: Array<RecipeSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
 }
 
-export type SlotRecipeCreatorFn = <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(
-  config: SlotRecipeDefinition<Slot, T>,
-) => SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>";
+export interface SlotRecipeCreatorFn {
+  <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+}";
 
     Module::new()
         .with_import(ImportDecl::ty(
