@@ -12,12 +12,16 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 ### Architecture
 
 - [Compiler lifecycle](./compiler-lifecycle.md) — end-to-end `createCompiler(config)` flow (construct → ingest →
-  extract → encode → emit → optimize → output), build vs watch modes, and which phases are built vs stubbed.
+  extract → encode → emit → output), build vs watch modes, and which phases are built vs deferred.
 - [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
 - [Project lifecycle](./project-lifecycle.md) — `Project` add / replace / remove semantics for watch mode.
+- [Native stylesheet compiler](./stylesheet.md) — CSS emission, static CSS support, ordering, and minification boundary.
 - [Scope and boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.
+- [Output & host layer (Driver)](./output-and-host-layer.md) — the JS orchestration layer above the pure compiler:
+  the `Driver` contract + shared `BaseDriver` (hosts ship in `@pandacss/compiler` node / `@pandacss/compiler-wasm`
+  browser), CSS-vs-artifact cadence, sink routing, fs-engine `scan`, and the config-diff algorithm.
 
 ### Subsystems
 
@@ -29,6 +33,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 ### Boundary
 
 - [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
+- [Config loading](./config-loading-design.md) — `@pandacss/config-loader`: bundle + serialize a user config into the
+  `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 
 ### Performance & operations
 
@@ -36,7 +42,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Instrumentation](./instrumentation.md) — `tracing` spans, native trace output, and release-only benchmark policy.
 - [Publish namespace](./publish-namespace.md) — placeholder crate names + rename plan before publish.
 - [Benchmarks](./bench/) — dated reports comparing implementations. Latest:
-  [extract-js-vs-rust](./bench/2026-05-16-extract-js-vs-rust.mdx) (15–37× speedup).
+  [generated-types-js-vs-rust](./bench/2026-06-01-generated-types-js-vs-rust.mdx) (−88 to −98% type instantiations vs legacy).
 
 ## Migration plan vs design notes
 

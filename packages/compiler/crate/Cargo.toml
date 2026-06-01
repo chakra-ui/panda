@@ -13,13 +13,20 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+lru = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["os"] }
+pandacss_fs = { workspace = true, features = ["os"] }
+pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_project = { workspace = true }
 pandacss_recipes = { workspace = true }
+pandacss_shared = { workspace = true }
+pandacss_stylesheet = { workspace = true }
 pandacss_tokens = { workspace = true }
 pandacss_tracing = { workspace = true }
+serde = { workspace = true }
+smallvec = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 

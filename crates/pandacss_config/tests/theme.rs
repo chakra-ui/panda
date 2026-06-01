@@ -3,6 +3,7 @@ use pandacss_config::UserConfig;
 use serde_json::json;
 
 #[test]
+#[allow(clippy::too_many_lines, reason = "single end-to-end theme fixture")]
 fn deserializes_typed_theme_shape() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {
@@ -144,4 +145,93 @@ fn deserializes_typed_theme_shape() {
     themes:
       - dark
     ");
+}
+
+#[test]
+fn condition_names_are_derived_from_config() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "conditions": {
+            "hover": "&:hover",
+            "supportsGrid": "@supports (display: grid)"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "768px",
+                "sm": "640px"
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    assert_yaml_snapshot!(config.condition_names(), @r"
+    - _hover
+    - _supportsGrid
+    - base
+    - md
+    - sm
+    ");
+}
+
+#[test]
+fn css_var_root_defaults_and_overrides() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let override_config: UserConfig = serde_json::from_value(json!({
+        "cssVarRoot": ":where(html)"
+    }))
+    .expect("override config");
+
+    assert_yaml_snapshot!(json!({
+        "default": default_config.css_var_root,
+        "override": override_config.css_var_root,
+    }), @r##"
+    default: ":where(:root, :host)"
+    override: ":where(html)"
+    "##);
+}
+
+#[test]
+fn preserves_global_css_in_serialized_config() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "globalCss": {
+            "html, body": {
+                "margin": 0,
+                "_hover": {
+                    "color": "red"
+                }
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    let serialized = serde_json::to_value(&config).expect("serialized config");
+    assert_yaml_snapshot!(serialized.get("globalCss"), @r#"
+    "html, body":
+      margin: 0
+      _hover:
+        color: red
+    "#);
+}
+
+#[test]
+fn preserves_global_vars_in_serialized_config() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "globalVars": {
+            "--random-color": "red",
+            "--button-color": {
+                "syntax": "<color>",
+                "inherits": false,
+                "initialValue": "blue"
+            }
+        }
+    }))
+    .expect("valid typed config");
+
+    let serialized = serde_json::to_value(&config).expect("serialized config");
+    assert_yaml_snapshot!(serialized.get("globalVars"), @r#"
+    "--random-color": red
+    "--button-color":
+      syntax: "<color>"
+      inherits: false
+      initialValue: blue
+    "#);
 }

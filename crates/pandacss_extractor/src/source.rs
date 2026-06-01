@@ -6,32 +6,18 @@
 //! to match TypeScript / `ts-morph` — the format every Panda user already
 //! sees in their editor and `tsc` output.
 
-use serde::Serialize;
-
-/// 1-indexed line, 1-indexed UTF-16 column.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SourceLocation {
-    pub line: u32,
-    pub column: u32,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SourceRange {
-    pub start: SourceLocation,
-    pub end: SourceLocation,
-}
+use pandacss_shared::{SourceLocation, SourceRange};
 
 /// Pre-computed byte offsets of every line start. Construct once per
 /// source file; lookup is O(log lines).
-pub(crate) struct LineIndex<'a> {
+pub struct LineIndex<'a> {
     source: &'a str,
     line_starts: Vec<u32>,
 }
 
 impl<'a> LineIndex<'a> {
-    pub(crate) fn new(source: &'a str) -> Self {
+    #[must_use]
+    pub fn new(source: &'a str) -> Self {
         let mut line_starts = vec![0];
         for (i, b) in source.bytes().enumerate() {
             if b == b'\n' {
@@ -45,7 +31,8 @@ impl<'a> LineIndex<'a> {
     }
 
     /// Offsets past end clamp to the end (matches ts-morph behavior).
-    pub(crate) fn locate(&self, byte_offset: u32) -> SourceLocation {
+    #[must_use]
+    pub fn locate(&self, byte_offset: u32) -> SourceLocation {
         let offset = (byte_offset as usize).min(self.source.len());
         let line_idx = self
             .line_starts
@@ -67,53 +54,11 @@ impl<'a> LineIndex<'a> {
         }
     }
 
-    pub(crate) fn locate_range(&self, start: u32, end: u32) -> SourceRange {
+    #[must_use]
+    pub fn locate_range(&self, start: u32, end: u32) -> SourceRange {
         SourceRange {
             start: self.locate(start),
             end: self.locate(end),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ascii_columns_are_one_indexed() {
-        let idx = LineIndex::new("hello world");
-        assert_eq!(idx.locate(0), SourceLocation { line: 1, column: 1 });
-        assert_eq!(idx.locate(6), SourceLocation { line: 1, column: 7 });
-        assert_eq!(
-            idx.locate(11),
-            SourceLocation {
-                line: 1,
-                column: 12
-            }
-        );
-    }
-
-    #[test]
-    fn newlines_advance_lines() {
-        let idx = LineIndex::new("a\nbb\nccc");
-        assert_eq!(idx.locate(0), SourceLocation { line: 1, column: 1 });
-        assert_eq!(idx.locate(2), SourceLocation { line: 2, column: 1 });
-        assert_eq!(idx.locate(5), SourceLocation { line: 3, column: 1 });
-        assert_eq!(idx.locate(7), SourceLocation { line: 3, column: 3 });
-    }
-
-    #[test]
-    fn columns_are_utf16_code_units() {
-        // 😀 is one char, two UTF-16 code units, four UTF-8 bytes.
-        let idx = LineIndex::new("😀x");
-        assert_eq!(idx.locate(0), SourceLocation { line: 1, column: 1 });
-        assert_eq!(idx.locate(4), SourceLocation { line: 1, column: 3 });
-    }
-
-    #[test]
-    fn offset_past_end_clamps() {
-        let idx = LineIndex::new("ab");
-        let loc = idx.locate(999);
-        assert_eq!(loc, SourceLocation { line: 1, column: 3 });
     }
 }

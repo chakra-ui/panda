@@ -2,6 +2,15 @@
 //! `crates/pandacss_extractor`; this crate only mirrors core types into NAPI-shaped
 //! structs and wires up the JS-facing functions.
 
+// NAPI boundary conventions trip several pedantic lints: fallible entry points
+// surface errors as thrown JS exceptions (documented on the TS surface, not in
+// rustdoc), and internal helpers borrow the `Env` handle.
+#![allow(
+    clippy::missing_errors_doc,
+    clippy::trivially_copy_pass_by_ref,
+    reason = "NAPI boundary: JS-exception error reporting; helpers borrow Env"
+)]
+
 mod cache;
 mod calls;
 mod compile;
@@ -14,7 +23,10 @@ mod project;
 mod session;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
-pub use compile::{CompileInput, CompileManifest, CompileOutput, InputFile, compile};
+pub use compile::{
+    CompileFileManifest, CompileInput, CompileLayerRange, CompileLayerRanges, CompileManifest,
+    CompileOutput, InputFile, compile,
+};
 pub use extract::{ExtractDebugResult, ExtractResult, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
@@ -23,7 +35,10 @@ pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use matcher::{
     MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
-pub use project::{ParseFileReport, Project, ProjectOptions, ProjectSummary, RecipeEntry};
+pub use project::{
+    CodegenArtifact, CodegenFile, Compiler, GenerateArtifactOptions, ParseFileReport,
+    ParsedFileView, ProjectOptions, ProjectSummary, RecipeEntry, StaticPatternResult,
+};
 pub use session::Extractor;
 
 use napi_derive::napi;
@@ -46,6 +61,7 @@ pub struct TraceOptions {
 }
 
 #[napi]
+#[must_use]
 pub fn start_tracing(options: Option<TraceOptions>) -> bool {
     let config = match options {
         Some(options) => pandacss_tracing::TraceConfig::from_values(
@@ -69,6 +85,7 @@ pub fn flush_tracing_export() {
 }
 
 #[napi]
+#[must_use]
 pub fn shutdown_tracing() -> bool {
     pandacss_tracing::shutdown()
 }
@@ -101,6 +118,7 @@ pub enum DiagnosticSeverity {
 
 #[napi(object)]
 pub struct Diagnostic {
+    pub code: String,
     pub message: String,
     pub severity: DiagnosticSeverity,
     /// UTF-8 byte offsets.
@@ -144,7 +162,7 @@ impl ExtractedArg {
 }
 
 /// One atomic style declaration: `(prop, value, conditions)`. Returned by
-/// `Project::atoms()`. Mirrors `pandacss_encoder::Atom` but with the
+/// `Compiler::atoms()`. Mirrors `pandacss_encoder::Atom` but with the
 /// internal `Box<str>` Number form parsed back to a JS-native number.
 #[napi(object)]
 #[derive(Clone)]

@@ -60,6 +60,8 @@ impl Theme {
     }
 }
 
+/// Numeric weight for sorting breakpoints by their leading magnitude
+/// (`"48rem"` -> `48`). Unparseable values sort last via `INFINITY`.
 fn breakpoint_sort_value(value: &str) -> f64 {
     value
         .chars()

@@ -1,0 +1,147 @@
+{
+  "theme": {
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px"
+    },
+    "tokens": {
+      "colors": {
+        "red": {
+          "100": {
+            "value": "#fee"
+          },
+          "500": {
+            "value": "#f00"
+          },
+          "900": {
+            "value": "#900"
+          }
+        },
+        "blue": {
+          "100": {
+            "value": "#eef"
+          },
+          "500": {
+            "value": "#00f"
+          },
+          "900": {
+            "value": "#009"
+          }
+        },
+        "gray": {
+          "100": {
+            "value": "#eee"
+          },
+          "500": {
+            "value": "#888"
+          },
+          "900": {
+            "value": "#111"
+          }
+        }
+      },
+      "spacing": {
+        "1": {
+          "value": "4px"
+        },
+        "2": {
+          "value": "8px"
+        },
+        "4": {
+          "value": "16px"
+        },
+        "8": {
+          "value": "32px"
+        }
+      },
+      "fontSizes": {
+        "sm": {
+          "value": "14px"
+        },
+        "md": {
+          "value": "16px"
+        },
+        "lg": {
+          "value": "20px"
+        }
+      },
+      "radii": {
+        "sm": {
+          "value": "2px"
+        },
+        "md": {
+          "value": "6px"
+        },
+        "full": {
+          "value": "9999px"
+        }
+      }
+    },
+    "semanticTokens": {
+      "colors": {
+        "fg": {
+          "value": {
+            "base": "{colors.gray.900}",
+            "_dark": "{colors.gray.100}"
+          }
+        },
+        "bg": {
+          "value": {
+            "base": "{colors.gray.100}",
+            "_dark": "{colors.gray.900}"
+          }
+        }
+      }
+    }
+  },
+  "conditions": {
+    "hover": "&:is(:hover, [data-hover])",
+    "focus": "&:is(:focus, [data-focus])",
+    "dark": "[data-theme=dark] &"
+  },
+  "utilities": {
+    "color": {
+      "className": "text",
+      "values": "colors"
+    },
+    "backgroundColor": {
+      "className": "bg",
+      "values": "colors",
+      "shorthand": "bg"
+    },
+    "padding": {
+      "className": "p",
+      "values": "spacing",
+      "shorthand": "p"
+    },
+    "margin": {
+      "className": "m",
+      "values": "spacing",
+      "shorthand": "m"
+    },
+    "gap": {
+      "className": "gap",
+      "values": "spacing"
+    },
+    "fontSize": {
+      "className": "fs",
+      "values": "fontSizes"
+    },
+    "borderRadius": {
+      "className": "rounded",
+      "values": "radii",
+      "shorthand": "rounded"
+    },
+    "display": {
+      "className": "d"
+    },
+    "flexDirection": {
+      "className": "flex",
+      "shorthand": "flexDir"
+    }
+  },
+  "jsxFramework": "react",
+  "jsxStyleProps": "none"
+}

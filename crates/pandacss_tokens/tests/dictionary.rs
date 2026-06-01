@@ -870,6 +870,138 @@ fn from_config_expands_color_mix_references() {
 }
 
 #[test]
+fn css_vars_view_groups_emittable_token_vars() {
+    let mut negative = t(
+        "spacing.-2",
+        "calc(var(--spacing-2) * -1)",
+        "",
+        TokenCategory::Spacing,
+    )
+    .with_condition("_dark");
+    negative.set_extension("isNegative", "true");
+    let mut virtual_token = t(
+        "colors.colorPalette",
+        "colors.colorPalette",
+        "var(--colors-color-palette)",
+        TokenCategory::Colors,
+    );
+    virtual_token.set_extension("isVirtual", "true");
+
+    let dict = TokenDictionary::builder()
+        .insert(t(
+            "colors.red",
+            "#f00",
+            "var(--colors-red)",
+            TokenCategory::Colors,
+        ))
+        .insert(
+            t(
+                "colors.fg",
+                "var(--colors-red)",
+                "var(--colors-fg)",
+                TokenCategory::Colors,
+            )
+            .with_condition("_dark"),
+        )
+        .insert(
+            t(
+                "colors.fg",
+                "#000",
+                "var(--colors-fg)",
+                TokenCategory::Colors,
+            )
+            .with_condition("_themeDark"),
+        )
+        .insert(negative)
+        .insert(virtual_token)
+        .build();
+
+    assert_yaml_snapshot!(snapshot_css_vars(&dict), @r##"
+    base:
+      - name: "--colors-red"
+        value: "#f00"
+    conditions:
+      - condition: _dark
+        vars:
+          - name: "--colors-fg"
+            value: var(--colors-red)
+    "##);
+}
+
+#[test]
+fn css_vars_view_does_not_skip_user_conditions_with_theme_prefix() {
+    let dict = TokenDictionary::builder()
+        .insert(
+            t(
+                "colors.fg",
+                "#111",
+                "var(--colors-fg)",
+                TokenCategory::Colors,
+            )
+            .with_condition("_themeify"),
+        )
+        .build();
+
+    assert_yaml_snapshot!(snapshot_css_vars(&dict), @r##"
+    base: []
+    conditions:
+      - condition: _themeify
+        vars:
+          - name: "--colors-fg"
+            value: "#111"
+    "##);
+}
+
+#[test]
+fn css_vars_view_uses_expanded_reference_and_color_mix_values() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "pink": { "value": "#ff00ff" },
+                    "border": { "value": "{colors.pink/30}" }
+                },
+                "opacity": {
+                    "half": { "value": 0.5 }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.pink}",
+                            "_dark": "{colors.border/half}"
+                        }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(snapshot_css_vars(&dict), @r##"
+    base:
+      - name: "--opacity-half"
+        value: "0.5"
+      - name: "--colors-pink"
+        value: "#ff00ff"
+      - name: "--colors-border"
+        value: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
+      - name: "--colors-fg"
+        value: "#ff00ff"
+    conditions:
+      - condition: _dark
+        vars:
+          - name: "--colors-fg"
+            value: "color-mix(in srgb, var(--colors-border) 50%, transparent)"
+    "##);
+}
+
+#[test]
 fn from_config_uses_css_var_prefix_and_hash_options() {
     let config: UserConfig = serde_json::from_value(json!({
         "prefix": {
@@ -1526,4 +1658,112 @@ fn snapshot_color_palettes(
             )
         })
         .collect()
+}
+
+fn snapshot_css_vars(dict: &TokenDictionary) -> serde_json::Value {
+    let vars = dict.css_vars();
+    json!({
+        "base": vars
+            .base
+            .iter()
+            .map(|var| json!({ "name": var.name, "value": var.value }))
+            .collect::<Vec<_>>(),
+        "conditions": vars
+            .conditions
+            .iter()
+            .map(|group| {
+                json!({
+                    "condition": group.condition,
+                    "vars": group
+                        .vars
+                        .iter()
+                        .map(|var| json!({ "name": var.name, "value": var.value }))
+                        .collect::<Vec<_>>(),
+                })
+            })
+            .collect::<Vec<_>>(),
+    })
+}
+
+// --- runtime `toVar` parity ---
+//
+// The generated `tokens/index` runtime derives every var-ref from the path via
+// a `toVar` helper instead of storing it. This mirrors that helper in Rust and
+// asserts it reproduces the dictionary's real `token.var` for tricky names
+// (uppercase, escape-needing `/`) across prefix + hash settings. If the runtime
+// JS drifts from `css_var_variable`/`push_css_var_name`, this fails.
+
+fn mirror_sanitize(out: &mut String, value: &str) {
+    for ch in value.chars() {
+        if ch.is_ascii_uppercase() {
+            out.push('-');
+            out.push(ch.to_ascii_lowercase());
+        } else if ch.is_ascii_alphanumeric()
+            || ch == '_'
+            || ch == '-'
+            || ('\u{0081}'..='\u{ffff}').contains(&ch)
+        {
+            out.push(ch);
+        } else {
+            out.push('\\');
+            out.push(ch);
+        }
+    }
+}
+
+fn mirror_to_var(path: &str, prefix: &str, hash: bool) -> String {
+    let name = path.replace('.', "-");
+    let body = if hash {
+        pandacss_shared::to_hash(&name)
+    } else {
+        let mut sanitized = String::new();
+        mirror_sanitize(&mut sanitized, &name);
+        sanitized
+    };
+
+    let mut out = String::from("var(--");
+    if !prefix.is_empty() {
+        if hash {
+            out.push_str(prefix);
+        } else {
+            mirror_sanitize(&mut out, prefix);
+        }
+        out.push('-');
+    }
+    out.push_str(&body);
+    out.push(')');
+    out
+}
+
+#[test]
+fn runtime_to_var_reproduces_every_token_var() {
+    for (prefix, hash) in [("", false), ("pd", false), ("panda", true)] {
+        let config: UserConfig = serde_json::from_value(json!({
+            "prefix": { "cssVar": prefix },
+            "hash": { "cssVar": hash },
+            "theme": {
+                "tokens": {
+                    "colors": {
+                        "red": { "500": { "value": "#f00" } },
+                        "brandPrimary": { "value": "#111" }
+                    },
+                    "sizes": { "1/2": { "value": "50%" } }
+                }
+            }
+        }))
+        .expect("config");
+
+        let dict = TokenDictionary::from_config(&config)
+            .expect("token dictionary")
+            .expect("non-empty dictionary");
+
+        for token in dict.iter() {
+            assert_eq!(
+                mirror_to_var(&token.path, prefix, hash),
+                token.var.as_ref(),
+                "path={} prefix={prefix:?} hash={hash}",
+                token.path,
+            );
+        }
+    }
 }

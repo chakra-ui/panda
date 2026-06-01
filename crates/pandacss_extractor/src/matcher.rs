@@ -1,3 +1,9 @@
+//! Match scanned imports against the configured import map, tagging each with
+//! the Panda [`MatchCategory`] (css / recipe / pattern / jsx / tokens) it
+//! belongs to. Ports `ImportMap.match()` from `packages/core/src/import-map.ts`.
+//! Also holds the extractor's config types (`Matchers`, `ExtractorConfig`,
+//! JSX-extraction settings) consumed downstream.
+
 use crate::{ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, Resolver};
 use regex::{Regex, RegexSet};
 use rustc_hash::{FxHashMap, FxHashSet};

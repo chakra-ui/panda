@@ -13,6 +13,9 @@ use tracing_subscriber::fmt;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+mod aggregator;
+pub use aggregator::{SpanStat, SpanTimings, SpanTimingsLayer};
+
 const DEFAULT_FILTER: &str = "info";
 const DEFAULT_TRACE_FILE: &str = ".panda/trace.json";
 
@@ -48,7 +51,9 @@ impl TraceConfig {
         output: Option<&str>,
         file: Option<&str>,
     ) -> Option<Self> {
+        // An empty/whitespace filter means tracing is off — bail without a config.
         let filter = filter.filter(|value| !value.trim().is_empty())?;
+
         let output = match output.unwrap_or("fmt") {
             "fmt" | "stderr" => TraceOutput::Fmt,
             "chrome-json" => TraceOutput::ChromeJson {
@@ -56,6 +61,7 @@ impl TraceConfig {
             },
             _ => return None,
         };
+
         Some(Self {
             filter: filter.to_owned(),
             output,
@@ -80,6 +86,7 @@ pub fn init(config: TraceConfig) -> bool {
 }
 
 fn install(config: TraceConfig) -> bool {
+    // Fall back to a sane default rather than failing if the filter is malformed.
     let filter =
         EnvFilter::try_new(&config.filter).unwrap_or_else(|_| EnvFilter::new(DEFAULT_FILTER));
     let registry = tracing_subscriber::registry().with(filter);
@@ -87,25 +94,34 @@ fn install(config: TraceConfig) -> bool {
     match config.output {
         TraceOutput::Fmt => {
             let subscriber = registry.with(fmt::layer().with_writer(std::io::stderr));
+
             try_init(subscriber)
         }
+
         TraceOutput::ChromeJson { file } => {
+            // Create the trace file's parent dir before the writer opens it.
             if let Some(parent) = file
                 .parent()
                 .filter(|parent| !parent.as_os_str().is_empty())
             {
                 let _ = std::fs::create_dir_all(parent);
             }
+
             let (chrome_layer, guard) =
                 tracing_chrome::ChromeLayerBuilder::new().file(file).build();
             let subscriber = registry.with(chrome_layer);
+
             if try_init(subscriber) {
+                // Park the flush guard in a static — dropping it would truncate
+                // the trace. `shutdown`/`flush` reach it from there.
                 let guard_slot = CHROME_GUARD.get_or_init(|| Mutex::new(None));
                 if let Ok(mut slot) = guard_slot.lock() {
                     *slot = Some(guard);
                 }
+
                 true
             } else {
+                // Another subscriber won the race; flush what we built and bail.
                 guard.flush();
                 false
             }
@@ -140,88 +156,4 @@ where
     S: Subscriber + Send + Sync + 'static,
 {
     subscriber.try_init().is_ok()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{TraceConfig, TraceOutput};
-    use std::path::PathBuf;
-
-    #[test]
-    fn no_filter_disables_tracing() {
-        assert_eq!(TraceConfig::from_values(None, None, None), None);
-        assert_eq!(TraceConfig::from_values(Some(""), None, None), None);
-    }
-
-    #[test]
-    fn parses_fmt_output() {
-        assert_eq!(
-            TraceConfig::from_values(Some("debug"), Some("fmt"), None),
-            Some(TraceConfig {
-                filter: "debug".to_owned(),
-                output: TraceOutput::Fmt,
-            })
-        );
-    }
-
-    #[test]
-    fn parses_chrome_json_output() {
-        assert_eq!(
-            TraceConfig::from_values(
-                Some("trace"),
-                Some("chrome-json"),
-                Some("target/panda-trace.json")
-            ),
-            Some(TraceConfig {
-                filter: "trace".to_owned(),
-                output: TraceOutput::ChromeJson {
-                    file: PathBuf::from("target/panda-trace.json"),
-                },
-            })
-        );
-    }
-
-    #[test]
-    fn unknown_output_disables_tracing() {
-        assert_eq!(
-            TraceConfig::from_values(Some("trace"), Some("otlp"), None),
-            None
-        );
-    }
-
-    #[test]
-    fn shutdown_finalizes_chrome_json() {
-        let trace_file = std::env::temp_dir().join(format!(
-            "panda-trace-{}-{}.json",
-            std::process::id(),
-            "shutdown"
-        ));
-        let _ = std::fs::remove_file(&trace_file);
-
-        let initialized = super::init(TraceConfig {
-            filter: "trace".to_owned(),
-            output: TraceOutput::ChromeJson {
-                file: trace_file.clone(),
-            },
-        });
-        if !initialized {
-            return;
-        }
-
-        let span = tracing::info_span!("file_parse", path = "/virtual/Button.tsx");
-        let entered = span.enter();
-        tracing::info!("parsed");
-        drop(entered);
-
-        super::flush();
-        assert!(super::shutdown());
-
-        let contents = std::fs::read_to_string(&trace_file).expect("trace file should exist");
-        let json: serde_json::Value =
-            serde_json::from_str(&contents).expect("trace file should be valid JSON");
-        assert!(json.as_array().is_some_and(|entries| !entries.is_empty()));
-        assert!(contents.contains("file_parse"));
-
-        let _ = std::fs::remove_file(trace_file);
-    }
 }

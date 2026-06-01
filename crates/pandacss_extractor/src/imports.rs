@@ -1,4 +1,8 @@
-use crate::{Diagnostic, DiagnosticSeverity, Span};
+//! Scan a file's `import` statements into [`ImportRecord`]s (named / default /
+//! namespace / side-effect, with type-only flags and spans) — the raw input
+//! the [`crate::matcher`] later filters against the configured import map.
+
+use crate::{Diagnostic, Span, diagnostic_codes, span_from_oxc};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     BindingIdentifier, ImportDeclarationSpecifier, ImportOrExportKind, ModuleExportName, Program,
@@ -82,7 +86,7 @@ pub(crate) fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
         if let Statement::ImportDeclaration(decl) = stmt {
             let module = decl.source.value.to_string();
             let type_only = matches!(decl.import_kind, ImportOrExportKind::Type);
-            let span = Span::from(decl.span);
+            let span = span_from_oxc(decl.span);
             let (kind, specifiers) = match decl.specifiers.as_ref() {
                 None => (ImportKind::SideEffect, Vec::new()),
                 Some(specs) => (
@@ -123,12 +127,11 @@ pub(crate) fn collect_parser_diagnostics(
                 })
             });
             let location = span.map(|s| line_index.locate_range(s.start, s.end));
-            Diagnostic {
-                message: error.message.to_string(),
-                severity: DiagnosticSeverity::Error,
-                span,
-                location,
-            }
+            let mut diagnostic =
+                Diagnostic::error(diagnostic_codes::JS_PARSE_ERROR, error.message.to_string());
+            diagnostic.span = span;
+            diagnostic.location = location;
+            diagnostic
         })
         .collect()
 }
@@ -140,21 +143,21 @@ fn specifier_record(spec: &ImportDeclarationSpecifier<'_>) -> ImportSpecifier {
             imported: module_export_name(&named.imported),
             local: binding_name(&named.local),
             type_only: matches!(named.import_kind, ImportOrExportKind::Type),
-            span: Span::from(named.span),
+            span: span_from_oxc(named.span),
         },
         ImportDeclarationSpecifier::ImportDefaultSpecifier(default) => ImportSpecifier {
             kind: ImportSpecifierKind::Default,
             imported: "default".to_owned(),
             local: binding_name(&default.local),
             type_only: false,
-            span: Span::from(default.span),
+            span: span_from_oxc(default.span),
         },
         ImportDeclarationSpecifier::ImportNamespaceSpecifier(ns) => ImportSpecifier {
             kind: ImportSpecifierKind::Namespace,
             imported: "*".to_owned(),
             local: binding_name(&ns.local),
             type_only: false,
-            span: Span::from(ns.span),
+            span: span_from_oxc(ns.span),
         },
     }
 }

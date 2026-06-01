@@ -146,31 +146,32 @@ impl FileSystem for MemoryFileSystem {
 
     fn read_dir(&self, path: &Path) -> io::Result<Vec<PathBuf>> {
         let state = self.inner.read().expect("memory FS poisoned");
+        // Empty path and "/" act as implicit roots; otherwise require an
+        // explicit dir entry.
         if !state.dirs.contains(path) && path.as_os_str() != "/" && path.as_os_str() != "" {
-            // The empty path and "/" act as implicit roots; otherwise require an
-            // explicit dir entry.
-            if !state.dirs.iter().any(|d| d == path) {
-                return Err(io::Error::new(
-                    io::ErrorKind::NotFound,
-                    format!("directory not found: {}", path.display()),
-                ));
-            }
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("directory not found: {}", path.display()),
+            ));
         }
         // This memory FS is intentionally optimized for simple fixtures and
         // wasm-backed virtual filesystems. Directory listing scans the current
         // path set instead of maintaining a children index; production OS
         // traversal uses `OsFileSystem`.
         let mut entries: Vec<PathBuf> = Vec::new();
+
         for p in state.files.keys() {
             if p.parent() == Some(path) {
                 entries.push(p.clone());
             }
         }
+
         for d in &state.dirs {
             if d.parent() == Some(path) {
                 entries.push(d.clone());
             }
         }
+
         entries.sort();
         entries.dedup();
         Ok(entries)

@@ -36,10 +36,20 @@ pub struct Matchers {
 }
 
 #[napi(object)]
-#[derive(Clone)]
+#[derive(Clone, serde::Serialize)]
 pub struct TokenDictionary {
     pub values: std::collections::HashMap<String, String>,
     pub vars: std::collections::HashMap<String, String>,
+}
+
+pub(crate) fn from_core_token_dictionary(
+    dictionary: &pandacss_tokens::TokenDictionary,
+) -> TokenDictionary {
+    let (values, vars) = dictionary.flat_maps();
+    TokenDictionary {
+        values: values.into_iter().collect(),
+        vars: vars.into_iter().collect(),
+    }
 }
 
 #[napi(object)]

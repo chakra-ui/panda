@@ -5,20 +5,43 @@
 //! every extracted style so callers see `Atom[]` directly (not raw
 //! `ExtractedCall` records — for that, use `Extractor`).
 
+use lru::LruCache;
 use napi_derive::napi;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::Diagnostic;
-use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
+use crate::cache::{
+    MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, TransformCache,
+    UtilityTransformCacheKey,
+};
 use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
-use pandacss_config::{CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig};
-use pandacss_extractor::{DiagnosticSeverity, Literal};
+use pandacss_codegen::{
+    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
+};
+use pandacss_config::{
+    CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
+    ValidationMode, validate_config_value, validation_mode_from_value,
+};
+use pandacss_encoder::{Atom as CoreAtom, AtomValue};
+use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
+use pandacss_fs::{FileSystem, OxcResolverFileSystem};
+use smallvec::SmallVec;
+
+use crate::compile::{CompileFileManifest, CompileOutput};
+use crate::matcher::{TokenDictionary, from_core_token_dictionary};
+
+/// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.
+type UtilityValueCallbacks =
+    HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>;
 
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
 pub struct ParseFileReport {
+    /// Source path parsed for this report.
+    pub path: String,
     pub css_calls: u32,
     pub cva_calls: u32,
     pub sva_calls: u32,
@@ -43,6 +66,32 @@ pub struct ProjectOptions {
     pub cross_file: Option<bool>,
 }
 
+/// Glob overrides for `scan`. Omitted fields fall back to the
+/// config's `include`/`exclude`/`cwd`.
+#[napi(object)]
+pub struct ScanOptions {
+    pub include: Option<Vec<String>>,
+    pub exclude: Option<Vec<String>>,
+    pub cwd: Option<String>,
+}
+
+/// A source glob with its static base directory (the dir a watcher subscribes to).
+#[napi(object)]
+pub struct SourceEntry {
+    pub base: String,
+    pub pattern: String,
+}
+
+/// The resolved cascade-layer names (config overrides + defaults applied).
+#[napi(object)]
+pub struct LayerNames {
+    pub reset: String,
+    pub base: String,
+    pub tokens: String,
+    pub recipes: String,
+    pub utilities: String,
+}
+
 /// One `(file, span_start, value)` entry for the recipe and slot-recipe
 /// iterators. `value` is the serialized recipe shape (matches
 /// `pandacss_recipes::Recipe` / `SlotRecipe`).
@@ -53,24 +102,58 @@ pub struct RecipeEntry {
     pub recipe: serde_json::Value,
 }
 
+#[napi(object)]
+pub struct ParsedFileView {
+    pub path: String,
+    pub atoms: Vec<crate::Atom>,
+    pub diagnostics: Vec<Diagnostic>,
+    pub recipes: Vec<RecipeEntry>,
+    pub slot_recipes: Vec<RecipeEntry>,
+}
+
+#[napi(object)]
+pub struct StaticPatternResult {
+    pub atoms: Vec<crate::Atom>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+#[napi(object)]
+pub struct GenerateArtifactOptions {
+    /// "extensionless" (default) or "runtime-and-types".
+    pub specifiers: Option<String>,
+}
+
+#[napi(object)]
+pub struct CodegenFile {
+    pub path: String,
+    pub code: String,
+    pub dependencies: Vec<String>,
+}
+
+#[napi(object)]
+pub struct CodegenArtifact {
+    pub id: String,
+    pub files: Vec<CodegenFile>,
+}
+
 #[napi]
-pub struct Project {
+pub struct Compiler {
     inner: pandacss_project::Project,
     config: serde_json::Value,
+    user_config: UserConfig,
     callbacks: CallbackHost,
+    /// Platform filesystem engine (real disk). Shared with the cross-file
+    /// resolver and used by `glob`/`scan` to discover + read source files.
+    fs: pandacss_fs::OsFileSystem,
 }
 
 struct CallbackHost {
     utility_transform_refs: HashMap<String, String>,
     pattern_transform_refs: HashMap<String, String>,
-    utility_transforms: HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    pattern_transforms: HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
+    utility_transforms:
+        HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    pattern_transforms:
+        HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
     transform_cache: TransformCache,
 }
 
@@ -95,30 +178,68 @@ impl CallbackHost {
 }
 
 #[napi]
-impl Project {
-    /// Construct a project from the resolved, JSON-safe Panda config snapshot.
+impl Compiler {
+    /// Construct a compiler from the resolved, JSON-safe Panda config snapshot.
     #[napi(factory)]
-    #[must_use]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned constructor arguments"
     )]
     pub fn from_config(
+        env: Env,
         config: serde_json::Value,
         options: Option<ProjectOptions>,
+        utility_values_callbacks: Option<UtilityValueCallbacks>,
     ) -> napi::Result<Self> {
         crate::init_tracing();
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
         let config_snapshot = config.clone();
-        let config: UserConfig = serde_json::from_value(config)
-            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let raw_diagnostics = validate_config_value(&config_snapshot);
+        if validation_mode_from_value(&config_snapshot) == ValidationMode::Error
+            && !raw_diagnostics.is_empty()
+        {
+            return Err(napi::Error::from_reason(format_config_diagnostics(
+                &raw_diagnostics,
+            )));
+        }
+        let mut config: UserConfig = serde_json::from_value(config).map_err(|err| {
+            let reason = if raw_diagnostics.is_empty() {
+                format!("invalid config: {err}")
+            } else {
+                format!(
+                    "invalid config: {err}\n{}",
+                    format_config_diagnostics(&raw_diagnostics)
+                )
+            };
+            napi::Error::from_reason(reason)
+        })?;
+        let token_dictionary = pandacss_tokens::TokenDictionary::from_config(&config)
+            .map_err(|err| napi::Error::from_reason(format!("invalid token config: {err}")))?
+            .map(Arc::new);
+        resolve_utility_values_callbacks(
+            &mut config,
+            token_dictionary.as_deref(),
+            utility_values_callbacks.as_ref(),
+            &env,
+        )?;
         let callbacks = CallbackHost::from_config(&config);
-        let project = pandacss_project::Project::from_config(config)
-            .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let user_config = config.clone();
+        let config_snapshot =
+            serde_json::to_value(&config).unwrap_or_else(|_| config_snapshot.clone());
+        let system = pandacss_project::System::new(pandacss_project::SystemInput {
+            config,
+            diagnostics: Some(raw_diagnostics),
+            token_dictionary,
+        })
+        .map_err(|err| napi::Error::from_reason(format!("invalid config: {err}")))?;
+        let project = pandacss_project::Project::new(system);
+        let fs = pandacss_fs::OsFileSystem::default();
         Ok(Self {
-            inner: apply_project_options(project, opts),
+            inner: apply_project_options(project, &opts, &fs),
             config: config_snapshot,
+            user_config,
             callbacks,
+            fs,
         })
     }
 
@@ -128,6 +249,124 @@ impl Project {
     #[must_use]
     pub fn config(&self) -> serde_json::Value {
         self.config.clone()
+    }
+
+    /// The resolved cascade-layer names (config overrides merged over defaults).
+    /// The host needs these to recognize the user's `@layer …;` directive
+    /// without re-deriving the Rust defaults.
+    #[napi]
+    #[must_use]
+    pub fn layers(&self) -> LayerNames {
+        let layers = &self.user_config.layers;
+        LayerNames {
+            reset: layers.reset.clone(),
+            base: layers.base.clone(),
+            tokens: layers.tokens.clone(),
+            recipes: layers.recipes.clone(),
+            utilities: layers.utilities.clone(),
+        }
+    }
+
+    /// Tooling introspection snapshot (read once, index on the host).
+    ///
+    /// # Errors
+    /// Returns an error if the snapshot fails to serialize.
+    #[napi]
+    pub fn spec(&self) -> napi::Result<serde_json::Value> {
+        let types = self.inner.type_data(&self.user_config);
+        let property_order = pandacss_stylesheet::order_properties(
+            types.utilities.properties.keys().map(String::as_str),
+        );
+        let spec = pandacss_config::Spec {
+            types,
+            property_order,
+            jsx_factory: self.user_config.jsx_factory.clone(),
+            import_map: self.user_config.import_map.clone(),
+        };
+        serde_json::to_value(&spec).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
+    /// Stateless source inspection for tooling (reporting, lint, IDE). Returns
+    /// classified Panda usage sites plus file-local extraction diagnostics.
+    ///
+    /// # Errors
+    /// Returns an error if the result fails to serialize.
+    #[napi(js_name = inspectFileSource)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn inspect_file_source(
+        &self,
+        path: String,
+        source: String,
+    ) -> napi::Result<serde_json::Value> {
+        let result = self.inner.inspect_file_source(&path, &source);
+        serde_json::to_value(&result).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
+    /// Source globs + their static base dirs (for the host watcher).
+    #[napi]
+    #[must_use]
+    pub fn sources(&self) -> Vec<SourceEntry> {
+        self.user_config
+            .include
+            .iter()
+            .map(|pattern| SourceEntry {
+                base: resolve_base(&self.user_config.cwd, pattern),
+                pattern: pattern.clone(),
+            })
+            .collect()
+    }
+
+    /// Generate artifacts and write them under `outdir` via the platform fs
+    /// (real disk on native). Returns the written paths.
+    ///
+    /// # Errors
+    /// Returns an error if a file fails to write.
+    #[napi(js_name = writeArtifacts)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_artifacts(
+        &self,
+        outdir: String,
+        cwd: Option<String>,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Vec<String>> {
+        use pandacss_fs::FileSystem;
+        let generate = generate_options(&self.user_config, options)?;
+        let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
+        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
+            .join(&outdir);
+        let mut written = Vec::new();
+        for artifact in artifacts {
+            for file in artifact.files {
+                let target = base.join(&file.path);
+                if let Some(parent) = target.parent() {
+                    self.fs
+                        .create_dir_all(parent)
+                        .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+                }
+                self.fs
+                    .write(&target, file.code.as_bytes())
+                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+                written.push(target.to_string_lossy().into_owned());
+            }
+        }
+        Ok(written)
+    }
+
+    /// Rust-built token dictionary projected into the small JS interop shape.
+    #[napi(js_name = token_dictionary)]
+    #[must_use]
+    pub fn token_dictionary(&self) -> Option<TokenDictionary> {
+        self.inner
+            .config()
+            .token_dictionary()
+            .as_deref()
+            .map(from_core_token_dictionary)
     }
 
     /// Register a JS-backed utility transform callback. The config snapshot
@@ -141,10 +380,11 @@ impl Project {
     pub fn register_utility_transform(
         &mut self,
         id: String,
-        callback: FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
+        callback: FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>,
     ) {
         self.callbacks.utility_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_utility();
+        self.inner.bump_parse_epoch();
     }
 
     /// Register a JS-backed pattern transform callback. Pattern transforms
@@ -158,67 +398,163 @@ impl Project {
     pub fn register_pattern_transform(
         &mut self,
         id: String,
-        callback: FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
+        callback: FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>,
     ) {
         self.callbacks.pattern_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_pattern();
+        self.inner.bump_parse_epoch();
     }
 
-    /// Extract + encode a single file. Re-parsing a path replaces its prior
-    /// contribution (atoms, recipes, diagnostics) — safe for watch mode.
+    /// Read a source file from the native filesystem and parse it.
+    #[napi(js_name = parseFile)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn parse_file(&mut self, env: Env, path: String) -> napi::Result<ParseFileReport> {
+        let source = self
+            .fs
+            .read_to_string(std::path::Path::new(&path))
+            .map_err(|err| napi::Error::from_reason(format!("failed to read `{path}`: {err}")))?;
+        Ok(self.parse_file_source(env, path, source))
+    }
+
+    /// Extract + encode provided source text. Re-parsing a path replaces its
+    /// prior contribution (atoms, recipes, diagnostics) — safe for watch mode.
+    #[napi(js_name = parseFileSource)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn parse_file_source(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
+        crate::init_tracing();
+        let report = self.parse_inner(&env, &path, &source);
+        let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
+        let report = convert_report(path, report);
+        crate::flush_tracing();
+        report
+    }
+
+    /// Shared parse path used by `parse_file` and `scan` — wires the
+    /// registered pattern/utility transform callbacks (if any) and returns the
+    /// core `ParseFileReport`.
+    fn parse_inner(
+        &mut self,
+        env: &Env,
+        path: &str,
+        source: &str,
+    ) -> pandacss_project::ParseFileReport {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_pattern_transforms && !has_utility_transforms {
+            return self.inner.parse_file(path, source);
+        }
+        let Compiler {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut transform = |name: &str, styles: &Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+                env,
+            )
+        };
+        let mut utility_transform = |prop: &str, value: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                value,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                env,
+            )
+        };
+        inner.parse_file_with(
+            path,
+            source,
+            pandacss_project::ParseTransforms {
+                pattern: has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
+        )
+    }
+
+    /// Source paths matching the config's `include`/`exclude` (overridable via
+    /// `options`), via the platform filesystem engine. Useful for file
+    /// discovery and the host's watch dependency list.
+    ///
+    /// # Errors
+    /// Returns an error when the scan fails (e.g. a non-existent `cwd`).
     #[napi]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
+    pub fn scan(&self, options: Option<ScanOptions>) -> napi::Result<Vec<String>> {
+        Ok(self
+            .scan_paths(options.as_ref())?
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect())
+    }
+
+    /// Read + parse source paths returned from `scan()`. Returns one report per
+    /// successfully parsed path.
+    ///
+    /// # Errors
+    /// Returns an error when a listed path fails to read.
+    #[napi(js_name = parseFiles)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn parse_files(
+        &mut self,
+        env: Env,
+        paths: Vec<String>,
+    ) -> napi::Result<Vec<ParseFileReport>> {
         crate::init_tracing();
-        let report = if !self.callbacks.has_pattern_transforms() {
-            self.inner.parse_file(&path, &source)
-        } else {
-            let Project {
-                inner, callbacks, ..
-            } = self;
-            let mut transform = |name: &str, styles: &Literal| {
-                apply_pattern_transform(
-                    name,
-                    styles,
-                    &callbacks.pattern_transform_refs,
-                    &callbacks.pattern_transforms,
-                    &mut callbacks.transform_cache,
-                    &env,
-                )
+        let mut reports = Vec::with_capacity(paths.len());
+        for path in paths {
+            let path = std::path::PathBuf::from(path);
+            let Ok(source) = self.fs.read_to_string(&path) else {
+                continue;
             };
-            inner.parse_file_with_pattern_transforms(&path, &source, &mut transform)
-        };
-        let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
-        let report = ParseFileReport {
-            css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
-            cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
-            sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
-            jsx_usages: u32::try_from(report.jsx_usages).unwrap_or(u32::MAX),
-            diagnostics: report
-                .diagnostics
-                .into_iter()
-                .map(convert_diagnostic)
-                .collect(),
-        };
+            let path = path.to_string_lossy();
+            let report = self.parse_inner(&env, &path, &source);
+            reports.push(convert_report(path.into_owned(), report));
+        }
         crate::flush_tracing();
-        report
+        Ok(reports)
+    }
+
+    fn scan_paths(&self, options: Option<&ScanOptions>) -> napi::Result<Vec<std::path::PathBuf>> {
+        let opts = glob_options(&self.user_config, options);
+        self.fs
+            .glob(&opts)
+            .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
     }
 
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
     /// using the project's configured matchers + token dictionary. Unlike
     /// `parseFile`, it registers nothing; it's the read-only peek companion.
-    #[napi]
+    #[napi(js_name = extractFileSource)]
     #[must_use]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn extract(&self, source: String, path: String) -> ExtractResult {
+    pub fn extract_file_source(&self, path: String, source: String) -> ExtractResult {
         crate::init_tracing();
-        let result = self.inner.extract(&source, &path);
+        let result = self.inner.extract(&path, &source);
         ExtractResult {
             calls: result.calls.into_iter().map(to_call).collect(),
             jsx: result.jsx.into_iter().map(to_jsx).collect(),
@@ -238,8 +574,63 @@ impl Project {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn refresh_file(&mut self, path: String, source: String) -> bool {
-        self.inner.refresh_file(&path, &source)
+    pub fn refresh_file(&mut self, env: Env, path: String) -> napi::Result<bool> {
+        let source = self
+            .fs
+            .read_to_string(std::path::Path::new(&path))
+            .map_err(|err| napi::Error::from_reason(format!("failed to read `{path}`: {err}")))?;
+        Ok(self.refresh_file_source(env, path, source))
+    }
+
+    /// Re-parse provided source text only if the path is already known.
+    #[napi(js_name = refreshFileSource)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn refresh_file_source(&mut self, env: Env, path: String, source: String) -> bool {
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_pattern_transforms && !has_utility_transforms {
+            return self.inner.refresh_file(&path, &source);
+        }
+
+        let Compiler {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut transform = |name: &str, styles: &Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+                &env,
+            )
+        };
+        let mut utility_transform = |prop: &str, value: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                value,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                &env,
+            )
+        };
+        inner.refresh_file_with(
+            &path,
+            &source,
+            pandacss_project::ParseTransforms {
+                pattern: has_pattern_transforms
+                    .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
+        )
     }
 
     /// Drop a file's contribution. Returns `true` if the path was known.
@@ -270,23 +661,13 @@ impl Project {
     /// Deduplicated atoms across every currently-known file. Sorted by
     /// `(prop, conditions, value)` for stable iteration / snapshot tests.
     #[napi]
-    #[must_use]
     pub fn atoms(&mut self, env: Env) -> napi::Result<Vec<crate::Atom>> {
         crate::init_tracing();
         let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
+        let _ = env;
         let atoms = to_atoms(self.inner.atoms());
-        if !self.callbacks.has_utility_transforms() {
-            crate::flush_tracing();
-            return Ok(atoms);
-        }
-        apply_utility_transforms(
-            atoms,
-            &self.callbacks.utility_transform_refs,
-            &self.callbacks.utility_transforms,
-            &mut self.callbacks.transform_cache,
-            &env,
-        )
-        .inspect(|_| crate::flush_tracing())
+        crate::flush_tracing();
+        Ok(atoms)
     }
 
     /// Every `cva()` recipe entry, in `(file, span_start)` order.
@@ -329,24 +710,259 @@ impl Project {
 
     /// Encoded config recipe styles, separate from atomic utility atoms.
     #[napi(js_name = encodedRecipes)]
-    #[must_use]
     pub fn encoded_recipes(&mut self, env: Env) -> napi::Result<serde_json::Value> {
         crate::init_tracing();
         let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
+        let _ = env;
         let encoded = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .unwrap_or(serde_json::Value::Null);
-        if !self.callbacks.has_utility_transforms() {
-            crate::flush_tracing();
-            return Ok(encoded);
+        crate::flush_tracing();
+        Ok(encoded)
+    }
+
+    #[napi]
+    pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms(env);
+        let Compiler {
+            inner, user_config, ..
+        } = self;
+        let output = crate::compile::build_compile_output(
+            inner,
+            user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+        );
+        crate::flush_tracing();
+        Ok(output)
+    }
+
+    /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
+    /// (byte offsets stay valid); unknown layer names are skipped.
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn layer_css(&mut self, env: Env, layers: Vec<String>) -> napi::Result<String> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("layer_css").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let Compiler {
+            inner, user_config, ..
+        } = self;
+        let token_dictionary = inner.config().token_dictionary();
+        let output = crate::compile::build_stylesheet_output(
+            inner,
+            user_config,
+            token_dictionary,
+            &static_pattern_atoms,
+        );
+        let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
+            .iter()
+            .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
+            .collect();
+        crate::flush_tracing();
+        Ok(output.get_layer_css(&selected))
+    }
+
+    /// Split the stylesheet into per-file outputs (one per layer + per recipe,
+    /// plus `recipes.css` / `styles.css` index files) for `--splitting`.
+    #[napi]
+    pub fn split_css(&mut self, env: Env) -> napi::Result<Vec<crate::compile::SplitCssFile>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("split_css").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let Compiler {
+            inner, user_config, ..
+        } = self;
+        let files = crate::compile::build_split_css(inner, user_config, &static_pattern_atoms);
+        crate::flush_tracing();
+        Ok(files)
+    }
+
+    #[napi(js_name = generateArtifacts)]
+    pub fn generate_artifacts(
+        &self,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Vec<CodegenArtifact>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("codegen", method = "generate_artifacts").entered();
+        let options = generate_options(&self.user_config, options)?;
+        let artifacts = self
+            .inner
+            .generate_artifacts(&self.user_config, options)
+            .into_iter()
+            .map(to_codegen_artifact)
+            .collect();
+        crate::flush_tracing();
+        Ok(artifacts)
+    }
+
+    #[napi(js_name = generateArtifact)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn generate_artifact(
+        &self,
+        id: String,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Option<CodegenArtifact>> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!("codegen", method = "generate_artifact", id).entered();
+        let id = id
+            .parse::<ArtifactId>()
+            .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
+        let options = generate_options(&self.user_config, options)?;
+        let artifact = self
+            .inner
+            .generate_artifact(&self.user_config, id, options)
+            .map(to_codegen_artifact);
+        crate::flush_tracing();
+        Ok(artifact)
+    }
+
+    #[napi(js_name = generateAffectedArtifacts)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn generate_affected_artifacts(
+        &self,
+        dependencies: Vec<String>,
+        options: Option<GenerateArtifactOptions>,
+    ) -> napi::Result<Vec<CodegenArtifact>> {
+        crate::init_tracing();
+        let _span =
+            tracing::trace_span!("codegen", method = "generate_affected_artifacts").entered();
+        let changed = dependency_set_from_strings(dependencies)?;
+        let options = generate_options(&self.user_config, options)?;
+        let artifacts = self
+            .inner
+            .generate_affected_artifacts(&self.user_config, changed, options)
+            .into_iter()
+            .map(to_codegen_artifact)
+            .collect();
+        crate::flush_tracing();
+        Ok(artifacts)
+    }
+
+    /// Config validation diagnostics from construction. Per-file and
+    /// compile diagnostics live on [`ParseFileReport`] / [`CompileOutput`].
+    #[napi]
+    #[must_use]
+    pub fn diagnostics(&self) -> Vec<Diagnostic> {
+        self.inner
+            .diagnostics()
+            .iter()
+            .cloned()
+            .map(crate::convert::convert_diagnostic)
+            .collect()
+    }
+
+    /// `(path, hex source_hash)` for every known file, sorted by path.
+    /// The hash matches the one the re-parse short-circuit uses.
+    #[napi(js_name = fileManifest)]
+    #[must_use]
+    pub fn file_manifest(&self) -> Vec<CompileFileManifest> {
+        self.inner
+            .file_manifest()
+            .into_iter()
+            .map(|(path, hash)| CompileFileManifest {
+                path: path.as_ref().to_owned(),
+                hash: format!("{hash:016x}"),
+            })
+            .collect()
+    }
+
+    /// Per-file view; returns `null` when `path` isn't known.
+    #[napi(js_name = getFile)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn get_file(&self, path: String) -> Option<ParsedFileView> {
+        let file = self.inner.get_file(&path)?;
+        Some(ParsedFileView {
+            path: file.path().to_owned(),
+            atoms: crate::convert::to_atoms(file.atoms()),
+            diagnostics: file
+                .diagnostics()
+                .iter()
+                .cloned()
+                .map(crate::convert::convert_diagnostic)
+                .collect(),
+            recipes: file
+                .recipes()
+                .map(|(span_start, recipe)| RecipeEntry {
+                    file: file.path().to_owned(),
+                    span_start,
+                    recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
+                })
+                .collect(),
+            slot_recipes: file
+                .slot_recipes()
+                .map(|(span_start, recipe)| RecipeEntry {
+                    file: file.path().to_owned(),
+                    span_start,
+                    recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
+                })
+                .collect(),
+        })
+    }
+
+    /// `staticCss.patterns` expansion as raw atoms, without compiling.
+    /// Routes through the same callback host as `parseFile`.
+    #[napi(js_name = staticPatternAtoms)]
+    pub fn static_pattern_atoms(&mut self, env: Env) -> napi::Result<StaticPatternResult> {
+        crate::init_tracing();
+        let (atoms, diagnostics) = self.collect_static_pattern_atoms(env);
+        crate::flush_tracing();
+        Ok(StaticPatternResult {
+            atoms: crate::convert::slice_to_atoms(&atoms),
+            diagnostics: diagnostics
+                .into_iter()
+                .map(crate::convert::convert_diagnostic)
+                .collect(),
+        })
+    }
+
+    fn collect_static_pattern_atoms(
+        &mut self,
+        env: Env,
+    ) -> (
+        Vec<pandacss_encoder::Atom>,
+        Vec<pandacss_extractor::Diagnostic>,
+    ) {
+        let Compiler {
+            inner,
+            user_config,
+            callbacks,
+            ..
+        } = self;
+        if callbacks.has_pattern_transforms() {
+            let pattern_cache = &mut callbacks.transform_cache.pattern;
+            let mut transform = |name: &str, styles: &Literal| {
+                apply_pattern_transform(
+                    name,
+                    styles,
+                    &callbacks.pattern_transform_refs,
+                    &callbacks.pattern_transforms,
+                    pattern_cache,
+                    &env,
+                )
+            };
+            inner.static_pattern_atoms(
+                user_config,
+                Some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
+            )
+        } else {
+            inner.static_pattern_atoms(user_config, None)
         }
-        apply_utility_transforms_to_encoded_recipes(
-            encoded,
-            &self.callbacks.utility_transform_refs,
-            &self.callbacks.utility_transforms,
-            &mut self.callbacks.transform_cache,
-            &env,
-        )
-        .inspect(|_| crate::flush_tracing())
     }
 
     /// Aggregate counts.
@@ -363,205 +979,307 @@ impl Project {
     }
 }
 
+fn core_atom_from_js_atom(atom: crate::Atom) -> Option<CoreAtom> {
+    let value = atom_value_from_json(atom.value)?;
+    let conditions: SmallVec<[Box<str>; 2]> = atom
+        .conditions
+        .into_iter()
+        .map(String::into_boxed_str)
+        .collect();
+    Some(CoreAtom::new(
+        atom.prop.into_boxed_str(),
+        value,
+        conditions,
+        false,
+    ))
+}
+
+fn atom_value_from_json(value: serde_json::Value) -> Option<AtomValue> {
+    match value {
+        serde_json::Value::String(value) => Some(AtomValue::String(value.into_boxed_str())),
+        serde_json::Value::Number(value) => {
+            Some(AtomValue::Number(value.to_string().into_boxed_str()))
+        }
+        serde_json::Value::Bool(value) => Some(AtomValue::Bool(value)),
+        serde_json::Value::Null => Some(AtomValue::Null),
+        serde_json::Value::Array(_) | serde_json::Value::Object(_) => None,
+    }
+}
+
+fn atom_value_to_json(value: &AtomValue) -> serde_json::Value {
+    match value {
+        AtomValue::String(value) => serde_json::Value::String(value.to_string()),
+        AtomValue::Number(value) => parse_number_string(value),
+        AtomValue::Bool(value) => serde_json::Value::Bool(*value),
+        AtomValue::Null => serde_json::Value::Null,
+    }
+}
+
+fn parse_number_string(value: &str) -> serde_json::Value {
+    if let Ok(value) = value.parse::<i64>() {
+        return serde_json::Value::from(value);
+    }
+    if let Ok(value) = value.parse::<f64>()
+        && let Some(value) = serde_json::Number::from_f64(value)
+    {
+        return serde_json::Value::Number(value);
+    }
+    serde_json::Value::String(value.to_owned())
+}
+
+/// Resolve a glob's watch base dir against `cwd` (empty base → `cwd` itself,
+/// avoiding a trailing-slash artifact).
+fn resolve_base(cwd: &str, pattern: &str) -> String {
+    let cwd = std::path::Path::new(cwd);
+    let base = pandacss_fs::base_dir(pattern);
+    if base.is_empty() {
+        cwd.to_string_lossy().into_owned()
+    } else {
+        cwd.join(base).to_string_lossy().into_owned()
+    }
+}
+
+fn convert_report(path: String, report: pandacss_project::ParseFileReport) -> ParseFileReport {
+    ParseFileReport {
+        path,
+        css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
+        cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
+        sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
+        jsx_usages: u32::try_from(report.jsx_usages).unwrap_or(u32::MAX),
+        diagnostics: report
+            .diagnostics
+            .into_iter()
+            .map(convert_diagnostic)
+            .collect(),
+    }
+}
+
+fn glob_options(
+    user_config: &UserConfig,
+    options: Option<&ScanOptions>,
+) -> pandacss_fs::GlobOptions {
+    pandacss_fs::GlobOptions {
+        include: options
+            .and_then(|opts| opts.include.clone())
+            .unwrap_or_else(|| user_config.include.clone()),
+        exclude: options
+            .and_then(|opts| opts.exclude.clone())
+            .unwrap_or_else(|| user_config.exclude.clone()),
+        cwd: std::path::PathBuf::from(
+            options
+                .and_then(|opts| opts.cwd.clone())
+                .unwrap_or_else(|| user_config.cwd.clone()),
+        ),
+        absolute: true,
+    }
+}
+
 fn apply_project_options(
     mut project: pandacss_project::Project,
-    opts: ProjectOptions,
+    opts: &ProjectOptions,
+    fs: &pandacss_fs::OsFileSystem,
 ) -> pandacss_project::Project {
     if opts.cross_file.unwrap_or(true) {
-        project = project.with_cross_file(pandacss_extractor::CrossFileResolver::new());
+        // Share the same fs instance with the resolver so cross-file reads and
+        // `glob`/`scan` see one consistent view.
+        project =
+            project.with_cross_file(pandacss_extractor::CrossFileResolver::with_fs(fs.clone()));
     }
     project
 }
 
-fn apply_utility_transforms(
-    atoms: Vec<crate::Atom>,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
-    env: &Env,
-) -> napi::Result<Vec<crate::Atom>> {
-    if utility_transform_refs.is_empty() {
-        return Ok(atoms);
-    }
-
-    let mut out = Vec::with_capacity(atoms.len());
-    for atom in atoms {
-        let Some(id) = utility_transform_refs.get(&atom.prop) else {
-            out.push(atom);
-            continue;
-        };
-        let Some(callback) = callbacks.get(id) else {
+fn generate_options(
+    user_config: &UserConfig,
+    options: Option<GenerateArtifactOptions>,
+) -> napi::Result<GenerateOptions> {
+    let specifiers = match options.and_then(|options| options.specifiers) {
+        None => ModuleSpecifierPolicy::Extensionless,
+        Some(value) if value == "extensionless" => ModuleSpecifierPolicy::Extensionless,
+        Some(value) if value == "runtime-and-types" => ModuleSpecifierPolicy::RuntimeAndTypes,
+        Some(value) => {
             return Err(napi::Error::from_reason(format!(
-                "Missing utility transform callback `{id}` for `{}`",
-                atom.prop
+                "unknown codegen specifier policy `{value}`"
             )));
-        };
-
-        let cache_key = UtilityTransformCacheKey {
-            id: id.clone(),
-            prop: atom.prop.clone(),
-            value: atom.value.to_string(),
-        };
-        if let Some(cached) = cache.utility.get(&cache_key) {
-            out.extend(apply_conditions(cached, &atom.conditions));
-            continue;
         }
+    };
 
-        let transform = callback.borrow_back(env)?;
-        let result = transform.call(FnArgs::from((
-            atom.value.clone(),
-            transform_args(&atom.value),
-        )))?;
-        let Some(style) = result.as_object() else {
-            continue;
-        };
-        if style.is_empty() {
-            continue;
-        }
-        let transformed = style_object_to_atoms(style, &[]);
-        out.extend(apply_conditions(&transformed, &atom.conditions));
-        cache.utility.insert(cache_key, transformed);
-    }
-
-    Ok(out)
+    Ok(GenerateOptions {
+        format: user_config.codegen_format,
+        specifiers,
+    })
 }
 
-fn apply_utility_transforms_to_encoded_recipes(
-    mut encoded: serde_json::Value,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
-    env: &Env,
-) -> napi::Result<serde_json::Value> {
-    transform_recipe_groups(
-        encoded.get_mut("base"),
-        utility_transform_refs,
-        callbacks,
-        cache,
-        env,
-    )?;
-    transform_recipe_groups(
-        encoded.get_mut("variants"),
-        utility_transform_refs,
-        callbacks,
-        cache,
-        env,
-    )?;
-    if let Some(atomic) = encoded.get_mut("atomic") {
-        let atoms = json_atoms_to_atoms(atomic);
-        *atomic = atoms_to_json(apply_utility_transforms(
-            atoms,
-            utility_transform_refs,
-            callbacks,
-            cache,
-            env,
-        )?);
+fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {
+    CodegenArtifact {
+        id: artifact.id.as_str().to_owned(),
+        files: artifact
+            .files
+            .into_iter()
+            .map(|file| CodegenFile {
+                path: file.path,
+                code: file.code,
+                dependencies: dependency_names(file.dependencies),
+            })
+            .collect(),
     }
-    Ok(encoded)
 }
 
-fn transform_recipe_groups(
-    groups: Option<&mut serde_json::Value>,
-    utility_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
+fn dependency_names(dependencies: DependencySet) -> Vec<String> {
+    dependencies
+        .to_vec()
+        .into_iter()
+        .map(|dependency| dependency.as_str().to_owned())
+        .collect()
+}
+
+fn dependency_set_from_strings(dependencies: Vec<String>) -> napi::Result<DependencySet> {
+    let mut set = DependencySet::EMPTY;
+    for dependency in dependencies {
+        let dependency = dependency.parse::<ConfigDependency>().map_err(|()| {
+            napi::Error::from_reason(format!("unknown config dependency `{dependency}`"))
+        })?;
+        set = set.union(DependencySet::one(dependency));
+    }
+    Ok(set)
+}
+
+fn resolve_utility_values_callbacks(
+    config: &mut UserConfig,
+    token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
+    callbacks: Option<&UtilityValueCallbacks>,
     env: &Env,
 ) -> napi::Result<()> {
-    let Some(serde_json::Value::Array(groups)) = groups else {
+    let Some(callbacks) = callbacks else {
         return Ok(());
     };
-    for group in groups {
-        let Some(entries) = group.get_mut("entries") else {
+    if callbacks.is_empty() {
+        return Ok(());
+    }
+
+    let token_dictionary = token_dictionary.map(from_core_token_dictionary);
+    for (prop, utility) in &mut config.utilities {
+        let Some(id) = utility_values_callback_id(utility).map(str::to_owned) else {
             continue;
         };
-        let atoms = json_atoms_to_atoms(entries);
-        *entries = atoms_to_json(apply_utility_transforms(
-            atoms,
-            utility_transform_refs,
-            callbacks,
-            cache,
-            env,
-        )?);
+        let Some(callback) = callbacks.get(&id) else {
+            continue;
+        };
+        let token_dictionary_json =
+            serde_json::to_value(&token_dictionary).unwrap_or(serde_json::Value::Null);
+        let result = callback
+            .borrow_back(env)
+            .map_err(|err| {
+                napi::Error::from_reason(format!(
+                    "Failed to borrow utility values callback `{id}` for `{prop}`: {err}"
+                ))
+            })?
+            .call(FnArgs::from((token_dictionary_json,)))
+            .map_err(|err| {
+                napi::Error::from_reason(format!(
+                    "Utility values callback `{id}` for `{prop}` threw: {}",
+                    err.reason
+                ))
+            })?;
+        utility.values = Some(serde_json::from_value(result).map_err(|err| {
+            napi::Error::from_reason(format!(
+                "Utility values callback `{id}` for `{prop}` returned invalid values: {err}"
+            ))
+        })?);
     }
     Ok(())
 }
 
-fn json_atoms_to_atoms(value: &serde_json::Value) -> Vec<crate::Atom> {
-    let serde_json::Value::Array(items) = value else {
-        return Vec::new();
+fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
+    let UtilityValues::Map(values) = utility.values.as_ref()? else {
+        return None;
     };
-    items
-        .iter()
-        .filter_map(|item| {
-            let serde_json::Value::Object(entry) = item else {
-                return None;
-            };
-            let prop = entry.get("prop")?.as_str()?.to_owned();
-            let value = entry
-                .get("value")
-                .cloned()
-                .unwrap_or(serde_json::Value::Null);
-            let conditions = entry
-                .get("conditions")
-                .and_then(serde_json::Value::as_array)
-                .map(|items| {
-                    items
-                        .iter()
-                        .filter_map(serde_json::Value::as_str)
-                        .map(str::to_owned)
-                        .collect()
-                })
-                .unwrap_or_default();
-            Some(crate::Atom {
-                prop,
-                value,
-                conditions,
-            })
-        })
-        .collect()
+    let kind = values.get("kind")?.as_str()?;
+    if kind != "js-callback" {
+        return None;
+    }
+    values.get("id")?.as_str()
 }
 
-fn atoms_to_json(atoms: Vec<crate::Atom>) -> serde_json::Value {
-    serde_json::Value::Array(
-        atoms
-            .into_iter()
-            .map(|atom| {
-                let mut entry = serde_json::Map::new();
-                entry.insert("prop".to_owned(), serde_json::Value::String(atom.prop));
-                entry.insert("value".to_owned(), atom.value);
-                entry.insert(
-                    "conditions".to_owned(),
-                    serde_json::Value::Array(
-                        atom.conditions
-                            .into_iter()
-                            .map(serde_json::Value::String)
-                            .collect(),
-                    ),
-                );
-                serde_json::Value::Object(entry)
-            })
-            .collect(),
-    )
+fn apply_utility_transform(
+    prop: &str,
+    value: &AtomValue,
+    utility_transform_refs: &HashMap<String, String>,
+    callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    cache: &mut LruCache<UtilityTransformCacheKey, Vec<crate::Atom>>,
+    env: &Env,
+) -> Result<Option<Vec<CoreAtom>>, pandacss_extractor::Diagnostic> {
+    let Some(id) = utility_transform_refs.get(prop) else {
+        return Ok(None);
+    };
+    let Some(callback) = callbacks.get(id) else {
+        return Err(callback_diagnostic(format!(
+            "Missing utility transform callback `{id}` for `{prop}`"
+        )));
+    };
+
+    let cache_key = UtilityTransformCacheKey {
+        id: id.clone(),
+        prop: prop.to_owned(),
+        value: pandacss_project::atom_value_cache_key(value),
+    };
+    if let Some(cached) = cache.get(&cache_key).cloned() {
+        tracing::trace!(
+            cache = "utility_transform",
+            action = "hit",
+            target = prop,
+            entries = cache.len()
+        );
+        return Ok(Some(
+            cached
+                .into_iter()
+                .filter_map(core_atom_from_js_atom)
+                .collect(),
+        ));
+    }
+    tracing::trace!(
+        cache = "utility_transform",
+        action = "miss",
+        target = prop,
+        entries = cache.len()
+    );
+
+    let value = atom_value_to_json(value);
+    let transform = callback.borrow_back(env).map_err(|err| {
+        callback_diagnostic(format!(
+            "Failed to borrow utility transform callback `{id}` for `{prop}`: {err}"
+        ))
+    })?;
+    let result = transform.call(FnArgs::from((value,))).map_err(|err| {
+        callback_diagnostic(format!(
+            "Utility transform callback `{id}` for `{prop}` threw: {}",
+            err.reason
+        ))
+    })?;
+    let Some(style) = result.as_object() else {
+        return Ok(Some(Vec::new()));
+    };
+    if style.is_empty() {
+        trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
+        cache.put(cache_key, Vec::new());
+        return Ok(Some(Vec::new()));
+    }
+    let transformed = style_object_to_atoms(style, &[]);
+    let core = transformed
+        .iter()
+        .cloned()
+        .filter_map(core_atom_from_js_atom)
+        .collect();
+    trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
+    cache.put(cache_key, transformed);
+    Ok(Some(core))
 }
 
 fn apply_pattern_transform(
     name: &str,
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
-    callbacks: &HashMap<
-        String,
-        FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>,
-    >,
-    cache: &mut TransformCache,
+    callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    cache: &mut LruCache<PatternTransformCacheKey, Option<Literal>>,
     env: &Env,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
     let Some(id) = pattern_transform_refs.get(name) else {
@@ -573,35 +1291,51 @@ fn apply_pattern_transform(
         )));
     };
 
+    let cache_key =
+        pandacss_project::literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
+            PatternTransformCacheKey {
+                id: id.clone(),
+                name: name.to_owned(),
+                props,
+            }
+        });
+    if let Some(cached) = cache_key.as_ref().and_then(|key| cache.get(key)).cloned() {
+        tracing::trace!(
+            cache = "pattern_transform",
+            action = "hit",
+            target = name,
+            entries = cache.len()
+        );
+        return Ok(cached);
+    }
+    tracing::trace!(
+        cache = "pattern_transform",
+        action = if cache_key.is_some() {
+            "miss"
+        } else {
+            "skip_oversized_key"
+        },
+        target = name,
+        entries = cache.len()
+    );
+
     let props = serde_json::to_value(styles).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to serialize pattern props for `{name}`: {err}"
         ))
     })?;
-    let props_key = serde_json::to_string(&props).map_err(|err| {
-        callback_diagnostic(format!("Failed to cache pattern props for `{name}`: {err}"))
-    })?;
-    let cache_key = PatternTransformCacheKey {
-        id: id.clone(),
-        name: name.to_owned(),
-        props: props_key,
-    };
-    if let Some(cached) = cache.pattern.get(&cache_key) {
-        return Ok(cached.clone());
-    }
 
     let transform = callback.borrow_back(env).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to borrow pattern transform callback `{id}` for `{name}`: {err}"
         ))
     })?;
-    let result = transform
-        .call(FnArgs::from((props, pattern_transform_args())))
-        .map_err(|err| {
-            callback_diagnostic(format!(
-                "Pattern transform callback `{id}` for `{name}` threw: {err}"
-            ))
-        })?;
+    let result = transform.call(FnArgs::from((props,))).map_err(|err| {
+        callback_diagnostic(format!(
+            "Pattern transform callback `{id}` for `{name}` threw: {}",
+            err.reason
+        ))
+    })?;
     let transformed = if result.is_null() {
         None
     } else {
@@ -611,8 +1345,21 @@ fn apply_pattern_transform(
             ))
         })?
     };
-    cache.pattern.insert(cache_key, transformed.clone());
+    if let Some(cache_key) = cache_key {
+        trace_cache_store("pattern_transform", name, cache.len(), cache.cap().get());
+        cache.put(cache_key, transformed.clone());
+    }
     Ok(transformed)
+}
+
+fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
+    tracing::trace!(
+        cache,
+        action = "store",
+        target,
+        entries = len.saturating_add(1).min(capacity),
+        evicted = len == capacity
+    );
 }
 
 fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {
@@ -656,40 +1403,8 @@ fn pattern_callback_id(pattern: &PatternConfig) -> Option<&str> {
 
 fn callback_ref_id(value: &CallbackRef) -> Option<&str> {
     (value.kind == "js-callback")
-        .then(|| value.id.as_deref())
+        .then_some(value.id.as_deref())
         .flatten()
-}
-
-fn transform_args(value: &serde_json::Value) -> serde_json::Value {
-    serde_json::json!({
-        "raw": value,
-        "token": null,
-        "utils": {
-            "colorMix": null
-        }
-    })
-}
-
-fn pattern_transform_args() -> serde_json::Value {
-    serde_json::json!({
-        "map": null,
-        "isCssUnit": null,
-        "isCssVar": null
-    })
-}
-
-fn apply_conditions(atoms: &[crate::Atom], conditions: &[String]) -> Vec<crate::Atom> {
-    if conditions.is_empty() {
-        return atoms.to_vec();
-    }
-    atoms
-        .iter()
-        .map(|atom| {
-            let mut atom = atom.clone();
-            atom.conditions = conditions.to_vec();
-            atom
-        })
-        .collect()
 }
 
 fn style_object_to_atoms(
@@ -783,11 +1498,23 @@ fn json_value_to_literal(value: &serde_json::Value) -> Option<Literal> {
 
 fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
     pandacss_extractor::Diagnostic {
+        code: diagnostic_codes::TRANSFORM_CALLBACK_FAILED.to_owned(),
         message,
         severity: DiagnosticSeverity::Warning,
         span: None,
         location: None,
     }
+}
+
+fn format_config_diagnostics(diagnostics: &[pandacss_shared::Diagnostic]) -> String {
+    let mut message = String::from("Invalid config:");
+    for diagnostic in diagnostics {
+        message.push_str("\n- [");
+        message.push_str(&diagnostic.code);
+        message.push_str("] ");
+        message.push_str(&diagnostic.message);
+    }
+    message
 }
 
 fn capitalize(value: &str) -> String {

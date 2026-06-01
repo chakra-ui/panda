@@ -1,6 +1,9 @@
+//! Extract Panda function-call usages (`css({…})`, `cva({…})`, `p.css({…})`,
+//! pattern/recipe calls) and fold each argument to a [`Literal`].
+
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
-    css_template::css_template_to_object, literal::expression_to_literal,
+    css_template::css_template_to_object, literal::expression_to_literal, span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -62,6 +65,7 @@ pub fn extract_calls(
         config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
+        None,
     );
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     ExtractedCallsResult {
@@ -218,7 +222,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                     name: resolved.name.into_owned(),
                     alias: resolved.alias.to_owned(),
                     data,
-                    span: Span::from(call.span),
+                    span: span_from_oxc(call.span),
                 });
             }
         }
@@ -237,7 +241,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.to_owned(),
                 data: vec![Some(object)],
-                span: Span::from(tagged.span),
+                span: span_from_oxc(tagged.span),
             });
         }
         walk::walk_tagged_template_expression(self, tagged);

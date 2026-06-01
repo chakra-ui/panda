@@ -1,0 +1,38 @@
+use pandacss_config::{CodegenFormat, UserConfig};
+use serde_json::json;
+
+#[test]
+fn codegen_format_defaults_and_overrides() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let ts_config: UserConfig = serde_json::from_value(json!({
+        "codegenFormat": "ts"
+    }))
+    .expect("ts codegen config");
+    let js_config: UserConfig = serde_json::from_value(json!({
+        "codegenFormat": "js"
+    }))
+    .expect("js codegen config");
+
+    assert_eq!(default_config.codegen_format, CodegenFormat::Mjs);
+    assert_eq!(default_config.codegen_format.runtime_extension(), "mjs");
+    assert_eq!(
+        default_config.codegen_format.declaration_extension(),
+        Some("d.mts")
+    );
+
+    assert_eq!(ts_config.codegen_format, CodegenFormat::Ts);
+    assert!(ts_config.codegen_format.is_source_ts());
+    assert_eq!(ts_config.codegen_format.runtime_extension(), "ts");
+    assert_eq!(ts_config.codegen_format.declaration_extension(), None);
+
+    assert_eq!(js_config.codegen_format, CodegenFormat::Js);
+    assert!(js_config.codegen_format.is_split());
+    assert_eq!(js_config.codegen_format.runtime_extension(), "js");
+    assert_eq!(
+        js_config.codegen_format.declaration_extension(),
+        Some("d.ts")
+    );
+
+    let serialized = serde_json::to_value(&ts_config).expect("serialized config");
+    assert_eq!(serialized.get("codegenFormat"), Some(&json!("ts")));
+}

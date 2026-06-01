@@ -1,0 +1,15 @@
+{
+  "theme": {
+    "breakpoints": { "sm": "640px", "md": "768px", "lg": "1024px" },
+    "tokens": {
+      "colors": { "red": { "100": { "value": "#fee" }, "500": { "value": "#f00" }, "900": { "value": "#900" } } },
+      "spacing": { "2": { "value": "8px" }, "4": { "value": "16px" }, "8": { "value": "32px" } }
+    }
+  },
+  "conditions": { "hover": "&:is(:hover, [data-hover])" },
+  "utilities": {
+    "color": { "className": "text", "values": "colors" },
+    "padding": { "className": "p", "values": "spacing", "shorthand": "p" },
+    "display": { "className": "d" }
+  }
+}

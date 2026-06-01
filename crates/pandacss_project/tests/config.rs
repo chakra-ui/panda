@@ -4,7 +4,7 @@ mod common;
 
 use common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
-use insta::assert_yaml_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_project::{Project, System};
 use serde_json::json;
 
@@ -22,11 +22,8 @@ fn config_builds_system_and_project() {
     let project = Project::new(system);
 
     assert!(project.is_empty());
-    assert!(
-        Project::from_config(config)
-            .expect("valid project config")
-            .is_empty()
-    );
+    let system = System::new(config).expect("valid project config");
+    assert!(Project::new(system).is_empty());
 }
 
 #[test]
@@ -45,8 +42,11 @@ fn invalid_serialized_jsx_regex_returns_error() {
         }
     }));
 
-    let error = match Project::from_config(config) {
-        Ok(_) => panic!("invalid regex should fail config build"),
+    let error = match System::new(config) {
+        Ok(system) => {
+            let _project = Project::new(system);
+            panic!("invalid regex should fail config build")
+        }
         Err(error) => error,
     };
 
@@ -148,7 +148,7 @@ fn css_shorthands_are_normalized() {
 fn utility_values_normalize_aliases() {
     let mut project = create_project(json!({
         "conditions": {
-            "_hover": "&:hover"
+            "hover": "&:hover"
         },
         "utilities": {
             "spacing": {
@@ -236,7 +236,7 @@ fn all_jsx_props_filter_valid_props() {
 fn conditions_survive_shorthand_normalization() {
     let mut project = create_project(json!({
         "conditions": {
-            "_hover": "&:hover"
+            "hover": "&:hover"
         },
         "utilities": {
             "padding": { "shorthand": "p" }
@@ -276,8 +276,8 @@ fn config_conditions_are_encoded_as_conditions() {
         indoc! {r"
             import { css } from '@panda/css';
             css({
-              cqSm: { color: 'red' },
-              supportsGrid: { display: 'grid' }
+              _cqSm: { color: 'red' },
+              _supportsGrid: { display: 'grid' }
             });
         "},
     );
@@ -286,12 +286,50 @@ fn config_conditions_are_encoded_as_conditions() {
     - prop: color
       value: red
       conditions:
-        - cqSm
+        - _cqSm
     - prop: display
       value: grid
       conditions:
-        - supportsGrid
+        - _supportsGrid
     "#);
+}
+
+#[test]
+fn config_validation_warnings_are_project_diagnostics() {
+    let project = create_project(json!({
+        "conditions": {
+            "pinkTheme": "[data-theme=pink]"
+        }
+    }));
+
+    assert_yaml_snapshot!(project.diagnostics(), @r#"
+    - code: config_condition_selector_invalid
+      message: "Selectors should contain the `&` character: `[data-theme=pink]`"
+      severity: warning
+      span: ~
+      location: ~
+    "#);
+}
+
+#[test]
+fn config_validation_error_fails_project_construction() {
+    let result = System::new(
+        serde_json::from_value::<pandacss_config::UserConfig>(json!({
+            "validation": "error",
+            "conditions": {
+                "pinkTheme": "[data-theme=pink]"
+            }
+        }))
+        .expect("valid typed config"),
+    );
+
+    let Err(error) = result else {
+        panic!("expected validation error");
+    };
+    assert_snapshot!(error.to_string(), @r"
+Config error: Invalid config:
+- [config_condition_selector_invalid] Selectors should contain the `&` character: `[data-theme=pink]`
+");
 }
 
 #[test]

@@ -36,6 +36,9 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     let Some(first) = chars.next() else {
         return Cow::Borrowed(value);
     };
+
+    // Borrow unchanged when the first char already uppercases to itself (the
+    // common case for class names) — avoids an allocation.
     let mut uppercase = first.to_uppercase();
     let Some(first_upper) = uppercase.next() else {
         return Cow::Borrowed(value);
@@ -50,34 +53,70 @@ pub fn capitalize(value: &str) -> Cow<'_, str> {
     Cow::Owned(out)
 }
 
+/// `PascalCase` an identifier, treating any non-alphanumeric run as a word
+/// break (`button-group` -> `ButtonGroup`). Empty results fall back to `_` so
+/// callers always get a valid identifier.
 #[must_use]
-pub fn dash_case(value: &str) -> String {
+pub fn pascal_case(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
+    let mut uppercase = true;
     for ch in value.chars() {
-        if ch.is_ascii_uppercase() {
-            out.push('-');
-            out.push(ch.to_ascii_lowercase());
+        if ch.is_ascii_alphanumeric() {
+            if uppercase {
+                out.push(ch.to_ascii_uppercase());
+                uppercase = false;
+            } else {
+                out.push(ch);
+            }
         } else {
-            out.push(ch);
+            uppercase = true;
         }
     }
-    out
+    if out.is_empty() { "_".into() } else { out }
 }
 
+/// Coerce a string into a valid JS identifier: non-`[A-Za-z0-9_$]` chars
+/// become `_`, and a leading digit is prefixed with `_`. Falls back to `_`.
 #[must_use]
-pub fn escape_css_var_name(value: &str) -> String {
+pub fn js_ident(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
-    for ch in value.chars() {
-        if ch.is_ascii_alphanumeric()
-            || ch == '_'
-            || ch == '-'
-            || ('\u{0081}'..='\u{ffff}').contains(&ch)
-        {
+    for (index, ch) in value.chars().enumerate() {
+        if ch.is_ascii_alphanumeric() || ch == '_' || ch == '$' {
+            if index == 0 && ch.is_ascii_digit() {
+                out.push('_');
+            }
             out.push(ch);
         } else {
-            out.push('\\');
-            out.push(ch);
+            out.push('_');
         }
     }
-    out
+    if out.is_empty() { "_".into() } else { out }
+}
+
+/// Kebab-case a name for use as a file stem: camelCase boundaries and
+/// non-alphanumeric runs both become single dashes, no leading/trailing dash
+/// (`ButtonGroup` -> `button-group`). Falls back to `_`.
+#[must_use]
+pub fn file_stem(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut prev_dash = false;
+    for ch in value.chars() {
+        if ch.is_ascii_uppercase() {
+            if !out.is_empty() && !prev_dash {
+                out.push('-');
+            }
+            out.push(ch.to_ascii_lowercase());
+            prev_dash = false;
+        } else if ch.is_ascii_alphanumeric() {
+            out.push(ch);
+            prev_dash = false;
+        } else if !prev_dash && !out.is_empty() {
+            out.push('-');
+            prev_dash = true;
+        }
+    }
+    if out.ends_with('-') {
+        out.pop();
+    }
+    if out.is_empty() { "_".into() } else { out }
 }

@@ -1,0 +1,81 @@
+//! Wire-up smoke test: project's `static_pattern_atoms` feeds into
+//! `StylesheetInput.static_pattern_atoms` and ends up in the utilities layer.
+//! Unit coverage for the expansion itself lives in `pandacss_project`'s
+//! `tests/static_patterns.rs`.
+
+mod common;
+
+use common::config;
+use insta::assert_snapshot;
+use pandacss_extractor::Literal;
+use pandacss_project::{Diagnostic, Project, System};
+use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
+use serde_json::json;
+
+#[test]
+fn static_pattern_atoms_flow_into_utilities_layer() {
+    let cfg = config(json!({
+        "utilities": {
+            "alignItems": { "className": "ai" }
+        },
+        "patterns": {
+            "stack": {
+                "properties": { "align": { "type": "enum", "value": ["center"] } }
+            }
+        },
+        "staticCss": {
+            "patterns": { "stack": [{ "properties": { "align": ["center"] } }] }
+        }
+    }));
+
+    let mut transform = |_name: &str, styles: &Literal| -> Result<Option<Literal>, Diagnostic> {
+        let Literal::Object(entries) = styles else {
+            return Ok(Some(styles.clone()));
+        };
+        Ok(Some(Literal::Object(
+            entries
+                .iter()
+                .map(|(k, v)| {
+                    let mapped = if k == "align" {
+                        "alignItems".to_owned()
+                    } else {
+                        k.clone()
+                    };
+                    (mapped, v.clone())
+                })
+                .collect(),
+        )))
+    };
+
+    let system = System::new(cfg.clone()).expect("project");
+    let mut project = Project::new(system);
+    let (pattern_atoms, diagnostics) = project.static_pattern_atoms(&cfg, Some(&mut transform));
+    assert!(diagnostics.is_empty(), "no expansion diagnostics expected");
+
+    let snapshots = project.stylesheet_snapshots(&cfg);
+    let output = pandacss_stylesheet::compile(
+        StylesheetInput {
+            config: &cfg,
+            token_dictionary: None,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &pattern_atoms,
+        },
+        &StylesheetOptions {
+            include_static: true,
+            ..Default::default()
+        },
+    );
+
+    let utilities = output
+        .layer_css(StylesheetLayer::Utilities)
+        .expect("utilities layer present");
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      .ai_center {
+        align-items: center;
+      }
+    }
+    ");
+}

@@ -42,5 +42,11 @@
     "dist",
     "pkg-node",
     "pkg-web"
-  ]
+  ],
+  "dependencies": {
+    "@pandacss/compiler-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@pandacss/config-loader": "workspace:*"
+  }
 }

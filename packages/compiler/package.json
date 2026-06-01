@@ -15,6 +15,15 @@
       },
       "require": "./dist/index.js"
     },
+    "./loader": {
+      "source": "./src/loader.ts",
+      "types": "./dist/loader.d.ts",
+      "import": {
+        "types": "./dist/loader.d.mts",
+        "default": "./dist/loader.mjs"
+      },
+      "require": "./dist/loader.js"
+    },
     "./package.json": "./package.json"
   },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -30,8 +39,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup src/index.ts src/loader.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup src/index.ts src/loader.ts --format=cjs,esm --shims --no-dts",
     "build:native": "tsx build-binding.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
@@ -43,7 +52,10 @@
   "napi": {
     "binaryName": "compiler"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/config-loader": "workspace:*"
+  },
   "devDependencies": {
     "@napi-rs/cli": "^3.0.0"
   }

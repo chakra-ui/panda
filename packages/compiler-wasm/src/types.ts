@@ -3,8 +3,36 @@
  * Kept hand-written (rather than re-exporting from `../pkg-node/*`) so
  * `tsc` typechecks succeed before the wasm artifact is built.
  *
+ * The data shapes (`Atom`, `Diagnostic`, `CompileOutput`, …) come from
+ * `@pandacss/compiler-shared` — the single contract shared with the native
+ * binding. Only the wasm-bindgen *class* shapes live here.
+ *
  * Run `pnpm build:wasm` to (re)generate the actual wasm bundle.
  */
+
+import type {
+  Atom,
+  CodegenArtifact,
+  CodegenArtifactId,
+  CodegenDependency,
+  CssFile,
+  StylesheetLayerName,
+  CompileFileManifest,
+  CompileOutput,
+  Diagnostic,
+  EncodedRecipeStyles,
+  FileInspectionResult,
+  LayerNames,
+  ScanOptions,
+  ParseFileReport,
+  ParsedFileView,
+  ProjectSummary,
+  RecipeEntry,
+  SourceEntry,
+  Spec,
+  StaticPatternResult,
+  GenerateArtifactOptions,
+} from '@pandacss/compiler-shared'
 
 export interface MatcherInput {
   /** Module specifier substrings to match (e.g. `["@panda/css"]`). */
@@ -35,20 +63,12 @@ export interface MatchersInput {
   tokenDictionary?: TokenDictionaryInput
 }
 
-export interface GlobOptions {
-  include: string[]
-  exclude?: string[]
-  cwd?: string
-  absolute?: boolean
-}
-
 export declare class WasmFileSystem {
   constructor()
   addFile(path: string, content: string): void
   removeFile(path: string): boolean
   readFile(path: string): string | undefined
   exists(path: string): boolean
-  glob(opts: GlobOptions): string[]
   fileCount(): number
 }
 
@@ -57,85 +77,30 @@ export declare class WasmExtractor {
   parseFile(path: string, source: string): unknown
 }
 
-/** One atomic style declaration: `(prop, value, conditions)`. */
-export interface Atom {
-  prop: string
-  value: string | number | boolean | null
-  conditions: string[]
-}
-
-/** `(file, spanStart, recipe)` entry. The `recipe` matches the
- *  serialized shape of `pandacss_recipes::Recipe` / `SlotRecipe`. */
-export interface RecipeEntry {
-  file: string
-  spanStart: number
-  recipe: unknown
-}
-
-export interface EncodedRecipeStyles {
-  base: RecipeStyleGroup[]
-  variants: RecipeStyleGroup[]
-  atomic: Atom[]
-}
-
-export interface RecipeStyleGroup {
-  recipe: string
-  slot?: string | null
-  className: string
-  entries: RecipeStyleEntry[]
-}
-
-export interface RecipeStyleEntry {
-  prop: string
-  value: string | number | boolean | null
-  conditions: string[]
-}
-
-export interface ParseFileReport {
-  cssCalls: number
-  cvaCalls: number
-  svaCalls: number
-  jsxUsages: number
-  diagnostics: unknown[]
-}
-
-export interface ProjectSummary {
-  filesProcessed: number
-  atomCount: number
-  recipeCount: number
-  slotRecipeCount: number
-}
-
-export type WasmProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform'
-
-export type WasmProjectCallbacks = Partial<Record<WasmProjectCallbackKind, Record<string, (...args: any[]) => unknown>>>
-
-export interface WasmConfigSnapshot {
-  config: Record<string, unknown>
-  callbacks?: WasmProjectCallbacks
-}
-
-export interface WasmProjectOptions {
-  /** Serialized config snapshot used to resolve callback ids to utility props. */
-  config?: Record<string, unknown>
-  /** Optional JS-side token helpers for callback execution. */
-  tokenDictionary?: TokenDictionaryInput
-  /** Browser/JS-host callbacks referenced by serialized config entries. */
-  callbacks?: WasmProjectCallbacks
-}
-
-/** Stateful project handle over a `WasmFileSystem`. Cross-file
- *  resolution always shares the same FS — `import { x } from './tokens'`
- *  references resolve through whatever the JS host has populated. */
-export declare class WasmProject {
-  constructor(fs: WasmFileSystem, matchers: MatchersInput, options?: WasmProjectOptions)
-  static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: WasmProjectOptions): WasmProject
+/** Stateful compiler handle over a `WasmFileSystem`. Cross-file resolution
+ *  always shares the same FS — `import { x } from './tokens'` references
+ *  resolve through whatever the JS host has populated.
+ *
+ *  Mirrors the native `Compiler` class. The TS facade adapts this into the
+ *  shared {@link @pandacss/compiler-shared#Compiler} surface (attaching `fs`,
+ *  hiding `registerUtilityTransform` / `registerPatternTransform`). */
+export declare class WasmCompiler {
+  static fromConfig(fs: WasmFileSystem, config: Record<string, unknown>, options?: unknown): WasmCompiler
   config(): Record<string, unknown> | null
-  extract(source: string, path: string): unknown
-  parseFile(path: string, source: string): ParseFileReport
-  refreshFile(path: string, source: string): boolean
+  extractFileSource(path: string, source: string): unknown
+  parseFile(path: string): ParseFileReport
+  parseFileSource(path: string, source: string): ParseFileReport
+  refreshFile(path: string): boolean
+  refreshFileSource(path: string, source: string): boolean
   removeFile(path: string): boolean
   clear(): void
+  scan(options?: ScanOptions): string[]
+  parseFiles(paths: string[]): ParseFileReport[]
+  layers(): LayerNames
+  spec(): Spec
+  sources(): SourceEntry[]
+  inspectFileSource(path: string, source: string): FileInspectionResult
+  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
@@ -144,4 +109,15 @@ export declare class WasmProject {
   slotRecipes(): RecipeEntry[]
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
+  compile(): CompileOutput
+  layerCss(layers: StylesheetLayerName[]): string
+  splitCss(): CssFile[]
+  generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
+  generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
+  generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]
+  diagnostics(): Diagnostic[]
+  fileManifest(): CompileFileManifest[]
+  /** Per-file view, or `null` when `path` isn't known. */
+  getFile(path: string): ParsedFileView | null
+  staticPatternAtoms(): StaticPatternResult
 }

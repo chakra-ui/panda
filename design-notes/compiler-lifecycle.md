@@ -22,8 +22,8 @@ function anyway. One configured instance, many files, is the only shape coherent
 
 ## Phases
 
-Source flows through six phases. Phases 0–3 are the shipped path; 4–6 are not built yet — which is why `compile()`
-returns an empty stylesheet today. Each heading reads as **phase — state · crate(s)**.
+Source flows through six phases. Phases 0–4 and the output shape are built on the native path; optimization and
+incremental stylesheet patching are still deferred. Each heading reads as **phase — state · crate(s)**.
 
 ### 0 · Construction — ✅ built · `pandacss_config` + `pandacss_project`
 
@@ -44,16 +44,25 @@ references.
 Style usage → atoms `(prop, value, conditions)`; recipes decomposed; JS transform callbacks fire. Maintained as an
 incremental, refcounted union.
 
-### 4 · Emission — ❌ unbuilt · `pandacss_emitter`
+### 4 · Emission — ✅ built · `pandacss_stylesheet`
 
-Atoms + recipes → CSS rules: conditions → selectors / media queries, class-name hashing, `@layer` assignment, plus the
-static config CSS (token `:root` vars, reset, base, global, keyframes).
+Atoms + recipes → CSS rules: conditions → selectors / media queries, class names, cascade layers, and the supported
+native static CSS subset. The crate emits formatted CSS or writer-minified CSS directly; it does not parse CSS.
 
-### 5 · Optimization — ❌ unbuilt · `pandacss_optimizer`
+Covered today: `globalCss` + `globalVars` + `globalFontface` + `globalPositionTry` (base layer), `theme.tokens` + `theme.semanticTokens` + `theme.keyframes`
+(tokens layer), reset CSS when `preflight` is enabled, configured cascade-layer names + custom per-utility sub-layers
+(nested in utilities), and the supported `staticCss` subset (`staticCss.css`, `staticCss.recipes`, global
+`recipes: "*"`, recipe-level `recipe.staticCss`, slot recipes, compound variant CSS, responsive/configured condition
+expansion). Still outside the native path: `staticCss.patterns`, `staticCss.themes`, `preflight.scope`/`level`
+rewriting, and theme token artifact files (codegen output owned by the JS host).
 
-Dedupe, merge, sort by layer, minify (lightningcss, or the postcss path for output parity).
+### 5 · Optimization — ❌ unbuilt
 
-### 6 · Output — ❌ stub · `pandacss_engine`
+No native CSS optimizer runs today. `StylesheetOptions::minify` controls only writer formatting; there is deliberately no
+raw whitespace post-process because that corrupts valid CSS. If optimization lands, it should be CSS-aware
+(`lightningcss` or an equivalent parser-backed pass).
+
+### 6 · Output — ✅ built · `compiler_napi` + `pandacss_stylesheet`
 
 `compile()` returns `{ css, sourceMap, manifest, diagnostics }`.
 
@@ -79,7 +88,8 @@ registering nothing.
 - **JS host owns:** config loading/resolution, `styled-system/*` **codegen** (the API user code imports — the compiler
   _consumes references_ to it, never generates it), file watching + glob orchestration, the PostCSS plugin shell, and
   the transform **callbacks** (arbitrary user functions can't live in Rust).
-- **Rust owns:** parse → extract → encode → emit → optimize, plus the incremental caches.
+- **Rust owns:** parse → extract → encode → emit, plus the project atom/recipe registry. Optimization and persistent
+  caches are not built yet.
 - **Contract across it:** a resolved config snapshot + callback refs in; `{ css, sourceMap, manifest, diagnostics }`
   out. Diagnostics flow back at every phase (parse errors already do — see the parse-error contract in
   [extraction-pipeline](./extraction-pipeline.md)).
@@ -90,17 +100,20 @@ registering nothing.
 signal. The host diffs hashes to decide whether to push CSS (HMR) or skip; a `cacheDir` lets a cold build skip
 re-extraction of unchanged files. It's the seam where phase 6 meets the (future) `pandacss_cache` crate.
 
-## Unresolved Questions
+## Guardrails
 
-- **`compile()` must drain instance state.** Today's stub calls a free native placeholder that ignores the registry.
-  When emission lands, `compiler.compile()` must emit from exactly the `atoms()`/`recipes()` the instance accumulated —
-  otherwise "compile" and "parseFile + atoms" drift into two different notions of project state. Keep that invariant.
+- **`compile()` must drain instance state.** `compiler.compile()` emits from exactly the `atoms()`/`recipes()` the
+  instance accumulated; otherwise "compile" and "parseFile + atoms" drift into two different notions of project state.
+  Keep that invariant.
 - **Batch ingestion + parallelism.** Phase 1 is single-file. A `parseFiles(iter)` seam (with `rayon`) is the natural
   place for per-file parallelism without disturbing the single-file API (noted in
   [project-lifecycle](./project-lifecycle.md)).
-- **Static CSS ownership.** Reset/base/global/token-`:root`/keyframes are config-derived, not extracted. Decide whether
-  the emitter pulls them from `System` directly or whether the host composes them — affects layer ordering and the
-  manifest's token list.
+- **Static CSS ownership.** `pandacss_stylesheet` owns utility and recipe static CSS, reset/preflight, base/global
+  CSS + vars, token vars, and keyframes. Theme token artifact files (the `styled-system/tokens/*` codegen) remain on
+  the JS host side.
+- **Incremental CSS emission.** `Project` updates its atom registry incrementally, but `compile()` still sorts and emits
+  from the whole project-wide atom set. A cached per-file/per-bucket emitter is a separate design, not a hidden behavior
+  of the current crate.
 - **Sourcemaps.** `CompileOutput.sourceMap` is in the contract but unspecified; mapping emitted rules back to source
   spans needs the spans extraction already carries to survive encoding.
 
@@ -109,6 +122,7 @@ re-extraction of unchanged files. It's the seam where phase 6 meets the (future)
 - [project-lifecycle](./project-lifecycle.md) — the registry add/replace/remove mechanics behind phases 1–3.
 - [extraction-pipeline](./extraction-pipeline.md) — the per-file parse → `ExtractUsage` flow (phase 2).
 - [atomic-encoding](./atomic-encoding.md) — usage → atoms + recipe decomposition (phase 3).
+- [stylesheet](./stylesheet.md) — native CSS emission and current non-optimizer boundary (phase 4/5).
 - [crate-layering](./crate-layering.md) — where each phase's crate sits in the tier model.
 - [bindings](./bindings.md) — how `createCompiler` is exposed across NAPI + wasm.
 - [scope-and-boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.

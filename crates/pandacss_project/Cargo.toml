@@ -8,9 +8,11 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
+pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true }
+pandacss_fs = { workspace = true, default-features = false }
 pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
 pandacss_utility = { workspace = true }
@@ -25,6 +27,7 @@ tracing = { workspace = true }
 [dev-dependencies]
 indoc = { workspace = true }
 insta = { workspace = true }
+pandacss_fs = { workspace = true, features = ["memory"] }
 
 [lints]
 workspace = true

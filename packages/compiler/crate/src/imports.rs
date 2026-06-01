@@ -44,7 +44,7 @@ pub struct ImportScanResult {
     clippy::needless_pass_by_value,
     reason = "NAPI requires owned String parameters"
 )]
-pub fn scan_imports(source: String, path: String) -> ImportScanResult {
+pub fn scan_imports(path: String, source: String) -> ImportScanResult {
     let result = pandacss_extractor::scan_imports(&source, &path);
     ImportScanResult {
         imports: result.imports.into_iter().map(convert_record).collect(),

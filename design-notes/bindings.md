@@ -25,16 +25,18 @@ packages/compiler/crate/src/                  # NAPI
   calls.rs      ExtractedCall mirror + extract_calls
   jsx.rs        ExtractedJsx mirror + extract_jsx
   extract.rs    ExtractResult / ExtractDebugResult + extract / extract_debug
-  compile.rs    CompileInput / Output mirrors + compile (placeholder)
-  project.rs    Project class; config-based construction, parseFile, atoms, recipes
+  compile.rs    legacy CompileInput / Output mirrors
+  project.rs    Project class; config-based construction, parseFile, atoms, recipes, compile
   session.rs    Extractor class (recommended batch entrypoint)
   convert.rs    pandacss_extractor::X ↔ X conversion helpers
 
 packages/compiler-wasm/crate/src/             # WASM
   lib.rs        re-exports + installPanicHook
+  cache.rs      utility/pattern transform callback caches
   fs.rs         WasmFileSystem (handle over MemoryFileSystem)
   matcher.rs    MatchersInput shape + to_core_matchers / to_core_token_dictionary
   extract.rs    WasmExtractor (parseFile)
+  project.rs    WasmProject; config-based construction, parseFile, atoms, recipes
 ```
 
 NAPI uses napi-rs's macro pattern (`#[napi(object)]` for plain data, `#[napi]` for constructable classes) with a
@@ -159,13 +161,30 @@ playground target. Composition:
 Future budget: keeping under 500 KB gzipped means no big new dep gets added casually. Anything that doubles size needs
 benchmarks first.
 
+## Native compile path
+
+`Project.compile()` is the production native CSS path. It stays on the Rust side after callbacks have been applied:
+
+1. borrow the project-wide dynamic atom set from `pandacss_project::Project`
+2. materialize callback-expanded atoms only when JS utility transforms are registered
+3. snapshot dynamic recipes
+4. compute a static recipe snapshot from the compiled project/config
+5. call `pandacss_stylesheet::compile()`
+
+The binding caches the parsed `UserConfig` on `Project` construction so each compile does not clone and deserialize the
+entire JSON config again. The current output is `{ css, sourceMap, manifest, diagnostics }`; `sourceMap` and manifest
+hashes are still placeholders.
+
+`pandacss_stylesheet` emits and writer-minifies CSS. It does not run a CSS optimizer. The old `optimize` knob was removed
+from the native API so the boundary is explicit.
+
 ## Performance: serialization cost is real
 
 Every `Literal::to_json()` materializes a `serde_json::Value` that crosses the NAPI boundary. For tooling APIs
 (`extract*()` returns JSON for JS consumption), this is unavoidable — JS callers want JSON.
 
 **The production hot path (`compile()`) must never reach this conversion.** When the real pipeline lands, the engine
-keeps `Literal` → encoder → emitter → optimizer entirely in Rust and returns compact CSS plus a manifest. Don't call
+keeps `Literal` → encoder → stylesheet emitter entirely in Rust and returns compact CSS plus a manifest. Don't call
 `to_json()` from inside `compile()`. There's a `PERF(port)` marker on `to_call` in `convert.rs` calling this out.
 
 The wasm binding sidesteps the JSON intermediate by using `serde-wasm-bindgen` directly, but the cost is similar —
@@ -205,34 +224,44 @@ The callback kinds are intentionally different:
   preserved after expansion; returned keys such as `sm`, `tablet`, or `_hover` are **not** interpreted as conditions.
 - `pattern.transform` runs before atomic encoding and returns a full system style object. Pattern output can contain
   nested config-derived conditions and breakpoints because it flows back through the normal style encoder.
+- `pattern.defaultValues` runs in the JS host before `pattern.transform`. Explicit props override defaults.
 - `utility.values` affects utility metadata and type/value availability. Prefer serializing resolved data when
   possible; only keep it executable if the JS config model truly requires it.
 
 Current support:
 
 - NAPI registers `utility.transform` callbacks on the native `Project` when the binary exposes
-  `registerUtilityTransform`.
+  `registerUtilityTransform`. The registered function is the TS host wrapper, so Rust calls it with only the raw value;
+  the wrapper passes real `TransformArgs` (`token`, `token.raw`, and `utils.colorMix`) to the user callback.
 - NAPI registers `pattern.transform` callbacks on the native `Project` when the binary exposes
-  `registerPatternTransform`.
+  `registerPatternTransform`. The registered function is also host-wrapped so pattern helpers and default values stay in
+  JS rather than being stubbed in Rust.
+- Utility transforms execute during `parseFile()` / `refreshFile()` for file-derived atoms and encoded recipe entries.
+  `atoms()` and `encodedRecipes()` are pure reads and never call back into JS.
 - Utility transform results are cached by callback id, property, and raw value. The cached result is condition-free;
-  the original atom's conditions are applied after expansion.
-- The TS wrapper keeps a compatibility fallback for older native binaries and uses the same cache shape.
-- WASM executes `utility.transform` in the JS host wrapper because browser callbacks are already JS-owned.
+  the original atom or recipe entry conditions are applied after expansion. Failed callback executions are reported as
+  `parseFile()` diagnostics and are not cached, so the next parse can retry the callback.
+- WASM registers both `utility.transform` and `pattern.transform` callbacks through the TS host wrapper. Pattern
+  and utility callbacks are installed before `parseFile()` so the Rust project can call back into JS before atomic
+  encoding.
+- WASM pattern transform results are cached by callback id, pattern name, and serialized props. Thrown callbacks become
+  `parseFile()` diagnostics; failed calls are not cached.
+- `@pandacss/compiler-wasm` exposes `createCompilerFromWasmModule(mod, config, options)` for browser callers that import
+  `pkg-web/compiler_wasm.js` directly and call wasm-bindgen's `init()` themselves. This preserves the same callback
+  registration path as Node's `createCompiler()`.
 
 Remaining work:
 
-- Fill out `TransformArgs`: real `token(path)`, `token.raw(path)`, and `utils.colorMix(value)` instead of stubs.
-- Add WASM/browser support for `pattern.transform`. The native shape is in place, but the browser wrapper still needs a
-  pre-encoding host callback path.
 - Decide whether `utility.values` should stay callback-based or become resolved data in the serialized config.
-- Add diagnostics for lazy utility callback failures. Native `pattern.transform` failures are attached to `parseFile()`;
-  utility transform diagnostics may need to live on `atoms()` or move callback execution into `parseFile()`.
+- Decide whether config/static CSS utility transforms should keep using the shared parse-time callback bridge or move to
+  a separate compile-time diagnostic surface.
 
 ## Loader (WASM)
 
-`packages/compiler-wasm/src/index.ts` exposes `loadWasm()` (lazy, cached) for Node consumers and `createExtractor()` for
-the common case. Browser consumers can also import directly from `@pandacss/compiler-wasm/pkg-web/*` and call
-wasm-bindgen's `init()` themselves when they need control over the wasm fetch.
+`packages/compiler-wasm/src/index.ts` exposes `loadWasm()` (lazy, cached) and `createCompiler()` for Node consumers.
+Browser consumers can import directly from `@pandacss/compiler-wasm/pkg-web/*` and call wasm-bindgen's `init()`
+themselves when they need control over the wasm fetch, then pass the initialized module to
+`createCompilerFromWasmModule()` so config callbacks are still registered before parsing.
 
 ## Related
 

@@ -5,7 +5,7 @@ import { createProject, importMap } from './test-utils'
 describe('Compiler recipes', () => {
   it('records cva recipes', () => {
     const compiler = createProject()
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/Button.tsx',
       `import { cva } from '@panda/css'
        export const button = cva({
@@ -90,7 +90,7 @@ describe('Compiler recipes', () => {
     expect(compiler.recipes().map(({ file }) => file)).toEqual(['theme.recipes.button'])
     expect(compiler.slotRecipes().map(({ file }) => file)).toEqual(['theme.slotRecipes.card'])
 
-    compiler.parseFile('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
+    compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ margin: '8px' })`)
     compiler.clear()
     expect(compiler.summary().recipeCount).toBe(1)
     expect(compiler.summary().slotRecipeCount).toBe(1)
@@ -134,7 +134,7 @@ describe('Compiler recipes', () => {
       { crossFile: false },
     )
 
-    const report = compiler.parseFile(
+    const report = compiler.parseFileSource(
       '/Button.tsx',
       `import { Action, Tabs, TabsRoot } from './components'
        const el = <>
@@ -239,7 +239,7 @@ describe('Compiler recipes', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/recipes.ts',
       `import { button } from '@panda/recipes'
        import * as recipes from '@panda/recipes'
@@ -320,7 +320,7 @@ describe('Compiler recipes', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/recipes.ts',
       `import { button } from '@panda/recipes'
        button({ size: { base: 'sm', md: 'md' } })`,

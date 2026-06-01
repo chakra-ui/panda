@@ -9,8 +9,10 @@
 //! `rustc_hash::FxHashMap` indexes built once at construction time.
 
 use rustc_hash::FxHashMap;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, hash_map::Entry};
 use std::sync::Arc;
+
+use pandacss_config::{TokenCategoryTypeData, TokenTypeData, token_category_type_name};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -274,12 +276,8 @@ impl Token {
     }
 }
 
-/// Snapshot of a token dictionary. Immutable once built.
-///
-/// Serde emits only `tokens`; indexes are derived state, rebuilt via the
-/// builder on `Deserialize`. The custom `Deserialize` below prevents the
-/// "deserialized dictionary has empty indexes" hazard a naked derive
-/// would introduce.
+/// `palette -> (virtual var -> token var)` index backing color-palette
+/// resolution. Built alongside the dictionary's other indexes.
 #[derive(Debug, Clone, Default)]
 pub struct ColorPaletteView {
     palettes: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>>,
@@ -314,6 +312,12 @@ impl ColorPaletteView {
     }
 }
 
+/// Snapshot of a token dictionary. Immutable once built.
+///
+/// Serde emits only `tokens`; the indexes are derived state, rebuilt via the
+/// builder on `Deserialize`. The custom `Deserialize` below prevents the
+/// "deserialized dictionary has empty indexes" hazard a naked derive would
+/// introduce.
 #[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct TokenDictionary {
@@ -411,6 +415,49 @@ impl TokenDictionary {
         self.tokens.iter()
     }
 
+    #[must_use]
+    pub fn css_vars(&self) -> TokenCssVars<'_> {
+        let mut view = TokenCssVars::default();
+        let mut condition_indexes: FxHashMap<&str, usize> = FxHashMap::default();
+        for token in &self.tokens {
+            let Some(name) = raw_css_var(token.var.as_ref()) else {
+                continue;
+            };
+            if token.extension("isNegative") == Some("true")
+                || token.extension("isVirtual") == Some("true")
+            {
+                continue;
+            }
+
+            let var = TokenCssVar {
+                name,
+                value: token.value.as_ref(),
+            };
+            let Some(condition) = token.condition.as_deref() else {
+                view.base.push(var);
+                continue;
+            };
+            if is_theme_condition(condition) {
+                continue;
+            }
+
+            match condition_indexes.entry(condition) {
+                Entry::Occupied(entry) => {
+                    view.conditions[*entry.get()].vars.push(var);
+                }
+                Entry::Vacant(entry) => {
+                    let index = view.conditions.len();
+                    entry.insert(index);
+                    view.conditions.push(TokenCssConditionVars {
+                        condition,
+                        vars: vec![var],
+                    });
+                }
+            }
+        }
+        view
+    }
+
     pub fn iter_category<'a>(
         &'a self,
         category: &'a TokenCategory,
@@ -470,6 +517,27 @@ impl TokenDictionary {
     #[must_use]
     pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_var_str(path, fallback).map(str::to_owned)
+    }
+
+    /// JSON-safe projection for JS interop. Keys are token paths; values are
+    /// the canonical token value / CSS-var string that [`Self::token`] would
+    /// resolve for each path.
+    #[must_use]
+    pub fn flat_maps(&self) -> (BTreeMap<String, String>, BTreeMap<String, String>) {
+        let mut indexes: Vec<usize> = self.by_path.values().copied().collect();
+        indexes.sort_unstable();
+        indexes.dedup();
+
+        let mut values = BTreeMap::new();
+        let mut vars = BTreeMap::new();
+        for index in indexes {
+            let token = &self.tokens[index];
+            values.insert(token.path.to_string(), token.value.to_string());
+            if !token.var.is_empty() {
+                vars.insert(token.path.to_string(), token.var.to_string());
+            }
+        }
+        (values, vars)
     }
 
     /// Zero-allocation `token('path', fallback)` lookup.
@@ -536,6 +604,111 @@ impl TokenDictionary {
     pub fn color_palettes(&self) -> &ColorPaletteView {
         &self.color_palettes
     }
+
+    /// Project the dictionary into the codegen [`TokenTypeData`]: per-category
+    /// value keys/types, color palettes, the flat `path -> value` runtime map,
+    /// and deprecated paths.
+    #[must_use]
+    pub fn type_data(&self) -> TokenTypeData {
+        let mut categories = BTreeMap::new();
+
+        for (category, values) in &self.category_values_cache {
+            let category_name = category.as_str();
+            let name = category_name.to_owned();
+
+            // Token unions are category-relative: `red.500`, not
+            // `colors.red.500`, matching legacy generated token types.
+            let mut values = values
+                .keys()
+                .map(|key| {
+                    let key = key.as_ref();
+                    key.strip_prefix(category_name)
+                        .and_then(|rest| rest.strip_prefix('.'))
+                        .map_or_else(|| key.to_owned(), ToOwned::to_owned)
+                })
+                .collect::<Vec<_>>();
+            values.sort();
+            values.shrink_to_fit();
+
+            categories.insert(
+                name.clone(),
+                TokenCategoryTypeData {
+                    type_name: token_category_type_name(&name),
+                    name,
+                    values,
+                },
+            );
+        }
+
+        let mut color_palettes = self
+            .color_palettes
+            .palettes()
+            .keys()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>();
+        color_palettes.sort();
+
+        let (raw_values, vars) = self.flat_maps();
+        let values = raw_values
+            .into_iter()
+            .map(|(path, value)| {
+                // Empty when the value is just the token's var-ref; the runtime
+                // `token.var` derives it via `toVar(path)` instead of storing it.
+                if vars.get(&path).is_some_and(|var| *var == value) {
+                    (path, String::new())
+                } else {
+                    (path, value)
+                }
+            })
+            .collect();
+
+        TokenTypeData {
+            categories,
+            color_palettes,
+            values,
+            deprecated: self
+                .deprecated_paths()
+                .iter()
+                .map(ToString::to_string)
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct TokenCssVars<'a> {
+    pub base: Vec<TokenCssVar<'a>>,
+    pub conditions: Vec<TokenCssConditionVars<'a>>,
+}
+
+impl TokenCssVars<'_> {
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.base.is_empty() && self.conditions.iter().all(|group| group.vars.is_empty())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TokenCssVar<'a> {
+    pub name: &'a str,
+    pub value: &'a str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TokenCssConditionVars<'a> {
+    pub condition: &'a str,
+    pub vars: Vec<TokenCssVar<'a>>,
+}
+
+fn is_theme_condition(condition: &str) -> bool {
+    // Theme variant tokens are collected under `_theme{CapitalizedName}` in
+    // `from_config::create_token_dictionary`; native token CSS intentionally
+    // leaves `config.themes` / `staticCss.themes` emission to a later pass.
+    let first_segment = condition.split(':').next().unwrap_or(condition);
+    first_segment
+        .strip_prefix("_theme")
+        .and_then(|suffix| suffix.chars().next())
+        .is_some_and(char::is_uppercase)
 }
 
 #[derive(Debug, Clone, Default)]
@@ -627,27 +800,14 @@ impl TokenDictionaryBuilder {
             .color_palettes
             .unwrap_or_else(|| build_color_palette_view(&self.tokens));
 
-        // Pass 1: condition-agnostic indexes plus base-only path/var
-        // entries. Conditional-only paths are filled in by pass 2 so a
-        // dictionary with no base entry still exposes its values through
-        // `by_path` — matches Panda's "use whatever is defined" fallback.
+        // Single pass: unconditional tokens overwrite `by_path` / `by_var`;
+        // conditional tokens only fill those entries when no unconditional
+        // sibling did — matches Panda's "use whatever is defined" fallback.
         for (i, token) in self.tokens.iter().enumerate() {
             by_category
                 .entry(token.category.clone())
                 .or_default()
                 .push(i);
-            if token.condition.is_none()
-                && let Some(key) = token.path.split_once('.').map(|(_, key)| key)
-            {
-                by_category_key
-                    .entry(token.category.clone())
-                    .or_default()
-                    .insert(Arc::from(key), i);
-                category_values_cache
-                    .entry(token.category.clone())
-                    .or_default()
-                    .insert(Arc::clone(&token.path), Arc::clone(&token.value));
-            }
 
             if let Some(condition) = token.condition.as_deref() {
                 if !by_condition.contains_key(condition) {
@@ -657,7 +817,6 @@ impl TokenDictionaryBuilder {
                     .entry(Arc::from(condition))
                     .or_default()
                     .push(i);
-
                 // Capacity hint of 2 — real themes rarely exceed 3
                 // condition variants per path.
                 by_path_condition
@@ -666,7 +825,21 @@ impl TokenDictionaryBuilder {
                         FxHashMap::with_capacity_and_hasher(2, rustc_hash::FxBuildHasher)
                     })
                     .insert(Arc::from(condition), i);
+                by_path.entry(Arc::clone(&token.path)).or_insert(i);
+                if !token.var.is_empty() {
+                    by_var.entry(Arc::clone(&token.var)).or_insert(i);
+                }
             } else {
+                if let Some(key) = token.path.split_once('.').map(|(_, key)| key) {
+                    by_category_key
+                        .entry(token.category.clone())
+                        .or_default()
+                        .insert(Arc::from(key), i);
+                    category_values_cache
+                        .entry(token.category.clone())
+                        .or_default()
+                        .insert(Arc::clone(&token.path), Arc::clone(&token.value));
+                }
                 by_path.insert(Arc::clone(&token.path), i);
                 if !token.var.is_empty() {
                     by_var.insert(Arc::clone(&token.var), i);
@@ -675,16 +848,6 @@ impl TokenDictionaryBuilder {
 
             if token.deprecated {
                 deprecated_paths_cache.push(Arc::clone(&token.path));
-            }
-        }
-
-        // Pass 2: surface conditional-only tokens through `by_path` / `by_var`.
-        for (i, token) in self.tokens.iter().enumerate() {
-            if token.condition.is_some() {
-                by_path.entry(Arc::clone(&token.path)).or_insert(i);
-                if !token.var.is_empty() {
-                    by_var.entry(Arc::clone(&token.var)).or_insert(i);
-                }
             }
         }
 
@@ -704,7 +867,12 @@ impl TokenDictionaryBuilder {
     }
 }
 
+/// Build the `colorPalette` index: for each concrete color token, map every
+/// ancestor palette root (e.g. `button`, `button.primary`) to the virtual
+/// `colors.colorPalette.*` var it should resolve through. Two passes — collect
+/// the virtual vars first, then wire each concrete token to them.
 fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
+    // Pass 1: index the virtual `colorPalette` placeholder vars by path.
     let mut virtual_vars: FxHashMap<&str, &str> = FxHashMap::default();
     for token in tokens {
         if token.category == TokenCategory::Colors && token.extension("isVirtual") == Some("true") {
@@ -716,6 +884,8 @@ fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
         return ColorPaletteView::default();
     }
 
+    // Pass 2: for each concrete color token, register it under every ancestor
+    // palette root that has a matching virtual var.
     let mut palettes: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>> = FxHashMap::default();
     for token in tokens {
         if token.category != TokenCategory::Colors
@@ -752,7 +922,10 @@ fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
     ColorPaletteView { palettes }
 }
 
-fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
+/// The palette-name segments of a color token path: `colors` prefix and the
+/// final value segment dropped (`["colors","button","primary","500"]` ->
+/// `["button","primary"]`). `None` for non-color or virtual `colorPalette` paths.
+pub(crate) fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
     if segments.first().copied() != Some("colors")
         || segments.get(1).copied() == Some("colorPalette")
         || segments.len() < 2
@@ -767,16 +940,25 @@ fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a s
     .filter(|segments| !segments.is_empty())
 }
 
-fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
-    let mut out = String::from("colors.colorPalette");
-    for segment in &segments[(1 + root_len)..] {
+/// The virtual lookup key for a palette root: the segments after the root
+/// become `colors.colorPalette.<rest>` (or bare `colors.colorPalette` when the
+/// root is the whole path).
+pub(crate) fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
+    let suffix = &segments[(1 + root_len)..];
+    if suffix.is_empty() {
+        return "colors.colorPalette".to_owned();
+    }
+    let suffix_len = suffix.iter().map(|segment| segment.len()).sum::<usize>() + suffix.len();
+    let mut out = String::with_capacity("colors.colorPalette".len() + suffix_len);
+    out.push_str("colors.colorPalette");
+    for segment in suffix {
         out.push('.');
         out.push_str(segment);
     }
     out
 }
 
-fn join_segments(segments: &[&str]) -> String {
+pub(crate) fn join_segments(segments: &[&str]) -> String {
     let total_len = segments.iter().map(|segment| segment.len()).sum::<usize>()
         + segments.len().saturating_sub(1);
     let mut out = String::with_capacity(total_len);

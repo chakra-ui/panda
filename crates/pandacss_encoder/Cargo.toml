@@ -13,6 +13,7 @@ pandacss_recipes = { workspace = true }
 pandacss_shared = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 smallvec = { workspace = true }
 tracing = { workspace = true }
 

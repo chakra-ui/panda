@@ -28,11 +28,19 @@ not for walker machinery.
 
 ### Tier 2 — process
 
-`pandacss_extractor`, `pandacss_encoder`.
+`pandacss_extractor`, `pandacss_encoder`, `pandacss_stylesheet`.
 
 `pandacss_extractor` parses sources via Oxc and produces `Literal` values plus `ExtractedCall` / `ExtractedJsx` records.
 `pandacss_encoder` consumes Tier 1 types (`Recipe`, `SlotRecipe`, `Literal`) and produces atomic `Atom` records. They're
 sibling tiers — different axes of work, neither depends on the other.
+
+`pandacss_utility` carries config-derived utility metadata (shorthands, value aliases, per-property layer overrides) and
+the `StyleNormalizer` consumed by `process_atomic_with`. It depends on `pandacss_encoder` for the `NormalizeAtomic`
+trait it implements — the one documented sibling-Tier-2 dep, in service of fusing the normalize+walk passes.
+
+`pandacss_stylesheet` consumes encoded atoms, recipe snapshots, utility metadata, and the supported static CSS config
+subset to produce CSS strings. It depends on `pandacss_encoder` for snapshot/atom types (not on `pandacss_project` —
+the project is a dev-dep used only for test wiring). It is an emitter/minifying writer, not a CSS optimizer.
 
 ### Tier 3 — façade
 
@@ -47,7 +55,7 @@ this, not to the lower tiers directly. See [project-lifecycle](./project-lifecyc
 
 Don't keep empty placeholder crates. When the implementation exists, add the crate at the boundary it actually earns:
 
-- CSS emission / optimization — Tier 2 (process atoms into CSS).
+- CSS optimization — Tier 2 only once a real CSS-aware optimizer exists.
 - Compile orchestration — Tier 3 only if it does more than `Project` plus emitter calls.
 - Persistent cache — separate infrastructure/process crate only once real cache behavior exists.
 
@@ -76,7 +84,7 @@ that don't fit Panda's extractor role.
 Panda v2 is fundamentally a one-way pipeline:
 
 ```
-extract → encode → emit → optimize
+extract → encode → emit
 ```
 
 The crate layout makes that direction visible at the dependency level. When asked "where does feature X go?", trace the
@@ -85,6 +93,8 @@ data direction:
 - New parsing of a `Literal` shape → Tier 1 (`pandacss_recipes`, `pandacss_tokens`, or a new sibling).
 - New resolved-config input shape → Tier 1 (`pandacss_config`) plus compilation in Tier 3 (`pandacss_project::System`).
 - New traversal that emits atoms → Tier 2 (extend `pandacss_encoder`).
+- New CSS emission from atoms/recipes/static CSS → Tier 2 (`pandacss_stylesheet`).
+- New CSS optimization after emission → future Tier 2 CSS-aware optimizer.
 - New cross-cutting orchestration that owns multi-file state → Tier 3 (`pandacss_project`).
 - New I/O or mutation → probably a new crate, not any existing one.
 

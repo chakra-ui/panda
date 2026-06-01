@@ -30,7 +30,7 @@ Three perf choices worth noting:
 The encoder is stateful — `Encoder<C>` owns a `path` buffer reused across walks:
 
 ```rust
-pub struct Encoder<C: ConditionMatcher = DefaultConditions> {
+pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
     path: SmallVec<[PathSegment; 8]>,
@@ -84,19 +84,49 @@ pub trait ConditionMatcher {
 }
 ```
 
-`DefaultConditions` recognizes `_*` plus the built-in breakpoint names (`base`, `sm`, `md`, `lg`, `xl`, `2xl`). The
-trait lets the user's Panda config plug in extra named conditions without modifying the encoder.
+There is no built-in default condition set in the encoder. Callers must derive condition names from the resolved Panda
+config and pass a matcher explicitly. In practice that means `base`, underscore-prefixed aliases for configured
+condition keys (`hover` → `_hover`), and configured breakpoint names. Test fixtures that rely on the standard breakpoint
+names provide `base`, `sm`, `md`, `lg`, `xl`, and `2xl` explicitly.
+
+`ConditionSet` is the shared matcher for callers that only need name lookup. It also treats raw selector / at-rule
+keys as conditions (`&:hover`, `@media ...`), matching Panda's inline condition behavior without hard-coding named
+conditions into the encoder.
 
 ## Recipe decomposition
 
-`Recipe` and `SlotRecipe` (the `pandacss_recipes` crate) decompose into the same `Atom` shape via three entry points:
+`Recipe` and `SlotRecipe` (the `pandacss_recipes` crate) decompose into the same `Atom` shape via four entry points:
 
-- `process_atomic(style)` — one style object.
+- `process_atomic(style)` — one style object, no normalization.
+- `process_atomic_with(style, &normalizer)` — fused walker: applies inline key resolution + leaf normalization +
+  responsive-array expansion in a single pass over the input. Avoids the upfront `StyleNormalizer.normalize` call and
+  the `Cow<Literal>` it produces. The project layer drives this with `pandacss_utility::StyleNormalizer`.
 - `process_atomic_recipe(recipe)` — every style across `base`, variant options, and compound variants.
 - `process_atomic_slot_recipe(slot_recipe)` — same, per slot.
 
 `atomic_styles` and `atomic_styles_per_slot` return lazy iterators — no intermediate `Vec` allocation. The encoder
 consumes lazily so the caller never pays for a full materialization.
+
+## Inline normalization — `NormalizeAtomic`
+
+`process_atomic_with` takes any `&N` where `N: NormalizeAtomic`. The trait has three method hooks with no-op defaults:
+
+```rust
+pub trait NormalizeAtomic {
+    fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str { key }
+    fn normalize_leaf<'a>(&self, _prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
+        Cow::Borrowed(value)
+    }
+    fn array_condition(&self, _index: usize) -> Option<&str> { None }
+}
+```
+
+Encoder doesn't depend on `pandacss_utility`; `StyleNormalizer` implements the trait inside `pandacss_utility` (the
+one sibling-Tier-2 dep utility takes on encoder). Callers that don't need normalization can pass the zero-cost
+`NoNormalize` marker or just call `process_atomic` instead.
+
+The fusion eliminates the prior "normalize tree → walk normalized tree" double walk; on the sandbox bench it dropped
+the `encoding_atomic` span from ~3.47 ms to ~1.67 ms (-52%), ~12 % of cold path at 500 unique files.
 
 ## Atomic styles per slot — PERF tradeoff
 
@@ -107,9 +137,9 @@ slices — but until benches force the change, the simpler shape wins.
 
 ## Encoder is single-pass per file
 
-`Encoder::new()` per file, fed every style / recipe extracted from that file, then `into_atoms()` to hand the set off to
-the project. The project's `parse_file` does exactly this. `into_atoms()` is cheaper than `atoms().clone()` — the inner
-set moves out, no re-hash.
+The project creates `Encoder::with_conditions(config_conditions)` per file, feeds every style / recipe extracted from
+that file, then calls `into_atoms()` to hand the set off to the project. The project's `parse_file` does exactly this.
+`into_atoms()` is cheaper than `atoms().clone()` — the inner set moves out, no re-hash.
 
 ## Related
 

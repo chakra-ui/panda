@@ -1,8 +1,10 @@
 //! Serialized configuration types consumed by the Panda Rust runtime.
 
 mod theme;
+mod type_data;
+mod validate;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -14,6 +16,14 @@ pub use theme::{
     StringOrNumber, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap, TokenEntry, TokenGroup,
     TokenNode, Tokens, VariantSelection,
 };
+pub use type_data::{
+    ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind, PatternTypeData,
+    PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition, SelectorTypeData,
+    SlotRecipeTypeDefinition, Spec, TokenCategoryTypeData, TokenTypeData, TypeData, TypegenOptions,
+    UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData, ValueTypePart, VariantTypeData,
+    token_category_type_name, value_alias_name,
+};
+pub use validate::{validate_config, validate_config_value, validation_mode_from_value};
 
 pub type Conditions = BTreeMap<String, ConditionQuery>;
 pub type PatternMap = BTreeMap<String, PatternConfig>;
@@ -61,14 +71,211 @@ pub struct UserConfig {
     pub global_css: Value,
     #[serde(default)]
     pub global_vars: Value,
+    #[serde(default = "default_css_var_root")]
+    pub css_var_root: String,
     #[serde(default)]
     pub global_fontface: Value,
     #[serde(default)]
     pub global_position_try: Value,
     #[serde(default)]
     pub themes: ThemeVariantsMap,
+    #[serde(default)]
+    pub layers: CascadeLayers,
+    #[serde(default)]
+    pub preflight: PreflightConfig,
+    #[serde(default)]
+    pub codegen_format: CodegenFormat,
+    #[serde(default, rename = "strictTokens")]
+    pub strict_tokens: bool,
+    #[serde(default, rename = "strictPropertyValues")]
+    pub strict_property_values: bool,
+    #[serde(default)]
+    pub validation: ValidationMode,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
+}
+
+fn default_css_var_root() -> String {
+    ":where(:root, :host)".to_owned()
+}
+
+impl UserConfig {
+    #[must_use]
+    pub fn condition_names(&self) -> Vec<String> {
+        let mut names = BTreeSet::new();
+        names.insert("base".to_owned());
+
+        for key in self.conditions.keys().filter(|key| !key.is_empty()) {
+            names.insert(format!("_{key}"));
+        }
+
+        names.extend(self.theme.breakpoint_names());
+        names.into_iter().collect()
+    }
+}
+
+/// User-facing names for the five cascade layers. Matches v1's
+/// `config.layers: Partial<CascadeLayers>` — any field a user omits keeps
+/// its default. The semantic identity (`StylesheetLayer::*`) is fixed; only
+/// the emitted name changes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CascadeLayers {
+    #[serde(default = "CascadeLayers::default_reset")]
+    pub reset: String,
+    #[serde(default = "CascadeLayers::default_base")]
+    pub base: String,
+    #[serde(default = "CascadeLayers::default_tokens")]
+    pub tokens: String,
+    #[serde(default = "CascadeLayers::default_recipes")]
+    pub recipes: String,
+    #[serde(default = "CascadeLayers::default_utilities")]
+    pub utilities: String,
+}
+
+impl Default for CascadeLayers {
+    fn default() -> Self {
+        Self {
+            reset: Self::default_reset(),
+            base: Self::default_base(),
+            tokens: Self::default_tokens(),
+            recipes: Self::default_recipes(),
+            utilities: Self::default_utilities(),
+        }
+    }
+}
+
+impl CascadeLayers {
+    fn default_reset() -> String {
+        "reset".to_owned()
+    }
+    fn default_base() -> String {
+        "base".to_owned()
+    }
+    fn default_tokens() -> String {
+        "tokens".to_owned()
+    }
+    fn default_recipes() -> String {
+        "recipes".to_owned()
+    }
+    fn default_utilities() -> String {
+        "utilities".to_owned()
+    }
+
+    /// Single source of truth for the fixed emit order: each pair is
+    /// `(semantic_field_name, user_facing_name)`. Used both for emission
+    /// and collision detection so the order is never duplicated.
+    #[must_use]
+    pub fn ordered(&self) -> [(&'static str, &str); 5] {
+        [
+            ("reset", &self.reset),
+            ("base", &self.base),
+            ("tokens", &self.tokens),
+            ("recipes", &self.recipes),
+            ("utilities", &self.utilities),
+        ]
+    }
+}
+
+/// Reset / preflight CSS configuration. Matches JS shape:
+/// `preflight: true | false | { scope?: string; level?: 'parent' | 'element' }`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PreflightConfig {
+    Bool(bool),
+    Options(PreflightOptions),
+}
+
+impl Default for PreflightConfig {
+    fn default() -> Self {
+        Self::Bool(false)
+    }
+}
+
+impl PreflightConfig {
+    #[must_use]
+    pub fn enabled(&self) -> bool {
+        match self {
+            Self::Bool(value) => *value,
+            Self::Options(_) => true,
+        }
+    }
+
+    #[must_use]
+    pub fn options(&self) -> Option<&PreflightOptions> {
+        match self {
+            Self::Options(options) => Some(options),
+            Self::Bool(_) => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PreflightOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub level: Option<PreflightLevel>,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PreflightLevel {
+    #[default]
+    Parent,
+    Element,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ValidationMode {
+    None,
+    #[default]
+    Warn,
+    Error,
+}
+
+/// Output format for generated artifacts. `Ts` emits source `.ts` directly;
+/// `Js`/`Mjs` split each module into a runtime file (`CommonJS` / ESM) plus a
+/// `.d.ts`. Drives the consumer codegen emit mode + file extensions.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CodegenFormat {
+    Js,
+    #[default]
+    Mjs,
+    Ts,
+}
+
+impl CodegenFormat {
+    #[must_use]
+    pub fn is_source_ts(self) -> bool {
+        matches!(self, Self::Ts)
+    }
+
+    #[must_use]
+    pub fn is_split(self) -> bool {
+        !self.is_source_ts()
+    }
+
+    #[must_use]
+    pub fn runtime_extension(self) -> &'static str {
+        match self {
+            Self::Js => "js",
+            Self::Mjs => "mjs",
+            Self::Ts => "ts",
+        }
+    }
+
+    #[must_use]
+    pub fn declaration_extension(self) -> Option<&'static str> {
+        match self {
+            Self::Js => Some("d.ts"),
+            Self::Mjs => Some("d.mts"),
+            Self::Ts => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -151,6 +358,15 @@ impl HashConfig {
             Self::None => false,
         }
     }
+
+    #[must_use]
+    pub fn class_name(&self) -> bool {
+        match self {
+            Self::Bool(value) => *value,
+            Self::Object(value) => value.class_name,
+            Self::None => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -158,6 +374,8 @@ impl HashConfig {
 pub struct HashOptions {
     #[serde(default)]
     pub css_var: bool,
+    #[serde(default)]
+    pub class_name: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -181,6 +399,11 @@ pub struct PatternConfig {
     pub default_values: Option<Value>,
     #[serde(default)]
     pub transform: Option<CallbackRef>,
+    /// Pre-stringified `{ transform, defaultValues }` source for codegen, prepared
+    /// by the JS config loader (Rust never stringifies a JS function). Embedded
+    /// verbatim into the generated pattern module.
+    #[serde(default, rename = "codegenSource")]
+    pub codegen_source: Option<String>,
     #[serde(default)]
     pub strict: bool,
     #[serde(default)]
@@ -219,6 +442,8 @@ pub struct UtilityConfig {
     pub values: Option<UtilityValues>,
     #[serde(default)]
     pub transform: Option<CallbackRef>,
+    #[serde(default)]
+    pub property: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
 }

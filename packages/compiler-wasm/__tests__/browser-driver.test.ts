@@ -1,0 +1,75 @@
+import { createConfigSnapshot } from '@pandacss/config-loader'
+import { describe, expect, it } from 'vitest'
+import { createBrowserDriver } from '../src'
+
+const snapshot = createConfigSnapshot({
+  cwd: '/proj',
+  outdir: 'styled-system',
+  include: ['**/*.tsx'],
+  importMap: {
+    css: ['@panda/css'],
+    recipe: ['@panda/recipes'],
+    pattern: ['@panda/patterns'],
+    jsx: ['@panda/jsx'],
+    tokens: ['@panda/tokens'],
+  },
+  patterns: {
+    stack: {
+      properties: { gap: {} },
+      defaultValues: { gap: '4' },
+      transform(props: Record<string, any>) {
+        return { display: 'flex', gap: props.gap }
+      },
+    },
+  },
+} as any)
+
+describe('createBrowserDriver', () => {
+  it('scans staged in-memory sources and compiles', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })" },
+    })
+
+    expect(driver.scan()).toMatchInlineSnapshot(`
+      [
+        "/proj/App.tsx",
+      ]
+    `)
+    expect(driver.parseFiles()).toMatchInlineSnapshot(`
+      [
+        {
+          "path": "/proj/App.tsx",
+          "cssCalls": 1,
+          "cvaCalls": 0,
+          "svaCalls": 0,
+          "jsxUsages": 0,
+          "diagnostics": [],
+        },
+      ]
+    `)
+    expect(driver.compile().css).toContain('blue')
+  })
+
+  it('embeds the user pattern transform in generated artifacts', async () => {
+    const driver = await createBrowserDriver({ snapshot })
+    const patterns = driver.artifacts().find((artifact) => artifact.id === 'patterns')
+    const stack = patterns?.files.find((file) => file.path === 'patterns/stack.mjs')
+
+    expect(stack?.code).toContain('display: "flex"')
+    expect(stack?.code).not.toContain('(s) => s')
+  })
+
+  it('routes a single in-memory change through applyChange', async () => {
+    const driver = await createBrowserDriver({ snapshot })
+
+    const applied = driver.applyChange({
+      path: '/proj/B.tsx',
+      kind: 'add',
+      content: "import { css } from '@panda/css'; css({ color: 'green' })",
+    })
+
+    expect(applied).toMatchInlineSnapshot(`true`)
+    expect(driver.compile().css).toContain('green')
+  })
+})

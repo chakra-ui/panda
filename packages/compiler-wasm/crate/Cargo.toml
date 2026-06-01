@@ -13,15 +13,21 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
+lru = { workspace = true }
+pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["memory"] }
 pandacss_fs = { workspace = true, features = ["memory"] }
 pandacss_project = { workspace = true }
 pandacss_recipes = { workspace = true }
+pandacss_shared = { workspace = true }
+pandacss_stylesheet = { workspace = true }
+pandacss_tokens = { workspace = true }
 serde = { workspace = true }
 serde-wasm-bindgen = "0.6"
 serde_json = { workspace = true }
+smallvec = { workspace = true }
 tracing = { workspace = true }
 wasm-bindgen = "0.2"
 

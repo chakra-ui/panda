@@ -30,7 +30,7 @@ pub struct ExtractDebugResult {
     clippy::needless_pass_by_value,
     reason = "NAPI requires owned arguments"
 )]
-pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResult {
+pub fn extract(path: String, source: String, matchers: Matchers) -> ExtractResult {
     crate::init_tracing();
     let config = to_core_config(matchers);
     let result = pandacss_extractor::extract(&source, &path, &config);
@@ -51,7 +51,7 @@ pub fn extract(source: String, path: String, matchers: Matchers) -> ExtractResul
     clippy::needless_pass_by_value,
     reason = "NAPI requires owned arguments"
 )]
-pub fn extract_debug(source: String, path: String, matchers: Matchers) -> ExtractDebugResult {
+pub fn extract_debug(path: String, source: String, matchers: Matchers) -> ExtractDebugResult {
     crate::init_tracing();
     let config = to_core_config(matchers);
     let result = pandacss_extractor::extract_debug(&source, &path, &config);

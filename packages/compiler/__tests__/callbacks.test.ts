@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { createCompiler } from '../src'
-import type { PatternHelpers } from '../src'
+import { createCompilerFromSnapshot } from '../src'
 import { importMap } from './test-utils'
 
 describe('Compiler callbacks', () => {
   it('applies js-backed utility transform callbacks from a config bundle', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -22,7 +21,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -32,7 +31,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px', color: 'red' })`,
@@ -60,7 +59,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('passes token helpers to utility transform callbacks', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -74,10 +73,22 @@ describe('Compiler callbacks', () => {
               },
             },
           },
+          theme: {
+            tokens: {
+              colors: {
+                red: {
+                  500: { value: '#f00' },
+                },
+              },
+              opacity: {
+                50: { value: '0.5' },
+              },
+            },
+          },
         },
         callbacks: {
           'utility.transform': {
-            'utilities.tint.transform': (value: string, args: any) => {
+            'utilities.tint.transform': (value, args) => {
               const mix = args.utils.colorMix(value)
               return {
                 color: args.token('colors.red.500'),
@@ -89,16 +100,10 @@ describe('Compiler callbacks', () => {
           },
         },
       },
-      {
-        crossFile: false,
-        tokenDictionary: {
-          values: { 'colors.red.500': '#f00', 'opacity.50': '0.5' },
-          vars: { 'colors.red.500': 'var(--colors-red-500)', 'opacity.50': 'var(--opacity-50)' },
-        },
-      },
+      { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ tint: 'red.500/50' })`,
@@ -131,7 +136,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks to encoded config recipes', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -170,7 +175,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -180,7 +185,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/recipes.ts',
       `import { button } from '@panda/recipes'
        import * as recipes from '@panda/recipes'
@@ -252,14 +257,14 @@ describe('Compiler callbacks', () => {
   })
 
   it('resolves utility values callbacks from a config bundle', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           utilities: {
             space: {
@@ -269,26 +274,27 @@ describe('Compiler callbacks', () => {
               },
             },
           },
+          theme: {
+            tokens: {
+              spacing: {
+                4: { value: '1rem' },
+              },
+            },
+          },
         },
         callbacks: {
           'utility.values': {
-            'utilities.space.values': (theme: (category: string) => Record<string, string> | undefined) => ({
+            'utilities.space.values': (theme) => ({
               ...(theme('spacing') ?? {}),
               compact: '2px',
             }),
           },
         },
       },
-      {
-        crossFile: false,
-        tokenDictionary: {
-          values: { 'spacing.4': '1rem' },
-          vars: { 'spacing.4': 'var(--spacing-4)' },
-        },
-      },
+      { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ space: '4', _hover: { space: 'compact' } })`,
@@ -310,11 +316,107 @@ describe('Compiler callbacks', () => {
         },
       ]
     `)
+
+    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/values.d.mts')?.code)
+      .toMatchInlineSnapshot(`
+        "import type { CssProperties } from './csstype';
+
+        import type { TokenValue } from './tokens';
+
+        export type AnyString = string & {}
+
+        export type AnyNumber = number & {}
+
+        export type CssVars = \`var(--\${string})\`
+
+        export type WithEscapeHatch<T> = T | \`[\${string}]\`
+
+        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends \`\${infer _}\` ? Value : never
+
+        export type SpaceValue = CssProperties["space"] | "-4" | "4" | "compact" | CssVars | AnyString"
+      `)
+  })
+
+  it('resolves utility values functions from a config snapshot', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            inset: {
+              property: 'inset',
+              values: {
+                kind: 'js-callback',
+                id: 'utilities.inset.values',
+              },
+            },
+          },
+          theme: {
+            tokens: {
+              spacing: {
+                2: { value: '0.5rem' },
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.values': {
+            'utilities.inset.values': (theme) => ({
+              ...(theme('spacing') ?? {}),
+              full: '100%',
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Dialog.tsx',
+      `import { css } from '@panda/css'
+       css({ inset: '2' })
+       css({ inset: 'full' })`,
+    )
+
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "inset",
+          "value": "0.5rem",
+          "conditions": [],
+        },
+        {
+          "prop": "inset",
+          "value": "100%",
+          "conditions": [],
+        },
+      ]
+    `)
+    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/values.d.mts')?.code)
+      .toMatchInlineSnapshot(`
+        "import type { CssProperties } from './csstype';
+
+        import type { TokenValue } from './tokens';
+
+        export type AnyString = string & {}
+
+        export type AnyNumber = number & {}
+
+        export type CssVars = \`var(--\${string})\`
+
+        export type WithEscapeHatch<T> = T | \`[\${string}]\`
+
+        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends \`\${infer _}\` ? Value : never
+
+        export type InsetValue = CssProperties["inset"] | "-2" | "2" | "full" | CssVars | AnyString"
+      `)
   })
 
   it('throws when serialized callback refs are missing callbacks', () => {
     expect(() =>
-      createCompiler(
+      createCompilerFromSnapshot(
         {
           config: {
             cwd: '/virtual',
@@ -337,14 +439,14 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks under conditions', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           utilities: {
             size: {
@@ -357,7 +459,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -367,7 +469,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ _hover: { size: '4px' } })`,
@@ -394,7 +496,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies utility transform callbacks from JSX props', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -411,7 +513,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => ({
+            'utilities.size.transform': (value) => ({
               width: value,
               height: value,
             }),
@@ -421,7 +523,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Card.tsx',
       `import { Box } from '@panda/jsx'
        const el = <Box size="4px" />`,
@@ -445,7 +547,7 @@ describe('Compiler callbacks', () => {
 
   it('caches utility transform callback results', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -462,7 +564,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => {
+            'utilities.size.transform': (value) => {
               calls += 1
               return { width: value, height: value }
             },
@@ -472,7 +574,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px', _hover: { size: '4px' } })`,
@@ -483,9 +585,178 @@ describe('Compiler callbacks', () => {
     expect(calls).toBe(1)
   })
 
+  it('reports utility transform callback failures during parseFile', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': () => {
+              throw new Error('boom')
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const report = compiler.parseFileSource(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ size: '4px' })`,
+    )
+
+    expect(report.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
+      [
+        {
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+          "severity": "warning",
+        },
+      ]
+    `)
+    expect(compiler.getFile('/virtual/Button.tsx')?.diagnostics.map(({ message, severity }) => ({ message, severity })))
+      .toMatchInlineSnapshot(`
+        [
+          {
+            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+            "severity": "warning",
+          },
+        ]
+      `)
+    expect(compiler.atoms()).toMatchInlineSnapshot(`[]`)
+  })
+
+  it('does not cache failed utility transform callbacks', () => {
+    let calls = 0
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value) => {
+              calls += 1
+              if (calls === 1) throw new Error('boom')
+              return { width: value, height: value }
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const source = `import { css } from '@panda/css'
+       css({ size: '4px' })`
+
+    const failed = compiler.parseFileSource('/virtual/Button.tsx', source)
+    const retried = compiler.parseFileSource('/virtual/Button.tsx', source)
+
+    expect(failed.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
+      [
+        {
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+          "severity": "warning",
+        },
+      ]
+    `)
+    expect(retried.diagnostics).toMatchInlineSnapshot(`[]`)
+    expect(calls).toBe(2)
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "height",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies utility transform callbacks during refreshFile', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            size: {
+              transform: {
+                kind: 'js-callback',
+                id: 'utilities.size.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.size.transform': (value) => ({ width: value, height: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'
+       css({ size: '4px' })`,
+    )
+    expect(
+      compiler.refreshFileSource(
+        '/virtual/Button.tsx',
+        `import { css } from '@panda/css'
+       css({ size: '8px' })`,
+      ),
+    ).toBe(true)
+
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "height",
+          "value": "8px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "8px",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
   it('shares utility transform cache between atoms and encoded recipes', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -509,7 +780,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'utility.transform': {
-            'utilities.size.transform': (value: string) => {
+            'utilities.size.transform': (value) => {
               calls += 1
               return { width: value, height: value }
             },
@@ -519,7 +790,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        import { button } from '@panda/recipes'
@@ -533,14 +804,14 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks before encoding', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           theme: {
             breakpoints: {
@@ -561,7 +832,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }, helpers: PatternHelpers) => ({
+            'patterns.stack.transform': (props, helpers) => ({
               display: 'flex',
               gap: helpers.map(props.gap, (value) =>
                 helpers.isCssUnit(value) || helpers.isCssVar(value) || helpers.isCssFunction(value)
@@ -575,7 +846,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -612,14 +883,14 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from pattern function calls', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
           conditions: {
-            _hover: '&:hover',
+            hover: '&:hover',
           },
           patterns: {
             stack: {
@@ -635,7 +906,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               flexDirection: 'column',
               gap: props.gap,
@@ -646,7 +917,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: { base: '4px', _hover: '8px' } })`,
@@ -681,7 +952,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies pattern transform callbacks from JSX pattern components', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -702,7 +973,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               flexDirection: 'column',
               gap: props.gap,
@@ -713,7 +984,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { Stack } from '@panda/jsx'
        const el = <Stack gap="4px" />`,
@@ -742,7 +1013,7 @@ describe('Compiler callbacks', () => {
 
   it('caches pattern transform callback results across function calls and JSX components', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -763,7 +1034,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => {
+            'patterns.stack.transform': (props) => {
               calls += 1
               return {
                 display: 'flex',
@@ -776,7 +1047,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -804,7 +1075,7 @@ describe('Compiler callbacks', () => {
 
   it('does not cache thrown pattern transform callbacks', () => {
     let calls = 0
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -824,7 +1095,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => {
+            'patterns.stack.transform': (props) => {
               calls += 1
               if (calls === 1) throw new Error('boom')
               return {
@@ -838,12 +1109,12 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: '4px' })`,
     )
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: '4px' })`,
@@ -867,7 +1138,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies object defaultValues before pattern transform callbacks', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -891,7 +1162,7 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               gap: props.gap,
             }),
@@ -901,7 +1172,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -926,7 +1197,7 @@ describe('Compiler callbacks', () => {
   })
 
   it('applies function defaultValues before pattern transform callbacks', () => {
-    const compiler = createCompiler(
+    const compiler = createCompilerFromSnapshot(
       {
         config: {
           cwd: '/virtual',
@@ -951,12 +1222,12 @@ describe('Compiler callbacks', () => {
         },
         callbacks: {
           'pattern.defaultValues': {
-            'patterns.stack.defaultValues': (props: { dense?: boolean }) => ({
+            'patterns.stack.defaultValues': (props) => ({
               gap: props.dense ? '2px' : '4px',
             }),
           },
           'pattern.transform': {
-            'patterns.stack.transform': (props: { gap?: unknown }) => ({
+            'patterns.stack.transform': (props) => ({
               display: 'flex',
               gap: props.gap,
             }),
@@ -966,7 +1237,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'

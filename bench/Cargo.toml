@@ -8,12 +8,18 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
+pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_extractor = { workspace = true }
+pandacss_project = { workspace = true }
+pandacss_stylesheet = { workspace = true }
 pandacss_tokens = { workspace = true }
+pandacss_tracing = { workspace = true }
 regex = { workspace = true }
 rustc-hash = { workspace = true }
 serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [lints]
 workspace = true

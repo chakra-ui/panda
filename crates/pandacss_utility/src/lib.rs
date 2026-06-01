@@ -6,13 +6,16 @@
 //! callbacks on the binding side.
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
-use pandacss_config::{CallbackRef, StringOrStringArray, UtilityConfig, UtilityValues};
+use pandacss_config::{
+    CallbackRef, PrimitiveType, StringOrStringArray, UtilityConfig, UtilityPropertyTypeData,
+    UtilityTypeData, UtilityValues, ValueAliasTypeData, ValueTypePart, value_alias_name,
+};
 use pandacss_extractor::Literal;
-use pandacss_shared::number_to_js_string;
-use pandacss_tokens::TokenDictionary;
+use pandacss_shared::{number_to_js_string, pascal_case};
+use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
@@ -29,6 +32,7 @@ pub struct Utility {
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct UtilityProperty {
     pub class_name: Option<String>,
+    pub css_property: Option<String>,
     pub layer: Option<String>,
     pub values: FxHashMap<String, Literal>,
     pub values_category: Option<String>,
@@ -79,6 +83,7 @@ impl Utility {
                         .class_name
                         .clone()
                         .or_else(|| default_class_name(config.shorthand.as_ref())),
+                    css_property: Some(config.property.clone().unwrap_or_else(|| property.clone())),
                     layer: config.layer.clone(),
                     values: values_map(config.values.as_ref()),
                     values_category: match config.values.as_ref() {
@@ -117,8 +122,45 @@ impl Utility {
     }
 
     #[must_use]
+    pub fn property_keys(&self, prop: &str) -> Vec<String> {
+        let key = self.resolve_shorthand(prop);
+        let Some(config) = self.properties.get(key) else {
+            return Vec::new();
+        };
+
+        // Explicit value keys win; otherwise fall back to the token category.
+        if !config.values.is_empty() {
+            let mut keys: Vec<_> = config.values.keys().cloned().collect();
+            keys.sort();
+            return keys;
+        }
+
+        let Some(category) = &config.values_category else {
+            return Vec::new();
+        };
+        let Some(tokens) = &self.tokens else {
+            return Vec::new();
+        };
+
+        let category = TokenCategory::from_path_segment(category);
+        tokens
+            .category_values_str(&category)
+            .map(|values| {
+                let mut keys: Vec<_> = values.keys().map(ToString::to_string).collect();
+                keys.sort();
+                keys
+            })
+            .unwrap_or_default()
+    }
+
+    #[must_use]
     pub fn is_deprecated(&self, prop: &str) -> bool {
         self.deprecated.contains(prop)
+    }
+
+    #[must_use]
+    pub fn deprecated_props(&self) -> &FxHashSet<String> {
+        &self.deprecated
     }
 
     #[must_use]
@@ -126,6 +168,33 @@ impl Utility {
         self.shorthands
             .get(prop)
             .map_or(prop, std::string::String::as_str)
+    }
+
+    /// Token category a property's values resolve against (e.g. `colors`).
+    /// Resolves shorthands first.
+    #[must_use]
+    pub fn token_category(&self, prop: &str) -> Option<&str> {
+        self.properties
+            .get(self.resolve_shorthand(prop))?
+            .values_category
+            .as_deref()
+    }
+
+    /// Resolves shorthand defensively before looking up the override.
+    #[must_use]
+    pub fn layer(&self, prop: &str) -> Option<&str> {
+        let prop = self.resolve_shorthand(prop);
+        self.properties.get(prop)?.layer.as_deref()
+    }
+
+    pub fn register_property(&mut self, name: String, property: UtilityProperty) {
+        self.properties.insert(name, property);
+    }
+
+    pub fn register_compositions(&mut self, theme: &pandacss_config::Theme) {
+        register_composition_group(self, "textStyle", &theme.text_styles);
+        register_composition_group(self, "layerStyle", &theme.layer_styles);
+        register_composition_group(self, "animationStyle", &theme.animation_styles);
     }
 
     #[must_use]
@@ -146,15 +215,83 @@ impl Utility {
         &self.prefix
     }
 
+    /// Project the utility metadata into the codegen [`UtilityTypeData`]
+    /// (property value types, shorthands, value aliases, class names).
+    #[must_use]
+    pub fn type_data(&self) -> UtilityTypeData {
+        let mut properties = BTreeMap::new();
+        let mut aliases = BTreeMap::new();
+        let mut class_names = BTreeMap::new();
+
+        // This is a codegen snapshot, not an extraction hot path. Sort once so
+        // generated types are stable across runs.
+        let mut property_entries = self.properties.iter().collect::<Vec<_>>();
+        property_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+
+        for (name, property) in property_entries {
+            let data = property_type_data(name, property);
+
+            aliases
+                .entry(data.alias.clone())
+                .or_insert_with(|| value_alias_type_data(&data));
+
+            class_names.insert(
+                name.clone(),
+                property
+                    .class_name
+                    .clone()
+                    .unwrap_or_else(|| hyphenate_property(name)),
+            );
+
+            properties.insert(name.clone(), data);
+        }
+
+        let mut shorthands = BTreeMap::new();
+        let mut shorthand_entries = self.shorthands.iter().collect::<Vec<_>>();
+        shorthand_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+
+        for (name, target) in shorthand_entries {
+            shorthands.insert(name.clone(), target.clone());
+
+            let Some(property) = self.properties.get(target) else {
+                continue;
+            };
+
+            let data = property_type_data(name, property);
+
+            // Many shorthands share the same value alias as their longhand.
+            // Keep one alias body and let properties reference it by name.
+            aliases
+                .entry(data.alias.clone())
+                .or_insert_with(|| value_alias_type_data(&data));
+
+            properties.insert(name.clone(), data);
+        }
+
+        UtilityTypeData {
+            properties,
+            shorthands,
+            deprecated: self.deprecated.iter().cloned().collect::<BTreeSet<_>>(),
+            aliases,
+            class_names,
+        }
+    }
+
     #[must_use]
     pub fn format_class_name(&self, class_name: &str) -> String {
+        self.format_class_name_owned(class_name.to_owned())
+    }
+
+    #[must_use]
+    pub fn format_class_name_owned(&self, class_name: String) -> String {
         if self.prefix.is_empty() {
-            return class_name.to_owned();
+            return class_name;
         }
+
         let mut out = String::with_capacity(self.prefix.len() + class_name.len() + 1);
         out.push_str(&self.prefix);
         out.push('-');
-        out.push_str(class_name);
+        out.push_str(&class_name);
         out
     }
 
@@ -172,18 +309,29 @@ impl Utility {
     #[must_use]
     pub fn transform(&self, prop: &str, value: &Literal) -> Option<UtilityTransformResult> {
         let value = literal_to_class_value(value)?;
+        Some(self.transform_str(prop, &value))
+    }
+
+    #[must_use]
+    pub fn transform_str(&self, prop: &str, value: &str) -> UtilityTransformResult {
         let key = self.resolve_shorthand(prop);
-        let class_value = without_space(&value);
-        let style_value = self.expand_reference_in_value(&arbitrary_value(&value));
-        let styles = self.default_style(key, &self.raw_property_value(key, &style_value));
-        Some(UtilityTransformResult {
+        let class_value = without_space(value);
+        let style_value = self.expand_reference_in_value(&arbitrary_value(value));
+        let style_prop = self
+            .properties
+            .get(key)
+            .and_then(|config| config.css_property.as_deref())
+            .unwrap_or(key);
+        let styles = self.default_style(style_prop, &self.raw_property_value(key, &style_value));
+
+        UtilityTransformResult {
             layer: self
                 .properties
                 .get(key)
                 .and_then(|config| config.layer.clone()),
             class_name: self.get_class_name(key, &class_value),
             styles,
-        })
+        }
     }
 
     #[must_use]
@@ -199,8 +347,20 @@ impl Utility {
 
     #[must_use]
     pub fn normalize_property_value(&self, prop: &str, value: &Literal) -> Literal {
+        self.normalize_property_value_cow(prop, value).into_owned()
+    }
+
+    /// Borrow-preserving variant — returns `Cow::Borrowed(value)` when no
+    /// alias maps, avoiding the unconditional clone of the input Literal.
+    /// Hot path: the fused encoder walker calls this per leaf.
+    #[must_use]
+    pub fn normalize_property_value_cow<'a>(
+        &self,
+        prop: &str,
+        value: &'a Literal,
+    ) -> Cow<'a, Literal> {
         let Some(config) = self.properties.get(prop) else {
-            return value.clone();
+            return Cow::Borrowed(value);
         };
         let mapped = match value {
             Literal::String(value) => config.values.get(value.as_str()),
@@ -214,21 +374,35 @@ impl Utility {
                 None
             }
         };
-        mapped.cloned().unwrap_or_else(|| value.clone())
+        // Only substitute scalar → scalar mappings here. Object/Array/Conditional
+        // mappings (e.g. composition utilities) keep the original lookup key on
+        // the atom; the substitution happens at emit time in `default_style`.
+        match mapped {
+            Some(
+                scalar @ (Literal::String(_)
+                | Literal::Number(_)
+                | Literal::Bool(_)
+                | Literal::Null),
+            ) => Cow::Owned(scalar.clone()),
+            _ => Cow::Borrowed(value),
+        }
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
         let Some(config) = self.properties.get(prop) else {
             return Literal::String(value.to_owned());
         };
+
         if let Some(value) = config.values.get(value) {
             return value.clone();
         }
+
         if let Some(category) = &config.values_category
             && let Some(value) = self.token_category_value(category, value)
         {
             return Literal::String(value.to_owned());
         }
+
         Literal::String(value.to_owned())
     }
 
@@ -237,6 +411,17 @@ impl Utility {
     }
 
     fn default_style(&self, prop: &str, value: &Literal) -> Literal {
+        // Composition-style values (Object/Array/Conditional from a values
+        // map) are already the final style shape — pass through with token
+        // refs expanded, no extra `prop: value` wrap.
+        if matches!(
+            value,
+            Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_)
+        ) {
+            return self.expand_styles_tree(value);
+        }
+
+        // A `--custom-prop` string value may itself reference a token var.
         let value = if prop.starts_with("--") {
             if let Literal::String(value) = value
                 && let Some(tokens) = &self.tokens
@@ -249,7 +434,30 @@ impl Utility {
         } else {
             value.clone()
         };
+
         Literal::Object(vec![(prop.to_owned(), value)])
+    }
+
+    fn expand_styles_tree(&self, value: &Literal) -> Literal {
+        match value {
+            Literal::Object(entries) => Literal::Object(
+                entries
+                    .iter()
+                    .map(|(k, v)| (k.clone(), self.expand_styles_tree(v)))
+                    .collect(),
+            ),
+            Literal::Array(items) => {
+                Literal::Array(items.iter().map(|v| self.expand_styles_tree(v)).collect())
+            }
+            Literal::Conditional(branches) => Literal::Conditional(
+                branches
+                    .iter()
+                    .map(|v| self.expand_styles_tree(v))
+                    .collect(),
+            ),
+            Literal::String(s) => Literal::String(self.expand_reference_in_value(s)),
+            Literal::Number(_) | Literal::Bool(_) | Literal::Null => value.clone(),
+        }
     }
 
     fn expand_reference_in_value(&self, value: &str) -> String {
@@ -279,6 +487,70 @@ impl Utility {
             }
             _ => {}
         }
+    }
+}
+
+/// Type info for one utility property: its literal value keys (sorted) and the
+/// name of the value-alias type its values resolve to (a token category alias,
+/// or `<Prop>Value`).
+fn property_type_data(name: &str, property: &UtilityProperty) -> UtilityPropertyTypeData {
+    let mut literals = property.values.keys().cloned().collect::<Vec<_>>();
+    literals.sort();
+    let alias_property = property.css_property.as_deref().unwrap_or(name);
+    let alias = property.values_category.as_deref().map_or_else(
+        || format!("{}Value", pascal_case(alias_property)),
+        value_alias_name,
+    );
+
+    UtilityPropertyTypeData {
+        name: name.to_owned(),
+        css_property: property.css_property.clone(),
+        token_category: property.values_category.clone(),
+        literals,
+        primitive: None,
+        alias,
+    }
+}
+
+/// Build the union of value-type parts a property's alias accepts — token
+/// category, raw CSS property values, configured literals, and an optional
+/// primitive fallback — in the order they should appear in the generated type.
+fn value_alias_type_data(property: &UtilityPropertyTypeData) -> ValueAliasTypeData {
+    let capacity = property.literals.len()
+        + usize::from(property.token_category.is_some())
+        + usize::from(property.css_property.is_some())
+        + 4;
+    let mut parts = Vec::with_capacity(capacity);
+
+    if let Some(category) = &property.token_category {
+        parts.push(ValueTypePart::TokenCategory(category.clone()));
+    }
+
+    if let Some(css_property) = &property.css_property {
+        parts.push(ValueTypePart::CssProperty(css_property.clone()));
+    }
+
+    parts.extend(
+        property
+            .literals
+            .iter()
+            .cloned()
+            .map(ValueTypePart::Literal),
+    );
+
+    if let Some(primitive) = property.primitive {
+        parts.push(ValueTypePart::Primitive(primitive));
+    } else if property.token_category.is_none() && property.literals.is_empty() {
+        parts.push(ValueTypePart::Primitive(PrimitiveType::String));
+        parts.push(ValueTypePart::Primitive(PrimitiveType::Number));
+    }
+
+    parts.push(ValueTypePart::CssVars);
+    parts.push(ValueTypePart::AnyString);
+
+    ValueAliasTypeData {
+        name: property.alias.clone(),
+        parts,
     }
 }
 
@@ -350,6 +622,8 @@ impl StyleNormalizer<'_> {
             );
         }
 
+        // With breakpoints, a positional array becomes a keyed object
+        // (`["a", "b"]` -> `{ sm: "a", md: "b" }`); `null` slots are skipped.
         let mut out = Vec::with_capacity(items.len().min(self.breakpoints.len()));
         for (index, item) in items.iter().enumerate() {
             let Some(key) = self.breakpoints.get(index) else {
@@ -358,9 +632,106 @@ impl StyleNormalizer<'_> {
             if matches!(item, Literal::Null) {
                 continue;
             }
+
             Literal::upsert_object_entry(&mut out, key.clone(), self.normalize_owned(item));
         }
+
         Literal::Object(out)
+    }
+}
+
+/// Drives the encoder's fused walker — no upfront normalization pass, no
+/// `Cow<Literal>` allocation when nothing actually changes.
+impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
+    fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
+        if self.shorthand {
+            self.utility
+                .map_or(key, |utility| utility.resolve_shorthand(key))
+        } else {
+            key
+        }
+    }
+
+    fn normalize_leaf<'a>(&self, prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
+        self.utility.map_or(Cow::Borrowed(value), |utility| {
+            utility.normalize_property_value_cow(prop, value)
+        })
+    }
+
+    fn array_condition(&self, index: usize) -> Option<&str> {
+        self.breakpoints.get(index).map(String::as_str)
+    }
+}
+
+const COMPOSITIONS_LAYER: &str = "compositions";
+
+fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &Value) {
+    let Value::Object(root) = source else {
+        return;
+    };
+    let mut values: FxHashMap<String, Literal> = FxHashMap::default();
+    walk_composition_tree(root, "", &mut values);
+    if values.is_empty() {
+        return;
+    }
+    utility.register_property(
+        prop_name.to_owned(),
+        UtilityProperty {
+            class_name: Some(prop_name.to_owned()),
+            css_property: None,
+            layer: Some(COMPOSITIONS_LAYER.to_owned()),
+            values,
+            values_category: None,
+            transform_callback_id: None,
+        },
+    );
+}
+
+fn walk_composition_tree(
+    node: &serde_json::Map<String, Value>,
+    prefix: &str,
+    out: &mut FxHashMap<String, Literal>,
+) {
+    for (key, value) in node {
+        let path = if prefix.is_empty() {
+            key.clone()
+        } else {
+            format!("{prefix}.{key}")
+        };
+        match value {
+            Value::Object(entries) => {
+                if let Some(styles) = entries.get("value") {
+                    if let Some(literal) = value_to_literal(styles) {
+                        out.insert(path, literal);
+                    }
+                } else {
+                    walk_composition_tree(entries, &path, out);
+                }
+            }
+            _ => {
+                if let Some(literal) = value_to_literal(value) {
+                    out.insert(path, literal);
+                }
+            }
+        }
+    }
+}
+
+fn value_to_literal(value: &Value) -> Option<Literal> {
+    match value {
+        Value::String(s) => Some(Literal::String(s.clone())),
+        Value::Number(n) => n.as_f64().map(Literal::Number),
+        Value::Bool(b) => Some(Literal::Bool(*b)),
+        Value::Null => Some(Literal::Null),
+        Value::Array(items) => Some(Literal::Array(
+            items.iter().filter_map(value_to_literal).collect(),
+        )),
+        Value::Object(entries) => Some(Literal::Object(
+            entries
+                .iter()
+                .filter_map(|(k, v)| Some((k.clone(), value_to_literal(v)?)))
+                .collect(),
+        )),
     }
 }
 
@@ -421,7 +792,8 @@ fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
-fn hyphenate_property(property: &str) -> String {
+#[must_use]
+pub fn hyphenate_property(property: &str) -> String {
     if property.starts_with("--") {
         return property.to_owned();
     }
@@ -437,15 +809,21 @@ fn hyphenate_property(property: &str) -> String {
             out.push(ch);
         }
     }
+
+    // `msTransform` hyphenates to `ms-transform`, but the vendor prefix needs
+    // a leading dash: `-ms-transform`.
     if let Some(rest) = out.strip_prefix("ms-") {
         let mut prefixed = String::with_capacity(out.len() + 1);
         prefixed.push_str("-ms-");
         prefixed.push_str(rest);
         return prefixed;
     }
+
     out
 }
 
+/// Unwrap the `[arbitrary]` escape hatch (`[2px]` -> `2px`), but only when the
+/// brackets balance — a stray inner `]` leaves the value untouched.
 fn arbitrary_value(value: &str) -> String {
     let value = value.trim();
     if !value.starts_with('[') || !value.ends_with(']') {
@@ -475,6 +853,8 @@ fn expand_token_references(value: &str, tokens: &TokenDictionary) -> String {
     replace_token_functions(&with_braces, tokens)
 }
 
+/// Replace each `{token.path}` occurrence with its CSS-var form, leaving an
+/// unterminated `{` (no closing brace) and the rest of the string verbatim.
 fn replace_wrapped_references(
     value: &str,
     open: char,
@@ -498,6 +878,9 @@ fn replace_wrapped_references(
     out
 }
 
+/// Replace each `token(path, fallback?)` call with the resolved var, using the
+/// fallback (or the raw path) when the token is unknown. Paren-matched so
+/// nested `token(...)` args don't truncate early.
 fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
@@ -512,7 +895,7 @@ fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
         let (path, fallback) = split_token_args(args);
         let resolved = tokens
             .get_var_str(path.trim(), None)
-            .unwrap_or_else(|| fallback.map(str::trim).unwrap_or_else(|| path.trim()));
+            .unwrap_or_else(|| fallback.map_or_else(|| path.trim(), str::trim));
         out.push_str(resolved);
         rest = &after_open[end + 1..];
     }
@@ -562,359 +945,5 @@ fn json_to_literal(value: &Value) -> Option<Literal> {
             .map(|(key, value)| json_to_literal(value).map(|value| (key.clone(), value)))
             .collect::<Option<Vec<_>>>()
             .map(Literal::Object),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use insta::assert_debug_snapshot;
-    use pandacss_tokens::{Token, TokenCategory};
-    use serde_json::json;
-
-    fn utility_config(value: Value) -> BTreeMap<String, UtilityConfig> {
-        serde_json::from_value(value).expect("utility config")
-    }
-
-    #[test]
-    fn string_shorthand_maps_to_property() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "padding": { "shorthand": "p" }
-        })));
-
-        assert_eq!(utility.resolve_shorthand("p"), "padding");
-        assert_eq!(utility.resolve_shorthand("padding"), "padding");
-        assert!(utility.is_known("p"));
-        assert!(utility.is_known("padding"));
-    }
-
-    #[test]
-    fn array_shorthands_map_to_same_property() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "margin": { "shorthand": ["m", "mg"] }
-        })));
-
-        assert_eq!(utility.resolve_shorthand("m"), "margin");
-        assert_eq!(utility.resolve_shorthand("mg"), "margin");
-    }
-
-    #[test]
-    fn callback_transform_refs_are_exposed() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "size": {
-                "shorthand": "sz",
-                "transform": {
-                    "kind": "js-callback",
-                    "id": "utilities.size.transform"
-                }
-            }
-        })));
-
-        assert_eq!(
-            utility.callback_transform_id("size"),
-            Some("utilities.size.transform")
-        );
-        assert_eq!(
-            utility.callback_transform_id("sz"),
-            Some("utilities.size.transform")
-        );
-    }
-
-    #[test]
-    fn utility_values_normalize_aliases_to_raw_values() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "spacing": {
-                "shorthand": "s",
-                "values": {
-                    "sm": "4px",
-                    "md": "8px"
-                }
-            }
-        })));
-        let style = Literal::Object(vec![
-            ("spacing".into(), Literal::String("sm".into())),
-            ("s".into(), Literal::String("md".into())),
-        ]);
-
-        assert_eq!(
-            utility.normalize_style_object(&style),
-            Literal::Object(vec![("spacing".into(), Literal::String("8px".into()))])
-        );
-    }
-
-    #[test]
-    fn utility_values_normalize_nested_conditions() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "spacing": {
-                "values": {
-                    "sm": "4px"
-                }
-            }
-        })));
-        let style = Literal::Object(vec![(
-            "_hover".into(),
-            Literal::Object(vec![("spacing".into(), Literal::String("sm".into()))]),
-        )]);
-
-        assert_eq!(
-            utility.normalize_style_object(&style),
-            Literal::Object(vec![(
-                "_hover".into(),
-                Literal::Object(vec![("spacing".into(), Literal::String("4px".into()))])
-            )])
-        );
-    }
-
-    #[test]
-    fn malformed_entries_are_ignored() {
-        let utility = Utility::from_config(&utility_config(json!({})));
-
-        assert!(utility.is_empty());
-        assert_eq!(utility.resolve_shorthand("p"), "p");
-    }
-
-    #[test]
-    fn normalizes_nested_style_object_keys() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "padding": { "shorthand": "p" },
-            "margin": { "shorthand": ["m"] }
-        })));
-        let style = Literal::Object(vec![(
-            "_hover".into(),
-            Literal::Object(vec![
-                ("p".into(), Literal::String("4".into())),
-                ("m".into(), Literal::String("2".into())),
-            ]),
-        )]);
-
-        assert_eq!(
-            utility.normalize_style_object(&style),
-            Literal::Object(vec![(
-                "_hover".into(),
-                Literal::Object(vec![
-                    ("padding".into(), Literal::String("4".into())),
-                    ("margin".into(), Literal::String("2".into())),
-                ])
-            )])
-        );
-    }
-
-    #[test]
-    fn transform_uses_separator_prefix_and_class_name() {
-        let utility = Utility::from_config_with_options(
-            &utility_config(json!({
-                "spacing": {
-                    "shorthand": "s",
-                    "className": "sp",
-                    "values": {
-                        "sm": "4px"
-                    }
-                }
-            })),
-            UtilityOptions {
-                separator: Some("__".into()),
-                prefix: Some("panda".into()),
-                tokens: None,
-            },
-        );
-
-        let result = utility
-            .transform("s", &Literal::String("sm".into()))
-            .expect("transform");
-
-        assert_debug_snapshot!((utility.format_class_name(&result.class_name), result), @r#"
-        (
-            "panda-sp__sm",
-            UtilityTransformResult {
-                layer: None,
-                class_name: "sp__sm",
-                styles: Object(
-                    [
-                        (
-                            "spacing",
-                            String(
-                                "4px",
-                            ),
-                        ),
-                    ],
-                ),
-            },
-        )
-        "#);
-    }
-
-    #[test]
-    fn transform_falls_back_to_hyphenated_property_class_name() {
-        let utility = Utility::from_config(&utility_config(json!({})));
-
-        let result = utility
-            .transform("backgroundColor", &Literal::String("red".into()))
-            .expect("transform");
-
-        assert_debug_snapshot!(result, @r#"
-        UtilityTransformResult {
-            layer: None,
-            class_name: "background-color_red",
-            styles: Object(
-                [
-                    (
-                        "backgroundColor",
-                        String(
-                            "red",
-                        ),
-                    ),
-                ],
-            ),
-        }
-        "#);
-    }
-
-    #[test]
-    fn transform_uses_configured_class_name_for_preset_utility() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "backgroundColor": {
-                "shorthand": "bgColor",
-                "className": "bg-c",
-                "values": "colors"
-            }
-        })));
-
-        let result = utility
-            .transform("bgColor", &Literal::String("red".into()))
-            .expect("transform");
-
-        assert_debug_snapshot!(result, @r#"
-        UtilityTransformResult {
-            layer: None,
-            class_name: "bg-c_red",
-            styles: Object(
-                [
-                    (
-                        "backgroundColor",
-                        String(
-                            "red",
-                        ),
-                    ),
-                ],
-            ),
-        }
-        "#);
-    }
-
-    #[test]
-    fn transform_supports_token_category_values() {
-        let tokens = TokenDictionary::builder()
-            .insert(Token::new(
-                "spacing.sm",
-                "4px",
-                "var(--spacing-sm)",
-                TokenCategory::Spacing,
-            ))
-            .build();
-        let utility = Utility::from_config_with_options(
-            &utility_config(json!({
-                "spacing": {
-                    "values": "spacing"
-                }
-            })),
-            UtilityOptions {
-                tokens: Some(Arc::new(tokens)),
-                ..UtilityOptions::default()
-            },
-        );
-
-        let result = utility
-            .transform("spacing", &Literal::String("sm".into()))
-            .expect("transform");
-
-        assert_debug_snapshot!(result, @r#"
-        UtilityTransformResult {
-            layer: None,
-            class_name: "spacing_sm",
-            styles: Object(
-                [
-                    (
-                        "spacing",
-                        String(
-                            "4px",
-                        ),
-                    ),
-                ],
-            ),
-        }
-        "#);
-    }
-
-    #[test]
-    fn transform_expands_token_references_in_values() {
-        let tokens = TokenDictionary::builder()
-            .insert(Token::new(
-                "colors.red.500",
-                "#f00",
-                "var(--colors-red-500)",
-                TokenCategory::Colors,
-            ))
-            .build();
-        let utility = Utility::from_config_with_options(
-            &utility_config(json!({})),
-            UtilityOptions {
-                tokens: Some(Arc::new(tokens)),
-                ..UtilityOptions::default()
-            },
-        );
-
-        let result = utility
-            .transform("color", &Literal::String("token(colors.red.500)".into()))
-            .expect("transform");
-
-        assert_debug_snapshot!(result, @r#"
-        UtilityTransformResult {
-            layer: None,
-            class_name: "color_token(colors.red.500)",
-            styles: Object(
-                [
-                    (
-                        "color",
-                        String(
-                            "var(--colors-red-500)",
-                        ),
-                    ),
-                ],
-            ),
-        }
-        "#);
-    }
-
-    #[test]
-    fn transform_preserves_layer() {
-        let utility = Utility::from_config(&utility_config(json!({
-            "textStyle": {
-                "layer": "recipes",
-                "values": ["body"]
-            }
-        })));
-
-        let result = utility
-            .transform("textStyle", &Literal::String("body".into()))
-            .expect("transform");
-
-        assert_debug_snapshot!(result, @r#"
-        UtilityTransformResult {
-            layer: Some(
-                "recipes",
-            ),
-            class_name: "text-style_body",
-            styles: Object(
-                [
-                    (
-                        "textStyle",
-                        String(
-                            "body",
-                        ),
-                    ),
-                ],
-            ),
-        }
-        "#);
     }
 }

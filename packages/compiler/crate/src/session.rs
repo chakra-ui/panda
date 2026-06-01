@@ -21,7 +21,7 @@ use crate::{MatchedImport, Matchers};
 /// ```js
 /// const extractor = new Extractor(matchers)
 /// for (const file of files) {
-///   const result = extractor.extract(file.source, file.path)
+///   const result = extractor.extract(file.path, file.source)
 /// }
 /// ```
 #[napi]
@@ -52,7 +52,7 @@ impl Extractor {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn extract(&self, source: String, path: String) -> ExtractResult {
+    pub fn extract(&self, path: String, source: String) -> ExtractResult {
         crate::init_tracing();
         let result = pandacss_extractor::extract(&source, &path, &self.config);
         ExtractResult {
@@ -72,7 +72,7 @@ impl Extractor {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn extract_debug(&self, source: String, path: String) -> ExtractDebugResult {
+    pub fn extract_debug(&self, path: String, source: String) -> ExtractDebugResult {
         crate::init_tracing();
         let result = pandacss_extractor::extract_debug(&source, &path, &self.config);
         ExtractDebugResult {

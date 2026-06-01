@@ -3,7 +3,7 @@
 //! `pandacss_extractor::Matchers` type for extraction.
 
 use pandacss_extractor::{Matcher, Matchers, NameMatcher};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Matchers config the JS host passes in. Shape mirrors the napi
 /// binding's `Matchers` so JS callers can construct it the same way.
@@ -28,11 +28,21 @@ pub struct MatcherInput {
     pub names: Option<Vec<String>>,
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct TokenDictionaryInput {
     pub values: std::collections::HashMap<String, String>,
     pub vars: std::collections::HashMap<String, String>,
+}
+
+pub(crate) fn from_core_token_dictionary(
+    dictionary: &pandacss_tokens::TokenDictionary,
+) -> TokenDictionaryInput {
+    let (values, vars) = dictionary.flat_maps();
+    TokenDictionaryInput {
+        values: values.into_iter().collect(),
+        vars: vars.into_iter().collect(),
+    }
 }
 
 pub(crate) fn to_core_matchers(input: MatchersInput) -> Matchers {

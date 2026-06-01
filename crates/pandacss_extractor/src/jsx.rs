@@ -1,7 +1,11 @@
+//! Extract JSX style-prop usages (`<Box mt="4" />`, `<styled.div color="red" />`,
+//! `<JSX.Stack>`) into a single style object per element, merging literal
+//! `{...spread}` attributes in source order.
+
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
     Matchers, Span, VisitorContext, css_template::css_template_to_object,
-    literal::expression_to_literal,
+    literal::expression_to_literal, span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -77,6 +81,7 @@ pub fn extract_jsx(
         config.token_dictionary.as_deref(),
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
+        None,
     );
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
     ExtractedJsxResult {
@@ -247,7 +252,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.into_owned(),
                 data: Literal::Object(entries),
-                span: Span::from(element.span),
+                span: span_from_oxc(element.span),
             });
         }
         walk::walk_jsx_opening_element(self, element);
@@ -263,7 +268,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.into_owned(),
                 data,
-                span: Span::from(tagged.span),
+                span: span_from_oxc(tagged.span),
             });
         }
         walk::walk_tagged_template_expression(self, tagged);

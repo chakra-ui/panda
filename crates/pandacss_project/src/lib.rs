@@ -12,10 +12,11 @@
 //!
 //! ```rust,ignore
 //! use pandacss_config::UserConfig;
-//! use pandacss_project::Project;
+//! use pandacss_project::{Project, System};
 //!
 //! let config = UserConfig::default();
-//! let mut project = Project::from_config(config)?;
+//! let system = System::new(config)?;
+//! let mut project = Project::new(system);
 //! project.parse_file("button.tsx", "import {{ css }} from '@panda/css'; css({{ color: 'red' }});");
 //! project.parse_file("card.tsx", /* … */);
 //!
@@ -24,16 +25,18 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
-mod compiled;
-mod conditions;
+mod codegen;
 mod config;
 mod error;
 mod parsed_file;
 mod patterns;
 mod recipes;
+mod runtime_config;
+mod static_patterns;
 mod system;
+mod transform_cache;
+mod usages;
 
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -42,21 +45,29 @@ use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use smallvec::SmallVec;
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, Encoder};
-use pandacss_extractor::{CrossFileResolver, ExtractorConfig, Literal, MatchCategory, extract};
-use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_utility::StyleNormalizer;
-
-pub use compiled::Config;
-pub(crate) use conditions::ProjectConditionMatcher;
-pub use error::{ConfigError, Result};
-pub use parsed_file::ParsedFile;
-use recipes::EncodedRecipesCache;
-pub use recipes::{
-    EncodedRecipes, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup,
-    RecipeStyleGroupSnapshot,
+use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
+use pandacss_extractor::{
+    CrossFileResolver, ExtractedCall, ExtractedJsx, LineIndex, Literal, MatchCategory, extract,
 };
-pub use system::System;
+use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_shared::diagnostic_codes;
+use pandacss_utility::{StyleNormalizer, Utility};
+
+pub use error::{ConfigError, Result};
+pub use pandacss_encoder::{
+    EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
+};
+pub use parsed_file::ParsedFile;
+pub use recipes::EncodedRecipes;
+use recipes::EncodedRecipesCache;
+pub use runtime_config::Config;
+pub use system::{System, SystemInput};
+pub use transform_cache::{
+    AtomValueCacheKey, LiteralCacheKey, atom_value_cache_key, literal_cache_key,
+};
+pub use usages::{FileInspectionResult, UsageKind, UsageSite};
+
+pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
@@ -69,6 +80,10 @@ pub struct Project {
     atoms_cache: FxHashSet<Atom>,
     atom_counts: FxHashMap<Atom, u32>,
     encoded_recipes_cache: EncodedRecipesCache,
+    atoms_snapshot_cache: Option<Vec<Atom>>,
+    encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
+    static_encoded_recipes_snapshot_cache: Option<(serde_json::Value, EncodedRecipesSnapshot)>,
+    parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -77,12 +92,21 @@ pub struct Project {
     inline_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
     inline_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     inline_slot_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
+    config_diagnostics: Vec<Diagnostic>,
+}
+
+pub struct ProjectStylesheetSnapshots<'a> {
+    pub atoms: &'a [Atom],
+    pub encoded_recipes: &'a EncodedRecipesSnapshot,
+    pub static_encoded_recipes: &'a EncodedRecipesSnapshot,
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
 // change without disturbing callers — [`ParsedFile`] is the public view.
 struct FileEntry {
     source_hash: u64,
+    parse_epoch: u64,
+    cacheable: bool,
     atoms: FxHashSet<Atom>,
     encoded_recipes: EncodedRecipes,
     diagnostics: Vec<Diagnostic>,
@@ -97,40 +121,13 @@ pub(crate) struct RecipeKey {
 
 impl Project {
     #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "Project conceptually takes ownership of the System"
+    )]
     pub fn new(system: System) -> Self {
-        Self::from_system(system)
-    }
-
-    #[must_use]
-    pub fn from_extractor_config(extractor_config: ExtractorConfig) -> Self {
-        let config = Arc::new(Config {
-            extractor_config,
-            utility: None,
-            conditions: conditions::ProjectConditions::from_names([]),
-            breakpoints: Vec::new(),
-            patterns: Default::default(),
-            recipes: Default::default(),
-            config_recipes: BTreeMap::new(),
-            config_slot_recipes: BTreeMap::new(),
-        });
-        Self {
-            config,
-            files: FxHashMap::default(),
-            atoms_cache: FxHashSet::default(),
-            atom_counts: FxHashMap::default(),
-            encoded_recipes_cache: EncodedRecipesCache::default(),
-            config_recipes: BTreeMap::new(),
-            config_slot_recipes: BTreeMap::new(),
-            inline_recipes: BTreeMap::new(),
-            inline_slot_recipes: BTreeMap::new(),
-            inline_recipe_spans: FxHashMap::default(),
-            inline_slot_recipe_spans: FxHashMap::default(),
-        }
-    }
-
-    #[must_use]
-    pub fn from_system(system: System) -> Self {
         let config = system.config_arc();
+        let config_diagnostics = system.diagnostics().to_vec();
         let config_recipes = config.config_recipes.clone();
         let config_slot_recipes = config.config_slot_recipes.clone();
         Self {
@@ -139,19 +136,23 @@ impl Project {
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
             encoded_recipes_cache: EncodedRecipesCache::default(),
+            atoms_snapshot_cache: None,
+            encoded_recipes_snapshot_cache: None,
+            static_encoded_recipes_snapshot_cache: None,
+            parse_epoch: 0,
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
             inline_slot_recipes: BTreeMap::new(),
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
+            config_diagnostics,
         }
     }
 
-    pub fn from_config(config: UserConfig) -> Result<Self> {
-        Ok(Self::from_system(System::new(config)?))
-    }
-
+    /// # Panics
+    /// Panics if the config `Arc` is already shared — only valid immediately
+    /// after [`Self::new`], before any clone of the config escapes.
     #[must_use]
     pub fn with_cross_file(mut self, resolver: CrossFileResolver) -> Self {
         Arc::get_mut(&mut self.config)
@@ -165,32 +166,41 @@ impl Project {
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
     /// and recipes) so stale styles can't linger in watch mode.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        self.parse_file_inner(path, source, None)
+        self.parse_file_inner(path, source, None, None)
     }
 
-    pub fn parse_file_with_pattern_transforms(
+    /// [`Self::parse_file`] with transform callbacks. The binding layer
+    /// builds `transforms` fresh per call — the closures capture the
+    /// per-call JS environment, so they can't be stored on the project.
+    pub fn parse_file_with(
         &mut self,
         path: &str,
         source: &str,
-        transform: &mut PatternTransformFn<'_>,
+        transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(path, source, Some(transform))
+        self.parse_file_inner(path, source, transforms.pattern, transforms.utility)
     }
 
     /// Stateless single-file extraction using this project's configured
     /// matchers + token dictionary. Unlike [`Self::parse_file`], it does not
     /// encode, decompose recipes, or register anything — it returns the raw
-    /// extracted usages directly. Backs `compiler.extract(...)` on the bindings.
+    /// extracted usages directly. Backs `compiler.extractFileSource(...)` on the
+    /// bindings.
     #[must_use]
-    pub fn extract(&self, source: &str, path: &str) -> pandacss_extractor::ExtractUsage {
+    pub fn extract(&self, path: &str, source: &str) -> pandacss_extractor::ExtractUsage {
         extract(source, path, &self.config.extractor_config)
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "single-pass dispatch over every extracted call/jsx kind"
+    )]
     fn parse_file_inner(
         &mut self,
         path: &str,
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
+        utility_transform: Option<&mut UtilityTransformFn<'_>>,
     ) -> ParseFileReport {
         let span = tracing::trace_span!(
             "file_parse",
@@ -200,19 +210,30 @@ impl Project {
         );
         let _guard = span.enter();
         let source_hash = hash_source(source);
-        if pattern_transform.is_none()
-            && self
-                .files
-                .get(path)
-                .is_some_and(|entry| entry.source_hash == source_hash)
-        {
+        if self.files.get(path).is_some_and(|entry| {
+            entry.cacheable
+                && entry.source_hash == source_hash
+                && entry.parse_epoch == self.parse_epoch
+        }) {
             span.record("cache_hit", true);
             return self.files.get(path).expect("checked above").report.clone();
         }
         span.record("cache_hit", false);
 
         let result = extract(source, path, &self.config.extractor_config);
-        let diagnostics = result.diagnostics;
+        let mut diagnostics = result.diagnostics;
+        if let Some(utility) = self.config.utility.as_ref()
+            && !utility.deprecated_props().is_empty()
+        {
+            let line_index = LineIndex::new(source);
+            push_deprecated_utility_diagnostics(
+                &result.calls,
+                &result.jsx,
+                utility,
+                &line_index,
+                &mut diagnostics,
+            );
+        }
         let mut report = ParseFileReport {
             css_calls: 0,
             cva_calls: 0,
@@ -361,11 +382,22 @@ impl Project {
             report.jsx_usages += 1;
         }
 
+        let mut atoms = encoder.into_atoms();
+        if let Some(transform) = utility_transform {
+            atoms = transform_atoms(atoms, transform, &mut report.diagnostics);
+            encoded_recipes.transform_utilities(transform, &mut report.diagnostics);
+        }
+
         let entry = FileEntry {
             source_hash,
-            atoms: encoder.into_atoms(),
+            parse_epoch: self.parse_epoch,
+            cacheable: !report
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code == diagnostic_codes::TRANSFORM_CALLBACK_FAILED),
+            atoms,
             encoded_recipes,
-            diagnostics,
+            diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
         self.add_file_state(path_key, entry);
@@ -381,6 +413,19 @@ impl Project {
             return false;
         }
         self.parse_file(path, source);
+        true
+    }
+
+    pub fn refresh_file_with(
+        &mut self,
+        path: &str,
+        source: &str,
+        transforms: ParseTransforms<'_>,
+    ) -> bool {
+        if !self.files.contains_key(path) {
+            return false;
+        }
+        self.parse_file_with(path, source, transforms);
         true
     }
 
@@ -416,10 +461,19 @@ impl Project {
         self.atoms_cache.clear();
         self.atom_counts.clear();
         self.encoded_recipes_cache.clear();
+        self.invalidate_stylesheet_snapshots();
         self.inline_recipes.clear();
         self.inline_slot_recipes.clear();
         self.inline_recipe_spans.clear();
         self.inline_slot_recipe_spans.clear();
+    }
+
+    /// Invalidate same-source parse short-circuiting while retaining the
+    /// current project output. Hosts call this when external transform
+    /// callbacks change; the next `parse_file` for any path recomputes even if
+    /// source text is unchanged.
+    pub fn bump_parse_epoch(&mut self) {
+        self.parse_epoch = self.parse_epoch.wrapping_add(1);
     }
 
     fn drop_file_state(&mut self, path: &str) {
@@ -428,6 +482,7 @@ impl Project {
     }
 
     fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
+        self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let count = self.atom_counts.entry(atom.clone()).or_insert(0);
             *count += 1;
@@ -441,6 +496,7 @@ impl Project {
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
         let entry = self.files.remove(path)?;
+        self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             if let Some(count) = self.atom_counts.get_mut(atom) {
                 *count -= 1;
@@ -453,6 +509,11 @@ impl Project {
         self.encoded_recipes_cache
             .remove_from(&entry.encoded_recipes);
         Some(entry)
+    }
+
+    fn invalidate_stylesheet_snapshots(&mut self) {
+        self.atoms_snapshot_cache = None;
+        self.encoded_recipes_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
@@ -476,23 +537,18 @@ impl Project {
         before != self.inline_recipes.len() + self.inline_slot_recipes.len()
     }
 
-    fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
-        StyleNormalizer {
+    fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+        let _span = tracing::trace_span!("encoding_atomic").entered();
+        let normalizer = StyleNormalizer {
             utility: self.config.utility.as_ref(),
             breakpoints: &self.config.breakpoints,
             shorthand: true,
-        }
-        .normalize(style)
-    }
-
-    fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
-        let _span = tracing::trace_span!("encoding", kind = "atomic").entered();
-        let normalized = self.normalize_style_object(style);
-        encoder.process_atomic(normalized.as_ref());
+        };
+        encoder.process_atomic_with(style, &normalizer);
     }
 
     fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
-        let _span = tracing::trace_span!("encoding", kind = "style_props").entered();
+        let _span = tracing::trace_span!("encoding_style_props").entered();
         let Literal::Object(entries) = style else {
             self.process_atomic(encoder, style);
             return;
@@ -541,6 +597,90 @@ impl Project {
     }
 
     #[must_use]
+    pub fn static_pattern_atoms(
+        &self,
+        user_config: &UserConfig,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> (Vec<Atom>, Vec<Diagnostic>) {
+        let mut diagnostics = Vec::new();
+        let atoms = static_patterns::expand_static_patterns(
+            user_config,
+            &self.config.patterns,
+            self.config.utility.as_ref(),
+            self.config.token_dictionary().as_deref(),
+            pattern_transform,
+            &mut diagnostics,
+        );
+        (atoms, diagnostics)
+    }
+
+    #[must_use]
+    pub(crate) fn static_encoded_recipes(
+        &self,
+        user_config: &UserConfig,
+    ) -> EncodedRecipesSnapshot {
+        let mut encoded = EncodedRecipes::default();
+        self.config.recipes.process_static_css(
+            &mut encoded,
+            user_config,
+            &self.config.conditions,
+            &self.config.breakpoints,
+        );
+        encoded.snapshot()
+    }
+
+    #[must_use]
+    #[allow(
+        clippy::missing_panics_doc,
+        reason = "snapshot caches are populated immediately above the expects"
+    )]
+    pub fn stylesheet_snapshots(
+        &mut self,
+        user_config: &UserConfig,
+    ) -> ProjectStylesheetSnapshots<'_> {
+        if self.atoms_snapshot_cache.is_none() {
+            let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
+            atoms.sort_by(compare_atoms_by_emit_order);
+            self.atoms_snapshot_cache = Some(atoms);
+        }
+        if self.encoded_recipes_snapshot_cache.is_none() {
+            self.encoded_recipes_snapshot_cache =
+                Some(self.encoded_recipes_cache.view().snapshot());
+        }
+        let static_cache_matches = self
+            .static_encoded_recipes_snapshot_cache
+            .as_ref()
+            .is_some_and(|(static_css, _)| static_css == &user_config.static_css);
+        if !static_cache_matches {
+            self.static_encoded_recipes_snapshot_cache = Some((
+                user_config.static_css.clone(),
+                self.static_encoded_recipes(user_config),
+            ));
+        }
+
+        ProjectStylesheetSnapshots {
+            atoms: self
+                .atoms_snapshot_cache
+                .as_deref()
+                .expect("atom snapshot was initialized"),
+            encoded_recipes: self
+                .encoded_recipes_snapshot_cache
+                .as_ref()
+                .expect("encoded recipe snapshot was initialized"),
+            static_encoded_recipes: self
+                .static_encoded_recipes_snapshot_cache
+                .as_ref()
+                .map(|(_, snapshot)| snapshot)
+                .expect("static recipe snapshot was initialized"),
+        }
+    }
+
+    #[must_use]
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.config_diagnostics
+    }
+
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.files.is_empty()
             && self.atoms_cache.is_empty()
@@ -569,6 +709,19 @@ impl Project {
             .map(|(k, v)| (k.file.as_ref(), k.span_start, v))
     }
 
+    /// `(path, source_hash)` per known file, sorted by path. Hash is
+    /// the same one the re-parse short-circuit uses.
+    #[must_use]
+    pub fn file_manifest(&self) -> Vec<(Arc<str>, u64)> {
+        let mut entries: Vec<(Arc<str>, u64)> = self
+            .files
+            .iter()
+            .map(|(path, entry)| (Arc::clone(path), entry.source_hash))
+            .collect();
+        entries.sort_by(|a, b| a.0.cmp(&b.0));
+        entries
+    }
+
     /// Aggregate counts; cheap, doesn't recompute. `files_processed` is
     /// the current unique file count — `remove_file` decrements it and
     /// re-parsing the same path doesn't double-count.
@@ -592,8 +745,151 @@ fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
 }
 
+/// Scan source files via the platform filesystem engine and hand each
+/// `(path, source)` to `parse`. Globs `opts` through `fs`, reads every match,
+/// and skips files that fail to read. Returns the number of files handed to
+/// `parse`.
+///
+/// The caller supplies `parse` (rather than this fn owning a [`Project`]) so the
+/// binding layer can wire its per-call transform callbacks, or — when it needs
+/// to interleave with `&mut self` — collect `(path, source)` pairs first and
+/// parse them in a second pass.
+///
+/// # Errors
+/// Propagates an I/O error from the initial glob (e.g. a non-existent `cwd`).
+pub fn scan_files<F, P>(
+    fs: &F,
+    opts: &pandacss_fs::GlobOptions,
+    mut parse: P,
+) -> std::io::Result<usize>
+where
+    F: pandacss_fs::FileSystem,
+    P: FnMut(&str, &str),
+{
+    let _span = tracing::trace_span!("scan").entered();
+    let mut count = 0;
+    for path in fs.glob(opts)? {
+        let Ok(source) = fs.read_to_string(&path) else {
+            continue;
+        };
+        parse(path.to_string_lossy().as_ref(), &source);
+        count += 1;
+    }
+    Ok(count)
+}
+
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
+
+pub type UtilityTransformFn<'a> =
+    dyn FnMut(&str, &AtomValue) -> std::result::Result<Option<Vec<Atom>>, Diagnostic> + 'a;
+
+/// Per-call transform callbacks for [`Project::parse_file_with`] /
+/// [`Project::refresh_file_with`]. The binding layer builds these fresh per
+/// call (the closures capture the per-call JS environment), so they're passed
+/// in rather than stored on the project.
+#[derive(Default)]
+pub struct ParseTransforms<'a> {
+    pub pattern: Option<&'a mut PatternTransformFn<'a>>,
+    pub utility: Option<&'a mut UtilityTransformFn<'a>>,
+}
+
+fn push_deprecated_utility_diagnostics(
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    utility: &Utility,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let deprecated = utility.deprecated_props();
+    let mut seen: Vec<String> = Vec::new();
+    for call in calls {
+        seen.clear();
+        for lit in call.data.iter().flatten() {
+            collect_deprecated_props(lit, utility, deprecated, &mut seen);
+        }
+        for prop in seen.drain(..) {
+            out.push(deprecated_utility_diagnostic(&prop, call.span, line_index));
+        }
+    }
+    for entry in jsx {
+        seen.clear();
+        collect_deprecated_props(&entry.data, utility, deprecated, &mut seen);
+        for prop in seen.drain(..) {
+            out.push(deprecated_utility_diagnostic(&prop, entry.span, line_index));
+        }
+    }
+}
+
+fn collect_deprecated_props(
+    value: &Literal,
+    utility: &Utility,
+    deprecated: &FxHashSet<String>,
+    out: &mut Vec<String>,
+) {
+    match value {
+        Literal::Object(entries) => {
+            for (key, child) in entries {
+                let canonical = utility.resolve_shorthand(key);
+                if deprecated.contains(canonical) {
+                    let name = canonical.to_owned();
+                    if !out.contains(&name) {
+                        out.push(name);
+                    }
+                }
+                collect_deprecated_props(child, utility, deprecated, out);
+            }
+        }
+        Literal::Array(items) | Literal::Conditional(items) => {
+            for item in items {
+                collect_deprecated_props(item, utility, deprecated, out);
+            }
+        }
+        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+    }
+}
+
+fn deprecated_utility_diagnostic(
+    prop: &str,
+    span: pandacss_extractor::Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    let mut diagnostic = Diagnostic::warning(
+        diagnostic_codes::DEPRECATED_UTILITY_USED,
+        format!("utility \"{prop}\" is deprecated"),
+    );
+    diagnostic.span = Some(span);
+    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    diagnostic
+}
+
+fn transform_atoms(
+    atoms: FxHashSet<Atom>,
+    transform: &mut UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> FxHashSet<Atom> {
+    let mut out = FxHashSet::default();
+    for atom in atoms {
+        match transform(atom.prop(), atom.value()) {
+            Ok(Some(transformed)) => {
+                let conditions: SmallVec<[Box<str>; 2]> =
+                    atom.conditions().iter().cloned().collect();
+                out.extend(
+                    transformed
+                        .into_iter()
+                        .map(|next| next.with_prefixed_conditions(&conditions)),
+                );
+            }
+            Ok(None) => {
+                out.insert(atom);
+            }
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+            }
+        }
+    }
+    out
+}
 
 fn hash_source(source: &str) -> u64 {
     let mut hasher = FxHasher::default();

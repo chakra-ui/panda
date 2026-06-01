@@ -1,0 +1,245 @@
+// Binding-agnostic callback runtime. Only `registerCallbacks` (which talks to a
+// native vs wasm instance) lives in each binding package.
+
+import type { ColorMixResult, PatternHelpers, ProjectCallbacks, RawToken, TokenLookup, TransformArgs } from './types'
+
+export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: ProjectCallbacks) {
+  assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])
+  assertCallbackRefs('utility.transform', getUtilityTransformRefs(config), callbacks['utility.transform'])
+  assertCallbackRefs('pattern.transform', getPatternTransformRefs(config), callbacks['pattern.transform'])
+  assertCallbackRefs('pattern.defaultValues', getPatternDefaultValueRefs(config), callbacks['pattern.defaultValues'])
+}
+
+function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: Record<string, Function> | undefined) {
+  for (const [name, id] of refs) {
+    if (!callbacks?.[id]) {
+      throw new Error(`Missing ${kind} callback \`${id}\` for \`${name}\``)
+    }
+  }
+}
+
+export function createTransformArgs(raw: unknown, tokenDictionary: TokenLookup | undefined): TransformArgs {
+  const token = Object.assign((path: string) => tokenDictionary?.vars[path] ?? tokenDictionary?.values[path], {
+    raw: (path: string): RawToken | undefined => {
+      const value = tokenDictionary?.values[path]
+      if (value == null) return undefined
+      const variable = tokenDictionary?.vars[path]
+      return variable == null ? { path, value } : { path, value, var: variable }
+    },
+  })
+
+  return {
+    raw,
+    token,
+    utils: {
+      colorMix: (value: string) => colorMix(value, token),
+    },
+  }
+}
+
+function colorMix(value: string, token: TransformArgs['token']): ColorMixResult {
+  if (!value || typeof value !== 'string') return { invalid: true, value }
+
+  const [rawColor, rawOpacity] = value.split('/')
+  if (!rawColor || !rawOpacity) return { invalid: true, value: rawColor }
+
+  const colorToken = token(`colors.${rawColor}`)
+  const opacityToken = token.raw(`opacity.${rawOpacity}`)?.value
+
+  if (!opacityToken && isNaN(Number(rawOpacity))) return { invalid: true, value: rawColor }
+
+  const percent = opacityToken ? Number(opacityToken) * 100 + '%' : `${rawOpacity}%`
+  const color = colorToken ?? rawColor
+
+  return {
+    invalid: false,
+    color,
+    value: `color-mix(in srgb, ${color} ${percent}, transparent)`,
+  }
+}
+
+export function createPatternHelpers(): PatternHelpers {
+  return {
+    map: mapPatternValue,
+    isCssUnit,
+    isCssVar,
+    isCssFunction,
+  }
+}
+
+function mapPatternValue(value: unknown, fn: (value: any) => any): unknown {
+  if (Array.isArray(value)) return value.map((item) => fn(item))
+  if (!isPlainObject(value)) return fn(value)
+  return walkObject(value, fn)
+}
+
+function walkObject(value: Record<string, unknown>, fn: (value: any) => any): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    const next = isPlainObject(child)
+      ? walkObject(child, fn)
+      : Array.isArray(child)
+        ? child.map((item) => fn(item))
+        : fn(child)
+    if (next != null) out[key] = next
+  }
+  return out
+}
+
+const lengthUnits =
+  'cm,mm,Q,in,pc,pt,px,em,ex,ch,rem,lh,rlh,vw,vh,vmin,vmax,vb,vi,svw,svh,lvw,lvh,dvw,dvh,cqw,cqh,cqi,cqb,cqmin,cqmax,%'
+const lengthUnitsPattern = `(?:${lengthUnits.split(',').join('|')})`
+const lengthRegExp = new RegExp(`^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?${lengthUnitsPattern}$`)
+
+function isCssUnit(value: unknown) {
+  return typeof value === 'string' && lengthRegExp.test(value)
+}
+
+function isCssVar(value: unknown) {
+  return typeof value === 'string' && /^var\(--.+\)$/.test(value)
+}
+
+function isCssFunction(value: unknown) {
+  return typeof value === 'string' && /^(min|max|clamp|calc)\(.*\)/.test(value)
+}
+
+function getUtilityTransformRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  const utilities = config.utilities
+  if (!utilities || typeof utilities !== 'object' || Array.isArray(utilities)) return refs
+
+  for (const [prop, utility] of Object.entries(utilities as Record<string, unknown>)) {
+    if (!utility || typeof utility !== 'object' || Array.isArray(utility)) continue
+    const transform = (utility as Record<string, unknown>).transform
+    if (isCallbackRef(transform)) refs.set(prop, transform.id)
+  }
+
+  return refs
+}
+
+function getUtilityValueRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  const utilities = config.utilities
+  if (!utilities || typeof utilities !== 'object' || Array.isArray(utilities)) return refs
+
+  for (const [prop, utility] of Object.entries(utilities as Record<string, unknown>)) {
+    if (!utility || typeof utility !== 'object' || Array.isArray(utility)) continue
+    const values = (utility as Record<string, unknown>).values
+    if (isCallbackRef(values)) refs.set(prop, values.id)
+  }
+
+  return refs
+}
+
+function getPatternTransformRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  collectPatternTransformRefs(config.patterns, refs)
+  return refs
+}
+
+function getPatternDefaultValueRefs(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  collectPatternDefaultValueRefs(config.patterns, refs)
+  return refs
+}
+
+/** `transformId → defaultValuesId` for patterns that have both — lets
+ *  `registerCallbacks` apply default values before a pattern transform runs. */
+export function getPatternDefaultValueRefsByTransformId(config: Record<string, unknown>) {
+  const refs = new Map<string, string>()
+  const patterns = config.patterns
+  if (!patterns || typeof patterns !== 'object' || Array.isArray(patterns)) return refs
+
+  for (const pattern of Object.values(patterns as Record<string, unknown>)) {
+    if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    const transform = (pattern as Record<string, unknown>).transform
+    const defaultValues = (pattern as Record<string, unknown>).defaultValues
+    if (isCallbackRef(transform) && isCallbackRef(defaultValues)) {
+      refs.set(transform.id, defaultValues.id)
+    }
+  }
+
+  return refs
+}
+
+function collectPatternTransformRefs(value: unknown, refs: Map<string, string>) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  collectPatternTransformRefMap(value as Record<string, unknown>, refs)
+}
+
+function collectPatternTransformRefMap(patterns: Record<string, unknown>, refs: Map<string, string>) {
+  for (const [name, pattern] of Object.entries(patterns)) {
+    if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    const transform = (pattern as Record<string, unknown>).transform
+    if (isCallbackRef(transform)) refs.set(name, transform.id)
+  }
+}
+
+function collectPatternDefaultValueRefs(value: unknown, refs: Map<string, string>) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  for (const [name, pattern] of Object.entries(value as Record<string, unknown>)) {
+    if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) continue
+    const defaultValues = (pattern as Record<string, unknown>).defaultValues
+    if (isCallbackRef(defaultValues)) refs.set(name, defaultValues.id)
+  }
+}
+
+export function mergePatternDefaultValues(defaults: unknown, props: unknown) {
+  if (!isPlainObject(defaults) || !isPlainObject(props)) return props
+  return { ...defaults, ...compactObject(props) }
+}
+
+function compactObject(value: Record<string, unknown>) {
+  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined))
+}
+
+function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: string } {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    (value as Record<string, unknown>).kind === 'js-callback' &&
+    typeof (value as Record<string, unknown>).id === 'string'
+  )
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+/** Right-biased merge of callback maps (later items override earlier). */
+export function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): ProjectCallbacks {
+  const result: ProjectCallbacks = {}
+  for (const item of items) {
+    for (const [kind, callbacks] of Object.entries(item ?? {}) as Array<
+      {
+        [K in keyof ProjectCallbacks]-?: [K, NonNullable<ProjectCallbacks[K]>]
+      }[keyof ProjectCallbacks]
+    >) {
+      assignCallbacks(result, kind, callbacks)
+    }
+  }
+  return result
+}
+
+function assignCallbacks<K extends keyof ProjectCallbacks>(
+  result: ProjectCallbacks,
+  kind: K,
+  callbacks: NonNullable<ProjectCallbacks[K]>,
+) {
+  result[kind] = { ...result[kind], ...callbacks } as ProjectCallbacks[K]
+}
+
+/** Project a token dictionary down to a single category's `name → value` map
+ *  (used to resolve `utility.values` callbacks at construction time). */
+export function getTokenCategoryValues(category: string, tokenDictionary: TokenLookup | undefined) {
+  if (!tokenDictionary) return undefined
+
+  const prefix = `${category}.`
+  const out: Record<string, string> = {}
+  for (const [path, value] of Object.entries(tokenDictionary.values)) {
+    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined
+}

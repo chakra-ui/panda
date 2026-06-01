@@ -27,12 +27,14 @@ oxc_resolver = "11.19.1"
 oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
 pandacss_config = { path = "crates/pandacss_config" }
+pandacss_codegen = { path = "crates/pandacss_codegen" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }
 pandacss_extractor = { path = "crates/pandacss_extractor", default-features = false }
 pandacss_fs = { path = "crates/pandacss_fs", default-features = false }
 pandacss_project = { path = "crates/pandacss_project" }
 pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }
+pandacss_stylesheet = { path = "crates/pandacss_stylesheet" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
 pandacss_tracing = { path = "crates/pandacss_tracing" }
 pandacss_utility = { path = "crates/pandacss_utility" }
@@ -41,6 +43,7 @@ serde_json = { version = "1.0.145", features = ["preserve_order"] }
 thiserror = "2.0.17"
 insta = { version = "1.47.2", features = ["yaml"] }
 fast-glob = "1"
+lru = "0.12"
 indoc = "2.0.7"
 itoa = "1.0"
 indexmap = { version = "2.14.0", features = ["serde"] }

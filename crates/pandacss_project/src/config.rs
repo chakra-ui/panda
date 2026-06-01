@@ -18,27 +18,43 @@ use pandacss_shared::{capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
 
-use crate::compiled::Config;
-use crate::conditions::ProjectConditions;
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
-use crate::{ConfigError, RecipeKey, Result};
+use crate::runtime_config::Config;
+use crate::{ConfigError, ProjectConditionMatcher, RecipeKey, Result};
 
 pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Config> {
-    let entries = ConfigDefinitions::from_config(&config)?;
-    let token_dictionary = TokenDictionary::from_config(&config)
-        .map_err(config_error_from_token_error)?
-        .map(Arc::new);
-    let utility = Utility::from_config_with_options(
+    compile_config_with_token_dictionary(config, None)
+}
+
+/// Compile a user config into the immutable runtime [`Config`]: the extractor
+/// matchers + JSX config, utility metadata, condition matcher, pattern/recipe
+/// registries, and the token dictionary (reused if the caller already built one).
+pub(crate) fn compile_config_with_token_dictionary(
+    config: &pandacss_config::UserConfig,
+    token_dictionary: Option<Arc<TokenDictionary>>,
+) -> Result<Config> {
+    let entries = ConfigDefinitions::from_config(config)?;
+    let token_dictionary = match token_dictionary {
+        Some(dictionary) => Some(dictionary),
+        None => TokenDictionary::from_config(config)
+            .map_err(config_error_from_token_error)?
+            .map(Arc::new),
+    };
+
+    let mut utility = Utility::from_config_with_options(
         &config.utilities,
-        utility_options_from_config(&config, token_dictionary.clone()),
+        utility_options_from_config(config, token_dictionary.clone()),
     );
+    utility.register_compositions(&config.theme);
+
     let conditions =
-        ProjectConditions::from_names(entries.condition_names.iter().map(String::as_str));
+        ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
-        jsx_extraction_config_from_definitions(&config, &entries, &utility),
+        jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
     extractor_config.token_dictionary = token_dictionary;
+
     let utility = (!utility.is_empty()).then_some(utility);
     let patterns = PatternRegistry::from_definitions(&entries.patterns);
     let recipes = RecipeRegistry::from_definitions(
@@ -60,9 +76,16 @@ pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Con
         recipes,
         config_recipes: config_recipes_from_definitions(&entries.recipes),
         config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
+        keyframes: config
+            .theme
+            .keyframes
+            .as_object()
+            .map(|frames| frames.keys().cloned().collect())
+            .unwrap_or_default(),
     })
 }
 
+#[allow(clippy::needless_pass_by_value, reason = "used as a map_err callback")]
 fn config_error_from_token_error(error: TokenError) -> ConfigError {
     ConfigError::config(format!("invalid token config: {error}"))
 }
@@ -130,7 +153,7 @@ impl ConfigDefinitions {
             import_map,
             jsx_factory,
             jsx_names,
-            condition_names: condition_names_from_config(config),
+            condition_names: config.condition_names(),
             breakpoints,
             patterns,
             recipes,
@@ -268,6 +291,10 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     }
 }
 
+/// Flatten patterns + recipes + slot recipes into the extractor's JSX config:
+/// the set of component names/regexes to match, plus each component's prop
+/// allowlist, strict flag, and blocklist (keyed separately for name vs regex
+/// matches).
 fn jsx_extraction_config_from_definitions(
     config: &pandacss_config::UserConfig,
     entries: &ConfigDefinitions,
@@ -429,28 +456,6 @@ fn utility_options_from_config(
         separator: config.separator.clone(),
         prefix: config.prefix.class_name().map(str::to_owned),
         tokens: token_dictionary,
-    }
-}
-
-fn condition_names_from_config(config: &pandacss_config::UserConfig) -> Vec<String> {
-    let mut names = BTreeSet::new();
-    names.insert("base".to_owned());
-    collect_condition_keys(config.conditions.keys(), &mut names);
-    for name in config.theme.breakpoint_names() {
-        names.insert(name);
-    }
-    names.into_iter().collect()
-}
-
-fn collect_condition_keys<'a>(
-    keys: impl Iterator<Item = &'a String>,
-    names: &mut BTreeSet<String>,
-) {
-    for key in keys.filter(|key| !key.is_empty()) {
-        names.insert(key.clone());
-        if !key.starts_with('_') {
-            names.insert(format!("_{key}"));
-        }
     }
 }
 

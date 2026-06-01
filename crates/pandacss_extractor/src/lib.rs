@@ -1,4 +1,12 @@
 //! Oxc-based source extractor for Panda usages.
+//!
+//! Per file, one parse drives the pipeline: [`scan_imports`] reads imports →
+//! [`match_imports`] matches them against the configured import map →
+//! [`extract_calls`]/[`extract_jsx`] find `css()`/`cva()`/styled-prop usages →
+//! the [`literal`] evaluator folds each argument to a static [`Literal`], using
+//! [`scope`] for same-file identifier resolution and [`cross_file`] for
+//! imported references. [`extract`] runs the whole thing; the individual
+//! entrypoints exist for tooling and parity tests.
 
 mod calls;
 mod cross_file;
@@ -17,7 +25,7 @@ mod source;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use css_property::{css_property_names, is_css_property};
-pub use extract::{ExtractDebugResult, ExtractUsage, extract, extract_debug};
+pub use extract::{ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
 };
@@ -31,50 +39,19 @@ pub use matcher::{
     ExtractorConfig, JsxExtractionConfig, JsxStyleProps, MatchCategory, MatchedImport, Matcher,
     Matchers, NameMatcher, TokenDictionary, match_import_records, match_imports,
 };
-pub use source::{SourceLocation, SourceRange};
+pub use pandacss_shared::{
+    Diagnostic, DiagnosticSeverity, SourceLocation, SourceRange, Span, diagnostic_codes,
+};
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
-pub(crate) use source::LineIndex;
+pub use source::LineIndex;
 
-use oxc_span::Span as OxcSpan;
-use serde::Serialize;
-
-/// UTF-8 byte offsets, matching `oxc_span::Span`.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct Span {
-    pub start: u32,
-    pub end: u32,
-}
-
-impl From<OxcSpan> for Span {
-    fn from(span: OxcSpan) -> Self {
-        Self {
-            start: span.start,
-            end: span.end,
-        }
+pub(crate) fn span_from_oxc(span: oxc_span::Span) -> Span {
+    Span {
+        start: span.start,
+        end: span.end,
     }
-}
-
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum DiagnosticSeverity {
-    Error,
-    Warning,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct Diagnostic {
-    pub message: String,
-    pub severity: DiagnosticSeverity,
-    /// UTF-8 byte offsets. Useful for slicing the source. `None` when the
-    /// underlying error didn't attribute a location.
-    pub span: Option<Span>,
-    /// Human-readable line/column range covering the same offsets as `span`.
-    /// 1-indexed line, 1-indexed UTF-16 column — matches `tsc`/IDE output.
-    pub location: Option<SourceRange>,
 }

@@ -15,6 +15,7 @@ pub(crate) fn convert_span(span: pandacss_extractor::Span) -> Span {
 
 pub(crate) fn convert_severity(s: pandacss_extractor::DiagnosticSeverity) -> DiagnosticSeverity {
     match s {
+        pandacss_extractor::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
         pandacss_extractor::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
         pandacss_extractor::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
     }
@@ -22,6 +23,7 @@ pub(crate) fn convert_severity(s: pandacss_extractor::DiagnosticSeverity) -> Dia
 
 pub(crate) fn convert_diagnostic(d: pandacss_extractor::Diagnostic) -> Diagnostic {
     Diagnostic {
+        code: d.code,
         message: d.message,
         severity: convert_severity(d.severity),
         span: d.span.map(convert_span),
@@ -178,7 +180,7 @@ pub(crate) fn to_core_token_dictionary(
 // that crosses the NAPI boundary. This is fine for the tooling-shaped
 // `extract*()` APIs (JS callers want JSON), but the production hot path
 // (`compile()`) must never reach here — the engine keeps Literal → encoder
-// → emitter → optimizer in Rust and returns compact CSS/manifest. Keep
+// → stylesheet emitter in Rust and returns compact CSS/manifest. Keep
 // this conversion confined to the tooling APIs; do not call it from
 // inside `compile()` when the real pipeline lands.
 pub(crate) fn to_call(c: pandacss_extractor::ExtractedCall) -> ExtractedCall {
@@ -237,12 +239,23 @@ fn parse_number_string(s: &str) -> serde_json::Value {
     serde_json::Value::String(s.to_string())
 }
 
-/// Build a stable-ordered JS array of atoms. Sort by `(prop, conditions,
-/// value)` so snapshot tests don't depend on hash-set iteration order.
+/// Sort by `(prop, conditions, value)` so snapshot tests don't depend on
+/// hash-set iteration order.
 pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
     atoms: &std::collections::HashSet<pandacss_encoder::Atom, S>,
 ) -> Vec<crate::Atom> {
     let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
+    sort_atoms(&mut sorted);
+    sorted.into_iter().map(serialize_atom).collect()
+}
+
+pub(crate) fn slice_to_atoms(atoms: &[pandacss_encoder::Atom]) -> Vec<crate::Atom> {
+    let mut sorted: Vec<&pandacss_encoder::Atom> = atoms.iter().collect();
+    sort_atoms(&mut sorted);
+    sorted.into_iter().map(serialize_atom).collect()
+}
+
+fn sort_atoms(sorted: &mut [&pandacss_encoder::Atom]) {
     sorted.sort_by(|a, b| {
         a.prop()
             .cmp(b.prop())
@@ -253,18 +266,18 @@ pub(crate) fn to_atoms<S: std::hash::BuildHasher>(
             })
             .then_with(|| value_sort_key(a.value()).cmp(&value_sort_key(b.value())))
     });
-    sorted
-        .into_iter()
-        .map(|atom| crate::Atom {
-            prop: atom.prop().to_string(),
-            value: to_atom_value(atom.value()),
-            conditions: atom
-                .conditions()
-                .iter()
-                .map(std::string::ToString::to_string)
-                .collect::<Vec<String>>(),
-        })
-        .collect()
+}
+
+fn serialize_atom(atom: &pandacss_encoder::Atom) -> crate::Atom {
+    crate::Atom {
+        prop: atom.prop().to_string(),
+        value: to_atom_value(atom.value()),
+        conditions: atom
+            .conditions()
+            .iter()
+            .map(std::string::ToString::to_string)
+            .collect::<Vec<String>>(),
+    }
 }
 
 // Lexicographic sort key over the variant tag + raw bytes — stable, cheap.

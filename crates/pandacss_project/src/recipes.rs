@@ -1,11 +1,28 @@
+//! Recipe compilation, resolution, and the incremental encoded-recipe cache.
+//!
+//! Three layers:
+//! - [`RecipeRegistry`] compiles config recipe/slot-recipe definitions into
+//!   resolved nodes (`base`, `variants`, `compoundVariants` pre-encoded to
+//!   atoms / style entries) and indexes them for JSX-name lookup.
+//! - Usage resolution (`process_usage`) takes a call/JSX usage's props, picks
+//!   the selected variants (with config defaults), and emits the matching
+//!   style groups.
+//! - `EncodedRecipesCache` keeps a refcounted union of encoded groups across
+//!   files so watch-mode add/remove is O(changed), mirroring the atom cache.
+
 use regex::RegexSet;
 use rustc_hash::{FxHashMap, FxHashSet};
-use serde::Serialize;
+use serde_json::Value;
 use smallvec::SmallVec;
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 
-use pandacss_encoder::{Atom, AtomValue, ConditionMatcher, Encoder};
-use pandacss_extractor::Literal;
+use pandacss_config::UserConfig;
+use pandacss_encoder::{
+    Atom, AtomValue, ConditionMatcher, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
+    RecipeStyleGroup, RecipeStyleGroupSnapshot, atom_value_sort_key, compare_atoms_by_emit_order,
+};
+use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
 use pandacss_utility::{StyleNormalizer, Utility};
@@ -13,6 +30,9 @@ use pandacss_utility::{StyleNormalizer, Utility};
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
 use crate::{ProjectConditionMatcher, literal_entries};
 
+/// Compiled config recipes, indexed for resolution and JSX-tag lookup.
+/// `jsx_to_recipes` handles exact tag matches; `regex_jsx_*` handle the
+/// regex-specifier matches via a single combined [`RegexSet`].
 #[derive(Debug, Clone, Default)]
 pub(crate) struct RecipeRegistry {
     recipes: FxHashMap<Box<str>, RecipeNode>,
@@ -44,6 +64,9 @@ struct SlotRecipeNode {
     compounds: Vec<ResolvedCompoundVariant>,
 }
 
+/// A `base` block or one variant option, pre-resolved: its class name plus the
+/// style entries it contributes. `Resolved*` types are the compiled form the
+/// registry holds so usage resolution is a lookup, not a re-parse.
 #[derive(Debug, Clone)]
 struct ResolvedRecipePart {
     class_name: Box<str>,
@@ -113,7 +136,7 @@ impl StyleResolver<'_> {
         StyleNormalizer {
             utility: self.utility,
             breakpoints: self.breakpoints,
-            shorthand: false,
+            shorthand: true,
         }
         .normalize(style)
     }
@@ -235,9 +258,7 @@ impl RecipeRegistry {
         recipe_names: &[&str],
         props: &Literal,
     ) -> Option<Literal> {
-        let Some(entries) = literal_entries(props) else {
-            return None;
-        };
+        let entries = literal_entries(props)?;
 
         let mut recipe_props = FxHashSet::default();
         for recipe_name in recipe_names {
@@ -278,6 +299,261 @@ impl RecipeRegistry {
     fn slot_class_name(class_name: &str, slot: &str) -> String {
         format!("{class_name}__{slot}")
     }
+
+    pub(crate) fn process_static_css(
+        &self,
+        encoded: &mut EncodedRecipes,
+        config: &UserConfig,
+        conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
+    ) {
+        let Some(rules_by_recipe) = static_recipe_rules(config) else {
+            return;
+        };
+
+        let responsive = breakpoints
+            .iter()
+            .filter(|key| key.as_str() != "base")
+            .cloned()
+            .collect::<Vec<_>>();
+
+        for (name, rules) in rules_by_recipe {
+            if !self.has_recipe(&name) {
+                continue;
+            }
+            encoded.process_usage(self, &name, &Literal::Object(Vec::new()), conditions);
+            self.extend_compound_atoms(&name, &mut encoded.atomic);
+            let options = self.variant_options(&name);
+            for rule in rules {
+                for selected in Self::static_rule_selections(&rule, &responsive, &options) {
+                    encoded.process_usage(self, &name, &selected, conditions);
+                }
+            }
+        }
+    }
+
+    fn has_recipe(&self, name: &str) -> bool {
+        self.recipes.contains_key(name) || self.slot_recipes.contains_key(name)
+    }
+
+    fn extend_compound_atoms(&self, name: &str, target: &mut FxHashSet<Atom>) {
+        if let Some(node) = self.recipes.get(name) {
+            target.extend(
+                node.compounds
+                    .iter()
+                    .flat_map(|compound| compound.atoms.iter().cloned()),
+            );
+        }
+        if let Some(node) = self.slot_recipes.get(name) {
+            target.extend(
+                node.compounds
+                    .iter()
+                    .flat_map(|compound| compound.atoms.iter().cloned()),
+            );
+        }
+    }
+
+    fn static_rule_selections(
+        rule: &Literal,
+        breakpoints: &[String],
+        options: &FxHashMap<Box<str>, Vec<String>>,
+    ) -> Vec<Literal> {
+        if matches!(rule, Literal::String(value) if value == "*") {
+            return options
+                .iter()
+                .flat_map(|(variant, values)| {
+                    values.iter().map(move |value| {
+                        Literal::Object(vec![(variant.to_string(), Literal::String(value.clone()))])
+                    })
+                })
+                .collect();
+        }
+
+        let Literal::Object(entries) = rule else {
+            return Vec::new();
+        };
+        let mut conditions = Vec::new();
+        let mut responsive = false;
+        for (key, value) in entries {
+            match key.as_str() {
+                "conditions" => conditions.extend(string_literals(value)),
+                "responsive" => responsive = matches!(value, Literal::Bool(true)),
+                _ => {}
+            }
+        }
+        if responsive {
+            conditions.extend(breakpoints.iter().cloned());
+        }
+
+        let mut out = Vec::new();
+        for (variant, value) in entries {
+            if matches!(variant.as_str(), "conditions" | "responsive") {
+                continue;
+            }
+            let values = static_variant_values(value, options.get(variant.as_str()));
+            out.extend(values.into_iter().map(|value| {
+                let value = if conditions.is_empty() {
+                    value
+                } else {
+                    conditional_static_value(&conditions, breakpoints, &value)
+                };
+                Literal::Object(vec![(variant.clone(), value)])
+            }));
+        }
+        out
+    }
+
+    fn variant_options(&self, name: &str) -> FxHashMap<Box<str>, Vec<String>> {
+        if let Some(node) = self.recipes.get(name) {
+            return node
+                .variants
+                .iter()
+                .map(|group| {
+                    let mut values = group
+                        .options
+                        .keys()
+                        .map(std::string::ToString::to_string)
+                        .collect::<Vec<_>>();
+                    values.sort();
+                    (group.name.clone(), values)
+                })
+                .collect();
+        }
+        if let Some(node) = self.slot_recipes.get(name) {
+            return node
+                .variants
+                .iter()
+                .map(|group| {
+                    let mut values = group
+                        .options
+                        .keys()
+                        .map(std::string::ToString::to_string)
+                        .collect::<Vec<_>>();
+                    values.sort();
+                    (group.name.clone(), values)
+                })
+                .collect();
+        }
+        FxHashMap::default()
+    }
+}
+
+fn static_recipe_rules(config: &UserConfig) -> Option<BTreeMap<String, Vec<Literal>>> {
+    let recipes = config.static_css.get("recipes");
+    if recipes.is_none()
+        && config
+            .theme
+            .recipes
+            .values()
+            .chain(config.theme.slot_recipes.values())
+            .all(|recipe| recipe.static_css.is_null())
+    {
+        return None;
+    }
+
+    let use_all = matches!(recipes, Some(Value::String(value)) if value == "*");
+    let mut out = BTreeMap::new();
+    if let Some(Value::Object(entries)) = recipes {
+        for (name, rules) in entries {
+            out.insert(name.clone(), static_rule_array(rules));
+        }
+    }
+
+    for (name, recipe) in config
+        .theme
+        .recipes
+        .iter()
+        .chain(config.theme.slot_recipes.iter())
+    {
+        if use_all {
+            out.insert(name.clone(), vec![Literal::String("*".to_owned())]);
+        } else if !recipe.static_css.is_null() {
+            out.insert(name.clone(), static_rule_array(&recipe.static_css));
+        }
+    }
+
+    Some(out)
+}
+
+fn static_rule_array(value: &Value) -> Vec<Literal> {
+    match value {
+        Value::Array(items) => items.iter().filter_map(json_value_to_literal).collect(),
+        _ => json_value_to_literal(value).into_iter().collect(),
+    }
+}
+
+fn json_value_to_literal(value: &Value) -> Option<Literal> {
+    match value {
+        Value::String(value) => Some(Literal::String(value.clone())),
+        Value::Number(value) => value.as_f64().map(Literal::Number),
+        Value::Bool(value) => Some(Literal::Bool(*value)),
+        Value::Null => Some(Literal::Null),
+        Value::Array(items) => Some(Literal::Array(
+            items.iter().filter_map(json_value_to_literal).collect(),
+        )),
+        Value::Object(entries) => Some(Literal::Object(
+            entries
+                .iter()
+                .filter_map(|(key, value)| Some((key.clone(), json_value_to_literal(value)?)))
+                .collect(),
+        )),
+    }
+}
+
+fn string_literals(value: &Literal) -> Vec<String> {
+    match value {
+        Literal::Array(items) => items
+            .iter()
+            .filter_map(|item| match item {
+                Literal::String(value) => Some(value.clone()),
+                _ => None,
+            })
+            .collect(),
+        Literal::String(value) => vec![value.clone()],
+        _ => Vec::new(),
+    }
+}
+
+fn static_variant_values(value: &Literal, wildcard_values: Option<&Vec<String>>) -> Vec<Literal> {
+    match value {
+        Literal::Array(items) => items
+            .iter()
+            .flat_map(|item| match item {
+                Literal::String(value) if value == "*" => wildcard_values
+                    .into_iter()
+                    .flatten()
+                    .cloned()
+                    .map(Literal::String)
+                    .collect(),
+                _ => vec![item.clone()],
+            })
+            .collect(),
+        Literal::String(value) if value == "*" => wildcard_values
+            .into_iter()
+            .flatten()
+            .cloned()
+            .map(Literal::String)
+            .collect(),
+        Literal::Bool(true) => vec![Literal::String("true".to_owned())],
+        _ => vec![value.clone()],
+    }
+}
+
+fn conditional_static_value(
+    conditions: &[String],
+    breakpoints: &[String],
+    value: &Literal,
+) -> Literal {
+    let mut entries = vec![("base".to_owned(), value.clone())];
+    entries.extend(conditions.iter().map(|condition| {
+        let key = if condition.starts_with('_') || breakpoints.iter().any(|key| key == condition) {
+            condition.clone()
+        } else {
+            format!("_{condition}")
+        };
+        (key, value.clone())
+    }));
+    Literal::Object(entries)
 }
 
 fn resolve_recipe_base(
@@ -478,39 +754,6 @@ struct RecipeVariantKey {
     class_name: Box<str>,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct RecipeStyleGroup {
-    pub class_name: Box<str>,
-    pub entries: FxHashSet<RecipeStyleEntry>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RecipeStyleEntry {
-    pub prop: Box<str>,
-    pub value: AtomValue,
-    pub conditions: SmallVec<[Box<str>; 2]>,
-    #[serde(skip_serializing_if = "is_false")]
-    pub important: bool,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EncodedRecipesSnapshot {
-    pub base: Vec<RecipeStyleGroupSnapshot>,
-    pub variants: Vec<RecipeStyleGroupSnapshot>,
-    pub atomic: Vec<Atom>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RecipeStyleGroupSnapshot {
-    pub recipe: Box<str>,
-    pub slot: serde_json::Value,
-    pub class_name: Box<str>,
-    pub entries: Vec<RecipeStyleEntry>,
-}
-
 impl EncodedRecipes {
     pub(crate) fn clear(&mut self) {
         self.base.clear();
@@ -522,6 +765,9 @@ impl EncodedRecipes {
         self.base.is_empty() && self.variants.is_empty() && self.atomic.is_empty()
     }
 
+    /// Record the style groups one recipe usage contributes: its `base` plus
+    /// every selected variant option (and matching compound variants). Dispatches
+    /// to the recipe vs slot-recipe path; unknown names are no-ops.
     pub(crate) fn process_usage(
         &mut self,
         recipes: &RecipeRegistry,
@@ -544,15 +790,10 @@ impl EncodedRecipes {
     ) {
         if let Some(base) = node.base.as_ref() {
             let key = recipe_part_key(&node.name, None);
-            if !self.base.contains_key(&key) {
-                self.base.insert(
-                    key,
-                    RecipeStyleGroup {
-                        class_name: base.class_name.clone(),
-                        entries: base.entries.clone(),
-                    },
-                );
-            }
+            self.base.entry(key).or_insert_with(|| RecipeStyleGroup {
+                class_name: base.class_name.clone(),
+                entries: base.entries.clone(),
+            });
         }
 
         let selected = selected_variants(&node.default_variants, selected, conditions);
@@ -656,6 +897,82 @@ impl EncodedRecipes {
             atomic: sorted_atoms_vec(&self.atomic),
         }
     }
+
+    pub(crate) fn transform_utilities(
+        &mut self,
+        transform: &mut crate::UtilityTransformFn<'_>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        transform_recipe_groups(&mut self.base, transform, diagnostics);
+        transform_recipe_groups(&mut self.variants, transform, diagnostics);
+        self.atomic = transform_atoms(std::mem::take(&mut self.atomic), transform, diagnostics);
+    }
+}
+
+fn transform_atoms(
+    atoms: FxHashSet<Atom>,
+    transform: &mut crate::UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> FxHashSet<Atom> {
+    let mut out = FxHashSet::default();
+    for atom in atoms {
+        match transform(atom.prop(), atom.value()) {
+            Ok(Some(transformed)) => {
+                let conditions: SmallVec<[Box<str>; 2]> =
+                    atom.conditions().iter().cloned().collect();
+                out.extend(
+                    transformed
+                        .into_iter()
+                        .map(|next| next.with_prefixed_conditions(&conditions)),
+                );
+            }
+            Ok(None) => {
+                out.insert(atom);
+            }
+            Err(diagnostic) => diagnostics.push(diagnostic),
+        }
+    }
+    out
+}
+
+fn transform_recipe_groups<K: Eq + std::hash::Hash>(
+    groups: &mut FxHashMap<K, RecipeStyleGroup>,
+    transform: &mut crate::UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for group in groups.values_mut() {
+        group.entries =
+            transform_recipe_entries(std::mem::take(&mut group.entries), transform, diagnostics);
+    }
+}
+
+fn transform_recipe_entries(
+    entries: FxHashSet<RecipeStyleEntry>,
+    transform: &mut crate::UtilityTransformFn<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> FxHashSet<RecipeStyleEntry> {
+    let mut out = FxHashSet::default();
+    for entry in entries {
+        match transform(entry.prop.as_ref(), &entry.value) {
+            Ok(Some(transformed)) => {
+                for atom in transformed {
+                    let mut conditions = entry.conditions.clone();
+                    conditions.extend(atom.conditions().iter().cloned());
+                    out.insert(RecipeStyleEntry {
+                        prop: atom.prop().into(),
+                        value: atom.value().clone(),
+                        conditions,
+                        important: entry.important || atom.important(),
+                    });
+                }
+            }
+            Ok(None) => {
+                out.insert(entry);
+            }
+            Err(diagnostic) => diagnostics.push(diagnostic),
+        }
+    }
+    out
 }
 
 impl EncodedRecipesCache {
@@ -902,6 +1219,10 @@ struct SelectedVariantValue {
     conditions: SmallVec<[Box<str>; 2]>,
 }
 
+/// Resolve which variant value(s) a usage selects per variant prop, starting
+/// from the recipe's `defaultVariants` and overriding with the usage's props.
+/// A value may be responsive/conditional (`size={{ base: 'sm', md: 'lg' }}`),
+/// so each selection carries the conditions under which it applies.
 fn selected_variants(
     defaults: &FxHashMap<Box<str>, Box<str>>,
     selected: &Literal,
@@ -933,6 +1254,9 @@ fn selected_variants(
     out
 }
 
+/// Walk a variant value, descending through condition keys (`base`, `md`, …)
+/// while accumulating the condition `path`, and record each leaf variant key
+/// with the conditions it was found under.
 fn collect_selected_variant_values(
     value: &Literal,
     conditions: &ProjectConditionMatcher,
@@ -992,6 +1316,10 @@ struct StyleLeaf<'a> {
     conditions: SmallVec<[Box<str>; 2]>,
 }
 
+/// Visit each leaf of a recipe style object, handing the callback the property
+/// name (first non-condition segment) and the condition chain *below* it.
+/// Recipe-specific cousin of the encoder's atom walker, emitting
+/// [`RecipeStyleEntry`] rather than atoms.
 fn walk_style_object<F>(value: &Literal, conditions: &ProjectConditionMatcher, mut visit: F)
 where
     F: FnMut(StyleLeaf<'_>),
@@ -1087,10 +1415,6 @@ fn literal_to_recipe_value(value: &Literal) -> Option<RecipeValue> {
     }
 }
 
-fn is_false(value: &bool) -> bool {
-    !*value
-}
-
 fn is_absolute_url(value: &str) -> bool {
     value.starts_with("http://") || value.starts_with("https://")
 }
@@ -1126,22 +1450,13 @@ fn sorted_recipe_part_group_snapshots(
 ) -> Vec<RecipeStyleGroupSnapshot> {
     let mut out: Vec<_> = groups
         .iter()
-        .map(|(key, group)| {
-            let mut entries: Vec<_> = group.entries.iter().cloned().collect();
-            entries.sort_by(|a, b| {
-                a.prop
-                    .cmp(&b.prop)
-                    .then_with(|| a.conditions.cmp(&b.conditions))
-                    .then_with(|| format!("{:?}", a.value).cmp(&format!("{:?}", b.value)))
-            });
-            RecipeStyleGroupSnapshot {
-                recipe: key.recipe.clone(),
-                slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
-                    serde_json::Value::String(slot.to_string())
-                }),
-                class_name: group.class_name.clone(),
-                entries,
-            }
+        .map(|(key, group)| RecipeStyleGroupSnapshot {
+            recipe: key.recipe.clone(),
+            slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
+                serde_json::Value::String(slot.to_string())
+            }),
+            class_name: group.class_name.clone(),
+            entries: sorted_recipe_entries(&group.entries),
         })
         .collect();
     out.sort_by(|a, b| {
@@ -1158,22 +1473,13 @@ fn sorted_recipe_variant_group_snapshots(
 ) -> Vec<RecipeStyleGroupSnapshot> {
     let mut out: Vec<_> = groups
         .iter()
-        .map(|(key, group)| {
-            let mut entries: Vec<_> = group.entries.iter().cloned().collect();
-            entries.sort_by(|a, b| {
-                a.prop
-                    .cmp(&b.prop)
-                    .then_with(|| a.conditions.cmp(&b.conditions))
-                    .then_with(|| format!("{:?}", a.value).cmp(&format!("{:?}", b.value)))
-            });
-            RecipeStyleGroupSnapshot {
-                recipe: key.recipe.clone(),
-                slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
-                    serde_json::Value::String(slot.to_string())
-                }),
-                class_name: group.class_name.clone(),
-                entries,
-            }
+        .map(|(key, group)| RecipeStyleGroupSnapshot {
+            recipe: key.recipe.clone(),
+            slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
+                serde_json::Value::String(slot.to_string())
+            }),
+            class_name: group.class_name.clone(),
+            entries: sorted_recipe_entries(&group.entries),
         })
         .collect();
     out.sort_by(|a, b| {
@@ -1191,11 +1497,17 @@ fn slot_sort_key(slot: &serde_json::Value) -> &str {
 
 fn sorted_atoms_vec(atoms: &FxHashSet<Atom>) -> Vec<Atom> {
     let mut out: Vec<_> = atoms.iter().cloned().collect();
+    out.sort_by(compare_atoms_by_emit_order);
+    out
+}
+
+fn sorted_recipe_entries(entries: &FxHashSet<RecipeStyleEntry>) -> Vec<RecipeStyleEntry> {
+    let mut out: Vec<_> = entries.iter().cloned().collect();
     out.sort_by(|a, b| {
-        a.prop()
-            .cmp(b.prop())
-            .then_with(|| a.conditions().cmp(b.conditions()))
-            .then_with(|| format!("{:?}", a.value()).cmp(&format!("{:?}", b.value())))
+        a.conditions
+            .cmp(&b.conditions)
+            .then_with(|| a.prop.cmp(&b.prop))
+            .then_with(|| atom_value_sort_key(&a.value).cmp(&atom_value_sort_key(&b.value)))
     });
     out
 }

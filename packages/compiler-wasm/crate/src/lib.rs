@@ -6,6 +6,13 @@
 //!
 //! See `design-notes/filesystem.md` (Phase B) and `design-notes/napi-boundary.md`.
 
+// wasm-bindgen boundary: fallible entry points surface errors as thrown JS
+// exceptions (documented on the TS surface, not in rustdoc).
+#![allow(
+    clippy::missing_errors_doc,
+    reason = "wasm-bindgen boundary reports errors as JS exceptions"
+)]
+
 mod cache;
 mod extract;
 mod fs;
@@ -15,7 +22,7 @@ mod project;
 pub use extract::WasmExtractor;
 pub use fs::WasmFileSystem;
 pub use matcher::{MatcherInput, MatchersInput, TokenDictionaryInput};
-pub use project::WasmProject;
+pub use project::WasmCompiler;
 
 use wasm_bindgen::prelude::*;
 
