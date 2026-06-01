@@ -8,6 +8,7 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
+pandacss_codegen = { workspace = true }
 pandacss_config = { workspace = true }
 pandacss_extractor = { workspace = true }
 pandacss_project = { workspace = true }

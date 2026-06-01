@@ -1,0 +1,80 @@
+---
+title: Generated Types — JS vs Rust codegen
+date: 2026-06-01
+fixtures:
+  - small
+  - medium
+  - large
+  - strict
+  - jsx-all / jsx-minimal / jsx-none
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+caveats:
+  - type-graph only (usage imports `./styled-system/types`, not the WIP runtime helpers)
+  - legacy generated with `eject: true` (no base preset) for parity
+  - both sides emitted as `.d.ts` under `skipLibCheck` — the real-world scenario (see "Measurement")
+---
+
+# Generated types: legacy JS generator vs Rust codegen
+
+> First measured comparison of the generated **type graph**. Both paths consume the same fixture configs
+> (`fixtures/generated-types/configs/*.json`): the Rust side via `Project::generate_artifacts`, the legacy side via
+> `@pandacss/node` codegen with `eject: true`. Both emit `.d.ts` declarations. An identical `usage.ts` imports
+> `./styled-system/types`, builds a recursive `SystemStyleObject`, and is checked with `tsc --extendedDiagnostics`
+> (`skipLibCheck: true`). Runtime helpers (`cva`/`sva`/recipe runtimes) are excluded — WIP, not type-cost.
+
+## TL;DR
+
+Rust is **dramatically cheaper on every metric** for the same usage and autocomplete. The headline is instantiations:
+the Rust named-alias structure instantiates **~50× fewer** types on use (49 vs ~2,600) because `skipLibCheck` skips the
+declaration bodies and only the user's own `css({…})` shape drives instantiation.
+
+| Fixture | Instantiations (rust / legacy) |        Δ | Types (rust / legacy) |    Δ |      Memory K |    Δ | Check ms |    Δ |
+| ------- | -----------------------------: | -------: | --------------------: | ---: | ------------: | ---: | -------: | ---: |
+| small   |                      49 / 2603 | **−98%** |            666 / 2427 | −73% | 74040 / 86886 | −15% |  20 / 50 | −60% |
+| medium  |                      49 / 2639 | **−98%** |            695 / 2487 | −72% | 74184 / 87067 | −15% |  20 / 50 | −60% |
+| large   |                      49 / 2648 | **−98%** |           1017 / 2988 | −66% | 75123 / 88933 | −16% |  20 / 60 | −67% |
+| strict  |                     314 / 2575 | **−88%** |            231 / 1932 | −88% | 72635 / 83864 | −13% |  20 / 50 | −60% |
+
+`jsx-{all,minimal,none}` read identically to `medium` (the Rust codegen doesn't emit distinct JSX artifacts yet).
+
+Strict instantiates more than non-strict (314 vs 49) because `WithEscapeHatch`/`OnlyKnown` wrappers instantiate on use —
+still −88% vs legacy.
+
+## Measurement: why this must be `.d.ts` + skipLibCheck
+
+This is the whole story, and the first cut of this harness got it wrong. Panda ships the styled-system as **declaration
+files**, and every Panda project runs **`skipLibCheck`** — so TypeScript never deep-checks `styled-system/**/*.d.ts`.
+The cost a user actually pays is on-demand instantiation when they write `css({…})`, not checking the generated lib.
+
+The first run emitted the Rust side as `.ts` _source_ (`format: Ts`) while legacy shipped `.d.ts`. That defeated
+skipLibCheck on the Rust side only, so csstype's ~600-union `Property` namespace was fully checked and counted — making
+Rust look ~2× _worse_ on `Types`. Emitting Rust as `.d.ts` (`format: Js`, matching legacy and real output) is what these
+numbers reflect, and it flips the result entirely.
+
+### Disproven hypothesis (kept as a record)
+
+Before spotting the `.ts`-vs-`.d.ts` artifact, the guess was that Rust's `types/index` doing
+`export type * from './csstype'` eagerly loaded the namespace, and that an explicit `export type { CssProperties }`
+would cut the count. Re-running the harness after that change left `Types` **unchanged** — csstype enters the graph
+through `values.ts`'s internal import, not the barrel. The explicit export was kept anyway as an **API-contract fix**
+(don't leak `Property`/`Globals`/`Pseudos`/`DataType` onto `styled-system/types`, matching legacy), but it is
+perf-neutral. The real variable was always the file extension.
+
+## Caveats
+
+- **Type-graph only.** `usage.ts` imports `./styled-system/types` and builds a `SystemStyleObject` (tokens, conditions,
+  nesting, an arbitrary selector); the values are real (a negative test confirms `color: 123` is rejected). It does not
+  import `css`/`cva`/recipes — those runtime artifacts are WIP and not the subject here.
+- **`eject: true`** on the legacy side (no base preset) keeps the utility/token surface equal to the fixture and to the
+  Rust side. Fair comparison; not representative of a full preset's absolute size.
+- **JSX not captured.** No distinct Rust JSX artifacts yet, so the `jsx-*` fixtures equal `medium`. Add a JSX usage once
+  those land to measure `jsxStyleProps`.
+
+## Reproduce
+
+```sh
+pnpm bench:types
+```
+
+Generates both styled-systems under `fixtures/generated-types/out/<fixture>/{rust,legacy}/` (gitignored, `.d.ts`) and
+prints the delta table. Rust generation alone: `cargo run -q -p pandacss_bench --bin generated_types_perf`.
