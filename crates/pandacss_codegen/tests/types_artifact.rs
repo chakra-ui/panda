@@ -401,19 +401,11 @@ fn emits_ts_system_and_index_types() {
 
         export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
-        export type NestedSelectors = {
-          [K in Selector]?: SystemStyleObject
+        export type NestedStyles = {
+          [K in Selector | Condition]?: SystemStyleObject
         }
 
-        export type NestedConditions = {
-          [K in Condition]?: SystemStyleObject
-        }
-
-        export type NestedArbitrary = {
-          [K in `&${string}` | `@${string}`]?: SystemStyleObject
-        }
-
-        export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedSelectors, NestedConditions, NestedArbitrary {}
+        export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}
 
         export interface GlobalStyleObject {
           [selector: string]: SystemStyleObject
