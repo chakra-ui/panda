@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+lru = { workspace = true }
 pandacss_encoder = { workspace = true }
 pandacss_extractor = { workspace = true, features = ["os"] }
 pandacss_fs = { workspace = true, features = ["os"] }

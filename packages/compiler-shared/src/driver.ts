@@ -7,7 +7,14 @@
 
 import { introspect } from './introspect'
 import type { Introspection } from './introspect'
-import type { CodegenArtifact, CodegenDependency, Compiler, CompileOutput, ScanReport, SerializedConfig } from './types'
+import type {
+  CodegenArtifact,
+  CodegenDependency,
+  Compiler,
+  CompileOutput,
+  ParseFileReport,
+  SerializedConfig,
+} from './types'
 
 /** Result of diffing two serialized configs — produced by config-loader's
  *  `diffConfig`, consumed by `Driver.reload`. */
@@ -58,8 +65,10 @@ export interface Driver {
   /** Re-load the config, diff it against the current one, and rebuild the
    *  compiler when it changed. Browser drivers are snapshot-fed → no-change. */
   reload(): Promise<ConfigDiff>
-  /** Discover + parse every source file via the engine's fs. */
-  scan(): ScanReport
+  /** Source paths matching the config includes/excludes. Does not parse. */
+  scan(): string[]
+  /** Scan, then parse every discovered source file via the engine fs. */
+  parseFiles(): ParseFileReport[]
   /** Route one watcher event into the engine. `false` = unknown path / no-op. */
   applyChange(change: SourceChange): boolean
   /** Route a batch of watcher events; returns each one's result. */
@@ -120,8 +129,12 @@ export abstract class BaseDriver implements Driver {
   abstract reload(): Promise<ConfigDiff>
   abstract applyChange(change: SourceChange): boolean
 
-  scan(): ScanReport {
+  scan(): string[] {
     return this.#compiler.scan()
+  }
+
+  parseFiles(): ParseFileReport[] {
+    return this.#compiler.parseFiles(this.scan())
   }
 
   applyChanges(changes: SourceChange[]): boolean[] {

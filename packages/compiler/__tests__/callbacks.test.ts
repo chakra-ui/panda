@@ -31,7 +31,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px', color: 'red' })`,
@@ -103,7 +103,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ tint: 'red.500/50' })`,
@@ -185,7 +185,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/recipes.ts',
       `import { button } from '@panda/recipes'
        import * as recipes from '@panda/recipes'
@@ -294,7 +294,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ space: '4', _hover: { space: 'compact' } })`,
@@ -373,7 +373,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Dialog.tsx',
       `import { css } from '@panda/css'
        css({ inset: '2' })
@@ -469,7 +469,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ _hover: { size: '4px' } })`,
@@ -523,7 +523,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Card.tsx',
       `import { Box } from '@panda/jsx'
        const el = <Box size="4px" />`,
@@ -574,7 +574,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px', _hover: { size: '4px' } })`,
@@ -612,7 +612,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    const report = compiler.parseFile(
+    const report = compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px' })`,
@@ -626,6 +626,15 @@ describe('Compiler callbacks', () => {
         },
       ]
     `)
+    expect(compiler.getFile('/virtual/Button.tsx')?.diagnostics.map(({ message, severity }) => ({ message, severity })))
+      .toMatchInlineSnapshot(`
+        [
+          {
+            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+            "severity": "warning",
+          },
+        ]
+      `)
     expect(compiler.atoms()).toMatchInlineSnapshot(`[]`)
   })
 
@@ -662,8 +671,8 @@ describe('Compiler callbacks', () => {
     const source = `import { css } from '@panda/css'
        css({ size: '4px' })`
 
-    const failed = compiler.parseFile('/virtual/Button.tsx', source)
-    const retried = compiler.parseFile('/virtual/Button.tsx', source)
+    const failed = compiler.parseFileSource('/virtual/Button.tsx', source)
+    const retried = compiler.parseFileSource('/virtual/Button.tsx', source)
 
     expect(failed.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
       [
@@ -716,13 +725,13 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ size: '4px' })`,
     )
     expect(
-      compiler.refreshFile(
+      compiler.refreshFileSource(
         '/virtual/Button.tsx',
         `import { css } from '@panda/css'
        css({ size: '8px' })`,
@@ -781,7 +790,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        import { button } from '@panda/recipes'
@@ -837,7 +846,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -908,7 +917,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: { base: '4px', _hover: '8px' } })`,
@@ -975,7 +984,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { Stack } from '@panda/jsx'
        const el = <Stack gap="4px" />`,
@@ -1038,7 +1047,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -1100,12 +1109,12 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: '4px' })`,
     )
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.ts',
       `import { stack } from '@panda/patterns'
        stack({ gap: '4px' })`,
@@ -1163,7 +1172,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'
@@ -1228,7 +1237,7 @@ describe('Compiler callbacks', () => {
       { crossFile: false },
     )
 
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { stack } from '@panda/patterns'
        import { Stack } from '@panda/jsx'

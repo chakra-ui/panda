@@ -7,7 +7,7 @@ import { baseConfig, describeIfBuilt, describeMissingWasm, withoutSpans } from '
 describeIfBuilt('@pandacss/compiler-wasm extract', () => {
   it('extracts a css() call to a literal object', async () => {
     const compiler = await createCompiler(baseConfig)
-    const raw = compiler.extract(
+    const raw = compiler.extractFileSource(
       '/src/code.tsx',
       `import { css } from '@panda/css';\ncss({ color: 'red', bg: 'blue' });\n`,
     )
@@ -34,7 +34,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
 
   it('extracts a <styled.div> JSX usage', async () => {
     const compiler = await createCompiler(baseConfig)
-    const raw = compiler.extract(
+    const raw = compiler.extractFileSource(
       '/src/code.tsx',
       `import { styled } from '@panda/jsx';\nconst X = () => <styled.div color="red" />;\n`,
     )
@@ -59,7 +59,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
   it('cross-file imports fold through the shared memory FS', async () => {
     const compiler = await createCompiler(baseConfig)
     compiler.fs!.addFile('/proj/tokens.ts', "export const brand = '#ef4444';\n")
-    const raw = compiler.extract(
+    const raw = compiler.extractFileSource(
       '/proj/main.tsx',
       `import { brand } from './tokens';\nimport { css } from '@panda/css';\ncss({ color: brand });\n`,
     )
@@ -85,7 +85,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
 
   it('extract reports parse-error diagnostics', async () => {
     const compiler = await createCompiler(baseConfig)
-    const raw = compiler.extract(
+    const raw = compiler.extractFileSource(
       '/src/code.tsx',
       `import { css } from '@panda/css';\ncss({ color: }) // syntax error\n`,
     )

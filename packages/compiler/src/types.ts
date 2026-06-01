@@ -100,7 +100,7 @@ export interface ExtractDebugResult {
 }
 
 /** Reusable extractor session — built once from a `Matchers` config, then
- *  called per file. For one-off use, prefer a `Compiler` + `extract`. */
+ *  called per file. For one-off use, prefer a `Compiler` + `extractFileSource`. */
 export interface ExtractorSession {
   extract(path: string, source: string): ExtractResult
   extractDebug(path: string, source: string): ExtractDebugResult

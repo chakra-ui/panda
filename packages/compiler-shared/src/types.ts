@@ -68,10 +68,17 @@ export interface EncodedRecipeStyles {
 }
 
 export interface ParseFileReport {
+  /** Source path parsed for this report. */
+  path: string
+  /** Number of `css(...)` calls extracted from this file. */
   cssCalls: number
+  /** Number of `cva(...)` recipe calls extracted from this file. */
   cvaCalls: number
+  /** Number of `sva(...)` slot-recipe calls extracted from this file. */
   svaCalls: number
+  /** Number of JSX style usages extracted from this file. */
   jsxUsages: number
+  /** Diagnostics produced while parsing this file. */
   diagnostics: Diagnostic[]
 }
 
@@ -117,19 +124,12 @@ export interface GenerateArtifactOptions {
   specifiers?: 'extensionless' | 'runtime-and-types'
 }
 
-/** Glob overrides for `Compiler.glob`/`scan`. Omitted fields fall back to the
+/** Scan overrides for `Compiler.scan`/`parseFiles`. Omitted fields fall back to the
  *  config's `include`/`exclude`/`cwd`. */
 export interface ScanOptions {
   include?: string[]
   exclude?: string[]
   cwd?: string
-}
-
-/** Result of `Compiler.scan`: how many files were parsed + their aggregated
- *  diagnostics. */
-export interface ScanReport {
-  count: number
-  diagnostics: Diagnostic[]
 }
 
 /** Resolved cascade-layer names (config overrides merged over defaults). */
@@ -285,6 +285,11 @@ export interface ExtractResult {
   diagnostics: Diagnostic[]
 }
 
+export interface FileInspectionResult {
+  usages: UsageSite[]
+  diagnostics: Diagnostic[]
+}
+
 /** The JSON-safe, fully-resolved Panda config the compiler consumes.
  *
  *  Intentionally opaque: function-valued options (`utilities.*.transform`, …)
@@ -356,21 +361,18 @@ export interface CompilerOptions {
   callbacks?: ProjectCallbacks
 }
 
-export interface GlobOptions {
-  include: string[]
-  exclude?: string[]
-  cwd?: string
-  absolute?: boolean
-}
-
 /** In-memory filesystem handle, exposed as `Compiler.fs` on the wasm binding
  *  (the browser has no real FS); `undefined` on native. */
 export interface CompilerFileSystem {
+  /** Add or replace a source file in the in-memory filesystem. */
   addFile(path: string, content: string): void
+  /** Remove a file from the in-memory filesystem. Returns `true` when it existed. */
   removeFile(path: string): boolean
+  /** Read a file from the in-memory filesystem. Returns `undefined` when missing. */
   readFile(path: string): string | undefined
+  /** `true` when `path` exists as a file or directory. */
   exists(path: string): boolean
-  glob(opts: GlobOptions): string[]
+  /** Number of files currently staged in the in-memory filesystem. */
   fileCount(): number
 }
 
@@ -378,25 +380,12 @@ export interface CompilerFileSystem {
  *  source files, drained to CSS via `compile()`. Identical on native and wasm —
  *  only construction differs (native sync; wasm async + populates `fs`). */
 export interface Compiler {
-  config(): SerializedConfig
+  /** Environment-specific filesystem handle. Present only on wasm/browser. */
   readonly fs?: CompilerFileSystem
 
-  parseFile(path: string, source: string): ParseFileReport
-  /** Re-parse `path` only if already known; `true` when present. Filter watch
-   *  events through this to ignore unrelated files. */
-  refreshFile(path: string, source: string): boolean
-  removeFile(path: string): boolean
-  clear(): void
-  /** Discover + parse every source file matching the config's `include`/
-   *  `exclude` (overridable) using the platform filesystem engine — disk on
-   *  native, the in-memory `fs` on wasm. The host neither globs nor reads. */
-  scan(options?: ScanOptions): ScanReport
-  /** Source paths matching the config's `include`/`exclude` (overridable) via
-   *  the filesystem engine — for the host's watch dependency list. */
-  glob(options?: ScanOptions): string[]
-  /** Classified usage sites (token/property/recipe/pattern + ranges) for a file
-   *  — the primitive for reporting, lint, and IDE tooling. */
-  usages(path: string, source: string): UsageSite[]
+  // Config and introspection
+  /** Serialized config snapshot this compiler was created with. */
+  config(): SerializedConfig
   /** Resolved cascade-layer names (config overrides merged over defaults) — so
    *  the host can recognize the user's `@layer …;` directive. */
   layers(): LayerNames
@@ -404,9 +393,32 @@ export interface Compiler {
   spec(): Spec
   /** Source globs + their static base dirs (for the host watcher). */
   sources(): SourceEntry[]
-  /** Generate + write artifacts under `outdir` via the platform fs (disk on
-   *  native, in-memory on wasm). Returns the written paths. */
-  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  /** Config validation diagnostics captured at construction time. */
+  diagnostics(): Diagnostic[]
+
+  // File discovery and parsing
+  /** Source paths matching the config's `include`/`exclude` (overridable) via
+   *  the filesystem engine — for discovery and host watch lists. */
+  scan(options?: ScanOptions): string[]
+  /** Read + parse paths returned from `scan()`, returning one report per file
+   *  that was successfully read and parsed. */
+  parseFiles(paths: string[]): ParseFileReport[]
+  /** Read + parse a path from the compiler filesystem. */
+  parseFile(path: string): ParseFileReport
+  /** Parse provided source text for `path`. */
+  parseFileSource(path: string, source: string): ParseFileReport
+  /** Re-parse `path` only if already known; `true` when present. Filter watch
+   *  events through this to ignore unrelated files. */
+  refreshFile(path: string): boolean
+  /** Re-parse provided source text for `path` only if already known. */
+  refreshFileSource(path: string, source: string): boolean
+  /** Drop one known file's atoms, recipes, and diagnostics from project state. */
+  removeFile(path: string): boolean
+  /** Drop all parsed file state while keeping the compiled config. */
+  clear(): void
+
+  // CSS output
+  /** Compile the current project state into a complete stylesheet. */
   compile(): CompileOutput
   /** CSS for the named layers only, concatenated in order — sliced in Rust so
    *  byte offsets stay valid. Pairs with `layers()` (names). Backs
@@ -416,20 +428,42 @@ export interface Compiler {
    *  plus `recipes.css` / `styles.css` index files) — backs `cssgen --splitting`.
    *  The host writes each `path -> code`, the same model as `writeArtifacts`. */
   splitCss(): CssFile[]
-  generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
-  generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
-  generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]
-  /** Stateless peek — returns raw calls/jsx, registers nothing. */
-  extract(path: string, source: string): ExtractResult
 
+  // Codegen artifacts
+  /** Generate + write artifacts under `outdir` via the platform fs (disk on
+   *  native, in-memory on wasm). Returns the written paths. */
+  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  /** Generate all codegen artifacts in memory without writing them. */
+  generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
+  /** Generate a single codegen artifact by id. */
+  generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
+  /** Generate only artifacts affected by the provided config dependency set. */
+  generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]
+
+  // Tooling queries
+  /** Stateless source extraction — returns raw calls/jsx, registers nothing. */
+  extractFileSource(path: string, source: string): ExtractResult
+  /** Stateless source inspection for classified Panda usage sites and
+   *  file-local extraction diagnostics. */
+  inspectFileSource(path: string, source: string): FileInspectionResult
+
+  // Project state views
+  /** Deduplicated atoms across all currently parsed files. */
   atoms(): Atom[]
+  /** Inline and config `cva()` recipes in stable `(file, span)` order. */
   recipes(): RecipeEntry[]
+  /** Inline and config `sva()` slot recipes in stable `(file, span)` order. */
   slotRecipes(): RecipeEntry[]
+  /** Encoded recipe styles accumulated from parsed files. */
   encodedRecipes(): EncodedRecipeStyles
+  /** Static pattern atoms expanded from `staticCss.patterns`. */
   staticPatternAtoms(): StaticPatternResult
+  /** Read-only view for one parsed file, or `null` when unknown. */
   getFile(path: string): ParsedFileView | null
+  /** Stable `(path, source hash)` manifest for known files. */
   fileManifest(): CompileFileManifest[]
+  /** Cheap aggregate counts for the current project state. */
   summary(): ProjectSummary
-  diagnostics(): Diagnostic[]
+  /** `true` when no parsed file or accumulated output state is present. */
   isEmpty(): boolean
 }

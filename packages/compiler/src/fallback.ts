@@ -20,13 +20,19 @@ class FallbackCompiler implements Compiler {
   config() {
     return {}
   }
-  extract() {
+  extractFileSource() {
     return { calls: [], jsx: [], diagnostics: [] }
   }
-  parseFile() {
-    return { cssCalls: 0, cvaCalls: 0, svaCalls: 0, jsxUsages: 0, diagnostics: [] }
+  parseFile(path: string) {
+    return { path, cssCalls: 0, cvaCalls: 0, svaCalls: 0, jsxUsages: 0, diagnostics: [] }
+  }
+  parseFileSource(path: string) {
+    return { path, cssCalls: 0, cvaCalls: 0, svaCalls: 0, jsxUsages: 0, diagnostics: [] }
   }
   refreshFile() {
+    return false
+  }
+  refreshFileSource() {
     return false
   }
   removeFile() {
@@ -36,9 +42,9 @@ class FallbackCompiler implements Compiler {
     /* no-op */
   }
   scan() {
-    return { count: 0, diagnostics: [] }
+    return []
   }
-  glob() {
+  parseFiles(_paths: string[]) {
     return []
   }
   layers() {
@@ -57,8 +63,8 @@ class FallbackCompiler implements Compiler {
   sources() {
     return []
   }
-  usages() {
-    return []
+  inspectFileSource() {
+    return { usages: [], diagnostics: [] }
   }
   writeArtifacts() {
     return []

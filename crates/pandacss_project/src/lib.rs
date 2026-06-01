@@ -34,6 +34,7 @@ mod recipes;
 mod runtime_config;
 mod static_patterns;
 mod system;
+mod transform_cache;
 mod usages;
 
 use std::collections::BTreeMap;
@@ -61,7 +62,10 @@ pub use recipes::EncodedRecipes;
 use recipes::EncodedRecipesCache;
 pub use runtime_config::Config;
 pub use system::{System, SystemInput};
-pub use usages::{UsageKind, UsageSite};
+pub use transform_cache::{
+    AtomValueCacheKey, LiteralCacheKey, atom_value_cache_key, literal_cache_key,
+};
+pub use usages::{FileInspectionResult, UsageKind, UsageSite};
 
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 
@@ -79,6 +83,7 @@ pub struct Project {
     atoms_snapshot_cache: Option<Vec<Atom>>,
     encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
     static_encoded_recipes_snapshot_cache: Option<(serde_json::Value, EncodedRecipesSnapshot)>,
+    parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
     config_recipes: BTreeMap<RecipeKey, Recipe>,
@@ -100,6 +105,8 @@ pub struct ProjectStylesheetSnapshots<'a> {
 // change without disturbing callers — [`ParsedFile`] is the public view.
 struct FileEntry {
     source_hash: u64,
+    parse_epoch: u64,
+    cacheable: bool,
     atoms: FxHashSet<Atom>,
     encoded_recipes: EncodedRecipes,
     diagnostics: Vec<Diagnostic>,
@@ -132,6 +139,7 @@ impl Project {
             atoms_snapshot_cache: None,
             encoded_recipes_snapshot_cache: None,
             static_encoded_recipes_snapshot_cache: None,
+            parse_epoch: 0,
             config_recipes,
             config_slot_recipes,
             inline_recipes: BTreeMap::new(),
@@ -176,7 +184,8 @@ impl Project {
     /// Stateless single-file extraction using this project's configured
     /// matchers + token dictionary. Unlike [`Self::parse_file`], it does not
     /// encode, decompose recipes, or register anything — it returns the raw
-    /// extracted usages directly. Backs `compiler.extract(...)` on the bindings.
+    /// extracted usages directly. Backs `compiler.extractFileSource(...)` on the
+    /// bindings.
     #[must_use]
     pub fn extract(&self, path: &str, source: &str) -> pandacss_extractor::ExtractUsage {
         extract(source, path, &self.config.extractor_config)
@@ -201,13 +210,11 @@ impl Project {
         );
         let _guard = span.enter();
         let source_hash = hash_source(source);
-        if pattern_transform.is_none()
-            && utility_transform.is_none()
-            && self
-                .files
-                .get(path)
-                .is_some_and(|entry| entry.source_hash == source_hash)
-        {
+        if self.files.get(path).is_some_and(|entry| {
+            entry.cacheable
+                && entry.source_hash == source_hash
+                && entry.parse_epoch == self.parse_epoch
+        }) {
             span.record("cache_hit", true);
             return self.files.get(path).expect("checked above").report.clone();
         }
@@ -383,9 +390,14 @@ impl Project {
 
         let entry = FileEntry {
             source_hash,
+            parse_epoch: self.parse_epoch,
+            cacheable: !report
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code == diagnostic_codes::TRANSFORM_CALLBACK_FAILED),
             atoms,
             encoded_recipes,
-            diagnostics,
+            diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
         self.add_file_state(path_key, entry);
@@ -454,6 +466,14 @@ impl Project {
         self.inline_slot_recipes.clear();
         self.inline_recipe_spans.clear();
         self.inline_slot_recipe_spans.clear();
+    }
+
+    /// Invalidate same-source parse short-circuiting while retaining the
+    /// current project output. Hosts call this when external transform
+    /// callbacks change; the next `parse_file` for any path recomputes even if
+    /// source text is unchanged.
+    pub fn bump_parse_epoch(&mut self) {
+        self.parse_epoch = self.parse_epoch.wrapping_add(1);
     }
 
     fn drop_file_state(&mut self, path: &str) {

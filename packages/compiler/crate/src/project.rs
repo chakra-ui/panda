@@ -5,12 +5,16 @@
 //! every extracted style so callers see `Atom[]` directly (not raw
 //! `ExtractedCall` records — for that, use `Extractor`).
 
+use lru::LruCache;
 use napi_derive::napi;
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::Diagnostic;
-use crate::cache::{PatternTransformCacheKey, TransformCache, UtilityTransformCacheKey};
+use crate::cache::{
+    MAX_TRANSFORM_CACHE_KEY_BYTES, PatternTransformCacheKey, TransformCache,
+    UtilityTransformCacheKey,
+};
 use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
@@ -23,6 +27,7 @@ use pandacss_config::{
 };
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
+use pandacss_fs::{FileSystem, OxcResolverFileSystem};
 use smallvec::SmallVec;
 
 use crate::compile::{CompileFileManifest, CompileOutput};
@@ -35,6 +40,8 @@ type UtilityValueCallbacks =
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
 pub struct ParseFileReport {
+    /// Source path parsed for this report.
+    pub path: String,
     pub css_calls: u32,
     pub cva_calls: u32,
     pub sva_calls: u32,
@@ -59,21 +66,13 @@ pub struct ProjectOptions {
     pub cross_file: Option<bool>,
 }
 
-/// Glob overrides for `scan`/`glob`. Omitted fields fall back to the
+/// Glob overrides for `scan`. Omitted fields fall back to the
 /// config's `include`/`exclude`/`cwd`.
 #[napi(object)]
 pub struct ScanOptions {
     pub include: Option<Vec<String>>,
     pub exclude: Option<Vec<String>>,
     pub cwd: Option<String>,
-}
-
-/// Result of `scan`: how many files were parsed + their aggregated
-/// diagnostics.
-#[napi(object)]
-pub struct ScanReport {
-    pub count: u32,
-    pub diagnostics: Vec<Diagnostic>,
 }
 
 /// A source glob with its static base directory (the dir a watcher subscribes to).
@@ -287,19 +286,23 @@ impl Compiler {
         serde_json::to_value(&spec).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
-    /// Classified usage sites (token / property / recipe / pattern) with ranges,
-    /// for tooling (reporting, lint, IDE). On-demand — not on the build path.
+    /// Stateless source inspection for tooling (reporting, lint, IDE). Returns
+    /// classified Panda usage sites plus file-local extraction diagnostics.
     ///
     /// # Errors
     /// Returns an error if the result fails to serialize.
-    #[napi]
+    #[napi(js_name = inspectFileSource)]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn usages(&self, path: String, source: String) -> napi::Result<serde_json::Value> {
-        let sites = self.inner.usages(&path, &source);
-        serde_json::to_value(&sites).map_err(|err| napi::Error::from_reason(err.to_string()))
+    pub fn inspect_file_source(
+        &self,
+        path: String,
+        source: String,
+    ) -> napi::Result<serde_json::Value> {
+        let result = self.inner.inspect_file_source(&path, &source);
+        serde_json::to_value(&result).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
     /// Source globs + their static base dirs (for the host watcher).
@@ -321,7 +324,7 @@ impl Compiler {
     ///
     /// # Errors
     /// Returns an error if a file fails to write.
-    #[napi]
+    #[napi(js_name = writeArtifacts)]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
@@ -381,6 +384,7 @@ impl Compiler {
     ) {
         self.callbacks.utility_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_utility();
+        self.inner.bump_parse_epoch();
     }
 
     /// Register a JS-backed pattern transform callback. Pattern transforms
@@ -398,20 +402,35 @@ impl Compiler {
     ) {
         self.callbacks.pattern_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_pattern();
+        self.inner.bump_parse_epoch();
     }
 
-    /// Extract + encode a single file. Re-parsing a path replaces its prior
-    /// contribution (atoms, recipes, diagnostics) — safe for watch mode.
-    #[napi]
+    /// Read a source file from the native filesystem and parse it.
+    #[napi(js_name = parseFile)]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn parse_file(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
+    pub fn parse_file(&mut self, env: Env, path: String) -> napi::Result<ParseFileReport> {
+        let source = self
+            .fs
+            .read_to_string(std::path::Path::new(&path))
+            .map_err(|err| napi::Error::from_reason(format!("failed to read `{path}`: {err}")))?;
+        Ok(self.parse_file_source(env, path, source))
+    }
+
+    /// Extract + encode provided source text. Re-parsing a path replaces its
+    /// prior contribution (atoms, recipes, diagnostics) — safe for watch mode.
+    #[napi(js_name = parseFileSource)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn parse_file_source(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         crate::init_tracing();
         let report = self.parse_inner(&env, &path, &source);
         let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
-        let report = convert_report(report);
+        let report = convert_report(path, report);
         crate::flush_tracing();
         report
     }
@@ -468,74 +487,72 @@ impl Compiler {
         )
     }
 
-    /// Discover + parse every source file matching the config's
-    /// `include`/`exclude` (overridable via `options`) using the platform
-    /// filesystem engine. Reads happen in Rust — the JS host does not glob or
-    /// read files. Returns the parsed file count + aggregated diagnostics.
-    ///
-    /// # Errors
-    /// Returns an error when the glob itself fails (e.g. a non-existent `cwd`).
-    #[napi]
-    #[allow(
-        clippy::needless_pass_by_value,
-        reason = "NAPI requires owned arguments"
-    )]
-    pub fn scan(&mut self, env: Env, options: Option<ScanOptions>) -> napi::Result<ScanReport> {
-        crate::init_tracing();
-        let opts = glob_options(&self.user_config, options.as_ref());
-        // Collect (path, source) via the fs engine first, then parse — keeps
-        // the `&self.fs` borrow disjoint from the `&mut self` parse pass.
-        let mut sources: Vec<(String, String)> = Vec::new();
-        pandacss_project::scan_files(&self.fs, &opts, |path, source| {
-            sources.push((path.to_owned(), source.to_owned()));
-        })
-        .map_err(|err| napi::Error::from_reason(format!("scan glob failed: {err}")))?;
-
-        let mut count: u32 = 0;
-        let mut diagnostics = Vec::new();
-        for (path, source) in sources {
-            let report = self.parse_inner(&env, &path, &source);
-            count = count.saturating_add(1);
-            diagnostics.extend(report.diagnostics.into_iter().map(convert_diagnostic));
-        }
-        crate::flush_tracing();
-        Ok(ScanReport { count, diagnostics })
-    }
-
     /// Source paths matching the config's `include`/`exclude` (overridable via
-    /// `options`), via the platform filesystem engine. Useful for the host's
-    /// watch dependency list without parsing.
+    /// `options`), via the platform filesystem engine. Useful for file
+    /// discovery and the host's watch dependency list.
     ///
     /// # Errors
-    /// Returns an error when the glob fails (e.g. a non-existent `cwd`).
+    /// Returns an error when the scan fails (e.g. a non-existent `cwd`).
     #[napi]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn glob(&self, options: Option<ScanOptions>) -> napi::Result<Vec<String>> {
-        use pandacss_fs::FileSystem;
-        let opts = glob_options(&self.user_config, options.as_ref());
-        let paths = self
-            .fs
-            .glob(&opts)
-            .map_err(|err| napi::Error::from_reason(format!("glob failed: {err}")))?;
-        Ok(paths
+    pub fn scan(&self, options: Option<ScanOptions>) -> napi::Result<Vec<String>> {
+        Ok(self
+            .scan_paths(options.as_ref())?
             .into_iter()
             .map(|path| path.to_string_lossy().into_owned())
             .collect())
     }
 
+    /// Read + parse source paths returned from `scan()`. Returns one report per
+    /// successfully parsed path.
+    ///
+    /// # Errors
+    /// Returns an error when a listed path fails to read.
+    #[napi(js_name = parseFiles)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn parse_files(
+        &mut self,
+        env: Env,
+        paths: Vec<String>,
+    ) -> napi::Result<Vec<ParseFileReport>> {
+        crate::init_tracing();
+        let mut reports = Vec::with_capacity(paths.len());
+        for path in paths {
+            let path = std::path::PathBuf::from(path);
+            let Ok(source) = self.fs.read_to_string(&path) else {
+                continue;
+            };
+            let path = path.to_string_lossy();
+            let report = self.parse_inner(&env, &path, &source);
+            reports.push(convert_report(path.into_owned(), report));
+        }
+        crate::flush_tracing();
+        Ok(reports)
+    }
+
+    fn scan_paths(&self, options: Option<&ScanOptions>) -> napi::Result<Vec<std::path::PathBuf>> {
+        let opts = glob_options(&self.user_config, options);
+        self.fs
+            .glob(&opts)
+            .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
+    }
+
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
     /// using the project's configured matchers + token dictionary. Unlike
     /// `parseFile`, it registers nothing; it's the read-only peek companion.
-    #[napi]
+    #[napi(js_name = extractFileSource)]
     #[must_use]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn extract(&self, path: String, source: String) -> ExtractResult {
+    pub fn extract_file_source(&self, path: String, source: String) -> ExtractResult {
         crate::init_tracing();
         let result = self.inner.extract(&path, &source);
         ExtractResult {
@@ -557,7 +574,21 @@ impl Compiler {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn refresh_file(&mut self, env: Env, path: String, source: String) -> bool {
+    pub fn refresh_file(&mut self, env: Env, path: String) -> napi::Result<bool> {
+        let source = self
+            .fs
+            .read_to_string(std::path::Path::new(&path))
+            .map_err(|err| napi::Error::from_reason(format!("failed to read `{path}`: {err}")))?;
+        Ok(self.refresh_file_source(env, path, source))
+    }
+
+    /// Re-parse provided source text only if the path is already known.
+    #[napi(js_name = refreshFileSource)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn refresh_file_source(&mut self, env: Env, path: String, source: String) -> bool {
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         if !has_pattern_transforms && !has_utility_transforms {
@@ -1008,8 +1039,9 @@ fn resolve_base(cwd: &str, pattern: &str) -> String {
     }
 }
 
-fn convert_report(report: pandacss_project::ParseFileReport) -> ParseFileReport {
+fn convert_report(path: String, report: pandacss_project::ParseFileReport) -> ParseFileReport {
     ParseFileReport {
+        path,
         css_calls: u32::try_from(report.css_calls).unwrap_or(u32::MAX),
         cva_calls: u32::try_from(report.cva_calls).unwrap_or(u32::MAX),
         sva_calls: u32::try_from(report.sva_calls).unwrap_or(u32::MAX),
@@ -1173,7 +1205,7 @@ fn apply_utility_transform(
     value: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
-    cache: &mut HashMap<UtilityTransformCacheKey, Vec<crate::Atom>>,
+    cache: &mut LruCache<UtilityTransformCacheKey, Vec<crate::Atom>>,
     env: &Env,
 ) -> Result<Option<Vec<CoreAtom>>, pandacss_extractor::Diagnostic> {
     let Some(id) = utility_transform_refs.get(prop) else {
@@ -1185,22 +1217,33 @@ fn apply_utility_transform(
         )));
     };
 
-    let value = atom_value_to_json(value);
     let cache_key = UtilityTransformCacheKey {
         id: id.clone(),
         prop: prop.to_owned(),
-        value: value.to_string(),
+        value: pandacss_project::atom_value_cache_key(value),
     };
-    if let Some(cached) = cache.get(&cache_key) {
+    if let Some(cached) = cache.get(&cache_key).cloned() {
+        tracing::trace!(
+            cache = "utility_transform",
+            action = "hit",
+            target = prop,
+            entries = cache.len()
+        );
         return Ok(Some(
             cached
-                .iter()
-                .cloned()
+                .into_iter()
                 .filter_map(core_atom_from_js_atom)
                 .collect(),
         ));
     }
+    tracing::trace!(
+        cache = "utility_transform",
+        action = "miss",
+        target = prop,
+        entries = cache.len()
+    );
 
+    let value = atom_value_to_json(value);
     let transform = callback.borrow_back(env).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to borrow utility transform callback `{id}` for `{prop}`: {err}"
@@ -1216,7 +1259,8 @@ fn apply_utility_transform(
         return Ok(Some(Vec::new()));
     };
     if style.is_empty() {
-        cache.insert(cache_key, Vec::new());
+        trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
+        cache.put(cache_key, Vec::new());
         return Ok(Some(Vec::new()));
     }
     let transformed = style_object_to_atoms(style, &[]);
@@ -1225,7 +1269,8 @@ fn apply_utility_transform(
         .cloned()
         .filter_map(core_atom_from_js_atom)
         .collect();
-    cache.insert(cache_key, transformed);
+    trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
+    cache.put(cache_key, transformed);
     Ok(Some(core))
 }
 
@@ -1234,7 +1279,7 @@ fn apply_pattern_transform(
     styles: &Literal,
     pattern_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
-    cache: &mut HashMap<PatternTransformCacheKey, Option<Literal>>,
+    cache: &mut LruCache<PatternTransformCacheKey, Option<Literal>>,
     env: &Env,
 ) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
     let Some(id) = pattern_transform_refs.get(name) else {
@@ -1246,22 +1291,39 @@ fn apply_pattern_transform(
         )));
     };
 
+    let cache_key =
+        pandacss_project::literal_cache_key(styles, MAX_TRANSFORM_CACHE_KEY_BYTES).map(|props| {
+            PatternTransformCacheKey {
+                id: id.clone(),
+                name: name.to_owned(),
+                props,
+            }
+        });
+    if let Some(cached) = cache_key.as_ref().and_then(|key| cache.get(key)).cloned() {
+        tracing::trace!(
+            cache = "pattern_transform",
+            action = "hit",
+            target = name,
+            entries = cache.len()
+        );
+        return Ok(cached);
+    }
+    tracing::trace!(
+        cache = "pattern_transform",
+        action = if cache_key.is_some() {
+            "miss"
+        } else {
+            "skip_oversized_key"
+        },
+        target = name,
+        entries = cache.len()
+    );
+
     let props = serde_json::to_value(styles).map_err(|err| {
         callback_diagnostic(format!(
             "Failed to serialize pattern props for `{name}`: {err}"
         ))
     })?;
-    let props_key = serde_json::to_string(&props).map_err(|err| {
-        callback_diagnostic(format!("Failed to cache pattern props for `{name}`: {err}"))
-    })?;
-    let cache_key = PatternTransformCacheKey {
-        id: id.clone(),
-        name: name.to_owned(),
-        props: props_key,
-    };
-    if let Some(cached) = cache.get(&cache_key) {
-        return Ok(cached.clone());
-    }
 
     let transform = callback.borrow_back(env).map_err(|err| {
         callback_diagnostic(format!(
@@ -1283,8 +1345,21 @@ fn apply_pattern_transform(
             ))
         })?
     };
-    cache.insert(cache_key, transformed.clone());
+    if let Some(cache_key) = cache_key {
+        trace_cache_store("pattern_transform", name, cache.len(), cache.cap().get());
+        cache.put(cache_key, transformed.clone());
+    }
     Ok(transformed)
+}
+
+fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
+    tracing::trace!(
+        cache,
+        action = "store",
+        target,
+        entries = len.saturating_add(1).min(capacity),
+        evicted = len == capacity
+    );
 }
 
 fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {

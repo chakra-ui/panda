@@ -8,7 +8,7 @@ import { createProject, createUserConfig, importMap } from './test-utils'
 describe('Compiler', () => {
   it('extracts atoms from a css() call', () => {
     const compiler = createProject()
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red', bg: 'blue' })`,
@@ -36,7 +36,7 @@ describe('Compiler', () => {
         backgroundColor: { className: 'bg', shorthand: 'bg' },
       },
     })
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red', bg: 'blue' })`,
@@ -185,8 +185,8 @@ describe('Compiler', () => {
 
   it('lists parsed files via fileManifest()', () => {
     const compiler = createProject()
-    compiler.parseFile('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
-    compiler.parseFile('/virtual/B.tsx', "import { css } from '@panda/css'; css({ color: 'blue' })")
+    compiler.parseFileSource('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
+    compiler.parseFileSource('/virtual/B.tsx', "import { css } from '@panda/css'; css({ color: 'blue' })")
     const manifest = compiler.fileManifest()
     expect(manifest.map((entry) => entry.path)).toEqual(['/virtual/A.tsx', '/virtual/B.tsx'])
     expect(manifest.every((entry) => /^[0-9a-f]{16}$/.test(entry.hash))).toBe(true)
@@ -194,7 +194,7 @@ describe('Compiler', () => {
 
   it('returns a per-file ParsedFileView via getFile()', () => {
     const compiler = createProject()
-    compiler.parseFile('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red', bg: 'blue' })")
+    compiler.parseFileSource('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red', bg: 'blue' })")
     expect(compiler.getFile('/virtual/missing.tsx')).toBeNull()
     const view = compiler.getFile('/virtual/A.tsx')
     expect(view?.path).toBe('/virtual/A.tsx')
@@ -238,7 +238,7 @@ describe('Compiler', () => {
 
   it('returns layer byte ranges in compile output', () => {
     const compiler = createProject()
-    compiler.parseFile('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
+    compiler.parseFileSource('/virtual/A.tsx', "import { css } from '@panda/css'; css({ color: 'red' })")
     const output = compiler.compile()
     const utilities = output.layerRanges.utilities
     expect(utilities).toBeDefined()
@@ -305,7 +305,7 @@ describe('Compiler', () => {
       outdir: 'styled-system',
     })
     expect(compiler.isEmpty()).toBe(true)
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Button.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red' })`,
@@ -340,7 +340,7 @@ describe('Compiler', () => {
       { crossFile: false },
     )
 
-    const report = compiler.parseFile(
+    const report = compiler.parseFileSource(
       '/virtual/Stack.tsx',
       `import { Stack } from '@panda/jsx'
        const el = <Stack gap="4" color="red" css={{ margin: "8px" }} />`,
@@ -375,7 +375,7 @@ describe('Compiler', () => {
       },
       { crossFile: false },
     )
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/virtual/Card.tsx',
       `import { css } from '@panda/css'
        css({ color: 'red', _hover: { color: 'blue', md: { color: 'green' } } })`,
@@ -410,7 +410,7 @@ describe('Compiler', () => {
 
   it('extracts JSX attributes as atoms', () => {
     const compiler = createProject()
-    compiler.parseFile(
+    compiler.parseFileSource(
       '/Card.tsx',
       `import { Box } from '@panda/jsx'
        const X = () => <Box color="red" padding="4" />`,
@@ -444,7 +444,7 @@ describe('Compiler', () => {
       )
 
       const compiler = createProject({}, { crossFile: true })
-      compiler.parseFile(
+      compiler.parseFileSource(
         mainPath,
         `import { brand } from './tokens'
          import { css } from '@panda/css'
@@ -466,7 +466,7 @@ describe('Compiler', () => {
 
   it('parseFile reports per-call counts', () => {
     const compiler = createProject()
-    const report = compiler.parseFile(
+    const report = compiler.parseFileSource(
       '/mixed.tsx',
       `import { css, cva } from '@panda/css'
        import { Box } from '@panda/jsx'
@@ -476,6 +476,7 @@ describe('Compiler', () => {
     )
     expect(report).toMatchInlineSnapshot(`
       {
+        "path": "/mixed.tsx",
         "cssCalls": 1,
         "cvaCalls": 1,
         "svaCalls": 0,

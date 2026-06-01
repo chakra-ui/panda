@@ -20,7 +20,7 @@ describe('compiler.splitCss()', () => {
         padding: { className: 'p' },
       },
     })
-    compiler.parseFile(
+    compiler.parseFileSource(
       'app.tsx',
       "import { css } from '@panda/css'\nimport { button } from '@panda/recipes'\ncss({ color: 'red' })\nbutton({ size: 'sm' })",
     )

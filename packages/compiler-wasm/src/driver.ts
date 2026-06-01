@@ -82,7 +82,7 @@ class BrowserDriver extends BaseDriver {
     }
     if (change.content == null) return false
     this.compiler.fs?.addFile(change.path, change.content)
-    this.compiler.parseFile(change.path, change.content)
+    this.compiler.parseFileSource(change.path, change.content)
     return true
   }
 }

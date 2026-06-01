@@ -1,7 +1,7 @@
-//! Position-carrying usage extraction for tooling (reporting, lint, IDE).
-//! `usages()` re-extracts a file and classifies each site (token, property,
-//! recipe, pattern, keyframe) — the engine knows the token dictionary,
-//! utilities, and keyframes, so classification is authoritative.
+//! Position-carrying source inspection for tooling (reporting, lint, IDE).
+//! `inspect_file_source()` re-extracts a file and classifies each site (token,
+//! property, recipe, pattern, keyframe) — the engine knows the token
+//! dictionary, utilities, and keyframes, so classification is authoritative.
 
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{LineIndex, Literal, MatchCategory};
@@ -10,6 +10,13 @@ use pandacss_utility::Utility;
 use serde::Serialize;
 
 use crate::{Project, ProjectConditionMatcher, SourceRange};
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileInspectionResult {
+    pub usages: Vec<UsageSite>,
+    pub diagnostics: Vec<crate::Diagnostic>,
+}
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,9 +46,10 @@ struct Cx<'a> {
 
 impl Project {
     /// Classify every Panda usage in a file (token / property / recipe / pattern)
-    /// with its source range. On-demand — not part of the build path.
+    /// with its source range, plus file-local extraction diagnostics. On-demand
+    /// — not part of the build path.
     #[must_use]
-    pub fn usages(&self, path: &str, source: &str) -> Vec<UsageSite> {
+    pub fn inspect_file_source(&self, path: &str, source: &str) -> FileInspectionResult {
         let result = self.extract(path, source);
         let line_index = LineIndex::new(source);
         let dict = self.config.token_dictionary();
@@ -85,7 +93,10 @@ impl Project {
             let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
             sites.push(site(UsageKind::Token, &token_ref.path, &range));
         }
-        sites
+        FileInspectionResult {
+            usages: sites,
+            diagnostics: result.diagnostics,
+        }
     }
 }
 
