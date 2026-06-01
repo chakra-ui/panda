@@ -60,11 +60,28 @@ through `values.ts`'s internal import, not the barrel. The explicit export was k
 (don't leak `Property`/`Globals`/`Pseudos`/`DataType` onto `styled-system/types`, matching legacy), but it is
 perf-neutral. The real variable was always the file extension.
 
+## Recipe / pattern / cva (spot-checked separately)
+
+The main table's `usage` only exercises `SystemStyleObject`. A separate Rust-side check on the `recipes` fixture
+(`button` recipe + `stack` pattern + `cva` + `RecipeVariantProps`) confirms those user-facing types are **correct, live,
+and cheap**:
+
+| usage                              | Types | Instantiations |
+| ---------------------------------- | ----: | -------------: |
+| base (`SystemStyleObject` only)    |   658 |             49 |
+| heavy (+ recipe + pattern + `cva`) |   849 |        **228** |
+
+A bounded +179 instantiations for a full recipe/pattern/cva exercise — no blowup (v1's equivalent is far higher given
+its `DistributiveOmit`/`Assign` recipe machinery). Negative tests confirm liveness: `button({ size: 'huge' })` and
+`stack({ direction: 'diagonal' })` are both rejected against the precise variant/prop unions. Legacy-vs-Rust isn't
+table-compared here because the flat (`styled-system/index`) vs nested (`styled-system/css`) barrel layouts give
+different import paths; a cross-layout comparison is future work.
+
 ## Caveats
 
-- **Type-graph only.** `usage.ts` imports `./styled-system/types` and builds a `SystemStyleObject` (tokens, conditions,
-  nesting, an arbitrary selector); the values are real (a negative test confirms `color: 123` is rejected). It does not
-  import `css`/`cva`/recipes — those runtime artifacts are WIP and not the subject here.
+- **Main table is type-graph only.** Its `usage.ts` imports `./styled-system/types` and builds a `SystemStyleObject`
+  (tokens, conditions, nesting, an arbitrary selector); values are real (`color: 123` is rejected). Recipe/pattern/cva
+  are covered in the section above, not the main table.
 - **`eject: true`** on the legacy side (no base preset) keeps the utility/token surface equal to the fixture and to the
   Rust side. Fair comparison; not representative of a full preset's absolute size.
 - **JSX not captured.** No distinct Rust JSX artifacts yet, so the `jsx-*` fixtures equal `medium`. Add a JSX usage once

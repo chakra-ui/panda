@@ -1,0 +1,35 @@
+{
+  "theme": {
+    "breakpoints": { "sm": "640px", "md": "768px", "lg": "1024px" },
+    "tokens": {
+      "colors": { "red": { "100": { "value": "#fee" }, "500": { "value": "#f00" }, "900": { "value": "#900" } } },
+      "spacing": { "2": { "value": "8px" }, "4": { "value": "16px" }, "8": { "value": "32px" } }
+    },
+    "recipes": {
+      "button": {
+        "className": "btn",
+        "base": { "color": "red.500", "padding": "4" },
+        "variants": {
+          "size": { "sm": { "padding": "2" }, "md": { "padding": "4" }, "lg": { "padding": "8" } },
+          "tone": { "solid": { "color": "red.900" }, "ghost": { "color": "red.100" } },
+          "block": { "true": { "padding": "8" } }
+        },
+        "defaultVariants": { "size": "md", "tone": "solid" }
+      }
+    }
+  },
+  "conditions": { "hover": "&:is(:hover, [data-hover])" },
+  "utilities": {
+    "color": { "className": "text", "values": "colors" },
+    "padding": { "className": "p", "values": "spacing", "shorthand": "p" }
+  },
+  "patterns": {
+    "stack": {
+      "properties": {
+        "gap": { "type": "token", "value": "spacing" },
+        "align": { "type": "property", "value": "alignItems" },
+        "direction": { "type": "enum", "value": ["row", "column"] }
+      }
+    }
+  }
+}

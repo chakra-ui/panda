@@ -317,12 +317,13 @@ fn system_types_module() -> Module {
     Module::new()
         .with_import(ImportDecl::ty(["Condition"], "./conditions"))
         .with_import(ImportDecl::ty(["Selector"], "./selectors"))
+        .with_import(ImportDecl::ty(["CssProperties"], "./csstype"))
         .with_import(ImportDecl::ty(
             ["CssVarProperties", "SystemProperties"],
             "./properties",
         ))
         .with_item(type_raw(
-            r"export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+            r#"export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
 export type NestedSelectors = {
   [K in Selector]?: SystemStyleObject
@@ -340,7 +341,35 @@ export interface SystemStyleObject extends SystemProperties, CssVarProperties, N
 
 export interface GlobalStyleObject {
   [selector: string]: SystemStyleObject
-}",
+}
+
+export interface CssKeyframes {
+  [name: string]: {
+    [time: string]: CssProperties
+  }
+}
+
+export interface GlobalFontfaceRule {
+  fontFamily: string
+  src: string
+  fontStyle?: string
+  fontWeight?: string | number
+  fontDisplay?: "auto" | "block" | "swap" | "fallback" | "optional"
+  unicodeRange?: string
+  fontFeatureSettings?: string
+  fontVariationSettings?: string
+  fontStretch?: string
+  ascentOverride?: string
+  descentOverride?: string
+  lineGapOverride?: string
+  sizeAdjust?: string
+}
+
+export type FontfaceRule = Omit<GlobalFontfaceRule, "fontFamily">
+
+export interface GlobalFontface {
+  [name: string]: FontfaceRule | FontfaceRule[]
+}"#,
         ))
 }
 

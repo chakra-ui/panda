@@ -384,10 +384,12 @@ fn emits_ts_system_and_index_types() {
 
     assert_eq!(
         file(types, "types/system-types.ts"),
-        indoc! {r"
+        indoc! {r#"
         import type { Condition } from './conditions';
 
         import type { Selector } from './selectors';
+
+        import type { CssProperties } from './csstype';
 
         import type { CssVarProperties, SystemProperties } from './properties';
 
@@ -410,7 +412,35 @@ fn emits_ts_system_and_index_types() {
         export interface GlobalStyleObject {
           [selector: string]: SystemStyleObject
         }
-        "}
+
+        export interface CssKeyframes {
+          [name: string]: {
+            [time: string]: CssProperties
+          }
+        }
+
+        export interface GlobalFontfaceRule {
+          fontFamily: string
+          src: string
+          fontStyle?: string
+          fontWeight?: string | number
+          fontDisplay?: "auto" | "block" | "swap" | "fallback" | "optional"
+          unicodeRange?: string
+          fontFeatureSettings?: string
+          fontVariationSettings?: string
+          fontStretch?: string
+          ascentOverride?: string
+          descentOverride?: string
+          lineGapOverride?: string
+          sizeAdjust?: string
+        }
+
+        export type FontfaceRule = Omit<GlobalFontfaceRule, "fontFamily">
+
+        export interface GlobalFontface {
+          [name: string]: FontfaceRule | FontfaceRule[]
+        }
+        "#}
         .trim()
     );
 
