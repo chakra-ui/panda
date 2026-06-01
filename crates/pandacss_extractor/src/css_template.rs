@@ -1,8 +1,8 @@
 //! Parse a `css` tagged-template *string* into a nested style object, so
 //! `` css`color: red; &:hover { color: blue }` `` extracts like the object form
-//! `{ color: 'red', '&:hover': { color: 'blue' } }`. The `astish` parser is a
-//! Rust port of the small JS library Panda uses for the same job: a flat scan
-//! that builds a tree of selector/declaration nodes via a parent stack.
+//! `{ color: 'red', '&:hover': { color: 'blue' } }`. `css_to_object` is a Rust
+//! port of the small `astish` JS library Panda uses for the same job: a flat
+//! scan that builds a tree of selector/declaration nodes via a parent stack.
 
 use crate::{Literal, Resolver, literal::template_literal_to_literal};
 use oxc_ast::ast::TemplateLiteral;
@@ -18,16 +18,16 @@ pub(crate) fn css_template_to_object(
     let Literal::String(text) = template_literal_to_literal(t, resolver)? else {
         return None;
     };
-    Some(astish(&text))
+    Some(css_to_object(&text))
 }
 
 /// Scan cleaned CSS token-by-token, maintaining a stack of open selector
 /// nodes: a selector opens a child node (auto-prefixed `& ` when bare), `}`
 /// pops, and each `prop: value` declaration writes into the current node.
-fn astish(val: &str) -> Literal {
+fn css_to_object(val: &str) -> Literal {
     let cleaned = clean_css(val);
     let css = cleaned.as_ref();
-    let mut builder = AstishBuilder::default();
+    let mut builder = CssObjectBuilder::default();
     let mut stack = vec![0];
     let mut pos = 0;
 
@@ -66,14 +66,14 @@ fn astish(val: &str) -> Literal {
 /// scan, flattened to a [`Literal::Object`] tree at the end. Each node keeps a
 /// key→entry index so repeated selectors/props merge instead of duplicating.
 #[derive(Default)]
-struct AstishBuilder {
-    nodes: Vec<AstishNode>,
+struct CssObjectBuilder {
+    nodes: Vec<CssObjectNode>,
 }
 
-impl AstishBuilder {
+impl CssObjectBuilder {
     fn ensure_root(&mut self) {
         if self.nodes.is_empty() {
-            self.nodes.push(AstishNode::default());
+            self.nodes.push(CssObjectNode::default());
         }
     }
 
@@ -81,12 +81,12 @@ impl AstishBuilder {
         self.ensure_root();
 
         if let Some(entry_index) = self.nodes[parent].index.get(&key).copied() {
-            if let AstishValue::Object(child) = self.nodes[parent].entries[entry_index].1 {
+            if let CssObjectValue::Object(child) = self.nodes[parent].entries[entry_index].1 {
                 return child;
             }
 
             let child = self.push_node();
-            self.nodes[parent].entries[entry_index].1 = AstishValue::Object(child);
+            self.nodes[parent].entries[entry_index].1 = CssObjectValue::Object(child);
             return child;
         }
 
@@ -94,7 +94,7 @@ impl AstishBuilder {
         let entry_index = self.nodes[parent].entries.len();
         self.nodes[parent]
             .entries
-            .push((key.clone(), AstishValue::Object(child)));
+            .push((key.clone(), CssObjectValue::Object(child)));
         self.nodes[parent].index.insert(key, entry_index);
         child
     }
@@ -103,20 +103,20 @@ impl AstishBuilder {
         self.ensure_root();
 
         if let Some(entry_index) = self.nodes[node].index.get(&key).copied() {
-            self.nodes[node].entries[entry_index].1 = AstishValue::String(value);
+            self.nodes[node].entries[entry_index].1 = CssObjectValue::String(value);
             return;
         }
 
         let entry_index = self.nodes[node].entries.len();
         self.nodes[node]
             .entries
-            .push((key.clone(), AstishValue::String(value)));
+            .push((key.clone(), CssObjectValue::String(value)));
         self.nodes[node].index.insert(key, entry_index);
     }
 
     fn push_node(&mut self) -> usize {
         let index = self.nodes.len();
-        self.nodes.push(AstishNode::default());
+        self.nodes.push(CssObjectNode::default());
         index
     }
 
@@ -130,8 +130,8 @@ impl AstishBuilder {
             .into_iter()
             .map(|(key, value)| {
                 let value = match value {
-                    AstishValue::String(value) => Literal::String(value),
-                    AstishValue::Object(child) => Literal::Object(self.take_node_entries(child)),
+                    CssObjectValue::String(value) => Literal::String(value),
+                    CssObjectValue::Object(child) => Literal::Object(self.take_node_entries(child)),
                 };
                 (key, value)
             })
@@ -140,12 +140,12 @@ impl AstishBuilder {
 }
 
 #[derive(Default)]
-struct AstishNode {
-    entries: Vec<(String, AstishValue)>,
+struct CssObjectNode {
+    entries: Vec<(String, CssObjectValue)>,
     index: FxHashMap<String, usize>,
 }
 
-enum AstishValue {
+enum CssObjectValue {
     String(String),
     Object(usize),
 }
