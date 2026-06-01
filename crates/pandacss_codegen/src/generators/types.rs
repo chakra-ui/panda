@@ -184,13 +184,15 @@ export type AnySelector = Selector | string",
 }
 
 fn csstype_module() -> Module {
-    raw_type_module(
-        r"export type CssPrimitive = string | number | boolean | null | undefined
-
-export interface CssProperties {
-  [property: string]: CssPrimitive | CssPrimitive[]
-}",
-    )
+    // Terse `csstype` vendored by scripts/vendor-csstype.ts: per-property keyword
+    // unions + `Pseudos`, minus JSDoc and the families Panda never consumes. The
+    // asset keeps a provenance header for maintainers; drop it from the emitted
+    // artifact so generated styled-system output stays clean.
+    let source = include_str!("../../assets/csstype.d.ts");
+    let body = source
+        .find("\nexport ")
+        .map_or(source, |idx| &source[idx + 1..]);
+    raw_type_module(body)
 }
 
 fn tokens_module(data: &TokenTypeData) -> Module {
@@ -526,10 +528,13 @@ fn variant_value_type(data: &VariantTypeData) -> String {
 }
 
 fn index_module() -> Module {
-    [
+    // `csstype` stays internal: re-exporting it wholesale would leak the entire
+    // `Property` namespace onto the public surface (and load it eagerly). Mirror
+    // the legacy contract — expose only the assembled `CssProperties` and keep
+    // the keyword unions / `Pseudos` / `*Properties` interfaces internal.
+    let module = [
         "./conditions",
         "./selectors",
-        "./csstype",
         "./tokens",
         "./values",
         "./properties",
@@ -542,7 +547,12 @@ fn index_module() -> Module {
         module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeStar {
             source: source.into(),
         })))
-    })
+    });
+
+    module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
+        names: vec!["CssProperties".into()],
+        source: "./csstype".into(),
+    })))
 }
 
 fn raw_type_module(code: impl Into<String>) -> Module {

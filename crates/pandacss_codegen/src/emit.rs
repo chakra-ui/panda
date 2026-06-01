@@ -278,6 +278,15 @@ fn print_export(
                 format!("export * from '{source}';")
             }
         }
+        ExportDecl::TypeNamed { names, source } => {
+            let source = print_source(source, ImportKind::Type, target, specifiers, format);
+            let list = names.join(", ");
+            if matches!(target, EmitTarget::SourceTs) {
+                format!("export type {{ {list} }} from '{source}';")
+            } else {
+                format!("export {{ {list} }} from '{source}';")
+            }
+        }
     }
 }
 

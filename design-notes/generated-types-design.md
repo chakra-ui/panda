@@ -251,6 +251,42 @@ display?: ConditionalValue<CssProperties["display"] | AnyString>
 The important part is that strictness changes the value expression, not the public file layout or the recursive object
 model.
 
+## CSS Property Types (`csstype`)
+
+Generated value aliases index per-property CSS keyword unions (`CssProperties["display"]`), and
+`selectors` consumes `Pseudos`. Both come from a vendored, terse copy of the npm `csstype` package
+emitted as `types/csstype`.
+
+The full upstream `csstype` declaration file is ~890KB, and **~75% of that is JSDoc** (browser-compat
+tables). It also ships every property list ~8× over: `Standard / Vendor / Obsolete / Svg`, each in
+`{camelCase, Hyphen} × {normal, Fallback}`. Panda consumes exactly one of those families. Because
+`pandacss_codegen` is a dependency of `compiler-wasm`, whatever is embedded ships in the browser
+wasm binary — so terseness is a payload concern, not just a repo-size one.
+
+**Tier 1 (current).** `crates/pandacss_codegen/scripts/vendor-csstype.ts` fetches a pinned
+`csstype` version, then:
+
+- strips all JSDoc/block comments,
+- drops the `*Hyphen` and `*Fallback` families, `HtmlAttributes` / `SvgAttributes`, the `AtRule`
+  namespace, and the `PropertyValue` / `Fallback` helpers,
+- keeps the camelCase property interfaces + the `Properties` aggregate, the `Property` / `DataType`
+  / `Globals` value unions, and `Pseudos`,
+- adds `export` to the `DataType` members (upstream leaves them bare, which only type-checks because
+  csstype ships as a `.d.ts` under `skipLibCheck`; exporting them makes the terse file valid as a
+  checked `.ts`),
+- appends `export interface CssProperties extends Properties<(string & {}) | number, string & {}> {}`.
+
+Result: ~138KB (~6.5× smaller), full per-property keyword autocomplete preserved. The output is a
+committed asset embedded via `include_str!`; regeneration is a manual maintainer step
+(`pnpm vendor:csstype`), so the fetch never runs at build time and the build stays offline and
+deterministic. Hover docs are intentionally dropped for now.
+
+**Tier 2 (deferred).** The `Property` namespace is ~47% of the terse file. Many of its unions are
+`Globals | <length>/<color> | (string & {})` — autocomplete-only, since `(string & {})` accepts any
+string. Collapsing those string-only properties to `string` (keeping only finite-keyword enums like
+`display`, `position`, `textAlign`) would shrink it further and cut instantiations. Gate this on the
+`--extendedDiagnostics` benchmarks below; do not do it speculatively.
+
 ## Token Types
 
 Token autocomplete should stay category-based:
@@ -452,6 +488,32 @@ Required fixture sizes:
 
 The comparison target is the legacy generated type shape. The Rust output should preserve autocomplete while reducing
 instantiations and memory in the medium and large fixtures.
+
+### Harness
+
+`pnpm bench:types` runs the harness:
+
+- Fixtures live in `fixtures/generated-types/configs/*.json` (`small`, `medium`, `large`, `strict`, `jsx-{all,minimal,none}`),
+  shared verbatim by both paths so the comparison is apples-to-apples.
+- `bench/src/bin/generated_types_perf.rs` emits the Rust-codegen styled-system per fixture; `bench/src/generated-types-perf.ts`
+  emits the legacy v1 styled-system via `@pandacss/node` (with `eject: true`, so no base preset is mixed in), drops an
+  identical `usage.ts` importing only `./styled-system/types`, and runs `tsc --extendedDiagnostics` on each.
+- Output is written under `fixtures/generated-types/out/` (gitignored, reproducible).
+
+The usage exercises the **type graph** (`SystemStyleObject` recursion, tokens, conditions, nesting) — not the WIP runtime
+helpers (`cva`/`sva`/recipe runtimes), which still have type errors and are out of scope for type-cost measurement.
+
+Current readings (both sides emitted as `.d.ts`, `skipLibCheck` on — the real-world scenario): Rust wins **every** metric
+— instantiations **−88 to −98%**, `Types` **−66 to −88%**, memory **−13 to −16%**, check time **−60 to −78%**. The
+headline is instantiations: the named-alias structure instantiates ~49 types on use vs legacy's ~2,600, because
+`skipLibCheck` skips the declaration bodies and only the user's own `css({…})` shape drives instantiation.
+
+This depends entirely on measuring `.d.ts` under `skipLibCheck` (how Panda actually ships). The first cut emitted the Rust
+side as `.ts` *source*, defeating skipLibCheck on that side only and making csstype's `Property` namespace look like a
+2–3× `Types` regression — a measurement artifact, not a real cost. A separately-tested hypothesis (that `types/index`'s
+`export type *` over csstype drove the count) was also disproven; the explicit `export type { CssProperties }` was kept as
+an API-contract fix but is perf-neutral. Caveat: the `jsx-*` fixtures read identically because the Rust codegen does not
+yet emit distinct JSX component artifacts, so `jsxStyleProps` cost is not captured (needs a JSX usage once those land).
 
 ## Implementation Order
 
