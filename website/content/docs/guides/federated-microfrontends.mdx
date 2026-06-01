@@ -1,6 +1,6 @@
 ---
 title: Federated Micro-Frontends
-description: How to safely run multiple Panda-built applications (and multiple versions of the same design system) on a single host page using `prefix` and `cssVarRoot`.
+description: How to safely run multiple Panda-built applications (and multiple versions of the same design system) on a single host page using `prefix` and `cssVarRoot` — whether your design system ships static CSS or build info.
 ---
 
 Panda supports federated micro-frontend architectures — multiple
@@ -83,6 +83,36 @@ layers do not help here** — both versions emit into the same `recipes`
 layer, and within a single layer load order still decides.
 
 This is the case `prefix` is designed for.
+
+## Two distribution models
+
+`prefix` is the fix in both cases — it's the only thing that survives a
+cross-version collision. What differs between setups is **who owns the
+prefix** and **what it's keyed to**, and that follows from how the design
+system ships its CSS:
+
+| Distribution                     | Who sets `prefix` | Keyed to                       | Tradeoff                                                                          |
+| -------------------------------- | ----------------- | ------------------------------ | --------------------------------------------------------------------------------- |
+| Lib ships **static CSS**         | Lib author        | DS version (e.g. `acme-v1`)    | One DS bundle per major, shared across every remote                               |
+| Lib ships **build info + preset**| Remote owner      | Remote identity (e.g. `remote1`) | Each remote tree-shakes its own DS slice; cross-version isolation falls out for free |
+
+In the **static-CSS** model the lib runs `panda cssgen` itself and publishes
+the finished stylesheet, so the prefix has to be baked in at the lib's build
+time — and the only thing it can safely key to is its own version. The
+sections from [Setting `prefix`](#setting-prefix) through [Recommended remote
+config](#recommended-remote-config) walk this model in detail.
+
+In the **build-info** model the lib ships extraction metadata and a preset
+instead of CSS, and each consuming remote generates the final stylesheet
+during its own app build. The prefix moves to the remote's config, keyed to
+the remote's identity. See [Model 2: Library ships build info +
+preset](#model-2-library-ships-build-info--preset) below.
+
+> If the lib and every consumer all use Panda, the build-info model is the
+> one the [Component Library guide](/docs/guides/component-library#ship-the-build-info-file)
+> already recommends — it tree-shakes the output down to the styles each app
+> actually uses. Federation doesn't change that recommendation; it just adds
+> the `prefix` requirement on the consumer side.
 
 ## Setting `prefix`
 
@@ -272,6 +302,67 @@ export default defineConfig({
 > **Note:** `preflight: false` is recommended for libs and remotes. A reset
 > stylesheet shipped from a remote can stomp on the host's body styles.
 > Let the host own the reset.
+
+## Model 2: Library ships build info + preset
+
+Everything above assumes the lib publishes prebuilt CSS. The other shape is
+[shipping build info](/docs/guides/component-library#ship-the-build-info-file)
+and a preset: each consuming remote generates the final stylesheet during its
+own build. The collision is identical, and `prefix` is still the fix — it
+just moves to the **consumer's** config, keyed to the remote's identity
+rather than the DS version.
+
+`panda ship` only writes extraction results (which styles are used), not the
+token and recipe **definitions**. So a build-info consumer wires up two
+pieces: the build-info file (via `include`) and the lib's preset (via
+`presets`). The preset supplies the definitions, the build-info file supplies
+the usage.
+
+`prefix` lives on the consumer's top-level config and is applied at emission,
+so `.button` becomes `.remote1-button` and `--colors-brand` becomes
+`--remote1-colors-brand` — regardless of whether the definition came from the
+remote's own source or from the lib's preset.
+
+```ts filename="remote1/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { acmeDsPreset } from '@acme-org/design-system'
+
+export default defineConfig({
+  prefix: 'remote1',
+  presets: ['@pandacss/dev/presets', acmeDsPreset],
+  importMap: '@acme-org/styled-system',
+  include: [
+    './node_modules/@acme-org/design-system/dist/panda.buildinfo.json',
+    './src/**/*.{ts,tsx}'
+  ]
+})
+```
+
+### Cross-version isolation is automatic
+
+Because the prefix is keyed to the remote — not to the DS version — version
+isolation falls out without anyone tracking versions. If `remote1` pins
+`@acme-org/design-system@29` and `remote2` pins `@30`, each remote resolves
+its own copy in `node_modules`, gets its own preset plus build info, and
+emits CSS under its own remote prefix:
+
+```css
+/* remote1's bundle (DS v29) */
+.remote1-button { ... }
+:where(:root, :host) { --remote1-colors-brand: #ea580c; }
+
+/* remote2's bundle (DS v30) */
+.remote2-button { ... }
+:where(:root, :host) { --remote2-colors-brand: #2563eb; }
+```
+
+Two payloads can't collide on a selector or variable name, so the host page
+loads both without a fight.
+
+> **Note:** In the build-info model the lib never sets a `prefix` — each
+> consumer namespaces itself. A lib that baked in its own prefix would force
+> every consumer to share it, which puts back the collision you set out to
+> avoid.
 
 ## Verifying the output
 
