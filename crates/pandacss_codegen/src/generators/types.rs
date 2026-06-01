@@ -80,7 +80,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
 
     files.extend(emit_type_file(
         "types/properties",
-        &properties_module_with_options(&ctx.types.utilities, ctx.types.options),
+        &properties_module(&ctx.types.utilities),
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
@@ -245,7 +245,7 @@ fn values_module_with_options(
         "export type AnyNumber = number & {}".to_owned(),
         "export type CssVars = `var(--${string})`".to_owned(),
         "export type WithEscapeHatch<T> = T | `[${string}]`".to_owned(),
-        "export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never".to_owned(),
+        "export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never".to_owned(),
     ];
 
     for alias in data.aliases.values() {
@@ -260,20 +260,16 @@ fn values_module_with_options(
     module
 }
 
-fn properties_module_with_options(
-    data: &UtilityTypeData,
-    options: pandacss_config::TypegenOptions,
-) -> Module {
+fn properties_module(data: &UtilityTypeData) -> Module {
     let mut imports = vec![ImportSpecifier::Named("ConditionalValue".into())];
+    // Strictness lives inside the value aliases now, so properties only import
+    // `ConditionalValue`, the `CssVar*` primitives, and the aliases themselves —
+    // not `OnlyKnown`/`WithEscapeHatch`.
     let mut value_imports = vec![
         ImportSpecifier::Named("AnyNumber".into()),
         ImportSpecifier::Named("AnyString".into()),
         ImportSpecifier::Named("CssVars".into()),
     ];
-    if options.strict_property_values {
-        value_imports.push(ImportSpecifier::Named("OnlyKnown".into()));
-        value_imports.push(ImportSpecifier::Named("WithEscapeHatch".into()));
-    }
 
     for alias in data.aliases.keys() {
         value_imports.push(ImportSpecifier::Named(alias.clone()));
@@ -298,7 +294,7 @@ fn properties_module_with_options(
             format!(
                 "  {}?: ConditionalValue<{}>",
                 quote_member(&property.name),
-                property_type(property, options)
+                property_type(property)
             )
         })
         .collect::<Vec<_>>()
@@ -593,7 +589,12 @@ fn type_raw(code: impl Into<String>) -> Item {
 }
 
 fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOptions) -> String {
-    if options.strict_tokens && has_token_part(parts) {
+    let token_backed = has_token_part(parts);
+
+    // Strictness is baked into the alias (computed once per category) rather than
+    // wrapped per-property — so every property is a uniform `ConditionalValue<Alias>`
+    // and the strict wrappers instantiate once each, not once per property.
+    if options.strict_tokens && token_backed {
         let strict_parts = parts
             .iter()
             .filter(|part| {
@@ -616,6 +617,26 @@ fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOp
         return format!("WithEscapeHatch<{strict_type}>");
     }
 
+    // Keyword properties (e.g. `display`) restrict to their known CSS values via
+    // `OnlyKnown` over the keyword union *only* — excluding the `string`/AnyString
+    // catch-all, which would otherwise collapse the union and drop every keyword.
+    if options.strict_property_values && !token_backed {
+        let keyword_parts = parts
+            .iter()
+            .filter(|part| {
+                matches!(
+                    part,
+                    ValueTypePart::CssProperty(_) | ValueTypePart::Literal(_)
+                )
+            })
+            .map(value_part)
+            .collect::<Vec<_>>();
+
+        if !keyword_parts.is_empty() {
+            return format!("WithEscapeHatch<OnlyKnown<{}>>", keyword_parts.join(" | "));
+        }
+    }
+
     value_parts_union(parts)
 }
 
@@ -627,18 +648,9 @@ fn value_parts_union(parts: &[ValueTypePart]) -> String {
     parts.iter().map(value_part).collect::<Vec<_>>().join(" | ")
 }
 
-fn property_type(
-    property: &pandacss_config::UtilityPropertyTypeData,
-    options: pandacss_config::TypegenOptions,
-) -> String {
-    if options.strict_property_values && property.css_property.is_some() {
-        return format!(
-            "WithEscapeHatch<OnlyKnown<{}, {}>>",
-            string_literal(&property.name),
-            property.alias
-        );
-    }
-
+fn property_type(property: &pandacss_config::UtilityPropertyTypeData) -> String {
+    // Strictness now lives in the value alias (see `value_alias_type`), so every
+    // property is a uniform `ConditionalValue<Alias>` — no per-property wrapper.
     property.alias.clone()
 }
 

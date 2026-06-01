@@ -511,7 +511,7 @@ fn emits_js_declaration_types() {
 
         export type WithEscapeHatch<T> = T | `[${string}]`
 
-        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
+        export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
 
         export type ColorValue = TokenValue<"colors"> | CssProperties["color"] | CssVars | AnyString
 
@@ -584,7 +584,7 @@ fn emits_strict_value_types_without_repeating_large_unions() {
 
         export type WithEscapeHatch<T> = T | `[${string}]`
 
-        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
+        export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
 
         export type ColorValue = WithEscapeHatch<TokenValue<"colors"> | CssVars>
 
@@ -595,10 +595,10 @@ fn emits_strict_value_types_without_repeating_large_unions() {
 
     assert_eq!(
         file(types, "types/properties.ts"),
-        indoc! {r#"
+        indoc! {r"
         import type { ConditionalValue } from './conditions';
 
-        import type { AnyNumber, AnyString, CssVars, OnlyKnown, WithEscapeHatch, ColorValue, SpacingValue } from './values';
+        import type { AnyNumber, AnyString, CssVars, ColorValue, SpacingValue } from './values';
 
         export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>
 
@@ -607,10 +607,10 @@ fn emits_strict_value_types_without_repeating_large_unions() {
         }
 
         export interface SystemProperties {
-          color?: ConditionalValue<WithEscapeHatch<OnlyKnown<"color", ColorValue>>>
-          gap?: ConditionalValue<WithEscapeHatch<OnlyKnown<"gap", SpacingValue>>>
+          color?: ConditionalValue<ColorValue>
+          gap?: ConditionalValue<SpacingValue>
         }
-        "#}
+        "}
         .trim()
     );
 }
@@ -641,7 +641,7 @@ fn can_emit_extensioned_type_specifiers() {
 
         export type WithEscapeHatch<T> = T | `[${string}]`
 
-        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
+        export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never
 
         export type ColorValue = TokenValue<"colors"> | CssProperties["color"] | CssVars | AnyString
 
