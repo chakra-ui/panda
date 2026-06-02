@@ -1,0 +1,178 @@
+---
+title: CLI codegen + cssgen — JS vs Rust
+date: 2026-06-02
+fixtures:
+  - sandbox/cli-v2
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+caveats:
+  - end-to-end CLI wall time on a tiny 2-file project — startup-bound, not a steady-state codegen number
+  - not equal-work — v2 emits 26 files vs 142 (jsx pass deferred), so `codegen` is partly "less output"; `cssgen` is the apples-to-apples row
+---
+
+# CLI: old JS engine vs v2 Rust engine (`codegen` + `cssgen`)
+
+> End-to-end wall-clock comparison of the experimental v2 CLI (`packages/cli_v2`, native NAPI Rust engine) against the
+> legacy JS CLI (`packages/cli`) running `codegen` and `cssgen` on the same project. This is the user-facing "how long
+> does the command take" number — the thing someone feels on every save — not a per-workload microbenchmark. For the
+> isolated extraction speedup, see [2026-05-16 extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx); for the
+> generated-type cost, [2026-06-01 generated-types-js-vs-rust](./2026-06-01-generated-types-js-vs-rust.mdx).
+
+## TL;DR
+
+The v2 Rust CLI is **~7× faster** end-to-end on `sandbox/cli-v2`, with `0` diagnostics and matching CSS for the styles
+the app actually uses.
+
+| Command   | old JS (mean) | v2 Rust (mean) | Speedup (mean) | Best-of (n=9) |
+| --------- | ------------: | -------------: | -------------: | ------------: |
+| `codegen` | 0.423 s       | 0.060 s        | **7.0×**       | 7.8×          |
+| `cssgen`  | 0.412 s       | 0.058 s        | **7.1×**       | 7.8×          |
+| total     | 0.835 s       | 0.118 s        | **7.1×**       | —             |
+
+`n = 9` per command, mean of wall-clock `real`. v2 `cssgen` reported `diagnostics: 0`.
+
+## What the two commands do
+
+The number above is two distinct operations, run back to back the way a project's `dev`/`build` script does:
+
+- **`codegen`** writes the `styled-system/` runtime + types (`css`, `cva`, `sva`, `cx`, `conditions`, recipe runtimes,
+  token maps, `.d.ts`/`.d.mts`). It depends only on the **config**, not on source files.
+- **`cssgen`** parses the project's source (`include: ['src/**/*.tsx']`, 2 files here), extracts style usage, and emits
+  the flat `styles.css`. This is the one that runs on every file change in watch mode.
+
+Both are timed cold (fresh process each run); there is no shared warm cache between iterations, so each number includes
+full engine startup.
+
+## Why the Rust path is faster
+
+Two structural reasons, both already documented in the design notes:
+
+- **Parsing + extraction.** The JS path drives `ts-morph` (a full TypeScript program + retained AST graph); the Rust
+  path uses Oxc and drops its allocator per call. That's the dominant win at scale (15–37× in the extractor bench).
+- **No per-call program/project warmup.** The legacy CLI reconstructs a generator context and TS project on each
+  invocation; the native engine loads once through NAPI. On a tiny project this startup difference is most of the gap.
+
+On this fixture the absolute times are small enough that **process + engine startup dominates** — which is exactly why
+the ratio here (~7×) is lower than the per-workload extractor ratio (up to 37×) and should be read as a floor, not a
+ceiling.
+
+## Output comparison
+
+The CLIs do not emit the same file set, so raw counts are not directly comparable — listed here so the `codegen` row
+isn't mistaken for equal work:
+
+| Category    | old JS | v2 Rust | Note                                                      |
+| ----------- | -----: | ------: | --------------------------------------------------------- |
+| `css/`      |     17 |      12 | runtime + decls; v2 has fewer decl files (consolidated)   |
+| `patterns/` |     42 |       0 | v2 doesn't emit built-in patterns when none are configured|
+| `recipes/`  |      8 |       5 | the `button` recipe is present in both                    |
+| `tokens/`   |      4 |       2 | `.d.mts` vs split `.d.ts`                                  |
+| `types/`    |     19 |       5 | v2 consolidates type surfaces (see 2026-06-01 report)     |
+| `jsx/`      |     49 |       0 | **deferred** — v2 jsx codegen is a separate later pass    |
+| root        |      3 |       3 | `helpers`, `styles.css`                                    |
+| **total**   |  **142** |  **27** |                                                          |
+
+So part of the `codegen` speedup is simply less output. `jsx/` is the one intentional gap (a deferred pass, not a bug);
+the rest is v2 being leaner (only-configured patterns, consolidated types).
+
+## Correctness
+
+Speed only counts if the output is right. A `styled-system/` tree diff between the two engines confirmed the **used**
+styles are equivalent:
+
+- the `button` recipe (base + `size`/`tone` variants + defaults) is present and equal,
+- the configured utilities (`d`, `bg`, `text`, `place-items`, `min-h`, …) emit the same rules,
+- `brand`/`danger` tokens resolve identically.
+
+The v2 `styles.css` is ~27% smaller only because the JS engine emits default utility-var registrations
+(`--blur`/`--backdrop-*`/`--gradient-*`/`--breakpoints-*`) for built-in utilities **this config never defines**; v2 emits
+only what's configured. No used style was missing or different.
+
+## Methodology
+
+| | |
+| ----------- | --------------------------------------------------------------------------- |
+| Fixture     | `sandbox/cli-v2` — plain-object config (1 recipe, ~15 utilities, `brand`/`danger` tokens, `globalCss`, `jsxFramework: 'react'`), 2 `.tsx` source files |
+| Commands    | `node packages/<cli>/bin.js <codegen\|cssgen> --cwd .` (raw, no pnpm wrapper) |
+| Samples     | 9 cold iterations per command, fresh process each                            |
+| Metric      | wall-clock `real`, reported as mean and best-of                              |
+| Toolchain   | node 22.20, Rust 1.93.0, darwin arm64                                        |
+| Pre-built   | all workspace dists (`pnpm build-fast`) + native `.node` (`build:native`)    |
+
+## How to reproduce
+
+Build the toolchain once, then time it with whichever tool you have. Works on macOS, Linux, and Windows.
+
+### 1. Build the v2 toolchain
+
+```sh
+# TS dists + the native NAPI binary.
+# Standard rustup puts cargo on ~/.cargo/bin; Homebrew keg-only rustup uses
+# $(brew --prefix rustup)/bin instead — adjust the PATH for your setup.
+pnpm build-fast
+PATH="$HOME/.cargo/bin:$PATH" pnpm --filter @pandacss/compiler build:native
+```
+
+### 2. Time it — pick one
+
+All options run from the fixture dir and do 9 cold runs per command:
+
+```sh
+cd sandbox/cli-v2
+```
+
+**Option A — `/usr/bin/time` (native on macOS & Linux, no extra tools):**
+
+```sh
+bench () { sum=0; n=9; for i in $(seq 1 $n); do
+  t=$( { /usr/bin/time -p "$@" >/dev/null; } 2>&1 | awk '/^real/{print $2}' )
+  sum=$(awk -v s="$sum" -v t="$t" 'BEGIN{print s+t}')
+done; awk -v s="$sum" -v n="$n" -v l="$*" 'BEGIN{printf "%-52s mean %.3fs (n=%d)\n", l, s/n, n}'; }
+
+bench node ../../packages/cli_v2/bin.js codegen --cwd .
+bench node ../../packages/cli/bin.js     codegen --cwd . --silent
+bench node ../../packages/cli_v2/bin.js  cssgen  --cwd .
+bench node ../../packages/cli/bin.js     cssgen  --cwd . --silent
+```
+
+**Option B — Node harness (any OS incl. Windows, no extra tools):**
+
+```sh
+node -e '
+  const { execFileSync } = require("node:child_process");
+  const { performance } = require("node:perf_hooks");
+  const N = 9;
+  const time = (cli, cmd) => {
+    const args = [`../../packages/${cli}/bin.js`, cmd, "--cwd", "."];
+    if (cli === "cli") args.push("--silent");
+    const ts = [];
+    for (let i = 0; i < N; i++) {
+      const s = performance.now();
+      execFileSync(process.execPath, args, { stdio: "ignore" });
+      ts.push(performance.now() - s);
+    }
+    ts.sort((a, b) => a - b);
+    const mean = ts.reduce((a, b) => a + b, 0) / N;
+    console.log(`${cli.padEnd(7)} ${cmd.padEnd(8)} mean ${mean.toFixed(0)}ms  best ${ts[0].toFixed(0)}ms  (n=${N})`);
+  };
+  for (const cmd of ["codegen", "cssgen"]) for (const cli of ["cli_v2", "cli"]) time(cli, cmd);
+'
+```
+
+**Option C — [`hyperfine`](https://github.com/sharkdp/hyperfine) (any OS, nicest stats), if installed:**
+
+```sh
+hyperfine -w 2 -N \
+  'node ../../packages/cli_v2/bin.js codegen --cwd .' \
+  'node ../../packages/cli/bin.js codegen --cwd . --silent'
+```
+
+## Open questions worth resolving
+
+- **What's the number on a real app?** This is startup-bound; re-run on a multi-hundred-file project for the
+  steady-state codegen speedup (expected to track the extractor's 15–37×).
+- **Equal-work comparison after jsx lands.** Once the v2 jsx pass ships, re-measure `codegen` with both engines emitting
+  the same artifact set — the current row understates v2's per-file cost because it emits fewer files.
+- **WASM CLI equivalent.** This is the NAPI path; the wasm path (`@pandacss/compiler-wasm`) uses `serde-wasm-bindgen`,
+  expected ~1.5–3× slower than NAPI.
+- **Watch-mode latency.** The number users feel most is incremental `cssgen` on a single changed file. Worth a separate
+  steady-state harness.
