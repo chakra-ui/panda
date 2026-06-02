@@ -29,10 +29,14 @@ import './index.css'
 export const App = () => <div className={css(${style})} />
 `
 
-function createFixture(style = `{ color: 'red' }`) {
+function configSource(outdir = 'styled-system') {
+  return CONFIG.replace("outdir: 'styled-system'", `outdir: '${outdir}'`)
+}
+
+function createFixture(style = `{ color: 'red' }`, config = CONFIG) {
   // realpath so test paths match Vite's realpath'd root (/tmp → /private/tmp on macOS).
   const dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-vite-')))
-  writeFileSync(join(dir, 'panda.config.ts'), CONFIG)
+  writeFileSync(join(dir, 'panda.config.ts'), config)
   writeFileSync(join(dir, 'index.css'), ENTRY_CSS)
   writeFileSync(join(dir, 'App.tsx'), APP(style))
   return dir
@@ -113,5 +117,34 @@ describe('@pandacss/vite', () => {
     const updated = await waitForCss(server, '8px')
     // Additive refresh keeps prior styles in dev — no flash of a missing rule.
     expect(updated).toContain('4px')
+  })
+
+  it('re-parses sources after a config reload', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    expect(await waitForCss(server, 'red')).toContain('red')
+
+    const configFile = join(dir, 'panda.config.ts')
+    writeFileSync(configFile, configSource('system'))
+    server.watcher.emit('change', configFile)
+
+    const css = await waitForCss(server, 'red')
+    expect(css).toContain('red')
+  })
+
+  it('uses the reloaded config outdir when no plugin outdir override is set', async () => {
+    dir = createFixture()
+    server = await startServer(dir)
+    await readCss(server)
+
+    const configFile = join(dir, 'panda.config.ts')
+    writeFileSync(configFile, configSource('system'))
+    server.watcher.emit('change', configFile)
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+      if (existsSync(join(dir, 'system', 'css', 'index.mjs'))) return
+      await new Promise((done) => setTimeout(done, 100))
+    }
+    throw new Error('timed out waiting for codegen in updated config outdir')
   })
 })

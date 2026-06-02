@@ -20,7 +20,7 @@ export interface PandaPluginOptions {
 export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let driver: Driver | undefined
   let cwd = ''
-  let outdir = ''
+  let outdir: string | undefined
   const rootIds = new Set<string>()
 
   const codegen = () => {
@@ -48,9 +48,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     async configResolved(config: ResolvedConfig) {
       cwd = options.cwd ?? config.root
       driver = await createNodeDriver({ cwd, configPath: options.configPath })
-      // `config` is a loose `Record<string, unknown>`; the loader always sets a string outdir.
-      const configOutdir = typeof driver.config.outdir === 'string' ? driver.config.outdir : undefined
-      outdir = options.outdir ?? configOutdir ?? 'styled-system'
+      outdir = options.outdir
       codegen()
       driver.parseFiles()
     },
@@ -77,6 +75,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         if (!diff.hasChanged) return
         // Runtime/types artifacts may have changed shape → rewrite + full reload.
         codegen()
+        driver.parseFiles()
         invalidateRoots(ctx.server)
         ctx.server.ws.send({ type: 'full-reload' })
         return []
