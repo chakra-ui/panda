@@ -24,7 +24,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   const rootIds = new Set<string>()
 
   const codegen = () => {
-    driver?.codegen({ cwd, outdir, specifiers: 'runtime-and-types' })
+    driver?.codegen({ cwd, outdir })
   }
 
   const invalidateRoots = (server: ViteDevServer): ModuleNode[] => {

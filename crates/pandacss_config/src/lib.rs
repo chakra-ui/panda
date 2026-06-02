@@ -85,6 +85,8 @@ pub struct UserConfig {
     pub preflight: PreflightConfig,
     #[serde(default)]
     pub codegen_format: CodegenFormat,
+    #[serde(default, rename = "codegenImportExtensions")]
+    pub codegen_import_extensions: bool,
     #[serde(default, rename = "strictTokens")]
     pub strict_tokens: bool,
     #[serde(default, rename = "strictPropertyValues")]

@@ -2,7 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use indoc::indoc;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 use serde_json::json;
 
@@ -27,7 +27,7 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
         &config,
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
@@ -91,7 +91,7 @@ fn emits_js_runtime_and_declarations() {
         &config,
         GenerateOptions {
             format: CodegenFormat::Js,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
@@ -149,7 +149,7 @@ fn emits_js_runtime_and_declarations() {
 }
 
 #[test]
-fn can_emit_extensioned_specifiers() {
+fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
     let config: pandacss_config::UserConfig = serde_json::from_value(json!({
         "conditions": {
@@ -162,7 +162,7 @@ fn can_emit_extensioned_specifiers() {
         &config,
         GenerateOptions {
             format: CodegenFormat::Js,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let conditions = artifact(&artifacts, ArtifactId::Conditions);

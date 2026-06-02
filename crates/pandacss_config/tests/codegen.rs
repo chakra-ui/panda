@@ -36,3 +36,21 @@ fn codegen_format_defaults_and_overrides() {
     let serialized = serde_json::to_value(&ts_config).expect("serialized config");
     assert_eq!(serialized.get("codegenFormat"), Some(&json!("ts")));
 }
+
+#[test]
+fn codegen_import_extensions_defaults_and_overrides() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let configured: UserConfig = serde_json::from_value(json!({
+        "codegenImportExtensions": true
+    }))
+    .expect("codegen import extensions config");
+
+    assert!(!default_config.codegen_import_extensions);
+    assert!(configured.codegen_import_extensions);
+
+    let serialized = serde_json::to_value(&configured).expect("serialized config");
+    assert_eq!(
+        serialized.get("codegenImportExtensions"),
+        Some(&json!(true))
+    );
+}

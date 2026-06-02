@@ -2,14 +2,14 @@ mod common;
 
 use common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 
 #[test]
 fn emits_ts_source_sva() {
     let artifacts = ArtifactGraph.generate(GenerateOptions {
         format: CodegenFormat::Ts,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let sva = artifact(&artifacts, ArtifactId::Sva);
 
@@ -70,7 +70,7 @@ fn emits_ts_source_sva() {
 fn emits_js_runtime_and_declarations() {
     let artifacts = ArtifactGraph.generate(GenerateOptions {
         format: CodegenFormat::Mjs,
-        specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+        import_extensions: true,
     });
     let sva = artifact(&artifacts, ArtifactId::Sva);
 

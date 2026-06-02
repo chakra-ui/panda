@@ -2,7 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use indoc::indoc;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 
 #[test]
@@ -11,7 +11,7 @@ fn reexports_css_modules() {
 
     let ts = graph.generate(GenerateOptions {
         format: CodegenFormat::Ts,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let index = artifact(&ts, ArtifactId::CssIndex);
     assert_eq!(paths(index), vec!["css/index.ts"]);
@@ -28,12 +28,12 @@ fn reexports_css_modules() {
 }
 
 #[test]
-fn can_emit_extensioned_specifiers() {
+fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
 
     let js = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+        import_extensions: true,
     });
     let index = artifact(&js, ArtifactId::CssIndex);
     assert_eq!(
@@ -59,7 +59,7 @@ fn can_emit_extensioned_specifiers() {
 
     let mjs = graph.generate(GenerateOptions {
         format: CodegenFormat::Mjs,
-        specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+        import_extensions: true,
     });
     let index = artifact(&mjs, ArtifactId::CssIndex);
     assert_eq!(

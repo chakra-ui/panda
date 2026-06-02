@@ -57,7 +57,7 @@ pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<Artif
         &module(),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }

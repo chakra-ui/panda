@@ -23,9 +23,7 @@ use crate::cache::{
 };
 use crate::fs::WasmFileSystem;
 use crate::matcher::from_core_token_dictionary;
-use pandacss_codegen::{
-    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions};
 use pandacss_config::{
     CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues, ValidationMode,
     validate_config_value, validation_mode_from_value,
@@ -996,24 +994,16 @@ fn generate_options(
     user_config: &UserConfig,
     options: &JsValue,
 ) -> Result<GenerateOptions, JsValue> {
-    let specifiers = option_string(options, "specifiers")?;
-    let specifiers = match specifiers.as_deref() {
-        None | Some("extensionless") => ModuleSpecifierPolicy::Extensionless,
-        Some("runtime-and-types") => ModuleSpecifierPolicy::RuntimeAndTypes,
-        Some(value) => {
-            return Err(JsValue::from_str(&format!(
-                "unknown codegen specifier policy `{value}`"
-            )));
-        }
-    };
+    let import_extensions = option_bool(options, "codegenImportExtensions")?
+        .unwrap_or(user_config.codegen_import_extensions);
 
     Ok(GenerateOptions {
         format: user_config.codegen_format,
-        specifiers,
+        import_extensions,
     })
 }
 
-fn option_string(options: &JsValue, key: &str) -> Result<Option<String>, JsValue> {
+fn option_bool(options: &JsValue, key: &str) -> Result<Option<bool>, JsValue> {
     if options.is_undefined() || options.is_null() {
         return Ok(None);
     }
@@ -1022,9 +1012,9 @@ fn option_string(options: &JsValue, key: &str) -> Result<Option<String>, JsValue
         return Ok(None);
     }
     value
-        .as_string()
+        .as_bool()
         .map(Some)
-        .ok_or_else(|| JsValue::from_str(&format!("`{key}` must be a string")))
+        .ok_or_else(|| JsValue::from_str(&format!("option `{key}` must be a boolean")))
 }
 
 fn build_compile_output(

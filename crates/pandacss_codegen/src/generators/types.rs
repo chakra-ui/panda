@@ -38,6 +38,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Tokens,
             ConfigDependency::Themes,
         ]),
@@ -53,6 +54,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Conditions,
             ConfigDependency::Tokens,
             ConfigDependency::Utilities,
@@ -66,6 +68,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Patterns,
             ConfigDependency::Tokens,
             ConfigDependency::Utilities,
@@ -76,7 +79,10 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         "types/recipe",
         &recipe_module(),
         options,
-        DependencySet::from_slice(&[ConfigDependency::CodegenFormat]),
+        DependencySet::from_slice(&[
+            ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
+        ]),
     ));
 
     files.extend(emit_type_file(
@@ -85,6 +91,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Conditions,
             ConfigDependency::Patterns,
             ConfigDependency::Recipes,
@@ -107,7 +114,7 @@ fn emit_type_file(
         module,
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }

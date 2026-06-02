@@ -6,6 +6,7 @@ export type { ConfigDiff } from '@pandacss/compiler-shared'
 /** Every `CodegenDependency` — the full-regen set used on first load. */
 const ALL_DEPENDENCIES: CodegenDependency[] = [
   'codegenFormat',
+  'codegenImportExtensions',
   'conditions',
   'hash',
   'jsxFactory',
@@ -103,6 +104,10 @@ function classify([head, second, third]: string[]): Classified {
       return { deps: ['jsxFactory'] }
     case 'jsxStyleProps':
       return { deps: ['jsxStyleProps'] }
+    case 'codegenFormat':
+      return { deps: ['codegenFormat'] }
+    case 'codegenImportExtensions':
+      return { deps: ['codegenImportExtensions'] }
     case 'outExtension':
     case 'forceConsistentTypeExtension':
     case 'shorthands':

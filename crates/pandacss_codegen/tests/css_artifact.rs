@@ -4,9 +4,7 @@ use std::collections::BTreeMap;
 
 use common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{
-    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TypeData, UserConfig, UtilityTypeData};
 
 fn config() -> UserConfig {
@@ -57,7 +55,7 @@ fn emits_ts_source_css() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let css = artifact(&artifacts, ArtifactId::Css);
@@ -147,7 +145,7 @@ fn emits_js_runtime_and_declarations() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let css = artifact(&artifacts, ArtifactId::Css);
@@ -241,7 +239,7 @@ fn guards_empty_utility_metadata() {
         &CodegenInput::default(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let css = artifact(&artifacts, ArtifactId::Css);

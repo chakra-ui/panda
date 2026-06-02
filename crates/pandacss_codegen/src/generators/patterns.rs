@@ -45,8 +45,11 @@ pub fn files(
             &runtime_module(),
             options.format,
             false,
-            options.specifiers,
-            DependencySet::one(ConfigDependency::CodegenFormat),
+            options.import_extensions,
+            DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
         ));
     }
 
@@ -59,7 +62,7 @@ pub fn files(
             &module_with_type_data(name, pattern, definition, meta),
             options.format,
             false,
-            options.specifiers,
+            options.import_extensions,
             dependencies,
         ));
     }
@@ -70,7 +73,7 @@ pub fn files(
             &index_module(&names),
             options.format,
             false,
-            options.specifiers,
+            options.import_extensions,
             dependencies,
         ));
     }

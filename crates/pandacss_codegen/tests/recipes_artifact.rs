@@ -2,9 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{
-    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TypeData, UserConfig};
 
 fn config() -> UserConfig {
@@ -77,7 +75,7 @@ fn emits_ts_source_recipes() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
@@ -267,7 +265,7 @@ fn emits_js_runtime_and_declarations() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
@@ -492,7 +490,7 @@ fn wires_class_name_hash_into_runtime() {
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);

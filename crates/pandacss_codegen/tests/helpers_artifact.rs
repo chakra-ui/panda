@@ -2,7 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 
 fn function_block(source: &str, name: &str) -> String {
@@ -634,7 +634,7 @@ fn emits_ts_source() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Ts,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -672,7 +672,7 @@ fn emits_ts_with_defaults() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Ts,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -691,7 +691,7 @@ fn emits_js_with_defaults() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -710,7 +710,7 @@ fn emits_js_get_compound_variant_css() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -741,7 +741,7 @@ fn emits_js_get_slot_compound_variant() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -766,7 +766,7 @@ fn emits_js_get_slot_recipes() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -804,7 +804,7 @@ fn emits_js_runtime() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
@@ -842,7 +842,7 @@ fn emits_declarations() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
         format: CodegenFormat::Js,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 

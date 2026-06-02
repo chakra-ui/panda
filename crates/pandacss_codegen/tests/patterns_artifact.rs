@@ -4,8 +4,7 @@ use common::{artifact, file, paths};
 use indoc::indoc;
 use insta::assert_snapshot;
 use pandacss_codegen::{
-    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
-    PatternCodegenMeta,
+    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, PatternCodegenMeta,
 };
 use pandacss_config::{
     CodegenFormat, PrimitiveType, TypeData, UserConfig, UtilityPropertyTypeData, UtilityTypeData,
@@ -133,7 +132,7 @@ fn emits_ts_source() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let patterns = artifact(&artifacts, ArtifactId::Patterns);
@@ -236,7 +235,7 @@ fn emits_js_runtime_and_declarations() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Js,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let patterns = artifact(&artifacts, ArtifactId::Patterns);
@@ -338,13 +337,13 @@ fn emits_js_runtime_and_declarations() {
 }
 
 #[test]
-fn can_emit_extensioned_specifiers() {
+fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate_with_input(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let patterns = artifact(&artifacts, ArtifactId::Patterns);
