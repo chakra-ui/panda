@@ -19,7 +19,7 @@ mod memory;
 mod os;
 
 pub use crate::file_system::FileSystem;
-pub use crate::glob::{GlobOptions, base_dir, walk_roots};
+pub use crate::glob::{GlobOptions, base_dir, matches_globs, walk_roots};
 
 #[cfg(feature = "memory")]
 pub use crate::memory::MemoryFileSystem;

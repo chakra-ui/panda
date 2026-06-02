@@ -267,6 +267,19 @@ impl Compiler {
         }
     }
 
+    /// Whether `css` declares Panda's cascade layers (`@layer reset, base, …;`),
+    /// marking it as the stylesheet root to inject the compiled CSS into.
+    #[napi(js_name = hasLayerDeclaration)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn has_layer_declaration(&self, css: String) -> bool {
+        let names = self.user_config.layers.ordered().map(|(_, name)| name);
+        pandacss_stylesheet::has_layer_declaration(&css, &names)
+    }
+
     /// Tooling introspection snapshot (read once, index on the host).
     ///
     /// # Errors
@@ -504,6 +517,38 @@ impl Compiler {
             .into_iter()
             .map(|path| path.to_string_lossy().into_owned())
             .collect())
+    }
+
+    /// Resolve a path to its real on-disk location (absolute, symlinks followed) so
+    /// two paths to the same file compare equal. Lenient: returns the input path when
+    /// it can't be resolved (e.g. it was just deleted), so callers can still match it.
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn realpath(&self, path: String) -> String {
+        let path = std::path::PathBuf::from(path);
+        self.fs
+            .canonicalize(&path)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .into_owned()
+    }
+
+    /// Whether `path` is a source file the project extracts from — its
+    /// `cwd`-relative form matches the configured `include`/`exclude` globs.
+    /// For routing a watch event to `applyChange` vs ignoring it.
+    #[napi(js_name = isSourceFile)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn is_source_file(&self, path: String) -> bool {
+        let opts = glob_options(&self.user_config, None);
+        pandacss_fs::matches_globs(std::path::Path::new(&path), &opts)
     }
 
     /// Read + parse source paths returned from `scan()`. Returns one report per

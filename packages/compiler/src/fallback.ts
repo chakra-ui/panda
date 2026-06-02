@@ -44,11 +44,20 @@ class FallbackCompiler implements Compiler {
   scan() {
     return []
   }
+  realpath(path: string) {
+    return path
+  }
+  isSourceFile() {
+    return false
+  }
   parseFiles(_paths: string[]) {
     return []
   }
   layers() {
     return { reset: 'reset', base: 'base', tokens: 'tokens', recipes: 'recipes', utilities: 'utilities' }
+  }
+  hasLayerDeclaration() {
+    return false
   }
   spec() {
     return {
