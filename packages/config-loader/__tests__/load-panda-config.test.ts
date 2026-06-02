@@ -143,3 +143,29 @@ describe('loadPandaConfig', () => {
     `)
   })
 })
+
+describe('loadPandaConfig cwd isolation', () => {
+  // Two projects with byte-identical config content bundle to identical code,
+  // so the in-memory `data:`-URL import resolves to the same cached ESM module.
+  // The loader must still resolve each call's own `cwd` (no mutation leak).
+  const SHARED_SOURCE = `export default { outdir: 'styled-system' }\n`
+  const dirs: string[] = []
+
+  afterAll(() => {
+    for (const dir of dirs) rmSync(dir, { recursive: true, force: true })
+  })
+
+  test('resolves each load against its own cwd', async () => {
+    const a = mkdtempSync(join(tmpdir(), 'panda-config-a-'))
+    const b = mkdtempSync(join(tmpdir(), 'panda-config-b-'))
+    dirs.push(a, b)
+    writeFileSync(join(a, 'panda.config.ts'), SHARED_SOURCE)
+    writeFileSync(join(b, 'panda.config.ts'), SHARED_SOURCE)
+
+    const first = await loadPandaConfig({ cwd: a })
+    const second = await loadPandaConfig({ cwd: b })
+
+    expect(first.config.cwd).toBe(a)
+    expect(second.config.cwd).toBe(b)
+  })
+})
