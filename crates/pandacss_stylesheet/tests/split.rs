@@ -60,8 +60,10 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
 
     === recipes/button.css ===
     @layer recipes {
-      .button {
-        display: inline-flex;
+      @layer base {
+        .button {
+          display: inline-flex;
+        }
       }
       .button--size_sm {
         padding: 8px;

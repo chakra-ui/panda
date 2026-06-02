@@ -117,8 +117,10 @@ fn expands_static_css_recipe_wildcard() {
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
 @layer recipes {
-  .button {
-    display: inline-flex;
+  @layer base {
+    .button {
+      display: inline-flex;
+    }
   }
   .button--size_md {
     padding: 12px;
@@ -290,12 +292,14 @@ fn expands_static_css_slot_recipe_wildcard() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  .checkbox__control {
-    display: inline-flex;
-  }
-  .checkbox__root {
-    display: flex;
+@layer recipes.slots {
+  @layer base {
+    .checkbox__control {
+      display: inline-flex;
+    }
+    .checkbox__root {
+      display: flex;
+    }
   }
   .checkbox__control--size_sm {
     padding: 2px;

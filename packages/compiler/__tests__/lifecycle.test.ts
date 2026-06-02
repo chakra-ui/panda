@@ -23,6 +23,11 @@ describe('Compiler lifecycle', () => {
           "value": "blue",
           "conditions": [],
         },
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
       ]
     `)
 
@@ -31,6 +36,21 @@ describe('Compiler lifecycle', () => {
     expect(compiler.removeFile('/a.tsx')).toBe(false)
     expect(compiler.atoms()).toEqual([])
     expect(compiler.summary().filesProcessed).toBe(0)
+  })
+
+  it('refresh keeps previous utility values when cross-file resolution is enabled', () => {
+    const compiler = createProject({}, { crossFile: true })
+    compiler.parseFileSource('/a.tsx', `import { css } from '@panda/css'\ncss({ padding: '4px' })`)
+
+    expect(compiler.refreshFileSource('/a.tsx', `import { css } from '@panda/css'\ncss({ padding: '8px' })`)).toBe(true)
+    expect(
+      compiler
+        .atoms()
+        .map((atom) => atom.value)
+        .sort(),
+    ).toEqual(['4px', '8px'])
+    expect(compiler.compile().css).toContain('4px')
+    expect(compiler.compile().css).toContain('8px')
   })
 
   it('dedups atoms across files', () => {
