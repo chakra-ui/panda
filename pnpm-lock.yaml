@@ -181,6 +181,21 @@ importers:
         specifier: 7.3.1
         version: 7.3.1
 
+  packages/cli_v2:
+    dependencies:
+      '@pandacss/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
+      '@parcel/watcher':
+        specifier: 2.5.1
+        version: 2.5.1
+      citty:
+        specifier: 0.1.6
+        version: 0.1.6
+
   packages/compiler:
     dependencies:
       '@pandacss/compiler-shared':
@@ -891,6 +906,19 @@ importers:
         specifier: 28.0.0
         version: 28.0.0
 
+  packages/vite:
+    dependencies:
+      '@pandacss/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
+    devDependencies:
+      vite:
+        specifier: 7.2.6
+        version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+
   playground:
     dependencies:
       '@ark-ui/react':
@@ -1045,6 +1073,43 @@ importers:
       '@pandacss/dev':
         specifier: workspace:*
         version: link:../../packages/cli
+
+  sandbox/cli-v2:
+    dependencies:
+      react:
+        specifier: 19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: 19.2.0
+        version: 19.2.0(react@19.2.0)
+    devDependencies:
+      '@pandacss/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli_v2
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@pandacss/vite':
+        specifier: workspace:*
+        version: link:../../packages/vite
+      '@types/react':
+        specifier: 19.2.7
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: 19.2.3
+        version: 19.2.3(@types/react@19.2.7)
+      '@vitejs/plugin-react':
+        specifier: 5.1.1
+        version: 5.1.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
+      typescript:
+        specifier: 6.0.2
+        version: 6.0.2
+      vite:
+        specifier: 7.2.6
+        version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+      vite-tsconfig-paths:
+        specifier: 5.1.4
+        version: 5.1.4(typescript@6.0.2)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
 
   sandbox/codegen:
     dependencies:
