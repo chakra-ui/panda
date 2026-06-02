@@ -15,6 +15,7 @@ export interface CompileInput {
   config?: SerializedConfig
   cwd?: string
   cacheDir?: string
+  emitLayerDeclaration?: boolean
 }
 
 export type ImportSpecifierKind = 'named' | 'default' | 'namespace'

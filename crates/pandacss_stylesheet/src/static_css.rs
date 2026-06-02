@@ -52,6 +52,16 @@ pub fn expand(
     atoms
 }
 
+pub(crate) fn has_static_css(config: &UserConfig) -> bool {
+    !config.static_css.is_null()
+        || config
+            .theme
+            .recipes
+            .values()
+            .chain(config.theme.slot_recipes.values())
+            .any(|recipe| !recipe.static_css.is_null())
+}
+
 pub(crate) fn has_static_recipes(config: &UserConfig) -> bool {
     config.static_css.get("recipes").is_some()
         || config

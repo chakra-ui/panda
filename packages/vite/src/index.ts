@@ -11,9 +11,6 @@ export interface PandaPluginOptions {
   outdir?: string
 }
 
-/** Panda's own leading layer declaration, stripped since the root already has one. */
-const LEADING_LAYER_DECL_RE = /^@layer[^;{]+;\s*/
-
 /**
  * Vite plugin for the Panda CSS v2 engine. Holds one long-lived {@link Driver}:
  * writes codegen artifacts to disk, and injects the compiled stylesheet into the
@@ -26,8 +23,8 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let outdir = ''
   const rootIds = new Set<string>()
 
-  const writeArtifacts = () => {
-    driver?.writeArtifacts(outdir, cwd, { specifiers: 'runtime-and-types' })
+  const codegen = () => {
+    driver?.codegen({ cwd, outdir, specifiers: 'runtime-and-types' })
   }
 
   const invalidateRoots = (server: ViteDevServer): ModuleNode[] => {
@@ -54,7 +51,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       // `config` is a loose `Record<string, unknown>`; the loader always sets a string outdir.
       const configOutdir = typeof driver.config.outdir === 'string' ? driver.config.outdir : undefined
       outdir = options.outdir ?? configOutdir ?? 'styled-system'
-      writeArtifacts()
+      codegen()
       driver.parseFiles()
     },
 
@@ -63,14 +60,13 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       if (!driver.compiler.hasLayerDeclaration(code)) return null
 
       rootIds.add(id)
-      const output = driver.compile()
+      const output = driver.cssgen({ emitLayerDeclaration: false })
       if (output.diagnostics.length > 0) {
         this.warn(`panda: ${output.diagnostics.length} diagnostic(s) while compiling the stylesheet`)
       }
       // Keep the user's declaration (it fixes layer order, incl. any custom
       // layers) and append Panda's layer bodies after their CSS.
-      const css = output.css.replace(LEADING_LAYER_DECL_RE, '')
-      return { code: `${code}\n${css}`, map: null }
+      return { code: `${code}\n${output.css}`, map: null }
     },
 
     async handleHotUpdate(ctx: HmrContext) {
@@ -80,7 +76,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         const diff = await driver.reload()
         if (!diff.hasChanged) return
         // Runtime/types artifacts may have changed shape → rewrite + full reload.
-        writeArtifacts()
+        codegen()
         invalidateRoots(ctx.server)
         ctx.server.ws.send({ type: 'full-reload' })
         return []

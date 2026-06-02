@@ -73,6 +73,21 @@ describe('Compiler', () => {
     `)
   })
 
+  it('can compile without the layer order declaration', () => {
+    const compiler = createProject({
+      utilities: {
+        color: { className: 'c' },
+      },
+    })
+    compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'; css({ color: 'red' })`)
+
+    const output = compiler.compile({ emitLayerDeclaration: false })
+
+    expect(output.css).not.toContain('@layer reset, base, tokens, recipes, utilities;')
+    expect(output.css).toContain('@layer utilities')
+    expect(output.layerRanges.utilities?.start).toBe(0)
+  })
+
   it('generates codegen artifacts from the resolved project', () => {
     const compiler = createProject({
       theme: {

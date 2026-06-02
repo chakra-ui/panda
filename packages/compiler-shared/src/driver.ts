@@ -10,9 +10,10 @@ import type { Introspection } from './introspect'
 import type {
   CodegenArtifact,
   CodegenDependency,
+  CodegenOptions,
   Compiler,
   CompileOutput,
-  GenerateArtifactOptions,
+  CompileOptions,
   ParseFileReport,
   SerializedConfig,
 } from './types'
@@ -76,10 +77,10 @@ export interface Driver {
   applyChanges(changes: SourceChange[]): boolean[]
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
-  /** Generate + write artifacts under `outdir` via the engine fs. Returns paths. */
-  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
-  /** Compile the stylesheet → `CompileOutput`; the caller routes the `css` string. */
-  compile(): CompileOutput
+  /** Generate + write artifacts under the configured `outdir` via the engine fs. Returns paths. */
+  codegen(options?: CodegenOptions): string[]
+  /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
+  cssgen(options?: CompileOptions): CompileOutput
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
   /** Whether a changed path is the config file or one of its bundled dependencies.
@@ -117,7 +118,7 @@ export abstract class BaseDriver implements Driver {
     this.#introspect = undefined
   }
 
-  /** cwd applied when `writeArtifacts` is called without one (disk hosts). */
+  /** cwd applied when `codegen` is called without one (disk hosts). */
   protected get defaultCwd(): string | undefined {
     return undefined
   }
@@ -152,12 +153,16 @@ export abstract class BaseDriver implements Driver {
     return selectArtifacts(this.#compiler, filter)
   }
 
-  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[] {
-    return this.#compiler.writeArtifacts(outdir, cwd ?? this.defaultCwd, options)
+  codegen(options?: CodegenOptions): string[] {
+    const cwd = options?.cwd ?? this.defaultCwd
+    const configuredOutdir = typeof this.config.outdir === 'string' ? this.config.outdir : undefined
+    const outdir = options?.outdir ?? configuredOutdir ?? 'styled-system'
+    const artifactOptions = options?.specifiers ? { specifiers: options.specifiers } : undefined
+    return this.#compiler.writeArtifacts(outdir, cwd, artifactOptions)
   }
 
-  compile(): CompileOutput {
-    return this.#compiler.compile()
+  cssgen(options?: CompileOptions): CompileOutput {
+    return this.#compiler.compile(options)
   }
 
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {

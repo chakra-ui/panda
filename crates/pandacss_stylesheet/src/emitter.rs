@@ -26,13 +26,16 @@ pub fn emit<'a>(
     mut atoms: Vec<&'a Atom>,
     recipes: &'a EncodedRecipesSnapshot,
     minify: bool,
+    emit_layer_declaration: bool,
 ) -> EmitOutput {
     let cx = EmitContext::new(config, utility);
     let layers = &config.layers;
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
-    write_layer_order(&mut writer, layers);
-    writer.newline();
+    if emit_layer_declaration {
+        write_layer_order(&mut writer, layers);
+        writer.newline();
+    }
     if config.preflight.enabled() {
         let options = config.preflight.options();
         let scope = options.and_then(|options| options.scope.as_deref());

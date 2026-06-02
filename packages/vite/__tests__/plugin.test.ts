@@ -87,6 +87,7 @@ describe('@pandacss/vite', () => {
     const css = await readCss(server)
     expect(css).toContain('red') // generated
     expect(css).toContain('black') // the user's own CSS is preserved
+    expect(css.match(/@layer reset, base, tokens, recipes, utilities;/g)).toHaveLength(1)
   })
 
   it('writes the styled-system runtime + types to disk at startup', async () => {

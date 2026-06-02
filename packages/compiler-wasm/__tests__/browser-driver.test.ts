@@ -48,7 +48,7 @@ describe('createBrowserDriver', () => {
         },
       ]
     `)
-    expect(driver.compile().css).toContain('blue')
+    expect(driver.cssgen().css).toContain('blue')
   })
 
   it('embeds the user pattern transform in generated artifacts', async () => {
@@ -70,6 +70,6 @@ describe('createBrowserDriver', () => {
     })
 
     expect(applied).toMatchInlineSnapshot(`true`)
-    expect(driver.compile().css).toContain('green')
+    expect(driver.cssgen().css).toContain('green')
   })
 })

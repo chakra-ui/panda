@@ -11,7 +11,7 @@ export interface NodeDriverOptions {
 
 /**
  * {@link Driver} backed by the native compiler (`OsFileSystem`). Loads the
- * config from disk; `scan` / `writeArtifacts` run through the Rust fs engine.
+ * config from disk; `scan` / `codegen` run through the Rust fs engine.
  */
 export async function createNodeDriver(options: NodeDriverOptions): Promise<Driver> {
   const loaded = await loadPandaConfig({ cwd: options.cwd, file: options.configPath })

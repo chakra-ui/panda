@@ -30,7 +30,7 @@ use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use pandacss_fs::{FileSystem, OxcResolverFileSystem};
 use smallvec::SmallVec;
 
-use crate::compile::{CompileFileManifest, CompileOutput};
+use crate::compile::{CompileFileManifest, CompileOptions, CompileOutput};
 use crate::matcher::{TokenDictionary, from_core_token_dictionary};
 
 /// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.
@@ -766,7 +766,15 @@ impl Compiler {
     }
 
     #[napi]
-    pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn compile(
+        &mut self,
+        env: Env,
+        options: Option<CompileOptions>,
+    ) -> napi::Result<CompileOutput> {
         crate::init_tracing();
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
@@ -779,6 +787,9 @@ impl Compiler {
             user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
+            options
+                .as_ref()
+                .is_none_or(CompileOptions::should_emit_layer_declaration),
         );
         crate::flush_tracing();
         Ok(output)
@@ -804,6 +815,7 @@ impl Compiler {
             user_config,
             token_dictionary,
             &static_pattern_atoms,
+            true,
         );
         let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
             .iter()
