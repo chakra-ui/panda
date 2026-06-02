@@ -124,6 +124,11 @@ export interface GenerateArtifactOptions {
   specifiers?: 'extensionless' | 'runtime-and-types'
 }
 
+export interface CodegenOptions extends GenerateArtifactOptions {
+  outdir?: string
+  cwd?: string
+}
+
 /** Scan overrides for `Compiler.scan`/`parseFiles`. Omitted fields fall back to the
  *  config's `include`/`exclude`/`cwd`. */
 export interface ScanOptions {
@@ -249,6 +254,11 @@ export interface CompileOutput {
   manifest: CompileManifest
   layerRanges: CompileLayerRanges
   diagnostics: Diagnostic[]
+}
+
+export interface CompileOptions {
+  /** Emit Panda's leading cascade-layer order declaration (`@layer reset, ...;`). */
+  emitLayerDeclaration?: boolean
 }
 
 /** One extracted call argument. A literal `null` (`{ kind: 'value', value: null }`)
@@ -428,7 +438,7 @@ export interface Compiler {
 
   // CSS output
   /** Compile the current project state into a complete stylesheet. */
-  compile(): CompileOutput
+  compile(options?: CompileOptions): CompileOutput
   /** CSS for the named layers only, concatenated in order — sliced in Rust so
    *  byte offsets stay valid. Pairs with `layers()` (names). Backs
    *  `cssgen <layer>` / `--minimal`. */

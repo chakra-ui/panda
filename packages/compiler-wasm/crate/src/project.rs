@@ -714,15 +714,17 @@ impl WasmCompiler {
     ///
     /// # Errors
     /// Returns a JS error if serializing fails.
-    pub fn compile(&mut self) -> Result<JsValue, JsValue> {
+    pub fn compile(&mut self, options: Option<JsValue>) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("css_compile", method = "wasm_project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms();
+        let options = compile_options_from_js(options)?;
         let output = build_compile_output(
             &mut self.inner,
             &self.user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
+            options.emit_layer_declaration.unwrap_or(true),
         );
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         output
@@ -747,6 +749,7 @@ impl WasmCompiler {
             &self.user_config,
             token_dictionary,
             &static_pattern_atoms,
+            true,
         );
         let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
             .iter()
@@ -863,6 +866,21 @@ struct CompileOutputSerde {
     manifest: CompileManifestSerde,
     layer_ranges: CompileLayerRangesSerde,
     diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileOptionsSerde {
+    emit_layer_declaration: Option<bool>,
+}
+
+fn compile_options_from_js(options: Option<JsValue>) -> Result<CompileOptionsSerde, JsValue> {
+    match options {
+        Some(value) if !value.is_undefined() && !value.is_null() => {
+            serde_wasm_bindgen::from_value(value).map_err(|err| JsValue::from_str(&err.to_string()))
+        }
+        _ => Ok(CompileOptionsSerde::default()),
+    }
 }
 
 #[derive(serde::Serialize)]
@@ -1014,6 +1032,7 @@ fn build_compile_output(
     user_config: &pandacss_config::UserConfig,
     static_pattern_atoms: &[CoreAtom],
     static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    emit_layer_declaration: bool,
 ) -> CompileOutputSerde {
     let token_dictionary = project.config().token_dictionary();
     let manifest_files: Vec<CompileFileManifestSerde> = project
@@ -1031,8 +1050,13 @@ fn build_compile_output(
         }
         paths.into_iter().collect()
     });
-    let output =
-        build_stylesheet_output(project, user_config, token_dictionary, static_pattern_atoms);
+    let output = build_stylesheet_output(
+        project,
+        user_config,
+        token_dictionary,
+        static_pattern_atoms,
+        emit_layer_declaration,
+    );
     let diagnostics: Vec<pandacss_shared::Diagnostic> = project
         .diagnostics()
         .iter()
@@ -1073,8 +1097,9 @@ fn build_split_css(
             .get("minify")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false),
-        include_static: true,
+        include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
+        emit_layer_declaration: true,
     };
     pandacss_stylesheet::split_css(
         &pandacss_stylesheet::StylesheetInput {
@@ -1102,6 +1127,7 @@ fn build_stylesheet_output(
     user_config: &pandacss_config::UserConfig,
     token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
     static_pattern_atoms: &[CoreAtom],
+    emit_layer_declaration: bool,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let snapshots = project.stylesheet_snapshots(user_config);
     let options = pandacss_stylesheet::StylesheetOptions {
@@ -1110,8 +1136,9 @@ fn build_stylesheet_output(
             .get("minify")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false),
-        include_static: true,
+        include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
+        emit_layer_declaration,
     };
     pandacss_stylesheet::compile(
         pandacss_stylesheet::StylesheetInput {

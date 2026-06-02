@@ -13,6 +13,28 @@ fn default_layer_names_emit_unchanged_preamble() {
 }
 
 #[test]
+fn can_omit_layer_order_declaration() {
+    let config = config(serde_json::json!({
+        "globalCss": { "body": { "margin": "0" } }
+    }));
+    let output = compile_output(
+        &config,
+        "",
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+    assert!(
+        !output
+            .css
+            .starts_with("@layer reset, base, tokens, recipes, utilities;")
+    );
+    assert!(output.css.starts_with("@layer base {"));
+    assert!(output.layer_css(StylesheetLayer::Base).is_some());
+}
+
+#[test]
 fn partial_rename_keeps_other_defaults() {
     // Only `reset` is renamed — the other four must stay at defaults.
     let config = config(serde_json::json!({
@@ -139,7 +161,10 @@ const LAYERS: [&str; 5] = ["reset", "base", "tokens", "recipes", "utilities"];
 
 #[test]
 fn has_layer_declaration_matches_an_exact_or_superset_statement() {
-    assert!(has_layer_declaration("@layer reset, base, tokens, recipes, utilities;", &LAYERS));
+    assert!(has_layer_declaration(
+        "@layer reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    ));
     assert!(has_layer_declaration(
         "@layer reset, base, tokens, recipes, utilities, custom;\n.x {}",
         &LAYERS
@@ -151,5 +176,8 @@ fn has_layer_declaration_rejects_non_matches() {
     assert!(!has_layer_declaration("@layer base, utilities;", &LAYERS)); // missing layers
     assert!(!has_layer_declaration(".x { color: red }", &LAYERS)); // no declaration
     assert!(!has_layer_declaration("@layer reset { .x {} }", &LAYERS)); // a block, not a statement
-    assert!(!has_layer_declaration("@layered reset, base, tokens, recipes, utilities;", &LAYERS)); // wrong keyword
+    assert!(!has_layer_declaration(
+        "@layered reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    )); // wrong keyword
 }

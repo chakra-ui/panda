@@ -18,11 +18,27 @@ use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "Compile-time stylesheet flags are independent toggles and map directly to host options"
+)]
 pub struct StylesheetOptions {
     pub minify: bool,
     pub include_static: bool,
     pub source_map: bool,
+    pub emit_layer_declaration: bool,
+}
+
+impl Default for StylesheetOptions {
+    fn default() -> Self {
+        Self {
+            minify: false,
+            include_static: false,
+            source_map: false,
+            emit_layer_declaration: true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -119,6 +135,13 @@ pub struct StylesheetInput<'a> {
     pub static_pattern_atoms: &'a [Atom],
 }
 
+/// Whether the config has any static CSS work that stylesheet compilation should
+/// include: top-level `staticCss.*` or recipe-level `theme.*.staticCss`.
+#[must_use]
+pub fn has_static_css(config: &UserConfig) -> bool {
+    static_css::has_static_css(config)
+}
+
 /// Compile the project's atoms + recipes (plus the static-CSS subset when
 /// `include_static` is set) into a single stylesheet. Diagnostics for
 /// unsupported config (`preflight.scope`, layer-name collisions, …) are
@@ -185,6 +208,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         atoms,
         recipes,
         options.minify,
+        options.emit_layer_declaration,
     );
 
     StylesheetOutput {
@@ -238,6 +262,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         atoms,
         recipes,
         options.minify,
+        true,
     );
 
     let mut files: Vec<SplitCssFile> = Vec::new();

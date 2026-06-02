@@ -56,14 +56,14 @@ describe('createNodeDriver', () => {
           },
         ]
       `)
-    expect(driver.compile().css).toContain('red')
+    expect(driver.cssgen().css).toContain('red')
   })
 
   it('writes artifacts under outdir via the engine fs, embedding the user transform', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()
 
-    const written = driver.writeArtifacts('styled-system')
+    const written = driver.codegen()
     expect(written.some((path) => path.endsWith(join('patterns', 'stack.mjs')))).toBe(true)
 
     const stack = readFileSync(join(dir, 'styled-system', 'patterns', 'stack.mjs'), 'utf8')
@@ -146,8 +146,8 @@ describe('createNodeDriver', () => {
         true,
       ]
     `)
-    expect(driver.compile().css).toContain('blue')
-    expect(driver.compile().css).toContain('green')
+    expect(driver.cssgen().css).toContain('blue')
+    expect(driver.cssgen().css).toContain('green')
   })
 
   it('reads source changes from disk when content is omitted', async () => {
@@ -156,12 +156,12 @@ describe('createNodeDriver', () => {
 
     writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'purple' })")
     expect(driver.applyChange({ path: file, kind: 'add' })).toBe(true)
-    expect(driver.compile().css).toContain('purple')
+    expect(driver.cssgen().css).toContain('purple')
 
     writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'orange' })")
     expect(driver.applyChange({ path: file, kind: 'change' })).toBe(true)
-    expect(driver.compile().css).toContain('purple')
-    expect(driver.compile().css).toContain('orange')
+    expect(driver.cssgen().css).toContain('purple')
+    expect(driver.cssgen().css).toContain('orange')
   })
 })
 

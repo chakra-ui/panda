@@ -18,6 +18,7 @@ import type {
   CssFile,
   StylesheetLayerName,
   CompileFileManifest,
+  CompileOptions,
   CompileOutput,
   Diagnostic,
   EncodedRecipeStyles,
@@ -112,7 +113,7 @@ export declare class WasmCompiler {
   slotRecipes(): RecipeEntry[]
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
-  compile(): CompileOutput
+  compile(options?: CompileOptions): CompileOutput
   layerCss(layers: StylesheetLayerName[]): string
   splitCss(): CssFile[]
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]

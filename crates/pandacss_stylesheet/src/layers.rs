@@ -18,7 +18,10 @@ pub fn has_layer_declaration(css: &str, layers: &[&str]) -> bool {
         let brace = after.find('{');
         // A declaration statement ends in `;` before any `{` (which would be a block).
         if semi.is_some_and(|s| brace.is_none_or(|b| s < b)) {
-            let declared: Vec<&str> = after[..semi.unwrap_or(0)].split(',').map(str::trim).collect();
+            let declared: Vec<&str> = after[..semi.unwrap_or(0)]
+                .split(',')
+                .map(str::trim)
+                .collect();
             if layers.iter().all(|name| declared.contains(name)) {
                 return true;
             }
