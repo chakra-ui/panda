@@ -58,6 +58,53 @@ fn escapes_nested_selector_keys_into_valid_class_names() {
 }
 
 #[test]
+fn emits_custom_props_parent_selectors_selector_lists_and_raw_at_rules() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css';\n",
+            "css({\n",
+            "  '--welcome-x': '20',\n",
+            "  color: 'black',\n",
+            "  '&:hover': { color: 'red' },\n",
+            "  '.group &': { color: 'blue' },\n",
+            "  '&, &:focus': { color: 'purple' },\n",
+            "  '@media (hover: hover)': { color: 'green' },\n",
+            "})",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .--welcome-x_20 {
+        --welcome-x: 20;
+      }
+      .c_black {
+        color: black;
+      }
+      .group .\[\.group_\&\]\:c_blue {
+        color: blue;
+      }
+      .\[\&\:hover\]\:c_red:hover {
+        color: red;
+      }
+      .\[\&\,_\&\:focus\]\:c_purple, .\[\&\,_\&\:focus\]\:c_purple:focus {
+        color: purple;
+      }
+      @media (hover: hover) {
+        .\[\@media_\(hover\:_hover\)\]\:c_green {
+          color: green;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn resolves_token_references_interpolated_in_longhand_values() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
@@ -80,6 +127,84 @@ fn resolves_token_references_interpolated_in_longhand_values() {
       }
       .border_2px_solid_token\(colors\.red\.300\) {
         border: 2px solid var(--colors-red-300);
+      }
+    }
+    ");
+}
+
+#[test]
+fn emits_gradient_utilities_from_value_maps() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "gradients": {
+                    "primary": { "value": "linear-gradient(to right, #ff0000, #0000ff)" }
+                },
+                "colors": {
+                    "red": { "200": { "value": "#fecaca" } },
+                    "blue": { "300": { "value": "#93c5fd" } }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundGradient": {
+                "shorthand": "bgGradient",
+                "className": "bg-grad",
+                "values": {
+                    "primary": {
+                        "backgroundImage": "{gradients.primary}"
+                    },
+                    "to-r": {
+                        "--gradient-stops": "var(--gradient-via-stops, var(--gradient-position), var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position))",
+                        "--gradient-position": "to right",
+                        "backgroundImage": "linear-gradient(var(--gradient-stops))"
+                    },
+                    "linear-gradient(var(--colors-red-200), var(--colors-blue-300))": {
+                        "backgroundImage": "linear-gradient({colors.red.200}, {colors.blue.300})"
+                    }
+                }
+            },
+            "textGradient": {
+                "className": "txt-grad",
+                "values": {
+                    "linear-gradient(var(--colors-red-200), var(--colors-blue-300))": {
+                        "backgroundImage": "linear-gradient({colors.red.200}, {colors.blue.300})",
+                        "-webkitBackgroundClip": "text",
+                        "color": "transparent"
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css';\n",
+            "css({ bgGradient: 'primary' });\n",
+            "css({ bgGradient: 'to-r' });\n",
+            "css({ bgGradient: 'linear-gradient({colors.red.200}, {colors.blue.300})' });\n",
+            "css({ textGradient: 'linear-gradient({colors.red.200}, {colors.blue.300})' });",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg-grad_linear-gradient\(\{colors\.red\.200\}\,_\{colors\.blue\.300\}\) {
+        background-image: linear-gradient(var(--colors-red-200), var(--colors-blue-300));
+      }
+      .bg-grad_primary {
+        background-image: var(--gradients-primary);
+      }
+      .bg-grad_to-r {
+        --gradient-stops: var(--gradient-via-stops, var(--gradient-position), var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position));
+        --gradient-position: to right;
+        background-image: linear-gradient(var(--gradient-stops));
+      }
+      .txt-grad_linear-gradient\(\{colors\.red\.200\}\,_\{colors\.blue\.300\}\) {
+        background-image: linear-gradient(var(--colors-red-200), var(--colors-blue-300));
+        -webkit-background-clip: text;
+        color: transparent;
       }
     }
     ");
