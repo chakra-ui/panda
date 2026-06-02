@@ -1,5 +1,17 @@
 # @pandacss/parser
 
+## 1.11.2
+
+### Patch Changes
+
+- Updated dependencies [a084498]
+  - @pandacss/extractor@1.11.2
+  - @pandacss/types@1.11.2
+  - @pandacss/config@1.11.2
+  - @pandacss/core@1.11.2
+  - @pandacss/logger@1.11.2
+  - @pandacss/shared@1.11.2
+
 ## 1.11.1
 
 ### Patch Changes

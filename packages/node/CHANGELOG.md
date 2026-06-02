@@ -1,5 +1,25 @@
 # @pandacss/node
 
+## 1.11.2
+
+### Patch Changes
+
+- 3730779: Fix `polyfill: true` leaving the user's `@layer reset, base, tokens, recipes, utilities;` order declaration
+  in the PostCSS plugin output.
+- Updated dependencies [c0511b8]
+  - @pandacss/generator@1.11.2
+  - @pandacss/parser@1.11.2
+  - @pandacss/types@1.11.2
+  - @pandacss/reporter@1.11.2
+  - @pandacss/config@1.11.2
+  - @pandacss/core@1.11.2
+  - @pandacss/logger@1.11.2
+  - @pandacss/plugin-lightningcss@1.11.2
+  - @pandacss/plugin-svelte@1.11.2
+  - @pandacss/plugin-vue@1.11.2
+  - @pandacss/shared@1.11.2
+  - @pandacss/token-dictionary@1.11.2
+
 ## 1.11.1
 
 ### Patch Changes
