@@ -1033,16 +1033,22 @@ fn finalized_class_name_owned(class_name: String, conditions: &[&str]) -> String
     if conditions.is_empty() {
         return class_name;
     }
-    let condition_len = conditions
-        .iter()
-        .map(|condition| condition.trim_start_matches('_').len() + 1)
-        .sum::<usize>();
-    let mut out = String::with_capacity(condition_len + class_name.len());
+    let capacity = conditions.iter().map(|c| c.len() + 3).sum::<usize>() + class_name.len();
+    let mut out = String::with_capacity(capacity);
     for condition in conditions {
         if !out.is_empty() {
             out.push(':');
         }
-        out.push_str(condition.trim_start_matches('_'));
+        // Mirror the runtime `finalizeConditions` so the emitted selector matches
+        // the class the runtime puts on the element: raw selectors / at-rules
+        // (`&`, `@`) wrap in `[…]` (spaces→`_`); named conditions drop leading `_`.
+        if condition.contains('&') || condition.contains('@') {
+            out.push('[');
+            out.push_str(&without_space(condition.trim()));
+            out.push(']');
+        } else {
+            out.push_str(condition.trim_start_matches('_'));
+        }
     }
     out.push(':');
     out.push_str(&class_name);
@@ -1157,15 +1163,18 @@ fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
+/// Backslash-escape every char in a class-name token that isn't a CSS identifier
+/// char (`[A-Za-z0-9_-]` or non-ASCII), so selector keys like `&:hover` emit a
+/// valid `.\&\:hover…` class. Mirrors v1's `esc` (its `[^\x80-￿\w-]` branch);
+/// real selector suffixes (`:hover`, `>`, …) are appended elsewhere, not here.
 fn escape_selector(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
-        match ch {
-            ':' | '.' | '/' | '!' | '%' | '[' | ']' | '(' | ')' | ',' | '#' => {
-                out.push('\\');
-                out.push(ch);
-            }
-            _ => out.push(ch),
+        if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' || !ch.is_ascii() {
+            out.push(ch);
+        } else {
+            out.push('\\');
+            out.push(ch);
         }
     }
     out

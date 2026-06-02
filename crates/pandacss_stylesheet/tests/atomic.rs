@@ -32,6 +32,32 @@ fn emits_dynamic_atomic_css() {
 }
 
 #[test]
+fn escapes_nested_selector_keys_into_valid_class_names() {
+    // `&:hover` is a raw selector, not a named condition: the runtime wraps it as
+    // `[&:hover]:…` (so does the emitter), and `[`/`]`/`&`/`:` are escaped in the
+    // class-name token while the real `:hover` is appended after it.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ color: 'orange', '&:hover': { color: 'red' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .c_orange {
+    color: orange;
+  }
+  .\[\&\:hover\]\:c_red:hover {
+    color: red;
+  }
+}
+");
+}
+
+#[test]
 fn resolves_token_references_interpolated_in_longhand_values() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
@@ -49,7 +75,7 @@ fn resolves_token_references_interpolated_in_longhand_values() {
     );
     assert_snapshot!(css, @r"
     @layer utilities {
-      .border_1px_solid_{colors\.red\.300} {
+      .border_1px_solid_\{colors\.red\.300\} {
         border: 1px solid var(--colors-red-300);
       }
       .border_2px_solid_token\(colors\.red\.300\) {
@@ -57,6 +83,25 @@ fn resolves_token_references_interpolated_in_longhand_values() {
       }
     }
     ");
+}
+
+#[test]
+fn fallback_atomic_class_names_replace_spaces_with_underscores() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ boxShadow: '0 20px 60px rgba(15, 23, 42, 0.16)' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .box-shadow_0_20px_60px_rgba\(15\,_23\,_42\,_0\.16\) {
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.16);
+  }
+}
+");
 }
 
 #[test]
@@ -111,5 +156,5 @@ fn minified_output_preserves_significant_spaces() {
             ..StylesheetOptions::default()
         },
     );
-    assert_snapshot!(css, @r#"@layer reset, base, tokens, recipes, utilities;@layer utilities{.m_1px_2px{margin:1px 2px;}.content_"a__b"{content:"a  b";}.descendantHover\:m_3px_4px :hover{margin:3px 4px;}}"#);
+    assert_snapshot!(css, @r#"@layer reset, base, tokens, recipes, utilities;@layer utilities{.m_1px_2px{margin:1px 2px;}.content_\"a__b\"{content:"a  b";}.descendantHover\:m_3px_4px :hover{margin:3px 4px;}}"#);
 }
