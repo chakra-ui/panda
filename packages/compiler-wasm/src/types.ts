@@ -95,8 +95,11 @@ export declare class WasmCompiler {
   removeFile(path: string): boolean
   clear(): void
   scan(options?: ScanOptions): string[]
+  realpath(path: string): string
+  isSourceFile(path: string): boolean
   parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
+  hasLayerDeclaration(css: string): boolean
   spec(): Spec
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): FileInspectionResult

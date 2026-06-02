@@ -12,6 +12,7 @@ import type {
   CodegenDependency,
   Compiler,
   CompileOutput,
+  GenerateArtifactOptions,
   ParseFileReport,
   SerializedConfig,
 } from './types'
@@ -76,11 +77,17 @@ export interface Driver {
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
   /** Generate + write artifacts under `outdir` via the engine fs. Returns paths. */
-  writeArtifacts(outdir: string, cwd?: string): string[]
+  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   /** Compile the stylesheet → `CompileOutput`; the caller routes the `css` string. */
   compile(): CompileOutput
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
+  /** Whether a changed path is the config file or one of its bundled dependencies.
+   *  Lets watch hosts route a change to `reload()` vs `applyChange()`. */
+  isConfigFile(file: string): boolean
+  /** Whether a changed path is a project source file (matches the config
+   *  `include`/`exclude`). The source-side companion to {@link isConfigFile}. */
+  isSourceFile(file: string): boolean
 }
 
 /** Full codegen set, or only the artifacts affected by a config diff. */
@@ -145,8 +152,8 @@ export abstract class BaseDriver implements Driver {
     return selectArtifacts(this.#compiler, filter)
   }
 
-  writeArtifacts(outdir: string, cwd?: string): string[] {
-    return this.#compiler.writeArtifacts(outdir, cwd ?? this.defaultCwd)
+  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[] {
+    return this.#compiler.writeArtifacts(outdir, cwd ?? this.defaultCwd, options)
   }
 
   compile(): CompileOutput {
@@ -160,5 +167,17 @@ export abstract class BaseDriver implements Driver {
       dirs: [...new Set(sources.map((source) => source.base))],
       config: this.configDependencies,
     }
+  }
+
+  // Config-file resolution is path-based and disk-bound, so it lives in the node
+  // host; snapshot-fed environments (browser) don't watch config files.
+  isConfigFile(_file: string): boolean {
+    return false
+  }
+
+  // Source matching is engine-owned (config globs); the Driver exposes it next to
+  // `isConfigFile` so watch hosts get one classification surface, not `.compiler`.
+  isSourceFile(file: string): boolean {
+    return this.#compiler.isSourceFile(file)
   }
 }

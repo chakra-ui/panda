@@ -200,6 +200,32 @@ impl WasmCompiler {
         serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Real on-disk path (symlinks followed) from the in-memory filesystem, so two
+    /// paths to the same file compare equal. Returns the input when unresolved.
+    #[must_use]
+    pub fn realpath(&self, path: String) -> String {
+        let path = PathBuf::from(path);
+        self.fs
+            .canonicalize(&path)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .into_owned()
+    }
+
+    /// Whether `path` is a source file the project extracts from — its
+    /// `cwd`-relative form matches the configured `include`/`exclude` globs.
+    #[wasm_bindgen(js_name = isSourceFile)]
+    #[must_use]
+    pub fn is_source_file(&self, path: &str) -> bool {
+        let opts = GlobOptions {
+            include: self.user_config.include.clone(),
+            exclude: self.user_config.exclude.clone(),
+            cwd: PathBuf::from(&self.user_config.cwd),
+            absolute: true,
+        };
+        pandacss_fs::matches_globs(std::path::Path::new(path), &opts)
+    }
+
     /// Read + parse source paths returned from `scan()`. Returns one report per
     /// successfully parsed path.
     ///
@@ -487,6 +513,15 @@ impl WasmCompiler {
         names
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Whether `css` declares Panda's cascade layers (`@layer reset, base, …;`),
+    /// marking it as the stylesheet root to inject the compiled CSS into.
+    #[wasm_bindgen(js_name = hasLayerDeclaration)]
+    #[must_use]
+    pub fn has_layer_declaration(&self, css: &str) -> bool {
+        let names = self.user_config.layers.ordered().map(|(_, name)| name);
+        pandacss_stylesheet::has_layer_declaration(css, &names)
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.

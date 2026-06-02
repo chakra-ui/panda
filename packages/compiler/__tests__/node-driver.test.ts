@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -84,6 +84,36 @@ describe('createNodeDriver', () => {
     expect(targets.config).toContain('panda.config.ts')
   })
 
+  it('classifies the config file (and not source files) for watch routing', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+
+    expect(driver.isConfigFile(join(dir, 'panda.config.ts'))).toBe(true)
+    expect(driver.isConfigFile(join(dir, 'App.tsx'))).toBe(false)
+    expect(driver.isConfigFile(join(dir, 'nested', '..', 'panda.config.ts'))).toBe(true)
+  })
+
+  it('detects a stylesheet root by its layer declaration', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const hasDecl = (css: string) => driver.compiler.hasLayerDeclaration(css)
+
+    expect(hasDecl('@layer reset, base, tokens, recipes, utilities;')).toBe(true)
+    expect(hasDecl('@layer reset, base, tokens, recipes, utilities, custom;\n.x {}')).toBe(true) // superset
+    expect(hasDecl('@layer base, utilities;')).toBe(false) // missing layers
+    expect(hasDecl('.x { color: red }')).toBe(false) // no declaration
+    expect(hasDecl('@layer reset { .x {} }')).toBe(false) // a block, not a statement
+  })
+
+  it('classifies source files by the configured include/exclude globs', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const isSource = (file: string) => driver.compiler.isSourceFile(file)
+
+    expect(isSource(join(dir, 'App.tsx'))).toBe(true) // matches **/*.tsx
+    expect(isSource(join(dir, 'nested', 'Deep.tsx'))).toBe(true)
+    expect(isSource(join(dir, 'notes.md'))).toBe(false) // wrong extension
+    expect(isSource(join(dir, 'styled-system', 'css', 'index.mjs'))).toBe(false) // generated output
+    expect(isSource('/elsewhere/Other.tsx')).toBe(false) // outside cwd
+  })
+
   it('exposes introspection over the current config', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     expect(driver.introspect.patterns()).toMatchInlineSnapshot(`
@@ -97,6 +127,7 @@ describe('createNodeDriver', () => {
 
   it('applies a batch of source changes', async () => {
     const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
     const applied = driver.applyChanges([
       {
         path: join(dir, 'App.tsx'),
@@ -129,7 +160,30 @@ describe('createNodeDriver', () => {
 
     writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'orange' })")
     expect(driver.applyChange({ path: file, kind: 'change' })).toBe(true)
+    expect(driver.compile().css).toContain('purple')
     expect(driver.compile().css).toContain('orange')
+  })
+})
+
+describe('createNodeDriver isConfigFile (symlinks)', () => {
+  it('matches the config file through a symlinked cwd', async () => {
+    const real = realpathSync(mkdtempSync(join(tmpdir(), 'panda-real-')))
+    writeFileSync(join(real, 'panda.config.ts'), CONFIG)
+    const parent = realpathSync(mkdtempSync(join(tmpdir(), 'panda-link-')))
+    const link = join(parent, 'proj')
+    try {
+      symlinkSync(real, link)
+    } catch {
+      return // symlinks not permitted (e.g. Windows without privilege) — skip
+    }
+
+    const driver = await createNodeDriver({ cwd: link })
+    // realpath collapses the symlink, so both the canonical and symlinked paths match.
+    expect(driver.isConfigFile(join(real, 'panda.config.ts'))).toBe(true)
+    expect(driver.isConfigFile(join(link, 'panda.config.ts'))).toBe(true)
+
+    rmSync(parent, { recursive: true, force: true }) // unlinks the `proj` symlink
+    rmSync(real, { recursive: true, force: true })
   })
 })
 

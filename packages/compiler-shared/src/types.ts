@@ -102,7 +102,7 @@ export interface StaticPatternResult {
   diagnostics: Diagnostic[]
 }
 
-export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 'patterns' | 'selectors' | 'types'
+export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 'patterns' | 'types'
 
 export type CodegenDependency =
   | 'codegenFormat'
@@ -389,6 +389,9 @@ export interface Compiler {
   /** Resolved cascade-layer names (config overrides merged over defaults) — so
    *  the host can recognize the user's `@layer …;` directive. */
   layers(): LayerNames
+  /** Whether `css` has Panda's cascade-layer declaration (`@layer reset, base, …;`),
+   *  marking it as the stylesheet root a bundler injects the compiled CSS into. */
+  hasLayerDeclaration(css: string): boolean
   /** Tooling introspection snapshot — read once, index on the host. */
   spec(): Spec
   /** Source globs + their static base dirs (for the host watcher). */
@@ -400,6 +403,12 @@ export interface Compiler {
   /** Source paths matching the config's `include`/`exclude` (overridable) via
    *  the filesystem engine — for discovery and host watch lists. */
   scan(options?: ScanOptions): string[]
+  /** Real on-disk path (absolute, symlinks followed) via the filesystem engine,
+   *  so two paths to the same file compare equal. Returns the input if unresolved. */
+  realpath(path: string): string
+  /** Whether `path` is a source file the project extracts from — its `cwd`-relative
+   *  form matches the configured `include`/`exclude` globs. For routing watch events. */
+  isSourceFile(path: string): boolean
   /** Read + parse paths returned from `scan()`, returning one report per file
    *  that was successfully read and parsed. */
   parseFiles(paths: string[]): ParseFileReport[]

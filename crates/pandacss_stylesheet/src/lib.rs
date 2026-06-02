@@ -1,9 +1,11 @@
 mod emitter;
+mod layers;
 mod preflight;
 mod sort;
 mod static_css;
 mod writer;
 
+pub use layers::has_layer_declaration;
 pub use sort::order_properties;
 
 use std::{ops::Range, sync::Arc};
