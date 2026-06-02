@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "panda codegen",
-    "dev": "rimraf .next && next dev",
+    "dev": "node ../../scripts/rm.mjs .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

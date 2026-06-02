@@ -38,9 +38,6 @@ importers:
       mdx-local-link-checker:
         specifier: 2.1.1
         version: 2.1.1
-      rimraf:
-        specifier: 5.0.10
-        version: 5.0.10
       ts-morph:
         specifier: 28.0.0
         version: 28.0.0
@@ -15127,10 +15124,6 @@ packages:
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
-    hasBin: true
-
-  rimraf@5.0.10:
-    resolution: {integrity: sha512-l0OE8wL34P4nJH/H2ffoaniAokM2qSmrtXHmlpvYr5AVVX8msAyW0l8NVJFDxlSK4u3Uh/f41cQheDVdnYijwQ==}
     hasBin: true
 
   rollup-plugin-visualizer@5.14.0:
@@ -35718,10 +35711,6 @@ snapshots:
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
-
-  rimraf@5.0.10:
-    dependencies:
-      glob: 10.4.5
 
   rollup-plugin-visualizer@5.14.0(rollup@4.53.1):
     dependencies:
