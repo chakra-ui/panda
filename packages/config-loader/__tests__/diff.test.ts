@@ -22,6 +22,7 @@ describe('diffConfig', () => {
     expect(result.dependencies).toMatchInlineSnapshot(`
       [
         "codegenFormat",
+        "codegenImportExtensions",
         "conditions",
         "hash",
         "jsxFactory",
@@ -88,15 +89,17 @@ describe('diffConfig', () => {
     `)
   })
 
-  test('jsx + format changes → respective dependencies', () => {
+  test('jsx + codegen option changes → respective dependencies', () => {
     const next = clone(base)
     next.jsxFramework = 'react'
     next.syntax = 'template-literal'
     next.shorthands = false
+    next.codegenImportExtensions = true
     const result = diffConfig(base, next)
     expect(result.dependencies.sort()).toMatchInlineSnapshot(`
       [
         "codegenFormat",
+        "codegenImportExtensions",
         "jsxFramework",
         "syntax",
       ]

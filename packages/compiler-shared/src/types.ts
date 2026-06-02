@@ -106,6 +106,7 @@ export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 
 
 export type CodegenDependency =
   | 'codegenFormat'
+  | 'codegenImportExtensions'
   | 'conditions'
   | 'hash'
   | 'jsxFactory'
@@ -121,7 +122,7 @@ export type CodegenDependency =
   | 'utilities'
 
 export interface GenerateArtifactOptions {
-  specifiers?: 'extensionless' | 'runtime-and-types'
+  codegenImportExtensions?: boolean
 }
 
 export interface CodegenOptions extends GenerateArtifactOptions {

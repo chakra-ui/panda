@@ -66,7 +66,7 @@ pub fn files(
             &declaration_module(&ctx.condition_keys()),
             options.format,
             false,
-            options.specifiers,
+            options.import_extensions,
             dependencies,
         );
     }
@@ -76,7 +76,7 @@ pub fn files(
         &module(ctx),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }

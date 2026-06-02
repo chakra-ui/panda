@@ -157,7 +157,10 @@ export abstract class BaseDriver implements Driver {
     const cwd = options?.cwd ?? this.defaultCwd
     const configuredOutdir = typeof this.config.outdir === 'string' ? this.config.outdir : undefined
     const outdir = options?.outdir ?? configuredOutdir ?? 'styled-system'
-    const artifactOptions = options?.specifiers ? { specifiers: options.specifiers } : undefined
+    const artifactOptions =
+      options?.codegenImportExtensions === undefined
+        ? undefined
+        : { codegenImportExtensions: options.codegenImportExtensions }
     return this.#compiler.writeArtifacts(outdir, cwd, artifactOptions)
   }
 

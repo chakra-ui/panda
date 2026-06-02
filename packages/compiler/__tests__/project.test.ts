@@ -138,6 +138,17 @@ describe('Compiler', () => {
     `)
   })
 
+  it('uses config codegenImportExtensions for generated import specifiers', () => {
+    const compiler = createProject({ codegenImportExtensions: true })
+
+    const artifact = compiler.generateArtifact('css-index')
+    const runtime = artifact?.files.find((file) => file.path === 'css/index.mjs')?.code
+    const types = artifact?.files.find((file) => file.path === 'css/index.d.mts')?.code
+
+    expect(runtime).toContain('./css.mjs')
+    expect(types).toContain('./css.d.mts')
+  })
+
   it('expands staticCss.patterns through compile()', () => {
     const compiler = createProject({
       patterns: {

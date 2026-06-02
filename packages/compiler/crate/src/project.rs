@@ -18,9 +18,7 @@ use crate::cache::{
 use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
-use pandacss_codegen::{
-    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions};
 use pandacss_config::{
     CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
     ValidationMode, validate_config_value, validation_mode_from_value,
@@ -119,8 +117,7 @@ pub struct StaticPatternResult {
 
 #[napi(object)]
 pub struct GenerateArtifactOptions {
-    /// "extensionless" (default) or "runtime-and-types".
-    pub specifiers: Option<String>,
+    pub codegen_import_extensions: Option<bool>,
 }
 
 #[napi(object)]
@@ -349,7 +346,7 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<String>> {
         use pandacss_fs::FileSystem;
-        let generate = generate_options(&self.user_config, options)?;
+        let generate = generate_options(&self.user_config, options);
         let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
         let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
             .join(&outdir);
@@ -847,7 +844,7 @@ impl Compiler {
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
         let _span = tracing::trace_span!("codegen", method = "generate_artifacts").entered();
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(&self.user_config, options);
         let artifacts = self
             .inner
             .generate_artifacts(&self.user_config, options)
@@ -873,7 +870,7 @@ impl Compiler {
         let id = id
             .parse::<ArtifactId>()
             .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(&self.user_config, options);
         let artifact = self
             .inner
             .generate_artifact(&self.user_config, id, options)
@@ -896,7 +893,7 @@ impl Compiler {
         let _span =
             tracing::trace_span!("codegen", method = "generate_affected_artifacts").entered();
         let changed = dependency_set_from_strings(dependencies)?;
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(&self.user_config, options);
         let artifacts = self
             .inner
             .generate_affected_artifacts(&self.user_config, changed, options)
@@ -1148,22 +1145,15 @@ fn apply_project_options(
 fn generate_options(
     user_config: &UserConfig,
     options: Option<GenerateArtifactOptions>,
-) -> napi::Result<GenerateOptions> {
-    let specifiers = match options.and_then(|options| options.specifiers) {
-        None => ModuleSpecifierPolicy::Extensionless,
-        Some(value) if value == "extensionless" => ModuleSpecifierPolicy::Extensionless,
-        Some(value) if value == "runtime-and-types" => ModuleSpecifierPolicy::RuntimeAndTypes,
-        Some(value) => {
-            return Err(napi::Error::from_reason(format!(
-                "unknown codegen specifier policy `{value}`"
-            )));
-        }
-    };
+) -> GenerateOptions {
+    let import_extensions = options
+        .and_then(|options| options.codegen_import_extensions)
+        .unwrap_or(user_config.codegen_import_extensions);
 
-    Ok(GenerateOptions {
+    GenerateOptions {
         format: user_config.codegen_format,
-        specifiers,
-    })
+        import_extensions,
+    }
 }
 
 fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {

@@ -1,8 +1,7 @@
 use indoc::indoc;
 use pandacss_codegen::{
     Block, EmitMode, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, JsxAttr,
-    JsxElement, JsxName, Module, ModuleSpecifierPolicy, Param, SourceExt, Stmt, TsType,
-    TypeAliasDecl, emit_module,
+    JsxElement, JsxName, Module, Param, SourceExt, Stmt, TsType, TypeAliasDecl, emit_module,
 };
 use pandacss_config::CodegenFormat;
 
@@ -13,7 +12,7 @@ fn emits_source_ts_with_runtime_and_type_items() {
         &module,
         EmitMode::SourceTs {
             ext: SourceExt::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
 
@@ -52,7 +51,7 @@ fn splits_runtime_and_declaration_items() {
         &module,
         EmitMode::Split {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
 
@@ -158,7 +157,7 @@ fn emits_framework_style_jsx_ast() {
         &module,
         EmitMode::SourceTs {
             ext: SourceExt::Tsx,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
 

@@ -5,9 +5,7 @@ use std::collections::BTreeMap;
 use common::{artifact, file, paths};
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_codegen::{
-    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{
     CodegenFormat, ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind,
     PatternTypeData, PatternTypeDefinition, PrimitiveType, RecipeTypeData, RecipeTypeDefinition,
@@ -513,12 +511,12 @@ fn emits_strict_value_types_without_repeating_large_unions() {
 }
 
 #[test]
-fn can_emit_extensioned_type_specifiers() {
+fn can_emit_type_import_extensions() {
     let artifacts = ArtifactGraph.generate_with_input(
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let types = artifact(&artifacts, ArtifactId::Types);

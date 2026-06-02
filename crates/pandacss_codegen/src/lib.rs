@@ -24,5 +24,5 @@ pub use ast::{
     Module, ObjectProp, Param, Stmt, TsMember, TsMemberName, TsType, TypeAliasDecl,
 };
 pub use context::{CodegenContext, CodegenInput, PatternCodegenMeta};
-pub use emit::{EmitMode, EmitTarget, ModuleSpecifierPolicy, PrintedFiles, SourceExt, emit_module};
+pub use emit::{EmitMode, EmitTarget, PrintedFiles, SourceExt, emit_module};
 pub use ts_strip::strip_typescript;

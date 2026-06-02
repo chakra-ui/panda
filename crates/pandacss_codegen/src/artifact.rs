@@ -6,9 +6,7 @@
 use pandacss_config::{CodegenFormat, UserConfig};
 use std::str::FromStr;
 
-use crate::{
-    CodegenContext, CodegenInput, EmitMode, Module, ModuleSpecifierPolicy, SourceExt, emit_module,
-};
+use crate::{CodegenContext, CodegenInput, EmitMode, Module, SourceExt, emit_module};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ArtifactId {
@@ -74,6 +72,7 @@ impl FromStr for ArtifactId {
 #[repr(u8)]
 pub enum ConfigDependency {
     CodegenFormat = 0,
+    CodegenImportExtensions,
     Conditions,
     Hash,
     JsxFactory,
@@ -92,6 +91,7 @@ pub enum ConfigDependency {
 impl ConfigDependency {
     pub const ALL: &'static [Self] = &[
         Self::CodegenFormat,
+        Self::CodegenImportExtensions,
         Self::Conditions,
         Self::Hash,
         Self::JsxFactory,
@@ -111,6 +111,7 @@ impl ConfigDependency {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::CodegenFormat => "codegenFormat",
+            Self::CodegenImportExtensions => "codegenImportExtensions",
             Self::Conditions => "conditions",
             Self::Hash => "hash",
             Self::JsxFactory => "jsxFactory",
@@ -210,14 +211,14 @@ pub struct ArtifactFile {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct GenerateOptions {
     pub format: CodegenFormat,
-    pub specifiers: ModuleSpecifierPolicy,
+    pub import_extensions: bool,
 }
 
 impl Default for GenerateOptions {
     fn default() -> Self {
         Self {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         }
     }
 }
@@ -229,12 +230,16 @@ impl ArtifactGraph {
     pub const NODES: &'static [ArtifactNode] = &[
         ArtifactNode {
             id: ArtifactId::Helpers,
-            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
         },
         ArtifactNode {
             id: ArtifactId::Patterns,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Patterns,
                 ConfigDependency::Tokens,
                 ConfigDependency::Utilities,
@@ -244,6 +249,7 @@ impl ArtifactGraph {
             id: ArtifactId::Recipes,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
                 ConfigDependency::Hash,
                 ConfigDependency::Prefix,
@@ -255,6 +261,7 @@ impl ArtifactGraph {
             id: ArtifactId::Types,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Patterns,
@@ -269,6 +276,7 @@ impl ArtifactGraph {
             id: ArtifactId::Css,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
                 ConfigDependency::Hash,
                 ConfigDependency::Prefix,
@@ -278,20 +286,30 @@ impl ArtifactGraph {
         },
         ArtifactNode {
             id: ArtifactId::Cva,
-            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
         },
         ArtifactNode {
             id: ArtifactId::Sva,
-            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
         },
         ArtifactNode {
             id: ArtifactId::Cx,
-            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
         },
         ArtifactNode {
             id: ArtifactId::Tokens,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Hash,
                 ConfigDependency::Prefix,
                 ConfigDependency::Tokens,
@@ -299,12 +317,16 @@ impl ArtifactGraph {
         },
         ArtifactNode {
             id: ArtifactId::CssIndex,
-            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+            ]),
         },
         ArtifactNode {
             id: ArtifactId::Conditions,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
                 ConfigDependency::Tokens,
             ]),
@@ -400,10 +422,10 @@ pub fn emit_module_files(
     module: &Module,
     format: CodegenFormat,
     has_jsx: bool,
-    specifiers: ModuleSpecifierPolicy,
+    import_extensions: bool,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    let mode = EmitMode::from_codegen_format(format, has_jsx, specifiers);
+    let mode = EmitMode::from_codegen_format(format, has_jsx, import_extensions);
     let printed = emit_module(module, mode);
 
     match mode {

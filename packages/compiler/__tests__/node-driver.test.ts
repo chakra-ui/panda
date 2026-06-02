@@ -6,6 +6,7 @@ import { createNodeDriver } from '../src'
 
 const CONFIG = `export default {
   outdir: 'styled-system',
+  codegenImportExtensions: true,
   include: ['**/*.tsx'],
   importMap: {
     css: ['@panda/css'],
@@ -68,6 +69,7 @@ describe('createNodeDriver', () => {
 
     const stack = readFileSync(join(dir, 'styled-system', 'patterns', 'stack.mjs'), 'utf8')
     expect(stack).toContain('display: "flex"')
+    expect(stack).toContain('./runtime.mjs')
     expect(stack).not.toContain('(s) => s')
   })
 
