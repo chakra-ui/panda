@@ -166,7 +166,7 @@ fn refresh_file_returns_false_on_unknown_path_and_doesnt_register() {
 }
 
 #[test]
-fn refresh_file_replaces_known_files_content() {
+fn refresh_file_accumulates_known_files_content() {
     let mut project = create_project(json!({}));
     project.parse_file(
         "button.tsx",
@@ -179,7 +179,7 @@ fn refresh_file_replaces_known_files_content() {
     assert!(refreshed);
     assert_yaml_snapshot!(project.summary(), @r"
     filesProcessed: 1
-    atomCount: 1
+    atomCount: 2
     recipeCount: 0
     slotRecipeCount: 0
     ");
@@ -187,7 +187,32 @@ fn refresh_file_replaces_known_files_content() {
     - prop: color
       value: blue
       conditions: []
+    - prop: color
+      value: red
+      conditions: []
     ");
+}
+
+#[test]
+fn remove_file_drops_accumulated_refresh_content() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "button.tsx",
+        "import { css } from '@panda/css';\ncss({ color: 'red' });",
+    );
+    assert!(project.refresh_file(
+        "button.tsx",
+        "import { css } from '@panda/css';\ncss({ color: 'blue' });",
+    ));
+
+    assert!(project.remove_file("button.tsx"));
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 0
+    atomCount: 0
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
 }
 
 #[test]

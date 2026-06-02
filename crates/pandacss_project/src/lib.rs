@@ -113,6 +113,12 @@ struct FileEntry {
     report: ParseFileReport,
 }
 
+#[derive(Clone, Copy)]
+enum ParseMode {
+    Replace,
+    Additive,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct RecipeKey {
     pub(crate) file: Arc<str>,
@@ -164,9 +170,9 @@ impl Project {
 
     /// Extract usages, decompose recipes, encode atoms into the per-file
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
-    /// and recipes) so stale styles can't linger in watch mode.
+    /// and recipes) so full rebuilds can clear stale styles.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        self.parse_file_inner(path, source, None, None)
+        self.parse_file_inner(path, source, None, None, ParseMode::Replace)
     }
 
     /// [`Self::parse_file`] with transform callbacks. The binding layer
@@ -178,7 +184,13 @@ impl Project {
         source: &str,
         transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(path, source, transforms.pattern, transforms.utility)
+        self.parse_file_inner(
+            path,
+            source,
+            transforms.pattern,
+            transforms.utility,
+            ParseMode::Replace,
+        )
     }
 
     /// Stateless single-file extraction using this project's configured
@@ -201,6 +213,7 @@ impl Project {
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
         utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        mode: ParseMode,
     ) -> ParseFileReport {
         let span = tracing::trace_span!(
             "file_parse",
@@ -242,9 +255,11 @@ impl Project {
             diagnostics: diagnostics.clone(),
         };
 
-        // Drop the previous contribution first; otherwise removed styles
-        // survive as ghost atoms in the global view.
-        self.drop_file_state(path);
+        if matches!(mode, ParseMode::Replace) {
+            // Drop the previous contribution first; otherwise removed styles
+            // survive as ghost atoms in the global view.
+            self.drop_file_state(path);
+        }
         let path_key: Arc<str> = Arc::from(path);
 
         let compiled = self.config.as_ref();
@@ -400,7 +415,10 @@ impl Project {
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
-        self.add_file_state(path_key, entry);
+        match mode {
+            ParseMode::Replace => self.add_file_state(path_key, entry),
+            ParseMode::Additive => self.add_file_state_additive(path_key, entry),
+        }
         report
     }
 
@@ -412,7 +430,7 @@ impl Project {
         if !self.files.contains_key(path) {
             return false;
         }
-        self.parse_file(path, source);
+        self.parse_file_inner(path, source, None, None, ParseMode::Additive);
         true
     }
 
@@ -425,7 +443,13 @@ impl Project {
         if !self.files.contains_key(path) {
             return false;
         }
-        self.parse_file_with(path, source, transforms);
+        self.parse_file_inner(
+            path,
+            source,
+            transforms.pattern,
+            transforms.utility,
+            ParseMode::Additive,
+        );
         true
     }
 
@@ -492,6 +516,46 @@ impl Project {
         }
         self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
         self.files.insert(path, entry);
+    }
+
+    fn add_file_state_additive(&mut self, path: Arc<str>, entry: FileEntry) {
+        if !self.files.contains_key(&path) {
+            self.add_file_state(path, entry);
+            return;
+        }
+
+        self.invalidate_stylesheet_snapshots();
+        let mut missing_atoms = Vec::new();
+        let missing_recipes = {
+            let existing = self
+                .files
+                .get_mut(&path)
+                .expect("file presence checked before mutation");
+            for atom in &entry.atoms {
+                if existing.atoms.insert(atom.clone()) {
+                    missing_atoms.push(atom.clone());
+                }
+            }
+            let missing_recipes = existing
+                .encoded_recipes
+                .extend_missing_from(&entry.encoded_recipes);
+            existing.source_hash = entry.source_hash;
+            existing.parse_epoch = entry.parse_epoch;
+            existing.cacheable = entry.cacheable;
+            existing.diagnostics = entry.diagnostics;
+            existing.report = entry.report;
+            missing_recipes
+        };
+
+        for atom in missing_atoms {
+            let count = self.atom_counts.entry(atom.clone()).or_insert(0);
+            *count += 1;
+            if *count == 1 {
+                self.atoms_cache.insert(atom);
+            }
+        }
+
+        self.encoded_recipes_cache.add_from(&missing_recipes);
     }
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {

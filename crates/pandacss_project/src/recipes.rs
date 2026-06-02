@@ -765,6 +765,18 @@ impl EncodedRecipes {
         self.base.is_empty() && self.variants.is_empty() && self.atomic.is_empty()
     }
 
+    pub(crate) fn extend_missing_from(&mut self, source: &Self) -> Self {
+        let mut missing = Self::default();
+        extend_missing_recipe_groups(&mut self.base, &mut missing.base, &source.base);
+        extend_missing_recipe_groups(&mut self.variants, &mut missing.variants, &source.variants);
+        for atom in &source.atomic {
+            if self.atomic.insert(atom.clone()) {
+                missing.atomic.insert(atom.clone());
+            }
+        }
+        missing
+    }
+
     /// Record the style groups one recipe usage contributes: its `base` plus
     /// every selected variant option (and matching compound variants). Dispatches
     /// to the recipe vs slot-recipe path; unknown names are no-ops.
@@ -906,6 +918,38 @@ impl EncodedRecipes {
         transform_recipe_groups(&mut self.base, transform, diagnostics);
         transform_recipe_groups(&mut self.variants, transform, diagnostics);
         self.atomic = transform_atoms(std::mem::take(&mut self.atomic), transform, diagnostics);
+    }
+}
+
+fn extend_missing_recipe_groups<K>(
+    target: &mut FxHashMap<K, RecipeStyleGroup>,
+    missing: &mut FxHashMap<K, RecipeStyleGroup>,
+    source: &FxHashMap<K, RecipeStyleGroup>,
+) where
+    K: Clone + Eq + std::hash::Hash,
+{
+    for (key, group) in source {
+        let target_group = target
+            .entry(key.clone())
+            .or_insert_with(|| RecipeStyleGroup {
+                class_name: group.class_name.clone(),
+                entries: FxHashSet::default(),
+            });
+        let mut missing_entries = FxHashSet::default();
+        for entry in &group.entries {
+            if target_group.entries.insert(entry.clone()) {
+                missing_entries.insert(entry.clone());
+            }
+        }
+        if !missing_entries.is_empty() {
+            missing.insert(
+                key.clone(),
+                RecipeStyleGroup {
+                    class_name: group.class_name.clone(),
+                    entries: missing_entries,
+                },
+            );
+        }
     }
 }
 

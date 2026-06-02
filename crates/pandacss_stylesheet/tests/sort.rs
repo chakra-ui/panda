@@ -59,15 +59,15 @@ fn applies_every_part_of_mixed_condition_arrays() {
         "import { css } from '@panda/css'; css({ _before: { _hoverFine: { content: '\"x\"' } } })",
     );
     assert_snapshot!(css, @r#"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @media (hover: hover) {
-    .hoverFine\:before\:content_"x":hover::before {
-      content: "x";
+    @layer reset, base, tokens, recipes, utilities;
+    @layer utilities {
+      @media (hover: hover) {
+        .hoverFine\:before\:content_\"x\":hover::before {
+          content: "x";
+        }
+      }
     }
-  }
-}
-"#);
+    "#);
 }
 
 #[test]
@@ -413,13 +413,13 @@ fn applies_pseudo_elements_after_multiple_pseudo_classes() {
         "import { css } from '@panda/css'; css({ _before: { _focus: { _hover: { content: '\"x\"' } } } })",
     );
     assert_snapshot!(css, @r#"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .hover\:focus\:before\:content_"x":hover:focus::before {
-    content: "x";
-  }
-}
-"#);
+    @layer reset, base, tokens, recipes, utilities;
+    @layer utilities {
+      .hover\:focus\:before\:content_\"x\":hover:focus::before {
+        content: "x";
+      }
+    }
+    "#);
 }
 
 #[test]
@@ -620,9 +620,11 @@ fn sorts_recipe_entries_with_the_same_priority_model() {
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
 @layer recipes {
-  .button {
-    padding: 8px;
-    padding-top: 4px;
+  @layer base {
+    .button {
+      padding: 8px;
+      padding-top: 4px;
+    }
   }
 }
 ");
@@ -818,8 +820,10 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
 @layer recipes {
-  .button {
-    background-color: blue;
+  @layer base {
+    .button {
+      background-color: blue;
+    }
   }
 }
 ");

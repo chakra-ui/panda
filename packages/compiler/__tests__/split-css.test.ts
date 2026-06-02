@@ -35,8 +35,10 @@ describe('compiler.splitCss()', () => {
     `)
     expect(compiler.splitCss().find((file) => file.path === 'recipes/button.css')?.code).toMatchInlineSnapshot(`
       "@layer recipes {
-        .button {
-          display: inline-flex;
+        @layer base {
+          .button {
+            display: inline-flex;
+          }
         }
         .button--size_sm {
           padding: 8px;

@@ -67,14 +67,7 @@ pub fn emit<'a>(
         }));
     }
     if has_recipe_rules(recipes) {
-        layer_ranges.recipes = Some(write_layer(&mut writer, &layers.recipes, |writer| {
-            for group in &recipes.base {
-                cx.write_recipe_group(writer, &group.class_name, &group.entries);
-            }
-            for group in &recipes.variants {
-                cx.write_recipe_group(writer, &group.class_name, &group.entries);
-            }
-        }));
+        layer_ranges.recipes = Some(cx.write_recipes_layer(&mut writer, recipes, &layers.recipes));
     }
     if !atoms.is_empty() || !recipes.atomic.is_empty() {
         atoms.extend(recipes.atomic.iter());
@@ -113,26 +106,35 @@ pub fn emit_recipe_split<'a>(
 ) -> Vec<(String, String)> {
     let cx = EmitContext::new(config, utility);
     let recipes_layer = &config.layers.recipes;
-    let mut grouped: indexmap::IndexMap<&str, Vec<&RecipeStyleGroupSnapshot>> =
-        indexmap::IndexMap::new();
-    for group in recipes.base.iter().chain(recipes.variants.iter()) {
+    let mut grouped: indexmap::IndexMap<&str, SplitRecipeGroups<'_>> = indexmap::IndexMap::new();
+    for group in &recipes.base {
         grouped
             .entry(group.recipe.as_ref())
             .or_default()
+            .base
+            .push(group);
+    }
+    for group in &recipes.variants {
+        grouped
+            .entry(group.recipe.as_ref())
+            .or_default()
+            .variants
             .push(group);
     }
     grouped
         .into_iter()
         .map(|(name, groups)| {
             let mut writer = CssWriter::new(minify, 256);
-            write_layer(&mut writer, recipes_layer, |writer| {
-                for group in groups {
-                    cx.write_recipe_group(writer, &group.class_name, &group.entries);
-                }
-            });
+            cx.write_recipe_group_refs(&mut writer, recipes_layer, &groups.base, &groups.variants);
             (name.to_owned(), writer.finish())
         })
         .collect()
+}
+
+#[derive(Default)]
+struct SplitRecipeGroups<'a> {
+    base: Vec<&'a RecipeStyleGroupSnapshot>,
+    variants: Vec<&'a RecipeStyleGroupSnapshot>,
 }
 
 /// `IndexMap` keeps custom-layer emit order deterministic (first-seen).
@@ -644,6 +646,52 @@ impl<'a> EmitContext<'a> {
     /// Emit one recipe class's rules. Entries are sorted then coalesced:
     /// consecutive entries that resolve to the same rule target (selector +
     /// wrappers) are merged into a single block rather than re-opening it.
+    fn write_recipes_layer(
+        &self,
+        writer: &mut CssWriter,
+        recipes: &EncodedRecipesSnapshot,
+        recipes_layer: &str,
+    ) -> Range<usize> {
+        let start = writer.len();
+        self.write_recipe_groups(writer, recipes_layer, &recipes.base, &recipes.variants);
+        let end = writer.len();
+        start..end
+    }
+
+    fn write_recipe_groups(
+        &self,
+        writer: &mut CssWriter,
+        recipes_layer: &str,
+        base: &[RecipeStyleGroupSnapshot],
+        variants: &[RecipeStyleGroupSnapshot],
+    ) {
+        let base = base.iter().collect::<Vec<_>>();
+        let variants = variants.iter().collect::<Vec<_>>();
+        self.write_recipe_group_refs(writer, recipes_layer, &base, &variants);
+    }
+
+    fn write_recipe_group_refs(
+        &self,
+        writer: &mut CssWriter,
+        recipes_layer: &str,
+        base: &[&RecipeStyleGroupSnapshot],
+        variants: &[&RecipeStyleGroupSnapshot],
+    ) {
+        let slot_layer = format!("{recipes_layer}.slots");
+        if has_slot_recipe_groups(base) || has_slot_recipe_groups(variants) {
+            writer.layer(&slot_layer, |writer| {
+                write_recipe_base_groups(self, writer, base, true);
+                write_recipe_variant_groups(self, writer, variants, true);
+            });
+        }
+        if has_regular_recipe_groups(base) || has_regular_recipe_groups(variants) {
+            writer.layer(recipes_layer, |writer| {
+                write_recipe_base_groups(self, writer, base, false);
+                write_recipe_variant_groups(self, writer, variants, false);
+            });
+        }
+    }
+
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
@@ -862,6 +910,54 @@ fn append_recipe_declaration(target: &mut Vec<RecipeDeclaration>, declaration: R
     target.push(declaration);
 }
 
+fn is_slot_recipe_group(group: &RecipeStyleGroupSnapshot) -> bool {
+    !group.slot.is_null()
+}
+
+fn has_slot_recipe_groups(groups: &[&RecipeStyleGroupSnapshot]) -> bool {
+    groups.iter().any(|group| is_slot_recipe_group(group))
+}
+
+fn has_regular_recipe_groups(groups: &[&RecipeStyleGroupSnapshot]) -> bool {
+    groups.iter().any(|group| !is_slot_recipe_group(group))
+}
+
+fn write_recipe_base_groups(
+    cx: &EmitContext<'_>,
+    writer: &mut CssWriter,
+    groups: &[&RecipeStyleGroupSnapshot],
+    slots: bool,
+) {
+    let groups = groups
+        .iter()
+        .copied()
+        .filter(|group| is_slot_recipe_group(group) == slots)
+        .collect::<Vec<_>>();
+    if groups.is_empty() {
+        return;
+    }
+    writer.layer("base", |writer| {
+        for group in groups {
+            cx.write_recipe_group(writer, &group.class_name, &group.entries);
+        }
+    });
+}
+
+fn write_recipe_variant_groups(
+    cx: &EmitContext<'_>,
+    writer: &mut CssWriter,
+    groups: &[&RecipeStyleGroupSnapshot],
+    slots: bool,
+) {
+    for group in groups
+        .iter()
+        .copied()
+        .filter(|group| is_slot_recipe_group(group) == slots)
+    {
+        cx.write_recipe_group(writer, &group.class_name, &group.entries);
+    }
+}
+
 fn write_with_wrappers(
     writer: &mut CssWriter,
     wrappers: &[String],
@@ -1058,7 +1154,7 @@ fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
 }
 
 fn without_space(value: &str) -> String {
-    value.chars().filter(|ch| !ch.is_whitespace()).collect()
+    value.replace(' ', "_")
 }
 
 fn escape_selector(value: &str) -> String {
