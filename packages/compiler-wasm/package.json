@@ -15,6 +15,15 @@
       },
       "require": "./dist/index.js"
     },
+    "./web": {
+      "source": "./src/web.ts",
+      "types": "./dist/web.d.ts",
+      "import": {
+        "types": "./dist/web.d.mts",
+        "default": "./dist/web.mjs"
+      },
+      "require": "./dist/web.js"
+    },
     "./pkg-node/*": "./pkg-node/*",
     "./pkg-web/*": "./pkg-web/*",
     "./package.json": "./package.json"
@@ -32,8 +41,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup",
+    "build-fast": "tsup --no-dts",
     "build:wasm": "tsx build-wasm.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"

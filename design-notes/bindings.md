@@ -263,6 +263,25 @@ Browser consumers can import directly from `@pandacss/compiler-wasm/pkg-web/*` a
 themselves when they need control over the wasm fetch, then pass the initialized module to
 `createCompilerFromWasmModule()` so config callbacks are still registered before parsing.
 
+## Browser-only subpath export (`./web`)
+
+`@pandacss/compiler-wasm` ships a `./web` subpath export (`dist/web.mjs`) that carries only the wasm-module facade —
+`createCompilerFromWasmModule` and the shared types — with **no** `import('../pkg-node/...')` in its module graph.
+
+Because `src/web.ts` never references `pkg-node`, tsup injects no Node `fileURLToPath` shim into `dist/web.mjs`.
+Browser bundlers (webpack, Vite) that stub or remove `node:url` will not throw at module-eval time.
+
+```ts
+import initWasm, * as wasmMod from '@pandacss/compiler-wasm/pkg-web/compiler_wasm.js'
+import { createCompilerFromWasmModule } from '@pandacss/compiler-wasm/web'
+
+await initWasm(new URL('/compiler_wasm_bg.wasm', window.location.origin))
+const compiler = createCompilerFromWasmModule(wasmMod, config, options)
+```
+
+The main `"."` entry still re-exports everything from `./web` plus `loadWasm` / `createCompiler` /
+`createCompilerFromSnapshot`, so Node consumers and existing tests are unaffected.
+
 ## Related
 
 - [filesystem](./filesystem.md) — the FS abstraction both bindings consume.
