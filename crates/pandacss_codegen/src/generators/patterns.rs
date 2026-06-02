@@ -93,20 +93,30 @@ pub fn module_with_type_data(
     let fn_type_name = format!("{}PatternFn", pascal_case(name));
 
     let type_imports = type_imports(pattern, definition);
+    let mut module = Module::new().with_import(ImportDecl::value(
+        ["getPatternStyles", "patternFns"],
+        "./runtime",
+    ));
 
-    Module::new()
-        .with_import(ImportDecl::value(
-            ["getPatternStyles", "patternFns"],
-            "./runtime",
-        ))
-        .with_import(ImportDecl {
-            kind: crate::ImportKind::Type,
-            specifiers: type_imports
-                .into_iter()
-                .map(crate::ImportSpecifier::Named)
-                .collect(),
-            source: "../types".into(),
-        })
+    let pattern_imports = filtered_type_imports(&type_imports, &["PatternRuntimeConfig"]);
+    if !pattern_imports.is_empty() {
+        module = module.with_import(type_import(pattern_imports, "../types/pattern"));
+    }
+
+    let token_imports = filtered_type_imports(&type_imports, &["TokenValue"]);
+    if !token_imports.is_empty() {
+        module = module.with_import(type_import(token_imports, "../types/tokens"));
+    }
+
+    let system_imports = filtered_type_imports(
+        &type_imports,
+        &["ConditionalValue", "SystemProperties", "SystemStyleObject"],
+    );
+    if !system_imports.is_empty() {
+        module = module.with_import(type_import(system_imports, "../types/system"));
+    }
+
+    module
         .with_item(config_const(&config_name, &type_name, pattern, meta))
         .with_item(properties_interface(&type_name, pattern, definition))
         .with_item(styles_interface(
@@ -122,6 +132,25 @@ pub fn module_with_type_data(
             &raw_name,
             &fn_type_name,
         ))
+}
+
+fn filtered_type_imports(imports: &BTreeSet<String>, names: &[&str]) -> Vec<String> {
+    names
+        .iter()
+        .filter(|name| imports.contains(**name))
+        .map(|name| (*name).to_owned())
+        .collect()
+}
+
+fn type_import(specifiers: Vec<String>, source: &str) -> ImportDecl {
+    ImportDecl {
+        kind: crate::ImportKind::Type,
+        specifiers: specifiers
+            .into_iter()
+            .map(crate::ImportSpecifier::Named)
+            .collect(),
+        source: source.into(),
+    }
 }
 
 /// Pattern runtime shared by every generated pattern file — the analogue of

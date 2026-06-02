@@ -167,11 +167,8 @@ fn emits_framework_style_jsx_ast() {
         Some(
             indoc! {r#"
             import { splitProps } from 'solid-js';
-
             import { stackRaw } from '../patterns/stack';
-
             import { styled } from './factory';
-
             import type { JSX } from 'solid-js';
 
             export interface StackProps extends StackProperties {}

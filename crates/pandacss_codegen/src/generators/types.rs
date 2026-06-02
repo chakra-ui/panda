@@ -234,6 +234,7 @@ fn system_module(
     parts.extend(vec![
         "export type Selector = `&${string}` | `@${string}`".into(),
         "export type AnySelector = Selector | string".into(),
+        "export type Nested<P> = P & {\n  [K in Selector]?: Nested<P>\n} & {\n  [K in AnySelector]?: Nested<P>\n} & {\n  [K in Condition]?: Nested<P>\n}".into(),
         r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
         "export type CssValue = Globals | (string & {}) | number".into(),
         format!("export interface CssProperties {{\n{css_members}\n}}"),

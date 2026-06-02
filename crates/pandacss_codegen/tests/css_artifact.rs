@@ -62,13 +62,11 @@ fn emits_ts_source_css() {
     );
     let css = artifact(&artifacts, ArtifactId::Css);
 
-    assert_eq!(paths(css), vec!["css.ts"]);
-    assert_snapshot!(file(css, "css.ts"), @r#"
-    import { createCss, createMergeCss, hypenateProperty, withoutSpace } from './helpers';
-
+    assert_eq!(paths(css), vec!["css/css.ts"]);
+    assert_snapshot!(file(css, "css/css.ts"), @r#"
+    import { createCss, createMergeCss, hypenateProperty, withoutSpace } from '../helpers';
     import { finalizeConditions, sortConditions } from './conditions';
-
-    import type { SystemStyleObject } from './types';
+    import type { SystemStyleObject } from '../types/system';
 
     type Styles = SystemStyleObject | undefined | null | false
 
@@ -90,15 +88,17 @@ fn emits_ts_source_css() {
 
     const classNameByProp = new Map<string, string>()
     const shorthands = new Map<string, string>()
-    utilities.split(",").forEach((utility: string) => {
-      const [prop, meta] = utility.split(":")
-      const [className, ...shorthandList] = meta.split("/")
-      if (className) classNameByProp.set(prop, className)
-      shorthandList.forEach((shorthand: string) => {
-        const key = shorthand === "1" ? className : shorthand
-        shorthands.set(key, prop)
+    if (utilities) {
+      utilities.split(",").forEach((utility: string) => {
+        const [prop, meta] = utility.split(":")
+        const [className, ...shorthandList] = meta.split("/")
+        if (className) classNameByProp.set(prop, className)
+        shorthandList.forEach((shorthand: string) => {
+          const key = shorthand === "1" ? className : shorthand
+          shorthands.set(key, prop)
+        })
       })
-    })
+    }
 
     const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
 
@@ -152,25 +152,26 @@ fn emits_js_runtime_and_declarations() {
     );
     let css = artifact(&artifacts, ArtifactId::Css);
 
-    assert_eq!(paths(css), vec!["css.mjs", "css.d.mts"]);
-    assert_snapshot!(file(css, "css.mjs"), @r#"
-    import { createCss, createMergeCss, hypenateProperty, withoutSpace } from './helpers.mjs';
-
+    assert_eq!(paths(css), vec!["css/css.mjs", "css/css.d.mts"]);
+    assert_snapshot!(file(css, "css/css.mjs"), @r#"
+    import { createCss, createMergeCss, hypenateProperty, withoutSpace } from '../helpers.mjs';
     import { finalizeConditions, sortConditions } from './conditions.mjs';
 
     const utilities = "WebkitLineClamp:webkit-line-clamp,color:text,flexDirection:flex/flexDir,marginInlineStart:/ms,marginLeft:ml/1"
 
     const classNameByProp = new Map()
     const shorthands = new Map()
-    utilities.split(",").forEach((utility) => {
-      const [prop, meta] = utility.split(":")
-      const [className, ...shorthandList] = meta.split("/")
-      if (className) classNameByProp.set(prop, className)
-      shorthandList.forEach((shorthand) => {
-        const key = shorthand === "1" ? className : shorthand
-        shorthands.set(key, prop)
+    if (utilities) {
+      utilities.split(",").forEach((utility) => {
+        const [prop, meta] = utility.split(":")
+        const [className, ...shorthandList] = meta.split("/")
+        if (className) classNameByProp.set(prop, className)
+        shorthandList.forEach((shorthand) => {
+          const key = shorthand === "1" ? className : shorthand
+          shorthands.set(key, prop)
+        })
       })
-    })
+    }
 
     const resolveShorthand = (prop) => shorthands.get(prop) || prop
 
@@ -211,8 +212,8 @@ fn emits_js_runtime_and_declarations() {
 
     export const { mergeCss, assignCss } = createMergeCss(context)
     "#);
-    assert_snapshot!(file(css, "css.d.mts"), @"
-    import type { SystemStyleObject } from './types.d.mts';
+    assert_snapshot!(file(css, "css/css.d.mts"), @"
+    import type { SystemStyleObject } from '../types/system.d.mts';
 
     type Styles = SystemStyleObject | undefined | null | false
 
@@ -232,4 +233,20 @@ fn emits_js_runtime_and_declarations() {
 
     export declare const css: CssFunction;
     ");
+}
+
+#[test]
+fn guards_empty_utility_metadata() {
+    let artifacts = ArtifactGraph.generate_with_input(
+        &CodegenInput::default(),
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+        },
+    );
+    let css = artifact(&artifacts, ArtifactId::Css);
+    let runtime = file(css, "css/css.mjs");
+
+    assert!(runtime.contains("const utilities = \"\""));
+    assert!(runtime.contains("if (utilities) {\n  utilities.split(\",\").forEach((utility) => {"));
 }

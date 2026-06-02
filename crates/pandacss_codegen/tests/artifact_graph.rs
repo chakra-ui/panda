@@ -21,7 +21,6 @@ fn filters_artifacts_by_config_dependencies() {
             .collect::<Vec<_>>(),
         vec![
             ArtifactId::Helpers,
-            ArtifactId::Selectors,
             ArtifactId::Patterns,
             ArtifactId::Recipes,
             ArtifactId::Types,
@@ -87,7 +86,7 @@ fn emitted_files_carry_config_dependencies() {
     assert!(file_dependencies(helpers, "helpers.d.mts").contains(ConfigDependency::CodegenFormat));
 
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
-    let dependencies = file_dependencies(conditions, "conditions.mjs");
+    let dependencies = file_dependencies(conditions, "css/conditions.mjs");
     assert!(dependencies.contains(ConfigDependency::CodegenFormat));
     assert!(dependencies.contains(ConfigDependency::Conditions));
     assert!(dependencies.contains(ConfigDependency::Tokens));

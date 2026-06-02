@@ -40,7 +40,10 @@ pub(super) fn normalize_style_object() -> Item {
             const { utility, conditions } = context
             const { hasShorthand, resolveShorthand } = utility
             shorthand = shorthand !== false
-            return walkObject(styles, (value: any) => Array.isArray(value) ? toResponsiveObject(value, conditions.breakpoints.keys) : value, {
+            return walkObject(styles, (value: any) => {
+              if (Array.isArray(value)) return toResponsiveObject(value, conditions.breakpoints.keys)
+              return value
+            }, {
               stop: Array.isArray,
               getKey: shorthand ? (prop: string) => hasShorthand ? resolveShorthand(prop) : prop : void 0
             })
