@@ -196,6 +196,76 @@ fn named_raw_css_call_normalizes_to_imported_name() {
 }
 
 #[test]
+fn aliased_raw_css_cva_and_sva_calls_normalize_to_imported_names() {
+    assert_yaml_snapshot!(
+        extract(
+            indoc! {r#"
+                styledCss.raw({ color: 'red' })
+                componentVariant.raw({ base: { color: 'blue' } })
+                slotVariant.raw({ slots: ['root'], base: { root: { color: 'green' } } })
+                randomAlias.raw({ color: 'pink' })
+            "#},
+            &[
+                MatchedImport {
+                    category: MatchCategory::Css,
+                    module: "@panda/css".into(),
+                    name: "css".into(),
+                    alias: "styledCss".into(),
+                    kind: ImportSpecifierKind::Named,
+                },
+                MatchedImport {
+                    category: MatchCategory::Css,
+                    module: "@panda/css".into(),
+                    name: "cva".into(),
+                    alias: "componentVariant".into(),
+                    kind: ImportSpecifierKind::Named,
+                },
+                MatchedImport {
+                    category: MatchCategory::Css,
+                    module: "@panda/css".into(),
+                    name: "sva".into(),
+                    alias: "slotVariant".into(),
+                    kind: ImportSpecifierKind::Named,
+                },
+            ],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: styledCss
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 31
+      - category: css
+        name: cva
+        alias: componentVariant
+        data:
+          - base:
+              color: blue
+        span:
+          start: 32
+          end: 81
+      - category: css
+        name: sva
+        alias: slotVariant
+        data:
+          - slots:
+              - root
+            base:
+              root:
+                color: green
+        span:
+          start: 82
+          end: 154
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
 fn namespace_raw_pattern_call_normalizes_to_property_name() {
     let matchers = panda_matchers("@panda");
     assert_yaml_snapshot!(

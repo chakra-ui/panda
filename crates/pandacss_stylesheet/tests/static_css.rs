@@ -3,7 +3,7 @@ mod common;
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_css, compile_layer_css, config};
+use common::{compile_css, compile_layer_css, compile_output, config};
 
 #[test]
 fn expands_static_css_utilities() {
@@ -81,6 +81,116 @@ fn expands_static_css_responsive_breakpoints() {
   }
 }
 ");
+}
+
+#[test]
+fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "css": [
+                {
+                    "conditions": ["hoverFine"],
+                    "responsive": true,
+                    "properties": {
+                        "color": ["blue.500", "red.500"]
+                    }
+                }
+            ]
+        },
+        "conditions": {
+            "hoverFine": ["@media (hover: hover)", "&:hover"]
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "tokens": {
+                "colors": {
+                    "blue": { "500": { "value": "#00f" } },
+                    "red": { "500": { "value": "#f00" } }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_blue\.500 {
+        color: #00f;
+      }
+      .c_red\.500 {
+        color: #f00;
+      }
+      @media (width >= 48rem) {
+        .md\:c_blue\.500 {
+          color: #00f;
+        }
+      }
+      @media (width >= 48rem) {
+        .md\:c_red\.500 {
+          color: #f00;
+        }
+      }
+      @media (hover: hover) {
+        .hoverFine\:c_blue\.500:hover {
+          color: #00f;
+        }
+      }
+      @media (hover: hover) {
+        .hoverFine\:c_red\.500:hover {
+          color: #f00;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn reports_unsupported_themes_and_empty_wildcards() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "themes": ["light", "dark"],
+            "css": [
+                {
+                    "properties": {
+                        "color": "*",
+                        "margin": "*"
+                    }
+                }
+            ]
+        },
+        "utilities": {
+            "color": { "className": "c" },
+            "margin": { "className": "m", "values": ["1", "2"] }
+        }
+    }));
+    let output = compile_output(&config, "", Default::default());
+    let diagnostics = output
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.as_str())
+        .collect::<Vec<_>>();
+
+    assert_snapshot!(output.css, @r"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_2 {
+        margin: 2;
+      }
+    }
+    ");
+    assert_snapshot!(diagnostics.join("\n"), @r"
+    static_css_themes_unsupported
+    static_css_wildcard_empty
+    ");
 }
 
 #[test]

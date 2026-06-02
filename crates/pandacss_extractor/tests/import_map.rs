@@ -66,6 +66,35 @@ fn substring_match_on_module() {
 }
 
 #[test]
+fn matches_generated_outdir_relative_modules() {
+    let scan = scan_imports(
+        indoc! {r#"
+            import { css } from "../../styled-system/css"
+            import { token } from "../styled-system/tokens"
+            import { stack } from "./styled-system/patterns"
+        "#},
+        "src/components/card.tsx",
+    );
+    assert_yaml_snapshot!(match_imports(&scan, &panda_org("styled-system")), @r#"
+    - category: css
+      module: "../../styled-system/css"
+      name: css
+      alias: css
+      kind: named
+    - category: tokens
+      module: "../styled-system/tokens"
+      name: token
+      alias: token
+      kind: named
+    - category: pattern
+      module: "./styled-system/patterns"
+      name: stack
+      alias: stack
+      kind: named
+    "#);
+}
+
+#[test]
 fn rejects_unknown_name_within_panda_module() {
     let scan = scan_imports("import { somethingElse } from '@panda/css'\n", "f.tsx");
     assert_yaml_snapshot!(match_imports(&scan, &css_only(&["@panda/css"])), @"[]");
@@ -241,6 +270,31 @@ fn overlapping_modules_pick_css_over_recipe() {
       module: "@panda/css"
       name: css
       alias: css
+      kind: named
+    "#);
+}
+
+#[test]
+fn overlapping_modules_pick_tokens_before_recipe() {
+    // Category priority after css is tokens, then recipe. If a broad
+    // modules entry overlaps, `token` should remain a token import.
+    let scan = scan_imports("import { token } from '@panda/tokens';\n", "f.tsx");
+    let matchers = Matchers {
+        tokens: Matcher {
+            modules: vec!["@panda".into()],
+            names: NameMatcher::only(["token"]),
+        },
+        recipe: Matcher {
+            modules: vec!["@panda".into()],
+            names: NameMatcher::Any,
+        },
+        ..Default::default()
+    };
+    assert_yaml_snapshot!(match_imports(&scan, &matchers), @r#"
+    - category: tokens
+      module: "@panda/tokens"
+      name: token
+      alias: token
       kind: named
     "#);
 }
