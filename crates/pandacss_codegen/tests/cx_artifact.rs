@@ -15,7 +15,7 @@ fn uses_codegen_format_for_files() {
     });
     assert_eq!(
         paths(artifact(&js, ArtifactId::Cx)),
-        vec!["cx.js", "cx.d.ts"]
+        vec!["css/cx.js", "css/cx.d.ts"]
     );
 
     let mjs = graph.generate(GenerateOptions {
@@ -24,14 +24,14 @@ fn uses_codegen_format_for_files() {
     });
     assert_eq!(
         paths(artifact(&mjs, ArtifactId::Cx)),
-        vec!["cx.mjs", "cx.d.mts"]
+        vec!["css/cx.mjs", "css/cx.d.mts"]
     );
 
     let ts = graph.generate(GenerateOptions {
         format: CodegenFormat::Ts,
         specifiers: ModuleSpecifierPolicy::Extensionless,
     });
-    assert_eq!(paths(artifact(&ts, ArtifactId::Cx)), vec!["cx.ts"]);
+    assert_eq!(paths(artifact(&ts, ArtifactId::Cx)), vec!["css/cx.ts"]);
 }
 
 #[test]
@@ -44,7 +44,7 @@ fn emits_representative_js_and_ts_sources() {
     });
     let js = artifact(&js, ArtifactId::Cx);
     assert_eq!(
-        file(js, "cx.js"),
+        file(js, "css/cx.js"),
         indoc! {r"
         /**
          * Conditionally join classNames into a single string
@@ -66,7 +66,7 @@ fn emits_representative_js_and_ts_sources() {
         .trim()
     );
     assert_eq!(
-        file(js, "cx.d.ts"),
+        file(js, "css/cx.d.ts"),
         indoc! {r"
         type Argument = string | boolean | null | undefined;
 
@@ -83,7 +83,7 @@ fn emits_representative_js_and_ts_sources() {
         specifiers: ModuleSpecifierPolicy::Extensionless,
     });
     assert_eq!(
-        file(artifact(&ts, ArtifactId::Cx), "cx.ts"),
+        file(artifact(&ts, ArtifactId::Cx), "css/cx.ts"),
         indoc! {r"
         type Argument = string | boolean | null | undefined;
 

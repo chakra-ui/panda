@@ -18,7 +18,7 @@ pub fn generate(
         id: ArtifactId::Css,
         dependencies,
         files: emit_module_files(
-            "css",
+            "css/css",
             &module(ctx),
             options.format,
             false,
@@ -37,13 +37,13 @@ fn module(ctx: CodegenContext<'_>) -> Module {
                 "hypenateProperty",
                 "withoutSpace",
             ],
-            "./helpers",
+            "../helpers",
         ))
         .with_import(ImportDecl::value(
             ["finalizeConditions", "sortConditions"],
             "./conditions",
         ))
-        .with_import(ImportDecl::ty(["SystemStyleObject"], "./types"))
+        .with_import(ImportDecl::ty(["SystemStyleObject"], "../types/system"))
         .with_item(Item::ty(ItemNode::RawStmt(CSS_TYPES.into())))
         .with_item(Item::runtime(ItemNode::RawStmt(css_runtime_code(ctx))))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
@@ -200,15 +200,17 @@ const CSS_RUNTIME_TEMPLATE: &str = r#"const utilities = "__UTILITIES__"
 
 const classNameByProp = new Map<string, string>()
 const shorthands = new Map<string, string>()
-utilities.split(",").forEach((utility: string) => {
-  const [prop, meta] = utility.split(":")
-  const [className, ...shorthandList] = meta.split("/")
-  if (className) classNameByProp.set(prop, className)
-  shorthandList.forEach((shorthand: string) => {
-    const key = shorthand === "1" ? className : shorthand
-    shorthands.set(key, prop)
+if (utilities) {
+  utilities.split(",").forEach((utility: string) => {
+    const [prop, meta] = utility.split(":")
+    const [className, ...shorthandList] = meta.split("/")
+    if (className) classNameByProp.set(prop, className)
+    shorthandList.forEach((shorthand: string) => {
+      const key = shorthand === "1" ? className : shorthand
+      shorthands.set(key, prop)
+    })
   })
-})
+}
 
 const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
 

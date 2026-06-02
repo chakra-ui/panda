@@ -13,15 +13,12 @@ fn emits_ts_source_sva() {
     });
     let sva = artifact(&artifacts, ArtifactId::Sva);
 
-    assert_eq!(paths(sva), vec!["sva.ts"]);
-    assert_snapshot!(file(sva, "sva.ts"), @"
-    import { getSlotRecipes, memo, splitProps, toVariantMap, withDefaults } from './helpers';
-
+    assert_eq!(paths(sva), vec!["css/sva.ts"]);
+    assert_snapshot!(file(sva, "css/sva.ts"), @"
+    import { getSlotRecipes, memo, splitProps, toVariantMap, withDefaults } from '../helpers';
     import { cva } from './cva';
-
     import { cx } from './cx';
-
-    import type { SlotRecipeCreatorFn } from './types/recipe';
+    import type { SlotRecipeCreatorFn } from '../types/recipe';
 
     export const sva: SlotRecipeCreatorFn = (config) => {
       const slotRecipes = getSlotRecipes(config)
@@ -77,12 +74,10 @@ fn emits_js_runtime_and_declarations() {
     });
     let sva = artifact(&artifacts, ArtifactId::Sva);
 
-    assert_eq!(paths(sva), vec!["sva.mjs", "sva.d.mts"]);
-    assert_snapshot!(file(sva, "sva.mjs"), @"
-    import { getSlotRecipes, memo, splitProps, toVariantMap, withDefaults } from './helpers.mjs';
-
+    assert_eq!(paths(sva), vec!["css/sva.mjs", "css/sva.d.mts"]);
+    assert_snapshot!(file(sva, "css/sva.mjs"), @"
+    import { getSlotRecipes, memo, splitProps, toVariantMap, withDefaults } from '../helpers.mjs';
     import { cva } from './cva.mjs';
-
     import { cx } from './cx.mjs';
 
     export const sva = (config) => {
@@ -129,8 +124,8 @@ fn emits_js_runtime_and_declarations() {
       })
     }
     ");
-    assert_snapshot!(file(sva, "sva.d.mts"), @"
-    import type { SlotRecipeCreatorFn } from './types/recipe.d.mts';
+    assert_snapshot!(file(sva, "css/sva.d.mts"), @"
+    import type { SlotRecipeCreatorFn } from '../types/recipe.d.mts';
 
     export declare const sva: SlotRecipeCreatorFn;
     ");

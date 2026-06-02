@@ -93,8 +93,7 @@ fn emits_ts_source_recipes() {
     );
     assert_snapshot!(file(recipes, "recipes/runtime.ts"), @r#"
     import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
-
-    import { finalizeConditions, sortConditions } from '../conditions';
+    import { finalizeConditions, sortConditions } from '../css/conditions';
 
     const conditions = {
       shift: sortConditions,
@@ -209,9 +208,7 @@ fn emits_ts_source_recipes() {
     "#);
     assert_snapshot!(file(recipes, "recipes/button.ts"), @r#"
     import { createRecipe } from './runtime';
-
     import type { ConditionalValue } from '../types/system';
-
     import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type ButtonVariant = {
@@ -233,9 +230,7 @@ fn emits_ts_source_recipes() {
     "#);
     assert_snapshot!(file(recipes, "recipes/card.ts"), @r#"
     import { createSlotRecipe } from './runtime';
-
     import type { ConditionalValue } from '../types/system';
-
     import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type CardVariant = {
@@ -258,7 +253,6 @@ fn emits_ts_source_recipes() {
     "#);
     assert_snapshot!(file(recipes, "recipes/index.ts"), @r#"
     export * from './button';
-
     export * from './card';
     "#);
 }
@@ -292,8 +286,7 @@ fn emits_js_runtime_and_declarations() {
     );
     assert_snapshot!(file(recipes, "recipes/runtime.mjs"), @r#"
     import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
-
-    import { finalizeConditions, sortConditions } from '../conditions.mjs';
+    import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
 
     const conditions = {
       shift: sortConditions,
@@ -415,7 +408,6 @@ fn emits_js_runtime_and_declarations() {
     "#);
     assert_snapshot!(file(recipes, "recipes/button.d.mts"), @r#"
     import type { ConditionalValue } from '../types/system.d.mts';
-
     import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.d.mts';
 
     export type ButtonVariant = {
@@ -442,7 +434,6 @@ fn emits_js_runtime_and_declarations() {
     "#);
     assert_snapshot!(file(recipes, "recipes/card.d.mts"), @r#"
     import type { ConditionalValue } from '../types/system.d.mts';
-
     import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.d.mts';
 
     export type CardVariant = {
@@ -463,12 +454,10 @@ fn emits_js_runtime_and_declarations() {
     "#);
     assert_snapshot!(file(recipes, "recipes/index.mjs"), @r#"
     export * from './button.mjs';
-
     export * from './card.mjs';
     "#);
     assert_snapshot!(file(recipes, "recipes/index.d.mts"), @r#"
     export * from './button.d.mts';
-
     export * from './card.d.mts';
     "#);
 }

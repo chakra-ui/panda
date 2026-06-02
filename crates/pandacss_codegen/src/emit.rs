@@ -112,14 +112,26 @@ fn print_module_with_format(
     specifiers: ModuleSpecifierPolicy,
     format: Option<CodegenFormat>,
 ) -> String {
-    let mut lines = Vec::new();
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    enum PrintedLineKind {
+        Import,
+        Export,
+        Other,
+    }
+
+    let mut lines: Vec<(PrintedLineKind, String)> = Vec::new();
 
     lines.extend(
         module
             .imports
             .iter()
             .filter(|import| should_print_import(import, target))
-            .map(|import| print_import(import, target, specifiers, format)),
+            .map(|import| {
+                (
+                    PrintedLineKind::Import,
+                    print_import(import, target, specifiers, format),
+                )
+            }),
     );
 
     lines.extend(
@@ -127,18 +139,40 @@ fn print_module_with_format(
             .items
             .iter()
             .filter(|item| should_print_item(item, target))
-            .map(|item| print_item(item, target, specifiers, format)),
+            .map(|item| {
+                let kind = match item.node {
+                    ItemNode::Export(_) => PrintedLineKind::Export,
+                    _ => PrintedLineKind::Other,
+                };
+                (kind, print_item(item, target, specifiers, format))
+            }),
     );
 
     // Drop blank lines only for the `.d.ts` (where a type-stripped runtime item
     // leaves an empty slot); the `.ts`/`.js` keep them as intentional spacing.
-    lines
+    let lines = lines
         .into_iter()
-        .filter(|line| !line.is_empty() || !matches!(target, EmitTarget::Dts))
-        .collect::<Vec<_>>()
-        .join("\n\n")
-        .trim()
-        .to_string()
+        .filter(|(_, line)| !line.is_empty() || !matches!(target, EmitTarget::Dts))
+        .collect::<Vec<_>>();
+
+    let mut output = String::new();
+    for (index, (kind, line)) in lines.iter().enumerate() {
+        if index > 0 {
+            let previous = lines[index - 1].0;
+            let separator = if (previous == PrintedLineKind::Import
+                && *kind == PrintedLineKind::Import)
+                || (previous == PrintedLineKind::Export && *kind == PrintedLineKind::Export)
+            {
+                "\n"
+            } else {
+                "\n\n"
+            };
+            output.push_str(separator);
+        }
+        output.push_str(line);
+    }
+
+    output.trim().to_string()
 }
 
 fn should_print_import(import: &ImportDecl, target: EmitTarget) -> bool {

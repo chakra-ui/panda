@@ -188,7 +188,7 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
         ))
         .with_import(ImportDecl::value(
             ["finalizeConditions", "sortConditions"],
-            "../conditions",
+            "../css/conditions",
         ))
         .with_item(Item::runtime(ItemNode::RawStmt(recipe_runtime_code(ctx))))
 }

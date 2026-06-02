@@ -20,7 +20,6 @@ pub enum ArtifactId {
     Helpers,
     Patterns,
     Recipes,
-    Selectors,
     Sva,
     Tokens,
     Types,
@@ -36,7 +35,6 @@ impl ArtifactId {
         Self::Helpers,
         Self::Patterns,
         Self::Recipes,
-        Self::Selectors,
         Self::Sva,
         Self::Tokens,
         Self::Types,
@@ -53,7 +51,6 @@ impl ArtifactId {
             Self::Helpers => "helpers",
             Self::Patterns => "patterns",
             Self::Recipes => "recipes",
-            Self::Selectors => "selectors",
             Self::Sva => "sva",
             Self::Tokens => "tokens",
             Self::Types => "types",
@@ -232,10 +229,6 @@ impl ArtifactGraph {
     pub const NODES: &'static [ArtifactNode] = &[
         ArtifactNode {
             id: ArtifactId::Helpers,
-            dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
-        },
-        ArtifactNode {
-            id: ArtifactId::Selectors,
             dependencies: DependencySet::one(ConfigDependency::CodegenFormat),
         },
         ArtifactNode {
@@ -467,7 +460,6 @@ fn generate_node(
         ArtifactId::Recipes => {
             crate::generators::recipes::generate(ctx, options, node.dependencies)
         }
-        ArtifactId::Selectors => crate::generators::selectors::generate(options, node.dependencies),
         ArtifactId::Types => crate::generators::types::generate(ctx, options, node.dependencies),
     }
 }

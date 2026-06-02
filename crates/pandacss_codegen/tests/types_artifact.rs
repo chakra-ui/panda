@@ -288,6 +288,7 @@ fn emits_ts_source_types() {
     assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
     // selectors + the recursive style object live here too
     assert!(system.contains("export type Selector = `&${string}` | `@${string}`"));
+    assert!(system.contains("export type Nested<P> = P & {"));
     assert!(system.contains(
         "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
     ));
@@ -391,6 +392,7 @@ fn emits_ts_system_and_index_types() {
     assert!(system.contains(
         "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}"
     ));
+    assert!(system.contains("  [K in AnySelector]?: Nested<P>"));
     assert!(system.contains(
         "export interface GlobalStyleObject {\n  [selector: string]: SystemStyleObject\n}"
     ));
@@ -408,11 +410,8 @@ fn emits_ts_system_and_index_types() {
         file(types, "types/index.ts"),
         indoc! {r"
         export type * from './tokens';
-
         export type * from './system';
-
         export type * from './pattern';
-
         export type * from './recipe';
         "}
         .trim()
@@ -537,11 +536,8 @@ fn can_emit_extensioned_type_specifiers() {
         file(types, "types/index.d.mts"),
         indoc! {r"
         export * from './tokens.d.mts';
-
         export * from './system.d.mts';
-
         export * from './pattern.d.mts';
-
         export * from './recipe.d.mts';
         "}
         .trim()
