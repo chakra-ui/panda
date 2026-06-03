@@ -12,3 +12,6 @@ packages/config/__tests__/samples/ts-import-map-one-source/outdir/**
 website/pages/**/*.mdx
 .draft/**/*.mdx
 styled-system
+# prettier 3.2.5 cannot parse `export { x as 'module.exports' }` (require(esm) interop) — bump prettier then remove
+packages/postcss/src/index.ts
+packages/cli/postcss.js
