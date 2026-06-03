@@ -6,8 +6,9 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{number_to_js_string, split_important};
-use pandacss_tokens::{TokenCssVar, TokenCssVars, TokenDictionary};
+use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};
+use rustc_hash::FxHashSet;
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
@@ -19,10 +20,16 @@ pub struct EmitOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
+#[derive(Clone, Copy)]
+pub struct EmitTokenContext<'a> {
+    pub dictionary: Option<&'a TokenDictionary>,
+    pub refs: &'a [String],
+}
+
 pub fn emit<'a>(
     config: &'a UserConfig,
     utility: &'a Utility,
-    token_dictionary: Option<&TokenDictionary>,
+    tokens: EmitTokenContext<'a>,
     mut atoms: Vec<&'a Atom>,
     recipes: &'a EncodedRecipesSnapshot,
     minify: bool,
@@ -54,26 +61,57 @@ pub fn emit<'a>(
             serialize_global_position_try(writer, &config.global_position_try);
         }));
     }
-    let token_vars = token_dictionary.map(TokenDictionary::css_vars);
+    if !recipes.atomic.is_empty() {
+        atoms.extend(recipes.atomic.iter());
+    }
+    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let usage = if config.optimize.remove_unused_tokens || config.optimize.remove_unused_keyframes {
+        Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
+    } else {
+        None
+    };
+    let token_vars = tokens
+        .dictionary
+        .map(TokenDictionary::css_vars)
+        .map(|vars| {
+            if config.optimize.remove_unused_tokens {
+                let used = usage
+                    .as_ref()
+                    .map(|usage| collect_used_token_vars(&vars, &usage.token_vars))
+                    .unwrap_or_default();
+                filter_token_vars(&vars, &used)
+            } else {
+                vars
+            }
+        });
     let prepared_token_vars = token_vars
         .as_ref()
         .and_then(|vars| cx.prepare_token_vars(vars));
-    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let keyframes = keyframes.filter(|keyframes| {
+        !config.optimize.remove_unused_keyframes
+            || usage
+                .as_ref()
+                .is_some_and(|usage| has_used_keyframes(keyframes, &usage.keyframes))
+    });
     if prepared_token_vars.is_some() || keyframes.is_some() {
         layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
             if let Some(token_vars) = prepared_token_vars.as_ref() {
                 cx.serialize_token_vars(writer, token_vars);
             }
             if let Some(keyframes) = keyframes {
-                serialize_keyframes(writer, keyframes);
+                let used = config
+                    .optimize
+                    .remove_unused_keyframes
+                    .then(|| usage.as_ref().map(|usage| &usage.keyframes))
+                    .flatten();
+                serialize_keyframes(writer, keyframes, used);
             }
         }));
     }
     if has_recipe_rules(recipes) {
         layer_ranges.recipes = Some(cx.write_recipes_layer(&mut writer, recipes, &layers.recipes));
     }
-    if !atoms.is_empty() || !recipes.atomic.is_empty() {
-        atoms.extend(recipes.atomic.iter());
+    if !atoms.is_empty() {
         let sorted = cx.sort.sorted_atoms(atoms);
         let buckets = bucket_atoms_by_layer(&cx, sorted);
         if !buckets.default.is_empty() || !buckets.custom.is_empty() {
@@ -198,8 +236,15 @@ fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>>
 /// Purpose-built walker — the body is flat `(selector -> declarations)`, no
 /// condition resolution, nested rules, or shorthand expansion, so we skip the
 /// `serialize_styles` machinery and write a primitive-only declaration loop.
-fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<String, Value>) {
+fn serialize_keyframes(
+    writer: &mut CssWriter,
+    keyframes: &serde_json::Map<String, Value>,
+    used: Option<&FxHashSet<String>>,
+) {
     for (name, body) in keyframes {
+        if used.is_some_and(|used| !used.contains(name)) {
+            continue;
+        }
         let Some(selectors) = as_non_empty_object(body) else {
             continue;
         };
@@ -209,6 +254,66 @@ fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<Strin
             }
         });
     }
+}
+
+fn has_used_keyframes(
+    keyframes: &serde_json::Map<String, Value>,
+    used: &FxHashSet<String>,
+) -> bool {
+    keyframes.keys().any(|name| used.contains(name))
+}
+
+fn filter_token_vars<'a>(vars: &TokenCssVars<'a>, used: &FxHashSet<String>) -> TokenCssVars<'a> {
+    TokenCssVars {
+        base: filter_token_var_slice(&vars.base, used),
+        conditions: vars
+            .conditions
+            .iter()
+            .filter_map(|group| {
+                let vars = filter_token_var_slice(&group.vars, used);
+                (!vars.is_empty()).then_some(TokenCssConditionVars {
+                    condition: group.condition,
+                    vars,
+                })
+            })
+            .collect(),
+    }
+}
+
+fn filter_token_var_slice<'a>(
+    vars: &[TokenCssVar<'a>],
+    used: &FxHashSet<String>,
+) -> Vec<TokenCssVar<'a>> {
+    vars.iter()
+        .copied()
+        .filter(|var| used.contains(var.name))
+        .collect()
+}
+
+fn collect_used_token_vars(
+    vars: &TokenCssVars<'_>,
+    initial: &FxHashSet<String>,
+) -> FxHashSet<String> {
+    let mut used = initial.clone();
+    loop {
+        let before = used.len();
+        for var in token_var_iter(vars) {
+            if used.contains(var.name) {
+                collect_css_var_refs(var.value, &mut used);
+            }
+        }
+        if used.len() == before {
+            return used;
+        }
+    }
+}
+
+fn token_var_iter<'a>(vars: &'a TokenCssVars<'a>) -> impl Iterator<Item = TokenCssVar<'a>> + 'a {
+    vars.base.iter().copied().chain(
+        vars.conditions
+            .iter()
+            .flat_map(|group| group.vars.iter().copied()),
+    )
 }
 
 /// Write one keyframe selector block (`0%` / `from` / `to` etc.). Skips
@@ -357,6 +462,194 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
         + recipe_entries.saturating_mul(64)
 }
 
+#[derive(Default)]
+struct UsageMarks {
+    token_vars: FxHashSet<String>,
+    keyframes: FxHashSet<String>,
+}
+
+fn collect_css_var_refs(value: &str, refs: &mut FxHashSet<String>) {
+    let mut rest = value;
+    while let Some(start) = rest.find("var(") {
+        let after_open = &rest[start + "var(".len()..];
+        let Some(end) = find_matching_paren(after_open) else {
+            return;
+        };
+        if let Some(name) = after_open[..end]
+            .split_once(',')
+            .map_or(after_open[..end].trim(), |(name, _)| name.trim())
+            .strip_prefix("--")
+        {
+            refs.insert(format!("--{name}"));
+        }
+        rest = &after_open[end + 1..];
+    }
+}
+
+fn collect_token_reference_vars(
+    value: &str,
+    token_dictionary: Option<&TokenDictionary>,
+    refs: &mut FxHashSet<String>,
+) {
+    let Some(token_dictionary) = token_dictionary else {
+        return;
+    };
+    collect_wrapped_token_reference_vars(value, token_dictionary, refs);
+    collect_token_function_vars(value, token_dictionary, refs);
+    collect_direct_token_reference_var(value, token_dictionary, refs);
+}
+
+fn collect_token_ref_vars(
+    token_refs: &[String],
+    token_dictionary: Option<&TokenDictionary>,
+    refs: &mut FxHashSet<String>,
+) {
+    let Some(token_dictionary) = token_dictionary else {
+        return;
+    };
+    for path in token_refs {
+        collect_token_path_var(path, token_dictionary, refs);
+    }
+}
+
+fn collect_wrapped_token_reference_vars(
+    value: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    let mut rest = value;
+    while let Some(start) = rest.find('{') {
+        let after_open = &rest[start + 1..];
+        let Some(end) = after_open.find('}') else {
+            return;
+        };
+        collect_token_path_var(
+            strip_token_modifier(after_open[..end].trim()),
+            token_dictionary,
+            refs,
+        );
+        rest = &after_open[end + 1..];
+    }
+}
+
+fn collect_token_function_vars(
+    value: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    let mut rest = value;
+    while let Some(start) = rest.find("token(") {
+        let after_open = &rest[start + "token(".len()..];
+        let Some(end) = find_matching_paren(after_open) else {
+            return;
+        };
+        let path = after_open[..end]
+            .split_once(',')
+            .map_or(after_open[..end].trim(), |(path, _)| path.trim());
+        collect_token_path_var(strip_token_modifier(path), token_dictionary, refs);
+        rest = &after_open[end + 1..];
+    }
+}
+
+fn collect_direct_token_reference_var(
+    value: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    let trimmed = value.trim();
+    if trimmed
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+    {
+        collect_token_path_var(strip_token_modifier(trimmed), token_dictionary, refs);
+    }
+}
+
+fn strip_token_modifier(value: &str) -> &str {
+    value
+        .split_once('/')
+        .map_or(value, |(base, _)| base.trim_end())
+}
+
+fn collect_token_path_var(
+    path: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    if let Some(name) = token_dictionary
+        .get_var_str(path, None)
+        .and_then(raw_css_var_name)
+    {
+        refs.insert(name.to_owned());
+    }
+}
+
+fn collect_value_token_refs(
+    value: &Value,
+    token_dictionary: Option<&TokenDictionary>,
+    refs: &mut FxHashSet<String>,
+) {
+    match value {
+        Value::String(value) => {
+            collect_css_var_refs(value, refs);
+            collect_token_reference_vars(value, token_dictionary, refs);
+        }
+        Value::Object(entries) => {
+            for value in entries.values() {
+                collect_value_token_refs(value, token_dictionary, refs);
+            }
+        }
+        Value::Array(items) => {
+            for value in items {
+                collect_value_token_refs(value, token_dictionary, refs);
+            }
+        }
+        Value::Null | Value::Bool(_) | Value::Number(_) => {}
+    }
+}
+
+fn collect_keyframe_refs(
+    value: &str,
+    keyframes: Option<&serde_json::Map<String, Value>>,
+    refs: &mut FxHashSet<String>,
+) {
+    let Some(keyframes) = keyframes else {
+        return;
+    };
+    for candidate in value
+        .split(|ch: char| ch.is_ascii_whitespace() || ch == ',')
+        .map(|part| part.trim_matches(|ch| matches!(ch, '"' | '\'')))
+        .filter(|part| !part.is_empty())
+    {
+        if keyframes.contains_key(candidate) {
+            refs.insert(candidate.to_owned());
+        }
+    }
+}
+
+fn is_animation_property(prop: &str) -> bool {
+    matches!(prop, "animation" | "animation-name")
+}
+
+fn raw_css_var_name(value: &str) -> Option<&str> {
+    let inner = value.trim().strip_prefix("var(")?.strip_suffix(')')?.trim();
+    let name = inner.split_once(',').map_or(inner, |(name, _)| name).trim();
+    name.starts_with("--").then_some(name)
+}
+
+fn find_matching_paren(value: &str) -> Option<usize> {
+    let mut depth = 0u32;
+    for (index, ch) in value.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' if depth == 0 => return Some(index),
+            ')' => depth -= 1,
+            _ => {}
+        }
+    }
+    None
+}
+
 struct EmitContext<'a> {
     config: &'a UserConfig,
     sort: SortContext<'a>,
@@ -369,6 +662,182 @@ impl<'a> EmitContext<'a> {
             config,
             sort: SortContext::new(config),
             utility,
+        }
+    }
+
+    fn collect_usage(
+        &self,
+        token_dictionary: Option<&TokenDictionary>,
+        token_refs: &[String],
+        atoms: &[&Atom],
+        recipes: &EncodedRecipesSnapshot,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+    ) -> UsageMarks {
+        let mut marks = UsageMarks::default();
+        collect_token_ref_vars(token_refs, token_dictionary, &mut marks.token_vars);
+        self.collect_styles_usage(
+            &self.config.global_css,
+            token_dictionary,
+            keyframes,
+            &mut marks,
+        );
+        self.collect_global_vars_usage(token_dictionary, &mut marks);
+
+        for atom in atoms {
+            self.collect_atom_usage(atom, token_dictionary, keyframes, &mut marks);
+        }
+
+        for group in recipes.base.iter().chain(&recipes.variants) {
+            for entry in &group.entries {
+                let Some(declarations) = self.recipe_entry_declarations(entry) else {
+                    continue;
+                };
+                Self::collect_declarations_usage(
+                    &declarations,
+                    token_dictionary,
+                    keyframes,
+                    &mut marks,
+                );
+            }
+        }
+
+        marks
+    }
+
+    fn collect_atom_usage(
+        &self,
+        atom: &Atom,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let raw = atom_value_to_string(atom.value());
+        let Some(raw) = raw.as_deref() else {
+            return;
+        };
+        let result = self.transform_atom(atom.prop(), raw);
+        Self::collect_literal_usage(&result.styles, token_dictionary, keyframes, marks);
+    }
+
+    fn collect_literal_usage(
+        styles: &Literal,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let Literal::Object(entries) = styles else {
+            return;
+        };
+        for (prop, value) in entries {
+            if let Some(value) = literal_to_css(value) {
+                Self::collect_declaration_usage(
+                    &hyphenate_property(prop),
+                    value.as_ref(),
+                    token_dictionary,
+                    keyframes,
+                    marks,
+                );
+            }
+        }
+    }
+
+    fn collect_styles_usage(
+        &self,
+        value: &Value,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+        for (key, value) in entries {
+            if let Value::Object(_) = value {
+                if resolved_condition_parts(self.config, key).is_some()
+                    || is_nested_selector_key(key)
+                {
+                    self.collect_styles_usage(value, token_dictionary, keyframes, marks);
+                    continue;
+                }
+
+                let mut declarations = Vec::new();
+                let mut conditional_declarations = Vec::new();
+                if self.collect_conditional_declarations(
+                    key,
+                    value,
+                    &mut declarations,
+                    &mut conditional_declarations,
+                ) {
+                    Self::collect_declarations_usage(
+                        &declarations,
+                        token_dictionary,
+                        keyframes,
+                        marks,
+                    );
+                    for conditional in conditional_declarations {
+                        Self::collect_declarations_usage(
+                            &conditional.declarations,
+                            token_dictionary,
+                            keyframes,
+                            marks,
+                        );
+                    }
+                    continue;
+                }
+            }
+
+            if let Some(declarations) = self.serialized_property_declarations(key, value) {
+                Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+            } else {
+                collect_value_token_refs(value, token_dictionary, &mut marks.token_vars);
+            }
+        }
+    }
+
+    fn collect_global_vars_usage(
+        &self,
+        token_dictionary: Option<&TokenDictionary>,
+        marks: &mut UsageMarks,
+    ) {
+        let Value::Object(entries) = &self.config.global_vars else {
+            return;
+        };
+        for value in entries.values() {
+            if let Value::String(value) = value {
+                collect_css_var_refs(value, &mut marks.token_vars);
+                collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
+            }
+        }
+    }
+
+    fn collect_declarations_usage(
+        declarations: &[RecipeDeclaration],
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        for declaration in declarations {
+            Self::collect_declaration_usage(
+                &declaration.prop,
+                &declaration.value,
+                token_dictionary,
+                keyframes,
+                marks,
+            );
+        }
+    }
+
+    fn collect_declaration_usage(
+        prop: &str,
+        value: &str,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        collect_css_var_refs(value, &mut marks.token_vars);
+        collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
+        if is_animation_property(prop) {
+            collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
         }
     }
 

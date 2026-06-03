@@ -78,6 +78,95 @@ fn emits_multiple_keyframes_with_percentage_selectors() {
 }
 
 #[test]
+fn optimize_keyframes_keeps_only_referenced_blocks() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                },
+                "fade": {
+                    "to": { "opacity": "0" }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; css({ animationName: 'spin' });",
+    );
+
+    assert!(css.contains("@keyframes spin"));
+    assert!(!css.contains("@keyframes fade"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+@layer utilities {
+  .animation-name_spin {
+    animation-name: spin;
+  }
+}
+");
+}
+
+#[test]
+fn optimize_keyframes_keeps_static_css_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "animationName": ["spin"]
+                    }
+                }
+            ]
+        },
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                },
+                "fade": {
+                    "to": { "opacity": "0" }
+                }
+            }
+        },
+        "utilities": {
+            "animationName": { "className": "animationName" }
+        }
+    }));
+    let css = compile_css(&config, "");
+
+    assert!(css.contains("@keyframes spin"));
+    assert!(!css.contains("@keyframes fade"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+@layer utilities {
+  .animationName_spin {
+    animation-name: spin;
+  }
+}
+");
+}
+
+#[test]
 fn emits_keyframes_alongside_token_vars_in_same_layer() {
     let config = config(serde_json::json!({
         "theme": {

@@ -1099,6 +1099,7 @@ fn build_split_css(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &options,
     )
@@ -1138,6 +1139,7 @@ fn build_stylesheet_output(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &options,
     )
