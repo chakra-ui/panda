@@ -1,3 +1,7 @@
 import plugin from '@pandacss/postcss'
 
-export default plugin.default ?? plugin
+const pandacss = plugin.default ?? plugin
+
+export default pandacss
+// see packages/postcss/src/index.ts — same require(esm) interop for cjs consumers
+export { pandacss as 'module.exports' }

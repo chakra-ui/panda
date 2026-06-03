@@ -80,6 +80,9 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
 pandacss.postcss = true
 
 export default pandacss
+// node's require(esm) returns this value directly instead of the namespace object,
+// so cjs consumers (next.js postcss config, postcss.config.cjs) get the callable plugin
+export { pandacss as 'module.exports' }
 
 const nodeModulesRegex = /node_modules/
 
