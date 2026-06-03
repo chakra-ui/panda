@@ -5,7 +5,7 @@ use pandacss_encoder::{
     Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{number_to_js_string, split_important};
+use pandacss_shared::{number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};
 use rustc_hash::FxHashSet;
@@ -847,11 +847,7 @@ impl<'a> EmitContext<'a> {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
-        let mut class_name = self.utility.format_class_name_owned(result.class_name);
-        if atom.important() {
-            class_name.push('!');
-        }
-        let rule = self.rule_target_owned(class_name, conditions);
+        let rule = self.rule_target_for_class(&result.class_name, conditions, atom.important());
         Self::write_style_rule(writer, &rule, &result.styles);
     }
 
@@ -1170,11 +1166,10 @@ impl<'a> EmitContext<'a> {
         class_name: &str,
         entries: &[RecipeStyleEntry],
     ) {
-        let selector_base = format!(".{}", escape_selector(class_name));
         let mut pending: Option<PendingRecipeRule> = None;
 
         for entry in self.sort.sorted_recipe_entries(entries) {
-            let rule = self.rule_target_with_base(&selector_base, &entry.conditions);
+            let rule = self.rule_target_for_class(class_name, &entry.conditions, false);
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
                 continue;
             };
@@ -1280,12 +1275,22 @@ impl<'a> EmitContext<'a> {
         });
     }
 
-    fn rule_target_with_base(&self, base: &str, conditions: &[&str]) -> RuleTarget {
-        self.rule_target_with_base_owned(base.to_owned(), conditions)
-    }
-
-    fn rule_target_owned(&self, class_name: String, conditions: &[&str]) -> RuleTarget {
-        let finalized = finalized_class_name_owned(class_name, conditions);
+    fn rule_target_for_class(
+        &self,
+        class_name: &str,
+        conditions: &[&str],
+        important: bool,
+    ) -> RuleTarget {
+        let mut finalized = if self.config.hash.class_name() {
+            let hashed = hash_class_name(class_name, conditions);
+            self.utility.format_class_name_owned(hashed)
+        } else {
+            let class_name = self.utility.format_class_name(class_name);
+            finalized_class_name_owned(class_name, conditions)
+        };
+        if important {
+            finalized.push('!');
+        }
         let base = format!(".{}", escape_selector(&finalized));
         self.rule_target_with_base_owned(base, conditions)
     }
@@ -1514,17 +1519,39 @@ fn finalized_class_name_owned(class_name: String, conditions: &[&str]) -> String
         // Mirror the runtime `finalizeConditions` so the emitted selector matches
         // the class the runtime puts on the element: raw selectors / at-rules
         // (`&`, `@`) wrap in `[…]` (spaces→`_`); named conditions drop leading `_`.
-        if condition.contains('&') || condition.contains('@') {
-            out.push('[');
-            out.push_str(&without_space(condition.trim()));
-            out.push(']');
-        } else {
-            out.push_str(condition.trim_start_matches('_'));
-        }
+        push_finalized_condition(&mut out, condition);
     }
     out.push(':');
     out.push_str(&class_name);
     out
+}
+
+fn hash_class_name(class_name: &str, conditions: &[&str]) -> String {
+    if conditions.is_empty() {
+        return to_hash(class_name);
+    }
+
+    let capacity = conditions.iter().map(|c| c.len() + 3).sum::<usize>() + class_name.len();
+    let mut input = String::with_capacity(capacity);
+    for condition in conditions {
+        if !input.is_empty() {
+            input.push(':');
+        }
+        push_finalized_condition(&mut input, condition);
+    }
+    input.push(':');
+    input.push_str(class_name);
+    to_hash(&input)
+}
+
+fn push_finalized_condition(out: &mut String, condition: &str) {
+    if condition.contains('&') || condition.contains('@') {
+        out.push('[');
+        out.push_str(&without_space(condition.trim()));
+        out.push(']');
+    } else {
+        out.push_str(condition.trim_start_matches('_'));
+    }
 }
 
 fn apply_condition(

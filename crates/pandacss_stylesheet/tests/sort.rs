@@ -670,7 +670,7 @@ fn coalesces_recipe_entries_with_matching_pseudo_targets() {
     padding: 8px;
     padding-top: 4px;
   }
-  .button--size_sm:hover {
+  .hover\:button--size_sm:hover {
     padding: 8px;
     padding-top: 4px;
   }
@@ -725,7 +725,7 @@ fn coalesces_recipe_entries_with_matching_at_rule_targets() {
     padding-top: 4px;
   }
   @media (width >= 48rem) {
-    .button--size_sm {
+    .md\:button--size_sm {
       padding: 8px;
       padding-top: 4px;
     }
@@ -783,12 +783,12 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
     padding: 8px;
     padding-top: 4px;
   }
-  .button--size_sm:hover {
+  .hover\:button--size_sm:hover {
     padding: 8px;
     padding-top: 4px;
   }
   @media (width >= 48rem) {
-    .button--size_sm {
+    .md\:button--size_sm {
       padding: 8px;
       padding-top: 4px;
     }

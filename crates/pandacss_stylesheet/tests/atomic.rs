@@ -32,6 +32,37 @@ fn emits_dynamic_atomic_css() {
 }
 
 #[test]
+fn hashes_atomic_class_names_with_prefix_conditions_and_important() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "hash": { "className": true },
+        "prefix": { "className": "pd" },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "utilities": {
+            "color": { "className": "c" },
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ color: 'red !important', _hover: { bg: 'blue' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .pd-wxtrg\! {
+    color: red;
+  }
+  .pd-hsecaD:hover {
+    background-color: blue;
+  }
+}
+");
+}
+
+#[test]
 fn resolves_semantic_token_category_values_to_css_vars() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
