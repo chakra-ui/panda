@@ -239,6 +239,14 @@ fn transform_uses_configured_class_name_for_preset_utility() {
 
 #[test]
 fn transform_supports_token_category_values() {
+    let mut negative = Token::new(
+        "spacing.-sm",
+        "calc(var(--spacing-sm) * -1)",
+        "",
+        TokenCategory::Spacing,
+    );
+    negative.set_extension("isNegative", "true");
+
     let tokens = TokenDictionary::builder()
         .insert(Token::new(
             "spacing.sm",
@@ -246,6 +254,7 @@ fn transform_supports_token_category_values() {
             "var(--spacing-sm)",
             TokenCategory::Spacing,
         ))
+        .insert(negative)
         .build();
     let utility = Utility::from_config_with_options(
         &utility_config(json!({
@@ -262,27 +271,171 @@ fn transform_supports_token_category_values() {
     let result = utility
         .transform("spacing", &Literal::String("sm".into()))
         .expect("transform");
+    let negative = utility
+        .transform("spacing", &Literal::String("-sm".into()))
+        .expect("negative transform");
 
-    assert_debug_snapshot!(result, @r#"
-    UtilityTransformResult {
-        layer: None,
-        class_name: "spacing_sm",
-        styles: Object(
-            [
-                (
-                    "spacing",
-                    String(
-                        "4px",
+    assert_debug_snapshot!((result, negative), @r#"
+    (
+        UtilityTransformResult {
+            layer: None,
+            class_name: "spacing_sm",
+            styles: Object(
+                [
+                    (
+                        "spacing",
+                        String(
+                            "var(--spacing-sm)",
+                        ),
                     ),
+                ],
+            ),
+        },
+        UtilityTransformResult {
+            layer: None,
+            class_name: "spacing_-sm",
+            styles: Object(
+                [
+                    (
+                        "spacing",
+                        String(
+                            "calc(var(--spacing-sm) * -1)",
+                        ),
+                    ),
+                ],
+            ),
+        },
+    )
+    "#);
+}
+
+#[test]
+fn transform_supports_color_opacity_modifiers() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.300",
+            "#fca5a5",
+            "var(--colors-red-300)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "opacity.half",
+            "0.5",
+            "var(--opacity-half)",
+            TokenCategory::Opacity,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "background": {
+                "shorthand": "bg",
+                "className": "bg",
+                "values": "colors"
+            },
+            "color": {
+                "className": "c",
+                "values": "colors"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let direct_token = utility.transform("bg", &Literal::String("red.300/40".into()));
+    let direct_raw = utility.transform("bg", &Literal::String("red/30".into()));
+    let curly = utility.transform(
+        "color",
+        &Literal::String("{colors.red.300/40}".into()),
+    );
+    let token_fn = utility.transform(
+        "bg",
+        &Literal::String("token(colors.red.300/half)".into()),
+    );
+
+    assert_debug_snapshot!(
+        (direct_token, direct_raw, curly, token_fn),
+        @r#"
+    (
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "bg_red.300/40",
+                styles: Object(
+                    [
+                        (
+                            "background",
+                            String(
+                                "color-mix(in srgb, var(--colors-red-300) 40%, transparent)",
+                            ),
+                        ),
+                    ],
                 ),
-            ],
+            },
         ),
-    }
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "bg_red/30",
+                styles: Object(
+                    [
+                        (
+                            "background",
+                            String(
+                                "color-mix(in srgb, red 30%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "c_{colors.red.300/40}",
+                styles: Object(
+                    [
+                        (
+                            "color",
+                            String(
+                                "color-mix(in srgb, var(--colors-red-300) 40%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "bg_token(colors.red.300/half)",
+                styles: Object(
+                    [
+                        (
+                            "background",
+                            String(
+                                "color-mix(in srgb, var(--colors-red-300) 50%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+    )
     "#);
 }
 
 #[test]
 fn property_keys_prefers_explicit_values_over_token_category() {
+    let mut negative = Token::new(
+        "spacing.-1",
+        "calc(var(--spacing-1) * -1)",
+        "",
+        TokenCategory::Spacing,
+    );
+    negative.set_extension("isNegative", "true");
+
     let tokens = TokenDictionary::builder()
         .insert(Token::new(
             "spacing.1",
@@ -296,6 +449,7 @@ fn property_keys_prefers_explicit_values_over_token_category() {
             "var(--spacing-2)",
             TokenCategory::Spacing,
         ))
+        .insert(negative)
         .build();
     let utility = Utility::from_config_with_options(
         &utility_config(json!({
@@ -336,12 +490,14 @@ fn property_keys_prefers_explicit_values_over_token_category() {
             "sm",
         ],
         [
-            "spacing.1",
-            "spacing.2",
+            "-1",
+            "1",
+            "2",
         ],
         [
-            "spacing.1",
-            "spacing.2",
+            "-1",
+            "1",
+            "2",
         ],
         [],
     )
