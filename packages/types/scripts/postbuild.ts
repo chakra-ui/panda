@@ -15,7 +15,7 @@ const fileMap = [
 
 export async function main() {
   fileMap.forEach((input) => {
-    const inputPath = join(__dirname, '..', 'src', input)
+    const inputPath = join(import.meta.dirname, '..', 'src', input)
     let content = readFileSync(inputPath, 'utf8').replace("'./tokens'", "'../tokens'")
 
     if (input.includes('system-types.ts')) {
@@ -25,7 +25,7 @@ export async function main() {
       )
     }
 
-    const packagesDir = join(__dirname, '..', '..')
+    const packagesDir = join(import.meta.dirname, '..', '..')
     const generatorPath = join(packagesDir, 'generator')
     const outPath = join(
       generatorPath,

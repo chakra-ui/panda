@@ -15,7 +15,7 @@ const createTsProject = () =>
   })
 
 const input = 'csstype.d.ts'
-const inputPath = join(__dirname, '..', 'src', input)
+const inputPath = join(import.meta.dirname, '..', 'src', input)
 const interfaces = [
   'StandardLonghandProperties',
   'StandardShorthandProperties',

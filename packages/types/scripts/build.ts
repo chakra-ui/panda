@@ -6,7 +6,7 @@ const toExt = (ext: string) => (file: string) => file.replace(/\.ts$/, ext)
 const toDts = toExt('.d.ts')
 
 export const main = () => {
-  const inputPath = path.join(__dirname, '..', 'src')
+  const inputPath = path.join(import.meta.dirname, '..', 'src')
   const files = fs.readdirSync(inputPath)
 
   const getOrCreateDir = (dir: string) => {

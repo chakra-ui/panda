@@ -10,7 +10,7 @@ const main = () => {
 }
 
 main().then(() => {
-  watch(join(__dirname, '..', 'src')).on('change', () => {
+  watch(join(import.meta.dirname, '..', 'src')).on('change', () => {
     console.log('Rebuild types')
     main()
   })
