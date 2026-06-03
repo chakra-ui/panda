@@ -495,19 +495,102 @@ fn emits_strict_value_types_without_repeating_large_unions() {
     // Strict aliases carry the WithEscapeHatch wrapper; configured props in the merged
     // `system` file reference them, native props still share `CssValue`.
     let system = file(types, "types/system.ts");
-    assert!(
-        system
-            .contains("export type ColorValue = WithEscapeHatch<TokenValue<\"colors\"> | CssVars>")
-    );
-    assert!(
-        system.contains(
-            "export type SpacingValue = WithEscapeHatch<TokenValue<\"spacing\"> | CssVars>"
-        )
-    );
+    assert!(system.contains(
+        "export type ColorValue = WithEscapeHatch<ColorGlobals | TokenValue<\"colors\"> | CssVars>"
+    ));
+    assert!(system.contains(
+        "export type SpacingValue = WithEscapeHatch<AutoGlobals | TokenValue<\"spacing\"> | CssVars>"
+    ));
     assert!(system.contains("export interface SystemProperties extends CssProperties {"));
     assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
     assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
     assert!(system.contains("  cursor?: ConditionalValue<CssValue>"));
+}
+
+#[test]
+fn strict_tokens_keep_per_category_globals() {
+    let mut input = CodegenInput {
+        types: TypeData {
+            utilities: UtilityTypeData {
+                properties: BTreeMap::from([
+                    (
+                        "width".into(),
+                        UtilityPropertyTypeData {
+                            name: "width".into(),
+                            css_property: Some("width".into()),
+                            token_category: Some("sizes".into()),
+                            alias: "SizeValue".into(),
+                            ..UtilityPropertyTypeData::default()
+                        },
+                    ),
+                    (
+                        "display".into(),
+                        UtilityPropertyTypeData {
+                            name: "display".into(),
+                            css_property: Some("display".into()),
+                            alias: "DisplayValue".into(),
+                            ..UtilityPropertyTypeData::default()
+                        },
+                    ),
+                ]),
+                aliases: BTreeMap::from([
+                    (
+                        "SizeValue".into(),
+                        ValueAliasTypeData {
+                            name: "SizeValue".into(),
+                            parts: vec![
+                                ValueTypePart::TokenCategory("sizes".into()),
+                                ValueTypePart::CssVars,
+                            ],
+                        },
+                    ),
+                    (
+                        "DisplayValue".into(),
+                        ValueAliasTypeData {
+                            name: "DisplayValue".into(),
+                            parts: vec![
+                                ValueTypePart::Literal("flex".into()),
+                                ValueTypePart::Literal("block".into()),
+                            ],
+                        },
+                    ),
+                ]),
+                ..UtilityTypeData::default()
+            },
+            ..TypeData::default()
+        },
+        ..CodegenInput::default()
+    };
+    input.types.options.strict_tokens = true;
+    input.types.options.strict_property_values = true;
+
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    let types = artifact(&artifacts, ArtifactId::Types);
+    let system = file(types, "types/system.ts");
+
+    // The per-category globals aliases are emitted once as static types.
+    assert!(
+        system.contains(r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#)
+    );
+    assert!(system.contains(
+        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#
+    ));
+    assert!(system.contains(r#"export type AutoGlobals = Globals | "auto""#));
+
+    // sizes-backed property unions in DimensionGlobals.
+    assert!(system.contains(
+        r#"export type SizeValue = WithEscapeHatch<DimensionGlobals | TokenValue<"sizes"> | CssVars>"#
+    ));
+    // strictPropertyValues keyword property keeps the base Globals alongside OnlyKnown.
+    assert!(system.contains(
+        r#"export type DisplayValue = WithEscapeHatch<Globals | OnlyKnown<"flex" | "block">>"#
+    ));
 }
 
 #[test]
