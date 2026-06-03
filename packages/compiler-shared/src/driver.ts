@@ -16,6 +16,7 @@ import type {
   CompileOptions,
   ParseFileReport,
   SerializedConfig,
+  WriteCssResult,
 } from './types'
 
 /** Result of diffing two serialized configs — produced by config-loader's
@@ -45,6 +46,12 @@ export interface SourceChange {
 /** Which artifacts to (re)generate. Omit for the full set. */
 export interface ArtifactFilter {
   dependencies?: CodegenDependency[]
+}
+
+export interface DriverPaths {
+  root: string
+  styleFile: string
+  stylesDir: string
 }
 
 /** Host orchestrator above the pure {@link Compiler}: owns config lifecycle,
@@ -77,10 +84,18 @@ export interface Driver {
   applyChanges(changes: SourceChange[]): boolean[]
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
+  /** Resolve the configured output directory, optionally applying a caller override. */
+  getOutdir(outdir?: string): string
+  /** Resolve a host path using the driver/compiler path semantics. */
+  resolvePath(path: string): string
+  /** Standard Panda output locations for an optional outdir override. */
+  paths(outdir?: string): DriverPaths
   /** Generate + write artifacts under the configured `outdir` via the engine fs. Returns paths. */
   codegen(options?: CodegenOptions): string[]
   /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
   cssgen(options?: CompileOptions): CompileOutput
+  /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
+  writeCss(outfile: string, options?: CompileOptions): WriteCssResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
   /** Whether a changed path is the config file or one of its bundled dependencies.
@@ -136,6 +151,7 @@ export abstract class BaseDriver implements Driver {
   abstract get configDependencies(): string[]
   abstract reload(): Promise<ConfigDiff>
   abstract applyChange(change: SourceChange): boolean
+  abstract getOutdir(outdir?: string): string
 
   scan(): string[] {
     return this.#compiler.scan()
@@ -155,8 +171,7 @@ export abstract class BaseDriver implements Driver {
 
   codegen(options?: CodegenOptions): string[] {
     const cwd = options?.cwd ?? this.defaultCwd
-    const configuredOutdir = typeof this.config.outdir === 'string' ? this.config.outdir : undefined
-    const outdir = options?.outdir ?? configuredOutdir ?? 'styled-system'
+    const outdir = this.getConfiguredOutdir(options?.outdir)
     const artifactOptions =
       options?.codegenImportExtensions === undefined
         ? undefined
@@ -166,6 +181,23 @@ export abstract class BaseDriver implements Driver {
 
   cssgen(options?: CompileOptions): CompileOutput {
     return this.#compiler.compile(options)
+  }
+
+  resolvePath(path: string): string {
+    return this.#compiler.resolvePath(path, this.defaultCwd)
+  }
+
+  paths(outdir?: string): DriverPaths {
+    const root = this.getOutdir(outdir)
+    return {
+      root,
+      styleFile: this.#compiler.joinPath([root, 'styles.css']),
+      stylesDir: this.#compiler.joinPath([root, 'styles']),
+    }
+  }
+
+  writeCss(outfile: string, options?: CompileOptions): WriteCssResult {
+    return this.#compiler.writeCss(outfile, this.defaultCwd, options)
   }
 
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {
@@ -187,5 +219,10 @@ export abstract class BaseDriver implements Driver {
   // `isConfigFile` so watch hosts get one classification surface, not `.compiler`.
   isSourceFile(file: string): boolean {
     return this.#compiler.isSourceFile(file)
+  }
+
+  protected getConfiguredOutdir(outdir?: string): string {
+    const configuredOutdir = typeof this.config.outdir === 'string' ? this.config.outdir : undefined
+    return outdir ?? configuredOutdir ?? 'styled-system'
   }
 }

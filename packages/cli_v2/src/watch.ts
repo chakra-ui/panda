@@ -1,5 +1,5 @@
 import * as parcelWatcher from '@parcel/watcher'
-import { dirname, resolve } from 'node:path'
+import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import type { Driver, SourceChange } from '@pandacss/compiler'
 
 export type WatchEvent = SourceChange
@@ -12,8 +12,9 @@ export interface WatchBatch {
 export interface ProjectWatchOptions {
   driver: Driver
   cwd: string
-  outdir: string
+  outdir: string | (() => string)
   debounceMs?: number
+  onError?(error: unknown): void
   onSourceChange(events: WatchEvent[]): Promise<void> | void
   onConfigChange(events: WatchEvent[]): Promise<void> | void
 }
@@ -71,16 +72,27 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   const configFiles = new Set(targets.config.map((path) => resolve(options.cwd, path)))
   const configDirs = new Set([...configFiles].map((path) => dirname(path)))
   const sourceDirs = new Set(targets.dirs.map((dir) => resolve(options.cwd, dir)))
+  let serialGate: Promise<void> = Promise.resolve()
+  const currentOutdir = () => (typeof options.outdir === 'function' ? options.outdir() : options.outdir)
+
+  const runSerialized = (task: () => Promise<void>): Promise<void> => {
+    serialGate = serialGate.then(task).catch((error) => {
+      options.onError?.(error)
+    })
+    return serialGate
+  }
 
   const debouncer = createEventDebouncer<WatchEvent>(async (events) => {
     const batch = splitEvents(events, options.driver)
-    if (batch.config.length > 0) {
-      await options.onConfigChange(batch.config)
-      return
-    }
-    if (batch.source.length > 0) {
-      await options.onSourceChange(batch.source)
-    }
+    await runSerialized(async () => {
+      if (batch.config.length > 0) {
+        await options.onConfigChange(batch.config)
+        return
+      }
+      if (batch.source.length > 0) {
+        await options.onSourceChange(batch.source)
+      }
+    })
   }, options.debounceMs ?? 0)
 
   const subscriptions: parcelWatcher.AsyncSubscription[] = []
@@ -92,10 +104,11 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
         const normalized = events
           .map((event) => normalizeParcelEvent(event))
           .filter((event): event is WatchEvent => !!event)
+          .filter((event) => !isOutputEvent(options.cwd, currentOutdir(), event))
           .filter((event) => !filter || filter(event))
         if (normalized.length > 0) debouncer.push(normalized)
       },
-      { ignore: ['**/node_modules/**', '**/.git/**', `${options.outdir}/**`] },
+      { ignore: ['**/node_modules/**', '**/.git/**', `${currentOutdir()}/**`] },
     )
     subscriptions.push(subscription)
   }
@@ -117,6 +130,13 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   process.once('SIGTERM', exit)
 
   return stop
+}
+
+export function isOutputEvent(cwd: string, outdir: string, event: WatchEvent): boolean {
+  const outputDir = resolve(cwd, outdir)
+  const target = resolve(cwd, event.path)
+  const path = relative(outputDir, target)
+  return path === '' || (!!path && !path.startsWith('..') && !isAbsolute(path))
 }
 
 function splitEvents(events: WatchEvent[], driver: Pick<Driver, 'isConfigFile'>): WatchBatch {

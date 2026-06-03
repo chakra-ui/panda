@@ -25,7 +25,7 @@ use pandacss_config::{
 };
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
-use pandacss_fs::{FileSystem, OxcResolverFileSystem};
+use pandacss_fs::{FileSystem, OsPathSystem, OxcResolverFileSystem, PathSystem};
 use smallvec::SmallVec;
 
 use crate::compile::{CompileFileManifest, CompileOptions, CompileOutput};
@@ -133,6 +133,16 @@ pub struct CodegenArtifact {
     pub files: Vec<CodegenFile>,
 }
 
+#[napi(object)]
+pub struct WriteCssResult {
+    pub path: String,
+    pub css: String,
+    pub source_map: Option<String>,
+    pub manifest: crate::compile::CompileManifest,
+    pub layer_ranges: crate::compile::CompileLayerRanges,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
 #[napi]
 pub struct Compiler {
     inner: pandacss_project::Project,
@@ -142,6 +152,7 @@ pub struct Compiler {
     /// Platform filesystem engine (real disk). Shared with the cross-file
     /// resolver and used by `glob`/`scan` to discover + read source files.
     fs: pandacss_fs::OsFileSystem,
+    paths: OsPathSystem,
 }
 
 struct CallbackHost {
@@ -237,6 +248,7 @@ impl Compiler {
             user_config,
             callbacks,
             fs,
+            paths: OsPathSystem,
         })
     }
 
@@ -345,27 +357,65 @@ impl Compiler {
         cwd: Option<String>,
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<String>> {
-        use pandacss_fs::FileSystem;
         let generate = generate_options(&self.user_config, options);
         let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
-        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
-            .join(&outdir);
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let base = self.paths.resolve(&cwd, &outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
             for file in artifact.files {
-                let target = base.join(&file.path);
-                if let Some(parent) = target.parent() {
+                if self.paths.is_absolute(&file.path) {
+                    return Err(napi::Error::from_reason(format!(
+                        "artifact output path must be relative: {}",
+                        file.path
+                    )));
+                }
+                let target = self.paths.join(&[&base, &file.path]);
+                let parent = self.paths.dirname(&target);
+                if !parent.is_empty() {
                     self.fs
-                        .create_dir_all(parent)
+                        .create_dir_all(std::path::Path::new(&parent))
                         .map_err(|err| napi::Error::from_reason(err.to_string()))?;
                 }
                 self.fs
-                    .write(&target, file.code.as_bytes())
+                    .write(std::path::Path::new(&target), file.code.as_bytes())
                     .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-                written.push(target.to_string_lossy().into_owned());
+                written.push(target);
             }
         }
         Ok(written)
+    }
+
+    #[napi(js_name = resolvePath)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn resolve_path(&self, path: String, cwd: Option<String>) -> String {
+        self.paths
+            .resolve(&cwd.unwrap_or_else(|| self.user_config.cwd.clone()), &path)
+    }
+
+    #[napi(js_name = joinPath)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn join_path(&self, parts: Vec<String>) -> String {
+        let parts = parts.iter().map(String::as_str).collect::<Vec<_>>();
+        self.paths.join(&parts)
+    }
+
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn dirname(&self, path: String) -> String {
+        self.paths.dirname(&path)
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
@@ -790,6 +840,42 @@ impl Compiler {
         );
         crate::flush_tracing();
         Ok(output)
+    }
+
+    #[napi(js_name = writeCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_css(
+        &mut self,
+        env: Env,
+        outfile: String,
+        cwd: Option<String>,
+        options: Option<CompileOptions>,
+    ) -> napi::Result<WriteCssResult> {
+        let output = self.compile(env, options)?;
+        let target = self.paths.resolve(
+            &cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            &outfile,
+        );
+        let parent = self.paths.dirname(&target);
+        if !parent.is_empty() {
+            self.fs
+                .create_dir_all(std::path::Path::new(&parent))
+                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        }
+        self.fs
+            .write(std::path::Path::new(&target), output.css.as_bytes())
+            .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        Ok(WriteCssResult {
+            path: target,
+            css: output.css,
+            source_map: output.source_map,
+            manifest: output.manifest,
+            layer_ranges: output.layer_ranges,
+            diagnostics: output.diagnostics,
+        })
     }
 
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
