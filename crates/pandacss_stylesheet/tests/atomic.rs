@@ -3,7 +3,7 @@ mod common;
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css_with_options, compile_layer_css, config};
+use common::{compile_css, compile_css_with_options, compile_layer_css, config};
 
 #[test]
 fn emits_dynamic_atomic_css() {
@@ -131,6 +131,50 @@ fn resolves_negative_spacing_category_values_to_calc_values() {
   }
   .m_4 {
     margin: var(--spacing-4);
+  }
+}
+");
+}
+
+#[test]
+fn theme_conditions_emit_data_panda_theme_parent_selector() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" }
+                }
+            }
+        },
+        "themes": {
+            "primary": {
+                "tokens": {
+                    "colors": {
+                        "red": { "value": "#d00" }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; css({ _themePrimary: { color: 'red' } });",
+    );
+
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red: #f00;
+  }
+}
+@layer utilities {
+  [data-panda-theme=primary] .themePrimary\:c_red {
+    color: var(--colors-red);
   }
 }
 ");

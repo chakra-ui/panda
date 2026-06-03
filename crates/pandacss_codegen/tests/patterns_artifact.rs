@@ -58,6 +58,7 @@ fn input() -> CodegenInput {
         types: type_data(&config),
         config,
         patterns,
+        ..CodegenInput::default()
     }
 }
 

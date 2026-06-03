@@ -129,9 +129,38 @@ impl UserConfig {
             names.insert(format!("_{key}"));
         }
 
+        for key in self.themes.keys().filter(|key| !key.is_empty()) {
+            names.insert(theme_condition_name(key));
+        }
+
         names.extend(self.theme.breakpoint_names());
         names.into_iter().collect()
     }
+
+    #[must_use]
+    pub fn theme_condition(&self, condition: &str) -> Option<String> {
+        let theme = condition.strip_prefix("_theme")?;
+        self.themes
+            .keys()
+            .find(|key| capitalize_for_theme_condition(key) == theme)
+            .map(|key| format!("[data-panda-theme={key}] &"))
+    }
+}
+
+#[must_use]
+pub fn theme_condition_name(theme: &str) -> String {
+    format!("_theme{}", capitalize_for_theme_condition(theme))
+}
+
+fn capitalize_for_theme_condition(value: &str) -> String {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return String::new();
+    };
+    let mut out = String::new();
+    out.extend(first.to_uppercase());
+    out.push_str(chars.as_str());
+    out
 }
 
 /// Stylesheet optimization switches. All optimizations are opt-in because

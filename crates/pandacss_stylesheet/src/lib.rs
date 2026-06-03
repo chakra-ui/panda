@@ -343,6 +343,73 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     files
 }
 
+/// Generate CSS custom-property overrides for a single configured theme.
+///
+/// # Errors
+///
+/// Returns an error when token dictionary construction fails.
+pub fn theme_css(
+    config: &UserConfig,
+    theme_name: &str,
+    minify: bool,
+) -> Result<Option<String>, pandacss_tokens::TokenError> {
+    let token_dictionary = TokenDictionary::from_config(config)?;
+    Ok(theme_css_from_dictionary(
+        config,
+        token_dictionary.as_ref(),
+        theme_name,
+        minify,
+    ))
+}
+
+#[must_use = "theme CSS is not emitted unless the returned string is written"]
+pub fn theme_css_from_dictionary(
+    config: &UserConfig,
+    token_dictionary: Option<&TokenDictionary>,
+    theme_name: &str,
+    minify: bool,
+) -> Option<String> {
+    token_dictionary
+        .and_then(|dictionary| emitter::emit_theme_css(config, dictionary, theme_name, minify))
+}
+
+/// Generate CSS custom-property overrides for every configured theme.
+///
+/// # Errors
+///
+/// Returns an error when token dictionary construction fails.
+pub fn theme_css_entries(
+    config: &UserConfig,
+    minify: bool,
+) -> Result<Vec<(String, String)>, pandacss_tokens::TokenError> {
+    let token_dictionary = TokenDictionary::from_config(config)?;
+    Ok(theme_css_entries_from_dictionary(
+        config,
+        token_dictionary.as_ref(),
+        minify,
+    ))
+}
+
+#[must_use]
+pub fn theme_css_entries_from_dictionary(
+    config: &UserConfig,
+    token_dictionary: Option<&TokenDictionary>,
+    minify: bool,
+) -> Vec<(String, String)> {
+    config
+        .themes
+        .keys()
+        .map(|theme_name| {
+            let css = token_dictionary
+                .and_then(|dictionary| {
+                    emitter::emit_theme_css(config, dictionary, theme_name, minify)
+                })
+                .unwrap_or_default();
+            (theme_name.clone(), css)
+        })
+        .collect()
+}
+
 fn ensure_trailing_newline(css: &str) -> String {
     if css.ends_with('\n') {
         css.to_owned()

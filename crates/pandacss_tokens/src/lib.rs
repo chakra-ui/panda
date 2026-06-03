@@ -418,6 +418,14 @@ impl TokenDictionary {
 
     #[must_use]
     pub fn css_vars(&self) -> TokenCssVars<'_> {
+        self.css_vars_with_theme_filter(|_| false)
+    }
+
+    #[must_use]
+    pub fn css_vars_with_theme_filter(
+        &self,
+        mut include_theme_condition: impl FnMut(&str) -> bool,
+    ) -> TokenCssVars<'_> {
         let mut view = TokenCssVars::default();
         let mut condition_indexes: FxHashMap<&str, usize> = FxHashMap::default();
         for token in &self.tokens {
@@ -438,7 +446,7 @@ impl TokenDictionary {
                 view.base.push(var);
                 continue;
             };
-            if is_theme_condition(condition) {
+            if is_theme_condition(condition) && !include_theme_condition(condition) {
                 continue;
             }
 
