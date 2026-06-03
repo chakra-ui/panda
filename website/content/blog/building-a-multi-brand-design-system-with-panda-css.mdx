@@ -1,0 +1,709 @@
+---
+title: 'Building a Multi-Brand Design System with Panda CSS'
+description:
+  'A practical guide to building a multi-brand design system with Panda CSS, covering brand-aware tokens, recipes,
+  custom conditions, and how to ship it as a shared preset.'
+date: 2026-06-03
+author: Esther Adebayo
+tags: [design-systems, css, guides]
+---
+
+Multi-brand design systems are a specific kind of hard. You need one component library that renders as Brand A in one
+context and Brand B in another, without duplicating your components, shipping separate stylesheets, or scattering brand
+logic throughout your component code.
+
+The styling tool you pick determines how painful or painless that is. This guide covers how to build a multi-brand
+design system with Panda CSS: structuring tokens for brand switching, writing components that adapt to the active brand,
+and shipping the whole thing as a shared preset that other teams can consume.
+
+## Why Choose Panda CSS for a Multi-Brand Design System
+
+The two most popular approaches to styling component libraries each break down under multi-brand requirements.
+
+**Runtime CSS-in-JS** (styled-components, Emotion) evaluates styles in the browser. Adding a second brand means
+interpolating brand values into your style functions at runtime, which grows the JavaScript cost with every brand you
+add. SSR hydration gets complicated, and the React team's move toward Server Components made this worse: runtime style
+injection does not work in a server-only component tree.
+
+**Utility-first CSS** (Tailwind) requires you to ship a separate compiled stylesheet per brand, or reach for CSS
+variables yourself with no framework support. Your design tokens live in a config file, but the connection between those
+tokens and your component props is a string. `className="text-brand-500"` compiles fine even if `brand-500` does not
+exist in your config, which means brand token mismatches fail silently in production.
+
+Panda takes a different approach. It runs at build time, extracts every style call, and generates a single plain CSS
+file. Brand switching happens at the CSS variable layer, not in JavaScript. Your components never change. The brand
+does.
+
+What makes it well-suited for multi-brand work specifically:
+
+- **Brand conditions baked into the token system.** Semantic tokens can resolve to different values based on a
+  `data-brand` attribute on any ancestor element. One token definition covers every brand.
+- **Type-safe tokens.** Every value you define is inferred into your style props. `color: 'red.999'` is a type error.
+  `color: 'red.500'` autocompletes. Brand token mismatches do not reach production.
+- **First-class recipes.** Panda's `cva` and `sva` APIs map directly to how component libraries are structured. Variants
+  and slots are typed. No brand-specific component forks needed.
+- **CSS cascade layers.** Output is organized into `@layer reset, base, tokens, recipes, utilities` automatically. No
+  specificity fights when layering brand overrides.
+- **Framework agnostic.** React, Vue, Svelte, Solid. The config and generated CSS work the same across all of them.
+- **Server Component ready.** No runtime means no client-only constraints.
+
+## The Config is Your Schema
+
+Everything in Panda flows from `panda.config.ts`. This file is the contract between your design decisions and your
+component code.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  include: ['./src/**/*.{ts,tsx}'],
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  preflight: true,
+  strictTokens: true,
+  theme: {
+    extend: {
+      tokens: {},
+      semanticTokens: {}
+    }
+  }
+})
+```
+
+When you run `panda codegen`, Panda writes a `styled-system/` directory into your project. That directory contains
+everything your components need:
+
+```
+styled-system/
+├── css/        # css(), cva(), sva(), cx(), mergeCss()
+├── recipes/    # compiled recipe functions
+├── patterns/   # flex, grid, stack, container, etc.
+├── jsx/        # Box, Stack, Flex, and the panda() factory
+└── tokens/     # token values and CSS variable names
+```
+
+This directory is generated code. Commit it. It should stay in sync with your config, and your CI should verify that.
+
+The `extend` key in `theme` is how you layer your tokens on top of the default Panda preset without replacing it. Use
+`theme.extend` unless you intentionally want to start from scratch.
+
+`strictTokens: true` enforces that every style value must come from a token you have defined. Without it,
+`color: 'red.500'` and `color: '#ff0000'` are both valid. With it, arbitrary values are type errors. For a shared design
+system this is the right default: it closes the gap between "we have a token system" and "the team actually uses it."
+
+## Design Tokens Done Right
+
+Panda tokens have two layers: primitive tokens and semantic tokens. This separation is what makes multi-brand switching
+work cleanly.
+
+**Primitive tokens** are raw values with no contextual meaning. Define a separate color palette per brand here:
+
+```ts
+tokens: {
+  colors: {
+    // Brand A palette
+    ocean: {
+      50:  { value: '#eff6ff' },
+      500: { value: '#3b82f6' },
+      900: { value: '#1e3a5f' },
+    },
+    // Brand B palette
+    forest: {
+      50:  { value: '#f0fdf4' },
+      500: { value: '#22c55e' },
+      900: { value: '#14532d' },
+    },
+  },
+  spacing: {
+    1: { value: '0.25rem' },
+    4: { value: '1rem' },
+  },
+},
+```
+
+**Semantic tokens** reference primitives and carry meaning. This is where the brand switching actually happens. Each
+semantic token resolves to Brand A's palette by default, and switches to Brand B's palette when the `_brandB` condition
+is active:
+
+```ts
+conditions: {
+  extend: {
+    brandB: '[data-brand=b] &',
+  },
+},
+
+semanticTokens: {
+  colors: {
+    brand: {
+      primary: {
+        value: {
+          base:    '{colors.ocean.500}',
+          _brandB: '{colors.forest.500}',
+        },
+      },
+      muted: {
+        value: {
+          base:    '{colors.ocean.50}',
+          _brandB: '{colors.forest.50}',
+          _dark:   '{colors.ocean.900}',
+        },
+      },
+    },
+    bg: {
+      canvas: { value: { base: '#ffffff', _dark: '#0a0a0a' } },
+    },
+    text: {
+      default: {
+        value: {
+          base:    '{colors.ocean.900}',
+          _brandB: '{colors.forest.900}',
+          _dark:   '{colors.ocean.50}',
+        },
+      },
+    },
+  },
+},
+```
+
+Panda compiles these into CSS custom properties:
+
+```css
+:root {
+  --colors-brand-primary: var(--colors-ocean-500);
+  --colors-text-default: var(--colors-ocean-900);
+}
+
+[data-brand='b'] {
+  --colors-brand-primary: var(--colors-forest-500);
+  --colors-text-default: var(--colors-forest-900);
+}
+```
+
+Your components reference semantic tokens only. A button that uses `bg: 'brand.primary'` works for every brand. The CSS
+variable does the switching. Your component code stays the same regardless of how many brands you add.
+
+Color is usually the first place you notice a brand switch. But stop there and your system is only half done.
+
+### Multi-brand is not just about color
+
+Brands also differ in typography and shape — sometimes dramatically. One brand might use a geometric sans-serif and
+sharp corners; another might use a classical serif and pill-shaped buttons. Define those as primitive tokens too, then
+alias them through semantic tokens the same way:
+
+```ts
+tokens: {
+  fonts: {
+    brandA: { value: '"Inter", sans-serif' },
+    brandB: { value: '"EB Garamond", serif' },
+  },
+},
+
+semanticTokens: {
+  fonts: {
+    body: {
+      value: {
+        base:    '{fonts.brandA}',
+        _brandB: '{fonts.brandB}',
+      },
+    },
+    heading: {
+      value: {
+        base:    '{fonts.brandA}',
+        _brandB: '{fonts.brandB}',
+      },
+    },
+  },
+  radii: {
+    component: {
+      value: {
+        base:    '{radii.md}',
+        _brandB: '{radii.full}',
+      },
+    },
+  },
+},
+```
+
+A component using `fontFamily: 'body'` and `borderRadius: 'component'` adapts its typeface and shape to the active brand
+without any conditional logic in the component itself.
+
+There is one more scenario to plan for before you start writing components: what happens when a user switches to dark
+mode inside a Brand B context? You need four states from one token — and that is where nesting conditions comes in.
+
+### Combining brand and dark mode
+
+When a token needs to handle both brand switching and dark mode, nest the `_dark` condition inside the brand condition:
+
+```ts
+semanticTokens: {
+  colors: {
+    brand: {
+      muted: {
+        value: {
+          base:    '{colors.ocean.50}',   // Brand A, light
+          _dark:   '{colors.ocean.900}',  // Brand A, dark
+          _brandB: {
+            base:  '{colors.forest.50}',  // Brand B, light
+            _dark: '{colors.forest.900}', // Brand B, dark
+          },
+        },
+      },
+    },
+  },
+},
+```
+
+This compiles to:
+
+```css
+:root {
+  --colors-brand-muted: var(--colors-ocean-50);
+}
+.dark {
+  --colors-brand-muted: var(--colors-ocean-900);
+}
+[data-brand='b'] {
+  --colors-brand-muted: var(--colors-forest-50);
+}
+[data-brand='b'] .dark {
+  --colors-brand-muted: var(--colors-forest-900);
+}
+```
+
+Four states. One token definition. No component changes.
+
+## Conditions and Brand Switching
+
+Conditions are the mechanism behind brand switching in Panda. They are also how Panda handles pseudo-states, dark mode,
+and responsive breakpoints. Once you understand conditions, the whole system connects.
+
+The key insight is that a condition is just a CSS selector string. Panda uses it to scope both CSS utility classes and
+CSS variable overrides. Brand switching, hover states, dark mode, and responsive breakpoints are all the same mechanism
+with different selector values.
+
+### Brand conditions
+
+You define a brand condition as a CSS selector string in your config:
+
+```ts
+// panda.config.ts
+conditions: {
+  extend: {
+    brandB: '[data-brand=b] &',
+  },
+},
+```
+
+Apply the brand at the root of each product or page:
+
+```tsx
+<div data-brand="b">
+  <App /> {/* every component inside resolves to Brand B tokens */}
+</div>
+```
+
+That is the entire runtime cost of brand switching. One `data-brand` attribute. The CSS variables defined by your
+semantic tokens handle the rest. You do not need to pass a brand prop through your component tree, use a context
+provider, or import brand-specific component variants.
+
+**Where to place `data-brand` depends on your product structure.** If each deployment is a single brand, set it on
+`<html>`:
+
+```tsx
+// app/layout.tsx (Next.js)
+<html data-brand={process.env.NEXT_PUBLIC_BRAND}>
+```
+
+If multiple brands coexist on the same page (a shared widget embedded inside a host product, a multi-tenant dashboard),
+wrap the relevant subtree:
+
+```tsx
+// A partner widget rendered inside your main app
+<div data-brand="b">
+  <PartnerWidget />
+</div>
+```
+
+If you are shipping a design system that other teams consume, export a typed `BrandProvider` so consumers do not need to
+know about `data-brand` at all:
+
+```tsx
+type Brand = 'a' | 'b'
+
+export const BrandProvider = ({ brand, children }: { brand: Brand; children: React.ReactNode }) => (
+  <div data-brand={brand}>{children}</div>
+)
+```
+
+If you need to override a specific style for a brand outside of tokens, you can use the condition directly in any style
+call:
+
+```ts
+css({
+  borderRadius: 'md',
+  _brandB: { borderRadius: 'full' }
+})
+```
+
+### Pseudo-states and dark mode
+
+Brand conditions are one type of condition. The same `_prefix` pattern handles every interactive state your components
+need — hover, focus, disabled, checked, and dark mode. You write them all in the same style object, next to each other.
+
+```ts
+css({
+  color: 'text.default',
+  bg: 'bg.canvas',
+  _hover: { color: 'brand.primary' },
+  _focus: { outline: '2px solid', outlineColor: 'brand.primary' },
+  _disabled: { opacity: '0.5', cursor: 'not-allowed' },
+  _checked: { bg: 'brand.primary', color: 'white' }
+})
+```
+
+Note: semantic tokens that already encode dark mode variants (like `bg.canvas` and `text.default`) do not need a `_dark`
+override. Use `_dark` only for values not covered by your token system, such as hardcoded fallbacks or third-party
+styles.
+
+### Responsive styles
+
+Responsive breakpoints follow the exact same pattern. Instead of an underscore-prefixed state key, you use the
+breakpoint name as the key and pass an object with your values.
+
+```ts
+css({
+  fontSize: { base: 'sm', md: 'md', lg: 'lg' }
+})
+```
+
+Compose a breakpoint with a state when you need both:
+
+```ts
+css({
+  textDecoration: 'none',
+  'md:_hover': { textDecoration: 'underline' }
+})
+```
+
+## Recipes are Your Component Contracts
+
+Recipes are the main building block of a design system in Panda. They define a component's visual states as a typed API.
+Because recipes reference semantic tokens directly, they are automatically multi-brand aware. You write one recipe.
+Every brand gets the right visual result.
+
+Most components fall into one of two categories: a single element (a button, a badge, an input) or a group of related
+elements (a checkbox with its label, a card with its header and body). Panda has a specific API for each.
+
+### Single-root components with `cva`
+
+`cva`, short for Class Variant Array, is for components that render a single DOM element. You define a `base` style that
+always applies, then `variants` for the different visual states consumers can choose from:
+
+```ts
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontWeight: 'semibold',
+    borderRadius: 'component',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    _disabled: { opacity: '0.5', cursor: 'not-allowed' }
+  },
+  variants: {
+    size: {
+      sm: { h: '8', px: '3', fontSize: 'sm' },
+      md: { h: '10', px: '4', fontSize: 'md' },
+      lg: { h: '12', px: '6', fontSize: 'lg' }
+    },
+    variant: {
+      solid: {
+        bg: 'brand.primary',
+        color: 'white',
+        _hover: { opacity: '0.9' }
+      },
+      outline: {
+        borderWidth: '1px',
+        borderColor: 'brand.primary',
+        color: 'brand.primary',
+        _hover: { bg: 'brand.muted' }
+      },
+      ghost: {
+        color: 'brand.primary',
+        _hover: { bg: 'brand.muted' }
+      }
+    }
+  },
+  defaultVariants: {
+    size: 'md',
+    variant: 'solid'
+  }
+})
+```
+
+```tsx
+<button className={button({ size: 'sm', variant: 'outline' })}>Submit</button>
+```
+
+Use `splitVariantProps` to cleanly separate variant props from the rest of your component props:
+
+```tsx
+import { button } from '../styled-system/recipes'
+
+const Button = (props: ButtonProps) => {
+  const [variantProps, restProps] = button.splitVariantProps(props)
+  return <button className={button(variantProps)} {...restProps} />
+}
+```
+
+### Multi-part components with `sva`
+
+`cva` works for a single element, but most real components are more than one element. A checkbox has a root wrapper, a
+visual control, and a label. A card has a header, a body, and a footer. If you use `cva` here, you end up with one
+monolithic class string that cannot distinguish between the parts.
+
+`sva` (Slot Variant Array) solves this. You define named slots, and each slot gets its own scoped styles and variants:
+
+```ts
+import { sva } from '../styled-system/css'
+
+const checkbox = sva({
+  slots: ['root', 'control', 'label'],
+  base: {
+    root: { display: 'flex', alignItems: 'center', gap: '2', cursor: 'pointer' },
+    control: {
+      borderWidth: '2px',
+      borderRadius: 'sm',
+      borderColor: 'gray.300',
+      _checked: { bg: 'brand.primary', borderColor: 'brand.primary' },
+      _focus: { ring: '2px', ringColor: 'brand.primary' }
+    },
+    label: { fontWeight: 'medium', color: 'text.default' }
+  },
+  variants: {
+    size: {
+      sm: {
+        control: { w: '4', h: '4' },
+        label: { fontSize: 'sm' }
+      },
+      md: {
+        control: { w: '5', h: '5' },
+        label: { fontSize: 'md' }
+      }
+    }
+  },
+  defaultVariants: { size: 'md' }
+})
+```
+
+```tsx
+const Checkbox = ({ size, children }) => {
+  const classes = checkbox({ size })
+  return (
+    <label className={classes.root}>
+      <input type="checkbox" hidden />
+      <div className={classes.control} />
+      <span className={classes.label}>{children}</span>
+    </label>
+  )
+}
+```
+
+`sva` generates separate class names per slot, so each part of your component gets exactly the CSS it needs with no
+overlap.
+
+## Tips and Tricks
+
+A few things that come up when building and publishing a multi-brand design system with Panda that are worth knowing
+before you ship.
+
+**Namespace your classes with `prefix`.** When you publish a design system, your consumers might also be using Panda.
+The `prefix` option prevents class name collisions:
+
+```ts
+// panda.config.ts
+prefix: 'ds',
+```
+
+This namespaces all generated classes (`ds-flex`, `ds-grid`) and all CSS custom properties
+(`--ds-colors-brand-primary`). Set it once, early.
+
+**Define recipes in the config for design system consumers.** Recipes defined in `panda.config.ts` under `theme.recipes`
+are available as named imports. This is the right place for your design system's canonical component styles:
+
+```ts
+// panda.config.ts
+theme: {
+  extend: {
+    recipes: {
+      button: buttonRecipe,
+      badge: badgeRecipe,
+    },
+    slotRecipes: {
+      checkbox: checkboxRecipe,
+      dialog: dialogRecipe,
+    },
+  },
+},
+```
+
+Consumers import them from `styled-system/recipes` with full type safety.
+
+## Shipping Your Multi-Brand System as a Preset
+
+Everything covered so far assumes you are building inside a single application. When you are building a shared
+multi-brand design system, the goal is to ship your tokens, brand conditions, recipes, and patterns as a package that
+any product team drops into their Panda config.
+
+Panda has a `definePreset` API for exactly this:
+
+```ts filename="packages/design-system/src/preset.ts"
+import { definePreset } from '@pandacss/dev'
+
+export const mySystemPreset = definePreset({
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          ocean: {
+            50: { value: '#eff6ff' },
+            500: { value: '#3b82f6' },
+            900: { value: '#1e3a5f' }
+          },
+          forest: {
+            50: { value: '#f0fdf4' },
+            500: { value: '#22c55e' },
+            900: { value: '#14532d' }
+          }
+        },
+        fonts: {
+          brandA: { value: '"Inter", sans-serif' },
+          brandB: { value: '"EB Garamond", serif' }
+        }
+      },
+      semanticTokens: {
+        colors: {
+          brand: {
+            primary: {
+              value: { base: '{colors.ocean.500}', _brandB: '{colors.forest.500}' }
+            },
+            muted: {
+              value: {
+                base: '{colors.ocean.50}',
+                _dark: '{colors.ocean.900}',
+                _brandB: { base: '{colors.forest.50}', _dark: '{colors.forest.900}' }
+              }
+            }
+          }
+        },
+        fonts: {
+          body: {
+            value: { base: '{fonts.brandA}', _brandB: '{fonts.brandB}' }
+          }
+        }
+      },
+      recipes: {
+        button: buttonRecipe
+      },
+      slotRecipes: {
+        checkbox: checkboxRecipe
+      }
+    }
+  },
+  conditions: {
+    extend: {
+      brandB: '[data-brand=b] &'
+    }
+  }
+})
+```
+
+A consuming application adds it in one line:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { mySystemPreset } from '@your-org/design-system/preset'
+
+export default defineConfig({
+  presets: ['@pandacss/preset-base', mySystemPreset],
+  include: ['./src/**/*.{ts,tsx}'],
+  outdir: 'styled-system'
+})
+```
+
+The consumer runs `panda codegen` and gets a `styled-system/` that includes all your tokens, recipes, and conditions
+alongside their own. They import components from your package and style utilities from their own `styled-system/`.
+
+A few things to get right when shipping a preset:
+
+- **Do not include `@pandacss/preset-panda` in your preset.** That is the consumer's decision. Only bundle what your
+  design system owns.
+- **Export your recipe definitions separately** from the preset so consumers can import them directly if they need to
+  extend or override them.
+- **Version your preset alongside your components.** A token rename in the preset is a breaking change for every
+  consumer.
+
+## Considerations Worth Knowing
+
+Panda handles the multi-brand problem well, but a few behaviors catch people off guard the first time. Better to know
+about them upfront than to hit them mid-project.
+
+**Truly dynamic values need a different plan.** Panda generates CSS at build time. A color computed from a user-provided
+hex code will not have a utility class waiting for it. The pattern for genuinely dynamic values is CSS custom properties
+combined with inline styles:
+
+```tsx
+<div style={{ '--user-color': userColor } as React.CSSProperties} className={css({ color: 'var(--user-color)' })} />
+```
+
+**The `styled-system/` directory lives in your repo.** Generated code goes in your codebase. Config changes create diffs
+in `styled-system/`. This surprises new contributors and adds noise to PRs. Add a note in your contributing guide and
+consider configuring your diff tool to collapse that directory by default.
+
+**Token conditions only handle visual differences.** If Brand B needs a genuinely different component structure — a
+different DOM layout, additional slots, fundamentally different markup — semantic tokens will not help. That is a
+component problem, not a token problem. The right answer there is a recipe variant that handles the structural
+difference, or in extreme cases a separate component. Tokens are for styling; structure belongs in components.
+
+## When Panda is the Right Call
+
+**You are building a multi-brand or white-label product.** This is where Panda earns its setup cost. Semantic tokens
+plus brand conditions give you per-brand CSS variables with one component tree, one stylesheet, and zero runtime logic.
+Adding a third or fourth brand is a config change, not a codebase change.
+
+**Your team is TypeScript-first.** Every token, variant, and condition is inferred. Autocomplete covers the full surface
+area of your design system. Mistyped tokens are compile-time errors, not visual bugs in production.
+
+**You are building for React Server Components.** No runtime means no client-only constraints. Your components stay on
+the server where they belong.
+
+Multi-brand design systems are hard regardless of what tool you use. But most of the difficulty comes from the wrong
+layer: brand logic scattered across component props, duplicated stylesheets, runtime style evaluation that grows with
+every brand you add. Panda pushes all of that down to the token and CSS variable layer, which is where it belongs. Your
+components stay clean. The brand stays in the config.
+
+One thing Panda does not handle: brand-specific non-CSS assets like logos, wordmarks, and illustrations. Those live
+outside the styling layer and are typically managed through environment variables, component props, or your asset
+pipeline. Panda is responsible for everything visual that CSS can express: color, typography, shape, spacing, and that
+covers the vast majority of what differs between brands.
+
+## Get Started
+
+Install Panda and initialize your config:
+
+```bash
+npm install -D @pandacss/dev
+npx panda init --postcss
+```
+
+`panda init` writes a starter `panda.config.ts`, adds the PostCSS plugin, and generates your initial `styled-system/`
+directory. From there, define your primitive tokens, add your semantic tokens with brand conditions, and run:
+
+```bash
+npx panda codegen
+```
+
+The full documentation is at [panda-css.com/docs](/docs). The [installation guides](/docs/installation/nextjs) cover
+framework-specific setup for Next.js, Vite, Astro, Remix, and others.
