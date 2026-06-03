@@ -46,6 +46,82 @@ fn expands_static_css_utilities() {
 }
 
 #[test]
+fn expands_static_css_negative_token_category_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "margin": "*"
+                    }
+                }
+            ]
+        },
+        "utilities": {
+            "margin": { "className": "m", "values": "spacing" }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .m_-4 {
+    margin: calc(var(--spacing-4) * -1);
+  }
+  .m_4 {
+    margin: var(--spacing-4);
+  }
+}
+");
+}
+
+#[test]
+fn expands_static_css_color_opacity_modifiers() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#fca5a5" }
+                    }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "background": ["red.300/40", "red/30"]
+                    }
+                }
+            ]
+        },
+        "utilities": {
+            "background": { "className": "bg", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .bg_red\.300\/40 {
+    background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+  }
+  .bg_red\/30 {
+    background: color-mix(in srgb, red 30%, transparent);
+  }
+}
+");
+}
+
+#[test]
 fn expands_static_css_responsive_breakpoints() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -120,29 +196,29 @@ fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
     assert_snapshot!(css, @r"
     @layer utilities {
       .c_blue\.500 {
-        color: #00f;
+        color: var(--colors-blue-500);
       }
       .c_red\.500 {
-        color: #f00;
+        color: var(--colors-red-500);
       }
       @media (width >= 48rem) {
         .md\:c_blue\.500 {
-          color: #00f;
+          color: var(--colors-blue-500);
         }
       }
       @media (width >= 48rem) {
         .md\:c_red\.500 {
-          color: #f00;
+          color: var(--colors-red-500);
         }
       }
       @media (hover: hover) {
         .hoverFine\:c_blue\.500:hover {
-          color: #00f;
+          color: var(--colors-blue-500);
         }
       }
       @media (hover: hover) {
         .hoverFine\:c_red\.500:hover {
-          color: #f00;
+          color: var(--colors-red-500);
         }
       }
     }

@@ -13,6 +13,7 @@ use std::collections::{BTreeMap, HashMap, hash_map::Entry};
 use std::sync::Arc;
 
 use pandacss_config::{TokenCategoryTypeData, TokenTypeData, token_category_type_name};
+use pandacss_shared::number_to_js_string;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -558,6 +559,39 @@ impl TokenDictionary {
         fallback
     }
 
+    #[must_use]
+    pub fn color_mix_str(&self, value: &str) -> Option<String> {
+        let (color_path, raw_opacity) = value.split_once('/')?;
+        if color_path.is_empty() || raw_opacity.is_empty() {
+            return None;
+        }
+
+        let color = self.get_var_str(color_path, None).unwrap_or(color_path);
+        let opacity_path = format!("opacity.{raw_opacity}");
+        let opacity = if let Some(opacity) = self.get_str(&opacity_path, None) {
+            let opacity = opacity.parse::<f64>().ok()?;
+            let mut out = number_to_js_string(opacity * 100.0);
+            out.push('%');
+            out
+        } else if raw_opacity.parse::<f64>().is_ok() {
+            let mut out = String::with_capacity(raw_opacity.len() + 1);
+            out.push_str(raw_opacity);
+            out.push('%');
+            out
+        } else {
+            return None;
+        };
+
+        let mut out =
+            String::with_capacity("color-mix(in srgb, ".len() + color.len() + opacity.len() + 15);
+        out.push_str("color-mix(in srgb, ");
+        out.push_str(color);
+        out.push(' ');
+        out.push_str(&opacity);
+        out.push_str(", transparent)");
+        Some(out)
+    }
+
     /// Snapshot of `{ path → value }` for one category. Only base tokens
     /// are included; conditional variants live under their own indices.
     #[must_use]
@@ -587,7 +621,7 @@ impl TokenDictionary {
         self.by_category_key
             .get(&category)?
             .get(key)
-            .map(|&i| self.tokens[i].value.as_ref())
+            .map(|&i| category_value(&self.tokens[i]))
     }
 
     #[must_use]
@@ -838,7 +872,7 @@ impl TokenDictionaryBuilder {
                     category_values_cache
                         .entry(token.category.clone())
                         .or_default()
-                        .insert(Arc::clone(&token.path), Arc::clone(&token.value));
+                        .insert(Arc::from(key), Arc::from(category_value(token)));
                 }
                 by_path.insert(Arc::clone(&token.path), i);
                 if !token.var.is_empty() {
@@ -864,6 +898,14 @@ impl TokenDictionaryBuilder {
             deprecated_paths_cache,
             color_palettes,
         }
+    }
+}
+
+fn category_value(token: &Token) -> &str {
+    if token.extension("isNegative") == Some("true") {
+        token.value.as_ref()
+    } else {
+        token.var.as_ref()
     }
 }
 

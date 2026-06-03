@@ -32,6 +32,130 @@ fn emits_dynamic_atomic_css() {
 }
 
 #[test]
+fn resolves_semantic_token_category_values_to_css_vars() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "blue": {
+                        "500": { "value": "#2563eb" }
+                    },
+                    "brand": {
+                        "500": { "value": "#111827" }
+                    }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "primary": { "value": "{colors.blue.500}" }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "color", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ color: 'primary' }); css({ color: 'brand.500' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .color_brand\.500 {
+    color: var(--colors-brand-500);
+  }
+  .color_primary {
+    color: var(--colors-primary);
+  }
+}
+");
+}
+
+#[test]
+fn resolves_negative_spacing_category_values_to_calc_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" }
+                }
+            }
+        },
+        "utilities": {
+            "margin": { "className": "m", "shorthand": "m", "values": "spacing" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ m: '-4' }); css({ m: '4' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .m_-4 {
+    margin: calc(var(--spacing-4) * -1);
+  }
+  .m_4 {
+    margin: var(--spacing-4);
+  }
+}
+");
+}
+
+#[test]
+fn resolves_color_opacity_modifiers_to_color_mix() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#fca5a5" }
+                    }
+                },
+                "opacity": {
+                    "half": { "value": 0.5 }
+                }
+            }
+        },
+        "utilities": {
+            "background": { "className": "bg", "shorthand": "bg", "values": "colors" },
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css';\n",
+            "css({ bg: 'red.300/40' });\n",
+            "css({ bg: 'red/30' });\n",
+            "css({ color: '{colors.red.300/40}' });\n",
+            "css({ bg: 'token(colors.red.300/half)' });",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .bg_red\.300\/40 {
+    background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+  }
+  .bg_red\/30 {
+    background: color-mix(in srgb, red 30%, transparent);
+  }
+  .bg_token\(colors\.red\.300\/half\) {
+    background: color-mix(in srgb, var(--colors-red-300) 50%, transparent);
+  }
+  .c_\{colors\.red\.300\/40\} {
+    color: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+  }
+}
+");
+}
+
+#[test]
 fn escapes_nested_selector_keys_into_valid_class_names() {
     // `&:hover` is a raw selector, not a named condition: the runtime wraps it as
     // `[&:hover]:…` (so does the emitter), and `[`/`]`/`&`/`:` are escaped in the

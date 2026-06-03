@@ -397,6 +397,12 @@ impl Utility {
             return value.clone();
         }
 
+        if config.values_category.as_deref() == Some("colors")
+            && let Some(value) = self.color_mix_category_value(value)
+        {
+            return Literal::String(value);
+        }
+
         if let Some(category) = &config.values_category
             && let Some(value) = self.token_category_value(category, value)
         {
@@ -408,6 +414,18 @@ impl Utility {
 
     fn token_category_value<'a>(&'a self, category: &str, value: &str) -> Option<&'a str> {
         self.tokens.as_ref()?.category_value_str(category, value)
+    }
+
+    fn color_mix_category_value(&self, value: &str) -> Option<String> {
+        let tokens = self.tokens.as_ref()?;
+        let (color, opacity) = value.split_once('/')?;
+        let color_path = format!("colors.{color}");
+        if tokens.token(&color_path).is_some() {
+            let path = format!("{color_path}/{opacity}");
+            tokens.color_mix_str(&path)
+        } else {
+            tokens.color_mix_str(value)
+        }
     }
 
     fn default_style(&self, prop: &str, value: &Literal) -> Literal {
@@ -871,7 +889,11 @@ fn replace_wrapped_references(
             return out;
         };
         let path = after_open[..end].trim();
-        out.push_str(tokens.get_var_str(path, None).unwrap_or(path));
+        if let Some(value) = color_mix_or_var(path, tokens) {
+            out.push_str(value.as_ref());
+        } else {
+            out.push_str(path);
+        }
         rest = &after_open[end + close.len_utf8()..];
     }
     out.push_str(rest);
@@ -893,14 +915,23 @@ fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
         };
         let args = &after_open[..end];
         let (path, fallback) = split_token_args(args);
-        let resolved = tokens
-            .get_var_str(path.trim(), None)
-            .unwrap_or_else(|| fallback.map_or_else(|| path.trim(), str::trim));
-        out.push_str(resolved);
+        let path = path.trim();
+        if let Some(value) = color_mix_or_var(path, tokens) {
+            out.push_str(value.as_ref());
+        } else {
+            out.push_str(fallback.map_or_else(|| path, str::trim));
+        }
         rest = &after_open[end + 1..];
     }
     out.push_str(rest);
     out
+}
+
+fn color_mix_or_var<'a>(path: &'a str, tokens: &'a TokenDictionary) -> Option<Cow<'a, str>> {
+    if path.contains('/') {
+        return tokens.color_mix_str(path).map(Cow::Owned);
+    }
+    tokens.get_var_str(path, None).map(Cow::Borrowed)
 }
 
 fn find_matching_paren(value: &str) -> Option<usize> {
