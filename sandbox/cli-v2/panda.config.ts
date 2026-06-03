@@ -3,6 +3,7 @@ export default {
   include: ['src/**/*.tsx'],
   exclude: [],
   outdir: 'styled-system',
+  codegenImportExtensions: true,
   jsxFactory: 'panda',
   jsxFramework: 'react',
   theme: {
