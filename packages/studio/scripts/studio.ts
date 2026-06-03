@@ -9,7 +9,7 @@ export interface BuildOpts {
   base?: string | undefined
 }
 
-const appPath = join(__dirname, '..')
+const appPath = join(import.meta.dirname, '..')
 
 export async function buildStudio({ outDir, configPath, base }: BuildOpts) {
   // Set NODE_ENV to production before importing React to ensure consistent builds

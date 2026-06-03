@@ -17,28 +17,28 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./merge": {
-      "types": "./dist/merge-config.d.ts",
       "source": "./src/merge-config.ts",
+      "types": "./dist/merge-config.d.ts",
       "default": "./dist/merge-config.js"
     },
     "./diff": {
-      "types": "./dist/diff-config.d.ts",
       "source": "./src/diff-config.ts",
+      "types": "./dist/diff-config.d.ts",
       "default": "./dist/diff-config.js"
     },
     "./ts-path": {
-      "types": "./dist/resolve-ts-path-pattern.d.ts",
       "source": "./src/resolve-ts-path-pattern.ts",
+      "types": "./dist/resolve-ts-path-pattern.d.ts",
       "default": "./dist/resolve-ts-path-pattern.js"
     },
     "./utils": {
-      "types": "./dist/utils.d.ts",
       "source": "./src/utils.ts",
+      "types": "./dist/utils.d.ts",
       "default": "./dist/utils.js"
     },
     "./package.json": "./package.json"

@@ -17,8 +17,8 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
@@ -26,8 +26,8 @@
   "scripts": {
     "generate": "node scripts/generate-theme.mjs",
     "generate:clean": "node scripts/generate-theme.mjs --clean",
-    "build": "tsup src/index.ts --format=esm,cjs --dts",
-    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "build": "tsup src/index.ts --format=esm --dts",
+    "build-fast": "tsup src/index.ts --format=esm --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [

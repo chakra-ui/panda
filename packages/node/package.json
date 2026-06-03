@@ -7,15 +7,15 @@
   "license": "MIT",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup --tsconfig tsconfig.build.json src/index.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup --tsconfig tsconfig.build.json src/index.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup --tsconfig tsconfig.build.json src/index.ts --format=esm --dts",
+    "build-fast": "tsup --tsconfig tsconfig.build.json src/index.ts --format=esm --no-dts",
     "dev": "pnpm build-fast --watch"
   },
   "files": [

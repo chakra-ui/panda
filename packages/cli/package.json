@@ -11,13 +11,13 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./presets": {
-      "types": "./dist/presets.d.ts",
       "source": "./src/presets.ts",
+      "types": "./dist/presets.d.ts",
       "default": "./dist/presets.js"
     },
     "./postcss": "./postcss.js",
@@ -34,8 +34,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src --format=esm,cjs --dts --no-splitting --shims",
-    "build-fast": "tsup src --format=esm,cjs --no-dts --no-splitting --shims",
+    "build": "tsup src --format=esm --dts --no-splitting",
+    "build-fast": "tsup src --format=esm --no-dts --no-splitting",
     "dev": "pnpm build-fast --watch src"
   },
   "files": [
@@ -58,12 +58,12 @@
     "@pandacss/shared": "workspace:*",
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "cac": "6.7.14"
-  },
-  "devDependencies": {
-    "@types/update-notifier": "6.0.8",
+    "cac": "6.7.14",
     "kleur": "4.1.5",
     "update-notifier": "7.3.1"
+  },
+  "devDependencies": {
+    "@types/update-notifier": "6.0.8"
   },
   "type": "module",
   "engines": {

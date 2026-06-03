@@ -4,9 +4,8 @@ import { defineConfig } from 'tsup'
 // Overrides here only affect declaration emit, not application tsconfig.
 export default defineConfig({
   entry: ['scripts/studio.ts'],
-  format: ['esm', 'cjs'],
+  format: ['esm'],
   splitting: false,
-  shims: true,
   dts: {
     compilerOptions: {
       ignoreDeprecations: '6.0',

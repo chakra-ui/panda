@@ -5,13 +5,13 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./loader": {
-      "types": "./dist/loader.d.ts",
       "source": "./src/loader.ts",
+      "types": "./dist/loader.d.ts",
       "default": "./dist/loader.js"
     },
     "./package.json": "./package.json"
@@ -29,8 +29,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup --tsconfig tsconfig.build.json src/index.ts src/loader.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup --tsconfig tsconfig.build.json src/index.ts src/loader.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup --tsconfig tsconfig.build.json src/index.ts src/loader.ts --format=esm --dts",
+    "build-fast": "tsup --tsconfig tsconfig.build.json src/index.ts src/loader.ts --format=esm --no-dts",
     "build:native": "tsx build-binding.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
