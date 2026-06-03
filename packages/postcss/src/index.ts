@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import path from 'path'
 import type { PluginCreator, TransformCallback } from 'postcss'
 
-const customRequire = createRequire(__dirname)
+const customRequire = createRequire(import.meta.url)
 
 const PLUGIN_NAME = 'pandacss'
 

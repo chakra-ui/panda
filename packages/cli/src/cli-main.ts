@@ -20,6 +20,7 @@ import {
 import { PandaError, compact } from '@pandacss/shared'
 import type { CssArtifactType } from '@pandacss/types'
 import { cac } from 'cac'
+import { createRequire } from 'module'
 import { join, resolve } from 'path'
 import { version } from '../package.json'
 import { interactive } from './interactive'
@@ -37,6 +38,8 @@ import type {
   SpecCommandFlags,
   StudioCommandFlags,
 } from './types'
+
+const require = createRequire(import.meta.url)
 
 export async function main() {
   const cli = cac('panda')
