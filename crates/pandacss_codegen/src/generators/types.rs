@@ -243,6 +243,9 @@ fn system_module(
         "export type AnySelector = Selector | string".into(),
         "export type Nested<P> = P & {\n  [K in Selector]?: Nested<P>\n} & {\n  [K in AnySelector]?: Nested<P>\n} & {\n  [K in Condition]?: Nested<P>\n}".into(),
         r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
+        r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#.into(),
+        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#.into(),
+        r#"export type AutoGlobals = Globals | "auto""#.into(),
         "export type CssValue = Globals | (string & {}) | number".into(),
         format!("export interface CssProperties {{\n{css_members}\n}}"),
         format!("export interface SystemProperties extends CssProperties {{\n{system_members}\n}}"),
@@ -521,7 +524,11 @@ fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOp
             strict_parts.join(" | ")
         };
 
-        return format!("WithEscapeHatch<{strict_type}>");
+        // CSS-wide keywords (and the non-tokenizable per-category keywords like
+        // `auto`/`currentColor`) stay assignable under strictTokens — they have no
+        // token to substitute and aren't a design-drift risk.
+        let globals = strict_token_globals(parts);
+        return format!("WithEscapeHatch<{globals} | {strict_type}>");
     }
 
     // Keyword properties (e.g. `display`) restrict to their configured literal
@@ -535,7 +542,10 @@ fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOp
             .collect::<Vec<_>>();
 
         if !keyword_parts.is_empty() {
-            return format!("WithEscapeHatch<OnlyKnown<{}>>", keyword_parts.join(" | "));
+            return format!(
+                "WithEscapeHatch<Globals | OnlyKnown<{}>>",
+                keyword_parts.join(" | ")
+            );
         }
     }
 
@@ -563,6 +573,41 @@ fn has_token_part(parts: &[ValueTypePart]) -> bool {
     parts
         .iter()
         .any(|part| matches!(part, ValueTypePart::TokenCategory(_)))
+}
+
+/// The globals alias a token category's strict type unions in: the CSS-wide
+/// keywords plus the non-tokenizable keywords that category's properties accept
+/// (per csstype). Categories with no extra keywords fall back to bare `Globals`.
+fn category_globals(category: &str) -> &'static str {
+    match category {
+        "colors" => "ColorGlobals",
+        "sizes" => "DimensionGlobals",
+        "spacing" | "zIndex" | "aspectRatios" => "AutoGlobals",
+        _ => "Globals",
+    }
+}
+
+/// Union of the globals aliases for every token category present in `parts`.
+fn strict_token_globals(parts: &[ValueTypePart]) -> String {
+    let mut names: Vec<&str> = parts
+        .iter()
+        .filter_map(|part| match part {
+            ValueTypePart::TokenCategory(category) => Some(category_globals(category)),
+            _ => None,
+        })
+        .collect();
+    names.sort_unstable();
+    names.dedup();
+    // Every category alias already includes `Globals`, so drop the bare base when a
+    // richer alias is present to keep the union tight.
+    if names.len() > 1 {
+        names.retain(|name| *name != "Globals");
+    }
+    if names.is_empty() {
+        "Globals".to_owned()
+    } else {
+        names.join(" | ")
+    }
 }
 
 fn value_part(part: &ValueTypePart) -> String {
