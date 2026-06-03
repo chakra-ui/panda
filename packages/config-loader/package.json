@@ -2,9 +2,9 @@
   "name": "@pandacss/config-loader",
   "version": "0.0.0",
   "description": "Self-contained loader that bundles and serializes a Panda config for the Rust compiler",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "sideEffects": false,
@@ -21,11 +21,7 @@
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },

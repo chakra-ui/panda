@@ -2,9 +2,9 @@
   "name": "@pandacss/cli",
   "version": "0.0.0",
   "description": "Experimental v2 CLI for the Panda Rust compiler",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "bin": {
@@ -15,11 +15,7 @@
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -34,8 +30,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/cli-main.ts --format=esm,cjs --dts --no-splitting --shims",
-    "build-fast": "tsup src/index.ts src/cli-main.ts --format=esm,cjs --no-dts --no-splitting --shims",
+    "build": "tsup src/index.ts src/cli-main.ts --format=esm --dts --no-splitting --shims",
+    "build-fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch src",
     "test": "vitest run"
   },
