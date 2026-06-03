@@ -54,7 +54,7 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     === utilities.css ===
     @layer utilities {
       .c_red {
-        color: #f00;
+        color: var(--colors-red);
       }
     }
 

@@ -431,11 +431,11 @@ fn expands_static_css_recipe_conditions_and_responsive() {
   .button--size_sm {
     padding: 8px;
   }
-  .button--size_sm:hover {
+  .hover\:button--size_sm:hover {
     padding: 8px;
   }
   @media (width >= 48rem) {
-    .button--size_sm {
+    .md\:button--size_sm {
       padding: 8px;
     }
   }

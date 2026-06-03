@@ -45,10 +45,10 @@ fn emits_global_css_from_serialized_config() {
 @layer base {
   html, body {
     padding: 0;
-    color: #f00;
+    color: var(--colors-red-500);
   }
   html:is(:hover, [data-hover]), body:is(:hover, [data-hover]) {
-    background-color: #f00;
+    background-color: var(--colors-red-500);
   }
   @media (width >= 48rem) {
     html, body {
@@ -118,10 +118,10 @@ fn emits_global_css_direct_nesting_and_conditions() {
     }
   }
   .btn:is(:focus, [data-focus]) {
-    color: #fecaca;
+    color: var(--colors-red-200);
   }
   .btn:is(:focus, [data-focus]):is(:hover, [data-hover]) {
-    background-color: #f87171;
+    background-color: var(--colors-red-400);
   }
   @media (width >= 40rem) {
     .btn {
@@ -129,10 +129,10 @@ fn emits_global_css_direct_nesting_and_conditions() {
     }
   }
   .btn .aaa {
-    color: #bfdbfe;
+    color: var(--colors-blue-200);
   }
   .btn .aaa .bbb {
-    color: #93c5fd;
+    color: var(--colors-blue-300);
   }
 }
 ");
@@ -243,20 +243,20 @@ fn emits_global_css_at_rules() {
 @layer base {
   @media (min-width: 640px) {
     body, :root {
-      color: #fecaca;
+      color: var(--colors-red-200);
     }
   }
   @media (min-width: 640px) {
     @supports (display: grid) and (display: contents) {
       body {
-        color: #fecaca;
+        color: var(--colors-red-200);
       }
     }
   }
   @media (min-width: 640px) {
     @supports (display: grid) and (display: contents) {
       body a {
-        color: #f87171;
+        color: var(--colors-red-400);
       }
     }
   }

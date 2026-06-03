@@ -80,7 +80,7 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
     @layer base {
       body {
         margin: 0;
-        color: #ef4444;
+        color: var(--colors-red-500);
       }
     }
     @layer tokens {
@@ -98,7 +98,7 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
         }
       }
       .button--tone_solid {
-        background-color: #ef4444;
+        background-color: var(--colors-red-500);
       }
       .button--size_sm {
         padding: 4px;
@@ -106,20 +106,20 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
     }
     @layer utilities {
       .c_blue\.500 {
-        color: #2563eb;
+        color: var(--colors-blue-500);
       }
       .c_red\.500 {
-        color: #ef4444;
+        color: var(--colors-red-500);
       }
       .dark .dark\:c_blue\.500 {
-        color: #2563eb;
+        color: var(--colors-blue-500);
       }
       .hover\:c_blue\.500:hover {
-        color: #2563eb;
+        color: var(--colors-blue-500);
       }
       @media (width >= 48rem) {
         .md\:bg_blue\.500 {
-          background-color: #2563eb;
+          background-color: var(--colors-blue-500);
         }
       }
     }
