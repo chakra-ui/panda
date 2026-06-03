@@ -165,7 +165,7 @@ export function inspectDriver(driver: Driver): InspectResult {
 }
 
 async function codegenOnce(ctx: RunContext, flags: CodegenFlags, _diff?: ConfigDiff): Promise<string[]> {
-  const files = ctx.driver.codegen({ outdir: ctx.outdir, specifiers: 'runtime-and-types' })
+  const files = ctx.driver.codegen({ outdir: ctx.outdir })
   if (!flags.silent) {
     ctx.output.log(`codegen: wrote ${files.length} files to ${ctx.outdir}`)
   }
