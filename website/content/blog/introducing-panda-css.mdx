@@ -1,0 +1,66 @@
+---
+title: Introducing Panda CSS
+description: A CSS-in-JS framework with first-class static extraction and type-safe design tokens.
+date: 2024-01-15
+author: Segun Adebayo
+tags: [announcement]
+---
+
+We're excited to announce Panda CSS, a new CSS-in-JS framework built for the modern web.
+
+## Why Panda CSS?
+
+Most CSS-in-JS libraries generate styles at runtime. This approach has real costs: larger JavaScript bundles, style recalculation on every render, and poor performance on slow devices.
+
+Panda takes a different path. It analyzes your source code at build time, extracts only the styles you use, and outputs plain CSS. No runtime style injection, no hidden overhead.
+
+## Type-safe design tokens
+
+Panda ships with a powerful token system. Define your design tokens once in `panda.config.ts`, and every style prop becomes type-safe.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        brand: { value: '#f6c90e' }
+      }
+    }
+  }
+})
+```
+
+Now `color: 'brand'` is a valid, autocompleted value across your entire project.
+
+## Static extraction
+
+Panda reads your JSX, TypeScript, and template literals and extracts only the CSS you actually use. Ship the smallest possible stylesheet.
+
+## Recipes
+
+Group related styles into reusable recipes with variants, just like Stitches or CVA.
+
+```ts
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: { px: '4', py: '2', rounded: 'md' },
+  variants: {
+    variant: {
+      solid: { bg: 'brand', color: 'black' },
+      outline: { borderWidth: '1px', borderColor: 'brand' }
+    }
+  }
+})
+```
+
+## Get started
+
+```bash
+npm install -D @pandacss/dev
+npx panda init
+```
+
+Check the [documentation](/docs) for a full guide.
