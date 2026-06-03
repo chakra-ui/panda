@@ -76,6 +76,10 @@ class NodeDriver extends BaseDriver {
     return true
   }
 
+  getOutdir(outdir?: string): string {
+    return this.compiler.resolvePath(this.getConfiguredOutdir(outdir), this.#options.cwd)
+  }
+
   override isConfigFile(file: string): boolean {
     // `realpath` (via the fs engine) follows symlinks so paths to the same file
     // compare equal — `dependencies` are relative to `cwd` (config-loader's `collectDependencies`).

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createEventDebouncer, handleWatchBatch, normalizeParcelEvent } from '../src'
+import { createEventDebouncer, handleWatchBatch, isOutputEvent, normalizeParcelEvent } from '../src'
 
 describe('watch helpers', () => {
   it('normalizes parcel event types', () => {
@@ -11,7 +11,7 @@ describe('watch helpers', () => {
   it('debounces multiple events into one batch', async () => {
     vi.useFakeTimers()
     const calls: string[][] = []
-    const debouncer = createEventDebouncer<string>((events) => calls.push(events), 50)
+    const debouncer = createEventDebouncer<string>((events) => void calls.push(events), 50)
 
     debouncer.push(['a'])
     debouncer.push(['b'])
@@ -49,5 +49,16 @@ describe('watch helpers', () => {
 
     expect(driver.reload).toHaveBeenCalledTimes(1)
     expect(driver.applyChanges).toHaveBeenCalledWith([{ kind: 'change', path: '/src/App.tsx' }])
+  })
+
+  it('detects generated output events under the current outdir', () => {
+    expect(
+      isOutputEvent('/project', 'styled-system', { kind: 'change', path: '/project/styled-system/css/css.mjs' }),
+    ).toBe(true)
+    expect(
+      isOutputEvent('/project', '/tmp/panda-system', { kind: 'change', path: '/tmp/panda-system/styles.css' }),
+    ).toBe(true)
+    expect(isOutputEvent('/project', 'styled-system', { kind: 'change', path: 'styled-system/styles.css' })).toBe(true)
+    expect(isOutputEvent('/project', 'styled-system', { kind: 'change', path: '/project/src/App.tsx' })).toBe(false)
   })
 })

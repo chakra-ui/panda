@@ -33,6 +33,7 @@ import type {
   Spec,
   StaticPatternResult,
   GenerateArtifactOptions,
+  WriteCssResult,
 } from '@pandacss/compiler-shared'
 
 export interface MatcherInput {
@@ -101,6 +102,9 @@ export declare class WasmCompiler {
   clear(): void
   scan(options?: ScanOptions): string[]
   realpath(path: string): string
+  resolvePath(path: string, cwd?: string): string
+  joinPath(parts: string[]): string
+  dirname(path: string): string
   isSourceFile(path: string): boolean
   parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
@@ -109,6 +113,7 @@ export declare class WasmCompiler {
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): FileInspectionResult
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void

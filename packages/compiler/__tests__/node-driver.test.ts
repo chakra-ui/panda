@@ -73,6 +73,30 @@ describe('createNodeDriver', () => {
     expect(stack).not.toContain('(s) => s')
   })
 
+  it('writes stylesheet output through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    const result = driver.writeCss('styled-system/styles.css')
+
+    expect(result.path).toBe(join(dir, 'styled-system', 'styles.css'))
+    expect(result.css).toContain('red')
+    expect(readFileSync(result.path, 'utf8')).toBe(result.css)
+  })
+
+  it('resolves the configured outdir through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+
+    expect(driver.getOutdir()).toBe(join(dir, 'styled-system'))
+    expect(driver.getOutdir('system')).toBe(join(dir, 'system'))
+    expect(driver.getOutdir('/tmp/panda-system')).toBe('/tmp/panda-system')
+    expect(driver.paths('system')).toEqual({
+      root: join(dir, 'system'),
+      styleFile: join(dir, 'system', 'styles.css'),
+      stylesDir: join(dir, 'system', 'styles'),
+    })
+  })
+
   it('lists watch targets (source patterns, base dirs, config deps)', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     const targets = driver.watchTargets()

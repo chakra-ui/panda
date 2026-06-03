@@ -72,4 +72,30 @@ describe('createBrowserDriver', () => {
     expect(applied).toMatchInlineSnapshot(`true`)
     expect(driver.cssgen().css).toContain('green')
   })
+
+  it('writes stylesheet output to the compiler memory fs', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })" },
+    })
+    driver.parseFiles()
+
+    const result = driver.writeCss('/proj/styled-system/styles.css')
+
+    expect(result.css).toContain('blue')
+    expect(driver.compiler.fs?.readFile(result.path)).toBe(result.css)
+  })
+
+  it('resolves the configured outdir through the driver host', async () => {
+    const driver = await createBrowserDriver({ snapshot })
+
+    expect(driver.getOutdir()).toBe('/proj/styled-system')
+    expect(driver.getOutdir('system')).toBe('/proj/system')
+    expect(driver.getOutdir('/tmp/panda-system')).toBe('/tmp/panda-system')
+    expect(driver.paths('system')).toEqual({
+      root: '/proj/system',
+      styleFile: '/proj/system/styles.css',
+      stylesDir: '/proj/system/styles',
+    })
+  })
 })

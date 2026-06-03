@@ -257,6 +257,10 @@ export interface CompileOutput {
   diagnostics: Diagnostic[]
 }
 
+export interface WriteCssResult extends CompileOutput {
+  path: string
+}
+
 export interface CompileOptions {
   /** Emit Panda's leading cascade-layer order declaration (`@layer reset, ...;`). */
   emitLayerDeclaration?: boolean
@@ -417,6 +421,12 @@ export interface Compiler {
   /** Real on-disk path (absolute, symlinks followed) via the filesystem engine,
    *  so two paths to the same file compare equal. Returns the input if unresolved. */
   realpath(path: string): string
+  /** Resolve `path` against the compiler host cwd. Absolute paths are returned unchanged. */
+  resolvePath(path: string, cwd?: string): string
+  /** Join path segments using the compiler host path semantics. */
+  joinPath(parts: string[]): string
+  /** Parent path using the compiler host path semantics. */
+  dirname(path: string): string
   /** Whether `path` is a source file the project extracts from — its `cwd`-relative
    *  form matches the configured `include`/`exclude` globs. For routing watch events. */
   isSourceFile(path: string): boolean
@@ -453,6 +463,8 @@ export interface Compiler {
   /** Generate + write artifacts under `outdir` via the platform fs (disk on
    *  native, in-memory on wasm). Returns the written paths. */
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  /** Generate + write stylesheet CSS via the platform fs. */
+  writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
   /** Generate all codegen artifacts in memory without writing them. */
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   /** Generate a single codegen artifact by id. */
