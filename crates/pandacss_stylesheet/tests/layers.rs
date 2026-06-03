@@ -105,7 +105,7 @@ fn two_layers_mapped_to_same_name_emit_one_collision_warning() {
         .iter()
         .map(|d| format!("{:?} {} {}", d.severity, d.code, d.message))
         .collect();
-    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layers.reset and layers.base both resolve to "x"; the cascade order becomes ambiguous"#);
+    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layer name "x" is shared by layers.reset, layers.base; the cascade order becomes ambiguous"#);
 }
 
 #[test]
@@ -133,7 +133,7 @@ fn rename_collides_with_another_layers_default_name() {
         .iter()
         .map(|d| format!("{:?} {} {}", d.severity, d.code, d.message))
         .collect();
-    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layers.reset and layers.tokens both resolve to "tokens"; the cascade order becomes ambiguous"#);
+    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layer name "tokens" is shared by layers.reset, layers.tokens; the cascade order becomes ambiguous"#);
 }
 
 #[test]
@@ -152,8 +152,8 @@ fn distinct_collision_groups_emit_one_warning_each() {
         .map(|d| format!("{} {}", d.code, d.message))
         .collect();
     assert_snapshot!(summary.join("\n"), @r#"
-    layer_name_collision layers.reset and layers.base both resolve to "x"; the cascade order becomes ambiguous
-    layer_name_collision layers.tokens and layers.recipes both resolve to "y"; the cascade order becomes ambiguous
+    layer_name_collision layer name "x" is shared by layers.reset, layers.base; the cascade order becomes ambiguous
+    layer_name_collision layer name "y" is shared by layers.tokens, layers.recipes; the cascade order becomes ambiguous
     "#);
 }
 

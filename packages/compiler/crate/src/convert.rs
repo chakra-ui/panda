@@ -139,6 +139,7 @@ pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
 /// JS-shaped `Matchers` (token dictionary as a child field, for backward
 /// JS-wire compat) → core `ExtractorConfig`.
 pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
+    let has_jsx_framework = m.jsx_framework.is_some();
     let token_dictionary = m
         .token_dictionary
         .clone()
@@ -147,6 +148,7 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
     pandacss_extractor::ExtractorConfig {
         matchers: to_core_matchers(m),
         jsx: pandacss_extractor::JsxExtractionConfig::default(),
+        has_jsx_framework,
         token_dictionary,
         // Cross-file resolution isn't on the flat `Matchers` shape — the
         // session class wires it up explicitly. Free-function callers

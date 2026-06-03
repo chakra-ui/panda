@@ -1,4 +1,4 @@
-use pandacss_config::{CodegenFormat, UserConfig};
+use pandacss_config::{CodegenFormat, JsxFramework, UserConfig};
 use serde_json::json;
 
 #[test]
@@ -90,4 +90,32 @@ fn optimize_defaults_and_overrides() {
         serialized.get("optimize"),
         Some(&json!({ "removeUnusedTokens": true, "removeUnusedKeyframes": true }))
     );
+}
+
+#[test]
+fn jsx_framework_preserves_known_and_custom_values() {
+    let react_config: UserConfig = serde_json::from_value(json!({
+        "jsxFramework": "react"
+    }))
+    .expect("known jsx framework config");
+    let custom_config: UserConfig = serde_json::from_value(json!({
+        "jsxFramework": "custom-jsx"
+    }))
+    .expect("custom jsx framework config");
+
+    assert_eq!(react_config.jsx_framework, Some(JsxFramework::React));
+    assert!(react_config.jsx_framework.as_ref().is_some_and(JsxFramework::is_known));
+    assert_eq!(
+        custom_config.jsx_framework,
+        Some(JsxFramework::Custom("custom-jsx".into()))
+    );
+    assert!(
+        custom_config
+            .jsx_framework
+            .as_ref()
+            .is_some_and(|framework| !framework.is_known())
+    );
+
+    let serialized = serde_json::to_value(&custom_config).expect("serialized config");
+    assert_eq!(serialized.get("jsxFramework"), Some(&json!("custom-jsx")));
 }

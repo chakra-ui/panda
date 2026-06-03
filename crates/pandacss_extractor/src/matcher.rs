@@ -114,6 +114,7 @@ impl Matcher {
 pub struct ExtractorConfig {
     pub matchers: Matchers,
     pub jsx: JsxExtractionConfig,
+    pub has_jsx_framework: bool,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,
     /// When `Some`, references to imported `const` exports from local
@@ -129,9 +130,16 @@ impl ExtractorConfig {
         Self {
             matchers,
             jsx: JsxExtractionConfig::default(),
+            has_jsx_framework: false,
             token_dictionary: None,
             cross_file: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_jsx_framework(mut self, enabled: bool) -> Self {
+        self.has_jsx_framework = enabled;
+        self
     }
 
     #[must_use]

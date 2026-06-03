@@ -3,6 +3,7 @@ mod layers;
 mod preflight;
 mod sort;
 mod static_css;
+mod static_css_diagnostics;
 mod writer;
 
 pub use layers::has_layer_declaration;
@@ -173,7 +174,12 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     // static-pattern atoms.
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
-        static_css::expand(input.config, &utility, &mut diagnostics)
+        static_css::expand(
+            input.config,
+            &utility,
+            token_dictionary.as_deref(),
+            &mut diagnostics,
+        )
     } else {
         Vec::new()
     };
@@ -240,7 +246,12 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
 
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
-        static_css::expand(input.config, &utility, &mut diagnostics)
+        static_css::expand(
+            input.config,
+            &utility,
+            token_dictionary.as_deref(),
+            &mut diagnostics,
+        )
     } else {
         Vec::new()
     };
@@ -355,18 +366,27 @@ fn push_layer_collision_diagnostics(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let entries = layers.ordered();
-    for (i, (semantic_a, name)) in entries.iter().enumerate() {
+    for (i, (_, name)) in entries.iter().enumerate() {
         // Only report a name once, on its first collision. Skip if any
         // earlier slot already used the same name (handled in the prior
         // iteration's `j` loop).
         if entries[..i].iter().any(|(_, prior)| prior == name) {
             continue;
         }
-        if let Some((semantic_b, _)) = entries[i + 1..].iter().find(|(_, other)| other == name) {
+        let colliding = entries
+            .iter()
+            .filter_map(|(semantic, other)| (other == name).then_some(*semantic))
+            .collect::<Vec<_>>();
+        if colliding.len() > 1 {
             diagnostics.push(Diagnostic::warning(
                 diagnostic_codes::LAYER_NAME_COLLISION,
                 format!(
-                    "layers.{semantic_a} and layers.{semantic_b} both resolve to \"{name}\"; the cascade order becomes ambiguous"
+                    "layer name \"{name}\" is shared by {}; the cascade order becomes ambiguous",
+                    colliding
+                        .iter()
+                        .map(|semantic| format!("layers.{semantic}"))
+                        .collect::<Vec<_>>()
+                        .join(", ")
                 ),
             ));
         }

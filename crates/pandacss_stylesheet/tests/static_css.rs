@@ -270,6 +270,90 @@ fn reports_unsupported_themes_and_empty_wildcards() {
 }
 
 #[test]
+fn reports_static_css_authoring_diagnostics() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                }
+            },
+            "recipes": {
+                "button": {
+                    "variants": {
+                        "size": {
+                            "sm": { "padding": "4px" }
+                        }
+                    }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "colr": "red",
+                        "--valid-token": "colors.red.300",
+                        "--invalid-token": "{colors.blue.300/40}"
+                    }
+                }
+            ],
+            "recipes": {
+                "missing": [{ "size": ["sm"] }],
+                "button": [
+                    { "tone": ["solid"] },
+                    { "size": ["lg"] }
+                ]
+            }
+        },
+        "utilities": {
+            "padding": { "className": "p" }
+        }
+    }));
+    let output = compile_output(&config, "", Default::default());
+    let diagnostics = output
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.as_str())
+        .collect::<Vec<_>>();
+
+    assert_snapshot!(diagnostics.join("\n"), @r"
+    static_css_recipe_unknown
+    static_css_recipe_variant_unknown
+    static_css_recipe_variant_value_unknown
+    static_css_property_unknown
+    static_css_token_reference_unknown
+    ");
+}
+
+#[test]
+fn reports_large_static_css_wildcards() {
+    let values = (0..=250)
+        .map(|index| serde_json::json!(format!("v{index}")))
+        .collect::<Vec<_>>();
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "css": [
+                { "properties": { "color": "*" } }
+            ]
+        },
+        "utilities": {
+            "color": { "className": "c", "values": values }
+        }
+    }));
+    let output = compile_output(&config, "", Default::default());
+    let diagnostics = output
+        .diagnostics
+        .iter()
+        .map(|diagnostic| format!("{:?} {}", diagnostic.severity, diagnostic.code))
+        .collect::<Vec<_>>();
+
+    assert_snapshot!(diagnostics.join("\n"), @"Info static_css_wildcard_large");
+}
+
+#[test]
 fn expands_static_css_recipe_wildcard() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
