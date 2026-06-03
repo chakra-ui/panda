@@ -1,3 +1,3 @@
-const plugin = require('@pandacss/postcss')
+import plugin from '@pandacss/postcss'
 
-module.exports = plugin.default ?? plugin
+export default plugin.default ?? plugin

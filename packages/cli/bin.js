@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-require(`./dist/cli-default.js`)
+import './dist/cli-default.js'
