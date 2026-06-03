@@ -159,6 +159,10 @@ fn condition_names_are_derived_from_config() {
                 "md": "768px",
                 "sm": "640px"
             }
+        },
+        "themes": {
+            "primary": {},
+            "primary-legacy": {}
         }
     }))
     .expect("valid typed config");
@@ -166,6 +170,8 @@ fn condition_names_are_derived_from_config() {
     assert_yaml_snapshot!(config.condition_names(), @r"
     - _hover
     - _supportsGrid
+    - _themePrimary
+    - _themePrimary-legacy
     - base
     - md
     - sm

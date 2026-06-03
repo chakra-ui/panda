@@ -1,6 +1,6 @@
 use std::{borrow::Cow, ops::Range};
 
-use pandacss_config::UserConfig;
+use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
     Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot,
 };
@@ -72,18 +72,7 @@ pub fn emit<'a>(
     };
     let token_vars = tokens
         .dictionary
-        .map(TokenDictionary::css_vars)
-        .map(|vars| {
-            if config.optimize.remove_unused_tokens {
-                let used = usage
-                    .as_ref()
-                    .map(|usage| collect_used_token_vars(&vars, &usage.token_vars))
-                    .unwrap_or_default();
-                filter_token_vars(&vars, &used)
-            } else {
-                vars
-            }
-        });
+        .map(|dictionary| prepare_emittable_token_vars(config, dictionary, usage.as_ref()));
     let prepared_token_vars = token_vars
         .as_ref()
         .and_then(|vars| cx.prepare_token_vars(vars));
@@ -132,6 +121,59 @@ pub fn emit<'a>(
     EmitOutput {
         css: writer.finish(),
         layer_ranges,
+    }
+}
+
+pub fn emit_theme_css(
+    config: &UserConfig,
+    dictionary: &TokenDictionary,
+    theme_name: &str,
+    minify: bool,
+) -> Option<String> {
+    if !config.themes.contains_key(theme_name) {
+        return None;
+    }
+
+    let theme_condition = theme_condition_name(theme_name);
+    let mut vars = dictionary.css_vars_with_theme_filter(|condition| {
+        theme_condition_segment(condition) == Some(theme_condition.as_str())
+    });
+    vars.base.clear();
+
+    let utility = Utility::default();
+    let cx = EmitContext::new(config, &utility);
+    let prepared = cx.prepare_token_vars(&vars)?;
+    let mut writer = CssWriter::new(minify, 512);
+    EmitContext::serialize_token_vars_with_root(&mut writer, &prepared, "");
+    Some(trim_final_newline(writer.finish()))
+}
+
+fn trim_final_newline(mut css: String) -> String {
+    while css.ends_with('\n') {
+        css.pop();
+    }
+    css
+}
+
+fn prepare_emittable_token_vars<'a>(
+    config: &UserConfig,
+    dictionary: &'a TokenDictionary,
+    usage: Option<&UsageMarks>,
+) -> TokenCssVars<'a> {
+    let theme_filter = static_theme_condition_filter(config);
+    let vars = dictionary.css_vars_with_theme_filter(|condition| {
+        theme_filter
+            .as_ref()
+            .is_some_and(|filter| filter.includes(condition))
+    });
+
+    if config.optimize.remove_unused_tokens {
+        let used = usage
+            .map(|usage| collect_used_token_vars(&vars, &usage.token_vars))
+            .unwrap_or_default();
+        filter_token_vars(&vars, &used)
+    } else {
+        vars
     }
 }
 
@@ -278,6 +320,47 @@ fn filter_token_vars<'a>(vars: &TokenCssVars<'a>, used: &FxHashSet<String>) -> T
             })
             .collect(),
     }
+}
+
+enum ThemeConditionFilter {
+    All,
+    Only(FxHashSet<String>),
+}
+
+impl ThemeConditionFilter {
+    fn includes(&self, condition: &str) -> bool {
+        match self {
+            Self::All => true,
+            Self::Only(conditions) => theme_condition_segment(condition)
+                .is_some_and(|condition| conditions.contains(condition)),
+        }
+    }
+}
+
+fn static_theme_condition_filter(config: &UserConfig) -> Option<ThemeConditionFilter> {
+    let themes = config.static_css.get("themes")?.as_array()?;
+    if themes.iter().any(|theme| theme.as_str() == Some("*")) {
+        return Some(ThemeConditionFilter::All);
+    }
+
+    let configured = config
+        .themes
+        .keys()
+        .map(|theme| (theme.as_str(), theme_condition_name(theme)))
+        .collect::<Vec<_>>();
+    let mut conditions = FxHashSet::default();
+    for theme in themes.iter().filter_map(|theme| theme.as_str()) {
+        if let Some((_, condition)) = configured.iter().find(|(name, _)| *name == theme) {
+            conditions.insert(condition.clone());
+        }
+    }
+
+    Some(ThemeConditionFilter::Only(conditions))
+}
+
+fn theme_condition_segment(condition: &str) -> Option<&str> {
+    let segment = condition.split(':').next().unwrap_or(condition);
+    segment.starts_with("_theme").then_some(segment)
 }
 
 fn filter_token_var_slice<'a>(
@@ -1071,8 +1154,14 @@ impl<'a> EmitContext<'a> {
     }
 
     fn serialize_token_vars(&self, writer: &mut CssWriter, vars: &PreparedTokenVars<'_>) {
-        let root = css_var_root(self.config);
+        Self::serialize_token_vars_with_root(writer, vars, css_var_root(self.config));
+    }
 
+    fn serialize_token_vars_with_root(
+        writer: &mut CssWriter,
+        vars: &PreparedTokenVars<'_>,
+        root: &str,
+    ) {
         if !vars.base.is_empty() {
             write_token_var_rule(writer, root, vars.base);
         }

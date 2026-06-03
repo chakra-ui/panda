@@ -19,6 +19,7 @@ pub enum ArtifactId {
     Patterns,
     Recipes,
     Sva,
+    Themes,
     Tokens,
     Types,
 }
@@ -34,6 +35,7 @@ impl ArtifactId {
         Self::Patterns,
         Self::Recipes,
         Self::Sva,
+        Self::Themes,
         Self::Tokens,
         Self::Types,
     ];
@@ -50,6 +52,7 @@ impl ArtifactId {
             Self::Patterns => "patterns",
             Self::Recipes => "recipes",
             Self::Sva => "sva",
+            Self::Themes => "themes",
             Self::Tokens => "tokens",
             Self::Types => "types",
         }
@@ -255,6 +258,18 @@ impl ArtifactGraph {
                 ConfigDependency::Prefix,
                 ConfigDependency::Recipes,
                 ConfigDependency::Separator,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::Themes,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::Conditions,
+                ConfigDependency::Hash,
+                ConfigDependency::Prefix,
+                ConfigDependency::Themes,
+                ConfigDependency::Tokens,
             ]),
         },
         ArtifactNode {
@@ -473,6 +488,7 @@ fn generate_node(
         ArtifactId::CssIndex => crate::generators::css_index::generate(options, node.dependencies),
         ArtifactId::Cva => crate::generators::cva::generate(options, node.dependencies),
         ArtifactId::Sva => crate::generators::sva::generate(options, node.dependencies),
+        ArtifactId::Themes => crate::generators::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::generators::tokens::generate(ctx, options, node.dependencies),
         ArtifactId::Cx => crate::generators::cx::generate(options, node.dependencies),
         ArtifactId::Helpers => crate::generators::helpers::generate(options, node.dependencies),

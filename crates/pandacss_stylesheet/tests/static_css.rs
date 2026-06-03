@@ -226,7 +226,7 @@ fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
 }
 
 #[test]
-fn reports_unsupported_themes_and_empty_wildcards() {
+fn reports_empty_wildcards_without_rejecting_static_css_themes() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "staticCss": {
@@ -264,7 +264,6 @@ fn reports_unsupported_themes_and_empty_wildcards() {
     }
     ");
     assert_snapshot!(diagnostics.join("\n"), @r"
-    static_css_themes_unsupported
     static_css_wildcard_empty
     ");
 }

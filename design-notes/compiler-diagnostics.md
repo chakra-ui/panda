@@ -38,7 +38,6 @@ Current codes:
 - `static_css_recipe_variant_value_unknown`
 - `static_css_recipes_missing_snapshot`
 - `static_css_token_reference_unknown`
-- `static_css_themes_unsupported`
 - `static_css_wildcard_large`
 - `static_css_wildcard_empty`
 - `token_dictionary_build_failed`

@@ -450,6 +450,11 @@ fn collect_condition_parts(
         return;
     }
 
+    if let Some(raw) = config.theme_condition(condition) {
+        collect_raw_part(&raw, at_rules, selectors);
+        return;
+    }
+
     if condition.starts_with('@') || condition.contains('&') {
         collect_raw_part(condition, at_rules, selectors);
     }

@@ -14,10 +14,13 @@ impl Project {
     #[must_use]
     pub fn codegen_input(&self, user_config: &UserConfig) -> CodegenInput {
         let _span = tracing::trace_span!("codegen_input").entered();
+        let token_dictionary = self.config().token_dictionary();
         CodegenInput {
             config: user_config.clone(),
-            types: self.type_data(user_config),
+            types: self.type_data_with_token_dictionary(user_config, token_dictionary.as_deref()),
             patterns: pattern_codegen_meta(user_config),
+            token_dictionary,
+            token_dictionary_provided: true,
         }
     }
 
@@ -26,14 +29,20 @@ impl Project {
     #[must_use]
     pub fn type_data(&self, user_config: &UserConfig) -> TypeData {
         let _span = tracing::trace_span!("type_data").entered();
+        let token_dictionary = self.config().token_dictionary();
+        self.type_data_with_token_dictionary(user_config, token_dictionary.as_deref())
+    }
+
+    fn type_data_with_token_dictionary(
+        &self,
+        user_config: &UserConfig,
+        token_dictionary: Option<&TokenDictionary>,
+    ) -> TypeData {
         TypeData {
             options: user_config.typegen_options(),
             conditions: user_config.condition_type_data(),
             selectors: SelectorTypeData::default(),
-            tokens: self
-                .config()
-                .token_dictionary()
-                .as_deref()
+            tokens: token_dictionary
                 .map(TokenDictionary::type_data)
                 .unwrap_or_default(),
             utilities: self

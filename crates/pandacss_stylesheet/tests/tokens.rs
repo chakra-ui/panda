@@ -757,6 +757,140 @@ fn skips_unknown_semantic_token_conditions() {
 }
 
 #[test]
+fn static_css_themes_emit_selected_theme_token_vars() {
+    let config = config(serde_json::json!({
+        "conditions": {
+            "osDark": "@media (prefers-color-scheme: dark)"
+        },
+        "staticCss": {
+            "themes": ["primary"]
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "text": { "value": "blue" },
+                    "blue": {
+                        "400": { "value": "#60a5fa" },
+                        "600": { "value": "#2563eb" }
+                    },
+                    "red": {
+                        "200": { "value": "#fecaca" },
+                        "400": { "value": "#f87171" },
+                        "600": { "value": "#dc2626" }
+                    }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "body": {
+                        "value": {
+                            "base": "{colors.blue.600}",
+                            "_osDark": "{colors.blue.400}"
+                        }
+                    }
+                }
+            }
+        },
+        "themes": {
+            "primary": {
+                "tokens": {
+                    "colors": {
+                        "text": { "value": "red" }
+                    }
+                },
+                "semanticTokens": {
+                    "colors": {
+                        "body": {
+                            "value": {
+                                "base": "{colors.red.600}",
+                                "_osDark": "{colors.red.400}"
+                            }
+                        },
+                        "muted": { "value": "{colors.red.200}" }
+                    }
+                }
+            },
+            "primary-legacy": {
+                "tokens": {
+                    "colors": {
+                        "text": { "value": "green" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(&config, "");
+
+    assert!(css.contains("[data-panda-theme=primary]"));
+    assert!(!css.contains("[data-panda-theme=primary-legacy]"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-text: blue;
+    --colors-blue-400: #60a5fa;
+    --colors-blue-600: #2563eb;
+    --colors-red-200: #fecaca;
+    --colors-red-400: #f87171;
+    --colors-red-600: #dc2626;
+    --colors-body: #2563eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :where(:root, :host) {
+      --colors-body: #60a5fa;
+    }
+  }
+  [data-panda-theme=primary] {
+    --colors-text: red;
+    --colors-body: #dc2626;
+    --colors-muted: #fecaca;
+  }
+  @media (prefers-color-scheme: dark) {
+    [data-panda-theme=primary] {
+      --colors-body: #f87171;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn static_css_themes_star_emits_all_theme_token_vars() {
+    let config = config(serde_json::json!({
+        "staticCss": {
+            "themes": ["*"]
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "text": { "value": "blue" }
+                }
+            }
+        },
+        "themes": {
+            "primary": {
+                "tokens": {
+                    "colors": {
+                        "text": { "value": "red" }
+                    }
+                }
+            },
+            "secondary": {
+                "tokens": {
+                    "colors": {
+                        "text": { "value": "green" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(&config, "");
+
+    assert!(css.contains("[data-panda-theme=primary]"));
+    assert!(css.contains("[data-panda-theme=secondary]"));
+}
+
+#[test]
 fn emits_tokens_between_base_and_runtime_layers() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

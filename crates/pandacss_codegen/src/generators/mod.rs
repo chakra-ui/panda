@@ -7,5 +7,6 @@ pub mod helpers;
 pub mod patterns;
 pub mod recipes;
 pub mod sva;
+pub mod themes;
 pub mod tokens;
 pub mod types;

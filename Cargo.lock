@@ -1070,6 +1070,8 @@ dependencies = [
  "insta",
  "pandacss_config",
  "pandacss_shared",
+ "pandacss_stylesheet",
+ "pandacss_tokens",
  "serde_json",
 ]
 

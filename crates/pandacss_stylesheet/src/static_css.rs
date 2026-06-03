@@ -20,7 +20,6 @@ pub fn expand(
     token_dictionary: Option<&TokenDictionary>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Atom> {
-    diagnostics::diagnose_scope(config, diagnostics);
     diagnostics::diagnose_recipes(config, diagnostics);
     let Some(css_rules) = config.static_css.get("css").and_then(Value::as_array) else {
         return Vec::new();

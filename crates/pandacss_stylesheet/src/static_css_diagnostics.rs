@@ -8,15 +8,6 @@ use serde_json::Value;
 
 const LARGE_WILDCARD_THRESHOLD: usize = 250;
 
-pub(super) fn diagnose_scope(config: &UserConfig, diagnostics: &mut Vec<Diagnostic>) {
-    if config.static_css.get("themes").is_some() {
-        diagnostics.push(Diagnostic::warning(
-            diagnostic_codes::STATIC_CSS_THEMES_UNSUPPORTED,
-            "staticCss.themes is handled by token artifact generation, not native stylesheet compile",
-        ));
-    }
-}
-
 pub(super) fn diagnose_property(
     property: &str,
     utility: &Utility,
