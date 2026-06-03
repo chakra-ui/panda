@@ -137,7 +137,7 @@ fn resolves_negative_spacing_category_values_to_calc_values() {
 }
 
 #[test]
-fn theme_conditions_emit_data_panda_theme_parent_selector() {
+fn theme_conditions_emit_self_or_descendant_where_selector() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
@@ -173,7 +173,7 @@ fn theme_conditions_emit_data_panda_theme_parent_selector() {
   }
 }
 @layer utilities {
-  [data-panda-theme=primary] .themePrimary\:c_red {
+  .themePrimary\:c_red:where([data-panda-theme=primary], [data-panda-theme=primary] *) {
     color: var(--colors-red);
   }
 }
@@ -453,6 +453,41 @@ fn emits_conditions_and_breakpoints() {
 @layer utilities {
   @media (width >= 48rem) {
     .hover\:md\:c_red:hover {
+      color: red;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn block_conditions_emit_each_slot_path() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "darkOrSystem": {
+                "&:where(.dark, .dark *)": "@slot",
+                "@media (prefers-color-scheme: dark)": {
+                    "&:where([data-color-mode=system], [data-color-mode=system] *)": "@slot"
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ _darkOrSystem: { color: 'red' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .darkOrSystem\:c_red:where(.dark, .dark *) {
+    color: red;
+  }
+  @media (prefers-color-scheme: dark) {
+    .darkOrSystem\:c_red:where([data-color-mode=system], [data-color-mode=system] *) {
       color: red;
     }
   }

@@ -12,7 +12,7 @@ use rustc_hash::FxHashSet;
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
-use crate::sort::{SortContext, condition_raw_parts};
+use crate::sort::{SortContext, condition_raw_paths};
 use crate::writer::CssWriter;
 
 pub struct EmitOutput {
@@ -836,7 +836,7 @@ impl<'a> EmitContext<'a> {
         };
         for (key, value) in entries {
             if let Value::Object(_) = value {
-                if resolved_condition_parts(self.config, key).is_some()
+                if resolved_condition_paths(self.config, key).is_some()
                     || is_nested_selector_key(key)
                 {
                     self.collect_styles_usage(value, token_dictionary, keyframes, marks);
@@ -930,8 +930,9 @@ impl<'a> EmitContext<'a> {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
-        let rule = self.rule_target_for_class(&result.class_name, conditions, atom.important());
-        Self::write_style_rule(writer, &rule, &result.styles);
+        for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
+            Self::write_style_rule(writer, &rule, &result.styles);
+        }
     }
 
     fn serialize_styles(&self, writer: &mut CssWriter, value: &Value) {
@@ -940,7 +941,7 @@ impl<'a> EmitContext<'a> {
         };
         let mut conditions = Vec::new();
         for (selector, styles) in entries {
-            if let Some(condition) = resolved_condition_parts(self.config, selector) {
+            if let Some(condition) = resolved_condition_paths(self.config, selector) {
                 self.serialize_scope(writer, styles, &mut conditions, condition);
             } else {
                 self.serialize_style_object(writer, selector, styles, &mut conditions);
@@ -952,8 +953,8 @@ impl<'a> EmitContext<'a> {
         &self,
         writer: &mut CssWriter,
         value: &Value,
-        conditions: &mut Vec<ConditionParts>,
-        condition: ConditionParts,
+        conditions: &mut Vec<ConditionPaths>,
+        condition: ConditionPaths,
     ) {
         let Value::Object(entries) = value else {
             return;
@@ -961,7 +962,7 @@ impl<'a> EmitContext<'a> {
 
         conditions.push(condition);
         for (selector, styles) in entries {
-            if let Some(condition) = resolved_condition_parts(self.config, selector) {
+            if let Some(condition) = resolved_condition_paths(self.config, selector) {
                 self.serialize_scope(writer, styles, conditions, condition);
             } else {
                 self.serialize_style_object(writer, selector, styles, conditions);
@@ -975,7 +976,7 @@ impl<'a> EmitContext<'a> {
         writer: &mut CssWriter,
         selector: &str,
         value: &Value,
-        conditions: &mut Vec<ConditionParts>,
+        conditions: &mut Vec<ConditionPaths>,
     ) {
         let Value::Object(entries) = value else {
             return;
@@ -986,7 +987,7 @@ impl<'a> EmitContext<'a> {
         let mut conditional_declarations = Vec::new();
         for (key, value) in entries {
             if let Value::Object(_) = value {
-                if let Some(condition) = resolved_condition_parts(self.config, key) {
+                if let Some(condition) = resolved_condition_paths(self.config, key) {
                     nested_rules.push(NestedStyleRule {
                         selector: selector.to_owned(),
                         value,
@@ -1018,14 +1019,16 @@ impl<'a> EmitContext<'a> {
         }
 
         if !declarations.is_empty() {
-            let rule = Self::rule_target_with_base_parts(selector, conditions);
-            Self::write_recipe_rule(writer, &rule, &declarations);
+            for rule in Self::rule_targets_with_base_parts(selector, conditions) {
+                Self::write_recipe_rule(writer, &rule, &declarations);
+            }
         }
 
         for conditional in conditional_declarations {
             conditions.push(conditional.condition);
-            let rule = Self::rule_target_with_base_parts(selector, conditions);
-            Self::write_recipe_rule(writer, &rule, &conditional.declarations);
+            for rule in Self::rule_targets_with_base_parts(selector, conditions) {
+                Self::write_recipe_rule(writer, &rule, &conditional.declarations);
+            }
             conditions.pop();
         }
 
@@ -1057,7 +1060,7 @@ impl<'a> EmitContext<'a> {
             let condition = if condition == "base" {
                 None
             } else {
-                let Some(condition) = resolved_condition_parts(self.config, condition) else {
+                let Some(condition) = resolved_condition_paths(self.config, condition) else {
                     return false;
                 };
                 Some(condition)
@@ -1167,37 +1170,56 @@ impl<'a> EmitContext<'a> {
         }
 
         for group in &vars.conditions {
-            let rule = Self::token_rule_target_with_base_parts(root, &group.conditions);
-            write_with_wrappers(writer, &rule.wrappers, |writer| {
-                write_token_var_rule(writer, &rule.selector, group.vars);
-            });
+            for rule in Self::token_rule_targets_with_base_parts(root, &group.conditions) {
+                write_with_wrappers(writer, &rule.wrappers, |writer| {
+                    write_token_var_rule(writer, &rule.selector, group.vars);
+                });
+            }
         }
     }
 
     /// Semantic token condition keys are produced by
     /// `pandacss_tokens::from_config::visit_semantic_values`, where nested
     /// conditions are joined with `:` (for example `_dark:md`).
-    fn resolve_token_condition(&self, condition: &str) -> Option<Vec<ConditionParts>> {
+    fn resolve_token_condition(&self, condition: &str) -> Option<Vec<ConditionPaths>> {
         let mut conditions = Vec::new();
         for segment in condition.split(':') {
             let segment = segment.trim();
             if segment.is_empty() || segment == "base" {
                 return None;
             }
-            conditions.push(resolved_condition_parts(self.config, segment)?);
+            conditions.push(resolved_condition_paths(self.config, segment)?);
         }
         (!conditions.is_empty()).then_some(conditions)
     }
 
-    fn token_rule_target_with_base_parts(base: &str, conditions: &[ConditionParts]) -> RuleTarget {
-        let mut selector = base.to_owned();
-        let mut wrappers = Vec::new();
-        for parts in conditions {
-            for raw in parts {
-                apply_token_raw_condition(base, &mut selector, &mut wrappers, raw);
+    fn token_rule_targets_with_base_parts(
+        base: &str,
+        conditions: &[ConditionPaths],
+    ) -> Vec<RuleTarget> {
+        let mut targets = vec![RuleTarget {
+            selector: base.to_owned(),
+            wrappers: Vec::new(),
+        }];
+        for paths in conditions {
+            let mut next = Vec::new();
+            for target in &targets {
+                for path in paths {
+                    let mut target = target.clone();
+                    for raw in path {
+                        apply_token_raw_condition(
+                            base,
+                            &mut target.selector,
+                            &mut target.wrappers,
+                            raw,
+                        );
+                    }
+                    next.push(target);
+                }
             }
+            targets = next;
         }
-        RuleTarget { selector, wrappers }
+        targets
     }
 
     /// Emit one recipe class's rules. Entries are sorted then coalesced:
@@ -1258,7 +1280,6 @@ impl<'a> EmitContext<'a> {
         let mut pending: Option<PendingRecipeRule> = None;
 
         for entry in self.sort.sorted_recipe_entries(entries) {
-            let rule = self.rule_target_for_class(class_name, &entry.conditions, false);
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
                 continue;
             };
@@ -1266,17 +1287,25 @@ impl<'a> EmitContext<'a> {
                 continue;
             }
 
-            match &mut pending {
-                Some(pending) if pending.rule == rule => {
-                    append_recipe_declarations(&mut pending.declarations, declarations);
-                }
-                Some(_) => {
-                    let previous = pending.take().expect("pending recipe rule");
-                    Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
-                    pending = Some(PendingRecipeRule { rule, declarations });
-                }
-                None => {
-                    pending = Some(PendingRecipeRule { rule, declarations });
+            for rule in self.rule_targets_for_class(class_name, &entry.conditions, false) {
+                match &mut pending {
+                    Some(pending) if pending.rule == rule => {
+                        append_recipe_declarations(&mut pending.declarations, declarations.clone());
+                    }
+                    Some(_) => {
+                        let previous = pending.take().expect("pending recipe rule");
+                        Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                        pending = Some(PendingRecipeRule {
+                            rule,
+                            declarations: declarations.clone(),
+                        });
+                    }
+                    None => {
+                        pending = Some(PendingRecipeRule {
+                            rule,
+                            declarations: declarations.clone(),
+                        });
+                    }
                 }
             }
         }
@@ -1364,12 +1393,12 @@ impl<'a> EmitContext<'a> {
         });
     }
 
-    fn rule_target_for_class(
+    fn rule_targets_for_class(
         &self,
         class_name: &str,
         conditions: &[&str],
         important: bool,
-    ) -> RuleTarget {
+    ) -> Vec<RuleTarget> {
         let mut finalized = if self.config.hash.class_name() {
             let hashed = hash_class_name(class_name, conditions);
             self.utility.format_class_name_owned(hashed)
@@ -1381,36 +1410,65 @@ impl<'a> EmitContext<'a> {
             finalized.push('!');
         }
         let base = format!(".{}", escape_selector(&finalized));
-        self.rule_target_with_base_owned(base, conditions)
+        self.rule_targets_with_base_owned(base, conditions)
     }
 
-    fn rule_target_with_base_owned(&self, mut selector: String, conditions: &[&str]) -> RuleTarget {
-        let mut wrappers = Vec::new();
+    fn rule_targets_with_base_owned(
+        &self,
+        selector: String,
+        conditions: &[&str],
+    ) -> Vec<RuleTarget> {
+        let mut targets = vec![RuleTarget {
+            selector,
+            wrappers: Vec::new(),
+        }];
         for condition in conditions {
-            apply_condition(self.config, &mut selector, &mut wrappers, condition);
+            let mut next = Vec::new();
+            for target in &targets {
+                for path in condition_raw_paths(self.config, condition) {
+                    let mut target = target.clone();
+                    for raw in path {
+                        apply_raw_condition(&mut target.selector, &mut target.wrappers, &raw);
+                    }
+                    next.push(target);
+                }
+            }
+            targets = next;
         }
-        RuleTarget { selector, wrappers }
+        targets
     }
 
-    fn rule_target_with_base_parts(base: &str, conditions: &[ConditionParts]) -> RuleTarget {
-        let mut selector = base.to_owned();
-        let mut wrappers = Vec::with_capacity(conditions.len());
-        for parts in conditions {
-            for raw in parts {
-                apply_raw_condition(&mut selector, &mut wrappers, raw);
+    fn rule_targets_with_base_parts(base: &str, conditions: &[ConditionPaths]) -> Vec<RuleTarget> {
+        let mut targets = vec![RuleTarget {
+            selector: base.to_owned(),
+            wrappers: Vec::new(),
+        }];
+        for paths in conditions {
+            let mut next = Vec::new();
+            for target in &targets {
+                for path in paths {
+                    let mut target = target.clone();
+                    for raw in path {
+                        apply_raw_condition(&mut target.selector, &mut target.wrappers, raw);
+                    }
+                    next.push(target);
+                }
             }
+            targets = next;
         }
-        RuleTarget { selector, wrappers }
+        targets
     }
 }
 
-type ConditionParts = Vec<String>;
+type ConditionPath = Vec<String>;
+type ConditionPaths = Vec<ConditionPath>;
 
 struct PendingRecipeRule {
     rule: RuleTarget,
     declarations: Vec<RecipeDeclaration>,
 }
 
+#[derive(Clone)]
 struct RecipeDeclaration {
     prop: String,
     value: String,
@@ -1420,11 +1478,11 @@ struct RecipeDeclaration {
 struct NestedStyleRule<'a> {
     selector: String,
     value: &'a Value,
-    condition: Option<ConditionParts>,
+    condition: Option<ConditionPaths>,
 }
 
 struct ConditionalDeclarations {
-    condition: ConditionParts,
+    condition: ConditionPaths,
     declarations: Vec<RecipeDeclaration>,
 }
 
@@ -1447,10 +1505,10 @@ struct PreparedTokenVars<'a> {
 
 struct PreparedTokenCondition<'a> {
     vars: &'a [TokenCssVar<'a>],
-    conditions: Vec<ConditionParts>,
+    conditions: Vec<ConditionPaths>,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 struct RuleTarget {
     selector: String,
     wrappers: Vec<String>,
@@ -1643,17 +1701,6 @@ fn push_finalized_condition(out: &mut String, condition: &str) {
     }
 }
 
-fn apply_condition(
-    config: &UserConfig,
-    selector: &mut String,
-    wrappers: &mut Vec<String>,
-    condition: &str,
-) {
-    for raw in condition_raw_parts(config, condition) {
-        apply_raw_condition(selector, wrappers, &raw);
-    }
-}
-
 /// Apply one resolved condition to a rule: at-rules (`@media …`) become
 /// wrappers; `&`-bearing selectors substitute the current selector for `&`;
 /// anything else becomes an ancestor (`raw selector`).
@@ -1768,9 +1815,9 @@ fn escape_selector(value: &str) -> String {
     out
 }
 
-fn resolved_condition_parts(config: &UserConfig, key: &str) -> Option<ConditionParts> {
-    let parts = condition_raw_parts(config, key);
-    (!parts.is_empty()).then_some(parts)
+fn resolved_condition_paths(config: &UserConfig, key: &str) -> Option<ConditionPaths> {
+    let paths = condition_raw_paths(config, key);
+    (!paths.is_empty()).then_some(paths)
 }
 
 fn is_nested_selector_key(key: &str) -> bool {

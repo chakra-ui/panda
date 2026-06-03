@@ -1,7 +1,7 @@
 mod common;
 
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetLayer;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
 use common::{compile_css, compile_layer_css, compile_output, config};
 
@@ -175,7 +175,11 @@ fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
             ]
         },
         "conditions": {
-            "hoverFine": ["@media (hover: hover)", "&:hover"]
+            "hoverFine": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            }
         },
         "theme": {
             "breakpoints": {
@@ -245,7 +249,7 @@ fn reports_empty_wildcards_without_rejecting_static_css_themes() {
             "margin": { "className": "m", "values": ["1", "2"] }
         }
     }));
-    let output = compile_output(&config, "", Default::default());
+    let output = compile_output(&config, "", StylesheetOptions::default());
     let diagnostics = output
         .diagnostics
         .iter()
@@ -310,7 +314,7 @@ fn reports_static_css_authoring_diagnostics() {
             "padding": { "className": "p" }
         }
     }));
-    let output = compile_output(&config, "", Default::default());
+    let output = compile_output(&config, "", StylesheetOptions::default());
     let diagnostics = output
         .diagnostics
         .iter()
@@ -342,7 +346,7 @@ fn reports_large_static_css_wildcards() {
             "color": { "className": "c", "values": values }
         }
     }));
-    let output = compile_output(&config, "", Default::default());
+    let output = compile_output(&config, "", StylesheetOptions::default());
     let diagnostics = output
         .diagnostics
         .iter()

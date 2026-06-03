@@ -119,3 +119,23 @@ fn typed_config_preserves_validation_mode() {
     assert_eq!(config.validation, ValidationMode::Error);
     assert!(validate_config(&config).is_empty());
 }
+
+#[test]
+fn reports_array_conditions_and_accepts_block_form() {
+    let diagnostics = diagnostics(json!({
+        "conditions": {
+            "hoverFine": ["@media (hover: hover)", "&:hover"],
+            "validBlock": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(diagnostics, @r#"
+    - code: config_condition_array_unsupported
+      message: "Array conditions are not supported in v2: `conditions.hoverFine`. Use block form with `@slot` instead."
+      severity: warning
+    "#);
+}

@@ -585,6 +585,57 @@ fn emits_semantic_token_conditions() {
 }
 
 #[test]
+fn block_conditions_emit_each_semantic_token_slot_path() {
+    let config = config(serde_json::json!({
+        "conditions": {
+            "darkOrSystem": {
+                "&:where(.dark, .dark *)": "@slot",
+                "@media (prefers-color-scheme: dark)": {
+                    "&:where([data-color-mode=system], [data-color-mode=system] *)": "@slot"
+                }
+            }
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.red}",
+                            "_darkOrSystem": "{colors.blue}"
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(&config, "");
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red: #f00;
+    --colors-blue: #00f;
+    --colors-fg: #f00;
+  }
+  :where(.dark, .dark *) {
+    --colors-fg: #00f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :where([data-color-mode=system], [data-color-mode=system] *) {
+      --colors-fg: #00f;
+    }
+  }
+}
+");
+}
+
+#[test]
 fn emits_nested_semantic_token_conditions() {
     let config = config(serde_json::json!({
         "conditions": {
@@ -840,13 +891,13 @@ fn static_css_themes_emit_selected_theme_token_vars() {
       --colors-body: #60a5fa;
     }
   }
-  [data-panda-theme=primary] {
+  :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
     --colors-text: red;
     --colors-body: #dc2626;
     --colors-muted: #fecaca;
   }
   @media (prefers-color-scheme: dark) {
-    [data-panda-theme=primary] {
+    :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
       --colors-body: #f87171;
     }
   }

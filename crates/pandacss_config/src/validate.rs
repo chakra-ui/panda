@@ -106,15 +106,42 @@ fn validate_conditions(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>)
     let Some(entries) = value.and_then(Value::as_object) else {
         return;
     };
-    for condition in entries.values() {
+    for (name, condition) in entries {
         if let Some(condition) = condition.as_str() {
             validate_condition_selector(condition, diagnostics);
             continue;
         }
         if let Some(items) = condition.as_array() {
+            diagnostics.push(warn(
+                diagnostic_codes::CONFIG_CONDITION_ARRAY_UNSUPPORTED,
+                format!(
+                    "Array conditions are not supported in v2: `conditions.{name}`. Use block form with `@slot` instead."
+                ),
+            ));
             for item in items.iter().filter_map(Value::as_str) {
                 validate_condition_selector(item, diagnostics);
             }
+            continue;
+        }
+        if let Some(block) = condition.as_object() {
+            validate_condition_block(block, diagnostics);
+        }
+    }
+}
+
+fn validate_condition_block(
+    block: &serde_json::Map<String, Value>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for (selector, value) in block {
+        validate_condition_selector(selector, diagnostics);
+        match value {
+            Value::String(value) if value == "@slot" => {}
+            Value::Object(nested) => validate_condition_block(nested, diagnostics),
+            _ => diagnostics.push(warn(
+                diagnostic_codes::CONFIG_CONDITION_SELECTOR_INVALID,
+                format!("Condition blocks must end in `@slot`: `{selector}`"),
+            )),
         }
     }
 }
