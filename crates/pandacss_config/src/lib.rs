@@ -143,7 +143,7 @@ impl UserConfig {
         self.themes
             .keys()
             .find(|key| capitalize_for_theme_condition(key) == theme)
-            .map(|key| format!("[data-panda-theme={key}] &"))
+            .map(|key| format!("&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"))
     }
 }
 
@@ -497,7 +497,6 @@ pub struct HashOptions {
 #[serde(untagged)]
 pub enum ConditionQuery {
     String(String),
-    Array(Vec<String>),
     Nested(BTreeMap<String, ConditionQuery>),
 }
 

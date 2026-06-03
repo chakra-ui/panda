@@ -1,0 +1,353 @@
+# Condition API Direction
+
+## Status
+
+Exploration note. This is not an accepted design yet.
+
+## Summary
+
+Panda v2 should consider converging condition configuration on two explicit forms: a short selector form and a block
+form with `@slot`. Simple selectors can stay concise, but complex variants are represented as a nested rule tree with a
+slot that marks where generated declarations or utility rules are inserted. Array conditions should not be part of the v2
+API.
+
+The main problem this note explores is theme and mode composition. Users expect a condition like dark mode plus a theme
+condition to work when the attributes live on the same element or on nested ancestors. Automatically merging selectors is
+too magical and can break valid DOM structures, so the API should make selector semantics explicit.
+
+## Current Problem
+
+Today a user might define:
+
+```ts
+conditions: {
+  dark: '[data-color-mode=dark] &',
+  blueTheme: '[data-theme=blue] &',
+}
+```
+
+When both conditions are applied, a utility can produce a descendant selector:
+
+```css
+[data-color-mode='dark'] [data-theme='blue'] .blueTheme\:dark\:c_yellow {
+  color: yellow;
+}
+```
+
+That only matches this DOM shape:
+
+```html
+<div data-color-mode="dark">
+  <div data-theme="blue">
+    <span class="blueTheme:dark:c_yellow"></span>
+  </div>
+</div>
+```
+
+It does not match the same-element shape:
+
+```html
+<div data-color-mode="dark" data-theme="blue">
+  <span class="blueTheme:dark:c_yellow"></span>
+</div>
+```
+
+The tempting fix is to merge parent selectors into:
+
+```css
+[data-color-mode='dark'][data-theme='blue'] .blueTheme\:dark\:c_yellow {
+  color: yellow;
+}
+```
+
+But that breaks the nested-ancestor case. Panda cannot infer the user's intended DOM shape from two arbitrary selector
+strings.
+
+## Supported Forms
+
+Support exactly two condition authoring forms: short form and block form. The short form is sugar for a one-slot block.
+There is no array condition form.
+
+### Short Form
+
+Use the short form for simple selector or at-rule conditions:
+
+```ts
+conditions: {
+  dark: '&:where(.dark, .dark *)',
+  colorModeDark: '&:where([data-color-mode=dark], [data-color-mode=dark] *)',
+  themeBlue: '&:where([data-theme=blue], [data-theme=blue] *)',
+  hover: '&:is(:hover, [data-hover])',
+  motionSafe: '@media (prefers-reduced-motion: no-preference)',
+}
+```
+
+This is shorthand for a one-slot block:
+
+```ts
+conditions: {
+  dark: {
+    '&:where([data-color-mode=dark], [data-color-mode=dark] *)': '@slot',
+  },
+}
+```
+
+The selector users write is the selector Panda emits. If they need exact descendant behavior, they write it:
+
+```ts
+conditions: {
+  darkDescendant: '[data-color-mode=dark] &',
+}
+```
+
+If they need same-element-only behavior, they write it:
+
+```ts
+conditions: {
+  darkSelf: '&[data-color-mode=dark]',
+}
+```
+
+### Block Form
+
+Use the block form for nested selectors, at-rules, or multi-output conditions:
+
+```ts
+conditions: {
+  hover: {
+    '&:is(:hover, [data-hover])': '@slot',
+  },
+
+  anyHover: {
+    '@media (any-hover: hover)': {
+      '&:hover': '@slot',
+    },
+  },
+
+  dark: {
+    '&:where([data-color-mode=dark], [data-color-mode=dark] *)': '@slot',
+  },
+
+  darkOrSystem: {
+    '&:where(.dark, .dark *)': '@slot',
+    '@media (prefers-color-scheme: dark)': {
+      '&:where([data-color-mode=system], [data-color-mode=system] *)': '@slot',
+    },
+  },
+}
+```
+
+No array form is supported:
+
+```ts
+conditions: {
+  // not supported in v2
+  supportHover: ['@media (hover: hover)', '&:hover'],
+}
+```
+
+The equivalent must be written as a block:
+
+```ts
+conditions: {
+  supportHover: {
+    '@media (hover: hover)': {
+      '&:hover': '@slot',
+    },
+  },
+}
+```
+
+This makes condition behavior explicit:
+
+- exact descendant dark mode:
+
+  ```ts
+  dark: {
+    '[data-color-mode=dark] &': '@slot',
+  }
+  ```
+
+- same-element-only dark mode:
+
+  ```ts
+  dark: {
+    '&[data-color-mode=dark]': '@slot',
+  }
+  ```
+
+- self-or-descendant dark mode:
+
+  ```ts
+  dark: {
+    '&:where([data-color-mode=dark], [data-color-mode=dark] *)': '@slot',
+  }
+  ```
+
+## Theme Conditions
+
+For `config.themes`, Panda owns the generated condition. In v2, generated theme conditions could internally use the
+explicit self-or-descendant selector form:
+
+```ts
+_themePrimary: '&:where([data-panda-theme=primary], [data-panda-theme=primary] *)'
+```
+
+This would make theme conditions work when the class is on the theme element itself or any descendant:
+
+```html
+<div data-panda-theme="primary" class="themePrimary:c_red"></div>
+
+<div data-panda-theme="primary">
+  <span class="themePrimary:c_red"></span>
+</div>
+```
+
+It also composes predictably with other explicit context-like selectors:
+
+```ts
+conditions: {
+  dark: {
+    '&:where([data-color-mode=dark], [data-color-mode=dark] *)': '@slot',
+  },
+}
+```
+
+If v2 needs to preserve closer legacy parity, the generated condition could remain:
+
+```ts
+_themePrimary: '[data-panda-theme=primary] &'
+```
+
+But the recommended v2 behavior is the self-or-descendant selector because it matches the common expectation that a
+theme is an ambient context.
+
+```ts
+css({
+  _themePrimary: {
+    _dark: {
+      color: 'red',
+    },
+  },
+})
+```
+
+Conceptually lowers to:
+
+```css
+.themePrimary\:dark\:c_red:where([data-panda-theme='primary'], [data-panda-theme='primary'] *):where(
+    [data-color-mode='dark'],
+    [data-color-mode='dark'] *
+  ) {
+  color: red;
+}
+```
+
+## Migration Notes
+
+Older string conditions map to the short form:
+
+```ts
+dark: '[data-color-mode=dark] &'
+```
+
+becomes:
+
+```ts
+dark: {
+  '[data-color-mode=dark] &': '@slot',
+}
+```
+
+In v2 documentation, this should be presented as:
+
+```ts
+conditions: {
+  dark: '[data-color-mode=dark] &',
+}
+```
+
+with a note that the short form normalizes to a one-slot block internally.
+
+Array conditions should not be normalized silently in v2. They should produce a migration diagnostic that points to the
+equivalent block form.
+
+```ts
+supportHover: ['@media (hover: hover)', '&:hover']
+```
+
+becomes:
+
+```ts
+supportHover: {
+  '@media (hover: hover)': {
+    '&:hover': '@slot',
+  },
+}
+```
+
+This keeps the condition grammar explicit and avoids maintaining arrays as a third condition language.
+
+## Why Not Auto-Merge Selectors?
+
+Auto-merging separate conditions like this:
+
+```ts
+conditions: {
+  dark: '[data-color-mode=dark] &',
+  blueTheme: '[data-theme=blue] &',
+}
+```
+
+into this:
+
+```css
+[data-color-mode='dark'][data-theme='blue'] .class {
+  color: red;
+}
+```
+
+only works for same-element attributes. It breaks nested contexts:
+
+```html
+<div data-color-mode="dark">
+  <div data-theme="blue">
+    <span class="class"></span>
+  </div>
+</div>
+```
+
+Panda should avoid this problem by not merging arbitrary condition selectors. If users want merged same-element
+selectors, they can express them directly:
+
+```ts
+conditions: {
+  darkBlue: '[data-color-mode=dark][data-theme=blue] &',
+}
+```
+
+If users want ambient self-or-descendant contexts, they can express that explicitly:
+
+```ts
+conditions: {
+  dark: '&:where([data-color-mode=dark], [data-color-mode=dark] *)',
+  blueTheme: '&:where([data-theme=blue], [data-theme=blue] *)',
+}
+```
+
+## Decisions
+
+- Panda-generated `config.themes` should switch to the self-or-descendant selector form in v2:
+  `&:where([data-panda-theme=name], [data-panda-theme=name] *)`.
+- Use `:where(...)` rather than `:is(...)` for the recommended self-or-descendant snippets. Conditions should not
+  increase selector specificity just because they model ambient context.
+- Array condition forms are not supported in v2.
+- Conditions should have one canonical lowering model across utilities, recipes, token variables, global CSS, and static
+  CSS. The base rule target can differ, but `_dark`, `_themePrimary`, breakpoints, and custom conditions should resolve
+  to the same wrappers everywhere.
+
+## Related
+
+- [Native stylesheet compiler](./stylesheet.md)
+- [Generated types design](./generated-types-design.md)
+- [Compiler diagnostics](./compiler-diagnostics.md)

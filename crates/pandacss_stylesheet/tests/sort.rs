@@ -43,11 +43,15 @@ fn sorts_pseudo_selectors_by_cascade_priority() {
 }
 
 #[test]
-fn applies_every_part_of_mixed_condition_arrays() {
+fn applies_every_part_of_block_form_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": {
-            "hoverFine": ["@media (hover: hover)", "&:hover"],
+            "hoverFine": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            },
             "before": "&::before"
         },
         "utilities": {
@@ -428,7 +432,11 @@ fn sorts_mixed_at_rule_and_selector_after_selector_only() {
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": {
             "hover": "&:hover",
-            "hoverFine": ["@media (hover: hover)", "&:hover"]
+            "hoverFine": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            }
         },
         "utilities": {
             "color": { "className": "c" }
