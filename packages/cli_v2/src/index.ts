@@ -1,14 +1,5 @@
-import { join } from 'node:path'
 import { createNodeDriver, type ConfigDiff, type Driver, type ParseFileReport } from '@pandacss/compiler'
-import {
-  consoleOutput,
-  formatDiagnostics,
-  resolveCwd,
-  resolveFile,
-  resolveOutdir,
-  writeTextFile,
-  type OutputSink,
-} from './io'
+import { consoleOutput, formatDiagnostics, resolveCwd, type OutputSink } from './io'
 import { startProjectWatch } from './watch'
 
 export interface CommonFlags {
@@ -67,7 +58,7 @@ interface RunContext {
 export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = consoleOutput): Promise<CodegenResult> {
   const cwd = resolveCwd(flags.cwd)
   const driver = await createNodeDriver({ cwd, configPath: flags.config })
-  const outdir = resolveOutdir(cwd, flags.outdir ?? driver.config.outdir)
+  const outdir = driver.getOutdir(flags.outdir)
   const ctx: RunContext = { driver, cwd, outdir, output }
   const files = await codegenOnce(ctx, flags)
 
@@ -76,14 +67,18 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
     result.stop = await startProjectWatch({
       driver,
       cwd,
-      outdir,
+      outdir: () => driver.getOutdir(flags.outdir),
+      onError: (error) => output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
         driver.applyChanges(events)
         await codegenOnce(ctx, flags)
       },
       onConfigChange: async () => {
         const diff = await driver.reload()
-        if (diff.hasChanged) await codegenOnce(ctx, flags, diff)
+        if (diff.hasChanged) {
+          result.outdir = driver.getOutdir(flags.outdir)
+          await codegenOnce(ctx, flags, diff)
+        }
       },
     })
   }
@@ -94,8 +89,10 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
 export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = consoleOutput): Promise<CssgenResult> {
   const cwd = resolveCwd(flags.cwd)
   const driver = await createNodeDriver({ cwd, configPath: flags.config })
-  const outdir = resolveOutdir(cwd, driver.config.outdir)
-  const outfile = resolveFile(cwd, flags.outfile ?? join(outdir, 'styles.css'))
+  const resolveOutfile = () => (flags.outfile ? driver.resolvePath(flags.outfile) : driver.paths().styleFile)
+  const resolveOutdir = () => driver.paths().root
+  let outdir = resolveOutdir()
+  let outfile = resolveOutfile()
 
   let current = await cssgenOnce({ driver, cwd, outdir, output }, outfile, flags)
   const result: CssgenResult = { driver, outfile, ...current }
@@ -104,7 +101,8 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
     result.stop = await startProjectWatch({
       driver,
       cwd,
-      outdir,
+      outdir: resolveOutdir,
+      onError: (error) => output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
         driver.applyChanges(events)
         current = await writeCssgenOutput({ driver, cwd, outdir, output }, outfile, flags, current.parsed)
@@ -113,7 +111,10 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
       onConfigChange: async () => {
         const diff = await driver.reload()
         if (diff.hasChanged) {
+          outdir = resolveOutdir()
+          outfile = resolveOutfile()
           current = await cssgenOnce({ driver, cwd, outdir, output }, outfile, flags)
+          result.outfile = outfile
           Object.assign(result, current)
         }
       },
@@ -165,9 +166,10 @@ export function inspectDriver(driver: Driver): InspectResult {
 }
 
 async function codegenOnce(ctx: RunContext, flags: CodegenFlags, _diff?: ConfigDiff): Promise<string[]> {
-  const files = ctx.driver.codegen({ outdir: ctx.outdir })
+  const outdir = ctx.driver.getOutdir(flags.outdir)
+  const files = ctx.driver.codegen({ outdir: flags.outdir })
   if (!flags.silent) {
-    ctx.output.log(`codegen: wrote ${files.length} files to ${ctx.outdir}`)
+    ctx.output.log(`codegen: wrote ${files.length} files to ${outdir}`)
   }
   return files
 }
@@ -187,13 +189,12 @@ export async function writeCssgenOutput(
   flags: CssgenFlags,
   parsed: ParseFileReport[],
 ): Promise<Pick<CssgenResult, 'parsed' | 'cssBytes' | 'diagnostics'>> {
-  const output = ctx.driver.cssgen()
-  await writeTextFile(outfile, output.css)
+  const output = ctx.driver.writeCss(outfile)
 
   const diagnostics = parsed.reduce((count, report) => count + report.diagnostics.length, output.diagnostics.length)
   if (!flags.silent) {
     ctx.output.log(
-      `cssgen: parsed ${parsed.length} files, wrote ${Buffer.byteLength(output.css)} bytes to ${outfile}, ${formatDiagnostics(
+      `cssgen: parsed ${parsed.length} files, wrote ${Buffer.byteLength(output.css)} bytes to ${output.path}, ${formatDiagnostics(
         output.diagnostics,
       )}`,
     )
@@ -206,4 +207,9 @@ export async function writeCssgenOutput(
   }
 }
 
-export { normalizeParcelEvent, createEventDebouncer, handleWatchBatch, startProjectWatch } from './watch'
+function formatWatchError(error: unknown): string {
+  if (error instanceof Error) return error.stack ?? error.message
+  return String(error)
+}
+
+export { normalizeParcelEvent, createEventDebouncer, handleWatchBatch, isOutputEvent, startProjectWatch } from './watch'

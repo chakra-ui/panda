@@ -9,7 +9,9 @@ use lru::LruCache;
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::CrossFileResolver;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
-use pandacss_fs::{FileSystem, GlobOptions, MemoryFileSystem, OxcResolverFileSystem};
+use pandacss_fs::{
+    FileSystem, GlobOptions, MemoryFileSystem, OxcResolverFileSystem, PathSystem, PosixPathSystem,
+};
 use serde::{Deserialize, Serialize as _};
 use std::collections::{BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
@@ -52,6 +54,7 @@ pub struct WasmCompiler {
     /// JS-facing `WasmFileSystem` handle. Used by `glob`/`scan` to discover +
     /// read the source files the host staged via `addFile`.
     fs: MemoryFileSystem,
+    paths: PosixPathSystem,
 }
 
 struct CallbackHost {
@@ -134,6 +137,7 @@ impl WasmCompiler {
             user_config,
             callbacks,
             fs: fs.inner.clone(),
+            paths: PosixPathSystem,
         })
     }
 
@@ -468,30 +472,57 @@ impl WasmCompiler {
         cwd: Option<String>,
         options: &JsValue,
     ) -> Result<JsValue, JsValue> {
-        use pandacss_fs::FileSystem;
         let generate = generate_options(&self.user_config, options)?;
         let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
-        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
-            .join(outdir);
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let base = self.paths.resolve(&cwd, outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
             for file in artifact.files {
-                let target = base.join(&file.path);
-                if let Some(parent) = target.parent() {
+                if self.paths.is_absolute(&file.path) {
+                    return Err(JsValue::from_str(&format!(
+                        "artifact output path must be relative: {}",
+                        file.path
+                    )));
+                }
+                let target = self.paths.join(&[&base, &file.path]);
+                let parent = self.paths.dirname(&target);
+                if !parent.is_empty() {
                     self.fs
-                        .create_dir_all(parent)
+                        .create_dir_all(Path::new(&parent))
                         .map_err(|err| JsValue::from_str(&err.to_string()))?;
                 }
                 self.fs
-                    .write(&target, file.code.as_bytes())
+                    .write(Path::new(&target), file.code.as_bytes())
                     .map_err(|err| JsValue::from_str(&err.to_string()))?;
-                written.push(target.to_string_lossy().into_owned());
+                written.push(target);
             }
         }
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         written
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = resolvePath)]
+    #[must_use]
+    pub fn resolve_path(&self, path: &str, cwd: Option<String>) -> String {
+        self.paths
+            .resolve(&cwd.unwrap_or_else(|| self.user_config.cwd.clone()), path)
+    }
+
+    #[wasm_bindgen(js_name = joinPath)]
+    pub fn join_path(&self, parts: JsValue) -> Result<String, JsValue> {
+        let parts: Vec<String> = serde_wasm_bindgen::from_value(parts)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let parts = parts.iter().map(String::as_str).collect::<Vec<_>>();
+        Ok(self.paths.join(&parts))
+    }
+
+    #[wasm_bindgen]
+    #[must_use]
+    pub fn dirname(&self, path: &str) -> String {
+        self.paths.dirname(path)
     }
 
     /// The resolved cascade-layer names (config overrides merged over defaults).
@@ -730,6 +761,52 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    #[wasm_bindgen(js_name = writeCss)]
+    pub fn write_css(
+        &mut self,
+        outfile: &str,
+        cwd: Option<String>,
+        options: Option<JsValue>,
+    ) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("css_compile", method = "wasm_write_css").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms();
+        let options = compile_options_from_js(options)?;
+        let output = build_compile_output(
+            &mut self.inner,
+            &self.user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+            options.emit_layer_declaration.unwrap_or(true),
+        );
+        let target = self.paths.resolve(
+            &cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            outfile,
+        );
+        let parent = self.paths.dirname(&target);
+        if !parent.is_empty() {
+            self.fs
+                .create_dir_all(Path::new(&parent))
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        }
+        self.fs
+            .write(Path::new(&target), output.css.as_bytes())
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+
+        let result = WriteCssResultSerde {
+            path: target,
+            css: output.css,
+            source_map: output.source_map,
+            manifest: output.manifest,
+            layer_ranges: output.layer_ranges,
+            diagnostics: output.diagnostics,
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
     /// (byte offsets stay valid); unknown layer names are skipped.
     #[wasm_bindgen(js_name = layerCss)]
@@ -859,6 +936,17 @@ impl WasmCompiler {
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CompileOutputSerde {
+    css: String,
+    source_map: Option<String>,
+    manifest: CompileManifestSerde,
+    layer_ranges: CompileLayerRangesSerde,
+    diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteCssResultSerde {
+    path: String,
     css: String,
     source_map: Option<String>,
     manifest: CompileManifestSerde,
