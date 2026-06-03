@@ -2,8 +2,6 @@
   "name": "@pandacss/studio",
   "version": "1.10.0",
   "description": "The automated token documentation for Panda CSS",
-  "main": "dist/studio.js",
-  "module": "dist/studio.mjs",
   "types": "dist/studio.d.ts",
   "sideEffects": false,
   "homepage": "https://panda-css.com",
@@ -18,11 +16,7 @@
   "exports": {
     ".": {
       "types": "./dist/studio.d.ts",
-      "require": "./dist/studio.js",
-      "import": {
-        "types": "./dist/studio.d.mts",
-        "default": "./dist/studio.mjs"
-      }
+      "default": "./dist/studio.js"
     }
   },
   "scripts": {
@@ -72,5 +66,9 @@
     "@testing-library/react": "16.3.0",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

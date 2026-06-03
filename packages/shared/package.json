@@ -2,8 +2,6 @@
   "name": "@pandacss/shared",
   "version": "1.10.0",
   "description": "Shared utilities for css panda",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
@@ -19,13 +17,9 @@
   },
   "exports": {
     ".": {
-      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -36,5 +30,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

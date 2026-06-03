@@ -2,15 +2,13 @@
   "name": "@pandacss/vite",
   "version": "0.0.0",
   "description": "Vite plugin for the Panda CSS v2 compiler",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "exports": {
     ".": {
-      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
@@ -26,8 +24,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm --dts --no-splitting --shims",
-    "build-fast": "tsup src/index.ts --format=esm --no-dts --no-splitting --shims",
+    "build": "tsup src/index.ts --format=esm,cjs --dts --no-splitting --shims",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch src",
     "test": "vitest run"
   },
@@ -43,5 +41,9 @@
   },
   "devDependencies": {
     "vite": "7.2.6"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

@@ -2,13 +2,12 @@
   "name": "@pandacss/types",
   "version": "1.10.0",
   "description": "The types for css panda",
-  "main": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "exports": {
     ".": {
-      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
       "default": "./dist/index.d.ts"
     },
     "./package.json": "./package.json"
@@ -38,5 +37,9 @@
     "ncp": "2.0.0",
     "pkg-types": "2.3.0",
     "ts-morph": "28.0.0"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

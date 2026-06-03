@@ -2,9 +2,7 @@
   "name": "@pandacss/cli",
   "version": "0.0.0",
   "description": "Experimental v2 CLI for the Panda Rust compiler",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "bin": {
@@ -13,8 +11,8 @@
   },
   "exports": {
     ".": {
-      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
@@ -30,8 +28,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/cli-main.ts --format=esm --dts --no-splitting --shims",
-    "build-fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
+    "build": "tsup src/index.ts src/cli-main.ts --format=esm,cjs --dts --no-splitting --shims",
+    "build-fast": "tsup src/index.ts src/cli-main.ts --format=esm,cjs --no-dts --no-splitting --shims",
     "dev": "pnpm build-fast --watch src",
     "test": "vitest run"
   },
@@ -44,5 +42,9 @@
     "@pandacss/compiler-shared": "workspace:*",
     "@parcel/watcher": "2.5.1",
     "citty": "0.1.6"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

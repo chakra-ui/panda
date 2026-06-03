@@ -2,8 +2,6 @@
   "name": "@pandacss/dev",
   "version": "1.10.0",
   "description": "The user facing package for panda css",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
@@ -13,22 +11,14 @@
   },
   "exports": {
     ".": {
-      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
     },
     "./presets": {
-      "source": "./src/presets.ts",
       "types": "./dist/presets.d.ts",
-      "require": "./dist/presets.js",
-      "import": {
-        "types": "./dist/presets.d.mts",
-        "default": "./dist/presets.mjs"
-      }
+      "source": "./src/presets.ts",
+      "default": "./dist/presets.js"
     },
     "./postcss": "./postcss.js",
     "./package.json": "./package.json"
@@ -74,5 +64,9 @@
     "@types/update-notifier": "6.0.8",
     "kleur": "4.1.5",
     "update-notifier": "7.3.1"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

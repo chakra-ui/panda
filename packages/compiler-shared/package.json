@@ -2,13 +2,11 @@
   "name": "@pandacss/compiler-shared",
   "version": "0.0.0",
   "description": "Shared TypeScript contract for the Panda compiler bindings (native + wasm)",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
@@ -26,8 +24,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=esm --shims --no-dts",
+    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
+    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
   },
@@ -35,5 +33,9 @@
     "dist"
   ],
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }
