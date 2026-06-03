@@ -36,3 +36,4 @@ ts-import-map-outdir
 packages/studio/src/lib/analysis.json
 
 storybook-static
+.cursor/plans
