@@ -2,27 +2,19 @@
   "name": "@pandacss/compiler-wasm",
   "version": "0.0.0",
   "description": "WebAssembly binding for the Panda compiler engine (browser/playground target)",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": "./dist/index.js"
+      "default": "./dist/index.js"
     },
     "./web": {
       "source": "./src/web.ts",
       "types": "./dist/web.d.ts",
-      "import": {
-        "types": "./dist/web.d.mts",
-        "default": "./dist/web.mjs"
-      },
-      "require": "./dist/web.js"
+      "default": "./dist/web.js"
     },
     "./pkg-node/*": "./pkg-node/*",
     "./pkg-web/*": "./pkg-web/*",

@@ -2,27 +2,19 @@
   "name": "@pandacss/compiler",
   "version": "0.0.0",
   "description": "Native Rust binding for the Panda compiler engine",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": "./dist/index.js"
+      "default": "./dist/index.js"
     },
     "./loader": {
       "source": "./src/loader.ts",
       "types": "./dist/loader.d.ts",
-      "import": {
-        "types": "./dist/loader.d.mts",
-        "default": "./dist/loader.mjs"
-      },
-      "require": "./dist/loader.js"
+      "default": "./dist/loader.js"
     },
     "./package.json": "./package.json"
   },
@@ -39,8 +31,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/loader.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts src/loader.ts --format=cjs,esm --shims --no-dts",
+    "build": "tsup src/index.ts src/loader.ts --format=esm --shims --dts",
+    "build-fast": "tsup src/index.ts src/loader.ts --format=esm --shims --no-dts",
     "build:native": "tsx build-binding.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
