@@ -122,6 +122,49 @@ fn token_var_call_resolves_to_css_variable() {
 }
 
 #[test]
+fn bare_runtime_token_calls_are_captured_for_stylesheet_optimization() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        export const red = token('colors.red.500');
+        export const primary = token('colors.primary');
+        export const redVar = token.var('colors.red.500');
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).token_refs, @r#"
+    - path: colors.red.500
+      span:
+        start: 58
+        end: 81
+      needsCssVar: false
+    - path: colors.primary
+      span:
+        start: 106
+        end: 129
+      needsCssVar: true
+    - path: colors.red.500
+      span:
+        start: 153
+        end: 180
+      needsCssVar: true
+    "#);
+}
+
+#[test]
+fn token_refs_are_deduped_when_a_call_is_also_folded_inside_css() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ color: token.var('colors.red.500') });
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).token_refs, @r#"
+    - path: colors.red.500
+      span:
+        start: 86
+        end: 113
+      needsCssVar: true
+    "#);
+}
+
+#[test]
 fn unknown_token_path_with_fallback_uses_fallback() {
     let src = indoc! {r"
         import { token } from '@panda/tokens';

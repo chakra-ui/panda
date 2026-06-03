@@ -54,3 +54,40 @@ fn codegen_import_extensions_defaults_and_overrides() {
         Some(&json!(true))
     );
 }
+
+#[test]
+fn optimize_defaults_and_overrides() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let configured: UserConfig = serde_json::from_value(json!({
+        "optimize": {
+            "removeUnusedTokens": true,
+            "removeUnusedKeyframes": true
+        }
+    }))
+    .expect("optimize config");
+    let partial: UserConfig = serde_json::from_value(json!({
+        "optimize": {
+            "removeUnusedTokens": true
+        }
+    }))
+    .expect("partial optimize config");
+    let legacy_boolean: UserConfig = serde_json::from_value(json!({
+        "optimize": true
+    }))
+    .expect("legacy optimize config");
+
+    assert!(!default_config.optimize.remove_unused_tokens);
+    assert!(!default_config.optimize.remove_unused_keyframes);
+    assert!(configured.optimize.remove_unused_tokens);
+    assert!(configured.optimize.remove_unused_keyframes);
+    assert!(partial.optimize.remove_unused_tokens);
+    assert!(!partial.optimize.remove_unused_keyframes);
+    assert!(!legacy_boolean.optimize.remove_unused_tokens);
+    assert!(!legacy_boolean.optimize.remove_unused_keyframes);
+
+    let serialized = serde_json::to_value(&configured).expect("serialized config");
+    assert_eq!(
+        serialized.get("optimize"),
+        Some(&json!({ "removeUnusedTokens": true, "removeUnusedKeyframes": true }))
+    );
+}

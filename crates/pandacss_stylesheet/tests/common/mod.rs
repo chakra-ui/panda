@@ -47,6 +47,7 @@ pub fn compile_output(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],
+            token_refs: snapshots.token_refs,
         },
         &StylesheetOptions {
             include_static: true,
@@ -69,6 +70,7 @@ pub fn split_output(config: &UserConfig, source: &str) -> Vec<pandacss_styleshee
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],
+            token_refs: snapshots.token_refs,
         },
         &StylesheetOptions {
             include_static: true,

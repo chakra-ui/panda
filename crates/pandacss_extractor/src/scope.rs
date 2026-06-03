@@ -158,7 +158,56 @@ impl<'a> Resolver<'a> {
     /// value. Mirrors the JS extractor's behavior in `maybe-box-node.ts`.
     pub(crate) fn resolve_token_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
         let dict = self.tokens?;
+        let (path, is_var, fallback) = self.token_call_parts(call)?;
 
+        if dict.is_deprecated(&path) {
+            self.record_deprecated_token(&path, call.span);
+        }
+
+        let resolved = if is_var {
+            dict.get_var(&path, fallback.as_deref())
+        } else {
+            dict.get(&path, fallback.as_deref())
+        };
+        if resolved.is_some() {
+            self.token_refs.borrow_mut().push(TokenRef {
+                path,
+                span: crate::span_from_oxc(call.span),
+                needs_css_var: resolved.as_deref().is_some_and(is_css_var_value),
+            });
+        }
+        resolved.map(Literal::String)
+    }
+
+    pub(crate) fn resolved_token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
+        let dict = self.tokens?;
+        let (path, is_var, fallback) = self.token_call_parts(call)?;
+        let resolved = if is_var {
+            dict.get_var(&path, fallback.as_deref())
+        } else {
+            dict.get(&path, fallback.as_deref())
+        };
+        resolved.is_some().then_some(path)
+    }
+
+    pub(crate) fn token_call_needs_css_var(&self, call: &CallExpression<'_>) -> bool {
+        let Some(dict) = self.tokens else {
+            return false;
+        };
+        let Some((path, is_var, fallback)) = self.token_call_parts(call) else {
+            return false;
+        };
+        if is_var {
+            return true;
+        }
+        dict.get(&path, fallback.as_deref())
+            .is_some_and(|value| is_css_var_value(&value))
+    }
+
+    fn token_call_parts(
+        &self,
+        call: &CallExpression<'_>,
+    ) -> Option<(String, bool, Option<String>)> {
         let (token_ident, is_var) = match &call.callee {
             Expression::Identifier(id) => (id, false),
             Expression::StaticMemberExpression(member) => {
@@ -196,22 +245,7 @@ impl<'a> Resolver<'a> {
                 _ => None,
             });
 
-        if dict.is_deprecated(&path) {
-            self.record_deprecated_token(&path, call.span);
-        }
-
-        let resolved = if is_var {
-            dict.get_var(&path, fallback.as_deref())
-        } else {
-            dict.get(&path, fallback.as_deref())
-        };
-        if resolved.is_some() {
-            self.token_refs.borrow_mut().push(TokenRef {
-                path,
-                span: crate::span_from_oxc(call.span),
-            });
-        }
-        resolved.map(Literal::String)
+        Some((path, is_var, fallback))
     }
 
     fn record_deprecated_token(&self, path: &str, span: oxc_span::Span) {
@@ -385,6 +419,10 @@ impl<'a> Resolver<'a> {
             BindingPattern::AssignmentPattern(_) => None,
         }
     }
+}
+
+fn is_css_var_value(value: &str) -> bool {
+    value.trim().starts_with("var(")
 }
 
 fn is_raw_category(category: MatchCategory) -> bool {

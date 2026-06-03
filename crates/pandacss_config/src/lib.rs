@@ -83,6 +83,8 @@ pub struct UserConfig {
     pub layers: CascadeLayers,
     #[serde(default)]
     pub preflight: PreflightConfig,
+    #[serde(default, deserialize_with = "deserialize_optimize_config")]
+    pub optimize: OptimizeConfig,
     #[serde(default)]
     pub codegen_format: CodegenFormat,
     #[serde(default, rename = "codegenImportExtensions")]
@@ -101,6 +103,20 @@ fn default_css_var_root() -> String {
     ":where(:root, :host)".to_owned()
 }
 
+fn deserialize_optimize_config<'de, D>(deserializer: D) -> Result<OptimizeConfig, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = Value::deserialize(deserializer)?;
+    if value.is_null() {
+        return Ok(OptimizeConfig::default());
+    }
+    if value.is_object() {
+        return serde_json::from_value(value).map_err(serde::de::Error::custom);
+    }
+    Ok(OptimizeConfig::default())
+}
+
 impl UserConfig {
     #[must_use]
     pub fn condition_names(&self) -> Vec<String> {
@@ -114,6 +130,17 @@ impl UserConfig {
         names.extend(self.theme.breakpoint_names());
         names.into_iter().collect()
     }
+}
+
+/// Stylesheet optimization switches. All optimizations are opt-in because
+/// Panda normally emits the complete token/keyframe surface for external CSS.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptimizeConfig {
+    #[serde(default)]
+    pub remove_unused_tokens: bool,
+    #[serde(default)]
+    pub remove_unused_keyframes: bool,
 }
 
 /// User-facing names for the five cascade layers. Matches v1's

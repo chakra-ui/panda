@@ -3,7 +3,7 @@
 
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
-    css_template::css_template_to_object, literal::expression_to_literal, span_from_oxc,
+    TokenRef, css_template::css_template_to_object, literal::expression_to_literal, span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -79,14 +79,34 @@ pub(crate) fn collect_calls(
     ctx: &crate::VisitorContext<'_>,
 ) -> Vec<ExtractedCall> {
     let mut out = Vec::new();
-    let mut extractor = Extractor { ctx, out: &mut out };
+    let mut extractor = Extractor {
+        ctx,
+        out: &mut out,
+        token_refs: None,
+    };
     extractor.visit_program(program);
     out
+}
+
+pub(crate) fn collect_calls_with_token_refs(
+    program: &oxc_ast::ast::Program<'_>,
+    ctx: &crate::VisitorContext<'_>,
+) -> (Vec<ExtractedCall>, Vec<TokenRef>) {
+    let mut calls = Vec::new();
+    let mut token_refs = Vec::new();
+    let mut extractor = Extractor {
+        ctx,
+        out: &mut calls,
+        token_refs: Some(&mut token_refs),
+    };
+    extractor.visit_program(program);
+    (calls, token_refs)
 }
 
 struct Extractor<'walk, 'ctx> {
     ctx: &'walk crate::VisitorContext<'ctx>,
     out: &'walk mut Vec<ExtractedCall>,
+    token_refs: Option<&'walk mut Vec<TokenRef>>,
 }
 
 /// `name` borrows from either the matched import or the AST so we don't
@@ -204,6 +224,17 @@ fn flatten_static_member_path<'a>(
 
 impl<'a> Visit<'a> for Extractor<'_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if let (Some(resolver), Some(token_refs)) =
+            (self.ctx.resolver, self.token_refs.as_deref_mut())
+            && let Some(path) = resolver.resolved_token_call_path(call)
+        {
+            token_refs.push(TokenRef {
+                path,
+                span: span_from_oxc(call.span),
+                needs_css_var: resolver.token_call_needs_css_var(call),
+            });
+        }
+
         if let Some(resolved) = self.resolve_callee(call) {
             let resolver = self.ctx.resolver;
             let data: Vec<Option<Literal>> = call

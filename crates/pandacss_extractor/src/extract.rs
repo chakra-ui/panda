@@ -3,7 +3,7 @@
 //! [`Resolver`]. [`extract`] returns the lean production result; `extract_debug`
 //! additionally surfaces raw + matched imports for tooling/parity tests.
 
-use crate::calls::collect_calls;
+use crate::calls::collect_calls_with_token_refs;
 use crate::jsx::collect_jsx;
 use crate::scope::Resolver;
 use crate::{
@@ -24,6 +24,8 @@ use serde::Serialize;
 pub struct TokenRef {
     pub path: String,
     pub span: Span,
+    #[serde(default)]
+    pub needs_css_var: bool,
 }
 
 /// Lean extraction result for the production hot path — strips `imports`
@@ -143,11 +145,11 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let calls = if should_collect_calls(&matched) {
+    let (calls, mut token_refs) = if should_collect_calls(&matched) {
         let _span = tracing::trace_span!("visit_calls").entered();
-        collect_calls(&parser_return.program, &ctx)
+        collect_calls_with_token_refs(&parser_return.program, &ctx)
     } else {
-        Vec::new()
+        (Vec::new(), Vec::new())
     };
     let jsx = if should_collect_jsx(&matched, config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
@@ -157,7 +159,8 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     };
 
     diagnostics.extend(resolver.take_deprecations());
-    let token_refs = resolver.take_token_refs();
+    token_refs.extend(resolver.take_token_refs());
+    let token_refs = dedupe_token_refs(token_refs);
 
     ExtractResult {
         imports,
@@ -182,4 +185,18 @@ fn should_collect_jsx(matched: &[MatchedImport], config: &ExtractorConfig) -> bo
         || matched
             .iter()
             .any(|import| import.category == MatchCategory::Jsx)
+}
+
+fn dedupe_token_refs(token_refs: Vec<TokenRef>) -> Vec<TokenRef> {
+    let mut deduped = Vec::with_capacity(token_refs.len());
+    for token_ref in token_refs {
+        if !deduped.iter().any(|existing: &TokenRef| {
+            existing.path == token_ref.path
+                && existing.span == token_ref.span
+                && existing.needs_css_var == token_ref.needs_css_var
+        }) {
+            deduped.push(token_ref);
+        }
+    }
+    deduped
 }

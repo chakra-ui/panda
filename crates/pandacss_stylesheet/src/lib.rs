@@ -133,6 +133,7 @@ pub struct StylesheetInput<'a> {
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
     pub static_pattern_atoms: &'a [Atom],
+    pub token_refs: &'a [String],
 }
 
 /// Whether the config has any static CSS work that stylesheet compilation should
@@ -204,7 +205,10 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     let emitted = emitter::emit(
         input.config,
         &utility,
-        token_dictionary.as_deref(),
+        emitter::EmitTokenContext {
+            dictionary: token_dictionary.as_deref(),
+            refs: input.token_refs,
+        },
         atoms,
         recipes,
         options.minify,
@@ -258,7 +262,10 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     let full = emitter::emit(
         input.config,
         &utility,
-        token_dictionary.as_deref(),
+        emitter::EmitTokenContext {
+            dictionary: token_dictionary.as_deref(),
+            refs: input.token_refs,
+        },
         atoms,
         recipes,
         options.minify,

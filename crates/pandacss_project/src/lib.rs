@@ -83,6 +83,7 @@ pub struct Project {
     atoms_snapshot_cache: Option<Vec<Atom>>,
     encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
     static_encoded_recipes_snapshot_cache: Option<(serde_json::Value, EncodedRecipesSnapshot)>,
+    token_refs_snapshot_cache: Option<Vec<String>>,
     parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
@@ -99,6 +100,7 @@ pub struct ProjectStylesheetSnapshots<'a> {
     pub atoms: &'a [Atom],
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: &'a EncodedRecipesSnapshot,
+    pub token_refs: &'a [String],
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
@@ -109,6 +111,7 @@ struct FileEntry {
     cacheable: bool,
     atoms: FxHashSet<Atom>,
     encoded_recipes: EncodedRecipes,
+    token_refs: Vec<String>,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
 }
@@ -145,6 +148,7 @@ impl Project {
             atoms_snapshot_cache: None,
             encoded_recipes_snapshot_cache: None,
             static_encoded_recipes_snapshot_cache: None,
+            token_refs_snapshot_cache: None,
             parse_epoch: 0,
             config_recipes,
             config_slot_recipes,
@@ -234,6 +238,12 @@ impl Project {
         span.record("cache_hit", false);
 
         let result = extract(source, path, &self.config.extractor_config);
+        let token_refs = result
+            .token_refs
+            .iter()
+            .filter(|token_ref| token_ref.needs_css_var)
+            .map(|token_ref| token_ref.path.clone())
+            .collect::<Vec<_>>();
         let mut diagnostics = result.diagnostics;
         if let Some(utility) = self.config.utility.as_ref()
             && !utility.deprecated_props().is_empty()
@@ -412,6 +422,7 @@ impl Project {
                 .any(|diagnostic| diagnostic.code == diagnostic_codes::TRANSFORM_CALLBACK_FAILED),
             atoms,
             encoded_recipes,
+            token_refs,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
@@ -542,6 +553,7 @@ impl Project {
             existing.source_hash = entry.source_hash;
             existing.parse_epoch = entry.parse_epoch;
             existing.cacheable = entry.cacheable;
+            existing.token_refs = entry.token_refs;
             existing.diagnostics = entry.diagnostics;
             existing.report = entry.report;
             missing_recipes
@@ -578,6 +590,7 @@ impl Project {
     fn invalidate_stylesheet_snapshots(&mut self) {
         self.atoms_snapshot_cache = None;
         self.encoded_recipes_snapshot_cache = None;
+        self.token_refs_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
@@ -711,6 +724,16 @@ impl Project {
             self.encoded_recipes_snapshot_cache =
                 Some(self.encoded_recipes_cache.view().snapshot());
         }
+        if self.token_refs_snapshot_cache.is_none() {
+            let mut token_refs = self
+                .files
+                .values()
+                .flat_map(|entry| entry.token_refs.iter().cloned())
+                .collect::<Vec<_>>();
+            token_refs.sort();
+            token_refs.dedup();
+            self.token_refs_snapshot_cache = Some(token_refs);
+        }
         let static_cache_matches = self
             .static_encoded_recipes_snapshot_cache
             .as_ref()
@@ -736,6 +759,10 @@ impl Project {
                 .as_ref()
                 .map(|(_, snapshot)| snapshot)
                 .expect("static recipe snapshot was initialized"),
+            token_refs: self
+                .token_refs_snapshot_cache
+                .as_deref()
+                .expect("token refs snapshot was initialized"),
         }
     }
 

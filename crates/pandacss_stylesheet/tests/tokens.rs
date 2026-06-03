@@ -2,10 +2,31 @@ mod common;
 
 use insta::assert_snapshot;
 use pandacss_encoder::EncodedRecipesSnapshot;
+use pandacss_project::{Project, System};
 use pandacss_shared::DiagnosticSeverity;
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 
 use common::{compile_css, compile_css_with_options, config};
+
+fn compile_project_css(project: &mut Project, config: &pandacss_config::UserConfig) -> String {
+    let snapshots = project.stylesheet_snapshots(config);
+    pandacss_stylesheet::compile(
+        StylesheetInput {
+            config,
+            token_dictionary: None,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &[],
+            token_refs: snapshots.token_refs,
+        },
+        &StylesheetOptions {
+            include_static: true,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css
+}
 
 #[test]
 fn emits_primitive_and_semantic_token_vars() {
@@ -36,6 +57,478 @@ fn emits_primitive_and_semantic_token_vars() {
     --colors-red: #f00;
     --spacing-2: 0.5rem;
     --colors-fg: #f00;
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_only_referenced_vars() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            },
+            "textStyles": {
+                "body": {
+                    "value": {
+                        "color": "{colors.red}"
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; css({ textStyle: 'body' });",
+    );
+
+    assert!(css.contains("--colors-red: #f00;"));
+    assert!(!css.contains("--colors-blue: #00f;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red: #f00;
+  }
+}
+@layer utilities {
+  @layer compositions {
+    .textStyle_body {
+      color: var(--colors-red);
+    }
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_referenced_semantic_conditions() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "conditions": {
+            "dark": ".dark &"
+        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" },
+                    "green": { "value": "#0f0" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.red}",
+                            "_dark": "{colors.blue}"
+                        }
+                    }
+                }
+            },
+            "textStyles": {
+                "body": {
+                    "value": {
+                        "color": "{colors.fg}"
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; css({ textStyle: 'body' });",
+    );
+
+    assert!(css.contains("--colors-fg: #f00;"));
+    assert!(css.contains("--colors-fg: #00f;"));
+    assert!(!css.contains("--colors-green: #0f0;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-fg: #f00;
+  }
+  .dark {
+    --colors-fg: #00f;
+  }
+}
+@layer utilities {
+  @layer compositions {
+    .textStyle_body {
+      color: var(--colors-fg);
+    }
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_static_css_token_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "color": ["{colors.red}"]
+                    }
+                }
+            ]
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_css(&config, "");
+
+    assert!(css.contains("--colors-red: #f00;"));
+    assert!(!css.contains("--colors-blue: #00f;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red: #f00;
+  }
+}
+@layer utilities {
+  .c_\{colors\.red\} {
+    color: var(--colors-red);
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_custom_property_direct_token_path_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#f00" } },
+                    "blue": { "300": { "value": "#00f" } }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '--css-var': 'colors.red.300', color: 'var(--css-var)' });",
+    );
+
+    assert!(css.contains("--colors-red-300: #f00;"));
+    assert!(!css.contains("--colors-blue-300: #00f;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red-300: #f00;
+  }
+}
+@layer utilities {
+  .--css-var_colors\.red\.300 {
+    --css-var: colors.red.300;
+  }
+  .color_var\(--css-var\) {
+    color: var(--css-var);
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_custom_property_curly_token_modifier_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#f00" } },
+                    "blue": { "300": { "value": "#00f" } }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '--css-var': '{colors.red.300/40}', color: 'var(--css-var)' });",
+    );
+
+    assert!(css.contains("--colors-red-300: #f00;"));
+    assert!(!css.contains("--colors-blue-300: #00f;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red-300: #f00;
+  }
+}
+@layer utilities {
+  .--css-var_\{colors\.red\.300\/40\} {
+    --css-var: {colors.red.300/40};
+  }
+  .color_var\(--css-var\) {
+    color: var(--css-var);
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_runtime_token_var_references_without_atoms() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { token } from '@panda/tokens'; export const red = token.var('colors.red');",
+    );
+
+    assert!(css.contains("--colors-red: #f00;"));
+    assert!(!css.contains("--colors-blue: #00f;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red: #f00;
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_keeps_runtime_semantic_token_references_without_atoms() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "conditions": {
+            "dark": ".dark &"
+        },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" },
+                    "green": { "value": "#0f0" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "value": {
+                            "base": "{colors.red}",
+                            "_dark": "{colors.blue}"
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { token } from '@panda/tokens'; export const fg = token.var('colors.fg');",
+    );
+
+    assert!(css.contains("--colors-fg: #f00;"));
+    assert!(css.contains("--colors-fg: #00f;"));
+    assert!(!css.contains("--colors-green: #0f0;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-fg: #f00;
+  }
+  .dark {
+    --colors-fg: #00f;
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_does_not_keep_primitive_runtime_token_value_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { token } from '@panda/tokens'; export const red = token('colors.red');",
+    );
+
+    assert!(!css.contains("--colors-red: #f00;"));
+    assert!(!css.contains("--colors-blue: #00f;"));
+    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+}
+
+#[test]
+fn optimize_tokens_combines_runtime_and_stylesheet_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" },
+                    "green": { "value": "#0f0" }
+                },
+                "spacing": {
+                    "2": { "value": "0.5rem" }
+                }
+            },
+            "textStyles": {
+                "body": {
+                    "value": {
+                        "color": "{colors.blue}"
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { css } from '@panda/css'; import { token } from '@panda/tokens'; css({ textStyle: 'body' }); export const red = token.var('colors.red');",
+    );
+
+    assert!(css.contains("--colors-red: #f00;"));
+    assert!(css.contains("--colors-blue: #00f;"));
+    assert!(!css.contains("--colors-green: #0f0;"));
+    assert!(!css.contains("--spacing-2: 0.5rem;"));
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-red: #f00;
+    --colors-blue: #00f;
+  }
+}
+@layer utilities {
+  @layer compositions {
+    .textStyle_body {
+      color: var(--colors-blue);
+    }
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_runtime_refs_update_when_file_is_refreshed() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        }
+    }));
+    let system = System::new(config.clone()).expect("valid system");
+    let mut project = Project::new(system);
+
+    project.parse_file(
+        "a.ts",
+        "import { token } from '@panda/tokens'; export const color = token.var('colors.red');",
+    );
+    let red_css = compile_project_css(&mut project, &config);
+    assert!(red_css.contains("--colors-red: #f00;"));
+    assert!(!red_css.contains("--colors-blue: #00f;"));
+
+    project.refresh_file(
+        "a.ts",
+        "import { token } from '@panda/tokens'; export const color = token.var('colors.blue');",
+    );
+    let blue_css = compile_project_css(&mut project, &config);
+    assert!(!blue_css.contains("--colors-red: #f00;"));
+    assert!(blue_css.contains("--colors-blue: #00f;"));
+    assert_snapshot!(blue_css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-blue: #00f;
+  }
+}
+");
+}
+
+#[test]
+fn optimize_tokens_runtime_refs_update_when_file_is_removed() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        }
+    }));
+    let system = System::new(config.clone()).expect("valid system");
+    let mut project = Project::new(system);
+
+    project.parse_file(
+        "a.ts",
+        "import { token } from '@panda/tokens'; export const color = token.var('colors.red');",
+    );
+    project.parse_file(
+        "b.ts",
+        "import { token } from '@panda/tokens'; export const color = token.var('colors.blue');",
+    );
+    let all_css = compile_project_css(&mut project, &config);
+    assert!(all_css.contains("--colors-red: #f00;"));
+    assert!(all_css.contains("--colors-blue: #00f;"));
+
+    project.remove_file("a.ts");
+    let blue_css = compile_project_css(&mut project, &config);
+    assert!(!blue_css.contains("--colors-red: #f00;"));
+    assert!(blue_css.contains("--colors-blue: #00f;"));
+    assert_snapshot!(blue_css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --colors-blue: #00f;
   }
 }
 ");
@@ -168,6 +661,7 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
             static_pattern_atoms: &[],
+            token_refs: &[],
         },
         &StylesheetOptions::default(),
     );
@@ -211,6 +705,7 @@ fn token_build_errors_are_reported_as_diagnostics() {
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
             static_pattern_atoms: &[],
+            token_refs: &[],
         },
         &StylesheetOptions::default(),
     );

@@ -61,6 +61,7 @@ fn static_pattern_atoms_flow_into_utilities_layer() {
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &StylesheetOptions {
             include_static: true,
@@ -145,6 +146,7 @@ fn static_pattern_conditions_and_responsive_flow_into_utilities_layer() {
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &StylesheetOptions {
             include_static: true,
