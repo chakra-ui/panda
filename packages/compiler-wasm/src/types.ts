@@ -52,12 +52,16 @@ export interface TokenDictionaryInput {
   vars: Record<string, string>
 }
 
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
+
 export interface MatchersInput {
   css?: MatcherInput
   recipe?: MatcherInput
   pattern?: MatcherInput
   jsx?: MatcherInput
   tokens?: MatcherInput
+  /** Configured JSX framework. Enables JSX-aware extraction diagnostics. */
+  jsxFramework?: JsxFramework
   /** Defaults to `["styled"]` when omitted. */
   jsxFactories?: string[]
   /** Enable `token('…')` folding by passing a resolved dictionary. */

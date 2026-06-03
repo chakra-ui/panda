@@ -24,7 +24,9 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
+use pandacss_shared::{
+    diagnostic_codes, number_to_js_string, push_number_to_js_string, split_important,
+};
 use pandacss_utility::{StyleNormalizer, Utility};
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
@@ -973,7 +975,11 @@ fn transform_atoms(
             Ok(None) => {
                 out.insert(atom);
             }
-            Err(diagnostic) => diagnostics.push(diagnostic),
+            Err(diagnostic) => diagnostics.push(with_callback_target(
+                diagnostic,
+                atom.prop(),
+                Some(&atom_value_summary(atom.value())),
+            )),
         }
     }
     out
@@ -1013,10 +1019,38 @@ fn transform_recipe_entries(
             Ok(None) => {
                 out.insert(entry);
             }
-            Err(diagnostic) => diagnostics.push(diagnostic),
+            Err(diagnostic) => diagnostics.push(with_callback_target(
+                diagnostic,
+                entry.prop.as_ref(),
+                Some(&atom_value_summary(&entry.value)),
+            )),
         }
     }
     out
+}
+
+fn with_callback_target(
+    mut diagnostic: Diagnostic,
+    prop: &str,
+    value: Option<&str>,
+) -> Diagnostic {
+    if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
+        return diagnostic;
+    }
+    let target = value.map_or_else(
+        || format!("utility `{prop}`"),
+        |value| format!("utility `{prop}` with value `{value}`"),
+    );
+    diagnostic.message = format!("{} ({target})", diagnostic.message);
+    diagnostic
+}
+
+fn atom_value_summary(value: &AtomValue) -> String {
+    match value {
+        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::Bool(value) => value.to_string(),
+        AtomValue::Null => "null".to_owned(),
+    }
 }
 
 impl EncodedRecipesCache {

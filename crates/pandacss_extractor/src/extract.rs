@@ -145,11 +145,11 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let (calls, mut token_refs) = if should_collect_calls(&matched) {
+    let (calls, call_diagnostics, mut token_refs) = if should_collect_calls(&matched) {
         let _span = tracing::trace_span!("visit_calls").entered();
-        collect_calls_with_token_refs(&parser_return.program, &ctx)
+        collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index)
     } else {
-        (Vec::new(), Vec::new())
+        (Vec::new(), Vec::new(), Vec::new())
     };
     let jsx = if should_collect_jsx(&matched, config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
@@ -158,6 +158,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
         Vec::new()
     };
 
+    diagnostics.extend(call_diagnostics);
     diagnostics.extend(resolver.take_deprecations());
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);

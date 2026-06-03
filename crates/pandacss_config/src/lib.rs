@@ -6,7 +6,7 @@ mod validate;
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
 pub use theme::{
@@ -47,6 +47,8 @@ pub struct UserConfig {
     pub exclude: Vec<String>,
     #[serde(default)]
     pub import_map: Option<ImportMap>,
+    #[serde(default)]
+    pub jsx_framework: Option<JsxFramework>,
     #[serde(default)]
     pub jsx_factory: Option<String>,
     #[serde(default)]
@@ -329,6 +331,61 @@ pub enum JsxStylePropsConfig {
     All,
     Minimal,
     None,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JsxFramework {
+    React,
+    Solid,
+    Preact,
+    Vue,
+    Qwik,
+    Custom(String),
+}
+
+impl JsxFramework {
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::React => "react",
+            Self::Solid => "solid",
+            Self::Preact => "preact",
+            Self::Vue => "vue",
+            Self::Qwik => "qwik",
+            Self::Custom(value) => value,
+        }
+    }
+
+    #[must_use]
+    pub fn is_known(&self) -> bool {
+        !matches!(self, Self::Custom(_))
+    }
+}
+
+impl Serialize for JsxFramework {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for JsxFramework {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Ok(match value.as_str() {
+            "react" => Self::React,
+            "solid" => Self::Solid,
+            "preact" => Self::Preact,
+            "vue" => Self::Vue,
+            "qwik" => Self::Qwik,
+            _ => Self::Custom(value),
+        })
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

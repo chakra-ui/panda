@@ -245,10 +245,10 @@ impl Project {
             .map(|token_ref| token_ref.path.clone())
             .collect::<Vec<_>>();
         let mut diagnostics = result.diagnostics;
+        let line_index = LineIndex::new(source);
         if let Some(utility) = self.config.utility.as_ref()
             && !utility.deprecated_props().is_empty()
         {
-            let line_index = LineIndex::new(source);
             push_deprecated_utility_diagnostics(
                 &result.calls,
                 &result.jsx,
@@ -276,7 +276,16 @@ impl Project {
         let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
         let mut encoded_recipes = EncodedRecipes::default();
         let empty_object = Literal::Object(Vec::new());
+        let diagnose_unextractable_calls = !compiled.extractor_config.has_jsx_framework;
         for call in result.calls {
+            if diagnose_unextractable_calls && call.data.iter().any(Option::is_none) {
+                report.diagnostics.push(dynamic_style_value_diagnostic(
+                    call.category,
+                    &call.name,
+                    call.span,
+                    &line_index,
+                ));
+            }
             let arg = call.data.into_iter().next().flatten();
             match (call.category, call.name.as_str()) {
                 (MatchCategory::Css, "css") => {
@@ -339,7 +348,12 @@ impl Project {
                                 self.process_style_props(&mut encoder, &style);
                             }
                             Ok(None) => {}
-                            Err(diagnostic) => report.diagnostics.push(diagnostic),
+                            Err(diagnostic) => report.diagnostics.push(with_callback_target(
+                                diagnostic,
+                                "pattern",
+                                &call.name,
+                                None,
+                            )),
                         }
                     }
                 }
@@ -396,7 +410,12 @@ impl Project {
                     Ok(Some(style)) => style,
                     Ok(None) => jsx.data,
                     Err(diagnostic) => {
-                        report.diagnostics.push(diagnostic);
+                        report.diagnostics.push(with_callback_target(
+                            diagnostic,
+                            "pattern",
+                            &jsx.name,
+                            None,
+                        ));
                         jsx.data
                     }
                 }
@@ -975,11 +994,56 @@ fn transform_atoms(
                 out.insert(atom);
             }
             Err(diagnostic) => {
-                diagnostics.push(diagnostic);
+                diagnostics.push(with_callback_target(
+                    diagnostic,
+                    "utility",
+                    atom.prop(),
+                    Some(&atom_value_summary(atom.value())),
+                ));
             }
         }
     }
     out
+}
+
+fn dynamic_style_value_diagnostic(
+    category: MatchCategory,
+    name: &str,
+    span: pandacss_extractor::Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    let mut diagnostic = Diagnostic::warning(
+        diagnostic_codes::PANDA_CALL_UNEXTRACTABLE,
+        format!("{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"),
+    );
+    diagnostic.span = Some(span);
+    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    diagnostic
+}
+
+fn with_callback_target(
+    mut diagnostic: Diagnostic,
+    kind: &str,
+    name: &str,
+    value: Option<&str>,
+) -> Diagnostic {
+    if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
+        return diagnostic;
+    }
+    let target = value.map_or_else(
+        || format!("{kind} `{name}`"),
+        |value| format!("{kind} `{name}` with value `{value}`"),
+    );
+    diagnostic.message = format!("{} ({target})", diagnostic.message);
+    diagnostic
+}
+
+fn atom_value_summary(value: &AtomValue) -> String {
+    match value {
+        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::Bool(value) => value.to_string(),
+        AtomValue::Null => "null".to_owned(),
+    }
 }
 
 fn hash_source(source: &str) -> u64 {

@@ -68,44 +68,61 @@ pub fn extract_calls(
         None,
     );
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
+    let line_index = crate::LineIndex::new(source);
+    let (calls, diagnostics) = collect_calls_inner(&parser_return.program, &ctx, Some(&line_index));
+    let mut diagnostics = diagnostics;
+    diagnostics.extend(crate::collect_parser_diagnostics(
+        &parser_return.errors,
+        source,
+    ));
     ExtractedCallsResult {
-        calls: collect_calls(&parser_return.program, &ctx),
-        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
+        calls,
+        diagnostics,
     }
 }
 
-pub(crate) fn collect_calls(
+fn collect_calls_inner(
     program: &oxc_ast::ast::Program<'_>,
     ctx: &crate::VisitorContext<'_>,
-) -> Vec<ExtractedCall> {
+    line_index: Option<&crate::LineIndex<'_>>,
+) -> (Vec<ExtractedCall>, Vec<Diagnostic>) {
     let mut out = Vec::new();
+    let mut diagnostics = Vec::new();
     let mut extractor = Extractor {
         ctx,
         out: &mut out,
+        diagnostics: &mut diagnostics,
+        line_index,
         token_refs: None,
     };
     extractor.visit_program(program);
-    out
+    (out, diagnostics)
 }
 
 pub(crate) fn collect_calls_with_token_refs(
     program: &oxc_ast::ast::Program<'_>,
     ctx: &crate::VisitorContext<'_>,
-) -> (Vec<ExtractedCall>, Vec<TokenRef>) {
+    line_index: &crate::LineIndex<'_>,
+) -> (Vec<ExtractedCall>, Vec<Diagnostic>, Vec<TokenRef>) {
     let mut calls = Vec::new();
+    let mut diagnostics = Vec::new();
     let mut token_refs = Vec::new();
     let mut extractor = Extractor {
         ctx,
         out: &mut calls,
+        diagnostics: &mut diagnostics,
+        line_index: Some(line_index),
         token_refs: Some(&mut token_refs),
     };
     extractor.visit_program(program);
-    (calls, token_refs)
+    (calls, diagnostics, token_refs)
 }
 
 struct Extractor<'walk, 'ctx> {
     ctx: &'walk crate::VisitorContext<'ctx>,
     out: &'walk mut Vec<ExtractedCall>,
+    diagnostics: &'walk mut Vec<Diagnostic>,
+    line_index: Option<&'walk crate::LineIndex<'walk>>,
     token_refs: Option<&'walk mut Vec<TokenRef>>,
 }
 
@@ -202,6 +219,23 @@ fn is_raw_category(category: MatchCategory) -> bool {
     )
 }
 
+fn dynamic_style_value_diagnostic(
+    category: MatchCategory,
+    name: &str,
+    span: Span,
+    line_index: Option<&crate::LineIndex<'_>>,
+) -> Diagnostic {
+    let mut diagnostic = Diagnostic::warning(
+        crate::diagnostic_codes::PANDA_CALL_UNEXTRACTABLE,
+        format!("{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"),
+    );
+    diagnostic.span = Some(span);
+    if let Some(line_index) = line_index {
+        diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    }
+    diagnostic
+}
+
 fn flatten_static_member_path<'a>(
     expr: &'a Expression<'_>,
 ) -> Option<(&'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
@@ -255,6 +289,13 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                     data,
                     span: span_from_oxc(call.span),
                 });
+            } else if !data.is_empty() && !self.ctx.config.has_jsx_framework {
+                self.diagnostics.push(dynamic_style_value_diagnostic(
+                    resolved.category,
+                    resolved.name.as_ref(),
+                    span_from_oxc(call.span),
+                    self.line_index,
+                ));
             }
         }
         walk::walk_call_expression(self, call);

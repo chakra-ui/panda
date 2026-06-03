@@ -54,6 +54,7 @@ pub(crate) fn compile_config_with_token_dictionary(
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
         jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
+    extractor_config.has_jsx_framework = config.jsx_framework.is_some();
     extractor_config.token_dictionary = token_dictionary;
 
     let utility = (!utility.is_empty()).then_some(utility);

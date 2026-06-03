@@ -35,9 +35,11 @@ impl WasmExtractor {
         // Take token_dictionary out first so the rest of `input` can be
         // moved into `to_core_matchers`.
         let token_dictionary = input.token_dictionary.take().map(to_core_token_dictionary);
+        let has_jsx_framework = input.jsx_framework.is_some();
         let core_matchers = to_core_matchers(input);
 
         let mut config = ExtractorConfig::new(core_matchers);
+        config.has_jsx_framework = has_jsx_framework;
         config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
         config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
 
