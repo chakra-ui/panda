@@ -49,6 +49,14 @@ fn token_type_data() -> TokenTypeData {
                 },
             ),
             (
+                "opacity".into(),
+                TokenCategoryTypeData {
+                    name: "opacity".into(),
+                    type_name: "OpacityToken".into(),
+                    values: vec!["half".into()],
+                },
+            ),
+            (
                 "spacing".into(),
                 TokenCategoryTypeData {
                     name: "spacing".into(),
@@ -237,12 +245,23 @@ fn emits_ts_source_types() {
         indoc! {r#"
         export type ColorToken = "red.500" | "blue.500"
 
+        export type OpacityToken = "half"
+
         export type SpacingToken = "1" | "2"
 
         export interface Tokens {
           colors: ColorToken
+          opacity: OpacityToken
           spacing: SpacingToken
         }
+
+        export type Token = `colors.${ColorToken}` | `opacity.${OpacityToken}` | `spacing.${SpacingToken}`
+
+        export type ColorOpacityModifier = `${number}` | OpacityToken
+
+        export type ColorOpacityToken = `colors.${ColorToken}/${ColorOpacityModifier}`
+
+        export type TokenPath = Token | ColorOpacityToken
 
         export type ColorPalette = "red" | "blue"
 

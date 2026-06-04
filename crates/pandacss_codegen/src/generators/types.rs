@@ -166,6 +166,9 @@ fn tokens_module(data: &TokenTypeData) -> Module {
     let mut parts = Vec::new();
 
     if data.categories.is_empty() {
+        parts.push("export type Token = string".to_owned());
+        parts.push("export type ColorOpacityModifier = `${number}`".to_owned());
+        parts.push("export type ColorOpacityToken = never".to_owned());
         parts.push("export interface Tokens {\n  [category: string]: string\n}".to_owned());
     } else {
         for category in data.categories.values() {
@@ -183,7 +186,46 @@ fn tokens_module(data: &TokenTypeData) -> Module {
             .collect::<Vec<_>>()
             .join("\n");
         parts.push(format!("export interface Tokens {{\n{members}\n}}"));
+
+        let token = data
+            .categories
+            .values()
+            .map(|category| format!("`{}.${{{}}}`", category.name, category.type_name))
+            .collect::<Vec<_>>()
+            .join(" | ");
+        parts.push(format!("export type Token = {token}"));
+
+        let opacity_modifier = data
+            .categories
+            .values()
+            .find(|category| category.name == "opacity")
+            .map_or_else(
+                || "`${number}`".to_owned(),
+                |category| format!("`${{number}}` | {}", category.type_name),
+            );
+        parts.push(format!(
+            "export type ColorOpacityModifier = {opacity_modifier}"
+        ));
+
+        let color_opacity_token = data
+            .categories
+            .values()
+            .find(|category| category.name == "colors")
+            .map_or_else(
+                || "never".to_owned(),
+                |category| {
+                    format!(
+                        "`colors.${{{}}}/${{ColorOpacityModifier}}`",
+                        category.type_name
+                    )
+                },
+            );
+        parts.push(format!(
+            "export type ColorOpacityToken = {color_opacity_token}"
+        ));
     }
+
+    parts.push("export type TokenPath = Token | ColorOpacityToken".to_owned());
 
     if data.color_palettes.is_empty() {
         parts.push("export type ColorPalette = string".to_owned());

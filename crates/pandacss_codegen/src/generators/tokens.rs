@@ -37,7 +37,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
     }
 
     module
-        .with_import(ImportDecl::ty(["Token"], "../types/tokens"))
+        .with_import(ImportDecl::ty(["Token", "TokenPath"], "../types/tokens"))
         .with_item(Item::ty(ItemNode::RawStmt(TOKEN_FN_TYPE.into())))
         .with_item(Item::runtime(ItemNode::RawStmt(runtime_code(
             ctx, prefix, hash,
@@ -78,7 +78,7 @@ fn runtime_code(ctx: CodegenContext<'_>, prefix: &str, hash: bool) -> String {
         )
     };
 
-    format!("const tokens: Record<string, string> = {tokens}\n\n{to_var}")
+    format!("const tokens: Record<string, string> = {tokens}\n\n{to_var}\n\n{COLOR_MIX_FN}")
 }
 
 /// The constant `var(--{prefix-}` segment. The prefix is hashed-mode-raw but
@@ -118,17 +118,36 @@ fn push_css_var_name(out: &mut String, value: &str) {
 }
 
 const TOKEN_FN_TYPE: &str = r"interface TokenFn {
-  (path: Token, fallback?: string): string
+  (path: TokenPath, fallback?: string): string
   var: (path: Token, fallback?: string) => string
 }";
 
 const TOKEN_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
   function token(path: string, fallback?: string) {
-    return path in tokens ? tokens[path] || toVar(path) : fallback
+    const value = tokens[path]
+    return value === undefined ? colorMix(path) || fallback : value || toVar(path)
   },
   {
     var: function tokenVar(path: string, fallback?: string) {
-      return path in tokens ? toVar(path) : fallback
+      return tokens[path] === undefined ? fallback : toVar(path)
     },
   },
 )";
+
+const COLOR_MIX_FN: &str = r#"function colorMix(path: string): string | undefined {
+  const colorPrefix = "colors."
+  if (!path.startsWith(colorPrefix)) return
+
+  const index = path.indexOf("/", colorPrefix.length)
+  if (index === -1 || index === path.length - 1) return
+
+  const colorPath = path.slice(0, index)
+  if (tokens[colorPath] === undefined) return
+
+  const rawOpacity = path.slice(index + 1)
+  const opacity = tokens["opacity." + rawOpacity]
+  const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
+  if (Number.isNaN(percent)) return
+
+  return "color-mix(in srgb, " + toVar(colorPath) + " " + percent + "%, transparent)"
+}"#;
