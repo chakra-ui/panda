@@ -16,6 +16,25 @@
         },
         "defaultVariants": { "size": "md", "tone": "solid" }
       }
+    },
+    "slotRecipes": {
+      "card": {
+        "className": "card",
+        "slots": ["root", "label"],
+        "base": {
+          "root": { "padding": "4" },
+          "label": { "color": "red.500" }
+        },
+        "variants": {
+          "tone": {
+            "neutral": {
+              "root": { "color": "red.900" },
+              "label": { "color": "red.100" }
+            }
+          }
+        },
+        "defaultVariants": { "tone": "neutral" }
+      }
     }
   },
   "conditions": { "hover": "&:is(:hover, [data-hover])" },
@@ -31,5 +50,8 @@
         "direction": { "type": "enum", "value": ["row", "column"] }
       }
     }
-  }
+  },
+  "jsxFramework": "react",
+  "jsxFactory": "styled",
+  "jsxStyleProps": "all"
 }

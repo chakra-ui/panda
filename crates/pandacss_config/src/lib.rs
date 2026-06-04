@@ -29,17 +29,36 @@ pub type Conditions = BTreeMap<String, ConditionQuery>;
 pub type PatternMap = BTreeMap<String, PatternConfig>;
 pub type UtilityMap = BTreeMap<String, UtilityConfig>;
 
+pub const DEFAULT_OUTDIR: &str = "styled-system";
+pub const DEFAULT_JSX_FACTORY: &str = "styled";
+pub const DEFAULT_SEPARATOR: &str = "_";
+pub const DEFAULT_CSS_VAR_ROOT: &str = ":where(:root, :host)";
+pub const DEFAULT_JSX_COMPONENT_NAMES: &[&str] = &["Box"];
+pub const DEFAULT_PATTERN_JSX_ELEMENT: &str = "div";
+
+fn default_outdir() -> String {
+    DEFAULT_OUTDIR.to_owned()
+}
+
+fn default_jsx_factory() -> String {
+    DEFAULT_JSX_FACTORY.to_owned()
+}
+
+fn default_separator() -> String {
+    DEFAULT_SEPARATOR.to_owned()
+}
+
 /// JSON-safe resolved config snapshot produced on the JavaScript side.
 ///
 /// JavaScript remains responsible for executing `panda.config.*`,
 /// resolving presets, and running config-phase plugins. Rust consumes this
 /// serializable shape after runtime-only hooks/plugins have been removed.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserConfig {
     #[serde(default)]
     pub cwd: String,
-    #[serde(default)]
+    #[serde(default = "default_outdir")]
     pub outdir: String,
     #[serde(default)]
     pub include: Vec<String>,
@@ -49,8 +68,8 @@ pub struct UserConfig {
     pub import_map: Option<ImportMap>,
     #[serde(default)]
     pub jsx_framework: Option<JsxFramework>,
-    #[serde(default)]
-    pub jsx_factory: Option<String>,
+    #[serde(default = "default_jsx_factory")]
+    pub jsx_factory: String,
     #[serde(default)]
     pub jsx_style_props: Option<JsxStylePropsConfig>,
     #[serde(default)]
@@ -65,8 +84,8 @@ pub struct UserConfig {
     pub prefix: PrefixConfig,
     #[serde(default)]
     pub hash: HashConfig,
-    #[serde(default)]
-    pub separator: Option<String>,
+    #[serde(default = "default_separator")]
+    pub separator: String,
     #[serde(default)]
     pub static_css: Value,
     #[serde(default)]
@@ -101,8 +120,46 @@ pub struct UserConfig {
     pub extra: serde_json::Map<String, Value>,
 }
 
+impl Default for UserConfig {
+    fn default() -> Self {
+        Self {
+            cwd: String::new(),
+            outdir: default_outdir(),
+            include: Vec::new(),
+            exclude: Vec::new(),
+            import_map: None,
+            jsx_framework: None,
+            jsx_factory: default_jsx_factory(),
+            jsx_style_props: None,
+            theme: Theme::default(),
+            conditions: Conditions::default(),
+            utilities: UtilityMap::default(),
+            patterns: PatternMap::default(),
+            prefix: PrefixConfig::default(),
+            hash: HashConfig::default(),
+            separator: default_separator(),
+            static_css: Value::default(),
+            global_css: Value::default(),
+            global_vars: Value::default(),
+            css_var_root: default_css_var_root(),
+            global_fontface: Value::default(),
+            global_position_try: Value::default(),
+            themes: ThemeVariantsMap::default(),
+            layers: CascadeLayers::default(),
+            preflight: PreflightConfig::default(),
+            optimize: OptimizeConfig::default(),
+            codegen_format: CodegenFormat::default(),
+            codegen_import_extensions: false,
+            strict_tokens: false,
+            strict_property_values: false,
+            validation: ValidationMode::default(),
+            extra: serde_json::Map::new(),
+        }
+    }
+}
+
 fn default_css_var_root() -> String {
-    ":where(:root, :host)".to_owned()
+    DEFAULT_CSS_VAR_ROOT.to_owned()
 }
 
 fn deserialize_optimize_config<'de, D>(deserializer: D) -> Result<OptimizeConfig, D::Error>
@@ -120,6 +177,42 @@ where
 }
 
 impl UserConfig {
+    #[must_use]
+    pub fn outdir(&self) -> &str {
+        if self.outdir.is_empty() {
+            DEFAULT_OUTDIR
+        } else {
+            &self.outdir
+        }
+    }
+
+    #[must_use]
+    pub fn jsx_factory(&self) -> &str {
+        if self.jsx_factory.is_empty() {
+            DEFAULT_JSX_FACTORY
+        } else {
+            &self.jsx_factory
+        }
+    }
+
+    #[must_use]
+    pub fn separator(&self) -> &str {
+        if self.separator.is_empty() {
+            DEFAULT_SEPARATOR
+        } else {
+            &self.separator
+        }
+    }
+
+    #[must_use]
+    pub fn css_var_root(&self) -> &str {
+        if self.css_var_root.is_empty() {
+            DEFAULT_CSS_VAR_ROOT
+        } else {
+            &self.css_var_root
+        }
+    }
+
     #[must_use]
     pub fn condition_names(&self) -> Vec<String> {
         let mut names = BTreeSet::new();
@@ -144,6 +237,13 @@ impl UserConfig {
             .keys()
             .find(|key| capitalize_for_theme_condition(key) == theme)
             .map(|key| format!("&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"))
+    }
+
+    #[must_use]
+    pub fn theme_root_selector(&self, theme: &str) -> Option<String> {
+        self.themes
+            .contains_key(theme)
+            .then(|| format!("[data-panda-theme={theme}]"))
     }
 }
 

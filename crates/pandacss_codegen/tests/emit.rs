@@ -1,7 +1,8 @@
 use indoc::indoc;
 use pandacss_codegen::{
-    Block, EmitMode, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, JsxAttr,
-    JsxElement, JsxName, Module, Param, SourceExt, Stmt, TsType, TypeAliasDecl, emit_module,
+    Block, EmitMode, Expr, FunctionDecl, ImportDecl, ImportKind, ImportSpecifier, InterfaceDecl,
+    Item, ItemNode, JsDoc, JsxAttr, JsxElement, JsxName, Module, Param, SourceExt, Stmt, TsType,
+    TypeAliasDecl, emit_module,
 };
 use pandacss_config::CodegenFormat;
 
@@ -41,6 +42,28 @@ fn emits_source_ts_with_runtime_and_type_items() {
             "}
             .trim()
         )
+    );
+}
+
+#[test]
+fn emits_namespace_imports() {
+    let module = Module::new().with_import(ImportDecl {
+        kind: ImportKind::Value,
+        specifiers: vec![ImportSpecifier::Namespace("recipes".into())],
+        source: "../recipes/index".into(),
+    });
+
+    let output = emit_module(
+        &module,
+        EmitMode::Split {
+            format: CodegenFormat::Mjs,
+            import_extensions: false,
+        },
+    );
+
+    assert_eq!(
+        output.runtime.as_deref(),
+        Some("import * as recipes from '../recipes/index';")
     );
 }
 

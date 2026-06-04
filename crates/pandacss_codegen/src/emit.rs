@@ -208,12 +208,27 @@ fn print_import(
         _ => "import",
     };
 
-    let specifiers = import
+    let namespace = import
         .specifiers
-        .iter()
-        .map(print_import_specifier)
-        .collect::<Vec<_>>()
-        .join(", ");
+        .first()
+        .and_then(|specifier| match specifier {
+            ImportSpecifier::Namespace(local) if import.specifiers.len() == 1 => Some(local),
+            _ => None,
+        });
+    let specifiers = namespace.map_or_else(
+        || {
+            format!(
+                "{{ {} }}",
+                import
+                    .specifiers
+                    .iter()
+                    .map(print_import_specifier)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        },
+        |local| format!("* as {local}"),
+    );
     let source = print_source(
         &import.source,
         import.kind,
@@ -222,13 +237,14 @@ fn print_import(
         format,
     );
 
-    format!("{keyword} {{ {specifiers} }} from '{source}';")
+    format!("{keyword} {specifiers} from '{source}';")
 }
 
 fn print_import_specifier(specifier: &ImportSpecifier) -> String {
     match specifier {
         ImportSpecifier::Named(name) => name.clone(),
         ImportSpecifier::NamedAlias { imported, local } => format!("{imported} as {local}"),
+        ImportSpecifier::Namespace(local) => format!("* as {local}"),
     }
 }
 

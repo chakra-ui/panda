@@ -22,6 +22,12 @@ fn filters_artifacts_by_config_dependencies() {
             .collect::<Vec<_>>(),
         vec![
             ArtifactId::Helpers,
+            ArtifactId::JsxIsValidProp,
+            ArtifactId::JsxFactory,
+            ArtifactId::JsxPatterns,
+            ArtifactId::JsxCreateRecipeContext,
+            ArtifactId::JsxCreateSlotRecipeContext,
+            ArtifactId::JsxIndex,
             ArtifactId::Patterns,
             ArtifactId::Recipes,
             ArtifactId::Themes,
@@ -63,7 +69,12 @@ fn filters_artifacts_by_config_dependencies() {
             .iter()
             .map(|artifact| artifact.id)
             .collect::<Vec<_>>(),
-        vec![ArtifactId::Recipes, ArtifactId::Types]
+        vec![
+            ArtifactId::JsxCreateRecipeContext,
+            ArtifactId::JsxCreateSlotRecipeContext,
+            ArtifactId::Recipes,
+            ArtifactId::Types
+        ]
     );
 
     let pattern_changes = graph.generate_affected(
@@ -75,7 +86,12 @@ fn filters_artifacts_by_config_dependencies() {
             .iter()
             .map(|artifact| artifact.id)
             .collect::<Vec<_>>(),
-        vec![ArtifactId::Patterns, ArtifactId::Types]
+        vec![
+            ArtifactId::JsxPatterns,
+            ArtifactId::JsxIndex,
+            ArtifactId::Patterns,
+            ArtifactId::Types
+        ]
     );
 
     let theme_changes = graph.generate_affected(

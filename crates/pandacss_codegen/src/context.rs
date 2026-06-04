@@ -59,6 +59,16 @@ impl<'a> CodegenContext<'a> {
     pub fn condition_keys(&self) -> Vec<String> {
         self.config.condition_names()
     }
+
+    #[must_use]
+    pub fn jsx_factory(&self) -> &str {
+        self.config.jsx_factory()
+    }
+
+    #[must_use]
+    pub fn separator(&self) -> &str {
+        self.config.separator()
+    }
 }
 
 fn empty_types() -> &'static TypeData {

@@ -104,7 +104,12 @@ fn jsx_framework_preserves_known_and_custom_values() {
     .expect("custom jsx framework config");
 
     assert_eq!(react_config.jsx_framework, Some(JsxFramework::React));
-    assert!(react_config.jsx_framework.as_ref().is_some_and(JsxFramework::is_known));
+    assert!(
+        react_config
+            .jsx_framework
+            .as_ref()
+            .is_some_and(JsxFramework::is_known)
+    );
     assert_eq!(
         custom_config.jsx_framework,
         Some(JsxFramework::Custom("custom-jsx".into()))

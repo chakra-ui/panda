@@ -16,6 +16,12 @@ pub enum ArtifactId {
     Cva,
     Cx,
     Helpers,
+    JsxCreateRecipeContext,
+    JsxCreateSlotRecipeContext,
+    JsxFactory,
+    JsxIndex,
+    JsxIsValidProp,
+    JsxPatterns,
     Patterns,
     Recipes,
     Sva,
@@ -32,6 +38,12 @@ impl ArtifactId {
         Self::Cva,
         Self::Cx,
         Self::Helpers,
+        Self::JsxIsValidProp,
+        Self::JsxFactory,
+        Self::JsxPatterns,
+        Self::JsxCreateRecipeContext,
+        Self::JsxCreateSlotRecipeContext,
+        Self::JsxIndex,
         Self::Patterns,
         Self::Recipes,
         Self::Sva,
@@ -49,6 +61,12 @@ impl ArtifactId {
             Self::Cva => "cva",
             Self::Cx => "cx",
             Self::Helpers => "helpers",
+            Self::JsxCreateRecipeContext => "jsx-create-recipe-context",
+            Self::JsxCreateSlotRecipeContext => "jsx-create-slot-recipe-context",
+            Self::JsxFactory => "jsx-factory",
+            Self::JsxIndex => "jsx-index",
+            Self::JsxIsValidProp => "jsx-is-valid-prop",
+            Self::JsxPatterns => "jsx-patterns",
             Self::Patterns => "patterns",
             Self::Recipes => "recipes",
             Self::Sva => "sva",
@@ -239,6 +257,70 @@ impl ArtifactGraph {
             ]),
         },
         ArtifactNode {
+            id: ArtifactId::JsxIsValidProp,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+                ConfigDependency::Utilities,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::JsxFactory,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::JsxPatterns,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+                ConfigDependency::Patterns,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::JsxCreateRecipeContext,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+                ConfigDependency::Recipes,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::JsxCreateSlotRecipeContext,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+                ConfigDependency::Recipes,
+            ]),
+        },
+        ArtifactNode {
+            id: ArtifactId::JsxIndex,
+            dependencies: DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+                ConfigDependency::Patterns,
+            ]),
+        },
+        ArtifactNode {
             id: ArtifactId::Patterns,
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
@@ -278,6 +360,8 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,
                 ConfigDependency::Patterns,
                 ConfigDependency::Recipes,
@@ -492,6 +576,28 @@ fn generate_node(
         ArtifactId::Tokens => crate::generators::tokens::generate(ctx, options, node.dependencies),
         ArtifactId::Cx => crate::generators::cx::generate(options, node.dependencies),
         ArtifactId::Helpers => crate::generators::helpers::generate(options, node.dependencies),
+        ArtifactId::JsxCreateRecipeContext => {
+            crate::generators::jsx::generate_create_recipe_context(ctx, options, node.dependencies)
+        }
+        ArtifactId::JsxCreateSlotRecipeContext => {
+            crate::generators::jsx::generate_create_slot_recipe_context(
+                ctx,
+                options,
+                node.dependencies,
+            )
+        }
+        ArtifactId::JsxFactory => {
+            crate::generators::jsx::generate_factory(ctx, options, node.dependencies)
+        }
+        ArtifactId::JsxIndex => {
+            crate::generators::jsx::generate_index(ctx, options, node.dependencies)
+        }
+        ArtifactId::JsxIsValidProp => {
+            crate::generators::jsx::generate_is_valid_prop(ctx, options, node.dependencies)
+        }
+        ArtifactId::JsxPatterns => {
+            crate::generators::jsx::generate_patterns(ctx, options, node.dependencies)
+        }
         ArtifactId::Patterns => {
             crate::generators::patterns::generate(ctx, options, node.dependencies)
         }
