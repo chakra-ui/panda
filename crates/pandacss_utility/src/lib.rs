@@ -98,6 +98,8 @@ impl Utility {
             );
         }
 
+        utility.register_color_palette_property();
+
         utility
     }
 
@@ -508,6 +510,43 @@ impl Utility {
             }
             _ => {}
         }
+    }
+
+    fn register_color_palette_property(&mut self) {
+        let Some(tokens) = &self.tokens else {
+            return;
+        };
+        let palettes = tokens.color_palettes();
+        if palettes.is_empty() {
+            return;
+        }
+
+        let mut values = FxHashMap::default();
+        for (palette, vars) in palettes.palettes() {
+            let mut entries: Vec<_> = vars
+                .iter()
+                .map(|(virtual_var, token_var)| {
+                    (
+                        virtual_var.to_string(),
+                        Literal::String(token_var.to_string()),
+                    )
+                })
+                .collect();
+            entries.sort_by(|(left, _), (right, _)| left.cmp(right));
+            values.insert(palette.to_string(), Literal::Object(entries));
+        }
+
+        self.properties.insert(
+            "colorPalette".to_owned(),
+            UtilityProperty {
+                class_name: None,
+                css_property: None,
+                layer: None,
+                values,
+                values_category: None,
+                transform_callback_id: None,
+            },
+        );
     }
 }
 

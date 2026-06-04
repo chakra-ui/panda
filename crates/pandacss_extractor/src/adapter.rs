@@ -1,16 +1,24 @@
 //! Shared source-adapter helpers for non-JS containers.
 
 use std::borrow::Cow;
+use std::path::Path;
 
 #[must_use]
 pub(crate) fn adapt_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
-    if path.ends_with(".vue") {
+    if has_extension(path, "vue") {
         return Cow::Owned(crate::vue_adapter::mask_vue(source));
     }
-    if path.ends_with(".svelte") {
+    if has_extension(path, "svelte") {
         return Cow::Owned(crate::svelte_adapter::mask_svelte(source));
     }
     Cow::Borrowed(source)
+}
+
+#[must_use]
+pub(crate) fn has_extension(path: &str, extension: &str) -> bool {
+    Path::new(path)
+        .extension()
+        .is_some_and(|actual| actual.eq_ignore_ascii_case(extension))
 }
 
 pub(crate) struct TagBlock {
@@ -148,10 +156,9 @@ pub(crate) fn find_tag_end(source: &str, from: usize) -> Option<usize> {
         let byte = bytes[index];
         match quote {
             Some(current) if byte == current => quote = None,
-            Some(_) => {}
             None if byte == b'\'' || byte == b'"' => quote = Some(byte),
             None if byte == b'>' => return Some(index),
-            None => {}
+            Some(_) | None => {}
         }
         index += 1;
     }

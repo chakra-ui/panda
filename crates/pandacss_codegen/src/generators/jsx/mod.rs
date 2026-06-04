@@ -171,15 +171,25 @@ fn client_files(files: Vec<ArtifactFile>) -> Vec<ArtifactFile> {
 }
 
 fn is_runtime_file(path: &str) -> bool {
-    if path.ends_with(".d.ts") || path.ends_with(".d.mts") || path.ends_with(".d.cts") {
+    let path = std::path::Path::new(path);
+    let Some(extension) = path.extension().and_then(|extension| extension.to_str()) else {
+        return false;
+    };
+    let extension = extension.to_ascii_lowercase();
+    let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
+        return false;
+    };
+
+    let is_declaration = matches!(extension.as_str(), "ts" | "mts" | "cts")
+        && stem
+            .rsplit('.')
+            .next()
+            .is_some_and(|part| part.eq_ignore_ascii_case("d"));
+    if is_declaration {
         return false;
     }
 
-    path.ends_with(".js")
-        || path.ends_with(".mjs")
-        || path.ends_with(".cjs")
-        || path.ends_with(".ts")
-        || path.ends_with(".tsx")
+    matches!(extension.as_str(), "js" | "mjs" | "cjs" | "ts" | "tsx")
 }
 
 fn is_react(ctx: CodegenContext<'_>) -> bool {
@@ -480,8 +490,7 @@ fn pattern_module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) 
             )
         )))
         .with_item(raw_type(format!(
-            "export interface {component_props} extends {props_name}, DistributiveOmit<{}<{jsx_element:?}>, {omit_keys}> {{}}\n\nexport declare const {jsx_name}: FunctionComponent<{component_props}>",
-            html_props,
+            "export interface {component_props} extends {props_name}, DistributiveOmit<{html_props}<{jsx_element:?}>, {omit_keys}> {{}}\n\nexport declare const {jsx_name}: FunctionComponent<{component_props}>",
         )))
 }
 
@@ -633,7 +642,7 @@ export function createRecipeContext(options) {
   }
 }";
 
-const CREATE_RECIPE_CONTEXT_TYPES: &str = r#"interface UnstyledProps {
+const CREATE_RECIPE_CONTEXT_TYPES: &str = r"interface UnstyledProps {
   unstyled?: boolean | undefined
 }
 
@@ -678,7 +687,7 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
 }
 
 export declare function createRecipeContext<R extends RecipeContextRecipe>(recipe: R): RecipeContext<R>
-export declare function createRecipeContext<R extends RecipeContextRecipe>(options: RecipeContextOptions<R>): RecipeContext<R>"#;
+export declare function createRecipeContext<R extends RecipeContextRecipe>(options: RecipeContextOptions<R>): RecipeContext<R>";
 
 fn create_slot_recipe_context_module(ctx: CodegenContext<'_>) -> Module {
     let factory = factory_name(ctx);

@@ -4,6 +4,10 @@ use common::{compile_css, config};
 use insta::assert_snapshot;
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "integration fixture keeps config, source, and CSS assertion together"
+)]
 fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },

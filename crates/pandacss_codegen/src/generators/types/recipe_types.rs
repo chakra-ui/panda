@@ -13,7 +13,7 @@ pub(super) fn module() -> Module {
         .with_item(type_raw(RECIPE_TYPES))
 }
 
-const RECIPE_TYPES: &str = r#"export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
+const RECIPE_TYPES: &str = r"export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
 
 export type RecipeVariant<T> = Required<NonNullable<RecipeVariantProps<T>>>
 
@@ -81,7 +81,7 @@ export interface SlotRecipeDefinition<Slot extends string = string, T extends Sl
 
 export interface SlotRecipeCreatorFn {
   <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
-}"#;
+}";
 
 pub(crate) fn concrete_recipe_types(
     type_name: &str,

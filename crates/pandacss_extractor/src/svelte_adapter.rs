@@ -58,9 +58,8 @@ fn copy_svelte_markup_expressions(mask: &mut [u8], source: &str, excluded: &[(us
         if in_tag {
             match tag_quote {
                 Some(quote) if bytes[cursor] == quote => tag_quote = None,
-                Some(_) => {}
                 None if bytes[cursor] == b'\'' || bytes[cursor] == b'"' => {
-                    tag_quote = Some(bytes[cursor])
+                    tag_quote = Some(bytes[cursor]);
                 }
                 None if starts_with(bytes, cursor, b"//") => {
                     cursor =
@@ -73,22 +72,22 @@ fn copy_svelte_markup_expressions(mask: &mut [u8], source: &str, excluded: &[(us
                     continue;
                 }
                 None if bytes[cursor] == b'>' => in_tag = false,
-                None => {}
+                Some(_) | None => {}
             }
         } else if bytes[cursor] == b'<' {
             in_tag = true;
             cursor += 1;
             continue;
         }
-        if bytes[cursor] == b'{' {
-            if let Some(close) = find_matching_brace(source, cursor) {
-                let expr_start = cursor + 1;
-                if let Some((start, end)) = svelte_expression_range(bytes, expr_start, close) {
-                    copy_expression(mask, source, start, end, cursor, close);
-                }
-                cursor = close + 1;
-                continue;
+        if bytes[cursor] == b'{'
+            && let Some(close) = find_matching_brace(source, cursor)
+        {
+            let expr_start = cursor + 1;
+            if let Some((start, end)) = svelte_expression_range(bytes, expr_start, close) {
+                copy_expression(mask, source, start, end, cursor, close);
             }
+            cursor = close + 1;
+            continue;
         }
         cursor += 1;
     }

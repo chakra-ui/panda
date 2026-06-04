@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use insta::assert_debug_snapshot;
-use pandacss_config::UtilityConfig;
+use pandacss_config::{UserConfig, UtilityConfig};
 use pandacss_extractor::Literal;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};
@@ -310,6 +310,10 @@ fn transform_supports_token_category_values() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "snapshot-heavy fixture keeps related color opacity assertions together"
+)]
 fn transform_supports_color_opacity_modifiers() {
     let tokens = TokenDictionary::builder()
         .insert(Token::new(
@@ -418,6 +422,92 @@ fn transform_supports_color_opacity_modifiers() {
         ),
     )
     "#);
+}
+
+#[test]
+fn transform_supports_generated_color_palette_utility() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#fca5a5" },
+                        "500": { "value": "#ef4444" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let tokens = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+    let utility = Utility::from_config_with_options(
+        &config.utilities,
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let result = utility
+        .transform("colorPalette", &Literal::String("red".into()))
+        .expect("transform");
+
+    assert!(utility.is_known("colorPalette"));
+    assert_debug_snapshot!(result, @r#"
+    UtilityTransformResult {
+        layer: None,
+        class_name: "color-palette_red",
+        styles: Object(
+            [
+                (
+                    "--colors-color-palette-300",
+                    String(
+                        "var(--colors-red-300)",
+                    ),
+                ),
+                (
+                    "--colors-color-palette-500",
+                    String(
+                        "var(--colors-red-500)",
+                    ),
+                ),
+            ],
+        ),
+    }
+    "#);
+}
+
+#[test]
+fn disabled_color_palette_generation_does_not_register_utility() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "colorPalette": {
+                "enabled": false
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#ef4444" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let tokens = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+    let utility = Utility::from_config_with_options(
+        &config.utilities,
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    assert!(!utility.is_known("colorPalette"));
 }
 
 #[test]
@@ -624,6 +714,10 @@ fn transform_supports_responsive_visibility_value_maps() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "snapshot-heavy fixture keeps related gradient assertions together"
+)]
 fn transform_supports_gradient_value_maps_and_token_refs() {
     let tokens = TokenDictionary::builder()
         .insert(Token::new(

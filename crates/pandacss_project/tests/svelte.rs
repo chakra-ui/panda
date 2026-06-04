@@ -41,7 +41,7 @@ fn module_and_instance_scripts_are_preserved() {
     let mut project = create_project(json!({}));
     let report = project.parse_file(
         "Scripts.svelte",
-        indoc! {r#"
+        indoc! {r"
             <script module>
               import { css as pandaCss } from '@panda/css';
               const root = pandaCss({ color: 'red' })
@@ -55,7 +55,7 @@ fn module_and_instance_scripts_are_preserved() {
             <section class={root}>
               <span class={child}>Hello</span>
             </section>
-        "#},
+        "},
     );
 
     assert!(report.diagnostics.is_empty());
@@ -75,7 +75,7 @@ fn comments_styles_and_control_blocks_do_not_extract() {
     let mut project = create_project(json!({}));
     let report = project.parse_file(
         "Ignored.svelte",
-        indoc! {r#"
+        indoc! {r"
             <script>
               import { css } from '@panda/css';
               const ready = true
@@ -91,7 +91,7 @@ fn comments_styles_and_control_blocks_do_not_extract() {
             {:else}
               <div>empty</div>
             {/if}
-        "#},
+        "},
     );
 
     assert!(report.diagnostics.is_empty());
@@ -108,7 +108,7 @@ fn block_header_expressions_are_extracted() {
     let mut project = create_project(json!({}));
     let report = project.parse_file(
         "Blocks.svelte",
-        indoc! {r#"
+        indoc! {r"
             <script>
               import { css } from '@panda/css';
               const ready = true
@@ -123,7 +123,7 @@ fn block_header_expressions_are_extracted() {
             {#each css({ margin: '8px' }) as item}
               <span>{item}</span>
             {/each}
-        "#},
+        "},
     );
 
     assert!(report.diagnostics.is_empty());
@@ -405,7 +405,7 @@ fn js_style_comments_in_markup_tags_are_ignored() {
     let mut project = create_project(json!({}));
     let report = project.parse_file(
         "TagComments.svelte",
-        indoc! {r#"
+        indoc! {r"
             <script>
               import { css } from '@panda/css';
             </script>
@@ -415,7 +415,7 @@ fn js_style_comments_in_markup_tags_are_ignored() {
               /* {css({ margin: '8px' })} */
               class={css({ padding: '4px' })}
             />
-        "#},
+        "},
     );
 
     assert!(report.diagnostics.is_empty());
