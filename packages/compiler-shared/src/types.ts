@@ -150,9 +150,7 @@ export interface LayerNames {
 /** The five cascade layers, in emit order. */
 export type StylesheetLayerName = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
-/** One file in a `--splitting` output set — a relative path (`tokens.css`,
- *  `recipes/button.css`, `styles.css`, …) and its CSS. Written verbatim by the
- *  host, the same model as a codegen artifact file. */
+/** One split CSS file, relative to `outdir`. */
 export interface CssFile {
   path: string
   code: string
@@ -259,6 +257,12 @@ export interface CompileOutput {
 
 export interface WriteCssResult extends CompileOutput {
   path: string
+}
+
+export interface WriteFilesResult {
+  root: string
+  paths: string[]
+  files: CssFile[]
 }
 
 export interface CompileOptions {
@@ -465,6 +469,8 @@ export interface Compiler {
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
   /** Generate + write stylesheet CSS via the platform fs. */
   writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
+  /** Generate + write split stylesheet files under `outdir` via the platform fs. */
+  writeSplitCss(outdir: string, cwd?: string): WriteFilesResult
   /** Generate all codegen artifacts in memory without writing them. */
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   /** Generate a single codegen artifact by id. */

@@ -15,6 +15,7 @@ export interface CodegenFlags extends CommonFlags {
 
 export interface CssgenFlags extends CommonFlags {
   outfile?: string
+  splitting?: boolean
 }
 
 export interface InspectFlags extends Pick<CommonFlags, 'cwd' | 'config'> {
@@ -89,7 +90,8 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
 export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = consoleOutput): Promise<CssgenResult> {
   const cwd = resolveCwd(flags.cwd)
   const driver = await createNodeDriver({ cwd, configPath: flags.config })
-  const resolveOutfile = () => (flags.outfile ? driver.resolvePath(flags.outfile) : driver.paths().styleFile)
+  const resolveOutfile = () =>
+    flags.splitting || !flags.outfile ? driver.paths().styleFile : driver.resolvePath(flags.outfile)
   const resolveOutdir = () => driver.paths().root
   let outdir = resolveOutdir()
   let outfile = resolveOutfile()
@@ -189,6 +191,20 @@ export async function writeCssgenOutput(
   flags: CssgenFlags,
   parsed: ParseFileReport[],
 ): Promise<Pick<CssgenResult, 'parsed' | 'cssBytes' | 'diagnostics'>> {
+  if (flags.splitting) {
+    const output = ctx.driver.writeSplitCss()
+    const cssBytes = output.files.reduce((total, file) => total + Buffer.byteLength(file.code), 0)
+    const diagnostics = parsed.reduce((count, report) => count + report.diagnostics.length, 0)
+    if (!flags.silent) {
+      ctx.output.log(`cssgen: parsed ${parsed.length} files, wrote ${output.files.length} files to ${output.root}`)
+    }
+    return {
+      parsed,
+      cssBytes,
+      diagnostics,
+    }
+  }
+
   const output = ctx.driver.writeCss(outfile)
 
   const diagnostics = parsed.reduce((count, report) => count + report.diagnostics.length, output.diagnostics.length)

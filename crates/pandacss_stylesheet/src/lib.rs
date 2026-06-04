@@ -15,7 +15,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
-use pandacss_shared::{Diagnostic, diagnostic_codes};
+use pandacss_shared::{Diagnostic, diagnostic_codes, file_stem};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
 
@@ -50,9 +50,7 @@ pub struct StylesheetOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
-/// One file in a `--splitting` output set: a relative path (`tokens.css`,
-/// `recipes/button.css`, `styles.css`, …) and its CSS. The host writes each
-/// `path -> code` verbatim — same shape as a codegen artifact file.
+/// One split CSS file, relative to `outdir`.
 #[derive(Debug, Clone)]
 pub struct SplitCssFile {
     pub path: String,
@@ -286,7 +284,6 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     let mut files: Vec<SplitCssFile> = Vec::new();
     let mut imports: Vec<String> = Vec::new();
 
-    // One file per (non-recipe) layer.
     for (layer, file) in [
         (StylesheetLayer::Reset, "reset.css"),
         (StylesheetLayer::Base, "global.css"),
@@ -300,29 +297,42 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
             .unwrap_or("");
         if !css.is_empty() {
             files.push(SplitCssFile {
-                path: file.to_owned(),
+                path: format!("styles/{file}"),
                 code: ensure_trailing_newline(css),
             });
-            imports.push(format!("@import './{file}';"));
+            imports.push(format!("@import './styles/{file}';"));
         }
     }
 
-    // One file per recipe, plus the `recipes.css` import index.
     let recipe_files = emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
     if !recipe_files.is_empty() {
         let mut recipe_imports = Vec::with_capacity(recipe_files.len());
         for (name, css) in &recipe_files {
             recipe_imports.push(format!("@import './recipes/{name}.css';"));
             files.push(SplitCssFile {
-                path: format!("recipes/{name}.css"),
+                path: format!("styles/recipes/{name}.css"),
                 code: ensure_trailing_newline(css),
             });
         }
         files.push(SplitCssFile {
-            path: "recipes.css".to_owned(),
+            path: "styles/recipes.css".to_owned(),
             code: format!("{}\n", recipe_imports.join("\n")),
         });
-        imports.push("@import './recipes.css';".to_owned());
+        imports.push("@import './styles/recipes.css';".to_owned());
+    }
+
+    for (theme_name, css) in theme_css_entries_from_dictionary(
+        input.config,
+        token_dictionary.as_deref(),
+        options.minify,
+    ) {
+        if css.trim().is_empty() {
+            continue;
+        }
+        files.push(SplitCssFile {
+            path: format!("styles/themes/{}.css", file_stem(&theme_name)),
+            code: ensure_trailing_newline(&css),
+        });
     }
 
     // `styles.css` entry: the @layer order declaration + the imports above.

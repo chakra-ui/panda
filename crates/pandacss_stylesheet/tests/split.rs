@@ -40,25 +40,25 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     assert_snapshot!(render(&files), @"
     === styles.css ===
     @layer reset, base, tokens, recipes, utilities;
-    @import './tokens.css';
-    @import './utilities.css';
-    @import './recipes.css';
+    @import './styles/tokens.css';
+    @import './styles/utilities.css';
+    @import './styles/recipes.css';
 
-    === tokens.css ===
+    === styles/tokens.css ===
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
       }
     }
 
-    === utilities.css ===
+    === styles/utilities.css ===
     @layer utilities {
       .c_red {
         color: var(--colors-red);
       }
     }
 
-    === recipes/button.css ===
+    === styles/recipes/button.css ===
     @layer recipes {
       @layer base {
         .button {
@@ -70,7 +70,32 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
       }
     }
 
-    === recipes.css ===
+    === styles/recipes.css ===
     @import './recipes/button.css';
     ");
+}
+
+#[test]
+fn split_css_emits_theme_files() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "text": { "value": "blue" }
+                }
+            }
+        },
+        "themes": {
+            "primaryTheme": {
+                "tokens": {
+                    "colors": {
+                        "text": { "value": "red" }
+                    }
+                }
+            }
+        }
+    }));
+    let files = split_output(&config, "");
+
+    assert!(files.iter().any(|file| file.path == "styles/themes/primary-theme.css"));
 }

@@ -84,6 +84,21 @@ describe('createNodeDriver', () => {
     expect(readFileSync(result.path, 'utf8')).toBe(result.css)
   })
 
+  it('writes split stylesheet output under outdir through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    const result = driver.writeSplitCss()
+
+    expect(result.root).toBe(join(dir, 'styled-system'))
+    expect(result.paths).toContain(join(dir, 'styled-system', 'styles.css'))
+    expect(result.paths).toContain(join(dir, 'styled-system', 'styles', 'utilities.css'))
+    expect(readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')).toContain(
+      "@import './styles/utilities.css';",
+    )
+    expect(readFileSync(join(dir, 'styled-system', 'styles', 'utilities.css'), 'utf8')).toContain('red')
+  })
+
   it('resolves the configured outdir through the driver host', async () => {
     const driver = await createNodeDriver({ cwd: dir })
 

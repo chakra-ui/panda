@@ -76,6 +76,17 @@ describe('cli v2 command helpers', () => {
     expect(readFileSync(join(dir, 'panda.css'), 'utf8')).toContain('red')
   })
 
+  it('cssgen writes split stylesheet output', async () => {
+    dir = createFixture()
+    const result = await runCssgen({ cwd: dir, splitting: true, silent: true })
+
+    expect(result.outfile).toBe(join(dir, 'styled-system', 'styles.css'))
+    expect(readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')).toContain(
+      "@import './styles/utilities.css';",
+    )
+    expect(readFileSync(join(dir, 'styled-system', 'styles', 'utilities.css'), 'utf8')).toContain('red')
+  })
+
   it('cssgen watch emission keeps previous styles when a source file changes', async () => {
     dir = createFixture()
     const appFile = join(dir, 'App.tsx')

@@ -33,6 +33,7 @@ export async function main(argv = process.argv): Promise<void> {
           config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
           watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
           outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
+          splitting: { type: 'boolean', description: 'Emit split CSS files' },
           silent: { type: 'boolean', description: 'Suppress all messages except errors' },
         },
         run: ({ args }) => runCssgen(args as CssgenFlags),

@@ -143,6 +143,13 @@ pub struct WriteCssResult {
     pub diagnostics: Vec<Diagnostic>,
 }
 
+#[napi(object)]
+pub struct WriteFilesResult {
+    pub root: String,
+    pub paths: Vec<String>,
+    pub files: Vec<crate::compile::SplitCssFile>,
+}
+
 #[napi]
 pub struct Compiler {
     inner: pandacss_project::Project,
@@ -363,25 +370,14 @@ impl Compiler {
         let base = self.paths.resolve(&cwd, &outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
-            for file in artifact.files {
-                if self.paths.is_absolute(&file.path) {
-                    return Err(napi::Error::from_reason(format!(
-                        "artifact output path must be relative: {}",
-                        file.path
-                    )));
-                }
-                let target = self.paths.join(&[&base, &file.path]);
-                let parent = self.paths.dirname(&target);
-                if !parent.is_empty() {
-                    self.fs
-                        .create_dir_all(std::path::Path::new(&parent))
-                        .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-                }
-                self.fs
-                    .write(std::path::Path::new(&target), file.code.as_bytes())
-                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-                written.push(target);
-            }
+            written.extend(self.write_relative_files(
+                &base,
+                artifact
+                    .files
+                    .iter()
+                    .map(|file| (file.path.as_str(), file.code.as_str())),
+                "artifact",
+            )?);
         }
         Ok(written)
     }
@@ -635,6 +631,34 @@ impl Compiler {
             .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
     }
 
+    fn write_relative_files<'a>(
+        &self,
+        root: &str,
+        files: impl IntoIterator<Item = (&'a str, &'a str)>,
+        label: &str,
+    ) -> napi::Result<Vec<String>> {
+        let mut written = Vec::new();
+        for (path, code) in files {
+            if self.paths.is_absolute(path) {
+                return Err(napi::Error::from_reason(format!(
+                    "{label} output path must be relative: {path}"
+                )));
+            }
+            let target = self.paths.join(&[root, path]);
+            let parent = self.paths.dirname(&target);
+            if !parent.is_empty() {
+                self.fs
+                    .create_dir_all(std::path::Path::new(&parent))
+                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+            }
+            self.fs
+                .write(std::path::Path::new(&target), code.as_bytes())
+                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+            written.push(target);
+        }
+        Ok(written)
+    }
+
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
     /// using the project's configured matchers + token dictionary. Unlike
     /// `parseFile`, it registers nothing; it's the read-only peek companion.
@@ -876,6 +900,30 @@ impl Compiler {
             layer_ranges: output.layer_ranges,
             diagnostics: output.diagnostics,
         })
+    }
+
+    #[napi(js_name = writeSplitCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_split_css(
+        &mut self,
+        env: Env,
+        outdir: String,
+        cwd: Option<String>,
+    ) -> napi::Result<WriteFilesResult> {
+        let files = self.split_css(env)?;
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, &outdir);
+        let paths = self.write_relative_files(
+            &root,
+            files
+                .iter()
+                .map(|file| (file.path.as_str(), file.code.as_str())),
+            "split css",
+        )?;
+        Ok(WriteFilesResult { root, paths, files })
     }
 
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
