@@ -1,0 +1,34 @@
+{
+  "nodeModulesDir": "manual",
+  "tasks": {
+    "v2:clean": "rm -rf styled-system",
+    "v2:codegen": "node ../../packages/cli_v2/bin.js codegen --cwd .",
+    "generate": "deno task v2:clean && deno task v2:codegen",
+    "check": "deno task generate && deno check --config deno.json main.tsx client.ts vite.config.ts",
+    "test": "deno task check && deno task build",
+    "dev": "vite --host 0.0.0.0 --port 4517",
+    "build": "vite build",
+    "start": "deno serve -A _fresh/server.js"
+  },
+  "imports": {
+    "fs": "node:fs",
+    "module": "node:module",
+    "path": "node:path",
+    "url": "node:url",
+    "fresh": "jsr:@fresh/core@^2.3.3",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.1.0",
+    "vite": "npm:vite@^7.2.6",
+    "preact": "npm:preact@^10.27.2",
+    "preact/jsx-runtime": "npm:preact@^10.27.2/jsx-runtime",
+    "preact/jsx-dev-runtime": "npm:preact@^10.27.2/jsx-dev-runtime",
+    "preact/hooks": "npm:preact@^10.27.2/hooks",
+    "preact/": "npm:preact@^10.27.2/",
+    "@preact/signals": "npm:@preact/signals@^2.5.1"
+  },
+  "compilerOptions": {
+    "jsx": "precompile",
+    "jsxImportSource": "preact",
+    "types": ["vite/client"],
+    "lib": ["dom", "dom.iterable", "deno.ns"]
+  }
+}
