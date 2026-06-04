@@ -80,6 +80,28 @@ describe('atomic / with basic style object', () => {
     `)
   })
 
+  test('should escape digit-leading breakpoint selectors', () => {
+    expect(css({ bg: { '2xl': 'orange.500' } })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 96rem) {
+          .\\32xl\\:bg_orange\\.500 {
+            background: var(--colors-orange-500);
+      }
+      }
+      }"
+    `)
+
+    expect(css({ '2xl': { bg: 'orange.500' } })).toMatchInlineSnapshot(`
+      "@layer utilities {
+        @media screen and (min-width: 96rem) {
+          .\\32xl\\:bg_orange\\.500 {
+            background: var(--colors-orange-500);
+      }
+      }
+      }"
+    `)
+  })
+
   test('should resolve responsive array with gaps', () => {
     expect(css({ width: ['50px', null, '60px'] })).toMatchInlineSnapshot(`
       "@layer utilities {
