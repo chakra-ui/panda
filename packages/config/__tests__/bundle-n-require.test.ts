@@ -21,8 +21,6 @@ describe('bundleNRequire', () => {
   })
 
   test('surfaces the real error instead of masking it with the node-eval message', async () => {
-    // The bundled output keeps `require("node:path")`, which is exactly what made the old
-    // `node-eval` fallback throw "Please pass in filename to use require" and hide this TypeError.
     const { dir, file } = writeConfig(
       `import { join } from 'node:path'\nconst broken = (undefined as any).nope\nexport default { outdir: join(broken) }\n`,
     )

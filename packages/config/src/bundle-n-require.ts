@@ -3,32 +3,17 @@ import { createRequire, Module } from 'node:module'
 import { dirname, extname, join } from 'node:path'
 import { build, type BuildOptions } from 'esbuild'
 
-/**
- * Inlined and fixed fork of `bundle-n-require`.
- *
- * The published package wraps the load in a bare `catch {}` that falls back to
- * `node-eval(code)` with no filename. When the fallback runs, the original error
- * is swallowed and the bundled code's first `require()` (a `node:` builtin is
- * enough) throws "Please pass in filename to use require" instead. Under bun the
- * `try` is more likely to fail, so that misleading message is all the user sees.
- *
- * This version keeps the Node happy path identical and fixes the fallback: it
- * compiles the bundled code with the real config filename, so `require()` resolves
- * and a genuinely broken config surfaces its real error.
- */
+// Vendored from `bundle-n-require` with the fallback fixed: the original re-evaluates the
+// bundle without a filename, so a failing config reports "Please pass in filename to use
+// require" instead of the real error (most visible under bun).
 
-/** Exports of an evaluated config module, before unwrapping a `default` export. */
 type ConfigModule = { default?: unknown } & Record<string, unknown>
 
-/** `Module._compile` is an internal Node API not present in `@types/node`. */
+// `_compile` / `_nodeModulePaths` are internal Node APIs missing from `@types/node`.
 interface CompilableModule {
   _compile(code: string, filename: string): unknown
 }
-
-/** `Module._nodeModulePaths` is likewise internal. */
-const ModuleInternals = Module as unknown as {
-  _nodeModulePaths(from: string): string[]
-}
+const ModuleInternals = Module as unknown as { _nodeModulePaths(from: string): string[] }
 
 export interface BundleNRequireOptions {
   cwd?: string
@@ -63,10 +48,7 @@ async function bundleConfigFile(file: string, cwd: string, options?: BuildOption
   }
 }
 
-/**
- * Patch `require.extensions` so a plain `require(file)` compiles the already
- * bundled code instead of re-reading the original source. This is the Node path.
- */
+// Node path: patch `require.extensions` so `require(file)` compiles the bundled code.
 function loadBundledFile(req: NodeRequire, file: string, code: string): ConfigModule {
   const extension = extname(file)
   const realFileName = realpathSync.native(file)
@@ -90,12 +72,8 @@ function loadBundledFile(req: NodeRequire, file: string, code: string): ConfigMo
   }
 }
 
-/**
- * Fallback for runtimes/extensions where `require(file)` is not intercepted
- * (`.mjs` configs, or bun ignoring `require.extensions`). Compiling with the real
- * filename gives any inner `require()` a resolution base, and lets a broken config
- * throw its real error instead of node-eval's masking message.
- */
+// Fallback (`.mjs`, or bun ignoring `require.extensions`): compile with the real filename
+// so inner `require()` resolves and a broken config throws its real error.
 function evalBundledFile(file: string, code: string): ConfigModule {
   const mod = new Module(file) as Module & CompilableModule
   mod.filename = file
