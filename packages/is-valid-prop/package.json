@@ -40,5 +40,8 @@
   ],
   "devDependencies": {
     "mdn-data": "^2.15.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

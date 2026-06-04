@@ -44,5 +44,8 @@
   },
   "devDependencies": {
     "@vue/compiler-core": "3.5.25"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

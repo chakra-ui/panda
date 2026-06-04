@@ -2,4 +2,4 @@
 "@pandacss/dev": patch
 ---
 
-Adds `"engines"` field to `package.json`
+Add an `engines` field (`node: >=20`) to every published package so consumers and tooling can see the supported Node version.

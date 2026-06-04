@@ -52,5 +52,8 @@
   },
   "devDependencies": {
     "@types/pluralize": "0.0.33"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

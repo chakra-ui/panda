@@ -58,5 +58,8 @@
   },
   "devDependencies": {
     "@types/lodash.merge": "4.6.9"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
