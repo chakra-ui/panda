@@ -244,6 +244,7 @@ fn print_source(
     }
 
     match (kind, target) {
+        (_, EmitTarget::SourceTs) => format!("{source}.ts"),
         (ImportKind::Value, EmitTarget::RuntimeJs) => {
             let ext = format.unwrap_or(CodegenFormat::Mjs).runtime_extension();
             format!("{source}.{ext}")

@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "types": [
+      "react",
+      "react-dom",
+      "npm:@types/react@19.2.7",
+      "npm:@types/react-dom@19.2.3"
+    ],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "deno.ns"
+    ]
+  },
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "v2:clean": "rm -rf styled-system",
+    "v2:codegen": "node ../../packages/cli_v2/bin.js codegen --cwd .",
+    "v2:cssgen": "node ../../packages/cli_v2/bin.js cssgen --cwd .",
+    "generate": "deno task v2:clean && deno task v2:codegen && deno task v2:cssgen",
+    "check": "deno task generate && deno check --config deno.json src/main.tsx",
+    "dev": "deno task generate && deno run --config deno.json --allow-read --allow-net --allow-env=NODE_ENV src/main.tsx",
+    "test": "deno task check"
+  },
+  "imports": {
+    "@styled-system/": "./styled-system/",
+    "react": "npm:react@19.2.0",
+    "react/jsx-runtime": "npm:react@19.2.0/jsx-runtime",
+    "react-dom/server": "npm:react-dom@19.2.0/server"
+  }
+}

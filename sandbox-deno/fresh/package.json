@@ -1,0 +1,9 @@
+{
+  "name": "sandbox-deno-fresh",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@pandacss/vite": "file:../../packages/vite"
+  }
+}

@@ -12,10 +12,8 @@ export interface PandaPluginOptions {
 }
 
 /**
- * Vite plugin for the Panda CSS v2 engine. Holds one long-lived {@link Driver}:
- * writes codegen artifacts to disk, and injects the compiled stylesheet into the
- * CSS file that declares Panda's layers (`@layer reset, base, …;`). Source edits
- * re-emit the root CSS module in the same HMR transaction as the JS update.
+ * Vite plugin for the Panda CSS v2 engine.
+ * The CSS file declaring Panda layers is treated as the generated CSS root.
  */
 export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let driver: Driver | undefined
@@ -25,6 +23,21 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
   const codegen = () => {
     driver?.codegen({ cwd, outdir })
+  }
+
+  const addPandaWatchFiles = (addWatchFile: (file: string) => void, inputId: string) => {
+    if (!driver) return
+
+    const inputFile = inputId.split('?')[0]
+    for (const file of driver.scan()) {
+      if (file !== inputFile) addWatchFile(file)
+    }
+    for (const dep of driver.watchTargets().config) {
+      addWatchFile(driver.resolvePath(dep))
+    }
+    if (driver.configPath) {
+      addWatchFile(driver.configPath)
+    }
   }
 
   const invalidateRoots = (server: ViteDevServer): ModuleNode[] => {
@@ -43,8 +56,6 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     name: 'pandacss',
     enforce: 'pre',
 
-    // configResolved (not buildStart): runs before Vite's dep scan/warmup, so
-    // the `styled-system/*` runtime exists on disk before anything resolves it.
     async configResolved(config: ResolvedConfig) {
       cwd = options.cwd ?? config.root
       driver = await createNodeDriver({ cwd, configPath: options.configPath })
@@ -58,12 +69,13 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       if (!driver.compiler.hasLayerDeclaration(code)) return null
 
       rootIds.add(id)
+      addPandaWatchFiles((file) => this.addWatchFile(file), id)
+
       const output = driver.cssgen({ emitLayerDeclaration: false })
       if (output.diagnostics.length > 0) {
         this.warn(`panda: ${output.diagnostics.length} diagnostic(s) while compiling the stylesheet`)
       }
-      // Keep the user's declaration (it fixes layer order, incl. any custom
-      // layers) and append Panda's layer bodies after their CSS.
+
       return { code: `${code}\n${output.css}`, map: null }
     },
 
@@ -73,7 +85,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       if (driver.isConfigFile(ctx.file)) {
         const diff = await driver.reload()
         if (!diff.hasChanged) return
-        // Runtime/types artifacts may have changed shape → rewrite + full reload.
+
         codegen()
         driver.parseFiles()
         invalidateRoots(ctx.server)
@@ -83,7 +95,6 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
       if (driver.isSourceFile(ctx.file)) {
         driver.applyChange({ path: ctx.file, kind: 'change', content: await ctx.read() })
-        // Re-emit the root stylesheet alongside the JS update in one HMR payload.
         return [...ctx.modules, ...invalidateRoots(ctx.server)]
       }
 
