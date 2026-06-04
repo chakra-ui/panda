@@ -3,13 +3,8 @@ import { createRequire, Module } from 'node:module'
 import { dirname, extname, join } from 'node:path'
 import { build, type BuildOptions } from 'esbuild'
 
-// Vendored from `bundle-n-require` with the fallback fixed: the original re-evaluates the
-// bundle without a filename, so a failing config reports "Please pass in filename to use
-// require" instead of the real error (most visible under bun).
-
 type ConfigModule = { default?: unknown } & Record<string, unknown>
 
-// `_compile` / `_nodeModulePaths` are internal Node APIs missing from `@types/node`.
 interface CompilableModule {
   _compile(code: string, filename: string): unknown
 }
@@ -48,7 +43,6 @@ async function bundleConfigFile(file: string, cwd: string, options?: BuildOption
   }
 }
 
-// Node path: patch `require.extensions` so `require(file)` compiles the bundled code.
 function loadBundledFile(req: NodeRequire, file: string, code: string): ConfigModule {
   const extension = extname(file)
   const realFileName = realpathSync.native(file)
@@ -72,8 +66,7 @@ function loadBundledFile(req: NodeRequire, file: string, code: string): ConfigMo
   }
 }
 
-// Fallback (`.mjs`, or bun ignoring `require.extensions`): compile with the real filename
-// so inner `require()` resolves and a broken config throws its real error.
+// Fallback: compile with the real filename so a broken config throws its real error.
 function evalBundledFile(file: string, code: string): ConfigModule {
   const mod = new Module(file) as Module & CompilableModule
   mod.filename = file
