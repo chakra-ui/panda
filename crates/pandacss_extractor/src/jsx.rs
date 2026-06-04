@@ -71,6 +71,9 @@ pub fn extract_jsx(
     config: &ExtractorConfig,
 ) -> ExtractedJsxResult {
     let allocator = Allocator::default();
+    let raw_source = source;
+    let source = crate::adapt_source(source, path);
+    let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
@@ -84,8 +87,12 @@ pub fn extract_jsx(
         None,
     );
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
+    let mut jsx = collect_jsx(&parser_return.program, &ctx);
+    jsx.extend(crate::template_styles::collect_template_styles(
+        raw_source, path, matched, config,
+    ));
     ExtractedJsxResult {
-        jsx: collect_jsx(&parser_return.program, &ctx),
+        jsx,
         diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
     }
 }
@@ -371,19 +378,38 @@ fn merge_attribute(
                     None => return,
                 },
             };
-            Literal::upsert_object_entry(out, key.to_owned(), value);
+            merge_style_prop(out, jsx, tag_name, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
             if let Some(Literal::Object(entries)) =
                 expression_to_literal(&spread.argument, resolver)
             {
-                for (k, v) in entries {
-                    if jsx.should_extract_prop(tag_name, &k) {
-                        Literal::upsert_object_entry(out, k, v);
-                    }
-                }
+                merge_style_props(out, jsx, tag_name, entries);
             }
         }
+    }
+}
+
+pub(crate) fn merge_style_prop(
+    out: &mut Vec<(String, Literal)>,
+    jsx: &crate::JsxExtractionConfig,
+    tag_name: &str,
+    key: &str,
+    value: Literal,
+) {
+    if jsx.should_extract_prop(tag_name, key) {
+        Literal::upsert_object_entry(out, key.to_owned(), value);
+    }
+}
+
+pub(crate) fn merge_style_props(
+    out: &mut Vec<(String, Literal)>,
+    jsx: &crate::JsxExtractionConfig,
+    tag_name: &str,
+    entries: Vec<(String, Literal)>,
+) {
+    for (key, value) in entries {
+        merge_style_prop(out, jsx, tag_name, &key, value);
     }
 }
 

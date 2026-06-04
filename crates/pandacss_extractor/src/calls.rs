@@ -55,6 +55,8 @@ pub fn extract_calls(
     config: &ExtractorConfig,
 ) -> ExtractedCallsResult {
     let allocator = Allocator::default();
+    let source = crate::adapt_source(source, path);
+    let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = Parser::new(&allocator, source, source_type).parse();
 
