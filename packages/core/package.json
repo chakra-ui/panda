@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/core",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "core functions for extract-it",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -58,5 +58,8 @@
   },
   "devDependencies": {
     "@types/lodash.merge": "4.6.9"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/node",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "The core css panda library",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -79,5 +79,8 @@
     "@types/lodash.merge": "4.6.9",
     "@types/pluralize": "0.0.33",
     "boxen": "8.0.1"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

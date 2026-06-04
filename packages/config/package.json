@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/config",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "Find and load panda config",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -86,5 +86,8 @@
   },
   "devDependencies": {
     "pkg-types": "2.3.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

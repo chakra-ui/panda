@@ -6,6 +6,7 @@ export const radii: Tokens['radii'] = {
   medium: { value: '6px' },
   large: { value: '8px' },
   xlarge: { value: '12px' },
+  xxlarge: { value: '16px' },
   full: { value: '9999px' },
   tile: { value: '25%' },
 }

@@ -1,5 +1,15 @@
 # @pandacss/mcp
 
+## 1.11.2
+
+### Patch Changes
+
+- Updated dependencies [3730779]
+  - @pandacss/node@1.11.2
+  - @pandacss/types@1.11.2
+  - @pandacss/logger@1.11.2
+  - @pandacss/token-dictionary@1.11.2
+
 ## 1.11.1
 
 ### Patch Changes
