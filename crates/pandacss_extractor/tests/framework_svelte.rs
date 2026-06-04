@@ -21,10 +21,10 @@ fn scan_imports_reads_script_blocks() {
     assert_yaml_snapshot!(import_shape(&scan), @r#"
     - module: "@panda/jsx"
       specifiers:
-        - Box:Box
+        - "Box:Box"
     - module: "@panda/css"
       specifiers:
-        - css:css
+        - "css:css"
     "#);
 }
 
@@ -45,7 +45,7 @@ fn template_calls_and_style_props_extract_together() {
     "#};
 
     let result = extract(source, "Card.svelte", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
         data:
@@ -54,7 +54,8 @@ fn template_calls_and_style_props_extract_together() {
       - name: Box
         data:
           color: red
-          padding: 4px
+          css:
+            padding: 4px
           margin: 8px
     ");
 }
@@ -379,7 +380,7 @@ fn larger_svelte_file_mixes_scripts_blocks_calls_and_style_props() {
     "#};
 
     let result = extract(source, "Large.svelte", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
         data:
@@ -397,7 +398,8 @@ fn larger_svelte_file_mixes_scripts_blocks_calls_and_style_props() {
       - name: Box
         data:
           color: blue
-          padding: 4px
+          css:
+            padding: 4px
           margin: 8px
       - name: Box
         data:
@@ -465,7 +467,8 @@ fn typescript_assertions_in_markup_style_props_fold() {
     "#};
 
     let result = extract(source, "TypeScriptMarkup.svelte", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
     jsx:
       - name: Box
         data:

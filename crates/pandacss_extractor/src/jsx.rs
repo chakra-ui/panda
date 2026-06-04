@@ -20,16 +20,11 @@ use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
 
-/// Member-chain tags like `<styled.div>` are accepted only when the root
-/// name is configured as a JSX factory; otherwise a named import like
-/// `Box` would over-match on `<Box.Item />`.
-const DEFAULT_JSX_FACTORY_NAMES: &[&str] = &["styled"];
-
 fn is_jsx_factory(matchers: &Matchers, name: &str) -> bool {
-    if let Some(overrides) = matchers.jsx_factories.as_ref() {
-        return overrides.iter().any(|f| f == name);
-    }
-    DEFAULT_JSX_FACTORY_NAMES.contains(&name)
+    matchers
+        .jsx_factories
+        .as_ref()
+        .is_some_and(|factories| factories.iter().any(|factory| factory == name))
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -116,6 +111,7 @@ struct ResolvedTag<'a> {
     category: MatchCategory,
     name: Cow<'a, str>,
     alias: Cow<'a, str>,
+    emit_empty: bool,
 }
 
 impl Extractor<'_, '_> {
@@ -145,17 +141,20 @@ impl Extractor<'_, '_> {
                         category: matched.category,
                         name: Cow::Borrowed(&matched.name),
                         alias: Cow::Borrowed(&matched.alias),
+                        emit_empty: true,
                     });
                 }
 
                 let tag_name = id.name.as_str();
-                if !self.ctx.config.jsx.is_component_tag(tag_name) {
+                let is_configured_component = self.ctx.config.jsx.is_component_tag(tag_name);
+                if !is_configured_component && !self.ctx.config.jsx.should_match_tag(tag_name) {
                     return None;
                 }
                 Some(ResolvedTag {
                     category: MatchCategory::Jsx,
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
+                    emit_empty: is_configured_component,
                 })
             }
             JSXElementName::MemberExpression(member) => {
@@ -179,11 +178,13 @@ impl Extractor<'_, '_> {
         }
         let Some(matched) = self.ctx.aliases.get(root) else {
             let display = member_display(root, path);
-            if self.ctx.config.jsx.is_component_tag(&display) {
+            let is_configured_component = self.ctx.config.jsx.is_component_tag(&display);
+            if is_configured_component || self.ctx.config.jsx.should_match_tag(&display) {
                 return Some(ResolvedTag {
                     category: MatchCategory::Jsx,
                     name: Cow::Owned(display),
                     alias: Cow::Borrowed(root),
+                    emit_empty: is_configured_component,
                 });
             }
             return None;
@@ -209,6 +210,7 @@ impl Extractor<'_, '_> {
                     category: matched.category,
                     name: Cow::Owned(display),
                     alias: Cow::Borrowed(&matched.alias),
+                    emit_empty: true,
                 })
             }
             ImportSpecifierKind::Namespace => {
@@ -225,6 +227,7 @@ impl Extractor<'_, '_> {
                     category: matched.category,
                     name: Cow::Owned(join_path(path)),
                     alias: Cow::Borrowed(&matched.alias),
+                    emit_empty: true,
                 })
             }
             ImportSpecifierKind::Default => None,
@@ -253,6 +256,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                     &self.ctx.config.jsx,
                     tag_name,
                 );
+            }
+            if entries.is_empty() && !resolved.emit_empty {
+                walk::walk_jsx_opening_element(self, element);
+                return;
             }
             self.out.push(ExtractedJsx {
                 category: resolved.category,

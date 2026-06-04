@@ -16,6 +16,13 @@ use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
 
+fn is_jsx_factory(matchers: &crate::Matchers, name: &str) -> bool {
+    matchers
+        .jsx_factories
+        .as_ref()
+        .is_some_and(|factories| factories.iter().any(|factory| factory == name))
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedCall {
@@ -77,10 +84,7 @@ pub fn extract_calls(
         &parser_return.errors,
         source,
     ));
-    ExtractedCallsResult {
-        calls,
-        diagnostics,
-    }
+    ExtractedCallsResult { calls, diagnostics }
 }
 
 fn collect_calls_inner(
@@ -174,6 +178,15 @@ impl Extractor<'_, '_> {
                 }
 
                 if matched.kind == ImportSpecifierKind::Named {
+                    if matched.category == MatchCategory::Jsx
+                        && is_jsx_factory(&self.ctx.config.matchers, &matched.name)
+                    {
+                        return Some(ResolvedCallee {
+                            category: matched.category,
+                            name: Cow::Owned(member_display(&matched.name, &path)),
+                            alias: &matched.alias,
+                        });
+                    }
                     if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
                         return None;
                     }
@@ -229,7 +242,9 @@ fn dynamic_style_value_diagnostic(
 ) -> Diagnostic {
     let mut diagnostic = Diagnostic::warning(
         crate::diagnostic_codes::PANDA_CALL_UNEXTRACTABLE,
-        format!("{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"),
+        format!(
+            "{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"
+        ),
     );
     diagnostic.span = Some(span);
     if let Some(line_index) = line_index {
@@ -256,6 +271,21 @@ fn flatten_static_member_path<'a>(
             _ => return None,
         }
     }
+}
+
+fn member_display(root: &str, path: &[&str]) -> String {
+    let mut out = String::with_capacity(
+        root.len()
+            + 1
+            + path.iter().map(|part| part.len()).sum::<usize>()
+            + path.len().saturating_sub(1),
+    );
+    out.push_str(root);
+    for part in path {
+        out.push('.');
+        out.push_str(part);
+    }
+    out
 }
 
 impl<'a> Visit<'a> for Extractor<'_, '_> {

@@ -22,10 +22,10 @@ fn scan_imports_reads_script_setup() {
     assert_yaml_snapshot!(import_shape(&scan), @r#"
     - module: "@panda/jsx"
       specifiers:
-        - Box:Box
+        - "Box:Box"
     - module: "@panda/css"
       specifiers:
-        - css:css
+        - "css:css"
     "#);
 }
 
@@ -47,7 +47,7 @@ fn template_calls_and_style_props_extract_together() {
     "#};
 
     let result = extract(source, "Card.vue", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
         data:
@@ -56,7 +56,8 @@ fn template_calls_and_style_props_extract_together() {
       - name: Box
         data:
           color: red
-          padding: 4px
+          css:
+            padding: 4px
           margin: 8px
     ");
 }
@@ -356,7 +357,7 @@ fn comments_and_tag_like_strings_do_not_break_template_extraction() {
       - name: Box
         data:
           css:
-            content: </Box>
+            content: "</Box>"
             color: blue
     "#);
 }
@@ -410,7 +411,7 @@ fn larger_vue_sfc_mixes_scripts_templates_calls_and_style_props() {
     "#};
 
     let result = extract(source, "Large.vue", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
         data:
@@ -422,7 +423,8 @@ fn larger_vue_sfc_mixes_scripts_templates_calls_and_style_props() {
       - name: Box
         data:
           color: red
-          padding: 4px
+          css:
+            padding: 4px
           margin: 8px
       - name: Box
         data:
@@ -461,7 +463,7 @@ fn slot_templates_and_v_memo_do_not_break_extraction() {
     "#};
 
     let result = extract(source, "Slots.vue", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
         data:
@@ -472,7 +474,8 @@ fn slot_templates_and_v_memo_do_not_break_extraction() {
           color: red
       - name: Box
         data:
-          padding: 4px
+          css:
+            padding: 4px
     ");
 }
 
@@ -489,7 +492,8 @@ fn script_tag_attrs_with_gt_do_not_break_import_scan() {
     "#};
 
     let result = extract(source, "Generic.vue", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
     jsx:
       - name: Box
         data:

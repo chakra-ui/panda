@@ -187,11 +187,12 @@ fn should_collect_calls(matched: &[MatchedImport]) -> bool {
 }
 
 fn should_skip_extraction(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
-    matched.is_empty() && !config.jsx.has_component_matchers()
+    matched.is_empty() && !config.has_jsx_framework && !config.jsx.has_component_matchers()
 }
 
 fn should_collect_jsx(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
-    config.jsx.has_component_matchers()
+    config.has_jsx_framework
+        || config.jsx.has_component_matchers()
         || matched
             .iter()
             .any(|import| import.category == MatchCategory::Jsx)

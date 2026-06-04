@@ -44,10 +44,10 @@ pub use pandacss_shared::{
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
+pub(crate) use adapter::adapt_source;
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
 pub use source::LineIndex;
-pub(crate) use adapter::adapt_source;
 
 pub(crate) fn span_from_oxc(span: oxc_span::Span) -> Span {
     Span {

@@ -28,6 +28,16 @@ fn cva(alias: &str) -> MatchedImport {
     }
 }
 
+fn jsx_factory(name: &str) -> MatchedImport {
+    MatchedImport {
+        category: MatchCategory::Jsx,
+        module: "@panda/jsx".into(),
+        name: name.into(),
+        alias: name.into(),
+        kind: ImportSpecifierKind::Named,
+    }
+}
+
 fn recipe(name: &str) -> MatchedImport {
     MatchedImport {
         category: MatchCategory::Recipe,
@@ -70,7 +80,7 @@ fn panda_matchers(prefix: &str) -> Matchers {
             modules: vec![format!("{prefix}/tokens")],
             names: NameMatcher::only(["token"]),
         },
-        jsx_factories: None,
+        jsx_factories: Some(vec!["styled".into()]),
     }
 }
 
@@ -721,6 +731,30 @@ fn non_literal_args_are_omitted_from_data() {
     diagnostics: []
     ",
     );
+}
+
+#[test]
+fn jsx_factory_property_call_extracts_recipe_config() {
+    let mut matchers = panda_matchers("@panda");
+    if let Some(jsx) = &mut matchers.jsx {
+        jsx.names = NameMatcher::only(["panda"]);
+    }
+    matchers.jsx_factories = Some(vec!["panda".into()]);
+
+    let result = extract_with(
+        "panda.div({ base: { color: 'red' }, variants: { size: { sm: { fontSize: '12px' } } } })",
+        &[jsx_factory("panda")],
+        &matchers,
+    );
+
+    assert_yaml_snapshot!(result.calls[0].data, @r#"
+    - base:
+        color: red
+      variants:
+        size:
+          sm:
+            fontSize: 12px
+    "#);
 }
 
 // --- namespace callees ---
