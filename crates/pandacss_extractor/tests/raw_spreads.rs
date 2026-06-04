@@ -2,11 +2,19 @@ use indoc::indoc;
 use insta::assert_yaml_snapshot;
 mod common;
 
-use common::panda_config;
-use pandacss_extractor::{ExtractUsage, extract};
+use common::{matcher, panda_config};
+use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matchers, extract};
 
 fn run(source: &str) -> ExtractUsage {
     extract(source, "fixture.tsx", &panda_config())
+}
+
+fn run_styled_system(source: &str) -> ExtractUsage {
+    let config = ExtractorConfig::new(Matchers {
+        css: matcher("styled-system/css", ["css", "cva", "sva"]),
+        ..Default::default()
+    });
+    extract(source, "fixture.tsx", &config)
 }
 
 #[test]
@@ -35,6 +43,56 @@ fn css_raw_spread_with_computed_property_name_matches_js_fixture() {
         fontSize: 14px
         opacity: 0.8
     ");
+}
+
+#[test]
+fn css_raw_identifier_values_fold_inside_nested_selectors() {
+    let src = indoc! {r#"
+        import { css } from 'styled-system/css'
+
+        const paragraphSpacingStyle = css.raw({
+          "&:not(:first-child)": { marginBlockStart: "1em" },
+        });
+
+        export const proseCss = css.raw({
+          maxWidth: "800px",
+          "& p": {
+            "&:not(:first-child)": { marginBlockStart: "1em" },
+          },
+          "& h1": paragraphSpacingStyle,
+          "& h2": paragraphSpacingStyle,
+          "& h3": paragraphSpacingStyle,
+          "& h4": paragraphSpacingStyle,
+          "& h5": paragraphSpacingStyle,
+          "& h6": paragraphSpacingStyle,
+        });
+    "#};
+    let calls = run_styled_system(src).calls;
+
+    assert_yaml_snapshot!(calls.last().expect("prose css.raw call").data, @r#"
+    - maxWidth: 800px
+      "& p":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+      "& h1":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+      "& h2":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+      "& h3":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+      "& h4":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+      "& h5":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+      "& h6":
+        "&:not(:first-child)":
+          marginBlockStart: 1em
+    "#);
 }
 
 #[test]
