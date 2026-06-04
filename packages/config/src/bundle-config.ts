@@ -1,15 +1,12 @@
 import { logger } from '@pandacss/logger'
 import { PandaError } from '@pandacss/shared'
 import type { Config } from '@pandacss/types'
-import { bundleNRequire } from 'bundle-n-require'
+import { bundleNRequire } from './bundle-n-require'
 import { findConfig } from './find-config'
 import type { BundleConfigResult, ConfigFileOptions } from './types'
 
 export async function bundle<T extends Config = Config>(filepath: string, cwd: string) {
-  const { mod, dependencies } = await bundleNRequire(filepath, {
-    cwd,
-    interopDefault: true,
-  })
+  const { mod, dependencies } = await bundleNRequire(filepath, { cwd })
 
   const config = (mod?.default ?? mod) as T
 
