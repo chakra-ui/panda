@@ -1409,7 +1409,7 @@ impl<'a> EmitContext<'a> {
     }
 
     fn transform_atom(&self, prop: &str, raw: &str) -> UtilityTransformResult {
-        if !self.utility.is_empty() {
+        if self.utility.should_transform(prop) {
             return self.utility.transform_str(prop, raw);
         }
         default_transform(prop, raw)
