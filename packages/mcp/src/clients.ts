@@ -53,7 +53,7 @@ export function getClientConfig(client: McpClient): McpClientConfig {
 export function generateMcpConfig(clientConfig: McpClientConfig) {
   const serverConfig = {
     command: 'npx',
-    args: ['panda', 'mcp'],
+    args: ['-y', '--package', '@pandacss/dev', 'panda', 'mcp'],
   }
 
   return {
