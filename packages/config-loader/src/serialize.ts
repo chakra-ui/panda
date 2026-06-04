@@ -1,4 +1,10 @@
-import type { ProjectCallbackKind, ProjectCallbacks, SerializedConfig } from '@pandacss/compiler-shared'
+import {
+  getResolvedConfigOutdir,
+  applyConfigDefaults,
+  type ProjectCallbackKind,
+  type ProjectCallbacks,
+  type SerializedConfig,
+} from '@pandacss/compiler-shared'
 import type { UserConfig } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 
@@ -21,12 +27,13 @@ export interface ConfigSnapshot {
  * pattern generator.
  */
 export function createConfigSnapshot(config: UserConfig): ConfigSnapshot {
+  const resolved = applyConfigDefaults(config) as UserConfig
   const callbacks: Callbacks = {}
   const serialized: SerializedConfig = {
-    ...sanitize(config, [], callbacks),
-    importMap: normalizeImportMap(config),
+    ...sanitize(resolved, [], callbacks),
+    importMap: normalizeImportMap(resolved),
   }
-  attachPatternCodegenSource(serialized, config)
+  attachPatternCodegenSource(serialized, resolved)
   return { config: serialized, callbacks: callbacks as ProjectCallbacks }
 }
 
@@ -81,7 +88,9 @@ function attachPatternCodegenSource(serialized: SerializedConfig, config: UserCo
 }
 
 function normalizeImportMap(config: UserConfig) {
-  const outdir = config.outdir?.split('/').at(-1) || 'styled-system'
+  const outdir = getResolvedConfigOutdir(config as unknown as SerializedConfig)
+    .split('/')
+    .at(-1)!
   const inputs = Array.isArray(config.importMap) ? config.importMap : [config.importMap]
   const output = {
     css: [] as string[],

@@ -12,6 +12,7 @@
 
 export * from './types'
 export * from './callbacks'
+export * from './defaults'
 export { introspect } from './introspect'
 export type { Introspection } from './introspect'
 export * from './driver'

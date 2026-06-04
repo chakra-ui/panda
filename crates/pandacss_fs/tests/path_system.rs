@@ -12,14 +12,20 @@ fn posix_path_system_resolves_and_joins() {
     );
     assert_eq!(paths.join(&["/"]), "/");
     assert_eq!(paths.join(&["/", "styles.css"]), "/styles.css");
-    assert_eq!(paths.join(&["/project", "/tmp/styled-system"]), "/tmp/styled-system");
+    assert_eq!(
+        paths.join(&["/project", "/tmp/styled-system"]),
+        "/tmp/styled-system"
+    );
     assert_eq!(
         paths.join(&["/project//", "./styled-system", "css/../styles.css"]),
         "/project/styled-system/styles.css"
     );
     assert_eq!(paths.join(&["/project", "../../styles.css"]), "/styles.css");
     assert_eq!(paths.join(&["project", "../styles.css"]), "styles.css");
-    assert_eq!(paths.join(&["project", "../../styles.css"]), "../styles.css");
+    assert_eq!(
+        paths.join(&["project", "../../styles.css"]),
+        "../styles.css"
+    );
     assert_eq!(paths.dirname("/"), "/");
     assert_eq!(
         paths.dirname("/project/styled-system/styles.css"),

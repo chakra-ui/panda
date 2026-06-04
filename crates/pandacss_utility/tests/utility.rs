@@ -345,14 +345,8 @@ fn transform_supports_color_opacity_modifiers() {
 
     let direct_token = utility.transform("bg", &Literal::String("red.300/40".into()));
     let direct_raw = utility.transform("bg", &Literal::String("red/30".into()));
-    let curly = utility.transform(
-        "color",
-        &Literal::String("{colors.red.300/40}".into()),
-    );
-    let token_fn = utility.transform(
-        "bg",
-        &Literal::String("token(colors.red.300/half)".into()),
-    );
+    let curly = utility.transform("color", &Literal::String("{colors.red.300/40}".into()));
+    let token_fn = utility.transform("bg", &Literal::String("token(colors.red.300/half)".into()));
 
     assert_debug_snapshot!(
         (direct_token, direct_raw, curly, token_fn),

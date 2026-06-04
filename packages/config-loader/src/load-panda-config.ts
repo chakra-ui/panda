@@ -1,3 +1,4 @@
+import { applyConfigDefaults } from '@pandacss/compiler-shared'
 import type { Config, UserConfig } from '@pandacss/types'
 import { bundle } from './bundle'
 import { PandaError } from './error'
@@ -26,12 +27,7 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
 
   // Defaults onto a copy — never mutate `config`: identical configs share one
   // cached `data:`-URL module, so mutation would leak `cwd` across loads.
-  const resolved: UserConfig = {
-    ...(config as UserConfig),
-    cwd: config.cwd ?? cwd,
-    outdir: config.outdir ?? 'styled-system',
-    validation: config.validation ?? 'warn',
-  }
+  const resolved = applyConfigDefaults(config as UserConfig, cwd) as UserConfig
 
   // Explicit `config.dependencies` escape hatch, on top of bundled module ids.
   const dependencyList = Array.from(new Set([...dependencies, ...(resolved.dependencies ?? [])]))

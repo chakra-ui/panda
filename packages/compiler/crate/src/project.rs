@@ -309,7 +309,7 @@ impl Compiler {
         let spec = pandacss_config::Spec {
             types,
             property_order,
-            jsx_factory: self.user_config.jsx_factory.clone(),
+            jsx_factory: Some(self.user_config.jsx_factory().to_owned()),
             import_map: self.user_config.import_map.clone(),
         };
         serde_json::to_value(&spec).map_err(|err| napi::Error::from_reason(err.to_string()))
@@ -370,14 +370,16 @@ impl Compiler {
         let base = self.paths.resolve(&cwd, &outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
-            written.extend(self.write_relative_files(
-                &base,
-                artifact
-                    .files
-                    .iter()
-                    .map(|file| (file.path.as_str(), file.code.as_str())),
-                "artifact",
-            )?);
+            written.extend(
+                self.write_relative_files(
+                    &base,
+                    artifact
+                        .files
+                        .iter()
+                        .map(|file| (file.path.as_str(), file.code.as_str())),
+                    "artifact",
+                )?,
+            );
         }
         Ok(written)
     }

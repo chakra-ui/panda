@@ -73,6 +73,15 @@ async function waitForCss(server: ViteDevServer, needle: string): Promise<string
   throw new Error(`timed out waiting for ${JSON.stringify(needle)} in the served CSS`)
 }
 
+async function waitForWarning(warnings: string[], needle: string): Promise<string> {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const warning = warnings.find((item) => item.includes(needle))
+    if (warning) return warning
+    await new Promise((done) => setTimeout(done, 100))
+  }
+  throw new Error(`timed out waiting for warning ${JSON.stringify(needle)}`)
+}
+
 describe('@pandacss/vite', () => {
   let dir: string | undefined
   let server: ViteDevServer | undefined
@@ -117,6 +126,29 @@ describe('@pandacss/vite', () => {
     const updated = await waitForCss(server, '8px')
     // Additive refresh keeps prior styles in dev — no flash of a missing rule.
     expect(updated).toContain('4px')
+  })
+
+  it('keeps previous CSS and reports diagnostics when source syntax breaks', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    const warnings: string[] = []
+    server.config.logger.warn = (message) => {
+      warnings.push(String(message))
+    }
+
+    expect(await waitForCss(server, 'red')).toContain('red')
+
+    const appFile = join(dir, 'App.tsx')
+    writeFileSync(appFile, APP(`{ color: }`))
+    server.watcher.emit('change', appFile)
+
+    expect(await waitForCss(server, 'red')).toContain('red')
+    expect(await waitForWarning(warnings, 'while parsing')).toContain('diagnostic')
+
+    writeFileSync(appFile, APP(`{ color: 'blue' }`))
+    server.watcher.emit('change', appFile)
+
+    expect(await waitForCss(server, 'blue')).toContain('blue')
   })
 
   it('re-parses sources after a config reload', async () => {

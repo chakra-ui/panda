@@ -427,6 +427,118 @@ fn non_shorthand_props_stay_unchanged() {
 }
 
 #[test]
+fn implicit_uppercase_jsx_components_extract_valid_style_props() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "utilities": {
+            "padding": { "shorthand": "p" }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            const el = <Card backgroundColor='red' p='4' madeUp='ignored' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: backgroundColor
+      value: red
+      conditions: []
+    - prop: padding
+      value: "4"
+      conditions: []
+    "#);
+}
+
+#[test]
+fn implicit_uppercase_jsx_components_without_style_props_are_ignored() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            const el = <Card madeUp='ignored' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 0);
+    assert!(sorted_atoms(&project).is_empty());
+}
+
+#[test]
+fn lowercase_jsx_tags_stay_ignored_for_style_props() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            const el = <div color='red' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 0);
+    assert!(sorted_atoms(&project).is_empty());
+}
+
+#[test]
+fn implicit_uppercase_jsx_components_follow_minimal_style_prop_mode() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "jsxStyleProps": "minimal"
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            const el = <Card color='red' css={{ margin: '8px' }} borderCss={{ width: '1px' }} />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: margin
+      value: 8px
+      conditions: []
+    - prop: width
+      value: 1px
+      conditions: []
+    ");
+}
+
+#[test]
+fn local_factory_alias_extracts_as_implicit_uppercase_component() {
+    let mut project = create_project(json!({
+        "jsxFactory": "panda"
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { panda } from '@panda/jsx';
+            const JsxPanel = panda.div;
+            const el = <JsxPanel display='grid' gap='4' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: display
+      value: grid
+      conditions: []
+    - prop: gap
+      value: "4"
+      conditions: []
+    "#);
+}
+
+#[test]
 fn minimal_jsx_filters_style_props() {
     let mut project = create_project(json!({
         "jsxStyleProps": "minimal"

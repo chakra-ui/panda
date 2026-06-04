@@ -10,8 +10,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
 use pandacss_config::{
-    CallbackRef, PrimitiveType, StringOrStringArray, UtilityConfig, UtilityPropertyTypeData,
-    UtilityTypeData, UtilityValues, ValueAliasTypeData, ValueTypePart, value_alias_name,
+    CallbackRef, DEFAULT_SEPARATOR, PrimitiveType, StringOrStringArray, UtilityConfig,
+    UtilityPropertyTypeData, UtilityTypeData, UtilityValues, ValueAliasTypeData, ValueTypePart,
+    value_alias_name,
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{number_to_js_string, pascal_case};
@@ -65,7 +66,9 @@ impl Utility {
         options: UtilityOptions,
     ) -> Self {
         let mut utility = Self {
-            separator: options.separator.unwrap_or_else(|| "_".to_owned()),
+            separator: options
+                .separator
+                .unwrap_or_else(|| DEFAULT_SEPARATOR.to_owned()),
             prefix: options.prefix.unwrap_or_default(),
             tokens: options.tokens,
             ..Self::default()

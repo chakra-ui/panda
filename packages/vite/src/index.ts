@@ -1,4 +1,4 @@
-import { createNodeDriver, type Driver } from '@pandacss/compiler'
+import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
 import { extname } from 'node:path'
 import type { HmrContext, ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 
@@ -9,6 +9,26 @@ export interface PandaPluginOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+}
+
+function formatDiagnostic(diagnostic: Diagnostic): string {
+  const location = diagnostic.location
+    ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
+    : diagnostic.span
+      ? `:${diagnostic.span.start}`
+      : ''
+  return `${diagnostic.severity} ${diagnostic.code}${location} ${diagnostic.message}`
+}
+
+function warnDiagnostics(
+  warn: (message: string) => void,
+  diagnostics: readonly Diagnostic[] | undefined,
+  context: string,
+) {
+  if (!diagnostics?.length) return
+  const shown = diagnostics.slice(0, 3).map(formatDiagnostic).join('\n')
+  const hidden = diagnostics.length > 3 ? `\n...and ${diagnostics.length - 3} more` : ''
+  warn(`panda: ${diagnostics.length} diagnostic(s) ${context}\n${shown}${hidden}`)
 }
 
 /**
@@ -72,9 +92,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       addPandaWatchFiles((file) => this.addWatchFile(file), id)
 
       const output = driver.cssgen({ emitLayerDeclaration: false })
-      if (output.diagnostics.length > 0) {
-        this.warn(`panda: ${output.diagnostics.length} diagnostic(s) while compiling the stylesheet`)
-      }
+      warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet')
 
       return { code: `${code}\n${output.css}`, map: null }
     },
@@ -95,6 +113,11 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
       if (driver.isSourceFile(ctx.file)) {
         driver.applyChange({ path: ctx.file, kind: 'change', content: await ctx.read() })
+        warnDiagnostics(
+          (message) => ctx.server.config.logger.warn(message),
+          driver.compiler.getFile(ctx.file)?.diagnostics,
+          `while parsing ${ctx.file}`,
+        )
         return [...ctx.modules, ...invalidateRoots(ctx.server)]
       }
 

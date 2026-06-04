@@ -267,11 +267,13 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],
+            token_refs: snapshots.token_refs,
         },
         &StylesheetOptions {
             minify: false,
             include_static: true,
             source_map: false,
+            emit_layer_declaration: true,
         },
     );
     let compile = t0.elapsed();
@@ -323,11 +325,13 @@ fn run_watch(config: &UserConfig, sources: &[(PathBuf, String)]) -> WatchRun {
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],
+            token_refs: snapshots.token_refs,
         },
         &StylesheetOptions {
             minify: false,
             include_static: true,
             source_map: false,
+            emit_layer_declaration: true,
         },
     );
     let compile = t0.elapsed();

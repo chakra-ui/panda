@@ -66,7 +66,7 @@ pub(crate) fn compile_config_with_token_dictionary(
             utility: utility.as_ref(),
             conditions: &conditions,
             breakpoints: &entries.breakpoints,
-            separator: config.separator.as_deref().unwrap_or("_"),
+            separator: config.separator(),
         },
     );
 
@@ -141,10 +141,7 @@ pub(crate) struct SlotRecipeDefinition {
 impl ConfigDefinitions {
     fn from_config(config: &pandacss_config::UserConfig) -> Result<Self> {
         let import_map = config.import_map.clone().unwrap_or_default();
-        let jsx_factory = config
-            .jsx_factory
-            .clone()
-            .unwrap_or_else(|| "styled".to_string());
+        let jsx_factory = config.jsx_factory().to_owned();
         let patterns = pattern_definitions_from_config(&config.patterns)?;
         let recipes = recipe_definitions(&config.theme.recipes)?;
         let slot_recipes = slot_recipe_definitions(&config.theme.slot_recipes)?;
@@ -456,7 +453,7 @@ fn utility_options_from_config(
     token_dictionary: Option<Arc<TokenDictionary>>,
 ) -> UtilityOptions {
     UtilityOptions {
-        separator: config.separator.clone(),
+        separator: Some(config.separator().to_owned()),
         prefix: config.prefix.class_name().map(str::to_owned),
         tokens: token_dictionary,
     }
@@ -643,7 +640,12 @@ fn jsx_names_from_definitions(
     recipes: &[RecipeDefinition],
     slot_recipes: &[SlotRecipeDefinition],
 ) -> Vec<String> {
-    let mut names = Vec::from([jsx_factory.to_owned(), "Box".to_owned()]);
+    let mut names = vec![jsx_factory.to_owned()];
+    names.extend(
+        pandacss_config::DEFAULT_JSX_COMPONENT_NAMES
+            .iter()
+            .map(|name| (*name).to_owned()),
+    );
     names.extend(
         patterns
             .iter()
