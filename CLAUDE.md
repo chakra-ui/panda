@@ -139,6 +139,9 @@ Brief description of the change and its impact.
 - `minor`: New features, backwards-compatible changes
 - `major`: Breaking changes
 
+**Keep changesets concise and user-facing.** Write for someone reading the changelog: describe the change and the impact
+they would notice, not the internal mechanics. A sentence or two is usually enough.
+
 ## Git & Writing Conventions
 
 ### No co-author trailer on commits
@@ -156,6 +159,12 @@ plain and direct so an average developer understands it on the first read.
 - Don't over-format. Avoid walls of bold text, emoji, and a bullet list for every thought. Use prose where prose works.
 - Say what changed and why. Drop the marketing tone and the wrap-up paragraph that just restates the title.
 - Match the length to the change. A one-line fix gets a one-line message, not an essay.
+
+### Comments
+
+Add a comment only when the code cannot carry the meaning on its own. Reach for clearer names and structure first. When
+a comment is warranted (a non-obvious "why", a workaround, an internal API), keep it to a line or two and skip anything
+the code already says.
 
 ## Important Files & Patterns
 
