@@ -1,6 +1,7 @@
 name: Publish
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.changeset/**'
@@ -12,6 +13,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # push tags and the Version Packages PR
+      pull-requests: write # open the Version Packages PR
+      id-token: write # OIDC handshake with npm (trusted publishing)
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -30,8 +35,8 @@ jobs:
         with:
           publish: pnpm release
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Slack Notification
         if: steps.changesets.outputs.published == 'true'
