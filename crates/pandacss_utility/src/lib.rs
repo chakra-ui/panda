@@ -28,6 +28,7 @@ pub struct Utility {
     separator: String,
     prefix: String,
     tokens: Option<Arc<TokenDictionary>>,
+    fallback_transform: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -71,6 +72,7 @@ impl Utility {
                 .unwrap_or_else(|| DEFAULT_SEPARATOR.to_owned()),
             prefix: options.prefix.unwrap_or_default(),
             tokens: options.tokens,
+            fallback_transform: !entries.is_empty(),
             ..Self::default()
         };
         for (property, config) in entries {
@@ -117,6 +119,11 @@ impl Utility {
     #[must_use]
     pub fn is_known(&self, prop: &str) -> bool {
         self.properties.contains_key(prop) || self.shorthands.contains_key(prop)
+    }
+
+    #[must_use]
+    pub fn should_transform(&self, prop: &str) -> bool {
+        self.fallback_transform || self.is_known(prop)
     }
 
     pub fn known_prop_names(&self) -> impl Iterator<Item = &str> {
@@ -193,6 +200,7 @@ impl Utility {
     }
 
     pub fn register_property(&mut self, name: String, property: UtilityProperty) {
+        self.fallback_transform = true;
         self.properties.insert(name, property);
     }
 

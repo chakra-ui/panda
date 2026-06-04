@@ -82,6 +82,9 @@ jobs:
       - name: Setup Rust
         run: rustup toolchain install 1.93.0 --profile minimal --component clippy rustfmt
 
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
       - name: Cache Cargo
         uses: actions/cache@v4
         with:
@@ -97,4 +100,7 @@ jobs:
         run: cargo check --workspace --locked
 
       - name: Run tests
-        run: cargo test --workspace --locked
+        run: cargo nextest run --workspace --locked
+
+      - name: Run doc tests
+        run: cargo test --workspace --doc --locked
