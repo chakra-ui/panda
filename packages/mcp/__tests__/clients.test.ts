@@ -2,11 +2,8 @@ import { describe, expect, test } from 'vitest'
 import { generateMcpConfig, MCP_CLIENTS } from '../src/clients'
 
 describe('generateMcpConfig', () => {
-  test('uses an npx command that resolves the @pandacss/dev binary', () => {
-    // `npx panda` resolves an unrelated `panda` package on npm (no bin), which fails with
-    // "npm error could not determine executable to run". Reference @pandacss/dev explicitly
-    // and pass the `panda` bin name so npx runs the right executable.
-    expect(generateMcpConfig(MCP_CLIENTS.claude)).toMatchInlineSnapshot(`
+  test('resolves the @pandacss/dev binary and pins the project cwd', () => {
+    expect(generateMcpConfig(MCP_CLIENTS.claude, '/project')).toMatchInlineSnapshot(`
       {
         "mcpServers": {
           "panda": {
@@ -18,6 +15,7 @@ describe('generateMcpConfig', () => {
               "mcp",
             ],
             "command": "npx",
+            "cwd": "/project",
           },
         },
       }
@@ -25,8 +23,8 @@ describe('generateMcpConfig', () => {
   })
 
   test('honors the client config key (vscode uses `servers`)', () => {
-    const config = generateMcpConfig(MCP_CLIENTS.vscode)
+    const config = generateMcpConfig(MCP_CLIENTS.vscode, '/project')
     expect(config).toHaveProperty('servers.panda')
-    expect((config as any).servers.panda.args).toEqual(['-y', '--package', '@pandacss/dev', 'panda', 'mcp'])
+    expect((config as any).servers.panda.cwd).toBe('/project')
   })
 })

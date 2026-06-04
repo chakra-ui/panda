@@ -61,7 +61,7 @@ export async function initMcpConfig(options: InitMcpConfigOptions = {}) {
     }
 
     // Generate new config
-    const newConfig = generateMcpConfig(clientConfig)
+    const newConfig = generateMcpConfig(clientConfig, cwd)
 
     // Check if config file already exists
     let finalConfig = newConfig

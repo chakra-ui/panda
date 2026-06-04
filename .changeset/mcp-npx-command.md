@@ -2,6 +2,9 @@
 '@pandacss/mcp': patch
 ---
 
-Fix `panda init-mcp` generating a server config that AI clients can't run. The config used `npx panda mcp`, but `panda` is an unrelated package on npm with no executable, so clients failed with "could not determine executable to run" (the same happens with `bunx panda mcp`).
+Fix `panda init-mcp` generating an MCP server config that AI clients couldn't run, or that couldn't find your Panda
+config.
 
-The generated config now runs `npx -y --package @pandacss/dev panda mcp`, which resolves the correct binary and falls back to the local install when one is present.
+The command was `npx panda mcp`, which resolves an unrelated `panda` package on npm and fails with "could not determine
+executable to run". It now runs `npx -y --package @pandacss/dev panda mcp` and sets the server's `cwd` to your project,
+so the correct binary runs and your config is always found.
