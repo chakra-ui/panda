@@ -27,10 +27,16 @@ describe('bundleNRequire', () => {
       `import { join } from 'node:path'\nconst broken = (undefined as any).nope\nexport default { outdir: join(broken) }\n`,
     )
 
-    const error = await bundleNRequire(file, { cwd: dir }).catch((err) => err as Error)
+    let error: Error | undefined
+    try {
+      await bundleNRequire(file, { cwd: dir })
+    } catch (err) {
+      error = err as Error
+    }
 
     expect(error).toBeInstanceOf(Error)
-    expect(error.message).not.toContain('Please pass in filename to use require')
-    expect(error.message).toMatch(/nope|undefined/)
+    const message = (error as Error).message
+    expect(message).not.toContain('Please pass in filename to use require')
+    expect(message).toMatch(/nope|undefined/)
   })
 })
