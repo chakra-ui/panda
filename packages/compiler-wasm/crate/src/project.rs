@@ -261,6 +261,34 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&format!("scan failed: {err}")))
     }
 
+    fn write_relative_files<'a>(
+        &self,
+        root: &str,
+        files: impl IntoIterator<Item = (&'a str, &'a str)>,
+        label: &str,
+    ) -> Result<Vec<String>, JsValue> {
+        let mut written = Vec::new();
+        for (path, code) in files {
+            if self.paths.is_absolute(path) {
+                return Err(JsValue::from_str(&format!(
+                    "{label} output path must be relative: {path}"
+                )));
+            }
+            let target = self.paths.join(&[root, path]);
+            let parent = self.paths.dirname(&target);
+            if !parent.is_empty() {
+                self.fs
+                    .create_dir_all(Path::new(&parent))
+                    .map_err(|err| JsValue::from_str(&err.to_string()))?;
+            }
+            self.fs
+                .write(Path::new(&target), code.as_bytes())
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+            written.push(target);
+        }
+        Ok(written)
+    }
+
     /// Shared parse path used by `parse_file` and `parseFiles` — wires the
     /// registered transform callbacks (if any) and returns the core report.
     fn parse_inner(&mut self, path: &str, source: &str) -> pandacss_project::ParseFileReport {
@@ -478,25 +506,14 @@ impl WasmCompiler {
         let base = self.paths.resolve(&cwd, outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
-            for file in artifact.files {
-                if self.paths.is_absolute(&file.path) {
-                    return Err(JsValue::from_str(&format!(
-                        "artifact output path must be relative: {}",
-                        file.path
-                    )));
-                }
-                let target = self.paths.join(&[&base, &file.path]);
-                let parent = self.paths.dirname(&target);
-                if !parent.is_empty() {
-                    self.fs
-                        .create_dir_all(Path::new(&parent))
-                        .map_err(|err| JsValue::from_str(&err.to_string()))?;
-                }
-                self.fs
-                    .write(Path::new(&target), file.code.as_bytes())
-                    .map_err(|err| JsValue::from_str(&err.to_string()))?;
-                written.push(target);
-            }
+            written.extend(self.write_relative_files(
+                &base,
+                artifact
+                    .files
+                    .iter()
+                    .map(|file| (file.path.as_str(), file.code.as_str())),
+                "artifact",
+            )?);
         }
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         written
@@ -849,6 +866,27 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    #[wasm_bindgen(js_name = writeSplitCss)]
+    pub fn write_split_css(&mut self, outdir: &str, cwd: Option<String>) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("split_css", method = "wasm_write_split_css").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms();
+        let files = build_split_css(&mut self.inner, &self.user_config, &static_pattern_atoms);
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, outdir);
+        let paths = self.write_relative_files(
+            &root,
+            files
+                .iter()
+                .map(|file| (file.path.as_str(), file.code.as_str())),
+            "split css",
+        )?;
+        let result = WriteFilesResultSerde { root, paths, files };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Generate every codegen artifact from the resolved project state.
     ///
     /// # Errors
@@ -952,6 +990,14 @@ struct WriteCssResultSerde {
     manifest: CompileManifestSerde,
     layer_ranges: CompileLayerRangesSerde,
     diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteFilesResultSerde {
+    root: String,
+    paths: Vec<String>,
+    files: Vec<SplitCssFileSerde>,
 }
 
 #[derive(Default, Deserialize)]

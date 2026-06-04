@@ -14,9 +14,11 @@ import type {
   Compiler,
   CompileOutput,
   CompileOptions,
+  CssFile,
   ParseFileReport,
   SerializedConfig,
   WriteCssResult,
+  WriteFilesResult,
 } from './types'
 
 /** Result of diffing two serialized configs — produced by config-loader's
@@ -94,8 +96,12 @@ export interface Driver {
   codegen(options?: CodegenOptions): string[]
   /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
   cssgen(options?: CompileOptions): CompileOutput
+  /** Generate split stylesheet files in memory without writing. */
+  splitCss(): CssFile[]
   /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
   writeCss(outfile: string, options?: CompileOptions): WriteCssResult
+  /** Generate + write split stylesheet files under the configured `outdir`. */
+  writeSplitCss(outdir?: string): WriteFilesResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
   /** Whether a changed path is the config file or one of its bundled dependencies.
@@ -133,11 +139,6 @@ export abstract class BaseDriver implements Driver {
     this.#introspect = undefined
   }
 
-  /** cwd applied when `codegen` is called without one (disk hosts). */
-  protected get defaultCwd(): string | undefined {
-    return undefined
-  }
-
   get compiler(): Compiler {
     return this.#compiler
   }
@@ -170,21 +171,24 @@ export abstract class BaseDriver implements Driver {
   }
 
   codegen(options?: CodegenOptions): string[] {
-    const cwd = options?.cwd ?? this.defaultCwd
     const outdir = this.getConfiguredOutdir(options?.outdir)
     const artifactOptions =
       options?.codegenImportExtensions === undefined
         ? undefined
         : { codegenImportExtensions: options.codegenImportExtensions }
-    return this.#compiler.writeArtifacts(outdir, cwd, artifactOptions)
+    return this.#compiler.writeArtifacts(outdir, options?.cwd, artifactOptions)
   }
 
   cssgen(options?: CompileOptions): CompileOutput {
     return this.#compiler.compile(options)
   }
 
+  splitCss(): CssFile[] {
+    return this.#compiler.splitCss()
+  }
+
   resolvePath(path: string): string {
-    return this.#compiler.resolvePath(path, this.defaultCwd)
+    return this.#compiler.resolvePath(path)
   }
 
   paths(outdir?: string): DriverPaths {
@@ -197,7 +201,11 @@ export abstract class BaseDriver implements Driver {
   }
 
   writeCss(outfile: string, options?: CompileOptions): WriteCssResult {
-    return this.#compiler.writeCss(outfile, this.defaultCwd, options)
+    return this.#compiler.writeCss(outfile, undefined, options)
+  }
+
+  writeSplitCss(outdir?: string): WriteFilesResult {
+    return this.#compiler.writeSplitCss(this.getConfiguredOutdir(outdir))
   }
 
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {

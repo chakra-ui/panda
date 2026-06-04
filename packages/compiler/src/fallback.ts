@@ -98,6 +98,13 @@ class FallbackCompiler implements Compiler {
       diagnostics: [] as Diagnostic[],
     }
   }
+  writeSplitCss(outdir: string) {
+    return {
+      root: outdir,
+      paths: [] as string[],
+      files: [],
+    }
+  }
   isEmpty() {
     return true
   }

@@ -86,6 +86,24 @@ describe('createBrowserDriver', () => {
     expect(driver.compiler.fs?.readFile(result.path)).toBe(result.css)
   })
 
+  it('writes split stylesheet output to the compiler memory fs', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })" },
+    })
+    driver.parseFiles()
+
+    const result = driver.writeSplitCss()
+
+    expect(result.root).toBe('/proj/styled-system')
+    expect(result.paths).toContain('/proj/styled-system/styles.css')
+    expect(result.paths).toContain('/proj/styled-system/styles/utilities.css')
+    expect(driver.compiler.fs?.readFile('/proj/styled-system/styles.css')).toContain(
+      "@import './styles/utilities.css';",
+    )
+    expect(driver.compiler.fs?.readFile('/proj/styled-system/styles/utilities.css')).toContain('blue')
+  })
+
   it('resolves the configured outdir through the driver host', async () => {
     const driver = await createBrowserDriver({ snapshot })
 

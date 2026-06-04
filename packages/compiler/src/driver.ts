@@ -28,10 +28,6 @@ class NodeDriver extends BaseDriver {
     this.#loaded = loaded
   }
 
-  protected override get defaultCwd(): string {
-    return this.#options.cwd
-  }
-
   get config() {
     return this.#loaded.config
   }
@@ -77,7 +73,7 @@ class NodeDriver extends BaseDriver {
   }
 
   getOutdir(outdir?: string): string {
-    return this.compiler.resolvePath(this.getConfiguredOutdir(outdir), this.#options.cwd)
+    return this.compiler.resolvePath(this.getConfiguredOutdir(outdir))
   }
 
   override isConfigFile(file: string): boolean {
