@@ -1,26 +1,44 @@
-// Tiny rimraf replacement. Removes every path matching the given glob patterns,
-// resolved from the current working directory. Used by the root clean/reset
-// scripts (run from the repo root) and the next-js sandbox dev scripts.
-//
-//   node scripts/rm.mjs "**/dist" "**/.turbo" "**/*.log"
-//
-// .git is always skipped. node_modules is pruned so a pattern like "**/dist"
-// never descends into dependencies. When a pattern explicitly targets
-// node_modules (reset), the node_modules dirs themselves are kept so they can
-// be removed.
-import { globSync, rmSync } from 'node:fs'
+// rimraf replacement: node scripts/rm.mjs "**/dist" "**/.turbo" "**/*.log"
+// Hand-rolled walk because fs.globSync's `**` skips dot-dirs (.turbo/.next) and is Node 22+.
+import { readdirSync, rmSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 
-const patterns = process.argv.slice(2)
-const targetingNodeModules = patterns.some((pattern) => pattern.includes('node_modules'))
+const PRUNE = new Set(['node_modules', '.git'])
+// retries cover Windows EPERM/EBUSY on locked files (what rimraf handled)
+const RM = { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }
 
-const exclude = (path) => {
-  const segments = path.split(/[\\/]/)
-  if (segments.includes('.git')) return true
-  const nm = segments.indexOf('node_modules')
-  if (nm === -1) return false
-  return targetingNodeModules ? nm < segments.length - 1 : true
+const toMatcher = (name) => {
+  if (!name.includes('*')) return (entry) => entry === name
+  const re = new RegExp('^' + name.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$')
+  return (entry) => re.test(entry)
 }
 
-for (const match of globSync(patterns, { exclude })) {
-  rmSync(match, { recursive: true, force: true })
+const walkRemove = (dir, match, removeNodeModules) => {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry.name)
+    if (match(entry.name)) {
+      rmSync(full, RM)
+      continue
+    }
+    if (entry.isDirectory()) {
+      if (PRUNE.has(entry.name) && !(removeNodeModules && entry.name === 'node_modules')) continue
+      walkRemove(full, match, removeNodeModules)
+    }
+  }
+}
+
+const cwd = process.cwd()
+for (const arg of process.argv.slice(2)) {
+  if (arg.startsWith('**/')) {
+    const name = arg.slice(3)
+    walkRemove(cwd, toMatcher(name), name === 'node_modules')
+  } else {
+    rmSync(resolve(cwd, arg), RM)
+  }
 }
