@@ -1,5 +1,5 @@
 ---
-'@pandacss/preset-atlaskit': minor
+'@pandacss/preset-atlaskit': patch
 ---
 
 Update `@atlaskit/tokens` to v13 and regenerate the preset. The generated theme had been stuck on ~v7-era values, so this brings it in line with the current Atlassian Design System.
