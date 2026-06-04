@@ -13,7 +13,7 @@
 
 use std::{fs, path::PathBuf};
 
-use pandacss_codegen::{GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::GenerateOptions;
 use pandacss_config::{CodegenFormat, UserConfig};
 use pandacss_project::{Project, System};
 use serde_json::{Value, json};
@@ -72,7 +72,7 @@ fn generate_fixture(name: &str, fixture: Value) {
         &user_config,
         GenerateOptions {
             format: CodegenFormat::Js,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
 

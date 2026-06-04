@@ -35,3 +35,7 @@ design note explaining the trade-off.
   (`codegen` + `cssgen`) on `sandbox/cli-v2`: v2 Rust CLI **~7× faster** (codegen 7.0×, cssgen 7.1×, n=9). Startup-bound
   tiny-project number with honest caveats (not equal-work — v2 emits 26 files vs 142, jsx pass deferred); `cssgen` is the
   apples-to-apples row.
+- [2026-06-04 — react-jsx-codegen-types](./2026-06-04-react-jsx-codegen-types.mdx) — `usage.tsx` coverage for the new
+  React JSX codegen surface (`styled`, `StyledVariantProps`, `createRecipeContext`, `createSlotRecipeContext`). Rust JSX
+  type-checks cleanly; simplification cut JSX instantiations by 14–32% from the first clean run. Legacy JSX rows are
+  documented as non-comparable because legacy lacks the split-context APIs.
