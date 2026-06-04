@@ -65,7 +65,7 @@ fn css_runtime_code(ctx: CodegenContext<'_>) -> String {
         .expect("breakpoints should serialize");
     let prefix =
         serde_json::to_string(&ctx.config.prefix.class_name()).expect("prefix should serialize");
-    let separator = ctx.config.separator.as_deref().unwrap_or("_");
+    let separator = ctx.separator();
     let hash = if ctx.config.hash.class_name() {
         "true"
     } else {

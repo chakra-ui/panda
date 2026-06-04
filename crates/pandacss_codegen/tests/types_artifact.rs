@@ -295,11 +295,11 @@ fn emits_ts_source_types() {
     assert!(!system.contains("KhtmlBoxAlign"));
 
     assert_snapshot!(file(types, "types/recipe.ts"), @"
-    import type { ConditionalValue, Pretty, SystemStyleObject } from './system';
+    import type { ConditionalValue, SystemStyleObject } from './system';
 
     export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
 
-    export type RecipeVariant<T> = Pretty<Required<NonNullable<RecipeVariantProps<T>>>>
+    export type RecipeVariant<T> = Required<NonNullable<RecipeVariantProps<T>>>
 
     export type RecipeVariantMap<Variant extends object> = {
       [K in keyof Variant]-?: Array<Variant[K]>
@@ -315,7 +315,7 @@ fn emits_ts_source_types() {
       variantMap: Map
       variantKeys: Array<keyof Props>
       raw: (props?: Props) => SystemStyleObject
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
+      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
       getVariantProps: (props?: Props) => Props
       merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
     }
@@ -329,7 +329,7 @@ fn emits_ts_source_types() {
       variantMap: Map
       variantKeys: Array<keyof Props>
       raw: (props?: Props) => Record<Slot, SystemStyleObject>
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
+      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
       getVariantProps: (props?: Props) => Props
     }
 
@@ -382,11 +382,7 @@ fn emits_ts_system_and_index_types() {
 
     // The former `system-types` content now lives in the merged `types/system`.
     let system = file(types, "types/system.ts");
-    assert!(
-        system.contains(
-            "export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never"
-        )
-    );
+    assert!(system.contains("export type Pretty<T> = { [K in keyof T]: T[K] } & {}"));
     assert!(system.contains(
         "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}"
     ));

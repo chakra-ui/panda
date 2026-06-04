@@ -4,6 +4,7 @@ pub mod css_index;
 pub mod cva;
 pub mod cx;
 pub mod helpers;
+pub mod jsx;
 pub mod patterns;
 pub mod recipes;
 pub mod sva;

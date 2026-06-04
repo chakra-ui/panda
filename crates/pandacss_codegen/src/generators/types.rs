@@ -2,11 +2,13 @@
 //! paths, condition keys, property values, and the system style-object types,
 //! derived from the config's [`TypeData`](pandacss_config::TypeData).
 
-use std::collections::BTreeMap;
+mod jsx_types;
+mod pattern_types;
+mod recipe_types;
 
 use pandacss_config::{
-    ConditionTypeData, PatternPropertyTypeKind, TokenTypeData, UtilityTypeData, ValueTypePart,
-    VariantTypeData,
+    ConditionTypeData, JsxFramework, JsxStylePropsConfig, PatternPropertyTypeKind, TokenTypeData,
+    UtilityTypeData, ValueTypePart,
 };
 
 use crate::{
@@ -14,6 +16,8 @@ use crate::{
     ExportDecl, ImportDecl, Item, ItemNode, Module,
     artifact::{GenerateOptions, emit_module_files},
 };
+
+pub(crate) use recipe_types::concrete_recipe_types;
 
 #[must_use]
 pub fn generate(
@@ -64,7 +68,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
 
     files.extend(emit_type_file(
         "types/pattern",
-        &pattern_module(),
+        &pattern_types::module(),
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
@@ -77,7 +81,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
 
     files.extend(emit_type_file(
         "types/recipe",
-        &recipe_module(),
+        &recipe_types::module(),
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
@@ -85,14 +89,31 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         ]),
     ));
 
+    if matches!(ctx.config.jsx_framework.as_ref(), Some(JsxFramework::React)) {
+        files.extend(emit_type_file(
+            "types/jsx",
+            &jsx_types::module(ctx),
+            options,
+            DependencySet::from_slice(&[
+                ConfigDependency::CodegenFormat,
+                ConfigDependency::CodegenImportExtensions,
+                ConfigDependency::JsxFactory,
+                ConfigDependency::JsxFramework,
+                ConfigDependency::JsxStyleProps,
+            ]),
+        ));
+    }
+
     files.extend(emit_type_file(
         "types/index",
-        &index_module(),
+        &index_module(ctx),
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
             ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Conditions,
+            ConfigDependency::JsxFactory,
+            ConfigDependency::JsxFramework,
             ConfigDependency::Patterns,
             ConfigDependency::Recipes,
             ConfigDependency::Tokens,
@@ -213,6 +234,7 @@ fn system_module(
     data: &UtilityTypeData,
     options: pandacss_config::TypegenOptions,
 ) -> Module {
+    let jsx_style_props = options.jsx_style_props;
     // One member per native CSS property (shared registry, already sorted, vendor
     // variants included). All share the single `CssValue`.
     let css_members = pandacss_shared::css_properties::CSS_PROPERTY_NAMES
@@ -234,8 +256,12 @@ fn system_module(
         .collect::<Vec<_>>()
         .join("\n");
 
-    let mut parts: Vec<String> =
-        vec!["export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never".into()];
+    let mut parts: Vec<String> = vec![
+        "export type Pretty<T> = { [K in keyof T]: T[K] } & {}".into(),
+        "export type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never".into(),
+        "export type DistributiveUnion<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] | T[K] : T[K]\n} & DistributiveOmit<U, keyof T>".into(),
+        "export type Assign<T, U> = Omit<T, keyof U> & U".into(),
+    ];
     parts.extend(condition_type_parts(conditions));
     parts.extend(value_alias_parts(data, options));
     parts.extend(vec![
@@ -278,216 +304,61 @@ export interface GlobalFontface {
 }"#
         .into(),
     ]);
+    parts.extend(jsx_style_type_parts(jsx_style_props));
 
     Module::new()
         .with_import(ImportDecl::ty(["TokenValue"], "./tokens"))
         .with_item(type_raw(parts.join("\n\n")))
 }
 
-fn pattern_module() -> Module {
-    Module::new()
-        .with_import(ImportDecl::ty(
-            [
-                "ConditionalValue",
-                "SystemProperties",
-                "SystemStyleObject",
-            ],
-            "./system",
-        ))
-        .with_item(type_raw(
-            r"export type PatternPrimitive = string | number | boolean
+fn jsx_style_type_parts(mode: JsxStylePropsConfig) -> Vec<String> {
+    let jsx_style_props = match mode {
+        JsxStylePropsConfig::All => "SystemStyleObject & WithCss",
+        JsxStylePropsConfig::Minimal => "WithCss",
+        JsxStylePropsConfig::None => "{}",
+    };
+    let html_props = match mode {
+        JsxStylePropsConfig::All => {
+            "export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Omit<T, keyof P | OmittedHTMLProps> & PatchedHTMLProps & P"
+        }
+        JsxStylePropsConfig::Minimal | JsxStylePropsConfig::None => {
+            "export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Omit<T, keyof P> & P"
+        }
+    };
 
-export type PatternPropertyValue<Property extends keyof SystemProperties> = SystemProperties[Property]
+    vec![format!(
+        r#"interface WithCss {{
+  css?: SystemStyleObject | SystemStyleObject[]
+}}
 
-export type PatternTokenValue<Value> = ConditionalValue<Value>
+export type JsxStyleProps = {jsx_style_props}
 
-export interface PatternHelpers {
-  map(value: unknown, fn: (value: string) => string | undefined): unknown
-  isCssUnit(value: unknown): boolean
-  isCssVar(value: unknown): boolean
-  isCssFunction(value: unknown): boolean
+export interface PatchedHTMLProps {{
+  htmlWidth?: string | number
+  htmlHeight?: string | number
+  htmlTranslate?: "yes" | "no" | undefined
+  htmlContent?: string
+}}
+
+export type OmittedHTMLProps = "color" | "translate" | "transition" | "width" | "height" | "content"
+
+{html_props}"#
+    )]
 }
 
-export interface PatternConfig<Props extends object = object> {
-  properties?: Props
-  defaultValues?: Partial<Props> | ((props: Props) => Partial<Props>)
-  transform?: (props: Props, helpers: PatternHelpers) => SystemStyleObject
-  strict?: boolean
-  blocklist?: Array<keyof SystemProperties>
-}
-
-export interface PatternRuntimeConfig<Props extends object = object> extends PatternConfig<Props> {
-  transform: (props: Props, helpers: PatternHelpers) => SystemStyleObject
-}",
-        ))
-}
-
-fn recipe_module() -> Module {
-    let generics = r"export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
-
-export type RecipeVariant<T> = Pretty<Required<NonNullable<RecipeVariantProps<T>>>>
-
-export type RecipeVariantMap<Variant extends object> = {
-  [K in keyof Variant]-?: Array<Variant[K]>
-}
-
-export type RecipeConfigVariantMap<T> = {
-  [K in keyof T]: Array<keyof T[K]>
-}
-
-export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
-  (props?: Props): string
-  __type: Props
-  variantMap: Map
-  variantKeys: Array<keyof Props>
-  raw: (props?: Props) => SystemStyleObject
-  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
-  getVariantProps: (props?: Props) => Props
-  merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
-}
-
-export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
-
-export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
-  (props?: Props): SlotRecord<Slot, string>
-  __type: Props
-  __slot: Slot
-  variantMap: Map
-  variantKeys: Array<keyof Props>
-  raw: (props?: Props) => Record<Slot, SystemStyleObject>
-  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<Omit<T, keyof Props>>]
-  getVariantProps: (props?: Props) => Props
-}
-
-export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
-
-export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
-
-export type RecipeSelection<T extends RecipeVariantRecord> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]>
-}
-
-export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
-  base?: SystemStyleObject
-  variants?: T
-  defaultVariants?: RecipeSelection<T>
-  compoundVariants?: Array<RecipeSelection<T> & { css: SystemStyleObject }>
-}
-
-export interface RecipeCreatorFn {
-  <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
-}
-
-export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
-
-export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
-  className?: string
-  slots: Slot[]
-  base?: SlotRecord<Slot, SystemStyleObject>
-  variants?: T
-  defaultVariants?: RecipeSelection<T>
-  compoundVariants?: Array<RecipeSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
-}
-
-export interface SlotRecipeCreatorFn {
-  <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
-}";
-
-    Module::new()
-        .with_import(ImportDecl::ty(
-            ["ConditionalValue", "Pretty", "SystemStyleObject"],
-            "./system",
-        ))
-        .with_item(type_raw(generics))
-}
-
-pub(crate) fn concrete_recipe_types(
-    type_name: &str,
-    slots: Option<&[String]>,
-    variants: &BTreeMap<String, VariantTypeData>,
-) -> Vec<String> {
-    let variant_name = format!("{type_name}Variant");
-    let props_name = format!("{type_name}VariantProps");
-    let map_name = format!("{type_name}VariantMap");
-    let mut out = vec![
-        variant_type(&variant_name, variants),
-        variant_props_type(&props_name, &variant_name),
-        variant_map_type(&map_name, &variant_name),
-    ];
-
-    if let Some(slots) = slots {
-        let slot_name = format!("{type_name}Slot");
-        out.push(format!(
-            "export type {slot_name} = {}",
-            string_union(slots, "string")
-        ));
-        out.push(format!(
-            "export type {type_name}Recipe = SlotRecipeRuntimeFn<{slot_name}, {props_name}, {map_name}>"
-        ));
-    } else {
-        out.push(format!(
-            "export type {type_name}Recipe = RecipeRuntimeFn<{props_name}, {map_name}>"
-        ));
-    }
-
-    out
-}
-
-fn variant_type(type_name: &str, variants: &BTreeMap<String, VariantTypeData>) -> String {
-    if variants.is_empty() {
-        return format!("export type {type_name} = {{}}");
-    }
-
-    let members = variants
-        .iter()
-        .map(|(name, data)| format!("  {}?: {}", quote_member(name), variant_value_type(data)))
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    format!("export type {type_name} = {{\n{members}\n}}")
-}
-
-fn variant_props_type(props_name: &str, variant_name: &str) -> String {
-    format!(
-        "export type {props_name} = {{\n  [K in keyof {variant_name}]?: ConditionalValue<{variant_name}[K]>\n}}"
-    )
-}
-
-fn variant_map_type(map_name: &str, variant_name: &str) -> String {
-    format!("export type {map_name} = RecipeVariantMap<{variant_name}>")
-}
-
-fn variant_value_type(data: &VariantTypeData) -> String {
-    let mut parts = Vec::with_capacity(data.values.len() + usize::from(data.allows_boolean));
-
-    if data.allows_boolean {
-        parts.push("boolean".to_owned());
-    }
-
-    parts.extend(
-        data.values
-            .iter()
-            .filter(|value| !(data.allows_boolean && (*value == "true" || *value == "false")))
-            .map(|value| string_literal(value)),
-    );
-
-    if parts.is_empty() {
-        "string".into()
-    } else {
-        parts.join(" | ")
-    }
-}
-
-fn index_module() -> Module {
+fn index_module(ctx: CodegenContext<'_>) -> Module {
     // `./system` carries our own CssProperties + SystemProperties + selectors +
     // SystemStyleObject (merged); re-exported via the star below.
-    ["./tokens", "./system", "./pattern", "./recipe"]
-        .into_iter()
-        .fold(Module::new(), |module, source| {
-            module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeStar {
-                source: source.into(),
-            })))
-        })
+    let mut sources = vec!["./tokens", "./system", "./pattern", "./recipe"];
+    if matches!(ctx.config.jsx_framework.as_ref(), Some(JsxFramework::React)) {
+        sources.push("./jsx");
+    }
+
+    sources.into_iter().fold(Module::new(), |module, source| {
+        module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeStar {
+            source: source.into(),
+        })))
+    })
 }
 
 fn raw_type_module(code: impl Into<String>) -> Module {

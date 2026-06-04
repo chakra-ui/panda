@@ -71,6 +71,7 @@ pub enum ImportKind {
 pub enum ImportSpecifier {
     Named(String),
     NamedAlias { imported: String, local: String },
+    Namespace(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

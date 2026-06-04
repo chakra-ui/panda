@@ -142,7 +142,7 @@ fn emits_ts_source_css() {
 #[test]
 fn emits_configured_separator_in_css_runtime() {
     let mut input = input();
-    input.config.separator = Some("__".into());
+    input.config.separator = "__".into();
     let artifacts = ArtifactGraph.generate_with_input(
         &input,
         GenerateOptions {

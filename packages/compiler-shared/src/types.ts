@@ -102,7 +102,20 @@ export interface StaticPatternResult {
   diagnostics: Diagnostic[]
 }
 
-export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 'patterns' | 'themes' | 'types'
+export type CodegenArtifactId =
+  | 'conditions'
+  | 'css-index'
+  | 'cx'
+  | 'helpers'
+  | 'jsx-create-recipe-context'
+  | 'jsx-create-slot-recipe-context'
+  | 'jsx-factory'
+  | 'jsx-index'
+  | 'jsx-is-valid-prop'
+  | 'jsx-patterns'
+  | 'patterns'
+  | 'themes'
+  | 'types'
 
 export type CodegenDependency =
   | 'codegenFormat'

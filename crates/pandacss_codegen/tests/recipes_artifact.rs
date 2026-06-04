@@ -258,7 +258,7 @@ fn emits_ts_source_recipes() {
 #[test]
 fn emits_configured_separator_in_recipe_runtime() {
     let mut input = input();
-    input.config.separator = Some("__".into());
+    input.config.separator = "__".into();
     let artifacts = ArtifactGraph.generate_with_input(
         &input,
         GenerateOptions {
@@ -268,7 +268,10 @@ fn emits_configured_separator_in_recipe_runtime() {
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
 
-    assert!(file(recipes, "recipes/runtime.ts").contains("`${className}--${prop}__${withoutSpace(value)}`"));
+    assert!(
+        file(recipes, "recipes/runtime.ts")
+            .contains("`${className}--${prop}__${withoutSpace(value)}`")
+    );
 }
 
 #[test]
