@@ -1,5 +1,18 @@
 # @pandacss/config
 
+## 1.11.3
+
+### Patch Changes
+
+- b702571: Previously, when your Panda config failed to load, the real error could be hidden behind a confusing
+  `Please pass in filename to use require` message (most often when running under Bun). Panda now reports the actual
+  config error instead.
+  - @pandacss/logger@1.11.3
+  - @pandacss/preset-base@1.11.3
+  - @pandacss/preset-panda@1.11.3
+  - @pandacss/shared@1.11.3
+  - @pandacss/types@1.11.3
+
 ## 1.11.2
 
 ### Patch Changes
