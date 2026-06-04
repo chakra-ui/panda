@@ -5,7 +5,7 @@
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
 use crate::adapter::{
-    blank_like, copy_range, find_bytes, find_matching_brace, starts_with, tag_blocks,
+    blank_like, copy_range, find_bytes, find_matching_brace, has_extension, starts_with, tag_blocks,
 };
 use crate::{
     ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
@@ -45,17 +45,17 @@ pub(crate) fn collect_template_styles(
         matched,
         config,
     };
-    if path.ends_with(".vue") {
+    if has_extension(path, "vue") {
         return collect_vue_template_styles(source, matched, config, &context);
     }
-    if path.ends_with(".svelte") {
+    if has_extension(path, "svelte") {
         return collect_svelte_template_styles(source, matched, config, &context);
     }
     Vec::new()
 }
 
 fn template_context_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
-    if path.ends_with(".vue") || path.ends_with(".svelte") {
+    if has_extension(path, "vue") || has_extension(path, "svelte") {
         return Cow::Owned(mask_script_blocks(source));
     }
     crate::adapt_source(source, path)
@@ -76,6 +76,13 @@ struct TemplateContext<'a> {
     config: &'a ExtractorConfig,
 }
 
+struct TemplateScan<'a> {
+    framework: Framework,
+    matched: &'a [MatchedImport],
+    config: &'a ExtractorConfig,
+    context: &'a TemplateContext<'a>,
+}
+
 fn collect_vue_template_styles(
     source: &str,
     matched: &[MatchedImport],
@@ -83,6 +90,12 @@ fn collect_vue_template_styles(
     context: &TemplateContext<'_>,
 ) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
+    let scan = TemplateScan {
+        framework: Framework::Vue,
+        matched,
+        config,
+        context,
+    };
     for block in tag_blocks(source, "template") {
         if has_non_html_lang(source, block.open_start, block.open_end) {
             continue;
@@ -91,10 +104,7 @@ fn collect_vue_template_styles(
             source,
             block.content_start,
             block.content_end,
-            Framework::Vue,
-            matched,
-            config,
-            context,
+            &scan,
             &mut out,
         );
     }
@@ -123,33 +133,21 @@ fn collect_svelte_template_styles(
     excluded.sort_unstable();
 
     let mut out = Vec::new();
+    let scan = TemplateScan {
+        framework: Framework::Svelte,
+        matched,
+        config,
+        context,
+    };
     let mut cursor = 0;
     for (start, end) in excluded {
         if cursor < start {
-            collect_markup_range(
-                source,
-                cursor,
-                start,
-                Framework::Svelte,
-                matched,
-                config,
-                context,
-                &mut out,
-            );
+            collect_markup_range(source, cursor, start, &scan, &mut out);
         }
         cursor = end;
     }
     if cursor < source.len() {
-        collect_markup_range(
-            source,
-            cursor,
-            source.len(),
-            Framework::Svelte,
-            matched,
-            config,
-            context,
-            &mut out,
-        );
+        collect_markup_range(source, cursor, source.len(), &scan, &mut out);
     }
     out
 }
@@ -158,10 +156,7 @@ fn collect_markup_range(
     source: &str,
     start: usize,
     end: usize,
-    framework: Framework,
-    matched: &[MatchedImport],
-    config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    scan: &TemplateScan<'_>,
     out: &mut Vec<ExtractedJsx>,
 ) {
     let bytes = source.as_bytes();
@@ -171,13 +166,11 @@ fn collect_markup_range(
             cursor = find_bytes(bytes, b"-->", cursor + 4).map_or(end, |index| index + 3);
             continue;
         }
-        if bytes[cursor] == b'<' {
-            if let Some(next) = collect_tag(
-                source, cursor, end, framework, matched, config, context, out,
-            ) {
-                cursor = next;
-                continue;
-            }
+        if bytes[cursor] == b'<'
+            && let Some(next) = collect_tag(source, cursor, end, scan, out)
+        {
+            cursor = next;
+            continue;
         }
         cursor += 1;
     }
@@ -187,10 +180,7 @@ fn collect_tag(
     source: &str,
     tag_start: usize,
     limit: usize,
-    framework: Framework,
-    matched: &[MatchedImport],
-    config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    scan: &TemplateScan<'_>,
     out: &mut Vec<ExtractedJsx>,
 ) -> Option<usize> {
     let bytes = source.as_bytes();
@@ -206,7 +196,7 @@ fn collect_tag(
         return Some(tag_end + 1);
     }
     let tag_name = source.get(name_start..name_end)?;
-    let Some(resolved) = resolve_template_tag(tag_name, matched, config) else {
+    let Some(resolved) = resolve_template_tag(tag_name, scan.matched, scan.config) else {
         return Some(tag_end + 1);
     };
 
@@ -215,9 +205,7 @@ fn collect_tag(
         source,
         name_end,
         tag_end,
-        framework,
-        config,
-        context,
+        scan,
         resolved.name.as_ref(),
         &mut entries,
     );
@@ -288,9 +276,7 @@ fn collect_attrs(
     source: &str,
     start: usize,
     end: usize,
-    framework: Framework,
-    config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    scan: &TemplateScan<'_>,
     tag_name: &str,
     entries: &mut Vec<(String, Literal)>,
 ) {
@@ -302,20 +288,20 @@ fn collect_attrs(
             break;
         }
 
-        if matches!(framework, Framework::Svelte) && bytes[cursor] == b'{' {
-            if let Some(close) = find_matching_brace(source, cursor) {
-                if close <= end {
-                    if let Some(expr) = svelte_spread_expr(source, cursor + 1, close) {
-                        merge_spread_with_context(expr, config, context, tag_name, entries);
-                    }
-                    cursor = close + 1;
-                    continue;
-                }
+        if matches!(scan.framework, Framework::Svelte)
+            && bytes[cursor] == b'{'
+            && let Some(close) = find_matching_brace(source, cursor)
+            && close <= end
+        {
+            if let Some(expr) = svelte_spread_expr(source, cursor + 1, close) {
+                merge_spread_with_context(expr, scan.config, scan.context, tag_name, entries);
             }
+            cursor = close + 1;
+            continue;
         }
 
         let name_start = cursor;
-        cursor = read_attr_name(bytes, cursor, end, framework);
+        cursor = read_attr_name(bytes, cursor, end, scan.framework);
         let Some(raw_name) = source.get(name_start..cursor) else {
             break;
         };
@@ -324,17 +310,24 @@ fn collect_attrs(
         let value = if cursor < end && bytes[cursor] == b'=' {
             cursor += 1;
             skip_ws_and_tag_comments(bytes, &mut cursor, end);
-            read_attr_value(source, &mut cursor, end, framework)
+            read_attr_value(source, &mut cursor, end, scan.framework)
         } else {
             AttrValue::Bool
         };
 
         merge_attr(
-            raw_name, value, framework, config, context, tag_name, entries,
+            raw_name,
+            value,
+            scan.framework,
+            scan.config,
+            scan.context,
+            tag_name,
+            entries,
         );
     }
 }
 
+#[derive(Clone, Copy)]
 enum AttrValue<'a> {
     Bool,
     Static(&'a str),
@@ -571,7 +564,6 @@ fn read_attr_name(bytes: &[u8], mut cursor: usize, end: usize, framework: Framew
         let byte = bytes[cursor];
         match quote {
             Some(current) if byte == current => quote = None,
-            Some(_) => {}
             None if byte == b'\'' || byte == b'"' => quote = Some(byte),
             None if matches!(framework, Framework::Vue) && byte == b'[' => bracket_depth += 1,
             None if matches!(framework, Framework::Vue) && byte == b']' => {
@@ -582,7 +574,7 @@ fn read_attr_name(bytes: &[u8], mut cursor: usize, end: usize, framework: Framew
             {
                 break;
             }
-            None => {}
+            Some(_) | None => {}
         }
         cursor += 1;
     }
@@ -615,12 +607,11 @@ fn find_markup_tag_end(source: &str, from: usize, limit: usize) -> Option<usize>
         let byte = bytes[index];
         match quote {
             Some(current) if byte == current => quote = None,
-            Some(_) => {}
             None if byte == b'\'' || byte == b'"' => quote = Some(byte),
             None if byte == b'{' => brace_depth += 1,
             None if byte == b'}' => brace_depth = brace_depth.saturating_sub(1),
             None if byte == b'>' && brace_depth == 0 => return Some(index),
-            None => {}
+            Some(_) | None => {}
         }
         index += 1;
     }

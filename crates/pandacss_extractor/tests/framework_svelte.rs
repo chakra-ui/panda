@@ -100,13 +100,13 @@ fn staged_extract_jsx_includes_template_style_props() {
 
 #[test]
 fn aliased_css_calls_extract_from_markup() {
-    let source = indoc! {r#"
+    let source = indoc! {r"
         <script>
         import { css as panda } from '@panda/css';
         </script>
 
         <p class={panda({ color: 'red' })} />
-    "#};
+    "};
 
     let result = extract(source, "Alias.svelte", &panda_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
@@ -167,14 +167,14 @@ fn static_class_attrs_do_not_become_style_props() {
 
 #[test]
 fn conditional_style_props_emit_conditional_literals() {
-    let source = indoc! {r#"
+    let source = indoc! {r"
         <script>
         import { Box } from '@panda/jsx';
         const selected = unknown
         </script>
 
         <Box color={selected ? 'red' : 'blue'} />
-    "#};
+    "};
 
     let result = extract(source, "Conditional.svelte", &panda_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
@@ -192,14 +192,14 @@ fn conditional_style_props_emit_conditional_literals() {
 
 #[test]
 fn array_css_prop_from_script_constant_extracts() {
-    let source = indoc! {r#"
+    let source = indoc! {r"
         <script>
         import { Box } from '@panda/jsx';
         const styles = [{ color: 'red' }, { padding: '4px' }]
         </script>
 
         <Box css={styles} />
-    "#};
+    "};
 
     let result = extract(source, "ArrayCss.svelte", &panda_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
@@ -215,14 +215,14 @@ fn array_css_prop_from_script_constant_extracts() {
 
 #[test]
 fn spread_filters_non_style_props() {
-    let source = indoc! {r#"
+    let source = indoc! {r"
         <script>
         import { Box } from '@panda/jsx';
         const props = { id: 'x', color: 'red', padding: '4px' }
         </script>
 
         <Box {...props} />
-    "#};
+    "};
 
     let result = extract(source, "SpreadFilter.svelte", &panda_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"

@@ -233,6 +233,72 @@ fn all_jsx_props_filter_valid_props() {
 }
 
 #[test]
+fn generated_color_palette_utility_is_a_valid_jsx_prop() {
+    let mut project = create_project(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#ef4444" }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box colorPalette='red' color='colorPalette.500' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: colorPalette.500
+      conditions: []
+    - prop: colorPalette
+      value: red
+      conditions: []
+    "#);
+}
+
+#[test]
+fn disabled_color_palette_generation_omits_jsx_prop_support() {
+    let mut project = create_project(json!({
+        "theme": {
+            "colorPalette": {
+                "enabled": false
+            },
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": { "value": "#ef4444" }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box colorPalette='red' color='red.500' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: red.500
+      conditions: []
+    "#);
+}
+
+#[test]
 fn conditions_survive_shorthand_normalization() {
     let mut project = create_project(json!({
         "conditions": {

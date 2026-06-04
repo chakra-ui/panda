@@ -432,7 +432,7 @@ fn comments_are_ignored_without_blocking_real_expressions() {
     let mut project = create_project(json!({}));
     let report = project.parse_file(
         "Comments.vue",
-        indoc! {r#"
+        indoc! {r"
             <script setup>
             import { css } from '@panda/css';
             </script>
@@ -441,7 +441,7 @@ fn comments_are_ignored_without_blocking_real_expressions() {
               <!-- {{ css({ color: 'red' }) }} -->
               <div>{{ css({ padding: '4px' }) }}</div>
             </template>
-        "#},
+        "},
     );
 
     assert!(report.diagnostics.is_empty());
