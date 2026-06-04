@@ -97,6 +97,7 @@ pub(crate) struct StyleResolver<'a> {
     pub(crate) utility: Option<&'a Utility>,
     pub(crate) conditions: &'a ProjectConditionMatcher,
     pub(crate) breakpoints: &'a [String],
+    pub(crate) separator: &'a str,
 }
 
 impl StyleResolver<'_> {
@@ -594,8 +595,12 @@ fn resolve_recipe_variants(
                 .options
                 .iter()
                 .map(|option| {
-                    let class_name =
-                        recipe_variant_class_name(class_name, &group.name, &option.key);
+                    let class_name = recipe_variant_class_name(
+                        class_name,
+                        &group.name,
+                        resolver.separator,
+                        &option.key,
+                    );
                     (
                         option.key.clone().into_boxed_str(),
                         ResolvedRecipePart {
@@ -663,8 +668,12 @@ fn resolve_slot_recipe_variants(
                         .iter()
                         .map(|(slot, style)| {
                             let slot_class = RecipeRegistry::slot_class_name(class_name, slot);
-                            let class_name =
-                                recipe_variant_class_name(&slot_class, &group.name, &option.key);
+                            let class_name = recipe_variant_class_name(
+                                &slot_class,
+                                &group.name,
+                                resolver.separator,
+                                &option.key,
+                            );
                             (
                                 slot.clone().into_boxed_str(),
                                 ResolvedRecipePart {
@@ -1227,8 +1236,13 @@ fn recipe_variant_key(recipe: &str, slot: Option<&str>, class_name: &str) -> Rec
     }
 }
 
-fn recipe_variant_class_name(class_name: &str, variant: &str, value: &str) -> String {
-    format!("{class_name}--{variant}_{value}")
+fn recipe_variant_class_name(
+    class_name: &str,
+    variant: &str,
+    separator: &str,
+    value: &str,
+) -> String {
+    format!("{class_name}--{variant}{separator}{value}")
 }
 
 fn with_entry_conditions(

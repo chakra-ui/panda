@@ -140,6 +140,22 @@ fn emits_ts_source_css() {
 }
 
 #[test]
+fn emits_configured_separator_in_css_runtime() {
+    let mut input = input();
+    input.config.separator = Some("__".into());
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
+    let css = artifact(&artifacts, ArtifactId::Css);
+
+    assert!(file(css, "css/css.ts").contains("`${propKey}__${withoutSpace(value)}`"));
+}
+
+#[test]
 fn emits_js_runtime_and_declarations() {
     let artifacts = ArtifactGraph.generate_with_input(
         &input(),

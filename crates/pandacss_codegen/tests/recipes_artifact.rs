@@ -256,6 +256,22 @@ fn emits_ts_source_recipes() {
 }
 
 #[test]
+fn emits_configured_separator_in_recipe_runtime() {
+    let mut input = input();
+    input.config.separator = Some("__".into());
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
+    let recipes = artifact(&artifacts, ArtifactId::Recipes);
+
+    assert!(file(recipes, "recipes/runtime.ts").contains("`${className}--${prop}__${withoutSpace(value)}`"));
+}
+
+#[test]
 #[allow(
     clippy::too_many_lines,
     reason = "inline snapshots for the full recipe artifact"

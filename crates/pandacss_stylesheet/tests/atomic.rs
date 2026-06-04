@@ -32,6 +32,33 @@ fn emits_dynamic_atomic_css() {
 }
 
 #[test]
+fn emits_dynamic_atomic_css_with_configured_separator() {
+    let config = config(serde_json::json!({
+        "separator": "__",
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c" },
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ color: 'red', bg: 'blue' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .bg__blue {
+    background-color: blue;
+  }
+  .c__red {
+    color: red;
+  }
+}
+");
+}
+
+#[test]
 fn hashes_atomic_class_names_with_prefix_conditions_and_important() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
