@@ -201,6 +201,11 @@ export async function startMcpServer(options: StartMcpServerOptions = {}) {
   const serverTransport = transport ?? new StdioServerTransport()
   await server.connect(serverTransport)
 
+  // Only own the lifecycle for the default stdio transport, not injected test ones.
+  if (!transport) {
+    watchProcessLifecycle(server)
+  }
+
   // Use stderr for logging (stdout is reserved for MCP protocol)
   console.error('Panda CSS MCP server started')
   console.error(`Working directory: ${resolvedCwd}`)
@@ -209,4 +214,63 @@ export async function startMcpServer(options: StartMcpServerOptions = {}) {
   }
 
   return server
+}
+
+type LifecycleListener = (arg: any) => void
+
+export interface ProcessLike {
+  stdin: { on(event: string, listener: LifecycleListener): unknown }
+  stdout: { on(event: string, listener: LifecycleListener): unknown; write(data: string): unknown }
+  stderr: { on(event: string, listener: LifecycleListener): unknown; write(data: string): unknown }
+  on(event: string, listener: LifecycleListener): unknown
+}
+
+export interface ProcessLifecycleOptions {
+  process?: ProcessLike
+  exit?: (code: number) => void
+}
+
+/**
+ * Exit the stdio MCP server on host disconnect or fatal error instead of orphaning
+ * and spinning at 100% CPU. See https://github.com/chakra-ui/panda/issues/3553.
+ */
+export function watchProcessLifecycle(server: Pick<McpServer, 'close'>, options: ProcessLifecycleOptions = {}) {
+  const proc = options.process ?? process
+  const exit = options.exit ?? ((code: number) => process.exit(code))
+
+  let exiting = false
+  const shutdown = (code: number) => {
+    if (exiting) return
+    exiting = true
+    void Promise.resolve(server.close()).catch(() => {})
+    exit(code)
+  }
+
+  // Host closed the pipe (session ended) -> stop instead of orphaning.
+  proc.stdin.on('end', () => shutdown(0))
+  proc.stdin.on('close', () => shutdown(0))
+
+  // Swallow broken pipes so they don't reach the fatal path and spin.
+  for (const stream of [proc.stdout, proc.stderr]) {
+    stream.on('error', (err: NodeJS.ErrnoException) => {
+      if (err?.code === 'EPIPE') shutdown(0)
+    })
+  }
+
+  const onFatal = (label: string) => (err: unknown) => {
+    try {
+      proc.stderr.write(`[panda mcp] ${label}, exiting: ${formatError(err)}\n`)
+    } catch {
+      // stderr may also be a broken pipe; swallow so we exit, not loop.
+    }
+    shutdown(1)
+  }
+  proc.on('uncaughtException', onFatal('uncaught exception'))
+  proc.on('unhandledRejection', onFatal('unhandled rejection'))
+
+  return shutdown
+}
+
+function formatError(err: unknown) {
+  return err instanceof Error ? err.stack ?? err.message : String(err)
 }
