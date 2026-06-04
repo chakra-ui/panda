@@ -40,5 +40,8 @@
   "dependencies": {
     "@pandacss/types": "workspace:*",
     "magic-string": "0.30.21"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -45,5 +45,8 @@
     "@pandacss/token-dictionary": "workspace:*",
     "@pandacss/types": "workspace:*",
     "zod": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

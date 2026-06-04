@@ -44,5 +44,8 @@
   },
   "devDependencies": {
     "@types/css": "0.0.38"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -48,5 +48,8 @@
   },
   "peerDependencies": {
     "astro": ">=4"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

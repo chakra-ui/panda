@@ -79,5 +79,8 @@
     "@types/lodash.merge": "4.6.9",
     "@types/pluralize": "0.0.33",
     "boxen": "8.0.1"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

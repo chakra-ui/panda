@@ -48,5 +48,8 @@
   },
   "devDependencies": {
     "markdown-table": "3.0.4"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
