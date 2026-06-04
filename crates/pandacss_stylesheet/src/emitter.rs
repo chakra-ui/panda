@@ -931,7 +931,7 @@ impl<'a> EmitContext<'a> {
         };
         let result = self.transform_atom(atom.prop(), raw);
         for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
-            Self::write_style_rule(writer, &rule, &result.styles);
+            Self::write_style_rule(writer, &rule, &result.styles, atom.important());
         }
     }
 
@@ -1377,7 +1377,7 @@ impl<'a> EmitContext<'a> {
         default_transform(prop, raw)
     }
 
-    fn write_style_rule(writer: &mut CssWriter, rule: &RuleTarget, styles: &Literal) {
+    fn write_style_rule(writer: &mut CssWriter, rule: &RuleTarget, styles: &Literal, important: bool) {
         let Literal::Object(entries) = styles else {
             return;
         };
@@ -1385,8 +1385,12 @@ impl<'a> EmitContext<'a> {
             writer.rule(&rule.selector, |writer| {
                 for (prop, value) in entries {
                     if let Some(value) = literal_to_css(value) {
-                        let (value, important) = split_important(&value);
-                        writer.declaration(&hyphenate_property(prop), value.as_ref(), important);
+                        let (value, value_important) = split_important(&value);
+                        writer.declaration(
+                            &hyphenate_property(prop),
+                            value.as_ref(),
+                            important || value_important,
+                        );
                     }
                 }
             });
