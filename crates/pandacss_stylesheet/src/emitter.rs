@@ -12,6 +12,7 @@ use rustc_hash::FxHashSet;
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
+use crate::numeric_value;
 use crate::sort::{SortContext, condition_raw_paths};
 use crate::writer::CssWriter;
 
@@ -407,7 +408,7 @@ fn write_keyframe_selector(writer: &mut CssWriter, selector: &str, declarations:
     };
     writer.rule(selector, |writer| {
         for (prop, value) in declarations {
-            let Some(rendered) = render_primitive_value(value) else {
+            let Some(rendered) = render_declaration_value(prop, value) else {
                 continue;
             };
             let (value, important) = split_important(&rendered);
@@ -472,7 +473,7 @@ fn at_rule_variants(value: &Value) -> &[Value] {
 /// rendered value. `false` and structural values are skipped.
 fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<String, Value>) {
     for (prop, value) in body {
-        if let Some(rendered) = render_descriptor_value(value) {
+        if let Some(rendered) = render_descriptor_value(prop, value) {
             writer.declaration(&hyphenate_property(prop), &rendered, false);
         }
     }
@@ -481,23 +482,25 @@ fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<Stri
 /// Render an at-rule descriptor value. Scalars defer to
 /// [`render_primitive_value`]; arrays join with `,` (matching v1's
 /// `String(array)` for multi-source `src`).
-fn render_descriptor_value(value: &Value) -> Option<String> {
+fn render_descriptor_value(prop: &str, value: &Value) -> Option<String> {
     match value {
         Value::Array(items) => {
-            let parts: Vec<String> = items.iter().filter_map(render_descriptor_value).collect();
+            let parts: Vec<String> = items
+                .iter()
+                .filter_map(|item| render_descriptor_value(prop, item))
+                .collect();
             (!parts.is_empty()).then(|| parts.join(","))
         }
-        _ => render_primitive_value(value).map(Cow::into_owned),
+        _ => render_declaration_value(prop, value).map(Cow::into_owned),
     }
 }
 
-/// Render a JSON value as a CSS-safe string. `Cow::Borrowed` for strings
-/// (the common case — no alloc), owned only for numbers. Returns `None`
-/// for structural values that can't appear at a CSS leaf.
-fn render_primitive_value(value: &Value) -> Option<Cow<'_, str>> {
+fn render_declaration_value<'a>(prop: &str, value: &'a Value) -> Option<Cow<'a, str>> {
     match value {
         Value::String(s) => Some(Cow::Borrowed(s.as_str())),
-        Value::Number(n) => n.as_f64().map(|f| Cow::Owned(number_to_js_string(f))),
+        Value::Number(n) => n
+            .as_f64()
+            .map(|f| Cow::Owned(numeric_value::format_number(prop, f))),
         Value::Bool(true) => Some(Cow::Borrowed("true")),
         Value::Bool(false) => Some(Cow::Borrowed("false")),
         Value::Null | Value::Object(_) | Value::Array(_) => None,
@@ -812,7 +815,7 @@ impl<'a> EmitContext<'a> {
             return;
         };
         for (prop, value) in entries {
-            if let Some(value) = literal_to_css(value) {
+            if let Some(value) = literal_to_css(prop, value, None) {
                 Self::collect_declaration_usage(
                     &hyphenate_property(prop),
                     value.as_ref(),
@@ -931,7 +934,13 @@ impl<'a> EmitContext<'a> {
         };
         let result = self.transform_atom(atom.prop(), raw);
         for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
-            Self::write_style_rule(writer, &rule, &result.styles, atom.important());
+            Self::write_style_rule(
+                writer,
+                &rule,
+                &result.styles,
+                atom.important(),
+                atom_numeric_hint(atom.value()),
+            );
         }
     }
 
@@ -1336,8 +1345,8 @@ impl<'a> EmitContext<'a> {
         };
 
         let mut declarations = Vec::with_capacity(entries.len());
-        for (prop, value) in entries {
-            if let Some(value) = literal_to_css(value) {
+        for (prop, literal) in entries {
+            if let Some(value) = literal_to_css(prop, literal, atom_value_numeric_hint(value)) {
                 let (value, value_important) = split_important(&value);
                 append_recipe_declaration(
                     &mut declarations,
@@ -1377,14 +1386,20 @@ impl<'a> EmitContext<'a> {
         default_transform(prop, raw)
     }
 
-    fn write_style_rule(writer: &mut CssWriter, rule: &RuleTarget, styles: &Literal, important: bool) {
+    fn write_style_rule(
+        writer: &mut CssWriter,
+        rule: &RuleTarget,
+        styles: &Literal,
+        important: bool,
+        numeric_hint: Option<&str>,
+    ) {
         let Literal::Object(entries) = styles else {
             return;
         };
         write_with_wrappers(writer, &rule.wrappers, |writer| {
             writer.rule(&rule.selector, |writer| {
                 for (prop, value) in entries {
-                    if let Some(value) = literal_to_css(value) {
+                    if let Some(value) = literal_to_css(prop, value, numeric_hint) {
                         let (value, value_important) = split_important(&value);
                         writer.declaration(
                             &hyphenate_property(prop),
@@ -1631,16 +1646,40 @@ fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
     }
 }
 
-fn literal_to_css(value: &Literal) -> Option<Cow<'_, str>> {
+fn literal_to_css<'a>(
+    prop: &str,
+    value: &'a Literal,
+    numeric_hint: Option<&str>,
+) -> Option<Cow<'a, str>> {
     match value {
-        Literal::String(value) => Some(Cow::Borrowed(value)),
-        Literal::Number(value) => Some(Cow::Owned(pandacss_shared::number_to_js_string(*value))),
+        Literal::String(value) => {
+            if numeric_hint == Some(value.as_str()) {
+                Some(Cow::Owned(numeric_value::format_number_str(prop, value)))
+            } else {
+                Some(Cow::Borrowed(value))
+            }
+        }
+        Literal::Number(value) => Some(Cow::Owned(numeric_value::format_number(prop, *value))),
         Literal::Bool(true) => Some(Cow::Borrowed("true")),
         Literal::Bool(false) | Literal::Null | Literal::Object(_) | Literal::Conditional(_) => None,
         Literal::Array(items) => {
-            let values: Vec<_> = items.iter().filter_map(literal_to_css).collect();
+            let values: Vec<_> = items
+                .iter()
+                .filter_map(|item| literal_to_css(prop, item, None))
+                .collect();
             (!values.is_empty()).then(|| Cow::Owned(join_css_values(&values)))
         }
+    }
+}
+
+fn atom_numeric_hint(value: &AtomValue) -> Option<&str> {
+    atom_value_numeric_hint(value)
+}
+
+fn atom_value_numeric_hint(value: &AtomValue) -> Option<&str> {
+    match value {
+        AtomValue::Number(value) => Some(value),
+        _ => None,
     }
 }
 

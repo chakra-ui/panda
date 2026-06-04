@@ -63,6 +63,43 @@ fn hashes_atomic_class_names_with_prefix_conditions_and_important() {
 }
 
 #[test]
+fn appends_px_to_numeric_values_except_unitless_and_custom_properties() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "width": { "className": "w" },
+            "opacity": { "className": "op" },
+            "zIndex": { "className": "z" },
+            "fontWeight": { "className": "fw" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '--foo': 42, width: 42, opacity: 1, zIndex: 0, fontWeight: 700 })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .--foo_42 {
+    --foo: 42;
+  }
+  .fw_700 {
+    font-weight: 700;
+  }
+  .op_1 {
+    opacity: 1;
+  }
+  .z_0 {
+    z-index: 0;
+  }
+  .w_42 {
+    width: 42px;
+  }
+}
+");
+}
+
+#[test]
 fn resolves_semantic_token_category_values_to_css_vars() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
