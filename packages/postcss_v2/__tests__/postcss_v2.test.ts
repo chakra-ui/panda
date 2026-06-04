@@ -1,20 +1,21 @@
-import type { Driver } from '@pandacss/compiler'
 import postcss from 'postcss'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const PROJECT_CWD = '/project'
 const INPUT = '@layer reset, base, tokens, recipes, utilities;'
 
-interface MockDriver extends Driver {
-  codegen: ReturnType<typeof vi.fn>
-  cssgen: ReturnType<typeof vi.fn>
-  parseFiles: ReturnType<typeof vi.fn>
-  reload: ReturnType<typeof vi.fn>
-  getOutdir: ReturnType<typeof vi.fn>
-  compiler: Driver['compiler'] & {
+interface MockDriver {
+  compiler: {
     hasLayerDeclaration: ReturnType<typeof vi.fn>
     sources: ReturnType<typeof vi.fn>
   }
+  configDependencies: string[]
+  configPath: string
+  codegen: ReturnType<typeof vi.fn>
+  cssgen: ReturnType<typeof vi.fn>
+  getOutdir: ReturnType<typeof vi.fn>
+  parseFiles: ReturnType<typeof vi.fn>
+  reload: ReturnType<typeof vi.fn>
 }
 
 afterEach(() => {
@@ -151,9 +152,7 @@ describe('@pandacss/postcss_v2', () => {
     })
     const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
 
-    await Promise.all(
-      [1, 2, 3, 4].map((index) => processor.process(INPUT, { from: `/project/styles-${index}.css` })),
-    )
+    await Promise.all([1, 2, 3, 4].map((index) => processor.process(INPUT, { from: `/project/styles-${index}.css` })))
 
     expect(createNodeDriver).toHaveBeenCalledTimes(1)
     expect(order).toEqual(['enter', 'leave'])

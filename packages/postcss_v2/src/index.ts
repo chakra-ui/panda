@@ -1,6 +1,6 @@
 import { createNodeDriver, type Driver } from '@pandacss/compiler'
 import { extname, normalize, resolve } from 'node:path'
-import type { Message, PluginCreator, Result, TransformCallback } from 'postcss'
+import type { Message, PluginCreator, Result, Root, TransformCallback } from 'postcss'
 
 const PLUGIN_NAME = 'pandacss'
 
@@ -29,7 +29,7 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
 
     if (shouldSkip(fileName, options.allow)) return
 
-    const inputCss = result.opts.css ?? root.toString()
+    const inputCss = getInputCss(root, result)
     if (!inputCss.includes('@layer')) return
 
     const cwd = resolve(options.cwd ?? process.cwd())
@@ -101,6 +101,11 @@ const shouldSkip = (fileName: string | undefined, allow: PluginOptions['allow'])
 
 function getDriverKey(cwd: string, configPath: string | undefined) {
   return `${cwd}:${configPath ?? ''}`
+}
+
+function getInputCss(root: Root, result: Result) {
+  const opts = result.opts as Result['opts'] & { css?: string }
+  return opts.css ?? root.toString()
 }
 
 function ensureCodegen(state: DriverState, options: { cwd: string; outdir: string | undefined }) {
