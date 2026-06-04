@@ -48,6 +48,14 @@ fn default_separator() -> String {
     DEFAULT_SEPARATOR.to_owned()
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum CssSyntaxKind {
+    TemplateLiteral,
+    #[default]
+    ObjectLiteral,
+}
+
 /// JSON-safe resolved config snapshot produced on the JavaScript side.
 ///
 /// JavaScript remains responsible for executing `panda.config.*`,
@@ -86,6 +94,8 @@ pub struct UserConfig {
     pub hash: HashConfig,
     #[serde(default = "default_separator")]
     pub separator: String,
+    #[serde(default)]
+    pub syntax: CssSyntaxKind,
     #[serde(default)]
     pub static_css: Value,
     #[serde(default)]
@@ -138,6 +148,7 @@ impl Default for UserConfig {
             prefix: PrefixConfig::default(),
             hash: HashConfig::default(),
             separator: default_separator(),
+            syntax: CssSyntaxKind::default(),
             static_css: Value::default(),
             global_css: Value::default(),
             global_vars: Value::default(),

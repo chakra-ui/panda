@@ -35,8 +35,9 @@ pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use literal::Literal;
 pub use matcher::{
-    ExtractorConfig, JsxExtractionConfig, JsxStyleProps, MatchCategory, MatchedImport, Matcher,
-    Matchers, NameMatcher, TokenDictionary, match_import_records, match_imports,
+    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxStyleProps, MatchCategory,
+    MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
+    match_imports,
 };
 pub use pandacss_shared::{
     Diagnostic, DiagnosticSeverity, SourceLocation, SourceRange, Span, diagnostic_codes,

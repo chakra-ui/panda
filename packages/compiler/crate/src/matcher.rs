@@ -33,6 +33,8 @@ pub struct Matchers {
     /// Resolved JSX factory names accepting member-chain tags
     /// (`<styled.div>`). Config loaders should pass the default explicitly.
     pub jsx_factories: Option<Vec<String>>,
+    /// CSS authoring syntax preference. Omit for object-literal mode.
+    pub syntax: Option<String>,
 }
 
 #[napi(object)]
