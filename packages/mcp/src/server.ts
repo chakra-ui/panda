@@ -242,7 +242,7 @@ export function watchProcessLifecycle(server: Pick<McpServer, 'close'>, options:
   const shutdown = (code: number) => {
     if (exiting) return
     exiting = true
-    void Promise.resolve(server.close()).catch(() => {})
+    void Promise.resolve(server.close()).catch(() => undefined)
     exit(code)
   }
 
