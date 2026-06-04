@@ -55,6 +55,48 @@ fn emits_config_recipe_css() {
 }
 
 #[test]
+fn emits_config_recipe_css_with_configured_separator() {
+    let config = config(serde_json::json!({
+        "separator": "__",
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "padding": { "className": "p" },
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": { "padding": "8px" }
+                        },
+                        "variant": {
+                            "solid": { "bg": "blue" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { button } from '@panda/recipes'; button({ size: 'sm', variant: 'solid' })",
+    );
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer recipes {
+  .button--size__sm {
+    padding: 8px;
+  }
+  .button--variant__solid {
+    background-color: blue;
+  }
+}
+");
+}
+
+#[test]
 fn hashes_recipe_class_names_with_prefix() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },

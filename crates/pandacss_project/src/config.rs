@@ -66,6 +66,7 @@ pub(crate) fn compile_config_with_token_dictionary(
             utility: utility.as_ref(),
             conditions: &conditions,
             breakpoints: &entries.breakpoints,
+            separator: config.separator.as_deref().unwrap_or("_"),
         },
     );
 
