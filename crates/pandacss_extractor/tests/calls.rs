@@ -239,12 +239,12 @@ fn named_raw_css_call_normalizes_to_imported_name() {
 fn aliased_raw_css_cva_and_sva_calls_normalize_to_imported_names() {
     assert_yaml_snapshot!(
         extract(
-            indoc! {r#"
+            indoc! {r"
                 styledCss.raw({ color: 'red' })
                 componentVariant.raw({ base: { color: 'blue' } })
                 slotVariant.raw({ slots: ['root'], base: { root: { color: 'green' } } })
                 randomAlias.raw({ color: 'pink' })
-            "#},
+            "},
             &[
                 MatchedImport {
                     category: MatchCategory::Css,

@@ -169,6 +169,42 @@ fn resolves_semantic_token_category_values_to_css_vars() {
 }
 
 #[test]
+fn emits_generated_color_palette_utility() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#fca5a5" },
+                        "500": { "value": "#ef4444" }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ colorPalette: 'red', color: 'colorPalette.500' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .c_colorPalette\.500 {
+    color: var(--colors-color-palette-500);
+  }
+  .color-palette_red {
+    --colors-color-palette-300: var(--colors-red-300);
+    --colors-color-palette-500: var(--colors-red-500);
+  }
+}
+");
+}
+
+#[test]
 fn resolves_negative_spacing_category_values_to_calc_values() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

@@ -232,6 +232,10 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
 /// file per layer, one per recipe, plus `recipes.css` / `styles.css` index
 /// files. Each file is written verbatim by the host (same model as artifacts).
 #[must_use]
+#[allow(
+    clippy::too_many_lines,
+    reason = "split output orchestration is easier to audit as one ordered pipeline"
+)]
 pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Vec<SplitCssFile> {
     let mut diagnostics = Vec::new();
     let token_dictionary = match input.token_dictionary.clone() {

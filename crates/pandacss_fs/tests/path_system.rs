@@ -44,20 +44,16 @@ fn posix_path_system_resolves_and_joins() {
 #[test]
 fn os_path_system_resolves_and_joins() {
     let paths = OsPathSystem;
-    let cwd = std::env::current_dir().unwrap();
-    let cwd = cwd.to_string_lossy();
+    let root = std::path::Path::new("project");
+    let cwd = root.to_string_lossy();
 
     assert_eq!(
         paths.resolve(&cwd, "styled-system"),
-        std::path::Path::new(cwd.as_ref())
-            .join("styled-system")
-            .to_string_lossy()
-            .into_owned()
+        root.join("styled-system").to_string_lossy().into_owned()
     );
     assert_eq!(
         paths.join(&[cwd.as_ref(), "styled-system", "css"]),
-        std::path::Path::new(cwd.as_ref())
-            .join("styled-system")
+        root.join("styled-system")
             .join("css")
             .to_string_lossy()
             .into_owned()

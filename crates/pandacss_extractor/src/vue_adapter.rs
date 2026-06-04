@@ -57,19 +57,19 @@ fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, en
             cursor = find_bytes(bytes, b"-->", cursor + 4).map_or(end, |index| index + 3);
             continue;
         }
-        if starts_with(bytes, cursor, b"{{") {
-            if let Some(close) = find_vue_interpolation_end(source, cursor + 2, end) {
-                copy_expression(mask, source, cursor + 2, close, cursor, close);
-                cursor = close + 2;
-                continue;
-            }
+        if starts_with(bytes, cursor, b"{{")
+            && let Some(close) = find_vue_interpolation_end(source, cursor + 2, end)
+        {
+            copy_expression(mask, source, cursor + 2, close, cursor, close);
+            cursor = close + 2;
+            continue;
         }
-        if bytes[cursor] == b'<' {
-            if let Some(tag_end) = find_tag_end(source, cursor + 1) {
-                copy_vue_tag_expressions(mask, source, cursor + 1, tag_end);
-                cursor = tag_end + 1;
-                continue;
-            }
+        if bytes[cursor] == b'<'
+            && let Some(tag_end) = find_tag_end(source, cursor + 1)
+        {
+            copy_vue_tag_expressions(mask, source, cursor + 1, tag_end);
+            cursor = tag_end + 1;
+            continue;
         }
         cursor += 1;
     }
@@ -97,7 +97,6 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
             let byte = bytes[cursor];
             match name_quote {
                 Some(quote) if byte == quote => name_quote = None,
-                Some(_) => {}
                 None if byte == b'\'' || byte == b'"' => name_quote = Some(byte),
                 None if byte == b'[' => bracket_depth += 1,
                 None if byte == b']' => bracket_depth = bracket_depth.saturating_sub(1),
@@ -106,7 +105,7 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
                 {
                     break;
                 }
-                None => {}
+                Some(_) | None => {}
             }
             cursor += 1;
         }

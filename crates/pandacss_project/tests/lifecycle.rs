@@ -275,7 +275,7 @@ fn stylesheet_snapshots_include_implicit_uppercase_jsx_styles() {
     let props = snapshots
         .atoms
         .iter()
-        .map(|atom| atom.prop())
+        .map(pandacss_encoder::Atom::prop)
         .collect::<Vec<_>>();
 
     assert_yaml_snapshot!(props, @r"
