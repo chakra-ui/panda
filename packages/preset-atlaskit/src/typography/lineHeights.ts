@@ -14,7 +14,6 @@ export const lineHeights: Tokens['lineHeights'] = {
     large: { value: '24px' },
     DEFAULT: { value: '20px' },
     small: { value: '16px' },
-    UNSAFE_small: { value: '16px' },
   },
   metric: {
     large: { value: '32px' },

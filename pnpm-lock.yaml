@@ -670,8 +670,8 @@ importers:
         specifier: ^6.0.0
         version: 6.2.4(react@19.2.0)
       '@atlaskit/tokens':
-        specifier: 8.4.0
-        version: 8.4.0(@types/react@19.2.7)(react@19.2.0)
+        specifier: 13.0.2
+        version: 13.0.2(react@19.2.0)
 
   packages/preset-base:
     dependencies:
@@ -1880,11 +1880,6 @@ packages:
     peerDependencies:
       react: ^18.2.0
 
-  '@atlaskit/ds-lib@5.3.0':
-    resolution: {integrity: sha512-j3DLHqBACSJsG3XqSgCIwZqvJhYkpSC8i+24n/JYCRjIxYEJMsuSXOtdeu0qBajREwgzmAFP6AVfVZh1zAWG/A==}
-    peerDependencies:
-      react: ^18.2.0
-
   '@atlaskit/ds-lib@7.0.0':
     resolution: {integrity: sha512-Uqywr6YMi6uBpD0BtbRmG8f81fteRT7NBf62J8zzWPSs7u3Jq9G3Oruwm3y+57Dxv6IqfRwrS10WJARlCJdBLw==}
     peerDependencies:
@@ -1901,15 +1896,15 @@ packages:
   '@atlaskit/platform-feature-flags@1.1.2':
     resolution: {integrity: sha512-PM+fVkV4Yn4/0keiN6ioAap2Y+odTyw1Z4uf+TA0zMmg3/lp/rVNJEc4a24dvd8DfVs5m9bxa/hbO1qJarhCBw==}
 
+  '@atlaskit/tokens@13.0.2':
+    resolution: {integrity: sha512-kzU0yebKEUI7zeH4hBdTfj63nfI3+Ya+SVqqsin7bwM0TVAgCZycZAqdtHY5bIHhLDuUGhHl1D0Zuk5B2Afa4w==}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
+
   '@atlaskit/tokens@13.1.1':
     resolution: {integrity: sha512-YNa0EO38NlW7S4xEBFS6mYDB5jDmqBHM9bJflYHM2KuVrEFVHkKd0TiHmUscD4mwvQoI1KK4BgVUIuyP3ZUwfw==}
     peerDependencies:
       react: ^18.2.0 || ^19.0.0
-
-  '@atlaskit/tokens@8.4.0':
-    resolution: {integrity: sha512-VIhKcAidRUhhb8huvGBYj7EgMHHO4e5rzo6QTfmcewFzd7J4XXI53YPnPn9w0kWdbk7Z+xrk2UONDWK5h7hkyg==}
-    peerDependencies:
-      react: ^18.2.0
 
   '@babel/code-frame@7.12.11':
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
@@ -14738,16 +14733,6 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
-  react-uid@2.4.0:
-    resolution: {integrity: sha512-+MVs/25NrcZuGrmlVRWPOSsbS8y72GJOBsR7d68j3/wqOrRBF52U29XAw4+XSelw0Vm6s5VmGH5mCbTCPGVCVg==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-
   react@19.2.0:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
     engines: {node: '>=0.10.0'}
@@ -18153,17 +18138,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@atlaskit/ds-lib@5.3.0(@types/react@19.2.7)(react@19.2.0)':
-    dependencies:
-      '@atlaskit/platform-feature-flags': 1.1.2(react@19.2.0)
-      '@babel/runtime': 7.28.4
-      bind-event-listener: 3.0.0
-      react: 19.2.0
-      react-uid: 2.4.0(@types/react@19.2.7)(react@19.2.0)
-      tiny-invariant: 1.3.3
-    transitivePeerDependencies:
-      - '@types/react'
-
   '@atlaskit/ds-lib@7.0.0(react@19.2.0)':
     dependencies:
       '@babel/runtime': 7.28.6
@@ -18202,7 +18176,7 @@ snapshots:
     transitivePeerDependencies:
       - react
 
-  '@atlaskit/tokens@13.1.1(react@19.2.0)':
+  '@atlaskit/tokens@13.0.2(react@19.2.0)':
     dependencies:
       '@atlaskit/ds-lib': 7.0.0(react@19.2.0)
       '@atlaskit/platform-feature-flags': 1.1.2(react@19.2.0)
@@ -18214,17 +18188,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@atlaskit/tokens@8.4.0(@types/react@19.2.7)(react@19.2.0)':
+  '@atlaskit/tokens@13.1.1(react@19.2.0)':
     dependencies:
-      '@atlaskit/ds-lib': 5.3.0(@types/react@19.2.7)(react@19.2.0)
+      '@atlaskit/ds-lib': 7.0.0(react@19.2.0)
       '@atlaskit/platform-feature-flags': 1.1.2(react@19.2.0)
-      '@babel/runtime': 7.28.4
-      '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/runtime': 7.28.6
+      '@babel/traverse': 7.29.0
+      '@babel/types': 7.29.0
       bind-event-listener: 3.0.0
       react: 19.2.0
     transitivePeerDependencies:
-      - '@types/react'
       - supports-color
 
   '@babel/code-frame@7.12.11':
@@ -18508,7 +18481,7 @@ snapshots:
   '@babel/helper-wrap-function@7.28.3':
     dependencies:
       '@babel/template': 7.27.2
-      '@babel/traverse': 7.28.5
+      '@babel/traverse': 7.29.0
       '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
@@ -35112,13 +35085,6 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-
-  react-uid@2.4.0(@types/react@19.2.7)(react@19.2.0):
-    dependencies:
-      react: 19.2.0
-      tslib: 2.8.1
-    optionalDependencies:
-      '@types/react': 19.2.7
 
   react@19.2.0: {}
 

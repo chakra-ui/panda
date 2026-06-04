@@ -14,7 +14,6 @@ export const fontSizes: Tokens['fontSizes'] = {
     large: { value: '16px' },
     DEFAULT: { value: '14px' },
     small: { value: '12px' },
-    UNSAFE_small: { value: '12px' },
   },
   metric: {
     large: { value: '28px' },

@@ -9,20 +9,35 @@ export const colors: Tokens['colors'] = {
     },
     warning: {
       bold: {
-        DEFAULT: { value: '#F5CD47' },
-        hovered: { value: '#E2B203' },
-        pressed: { value: '#CF9F02' },
+        DEFAULT: { value: '#FBC828' },
+        hovered: { value: '#FCA700' },
+        pressed: { value: '#F68909' },
       },
     },
   },
   chart: {
     categorical: {
-      '1': {
-        DEFAULT: { value: '#2898BD' },
+      '5': {
+        DEFAULT: { value: '#1558BC' },
       },
-      '3': {
-        DEFAULT: { value: '#E56910' },
+      '6': {
+        DEFAULT: { value: '#964AC0' },
       },
+      '7': {
+        DEFAULT: { value: '#42B2D7' },
+      },
+    },
+    danger: {
+      DEFAULT: { value: '#E2483D' },
+    },
+    warning: {
+      DEFAULT: { value: '#F68909' },
+    },
+    success: {
+      DEFAULT: { value: '#82B536' },
+    },
+    discovery: {
+      DEFAULT: { value: '#BF63F3' },
     },
   },
 }

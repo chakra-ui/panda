@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@atlaskit/motion": "^6.0.0",
-    "@atlaskit/tokens": "8.4.0"
+    "@atlaskit/tokens": "13.0.2"
   },
   "engines": {
     "node": ">=20"
