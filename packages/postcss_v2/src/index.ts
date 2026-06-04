@@ -129,9 +129,9 @@ function registerDependencies(driver: Driver, result: Result, cwd: string, paren
     )
   }
 
-  const configDeps = new Set(driver.configDependencies)
+  const configDeps = new Set(driver.configDependencies.map((file) => normalize(resolve(cwd, file))))
   if (driver.configPath) {
-    configDeps.add(driver.configPath)
+    configDeps.add(normalize(resolve(cwd, driver.configPath)))
   }
 
   for (const file of configDeps) {
@@ -139,7 +139,7 @@ function registerDependencies(driver: Driver, result: Result, cwd: string, paren
       withPluginMetadata(
         {
           type: 'dependency',
-          file: normalize(resolve(cwd, file)),
+          file,
         },
         parent,
       ),

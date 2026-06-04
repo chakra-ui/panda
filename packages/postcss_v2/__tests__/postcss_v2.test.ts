@@ -30,7 +30,7 @@ describe('@pandacss/postcss_v2', () => {
 
     const result = await run(INPUT, {}, '/project/node_modules/pkg/styles.css')
 
-    expect(result.css).toBe(INPUT)
+    expect(result.css).toMatchInlineSnapshot(`"@layer reset, base, tokens, recipes, utilities;"`)
     expect(createNodeDriver).not.toHaveBeenCalled()
   })
 
@@ -47,7 +47,7 @@ describe('@pandacss/postcss_v2', () => {
 
     const result = await run(INPUT, {}, '/project/styles.js')
 
-    expect(result.css).toBe(INPUT)
+    expect(result.css).toMatchInlineSnapshot(`"@layer reset, base, tokens, recipes, utilities;"`)
     expect(createNodeDriver).not.toHaveBeenCalled()
   })
 
@@ -57,7 +57,7 @@ describe('@pandacss/postcss_v2', () => {
 
     const result = await run(input)
 
-    expect(result.css).toBe(input)
+    expect(result.css).toMatchInlineSnapshot(`".btn { color: red }"`)
     expect(createNodeDriver).not.toHaveBeenCalled()
   })
 
@@ -67,7 +67,7 @@ describe('@pandacss/postcss_v2', () => {
 
     const result = await run('@layer base { .btn { color: red } }')
 
-    expect(result.css).toBe('@layer base { .btn { color: red } }')
+    expect(result.css).toMatchInlineSnapshot(`"@layer base { .btn { color: red } }"`)
     expect(driver.codegen).not.toHaveBeenCalled()
     expect(driver.parseFiles).not.toHaveBeenCalled()
   })
@@ -80,30 +80,32 @@ describe('@pandacss/postcss_v2', () => {
     expect(driver.codegen).toHaveBeenCalledWith({ cwd: PROJECT_CWD, outdir: undefined })
     expect(driver.parseFiles).toHaveBeenCalledTimes(1)
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false })
-    expect(result.css).toContain('.text_red')
-    expect(result.messages).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'dir-dependency',
-          dir: '/project/src',
-          glob: 'src/**/*.tsx',
-          plugin: 'pandacss',
-          parent: '/project/styles.css',
-        }),
-        expect.objectContaining({
-          type: 'dependency',
-          file: '/project/panda.config.ts',
-          plugin: 'pandacss',
-          parent: '/project/styles.css',
-        }),
-        expect.objectContaining({
-          type: 'dependency',
-          file: '/project/panda.tokens.ts',
-          plugin: 'pandacss',
-          parent: '/project/styles.css',
-        }),
-      ]),
+    expect(result.css).toMatchInlineSnapshot(
+      `"@layer reset, base, tokens, recipes, utilities;.text_red { color: red }"`,
     )
+    expect(result.messages).toMatchInlineSnapshot(`
+      [
+        {
+          "dir": "/project/src",
+          "glob": "src/**/*.tsx",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dir-dependency",
+        },
+        {
+          "file": "/project/panda.config.ts",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/panda.tokens.ts",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+      ]
+    `)
   })
 
   it('uses dependency messages for source directories in Rollup watch mode', async () => {
@@ -112,15 +114,28 @@ describe('@pandacss/postcss_v2', () => {
 
     const result = await run(INPUT)
 
-    expect(result.messages).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'dependency',
-          file: '/project/src',
-          plugin: 'pandacss',
-        }),
-      ]),
-    )
+    expect(result.messages).toMatchInlineSnapshot(`
+      [
+        {
+          "file": "/project/src",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/panda.config.ts",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/panda.tokens.ts",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+      ]
+    `)
   })
 
   it('reloads an existing driver and regenerates artifacts only when config changes', async () => {
@@ -155,7 +170,12 @@ describe('@pandacss/postcss_v2', () => {
     await Promise.all([1, 2, 3, 4].map((index) => processor.process(INPUT, { from: `/project/styles-${index}.css` })))
 
     expect(createNodeDriver).toHaveBeenCalledTimes(1)
-    expect(order).toEqual(['enter', 'leave'])
+    expect(order).toMatchInlineSnapshot(`
+      [
+        "enter",
+        "leave",
+      ]
+    `)
   })
 })
 
