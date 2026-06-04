@@ -250,6 +250,10 @@ export function watchProcessLifecycle(server: Pick<McpServer, 'close'>, options:
   proc.stdin.on('end', () => shutdown(0))
   proc.stdin.on('close', () => shutdown(0))
 
+  // Honor termination signals so an explicit kill exits cleanly too.
+  proc.on('SIGINT', () => shutdown(0))
+  proc.on('SIGTERM', () => shutdown(0))
+
   // Swallow broken pipes so they don't reach the fatal path and spin.
   for (const stream of [proc.stdout, proc.stderr]) {
     stream.on('error', (err: NodeJS.ErrnoException) => {

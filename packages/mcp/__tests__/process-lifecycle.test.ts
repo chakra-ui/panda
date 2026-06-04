@@ -28,6 +28,15 @@ describe('watchProcessLifecycle', () => {
     expect(server.close).toHaveBeenCalledOnce()
   })
 
+  test('exits cleanly on SIGTERM', () => {
+    const { raw, server, exit } = setup()
+
+    raw.emit('SIGTERM')
+
+    expect(exit).toHaveBeenCalledWith(0)
+    expect(server.close).toHaveBeenCalledOnce()
+  })
+
   test('exits on a broken pipe instead of recursing', () => {
     const { stdout, exit } = setup()
 
