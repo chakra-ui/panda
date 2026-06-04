@@ -6,17 +6,18 @@
  *      cargo bin) into `out/<name>/rust/`.
  *   2. Generates the legacy v1 styled-system (via `@pandacss/node`) into
  *      `out/<name>/legacy/`.
- *   3. Drops an identical `usage.ts` + `tsconfig.json` into both and runs
+ *   3. Drops an identical `usage.ts(x)` + `tsconfig.json` into both and runs
  *      `tsc --extendedDiagnostics` on each.
  *   4. Prints a Rust-vs-legacy delta table (Types, Instantiations, Memory, Check time).
  *
- * The usage file imports only the type surface (`./styled-system/types`), so we
- * measure the generated type graph — not WIP runtime helpers.
+ * React JSX fixtures use TSX so the styled factory and recipe contexts are
+ * measured with real component props.
  *
  * Run: `pnpm bench:types`
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -26,16 +27,22 @@ const { codegen, loadConfigAndCreateContext } = pandaNode
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(scriptDir, '..', '..')
+const require = createRequire(import.meta.url)
 const fixturesDir = join(repoRoot, 'fixtures', 'generated-types')
 const configsDir = join(fixturesDir, 'configs')
 const outDir = join(fixturesDir, 'out')
 const tsc = join(repoRoot, 'node_modules', '.bin', 'tsc')
+const packageResolvePaths = [
+  repoRoot,
+  join(repoRoot, 'bench'),
+  join(repoRoot, 'sandbox', 'codegen'),
+  join(repoRoot, 'sandbox', 'vite-ts'),
+  join(repoRoot, 'sandbox', 'cli-v2'),
+]
 
-// Universal + strict-safe: only token-backed values, conditions, nesting, and an
-// arbitrary selector. `SystemStyleObject` is the recursive workhorse and is the
-// one public type both the Rust and legacy graphs export under the same name, so
-// the comparison stays apples-to-apples.
-const USAGE = `import type { SystemStyleObject } from './styled-system/types'
+type FixtureConfig = Record<string, any>
+
+const SYSTEM_USAGE = `import type { SystemStyleObject } from './styled-system/types'
 
 const a: SystemStyleObject = {
   color: 'red.500',
@@ -48,8 +55,166 @@ const nested: SystemStyleObject = { _hover: { md: { '& svg': { color: 'red.900' 
 void a; void nested
 `
 
-const TSCONFIG = JSON.stringify(
-  {
+function isReactConfig(config: FixtureConfig): boolean {
+  return config.jsxFramework === 'react'
+}
+
+function pascalCase(value: string): string {
+  return value.replace(/(^|[-_\s]+)([a-z0-9])/g, (_, _sep, char) => char.toUpperCase())
+}
+
+function jsxFactoryName(config: FixtureConfig): string {
+  return typeof config.jsxFactory === 'string' ? config.jsxFactory : 'styled'
+}
+
+function jsxStyleProps(config: FixtureConfig): 'all' | 'minimal' | 'none' {
+  return config.jsxStyleProps === 'minimal' || config.jsxStyleProps === 'none' ? config.jsxStyleProps : 'all'
+}
+
+function jsxStyleAttrs(config: FixtureConfig): string {
+  switch (jsxStyleProps(config)) {
+    case 'minimal':
+      return "css={{ color: 'red.500', padding: '4', _hover: { color: 'red.100' } }}"
+    case 'none':
+      return 'id="box"'
+    default:
+      return 'color="red.500" padding="4" _hover={{ color: \'red.100\' }}'
+  }
+}
+
+function jsxStyleObject(config: FixtureConfig): string {
+  switch (jsxStyleProps(config)) {
+    case 'minimal':
+      return "css: { color: 'red.500', padding: '4', _hover: { color: 'red.100' } }"
+    case 'none':
+      return "id: 'box'"
+    default:
+      return "color: 'red.500', padding: '4', _hover: { color: 'red.100' }"
+  }
+}
+
+function jsxCustomStyleObject(config: FixtureConfig): string {
+  return jsxStyleProps(config) === 'none' ? '' : `, ${jsxStyleObject(config)}`
+}
+
+function recipeUsage(config: FixtureConfig): string {
+  const hasButton = Boolean(config.theme?.recipes?.button)
+  const hasCard = Boolean(config.theme?.slotRecipes?.card)
+  if (!hasButton && !hasCard) return ''
+
+  const imports = [
+    hasButton ? 'button' : undefined,
+    hasCard ? 'card' : undefined,
+  ].filter(Boolean)
+
+  const button = hasButton
+    ? `
+const ButtonContext = createRecipeContext(button)
+const Button = ButtonContext.withContext('button', { defaultProps: { type: 'button' } })
+type ButtonProps = ComponentProps<typeof Button>
+const buttonProps: ButtonProps = { size: 'sm', tone: 'ghost', ${jsxStyleObject(config)} }
+void buttonProps`
+    : ''
+
+  const card = hasCard
+    ? `
+const CardContext = createSlotRecipeContext(card)
+const CardRoot = CardContext.withProvider('section', 'root')
+const CardLabel = CardContext.withContext('span', 'label')
+type CardRootProps = ComponentProps<typeof CardRoot>
+type CardLabelProps = ComponentProps<typeof CardLabel>
+const cardRootProps: CardRootProps = { tone: 'neutral', ${jsxStyleObject(config)} }
+const cardLabelProps: CardLabelProps = { ${jsxStyleObject(config)} }
+void cardRootProps
+void cardLabelProps`
+    : ''
+
+  return `
+import { ${imports.join(', ')} } from './styled-system/recipes'
+${button}
+${card}`
+}
+
+function recipeJsx(config: FixtureConfig): string {
+  const hasButton = Boolean(config.theme?.recipes?.button)
+  const hasCard = Boolean(config.theme?.slotRecipes?.card)
+  return [
+    hasButton ? `<Button {...buttonProps} />` : undefined,
+    hasCard ? `<CardRoot {...cardRootProps}><CardLabel {...cardLabelProps} /></CardRoot>` : undefined,
+  ]
+    .filter(Boolean)
+    .join('\n    ')
+}
+
+function reactUsage(config: FixtureConfig): string {
+  const factory = jsxFactoryName(config)
+  const factoryType = pascalCase(factory)
+  const componentType = `${factoryType}Component`
+  const htmlPropsType = `HTML${factoryType}Props`
+  const hasRecipeContext = Boolean(config.theme?.recipes?.button || config.theme?.slotRecipes?.card)
+
+  return `import type { ComponentProps, ReactElement } from 'react'
+import { ${factory}${hasRecipeContext ? ', createRecipeContext, createSlotRecipeContext' : ''} } from './styled-system/jsx'
+import type { ${componentType}, ${htmlPropsType}, StyledVariantProps } from './styled-system/jsx'
+${recipeUsage(config)}
+
+const Box = ${factory}('div')
+const Div = ${factory}.div
+type BoxProps = ${htmlPropsType}<'div'>
+type BoxVariants = StyledVariantProps<typeof Box>
+type SectionComponent = ${componentType}<'section', { tone?: 'quiet' }>
+declare const Section: SectionComponent
+
+const boxProps: BoxProps = { ${jsxStyleObject(config)}, as: 'article', 'data-state': 'open' }
+const boxVariants: BoxVariants = {}
+void boxProps
+void boxVariants
+void Section
+
+type CustomProps = { title: string; className?: string }
+const Custom = (_props: CustomProps): ReactElement | null => null
+const StyledCustom = ${factory}(Custom)
+type StyledCustomProps = ComponentProps<typeof StyledCustom>
+const customProps: StyledCustomProps = { title: 'hello'${jsxCustomStyleObject(config)} }
+void customProps
+
+export const fixture = (
+  <>
+    <Box {...boxProps} />
+    <Div ${jsxStyleAttrs(config)} />
+    <StyledCustom {...customProps} />
+    ${recipeJsx(config)}
+  </>
+)
+`
+}
+
+function packageDir(name: string): string {
+  return dirname(require.resolve(`${name}/package.json`, { paths: packageResolvePaths }))
+}
+
+function reactCompilerOptions(): Record<string, unknown> {
+  const reactTypes = packageDir('@types/react')
+  return {
+    jsx: 'react-jsx',
+    lib: ['ESNext', 'DOM', 'DOM.Iterable'],
+    paths: {
+      react: [join(reactTypes, 'index.d.ts')],
+      'react/jsx-runtime': [join(reactTypes, 'jsx-runtime.d.ts')],
+      'react/jsx-dev-runtime': [join(reactTypes, 'jsx-dev-runtime.d.ts')],
+    },
+  }
+}
+
+function usage(config: FixtureConfig): { file: string; code: string } {
+  return isReactConfig(config)
+    ? { file: 'usage.tsx', code: reactUsage(config) }
+    : { file: 'usage.ts', code: SYSTEM_USAGE }
+}
+
+const TSCONFIG = (react: boolean) =>
+  JSON.stringify(
+    {
     compilerOptions: {
       strict: true,
       skipLibCheck: true,
@@ -57,12 +222,13 @@ const TSCONFIG = JSON.stringify(
       moduleResolution: 'bundler',
       module: 'esnext',
       target: 'esnext',
+      ...(react ? reactCompilerOptions() : {}),
     },
-    include: ['usage.ts'],
-  },
-  null,
-  2,
-)
+      include: [react ? 'usage.tsx' : 'usage.ts'],
+    },
+    null,
+    2,
+  )
 
 interface Metrics {
   files: number
@@ -81,7 +247,7 @@ function generateRust(): void {
   })
 }
 
-async function generateLegacy(name: string, config: Record<string, unknown>): Promise<void> {
+async function generateLegacy(name: string, config: FixtureConfig): Promise<void> {
   const legacyDir = join(outDir, name, 'legacy')
   rmSync(join(legacyDir, 'styled-system'), { recursive: true, force: true })
   mkdirSync(legacyDir, { recursive: true })
@@ -95,9 +261,12 @@ async function generateLegacy(name: string, config: Record<string, unknown>): Pr
   await codegen(ctx as any)
 }
 
-function writeUsage(dir: string): void {
-  writeFileSync(join(dir, 'usage.ts'), USAGE)
-  writeFileSync(join(dir, 'tsconfig.json'), TSCONFIG)
+function writeUsage(dir: string, config: FixtureConfig): void {
+  const source = usage(config)
+  rmSync(join(dir, 'usage.ts'), { force: true })
+  rmSync(join(dir, 'usage.tsx'), { force: true })
+  writeFileSync(join(dir, source.file), source.code)
+  writeFileSync(join(dir, 'tsconfig.json'), TSCONFIG(isReactConfig(config)))
 }
 
 function measure(dir: string): Metrics {
@@ -157,8 +326,8 @@ async function main() {
       continue
     }
     const hasLegacy = existsSync(join(legacyDir, 'styled-system'))
-    writeUsage(rustDir)
-    if (hasLegacy) writeUsage(legacyDir)
+    writeUsage(rustDir, config)
+    if (hasLegacy) writeUsage(legacyDir, config)
 
     const rust = measure(rustDir)
     const legacy = hasLegacy

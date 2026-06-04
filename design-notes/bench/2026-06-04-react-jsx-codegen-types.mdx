@@ -1,0 +1,103 @@
+---
+title: React JSX codegen types
+date: 2026-06-04
+fixtures:
+  - jsx-all
+  - jsx-minimal
+  - jsx-none
+  - recipes
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+caveats:
+  - Rust JSX fixtures type-check cleanly
+  - legacy JSX rows are not comparable for split-context APIs because legacy lacks `createRecipeContext`, `createSlotRecipeContext`, and `StyledVariantProps`
+  - benchmark uses real React 19 type declarations resolved from the workspace
+---
+
+# React JSX codegen types
+
+The generated-types benchmark now exercises the React JSX surface with `usage.tsx`, not just `SystemStyleObject`.
+The JSX usage covers:
+
+- `styled('div')` and `styled.div`
+- `HTMLStyledProps` / `HTMLPandaProps`
+- `StyledVariantProps`
+- custom component wrapping
+- `createRecipeContext`
+- `createSlotRecipeContext`
+- `jsxStyleProps: "all" | "minimal" | "none"`
+
+## Final Rust numbers
+
+These are the clean Rust rows from:
+
+```sh
+pnpm --filter @pandacss/bench generated-types-perf
+```
+
+| Fixture     | Types | Instantiations | Memory K | Check ms |
+| ----------- | ----: | -------------: | -------: | -------: |
+| jsx-all     | 32888 |         133650 |   147196 |      590 |
+| jsx-minimal | 12769 |          91327 |   123218 |      330 |
+| jsx-none    | 12845 |          94105 |   120652 |      330 |
+| recipes     | 38281 |         137615 |   157476 |      700 |
+
+The non-JSX type graph remains cheap in the same run:
+
+| Fixture | Types | Instantiations | Memory K | Check ms |
+| ------- | ----: | -------------: | -------: | -------: |
+| small   |   187 |             20 |    66199 |       20 |
+| medium  |   212 |             20 |    66274 |       20 |
+| large   |   534 |             20 |    67056 |       20 |
+| strict  |   234 |             26 |    66187 |       30 |
+
+## What changed
+
+The first clean JSX run proved the declarations were correct but heavier than necessary. The useful simplifications were:
+
+- `ComponentProps<T>` no longer goes through React's full `LibraryManagedAttributes<ComponentPropsWithRef<T>>` path.
+- Context helpers return plain callable component types instead of `ForwardRefExoticComponent` / `ComponentType` wrappers.
+- `JsxHTMLProps` uses one non-distributive `Omit` merge instead of `DistributiveOmit<T, ...>` plus a second `Assign`.
+- Generated JSX props include `data-*` attributes on factory and context components.
+
+## Improvement from the first clean JSX run
+
+| Fixture     | Instantiations before | Instantiations after | Delta |
+| ----------- | --------------------: | -------------------: | ----: |
+| jsx-all     |                155513 |               133650 |  -14% |
+| jsx-minimal |                108047 |                91327 |  -15% |
+| jsx-none    |                110786 |                94105 |  -15% |
+| recipes     |                201989 |               137615 |  -32% |
+
+The attempted `JsxStyleHTMLProps<T>` fast path was reverted. It looked attractive because plain styled components do not
+need recipe variant override behavior, but TypeScript instantiated more types with the extra branch and alias.
+
+A follow-up explicit-intrinsic experiment was also reverted. The idea was to replace
+`[K in keyof JSX.IntrinsicElements]` with a generated list of common HTML/SVG tags and add separate intrinsic/custom
+factory overloads. Even after trimming the list to common app tags, it regressed badly:
+
+| Fixture     | Current instantiations | Explicit intrinsic instantiations | Delta |
+| ----------- | ---------------------: | --------------------------------: | ----: |
+| jsx-all     |                 133650 |                            192381 |  +44% |
+| jsx-minimal |                  91327 |                            140986 |  +54% |
+| jsx-none    |                  94105 |                            140796 |  +50% |
+| recipes     |                 137615 |                            196211 |  +43% |
+
+Conclusion: the mapped intrinsic surface is cheaper than explicit per-tag members for this generator.
+
+## Legacy comparison caveat
+
+The script still prints legacy columns for every fixture, but the JSX rows are not an apples-to-apples comparison:
+
+- legacy does not export `StyledVariantProps`
+- legacy does not export `createRecipeContext` / `createSlotRecipeContext`
+- legacy `HTML...Props` rejects the `data-state` object-literal check used by the benchmark
+
+For this pass, use the Rust JSX rows as regression baselines. The non-JSX rows remain comparable with legacy and still
+show the same ~99% instantiation reduction described in the earlier generated-types report.
+
+## Reproduce
+
+```sh
+pnpm --filter @pandacss/bench generated-types-perf
+cargo test -p pandacss_codegen react_jsx
+```
