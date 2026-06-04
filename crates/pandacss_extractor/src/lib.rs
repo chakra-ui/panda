@@ -8,6 +8,7 @@
 //! imported references. [`extract`] runs the whole thing; the individual
 //! entrypoints exist for tooling and parity tests.
 
+mod adapter;
 mod calls;
 mod cross_file;
 mod css_template;
@@ -18,6 +19,9 @@ mod literal;
 mod matcher;
 mod scope;
 mod source;
+mod svelte_adapter;
+mod template_styles;
+mod vue_adapter;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use extract::{ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug};
@@ -43,6 +47,7 @@ pub use pandacss_shared::{
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
 pub use source::LineIndex;
+pub(crate) use adapter::adapt_source;
 
 pub(crate) fn span_from_oxc(span: oxc_span::Span) -> Span {
     Span {

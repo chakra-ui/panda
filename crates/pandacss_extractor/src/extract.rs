@@ -104,6 +104,9 @@ struct ExtractResult {
 
 fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractResult {
     let allocator = Allocator::default();
+    let raw_source = source;
+    let source = crate::adapt_source(source, path);
+    let source = source.as_ref();
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = {
         let _span = tracing::trace_span!("oxc_parse", path = path).entered();
@@ -151,12 +154,18 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     } else {
         (Vec::new(), Vec::new(), Vec::new())
     };
-    let jsx = if should_collect_jsx(&matched, config) {
+    let mut jsx = if should_collect_jsx(&matched, config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
         collect_jsx(&parser_return.program, &ctx)
     } else {
         Vec::new()
     };
+    if should_collect_jsx(&matched, config) {
+        let _span = tracing::trace_span!("visit_template_styles").entered();
+        jsx.extend(crate::template_styles::collect_template_styles(
+            raw_source, path, &matched, config,
+        ));
+    }
 
     diagnostics.extend(call_diagnostics);
     diagnostics.extend(resolver.take_deprecations());
