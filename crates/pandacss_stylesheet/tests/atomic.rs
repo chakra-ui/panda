@@ -53,7 +53,7 @@ fn hashes_atomic_class_names_with_prefix_conditions_and_important() {
     assert_snapshot!(css, @r"
 @layer utilities {
   .pd-wxtrg\! {
-    color: red;
+    color: red !important;
   }
   .pd-hsecaD:hover {
     background-color: blue;
