@@ -3,10 +3,14 @@ use insta::assert_yaml_snapshot;
 mod common;
 
 use common::panda_config;
-use pandacss_extractor::{ExtractUsage, extract};
+use pandacss_extractor::{CssSyntaxKind, ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
-    extract(source, "fixture.tsx", &panda_config())
+    extract(
+        source,
+        "fixture.tsx",
+        &panda_config().with_syntax(CssSyntaxKind::TemplateLiteral),
+    )
 }
 
 #[test]

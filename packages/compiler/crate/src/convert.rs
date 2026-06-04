@@ -140,6 +140,7 @@ pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
 /// JS-wire compat) → core `ExtractorConfig`.
 pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
     let has_jsx_framework = m.jsx_framework.is_some();
+    let syntax = syntax_from_string(m.syntax.as_deref());
     let token_dictionary = m
         .token_dictionary
         .clone()
@@ -149,11 +150,19 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
         matchers: to_core_matchers(m),
         jsx: pandacss_extractor::JsxExtractionConfig::default(),
         has_jsx_framework,
+        syntax,
         token_dictionary,
         // Cross-file resolution isn't on the flat `Matchers` shape — the
         // session class wires it up explicitly. Free-function callers
         // extract single files anyway, so a per-call cache wouldn't help.
         cross_file: None,
+    }
+}
+
+fn syntax_from_string(value: Option<&str>) -> pandacss_extractor::CssSyntaxKind {
+    match value {
+        Some("template-literal") => pandacss_extractor::CssSyntaxKind::TemplateLiteral,
+        _ => pandacss_extractor::CssSyntaxKind::ObjectLiteral,
     }
 }
 

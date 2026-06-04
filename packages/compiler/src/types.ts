@@ -50,6 +50,7 @@ export interface Matcher {
 }
 
 export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
+export type CssSyntax = 'template-literal' | 'object-literal'
 
 export interface Matchers {
   css: Matcher
@@ -65,6 +66,8 @@ export interface Matchers {
   tokenDictionary?: TokenDictionary
   /** Resolved JSX factory names that accept member-chain tags (`<styled.div>`). */
   jsxFactories?: string[]
+  /** CSS authoring syntax preference. Omit for object-literal mode. */
+  syntax?: CssSyntax
 }
 
 /** Two parallel `path → string` maps backing `token()` resolution.

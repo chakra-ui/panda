@@ -17,6 +17,7 @@ pub struct MatchersInput {
     pub tokens: MatcherInput,
     pub jsx_framework: Option<String>,
     pub jsx_factories: Option<Vec<String>>,
+    pub syntax: Option<String>,
     pub token_dictionary: Option<TokenDictionaryInput>,
 }
 

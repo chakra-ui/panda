@@ -289,6 +289,7 @@ impl Project {
             let mut args = call.data.into_iter();
             let arg = args.next().flatten();
             let second_arg = args.next().flatten();
+            let third_arg = args.next().flatten();
             match (call.category, call.name.as_str()) {
                 (MatchCategory::Css, "css") => {
                     let Some(arg) = arg else {
@@ -372,6 +373,24 @@ impl Project {
                     );
                 }
                 (MatchCategory::Jsx, _) => {
+                    if let Some(recipe_name) = call.jsx_recipe_ident.as_deref()
+                        && let Some(default_props) = default_props_from_options(third_arg.as_ref())
+                    {
+                        if let Some(style_props) = compiled
+                            .recipes
+                            .style_props_for_recipes(&[recipe_name], default_props)
+                        {
+                            self.process_style_props(&mut encoder, &style_props);
+                        }
+                        encoded_recipes.process_usage(
+                            &compiled.recipes,
+                            recipe_name,
+                            default_props,
+                            &compiled.conditions,
+                        );
+                        report.jsx_usages += 1;
+                        continue;
+                    }
                     let Some(style) =
                         jsx_factory_static_style(second_arg.as_ref().or(arg.as_ref()))
                     else {
@@ -894,6 +913,12 @@ fn is_css_prop(key: &str) -> bool {
 enum JsxFactoryStaticStyle<'a> {
     Style(&'a Literal),
     Recipe(&'a Literal),
+}
+
+fn default_props_from_options(options: Option<&Literal>) -> Option<&Literal> {
+    literal_entries(options?)?
+        .iter()
+        .find_map(|(key, value)| (key == "defaultProps").then_some(value))
 }
 
 fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStaticStyle<'_>> {

@@ -3,8 +3,8 @@
 //! `{...spread}` attributes in source order.
 
 use crate::{
-    Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
-    Matchers, Span, VisitorContext, css_template::css_template_to_object,
+    CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
+    MatchedImport, Matchers, Span, VisitorContext, css_template::css_template_to_object,
     literal::expression_to_literal, span_from_oxc,
 };
 use oxc_allocator::Allocator;
@@ -191,21 +191,30 @@ impl Extractor<'_, '_> {
         };
         match matched.kind {
             ImportSpecifierKind::Named => {
-                // `X.Y` on a named import is only a Panda usage when X is a
-                // JSX factory like `styled.div`. For a recipe Component,
-                // `Box.Item` is plain dot access — skip.
-                if !is_jsx_factory(&self.ctx.config.matchers, &matched.name) {
-                    return None;
+                // Named member tags are Panda usages only for JSX factories
+                // or for member names explicitly configured by recipes.
+                if is_jsx_factory(&self.ctx.config.matchers, &matched.name) {
+                    if !self
+                        .ctx
+                        .config
+                        .matchers
+                        .category_accepts_name(matched.category, &matched.name)
+                    {
+                        return None;
+                    }
+                    let display = member_display(&matched.name, path);
+                    return Some(ResolvedTag {
+                        category: matched.category,
+                        name: Cow::Owned(display),
+                        alias: Cow::Borrowed(&matched.alias),
+                        emit_empty: true,
+                    });
                 }
-                if !self
-                    .ctx
-                    .config
-                    .matchers
-                    .category_accepts_name(matched.category, &matched.name)
-                {
-                    return None;
-                }
+
                 let display = member_display(&matched.name, path);
+                if !self.ctx.config.jsx.is_component_tag(&display) {
+                    return None;
+                }
                 Some(ResolvedTag {
                     category: matched.category,
                     name: Cow::Owned(display),
@@ -273,6 +282,11 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 
     fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
+        if self.ctx.config.syntax != CssSyntaxKind::TemplateLiteral {
+            walk::walk_tagged_template_expression(self, tagged);
+            return;
+        }
+
         if let Some(resolved) = self.resolve_tagged_tag(&tagged.tag)
             && let Some(data @ Literal::Object(_)) =
                 css_template_to_object(&tagged.quasi, self.ctx.resolver)

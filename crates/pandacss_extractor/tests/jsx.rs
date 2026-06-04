@@ -4,8 +4,8 @@ mod common;
 
 use common::jsx_config;
 use pandacss_extractor::{
-    ExtractedJsxResult, ImportSpecifierKind, JsxExtractionConfig, JsxStyleProps, MatchCategory,
-    MatchedImport, extract_jsx,
+    CssSyntaxKind, ExtractedJsxResult, ImportSpecifierKind, JsxExtractionConfig, JsxStyleProps,
+    MatchCategory, MatchedImport, extract_jsx,
 };
 use serde_json::json;
 
@@ -45,6 +45,15 @@ fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
         "fixture.tsx",
         matched,
         &jsx_config(["styled", "Box", "Stack", "Grid"]),
+    )
+}
+
+fn extract_template(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
+    extract_jsx(
+        source,
+        "fixture.tsx",
+        matched,
+        &jsx_config(["styled", "Box", "Stack", "Grid"]).with_syntax(CssSyntaxKind::TemplateLiteral),
     )
 }
 
@@ -194,6 +203,33 @@ fn styled_factory_with_multiple_attrs() {
         span:
           start: 0
           end: 52
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn configured_named_member_component_extracts() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.component_names.insert("Tabs.Trigger".into());
+
+    assert_yaml_snapshot!(
+        extract_with_jsx_config(
+            "<Tabs.Trigger value='button' color='red' />",
+            &[pattern_component("Tabs")],
+            jsx,
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Tabs.Trigger
+        alias: Tabs
+        data:
+          value: button
+          color: red
+        span:
+          start: 0
+          end: 43
     diagnostics: []
     ",
     );
@@ -1049,7 +1085,7 @@ fn styled_factory_tagged_template_css() {
             width: 11rem;
         `
     "};
-    assert_yaml_snapshot!(extract(source, &[styled("styled")]).jsx, @"
+    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"
     - category: jsx
       name: styled.div
       alias: styled
@@ -1070,12 +1106,23 @@ fn styled_factory_tagged_template_css() {
 }
 
 #[test]
+fn styled_factory_tagged_template_ignored_in_object_syntax() {
+    assert_yaml_snapshot!(
+        extract("const baseStyle = styled.div`color: red;`", &[styled("styled")]),
+        @r"
+    jsx: []
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
 fn tagged_template_css_splits_value_on_first_colon() {
     // A value keeping a colon (`url(http://…)`) survives — the astish value
     // group stops at the first `;`, not the inner `:`. Each declaration is
     // `;`-terminated, as the astish regex requires.
     assert_yaml_snapshot!(
-        extract(
+        extract_template(
             "const x = styled.div`background: url(http://x.png); color: red;`",
             &[styled("styled")],
         ),
@@ -1102,7 +1149,7 @@ fn tagged_template_css_nests_at_rules_and_selectors() {
     // with media queries": a bare `@media` block nests under its full
     // condition key; flat declarations stay at the top level.
     assert_yaml_snapshot!(
-        extract(
+        extract_template(
             "const x = styled.div`width: 500px; height: 500px; background: red; @media (min-width: 700px) { background: blue; }`",
             &[styled("styled")],
         ),
@@ -1140,7 +1187,7 @@ fn tagged_template_css_joins_multiline_selectors() {
             }
         `
     "};
-    assert_yaml_snapshot!(extract(source, &[styled("styled")]).jsx, @r#"
+    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @r#"
     - category: jsx
       name: styled.div
       alias: styled
@@ -1170,7 +1217,7 @@ fn tagged_template_css_matches_shared_astish_fixture() {
             }
         `
     "};
-    let result = extract(source, &[styled("styled")]);
+    let result = extract_template(source, &[styled("styled")]);
     assert_yaml_snapshot!(result.jsx[0].data, @r#"
     display: flex
     align-items: center
@@ -1202,7 +1249,7 @@ fn tagged_template_css_supports_native_nesting_and_custom_props() {
             }
         `
     "};
-    let result = extract(source, &[styled("styled")]);
+    let result = extract_template(source, &[styled("styled")]);
     assert_yaml_snapshot!(result.jsx[0].data, @r#"
     color: red
     "--test": 4px

@@ -2,8 +2,9 @@
 //! pattern/recipe calls) and fold each argument to a [`Literal`].
 
 use crate::{
-    Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
-    TokenRef, css_template::css_template_to_object, literal::expression_to_literal, span_from_oxc,
+    CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
+    MatchedImport, Span, TokenRef, css_template::css_template_to_object,
+    literal::expression_to_literal, span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -38,6 +39,11 @@ pub struct ExtractedCall {
     /// non-foldable expression). Calls where *every* argument is
     /// non-extractable are dropped.
     pub data: Vec<Option<Literal>>,
+    /// Internal-only hint for JSX factory calls such as
+    /// `styled("button", button, { defaultProps })`, where the second
+    /// argument is intentionally non-literal but still names a config recipe.
+    #[serde(skip)]
+    pub jsx_recipe_ident: Option<String>,
     pub span: Span,
 }
 
@@ -234,6 +240,21 @@ fn is_raw_category(category: MatchCategory) -> bool {
     )
 }
 
+fn should_emit_call(
+    category: MatchCategory,
+    data: &[Option<Literal>],
+    jsx_recipe_ident: Option<&str>,
+) -> bool {
+    if category == MatchCategory::Jsx {
+        return jsx_recipe_ident.is_some()
+            || data
+                .iter()
+                .flatten()
+                .any(|literal| matches!(literal, Literal::Object(_)));
+    }
+    data.iter().any(Option::is_some) || (category == MatchCategory::Recipe && data.is_empty())
+}
+
 fn dynamic_style_value_diagnostic(
     category: MatchCategory,
     name: &str,
@@ -303,6 +324,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
 
         if let Some(resolved) = self.resolve_callee(call) {
             let resolver = self.ctx.resolver;
+            let jsx_recipe_ident = (resolved.category == MatchCategory::Jsx)
+                .then(|| self.jsx_recipe_identifier(call))
+                .flatten();
             let data: Vec<Option<Literal>> = call
                 .arguments
                 .iter()
@@ -311,17 +335,19 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
             // Drop only when nothing was extractable. Otherwise keep
             // positional `None` slots so consumers know which arg was
             // non-literal.
-            if data.iter().any(Option::is_some)
-                || (resolved.category == MatchCategory::Recipe && data.is_empty())
-            {
+            if should_emit_call(resolved.category, &data, jsx_recipe_ident.as_deref()) {
                 self.out.push(ExtractedCall {
                     category: resolved.category,
                     name: resolved.name.into_owned(),
                     alias: resolved.alias.to_owned(),
                     data,
+                    jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                 });
-            } else if !data.is_empty() && !self.ctx.config.has_jsx_framework {
+            } else if resolved.category != MatchCategory::Jsx
+                && !data.is_empty()
+                && !self.ctx.config.has_jsx_framework
+            {
                 self.diagnostics.push(dynamic_style_value_diagnostic(
                     resolved.category,
                     resolved.name.as_ref(),
@@ -334,6 +360,26 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 
     fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
+        if self.ctx.config.syntax != CssSyntaxKind::TemplateLiteral {
+            walk::walk_tagged_template_expression(self, tagged);
+            return;
+        }
+
+        if let Expression::CallExpression(call) = &tagged.tag
+            && let Some(resolved) = self.resolve_callee_expr(&call.callee)
+            && resolved.category == MatchCategory::Jsx
+            && let Some(object @ Literal::Object(_)) =
+                css_template_to_object(&tagged.quasi, self.ctx.resolver)
+        {
+            self.out.push(ExtractedCall {
+                category: MatchCategory::Css,
+                name: "css".to_owned(),
+                alias: resolved.alias.to_owned(),
+                data: vec![Some(object)],
+                jsx_recipe_ident: None,
+                span: span_from_oxc(tagged.span),
+            });
+        }
         if let Some(resolved) = self.resolve_callee_expr(&tagged.tag)
             && resolved.category == MatchCategory::Css
             && resolved.name.as_ref() == "css"
@@ -345,10 +391,27 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.to_owned(),
                 data: vec![Some(object)],
+                jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
+    }
+}
+
+impl Extractor<'_, '_> {
+    fn jsx_recipe_identifier(&self, call: &CallExpression<'_>) -> Option<String> {
+        let arg = call.arguments.get(1)?.as_expression()?;
+        let Expression::Identifier(ident) = arg else {
+            return None;
+        };
+        if let Some(resolver) = self.ctx.resolver
+            && !resolver.is_import_binding(ident)
+        {
+            return None;
+        }
+        let matched = self.ctx.aliases.get(ident.name.as_str())?;
+        (matched.category == MatchCategory::Recipe).then(|| matched.name.clone())
     }
 }
 

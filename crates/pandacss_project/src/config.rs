@@ -6,12 +6,12 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use pandacss_config::{
-    CompoundVariantConfig, ImportMap, JsxSpecifier, JsxStylePropsConfig, PatternConfig,
-    RecipeConfig, VariantSelection,
+    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxSpecifier,
+    JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
-    ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal, Matcher as ExtractorMatcher,
-    Matchers, NameMatcher as ExtractorNameMatcher,
+    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal,
+    Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::css_property_names;
@@ -55,6 +55,7 @@ pub(crate) fn compile_config_with_token_dictionary(
         jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
+    extractor_config.syntax = extractor_syntax_from_config(config.syntax);
     extractor_config.token_dictionary = token_dictionary;
 
     let utility = (!utility.is_empty()).then_some(utility);
@@ -448,6 +449,13 @@ fn jsx_style_props_from_config(config: &pandacss_config::UserConfig) -> JsxStyle
     }
 }
 
+fn extractor_syntax_from_config(syntax: ConfigCssSyntaxKind) -> CssSyntaxKind {
+    match syntax {
+        ConfigCssSyntaxKind::TemplateLiteral => CssSyntaxKind::TemplateLiteral,
+        ConfigCssSyntaxKind::ObjectLiteral => CssSyntaxKind::ObjectLiteral,
+    }
+}
+
 fn utility_options_from_config(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
@@ -629,8 +637,15 @@ fn recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
 fn slot_recipe_jsx_names(name: &str, recipe: &RecipeConfig) -> Vec<String> {
     let capitalized = capitalize(name);
     let mut names = recipe_jsx_names(name, recipe);
-    names.push(format!("{capitalized}.Root"));
-    names.push(format!("{capitalized}Root"));
+    for slot in &recipe.slots {
+        let slot_name = capitalize(slot);
+        names.push(format!("{capitalized}.{slot_name}"));
+        names.push(format!("{capitalized}{slot_name}"));
+    }
+    if recipe.slots.iter().all(|slot| slot != "root") {
+        names.push(format!("{capitalized}.Root"));
+        names.push(format!("{capitalized}Root"));
+    }
     names
 }
 

@@ -93,6 +93,13 @@ pub struct Matchers {
     pub jsx_factories: Option<Vec<String>>,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum CssSyntaxKind {
+    TemplateLiteral,
+    #[default]
+    ObjectLiteral,
+}
+
 impl Matcher {
     #[must_use]
     fn accepts_module(&self, module: &str) -> bool {
@@ -114,6 +121,7 @@ pub struct ExtractorConfig {
     pub matchers: Matchers,
     pub jsx: JsxExtractionConfig,
     pub has_jsx_framework: bool,
+    pub syntax: CssSyntaxKind,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,
     /// When `Some`, references to imported `const` exports from local
@@ -130,6 +138,7 @@ impl ExtractorConfig {
             matchers,
             jsx: JsxExtractionConfig::default(),
             has_jsx_framework: false,
+            syntax: CssSyntaxKind::default(),
             token_dictionary: None,
             cross_file: None,
         }
@@ -138,6 +147,12 @@ impl ExtractorConfig {
     #[must_use]
     pub fn with_jsx_framework(mut self, enabled: bool) -> Self {
         self.has_jsx_framework = enabled;
+        self
+    }
+
+    #[must_use]
+    pub fn with_syntax(mut self, syntax: CssSyntaxKind) -> Self {
+        self.syntax = syntax;
         self
     }
 

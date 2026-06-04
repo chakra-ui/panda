@@ -257,6 +257,659 @@ fn jsx_factory_property_call_variants_without_base_feed_the_encoder() {
 }
 
 #[test]
+fn jsx_factory_default_props_route_imported_recipe_usage() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "display": "inline-flex" },
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "14px" }
+                        },
+                        "tone": {
+                            "solid": { "background": "red" }
+                        }
+                    },
+                    "defaultVariants": { "size": "sm" }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "button.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            import { button as aliasedButton } from '@panda/recipes';
+
+            const Button = styled('button', aliasedButton, {
+              defaultProps: {
+                size: 'md',
+                tone: 'solid',
+                color: 'blue',
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    ");
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: display
+            value: inline-flex
+            conditions: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 14px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--tone_solid
+        entries:
+          - prop: background
+            value: red
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn jsx_factory_call_tagged_template_feeds_atomic_css() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "text.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Text = styled('span')`
+              color: red;
+              padding: 4px;
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: padding
+      value: 4px
+      conditions: []
+    ");
+}
+
+#[test]
+fn css_tagged_template_feeds_atomic_css() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "styles.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            css`
+              color: red;
+              padding: 4px;
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: padding
+      value: 4px
+      conditions: []
+    ");
+}
+
+#[test]
+fn styled_member_tagged_template_feeds_jsx_style_props() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "card.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const Card = styled.div`
+              background: white;
+              margin: 8px;
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 0
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 1
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: background
+      value: white
+      conditions: []
+    - prop: margin
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
+fn tagged_template_nested_rules_feed_conditions() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "nested.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            css`
+              color: red;
+
+              &:hover {
+                color: blue;
+              }
+
+              @media (min-width: 40rem) {
+                padding: 8px;
+              }
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: color
+      value: blue
+      conditions:
+        - "&:hover"
+    - prop: padding
+      value: 8px
+      conditions:
+        - "@media (min-width: 40rem)"
+    "#);
+}
+
+#[test]
+fn tagged_template_combinators_match_core_template_literal_fixtures() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "combinators.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            css`
+              p + p {
+                color: red;
+              }
+
+              p ~ p {
+                color: blue;
+              }
+
+              .box & {
+                background-color: red;
+              }
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: background-color
+      value: red
+      conditions:
+        - ".box &"
+    - prop: color
+      value: red
+      conditions:
+        - "& p + p"
+    - prop: color
+      value: blue
+      conditions:
+        - "& p ~ p"
+    "#);
+}
+
+#[test]
+fn tagged_template_deep_native_nesting_matches_core_template_literal_fixtures() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "deep.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            css`
+              .demo {
+                .triangle,
+                .square {
+                  opacity: 0.25;
+                  filter: blur(25px);
+                }
+              }
+
+              :not(.pink) {
+                opacity: 0.5;
+              }
+
+              figure {
+                margin: 0;
+
+                > figcaption {
+                  background: hsl(0 0% 0% / 50%);
+
+                  > p {
+                    font-size: 0.9rem;
+                  }
+                }
+              }
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: background
+      value: hsl(0 0% 0% / 50%)
+      conditions:
+        - "& figure"
+        - "& > figcaption"
+    - prop: filter
+      value: blur(25px)
+      conditions:
+        - "& .demo"
+        - "& .triangle, .square"
+    - prop: font-size
+      value: 0.9rem
+      conditions:
+        - "& figure"
+        - "& > figcaption"
+        - "& > p"
+    - prop: margin
+      value: "0"
+      conditions:
+        - "& figure"
+    - prop: opacity
+      value: "0.25"
+      conditions:
+        - "& .demo"
+        - "& .triangle, .square"
+    - prop: opacity
+      value: "0.5"
+      conditions:
+        - "& :not(.pink)"
+    "#);
+}
+
+#[test]
+fn tagged_template_token_function_interpolations_fold() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal",
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "500": {
+                            "value": "#ef4444"
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "tokens.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { token } from '@panda/tokens';
+
+            css`
+              color: ${token('colors.red.500')};
+              border-color: ${token.var('colors.red.500')};
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r##"
+    - prop: border-color
+      value: var(--colors-red-500)
+      conditions: []
+    - prop: color
+      value: "#ef4444"
+      conditions: []
+    "##);
+}
+
+#[test]
+fn tagged_template_string_fragment_interpolations_fold() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "fragments.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+
+            const colorRule = 'color: blue;';
+            const backgroundRule = 'background: red;';
+
+            const Box = styled.div`
+              ${colorRule}
+              ${backgroundRule}
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 0
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 1
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: background
+      value: red
+      conditions: []
+    - prop: color
+      value: blue
+      conditions: []
+    ");
+}
+
+#[test]
+fn tagged_template_literal_expression_interpolations_fold() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "emotion-like.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            css`
+              color: ${'green'};
+              font-size: ${10 + 4}px;
+              width: ${500}px;
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: green
+      conditions: []
+    - prop: font-size
+      value: 14px
+      conditions: []
+    - prop: width
+      value: 500px
+      conditions: []
+    ");
+}
+
+#[test]
+fn tagged_template_at_rule_prelude_interpolation_folds() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "media.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            const breakpoint = 768;
+
+            css`
+              color: blue;
+
+              @media (min-width: ${breakpoint}px) {
+                color: red;
+              }
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions:
+        - "@media (min-width: 768px)"
+    "#);
+}
+
+#[test]
+fn tagged_template_var_fallback_interpolation_folds() {
+    let mut project = create_project(json!({
+        "syntax": "template-literal"
+    }));
+
+    let report = project.parse_file(
+        "fallback.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+
+            const fallback = 'coral';
+
+            css`
+              color: var(--theme-color, ${fallback});
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 1
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: "var(--theme-color, coral)"
+      conditions: []
+    "#);
+}
+
+#[test]
+fn tagged_templates_are_ignored_in_object_syntax() {
+    let mut project = create_project(json!({}));
+
+    let report = project.parse_file(
+        "text.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { styled } from '@panda/jsx';
+
+            const cssText = css`color: red;`;
+            const StyledText = styled('span')`
+              padding: 4px;
+            `;
+        "},
+    );
+
+    assert_yaml_snapshot!(report, @r"
+    cssCalls: 0
+    cvaCalls: 0
+    svaCalls: 0
+    jsxUsages: 0
+    diagnostics: []
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+}
+
+#[test]
+fn named_slot_recipe_member_tag_routes_recipe_and_style_props() {
+    let mut project = create_project(json!({
+        "theme": {
+            "slotRecipes": {
+                "tabs": {
+                    "jsx": ["Tabs"],
+                    "slots": ["root", "trigger"],
+                    "base": {
+                        "root": { "display": "flex" },
+                        "trigger": { "color": "blue" }
+                    },
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "root": { "gap": "4px" },
+                                "trigger": { "fontSize": "12px" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "tabs.tsx",
+        indoc! {r"
+            import { Tabs } from '@panda/jsx';
+
+            const el = <Tabs.Trigger size='sm' padding='2px' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: padding
+      value: 2px
+      conditions: []
+    ");
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: tabs
+        slot: root
+        className: tabs__root
+        entries:
+          - prop: display
+            value: flex
+            conditions: []
+      - recipe: tabs
+        slot: trigger
+        className: tabs__trigger
+        entries:
+          - prop: color
+            value: blue
+            conditions: []
+    variants:
+      - recipe: tabs
+        slot: root
+        className: tabs__root--size_sm
+        entries:
+          - prop: gap
+            value: 4px
+            conditions: []
+      - recipe: tabs
+        slot: trigger
+        className: tabs__trigger--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn jsx_css_prop_object_feeds_styles() {
     // The `css` prop's object value is treated as nested styles, not a flat
     // `css`-named atom.

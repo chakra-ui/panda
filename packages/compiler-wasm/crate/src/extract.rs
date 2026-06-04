@@ -36,10 +36,12 @@ impl WasmExtractor {
         // moved into `to_core_matchers`.
         let token_dictionary = input.token_dictionary.take().map(to_core_token_dictionary);
         let has_jsx_framework = input.jsx_framework.is_some();
+        let syntax = syntax_from_string(input.syntax.as_deref());
         let core_matchers = to_core_matchers(input);
 
         let mut config = ExtractorConfig::new(core_matchers);
         config.has_jsx_framework = has_jsx_framework;
+        config.syntax = syntax;
         config.token_dictionary = token_dictionary.map(std::sync::Arc::new);
         config.cross_file = Some(CrossFileResolver::with_fs(fs.inner.clone()));
 
@@ -64,5 +66,12 @@ impl WasmExtractor {
         result
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+}
+
+fn syntax_from_string(value: Option<&str>) -> pandacss_extractor::CssSyntaxKind {
+    match value {
+        Some("template-literal") => pandacss_extractor::CssSyntaxKind::TemplateLiteral,
+        _ => pandacss_extractor::CssSyntaxKind::ObjectLiteral,
     }
 }

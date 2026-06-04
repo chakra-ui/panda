@@ -13,10 +13,19 @@ mod common;
 
 use common::css_config;
 use indoc::indoc;
-use pandacss_extractor::{ExtractUsage, extract};
+use insta::assert_yaml_snapshot;
+use pandacss_extractor::{CssSyntaxKind, ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
     extract(source, "fixture.tsx", &css_config())
+}
+
+fn run_template(source: &str) -> ExtractUsage {
+    extract(
+        source,
+        "fixture.tsx",
+        &css_config().with_syntax(CssSyntaxKind::TemplateLiteral),
+    )
 }
 
 #[test]
@@ -29,11 +38,16 @@ fn tagged_template_value_folds_to_string_when_referenced() {
         const block = gql`color: red; padding: 4px;`;
         css({ display: block });
     "};
-    let calls = run(src).calls;
-    assert_eq!(calls.len(), 1, "only the outer css() extracts");
-    let lit = calls[0].data[0].as_ref().expect("data present");
-    let json = serde_json::to_value(lit).unwrap();
-    assert_eq!(json["display"], "color: red; padding: 4px;");
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - display: "color: red; padding: 4px;"
+      span:
+        start: 80
+        end: 103
+    "#);
 }
 
 #[test]
@@ -47,11 +61,16 @@ fn tagged_template_with_identifier_interpolation_folds() {
         const block = styled`padding: ${size}px;`;
         css({ value: block });
     "};
-    let calls = run(src).calls;
-    assert_eq!(calls.len(), 1);
-    let lit = calls[0].data[0].as_ref().unwrap();
-    let json = serde_json::to_value(lit).unwrap();
-    assert_eq!(json["value"], "padding: 4px;");
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - value: "padding: 4px;"
+      span:
+        start: 93
+        end: 114
+    "#);
 }
 
 #[test]
@@ -63,8 +82,23 @@ fn css_tagged_template_extracts_as_css_in_template() {
         import { css } from '@panda/css';
         const styles = css`color: red;`;
     "};
-    let calls = run(src).calls;
-    assert_eq!(calls.len(), 1, "css`...` extracts as CSS-in-template");
-    let json = serde_json::to_value(calls[0].data[0].as_ref().unwrap()).unwrap();
-    assert_eq!(json["color"], "red");
+    assert_yaml_snapshot!(run_template(src).calls, @r"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 49
+        end: 65
+    ");
+}
+
+#[test]
+fn css_tagged_template_does_not_extract_in_object_syntax() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const styles = css`color: red;`;
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"[]");
 }
