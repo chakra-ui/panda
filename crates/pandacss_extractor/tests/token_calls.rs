@@ -52,6 +52,12 @@ fn sample_tokens() -> TokenDictionary {
             TokenCategory::Spacing,
         ))
         .insert(Token::new(
+            "opacity.half",
+            "0.5",
+            "var(--opacity-half)",
+            TokenCategory::Opacity,
+        ))
+        .insert(Token::new(
             "colors.primary",
             "var(--colors-primary)",
             "var(--colors-primary)",
@@ -99,6 +105,87 @@ fn token_call_resolves_to_raw_value() {
       span:
         start: 86
         end: 109
+    "##);
+}
+
+#[test]
+fn token_call_color_opacity_modifier_resolves_to_color_mix() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({
+          backgroundColor: token('colors.red.500/40'),
+          borderColor: token('colors.red.500/half')
+        });
+    "};
+    let result = run_with_tokens(src);
+
+    assert_yaml_snapshot!(result.calls, @r##"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - backgroundColor: "color-mix(in srgb, var(--colors-red-500) 40%, transparent)"
+          borderColor: "color-mix(in srgb, var(--colors-red-500) 50%, transparent)"
+      span:
+        start: 73
+        end: 172
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.red.500/40
+      span:
+        start: 98
+        end: 124
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.red.500/half
+      span:
+        start: 141
+        end: 169
+    "##);
+    assert_yaml_snapshot!(result.token_refs, @r#"
+    - path: colors.red.500
+      span:
+        start: 98
+        end: 124
+      needsCssVar: true
+    - path: colors.red.500
+      span:
+        start: 141
+        end: 169
+      needsCssVar: true
+    "#);
+}
+
+#[test]
+fn token_call_opacity_modifier_only_applies_to_colors() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({ margin: token('spacing.4/40', 'fallback') });
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r##"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - margin: fallback
+      span:
+        start: 73
+        end: 123
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - spacing.4/40
+        - fallback
+      span:
+        start: 87
+        end: 120
     "##);
 }
 

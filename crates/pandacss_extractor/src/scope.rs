@@ -22,7 +22,7 @@ use oxc_ast::ast::{
     VariableDeclarator,
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 
@@ -48,6 +48,12 @@ pub(crate) struct Resolver<'a> {
     line_index: Option<&'a crate::LineIndex<'a>>,
     deprecations: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
+}
+
+struct TokenCallResolution {
+    value: String,
+    ref_path: String,
+    needs_css_var: bool,
 }
 
 /// `InProgress` guards against cycles like `const a = b; const b = a;`.
@@ -160,34 +166,25 @@ impl<'a> Resolver<'a> {
         let dict = self.tokens?;
         let (path, is_var, fallback) = self.token_call_parts(call)?;
 
-        if dict.is_deprecated(&path) {
-            self.record_deprecated_token(&path, call.span);
+        let resolution = token_call_resolution(dict, &path, is_var, fallback.as_deref())?;
+
+        if dict.is_deprecated(&resolution.ref_path) {
+            self.record_deprecated_token(&resolution.ref_path, call.span);
         }
 
-        let resolved = if is_var {
-            dict.get_var(&path, fallback.as_deref())
-        } else {
-            dict.get(&path, fallback.as_deref())
-        };
-        if resolved.is_some() {
-            self.token_refs.borrow_mut().push(TokenRef {
-                path,
-                span: crate::span_from_oxc(call.span),
-                needs_css_var: resolved.as_deref().is_some_and(is_css_var_value),
-            });
-        }
-        resolved.map(Literal::String)
+        self.token_refs.borrow_mut().push(TokenRef {
+            path: resolution.ref_path,
+            span: crate::span_from_oxc(call.span),
+            needs_css_var: resolution.needs_css_var,
+        });
+        Some(Literal::String(resolution.value))
     }
 
     pub(crate) fn resolved_token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
         let dict = self.tokens?;
         let (path, is_var, fallback) = self.token_call_parts(call)?;
-        let resolved = if is_var {
-            dict.get_var(&path, fallback.as_deref())
-        } else {
-            dict.get(&path, fallback.as_deref())
-        };
-        resolved.is_some().then_some(path)
+        token_call_resolution(dict, &path, is_var, fallback.as_deref())
+            .map(|result| result.ref_path)
     }
 
     pub(crate) fn token_call_needs_css_var(&self, call: &CallExpression<'_>) -> bool {
@@ -197,11 +194,8 @@ impl<'a> Resolver<'a> {
         let Some((path, is_var, fallback)) = self.token_call_parts(call) else {
             return false;
         };
-        if is_var {
-            return true;
-        }
-        dict.get(&path, fallback.as_deref())
-            .is_some_and(|value| is_css_var_value(&value))
+        token_call_resolution(dict, &path, is_var, fallback.as_deref())
+            .is_some_and(|result| result.needs_css_var)
     }
 
     fn token_call_parts(
@@ -419,6 +413,49 @@ impl<'a> Resolver<'a> {
             BindingPattern::AssignmentPattern(_) => None,
         }
     }
+}
+
+fn token_call_resolution(
+    dict: &TokenDictionary,
+    path: &str,
+    is_var: bool,
+    fallback: Option<&str>,
+) -> Option<TokenCallResolution> {
+    if is_var {
+        let value = dict.get_var(path, fallback)?;
+        return Some(TokenCallResolution {
+            value,
+            ref_path: path.to_owned(),
+            needs_css_var: true,
+        });
+    }
+
+    if let Some(value) = dict.get(path, None) {
+        return Some(TokenCallResolution {
+            needs_css_var: is_css_var_value(&value),
+            value,
+            ref_path: path.to_owned(),
+        });
+    }
+
+    if let Some((color_path, _)) = path.split_once('/')
+        && dict
+            .token(color_path)
+            .is_some_and(|token| token.category == TokenCategory::Colors)
+        && let Some(value) = dict.color_mix_str(path)
+    {
+        return Some(TokenCallResolution {
+            value,
+            ref_path: color_path.to_owned(),
+            needs_css_var: true,
+        });
+    }
+
+    fallback.map(|value| TokenCallResolution {
+        value: value.to_owned(),
+        ref_path: path.to_owned(),
+        needs_css_var: is_css_var_value(value),
+    })
 }
 
 fn is_css_var_value(value: &str) -> bool {

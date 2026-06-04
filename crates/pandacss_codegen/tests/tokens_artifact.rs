@@ -16,6 +16,7 @@ fn token_values() -> TokenTypeData {
     TokenTypeData {
         values: BTreeMap::from([
             ("colors.red.500".into(), "#ef4444".into()),
+            ("opacity.half".into(), "0.5".into()),
             ("spacing.4".into(), "1rem".into()),
             // value == var → stored empty, derived at runtime
             ("colors.primary".into(), String::new()),
@@ -48,14 +49,14 @@ fn emits_ts_source_tokens() {
 
     assert_eq!(paths(tokens), vec!["tokens/index.ts"]);
     assert_snapshot!(file(tokens, "tokens/index.ts"), @r##"
-    import type { Token } from '../types/tokens';
+    import type { Token, TokenPath } from '../types/tokens';
 
     interface TokenFn {
-      (path: Token, fallback?: string): string
+      (path: TokenPath, fallback?: string): string
       var: (path: Token, fallback?: string) => string
     }
 
-    const tokens: Record<string, string> = {"colors.primary":"","colors.red.500":"#ef4444","spacing.4":"1rem"}
+    const tokens: Record<string, string> = {"colors.primary":"","colors.red.500":"#ef4444","opacity.half":"0.5","spacing.4":"1rem"}
 
     function toVar(path: string): string {
       let out = ""
@@ -67,13 +68,32 @@ fn emits_ts_source_tokens() {
       return "var(--pd-" + out + ")"
     }
 
+    function colorMix(path: string): string | undefined {
+      const colorPrefix = "colors."
+      if (!path.startsWith(colorPrefix)) return
+
+      const index = path.indexOf("/", colorPrefix.length)
+      if (index === -1 || index === path.length - 1) return
+
+      const colorPath = path.slice(0, index)
+      if (tokens[colorPath] === undefined) return
+
+      const rawOpacity = path.slice(index + 1)
+      const opacity = tokens["opacity." + rawOpacity]
+      const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
+      if (Number.isNaN(percent)) return
+
+      return "color-mix(in srgb, " + toVar(colorPath) + " " + percent + "%, transparent)"
+    }
+
     export const token: TokenFn = /* @__PURE__ */ Object.assign(
       function token(path: string, fallback?: string) {
-        return path in tokens ? tokens[path] || toVar(path) : fallback
+        const value = tokens[path]
+        return value === undefined ? colorMix(path) || fallback : value || toVar(path)
       },
       {
         var: function tokenVar(path: string, fallback?: string) {
-          return path in tokens ? toVar(path) : fallback
+          return tokens[path] === undefined ? fallback : toVar(path)
         },
       },
     )
@@ -96,7 +116,7 @@ fn emits_js_runtime_and_declarations() {
         vec!["tokens/index.mjs", "tokens/index.d.mts"]
     );
     assert_snapshot!(file(tokens, "tokens/index.mjs"), @r##"
-    const tokens = {"colors.primary":"","colors.red.500":"#ef4444","spacing.4":"1rem"}
+    const tokens = {"colors.primary":"","colors.red.500":"#ef4444","opacity.half":"0.5","spacing.4":"1rem"}
 
     function toVar(path){
       let out = ""
@@ -108,22 +128,41 @@ fn emits_js_runtime_and_declarations() {
       return "var(--pd-" + out + ")"
     }
 
+    function colorMix(path){
+      const colorPrefix = "colors."
+      if (!path.startsWith(colorPrefix)) return
+
+      const index = path.indexOf("/", colorPrefix.length)
+      if (index === -1 || index === path.length - 1) return
+
+      const colorPath = path.slice(0, index)
+      if (tokens[colorPath] === undefined) return
+
+      const rawOpacity = path.slice(index + 1)
+      const opacity = tokens["opacity." + rawOpacity]
+      const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
+      if (Number.isNaN(percent)) return
+
+      return "color-mix(in srgb, " + toVar(colorPath) + " " + percent + "%, transparent)"
+    }
+
     export const token = /* @__PURE__ */ Object.assign(
       function token(path, fallback) {
-        return path in tokens ? tokens[path] || toVar(path) : fallback
+        const value = tokens[path]
+        return value === undefined ? colorMix(path) || fallback : value || toVar(path)
       },
       {
         var: function tokenVar(path, fallback) {
-          return path in tokens ? toVar(path) : fallback
+          return tokens[path] === undefined ? fallback : toVar(path)
         },
       },
     )
     "##);
     assert_snapshot!(file(tokens, "tokens/index.d.mts"), @"
-    import type { Token } from '../types/tokens.d.mts';
+    import type { Token, TokenPath } from '../types/tokens.d.mts';
 
     interface TokenFn {
-      (path: Token, fallback?: string): string
+      (path: TokenPath, fallback?: string): string
       var: (path: Token, fallback?: string) => string
     }
 
