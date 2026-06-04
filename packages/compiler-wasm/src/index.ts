@@ -8,55 +8,24 @@
  * Consumers should `import { createCompiler } from '@pandacss/compiler-wasm'`.
  * It loads the wasm module and resolves to a `Compiler` — the same flat shape
  * as the native binding, with the shared in-memory FS exposed as `compiler.fs`.
+ *
+ * Browser consumers that want a shim-free bundle should import from
+ * `@pandacss/compiler-wasm/web` instead — it carries only the wasm-module
+ * facade with no `pkg-node` / `loadWasm` in its module graph.
  */
 
-import { assertProjectCallbacks, getTokenCategoryValues, mergeCallbacks } from '@pandacss/compiler-shared'
-import type {
-  Compiler,
-  CompilerOptions,
-  ConfigSnapshot,
-  ProjectCallbacks,
-  SerializedConfig,
-} from '@pandacss/compiler-shared'
-import { registerCallbacks } from './callbacks'
-import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
+import { mergeCallbacks } from '@pandacss/compiler-shared'
+import type { Compiler, CompilerOptions, ConfigSnapshot, SerializedConfig } from '@pandacss/compiler-shared'
+import { build } from './web'
+import type { WasmModule } from './web'
 
-export type { PatternHelpers } from './callbacks'
-export type {
-  MatcherInput,
-  MatchersInput,
-  TokenDictionaryInput,
-  WasmCompiler,
-  WasmExtractor,
-  WasmFileSystem,
-} from './types'
-// Re-export the shared contract so consumers get one import surface.
-export type * from '@pandacss/compiler-shared'
+// Re-export everything from the browser-safe web entry so the main entry's
+// public API surface stays identical.
+export * from './web'
+export type * from './web'
 
 export { createBrowserDriver } from './driver'
 export type { BrowserDriverOptions } from './driver'
-
-/** `configCallbacks` carry construction-time `utility.values` resolvers. */
-interface WasmFromConfigOptions {
-  configCallbacks?: {
-    utilityValues?: Record<string, (tokenDictionary: TokenDictionaryInput | undefined) => unknown>
-  }
-}
-
-/** The raw wasm instance — superset of {@link Compiler} carrying the internal
- *  `token_dictionary` the facade hides. */
-interface RawWasmCompiler extends WasmCompiler {
-  token_dictionary?(): TokenDictionaryInput | undefined
-}
-
-export interface WasmModule {
-  WasmFileSystem: new () => WasmFileSystem
-  WasmExtractor: new (fs: WasmFileSystem, matchers: unknown) => unknown
-  WasmCompiler: {
-    fromConfig(fs: WasmFileSystem, config: SerializedConfig, options?: WasmFromConfigOptions): RawWasmCompiler
-  }
-  installPanicHook: () => void
-}
 
 let cached: WasmModule | null = null
 
@@ -82,6 +51,7 @@ export async function loadWasm(): Promise<WasmModule> {
  * (`compiler.fs.addFile(...)`) so cross-file imports fold during extraction.
  */
 export async function createCompiler(config: SerializedConfig, options?: CompilerOptions): Promise<Compiler> {
+  const { createCompilerFromWasmModule } = await import('./web')
   return createCompilerFromWasmModule(await loadWasm(), config, options)
 }
 
@@ -93,44 +63,4 @@ export async function createCompilerFromSnapshot(
 ): Promise<Compiler> {
   const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
   return build(await loadWasm(), snapshot.config, callbacks)
-}
-
-/**
- * Build a compiler from an already-loaded wasm module. Browser callers that
- * import `./pkg-web/compiler_wasm.js` should call its default `init()` first,
- * then pass the initialized module here.
- */
-export function createCompilerFromWasmModule(
-  mod: WasmModule,
-  config: SerializedConfig,
-  options?: CompilerOptions,
-): Compiler {
-  return build(mod, config, options?.callbacks ?? {})
-}
-
-function build(mod: WasmModule, config: SerializedConfig, callbacks: ProjectCallbacks): Compiler {
-  const fs = new mod.WasmFileSystem()
-  assertProjectCallbacks(config, callbacks)
-  const compiler = mod.WasmCompiler.fromConfig(fs, config, buildFromConfigOptions(callbacks))
-  registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
-  // Expose the shared FS as a field so the return shape matches native.
-  ;(compiler as unknown as { fs: WasmFileSystem }).fs = fs
-  return compiler as unknown as Compiler
-}
-
-function buildFromConfigOptions(callbacks: ProjectCallbacks): WasmFromConfigOptions | undefined {
-  const utilityValues = callbacks['utility.values']
-  if (!utilityValues || Object.keys(utilityValues).length === 0) return undefined
-
-  return {
-    configCallbacks: {
-      utilityValues: Object.fromEntries(
-        Object.entries(utilityValues).map(([id, callback]) => [
-          id,
-          (tokenDictionary: TokenDictionaryInput | undefined) =>
-            callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
-        ]),
-      ),
-    },
-  }
 }

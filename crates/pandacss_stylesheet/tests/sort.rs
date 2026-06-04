@@ -43,11 +43,15 @@ fn sorts_pseudo_selectors_by_cascade_priority() {
 }
 
 #[test]
-fn applies_every_part_of_mixed_condition_arrays() {
+fn applies_every_part_of_block_form_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": {
-            "hoverFine": ["@media (hover: hover)", "&:hover"],
+            "hoverFine": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            },
             "before": "&::before"
         },
         "utilities": {
@@ -59,15 +63,15 @@ fn applies_every_part_of_mixed_condition_arrays() {
         "import { css } from '@panda/css'; css({ _before: { _hoverFine: { content: '\"x\"' } } })",
     );
     assert_snapshot!(css, @r#"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @media (hover: hover) {
-    .hoverFine\:before\:content_"x":hover::before {
-      content: "x";
+    @layer reset, base, tokens, recipes, utilities;
+    @layer utilities {
+      @media (hover: hover) {
+        .hoverFine\:before\:content_\"x\":hover::before {
+          content: "x";
+        }
+      }
     }
-  }
-}
-"#);
+    "#);
 }
 
 #[test]
@@ -413,13 +417,13 @@ fn applies_pseudo_elements_after_multiple_pseudo_classes() {
         "import { css } from '@panda/css'; css({ _before: { _focus: { _hover: { content: '\"x\"' } } } })",
     );
     assert_snapshot!(css, @r#"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .hover\:focus\:before\:content_"x":hover:focus::before {
-    content: "x";
-  }
-}
-"#);
+    @layer reset, base, tokens, recipes, utilities;
+    @layer utilities {
+      .hover\:focus\:before\:content_\"x\":hover:focus::before {
+        content: "x";
+      }
+    }
+    "#);
 }
 
 #[test]
@@ -428,7 +432,11 @@ fn sorts_mixed_at_rule_and_selector_after_selector_only() {
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": {
             "hover": "&:hover",
-            "hoverFine": ["@media (hover: hover)", "&:hover"]
+            "hoverFine": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            }
         },
         "utilities": {
             "color": { "className": "c" }
@@ -620,9 +628,11 @@ fn sorts_recipe_entries_with_the_same_priority_model() {
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
 @layer recipes {
-  .button {
-    padding: 8px;
-    padding-top: 4px;
+  @layer base {
+    .button {
+      padding: 8px;
+      padding-top: 4px;
+    }
   }
 }
 ");
@@ -668,7 +678,7 @@ fn coalesces_recipe_entries_with_matching_pseudo_targets() {
     padding: 8px;
     padding-top: 4px;
   }
-  .button--size_sm:hover {
+  .hover\:button--size_sm:hover {
     padding: 8px;
     padding-top: 4px;
   }
@@ -723,7 +733,7 @@ fn coalesces_recipe_entries_with_matching_at_rule_targets() {
     padding-top: 4px;
   }
   @media (width >= 48rem) {
-    .button--size_sm {
+    .md\:button--size_sm {
       padding: 8px;
       padding-top: 4px;
     }
@@ -781,12 +791,12 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
     padding: 8px;
     padding-top: 4px;
   }
-  .button--size_sm:hover {
+  .hover\:button--size_sm:hover {
     padding: 8px;
     padding-top: 4px;
   }
   @media (width >= 48rem) {
-    .button--size_sm {
+    .md\:button--size_sm {
       padding: 8px;
       padding-top: 4px;
     }
@@ -818,8 +828,10 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
 @layer recipes {
-  .button {
-    background-color: blue;
+  @layer base {
+    .button {
+      background-color: blue;
+    }
   }
 }
 ");

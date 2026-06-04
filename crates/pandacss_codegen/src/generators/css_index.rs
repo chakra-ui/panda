@@ -19,11 +19,11 @@ pub fn module() -> Module {
 #[must_use]
 pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<ArtifactFile> {
     emit_module_files(
-        "index",
+        "css/index",
         &module(),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }

@@ -28,7 +28,11 @@ export interface MixedCondition {
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
 
-export type ConditionQuery = string | string[]
+export type ConditionSlot = '@slot'
+export interface ConditionBlock {
+  [selector: string]: ConditionSlot | ConditionBlock
+}
+export type ConditionQuery = string | ConditionBlock
 
 export interface Conditions {
   [condition: string]: ConditionQuery

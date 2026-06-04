@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
 use pandacss_extractor::{
-    ExtractorConfig, JsxExtractionConfig, Matcher, Matchers, NameMatcher, TokenDictionary,
+    ExtractorConfig, ExtractUsage, ImportScanResult, JsxExtractionConfig, Literal, Matcher,
+    Matchers, NameMatcher, TokenDictionary,
 };
+use serde::Serialize;
 
 pub fn matcher<const N: usize>(module: &str, names: [&str; N]) -> Matcher {
     Matcher {
@@ -61,4 +63,67 @@ pub fn jsx_matchers<const N: usize>(names: [&str; N]) -> Matchers {
 
 pub fn jsx_config<const N: usize>(names: [&str; N]) -> ExtractorConfig {
     ExtractorConfig::new(jsx_matchers(names))
+}
+
+#[derive(Serialize)]
+pub struct ExtractShape {
+    pub calls: Vec<CallShape>,
+    pub jsx: Vec<JsxShape>,
+}
+
+#[derive(Serialize)]
+pub struct CallShape {
+    pub name: String,
+    pub data: serde_json::Value,
+}
+
+#[derive(Serialize)]
+pub struct JsxShape {
+    pub name: String,
+    pub data: serde_json::Value,
+}
+
+pub fn extract_shape(result: &ExtractUsage) -> ExtractShape {
+    ExtractShape {
+        calls: result
+            .calls
+            .iter()
+            .map(|call| CallShape {
+                name: call.name.clone(),
+                data: call
+                    .data
+                    .first()
+                    .and_then(Option::as_ref)
+                    .map_or(serde_json::Value::Null, Literal::to_json),
+            })
+            .collect(),
+        jsx: result
+            .jsx
+            .iter()
+            .map(|jsx| JsxShape {
+                name: jsx.name.clone(),
+                data: jsx.data.to_json(),
+            })
+            .collect(),
+    }
+}
+
+#[derive(Serialize)]
+pub struct ImportShape {
+    pub module: String,
+    pub specifiers: Vec<String>,
+}
+
+pub fn import_shape(scan: &ImportScanResult) -> Vec<ImportShape> {
+    scan.imports
+        .iter()
+        .map(|import| ImportShape {
+            module: import.module.clone(),
+            specifiers: import
+                .specifiers
+                .iter()
+                .map(|specifier| format!("{}:{}", specifier.imported, specifier.local))
+                .collect(),
+        })
+        .collect()
 }

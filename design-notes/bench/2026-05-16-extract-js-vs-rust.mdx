@@ -30,8 +30,8 @@ second through Rust.
 
 ### 2026-05-18 matcher fast-path spot check
 
-After adding matcher fast paths (JSX regex `RegexSet`s, import source/name indexing, and lower-allocation JSX member
-tag resolution), we added a focused direct extractor comparison:
+After adding matcher fast paths (JSX regex `RegexSet`s, import source/name indexing, and lower-allocation JSX member tag
+resolution), we added a focused direct extractor comparison:
 
 ```sh
 pnpm --filter=./bench jsx-heavy-compare -- --elements 2000 --warm 10 --iterations 50
@@ -41,8 +41,8 @@ This harness intentionally skips config loading and full `@pandacss/parser` proj
 extractor package directly against the native Rust `Extractor` over the same generated JSX-heavy TSX string. The local
 NAPI binding was rebuilt before running so the Rust path included the working-tree fast-path changes.
 
-| Fixture                 | Bytes   | Iterations | JS total   | Rust total | JS per iter | Rust per iter | Speedup     |
-| ----------------------- | ------: | ---------: | ---------: | ---------: | ----------: | ------------: | ----------: |
+| Fixture                 |   Bytes | Iterations |   JS total | Rust total | JS per iter | Rust per iter |    Speedup |
+| ----------------------- | ------: | ---------: | ---------: | ---------: | ----------: | ------------: | ---------: |
 | `jsx-heavy-direct-2000` | 64.8 KB |         50 | 90020.2 ms |   116.4 ms |   1800.4 ms |        2.3 ms | **773.5×** |
 
 Both paths produced the same checksum (`50050`), so the timed runs counted the same extracted items.
@@ -235,8 +235,8 @@ numbers.
 - **What does the gap look like with the Rust encoder wired in?** Phase C goal. The Rust encoder turns extracted
   literals into atoms; that work currently happens JS-side too, so the comparison should remain favorable to Rust but
   might tighten by 10-20%.
-- **What's the WASM equivalent?** The wasm binding (`@pandacss/compiler-wasm`) uses `serde-wasm-bindgen` instead of NAPI;
-  expect 1.5-3× slower than NAPI based on rolldown's published numbers. Worth measuring before Phase C.
+- **What's the WASM equivalent?** The wasm binding (`@pandacss/compiler-wasm`) uses `serde-wasm-bindgen` instead of
+  NAPI; expect 1.5-3× slower than NAPI based on rolldown's published numbers. Worth measuring before Phase C.
 - **What's the memory footprint?** ts-morph retains the AST graph; Rust drops the allocator per call. Significant for
   long-running watch processes. Needs a separate harness (RSS / heap delta across the 1000-file run).
 

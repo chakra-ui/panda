@@ -56,34 +56,32 @@ Autocomplete is not the problem. The problem is how much type expansion is requi
 
 ## File Layout
 
-The generated type artifacts should be split by role:
+The generated type artifacts:
 
 ```txt
 types/index
-types/conditions
-types/selectors
 types/tokens
-types/values
-types/properties
-types/system-types
+types/system     # condition/value aliases + own csstype + SystemProperties + selectors + SystemStyleObject + globals/keyframes/fontface
 types/pattern
 types/recipe
 ```
 
-`types/index` should re-export the public surface. Artifact dependencies should stay granular:
+`types/system` is the **merged** core surface — what were once `conditions`, `values`, `csstype`,
+`selectors`, `properties`, and `system-types` are one file. Fewer modules means fewer cross-module
+boundaries on the hot path (the recursive `SystemStyleObject` no longer reaches across support files),
+which matters at enterprise scale. `types/index` re-exports the public surface. Artifact dependencies
+stay granular:
 
-| Artifact             | Depends on                                      |
-| -------------------- | ----------------------------------------------- |
-| `types/conditions`   | `CodegenFormat`, `Conditions`                   |
-| `types/selectors`    | `CodegenFormat`                                 |
-| `types/tokens`       | `CodegenFormat`, `Tokens`, `Themes`             |
-| `types/values`       | `CodegenFormat`, `Tokens`, `Utilities`          |
-| `types/properties`   | `CodegenFormat`, `Tokens`, `Utilities`, `Syntax` |
-| `types/system-types` | `CodegenFormat`, `Conditions`, `Utilities`      |
-| `types/pattern`      | `CodegenFormat`, `Patterns`, `Utilities`, `Tokens` |
-| `types/recipe`       | `CodegenFormat`, `Recipes`, `Conditions`        |
+| Artifact           | Depends on                                                       |
+| ------------------ | ---------------------------------------------------------------- |
+| `types/tokens`     | `CodegenFormat`, `Tokens`, `Themes`                              |
+| `types/system`     | `CodegenFormat`, `Conditions`, `Tokens`, `Utilities`, `Syntax`   |
+| `types/pattern`    | `CodegenFormat`, `Patterns`, `Utilities`, `Tokens`               |
+| `types/recipe`     | `CodegenFormat`, `Recipes`, `Conditions`                         |
 
-This lets watch mode regenerate only the files whose type inputs changed.
+This lets watch mode regenerate only the files whose type inputs changed. (Earlier drafts split
+`system` into five files by role; the measured win from one fast graph outweighed the
+finer-grained invalidation.)
 
 ## Recursive CSS Shape
 
@@ -152,7 +150,7 @@ The exact index shape can change based on selector support, but the recursion sh
 
 ## Value Aliases
 
-The generator should canonicalize repeated value unions into aliases.
+The generator should canonicalize repeated value unions into aliases inside `types/system`.
 
 Instead of emitting this shape repeatedly:
 
@@ -251,41 +249,56 @@ display?: ConditionalValue<CssProperties["display"] | AnyString>
 The important part is that strictness changes the value expression, not the public file layout or the recursive object
 model.
 
-## CSS Property Types (`csstype`)
+## CSS Property Types (our own csstype)
 
-Generated value aliases index per-property CSS keyword unions (`CssProperties["display"]`), and
-`selectors` consumes `Pseudos`. Both come from a vendored, terse copy of the npm `csstype` package
-emitted as `types/csstype`.
+Panda owns its CSS-property type model — no vendored npm `csstype`. The whole native-property surface
+collapses to **one shared value type**:
 
-The full upstream `csstype` declaration file is ~890KB, and **~75% of that is JSDoc** (browser-compat
-tables). It also ships every property list ~8× over: `Standard / Vendor / Obsolete / Svg`, each in
-`{camelCase, Hyphen} × {normal, Fallback}`. Panda consumes exactly one of those families. Because
-`pandacss_codegen` is a dependency of `compiler-wasm`, whatever is embedded ships in the browser
-wasm binary — so terseness is a payload concern, not just a repo-size one.
+```ts
+export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset"
+export type CssValue = Globals | (string & {}) | number
 
-**Tier 1 (current).** `crates/pandacss_codegen/scripts/vendor-csstype.ts` fetches a pinned
-`csstype` version, then:
+export interface CssProperties {
+  accentColor?: ConditionalValue<CssValue>   // ~540 native props, all share CssValue
+  // …
+}
+export interface SystemProperties extends CssProperties {
+  color?: ConditionalValue<ColorsValue>       // configured utilities override with their alias
+  // …
+}
+```
 
-- strips all JSDoc/block comments,
-- drops the `*Hyphen` and `*Fallback` families, `HtmlAttributes` / `SvgAttributes`, the `AtRule`
-  namespace, and the `PropertyValue` / `Fallback` helpers,
-- keeps the camelCase property interfaces + the `Properties` aggregate, the `Property` / `DataType`
-  / `Globals` value unions, and `Pseudos`,
-- adds `export` to the `DataType` members (upstream leaves them bare, which only type-checks because
-  csstype ships as a `.d.ts` under `skipLibCheck`; exporting them makes the terse file valid as a
-  checked `.ts`),
-- appends `export interface CssProperties extends Properties<(string & {}) | number, string & {}> {}`.
+Why this shape:
 
-Result: ~138KB (~6.5× smaller), full per-property keyword autocomplete preserved. The output is a
-committed asset embedded via `include_str!`; regeneration is a manual maintainer step
-(`pnpm vendor:csstype`), so the fetch never runs at build time and the build stays offline and
-deterministic. Hover docs are intentionally dropped for now.
+- **Completeness via `interface extends`.** `SystemProperties extends CssProperties` accepts *any*
+  CSS property (native props fall back to `CssValue`), while configured utilities override the
+  inherited member with their precise token alias. The alias is assignable to `CssValue`, so the
+  override is valid. No `Omit` / `Exclude` / intersection — a clean interface combine.
+- **One cached type for every native prop.** All ~540 native members are `ConditionalValue<CssValue>`,
+  so TypeScript instantiates that **once** and reuses it. Measured: the whole graph resolves at ~20
+  instantiations vs legacy's ~2,600 (see Benchmarks).
+- **Global keywords for free.** `Globals` in `CssValue` gives `inherit`/`unset`/… autocomplete on
+  every property at no per-property cost.
+- **Deliberate tradeoff:** native (non-utility) props do **not** get per-keyword autocomplete
+  (`display: 'flex'` suggestions). Configured utilities still get full token + literal autocomplete
+  (the base preset configures the keyword-bearing properties), and any string is still accepted via
+  `(string & {})`. We chose this — a vendored per-property keyword csstype is the single heaviest input
+  to the legacy type cost, and it ships in the `compiler-wasm` browser binary.
 
-**Tier 2 (deferred).** The `Property` namespace is ~47% of the terse file. Many of its unions are
-`Globals | <length>/<color> | (string & {})` — autocomplete-only, since `(string & {})` accepts any
-string. Collapsing those string-only properties to `string` (keeping only finite-keyword enums like
-`display`, `position`, `textAlign`) would shrink it further and cut instantiations. Gate this on the
-`--extendedDiagnostics` benchmarks below; do not do it speculatively.
+### Property registry (shared, single source of truth)
+
+The list of valid property names lives in **`pandacss_shared::css_properties::CSS_PROPERTY_NAMES`** —
+one flat, sorted, `@generated` list (mdn-data + Panda SVG additions; `-webkit-` + SVG kept, `-moz-`/
+`-ms-` dropped). Regenerate with `pnpm --filter @pandacss/is-valid-prop mdn:rust`.
+
+Both consumers read the **same** list, so "a valid property to extract" and "a property offered in the
+types" can never diverge:
+
+- the **extractor** `binary_search`es it for `is_css_property` (a hot path),
+- the **codegen** emits one `CssProperties` member per name.
+
+Selectors are generated locally (`Selector = `&${string}` | `@${string}``); we do not carry csstype's
+`Pseudos`.
 
 ## Token Types
 
@@ -504,31 +517,30 @@ The usage exercises the **type graph** (`SystemStyleObject` recursion, tokens, c
 helpers (`cva`/`sva`/recipe runtimes), which still have type errors and are out of scope for type-cost measurement.
 
 Current readings (both sides emitted as `.d.ts`, `skipLibCheck` on — the real-world scenario): Rust wins **every** metric
-— instantiations **−88 to −98%**, `Types` **−66 to −88%**, memory **−13 to −16%**, check time **−60 to −78%**. The
-headline is instantiations: the named-alias structure instantiates ~49 types on use vs legacy's ~2,600, because
-`skipLibCheck` skips the declaration bodies and only the user's own `css({…})` shape drives instantiation.
+across all fixtures — instantiations **−99%** (~20 vs legacy's ~2,600), `Types` **−82 to −92%**, memory **−21 to −25%**,
+check time **−40 to −67%**. The headline is instantiations: every native CSS property shares one cached
+`ConditionalValue<CssValue>`, and `skipLibCheck` skips the declaration bodies, so only the user's own `css({…})` shape
+drives instantiation. Memory dropped further once the vendored csstype's `Property` namespace was removed entirely.
 
-This depends entirely on measuring `.d.ts` under `skipLibCheck` (how Panda actually ships). The first cut emitted the Rust
-side as `.ts` *source*, defeating skipLibCheck on that side only and making csstype's `Property` namespace look like a
-2–3× `Types` regression — a measurement artifact, not a real cost. A separately-tested hypothesis (that `types/index`'s
-`export type *` over csstype drove the count) was also disproven; the explicit `export type { CssProperties }` was kept as
-an API-contract fix but is perf-neutral. Caveat: the `jsx-*` fixtures read identically because the Rust codegen does not
-yet emit distinct JSX component artifacts, so `jsxStyleProps` cost is not captured (needs a JSX usage once those land).
+Measurement only holds for `.d.ts` under `skipLibCheck` (how Panda ships). An early cut emitted the Rust side as `.ts`
+*source*, which defeated skipLibCheck on that side and made the (then-vendored) csstype look like a 2–3× `Types`
+regression — a measurement artifact that vanished once the own `CssValue`-based csstype replaced the vendored keyword
+unions. Caveat: the `jsx-*` fixtures read identically because the codegen does not yet emit distinct JSX component
+artifacts, so `jsxStyleProps` cost is not captured (needs a JSX usage once those land).
 
 ## Implementation Order
 
 1. Add type artifact IDs and dependency metadata.
-2. Generate `types/conditions` and `types/selectors`.
-3. Generate `types/tokens` from resolved token categories.
-4. Generate `types/values` with category and shared value aliases.
-5. Generate `types/properties` using aliases instead of repeated inline unions.
-6. Generate `types/system-types` with named recursive nesting aliases.
-7. Update pattern codegen to import and use precise pattern property types.
-8. Add snapshots for TS and JS/DTS outputs that show typed pattern props.
-9. Add strict typecheck fixtures for representative generated TS.
-10. Add editor-cost checks where possible, such as comparing generated type file size and TypeScript diagnostics timing
+2. Generate `types/tokens` from resolved token categories.
+3. Generate `types/system`: condition/value aliases, own csstype (`CssValue` + `CssProperties` from the shared property
+   registry), `SystemProperties extends CssProperties` with per-utility overrides, selectors, and the named recursive
+   `SystemStyleObject` — all in one file.
+4. Update pattern codegen to import and use precise pattern property types.
+5. Add snapshots for TS and JS/DTS outputs that show typed pattern props.
+6. Add strict typecheck fixtures for representative generated TS.
+7. Add editor-cost checks where possible, such as comparing generated type file size and TypeScript diagnostics timing
     against the legacy shape.
-11. Add regression fixtures for `strictTokens`, `strictPropertyValues`, and each `jsxStyleProps` setting.
+8. Add regression fixtures for `strictTokens`, `strictPropertyValues`, and each `jsxStyleProps` setting.
 
 ## Non-Goals
 

@@ -140,11 +140,117 @@ fn category_values_grouped_by_category() {
         "sizes": snapshot_category_values(&dict, &TokenCategory::Sizes),
     }), @r##"
     colors:
-      colors.blue: "#00f"
-      colors.red: "#f00"
+      blue: var(--c-b)
+      red: var(--c-r)
     sizes:
-      sizes.md: 8px
-      sizes.sm: 4px
+      md: var(--s-md)
+      sm: var(--s-sm)
+    "##);
+}
+
+#[test]
+fn semantic_category_values_emit_var_refs() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "blue": {
+                        "500": { "value": "#2563eb" }
+                    },
+                    "brand": {
+                        "500": { "value": "#111827" }
+                    }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "primary": { "value": "{colors.blue.500}" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_yaml_snapshot!(json!({
+        "primary": dict.category_value_str("colors", "primary"),
+        "brand_500": dict.category_value_str("colors", "brand.500"),
+        "colors": snapshot_category_values(&dict, &TokenCategory::Colors),
+    }), @r##"
+    primary: var(--colors-primary)
+    brand_500: var(--colors-brand-500)
+    colors:
+      blue.500: var(--colors-blue-500)
+      brand.500: var(--colors-brand-500)
+      colorPalette: var(--colors-color-palette)
+      colorPalette.500: var(--colors-color-palette-500)
+      primary: var(--colors-primary)
+    "##);
+}
+
+#[test]
+fn negative_category_values_emit_calc_values() {
+    let mut negative = t(
+        "spacing.-4",
+        "calc(var(--spacing-4) * -1)",
+        "",
+        TokenCategory::Spacing,
+    );
+    negative.set_extension("isNegative", "true");
+
+    let dict = TokenDictionary::builder()
+        .insert(t(
+            "spacing.4",
+            "1rem",
+            "var(--spacing-4)",
+            TokenCategory::Spacing,
+        ))
+        .insert(negative)
+        .build();
+
+    assert_yaml_snapshot!(json!({
+        "positive": dict.category_value_str("spacing", "4"),
+        "negative": dict.category_value_str("spacing", "-4"),
+        "spacing": snapshot_category_values(&dict, &TokenCategory::Spacing),
+    }), @r##"
+    positive: var(--spacing-4)
+    negative: calc(var(--spacing-4) * -1)
+    spacing:
+      "-4": calc(var(--spacing-4) * -1)
+      "4": var(--spacing-4)
+    "##);
+}
+
+#[test]
+fn color_mix_resolves_token_and_opacity_modifiers() {
+    let dict = TokenDictionary::builder()
+        .insert(t(
+            "colors.red.300",
+            "#fca5a5",
+            "var(--colors-red-300)",
+            TokenCategory::Colors,
+        ))
+        .insert(t(
+            "opacity.half",
+            "0.5",
+            "var(--opacity-half)",
+            TokenCategory::Opacity,
+        ))
+        .build();
+
+    assert_yaml_snapshot!(json!({
+        "token_percent": dict.color_mix_str("colors.red.300/40"),
+        "token_opacity": dict.color_mix_str("colors.red.300/half"),
+        "raw_color": dict.color_mix_str("red/30"),
+        "invalid": dict.color_mix_str("colors.red.300/nope"),
+    }), @r##"
+    token_percent: "color-mix(in srgb, var(--colors-red-300) 40%, transparent)"
+    token_opacity: "color-mix(in srgb, var(--colors-red-300) 50%, transparent)"
+    raw_color: "color-mix(in srgb, red 30%, transparent)"
+    invalid: ~
     "##);
 }
 

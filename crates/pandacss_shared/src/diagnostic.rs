@@ -4,6 +4,7 @@ pub mod codes {
     pub const COMPILE_PLACEHOLDER: &str = "compile_placeholder";
     pub const CONFIG_ARTIFACT_NAME_CONFLICT: &str = "config_artifact_name_conflict";
     pub const CONFIG_BREAKPOINT_UNITS_MIXED: &str = "config_breakpoint_units_mixed";
+    pub const CONFIG_CONDITION_ARRAY_UNSUPPORTED: &str = "config_condition_array_unsupported";
     pub const CONFIG_CONDITION_SELECTOR_INVALID: &str = "config_condition_selector_invalid";
     pub const CONFIG_TOKEN_CIRCULAR_REFERENCE: &str = "config_token_circular_reference";
     pub const CONFIG_TOKEN_KEY_CONTAINS_SPACE: &str = "config_token_key_contains_space";
@@ -19,9 +20,16 @@ pub mod codes {
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";
     pub const STATIC_CSS_PATTERN_MISSING_TRANSFORM: &str = "static_css_pattern_missing_transform";
     pub const STATIC_CSS_PATTERN_UNKNOWN: &str = "static_css_pattern_unknown";
+    pub const STATIC_CSS_PROPERTY_UNKNOWN: &str = "static_css_property_unknown";
+    pub const STATIC_CSS_RECIPE_UNKNOWN: &str = "static_css_recipe_unknown";
+    pub const STATIC_CSS_RECIPE_VARIANT_UNKNOWN: &str = "static_css_recipe_variant_unknown";
+    pub const STATIC_CSS_RECIPE_VARIANT_VALUE_UNKNOWN: &str =
+        "static_css_recipe_variant_value_unknown";
     pub const STATIC_CSS_RECIPES_MISSING_SNAPSHOT: &str = "static_css_recipes_missing_snapshot";
-    pub const STATIC_CSS_THEMES_UNSUPPORTED: &str = "static_css_themes_unsupported";
+    pub const STATIC_CSS_TOKEN_REFERENCE_UNKNOWN: &str = "static_css_token_reference_unknown";
+    pub const STATIC_CSS_WILDCARD_LARGE: &str = "static_css_wildcard_large";
     pub const STATIC_CSS_WILDCARD_EMPTY: &str = "static_css_wildcard_empty";
+    pub const PANDA_CALL_UNEXTRACTABLE: &str = "panda_call_unextractable";
     pub const TOKEN_DICTIONARY_BUILD_FAILED: &str = "token_dictionary_build_failed";
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
 }

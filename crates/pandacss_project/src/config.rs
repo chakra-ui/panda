@@ -11,9 +11,10 @@ use pandacss_config::{
 };
 use pandacss_extractor::{
     ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal, Matcher as ExtractorMatcher,
-    Matchers, NameMatcher as ExtractorNameMatcher, css_property_names,
+    Matchers, NameMatcher as ExtractorNameMatcher,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
+use pandacss_shared::css_properties::css_property_names;
 use pandacss_shared::{capitalize, compile_js_regex};
 use pandacss_tokens::{TokenDictionary, TokenError};
 use pandacss_utility::{Utility, UtilityOptions};
@@ -53,6 +54,7 @@ pub(crate) fn compile_config_with_token_dictionary(
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
         jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
+    extractor_config.has_jsx_framework = config.jsx_framework.is_some();
     extractor_config.token_dictionary = token_dictionary;
 
     let utility = (!utility.is_empty()).then_some(utility);
@@ -64,6 +66,7 @@ pub(crate) fn compile_config_with_token_dictionary(
             utility: utility.as_ref(),
             conditions: &conditions,
             breakpoints: &entries.breakpoints,
+            separator: config.separator.as_deref().unwrap_or("_"),
         },
     );
 

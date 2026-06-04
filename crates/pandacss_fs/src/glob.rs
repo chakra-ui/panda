@@ -1,5 +1,5 @@
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use fast_glob::glob_match;
 
@@ -28,6 +28,38 @@ impl Default for GlobOptions {
             absolute: true,
         }
     }
+}
+
+/// Whether a single `path` matches the discovery globs without walking the tree:
+/// its `cwd`-relative form matches some `include` pattern and no `exclude` pattern
+/// (defaulting to `["**/*.d.ts"]`, matching the walk). A path outside `cwd` never
+/// matches. The single-path companion to [`default_walk`] — for classifying one
+/// watch event rather than enumerating the project.
+#[must_use]
+pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
+    let rel = match path.strip_prefix(&opts.cwd) {
+        Ok(rel) => rel,
+        Err(_) if path.is_relative() => path,
+        Err(_) => return false, // outside cwd
+    };
+    let rel_str = rel.to_string_lossy();
+    let rel_bytes = rel_str.as_bytes();
+
+    let default_excludes = ["**/*.d.ts".to_owned()];
+    let excludes: &[String] = if opts.exclude.is_empty() {
+        &default_excludes
+    } else {
+        &opts.exclude
+    };
+    if excludes
+        .iter()
+        .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+    {
+        return false;
+    }
+    opts.include
+        .iter()
+        .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
 }
 
 /// The static directory prefix of a glob pattern — the part before the first

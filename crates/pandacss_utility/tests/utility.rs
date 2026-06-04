@@ -239,6 +239,14 @@ fn transform_uses_configured_class_name_for_preset_utility() {
 
 #[test]
 fn transform_supports_token_category_values() {
+    let mut negative = Token::new(
+        "spacing.-sm",
+        "calc(var(--spacing-sm) * -1)",
+        "",
+        TokenCategory::Spacing,
+    );
+    negative.set_extension("isNegative", "true");
+
     let tokens = TokenDictionary::builder()
         .insert(Token::new(
             "spacing.sm",
@@ -246,6 +254,7 @@ fn transform_supports_token_category_values() {
             "var(--spacing-sm)",
             TokenCategory::Spacing,
         ))
+        .insert(negative)
         .build();
     let utility = Utility::from_config_with_options(
         &utility_config(json!({
@@ -262,22 +271,504 @@ fn transform_supports_token_category_values() {
     let result = utility
         .transform("spacing", &Literal::String("sm".into()))
         .expect("transform");
+    let negative = utility
+        .transform("spacing", &Literal::String("-sm".into()))
+        .expect("negative transform");
 
-    assert_debug_snapshot!(result, @r#"
+    assert_debug_snapshot!((result, negative), @r#"
+    (
+        UtilityTransformResult {
+            layer: None,
+            class_name: "spacing_sm",
+            styles: Object(
+                [
+                    (
+                        "spacing",
+                        String(
+                            "var(--spacing-sm)",
+                        ),
+                    ),
+                ],
+            ),
+        },
+        UtilityTransformResult {
+            layer: None,
+            class_name: "spacing_-sm",
+            styles: Object(
+                [
+                    (
+                        "spacing",
+                        String(
+                            "calc(var(--spacing-sm) * -1)",
+                        ),
+                    ),
+                ],
+            ),
+        },
+    )
+    "#);
+}
+
+#[test]
+fn transform_supports_color_opacity_modifiers() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.300",
+            "#fca5a5",
+            "var(--colors-red-300)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "opacity.half",
+            "0.5",
+            "var(--opacity-half)",
+            TokenCategory::Opacity,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "background": {
+                "shorthand": "bg",
+                "className": "bg",
+                "values": "colors"
+            },
+            "color": {
+                "className": "c",
+                "values": "colors"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let direct_token = utility.transform("bg", &Literal::String("red.300/40".into()));
+    let direct_raw = utility.transform("bg", &Literal::String("red/30".into()));
+    let curly = utility.transform(
+        "color",
+        &Literal::String("{colors.red.300/40}".into()),
+    );
+    let token_fn = utility.transform(
+        "bg",
+        &Literal::String("token(colors.red.300/half)".into()),
+    );
+
+    assert_debug_snapshot!(
+        (direct_token, direct_raw, curly, token_fn),
+        @r#"
+    (
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "bg_red.300/40",
+                styles: Object(
+                    [
+                        (
+                            "background",
+                            String(
+                                "color-mix(in srgb, var(--colors-red-300) 40%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "bg_red/30",
+                styles: Object(
+                    [
+                        (
+                            "background",
+                            String(
+                                "color-mix(in srgb, red 30%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "c_{colors.red.300/40}",
+                styles: Object(
+                    [
+                        (
+                            "color",
+                            String(
+                                "color-mix(in srgb, var(--colors-red-300) 40%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Some(
+            UtilityTransformResult {
+                layer: None,
+                class_name: "bg_token(colors.red.300/half)",
+                styles: Object(
+                    [
+                        (
+                            "background",
+                            String(
+                                "color-mix(in srgb, var(--colors-red-300) 50%, transparent)",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+    )
+    "#);
+}
+
+#[test]
+fn property_keys_prefers_explicit_values_over_token_category() {
+    let mut negative = Token::new(
+        "spacing.-1",
+        "calc(var(--spacing-1) * -1)",
+        "",
+        TokenCategory::Spacing,
+    );
+    negative.set_extension("isNegative", "true");
+
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "spacing.1",
+            "0.25rem",
+            "var(--spacing-1)",
+            TokenCategory::Spacing,
+        ))
+        .insert(Token::new(
+            "spacing.2",
+            "0.5rem",
+            "var(--spacing-2)",
+            TokenCategory::Spacing,
+        ))
+        .insert(negative)
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "gap": {
+                "shorthand": "g",
+                "values": {
+                    "sm": "1rem",
+                    "lg": "2rem"
+                }
+            },
+            "padding": {
+                "shorthand": "p",
+                "values": "spacing"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    assert_debug_snapshot!(
+        (
+            utility.property_keys("gap"),
+            utility.property_keys("g"),
+            utility.property_keys("padding"),
+            utility.property_keys("p"),
+            utility.property_keys("unknown"),
+        ),
+        @r#"
+    (
+        [
+            "lg",
+            "sm",
+        ],
+        [
+            "lg",
+            "sm",
+        ],
+        [
+            "-1",
+            "1",
+            "2",
+        ],
+        [
+            "-1",
+            "1",
+            "2",
+        ],
+        [],
+    )
+    "#,
+    );
+}
+
+#[test]
+fn token_category_values_need_a_dictionary() {
+    let utility = Utility::from_config(&utility_config(json!({
+        "margin": {
+            "className": "m",
+            "values": "spacing"
+        }
+    })));
+
+    assert_eq!(utility.token_category("margin"), Some("spacing"));
+    assert_eq!(utility.property_keys("margin"), Vec::<String>::new());
+    assert_debug_snapshot!(
+        utility
+            .transform("margin", &Literal::String("4".into()))
+            .expect("transform"),
+        @r#"
     UtilityTransformResult {
         layer: None,
-        class_name: "spacing_sm",
+        class_name: "m_4",
         styles: Object(
             [
                 (
-                    "spacing",
+                    "margin",
                     String(
-                        "4px",
+                        "4",
                     ),
                 ),
             ],
         ),
     }
+    "#,
+    );
+}
+
+#[test]
+fn transform_supports_responsive_visibility_value_maps() {
+    let utility = Utility::from_config(&utility_config(json!({
+        "hideFrom": {
+            "className": "hide",
+            "values": {
+                "sm": {
+                    "@breakpoint sm": {
+                        "display": "none"
+                    }
+                },
+                "lg": {
+                    "@breakpoint lg": {
+                        "display": "none"
+                    }
+                }
+            }
+        },
+        "hideBelow": {
+            "className": "show",
+            "values": {
+                "sm": {
+                    "@breakpoint smDown": {
+                        "display": "none"
+                    }
+                },
+                "lg": {
+                    "@breakpoint lgDown": {
+                        "display": "none"
+                    }
+                }
+            }
+        }
+    })));
+
+    let hide_from = utility
+        .transform("hideFrom", &Literal::String("sm".into()))
+        .expect("hideFrom transform");
+    let hide_below = utility
+        .transform("hideBelow", &Literal::String("lg".into()))
+        .expect("hideBelow transform");
+
+    assert_debug_snapshot!((hide_from, hide_below), @r#"
+    (
+        UtilityTransformResult {
+            layer: None,
+            class_name: "hide_sm",
+            styles: Object(
+                [
+                    (
+                        "@breakpoint sm",
+                        Object(
+                            [
+                                (
+                                    "display",
+                                    String(
+                                        "none",
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+        },
+        UtilityTransformResult {
+            layer: None,
+            class_name: "show_lg",
+            styles: Object(
+                [
+                    (
+                        "@breakpoint lgDown",
+                        Object(
+                            [
+                                (
+                                    "display",
+                                    String(
+                                        "none",
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+        },
+    )
+    "#);
+}
+
+#[test]
+fn transform_supports_gradient_value_maps_and_token_refs() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "gradients.primary",
+            "linear-gradient(to right, #ff0000, #0000ff)",
+            "var(--gradients-primary)",
+            TokenCategory::Gradients,
+        ))
+        .insert(Token::new(
+            "colors.red.200",
+            "#fecaca",
+            "var(--colors-red-200)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "colors.blue.300",
+            "#93c5fd",
+            "var(--colors-blue-300)",
+            TokenCategory::Colors,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "backgroundGradient": {
+                "shorthand": "bgGradient",
+                "className": "bg-grad",
+                "values": {
+                    "primary": {
+                        "backgroundImage": "{gradients.primary}"
+                    },
+                    "to-r": {
+                        "--gradient-stops": "var(--gradient-via-stops, var(--gradient-position), var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position))",
+                        "--gradient-position": "to right",
+                        "backgroundImage": "linear-gradient(var(--gradient-stops))"
+                    },
+                    "linear-gradient(var(--colors-red-200), var(--colors-blue-300))": {
+                        "backgroundImage": "linear-gradient({colors.red.200}, {colors.blue.300})"
+                    }
+                }
+            },
+            "textGradient": {
+                "className": "txt-grad",
+                "values": {
+                    "linear-gradient(var(--colors-red-200), var(--colors-blue-300))": {
+                        "backgroundImage": "linear-gradient({colors.red.200}, {colors.blue.300})",
+                        "-webkitBackgroundClip": "text",
+                        "color": "transparent"
+                    }
+                }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let token = utility
+        .transform("bgGradient", &Literal::String("primary".into()))
+        .expect("token gradient");
+    let shortcut = utility
+        .transform("bgGradient", &Literal::String("to-r".into()))
+        .expect("direction gradient");
+    let text = utility
+        .transform(
+            "textGradient",
+            &Literal::String("linear-gradient({colors.red.200}, {colors.blue.300})".into()),
+        )
+        .expect("text gradient");
+
+    assert_debug_snapshot!((token, shortcut, text), @r#"
+    (
+        UtilityTransformResult {
+            layer: None,
+            class_name: "bg-grad_primary",
+            styles: Object(
+                [
+                    (
+                        "backgroundImage",
+                        String(
+                            "var(--gradients-primary)",
+                        ),
+                    ),
+                ],
+            ),
+        },
+        UtilityTransformResult {
+            layer: None,
+            class_name: "bg-grad_to-r",
+            styles: Object(
+                [
+                    (
+                        "--gradient-stops",
+                        String(
+                            "var(--gradient-via-stops, var(--gradient-position), var(--gradient-from) var(--gradient-from-position), var(--gradient-to) var(--gradient-to-position))",
+                        ),
+                    ),
+                    (
+                        "--gradient-position",
+                        String(
+                            "to right",
+                        ),
+                    ),
+                    (
+                        "backgroundImage",
+                        String(
+                            "linear-gradient(var(--gradient-stops))",
+                        ),
+                    ),
+                ],
+            ),
+        },
+        UtilityTransformResult {
+            layer: None,
+            class_name: "txt-grad_linear-gradient({colors.red.200},_{colors.blue.300})",
+            styles: Object(
+                [
+                    (
+                        "backgroundImage",
+                        String(
+                            "linear-gradient(var(--colors-red-200), var(--colors-blue-300))",
+                        ),
+                    ),
+                    (
+                        "-webkitBackgroundClip",
+                        String(
+                            "text",
+                        ),
+                    ),
+                    (
+                        "color",
+                        String(
+                            "transparent",
+                        ),
+                    ),
+                ],
+            ),
+        },
+    )
     "#);
 }
 

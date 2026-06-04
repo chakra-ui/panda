@@ -83,6 +83,7 @@ pub struct Project {
     atoms_snapshot_cache: Option<Vec<Atom>>,
     encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
     static_encoded_recipes_snapshot_cache: Option<(serde_json::Value, EncodedRecipesSnapshot)>,
+    token_refs_snapshot_cache: Option<Vec<String>>,
     parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
     /// matching entry and span shifts don't leave orphans.
@@ -99,6 +100,7 @@ pub struct ProjectStylesheetSnapshots<'a> {
     pub atoms: &'a [Atom],
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: &'a EncodedRecipesSnapshot,
+    pub token_refs: &'a [String],
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
@@ -109,8 +111,15 @@ struct FileEntry {
     cacheable: bool,
     atoms: FxHashSet<Atom>,
     encoded_recipes: EncodedRecipes,
+    token_refs: Vec<String>,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
+}
+
+#[derive(Clone, Copy)]
+enum ParseMode {
+    Replace,
+    Additive,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -139,6 +148,7 @@ impl Project {
             atoms_snapshot_cache: None,
             encoded_recipes_snapshot_cache: None,
             static_encoded_recipes_snapshot_cache: None,
+            token_refs_snapshot_cache: None,
             parse_epoch: 0,
             config_recipes,
             config_slot_recipes,
@@ -164,9 +174,9 @@ impl Project {
 
     /// Extract usages, decompose recipes, encode atoms into the per-file
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
-    /// and recipes) so stale styles can't linger in watch mode.
+    /// and recipes) so full rebuilds can clear stale styles.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        self.parse_file_inner(path, source, None, None)
+        self.parse_file_inner(path, source, None, None, ParseMode::Replace)
     }
 
     /// [`Self::parse_file`] with transform callbacks. The binding layer
@@ -178,7 +188,13 @@ impl Project {
         source: &str,
         transforms: ParseTransforms<'_>,
     ) -> ParseFileReport {
-        self.parse_file_inner(path, source, transforms.pattern, transforms.utility)
+        self.parse_file_inner(
+            path,
+            source,
+            transforms.pattern,
+            transforms.utility,
+            ParseMode::Replace,
+        )
     }
 
     /// Stateless single-file extraction using this project's configured
@@ -201,6 +217,7 @@ impl Project {
         source: &str,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
         utility_transform: Option<&mut UtilityTransformFn<'_>>,
+        mode: ParseMode,
     ) -> ParseFileReport {
         let span = tracing::trace_span!(
             "file_parse",
@@ -221,11 +238,17 @@ impl Project {
         span.record("cache_hit", false);
 
         let result = extract(source, path, &self.config.extractor_config);
+        let token_refs = result
+            .token_refs
+            .iter()
+            .filter(|token_ref| token_ref.needs_css_var)
+            .map(|token_ref| token_ref.path.clone())
+            .collect::<Vec<_>>();
         let mut diagnostics = result.diagnostics;
+        let line_index = LineIndex::new(source);
         if let Some(utility) = self.config.utility.as_ref()
             && !utility.deprecated_props().is_empty()
         {
-            let line_index = LineIndex::new(source);
             push_deprecated_utility_diagnostics(
                 &result.calls,
                 &result.jsx,
@@ -242,16 +265,27 @@ impl Project {
             diagnostics: diagnostics.clone(),
         };
 
-        // Drop the previous contribution first; otherwise removed styles
-        // survive as ghost atoms in the global view.
-        self.drop_file_state(path);
+        if matches!(mode, ParseMode::Replace) {
+            // Drop the previous contribution first; otherwise removed styles
+            // survive as ghost atoms in the global view.
+            self.drop_file_state(path);
+        }
         let path_key: Arc<str> = Arc::from(path);
 
         let compiled = self.config.as_ref();
         let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
         let mut encoded_recipes = EncodedRecipes::default();
         let empty_object = Literal::Object(Vec::new());
+        let diagnose_unextractable_calls = !compiled.extractor_config.has_jsx_framework;
         for call in result.calls {
+            if diagnose_unextractable_calls && call.data.iter().any(Option::is_none) {
+                report.diagnostics.push(dynamic_style_value_diagnostic(
+                    call.category,
+                    &call.name,
+                    call.span,
+                    &line_index,
+                ));
+            }
             let arg = call.data.into_iter().next().flatten();
             match (call.category, call.name.as_str()) {
                 (MatchCategory::Css, "css") => {
@@ -314,7 +348,12 @@ impl Project {
                                 self.process_style_props(&mut encoder, &style);
                             }
                             Ok(None) => {}
-                            Err(diagnostic) => report.diagnostics.push(diagnostic),
+                            Err(diagnostic) => report.diagnostics.push(with_callback_target(
+                                diagnostic,
+                                "pattern",
+                                &call.name,
+                                None,
+                            )),
                         }
                     }
                 }
@@ -371,7 +410,12 @@ impl Project {
                     Ok(Some(style)) => style,
                     Ok(None) => jsx.data,
                     Err(diagnostic) => {
-                        report.diagnostics.push(diagnostic);
+                        report.diagnostics.push(with_callback_target(
+                            diagnostic,
+                            "pattern",
+                            &jsx.name,
+                            None,
+                        ));
                         jsx.data
                     }
                 }
@@ -397,10 +441,14 @@ impl Project {
                 .any(|diagnostic| diagnostic.code == diagnostic_codes::TRANSFORM_CALLBACK_FAILED),
             atoms,
             encoded_recipes,
+            token_refs,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
-        self.add_file_state(path_key, entry);
+        match mode {
+            ParseMode::Replace => self.add_file_state(path_key, entry),
+            ParseMode::Additive => self.add_file_state_additive(path_key, entry),
+        }
         report
     }
 
@@ -412,7 +460,7 @@ impl Project {
         if !self.files.contains_key(path) {
             return false;
         }
-        self.parse_file(path, source);
+        self.parse_file_inner(path, source, None, None, ParseMode::Additive);
         true
     }
 
@@ -425,7 +473,13 @@ impl Project {
         if !self.files.contains_key(path) {
             return false;
         }
-        self.parse_file_with(path, source, transforms);
+        self.parse_file_inner(
+            path,
+            source,
+            transforms.pattern,
+            transforms.utility,
+            ParseMode::Additive,
+        );
         true
     }
 
@@ -494,6 +548,47 @@ impl Project {
         self.files.insert(path, entry);
     }
 
+    fn add_file_state_additive(&mut self, path: Arc<str>, entry: FileEntry) {
+        if !self.files.contains_key(&path) {
+            self.add_file_state(path, entry);
+            return;
+        }
+
+        self.invalidate_stylesheet_snapshots();
+        let mut missing_atoms = Vec::new();
+        let missing_recipes = {
+            let existing = self
+                .files
+                .get_mut(&path)
+                .expect("file presence checked before mutation");
+            for atom in &entry.atoms {
+                if existing.atoms.insert(atom.clone()) {
+                    missing_atoms.push(atom.clone());
+                }
+            }
+            let missing_recipes = existing
+                .encoded_recipes
+                .extend_missing_from(&entry.encoded_recipes);
+            existing.source_hash = entry.source_hash;
+            existing.parse_epoch = entry.parse_epoch;
+            existing.cacheable = entry.cacheable;
+            existing.token_refs = entry.token_refs;
+            existing.diagnostics = entry.diagnostics;
+            existing.report = entry.report;
+            missing_recipes
+        };
+
+        for atom in missing_atoms {
+            let count = self.atom_counts.entry(atom.clone()).or_insert(0);
+            *count += 1;
+            if *count == 1 {
+                self.atoms_cache.insert(atom);
+            }
+        }
+
+        self.encoded_recipes_cache.add_from(&missing_recipes);
+    }
+
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {
         let entry = self.files.remove(path)?;
         self.invalidate_stylesheet_snapshots();
@@ -514,6 +609,7 @@ impl Project {
     fn invalidate_stylesheet_snapshots(&mut self) {
         self.atoms_snapshot_cache = None;
         self.encoded_recipes_snapshot_cache = None;
+        self.token_refs_snapshot_cache = None;
     }
 
     fn drop_recipes_for(&mut self, path: &str) -> bool {
@@ -647,6 +743,16 @@ impl Project {
             self.encoded_recipes_snapshot_cache =
                 Some(self.encoded_recipes_cache.view().snapshot());
         }
+        if self.token_refs_snapshot_cache.is_none() {
+            let mut token_refs = self
+                .files
+                .values()
+                .flat_map(|entry| entry.token_refs.iter().cloned())
+                .collect::<Vec<_>>();
+            token_refs.sort();
+            token_refs.dedup();
+            self.token_refs_snapshot_cache = Some(token_refs);
+        }
         let static_cache_matches = self
             .static_encoded_recipes_snapshot_cache
             .as_ref()
@@ -672,6 +778,10 @@ impl Project {
                 .as_ref()
                 .map(|(_, snapshot)| snapshot)
                 .expect("static recipe snapshot was initialized"),
+            token_refs: self
+                .token_refs_snapshot_cache
+                .as_deref()
+                .expect("token refs snapshot was initialized"),
         }
     }
 
@@ -884,11 +994,56 @@ fn transform_atoms(
                 out.insert(atom);
             }
             Err(diagnostic) => {
-                diagnostics.push(diagnostic);
+                diagnostics.push(with_callback_target(
+                    diagnostic,
+                    "utility",
+                    atom.prop(),
+                    Some(&atom_value_summary(atom.value())),
+                ));
             }
         }
     }
     out
+}
+
+fn dynamic_style_value_diagnostic(
+    category: MatchCategory,
+    name: &str,
+    span: pandacss_extractor::Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    let mut diagnostic = Diagnostic::warning(
+        diagnostic_codes::PANDA_CALL_UNEXTRACTABLE,
+        format!("{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"),
+    );
+    diagnostic.span = Some(span);
+    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    diagnostic
+}
+
+fn with_callback_target(
+    mut diagnostic: Diagnostic,
+    kind: &str,
+    name: &str,
+    value: Option<&str>,
+) -> Diagnostic {
+    if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
+        return diagnostic;
+    }
+    let target = value.map_or_else(
+        || format!("{kind} `{name}`"),
+        |value| format!("{kind} `{name}` with value `{value}`"),
+    );
+    diagnostic.message = format!("{} ({target})", diagnostic.message);
+    diagnostic
+}
+
+fn atom_value_summary(value: &AtomValue) -> String {
+    match value {
+        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::Bool(value) => value.to_string(),
+        AtomValue::Null => "null".to_owned(),
+    }
 }
 
 fn hash_source(source: &str) -> u64 {

@@ -96,6 +96,14 @@ fn extract_with(
     )
 }
 
+fn extract_with_config(
+    source: &str,
+    matched: &[MatchedImport],
+    config: &ExtractorConfig,
+) -> ExtractedCallsResult {
+    extract_calls(source, "fixture.tsx", matched, config)
+}
+
 #[test]
 fn duplicate_object_keys_keep_first_position_with_last_value() {
     // ES object-initializer semantics: a later property with the same key
@@ -193,6 +201,76 @@ fn named_raw_css_call_normalizes_to_imported_name() {
           end: 25
     diagnostics: []
     ");
+}
+
+#[test]
+fn aliased_raw_css_cva_and_sva_calls_normalize_to_imported_names() {
+    assert_yaml_snapshot!(
+        extract(
+            indoc! {r#"
+                styledCss.raw({ color: 'red' })
+                componentVariant.raw({ base: { color: 'blue' } })
+                slotVariant.raw({ slots: ['root'], base: { root: { color: 'green' } } })
+                randomAlias.raw({ color: 'pink' })
+            "#},
+            &[
+                MatchedImport {
+                    category: MatchCategory::Css,
+                    module: "@panda/css".into(),
+                    name: "css".into(),
+                    alias: "styledCss".into(),
+                    kind: ImportSpecifierKind::Named,
+                },
+                MatchedImport {
+                    category: MatchCategory::Css,
+                    module: "@panda/css".into(),
+                    name: "cva".into(),
+                    alias: "componentVariant".into(),
+                    kind: ImportSpecifierKind::Named,
+                },
+                MatchedImport {
+                    category: MatchCategory::Css,
+                    module: "@panda/css".into(),
+                    name: "sva".into(),
+                    alias: "slotVariant".into(),
+                    kind: ImportSpecifierKind::Named,
+                },
+            ],
+        ),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: styledCss
+        data:
+          - color: red
+        span:
+          start: 0
+          end: 31
+      - category: css
+        name: cva
+        alias: componentVariant
+        data:
+          - base:
+              color: blue
+        span:
+          start: 32
+          end: 81
+      - category: css
+        name: sva
+        alias: slotVariant
+        data:
+          - slots:
+              - root
+            base:
+              root:
+                color: green
+        span:
+          start: 82
+          end: 154
+    diagnostics: []
+    ",
+    );
 }
 
 #[test]
@@ -388,6 +466,58 @@ fn skips_non_literal_arguments() {
         ),
         @"
     calls: []
+    diagnostics:
+      - code: panda_call_unextractable
+        message: \"Css call `css` received a dynamic argument, so no static CSS was generated for this call\"
+        severity: warning
+        span:
+          start: 0
+          end: 11
+        location:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 12
+      - code: panda_call_unextractable
+        message: \"Css call `css` received a dynamic argument, so no static CSS was generated for this call\"
+        severity: warning
+        span:
+          start: 12
+          end: 29
+        location:
+          start:
+            line: 2
+            column: 1
+          end:
+            line: 2
+            column: 18
+      - code: panda_call_unextractable
+        message: \"Css call `css` received a dynamic argument, so no static CSS was generated for this call\"
+        severity: warning
+        span:
+          start: 30
+          end: 47
+        location:
+          start:
+            line: 3
+            column: 1
+          end:
+            line: 3
+            column: 18
+    ",
+    );
+}
+
+#[test]
+fn skips_unextractable_call_diagnostic_when_jsx_framework_is_configured() {
+    let config = ExtractorConfig::new(css_matchers()).with_jsx_framework(true);
+
+    assert_yaml_snapshot!(
+        extract_with_config("css(styles)", &[css("css")], &config),
+        @"
+    calls: []
     diagnostics: []
     ",
     );
@@ -505,7 +635,20 @@ fn finds_calls_inside_function_body() {
 fn computed_keys_skip_extraction() {
     assert_yaml_snapshot!(extract("css({ [dynamicKey]: 'red' })", &[css("css")]), @"
     calls: []
-    diagnostics: []
+    diagnostics:
+      - code: panda_call_unextractable
+        message: \"Css call `css` received a dynamic argument, so no static CSS was generated for this call\"
+        severity: warning
+        span:
+          start: 0
+          end: 28
+        location:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 29
     ");
 }
 
@@ -944,7 +1087,20 @@ fn template_literal_with_interpolation_is_skipped() {
         extract("css({ color: `${dynamic}px` })", &[css("css")]),
         @"
     calls: []
-    diagnostics: []
+    diagnostics:
+      - code: panda_call_unextractable
+        message: \"Css call `css` received a dynamic argument, so no static CSS was generated for this call\"
+        severity: warning
+        span:
+          start: 0
+          end: 30
+        location:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 31
     ",
     );
 }
@@ -1110,7 +1266,20 @@ fn non_numeric_string_in_arithmetic_drops() {
         extract("css({ a: 'foo' - 1 })", &[css("css")]),
         @"
     calls: []
-    diagnostics: []
+    diagnostics:
+      - code: panda_call_unextractable
+        message: \"Css call `css` received a dynamic argument, so no static CSS was generated for this call\"
+        severity: warning
+        span:
+          start: 0
+          end: 21
+        location:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 22
     ",
     );
 }

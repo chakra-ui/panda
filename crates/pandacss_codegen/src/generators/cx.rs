@@ -53,11 +53,11 @@ pub fn module() -> Module {
 #[must_use]
 pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<ArtifactFile> {
     emit_module_files(
-        "cx",
+        "css/cx",
         &module(),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }

@@ -19,11 +19,11 @@ pub fn generate(options: GenerateOptions, dependencies: DependencySet) -> Artifa
 #[must_use]
 pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<ArtifactFile> {
     emit_module_files(
-        "sva",
+        "css/sva",
         &module(),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }
@@ -38,11 +38,11 @@ fn module() -> Module {
                 "toVariantMap",
                 "withDefaults",
             ],
-            "./helpers",
+            "../helpers",
         ))
         .with_import(ImportDecl::value(["cva"], "./cva"))
         .with_import(ImportDecl::value(["cx"], "./cx"))
-        .with_import(ImportDecl::ty(["SlotRecipeCreatorFn"], "./types/recipe"))
+        .with_import(ImportDecl::ty(["SlotRecipeCreatorFn"], "../types/recipe"))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
             exported: true,
             declare: false,

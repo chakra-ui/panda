@@ -15,6 +15,7 @@ export interface CompileInput {
   config?: SerializedConfig
   cwd?: string
   cacheDir?: string
+  emitLayerDeclaration?: boolean
 }
 
 export type ImportSpecifierKind = 'named' | 'default' | 'namespace'
@@ -48,12 +49,16 @@ export interface Matcher {
   names?: string[]
 }
 
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
+
 export interface Matchers {
   css: Matcher
   recipe: Matcher
   pattern: Matcher
   jsx?: Matcher
   tokens: Matcher
+  /** Configured JSX framework. Enables JSX-aware extraction diagnostics. */
+  jsxFramework?: JsxFramework
   /** Resolved Panda token dictionary. When present, `token('path')` and
    *  `token.var('path')` calls fold to their dictionary value during
    *  extraction. */

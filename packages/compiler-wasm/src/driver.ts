@@ -85,4 +85,8 @@ class BrowserDriver extends BaseDriver {
     this.compiler.parseFileSource(change.path, change.content)
     return true
   }
+
+  getOutdir(outdir?: string): string {
+    return this.compiler.resolvePath(this.getConfiguredOutdir(outdir))
+  }
 }

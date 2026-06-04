@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -6,6 +6,7 @@ import { createNodeDriver } from '../src'
 
 const CONFIG = `export default {
   outdir: 'styled-system',
+  codegenImportExtensions: true,
   include: ['**/*.tsx'],
   importMap: {
     css: ['@panda/css'],
@@ -56,19 +57,59 @@ describe('createNodeDriver', () => {
           },
         ]
       `)
-    expect(driver.compile().css).toContain('red')
+    expect(driver.cssgen().css).toContain('red')
   })
 
   it('writes artifacts under outdir via the engine fs, embedding the user transform', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()
 
-    const written = driver.writeArtifacts('styled-system')
+    const written = driver.codegen()
     expect(written.some((path) => path.endsWith(join('patterns', 'stack.mjs')))).toBe(true)
 
     const stack = readFileSync(join(dir, 'styled-system', 'patterns', 'stack.mjs'), 'utf8')
     expect(stack).toContain('display: "flex"')
+    expect(stack).toContain('./runtime.mjs')
     expect(stack).not.toContain('(s) => s')
+  })
+
+  it('writes stylesheet output through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    const result = driver.writeCss('styled-system/styles.css')
+
+    expect(result.path).toBe(join(dir, 'styled-system', 'styles.css'))
+    expect(result.css).toContain('red')
+    expect(readFileSync(result.path, 'utf8')).toBe(result.css)
+  })
+
+  it('writes split stylesheet output under outdir through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    const result = driver.writeSplitCss()
+
+    expect(result.root).toBe(join(dir, 'styled-system'))
+    expect(result.paths).toContain(join(dir, 'styled-system', 'styles.css'))
+    expect(result.paths).toContain(join(dir, 'styled-system', 'styles', 'utilities.css'))
+    expect(readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')).toContain(
+      "@import './styles/utilities.css';",
+    )
+    expect(readFileSync(join(dir, 'styled-system', 'styles', 'utilities.css'), 'utf8')).toContain('red')
+  })
+
+  it('resolves the configured outdir through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+
+    expect(driver.getOutdir()).toBe(join(dir, 'styled-system'))
+    expect(driver.getOutdir('system')).toBe(join(dir, 'system'))
+    expect(driver.getOutdir('/tmp/panda-system')).toBe('/tmp/panda-system')
+    expect(driver.paths('system')).toEqual({
+      root: join(dir, 'system'),
+      styleFile: join(dir, 'system', 'styles.css'),
+      stylesDir: join(dir, 'system', 'styles'),
+    })
   })
 
   it('lists watch targets (source patterns, base dirs, config deps)', async () => {
@@ -84,6 +125,36 @@ describe('createNodeDriver', () => {
     expect(targets.config).toContain('panda.config.ts')
   })
 
+  it('classifies the config file (and not source files) for watch routing', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+
+    expect(driver.isConfigFile(join(dir, 'panda.config.ts'))).toBe(true)
+    expect(driver.isConfigFile(join(dir, 'App.tsx'))).toBe(false)
+    expect(driver.isConfigFile(join(dir, 'nested', '..', 'panda.config.ts'))).toBe(true)
+  })
+
+  it('detects a stylesheet root by its layer declaration', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const hasDecl = (css: string) => driver.compiler.hasLayerDeclaration(css)
+
+    expect(hasDecl('@layer reset, base, tokens, recipes, utilities;')).toBe(true)
+    expect(hasDecl('@layer reset, base, tokens, recipes, utilities, custom;\n.x {}')).toBe(true) // superset
+    expect(hasDecl('@layer base, utilities;')).toBe(false) // missing layers
+    expect(hasDecl('.x { color: red }')).toBe(false) // no declaration
+    expect(hasDecl('@layer reset { .x {} }')).toBe(false) // a block, not a statement
+  })
+
+  it('classifies source files by the configured include/exclude globs', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const isSource = (file: string) => driver.compiler.isSourceFile(file)
+
+    expect(isSource(join(dir, 'App.tsx'))).toBe(true) // matches **/*.tsx
+    expect(isSource(join(dir, 'nested', 'Deep.tsx'))).toBe(true)
+    expect(isSource(join(dir, 'notes.md'))).toBe(false) // wrong extension
+    expect(isSource(join(dir, 'styled-system', 'css', 'index.mjs'))).toBe(false) // generated output
+    expect(isSource('/elsewhere/Other.tsx')).toBe(false) // outside cwd
+  })
+
   it('exposes introspection over the current config', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     expect(driver.introspect.patterns()).toMatchInlineSnapshot(`
@@ -97,6 +168,7 @@ describe('createNodeDriver', () => {
 
   it('applies a batch of source changes', async () => {
     const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
     const applied = driver.applyChanges([
       {
         path: join(dir, 'App.tsx'),
@@ -115,8 +187,8 @@ describe('createNodeDriver', () => {
         true,
       ]
     `)
-    expect(driver.compile().css).toContain('blue')
-    expect(driver.compile().css).toContain('green')
+    expect(driver.cssgen().css).toContain('blue')
+    expect(driver.cssgen().css).toContain('green')
   })
 
   it('reads source changes from disk when content is omitted', async () => {
@@ -125,11 +197,34 @@ describe('createNodeDriver', () => {
 
     writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'purple' })")
     expect(driver.applyChange({ path: file, kind: 'add' })).toBe(true)
-    expect(driver.compile().css).toContain('purple')
+    expect(driver.cssgen().css).toContain('purple')
 
     writeFileSync(file, "import { css } from '@panda/css'; css({ color: 'orange' })")
     expect(driver.applyChange({ path: file, kind: 'change' })).toBe(true)
-    expect(driver.compile().css).toContain('orange')
+    expect(driver.cssgen().css).toContain('purple')
+    expect(driver.cssgen().css).toContain('orange')
+  })
+})
+
+describe('createNodeDriver isConfigFile (symlinks)', () => {
+  it('matches the config file through a symlinked cwd', async () => {
+    const real = realpathSync(mkdtempSync(join(tmpdir(), 'panda-real-')))
+    writeFileSync(join(real, 'panda.config.ts'), CONFIG)
+    const parent = realpathSync(mkdtempSync(join(tmpdir(), 'panda-link-')))
+    const link = join(parent, 'proj')
+    try {
+      symlinkSync(real, link)
+    } catch {
+      return // symlinks not permitted (e.g. Windows without privilege) — skip
+    }
+
+    const driver = await createNodeDriver({ cwd: link })
+    // realpath collapses the symlink, so both the canonical and symlinked paths match.
+    expect(driver.isConfigFile(join(real, 'panda.config.ts'))).toBe(true)
+    expect(driver.isConfigFile(join(link, 'panda.config.ts'))).toBe(true)
+
+    rmSync(parent, { recursive: true, force: true }) // unlinks the `proj` symlink
+    rmSync(real, { recursive: true, force: true })
   })
 })
 

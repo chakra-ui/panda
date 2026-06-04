@@ -2,24 +2,22 @@ mod common;
 
 use common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 
 #[test]
 fn emits_ts_source_cva() {
     let artifacts = ArtifactGraph.generate(GenerateOptions {
         format: CodegenFormat::Ts,
-        specifiers: ModuleSpecifierPolicy::Extensionless,
+        import_extensions: false,
     });
     let cva = artifact(&artifacts, ArtifactId::Cva);
 
-    assert_eq!(paths(cva), vec!["cva.ts"]);
-    assert_snapshot!(file(cva, "cva.ts"), @"
-    import { getCompoundVariantCss, memo, mergeProps, splitProps, toVariantMap, uniq, withDefaults } from './helpers';
-
+    assert_eq!(paths(cva), vec!["css/cva.ts"]);
+    assert_snapshot!(file(cva, "css/cva.ts"), @"
+    import { getCompoundVariantCss, memo, mergeProps, splitProps, toVariantMap, uniq, withDefaults } from '../helpers';
     import { css, mergeCss } from './css';
-
-    import type { RecipeCreatorFn } from './types/recipe';
+    import type { RecipeCreatorFn } from '../types/recipe';
 
     export const cva: RecipeCreatorFn = (config) => {
       const defaults = (c: Record<string, any>) => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
@@ -74,14 +72,13 @@ fn emits_ts_source_cva() {
 fn emits_js_runtime_and_declarations() {
     let artifacts = ArtifactGraph.generate(GenerateOptions {
         format: CodegenFormat::Mjs,
-        specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+        import_extensions: true,
     });
     let cva = artifact(&artifacts, ArtifactId::Cva);
 
-    assert_eq!(paths(cva), vec!["cva.mjs", "cva.d.mts"]);
-    assert_snapshot!(file(cva, "cva.mjs"), @"
-    import { getCompoundVariantCss, memo, mergeProps, splitProps, toVariantMap, uniq, withDefaults } from './helpers.mjs';
-
+    assert_eq!(paths(cva), vec!["css/cva.mjs", "css/cva.d.mts"]);
+    assert_snapshot!(file(cva, "css/cva.mjs"), @"
+    import { getCompoundVariantCss, memo, mergeProps, splitProps, toVariantMap, uniq, withDefaults } from '../helpers.mjs';
     import { css, mergeCss } from './css.mjs';
 
     export const cva = (config) => {
@@ -131,8 +128,8 @@ fn emits_js_runtime_and_declarations() {
       })
     }
     ");
-    assert_snapshot!(file(cva, "cva.d.mts"), @"
-    import type { RecipeCreatorFn } from './types/recipe.d.mts';
+    assert_snapshot!(file(cva, "css/cva.d.mts"), @"
+    import type { RecipeCreatorFn } from '../types/recipe.d.mts';
 
     export declare const cva: RecipeCreatorFn;
     ");

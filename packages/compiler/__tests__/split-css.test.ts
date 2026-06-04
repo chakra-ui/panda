@@ -27,16 +27,18 @@ describe('compiler.splitCss()', () => {
     expect(compiler.splitCss().map((file) => file.path)).toMatchInlineSnapshot(`
       [
         "styles.css",
-        "tokens.css",
-        "utilities.css",
-        "recipes/button.css",
-        "recipes.css",
+        "styles/tokens.css",
+        "styles/utilities.css",
+        "styles/recipes/button.css",
+        "styles/recipes.css",
       ]
     `)
-    expect(compiler.splitCss().find((file) => file.path === 'recipes/button.css')?.code).toMatchInlineSnapshot(`
+    expect(compiler.splitCss().find((file) => file.path === 'styles/recipes/button.css')?.code).toMatchInlineSnapshot(`
       "@layer recipes {
-        .button {
-          display: inline-flex;
+        @layer base {
+          .button {
+            display: inline-flex;
+          }
         }
         .button--size_sm {
           padding: 8px;
@@ -46,9 +48,9 @@ describe('compiler.splitCss()', () => {
     `)
     expect(compiler.splitCss().find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
-      @import './tokens.css';
-      @import './utilities.css';
-      @import './recipes.css';
+      @import './styles/tokens.css';
+      @import './styles/utilities.css';
+      @import './styles/recipes.css';
       "
     `)
   })

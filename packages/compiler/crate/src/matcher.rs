@@ -25,6 +25,7 @@ pub struct Matchers {
     pub pattern: Matcher,
     pub jsx: Option<Matcher>,
     pub tokens: Matcher,
+    pub jsx_framework: Option<String>,
     /// When present, `token('path')` / `token.var('path')` fold during
     /// extraction. Pass parallel JS maps: `values[path]` → raw value,
     /// `vars[path]` → CSS-var form. Omit to disable.

@@ -18,20 +18,14 @@ pub enum SourceExt {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ModuleSpecifierPolicy {
-    Extensionless,
-    RuntimeAndTypes,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EmitMode {
     SourceTs {
         ext: SourceExt,
-        specifiers: ModuleSpecifierPolicy,
+        import_extensions: bool,
     },
     Split {
         format: CodegenFormat,
-        specifiers: ModuleSpecifierPolicy,
+        import_extensions: bool,
     },
 }
 
@@ -40,7 +34,7 @@ impl EmitMode {
     pub fn from_codegen_format(
         format: CodegenFormat,
         has_jsx: bool,
-        specifiers: ModuleSpecifierPolicy,
+        import_extensions: bool,
     ) -> Self {
         if format.is_source_ts() {
             Self::SourceTs {
@@ -49,10 +43,13 @@ impl EmitMode {
                 } else {
                     SourceExt::Ts
                 },
-                specifiers,
+                import_extensions,
             }
         } else {
-            Self::Split { format, specifiers }
+            Self::Split {
+                format,
+                import_extensions,
+            }
         }
     }
 }
@@ -74,23 +71,32 @@ pub struct PrintedFiles {
 #[must_use]
 pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
     match mode {
-        EmitMode::SourceTs { specifiers, .. } => PrintedFiles {
-            source_ts: Some(print_module(module, EmitTarget::SourceTs, specifiers)),
+        EmitMode::SourceTs {
+            import_extensions, ..
+        } => PrintedFiles {
+            source_ts: Some(print_module(
+                module,
+                EmitTarget::SourceTs,
+                import_extensions,
+            )),
             runtime: None,
             types: None,
         },
-        EmitMode::Split { format, specifiers } => PrintedFiles {
+        EmitMode::Split {
+            format,
+            import_extensions,
+        } => PrintedFiles {
             source_ts: None,
             runtime: Some(print_module_with_format(
                 module,
                 EmitTarget::RuntimeJs,
-                specifiers,
+                import_extensions,
                 Some(format),
             )),
             types: Some(print_module_with_format(
                 module,
                 EmitTarget::Dts,
-                specifiers,
+                import_extensions,
                 Some(format),
             )),
         },
@@ -98,28 +104,36 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
 }
 
 #[must_use]
-pub fn print_module(
-    module: &Module,
-    target: EmitTarget,
-    specifiers: ModuleSpecifierPolicy,
-) -> String {
-    print_module_with_format(module, target, specifiers, None)
+pub fn print_module(module: &Module, target: EmitTarget, import_extensions: bool) -> String {
+    print_module_with_format(module, target, import_extensions, None)
 }
 
 fn print_module_with_format(
     module: &Module,
     target: EmitTarget,
-    specifiers: ModuleSpecifierPolicy,
+    import_extensions: bool,
     format: Option<CodegenFormat>,
 ) -> String {
-    let mut lines = Vec::new();
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    enum PrintedLineKind {
+        Import,
+        Export,
+        Other,
+    }
+
+    let mut lines: Vec<(PrintedLineKind, String)> = Vec::new();
 
     lines.extend(
         module
             .imports
             .iter()
             .filter(|import| should_print_import(import, target))
-            .map(|import| print_import(import, target, specifiers, format)),
+            .map(|import| {
+                (
+                    PrintedLineKind::Import,
+                    print_import(import, target, import_extensions, format),
+                )
+            }),
     );
 
     lines.extend(
@@ -127,18 +141,40 @@ fn print_module_with_format(
             .items
             .iter()
             .filter(|item| should_print_item(item, target))
-            .map(|item| print_item(item, target, specifiers, format)),
+            .map(|item| {
+                let kind = match item.node {
+                    ItemNode::Export(_) => PrintedLineKind::Export,
+                    _ => PrintedLineKind::Other,
+                };
+                (kind, print_item(item, target, import_extensions, format))
+            }),
     );
 
     // Drop blank lines only for the `.d.ts` (where a type-stripped runtime item
     // leaves an empty slot); the `.ts`/`.js` keep them as intentional spacing.
-    lines
+    let lines = lines
         .into_iter()
-        .filter(|line| !line.is_empty() || !matches!(target, EmitTarget::Dts))
-        .collect::<Vec<_>>()
-        .join("\n\n")
-        .trim()
-        .to_string()
+        .filter(|(_, line)| !line.is_empty() || !matches!(target, EmitTarget::Dts))
+        .collect::<Vec<_>>();
+
+    let mut output = String::new();
+    for (index, (kind, line)) in lines.iter().enumerate() {
+        if index > 0 {
+            let previous = lines[index - 1].0;
+            let separator = if (previous == PrintedLineKind::Import
+                && *kind == PrintedLineKind::Import)
+                || (previous == PrintedLineKind::Export && *kind == PrintedLineKind::Export)
+            {
+                "\n"
+            } else {
+                "\n\n"
+            };
+            output.push_str(separator);
+        }
+        output.push_str(line);
+    }
+
+    output.trim().to_string()
 }
 
 fn should_print_import(import: &ImportDecl, target: EmitTarget) -> bool {
@@ -164,7 +200,7 @@ fn should_print_item(item: &Item, target: EmitTarget) -> bool {
 fn print_import(
     import: &ImportDecl,
     target: EmitTarget,
-    specifier_policy: ModuleSpecifierPolicy,
+    import_extensions: bool,
     format: Option<CodegenFormat>,
 ) -> String {
     let keyword = match (import.kind, target) {
@@ -182,7 +218,7 @@ fn print_import(
         &import.source,
         import.kind,
         target,
-        specifier_policy,
+        import_extensions,
         format,
     );
 
@@ -200,14 +236,15 @@ fn print_source(
     source: &str,
     kind: ImportKind,
     target: EmitTarget,
-    specifiers: ModuleSpecifierPolicy,
+    import_extensions: bool,
     format: Option<CodegenFormat>,
 ) -> String {
-    if !source.starts_with('.') || matches!(specifiers, ModuleSpecifierPolicy::Extensionless) {
+    if !source.starts_with('.') || !import_extensions {
         return source.to_string();
     }
 
     match (kind, target) {
+        (_, EmitTarget::SourceTs) => format!("{source}.ts"),
         (ImportKind::Value, EmitTarget::RuntimeJs) => {
             let ext = format.unwrap_or(CodegenFormat::Mjs).runtime_extension();
             format!("{source}.{ext}")
@@ -225,7 +262,7 @@ fn print_source(
 fn print_item(
     item: &Item,
     target: EmitTarget,
-    specifiers: ModuleSpecifierPolicy,
+    import_extensions: bool,
     format: Option<CodegenFormat>,
 ) -> String {
     match &item.node {
@@ -234,7 +271,7 @@ fn print_item(
         ItemNode::Interface(decl) => print_interface(decl),
         ItemNode::TypeAlias(decl) => print_type_alias(decl),
         ItemNode::Assignment(assignment) => print_assignment(assignment),
-        ItemNode::Export(decl) => print_export(decl, target, specifiers, format),
+        ItemNode::Export(decl) => print_export(decl, target, import_extensions, format),
         ItemNode::RawStmt(code) => {
             if matches!(target, EmitTarget::RuntimeJs) {
                 strip_typescript_fixpoint(code)
@@ -260,18 +297,18 @@ fn strip_typescript_fixpoint(code: &str) -> String {
 fn print_export(
     decl: &ExportDecl,
     target: EmitTarget,
-    specifiers: ModuleSpecifierPolicy,
+    import_extensions: bool,
     format: Option<CodegenFormat>,
 ) -> String {
     match decl {
         ExportDecl::Star { source } => {
             format!(
                 "export * from '{}';",
-                print_source(source, ImportKind::Value, target, specifiers, format)
+                print_source(source, ImportKind::Value, target, import_extensions, format)
             )
         }
         ExportDecl::TypeStar { source } => {
-            let source = print_source(source, ImportKind::Type, target, specifiers, format);
+            let source = print_source(source, ImportKind::Type, target, import_extensions, format);
             if matches!(target, EmitTarget::SourceTs) {
                 format!("export type * from '{source}';")
             } else {
@@ -279,7 +316,7 @@ fn print_export(
             }
         }
         ExportDecl::TypeNamed { names, source } => {
-            let source = print_source(source, ImportKind::Type, target, specifiers, format);
+            let source = print_source(source, ImportKind::Type, target, import_extensions, format);
             let list = names.join(", ");
             if matches!(target, EmitTarget::SourceTs) {
                 format!("export type {{ {list} }} from '{source}';")

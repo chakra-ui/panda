@@ -1,9 +1,9 @@
 mod common;
 
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetLayer;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css, compile_layer_css, config};
+use common::{compile_css, compile_layer_css, compile_output, config};
 
 #[test]
 fn expands_static_css_utilities() {
@@ -40,6 +40,82 @@ fn expands_static_css_utilities() {
   }
   .hover\:c_red:hover {
     color: red;
+  }
+}
+");
+}
+
+#[test]
+fn expands_static_css_negative_token_category_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "margin": "*"
+                    }
+                }
+            ]
+        },
+        "utilities": {
+            "margin": { "className": "m", "values": "spacing" }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .m_-4 {
+    margin: calc(var(--spacing-4) * -1);
+  }
+  .m_4 {
+    margin: var(--spacing-4);
+  }
+}
+");
+}
+
+#[test]
+fn expands_static_css_color_opacity_modifiers() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#fca5a5" }
+                    }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "background": ["red.300/40", "red/30"]
+                    }
+                }
+            ]
+        },
+        "utilities": {
+            "background": { "className": "bg", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .bg_red\.300\/40 {
+    background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+  }
+  .bg_red\/30 {
+    background: color-mix(in srgb, red 30%, transparent);
   }
 }
 ");
@@ -84,6 +160,203 @@ fn expands_static_css_responsive_breakpoints() {
 }
 
 #[test]
+fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "css": [
+                {
+                    "conditions": ["hoverFine"],
+                    "responsive": true,
+                    "properties": {
+                        "color": ["blue.500", "red.500"]
+                    }
+                }
+            ]
+        },
+        "conditions": {
+            "hoverFine": {
+                "@media (hover: hover)": {
+                    "&:hover": "@slot"
+                }
+            }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "tokens": {
+                "colors": {
+                    "blue": { "500": { "value": "#00f" } },
+                    "red": { "500": { "value": "#f00" } }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_blue\.500 {
+        color: var(--colors-blue-500);
+      }
+      .c_red\.500 {
+        color: var(--colors-red-500);
+      }
+      @media (width >= 48rem) {
+        .md\:c_blue\.500 {
+          color: var(--colors-blue-500);
+        }
+      }
+      @media (width >= 48rem) {
+        .md\:c_red\.500 {
+          color: var(--colors-red-500);
+        }
+      }
+      @media (hover: hover) {
+        .hoverFine\:c_blue\.500:hover {
+          color: var(--colors-blue-500);
+        }
+      }
+      @media (hover: hover) {
+        .hoverFine\:c_red\.500:hover {
+          color: var(--colors-red-500);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn reports_empty_wildcards_without_rejecting_static_css_themes() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "themes": ["light", "dark"],
+            "css": [
+                {
+                    "properties": {
+                        "color": "*",
+                        "margin": "*"
+                    }
+                }
+            ]
+        },
+        "utilities": {
+            "color": { "className": "c" },
+            "margin": { "className": "m", "values": ["1", "2"] }
+        }
+    }));
+    let output = compile_output(&config, "", StylesheetOptions::default());
+    let diagnostics = output
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.as_str())
+        .collect::<Vec<_>>();
+
+    assert_snapshot!(output.css, @r"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_2 {
+        margin: 2;
+      }
+    }
+    ");
+    assert_snapshot!(diagnostics.join("\n"), @r"
+    static_css_wildcard_empty
+    ");
+}
+
+#[test]
+fn reports_static_css_authoring_diagnostics() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                }
+            },
+            "recipes": {
+                "button": {
+                    "variants": {
+                        "size": {
+                            "sm": { "padding": "4px" }
+                        }
+                    }
+                }
+            }
+        },
+        "staticCss": {
+            "css": [
+                {
+                    "properties": {
+                        "colr": "red",
+                        "--valid-token": "colors.red.300",
+                        "--invalid-token": "{colors.blue.300/40}"
+                    }
+                }
+            ],
+            "recipes": {
+                "missing": [{ "size": ["sm"] }],
+                "button": [
+                    { "tone": ["solid"] },
+                    { "size": ["lg"] }
+                ]
+            }
+        },
+        "utilities": {
+            "padding": { "className": "p" }
+        }
+    }));
+    let output = compile_output(&config, "", StylesheetOptions::default());
+    let diagnostics = output
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code.as_str())
+        .collect::<Vec<_>>();
+
+    assert_snapshot!(diagnostics.join("\n"), @r"
+    static_css_recipe_unknown
+    static_css_recipe_variant_unknown
+    static_css_recipe_variant_value_unknown
+    static_css_property_unknown
+    static_css_token_reference_unknown
+    ");
+}
+
+#[test]
+fn reports_large_static_css_wildcards() {
+    let values = (0..=250)
+        .map(|index| serde_json::json!(format!("v{index}")))
+        .collect::<Vec<_>>();
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "staticCss": {
+            "css": [
+                { "properties": { "color": "*" } }
+            ]
+        },
+        "utilities": {
+            "color": { "className": "c", "values": values }
+        }
+    }));
+    let output = compile_output(&config, "", StylesheetOptions::default());
+    let diagnostics = output
+        .diagnostics
+        .iter()
+        .map(|diagnostic| format!("{:?} {}", diagnostic.severity, diagnostic.code))
+        .collect::<Vec<_>>();
+
+    assert_snapshot!(diagnostics.join("\n"), @"Info static_css_wildcard_large");
+}
+
+#[test]
 fn expands_static_css_recipe_wildcard() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
@@ -117,8 +390,10 @@ fn expands_static_css_recipe_wildcard() {
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
 @layer recipes {
-  .button {
-    display: inline-flex;
+  @layer base {
+    .button {
+      display: inline-flex;
+    }
   }
   .button--size_md {
     padding: 12px;
@@ -243,11 +518,11 @@ fn expands_static_css_recipe_conditions_and_responsive() {
   .button--size_sm {
     padding: 8px;
   }
-  .button--size_sm:hover {
+  .hover\:button--size_sm:hover {
     padding: 8px;
   }
   @media (width >= 48rem) {
-    .button--size_sm {
+    .md\:button--size_sm {
       padding: 8px;
     }
   }
@@ -290,12 +565,14 @@ fn expands_static_css_slot_recipe_wildcard() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
 @layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  .checkbox__control {
-    display: inline-flex;
-  }
-  .checkbox__root {
-    display: flex;
+@layer recipes.slots {
+  @layer base {
+    .checkbox__control {
+      display: inline-flex;
+    }
+    .checkbox__root {
+      display: flex;
+    }
   }
   .checkbox__control--size_sm {
     padding: 2px;

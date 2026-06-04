@@ -18,19 +18,17 @@ use crate::cache::{
 use crate::convert::{convert_diagnostic, to_atoms, to_call, to_jsx};
 use crate::extract::ExtractResult;
 use napi::bindgen_prelude::{Env, FnArgs, FunctionRef};
-use pandacss_codegen::{
-    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions};
 use pandacss_config::{
     CallbackRef, JsxSpecifier, PatternConfig, UserConfig, UtilityConfig, UtilityValues,
     ValidationMode, validate_config_value, validation_mode_from_value,
 };
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
-use pandacss_fs::{FileSystem, OxcResolverFileSystem};
+use pandacss_fs::{FileSystem, OsPathSystem, OxcResolverFileSystem, PathSystem};
 use smallvec::SmallVec;
 
-use crate::compile::{CompileFileManifest, CompileOutput};
+use crate::compile::{CompileFileManifest, CompileOptions, CompileOutput};
 use crate::matcher::{TokenDictionary, from_core_token_dictionary};
 
 /// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.
@@ -119,8 +117,7 @@ pub struct StaticPatternResult {
 
 #[napi(object)]
 pub struct GenerateArtifactOptions {
-    /// "extensionless" (default) or "runtime-and-types".
-    pub specifiers: Option<String>,
+    pub codegen_import_extensions: Option<bool>,
 }
 
 #[napi(object)]
@@ -136,6 +133,23 @@ pub struct CodegenArtifact {
     pub files: Vec<CodegenFile>,
 }
 
+#[napi(object)]
+pub struct WriteCssResult {
+    pub path: String,
+    pub css: String,
+    pub source_map: Option<String>,
+    pub manifest: crate::compile::CompileManifest,
+    pub layer_ranges: crate::compile::CompileLayerRanges,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+#[napi(object)]
+pub struct WriteFilesResult {
+    pub root: String,
+    pub paths: Vec<String>,
+    pub files: Vec<crate::compile::SplitCssFile>,
+}
+
 #[napi]
 pub struct Compiler {
     inner: pandacss_project::Project,
@@ -145,6 +159,7 @@ pub struct Compiler {
     /// Platform filesystem engine (real disk). Shared with the cross-file
     /// resolver and used by `glob`/`scan` to discover + read source files.
     fs: pandacss_fs::OsFileSystem,
+    paths: OsPathSystem,
 }
 
 struct CallbackHost {
@@ -240,6 +255,7 @@ impl Compiler {
             user_config,
             callbacks,
             fs,
+            paths: OsPathSystem,
         })
     }
 
@@ -265,6 +281,19 @@ impl Compiler {
             recipes: layers.recipes.clone(),
             utilities: layers.utilities.clone(),
         }
+    }
+
+    /// Whether `css` declares Panda's cascade layers (`@layer reset, base, …;`),
+    /// marking it as the stylesheet root to inject the compiled CSS into.
+    #[napi(js_name = hasLayerDeclaration)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn has_layer_declaration(&self, css: String) -> bool {
+        let names = self.user_config.layers.ordered().map(|(_, name)| name);
+        pandacss_stylesheet::has_layer_declaration(&css, &names)
     }
 
     /// Tooling introspection snapshot (read once, index on the host).
@@ -335,27 +364,54 @@ impl Compiler {
         cwd: Option<String>,
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<String>> {
-        use pandacss_fs::FileSystem;
-        let generate = generate_options(&self.user_config, options)?;
+        let generate = generate_options(&self.user_config, options);
         let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
-        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
-            .join(&outdir);
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let base = self.paths.resolve(&cwd, &outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
-            for file in artifact.files {
-                let target = base.join(&file.path);
-                if let Some(parent) = target.parent() {
-                    self.fs
-                        .create_dir_all(parent)
-                        .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-                }
-                self.fs
-                    .write(&target, file.code.as_bytes())
-                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-                written.push(target.to_string_lossy().into_owned());
-            }
+            written.extend(self.write_relative_files(
+                &base,
+                artifact
+                    .files
+                    .iter()
+                    .map(|file| (file.path.as_str(), file.code.as_str())),
+                "artifact",
+            )?);
         }
         Ok(written)
+    }
+
+    #[napi(js_name = resolvePath)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn resolve_path(&self, path: String, cwd: Option<String>) -> String {
+        self.paths
+            .resolve(&cwd.unwrap_or_else(|| self.user_config.cwd.clone()), &path)
+    }
+
+    #[napi(js_name = joinPath)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn join_path(&self, parts: Vec<String>) -> String {
+        let parts = parts.iter().map(String::as_str).collect::<Vec<_>>();
+        self.paths.join(&parts)
+    }
+
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn dirname(&self, path: String) -> String {
+        self.paths.dirname(&path)
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
@@ -506,6 +562,38 @@ impl Compiler {
             .collect())
     }
 
+    /// Resolve a path to its real on-disk location (absolute, symlinks followed) so
+    /// two paths to the same file compare equal. Lenient: returns the input path when
+    /// it can't be resolved (e.g. it was just deleted), so callers can still match it.
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn realpath(&self, path: String) -> String {
+        let path = std::path::PathBuf::from(path);
+        self.fs
+            .canonicalize(&path)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .into_owned()
+    }
+
+    /// Whether `path` is a source file the project extracts from — its
+    /// `cwd`-relative form matches the configured `include`/`exclude` globs.
+    /// For routing a watch event to `applyChange` vs ignoring it.
+    #[napi(js_name = isSourceFile)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn is_source_file(&self, path: String) -> bool {
+        let opts = glob_options(&self.user_config, None);
+        pandacss_fs::matches_globs(std::path::Path::new(&path), &opts)
+    }
+
     /// Read + parse source paths returned from `scan()`. Returns one report per
     /// successfully parsed path.
     ///
@@ -541,6 +629,34 @@ impl Compiler {
         self.fs
             .glob(&opts)
             .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
+    }
+
+    fn write_relative_files<'a>(
+        &self,
+        root: &str,
+        files: impl IntoIterator<Item = (&'a str, &'a str)>,
+        label: &str,
+    ) -> napi::Result<Vec<String>> {
+        let mut written = Vec::new();
+        for (path, code) in files {
+            if self.paths.is_absolute(path) {
+                return Err(napi::Error::from_reason(format!(
+                    "{label} output path must be relative: {path}"
+                )));
+            }
+            let target = self.paths.join(&[root, path]);
+            let parent = self.paths.dirname(&target);
+            if !parent.is_empty() {
+                self.fs
+                    .create_dir_all(std::path::Path::new(&parent))
+                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+            }
+            self.fs
+                .write(std::path::Path::new(&target), code.as_bytes())
+                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+            written.push(target);
+        }
+        Ok(written)
     }
 
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
@@ -721,7 +837,15 @@ impl Compiler {
     }
 
     #[napi]
-    pub fn compile(&mut self, env: Env) -> napi::Result<CompileOutput> {
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn compile(
+        &mut self,
+        env: Env,
+        options: Option<CompileOptions>,
+    ) -> napi::Result<CompileOutput> {
         crate::init_tracing();
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
@@ -734,9 +858,72 @@ impl Compiler {
             user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
+            options
+                .as_ref()
+                .is_none_or(CompileOptions::should_emit_layer_declaration),
         );
         crate::flush_tracing();
         Ok(output)
+    }
+
+    #[napi(js_name = writeCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_css(
+        &mut self,
+        env: Env,
+        outfile: String,
+        cwd: Option<String>,
+        options: Option<CompileOptions>,
+    ) -> napi::Result<WriteCssResult> {
+        let output = self.compile(env, options)?;
+        let target = self.paths.resolve(
+            &cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            &outfile,
+        );
+        let parent = self.paths.dirname(&target);
+        if !parent.is_empty() {
+            self.fs
+                .create_dir_all(std::path::Path::new(&parent))
+                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        }
+        self.fs
+            .write(std::path::Path::new(&target), output.css.as_bytes())
+            .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        Ok(WriteCssResult {
+            path: target,
+            css: output.css,
+            source_map: output.source_map,
+            manifest: output.manifest,
+            layer_ranges: output.layer_ranges,
+            diagnostics: output.diagnostics,
+        })
+    }
+
+    #[napi(js_name = writeSplitCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_split_css(
+        &mut self,
+        env: Env,
+        outdir: String,
+        cwd: Option<String>,
+    ) -> napi::Result<WriteFilesResult> {
+        let files = self.split_css(env)?;
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, &outdir);
+        let paths = self.write_relative_files(
+            &root,
+            files
+                .iter()
+                .map(|file| (file.path.as_str(), file.code.as_str())),
+            "split css",
+        )?;
+        Ok(WriteFilesResult { root, paths, files })
     }
 
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
@@ -759,6 +946,7 @@ impl Compiler {
             user_config,
             token_dictionary,
             &static_pattern_atoms,
+            true,
         );
         let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
             .iter()
@@ -790,7 +978,7 @@ impl Compiler {
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
         let _span = tracing::trace_span!("codegen", method = "generate_artifacts").entered();
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(&self.user_config, options);
         let artifacts = self
             .inner
             .generate_artifacts(&self.user_config, options)
@@ -816,7 +1004,7 @@ impl Compiler {
         let id = id
             .parse::<ArtifactId>()
             .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(&self.user_config, options);
         let artifact = self
             .inner
             .generate_artifact(&self.user_config, id, options)
@@ -839,7 +1027,7 @@ impl Compiler {
         let _span =
             tracing::trace_span!("codegen", method = "generate_affected_artifacts").entered();
         let changed = dependency_set_from_strings(dependencies)?;
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(&self.user_config, options);
         let artifacts = self
             .inner
             .generate_affected_artifacts(&self.user_config, changed, options)
@@ -1091,22 +1279,15 @@ fn apply_project_options(
 fn generate_options(
     user_config: &UserConfig,
     options: Option<GenerateArtifactOptions>,
-) -> napi::Result<GenerateOptions> {
-    let specifiers = match options.and_then(|options| options.specifiers) {
-        None => ModuleSpecifierPolicy::Extensionless,
-        Some(value) if value == "extensionless" => ModuleSpecifierPolicy::Extensionless,
-        Some(value) if value == "runtime-and-types" => ModuleSpecifierPolicy::RuntimeAndTypes,
-        Some(value) => {
-            return Err(napi::Error::from_reason(format!(
-                "unknown codegen specifier policy `{value}`"
-            )));
-        }
-    };
+) -> GenerateOptions {
+    let import_extensions = options
+        .and_then(|options| options.codegen_import_extensions)
+        .unwrap_or(user_config.codegen_import_extensions);
 
-    Ok(GenerateOptions {
+    GenerateOptions {
         format: user_config.codegen_format,
-        specifiers,
-    })
+        import_extensions,
+    }
 }
 
 fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {

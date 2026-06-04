@@ -18,6 +18,7 @@ import type {
   CssFile,
   StylesheetLayerName,
   CompileFileManifest,
+  CompileOptions,
   CompileOutput,
   Diagnostic,
   EncodedRecipeStyles,
@@ -32,6 +33,8 @@ import type {
   Spec,
   StaticPatternResult,
   GenerateArtifactOptions,
+  WriteCssResult,
+  WriteFilesResult,
 } from '@pandacss/compiler-shared'
 
 export interface MatcherInput {
@@ -51,12 +54,16 @@ export interface TokenDictionaryInput {
   vars: Record<string, string>
 }
 
+export type JsxFramework = 'react' | 'solid' | 'preact' | 'vue' | 'qwik' | (string & {})
+
 export interface MatchersInput {
   css?: MatcherInput
   recipe?: MatcherInput
   pattern?: MatcherInput
   jsx?: MatcherInput
   tokens?: MatcherInput
+  /** Configured JSX framework. Enables JSX-aware extraction diagnostics. */
+  jsxFramework?: JsxFramework
   /** Defaults to `["styled"]` when omitted. */
   jsxFactories?: string[]
   /** Enable `token('…')` folding by passing a resolved dictionary. */
@@ -95,12 +102,20 @@ export declare class WasmCompiler {
   removeFile(path: string): boolean
   clear(): void
   scan(options?: ScanOptions): string[]
+  realpath(path: string): string
+  resolvePath(path: string, cwd?: string): string
+  joinPath(parts: string[]): string
+  dirname(path: string): string
+  isSourceFile(path: string): boolean
   parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
+  hasLayerDeclaration(css: string): boolean
   spec(): Spec
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): FileInspectionResult
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
+  writeSplitCss(outdir: string, cwd?: string): WriteFilesResult
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
@@ -109,7 +124,7 @@ export declare class WasmCompiler {
   slotRecipes(): RecipeEntry[]
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
-  compile(): CompileOutput
+  compile(options?: CompileOptions): CompileOutput
   layerCss(layers: StylesheetLayerName[]): string
   splitCss(): CssFile[]
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]

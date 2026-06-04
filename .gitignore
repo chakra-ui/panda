@@ -23,6 +23,7 @@ packages/compiler/native.d.ts
 .idea
 *.vsix
 .vercel
+_fresh
 
 ## Panda
 .panda
@@ -36,3 +37,4 @@ ts-import-map-outdir
 packages/studio/src/lib/analysis.json
 
 storybook-static
+.cursor/plans

@@ -19,11 +19,11 @@ pub fn generate(options: GenerateOptions, dependencies: DependencySet) -> Artifa
 #[must_use]
 pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<ArtifactFile> {
     emit_module_files(
-        "cva",
+        "css/cva",
         &module(),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }
@@ -40,10 +40,10 @@ fn module() -> Module {
                 "uniq",
                 "withDefaults",
             ],
-            "./helpers",
+            "../helpers",
         ))
         .with_import(ImportDecl::value(["css", "mergeCss"], "./css"))
-        .with_import(ImportDecl::ty(["RecipeCreatorFn"], "./types/recipe"))
+        .with_import(ImportDecl::ty(["RecipeCreatorFn"], "../types/recipe"))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
             exported: true,
             declare: false,

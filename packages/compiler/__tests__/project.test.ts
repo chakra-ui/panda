@@ -73,6 +73,21 @@ describe('Compiler', () => {
     `)
   })
 
+  it('can compile without the layer order declaration', () => {
+    const compiler = createProject({
+      utilities: {
+        color: { className: 'c' },
+      },
+    })
+    compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'; css({ color: 'red' })`)
+
+    const output = compiler.compile({ emitLayerDeclaration: false })
+
+    expect(output.css).not.toContain('@layer reset, base, tokens, recipes, utilities;')
+    expect(output.css).toContain('@layer utilities')
+    expect(output.layerRanges.utilities?.start).toBe(0)
+  })
+
   it('generates codegen artifacts from the resolved project', () => {
     const compiler = createProject({
       theme: {
@@ -90,13 +105,8 @@ describe('Compiler', () => {
 
     expect(artifact?.files.map((file) => file.path)).toMatchInlineSnapshot(`
       [
-        "types/conditions.d.mts",
-        "types/selectors.d.mts",
-        "types/csstype.d.mts",
         "types/tokens.d.mts",
-        "types/values.d.mts",
-        "types/properties.d.mts",
-        "types/system-types.d.mts",
+        "types/system.d.mts",
         "types/pattern.d.mts",
         "types/recipe.d.mts",
         "types/index.d.mts",
@@ -126,6 +136,17 @@ describe('Compiler', () => {
         "conditions",
       ]
     `)
+  })
+
+  it('uses config codegenImportExtensions for generated import specifiers', () => {
+    const compiler = createProject({ codegenImportExtensions: true })
+
+    const artifact = compiler.generateArtifact('css-index')
+    const runtime = artifact?.files.find((file) => file.path === 'css/index.mjs')?.code
+    const types = artifact?.files.find((file) => file.path === 'css/index.d.mts')?.code
+
+    expect(runtime).toContain('./css.mjs')
+    expect(types).toContain('./css.d.mts')
   })
 
   it('expands staticCss.patterns through compile()', () => {

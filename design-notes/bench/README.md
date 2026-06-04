@@ -29,4 +29,9 @@ design note explaining the trade-off.
   boundary numbers with tracing disabled vs Chrome JSON trace output enabled.
 - [2026-06-01 — generated-types-js-vs-rust](./2026-06-01-generated-types-js-vs-rust.mdx) — `tsc --extendedDiagnostics`
   comparison of the Rust codegen vs legacy generator type graph (both `.d.ts`, `skipLibCheck`). Rust wins everything:
-  **−88 to −98% instantiations**, −66 to −88% `Types`, −13 to −16% memory. (Lesson: measure `.d.ts`, not `.ts` source.)
+  **−99% instantiations**, −82 to −92% `Types`, −21 to −25% memory — via an own `CssValue`-based csstype + a single
+  merged `system.d.ts`. (Lesson: measure `.d.ts`, not `.ts` source.)
+- [2026-06-02 — cli-codegen-js-vs-rust](./2026-06-02-cli-codegen-js-vs-rust.mdx) — end-to-end CLI wall time
+  (`codegen` + `cssgen`) on `sandbox/cli-v2`: v2 Rust CLI **~7× faster** (codegen 7.0×, cssgen 7.1×, n=9). Startup-bound
+  tiny-project number with honest caveats (not equal-work — v2 emits 26 files vs 142, jsx pass deferred); `cssgen` is the
+  apples-to-apples row.

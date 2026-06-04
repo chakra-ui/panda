@@ -11,7 +11,7 @@ use pandacss_config::{
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConfigDependency, DependencySet,
-    ExportDecl, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module,
+    ExportDecl, ImportDecl, Item, ItemNode, Module,
     artifact::{GenerateOptions, emit_module_files},
 };
 
@@ -33,71 +33,32 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
     let mut files = Vec::new();
 
     files.extend(emit_type_file(
-        "types/conditions",
-        &conditions_module(&ctx.types.conditions),
-        options,
-        DependencySet::from_slice(&[
-            ConfigDependency::CodegenFormat,
-            ConfigDependency::Conditions,
-        ]),
-    ));
-
-    files.extend(emit_type_file(
-        "types/selectors",
-        &selectors_module(),
-        options,
-        DependencySet::one(ConfigDependency::CodegenFormat),
-    ));
-
-    files.extend(emit_type_file(
-        "types/csstype",
-        &csstype_module(),
-        options,
-        DependencySet::one(ConfigDependency::CodegenFormat),
-    ));
-
-    files.extend(emit_type_file(
         "types/tokens",
         &tokens_module(&ctx.types.tokens),
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Tokens,
             ConfigDependency::Themes,
         ]),
     ));
 
     files.extend(emit_type_file(
-        "types/values",
-        &values_module_with_options(&ctx.types.utilities, ctx.types.options),
+        "types/system",
+        &system_module(
+            &ctx.types.conditions,
+            &ctx.types.utilities,
+            ctx.types.options,
+        ),
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
-            ConfigDependency::Tokens,
-            ConfigDependency::Utilities,
-        ]),
-    ));
-
-    files.extend(emit_type_file(
-        "types/properties",
-        &properties_module_with_options(&ctx.types.utilities, ctx.types.options),
-        options,
-        DependencySet::from_slice(&[
-            ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
+            ConfigDependency::Conditions,
             ConfigDependency::Tokens,
             ConfigDependency::Utilities,
             ConfigDependency::Syntax,
-        ]),
-    ));
-
-    files.extend(emit_type_file(
-        "types/system-types",
-        &system_types_module(),
-        options,
-        DependencySet::from_slice(&[
-            ConfigDependency::CodegenFormat,
-            ConfigDependency::Conditions,
-            ConfigDependency::Utilities,
         ]),
     ));
 
@@ -107,6 +68,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Patterns,
             ConfigDependency::Tokens,
             ConfigDependency::Utilities,
@@ -117,7 +79,10 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         "types/recipe",
         &recipe_module(),
         options,
-        DependencySet::from_slice(&[ConfigDependency::CodegenFormat]),
+        DependencySet::from_slice(&[
+            ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
+        ]),
     ));
 
     files.extend(emit_type_file(
@@ -126,6 +91,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         options,
         DependencySet::from_slice(&[
             ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Conditions,
             ConfigDependency::Patterns,
             ConfigDependency::Recipes,
@@ -148,12 +114,12 @@ fn emit_type_file(
         module,
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         dependencies,
     )
 }
 
-fn conditions_module(data: &ConditionTypeData) -> Module {
+fn condition_type_parts(data: &ConditionTypeData) -> Vec<String> {
     let condition_members = data
         .keys
         .iter()
@@ -167,32 +133,12 @@ fn conditions_module(data: &ConditionTypeData) -> Module {
         .collect::<Vec<_>>()
         .join("\n");
 
-    raw_type_module(format!(
+    vec![format!(
         "export interface Conditions {{\n{condition_members}\n}}\n\n\
          export interface Breakpoints {{\n{breakpoint_members}\n}}\n\n\
          export type Condition = keyof Conditions\n\n\
          export type ConditionalValue<T> =\n  | T\n  | Array<T | null>\n  | {{ [K in Condition]?: ConditionalValue<T> }}"
-    ))
-}
-
-fn selectors_module() -> Module {
-    raw_type_module(
-        r"export type Selector = `&${string}` | `@${string}`
-
-export type AnySelector = Selector | string",
-    )
-}
-
-fn csstype_module() -> Module {
-    // Terse `csstype` vendored by scripts/vendor-csstype.ts: per-property keyword
-    // unions + `Pseudos`, minus JSDoc and the families Panda never consumes. The
-    // asset keeps a provenance header for maintainers; drop it from the emitted
-    // artifact so generated styled-system output stays clean.
-    let source = include_str!("../../assets/csstype.d.ts");
-    let body = source
-        .find("\nexport ")
-        .map_or(source, |idx| &source[idx + 1..]);
-    raw_type_module(body)
+    )]
 }
 
 fn tokens_module(data: &TokenTypeData) -> Module {
@@ -232,20 +178,16 @@ fn tokens_module(data: &TokenTypeData) -> Module {
     raw_type_module(parts.join("\n\n"))
 }
 
-fn values_module_with_options(
+fn value_alias_parts(
     data: &UtilityTypeData,
     options: pandacss_config::TypegenOptions,
-) -> Module {
-    let mut module = Module::new()
-        .with_import(ImportDecl::ty(["CssProperties"], "./csstype"))
-        .with_import(ImportDecl::ty(["TokenValue"], "./tokens"));
-
+) -> Vec<String> {
     let mut parts = vec![
         "export type AnyString = string & {}".to_owned(),
         "export type AnyNumber = number & {}".to_owned(),
         "export type CssVars = `var(--${string})`".to_owned(),
         "export type WithEscapeHatch<T> = T | `[${string}]`".to_owned(),
-        "export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never".to_owned(),
+        "export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never".to_owned(),
     ];
 
     for alias in data.aliases.values() {
@@ -256,99 +198,102 @@ fn values_module_with_options(
         ));
     }
 
-    module.items.push(type_raw(parts.join("\n\n")));
-    module
+    parts
 }
 
-fn properties_module_with_options(
+/// The single combined type surface: our own csstype (`CssValue` + `CssProperties`),
+/// `SystemProperties`, selectors, the recursive `SystemStyleObject`, globals, and
+/// keyframe/fontface shapes — all in one file so there are no cross-module
+/// boundaries on the hot path. Every native CSS property shares the single
+/// `CssValue`, so all ~850 collapse to one cached `ConditionalValue<CssValue>`;
+/// `SystemProperties extends CssProperties` and overrides only the configured
+/// utilities with their precise alias (assignable to `CssValue`).
+fn system_module(
+    conditions: &ConditionTypeData,
     data: &UtilityTypeData,
     options: pandacss_config::TypegenOptions,
 ) -> Module {
-    let mut imports = vec![ImportSpecifier::Named("ConditionalValue".into())];
-    let mut value_imports = vec![
-        ImportSpecifier::Named("AnyNumber".into()),
-        ImportSpecifier::Named("AnyString".into()),
-        ImportSpecifier::Named("CssVars".into()),
-    ];
-    if options.strict_property_values {
-        value_imports.push(ImportSpecifier::Named("OnlyKnown".into()));
-        value_imports.push(ImportSpecifier::Named("WithEscapeHatch".into()));
-    }
+    // One member per native CSS property (shared registry, already sorted, vendor
+    // variants included). All share the single `CssValue`.
+    let css_members = pandacss_shared::css_properties::CSS_PROPERTY_NAMES
+        .iter()
+        .map(|&name| format!("  {}?: ConditionalValue<CssValue>", quote_member(name)))
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    for alias in data.aliases.keys() {
-        value_imports.push(ImportSpecifier::Named(alias.clone()));
-    }
-
-    let mut module = Module::new()
-        .with_import(ImportDecl {
-            kind: ImportKind::Type,
-            specifiers: std::mem::take(&mut imports),
-            source: "./conditions".into(),
-        })
-        .with_import(ImportDecl {
-            kind: ImportKind::Type,
-            specifiers: value_imports,
-            source: "./values".into(),
-        });
-
-    let members = data
+    let system_members = data
         .properties
         .values()
         .map(|property| {
             format!(
                 "  {}?: ConditionalValue<{}>",
                 quote_member(&property.name),
-                property_type(property, options)
+                property.alias
             )
         })
         .collect::<Vec<_>>()
         .join("\n");
 
-    let body = format!(
-        "export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>\n\n\
-         export type CssVarProperties = {{\n  [K in `--${{string}}`]?: CssVarValue\n}}\n\n\
-         export interface SystemProperties {{\n{members}\n}}"
-    );
-    module.items.push(type_raw(body));
-    module
+    let mut parts: Vec<String> =
+        vec!["export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never".into()];
+    parts.extend(condition_type_parts(conditions));
+    parts.extend(value_alias_parts(data, options));
+    parts.extend(vec![
+        "export type Selector = `&${string}` | `@${string}`".into(),
+        "export type AnySelector = Selector | string".into(),
+        "export type Nested<P> = P & {\n  [K in Selector]?: Nested<P>\n} & {\n  [K in AnySelector]?: Nested<P>\n} & {\n  [K in Condition]?: Nested<P>\n}".into(),
+        r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
+        r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#.into(),
+        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#.into(),
+        r#"export type AutoGlobals = Globals | "auto""#.into(),
+        "export type CssValue = Globals | (string & {}) | number".into(),
+        format!("export interface CssProperties {{\n{css_members}\n}}"),
+        format!("export interface SystemProperties extends CssProperties {{\n{system_members}\n}}"),
+        "export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>".into(),
+        "export type CssVarProperties = {\n  [K in `--${string}`]?: CssVarValue\n}".into(),
+        "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}".into(),
+        "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}".into(),
+        "export interface GlobalStyleObject {\n  [selector: string]: SystemStyleObject\n}".into(),
+        "export interface CssKeyframes {\n  [name: string]: {\n    [time: string]: CssProperties\n  }\n}".into(),
+        r#"export interface GlobalFontfaceRule {
+  fontFamily: string
+  src: string
+  fontStyle?: string
+  fontWeight?: string | number
+  fontDisplay?: "auto" | "block" | "swap" | "fallback" | "optional"
+  unicodeRange?: string
+  fontFeatureSettings?: string
+  fontVariationSettings?: string
+  fontStretch?: string
+  ascentOverride?: string
+  descentOverride?: string
+  lineGapOverride?: string
+  sizeAdjust?: string
 }
 
-fn system_types_module() -> Module {
+export type FontfaceRule = Omit<GlobalFontfaceRule, "fontFamily">
+
+export interface GlobalFontface {
+  [name: string]: FontfaceRule | FontfaceRule[]
+}"#
+        .into(),
+    ]);
+
     Module::new()
-        .with_import(ImportDecl::ty(["Condition"], "./conditions"))
-        .with_import(ImportDecl::ty(["Selector"], "./selectors"))
-        .with_import(ImportDecl::ty(
-            ["CssVarProperties", "SystemProperties"],
-            "./properties",
-        ))
-        .with_item(type_raw(
-            r"export type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
-export type NestedSelectors = {
-  [K in Selector]?: SystemStyleObject
-}
-
-export type NestedConditions = {
-  [K in Condition]?: SystemStyleObject
-}
-
-export type NestedArbitrary = {
-  [K in `&${string}` | `@${string}`]?: SystemStyleObject
-}
-
-export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedSelectors, NestedConditions, NestedArbitrary {}
-
-export interface GlobalStyleObject {
-  [selector: string]: SystemStyleObject
-}",
-        ))
+        .with_import(ImportDecl::ty(["TokenValue"], "./tokens"))
+        .with_item(type_raw(parts.join("\n\n")))
 }
 
 fn pattern_module() -> Module {
     Module::new()
-        .with_import(ImportDecl::ty(["ConditionalValue"], "./conditions"))
-        .with_import(ImportDecl::ty(["SystemProperties"], "./properties"))
-        .with_import(ImportDecl::ty(["SystemStyleObject"], "./system-types"))
+        .with_import(ImportDecl::ty(
+            [
+                "ConditionalValue",
+                "SystemProperties",
+                "SystemStyleObject",
+            ],
+            "./system",
+        ))
         .with_item(type_raw(
             r"export type PatternPrimitive = string | number | boolean
 
@@ -386,7 +331,12 @@ export type RecipeVariantMap<Variant extends object> = {
   [K in keyof Variant]-?: Array<Variant[K]>
 }
 
-export type RecipeRuntimeFn<Props extends object = object, Map extends object = object> = ((props?: Props) => string) & {
+export type RecipeConfigVariantMap<T> = {
+  [K in keyof T]: Array<keyof T[K]>
+}
+
+export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
+  (props?: Props): string
   __type: Props
   variantMap: Map
   variantKeys: Array<keyof Props>
@@ -398,7 +348,8 @@ export type RecipeRuntimeFn<Props extends object = object, Map extends object = 
 
 export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
-export type SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = ((props?: Props) => SlotRecord<Slot, string>) & {
+export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
+  (props?: Props): SlotRecord<Slot, string>
   __type: Props
   __slot: Slot
   variantMap: Map
@@ -423,9 +374,9 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
   compoundVariants?: Array<RecipeSelection<T> & { css: SystemStyleObject }>
 }
 
-export type RecipeCreatorFn = <T extends RecipeVariantRecord>(
-  config: RecipeDefinition<T>,
-) => RecipeRuntimeFn<RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>
+export interface RecipeCreatorFn {
+  <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+}
 
 export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
 
@@ -438,14 +389,14 @@ export interface SlotRecipeDefinition<Slot extends string = string, T extends Sl
   compoundVariants?: Array<RecipeSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
 }
 
-export type SlotRecipeCreatorFn = <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(
-  config: SlotRecipeDefinition<Slot, T>,
-) => SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, { [K in keyof T]: Array<keyof T[K]> }>";
+export interface SlotRecipeCreatorFn {
+  <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+}";
 
     Module::new()
         .with_import(ImportDecl::ty(
-            ["Pretty", "SystemStyleObject"],
-            "./system-types",
+            ["ConditionalValue", "Pretty", "SystemStyleObject"],
+            "./system",
         ))
         .with_item(type_raw(generics))
 }
@@ -528,31 +479,15 @@ fn variant_value_type(data: &VariantTypeData) -> String {
 }
 
 fn index_module() -> Module {
-    // `csstype` stays internal: re-exporting it wholesale would leak the entire
-    // `Property` namespace onto the public surface (and load it eagerly). Mirror
-    // the legacy contract — expose only the assembled `CssProperties` and keep
-    // the keyword unions / `Pseudos` / `*Properties` interfaces internal.
-    let module = [
-        "./conditions",
-        "./selectors",
-        "./tokens",
-        "./values",
-        "./properties",
-        "./system-types",
-        "./pattern",
-        "./recipe",
-    ]
-    .into_iter()
-    .fold(Module::new(), |module, source| {
-        module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeStar {
-            source: source.into(),
-        })))
-    });
-
-    module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
-        names: vec!["CssProperties".into()],
-        source: "./csstype".into(),
-    })))
+    // `./system` carries our own CssProperties + SystemProperties + selectors +
+    // SystemStyleObject (merged); re-exported via the star below.
+    ["./tokens", "./system", "./pattern", "./recipe"]
+        .into_iter()
+        .fold(Module::new(), |module, source| {
+            module.with_item(Item::ty(ItemNode::Export(ExportDecl::TypeStar {
+                source: source.into(),
+            })))
+        })
 }
 
 fn raw_type_module(code: impl Into<String>) -> Module {
@@ -564,7 +499,12 @@ fn type_raw(code: impl Into<String>) -> Item {
 }
 
 fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOptions) -> String {
-    if options.strict_tokens && has_token_part(parts) {
+    let token_backed = has_token_part(parts);
+
+    // Strictness is baked into the alias (computed once per category) rather than
+    // wrapped per-property — so every property is a uniform `ConditionalValue<Alias>`
+    // and the strict wrappers instantiate once each, not once per property.
+    if options.strict_tokens && token_backed {
         let strict_parts = parts
             .iter()
             .filter(|part| {
@@ -584,39 +524,90 @@ fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOp
             strict_parts.join(" | ")
         };
 
-        return format!("WithEscapeHatch<{strict_type}>");
+        // CSS-wide keywords (and the non-tokenizable per-category keywords like
+        // `auto`/`currentColor`) stay assignable under strictTokens — they have no
+        // token to substitute and aren't a design-drift risk.
+        let globals = strict_token_globals(parts);
+        return format!("WithEscapeHatch<{globals} | {strict_type}>");
+    }
+
+    // Keyword properties (e.g. `display`) restrict to their configured literal
+    // values via `OnlyKnown`, with `[arbitrary]` as the escape hatch. Keywords come
+    // from the utility config now, not csstype.
+    if options.strict_property_values && !token_backed {
+        let keyword_parts = parts
+            .iter()
+            .filter(|part| matches!(part, ValueTypePart::Literal(_)))
+            .map(value_part)
+            .collect::<Vec<_>>();
+
+        if !keyword_parts.is_empty() {
+            return format!(
+                "WithEscapeHatch<Globals | OnlyKnown<{}>>",
+                keyword_parts.join(" | ")
+            );
+        }
     }
 
     value_parts_union(parts)
 }
 
 fn value_parts_union(parts: &[ValueTypePart]) -> String {
-    if parts.is_empty() {
+    // CssProperty parts pointed at the vendored csstype's per-property keyword
+    // unions; with our own lean csstype those are gone — `AnyString` carries the
+    // freeform CSS value, so drop them.
+    let rendered = parts
+        .iter()
+        .filter(|part| !matches!(part, ValueTypePart::CssProperty(_)))
+        .map(value_part)
+        .collect::<Vec<_>>();
+
+    if rendered.is_empty() {
         return "unknown".into();
     }
 
-    parts.iter().map(value_part).collect::<Vec<_>>().join(" | ")
-}
-
-fn property_type(
-    property: &pandacss_config::UtilityPropertyTypeData,
-    options: pandacss_config::TypegenOptions,
-) -> String {
-    if options.strict_property_values && property.css_property.is_some() {
-        return format!(
-            "WithEscapeHatch<OnlyKnown<{}, {}>>",
-            string_literal(&property.name),
-            property.alias
-        );
-    }
-
-    property.alias.clone()
+    rendered.join(" | ")
 }
 
 fn has_token_part(parts: &[ValueTypePart]) -> bool {
     parts
         .iter()
         .any(|part| matches!(part, ValueTypePart::TokenCategory(_)))
+}
+
+/// The globals alias a token category's strict type unions in: the CSS-wide
+/// keywords plus the non-tokenizable keywords that category's properties accept
+/// (per csstype). Categories with no extra keywords fall back to bare `Globals`.
+fn category_globals(category: &str) -> &'static str {
+    match category {
+        "colors" => "ColorGlobals",
+        "sizes" => "DimensionGlobals",
+        "spacing" | "zIndex" | "aspectRatios" => "AutoGlobals",
+        _ => "Globals",
+    }
+}
+
+/// Union of the globals aliases for every token category present in `parts`.
+fn strict_token_globals(parts: &[ValueTypePart]) -> String {
+    let mut names: Vec<&str> = parts
+        .iter()
+        .filter_map(|part| match part {
+            ValueTypePart::TokenCategory(category) => Some(category_globals(category)),
+            _ => None,
+        })
+        .collect();
+    names.sort_unstable();
+    names.dedup();
+    // Every category alias already includes `Globals`, so drop the bare base when a
+    // richer alias is present to keep the union tight.
+    if names.len() > 1 {
+        names.retain(|name| *name != "Globals");
+    }
+    if names.is_empty() {
+        "Globals".to_owned()
+    } else {
+        names.join(" | ")
+    }
 }
 
 fn value_part(part: &ValueTypePart) -> String {

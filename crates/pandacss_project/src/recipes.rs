@@ -24,7 +24,9 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
+use pandacss_shared::{
+    diagnostic_codes, number_to_js_string, push_number_to_js_string, split_important,
+};
 use pandacss_utility::{StyleNormalizer, Utility};
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
@@ -95,6 +97,7 @@ pub(crate) struct StyleResolver<'a> {
     pub(crate) utility: Option<&'a Utility>,
     pub(crate) conditions: &'a ProjectConditionMatcher,
     pub(crate) breakpoints: &'a [String],
+    pub(crate) separator: &'a str,
 }
 
 impl StyleResolver<'_> {
@@ -592,8 +595,12 @@ fn resolve_recipe_variants(
                 .options
                 .iter()
                 .map(|option| {
-                    let class_name =
-                        recipe_variant_class_name(class_name, &group.name, &option.key);
+                    let class_name = recipe_variant_class_name(
+                        class_name,
+                        &group.name,
+                        resolver.separator,
+                        &option.key,
+                    );
                     (
                         option.key.clone().into_boxed_str(),
                         ResolvedRecipePart {
@@ -661,8 +668,12 @@ fn resolve_slot_recipe_variants(
                         .iter()
                         .map(|(slot, style)| {
                             let slot_class = RecipeRegistry::slot_class_name(class_name, slot);
-                            let class_name =
-                                recipe_variant_class_name(&slot_class, &group.name, &option.key);
+                            let class_name = recipe_variant_class_name(
+                                &slot_class,
+                                &group.name,
+                                resolver.separator,
+                                &option.key,
+                            );
                             (
                                 slot.clone().into_boxed_str(),
                                 ResolvedRecipePart {
@@ -763,6 +774,18 @@ impl EncodedRecipes {
 
     pub(crate) fn is_empty(&self) -> bool {
         self.base.is_empty() && self.variants.is_empty() && self.atomic.is_empty()
+    }
+
+    pub(crate) fn extend_missing_from(&mut self, source: &Self) -> Self {
+        let mut missing = Self::default();
+        extend_missing_recipe_groups(&mut self.base, &mut missing.base, &source.base);
+        extend_missing_recipe_groups(&mut self.variants, &mut missing.variants, &source.variants);
+        for atom in &source.atomic {
+            if self.atomic.insert(atom.clone()) {
+                missing.atomic.insert(atom.clone());
+            }
+        }
+        missing
     }
 
     /// Record the style groups one recipe usage contributes: its `base` plus
@@ -909,6 +932,38 @@ impl EncodedRecipes {
     }
 }
 
+fn extend_missing_recipe_groups<K>(
+    target: &mut FxHashMap<K, RecipeStyleGroup>,
+    missing: &mut FxHashMap<K, RecipeStyleGroup>,
+    source: &FxHashMap<K, RecipeStyleGroup>,
+) where
+    K: Clone + Eq + std::hash::Hash,
+{
+    for (key, group) in source {
+        let target_group = target
+            .entry(key.clone())
+            .or_insert_with(|| RecipeStyleGroup {
+                class_name: group.class_name.clone(),
+                entries: FxHashSet::default(),
+            });
+        let mut missing_entries = FxHashSet::default();
+        for entry in &group.entries {
+            if target_group.entries.insert(entry.clone()) {
+                missing_entries.insert(entry.clone());
+            }
+        }
+        if !missing_entries.is_empty() {
+            missing.insert(
+                key.clone(),
+                RecipeStyleGroup {
+                    class_name: group.class_name.clone(),
+                    entries: missing_entries,
+                },
+            );
+        }
+    }
+}
+
 fn transform_atoms(
     atoms: FxHashSet<Atom>,
     transform: &mut crate::UtilityTransformFn<'_>,
@@ -929,7 +984,11 @@ fn transform_atoms(
             Ok(None) => {
                 out.insert(atom);
             }
-            Err(diagnostic) => diagnostics.push(diagnostic),
+            Err(diagnostic) => diagnostics.push(with_callback_target(
+                diagnostic,
+                atom.prop(),
+                Some(&atom_value_summary(atom.value())),
+            )),
         }
     }
     out
@@ -969,10 +1028,38 @@ fn transform_recipe_entries(
             Ok(None) => {
                 out.insert(entry);
             }
-            Err(diagnostic) => diagnostics.push(diagnostic),
+            Err(diagnostic) => diagnostics.push(with_callback_target(
+                diagnostic,
+                entry.prop.as_ref(),
+                Some(&atom_value_summary(&entry.value)),
+            )),
         }
     }
     out
+}
+
+fn with_callback_target(
+    mut diagnostic: Diagnostic,
+    prop: &str,
+    value: Option<&str>,
+) -> Diagnostic {
+    if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
+        return diagnostic;
+    }
+    let target = value.map_or_else(
+        || format!("utility `{prop}`"),
+        |value| format!("utility `{prop}` with value `{value}`"),
+    );
+    diagnostic.message = format!("{} ({target})", diagnostic.message);
+    diagnostic
+}
+
+fn atom_value_summary(value: &AtomValue) -> String {
+    match value {
+        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::Bool(value) => value.to_string(),
+        AtomValue::Null => "null".to_owned(),
+    }
 }
 
 impl EncodedRecipesCache {
@@ -1149,8 +1236,13 @@ fn recipe_variant_key(recipe: &str, slot: Option<&str>, class_name: &str) -> Rec
     }
 }
 
-fn recipe_variant_class_name(class_name: &str, variant: &str, value: &str) -> String {
-    format!("{class_name}--{variant}_{value}")
+fn recipe_variant_class_name(
+    class_name: &str,
+    variant: &str,
+    separator: &str,
+    value: &str,
+) -> String {
+    format!("{class_name}--{variant}{separator}{value}")
 }
 
 fn with_entry_conditions(

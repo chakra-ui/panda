@@ -1,17 +1,19 @@
 use std::{borrow::Cow, ops::Range};
 
-use pandacss_config::UserConfig;
+use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
     Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{number_to_js_string, split_important};
-use pandacss_tokens::{TokenCssVar, TokenCssVars, TokenDictionary};
+use pandacss_shared::{number_to_js_string, split_important, to_hash};
+use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};
+use rustc_hash::FxHashSet;
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
-use crate::sort::{SortContext, condition_raw_parts};
+use crate::numeric_value;
+use crate::sort::{SortContext, condition_raw_paths};
 use crate::writer::CssWriter;
 
 pub struct EmitOutput {
@@ -19,20 +21,29 @@ pub struct EmitOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
+#[derive(Clone, Copy)]
+pub struct EmitTokenContext<'a> {
+    pub dictionary: Option<&'a TokenDictionary>,
+    pub refs: &'a [String],
+}
+
 pub fn emit<'a>(
     config: &'a UserConfig,
     utility: &'a Utility,
-    token_dictionary: Option<&TokenDictionary>,
+    tokens: EmitTokenContext<'a>,
     mut atoms: Vec<&'a Atom>,
     recipes: &'a EncodedRecipesSnapshot,
     minify: bool,
+    emit_layer_declaration: bool,
 ) -> EmitOutput {
     let cx = EmitContext::new(config, utility);
     let layers = &config.layers;
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
-    write_layer_order(&mut writer, layers);
-    writer.newline();
+    if emit_layer_declaration {
+        write_layer_order(&mut writer, layers);
+        writer.newline();
+    }
     if config.preflight.enabled() {
         let options = config.preflight.options();
         let scope = options.and_then(|options| options.scope.as_deref());
@@ -51,33 +62,46 @@ pub fn emit<'a>(
             serialize_global_position_try(writer, &config.global_position_try);
         }));
     }
-    let token_vars = token_dictionary.map(TokenDictionary::css_vars);
+    if !recipes.atomic.is_empty() {
+        atoms.extend(recipes.atomic.iter());
+    }
+    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let usage = if config.optimize.remove_unused_tokens || config.optimize.remove_unused_keyframes {
+        Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
+    } else {
+        None
+    };
+    let token_vars = tokens
+        .dictionary
+        .map(|dictionary| prepare_emittable_token_vars(config, dictionary, usage.as_ref()));
     let prepared_token_vars = token_vars
         .as_ref()
         .and_then(|vars| cx.prepare_token_vars(vars));
-    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let keyframes = keyframes.filter(|keyframes| {
+        !config.optimize.remove_unused_keyframes
+            || usage
+                .as_ref()
+                .is_some_and(|usage| has_used_keyframes(keyframes, &usage.keyframes))
+    });
     if prepared_token_vars.is_some() || keyframes.is_some() {
         layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
             if let Some(token_vars) = prepared_token_vars.as_ref() {
                 cx.serialize_token_vars(writer, token_vars);
             }
             if let Some(keyframes) = keyframes {
-                serialize_keyframes(writer, keyframes);
+                let used = config
+                    .optimize
+                    .remove_unused_keyframes
+                    .then(|| usage.as_ref().map(|usage| &usage.keyframes))
+                    .flatten();
+                serialize_keyframes(writer, keyframes, used);
             }
         }));
     }
     if has_recipe_rules(recipes) {
-        layer_ranges.recipes = Some(write_layer(&mut writer, &layers.recipes, |writer| {
-            for group in &recipes.base {
-                cx.write_recipe_group(writer, &group.class_name, &group.entries);
-            }
-            for group in &recipes.variants {
-                cx.write_recipe_group(writer, &group.class_name, &group.entries);
-            }
-        }));
+        layer_ranges.recipes = Some(cx.write_recipes_layer(&mut writer, recipes, &layers.recipes));
     }
-    if !atoms.is_empty() || !recipes.atomic.is_empty() {
-        atoms.extend(recipes.atomic.iter());
+    if !atoms.is_empty() {
         let sorted = cx.sort.sorted_atoms(atoms);
         let buckets = bucket_atoms_by_layer(&cx, sorted);
         if !buckets.default.is_empty() || !buckets.custom.is_empty() {
@@ -101,6 +125,59 @@ pub fn emit<'a>(
     }
 }
 
+pub fn emit_theme_css(
+    config: &UserConfig,
+    dictionary: &TokenDictionary,
+    theme_name: &str,
+    minify: bool,
+) -> Option<String> {
+    if !config.themes.contains_key(theme_name) {
+        return None;
+    }
+
+    let theme_condition = theme_condition_name(theme_name);
+    let mut vars = dictionary.css_vars_with_theme_filter(|condition| {
+        theme_condition_segment(condition) == Some(theme_condition.as_str())
+    });
+    vars.base.clear();
+
+    let utility = Utility::default();
+    let cx = EmitContext::new(config, &utility);
+    let prepared = cx.prepare_token_vars(&vars)?;
+    let mut writer = CssWriter::new(minify, 512);
+    EmitContext::serialize_token_vars_with_root(&mut writer, &prepared, "");
+    Some(trim_final_newline(writer.finish()))
+}
+
+fn trim_final_newline(mut css: String) -> String {
+    while css.ends_with('\n') {
+        css.pop();
+    }
+    css
+}
+
+fn prepare_emittable_token_vars<'a>(
+    config: &UserConfig,
+    dictionary: &'a TokenDictionary,
+    usage: Option<&UsageMarks>,
+) -> TokenCssVars<'a> {
+    let theme_filter = static_theme_condition_filter(config);
+    let vars = dictionary.css_vars_with_theme_filter(|condition| {
+        theme_filter
+            .as_ref()
+            .is_some_and(|filter| filter.includes(condition))
+    });
+
+    if config.optimize.remove_unused_tokens {
+        let used = usage
+            .map(|usage| collect_used_token_vars(&vars, &usage.token_vars))
+            .unwrap_or_default();
+        filter_token_vars(&vars, &used)
+    } else {
+        vars
+    }
+}
+
 /// Per-recipe CSS for split output: groups the recipe layer's base + variant
 /// groups by recipe name (first-seen order) and re-emits each as its own
 /// `@layer recipes { … }` block. Returns `(recipe_name, css)`.
@@ -113,26 +190,35 @@ pub fn emit_recipe_split<'a>(
 ) -> Vec<(String, String)> {
     let cx = EmitContext::new(config, utility);
     let recipes_layer = &config.layers.recipes;
-    let mut grouped: indexmap::IndexMap<&str, Vec<&RecipeStyleGroupSnapshot>> =
-        indexmap::IndexMap::new();
-    for group in recipes.base.iter().chain(recipes.variants.iter()) {
+    let mut grouped: indexmap::IndexMap<&str, SplitRecipeGroups<'_>> = indexmap::IndexMap::new();
+    for group in &recipes.base {
         grouped
             .entry(group.recipe.as_ref())
             .or_default()
+            .base
+            .push(group);
+    }
+    for group in &recipes.variants {
+        grouped
+            .entry(group.recipe.as_ref())
+            .or_default()
+            .variants
             .push(group);
     }
     grouped
         .into_iter()
         .map(|(name, groups)| {
             let mut writer = CssWriter::new(minify, 256);
-            write_layer(&mut writer, recipes_layer, |writer| {
-                for group in groups {
-                    cx.write_recipe_group(writer, &group.class_name, &group.entries);
-                }
-            });
+            cx.write_recipe_group_refs(&mut writer, recipes_layer, &groups.base, &groups.variants);
             (name.to_owned(), writer.finish())
         })
         .collect()
+}
+
+#[derive(Default)]
+struct SplitRecipeGroups<'a> {
+    base: Vec<&'a RecipeStyleGroupSnapshot>,
+    variants: Vec<&'a RecipeStyleGroupSnapshot>,
 }
 
 /// `IndexMap` keeps custom-layer emit order deterministic (first-seen).
@@ -193,8 +279,15 @@ fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>>
 /// Purpose-built walker — the body is flat `(selector -> declarations)`, no
 /// condition resolution, nested rules, or shorthand expansion, so we skip the
 /// `serialize_styles` machinery and write a primitive-only declaration loop.
-fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<String, Value>) {
+fn serialize_keyframes(
+    writer: &mut CssWriter,
+    keyframes: &serde_json::Map<String, Value>,
+    used: Option<&FxHashSet<String>>,
+) {
     for (name, body) in keyframes {
+        if used.is_some_and(|used| !used.contains(name)) {
+            continue;
+        }
         let Some(selectors) = as_non_empty_object(body) else {
             continue;
         };
@@ -206,6 +299,107 @@ fn serialize_keyframes(writer: &mut CssWriter, keyframes: &serde_json::Map<Strin
     }
 }
 
+fn has_used_keyframes(
+    keyframes: &serde_json::Map<String, Value>,
+    used: &FxHashSet<String>,
+) -> bool {
+    keyframes.keys().any(|name| used.contains(name))
+}
+
+fn filter_token_vars<'a>(vars: &TokenCssVars<'a>, used: &FxHashSet<String>) -> TokenCssVars<'a> {
+    TokenCssVars {
+        base: filter_token_var_slice(&vars.base, used),
+        conditions: vars
+            .conditions
+            .iter()
+            .filter_map(|group| {
+                let vars = filter_token_var_slice(&group.vars, used);
+                (!vars.is_empty()).then_some(TokenCssConditionVars {
+                    condition: group.condition,
+                    vars,
+                })
+            })
+            .collect(),
+    }
+}
+
+enum ThemeConditionFilter {
+    All,
+    Only(FxHashSet<String>),
+}
+
+impl ThemeConditionFilter {
+    fn includes(&self, condition: &str) -> bool {
+        match self {
+            Self::All => true,
+            Self::Only(conditions) => theme_condition_segment(condition)
+                .is_some_and(|condition| conditions.contains(condition)),
+        }
+    }
+}
+
+fn static_theme_condition_filter(config: &UserConfig) -> Option<ThemeConditionFilter> {
+    let themes = config.static_css.get("themes")?.as_array()?;
+    if themes.iter().any(|theme| theme.as_str() == Some("*")) {
+        return Some(ThemeConditionFilter::All);
+    }
+
+    let configured = config
+        .themes
+        .keys()
+        .map(|theme| (theme.as_str(), theme_condition_name(theme)))
+        .collect::<Vec<_>>();
+    let mut conditions = FxHashSet::default();
+    for theme in themes.iter().filter_map(|theme| theme.as_str()) {
+        if let Some((_, condition)) = configured.iter().find(|(name, _)| *name == theme) {
+            conditions.insert(condition.clone());
+        }
+    }
+
+    Some(ThemeConditionFilter::Only(conditions))
+}
+
+fn theme_condition_segment(condition: &str) -> Option<&str> {
+    let segment = condition.split(':').next().unwrap_or(condition);
+    segment.starts_with("_theme").then_some(segment)
+}
+
+fn filter_token_var_slice<'a>(
+    vars: &[TokenCssVar<'a>],
+    used: &FxHashSet<String>,
+) -> Vec<TokenCssVar<'a>> {
+    vars.iter()
+        .copied()
+        .filter(|var| used.contains(var.name))
+        .collect()
+}
+
+fn collect_used_token_vars(
+    vars: &TokenCssVars<'_>,
+    initial: &FxHashSet<String>,
+) -> FxHashSet<String> {
+    let mut used = initial.clone();
+    loop {
+        let before = used.len();
+        for var in token_var_iter(vars) {
+            if used.contains(var.name) {
+                collect_css_var_refs(var.value, &mut used);
+            }
+        }
+        if used.len() == before {
+            return used;
+        }
+    }
+}
+
+fn token_var_iter<'a>(vars: &'a TokenCssVars<'a>) -> impl Iterator<Item = TokenCssVar<'a>> + 'a {
+    vars.base.iter().copied().chain(
+        vars.conditions
+            .iter()
+            .flat_map(|group| group.vars.iter().copied()),
+    )
+}
+
 /// Write one keyframe selector block (`0%` / `from` / `to` etc.). Skips
 /// non-primitive leaves silently — matches v1's lenient stringify.
 fn write_keyframe_selector(writer: &mut CssWriter, selector: &str, declarations: &Value) {
@@ -214,7 +408,7 @@ fn write_keyframe_selector(writer: &mut CssWriter, selector: &str, declarations:
     };
     writer.rule(selector, |writer| {
         for (prop, value) in declarations {
-            let Some(rendered) = render_primitive_value(value) else {
+            let Some(rendered) = render_declaration_value(prop, value) else {
                 continue;
             };
             let (value, important) = split_important(&rendered);
@@ -279,7 +473,7 @@ fn at_rule_variants(value: &Value) -> &[Value] {
 /// rendered value. `false` and structural values are skipped.
 fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<String, Value>) {
     for (prop, value) in body {
-        if let Some(rendered) = render_descriptor_value(value) {
+        if let Some(rendered) = render_descriptor_value(prop, value) {
             writer.declaration(&hyphenate_property(prop), &rendered, false);
         }
     }
@@ -288,23 +482,25 @@ fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<Stri
 /// Render an at-rule descriptor value. Scalars defer to
 /// [`render_primitive_value`]; arrays join with `,` (matching v1's
 /// `String(array)` for multi-source `src`).
-fn render_descriptor_value(value: &Value) -> Option<String> {
+fn render_descriptor_value(prop: &str, value: &Value) -> Option<String> {
     match value {
         Value::Array(items) => {
-            let parts: Vec<String> = items.iter().filter_map(render_descriptor_value).collect();
+            let parts: Vec<String> = items
+                .iter()
+                .filter_map(|item| render_descriptor_value(prop, item))
+                .collect();
             (!parts.is_empty()).then(|| parts.join(","))
         }
-        _ => render_primitive_value(value).map(Cow::into_owned),
+        _ => render_declaration_value(prop, value).map(Cow::into_owned),
     }
 }
 
-/// Render a JSON value as a CSS-safe string. `Cow::Borrowed` for strings
-/// (the common case — no alloc), owned only for numbers. Returns `None`
-/// for structural values that can't appear at a CSS leaf.
-fn render_primitive_value(value: &Value) -> Option<Cow<'_, str>> {
+fn render_declaration_value<'a>(prop: &str, value: &'a Value) -> Option<Cow<'a, str>> {
     match value {
         Value::String(s) => Some(Cow::Borrowed(s.as_str())),
-        Value::Number(n) => n.as_f64().map(|f| Cow::Owned(number_to_js_string(f))),
+        Value::Number(n) => n
+            .as_f64()
+            .map(|f| Cow::Owned(numeric_value::format_number(prop, f))),
         Value::Bool(true) => Some(Cow::Borrowed("true")),
         Value::Bool(false) => Some(Cow::Borrowed("false")),
         Value::Null | Value::Object(_) | Value::Array(_) => None,
@@ -352,6 +548,194 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
         + recipe_entries.saturating_mul(64)
 }
 
+#[derive(Default)]
+struct UsageMarks {
+    token_vars: FxHashSet<String>,
+    keyframes: FxHashSet<String>,
+}
+
+fn collect_css_var_refs(value: &str, refs: &mut FxHashSet<String>) {
+    let mut rest = value;
+    while let Some(start) = rest.find("var(") {
+        let after_open = &rest[start + "var(".len()..];
+        let Some(end) = find_matching_paren(after_open) else {
+            return;
+        };
+        if let Some(name) = after_open[..end]
+            .split_once(',')
+            .map_or(after_open[..end].trim(), |(name, _)| name.trim())
+            .strip_prefix("--")
+        {
+            refs.insert(format!("--{name}"));
+        }
+        rest = &after_open[end + 1..];
+    }
+}
+
+fn collect_token_reference_vars(
+    value: &str,
+    token_dictionary: Option<&TokenDictionary>,
+    refs: &mut FxHashSet<String>,
+) {
+    let Some(token_dictionary) = token_dictionary else {
+        return;
+    };
+    collect_wrapped_token_reference_vars(value, token_dictionary, refs);
+    collect_token_function_vars(value, token_dictionary, refs);
+    collect_direct_token_reference_var(value, token_dictionary, refs);
+}
+
+fn collect_token_ref_vars(
+    token_refs: &[String],
+    token_dictionary: Option<&TokenDictionary>,
+    refs: &mut FxHashSet<String>,
+) {
+    let Some(token_dictionary) = token_dictionary else {
+        return;
+    };
+    for path in token_refs {
+        collect_token_path_var(path, token_dictionary, refs);
+    }
+}
+
+fn collect_wrapped_token_reference_vars(
+    value: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    let mut rest = value;
+    while let Some(start) = rest.find('{') {
+        let after_open = &rest[start + 1..];
+        let Some(end) = after_open.find('}') else {
+            return;
+        };
+        collect_token_path_var(
+            strip_token_modifier(after_open[..end].trim()),
+            token_dictionary,
+            refs,
+        );
+        rest = &after_open[end + 1..];
+    }
+}
+
+fn collect_token_function_vars(
+    value: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    let mut rest = value;
+    while let Some(start) = rest.find("token(") {
+        let after_open = &rest[start + "token(".len()..];
+        let Some(end) = find_matching_paren(after_open) else {
+            return;
+        };
+        let path = after_open[..end]
+            .split_once(',')
+            .map_or(after_open[..end].trim(), |(path, _)| path.trim());
+        collect_token_path_var(strip_token_modifier(path), token_dictionary, refs);
+        rest = &after_open[end + 1..];
+    }
+}
+
+fn collect_direct_token_reference_var(
+    value: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    let trimmed = value.trim();
+    if trimmed
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+    {
+        collect_token_path_var(strip_token_modifier(trimmed), token_dictionary, refs);
+    }
+}
+
+fn strip_token_modifier(value: &str) -> &str {
+    value
+        .split_once('/')
+        .map_or(value, |(base, _)| base.trim_end())
+}
+
+fn collect_token_path_var(
+    path: &str,
+    token_dictionary: &TokenDictionary,
+    refs: &mut FxHashSet<String>,
+) {
+    if let Some(name) = token_dictionary
+        .get_var_str(path, None)
+        .and_then(raw_css_var_name)
+    {
+        refs.insert(name.to_owned());
+    }
+}
+
+fn collect_value_token_refs(
+    value: &Value,
+    token_dictionary: Option<&TokenDictionary>,
+    refs: &mut FxHashSet<String>,
+) {
+    match value {
+        Value::String(value) => {
+            collect_css_var_refs(value, refs);
+            collect_token_reference_vars(value, token_dictionary, refs);
+        }
+        Value::Object(entries) => {
+            for value in entries.values() {
+                collect_value_token_refs(value, token_dictionary, refs);
+            }
+        }
+        Value::Array(items) => {
+            for value in items {
+                collect_value_token_refs(value, token_dictionary, refs);
+            }
+        }
+        Value::Null | Value::Bool(_) | Value::Number(_) => {}
+    }
+}
+
+fn collect_keyframe_refs(
+    value: &str,
+    keyframes: Option<&serde_json::Map<String, Value>>,
+    refs: &mut FxHashSet<String>,
+) {
+    let Some(keyframes) = keyframes else {
+        return;
+    };
+    for candidate in value
+        .split(|ch: char| ch.is_ascii_whitespace() || ch == ',')
+        .map(|part| part.trim_matches(|ch| matches!(ch, '"' | '\'')))
+        .filter(|part| !part.is_empty())
+    {
+        if keyframes.contains_key(candidate) {
+            refs.insert(candidate.to_owned());
+        }
+    }
+}
+
+fn is_animation_property(prop: &str) -> bool {
+    matches!(prop, "animation" | "animation-name")
+}
+
+fn raw_css_var_name(value: &str) -> Option<&str> {
+    let inner = value.trim().strip_prefix("var(")?.strip_suffix(')')?.trim();
+    let name = inner.split_once(',').map_or(inner, |(name, _)| name).trim();
+    name.starts_with("--").then_some(name)
+}
+
+fn find_matching_paren(value: &str) -> Option<usize> {
+    let mut depth = 0u32;
+    for (index, ch) in value.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' if depth == 0 => return Some(index),
+            ')' => depth -= 1,
+            _ => {}
+        }
+    }
+    None
+}
+
 struct EmitContext<'a> {
     config: &'a UserConfig,
     sort: SortContext<'a>,
@@ -367,18 +751,197 @@ impl<'a> EmitContext<'a> {
         }
     }
 
+    fn collect_usage(
+        &self,
+        token_dictionary: Option<&TokenDictionary>,
+        token_refs: &[String],
+        atoms: &[&Atom],
+        recipes: &EncodedRecipesSnapshot,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+    ) -> UsageMarks {
+        let mut marks = UsageMarks::default();
+        collect_token_ref_vars(token_refs, token_dictionary, &mut marks.token_vars);
+        self.collect_styles_usage(
+            &self.config.global_css,
+            token_dictionary,
+            keyframes,
+            &mut marks,
+        );
+        self.collect_global_vars_usage(token_dictionary, &mut marks);
+
+        for atom in atoms {
+            self.collect_atom_usage(atom, token_dictionary, keyframes, &mut marks);
+        }
+
+        for group in recipes.base.iter().chain(&recipes.variants) {
+            for entry in &group.entries {
+                let Some(declarations) = self.recipe_entry_declarations(entry) else {
+                    continue;
+                };
+                Self::collect_declarations_usage(
+                    &declarations,
+                    token_dictionary,
+                    keyframes,
+                    &mut marks,
+                );
+            }
+        }
+
+        marks
+    }
+
+    fn collect_atom_usage(
+        &self,
+        atom: &Atom,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let raw = atom_value_to_string(atom.value());
+        let Some(raw) = raw.as_deref() else {
+            return;
+        };
+        let result = self.transform_atom(atom.prop(), raw);
+        Self::collect_literal_usage(&result.styles, token_dictionary, keyframes, marks);
+    }
+
+    fn collect_literal_usage(
+        styles: &Literal,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let Literal::Object(entries) = styles else {
+            return;
+        };
+        for (prop, value) in entries {
+            if let Some(value) = literal_to_css(prop, value, None) {
+                Self::collect_declaration_usage(
+                    &hyphenate_property(prop),
+                    value.as_ref(),
+                    token_dictionary,
+                    keyframes,
+                    marks,
+                );
+            }
+        }
+    }
+
+    fn collect_styles_usage(
+        &self,
+        value: &Value,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+        for (key, value) in entries {
+            if let Value::Object(_) = value {
+                if resolved_condition_paths(self.config, key).is_some()
+                    || is_nested_selector_key(key)
+                {
+                    self.collect_styles_usage(value, token_dictionary, keyframes, marks);
+                    continue;
+                }
+
+                let mut declarations = Vec::new();
+                let mut conditional_declarations = Vec::new();
+                if self.collect_conditional_declarations(
+                    key,
+                    value,
+                    &mut declarations,
+                    &mut conditional_declarations,
+                ) {
+                    Self::collect_declarations_usage(
+                        &declarations,
+                        token_dictionary,
+                        keyframes,
+                        marks,
+                    );
+                    for conditional in conditional_declarations {
+                        Self::collect_declarations_usage(
+                            &conditional.declarations,
+                            token_dictionary,
+                            keyframes,
+                            marks,
+                        );
+                    }
+                    continue;
+                }
+            }
+
+            if let Some(declarations) = self.serialized_property_declarations(key, value) {
+                Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+            } else {
+                collect_value_token_refs(value, token_dictionary, &mut marks.token_vars);
+            }
+        }
+    }
+
+    fn collect_global_vars_usage(
+        &self,
+        token_dictionary: Option<&TokenDictionary>,
+        marks: &mut UsageMarks,
+    ) {
+        let Value::Object(entries) = &self.config.global_vars else {
+            return;
+        };
+        for value in entries.values() {
+            if let Value::String(value) = value {
+                collect_css_var_refs(value, &mut marks.token_vars);
+                collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
+            }
+        }
+    }
+
+    fn collect_declarations_usage(
+        declarations: &[RecipeDeclaration],
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        for declaration in declarations {
+            Self::collect_declaration_usage(
+                &declaration.prop,
+                &declaration.value,
+                token_dictionary,
+                keyframes,
+                marks,
+            );
+        }
+    }
+
+    fn collect_declaration_usage(
+        prop: &str,
+        value: &str,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        collect_css_var_refs(value, &mut marks.token_vars);
+        collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
+        if is_animation_property(prop) {
+            collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
+        }
+    }
+
     fn write_atom(&self, writer: &mut CssWriter, atom: &Atom, conditions: &[&str]) {
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
-        let mut class_name = self.utility.format_class_name_owned(result.class_name);
-        if atom.important() {
-            class_name.push('!');
+        for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
+            Self::write_style_rule(
+                writer,
+                &rule,
+                &result.styles,
+                atom.important(),
+                atom_numeric_hint(atom.value()),
+            );
         }
-        let rule = self.rule_target_owned(class_name, conditions);
-        Self::write_style_rule(writer, &rule, &result.styles);
     }
 
     fn serialize_styles(&self, writer: &mut CssWriter, value: &Value) {
@@ -387,7 +950,7 @@ impl<'a> EmitContext<'a> {
         };
         let mut conditions = Vec::new();
         for (selector, styles) in entries {
-            if let Some(condition) = resolved_condition_parts(self.config, selector) {
+            if let Some(condition) = resolved_condition_paths(self.config, selector) {
                 self.serialize_scope(writer, styles, &mut conditions, condition);
             } else {
                 self.serialize_style_object(writer, selector, styles, &mut conditions);
@@ -399,8 +962,8 @@ impl<'a> EmitContext<'a> {
         &self,
         writer: &mut CssWriter,
         value: &Value,
-        conditions: &mut Vec<ConditionParts>,
-        condition: ConditionParts,
+        conditions: &mut Vec<ConditionPaths>,
+        condition: ConditionPaths,
     ) {
         let Value::Object(entries) = value else {
             return;
@@ -408,7 +971,7 @@ impl<'a> EmitContext<'a> {
 
         conditions.push(condition);
         for (selector, styles) in entries {
-            if let Some(condition) = resolved_condition_parts(self.config, selector) {
+            if let Some(condition) = resolved_condition_paths(self.config, selector) {
                 self.serialize_scope(writer, styles, conditions, condition);
             } else {
                 self.serialize_style_object(writer, selector, styles, conditions);
@@ -422,7 +985,7 @@ impl<'a> EmitContext<'a> {
         writer: &mut CssWriter,
         selector: &str,
         value: &Value,
-        conditions: &mut Vec<ConditionParts>,
+        conditions: &mut Vec<ConditionPaths>,
     ) {
         let Value::Object(entries) = value else {
             return;
@@ -433,7 +996,7 @@ impl<'a> EmitContext<'a> {
         let mut conditional_declarations = Vec::new();
         for (key, value) in entries {
             if let Value::Object(_) = value {
-                if let Some(condition) = resolved_condition_parts(self.config, key) {
+                if let Some(condition) = resolved_condition_paths(self.config, key) {
                     nested_rules.push(NestedStyleRule {
                         selector: selector.to_owned(),
                         value,
@@ -465,14 +1028,16 @@ impl<'a> EmitContext<'a> {
         }
 
         if !declarations.is_empty() {
-            let rule = Self::rule_target_with_base_parts(selector, conditions);
-            Self::write_recipe_rule(writer, &rule, &declarations);
+            for rule in Self::rule_targets_with_base_parts(selector, conditions) {
+                Self::write_recipe_rule(writer, &rule, &declarations);
+            }
         }
 
         for conditional in conditional_declarations {
             conditions.push(conditional.condition);
-            let rule = Self::rule_target_with_base_parts(selector, conditions);
-            Self::write_recipe_rule(writer, &rule, &conditional.declarations);
+            for rule in Self::rule_targets_with_base_parts(selector, conditions) {
+                Self::write_recipe_rule(writer, &rule, &conditional.declarations);
+            }
             conditions.pop();
         }
 
@@ -504,7 +1069,7 @@ impl<'a> EmitContext<'a> {
             let condition = if condition == "base" {
                 None
             } else {
-                let Some(condition) = resolved_condition_parts(self.config, condition) else {
+                let Some(condition) = resolved_condition_paths(self.config, condition) else {
                     return false;
                 };
                 Some(condition)
@@ -601,60 +1166,129 @@ impl<'a> EmitContext<'a> {
     }
 
     fn serialize_token_vars(&self, writer: &mut CssWriter, vars: &PreparedTokenVars<'_>) {
-        let root = css_var_root(self.config);
+        Self::serialize_token_vars_with_root(writer, vars, css_var_root(self.config));
+    }
 
+    fn serialize_token_vars_with_root(
+        writer: &mut CssWriter,
+        vars: &PreparedTokenVars<'_>,
+        root: &str,
+    ) {
         if !vars.base.is_empty() {
             write_token_var_rule(writer, root, vars.base);
         }
 
         for group in &vars.conditions {
-            let rule = Self::token_rule_target_with_base_parts(root, &group.conditions);
-            write_with_wrappers(writer, &rule.wrappers, |writer| {
-                write_token_var_rule(writer, &rule.selector, group.vars);
-            });
+            for rule in Self::token_rule_targets_with_base_parts(root, &group.conditions) {
+                write_with_wrappers(writer, &rule.wrappers, |writer| {
+                    write_token_var_rule(writer, &rule.selector, group.vars);
+                });
+            }
         }
     }
 
     /// Semantic token condition keys are produced by
     /// `pandacss_tokens::from_config::visit_semantic_values`, where nested
     /// conditions are joined with `:` (for example `_dark:md`).
-    fn resolve_token_condition(&self, condition: &str) -> Option<Vec<ConditionParts>> {
+    fn resolve_token_condition(&self, condition: &str) -> Option<Vec<ConditionPaths>> {
         let mut conditions = Vec::new();
         for segment in condition.split(':') {
             let segment = segment.trim();
             if segment.is_empty() || segment == "base" {
                 return None;
             }
-            conditions.push(resolved_condition_parts(self.config, segment)?);
+            conditions.push(resolved_condition_paths(self.config, segment)?);
         }
         (!conditions.is_empty()).then_some(conditions)
     }
 
-    fn token_rule_target_with_base_parts(base: &str, conditions: &[ConditionParts]) -> RuleTarget {
-        let mut selector = base.to_owned();
-        let mut wrappers = Vec::new();
-        for parts in conditions {
-            for raw in parts {
-                apply_token_raw_condition(base, &mut selector, &mut wrappers, raw);
+    fn token_rule_targets_with_base_parts(
+        base: &str,
+        conditions: &[ConditionPaths],
+    ) -> Vec<RuleTarget> {
+        let mut targets = vec![RuleTarget {
+            selector: base.to_owned(),
+            wrappers: Vec::new(),
+        }];
+        for paths in conditions {
+            let mut next = Vec::new();
+            for target in &targets {
+                for path in paths {
+                    let mut target = target.clone();
+                    for raw in path {
+                        apply_token_raw_condition(
+                            base,
+                            &mut target.selector,
+                            &mut target.wrappers,
+                            raw,
+                        );
+                    }
+                    next.push(target);
+                }
             }
+            targets = next;
         }
-        RuleTarget { selector, wrappers }
+        targets
     }
 
     /// Emit one recipe class's rules. Entries are sorted then coalesced:
     /// consecutive entries that resolve to the same rule target (selector +
     /// wrappers) are merged into a single block rather than re-opening it.
+    fn write_recipes_layer(
+        &self,
+        writer: &mut CssWriter,
+        recipes: &EncodedRecipesSnapshot,
+        recipes_layer: &str,
+    ) -> Range<usize> {
+        let start = writer.len();
+        self.write_recipe_groups(writer, recipes_layer, &recipes.base, &recipes.variants);
+        let end = writer.len();
+        start..end
+    }
+
+    fn write_recipe_groups(
+        &self,
+        writer: &mut CssWriter,
+        recipes_layer: &str,
+        base: &[RecipeStyleGroupSnapshot],
+        variants: &[RecipeStyleGroupSnapshot],
+    ) {
+        let base = base.iter().collect::<Vec<_>>();
+        let variants = variants.iter().collect::<Vec<_>>();
+        self.write_recipe_group_refs(writer, recipes_layer, &base, &variants);
+    }
+
+    fn write_recipe_group_refs(
+        &self,
+        writer: &mut CssWriter,
+        recipes_layer: &str,
+        base: &[&RecipeStyleGroupSnapshot],
+        variants: &[&RecipeStyleGroupSnapshot],
+    ) {
+        let slot_layer = format!("{recipes_layer}.slots");
+        if has_slot_recipe_groups(base) || has_slot_recipe_groups(variants) {
+            writer.layer(&slot_layer, |writer| {
+                write_recipe_base_groups(self, writer, base, true);
+                write_recipe_variant_groups(self, writer, variants, true);
+            });
+        }
+        if has_regular_recipe_groups(base) || has_regular_recipe_groups(variants) {
+            writer.layer(recipes_layer, |writer| {
+                write_recipe_base_groups(self, writer, base, false);
+                write_recipe_variant_groups(self, writer, variants, false);
+            });
+        }
+    }
+
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
         class_name: &str,
         entries: &[RecipeStyleEntry],
     ) {
-        let selector_base = format!(".{}", escape_selector(class_name));
         let mut pending: Option<PendingRecipeRule> = None;
 
         for entry in self.sort.sorted_recipe_entries(entries) {
-            let rule = self.rule_target_with_base(&selector_base, &entry.conditions);
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
                 continue;
             };
@@ -662,17 +1296,25 @@ impl<'a> EmitContext<'a> {
                 continue;
             }
 
-            match &mut pending {
-                Some(pending) if pending.rule == rule => {
-                    append_recipe_declarations(&mut pending.declarations, declarations);
-                }
-                Some(_) => {
-                    let previous = pending.take().expect("pending recipe rule");
-                    Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
-                    pending = Some(PendingRecipeRule { rule, declarations });
-                }
-                None => {
-                    pending = Some(PendingRecipeRule { rule, declarations });
+            for rule in self.rule_targets_for_class(class_name, &entry.conditions, false) {
+                match &mut pending {
+                    Some(pending) if pending.rule == rule => {
+                        append_recipe_declarations(&mut pending.declarations, declarations.clone());
+                    }
+                    Some(_) => {
+                        let previous = pending.take().expect("pending recipe rule");
+                        Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                        pending = Some(PendingRecipeRule {
+                            rule,
+                            declarations: declarations.clone(),
+                        });
+                    }
+                    None => {
+                        pending = Some(PendingRecipeRule {
+                            rule,
+                            declarations: declarations.clone(),
+                        });
+                    }
                 }
             }
         }
@@ -703,8 +1345,8 @@ impl<'a> EmitContext<'a> {
         };
 
         let mut declarations = Vec::with_capacity(entries.len());
-        for (prop, value) in entries {
-            if let Some(value) = literal_to_css(value) {
+        for (prop, literal) in entries {
+            if let Some(value) = literal_to_css(prop, literal, atom_value_numeric_hint(value)) {
                 let (value, value_important) = split_important(&value);
                 append_recipe_declaration(
                     &mut declarations,
@@ -744,59 +1386,108 @@ impl<'a> EmitContext<'a> {
         default_transform(prop, raw)
     }
 
-    fn write_style_rule(writer: &mut CssWriter, rule: &RuleTarget, styles: &Literal) {
+    fn write_style_rule(
+        writer: &mut CssWriter,
+        rule: &RuleTarget,
+        styles: &Literal,
+        important: bool,
+        numeric_hint: Option<&str>,
+    ) {
         let Literal::Object(entries) = styles else {
             return;
         };
         write_with_wrappers(writer, &rule.wrappers, |writer| {
             writer.rule(&rule.selector, |writer| {
                 for (prop, value) in entries {
-                    if let Some(value) = literal_to_css(value) {
-                        let (value, important) = split_important(&value);
-                        writer.declaration(&hyphenate_property(prop), value.as_ref(), important);
+                    if let Some(value) = literal_to_css(prop, value, numeric_hint) {
+                        let (value, value_important) = split_important(&value);
+                        writer.declaration(
+                            &hyphenate_property(prop),
+                            value.as_ref(),
+                            important || value_important,
+                        );
                     }
                 }
             });
         });
     }
 
-    fn rule_target_with_base(&self, base: &str, conditions: &[&str]) -> RuleTarget {
-        self.rule_target_with_base_owned(base.to_owned(), conditions)
-    }
-
-    fn rule_target_owned(&self, class_name: String, conditions: &[&str]) -> RuleTarget {
-        let finalized = finalized_class_name_owned(class_name, conditions);
+    fn rule_targets_for_class(
+        &self,
+        class_name: &str,
+        conditions: &[&str],
+        important: bool,
+    ) -> Vec<RuleTarget> {
+        let mut finalized = if self.config.hash.class_name() {
+            let hashed = hash_class_name(class_name, conditions);
+            self.utility.format_class_name_owned(hashed)
+        } else {
+            let class_name = self.utility.format_class_name(class_name);
+            finalized_class_name_owned(class_name, conditions)
+        };
+        if important {
+            finalized.push('!');
+        }
         let base = format!(".{}", escape_selector(&finalized));
-        self.rule_target_with_base_owned(base, conditions)
+        self.rule_targets_with_base_owned(base, conditions)
     }
 
-    fn rule_target_with_base_owned(&self, mut selector: String, conditions: &[&str]) -> RuleTarget {
-        let mut wrappers = Vec::new();
+    fn rule_targets_with_base_owned(
+        &self,
+        selector: String,
+        conditions: &[&str],
+    ) -> Vec<RuleTarget> {
+        let mut targets = vec![RuleTarget {
+            selector,
+            wrappers: Vec::new(),
+        }];
         for condition in conditions {
-            apply_condition(self.config, &mut selector, &mut wrappers, condition);
+            let mut next = Vec::new();
+            for target in &targets {
+                for path in condition_raw_paths(self.config, condition) {
+                    let mut target = target.clone();
+                    for raw in path {
+                        apply_raw_condition(&mut target.selector, &mut target.wrappers, &raw);
+                    }
+                    next.push(target);
+                }
+            }
+            targets = next;
         }
-        RuleTarget { selector, wrappers }
+        targets
     }
 
-    fn rule_target_with_base_parts(base: &str, conditions: &[ConditionParts]) -> RuleTarget {
-        let mut selector = base.to_owned();
-        let mut wrappers = Vec::with_capacity(conditions.len());
-        for parts in conditions {
-            for raw in parts {
-                apply_raw_condition(&mut selector, &mut wrappers, raw);
+    fn rule_targets_with_base_parts(base: &str, conditions: &[ConditionPaths]) -> Vec<RuleTarget> {
+        let mut targets = vec![RuleTarget {
+            selector: base.to_owned(),
+            wrappers: Vec::new(),
+        }];
+        for paths in conditions {
+            let mut next = Vec::new();
+            for target in &targets {
+                for path in paths {
+                    let mut target = target.clone();
+                    for raw in path {
+                        apply_raw_condition(&mut target.selector, &mut target.wrappers, raw);
+                    }
+                    next.push(target);
+                }
             }
+            targets = next;
         }
-        RuleTarget { selector, wrappers }
+        targets
     }
 }
 
-type ConditionParts = Vec<String>;
+type ConditionPath = Vec<String>;
+type ConditionPaths = Vec<ConditionPath>;
 
 struct PendingRecipeRule {
     rule: RuleTarget,
     declarations: Vec<RecipeDeclaration>,
 }
 
+#[derive(Clone)]
 struct RecipeDeclaration {
     prop: String,
     value: String,
@@ -806,11 +1497,11 @@ struct RecipeDeclaration {
 struct NestedStyleRule<'a> {
     selector: String,
     value: &'a Value,
-    condition: Option<ConditionParts>,
+    condition: Option<ConditionPaths>,
 }
 
 struct ConditionalDeclarations {
-    condition: ConditionParts,
+    condition: ConditionPaths,
     declarations: Vec<RecipeDeclaration>,
 }
 
@@ -833,10 +1524,10 @@ struct PreparedTokenVars<'a> {
 
 struct PreparedTokenCondition<'a> {
     vars: &'a [TokenCssVar<'a>],
-    conditions: Vec<ConditionParts>,
+    conditions: Vec<ConditionPaths>,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 struct RuleTarget {
     selector: String,
     wrappers: Vec<String>,
@@ -860,6 +1551,54 @@ fn append_recipe_declaration(target: &mut Vec<RecipeDeclaration>, declaration: R
         return;
     }
     target.push(declaration);
+}
+
+fn is_slot_recipe_group(group: &RecipeStyleGroupSnapshot) -> bool {
+    !group.slot.is_null()
+}
+
+fn has_slot_recipe_groups(groups: &[&RecipeStyleGroupSnapshot]) -> bool {
+    groups.iter().any(|group| is_slot_recipe_group(group))
+}
+
+fn has_regular_recipe_groups(groups: &[&RecipeStyleGroupSnapshot]) -> bool {
+    groups.iter().any(|group| !is_slot_recipe_group(group))
+}
+
+fn write_recipe_base_groups(
+    cx: &EmitContext<'_>,
+    writer: &mut CssWriter,
+    groups: &[&RecipeStyleGroupSnapshot],
+    slots: bool,
+) {
+    let groups = groups
+        .iter()
+        .copied()
+        .filter(|group| is_slot_recipe_group(group) == slots)
+        .collect::<Vec<_>>();
+    if groups.is_empty() {
+        return;
+    }
+    writer.layer("base", |writer| {
+        for group in groups {
+            cx.write_recipe_group(writer, &group.class_name, &group.entries);
+        }
+    });
+}
+
+fn write_recipe_variant_groups(
+    cx: &EmitContext<'_>,
+    writer: &mut CssWriter,
+    groups: &[&RecipeStyleGroupSnapshot],
+    slots: bool,
+) {
+    for group in groups
+        .iter()
+        .copied()
+        .filter(|group| is_slot_recipe_group(group) == slots)
+    {
+        cx.write_recipe_group(writer, &group.class_name, &group.entries);
+    }
 }
 
 fn write_with_wrappers(
@@ -907,16 +1646,40 @@ fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
     }
 }
 
-fn literal_to_css(value: &Literal) -> Option<Cow<'_, str>> {
+fn literal_to_css<'a>(
+    prop: &str,
+    value: &'a Literal,
+    numeric_hint: Option<&str>,
+) -> Option<Cow<'a, str>> {
     match value {
-        Literal::String(value) => Some(Cow::Borrowed(value)),
-        Literal::Number(value) => Some(Cow::Owned(pandacss_shared::number_to_js_string(*value))),
+        Literal::String(value) => {
+            if numeric_hint == Some(value.as_str()) {
+                Some(Cow::Owned(numeric_value::format_number_str(prop, value)))
+            } else {
+                Some(Cow::Borrowed(value))
+            }
+        }
+        Literal::Number(value) => Some(Cow::Owned(numeric_value::format_number(prop, *value))),
         Literal::Bool(true) => Some(Cow::Borrowed("true")),
         Literal::Bool(false) | Literal::Null | Literal::Object(_) | Literal::Conditional(_) => None,
         Literal::Array(items) => {
-            let values: Vec<_> = items.iter().filter_map(literal_to_css).collect();
+            let values: Vec<_> = items
+                .iter()
+                .filter_map(|item| literal_to_css(prop, item, None))
+                .collect();
             (!values.is_empty()).then(|| Cow::Owned(join_css_values(&values)))
         }
+    }
+}
+
+fn atom_numeric_hint(value: &AtomValue) -> Option<&str> {
+    atom_value_numeric_hint(value)
+}
+
+fn atom_value_numeric_hint(value: &AtomValue) -> Option<&str> {
+    match value {
+        AtomValue::Number(value) => Some(value),
+        _ => None,
     }
 }
 
@@ -937,30 +1700,47 @@ fn finalized_class_name_owned(class_name: String, conditions: &[&str]) -> String
     if conditions.is_empty() {
         return class_name;
     }
-    let condition_len = conditions
-        .iter()
-        .map(|condition| condition.trim_start_matches('_').len() + 1)
-        .sum::<usize>();
-    let mut out = String::with_capacity(condition_len + class_name.len());
+    let capacity = conditions.iter().map(|c| c.len() + 3).sum::<usize>() + class_name.len();
+    let mut out = String::with_capacity(capacity);
     for condition in conditions {
         if !out.is_empty() {
             out.push(':');
         }
-        out.push_str(condition.trim_start_matches('_'));
+        // Mirror the runtime `finalizeConditions` so the emitted selector matches
+        // the class the runtime puts on the element: raw selectors / at-rules
+        // (`&`, `@`) wrap in `[…]` (spaces→`_`); named conditions drop leading `_`.
+        push_finalized_condition(&mut out, condition);
     }
     out.push(':');
     out.push_str(&class_name);
     out
 }
 
-fn apply_condition(
-    config: &UserConfig,
-    selector: &mut String,
-    wrappers: &mut Vec<String>,
-    condition: &str,
-) {
-    for raw in condition_raw_parts(config, condition) {
-        apply_raw_condition(selector, wrappers, &raw);
+fn hash_class_name(class_name: &str, conditions: &[&str]) -> String {
+    if conditions.is_empty() {
+        return to_hash(class_name);
+    }
+
+    let capacity = conditions.iter().map(|c| c.len() + 3).sum::<usize>() + class_name.len();
+    let mut input = String::with_capacity(capacity);
+    for condition in conditions {
+        if !input.is_empty() {
+            input.push(':');
+        }
+        push_finalized_condition(&mut input, condition);
+    }
+    input.push(':');
+    input.push_str(class_name);
+    to_hash(&input)
+}
+
+fn push_finalized_condition(out: &mut String, condition: &str) {
+    if condition.contains('&') || condition.contains('@') {
+        out.push('[');
+        out.push_str(&without_space(condition.trim()));
+        out.push(']');
+    } else {
+        out.push_str(condition.trim_start_matches('_'));
     }
 }
 
@@ -1058,26 +1838,29 @@ fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
 }
 
 fn without_space(value: &str) -> String {
-    value.chars().filter(|ch| !ch.is_whitespace()).collect()
+    value.replace(' ', "_")
 }
 
+/// Backslash-escape every char in a class-name token that isn't a CSS identifier
+/// char (`[A-Za-z0-9_-]` or non-ASCII), so selector keys like `&:hover` emit a
+/// valid `.\&\:hover…` class. Mirrors v1's `esc` (its `[^\x80-￿\w-]` branch);
+/// real selector suffixes (`:hover`, `>`, …) are appended elsewhere, not here.
 fn escape_selector(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
-        match ch {
-            ':' | '.' | '/' | '!' | '%' | '[' | ']' | '(' | ')' | ',' | '#' => {
-                out.push('\\');
-                out.push(ch);
-            }
-            _ => out.push(ch),
+        if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' || !ch.is_ascii() {
+            out.push(ch);
+        } else {
+            out.push('\\');
+            out.push(ch);
         }
     }
     out
 }
 
-fn resolved_condition_parts(config: &UserConfig, key: &str) -> Option<ConditionParts> {
-    let parts = condition_raw_parts(config, key);
-    (!parts.is_empty()).then_some(parts)
+fn resolved_condition_paths(config: &UserConfig, key: &str) -> Option<ConditionPaths> {
+    let paths = condition_raw_paths(config, key);
+    (!paths.is_empty()).then_some(paths)
 }
 
 fn is_nested_selector_key(key: &str) -> bool {

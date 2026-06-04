@@ -290,14 +290,18 @@ fn collect_semantic_category<T: TokenValueString>(
         let metadata = token_metadata(token, token_path.is_default);
 
         if let Some(condition) = forced_condition {
-            visit_semantic_values(&token.value, None, &mut |_, value| {
+            visit_semantic_values(&token.value, None, &mut |nested_condition, value| {
+                let condition = nested_condition.as_deref().map_or_else(
+                    || condition.to_owned(),
+                    |nested| format!("{condition}:{nested}"),
+                );
                 push_token(
                     builder,
                     context,
                     &token_path,
                     &value.to_token_string(),
                     token_category.clone(),
-                    Some(condition),
+                    Some(&condition),
                     Some(metadata),
                 );
             });

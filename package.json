@@ -17,7 +17,6 @@
     "rust:test": "cargo test --workspace --locked",
     "rust:fmt": "cargo fmt --all --check",
     "rust:clippy": "cargo clippy --workspace --all-targets --locked -- -D warnings",
-    "vendor:csstype": "tsx crates/pandacss_codegen/scripts/vendor-csstype.ts",
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",

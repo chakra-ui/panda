@@ -34,11 +34,11 @@ fn generates_artifacts_from_resolved_project_state() {
         .iter()
         .find(|file| file.path == "types/tokens.d.mts")
         .expect("tokens file");
-    let properties = artifact
+    let system = artifact
         .files
         .iter()
-        .find(|file| file.path == "types/properties.d.mts")
-        .expect("properties file");
+        .find(|file| file.path == "types/system.d.mts")
+        .expect("system file");
 
     assert_snapshot!(tokens.code, @r#"
     export type ColorToken = "colorPalette.500" | "red.500"
@@ -51,20 +51,161 @@ fn generates_artifacts_from_resolved_project_state() {
 
     export type TokenValue<T extends keyof Tokens> = Tokens[T]
     "#);
-    assert_snapshot!(properties.code, @r#"
-    import type { ConditionalValue } from './conditions';
 
-    import type { AnyNumber, AnyString, CssVars, ColorsValue } from './values';
+    // `types/system` is the merged surface (own csstype + properties + selectors +
+    // system-types) — ~540 members, so assert its shape rather than full content.
+    let code = &system.code;
+    assert!(code.contains("export type CssValue = Globals | (string & {}) | number"));
+    assert!(code.contains("export interface CssProperties {"));
+    assert!(code.contains("  cursor?: ConditionalValue<CssValue>"));
+    assert!(code.contains("export interface SystemProperties extends CssProperties {"));
+    assert!(code.contains("  color?: ConditionalValue<ColorsValue>"));
+    assert!(code.contains(
+        "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
+    ));
+}
 
-    export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>
+#[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "theme artifact fixture covers runtime and type outputs together"
+)]
+fn generates_theme_artifact_files() {
+    let config = create_config(json!({
+        "conditions": {
+            "osDark": "@media (prefers-color-scheme: dark)"
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "blue": {
+                        "400": { "value": "#60a5fa" },
+                        "600": { "value": "#2563eb" }
+                    },
+                    "pink": {
+                        "400": { "value": "#f472b6" },
+                        "600": { "value": "#db2777" }
+                    }
+                }
+            }
+        },
+        "themes": {
+            "default": {
+                "tokens": {
+                    "colors": {
+                        "primary": { "value": "blue" }
+                    }
+                },
+                "semanticTokens": {
+                    "colors": {
+                        "text": {
+                            "value": {
+                                "base": "{colors.blue.600}",
+                                "_osDark": "{colors.blue.400}"
+                            }
+                        }
+                    }
+                }
+            },
+            "empty": {},
+            "pink": {
+                "tokens": {
+                    "colors": {
+                        "primary": { "value": "pink" }
+                    }
+                },
+                "semanticTokens": {
+                    "colors": {
+                        "text": {
+                            "value": {
+                                "base": "{colors.pink.600}",
+                                "_osDark": "{colors.pink.400}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let system = System::new(config.clone()).expect("valid project config");
+    let project = Project::new(system);
+    let artifact = project
+        .generate_artifact(&config, ArtifactId::Themes, GenerateOptions::default())
+        .expect("themes artifact");
 
-    export type CssVarProperties = {
-      [K in `--${string}`]?: CssVarValue
+    let mut files = artifact
+        .files
+        .iter()
+        .map(|file| file.path.as_str())
+        .collect::<Vec<_>>();
+    files.sort_unstable();
+    assert_eq!(
+        files,
+        vec![
+            "themes/index.d.mts",
+            "themes/index.mjs",
+            "themes/theme-default.json",
+            "themes/theme-empty.json",
+            "themes/theme-pink.json"
+        ]
+    );
+
+    let default_theme = artifact
+        .files
+        .iter()
+        .find(|file| file.path == "themes/theme-default.json")
+        .expect("default theme json");
+    assert_snapshot!(default_theme.code, @r##"
+    {
+      "name": "default",
+      "id": "panda-theme-default",
+      "css": "[data-panda-theme=default] {\n  --colors-primary: blue;\n  --colors-text: #2563eb;\n}\n@media (prefers-color-scheme: dark) {\n  [data-panda-theme=default] {\n    --colors-text: #60a5fa;\n  }\n}"
+    }
+    "##);
+    let empty_theme = artifact
+        .files
+        .iter()
+        .find(|file| file.path == "themes/theme-empty.json")
+        .expect("empty theme json");
+    assert_snapshot!(empty_theme.code, @r#"
+    {
+      "name": "empty",
+      "id": "panda-theme-empty",
+      "css": ""
+    }
+    "#);
+
+    let index_types = artifact
+        .files
+        .iter()
+        .find(|file| file.path == "themes/index.d.mts")
+        .expect("themes index types");
+    assert_snapshot!(index_types.code, @r#"
+    export type ThemeName = "default" | "empty" | "pink"
+    export type ThemeByName = {
+      "default": {
+        id: string
+        name: "default"
+        css: string
+      }
+      "pink": {
+        id: string
+        name: "pink"
+        css: string
+      }
     }
 
-    export interface SystemProperties {
-      color?: ConditionalValue<ColorsValue>
-    }
+    export type Theme<T extends ThemeName> = ThemeByName[T]
+
+    /**
+     * Dynamically import a theme by name
+     */
+    export declare function getTheme<T extends ThemeName>(themeName: T): Promise<ThemeByName[T]>
+
+    /**
+     * Inject a theme stylesheet into the document
+     */
+    export declare function injectTheme(el: HTMLElement, theme: Theme<any>): HTMLStyleElement
     "#);
 }
 
@@ -146,5 +287,5 @@ fn generates_affected_artifacts_by_dependency() {
         .map(|artifact| artifact.id)
         .collect::<Vec<_>>();
 
-    assert_snapshot!(format!("{ids:?}"), @"[Patterns, Types, Tokens, Conditions]");
+    assert_snapshot!(format!("{ids:?}"), @"[Patterns, Themes, Types, Tokens, Conditions]");
 }

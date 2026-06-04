@@ -2,7 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use indoc::indoc;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions, ModuleSpecifierPolicy};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 use serde_json::json;
 
@@ -27,17 +27,15 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
         &config,
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
-    assert_eq!(paths(conditions), vec!["conditions.ts"]);
+    assert_eq!(paths(conditions), vec!["css/conditions.ts"]);
     assert_eq!(
-        file(conditions, "conditions.ts"),
+        file(conditions, "css/conditions.ts"),
         indoc! {r#"
         import { withoutSpace } from '../helpers';
-
-        import type { AnySelector, Selectors } from './selectors';
 
         const conditions = new Set("_hover,_supportsGrid,base,md,sm".split(','))
         const conditionRe = /^@|&/
@@ -67,38 +65,6 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
             return aa && !bb ? 1 : !aa && bb ? -1 : 0
           })
         }
-
-        export interface Conditions {
-          /**
-           * `&:hover`
-           */
-          "_hover": string
-          /**
-           * `@supports (display: grid)`
-           */
-          "_supportsGrid": string
-          /**
-           * The base (=no conditions) styles to apply 
-           */
-          "base": string
-          "md": string
-          "sm": string
-        }
-
-        export type ConditionalValue<V> =
-          | V
-          | Array<V | null>
-          | {
-              [K in keyof Conditions]?: ConditionalValue<V>
-            }
-
-        export type Nested<P> = P & {
-          [K in Selectors]?: Nested<P>
-        } & {
-          [K in AnySelector]?: Nested<P>
-        } & {
-          [K in keyof Conditions]?: Nested<P>
-        }
         "#}
         .trim()
     );
@@ -125,13 +91,16 @@ fn emits_js_runtime_and_declarations() {
         &config,
         GenerateOptions {
             format: CodegenFormat::Js,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
-    assert_eq!(paths(conditions), vec!["conditions.js", "conditions.d.ts"]);
     assert_eq!(
-        file(conditions, "conditions.js"),
+        paths(conditions),
+        vec!["css/conditions.js", "css/conditions.d.ts"]
+    );
+    assert_eq!(
+        file(conditions, "css/conditions.js"),
         indoc! {r#"
         import { withoutSpace } from '../helpers';
 
@@ -167,54 +136,20 @@ fn emits_js_runtime_and_declarations() {
         .trim()
     );
     assert_eq!(
-        file(conditions, "conditions.d.ts"),
-        indoc! {r#"
-        import type { AnySelector, Selectors } from './selectors';
-
+        file(conditions, "css/conditions.d.ts"),
+        indoc! {r"
         export declare function isCondition(v: string): boolean;
 
         export declare function finalizeConditions(paths: string[]): string[];
 
         export declare function sortConditions(paths: string[]): string[];
-
-        export interface Conditions {
-          /**
-           * `&:hover`
-           */
-          "_hover": string
-          /**
-           * `@supports (display: grid)`
-           */
-          "_supportsGrid": string
-          /**
-           * The base (=no conditions) styles to apply 
-           */
-          "base": string
-          "md": string
-          "sm": string
-        }
-
-        export type ConditionalValue<V> =
-          | V
-          | Array<V | null>
-          | {
-              [K in keyof Conditions]?: ConditionalValue<V>
-            }
-
-        export type Nested<P> = P & {
-          [K in Selectors]?: Nested<P>
-        } & {
-          [K in AnySelector]?: Nested<P>
-        } & {
-          [K in keyof Conditions]?: Nested<P>
-        }
-        "#}
+        "}
         .trim()
     );
 }
 
 #[test]
-fn can_emit_extensioned_specifiers() {
+fn can_emit_import_extensions() {
     let graph = ArtifactGraph;
     let config: pandacss_config::UserConfig = serde_json::from_value(json!({
         "conditions": {
@@ -227,23 +162,17 @@ fn can_emit_extensioned_specifiers() {
         &config,
         GenerateOptions {
             format: CodegenFormat::Js,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let conditions = artifact(&artifacts, ArtifactId::Conditions);
 
     assert_eq!(
-        file(conditions, "conditions.js")
+        file(conditions, "css/conditions.js")
             .lines()
             .next()
             .expect("import line"),
         "import { withoutSpace } from '../helpers.js';"
     );
-    assert_eq!(
-        file(conditions, "conditions.d.ts")
-            .lines()
-            .next()
-            .expect("import line"),
-        "import type { AnySelector, Selectors } from './selectors.d.ts';"
-    );
+    assert!(!file(conditions, "css/conditions.d.ts").contains("../types/system"));
 }

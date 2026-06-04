@@ -1,7 +1,7 @@
 mod common;
 
 use insta::assert_snapshot;
-use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions, has_layer_declaration};
 
 use common::{compile_css, compile_output, config};
 
@@ -10,6 +10,28 @@ fn default_layer_names_emit_unchanged_preamble() {
     let config = config(serde_json::json!({}));
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+}
+
+#[test]
+fn can_omit_layer_order_declaration() {
+    let config = config(serde_json::json!({
+        "globalCss": { "body": { "margin": "0" } }
+    }));
+    let output = compile_output(
+        &config,
+        "",
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+    assert!(
+        !output
+            .css
+            .starts_with("@layer reset, base, tokens, recipes, utilities;")
+    );
+    assert!(output.css.starts_with("@layer base {"));
+    assert!(output.layer_css(StylesheetLayer::Base).is_some());
 }
 
 #[test]
@@ -83,7 +105,7 @@ fn two_layers_mapped_to_same_name_emit_one_collision_warning() {
         .iter()
         .map(|d| format!("{:?} {} {}", d.severity, d.code, d.message))
         .collect();
-    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layers.reset and layers.base both resolve to "x"; the cascade order becomes ambiguous"#);
+    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layer name "x" is shared by layers.reset, layers.base; the cascade order becomes ambiguous"#);
 }
 
 #[test]
@@ -111,7 +133,7 @@ fn rename_collides_with_another_layers_default_name() {
         .iter()
         .map(|d| format!("{:?} {} {}", d.severity, d.code, d.message))
         .collect();
-    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layers.reset and layers.tokens both resolve to "tokens"; the cascade order becomes ambiguous"#);
+    assert_snapshot!(summary.join("\n"), @r#"Warning layer_name_collision layer name "tokens" is shared by layers.reset, layers.tokens; the cascade order becomes ambiguous"#);
 }
 
 #[test]
@@ -130,7 +152,32 @@ fn distinct_collision_groups_emit_one_warning_each() {
         .map(|d| format!("{} {}", d.code, d.message))
         .collect();
     assert_snapshot!(summary.join("\n"), @r#"
-    layer_name_collision layers.reset and layers.base both resolve to "x"; the cascade order becomes ambiguous
-    layer_name_collision layers.tokens and layers.recipes both resolve to "y"; the cascade order becomes ambiguous
+    layer_name_collision layer name "x" is shared by layers.reset, layers.base; the cascade order becomes ambiguous
+    layer_name_collision layer name "y" is shared by layers.tokens, layers.recipes; the cascade order becomes ambiguous
     "#);
+}
+
+const LAYERS: [&str; 5] = ["reset", "base", "tokens", "recipes", "utilities"];
+
+#[test]
+fn has_layer_declaration_matches_an_exact_or_superset_statement() {
+    assert!(has_layer_declaration(
+        "@layer reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    ));
+    assert!(has_layer_declaration(
+        "@layer reset, base, tokens, recipes, utilities, custom;\n.x {}",
+        &LAYERS
+    ));
+}
+
+#[test]
+fn has_layer_declaration_rejects_non_matches() {
+    assert!(!has_layer_declaration("@layer base, utilities;", &LAYERS)); // missing layers
+    assert!(!has_layer_declaration(".x { color: red }", &LAYERS)); // no declaration
+    assert!(!has_layer_declaration("@layer reset { .x {} }", &LAYERS)); // a block, not a statement
+    assert!(!has_layer_declaration(
+        "@layered reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    )); // wrong keyword
 }

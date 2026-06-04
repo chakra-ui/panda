@@ -3,10 +3,13 @@
 //! fan out to every value a utility knows; `conditions`/`responsive` wrap each
 //! value so it emits under the requested states.
 
+use crate::static_css_diagnostics as diagnostics;
+
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, ConditionSet, Encoder};
 use pandacss_extractor::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
+use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{StyleNormalizer, Utility};
 use serde_json::Value;
 
@@ -14,9 +17,10 @@ use serde_json::Value;
 pub fn expand(
     config: &UserConfig,
     utility: &Utility,
+    token_dictionary: Option<&TokenDictionary>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Atom> {
-    diagnose_static_css_scope(config, diagnostics);
+    diagnostics::diagnose_recipes(config, diagnostics);
     let Some(css_rules) = config.static_css.get("css").and_then(Value::as_array) else {
         return Vec::new();
     };
@@ -32,7 +36,14 @@ pub fn expand(
         .collect::<Vec<_>>();
 
     for rule in css_rules {
-        let styles = expand_css_rule(rule, config, utility, &responsive, diagnostics);
+        let styles = expand_css_rule(
+            rule,
+            config,
+            utility,
+            token_dictionary,
+            &responsive,
+            diagnostics,
+        );
         if styles.is_empty() {
             continue;
         }
@@ -52,6 +63,16 @@ pub fn expand(
     atoms
 }
 
+pub(crate) fn has_static_css(config: &UserConfig) -> bool {
+    !config.static_css.is_null()
+        || config
+            .theme
+            .recipes
+            .values()
+            .chain(config.theme.slot_recipes.values())
+            .any(|recipe| !recipe.static_css.is_null())
+}
+
 pub(crate) fn has_static_recipes(config: &UserConfig) -> bool {
     config.static_css.get("recipes").is_some()
         || config
@@ -62,19 +83,11 @@ pub(crate) fn has_static_recipes(config: &UserConfig) -> bool {
             .any(|recipe| !recipe.static_css.is_null())
 }
 
-fn diagnose_static_css_scope(config: &UserConfig, diagnostics: &mut Vec<Diagnostic>) {
-    if config.static_css.get("themes").is_some() {
-        diagnostics.push(Diagnostic::warning(
-            diagnostic_codes::STATIC_CSS_THEMES_UNSUPPORTED,
-            "staticCss.themes is handled by token artifact generation, not native stylesheet compile",
-        ));
-    }
-}
-
 fn expand_css_rule(
     rule: &Value,
     config: &UserConfig,
     utility: &Utility,
+    token_dictionary: Option<&TokenDictionary>,
     breakpoints: &[String],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Literal> {
@@ -98,9 +111,11 @@ fn expand_css_rule(
         ) {
             continue;
         }
+        diagnostics::diagnose_property(property, utility, diagnostics);
         let values = static_values(values);
         let mut expanded = Vec::new();
         for value in values {
+            diagnostics::diagnose_token_refs(property, &value, token_dictionary, diagnostics);
             // `"*"` means "every value this utility defines" (enum keys or
             // token-category keys); anything else is a literal value.
             if value == Literal::String("*".to_owned()) {
@@ -109,6 +124,15 @@ fn expand_css_rule(
                     diagnostics.push(Diagnostic::warning(
                         diagnostic_codes::STATIC_CSS_WILDCARD_EMPTY,
                         format!("staticCss wildcard for `{property}` has no values"),
+                    ));
+                }
+                if diagnostics::is_large_wildcard(keys.len()) {
+                    diagnostics.push(Diagnostic::info(
+                        diagnostic_codes::STATIC_CSS_WILDCARD_LARGE,
+                        format!(
+                            "staticCss wildcard for `{property}` expands to {} values",
+                            keys.len()
+                        ),
                     ));
                 }
                 expanded.extend(keys.into_iter().map(Literal::String));

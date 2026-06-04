@@ -48,7 +48,7 @@ describe('createBrowserDriver', () => {
         },
       ]
     `)
-    expect(driver.compile().css).toContain('blue')
+    expect(driver.cssgen().css).toContain('blue')
   })
 
   it('embeds the user pattern transform in generated artifacts', async () => {
@@ -70,6 +70,50 @@ describe('createBrowserDriver', () => {
     })
 
     expect(applied).toMatchInlineSnapshot(`true`)
-    expect(driver.compile().css).toContain('green')
+    expect(driver.cssgen().css).toContain('green')
+  })
+
+  it('writes stylesheet output to the compiler memory fs', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })" },
+    })
+    driver.parseFiles()
+
+    const result = driver.writeCss('/proj/styled-system/styles.css')
+
+    expect(result.css).toContain('blue')
+    expect(driver.compiler.fs?.readFile(result.path)).toBe(result.css)
+  })
+
+  it('writes split stylesheet output to the compiler memory fs', async () => {
+    const driver = await createBrowserDriver({
+      snapshot,
+      sources: { '/proj/App.tsx': "import { css } from '@panda/css'; css({ color: 'blue' })" },
+    })
+    driver.parseFiles()
+
+    const result = driver.writeSplitCss()
+
+    expect(result.root).toBe('/proj/styled-system')
+    expect(result.paths).toContain('/proj/styled-system/styles.css')
+    expect(result.paths).toContain('/proj/styled-system/styles/utilities.css')
+    expect(driver.compiler.fs?.readFile('/proj/styled-system/styles.css')).toContain(
+      "@import './styles/utilities.css';",
+    )
+    expect(driver.compiler.fs?.readFile('/proj/styled-system/styles/utilities.css')).toContain('blue')
+  })
+
+  it('resolves the configured outdir through the driver host', async () => {
+    const driver = await createBrowserDriver({ snapshot })
+
+    expect(driver.getOutdir()).toBe('/proj/styled-system')
+    expect(driver.getOutdir('system')).toBe('/proj/system')
+    expect(driver.getOutdir('/tmp/panda-system')).toBe('/tmp/panda-system')
+    expect(driver.paths('system')).toEqual({
+      root: '/proj/system',
+      styleFile: '/proj/system/styles.css',
+      stylesDir: '/proj/system/styles',
+    })
   })
 })

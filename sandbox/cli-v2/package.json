@@ -1,0 +1,36 @@
+{
+  "name": "sandbox-cli-v2",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:cli": "pnpm v2:codegen && pnpm v2:cssgen && concurrently \"pnpm v2:cssgen:watch\" \"vite\"",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "v2:inspect": "node ../../packages/cli_v2/bin.js inspect --cwd . --json",
+    "v2:codegen": "pnpm v2:clean && node ../../packages/cli_v2/bin.js codegen --cwd .",
+    "v2:codegen:watch": "node ../../packages/cli_v2/bin.js codegen --cwd . --watch",
+    "v2:cssgen": "node ../../packages/cli_v2/bin.js cssgen --cwd .",
+    "v2:cssgen:watch": "node ../../packages/cli_v2/bin.js cssgen --cwd . --watch",
+    "v2:clean": "rm -rf styled-system",
+    "old:codegen": "node ../../packages/cli/bin.js codegen --cwd . --silent",
+    "old:cssgen": "node ../../packages/cli/bin.js cssgen --cwd . --silent",
+    "test": "pnpm v2:inspect && pnpm build"
+  },
+  "dependencies": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/vite": "workspace:*",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "typescript": "6.0.2",
+    "vite": "7.2.6",
+    "vite-tsconfig-paths": "5.1.4"
+  }
+}

@@ -44,11 +44,31 @@ class FallbackCompiler implements Compiler {
   scan() {
     return []
   }
+  realpath(path: string) {
+    return path
+  }
+  resolvePath(path: string, cwd?: string) {
+    if (!cwd || path.startsWith('/')) return path
+    return `${cwd.replace(/\/$/, '')}/${path}`
+  }
+  joinPath(parts: string[]) {
+    return parts.filter(Boolean).join('/')
+  }
+  dirname(path: string) {
+    const index = path.lastIndexOf('/')
+    return index <= 0 ? '' : path.slice(0, index)
+  }
+  isSourceFile() {
+    return false
+  }
   parseFiles(_paths: string[]) {
     return []
   }
   layers() {
     return { reset: 'reset', base: 'base', tokens: 'tokens', recipes: 'recipes', utilities: 'utilities' }
+  }
+  hasLayerDeclaration() {
+    return false
   }
   spec() {
     return {
@@ -68,6 +88,22 @@ class FallbackCompiler implements Compiler {
   }
   writeArtifacts() {
     return []
+  }
+  writeCss(outfile: string) {
+    return {
+      path: outfile,
+      css: '',
+      manifest: { files: [], tokens: [] },
+      layerRanges: {},
+      diagnostics: [] as Diagnostic[],
+    }
+  }
+  writeSplitCss(outdir: string) {
+    return {
+      root: outdir,
+      paths: [] as string[],
+      files: [],
+    }
   }
   isEmpty() {
     return true

@@ -21,7 +21,7 @@ pub fn generate(
             &module(ctx),
             options.format,
             false,
-            options.specifiers,
+            options.import_extensions,
             dependencies,
         ),
     }

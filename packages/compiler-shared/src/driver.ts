@@ -10,10 +10,15 @@ import type { Introspection } from './introspect'
 import type {
   CodegenArtifact,
   CodegenDependency,
+  CodegenOptions,
   Compiler,
   CompileOutput,
+  CompileOptions,
+  CssFile,
   ParseFileReport,
   SerializedConfig,
+  WriteCssResult,
+  WriteFilesResult,
 } from './types'
 
 /** Result of diffing two serialized configs — produced by config-loader's
@@ -43,6 +48,12 @@ export interface SourceChange {
 /** Which artifacts to (re)generate. Omit for the full set. */
 export interface ArtifactFilter {
   dependencies?: CodegenDependency[]
+}
+
+export interface DriverPaths {
+  root: string
+  styleFile: string
+  stylesDir: string
 }
 
 /** Host orchestrator above the pure {@link Compiler}: owns config lifecycle,
@@ -75,12 +86,30 @@ export interface Driver {
   applyChanges(changes: SourceChange[]): boolean[]
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
-  /** Generate + write artifacts under `outdir` via the engine fs. Returns paths. */
-  writeArtifacts(outdir: string, cwd?: string): string[]
-  /** Compile the stylesheet → `CompileOutput`; the caller routes the `css` string. */
-  compile(): CompileOutput
+  /** Resolve the configured output directory, optionally applying a caller override. */
+  getOutdir(outdir?: string): string
+  /** Resolve a host path using the driver/compiler path semantics. */
+  resolvePath(path: string): string
+  /** Standard Panda output locations for an optional outdir override. */
+  paths(outdir?: string): DriverPaths
+  /** Generate + write artifacts under the configured `outdir` via the engine fs. Returns paths. */
+  codegen(options?: CodegenOptions): string[]
+  /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
+  cssgen(options?: CompileOptions): CompileOutput
+  /** Generate split stylesheet files in memory without writing. */
+  splitCss(): CssFile[]
+  /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
+  writeCss(outfile: string, options?: CompileOptions): WriteCssResult
+  /** Generate + write split stylesheet files under the configured `outdir`. */
+  writeSplitCss(outdir?: string): WriteFilesResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
+  /** Whether a changed path is the config file or one of its bundled dependencies.
+   *  Lets watch hosts route a change to `reload()` vs `applyChange()`. */
+  isConfigFile(file: string): boolean
+  /** Whether a changed path is a project source file (matches the config
+   *  `include`/`exclude`). The source-side companion to {@link isConfigFile}. */
+  isSourceFile(file: string): boolean
 }
 
 /** Full codegen set, or only the artifacts affected by a config diff. */
@@ -110,11 +139,6 @@ export abstract class BaseDriver implements Driver {
     this.#introspect = undefined
   }
 
-  /** cwd applied when `writeArtifacts` is called without one (disk hosts). */
-  protected get defaultCwd(): string | undefined {
-    return undefined
-  }
-
   get compiler(): Compiler {
     return this.#compiler
   }
@@ -128,6 +152,7 @@ export abstract class BaseDriver implements Driver {
   abstract get configDependencies(): string[]
   abstract reload(): Promise<ConfigDiff>
   abstract applyChange(change: SourceChange): boolean
+  abstract getOutdir(outdir?: string): string
 
   scan(): string[] {
     return this.#compiler.scan()
@@ -145,12 +170,42 @@ export abstract class BaseDriver implements Driver {
     return selectArtifacts(this.#compiler, filter)
   }
 
-  writeArtifacts(outdir: string, cwd?: string): string[] {
-    return this.#compiler.writeArtifacts(outdir, cwd ?? this.defaultCwd)
+  codegen(options?: CodegenOptions): string[] {
+    const outdir = this.getConfiguredOutdir(options?.outdir)
+    const artifactOptions =
+      options?.codegenImportExtensions === undefined
+        ? undefined
+        : { codegenImportExtensions: options.codegenImportExtensions }
+    return this.#compiler.writeArtifacts(outdir, options?.cwd, artifactOptions)
   }
 
-  compile(): CompileOutput {
-    return this.#compiler.compile()
+  cssgen(options?: CompileOptions): CompileOutput {
+    return this.#compiler.compile(options)
+  }
+
+  splitCss(): CssFile[] {
+    return this.#compiler.splitCss()
+  }
+
+  resolvePath(path: string): string {
+    return this.#compiler.resolvePath(path)
+  }
+
+  paths(outdir?: string): DriverPaths {
+    const root = this.getOutdir(outdir)
+    return {
+      root,
+      styleFile: this.#compiler.joinPath([root, 'styles.css']),
+      stylesDir: this.#compiler.joinPath([root, 'styles']),
+    }
+  }
+
+  writeCss(outfile: string, options?: CompileOptions): WriteCssResult {
+    return this.#compiler.writeCss(outfile, undefined, options)
+  }
+
+  writeSplitCss(outdir?: string): WriteFilesResult {
+    return this.#compiler.writeSplitCss(this.getConfiguredOutdir(outdir))
   }
 
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {
@@ -160,5 +215,22 @@ export abstract class BaseDriver implements Driver {
       dirs: [...new Set(sources.map((source) => source.base))],
       config: this.configDependencies,
     }
+  }
+
+  // Config-file resolution is path-based and disk-bound, so it lives in the node
+  // host; snapshot-fed environments (browser) don't watch config files.
+  isConfigFile(_file: string): boolean {
+    return false
+  }
+
+  // Source matching is engine-owned (config globs); the Driver exposes it next to
+  // `isConfigFile` so watch hosts get one classification surface, not `.compiler`.
+  isSourceFile(file: string): boolean {
+    return this.#compiler.isSourceFile(file)
+  }
+
+  protected getConfiguredOutdir(outdir?: string): string {
+    const configuredOutdir = typeof this.config.outdir === 'string' ? this.config.outdir : undefined
+    return outdir ?? configuredOutdir ?? 'styled-system'
   }
 }

@@ -1,9 +1,13 @@
 mod emitter;
+mod layers;
+mod numeric_value;
 mod preflight;
 mod sort;
 mod static_css;
+mod static_css_diagnostics;
 mod writer;
 
+pub use layers::has_layer_declaration;
 pub use sort::order_properties;
 
 use std::{ops::Range, sync::Arc};
@@ -12,15 +16,31 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
-use pandacss_shared::{Diagnostic, diagnostic_codes};
+use pandacss_shared::{Diagnostic, diagnostic_codes, file_stem};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "Compile-time stylesheet flags are independent toggles and map directly to host options"
+)]
 pub struct StylesheetOptions {
     pub minify: bool,
     pub include_static: bool,
     pub source_map: bool,
+    pub emit_layer_declaration: bool,
+}
+
+impl Default for StylesheetOptions {
+    fn default() -> Self {
+        Self {
+            minify: false,
+            include_static: false,
+            source_map: false,
+            emit_layer_declaration: true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -31,9 +51,7 @@ pub struct StylesheetOutput {
     pub layer_ranges: StylesheetLayerRanges,
 }
 
-/// One file in a `--splitting` output set: a relative path (`tokens.css`,
-/// `recipes/button.css`, `styles.css`, …) and its CSS. The host writes each
-/// `path -> code` verbatim — same shape as a codegen artifact file.
+/// One split CSS file, relative to `outdir`.
 #[derive(Debug, Clone)]
 pub struct SplitCssFile {
     pub path: String,
@@ -115,6 +133,14 @@ pub struct StylesheetInput<'a> {
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
     pub static_pattern_atoms: &'a [Atom],
+    pub token_refs: &'a [String],
+}
+
+/// Whether the config has any static CSS work that stylesheet compilation should
+/// include: top-level `staticCss.*` or recipe-level `theme.*.staticCss`.
+#[must_use]
+pub fn has_static_css(config: &UserConfig) -> bool {
+    static_css::has_static_css(config)
 }
 
 /// Compile the project's atoms + recipes (plus the static-CSS subset when
@@ -147,7 +173,12 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     // static-pattern atoms.
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
-        static_css::expand(input.config, &utility, &mut diagnostics)
+        static_css::expand(
+            input.config,
+            &utility,
+            token_dictionary.as_deref(),
+            &mut diagnostics,
+        )
     } else {
         Vec::new()
     };
@@ -179,10 +210,14 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     let emitted = emitter::emit(
         input.config,
         &utility,
-        token_dictionary.as_deref(),
+        emitter::EmitTokenContext {
+            dictionary: token_dictionary.as_deref(),
+            refs: input.token_refs,
+        },
         atoms,
         recipes,
         options.minify,
+        options.emit_layer_declaration,
     );
 
     StylesheetOutput {
@@ -210,7 +245,12 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
 
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
-        static_css::expand(input.config, &utility, &mut diagnostics)
+        static_css::expand(
+            input.config,
+            &utility,
+            token_dictionary.as_deref(),
+            &mut diagnostics,
+        )
     } else {
         Vec::new()
     };
@@ -232,16 +272,19 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     let full = emitter::emit(
         input.config,
         &utility,
-        token_dictionary.as_deref(),
+        emitter::EmitTokenContext {
+            dictionary: token_dictionary.as_deref(),
+            refs: input.token_refs,
+        },
         atoms,
         recipes,
         options.minify,
+        true,
     );
 
     let mut files: Vec<SplitCssFile> = Vec::new();
     let mut imports: Vec<String> = Vec::new();
 
-    // One file per (non-recipe) layer.
     for (layer, file) in [
         (StylesheetLayer::Reset, "reset.css"),
         (StylesheetLayer::Base, "global.css"),
@@ -255,29 +298,42 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
             .unwrap_or("");
         if !css.is_empty() {
             files.push(SplitCssFile {
-                path: file.to_owned(),
+                path: format!("styles/{file}"),
                 code: ensure_trailing_newline(css),
             });
-            imports.push(format!("@import './{file}';"));
+            imports.push(format!("@import './styles/{file}';"));
         }
     }
 
-    // One file per recipe, plus the `recipes.css` import index.
     let recipe_files = emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
     if !recipe_files.is_empty() {
         let mut recipe_imports = Vec::with_capacity(recipe_files.len());
         for (name, css) in &recipe_files {
             recipe_imports.push(format!("@import './recipes/{name}.css';"));
             files.push(SplitCssFile {
-                path: format!("recipes/{name}.css"),
+                path: format!("styles/recipes/{name}.css"),
                 code: ensure_trailing_newline(css),
             });
         }
         files.push(SplitCssFile {
-            path: "recipes.css".to_owned(),
+            path: "styles/recipes.css".to_owned(),
             code: format!("{}\n", recipe_imports.join("\n")),
         });
-        imports.push("@import './recipes.css';".to_owned());
+        imports.push("@import './styles/recipes.css';".to_owned());
+    }
+
+    for (theme_name, css) in theme_css_entries_from_dictionary(
+        input.config,
+        token_dictionary.as_deref(),
+        options.minify,
+    ) {
+        if css.trim().is_empty() {
+            continue;
+        }
+        files.push(SplitCssFile {
+            path: format!("styles/themes/{}.css", file_stem(&theme_name)),
+            code: ensure_trailing_newline(&css),
+        });
     }
 
     // `styles.css` entry: the @layer order declaration + the imports above.
@@ -296,6 +352,73 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     );
 
     files
+}
+
+/// Generate CSS custom-property overrides for a single configured theme.
+///
+/// # Errors
+///
+/// Returns an error when token dictionary construction fails.
+pub fn theme_css(
+    config: &UserConfig,
+    theme_name: &str,
+    minify: bool,
+) -> Result<Option<String>, pandacss_tokens::TokenError> {
+    let token_dictionary = TokenDictionary::from_config(config)?;
+    Ok(theme_css_from_dictionary(
+        config,
+        token_dictionary.as_ref(),
+        theme_name,
+        minify,
+    ))
+}
+
+#[must_use = "theme CSS is not emitted unless the returned string is written"]
+pub fn theme_css_from_dictionary(
+    config: &UserConfig,
+    token_dictionary: Option<&TokenDictionary>,
+    theme_name: &str,
+    minify: bool,
+) -> Option<String> {
+    token_dictionary
+        .and_then(|dictionary| emitter::emit_theme_css(config, dictionary, theme_name, minify))
+}
+
+/// Generate CSS custom-property overrides for every configured theme.
+///
+/// # Errors
+///
+/// Returns an error when token dictionary construction fails.
+pub fn theme_css_entries(
+    config: &UserConfig,
+    minify: bool,
+) -> Result<Vec<(String, String)>, pandacss_tokens::TokenError> {
+    let token_dictionary = TokenDictionary::from_config(config)?;
+    Ok(theme_css_entries_from_dictionary(
+        config,
+        token_dictionary.as_ref(),
+        minify,
+    ))
+}
+
+#[must_use]
+pub fn theme_css_entries_from_dictionary(
+    config: &UserConfig,
+    token_dictionary: Option<&TokenDictionary>,
+    minify: bool,
+) -> Vec<(String, String)> {
+    config
+        .themes
+        .keys()
+        .map(|theme_name| {
+            let css = token_dictionary
+                .and_then(|dictionary| {
+                    emitter::emit_theme_css(config, dictionary, theme_name, minify)
+                })
+                .unwrap_or_default();
+            (theme_name.clone(), css)
+        })
+        .collect()
 }
 
 fn ensure_trailing_newline(css: &str) -> String {
@@ -321,18 +444,27 @@ fn push_layer_collision_diagnostics(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let entries = layers.ordered();
-    for (i, (semantic_a, name)) in entries.iter().enumerate() {
+    for (i, (_, name)) in entries.iter().enumerate() {
         // Only report a name once, on its first collision. Skip if any
         // earlier slot already used the same name (handled in the prior
         // iteration's `j` loop).
         if entries[..i].iter().any(|(_, prior)| prior == name) {
             continue;
         }
-        if let Some((semantic_b, _)) = entries[i + 1..].iter().find(|(_, other)| other == name) {
+        let colliding = entries
+            .iter()
+            .filter_map(|(semantic, other)| (other == name).then_some(*semantic))
+            .collect::<Vec<_>>();
+        if colliding.len() > 1 {
             diagnostics.push(Diagnostic::warning(
                 diagnostic_codes::LAYER_NAME_COLLISION,
                 format!(
-                    "layers.{semantic_a} and layers.{semantic_b} both resolve to \"{name}\"; the cascade order becomes ambiguous"
+                    "layer name \"{name}\" is shared by {}; the cascade order becomes ambiguous",
+                    colliding
+                        .iter()
+                        .map(|semantic| format!("layers.{semantic}"))
+                        .collect::<Vec<_>>()
+                        .join(", ")
                 ),
             ));
         }

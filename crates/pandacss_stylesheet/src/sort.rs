@@ -416,16 +416,31 @@ fn compare_apply_selectors(a: &[SelectorKey], b: &[SelectorKey]) -> Ordering {
     }
 }
 
-pub fn condition_raw_parts(config: &UserConfig, condition: &str) -> Vec<String> {
-    let mut at_rules = Vec::new();
-    let mut selectors = Vec::new();
-    collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
-    at_rules.sort();
-    selectors.sort();
-    let mut parts = Vec::with_capacity(at_rules.len() + selectors.len());
-    parts.extend(at_rules.into_iter().map(|part| part.raw));
-    parts.extend(selectors.into_iter().map(|part| part.raw));
-    parts
+#[must_use]
+pub fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<Vec<String>> {
+    if let Some(value) = config.theme.breakpoints.get(condition) {
+        return vec![vec![format!("@media (width >= {value})")]];
+    }
+
+    let key = condition.trim_start_matches('_');
+    let query = config
+        .conditions
+        .get(condition)
+        .or_else(|| config.conditions.get(key));
+
+    if let Some(query) = query {
+        return query_raw_paths(query);
+    }
+
+    if let Some(raw) = config.theme_condition(condition) {
+        return vec![vec![raw]];
+    }
+
+    if condition.starts_with('@') || condition.contains('&') {
+        return vec![vec![condition.to_owned()]];
+    }
+
+    Vec::new()
 }
 
 fn collect_condition_parts(
@@ -450,6 +465,11 @@ fn collect_condition_parts(
         return;
     }
 
+    if let Some(raw) = config.theme_condition(condition) {
+        collect_raw_part(&raw, at_rules, selectors);
+        return;
+    }
+
     if condition.starts_with('@') || condition.contains('&') {
         collect_raw_part(condition, at_rules, selectors);
     }
@@ -462,17 +482,42 @@ fn collect_query_parts(
 ) {
     match query {
         ConditionQuery::String(value) => collect_raw_part(value, at_rules, selectors),
-        ConditionQuery::Array(items) => {
-            for item in items {
-                collect_raw_part(item, at_rules, selectors);
-            }
-        }
         ConditionQuery::Nested(items) => {
-            for query in items.values() {
-                collect_query_parts(query, at_rules, selectors);
+            for (raw, query) in items {
+                collect_raw_part(raw, at_rules, selectors);
+                match query {
+                    ConditionQuery::String(value) if value == "@slot" => {}
+                    _ => collect_query_parts(query, at_rules, selectors),
+                }
             }
         }
     }
+}
+
+fn query_raw_paths(query: &ConditionQuery) -> Vec<Vec<String>> {
+    match query {
+        ConditionQuery::String(value) => vec![vec![value.clone()]],
+        ConditionQuery::Nested(items) => block_raw_paths(items),
+    }
+}
+
+fn block_raw_paths(items: &std::collections::BTreeMap<String, ConditionQuery>) -> Vec<Vec<String>> {
+    let mut paths = Vec::new();
+    for (raw, query) in items {
+        match query {
+            ConditionQuery::String(value) if value == "@slot" => {
+                paths.push(vec![raw.clone()]);
+            }
+            ConditionQuery::String(_) => {}
+            ConditionQuery::Nested(children) => {
+                for mut path in block_raw_paths(children) {
+                    path.insert(0, raw.clone());
+                    paths.push(path);
+                }
+            }
+        }
+    }
+    paths
 }
 
 fn collect_raw_part(raw: &str, at_rules: &mut Vec<AtRuleKey>, selectors: &mut Vec<SelectorKey>) {

@@ -28,10 +28,14 @@ pub fn generate(
 
 #[must_use]
 pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactFile> {
-    let recipe_dependencies =
-        DependencySet::from_slice(&[ConfigDependency::CodegenFormat, ConfigDependency::Recipes]);
+    let recipe_dependencies = DependencySet::from_slice(&[
+        ConfigDependency::CodegenFormat,
+        ConfigDependency::CodegenImportExtensions,
+        ConfigDependency::Recipes,
+    ]);
     let runtime_dependencies = DependencySet::from_slice(&[
         ConfigDependency::CodegenFormat,
+        ConfigDependency::CodegenImportExtensions,
         ConfigDependency::Conditions,
         ConfigDependency::Hash,
         ConfigDependency::Prefix,
@@ -46,7 +50,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         &runtime_module(ctx),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         runtime_dependencies,
     ));
 
@@ -65,7 +69,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
             &recipe_module(ctx, name, recipe, &type_name, false),
             options.format,
             false,
-            options.specifiers,
+            options.import_extensions,
             recipe_dependencies,
         ));
     }
@@ -85,7 +89,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
             &recipe_module(ctx, name, recipe, &type_name, true),
             options.format,
             false,
-            options.specifiers,
+            options.import_extensions,
             recipe_dependencies,
         ));
     }
@@ -95,7 +99,7 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         &index_module(&stems),
         options.format,
         false,
-        options.specifiers,
+        options.import_extensions,
         recipe_dependencies,
     ));
 
@@ -126,7 +130,7 @@ fn recipe_module(
 
     Module::new()
         .with_import(ImportDecl::value([factory], "./runtime"))
-        .with_import(ImportDecl::ty(["ConditionalValue"], "../types/conditions"))
+        .with_import(ImportDecl::ty(["ConditionalValue"], "../types/system"))
         .with_import(ImportDecl::ty(
             [runtime_fn, "RecipeVariantMap"],
             "../types/recipe",
@@ -188,7 +192,7 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
         ))
         .with_import(ImportDecl::value(
             ["finalizeConditions", "sortConditions"],
-            "../conditions",
+            "../css/conditions",
         ))
         .with_item(Item::runtime(ItemNode::RawStmt(recipe_runtime_code(ctx))))
 }

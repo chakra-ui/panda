@@ -2,9 +2,7 @@ mod common;
 
 use common::{artifact, file, paths};
 use insta::assert_snapshot;
-use pandacss_codegen::{
-    ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TypeData, UserConfig};
 
 fn config() -> UserConfig {
@@ -77,7 +75,7 @@ fn emits_ts_source_recipes() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
@@ -93,8 +91,7 @@ fn emits_ts_source_recipes() {
     );
     assert_snapshot!(file(recipes, "recipes/runtime.ts"), @r#"
     import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
-
-    import { finalizeConditions, sortConditions } from '../conditions';
+    import { finalizeConditions, sortConditions } from '../css/conditions';
 
     const conditions = {
       shift: sortConditions,
@@ -209,9 +206,7 @@ fn emits_ts_source_recipes() {
     "#);
     assert_snapshot!(file(recipes, "recipes/button.ts"), @r#"
     import { createRecipe } from './runtime';
-
-    import type { ConditionalValue } from '../types/conditions';
-
+    import type { ConditionalValue } from '../types/system';
     import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type ButtonVariant = {
@@ -233,9 +228,7 @@ fn emits_ts_source_recipes() {
     "#);
     assert_snapshot!(file(recipes, "recipes/card.ts"), @r#"
     import { createSlotRecipe } from './runtime';
-
-    import type { ConditionalValue } from '../types/conditions';
-
+    import type { ConditionalValue } from '../types/system';
     import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type CardVariant = {
@@ -258,9 +251,24 @@ fn emits_ts_source_recipes() {
     "#);
     assert_snapshot!(file(recipes, "recipes/index.ts"), @r#"
     export * from './button';
-
     export * from './card';
     "#);
+}
+
+#[test]
+fn emits_configured_separator_in_recipe_runtime() {
+    let mut input = input();
+    input.config.separator = Some("__".into());
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            import_extensions: false,
+        },
+    );
+    let recipes = artifact(&artifacts, ArtifactId::Recipes);
+
+    assert!(file(recipes, "recipes/runtime.ts").contains("`${className}--${prop}__${withoutSpace(value)}`"));
 }
 
 #[test]
@@ -273,7 +281,7 @@ fn emits_js_runtime_and_declarations() {
         &input(),
         GenerateOptions {
             format: CodegenFormat::Mjs,
-            specifiers: ModuleSpecifierPolicy::RuntimeAndTypes,
+            import_extensions: true,
         },
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
@@ -292,8 +300,7 @@ fn emits_js_runtime_and_declarations() {
     );
     assert_snapshot!(file(recipes, "recipes/runtime.mjs"), @r#"
     import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
-
-    import { finalizeConditions, sortConditions } from '../conditions.mjs';
+    import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
 
     const conditions = {
       shift: sortConditions,
@@ -414,8 +421,7 @@ fn emits_js_runtime_and_declarations() {
     export const button = createRecipe(buttonConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/button.d.mts"), @r#"
-    import type { ConditionalValue } from '../types/conditions.d.mts';
-
+    import type { ConditionalValue } from '../types/system.d.mts';
     import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.d.mts';
 
     export type ButtonVariant = {
@@ -441,8 +447,7 @@ fn emits_js_runtime_and_declarations() {
     export const card = createSlotRecipe(cardConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/card.d.mts"), @r#"
-    import type { ConditionalValue } from '../types/conditions.d.mts';
-
+    import type { ConditionalValue } from '../types/system.d.mts';
     import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.d.mts';
 
     export type CardVariant = {
@@ -463,12 +468,10 @@ fn emits_js_runtime_and_declarations() {
     "#);
     assert_snapshot!(file(recipes, "recipes/index.mjs"), @r#"
     export * from './button.mjs';
-
     export * from './card.mjs';
     "#);
     assert_snapshot!(file(recipes, "recipes/index.d.mts"), @r#"
     export * from './button.d.mts';
-
     export * from './card.d.mts';
     "#);
 }
@@ -503,7 +506,7 @@ fn wires_class_name_hash_into_runtime() {
         &input,
         GenerateOptions {
             format: CodegenFormat::Ts,
-            specifiers: ModuleSpecifierPolicy::Extensionless,
+            import_extensions: false,
         },
     );
     let recipes = artifact(&artifacts, ArtifactId::Recipes);

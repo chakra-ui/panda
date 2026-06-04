@@ -16,7 +16,7 @@ export default defineConfig({
   test: {
     globals: true,
     testTimeout: 15_000,
-    setupFiles: ['tests-setup.ts'],
+    setupFiles: [resolve('./tests-setup.ts')],
     hideSkippedTests: true,
     environment: 'happy-dom',
     // https://vitest.dev/config/#exclude defaults + sandbox/codegen/frameworks

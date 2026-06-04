@@ -25,20 +25,24 @@ caveats:
 ## TL;DR
 
 Rust is **dramatically cheaper on every metric** for the same usage and autocomplete. The headline is instantiations:
-the Rust named-alias structure instantiates **~50× fewer** types on use (49 vs ~2,600) because `skipLibCheck` skips the
-declaration bodies and only the user's own `css({…})` shape drives instantiation.
+**~130× fewer** (~20 vs ~2,600), because every native CSS property shares one cached `ConditionalValue<CssValue>` and
+`skipLibCheck` skips the declaration bodies — only the user's own `css({…})` shape drives instantiation.
 
 | Fixture | Instantiations (rust / legacy) |        Δ | Types (rust / legacy) |    Δ |      Memory K |    Δ | Check ms |    Δ |
 | ------- | -----------------------------: | -------: | --------------------: | ---: | ------------: | ---: | -------: | ---: |
-| small   |                      49 / 2603 | **−98%** |            666 / 2427 | −73% | 74040 / 86886 | −15% |  20 / 50 | −60% |
-| medium  |                      49 / 2639 | **−98%** |            695 / 2487 | −72% | 74184 / 87067 | −15% |  20 / 50 | −60% |
-| large   |                      49 / 2648 | **−98%** |           1017 / 2988 | −66% | 75123 / 88933 | −16% |  20 / 60 | −67% |
-| strict  |                     314 / 2575 | **−88%** |            231 / 1932 | −88% | 72635 / 83864 | −13% |  20 / 50 | −60% |
+| small   |                      20 / 2603 | **−99%** |            187 / 2427 | −92% | 65790 / 86888 | −24% |  30 / 50 | −40% |
+| medium  |                      20 / 2639 | **−99%** |            212 / 2487 | −91% | 66046 / 83584 | −21% |  20 / 50 | −60% |
+| large   |                      20 / 2648 | **−99%** |            534 / 2988 | −82% | 66969 / 89119 | −25% |  20 / 50 | −60% |
+| strict  |                      26 / 2575 | **−99%** |            215 / 1932 | −89% | 65803 / 84376 | −22% |  20 / 50 | −60% |
 
-`jsx-{all,minimal,none}` read identically to `medium` (the Rust codegen doesn't emit distinct JSX artifacts yet).
+`jsx-{all,minimal,none}` match `medium` on `Types`/instantiations (the Rust codegen doesn't emit distinct JSX artifacts
+yet). Strict is marginally higher (26 vs 20) — `WithEscapeHatch`/`OnlyKnown` wrappers over the configured literals
+instantiate on use — still −99% vs legacy.
 
-Strict instantiates more than non-strict (314 vs 49) because `WithEscapeHatch`/`OnlyKnown` wrappers instantiate on use —
-still −88% vs legacy.
+These numbers reflect the final architecture: **our own csstype** (one shared `CssValue`, no vendored keyword unions),
+the core support surfaces **merged into one `types/system.d.ts`**, and a **single shared property registry**
+(`pandacss_shared::css_properties`) feeding both the extractor and the codegen. Memory fell to ~66-67MB once the
+vendored csstype `Property` namespace was dropped entirely.
 
 ## Measurement: why this must be `.d.ts` + skipLibCheck
 
@@ -47,24 +51,42 @@ files**, and every Panda project runs **`skipLibCheck`** — so TypeScript never
 The cost a user actually pays is on-demand instantiation when they write `css({…})`, not checking the generated lib.
 
 The first run emitted the Rust side as `.ts` _source_ (`format: Ts`) while legacy shipped `.d.ts`. That defeated
-skipLibCheck on the Rust side only, so csstype's ~600-union `Property` namespace was fully checked and counted — making
-Rust look ~2× _worse_ on `Types`. Emitting Rust as `.d.ts` (`format: Js`, matching legacy and real output) is what these
-numbers reflect, and it flips the result entirely.
+skipLibCheck on the Rust side only, so the (then-vendored) csstype's ~600-union `Property` namespace was fully checked
+and counted — making Rust look ~2× _worse_ on `Types`. Emitting Rust as `.d.ts` (`format: Js`, matching legacy and real
+output) is what these numbers reflect.
 
-### Disproven hypothesis (kept as a record)
+### How we got from −98% to −99% (kept as a record)
 
-Before spotting the `.ts`-vs-`.d.ts` artifact, the guess was that Rust's `types/index` doing
-`export type * from './csstype'` eagerly loaded the namespace, and that an explicit `export type { CssProperties }`
-would cut the count. Re-running the harness after that change left `Types` **unchanged** — csstype enters the graph
-through `values.ts`'s internal import, not the barrel. The explicit export was kept anyway as an **API-contract fix**
-(don't leak `Property`/`Globals`/`Pseudos`/`DataType` onto `styled-system/types`, matching legacy), but it is
-perf-neutral. The real variable was always the file extension.
+The early cuts indexed a vendored, terse csstype (`CssProperties["display"]`) — fast, but ~50 instantiations and a heavy
+`Property` namespace in the wasm binary. Two dead ends along the way: a mapped `Exclude<keyof CssProperties, …>` fallback
+spiked to **2,647** instantiations (an `Exclude` over ~850 keys), and an `export type * → export type { CssProperties }`
+barrel tweak proved **perf-neutral** (kept only as API hygiene). The win came from replacing the vendored csstype with
+**our own `CssValue`-based csstype** (every native prop shares one cached type), which dropped instantiations to ~20 and
+let the `Property` namespace — and the 136KB asset — be deleted outright (the −24% memory).
+
+## Recipe / pattern / cva (spot-checked separately)
+
+The main table's `usage` only exercises `SystemStyleObject`. A separate Rust-side check on the `recipes` fixture
+(`button` recipe + `stack` pattern + `cva` + `RecipeVariantProps`) confirms those user-facing types are **correct, live,
+and cheap**. (Absolute numbers below are from the earlier csstype-indexed cut — base is now ~20, not 49 — but the
+bounded-delta / no-blowup conclusion is unchanged.)
+
+| usage                              | Types | Instantiations |
+| ---------------------------------- | ----: | -------------: |
+| base (`SystemStyleObject` only)    |   658 |             49 |
+| heavy (+ recipe + pattern + `cva`) |   849 |        **228** |
+
+A bounded +179 instantiations for a full recipe/pattern/cva exercise — no blowup (v1's equivalent is far higher given
+its `DistributiveOmit`/`Assign` recipe machinery). Negative tests confirm liveness: `button({ size: 'huge' })` and
+`stack({ direction: 'diagonal' })` are both rejected against the precise variant/prop unions. Legacy-vs-Rust isn't
+table-compared here because the flat (`styled-system/index`) vs nested (`styled-system/css`) barrel layouts give
+different import paths; a cross-layout comparison is future work.
 
 ## Caveats
 
-- **Type-graph only.** `usage.ts` imports `./styled-system/types` and builds a `SystemStyleObject` (tokens, conditions,
-  nesting, an arbitrary selector); the values are real (a negative test confirms `color: 123` is rejected). It does not
-  import `css`/`cva`/recipes — those runtime artifacts are WIP and not the subject here.
+- **Main table is type-graph only.** Its `usage.ts` imports `./styled-system/types` and builds a `SystemStyleObject`
+  (tokens, conditions, nesting, an arbitrary selector); values are real (`color: 123` is rejected). Recipe/pattern/cva
+  are covered in the section above, not the main table.
 - **`eject: true`** on the legacy side (no base preset) keeps the utility/token surface equal to the fixture and to the
   Rust side. Fair comparison; not representative of a full preset's absolute size.
 - **JSX not captured.** No distinct Rust JSX artifacts yet, so the `jsx-*` fixtures equal `medium`. Add a JSX usage once

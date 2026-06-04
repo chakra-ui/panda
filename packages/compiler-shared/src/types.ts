@@ -102,10 +102,11 @@ export interface StaticPatternResult {
   diagnostics: Diagnostic[]
 }
 
-export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 'patterns' | 'selectors' | 'types'
+export type CodegenArtifactId = 'conditions' | 'css-index' | 'cx' | 'helpers' | 'patterns' | 'themes' | 'types'
 
 export type CodegenDependency =
   | 'codegenFormat'
+  | 'codegenImportExtensions'
   | 'conditions'
   | 'hash'
   | 'jsxFactory'
@@ -121,7 +122,12 @@ export type CodegenDependency =
   | 'utilities'
 
 export interface GenerateArtifactOptions {
-  specifiers?: 'extensionless' | 'runtime-and-types'
+  codegenImportExtensions?: boolean
+}
+
+export interface CodegenOptions extends GenerateArtifactOptions {
+  outdir?: string
+  cwd?: string
 }
 
 /** Scan overrides for `Compiler.scan`/`parseFiles`. Omitted fields fall back to the
@@ -144,9 +150,7 @@ export interface LayerNames {
 /** The five cascade layers, in emit order. */
 export type StylesheetLayerName = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
-/** One file in a `--splitting` output set — a relative path (`tokens.css`,
- *  `recipes/button.css`, `styles.css`, …) and its CSS. Written verbatim by the
- *  host, the same model as a codegen artifact file. */
+/** One split CSS file, relative to `outdir`. */
 export interface CssFile {
   path: string
   code: string
@@ -249,6 +253,21 @@ export interface CompileOutput {
   manifest: CompileManifest
   layerRanges: CompileLayerRanges
   diagnostics: Diagnostic[]
+}
+
+export interface WriteCssResult extends CompileOutput {
+  path: string
+}
+
+export interface WriteFilesResult {
+  root: string
+  paths: string[]
+  files: CssFile[]
+}
+
+export interface CompileOptions {
+  /** Emit Panda's leading cascade-layer order declaration (`@layer reset, ...;`). */
+  emitLayerDeclaration?: boolean
 }
 
 /** One extracted call argument. A literal `null` (`{ kind: 'value', value: null }`)
@@ -389,6 +408,9 @@ export interface Compiler {
   /** Resolved cascade-layer names (config overrides merged over defaults) — so
    *  the host can recognize the user's `@layer …;` directive. */
   layers(): LayerNames
+  /** Whether `css` has Panda's cascade-layer declaration (`@layer reset, base, …;`),
+   *  marking it as the stylesheet root a bundler injects the compiled CSS into. */
+  hasLayerDeclaration(css: string): boolean
   /** Tooling introspection snapshot — read once, index on the host. */
   spec(): Spec
   /** Source globs + their static base dirs (for the host watcher). */
@@ -400,6 +422,18 @@ export interface Compiler {
   /** Source paths matching the config's `include`/`exclude` (overridable) via
    *  the filesystem engine — for discovery and host watch lists. */
   scan(options?: ScanOptions): string[]
+  /** Real on-disk path (absolute, symlinks followed) via the filesystem engine,
+   *  so two paths to the same file compare equal. Returns the input if unresolved. */
+  realpath(path: string): string
+  /** Resolve `path` against the compiler host cwd. Absolute paths are returned unchanged. */
+  resolvePath(path: string, cwd?: string): string
+  /** Join path segments using the compiler host path semantics. */
+  joinPath(parts: string[]): string
+  /** Parent path using the compiler host path semantics. */
+  dirname(path: string): string
+  /** Whether `path` is a source file the project extracts from — its `cwd`-relative
+   *  form matches the configured `include`/`exclude` globs. For routing watch events. */
+  isSourceFile(path: string): boolean
   /** Read + parse paths returned from `scan()`, returning one report per file
    *  that was successfully read and parsed. */
   parseFiles(paths: string[]): ParseFileReport[]
@@ -419,7 +453,7 @@ export interface Compiler {
 
   // CSS output
   /** Compile the current project state into a complete stylesheet. */
-  compile(): CompileOutput
+  compile(options?: CompileOptions): CompileOutput
   /** CSS for the named layers only, concatenated in order — sliced in Rust so
    *  byte offsets stay valid. Pairs with `layers()` (names). Backs
    *  `cssgen <layer>` / `--minimal`. */
@@ -433,6 +467,10 @@ export interface Compiler {
   /** Generate + write artifacts under `outdir` via the platform fs (disk on
    *  native, in-memory on wasm). Returns the written paths. */
   writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  /** Generate + write stylesheet CSS via the platform fs. */
+  writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
+  /** Generate + write split stylesheet files under `outdir` via the platform fs. */
+  writeSplitCss(outdir: string, cwd?: string): WriteFilesResult
   /** Generate all codegen artifacts in memory without writing them. */
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   /** Generate a single codegen artifact by id. */

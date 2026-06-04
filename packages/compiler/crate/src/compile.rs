@@ -13,6 +13,19 @@ pub struct CompileInput {
     pub config: Option<serde_json::Value>,
     pub cwd: Option<String>,
     pub cache_dir: Option<String>,
+    pub emit_layer_declaration: Option<bool>,
+}
+
+#[napi(object)]
+#[derive(Default)]
+pub struct CompileOptions {
+    pub emit_layer_declaration: Option<bool>,
+}
+
+impl CompileOptions {
+    pub(crate) fn should_emit_layer_declaration(&self) -> bool {
+        self.emit_layer_declaration.unwrap_or(true)
+    }
 }
 
 #[napi(object)]
@@ -77,7 +90,9 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         config: None,
         cwd: None,
         cache_dir: None,
+        emit_layer_declaration: None,
     });
+    let emit_layer_declaration = input.emit_layer_declaration.unwrap_or(true);
     let files = input.files.unwrap_or_default();
     let Some(config_value) = input.config else {
         return error_output(
@@ -126,6 +141,7 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         &user_config,
         &static_pattern_atoms,
         static_pattern_diagnostics,
+        emit_layer_declaration,
     )
 }
 
@@ -134,6 +150,7 @@ pub(crate) fn build_compile_output(
     user_config: &UserConfig,
     static_pattern_atoms: &[CoreAtom],
     static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    emit_layer_declaration: bool,
 ) -> CompileOutput {
     let token_dictionary = project.config().token_dictionary();
     let manifest_files = project
@@ -151,8 +168,13 @@ pub(crate) fn build_compile_output(
         }
         paths.into_iter().collect()
     });
-    let output =
-        build_stylesheet_output(project, user_config, token_dictionary, static_pattern_atoms);
+    let output = build_stylesheet_output(
+        project,
+        user_config,
+        token_dictionary,
+        static_pattern_atoms,
+        emit_layer_declaration,
+    );
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
@@ -193,8 +215,9 @@ pub(crate) fn build_split_css(
             .get("minify")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false),
-        include_static: true,
+        include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
+        emit_layer_declaration: true,
     };
     pandacss_stylesheet::split_css(
         &pandacss_stylesheet::StylesheetInput {
@@ -204,6 +227,7 @@ pub(crate) fn build_split_css(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &options,
     )
@@ -222,6 +246,7 @@ pub(crate) fn build_stylesheet_output(
     user_config: &UserConfig,
     token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
     static_pattern_atoms: &[CoreAtom],
+    emit_layer_declaration: bool,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let snapshots = project.stylesheet_snapshots(user_config);
     let options = pandacss_stylesheet::StylesheetOptions {
@@ -230,8 +255,9 @@ pub(crate) fn build_stylesheet_output(
             .get("minify")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false),
-        include_static: true,
+        include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
+        emit_layer_declaration,
     };
     pandacss_stylesheet::compile(
         pandacss_stylesheet::StylesheetInput {
@@ -241,6 +267,7 @@ pub(crate) fn build_stylesheet_output(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &options,
     )

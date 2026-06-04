@@ -9,7 +9,9 @@ use lru::LruCache;
 use pandacss_encoder::{Atom as CoreAtom, AtomValue};
 use pandacss_extractor::CrossFileResolver;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
-use pandacss_fs::{FileSystem, GlobOptions, MemoryFileSystem, OxcResolverFileSystem};
+use pandacss_fs::{
+    FileSystem, GlobOptions, MemoryFileSystem, OxcResolverFileSystem, PathSystem, PosixPathSystem,
+};
 use serde::{Deserialize, Serialize as _};
 use std::collections::{BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
@@ -23,9 +25,7 @@ use crate::cache::{
 };
 use crate::fs::WasmFileSystem;
 use crate::matcher::from_core_token_dictionary;
-use pandacss_codegen::{
-    Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions, ModuleSpecifierPolicy,
-};
+use pandacss_codegen::{Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions};
 use pandacss_config::{
     CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues, ValidationMode,
     validate_config_value, validation_mode_from_value,
@@ -54,6 +54,7 @@ pub struct WasmCompiler {
     /// JS-facing `WasmFileSystem` handle. Used by `glob`/`scan` to discover +
     /// read the source files the host staged via `addFile`.
     fs: MemoryFileSystem,
+    paths: PosixPathSystem,
 }
 
 struct CallbackHost {
@@ -136,6 +137,7 @@ impl WasmCompiler {
             user_config,
             callbacks,
             fs: fs.inner.clone(),
+            paths: PosixPathSystem,
         })
     }
 
@@ -200,6 +202,32 @@ impl WasmCompiler {
         serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Real on-disk path (symlinks followed) from the in-memory filesystem, so two
+    /// paths to the same file compare equal. Returns the input when unresolved.
+    #[must_use]
+    pub fn realpath(&self, path: String) -> String {
+        let path = PathBuf::from(path);
+        self.fs
+            .canonicalize(&path)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .into_owned()
+    }
+
+    /// Whether `path` is a source file the project extracts from — its
+    /// `cwd`-relative form matches the configured `include`/`exclude` globs.
+    #[wasm_bindgen(js_name = isSourceFile)]
+    #[must_use]
+    pub fn is_source_file(&self, path: &str) -> bool {
+        let opts = GlobOptions {
+            include: self.user_config.include.clone(),
+            exclude: self.user_config.exclude.clone(),
+            cwd: PathBuf::from(&self.user_config.cwd),
+            absolute: true,
+        };
+        pandacss_fs::matches_globs(std::path::Path::new(path), &opts)
+    }
+
     /// Read + parse source paths returned from `scan()`. Returns one report per
     /// successfully parsed path.
     ///
@@ -231,6 +259,34 @@ impl WasmCompiler {
         self.fs
             .glob(&opts)
             .map_err(|err| JsValue::from_str(&format!("scan failed: {err}")))
+    }
+
+    fn write_relative_files<'a>(
+        &self,
+        root: &str,
+        files: impl IntoIterator<Item = (&'a str, &'a str)>,
+        label: &str,
+    ) -> Result<Vec<String>, JsValue> {
+        let mut written = Vec::new();
+        for (path, code) in files {
+            if self.paths.is_absolute(path) {
+                return Err(JsValue::from_str(&format!(
+                    "{label} output path must be relative: {path}"
+                )));
+            }
+            let target = self.paths.join(&[root, path]);
+            let parent = self.paths.dirname(&target);
+            if !parent.is_empty() {
+                self.fs
+                    .create_dir_all(Path::new(&parent))
+                    .map_err(|err| JsValue::from_str(&err.to_string()))?;
+            }
+            self.fs
+                .write(Path::new(&target), code.as_bytes())
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+            written.push(target);
+        }
+        Ok(written)
     }
 
     /// Shared parse path used by `parse_file` and `parseFiles` — wires the
@@ -444,30 +500,46 @@ impl WasmCompiler {
         cwd: Option<String>,
         options: &JsValue,
     ) -> Result<JsValue, JsValue> {
-        use pandacss_fs::FileSystem;
         let generate = generate_options(&self.user_config, options)?;
         let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
-        let base = std::path::PathBuf::from(cwd.unwrap_or_else(|| self.user_config.cwd.clone()))
-            .join(outdir);
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let base = self.paths.resolve(&cwd, outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
-            for file in artifact.files {
-                let target = base.join(&file.path);
-                if let Some(parent) = target.parent() {
-                    self.fs
-                        .create_dir_all(parent)
-                        .map_err(|err| JsValue::from_str(&err.to_string()))?;
-                }
-                self.fs
-                    .write(&target, file.code.as_bytes())
-                    .map_err(|err| JsValue::from_str(&err.to_string()))?;
-                written.push(target.to_string_lossy().into_owned());
-            }
+            written.extend(self.write_relative_files(
+                &base,
+                artifact
+                    .files
+                    .iter()
+                    .map(|file| (file.path.as_str(), file.code.as_str())),
+                "artifact",
+            )?);
         }
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         written
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = resolvePath)]
+    #[must_use]
+    pub fn resolve_path(&self, path: &str, cwd: Option<String>) -> String {
+        self.paths
+            .resolve(&cwd.unwrap_or_else(|| self.user_config.cwd.clone()), path)
+    }
+
+    #[wasm_bindgen(js_name = joinPath)]
+    pub fn join_path(&self, parts: JsValue) -> Result<String, JsValue> {
+        let parts: Vec<String> = serde_wasm_bindgen::from_value(parts)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let parts = parts.iter().map(String::as_str).collect::<Vec<_>>();
+        Ok(self.paths.join(&parts))
+    }
+
+    #[wasm_bindgen]
+    #[must_use]
+    pub fn dirname(&self, path: &str) -> String {
+        self.paths.dirname(path)
     }
 
     /// The resolved cascade-layer names (config overrides merged over defaults).
@@ -487,6 +559,15 @@ impl WasmCompiler {
         names
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Whether `css` declares Panda's cascade layers (`@layer reset, base, …;`),
+    /// marking it as the stylesheet root to inject the compiled CSS into.
+    #[wasm_bindgen(js_name = hasLayerDeclaration)]
+    #[must_use]
+    pub fn has_layer_declaration(&self, css: &str) -> bool {
+        let names = self.user_config.layers.ordered().map(|(_, name)| name);
+        pandacss_stylesheet::has_layer_declaration(css, &names)
     }
 
     /// Rust-built token dictionary projected into the small JS interop shape.
@@ -679,18 +760,66 @@ impl WasmCompiler {
     ///
     /// # Errors
     /// Returns a JS error if serializing fails.
-    pub fn compile(&mut self) -> Result<JsValue, JsValue> {
+    pub fn compile(&mut self, options: Option<JsValue>) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("css_compile", method = "wasm_project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms();
+        let options = compile_options_from_js(options)?;
         let output = build_compile_output(
             &mut self.inner,
             &self.user_config,
             &static_pattern_atoms,
             static_pattern_diagnostics,
+            options.emit_layer_declaration.unwrap_or(true),
         );
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         output
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = writeCss)]
+    pub fn write_css(
+        &mut self,
+        outfile: &str,
+        cwd: Option<String>,
+        options: Option<JsValue>,
+    ) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("css_compile", method = "wasm_write_css").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms();
+        let options = compile_options_from_js(options)?;
+        let output = build_compile_output(
+            &mut self.inner,
+            &self.user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+            options.emit_layer_declaration.unwrap_or(true),
+        );
+        let target = self.paths.resolve(
+            &cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            outfile,
+        );
+        let parent = self.paths.dirname(&target);
+        if !parent.is_empty() {
+            self.fs
+                .create_dir_all(Path::new(&parent))
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        }
+        self.fs
+            .write(Path::new(&target), output.css.as_bytes())
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+
+        let result = WriteCssResultSerde {
+            path: target,
+            css: output.css,
+            source_map: output.source_map,
+            manifest: output.manifest,
+            layer_ranges: output.layer_ranges,
+            diagnostics: output.diagnostics,
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
@@ -712,6 +841,7 @@ impl WasmCompiler {
             &self.user_config,
             token_dictionary,
             &static_pattern_atoms,
+            true,
         );
         let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
             .iter()
@@ -732,6 +862,27 @@ impl WasmCompiler {
         let files = build_split_css(&mut self.inner, &self.user_config, &static_pattern_atoms);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         files
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = writeSplitCss)]
+    pub fn write_split_css(&mut self, outdir: &str, cwd: Option<String>) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("split_css", method = "wasm_write_split_css").entered();
+        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms();
+        let files = build_split_css(&mut self.inner, &self.user_config, &static_pattern_atoms);
+        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, outdir);
+        let paths = self.write_relative_files(
+            &root,
+            files
+                .iter()
+                .map(|file| (file.path.as_str(), file.code.as_str())),
+            "split css",
+        )?;
+        let result = WriteFilesResultSerde { root, paths, files };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
@@ -828,6 +979,40 @@ struct CompileOutputSerde {
     manifest: CompileManifestSerde,
     layer_ranges: CompileLayerRangesSerde,
     diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteCssResultSerde {
+    path: String,
+    css: String,
+    source_map: Option<String>,
+    manifest: CompileManifestSerde,
+    layer_ranges: CompileLayerRangesSerde,
+    diagnostics: Vec<pandacss_shared::Diagnostic>,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteFilesResultSerde {
+    root: String,
+    paths: Vec<String>,
+    files: Vec<SplitCssFileSerde>,
+}
+
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileOptionsSerde {
+    emit_layer_declaration: Option<bool>,
+}
+
+fn compile_options_from_js(options: Option<JsValue>) -> Result<CompileOptionsSerde, JsValue> {
+    match options {
+        Some(value) if !value.is_undefined() && !value.is_null() => {
+            serde_wasm_bindgen::from_value(value).map_err(|err| JsValue::from_str(&err.to_string()))
+        }
+        _ => Ok(CompileOptionsSerde::default()),
+    }
 }
 
 #[derive(serde::Serialize)]
@@ -943,24 +1128,16 @@ fn generate_options(
     user_config: &UserConfig,
     options: &JsValue,
 ) -> Result<GenerateOptions, JsValue> {
-    let specifiers = option_string(options, "specifiers")?;
-    let specifiers = match specifiers.as_deref() {
-        None | Some("extensionless") => ModuleSpecifierPolicy::Extensionless,
-        Some("runtime-and-types") => ModuleSpecifierPolicy::RuntimeAndTypes,
-        Some(value) => {
-            return Err(JsValue::from_str(&format!(
-                "unknown codegen specifier policy `{value}`"
-            )));
-        }
-    };
+    let import_extensions = option_bool(options, "codegenImportExtensions")?
+        .unwrap_or(user_config.codegen_import_extensions);
 
     Ok(GenerateOptions {
         format: user_config.codegen_format,
-        specifiers,
+        import_extensions,
     })
 }
 
-fn option_string(options: &JsValue, key: &str) -> Result<Option<String>, JsValue> {
+fn option_bool(options: &JsValue, key: &str) -> Result<Option<bool>, JsValue> {
     if options.is_undefined() || options.is_null() {
         return Ok(None);
     }
@@ -969,9 +1146,9 @@ fn option_string(options: &JsValue, key: &str) -> Result<Option<String>, JsValue
         return Ok(None);
     }
     value
-        .as_string()
+        .as_bool()
         .map(Some)
-        .ok_or_else(|| JsValue::from_str(&format!("`{key}` must be a string")))
+        .ok_or_else(|| JsValue::from_str(&format!("option `{key}` must be a boolean")))
 }
 
 fn build_compile_output(
@@ -979,6 +1156,7 @@ fn build_compile_output(
     user_config: &pandacss_config::UserConfig,
     static_pattern_atoms: &[CoreAtom],
     static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    emit_layer_declaration: bool,
 ) -> CompileOutputSerde {
     let token_dictionary = project.config().token_dictionary();
     let manifest_files: Vec<CompileFileManifestSerde> = project
@@ -996,8 +1174,13 @@ fn build_compile_output(
         }
         paths.into_iter().collect()
     });
-    let output =
-        build_stylesheet_output(project, user_config, token_dictionary, static_pattern_atoms);
+    let output = build_stylesheet_output(
+        project,
+        user_config,
+        token_dictionary,
+        static_pattern_atoms,
+        emit_layer_declaration,
+    );
     let diagnostics: Vec<pandacss_shared::Diagnostic> = project
         .diagnostics()
         .iter()
@@ -1038,8 +1221,9 @@ fn build_split_css(
             .get("minify")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false),
-        include_static: true,
+        include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
+        emit_layer_declaration: true,
     };
     pandacss_stylesheet::split_css(
         &pandacss_stylesheet::StylesheetInput {
@@ -1049,6 +1233,7 @@ fn build_split_css(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &options,
     )
@@ -1067,6 +1252,7 @@ fn build_stylesheet_output(
     user_config: &pandacss_config::UserConfig,
     token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
     static_pattern_atoms: &[CoreAtom],
+    emit_layer_declaration: bool,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let snapshots = project.stylesheet_snapshots(user_config);
     let options = pandacss_stylesheet::StylesheetOptions {
@@ -1075,8 +1261,9 @@ fn build_stylesheet_output(
             .get("minify")
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false),
-        include_static: true,
+        include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
+        emit_layer_declaration,
     };
     pandacss_stylesheet::compile(
         pandacss_stylesheet::StylesheetInput {
@@ -1086,6 +1273,7 @@ fn build_stylesheet_output(
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
+            token_refs: snapshots.token_refs,
         },
         &options,
     )

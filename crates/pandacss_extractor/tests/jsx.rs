@@ -842,6 +842,38 @@ fn css_prop_aliases_extract_in_minimal_mode_like_js_parser_fixture() {
     );
 }
 
+#[test]
+fn css_prop_aliases_extract_on_configured_components_in_minimal_mode() {
+    let mut jsx = JsxExtractionConfig {
+        style_props: JsxStyleProps::Minimal,
+        ..Default::default()
+    };
+    jsx.component_names.insert("MyComponent".into());
+
+    assert_yaml_snapshot!(
+        extract_with_jsx_config(
+            "<MyComponent color='red' css={{ bg: 'red.200' }} inputCss={{ color: 'blue.300' }} />",
+            &[],
+            jsx,
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: MyComponent
+        alias: MyComponent
+        data:
+          css:
+            bg: red.200
+          inputCss:
+            color: blue.300
+        span:
+          start: 0
+          end: 84
+    diagnostics: []
+    ",
+    );
+}
+
 // --- attribute overwrite & spread interleaving ---
 
 #[test]

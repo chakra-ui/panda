@@ -317,24 +317,9 @@ describe('Compiler callbacks', () => {
       ]
     `)
 
-    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/values.d.mts')?.code)
-      .toMatchInlineSnapshot(`
-        "import type { CssProperties } from './csstype';
-
-        import type { TokenValue } from './tokens';
-
-        export type AnyString = string & {}
-
-        export type AnyNumber = number & {}
-
-        export type CssVars = \`var(--\${string})\`
-
-        export type WithEscapeHatch<T> = T | \`[\${string}]\`
-
-        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends \`\${infer _}\` ? Value : never
-
-        export type SpaceValue = CssProperties["space"] | "-4" | "4" | "compact" | CssVars | AnyString"
-      `)
+    expect(
+      compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/system.d.mts')?.code,
+    ).toContain('export type SpaceValue = "-4" | "4" | "compact" | CssVars | AnyString')
   })
 
   it('resolves utility values functions from a config snapshot', () => {
@@ -394,24 +379,9 @@ describe('Compiler callbacks', () => {
         },
       ]
     `)
-    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/values.d.mts')?.code)
-      .toMatchInlineSnapshot(`
-        "import type { CssProperties } from './csstype';
-
-        import type { TokenValue } from './tokens';
-
-        export type AnyString = string & {}
-
-        export type AnyNumber = number & {}
-
-        export type CssVars = \`var(--\${string})\`
-
-        export type WithEscapeHatch<T> = T | \`[\${string}]\`
-
-        export type OnlyKnown<Key, Value> = Value extends boolean ? Value : Value extends \`\${infer _}\` ? Value : never
-
-        export type InsetValue = CssProperties["inset"] | "-2" | "2" | "full" | CssVars | AnyString"
-      `)
+    expect(
+      compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/system.d.mts')?.code,
+    ).toContain('export type InsetValue = "-2" | "2" | "full" | CssVars | AnyString')
   })
 
   it('throws when serialized callback refs are missing callbacks', () => {
@@ -742,7 +712,17 @@ describe('Compiler callbacks', () => {
       [
         {
           "prop": "height",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "height",
           "value": "8px",
+          "conditions": [],
+        },
+        {
+          "prop": "width",
+          "value": "4px",
           "conditions": [],
         },
         {

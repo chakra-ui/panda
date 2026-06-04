@@ -6,7 +6,7 @@ mod validate;
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
 pub use theme::{
@@ -48,6 +48,8 @@ pub struct UserConfig {
     #[serde(default)]
     pub import_map: Option<ImportMap>,
     #[serde(default)]
+    pub jsx_framework: Option<JsxFramework>,
+    #[serde(default)]
     pub jsx_factory: Option<String>,
     #[serde(default)]
     pub jsx_style_props: Option<JsxStylePropsConfig>,
@@ -83,8 +85,12 @@ pub struct UserConfig {
     pub layers: CascadeLayers,
     #[serde(default)]
     pub preflight: PreflightConfig,
+    #[serde(default, deserialize_with = "deserialize_optimize_config")]
+    pub optimize: OptimizeConfig,
     #[serde(default)]
     pub codegen_format: CodegenFormat,
+    #[serde(default, rename = "codegenImportExtensions")]
+    pub codegen_import_extensions: bool,
     #[serde(default, rename = "strictTokens")]
     pub strict_tokens: bool,
     #[serde(default, rename = "strictPropertyValues")]
@@ -99,6 +105,20 @@ fn default_css_var_root() -> String {
     ":where(:root, :host)".to_owned()
 }
 
+fn deserialize_optimize_config<'de, D>(deserializer: D) -> Result<OptimizeConfig, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = Value::deserialize(deserializer)?;
+    if value.is_null() {
+        return Ok(OptimizeConfig::default());
+    }
+    if value.is_object() {
+        return serde_json::from_value(value).map_err(serde::de::Error::custom);
+    }
+    Ok(OptimizeConfig::default())
+}
+
 impl UserConfig {
     #[must_use]
     pub fn condition_names(&self) -> Vec<String> {
@@ -109,9 +129,49 @@ impl UserConfig {
             names.insert(format!("_{key}"));
         }
 
+        for key in self.themes.keys().filter(|key| !key.is_empty()) {
+            names.insert(theme_condition_name(key));
+        }
+
         names.extend(self.theme.breakpoint_names());
         names.into_iter().collect()
     }
+
+    #[must_use]
+    pub fn theme_condition(&self, condition: &str) -> Option<String> {
+        let theme = condition.strip_prefix("_theme")?;
+        self.themes
+            .keys()
+            .find(|key| capitalize_for_theme_condition(key) == theme)
+            .map(|key| format!("&:where([data-panda-theme={key}], [data-panda-theme={key}] *)"))
+    }
+}
+
+#[must_use]
+pub fn theme_condition_name(theme: &str) -> String {
+    format!("_theme{}", capitalize_for_theme_condition(theme))
+}
+
+fn capitalize_for_theme_condition(value: &str) -> String {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return String::new();
+    };
+    let mut out = String::new();
+    out.extend(first.to_uppercase());
+    out.push_str(chars.as_str());
+    out
+}
+
+/// Stylesheet optimization switches. All optimizations are opt-in because
+/// Panda normally emits the complete token/keyframe surface for external CSS.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptimizeConfig {
+    #[serde(default)]
+    pub remove_unused_tokens: bool,
+    #[serde(default)]
+    pub remove_unused_keyframes: bool,
 }
 
 /// User-facing names for the five cascade layers. Matches v1's
@@ -302,6 +362,61 @@ pub enum JsxStylePropsConfig {
     None,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JsxFramework {
+    React,
+    Solid,
+    Preact,
+    Vue,
+    Qwik,
+    Custom(String),
+}
+
+impl JsxFramework {
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::React => "react",
+            Self::Solid => "solid",
+            Self::Preact => "preact",
+            Self::Vue => "vue",
+            Self::Qwik => "qwik",
+            Self::Custom(value) => value,
+        }
+    }
+
+    #[must_use]
+    pub fn is_known(&self) -> bool {
+        !matches!(self, Self::Custom(_))
+    }
+}
+
+impl Serialize for JsxFramework {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for JsxFramework {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Ok(match value.as_str() {
+            "react" => Self::React,
+            "solid" => Self::Solid,
+            "preact" => Self::Preact,
+            "vue" => Self::Vue,
+            "qwik" => Self::Qwik,
+            _ => Self::Custom(value),
+        })
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum PrefixConfig {
@@ -382,7 +497,6 @@ pub struct HashOptions {
 #[serde(untagged)]
 pub enum ConditionQuery {
     String(String),
-    Array(Vec<String>),
     Nested(BTreeMap<String, ConditionQuery>),
 }
 
