@@ -7,6 +7,7 @@ use pandacss_extractor::{
     ExtractedJsxResult, ImportSpecifierKind, JsxExtractionConfig, JsxStyleProps, MatchCategory,
     MatchedImport, extract_jsx,
 };
+use serde_json::json;
 
 fn styled(alias: &str) -> MatchedImport {
     MatchedImport {
@@ -66,6 +67,72 @@ fn lowercase_html_tags_are_ignored() {
     jsx: []
     diagnostics: []
     ");
+}
+
+#[test]
+fn implicit_uppercase_component_extracts_valid_style_props() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.valid_style_props.insert("color".into());
+
+    let result = extract_with_jsx_config("<Panel color='red' madeUp='ignored' />", &[], jsx);
+
+    assert!(result.diagnostics.is_empty());
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(result.jsx[0].name, "Panel");
+    assert_eq!(result.jsx[0].data.to_json(), json!({ "color": "red" }));
+}
+
+#[test]
+fn implicit_uppercase_component_without_style_props_is_ignored() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.valid_style_props.insert("color".into());
+
+    let result = extract_with_jsx_config("<Panel madeUp='ignored' />", &[], jsx);
+
+    assert!(result.jsx.is_empty());
+}
+
+#[test]
+fn implicit_uppercase_component_follows_minimal_style_prop_mode() {
+    let result = extract_with_jsx_config(
+        "<Panel color='red' css={{ bg: 'red.200' }} borderCss={{ width: '1px' }} />",
+        &[],
+        JsxExtractionConfig {
+            style_props: JsxStyleProps::Minimal,
+            ..Default::default()
+        },
+    );
+
+    assert!(result.diagnostics.is_empty());
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(
+        result.jsx[0].data.to_json(),
+        json!({
+            "css": { "bg": "red.200" },
+            "borderCss": { "width": "1px" }
+        })
+    );
+}
+
+#[test]
+fn local_factory_alias_extracts_by_uppercase_component_name() {
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.valid_style_props.insert("display".into());
+    jsx.valid_style_props.insert("gap".into());
+
+    let result = extract_with_jsx_config(
+        "const JsxPanel = panda.div; const el = <JsxPanel display='grid' gap='4' />;",
+        &[styled("panda")],
+        jsx,
+    );
+
+    assert!(result.diagnostics.is_empty());
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(result.jsx[0].name, "JsxPanel");
+    assert_eq!(
+        result.jsx[0].data.to_json(),
+        json!({ "display": "grid", "gap": "4" })
+    );
 }
 
 #[test]
@@ -331,8 +398,8 @@ fn nested_jsx_elements() {
 }
 
 #[test]
-fn ignores_unmatched_components() {
-    // <Unrelated /> not in matchers → not extracted.
+fn extracts_unmatched_uppercase_components_with_style_props() {
+    // Unknown uppercase components match legacy behavior, then props are filtered.
     // Wrapped in fragment because adjacent top-level self-closing JSX
     // confuses ASI (Oxc emits a "missing semicolon" diagnostic otherwise).
     assert_yaml_snapshot!(
@@ -350,6 +417,14 @@ fn ignores_unmatched_components() {
         span:
           start: 2
           end: 21
+      - category: jsx
+        name: Unrelated
+        alias: Unrelated
+        data:
+          color: blue
+        span:
+          start: 21
+          end: 47
     diagnostics: []
     ",
     );

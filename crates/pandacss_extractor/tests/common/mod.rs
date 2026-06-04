@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use pandacss_extractor::{
-    ExtractorConfig, ExtractUsage, ImportScanResult, JsxExtractionConfig, Literal, Matcher,
+    ExtractUsage, ExtractorConfig, ImportScanResult, JsxExtractionConfig, Literal, Matcher,
     Matchers, NameMatcher, TokenDictionary,
 };
 use serde::Serialize;
@@ -27,7 +27,7 @@ pub fn panda_matchers() -> Matchers {
         pattern: any_matcher("@panda/patterns"),
         jsx: Some(matcher("@panda/jsx", ["styled", "Box"])),
         tokens: matcher("@panda/tokens", ["token"]),
-        jsx_factories: None,
+        jsx_factories: Some(vec!["styled".into()]),
     }
 }
 
@@ -57,6 +57,7 @@ pub fn css_config() -> ExtractorConfig {
 pub fn jsx_matchers<const N: usize>(names: [&str; N]) -> Matchers {
     Matchers {
         jsx: Some(matcher("@panda/jsx", names)),
+        jsx_factories: Some(vec!["styled".into()]),
         ..Default::default()
     }
 }

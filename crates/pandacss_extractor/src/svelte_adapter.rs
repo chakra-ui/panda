@@ -16,8 +16,16 @@ pub(crate) fn mask_svelte(source: &str) -> String {
     }
 
     let mut excluded = Vec::with_capacity(scripts.len() + styles.len());
-    excluded.extend(scripts.iter().map(|block| (block.open_start, block.close_end)));
-    excluded.extend(styles.iter().map(|block| (block.open_start, block.close_end)));
+    excluded.extend(
+        scripts
+            .iter()
+            .map(|block| (block.open_start, block.close_end)),
+    );
+    excluded.extend(
+        styles
+            .iter()
+            .map(|block| (block.open_start, block.close_end)),
+    );
     excluded.sort_unstable();
 
     copy_svelte_markup_expressions(&mut mask, source, &excluded);
@@ -51,13 +59,17 @@ fn copy_svelte_markup_expressions(mask: &mut [u8], source: &str, excluded: &[(us
             match tag_quote {
                 Some(quote) if bytes[cursor] == quote => tag_quote = None,
                 Some(_) => {}
-                None if bytes[cursor] == b'\'' || bytes[cursor] == b'"' => tag_quote = Some(bytes[cursor]),
+                None if bytes[cursor] == b'\'' || bytes[cursor] == b'"' => {
+                    tag_quote = Some(bytes[cursor])
+                }
                 None if starts_with(bytes, cursor, b"//") => {
-                    cursor = find_bytes(bytes, b"\n", cursor + 2).map_or(bytes.len(), |index| index + 1);
+                    cursor =
+                        find_bytes(bytes, b"\n", cursor + 2).map_or(bytes.len(), |index| index + 1);
                     continue;
                 }
                 None if starts_with(bytes, cursor, b"/*") => {
-                    cursor = find_bytes(bytes, b"*/", cursor + 2).map_or(bytes.len(), |index| index + 2);
+                    cursor =
+                        find_bytes(bytes, b"*/", cursor + 2).map_or(bytes.len(), |index| index + 2);
                     continue;
                 }
                 None if bytes[cursor] == b'>' => in_tag = false,
@@ -102,7 +114,10 @@ fn block_expression_range(bytes: &[u8], start: usize, end: usize) -> Option<(usi
     let (keyword, expr_start) = read_word(bytes, start, end)?;
     match keyword {
         "if" | "key" => Some((expr_start, end)),
-        "each" => Some((expr_start, find_word(bytes, expr_start, end, b" as ").unwrap_or(end))),
+        "each" => Some((
+            expr_start,
+            find_word(bytes, expr_start, end, b" as ").unwrap_or(end),
+        )),
         "await" => Some((
             expr_start,
             find_word(bytes, expr_start, end, b" then ")

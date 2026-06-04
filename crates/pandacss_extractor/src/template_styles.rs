@@ -4,9 +4,12 @@
 //! `<Box color="red" />` are not JS expressions, so they are collected
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
-use crate::adapter::{find_bytes, find_matching_brace, starts_with, tag_blocks};
+use crate::adapter::{
+    blank_like, copy_range, find_bytes, find_matching_brace, starts_with, tag_blocks,
+};
 use crate::{
-    ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
+    ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
+    Span,
     jsx::{merge_style_prop, merge_style_props},
     literal::expression_to_literal,
 };
@@ -35,9 +38,9 @@ pub(crate) fn collect_template_styles(
     matched: &[MatchedImport],
     config: &ExtractorConfig,
 ) -> Vec<ExtractedJsx> {
-    let adapted = crate::adapt_source(source, path);
+    let context_source = template_context_source(source, path);
     let context = TemplateContext {
-        source: adapted.as_ref(),
+        source: context_source.as_ref(),
         path,
         matched,
         config,
@@ -49,6 +52,21 @@ pub(crate) fn collect_template_styles(
         return collect_svelte_template_styles(source, matched, config, &context);
     }
     Vec::new()
+}
+
+fn template_context_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
+    if path.ends_with(".vue") || path.ends_with(".svelte") {
+        return Cow::Owned(mask_script_blocks(source));
+    }
+    crate::adapt_source(source, path)
+}
+
+fn mask_script_blocks(source: &str) -> String {
+    let mut mask = blank_like(source);
+    for block in tag_blocks(source, "script") {
+        copy_range(&mut mask, source, block.content_start, block.content_end);
+    }
+    String::from_utf8(mask).expect("source mask remains valid utf-8")
 }
 
 struct TemplateContext<'a> {
@@ -92,8 +110,16 @@ fn collect_svelte_template_styles(
     let scripts = tag_blocks(source, "script");
     let styles = tag_blocks(source, "style");
     let mut excluded = Vec::with_capacity(scripts.len() + styles.len());
-    excluded.extend(scripts.iter().map(|block| (block.open_start, block.close_end)));
-    excluded.extend(styles.iter().map(|block| (block.open_start, block.close_end)));
+    excluded.extend(
+        scripts
+            .iter()
+            .map(|block| (block.open_start, block.close_end)),
+    );
+    excluded.extend(
+        styles
+            .iter()
+            .map(|block| (block.open_start, block.close_end)),
+    );
     excluded.sort_unstable();
 
     let mut out = Vec::new();
@@ -146,9 +172,9 @@ fn collect_markup_range(
             continue;
         }
         if bytes[cursor] == b'<' {
-            if let Some(next) =
-                collect_tag(source, cursor, end, framework, matched, config, context, out)
-            {
+            if let Some(next) = collect_tag(
+                source, cursor, end, framework, matched, config, context, out,
+            ) {
                 cursor = next;
                 continue;
             }
@@ -217,14 +243,6 @@ fn resolve_template_tag<'a>(
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
 ) -> Option<ResolvedTemplateTag<'a>> {
-    if config.jsx.is_component_tag(tag_name) {
-        return Some(ResolvedTemplateTag {
-            category: MatchCategory::Jsx,
-            name: Cow::Borrowed(tag_name),
-            alias: Cow::Borrowed(tag_name),
-        });
-    }
-
     let (root, path) = tag_name.split_once('.').unwrap_or((tag_name, ""));
     for item in matched {
         if item.category != MatchCategory::Jsx || item.alias != root {
@@ -255,6 +273,13 @@ fn resolve_template_tag<'a>(
             }
             _ => {}
         }
+    }
+    if config.jsx.should_match_tag(tag_name) {
+        return Some(ResolvedTemplateTag {
+            category: MatchCategory::Jsx,
+            name: Cow::Borrowed(tag_name),
+            alias: Cow::Borrowed(tag_name),
+        });
     }
     None
 }
@@ -304,7 +329,9 @@ fn collect_attrs(
             AttrValue::Bool
         };
 
-        merge_attr(raw_name, value, framework, config, context, tag_name, entries);
+        merge_attr(
+            raw_name, value, framework, config, context, tag_name, entries,
+        );
     }
 }
 
@@ -385,7 +412,7 @@ fn merge_svelte_attr(
 }
 
 fn is_template_transport_attr(name: &str) -> bool {
-    matches!(name, "class" | "className" | "style")
+    matches!(name, "class" | "className" | "id" | "style")
 }
 
 fn merge_spread_with_context(
@@ -502,7 +529,8 @@ fn read_attr_value<'a>(
     }
 
     let start = *cursor;
-    while *cursor < end && !bytes[*cursor].is_ascii_whitespace() && !matches!(bytes[*cursor], b'>') {
+    while *cursor < end && !bytes[*cursor].is_ascii_whitespace() && !matches!(bytes[*cursor], b'>')
+    {
         *cursor += 1;
     }
     AttrValue::Static(source.get(start..*cursor).unwrap_or_default())
@@ -549,9 +577,8 @@ fn read_attr_name(bytes: &[u8], mut cursor: usize, end: usize, framework: Framew
             None if matches!(framework, Framework::Vue) && byte == b']' => {
                 bracket_depth = bracket_depth.saturating_sub(1);
             }
-            None
-                if bracket_depth == 0
-                    && (byte.is_ascii_whitespace() || matches!(byte, b'=' | b'/' | b'>')) =>
+            None if bracket_depth == 0
+                && (byte.is_ascii_whitespace() || matches!(byte, b'=' | b'/' | b'>')) =>
             {
                 break;
             }

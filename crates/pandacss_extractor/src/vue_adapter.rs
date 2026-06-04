@@ -101,9 +101,8 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
                 None if byte == b'\'' || byte == b'"' => name_quote = Some(byte),
                 None if byte == b'[' => bracket_depth += 1,
                 None if byte == b']' => bracket_depth = bracket_depth.saturating_sub(1),
-                None
-                    if bracket_depth == 0
-                        && (byte.is_ascii_whitespace() || matches!(byte, b'=' | b'/' | b'>')) =>
+                None if bracket_depth == 0
+                    && (byte.is_ascii_whitespace() || matches!(byte, b'=' | b'/' | b'>')) =>
                 {
                     break;
                 }
@@ -152,14 +151,20 @@ fn copy_vue_tag_expressions(mask: &mut [u8], source: &str, start: usize, end: us
         };
 
         if let Some(name) = source.get(name_start..name_end)
-            && let Some((expr_start, expr_end)) = vue_expression_range(name, source, value_start, value_end)
+            && let Some((expr_start, expr_end)) =
+                vue_expression_range(name, source, value_start, value_end)
         {
             copy_expression(mask, source, expr_start, expr_end, before, after);
         }
     }
 }
 
-fn vue_expression_range(name: &str, source: &str, start: usize, end: usize) -> Option<(usize, usize)> {
+fn vue_expression_range(
+    name: &str,
+    source: &str,
+    start: usize,
+    end: usize,
+) -> Option<(usize, usize)> {
     if name == "v-for" {
         return v_for_source_range(source, start, end);
     }

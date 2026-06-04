@@ -148,10 +148,10 @@ fn function_param_with_non_literal_type_drops() {
 // --- JSX factory configuration ---
 
 #[test]
-fn default_jsx_factory_is_styled() {
-    // Without overriding `jsx_factories`, only `<styled.div>` should
-    // match member-chain factories. `<Panda.foo>` should NOT match even
-    // though `Panda` is a JSX import name.
+fn jsx_factory_names_are_explicitly_configured() {
+    // The extractor consumes resolved factory names from config; it doesn't
+    // own a hard-coded default. `<Panda.foo>` should NOT match unless
+    // `Panda` is passed in `jsx_factories`.
     let src = indoc! {r"
         import { Panda } from '@panda/jsx';
         const a = <Panda.div color='red' />;
@@ -165,8 +165,7 @@ fn default_jsx_factory_is_styled() {
 
 #[test]
 fn custom_jsx_factory_extracts_member_chain() {
-    // Override `jsx_factories` to include `Panda`. Now `<Panda.div>`
-    // extracts as a factory call.
+    // Passing `Panda` as a resolved JSX factory enables `<Panda.div>`.
     let src = indoc! {r"
         import { Panda } from '@panda/jsx';
         const a = <Panda.div color='red' />;
@@ -185,9 +184,8 @@ fn custom_jsx_factory_extracts_member_chain() {
 
 #[test]
 fn custom_jsx_factory_excludes_default_styled() {
-    // When `jsx_factories` is `Some([...])`, it *replaces* the default,
-    // it doesn't add to it. Confirming so a user who overrides knows the
-    // contract.
+    // Factory names are explicit, not additive. If only `Panda` is passed,
+    // `<styled.div>` does not match.
     let src = indoc! {r"
         import { styled } from '@panda/jsx';
         const a = <styled.div color='red' />;

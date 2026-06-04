@@ -87,10 +87,9 @@ pub struct Matchers {
     pub pattern: Matcher,
     pub jsx: Option<Matcher>,
     pub tokens: Matcher,
-    /// JSX factories that accept member-chain tags like `<styled.div>`.
-    /// `None` falls back to the built-in `["styled"]`; `Some(list)`
-    /// replaces the default — useful when a preset renames the factory
-    /// or adds aliases (`panda.css` alongside `styled`).
+    /// Resolved JSX factories that accept member-chain tags like
+    /// `<styled.div>`. The host/config layer should pass the default
+    /// factory explicitly.
     pub jsx_factories: Option<Vec<String>>,
 }
 
@@ -221,6 +220,11 @@ impl JsxExtractionConfig {
     }
 
     #[must_use]
+    pub fn should_match_tag(&self, tag_name: &str) -> bool {
+        self.is_component_tag(tag_name) || is_uppercase_component_tag(tag_name)
+    }
+
+    #[must_use]
     pub fn should_extract_prop(&self, tag_name: &str, prop_name: &str) -> bool {
         if self.is_blocklisted_prop(tag_name, prop_name) {
             return false;
@@ -295,6 +299,13 @@ impl JsxExtractionConfig {
             .iter()
             .any(|(regex, props)| regex.is_match(tag_name) && props.contains(prop_name))
     }
+}
+
+fn is_uppercase_component_tag(tag_name: &str) -> bool {
+    tag_name
+        .chars()
+        .next()
+        .is_some_and(|character| character.is_ascii_uppercase())
 }
 
 fn regex_set_from_regexes(regexes: &[Regex]) -> Option<RegexSet> {
