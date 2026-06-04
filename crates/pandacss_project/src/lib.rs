@@ -286,7 +286,9 @@ impl Project {
                     &line_index,
                 ));
             }
-            let arg = call.data.into_iter().next().flatten();
+            let mut args = call.data.into_iter();
+            let arg = args.next().flatten();
+            let second_arg = args.next().flatten();
             match (call.category, call.name.as_str()) {
                 (MatchCategory::Css, "css") => {
                     let Some(arg) = arg else {
@@ -349,10 +351,7 @@ impl Project {
                             }
                             Ok(None) => {}
                             Err(diagnostic) => report.diagnostics.push(with_callback_target(
-                                diagnostic,
-                                "pattern",
-                                &call.name,
-                                None,
+                                diagnostic, "pattern", &call.name, None,
                             )),
                         }
                     }
@@ -371,6 +370,36 @@ impl Project {
                         arg,
                         &compiled.conditions,
                     );
+                }
+                (MatchCategory::Jsx, _) => {
+                    let Some(style) =
+                        jsx_factory_static_style(second_arg.as_ref().or(arg.as_ref()))
+                    else {
+                        continue;
+                    };
+                    match style {
+                        JsxFactoryStaticStyle::Style(style) => {
+                            self.process_style_props(&mut encoder, style);
+                        }
+                        JsxFactoryStaticStyle::Recipe(config) => {
+                            let Some(recipe) = Recipe::from_literal(config) else {
+                                continue;
+                            };
+                            encoder.process_atomic_recipe(&recipe);
+                            self.inline_recipes.insert(
+                                RecipeKey {
+                                    file: Arc::clone(&path_key),
+                                    span_start: call.span.start,
+                                },
+                                recipe,
+                            );
+                            self.inline_recipe_spans
+                                .entry(Arc::clone(&path_key))
+                                .or_default()
+                                .push(call.span.start);
+                        }
+                    }
+                    report.jsx_usages += 1;
                 }
                 _ => {}
             }
@@ -410,12 +439,9 @@ impl Project {
                     Ok(Some(style)) => style,
                     Ok(None) => jsx.data,
                     Err(diagnostic) => {
-                        report.diagnostics.push(with_callback_target(
-                            diagnostic,
-                            "pattern",
-                            &jsx.name,
-                            None,
-                        ));
+                        report
+                            .diagnostics
+                            .push(with_callback_target(diagnostic, "pattern", &jsx.name, None));
                         jsx.data
                     }
                 }
@@ -791,6 +817,16 @@ impl Project {
     }
 
     #[must_use]
+    pub fn file_diagnostics(&self) -> Vec<&Diagnostic> {
+        let mut files = self.files.iter().collect::<Vec<_>>();
+        files.sort_by(|(left, _), (right, _)| left.cmp(right));
+        files
+            .into_iter()
+            .flat_map(|(_, entry)| entry.diagnostics.iter())
+            .collect()
+    }
+
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.files.is_empty()
             && self.atoms_cache.is_empty()
@@ -853,6 +889,30 @@ impl Project {
 
 fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
+}
+
+enum JsxFactoryStaticStyle<'a> {
+    Style(&'a Literal),
+    Recipe(&'a Literal),
+}
+
+fn jsx_factory_static_style(config: Option<&Literal>) -> Option<JsxFactoryStaticStyle<'_>> {
+    let config = config?;
+    let Literal::Object(entries) = config else {
+        return None;
+    };
+
+    let has_recipe_config = entries.iter().any(|(key, _)| {
+        matches!(
+            key.as_str(),
+            "base" | "variants" | "defaultVariants" | "compoundVariants"
+        )
+    });
+    Some(if has_recipe_config {
+        JsxFactoryStaticStyle::Recipe(config)
+    } else {
+        JsxFactoryStaticStyle::Style(config)
+    })
 }
 
 /// Scan source files via the platform filesystem engine and hand each
@@ -1014,7 +1074,9 @@ fn dynamic_style_value_diagnostic(
 ) -> Diagnostic {
     let mut diagnostic = Diagnostic::warning(
         diagnostic_codes::PANDA_CALL_UNEXTRACTABLE,
-        format!("{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"),
+        format!(
+            "{category:?} call `{name}` received a dynamic argument, so no static CSS was generated for this call"
+        ),
     );
     diagnostic.span = Some(span);
     diagnostic.location = Some(line_index.locate_range(span.start, span.end));

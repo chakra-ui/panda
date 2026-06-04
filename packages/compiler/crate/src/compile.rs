@@ -187,6 +187,7 @@ pub(crate) fn build_compile_output(
             .diagnostics()
             .iter()
             .cloned()
+            .chain(project.file_diagnostics().into_iter().cloned())
             .chain(static_pattern_diagnostics)
             .chain(output.diagnostics)
             .map(crate::convert::convert_diagnostic)

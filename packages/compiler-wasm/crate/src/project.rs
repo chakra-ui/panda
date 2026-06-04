@@ -446,7 +446,7 @@ impl WasmCompiler {
         let spec = pandacss_config::Spec {
             types,
             property_order,
-            jsx_factory: self.user_config.jsx_factory.clone(),
+            jsx_factory: Some(self.user_config.jsx_factory().to_owned()),
             import_map: self.user_config.import_map.clone(),
         };
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
@@ -506,14 +506,16 @@ impl WasmCompiler {
         let base = self.paths.resolve(&cwd, outdir);
         let mut written = Vec::new();
         for artifact in artifacts {
-            written.extend(self.write_relative_files(
-                &base,
-                artifact
-                    .files
-                    .iter()
-                    .map(|file| (file.path.as_str(), file.code.as_str())),
-                "artifact",
-            )?);
+            written.extend(
+                self.write_relative_files(
+                    &base,
+                    artifact
+                        .files
+                        .iter()
+                        .map(|file| (file.path.as_str(), file.code.as_str())),
+                    "artifact",
+                )?,
+            );
         }
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         written
@@ -867,7 +869,11 @@ impl WasmCompiler {
     }
 
     #[wasm_bindgen(js_name = writeSplitCss)]
-    pub fn write_split_css(&mut self, outdir: &str, cwd: Option<String>) -> Result<JsValue, JsValue> {
+    pub fn write_split_css(
+        &mut self,
+        outdir: &str,
+        cwd: Option<String>,
+    ) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("split_css", method = "wasm_write_split_css").entered();
         let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms();
         let files = build_split_css(&mut self.inner, &self.user_config, &static_pattern_atoms);

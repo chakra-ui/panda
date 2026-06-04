@@ -30,9 +30,8 @@ pub struct Matchers {
     /// extraction. Pass parallel JS maps: `values[path]` → raw value,
     /// `vars[path]` → CSS-var form. Omit to disable.
     pub token_dictionary: Option<TokenDictionary>,
-    /// JSX factory names accepting member-chain tags (`<styled.div>`).
-    /// Omit for the built-in `["styled"]` default; `Some(list)` replaces
-    /// it outright (not additive).
+    /// Resolved JSX factory names accepting member-chain tags
+    /// (`<styled.div>`). Config loaders should pass the default explicitly.
     pub jsx_factories: Option<Vec<String>>,
 }
 

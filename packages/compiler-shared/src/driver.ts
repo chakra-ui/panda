@@ -7,6 +7,7 @@
 
 import { introspect } from './introspect'
 import type { Introspection } from './introspect'
+import { getResolvedConfigOutdir } from './defaults'
 import type {
   CodegenArtifact,
   CodegenDependency,
@@ -230,7 +231,6 @@ export abstract class BaseDriver implements Driver {
   }
 
   protected getConfiguredOutdir(outdir?: string): string {
-    const configuredOutdir = typeof this.config.outdir === 'string' ? this.config.outdir : undefined
-    return outdir ?? configuredOutdir ?? 'styled-system'
+    return outdir ?? getResolvedConfigOutdir(this.config)
   }
 }

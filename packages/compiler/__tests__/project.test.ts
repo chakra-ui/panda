@@ -296,6 +296,26 @@ describe('Compiler', () => {
     expect(output.diagnostics).toEqual([])
   })
 
+  it('one-shot compile() surfaces file parse diagnostics', () => {
+    const output = compile({
+      config: createUserConfig() as unknown as Record<string, unknown>,
+      files: [
+        {
+          path: '/virtual/App.tsx',
+          content: "import { css } from '@panda/css'\ncss({ color: })",
+        },
+      ],
+    })
+
+    expect(output.diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
+      [
+        {
+          "severity": "error",
+        },
+      ]
+    `)
+  })
+
   it('top-level compile() with no config surfaces an error diagnostic', () => {
     const output = compile()
     expect(output.css).toBe('')
@@ -452,6 +472,104 @@ describe('Compiler', () => {
     `)
   })
 
+  it('extracts JSX factory call base styles into CSS', () => {
+    const compiler = createProject({
+      jsxFactory: 'panda',
+    })
+
+    compiler.parseFileSource(
+      '/Notice.tsx',
+      `import { panda } from '@panda/jsx'
+       const Notice = panda('div', {
+         base: {
+           fontFamily: 'Monaspace Neon',
+           background: 'pink',
+           paddingInline: '16px',
+           paddingBlock: '16px',
+         },
+       })`,
+    )
+
+    expect(compiler.compile().css).toMatchInlineSnapshot(`
+      "@layer reset, base, tokens, recipes, utilities;
+      @layer utilities {
+        .background_pink {
+          background: pink;
+        }
+        .padding-inline_16px {
+          padding-inline: 16px;
+        }
+        .padding-block_16px {
+          padding-block: 16px;
+        }
+        .font-family_Monaspace_Neon {
+          font-family: Monaspace Neon;
+        }
+      }
+      "
+    `)
+  })
+
+  it('extracts JSX factory recipe variants into CSS', () => {
+    const compiler = createProject({
+      jsxFactory: 'panda',
+    })
+
+    compiler.parseFileSource(
+      '/Notice.tsx',
+      `import { panda } from '@panda/jsx'
+       const Notice = panda('div', {
+         base: { display: 'inline-flex' },
+         variants: {
+           size: {
+             sm: { fontSize: '12px' },
+             lg: { fontSize: '18px' },
+           },
+           tone: {
+             info: { color: 'blue' },
+             danger: { color: 'red' },
+           },
+         },
+         defaultVariants: {
+           size: 'sm',
+           tone: 'info',
+         },
+         compoundVariants: [
+           {
+             size: 'lg',
+             tone: 'danger',
+             css: { fontWeight: 'bold' },
+           },
+         ],
+       })`,
+    )
+
+    expect(compiler.compile().css).toMatchInlineSnapshot(`
+      "@layer reset, base, tokens, recipes, utilities;
+      @layer utilities {
+        .color_blue {
+          color: blue;
+        }
+        .color_red {
+          color: red;
+        }
+        .display_inline-flex {
+          display: inline-flex;
+        }
+        .font-size_12px {
+          font-size: 12px;
+        }
+        .font-size_18px {
+          font-size: 18px;
+        }
+        .font-weight_bold {
+          font-weight: bold;
+        }
+      }
+      "
+    `)
+  })
+
   it('cross-file folding resolves imported tokens (uses real fs)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-project-test-'))
     try {
@@ -502,8 +620,21 @@ describe('Compiler', () => {
         "cvaCalls": 1,
         "svaCalls": 0,
         "jsxUsages": 1,
-        "diagnostics": [],
-      }
+      "diagnostics": [],
+    }
+  `)
+  })
+
+  it('project compile() includes parse diagnostics from files', () => {
+    const compiler = createProject()
+    compiler.parseFileSource('/bad.tsx', "import { css } from '@panda/css'\ncss({ color: })")
+
+    expect(compiler.compile().diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
+      [
+        {
+          "severity": "error",
+        },
+      ]
     `)
   })
 })

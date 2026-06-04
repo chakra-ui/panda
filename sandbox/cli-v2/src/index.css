@@ -1,4 +1,3 @@
 /* Declaring Panda's cascade layers marks this file as the stylesheet root —
-   @pandacss/vite injects the generated CSS after it. Author your own global
-   CSS here too. */
+   @pandacss/vite injects the generated CSS after it. */
 @layer reset, base, tokens, recipes, utilities;

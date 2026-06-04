@@ -1038,11 +1038,7 @@ fn transform_recipe_entries(
     out
 }
 
-fn with_callback_target(
-    mut diagnostic: Diagnostic,
-    prop: &str,
-    value: Option<&str>,
-) -> Diagnostic {
+fn with_callback_target(mut diagnostic: Diagnostic, prop: &str, value: Option<&str>) -> Diagnostic {
     if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
         return diagnostic;
     }

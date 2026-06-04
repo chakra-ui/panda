@@ -260,3 +260,26 @@ fn stylesheet_snapshots_update_after_project_changes() {
     assert_eq!(snapshots.atoms.len(), 1);
     assert_eq!(snapshots.atoms[0].prop(), "padding");
 }
+
+#[test]
+fn stylesheet_snapshots_include_implicit_uppercase_jsx_styles() {
+    let config = create_config(json!({
+        "jsxFramework": "react"
+    }));
+    let system = pandacss_project::System::new(config.clone()).unwrap();
+    let mut project = pandacss_project::Project::new(system);
+
+    project.parse_file("card.tsx", "const el = <Card color='red' padding='4px' />;");
+
+    let snapshots = project.stylesheet_snapshots(&config);
+    let props = snapshots
+        .atoms
+        .iter()
+        .map(|atom| atom.prop())
+        .collect::<Vec<_>>();
+
+    assert_yaml_snapshot!(props, @r"
+    - color
+    - padding
+    ");
+}

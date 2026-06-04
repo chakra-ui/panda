@@ -66,6 +66,197 @@ fn jsx_style_props_feed_the_encoder() {
 }
 
 #[test]
+fn jsx_factory_call_base_styles_feed_the_encoder() {
+    let mut project = create_project(json!({
+        "jsxFactory": "panda"
+    }));
+
+    let report = project.parse_file(
+        "notice.tsx",
+        indoc! {r"
+            import { panda } from '@panda/jsx';
+
+            const Notice = panda('div', {
+              base: {
+                fontFamily: 'Monaspace Neon',
+                background: 'pink',
+                paddingInline: '16px',
+                paddingBlock: '16px',
+              },
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: background
+      value: pink
+      conditions: []
+    - prop: fontFamily
+      value: Monaspace Neon
+      conditions: []
+    - prop: paddingBlock
+      value: 16px
+      conditions: []
+    - prop: paddingInline
+      value: 16px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_call_plain_style_object_stays_atomic_css() {
+    let mut project = create_project(json!({
+        "jsxFactory": "panda"
+    }));
+
+    let report = project.parse_file(
+        "notice.tsx",
+        indoc! {r"
+            import { panda } from '@panda/jsx';
+
+            const Notice = panda('div', {
+              color: 'red',
+              padding: '4px',
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 2
+    recipeCount: 0
+    slotRecipeCount: 0
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: padding
+      value: 4px
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_call_recipe_variants_feed_the_encoder() {
+    let mut project = create_project(json!({
+        "jsxFactory": "panda"
+    }));
+
+    let report = project.parse_file(
+        "notice.tsx",
+        indoc! {r"
+            import { panda } from '@panda/jsx';
+
+            const Notice = panda('div', {
+              base: {
+                display: 'inline-flex',
+              },
+              variants: {
+                size: {
+                  sm: { fontSize: '12px' },
+                  lg: { fontSize: '18px' },
+                },
+                tone: {
+                  info: { color: 'blue' },
+                  danger: { color: 'red' },
+                },
+              },
+              defaultVariants: {
+                size: 'sm',
+                tone: 'info',
+              },
+              compoundVariants: [
+                {
+                  size: 'lg',
+                  tone: 'danger',
+                  css: { fontWeight: 'bold' },
+                },
+              ],
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 6
+    recipeCount: 1
+    slotRecipeCount: 0
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    - prop: display
+      value: inline-flex
+      conditions: []
+    - prop: fontSize
+      value: 12px
+      conditions: []
+    - prop: fontSize
+      value: 18px
+      conditions: []
+    - prop: fontWeight
+      value: bold
+      conditions: []
+    ");
+}
+
+#[test]
+fn jsx_factory_property_call_variants_without_base_feed_the_encoder() {
+    let mut project = create_project(json!({
+        "jsxFactory": "panda"
+    }));
+
+    let report = project.parse_file(
+        "notice.tsx",
+        indoc! {r"
+            import { panda } from '@panda/jsx';
+
+            const Notice = panda.div({
+              variants: {
+                size: {
+                  sm: { fontSize: '12px' },
+                  lg: { fontSize: '18px' },
+                },
+              },
+              compoundVariants: [
+                {
+                  size: 'lg',
+                  css: { fontWeight: 'bold' },
+                },
+              ],
+            });
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(project.summary(), @r"
+    filesProcessed: 1
+    atomCount: 3
+    recipeCount: 1
+    slotRecipeCount: 0
+    ");
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: fontSize
+      value: 12px
+      conditions: []
+    - prop: fontSize
+      value: 18px
+      conditions: []
+    - prop: fontWeight
+      value: bold
+      conditions: []
+    ");
+}
+
+#[test]
 fn jsx_css_prop_object_feeds_styles() {
     // The `css` prop's object value is treated as nested styles, not a flat
     // `css`-named atom.

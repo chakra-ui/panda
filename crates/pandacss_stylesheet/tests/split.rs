@@ -97,5 +97,9 @@ fn split_css_emits_theme_files() {
     }));
     let files = split_output(&config, "");
 
-    assert!(files.iter().any(|file| file.path == "styles/themes/primary-theme.css"));
+    assert!(
+        files
+            .iter()
+            .any(|file| file.path == "styles/themes/primary-theme.css")
+    );
 }

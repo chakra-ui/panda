@@ -33,6 +33,7 @@ export default {
           size: {
             sm: { padding: '8px 12px', fontSize: '14px' },
             md: { padding: '10px 16px', fontSize: '16px' },
+            lg: { padding: '12px 20px', fontSize: '18px' },
           },
           tone: {
             brand: { backgroundColor: 'brand.500', color: 'white' },

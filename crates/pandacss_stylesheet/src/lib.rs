@@ -322,11 +322,9 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         imports.push("@import './styles/recipes.css';".to_owned());
     }
 
-    for (theme_name, css) in theme_css_entries_from_dictionary(
-        input.config,
-        token_dictionary.as_deref(),
-        options.minify,
-    ) {
+    for (theme_name, css) in
+        theme_css_entries_from_dictionary(input.config, token_dictionary.as_deref(), options.minify)
+    {
         if css.trim().is_empty() {
             continue;
         }
@@ -475,7 +473,7 @@ fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictiona
     let mut utility = Utility::from_config_with_options(
         &config.utilities,
         UtilityOptions {
-            separator: config.separator.clone(),
+            separator: Some(config.separator().to_owned()),
             prefix: config.prefix.class_name().map(str::to_owned),
             tokens: dictionary,
         },

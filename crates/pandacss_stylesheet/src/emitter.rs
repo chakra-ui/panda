@@ -131,21 +131,50 @@ pub fn emit_theme_css(
     theme_name: &str,
     minify: bool,
 ) -> Option<String> {
-    if !config.themes.contains_key(theme_name) {
-        return None;
-    }
+    let theme_root = config.theme_root_selector(theme_name)?;
 
     let theme_condition = theme_condition_name(theme_name);
-    let mut vars = dictionary.css_vars_with_theme_filter(|condition| {
+    let vars = dictionary.css_vars_with_theme_filter(|condition| {
         theme_condition_segment(condition) == Some(theme_condition.as_str())
     });
-    vars.base.clear();
 
-    let utility = Utility::default();
-    let cx = EmitContext::new(config, &utility);
-    let prepared = cx.prepare_token_vars(&vars)?;
+    let mut base = Vec::new();
+    let mut conditions = Vec::new();
+    for group in &vars.conditions {
+        let mut condition_paths = Vec::new();
+        let mut has_theme = false;
+        for segment in group.condition.split(':') {
+            if segment == theme_condition.as_str() {
+                has_theme = true;
+                continue;
+            }
+            if segment.is_empty() || segment == "base" {
+                continue;
+            }
+            condition_paths.push(resolved_condition_paths(config, segment)?);
+        }
+        if !has_theme {
+            continue;
+        }
+        if condition_paths.is_empty() {
+            base.extend_from_slice(&group.vars);
+        } else {
+            conditions.push(PreparedTokenCondition {
+                vars: group.vars.as_slice(),
+                conditions: condition_paths,
+            });
+        }
+    }
+
+    let prepared = PreparedTokenVars {
+        base: base.as_slice(),
+        conditions,
+    };
+    if prepared.base.is_empty() && prepared.conditions.is_empty() {
+        return None;
+    }
     let mut writer = CssWriter::new(minify, 512);
-    EmitContext::serialize_token_vars_with_root(&mut writer, &prepared, "");
+    EmitContext::serialize_token_vars_with_root(&mut writer, &prepared, &theme_root);
     Some(trim_final_newline(writer.finish()))
 }
 
@@ -1128,7 +1157,7 @@ impl<'a> EmitContext<'a> {
         }
 
         if !declarations.is_empty() {
-            writer.rule(css_var_root(self.config), |writer| {
+            writer.rule(self.config.css_var_root(), |writer| {
                 for declaration in declarations {
                     writer.declaration(declaration.prop, declaration.value, false);
                 }
@@ -1166,7 +1195,7 @@ impl<'a> EmitContext<'a> {
     }
 
     fn serialize_token_vars(&self, writer: &mut CssWriter, vars: &PreparedTokenVars<'_>) {
-        Self::serialize_token_vars_with_root(writer, vars, css_var_root(self.config));
+        Self::serialize_token_vars_with_root(writer, vars, self.config.css_var_root());
     }
 
     fn serialize_token_vars_with_root(
@@ -1971,12 +2000,4 @@ fn global_var_property<'a>(
         inherits,
         initial_value,
     })
-}
-
-fn css_var_root(config: &UserConfig) -> &str {
-    if config.css_var_root.is_empty() {
-        ":where(:root, :host)"
-    } else {
-        config.css_var_root.as_str()
-    }
 }
