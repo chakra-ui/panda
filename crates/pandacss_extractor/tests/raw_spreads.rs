@@ -97,15 +97,17 @@ fn css_raw_identifier_values_fold_inside_nested_selectors() {
 }
 
 #[test]
-fn pattern_raw_spread_inside_nested_selector_matches_issue_3278() {
+fn pattern_raw_result_spread_inside_nested_selector_matches_issue_3278() {
     let src = indoc! {r#"
         import { css } from 'styled-system/css'
         import { stack } from 'styled-system/patterns';
 
+        const list = stack.raw({ gap: "0.8rem" });
+
         const mainCss = css({
           bg: "blue.100",
           "& ul": {
-            ...stack.raw({ gap: "0.8rem" }),
+            ...list,
           },
           "& li": {
             bg: "blue.200",
@@ -125,16 +127,16 @@ fn pattern_raw_spread_inside_nested_selector_matches_issue_3278() {
           "& li":
             bg: blue.200
       span:
-        start: 105
-        end: 222
+        start: 153
+        end: 246
     - category: pattern
       name: stack
       alias: stack
       data:
         - gap: 0.8rem
       span:
-        start: 148
-        end: 176
+        start: 99
+        end: 127
     "#);
 }
 

@@ -458,6 +458,7 @@ fn parse_expression_literal(
             context.config.cross_file.as_ref(),
             Some(std::path::PathBuf::from(context.path)),
             None,
+            None,
         )
     });
     for stmt in parser_return.program.body.iter().rev() {

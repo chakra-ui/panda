@@ -31,6 +31,10 @@ use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
 use crate::{ImportSpecifierKind, Literal, TokenRef};
 
+pub(crate) type PatternRawTransformFn<'a> =
+    dyn FnMut(&str, &Literal) -> Result<Option<Literal>, crate::Diagnostic> + 'a;
+pub(crate) type PatternRawTransformCell<'a> = RefCell<&'a mut PatternRawTransformFn<'a>>;
+
 /// Per-file symbol/scope index plus a memo of resolved literal values.
 ///
 /// Also recognizes Panda `token()` / `token.var()` calls and resolves them
@@ -46,8 +50,9 @@ pub(crate) struct Resolver<'a> {
     cross_file: Option<&'a dyn CrossFileLookup>,
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
-    deprecations: RefCell<Vec<crate::Diagnostic>>,
+    diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
+    pattern_raw_transform: Option<&'a PatternRawTransformCell<'a>>,
 }
 
 struct TokenCallResolution {
@@ -73,6 +78,7 @@ impl<'a> Resolver<'a> {
         cross_file: Option<&'a CrossFileResolver>,
         source_path: Option<PathBuf>,
         line_index: Option<&'a crate::LineIndex<'a>>,
+        pattern_raw_transform: Option<&'a PatternRawTransformCell<'a>>,
     ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -84,8 +90,9 @@ impl<'a> Resolver<'a> {
             cross_file: cross_file.map(CrossFileResolver::as_lookup),
             source_path,
             line_index,
-            deprecations: RefCell::default(),
+            diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
+            pattern_raw_transform,
         }
     }
 
@@ -97,6 +104,7 @@ impl<'a> Resolver<'a> {
         matchers: Option<&'a Matchers>,
         source_path: Option<PathBuf>,
         line_index: Option<&'a crate::LineIndex<'a>>,
+        pattern_raw_transform: Option<&'a PatternRawTransformCell<'a>>,
     ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -108,13 +116,14 @@ impl<'a> Resolver<'a> {
             cross_file,
             source_path,
             line_index,
-            deprecations: RefCell::default(),
+            diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
+            pattern_raw_transform,
         }
     }
 
-    pub(crate) fn take_deprecations(&self) -> Vec<crate::Diagnostic> {
-        std::mem::take(&mut self.deprecations.borrow_mut())
+    pub(crate) fn take_diagnostics(&self) -> Vec<crate::Diagnostic> {
+        std::mem::take(&mut self.diagnostics.borrow_mut())
     }
 
     /// Token paths resolved from `token()` / `token.var()` calls, with spans.
@@ -253,7 +262,7 @@ impl<'a> Resolver<'a> {
         );
         diagnostic.span = Some(span);
         diagnostic.location = location;
-        self.deprecations.borrow_mut().push(diagnostic);
+        self.diagnostics.borrow_mut().push(diagnostic);
     }
 
     pub(crate) fn resolve_identifier(&self, ident: &IdentifierReference<'_>) -> Option<Literal> {
@@ -365,11 +374,12 @@ impl<'a> Resolver<'a> {
             return None;
         }
 
-        match matched.kind {
+        let name = match matched.kind {
             ImportSpecifierKind::Named => {
                 if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
                     return None;
                 }
+                matched.name.as_str()
             }
             ImportSpecifierKind::Namespace => {
                 let (&property, raw_tail) = path.split_first()?;
@@ -379,16 +389,35 @@ impl<'a> Resolver<'a> {
                 if !matchers.category_accepts_name(matched.category, property) {
                     return None;
                 }
+                property
             }
             ImportSpecifierKind::Default => {
                 return None;
             }
-        }
+        };
 
-        call.arguments
+        let style = call
+            .arguments
             .first()?
             .as_expression()
-            .and_then(|expr| expression_to_literal(expr, Some(self)))
+            .and_then(|expr| expression_to_literal(expr, Some(self)))?;
+
+        if matched.category != MatchCategory::Pattern {
+            return Some(style);
+        }
+
+        let Some(transform) = self.pattern_raw_transform else {
+            return Some(style);
+        };
+
+        match (transform.borrow_mut())(name, &style) {
+            Ok(Some(transformed)) => Some(transformed),
+            Ok(None) => None,
+            Err(diagnostic) => {
+                self.diagnostics.borrow_mut().push(diagnostic);
+                None
+            }
+        }
     }
 
     fn resolve_declarator(

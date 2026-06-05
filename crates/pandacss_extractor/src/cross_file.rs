@@ -175,6 +175,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             matchers,
             Some(path.to_path_buf()),
             None,
+            None,
         );
 
         // Oxc returns a partial AST on parse errors; walk what we get,

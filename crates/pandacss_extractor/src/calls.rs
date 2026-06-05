@@ -81,6 +81,7 @@ pub fn extract_calls(
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
         None,
+        None,
     );
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     let line_index = crate::LineIndex::new(source);

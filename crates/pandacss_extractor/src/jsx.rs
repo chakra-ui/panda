@@ -81,6 +81,7 @@ pub fn extract_jsx(
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
         None,
+        None,
     );
     let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
     let mut jsx = collect_jsx(&parser_return.program, &ctx);
