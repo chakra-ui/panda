@@ -117,6 +117,14 @@ fn pattern_raw_result_spread_inside_nested_selector_matches_issue_3278() {
     let calls = run_styled_system(src).calls;
 
     assert_yaml_snapshot!(calls, @r#"
+    - category: pattern
+      name: stack
+      alias: stack
+      data:
+        - gap: 0.8rem
+      span:
+        start: 102
+        end: 130
     - category: css
       name: css
       alias: css
@@ -127,16 +135,8 @@ fn pattern_raw_result_spread_inside_nested_selector_matches_issue_3278() {
           "& li":
             bg: blue.200
       span:
-        start: 153
-        end: 246
-    - category: pattern
-      name: stack
-      alias: stack
-      data:
-        - gap: 0.8rem
-      span:
-        start: 99
-        end: 127
+        start: 149
+        end: 242
     "#);
 }
 
