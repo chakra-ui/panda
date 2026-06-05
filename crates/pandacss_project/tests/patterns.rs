@@ -137,7 +137,7 @@ fn pattern_raw_result_spread_uses_transformed_styles_in_nested_css() {
 
     project.parse_file_with(
         "fixture.ts",
-        indoc! {r#"
+        indoc! {r"
             import { css } from '@panda/css';
             import { stack } from '@panda/patterns';
 
@@ -151,7 +151,7 @@ fn pattern_raw_result_spread_uses_transformed_styles_in_nested_css() {
                 bg: 'blue.200',
               },
             });
-        "#},
+        "},
         ParseTransforms {
             pattern: Some(&mut transform),
             utility: None,
