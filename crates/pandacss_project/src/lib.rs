@@ -265,10 +265,17 @@ impl Project {
             .collect::<Vec<_>>();
         let mut diagnostics = result.diagnostics;
         let line_index = LineIndex::new(source);
-        if let Some(utility) = self.config.utility.as_ref()
-            && !utility.deprecated_props().is_empty()
-        {
-            push_deprecated_utility_diagnostics(
+        if let Some(utility) = self.config.utility.as_ref() {
+            if !utility.deprecated_props().is_empty() {
+                push_deprecated_utility_diagnostics(
+                    &result.calls,
+                    &result.jsx,
+                    utility,
+                    &line_index,
+                    &mut diagnostics,
+                );
+            }
+            push_invalid_color_opacity_modifier_diagnostics(
                 &result.calls,
                 &result.jsx,
                 utility,
@@ -1072,6 +1079,84 @@ fn deprecated_utility_diagnostic(
     let mut diagnostic = Diagnostic::warning(
         diagnostic_codes::DEPRECATED_UTILITY_USED,
         format!("utility \"{prop}\" is deprecated"),
+    );
+    diagnostic.span = Some(span);
+    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    diagnostic
+}
+
+fn push_invalid_color_opacity_modifier_diagnostics(
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    utility: &Utility,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut values = Vec::new();
+    for call in calls {
+        values.clear();
+        for lit in call.data.iter().flatten() {
+            collect_invalid_color_opacity_modifiers(lit, utility, &mut values);
+        }
+        for value in values.drain(..) {
+            out.push(invalid_color_opacity_modifier_diagnostic(
+                &value,
+                call.span,
+                line_index,
+            ));
+        }
+    }
+    for entry in jsx {
+        values.clear();
+        collect_invalid_color_opacity_modifiers(&entry.data, utility, &mut values);
+        for value in values.drain(..) {
+            out.push(invalid_color_opacity_modifier_diagnostic(
+                &value,
+                entry.span,
+                line_index,
+            ));
+        }
+    }
+}
+
+fn collect_invalid_color_opacity_modifiers(
+    value: &Literal,
+    utility: &Utility,
+    out: &mut Vec<String>,
+) {
+    match value {
+        Literal::Object(entries) => {
+            for (key, child) in entries {
+                let canonical = utility.resolve_shorthand(key);
+                if utility.token_category(canonical) == Some("colors")
+                    && let Literal::String(value) = child
+                    && utility.is_invalid_color_opacity_modifier(value)
+                    && !out.contains(value)
+                {
+                    out.push(value.clone());
+                }
+                collect_invalid_color_opacity_modifiers(child, utility, out);
+            }
+        }
+        Literal::Array(items) | Literal::Conditional(items) => {
+            for item in items {
+                collect_invalid_color_opacity_modifiers(item, utility, out);
+            }
+        }
+        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+    }
+}
+
+fn invalid_color_opacity_modifier_diagnostic(
+    value: &str,
+    span: pandacss_extractor::Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    let mut diagnostic = Diagnostic::warning(
+        diagnostic_codes::INVALID_COLOR_OPACITY_MODIFIER,
+        format!(
+            "Color value `{value}` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`)"
+        ),
     );
     diagnostic.span = Some(span);
     diagnostic.location = Some(line_index.locate_range(span.start, span.end));

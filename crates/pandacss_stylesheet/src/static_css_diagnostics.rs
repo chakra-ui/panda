@@ -35,6 +35,20 @@ pub(super) fn diagnose_token_refs(
         return;
     };
     for reference in token_like_references(value) {
+        if let Some((path, opacity)) = reference.split_once('/')
+            && path.starts_with("colors.")
+            && let Some(dictionary) = dictionary
+            && dictionary.token(path).is_some()
+        {
+            if !dictionary.is_valid_opacity_modifier(opacity) {
+                diagnostics.push(Diagnostic::warning(
+                    diagnostic_codes::INVALID_COLOR_OPACITY_MODIFIER,
+                    invalid_color_opacity_modifier_message(reference),
+                ));
+            }
+            continue;
+        }
+
         // Opacity modifiers are not part of the token path. `{colors.red.300/40}`
         // should validate against `colors.red.300`.
         let path = reference
@@ -48,6 +62,12 @@ pub(super) fn diagnose_token_refs(
             format!("staticCss.css `{property}` references unknown token `{path}`"),
         ));
     }
+}
+
+fn invalid_color_opacity_modifier_message(value: &str) -> String {
+    format!(
+        "Color value `{value}` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`)"
+    )
 }
 
 pub(super) fn diagnose_recipes(config: &UserConfig, diagnostics: &mut Vec<Diagnostic>) {

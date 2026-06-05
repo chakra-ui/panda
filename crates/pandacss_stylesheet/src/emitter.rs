@@ -58,6 +58,7 @@ pub fn emit<'a>(
     }
     if has_base_layer(config) {
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
+            write_made_with_panda_marker(writer);
             cx.write_collected_styles(writer, &config.global_css);
             cx.serialize_global_vars(writer);
             serialize_global_fontface(writer, &config.global_fontface);
@@ -543,23 +544,16 @@ fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
         .any(|group| !group.entries.is_empty())
 }
 
-fn has_base_layer(config: &UserConfig) -> bool {
-    as_non_empty_object(&config.global_css).is_some()
-        || has_global_vars(&config.global_vars)
-        || as_non_empty_object(&config.global_fontface).is_some()
-        || as_non_empty_object(&config.global_position_try).is_some()
+fn has_base_layer(_config: &UserConfig) -> bool {
+    // PORT NOTE: v1 `generateGlobalCss` always emits the Panda marker in base.
+    true
 }
 
-fn has_global_vars(value: &Value) -> bool {
-    let Value::Object(entries) = value else {
-        return false;
-    };
-
-    entries.iter().any(|(key, value)| match value {
-        Value::String(_) => true,
-        Value::Object(config) => global_var_property(key, config).is_some(),
-        Value::Null | Value::Bool(_) | Value::Number(_) | Value::Array(_) => false,
-    })
+/// PORT NOTE: mirrors `packages/generator/src/artifacts/css/global-css.ts`.
+fn write_made_with_panda_marker(writer: &mut CssWriter) {
+    writer.rule(":root", |writer| {
+        writer.declaration("--made-with-panda", "'🐼'", false);
+    });
 }
 
 fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {

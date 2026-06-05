@@ -264,18 +264,23 @@ fn theme_conditions_emit_self_or_descendant_where_selector() {
     );
 
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-  }
-}
-@layer utilities {
-  .themePrimary\:c_red:where([data-panda-theme=primary], [data-panda-theme=primary] *) {
-    color: var(--colors-red);
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+      }
+    }
+    @layer utilities {
+      .themePrimary\:c_red:where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+        color: var(--colors-red);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -859,5 +864,5 @@ fn minified_output_preserves_significant_spaces() {
             ..StylesheetOptions::default()
         },
     );
-    assert_snapshot!(css, @r#"@layer reset, base, tokens, recipes, utilities;@layer utilities{.m_1px_2px{margin:1px 2px;}.content_\"a__b\"{content:"a  b";}.descendantHover\:m_3px_4px :hover{margin:3px 4px;}}"#);
+    assert_snapshot!(css, @r#"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}}@layer utilities{.m_1px_2px{margin:1px 2px;}.content_\"a__b\"{content:"a  b";}.descendantHover\:m_3px_4px :hover{margin:3px 4px;}}"#);
 }

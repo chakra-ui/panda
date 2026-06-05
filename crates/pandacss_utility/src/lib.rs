@@ -441,6 +441,15 @@ impl Utility {
         }
     }
 
+    /// Whether a color-category value uses an opacity modifier that cannot be
+    /// resolved to `color-mix`.
+    #[must_use]
+    pub fn is_invalid_color_opacity_modifier(&self, value: &str) -> bool {
+        value.contains('/')
+            && self.tokens.is_some()
+            && self.color_mix_category_value(value).is_none()
+    }
+
     fn default_style(&self, prop: &str, value: &Literal) -> Literal {
         // Composition-style values (Object/Array/Conditional from a values
         // map) are already the final style shape — pass through with token

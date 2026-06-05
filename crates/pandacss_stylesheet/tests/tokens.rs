@@ -50,6 +50,11 @@ fn emits_primitive_and_semantic_token_vars() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
@@ -88,21 +93,26 @@ fn optimize_tokens_keeps_only_referenced_vars() {
 
     assert!(css.contains("--colors-red: #f00;"));
     assert!(!css.contains("--colors-blue: #00f;"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-  }
-}
-@layer utilities {
-  @layer compositions {
-    .textStyle_body {
-      color: var(--colors-red);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+      }
+    }
+    @layer utilities {
+      @layer compositions {
+        .textStyle_body {
+          color: var(--colors-red);
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -150,6 +160,11 @@ fn optimize_tokens_keeps_referenced_semantic_conditions() {
     assert!(!css.contains("--colors-green: #0f0;"));
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
@@ -201,18 +216,23 @@ fn optimize_tokens_keeps_static_css_token_references() {
     assert!(css.contains("--colors-red: #f00;"));
     assert!(!css.contains("--colors-blue: #00f;"));
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-  }
-}
-@layer utilities {
-  .c_\{colors\.red\} {
-    color: var(--colors-red);
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+      }
+    }
+    @layer utilities {
+      .c_\{colors\.red\} {
+        color: var(--colors-red);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -238,6 +258,11 @@ fn optimize_tokens_keeps_custom_property_direct_token_path_references() {
     assert!(!css.contains("--colors-blue-300: #00f;"));
     assert_snapshot!(css, @r"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red-300: #f00;
@@ -277,6 +302,11 @@ fn optimize_tokens_keeps_custom_property_curly_token_modifier_references() {
     assert!(!css.contains("--colors-blue-300: #00f;"));
     assert_snapshot!(css, @r"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red-300: #f00;
@@ -314,14 +344,19 @@ fn optimize_tokens_keeps_runtime_token_var_references_without_atoms() {
 
     assert!(css.contains("--colors-red: #f00;"));
     assert!(!css.contains("--colors-blue: #00f;"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -362,6 +397,11 @@ fn optimize_tokens_keeps_runtime_semantic_token_references_without_atoms() {
     assert!(!css.contains("--colors-green: #0f0;"));
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
@@ -396,7 +436,14 @@ fn optimize_tokens_does_not_keep_primitive_runtime_token_value_references() {
 
     assert!(!css.contains("--colors-red: #f00;"));
     assert!(!css.contains("--colors-blue: #00f;"));
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]
@@ -433,22 +480,27 @@ fn optimize_tokens_combines_runtime_and_stylesheet_references() {
     assert!(css.contains("--colors-blue: #00f;"));
     assert!(!css.contains("--colors-green: #0f0;"));
     assert!(!css.contains("--spacing-2: 0.5rem;"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-    --colors-blue: #00f;
-  }
-}
-@layer utilities {
-  @layer compositions {
-    .textStyle_body {
-      color: var(--colors-blue);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+        --colors-blue: #00f;
+      }
+    }
+    @layer utilities {
+      @layer compositions {
+        .textStyle_body {
+          color: var(--colors-blue);
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -483,14 +535,19 @@ fn optimize_tokens_runtime_refs_update_when_file_is_refreshed() {
     let blue_css = compile_project_css(&mut project, &config);
     assert!(!blue_css.contains("--colors-red: #f00;"));
     assert!(blue_css.contains("--colors-blue: #00f;"));
-    assert_snapshot!(blue_css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-blue: #00f;
-  }
-}
-");
+    assert_snapshot!(blue_css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-blue: #00f;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -526,14 +583,19 @@ fn optimize_tokens_runtime_refs_update_when_file_is_removed() {
     let blue_css = compile_project_css(&mut project, &config);
     assert!(!blue_css.contains("--colors-red: #f00;"));
     assert!(blue_css.contains("--colors-blue: #00f;"));
-    assert_snapshot!(blue_css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-blue: #00f;
-  }
-}
-");
+    assert_snapshot!(blue_css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-blue: #00f;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -568,6 +630,11 @@ fn emits_semantic_token_conditions() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-gray-100: #f4f4f5;
@@ -619,6 +686,11 @@ fn block_conditions_emit_each_semantic_token_slot_path() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
@@ -670,6 +742,11 @@ fn emits_nested_semantic_token_conditions() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
@@ -719,18 +796,21 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
         &StylesheetOptions::default(),
     );
     let css = output.get_layer_css(&[StylesheetLayer::Base, StylesheetLayer::Tokens]);
-    assert_snapshot!(css, @r"
-@layer base {
-  :where(:root, :host) {
-    --brand: red;
-  }
-}
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      :where(:root, :host) {
+        --brand: red;
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -804,9 +884,14 @@ fn skips_unknown_semantic_token_conditions() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]
@@ -878,6 +963,11 @@ fn static_css_themes_emit_selected_theme_token_vars() {
     assert!(!css.contains("[data-panda-theme=primary-legacy]"));
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-text: blue;
@@ -991,7 +1081,7 @@ fn minified_output_preserves_token_var_declarations() {
             ..StylesheetOptions::default()
         },
     );
-    assert_snapshot!(css, @r"@layer reset, base, tokens, recipes, utilities;@layer tokens{:where(:root, :host){--colors-red:#f00;}}");
+    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}}@layer tokens{:where(:root, :host){--colors-red:#f00;}}");
 }
 
 #[test]
@@ -1010,17 +1100,20 @@ fn css_var_root_override_applies_to_tokens_and_global_vars() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer base {
-  :where(html) {
-    --brand: red;
-  }
-}
-@layer tokens {
-  :where(html) {
-    --colors-red: #f00;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      :where(html) {
+        --brand: red;
+      }
+    }
+    @layer tokens {
+      :where(html) {
+        --colors-red: #f00;
+      }
+    }
+    ");
 }

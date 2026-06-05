@@ -568,6 +568,15 @@ impl TokenDictionary {
     }
 
     #[must_use]
+    pub fn is_valid_opacity_modifier(&self, raw_opacity: &str) -> bool {
+        !raw_opacity.is_empty()
+            && (raw_opacity.parse::<f64>().is_ok()
+                || self
+                    .get_str(&format!("opacity.{raw_opacity}"), None)
+                    .is_some())
+    }
+
+    #[must_use]
     pub fn color_mix_str(&self, value: &str) -> Option<String> {
         let (color_path, raw_opacity) = value.split_once('/')?;
         if color_path.is_empty() || raw_opacity.is_empty() {
@@ -575,8 +584,7 @@ impl TokenDictionary {
         }
 
         let color = self.get_var_str(color_path, None).unwrap_or(color_path);
-        let opacity_path = format!("opacity.{raw_opacity}");
-        let opacity = if let Some(opacity) = self.get_str(&opacity_path, None) {
+        let opacity = if let Some(opacity) = self.get_str(&format!("opacity.{raw_opacity}"), None) {
             let opacity = opacity.parse::<f64>().ok()?;
             let mut out = number_to_js_string(opacity * 100.0);
             out.push('%');

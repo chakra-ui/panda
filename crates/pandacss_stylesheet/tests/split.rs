@@ -38,9 +38,17 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     assert_snapshot!(render(&files), @"
     === styles.css ===
     @layer reset, base, tokens, recipes, utilities;
+    @import './styles/global.css';
     @import './styles/tokens.css';
     @import './styles/utilities.css';
     @import './styles/recipes.css';
+
+    === styles/global.css ===
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
 
     === styles/tokens.css ===
     @layer tokens {

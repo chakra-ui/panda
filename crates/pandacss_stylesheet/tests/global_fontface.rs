@@ -17,6 +17,9 @@ fn emits_global_fontface_into_base_layer() {
     let base = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(base, @"
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       @font-face {
         font-family: Inter;
         src: url('/fonts/inter.woff2') format('woff2');
@@ -40,6 +43,9 @@ fn emits_one_block_per_rule_for_fontface_arrays() {
     let base = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(base, @"
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       @font-face {
         font-family: Inter;
         src: url('/fonts/inter-400.woff2');
@@ -66,6 +72,9 @@ fn joins_multi_source_fontface_src_arrays() {
     let base = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(base, @"
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       @font-face {
         font-family: Inter;
         src: url('/fonts/inter.woff2') format('woff2'),url('/fonts/inter.woff') format('woff');
@@ -87,6 +96,9 @@ fn emits_global_position_try_with_dashed_ident() {
     let base = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(base, @"
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       @position-try --flip {
         position-anchor: --trigger;
         top: anchor(bottom);
@@ -107,6 +119,9 @@ fn preserves_existing_double_dash_position_try_name() {
     let base = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(base, @"
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       @position-try --custom {
         top: anchor(bottom);
       }

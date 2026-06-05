@@ -117,6 +117,11 @@ fn output_config_recipe() {
     );
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer tokens {
       :where(:root, :host) {
         --colors-blue-500: #3b82f6;

@@ -16,19 +16,24 @@ fn emits_single_keyframe_block_in_tokens_layer() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-    to {
-      transform: rotate(360deg);
+    @layer tokens {
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -49,30 +54,35 @@ fn emits_multiple_keyframes_with_percentage_selectors() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  @keyframes pulse {
-    0% {
-      opacity: 1;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-    50% {
-      opacity: 0.5;
+    @layer tokens {
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
     }
-    100% {
-      opacity: 1;
-    }
-  }
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -98,21 +108,26 @@ fn optimize_keyframes_keeps_only_referenced_blocks() {
 
     assert!(css.contains("@keyframes spin"));
     assert!(!css.contains("@keyframes fade"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-@layer utilities {
-  .animation-name_spin {
-    animation-name: spin;
-  }
-}
-");
+    @layer tokens {
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+    @layer utilities {
+      .animation-name_spin {
+        animation-name: spin;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -147,21 +162,26 @@ fn optimize_keyframes_keeps_static_css_references() {
 
     assert!(css.contains("@keyframes spin"));
     assert!(!css.contains("@keyframes fade"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-@layer utilities {
-  .animationName_spin {
-    animation-name: spin;
-  }
-}
-");
+    @layer tokens {
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+    @layer utilities {
+      .animationName_spin {
+        animation-name: spin;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -179,19 +199,24 @@ fn emits_keyframes_alongside_token_vars_in_same_layer() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-  }
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -202,7 +227,14 @@ fn skips_tokens_layer_when_keyframes_object_is_empty() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]
@@ -224,21 +256,26 @@ fn keyframe_with_multiple_declarations_per_selector() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  @keyframes slideIn {
-    from {
-      transform: translateX(-100%);
-      opacity: 0;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-    to {
-      transform: translateX(0);
-      opacity: 1;
+    @layer tokens {
+      @keyframes slideIn {
+        from {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -260,5 +297,5 @@ fn minified_output_preserves_keyframe_blocks() {
             ..StylesheetOptions::default()
         },
     );
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;@layer tokens{@keyframes spin{to{transform:rotate(360deg);}}}");
+    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}}@layer tokens{@keyframes spin{to{transform:rotate(360deg);}}}");
 }

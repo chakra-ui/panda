@@ -80,6 +80,9 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
     assert_snapshot!(css, @r"
     @layer reset, base, tokens, recipes, utilities;
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       body {
         margin: 0;
         color: var(--colors-red-500);

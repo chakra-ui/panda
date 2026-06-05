@@ -250,8 +250,13 @@ fn reports_empty_wildcards_without_rejecting_static_css_themes() {
         .map(|diagnostic| diagnostic.code.as_str())
         .collect::<Vec<_>>();
 
-    assert_snapshot!(output.css, @r"
+    assert_snapshot!(output.css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer utilities {
       .m_1 {
         margin: 1;
@@ -292,7 +297,8 @@ fn reports_static_css_authoring_diagnostics() {
                     "properties": {
                         "colr": "red",
                         "--valid-token": "colors.red.300",
-                        "--invalid-token": "{colors.blue.300/40}"
+                        "--invalid-token": "{colors.blue.300/40}",
+                        "--invalid-opacity": "{colors.red.300/nope}"
                     }
                 }
             ],
@@ -321,6 +327,7 @@ fn reports_static_css_authoring_diagnostics() {
     static_css_recipe_variant_value_unknown
     static_css_property_unknown
     static_css_token_reference_unknown
+    invalid_color_opacity_modifier
     ");
 }
 
@@ -557,25 +564,30 @@ fn expands_static_css_slot_recipe_wildcard() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer recipes.slots {
-  @layer base {
-    .checkbox__control {
-      display: inline-flex;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-    .checkbox__root {
-      display: flex;
+    @layer recipes.slots {
+      @layer base {
+        .checkbox__control {
+          display: inline-flex;
+        }
+        .checkbox__root {
+          display: flex;
+        }
+      }
+      .checkbox__control--size_sm {
+        padding: 2px;
+      }
+      .checkbox__root--size_sm {
+        padding: 4px;
+      }
     }
-  }
-  .checkbox__control--size_sm {
-    padding: 2px;
-  }
-  .checkbox__root--size_sm {
-    padding: 4px;
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -613,20 +625,25 @@ fn expands_static_recipe_compound_variant_css() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  .button--size_sm {
-    padding: 8px;
-  }
-  .button--variant_outline {
-    border-width: 1px;
-  }
-}
-@layer utilities {
-  .bw_2px {
-    border-width: 2px;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer recipes {
+      .button--size_sm {
+        padding: 8px;
+      }
+      .button--variant_outline {
+        border-width: 1px;
+      }
+    }
+    @layer utilities {
+      .bw_2px {
+        border-width: 2px;
+      }
+    }
+    ");
 }

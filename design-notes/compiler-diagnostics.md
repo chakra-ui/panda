@@ -26,6 +26,7 @@ Current codes:
 - `config_token_unknown_reference`
 - `deprecated_token_used`
 - `deprecated_utility_used`
+- `invalid_color_opacity_modifier`
 - `js_parse_error`
 - `layer_name_collision`
 - `panda_call_unextractable`

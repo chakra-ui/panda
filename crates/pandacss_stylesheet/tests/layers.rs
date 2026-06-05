@@ -7,7 +7,14 @@ use crate::common::{compile_css, compile_output, config};
 fn default_layer_names_emit_unchanged_preamble() {
     let config = config(serde_json::json!({}));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]

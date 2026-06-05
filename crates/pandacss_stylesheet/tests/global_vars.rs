@@ -16,19 +16,22 @@ fn emits_global_vars_from_serialized_config() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer base {
-  :where(:root, :host) {
-    --random-color: red;
-  }
-  @property --button-color {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: blue;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      :where(:root, :host) {
+        --random-color: red;
+      }
+      @property --button-color {
+        syntax: '<color>';
+        inherits: false;
+        initial-value: blue;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -39,14 +42,17 @@ fn emits_global_vars_without_global_css() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer base {
-  :where(:root, :host) {
-    --random-color: red;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      :where(:root, :host) {
+        --random-color: red;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -66,17 +72,20 @@ fn emits_global_css_before_global_vars_in_base_layer() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer base {
-  body {
-    color: red;
-  }
-  :where(:root, :host) {
-    --random-color: red;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      body {
+        color: red;
+      }
+      :where(:root, :host) {
+        --random-color: red;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -90,15 +99,18 @@ fn global_vars_property_allows_missing_initial_value_for_universal_syntax() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer base {
-  @property --anything {
-    syntax: '*';
-    inherits: false;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      @property --anything {
+        syntax: '*';
+        inherits: false;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -112,9 +124,14 @@ fn global_vars_property_ignores_missing_initial_value_for_typed_syntax() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]
@@ -137,5 +154,5 @@ fn minified_output_preserves_global_vars_syntax() {
             ..StylesheetOptions::default()
         },
     );
-    assert_snapshot!(css, @r"@layer reset, base, tokens, recipes, utilities;@layer base{:where(:root, :host){--random-color:red;}@property --button-color{syntax:'<color>';inherits:false;initial-value:blue;}}");
+    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}:where(:root, :host){--random-color:red;}@property --button-color{syntax:'<color>';inherits:false;initial-value:blue;}}");
 }

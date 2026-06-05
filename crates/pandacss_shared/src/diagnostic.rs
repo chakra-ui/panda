@@ -15,6 +15,7 @@ pub mod codes {
     pub const CONFIG_TOKEN_UNKNOWN_REFERENCE: &str = "config_token_unknown_reference";
     pub const DEPRECATED_TOKEN_USED: &str = "deprecated_token_used";
     pub const DEPRECATED_UTILITY_USED: &str = "deprecated_utility_used";
+    pub const INVALID_COLOR_OPACITY_MODIFIER: &str = "invalid_color_opacity_modifier";
     pub const JS_PARSE_ERROR: &str = "js_parse_error";
     pub const LAYER_NAME_COLLISION: &str = "layer_name_collision";
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";

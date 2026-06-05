@@ -7,14 +7,28 @@ use crate::common::{compile_css, compile_layer_css, compile_output, config};
 fn preflight_disabled_by_default() {
     let config = config(serde_json::json!({}));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]
 fn preflight_false_emits_no_reset_layer() {
     let config = config(serde_json::json!({ "preflight": false }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]

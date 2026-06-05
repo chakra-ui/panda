@@ -1,7 +1,47 @@
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetLayer;
 
-use crate::common::{compile_layer_css, config};
+use crate::common::{compile_css, compile_layer_css, config};
+
+#[test]
+fn emits_made_with_panda_marker_in_base_layer() {
+    let config = config(serde_json::json!({}));
+    let css = compile_css(&config, "");
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+");
+}
+
+#[test]
+fn emits_made_with_panda_marker_before_user_global_css() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c" }
+        },
+        "globalCss": {
+            "body": {
+                "color": "red"
+            }
+        }
+    }));
+    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  body {
+    color: red;
+  }
+}
+");
+}
 
 #[test]
 fn emits_global_css_from_serialized_config() {
@@ -41,6 +81,9 @@ fn emits_global_css_from_serialized_config() {
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
 @layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
   html, body {
     padding: 0;
     color: var(--colors-red-500);
@@ -107,6 +150,9 @@ fn emits_global_css_direct_nesting_and_conditions() {
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
     @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
       .btn {
         width: 40px;
       }
@@ -179,31 +225,34 @@ fn emits_global_css_recursive_nesting_and_important() {
         }
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
-    assert_snapshot!(css, @r"
-@layer base {
-  html {
-    scroll-padding-top: 80px;
-  }
-  html.dragging-ew {
-    user-select: none !important;
-  }
-  html.dragging-ew * {
-    cursor: ew-resize !important;
-  }
-  html.dragging-ew:is(:hover, [data-hover]) {
-    color: red;
-  }
-  body > a:not(:hover) {
-    text-decoration: none;
-  }
-  p {
-    margin: 0;
-  }
-  p ~ p {
-    margin-top: 0;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      html {
+        scroll-padding-top: 80px;
+      }
+      html.dragging-ew {
+        user-select: none !important;
+      }
+      html.dragging-ew * {
+        cursor: ew-resize !important;
+      }
+      html.dragging-ew:is(:hover, [data-hover]) {
+        color: red;
+      }
+      body > a:not(:hover) {
+        text-decoration: none;
+      }
+      p {
+        margin: 0;
+      }
+      p ~ p {
+        margin-top: 0;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -237,21 +286,24 @@ fn emits_global_css_at_rules() {
         }
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
-    assert_snapshot!(css, @r"
-@layer base {
-  @media (min-width: 640px) {
-    body, :root {
-      color: var(--colors-red-200);
-    }
-    @supports (display: grid) and (display: contents) {
-      body {
-        color: var(--colors-red-200);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
       }
-      body a {
-        color: var(--colors-red-400);
+      @media (min-width: 640px) {
+        body, :root {
+          color: var(--colors-red-200);
+        }
+        @supports (display: grid) and (display: contents) {
+          body {
+            color: var(--colors-red-200);
+          }
+          body a {
+            color: var(--colors-red-400);
+          }
+        }
       }
     }
-  }
-}
-");
+    ");
 }

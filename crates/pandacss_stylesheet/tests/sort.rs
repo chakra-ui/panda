@@ -22,22 +22,27 @@ fn sorts_pseudo_selectors_by_cascade_priority() {
         "import { css } from '@panda/css'; css({ _active: { color: 'red' }, _hover: { color: 'red' }, _focus: { color: 'red' }, _custom: { color: 'red' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .custom\:c_red[data-open] {
-    color: red;
-  }
-  .hover\:c_red:hover {
-    color: red;
-  }
-  .focus\:c_red:focus {
-    color: red;
-  }
-  .active\:c_red:active {
-    color: red;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .custom\:c_red[data-open] {
+        color: red;
+      }
+      .hover\:c_red:hover {
+        color: red;
+      }
+      .focus\:c_red:focus {
+        color: red;
+      }
+      .active\:c_red:active {
+        color: red;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -62,6 +67,11 @@ fn applies_every_part_of_block_form_conditions() {
     );
     assert_snapshot!(css, @r#"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer utilities {
       @media (hover: hover) {
         .hoverFine\:before\:content_\"x\":hover::before {
@@ -152,25 +162,30 @@ fn sorts_axis_shorthands_before_state_variants() {
         "import { css } from '@panda/css'; css({ py: '12px', _focus: { _hover: { padding: '12px' } }, _hover: { padding: '4px' }, padding: '4px', px: '12px' })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .p_4px {
-    padding: 4px;
-  }
-  .px_12px {
-    padding-inline: 12px;
-  }
-  .py_12px {
-    padding-block: 12px;
-  }
-  .hover\:p_4px:hover {
-    padding: 4px;
-  }
-  .hover\:focus\:p_12px:hover:focus {
-    padding: 12px;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .p_4px {
+        padding: 4px;
+      }
+      .px_12px {
+        padding-inline: 12px;
+      }
+      .py_12px {
+        padding-block: 12px;
+      }
+      .hover\:p_4px:hover {
+        padding: 4px;
+      }
+      .hover\:focus\:p_12px:hover:focus {
+        padding: 12px;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -192,30 +207,35 @@ fn sorts_max_width_conditions_before_min_width_conditions() {
         "import { css } from '@panda/css'; css({ _minLg: { color: 'red' }, _maxSm: { color: 'red' }, _minSm: { color: 'red' }, _maxLg: { color: 'red' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @media (width < 64rem) {
-    .maxLg\:c_red {
-      color: red;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-  @media (width < 40rem) {
-    .maxSm\:c_red {
-      color: red;
+    @layer utilities {
+      @media (width < 64rem) {
+        .maxLg\:c_red {
+          color: red;
+        }
+      }
+      @media (width < 40rem) {
+        .maxSm\:c_red {
+          color: red;
+        }
+      }
+      @media (width >= 40rem) {
+        .minSm\:c_red {
+          color: red;
+        }
+      }
+      @media (width >= 64rem) {
+        .minLg\:c_red {
+          color: red;
+        }
+      }
     }
-  }
-  @media (width >= 40rem) {
-    .minSm\:c_red {
-      color: red;
-    }
-  }
-  @media (width >= 64rem) {
-    .minLg\:c_red {
-      color: red;
-    }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -238,25 +258,30 @@ fn sorts_same_root_attribute_variants_deterministically() {
         "import { css } from '@panda/css'; css({ _dataHover: { display: 'flex' }, _dataFoo: { display: 'flex' }, _dataActive: { display: 'flex' }, _dataBar: { display: 'flex' }, _dataFocus: { display: 'flex' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .dataActive\:d_flex[data-active] {
-    display: flex;
-  }
-  .dataBar\:d_flex[data-bar] {
-    display: flex;
-  }
-  .dataFocus\:d_flex[data-focus] {
-    display: flex;
-  }
-  .dataFoo\:d_flex[data-foo] {
-    display: flex;
-  }
-  .dataHover\:d_flex[data-hover] {
-    display: flex;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .dataActive\:d_flex[data-active] {
+        display: flex;
+      }
+      .dataBar\:d_flex[data-bar] {
+        display: flex;
+      }
+      .dataFocus\:d_flex[data-focus] {
+        display: flex;
+      }
+      .dataFoo\:d_flex[data-foo] {
+        display: flex;
+      }
+      .dataHover\:d_flex[data-hover] {
+        display: flex;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -276,21 +301,26 @@ fn sorts_base_rules_before_selector_and_at_rule_variants() {
         "import { css } from '@panda/css'; css({ _wide: { color: 'red' }, _hover: { color: 'red' }, color: 'red' })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .c_red {
-    color: red;
-  }
-  .hover\:c_red:hover {
-    color: red;
-  }
-  @media (width >= 64rem) {
-    .wide\:c_red {
-      color: red;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer utilities {
+      .c_red {
+        color: red;
+      }
+      .hover\:c_red:hover {
+        color: red;
+      }
+      @media (width >= 64rem) {
+        .wide\:c_red {
+          color: red;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -313,35 +343,40 @@ fn sorts_at_rule_kinds_by_cascade_bucket() {
         "import { css } from '@panda/css'; css({ _print: { opacity: '1' }, _starting: { opacity: '1' }, _container: { opacity: '1' }, _support: { opacity: '1' }, _media: { opacity: '1' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @supports (display: grid) {
-    .support\:opacity_1 {
-      opacity: 1;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .media\:opacity_1 {
-      opacity: 1;
+    @layer utilities {
+      @supports (display: grid) {
+        .support\:opacity_1 {
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .media\:opacity_1 {
+          opacity: 1;
+        }
+      }
+      @container card (width >= 40rem) {
+        .container\:opacity_1 {
+          opacity: 1;
+        }
+      }
+      @media print {
+        .print\:opacity_1 {
+          opacity: 1;
+        }
+      }
+      @starting-style {
+        .starting\:opacity_1 {
+          opacity: 1;
+        }
+      }
     }
-  }
-  @container card (width >= 40rem) {
-    .container\:opacity_1 {
-      opacity: 1;
-    }
-  }
-  @media print {
-    .print\:opacity_1 {
-      opacity: 1;
-    }
-  }
-  @starting-style {
-    .starting\:opacity_1 {
-      opacity: 1;
-    }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -367,34 +402,39 @@ fn sorts_structural_form_and_interactive_pseudos() {
         "import { css } from '@panda/css'; css({ _active: { display: 'flex' }, _focus: { display: 'flex' }, _hover: { display: 'flex' }, _focusWithin: { display: 'flex' }, _disabled: { display: 'flex' }, _checked: { display: 'flex' }, _empty: { display: 'flex' }, _first: { display: 'flex' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .first\:d_flex:first-child {
-    display: flex;
-  }
-  .empty\:d_flex:empty {
-    display: flex;
-  }
-  .disabled\:d_flex:disabled {
-    display: flex;
-  }
-  .checked\:d_flex:checked {
-    display: flex;
-  }
-  .focusWithin\:d_flex:focus-within {
-    display: flex;
-  }
-  .hover\:d_flex:hover {
-    display: flex;
-  }
-  .focus\:d_flex:focus {
-    display: flex;
-  }
-  .active\:d_flex:active {
-    display: flex;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .first\:d_flex:first-child {
+        display: flex;
+      }
+      .empty\:d_flex:empty {
+        display: flex;
+      }
+      .disabled\:d_flex:disabled {
+        display: flex;
+      }
+      .checked\:d_flex:checked {
+        display: flex;
+      }
+      .focusWithin\:d_flex:focus-within {
+        display: flex;
+      }
+      .hover\:d_flex:hover {
+        display: flex;
+      }
+      .focus\:d_flex:focus {
+        display: flex;
+      }
+      .active\:d_flex:active {
+        display: flex;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -416,6 +456,11 @@ fn applies_pseudo_elements_after_multiple_pseudo_classes() {
     );
     assert_snapshot!(css, @r#"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer utilities {
       .hover\:focus\:before\:content_\"x\":hover:focus::before {
         content: "x";
@@ -445,18 +490,23 @@ fn sorts_mixed_at_rule_and_selector_after_selector_only() {
         "import { css } from '@panda/css'; css({ _hoverFine: { color: 'red' }, _hover: { color: 'red' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .hover\:c_red:hover {
-    color: red;
-  }
-  @media (hover: hover) {
-    .hoverFine\:c_red:hover {
-      color: red;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer utilities {
+      .hover\:c_red:hover {
+        color: red;
+      }
+      @media (hover: hover) {
+        .hoverFine\:c_red:hover {
+          color: red;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -478,24 +528,29 @@ fn sorts_stacked_max_and_min_conditions_by_outer_priority() {
         "import { css } from '@panda/css'; css({ _minSm: { _maxLg: { color: 'red' } }, _minLg: { _maxSm: { color: 'red' } } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @media (width < 64rem) {
-    @media (width >= 40rem) {
-      .maxLg\:minSm\:c_red {
-        color: red;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
       }
     }
-  }
-  @media (width < 40rem) {
-    @media (width >= 64rem) {
-      .maxSm\:minLg\:c_red {
-        color: red;
+    @layer utilities {
+      @media (width < 64rem) {
+        @media (width >= 40rem) {
+          .maxLg\:minSm\:c_red {
+            color: red;
+          }
+        }
+      }
+      @media (width < 40rem) {
+        @media (width >= 64rem) {
+          .maxSm\:minLg\:c_red {
+            color: red;
+          }
+        }
       }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -550,20 +605,25 @@ fn sorts_css_function_queries_deterministically() {
         "import { css } from '@panda/css'; css({ _calcB: { color: 'red' }, _calcA: { color: 'red' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @media (width >= calc(100% - 1rem)) {
-    .calcB\:c_red {
-      color: red;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-  @media (width >= calc(100% - 2rem)) {
-    .calcA\:c_red {
-      color: red;
+    @layer utilities {
+      @media (width >= calc(100% - 1rem)) {
+        .calcB\:c_red {
+          color: red;
+        }
+      }
+      @media (width >= calc(100% - 2rem)) {
+        .calcA\:c_red {
+          color: red;
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -583,20 +643,25 @@ fn sorts_container_queries_by_resolved_width() {
         "import { css } from '@panda/css'; css({ _containerLg: { display: 'flex' }, _containerSm: { display: 'flex' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  @container card (width >= 40rem) {
-    .containerSm\:d_flex {
-      display: flex;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-  @container card (width >= 64rem) {
-    .containerLg\:d_flex {
-      display: flex;
+    @layer utilities {
+      @container card (width >= 40rem) {
+        .containerSm\:d_flex {
+          display: flex;
+        }
+      }
+      @container card (width >= 64rem) {
+        .containerLg\:d_flex {
+          display: flex;
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -623,17 +688,22 @@ fn sorts_recipe_entries_with_the_same_priority_model() {
         }
     }));
     let css = compile_css(&config, "import { button } from '@panda/recipes'; button()");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  @layer base {
-    .button {
-      padding: 8px;
-      padding-top: 4px;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer recipes {
+      @layer base {
+        .button {
+          padding: 8px;
+          padding-top: 4px;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -670,18 +740,23 @@ fn coalesces_recipe_entries_with_matching_pseudo_targets() {
     }));
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  .button--size_sm {
-    padding: 8px;
-    padding-top: 4px;
-  }
-  .hover\:button--size_sm:hover {
-    padding: 8px;
-    padding-top: 4px;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer recipes {
+      .button--size_sm {
+        padding: 8px;
+        padding-top: 4px;
+      }
+      .hover\:button--size_sm:hover {
+        padding: 8px;
+        padding-top: 4px;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -718,26 +793,31 @@ fn coalesces_recipe_entries_with_matching_at_rule_targets() {
     }));
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --breakpoints-md: 48rem;
-    --sizes-breakpoint-md: 48rem;
-  }
-}
-@layer recipes {
-  .button--size_sm {
-    padding: 8px;
-    padding-top: 4px;
-  }
-  @media (width >= 48rem) {
-    .md\:button--size_sm {
-      padding: 8px;
-      padding-top: 4px;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer tokens {
+      :where(:root, :host) {
+        --breakpoints-md: 48rem;
+        --sizes-breakpoint-md: 48rem;
+      }
+    }
+    @layer recipes {
+      .button--size_sm {
+        padding: 8px;
+        padding-top: 4px;
+      }
+      @media (width >= 48rem) {
+        .md\:button--size_sm {
+          padding: 8px;
+          padding-top: 4px;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -777,30 +857,35 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
     }));
     let css = compile_css(&config, "");
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --breakpoints-md: 48rem;
-    --sizes-breakpoint-md: 48rem;
-  }
-}
-@layer recipes {
-  .button--size_sm {
-    padding: 8px;
-    padding-top: 4px;
-  }
-  .hover\:button--size_sm:hover {
-    padding: 8px;
-    padding-top: 4px;
-  }
-  @media (width >= 48rem) {
-    .md\:button--size_sm {
-      padding: 8px;
-      padding-top: 4px;
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
     }
-  }
-}
-");
+    @layer tokens {
+      :where(:root, :host) {
+        --breakpoints-md: 48rem;
+        --sizes-breakpoint-md: 48rem;
+      }
+    }
+    @layer recipes {
+      .button--size_sm {
+        padding: 8px;
+        padding-top: 4px;
+      }
+      .hover\:button--size_sm:hover {
+        padding: 8px;
+        padding-top: 4px;
+      }
+      @media (width >= 48rem) {
+        .md\:button--size_sm {
+          padding: 8px;
+          padding-top: 4px;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -825,6 +910,11 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
     let css = compile_css(&config, "import { button } from '@panda/recipes'; button()");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
     @layer recipes {
       @layer base {
         .button {
@@ -869,22 +959,27 @@ fn sorts_recipe_atomic_atoms_with_dynamic_atoms() {
         &config,
         "import { css } from '@panda/css'; css({ paddingTop: '2px' })",
     );
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  .button--size_sm {
-    padding-top: 4px;
-  }
-}
-@layer utilities {
-  .p_8px {
-    padding: 8px;
-  }
-  .pt_2px {
-    padding-top: 2px;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer recipes {
+      .button--size_sm {
+        padding-top: 4px;
+      }
+    }
+    @layer utilities {
+      .p_8px {
+        padding: 8px;
+      }
+      .pt_2px {
+        padding-top: 2px;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -904,16 +999,21 @@ fn sorts_unknown_selector_conditions_before_known_pseudos() {
         "import { css } from '@panda/css'; css({ _hover: { color: 'red' }, _dataOpen: { color: 'red' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .dataOpen\:c_red[data-open] {
-    color: red;
-  }
-  .hover\:c_red:hover {
-    color: red;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .dataOpen\:c_red[data-open] {
+        color: red;
+      }
+      .hover\:c_red:hover {
+        color: red;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -933,14 +1033,19 @@ fn sorts_compound_pseudo_conditions_by_total_pseudo_priority() {
         "import { css } from '@panda/css'; css({ _hoverFocus: { color: 'red' }, _hover: { color: 'red' } })",
     );
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer utilities {
-  .hover\:c_red:hover {
-    color: red;
-  }
-  .hoverFocus\:c_red:hover:focus {
-    color: red;
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer utilities {
+      .hover\:c_red:hover {
+        color: red;
+      }
+      .hoverFocus\:c_red:hover:focus {
+        color: red;
+      }
+    }
+    ");
 }
