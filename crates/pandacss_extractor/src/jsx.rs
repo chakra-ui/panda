@@ -5,13 +5,14 @@
 use crate::{
     CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
     MatchedImport, Matchers, Span, VisitorContext, css_template::css_template_to_object,
-    literal::expression_to_literal, span_from_oxc,
+    jsx_react_runtime, literal::expression_to_literal, span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName, JSXAttributeValue,
-    JSXElementName, JSXExpression, JSXMemberExpression, JSXMemberExpressionObject,
-    JSXOpeningElement, StaticMemberExpression, TaggedTemplateExpression,
+    CallExpression, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXElementName, JSXExpression, JSXMemberExpression,
+    JSXMemberExpressionObject, JSXOpeningElement, Program, StaticMemberExpression,
+    TaggedTemplateExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -92,26 +93,29 @@ pub fn extract_jsx(
     }
 }
 
-pub(crate) fn collect_jsx(
-    program: &oxc_ast::ast::Program<'_>,
-    ctx: &VisitorContext<'_>,
-) -> Vec<ExtractedJsx> {
+pub(crate) fn collect_jsx(program: &Program<'_>, ctx: &VisitorContext<'_>) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
-    let mut extractor = Extractor { ctx, out: &mut out };
+    let react_runtime = jsx_react_runtime::ReactRuntimeImports::from_program(program);
+    let mut extractor = Extractor {
+        ctx,
+        out: &mut out,
+        react_runtime,
+    };
     extractor.visit_program(program);
     out
 }
 
-struct Extractor<'walk, 'ctx> {
+pub(crate) struct Extractor<'walk, 'ctx> {
     ctx: &'walk VisitorContext<'ctx>,
     out: &'walk mut Vec<ExtractedJsx>,
+    react_runtime: jsx_react_runtime::ReactRuntimeImports,
 }
 
-struct ResolvedTag<'a> {
-    category: MatchCategory,
-    name: Cow<'a, str>,
-    alias: Cow<'a, str>,
-    emit_empty: bool,
+pub(crate) struct ResolvedTag<'a> {
+    pub(crate) category: MatchCategory,
+    pub(crate) name: Cow<'a, str>,
+    pub(crate) alias: Cow<'a, str>,
+    pub(crate) emit_empty: bool,
 }
 
 impl Extractor<'_, '_> {
@@ -250,9 +254,81 @@ impl Extractor<'_, '_> {
         let (root, root_ident, path) = flatten_expr_member(member)?;
         self.resolve_member(root, root_ident, &path)
     }
+
+    pub(crate) fn resolve_runtime_tag<'a>(
+        &'a self,
+        expr: &'a Expression<'_>,
+    ) -> Option<ResolvedTag<'a>> {
+        match expr {
+            Expression::Identifier(id) => {
+                if let Some(matched) = self.ctx.aliases.get(id.name.as_str()) {
+                    if matched.kind != ImportSpecifierKind::Named {
+                        return None;
+                    }
+                    if let Some(resolver) = self.ctx.resolver
+                        && !resolver.is_import_binding(id)
+                    {
+                        return None;
+                    }
+                    if !self
+                        .ctx
+                        .config
+                        .matchers
+                        .category_accepts_name(matched.category, &matched.name)
+                    {
+                        return None;
+                    }
+                    return Some(ResolvedTag {
+                        category: matched.category,
+                        name: Cow::Borrowed(&matched.name),
+                        alias: Cow::Borrowed(&matched.alias),
+                        emit_empty: true,
+                    });
+                }
+
+                let tag_name = id.name.as_str();
+                let is_configured_component = self.ctx.config.jsx.is_component_tag(tag_name);
+                if !is_configured_component && !self.ctx.config.jsx.should_match_tag(tag_name) {
+                    return None;
+                }
+                Some(ResolvedTag {
+                    category: MatchCategory::Jsx,
+                    name: Cow::Borrowed(tag_name),
+                    alias: Cow::Borrowed(tag_name),
+                    emit_empty: is_configured_component,
+                })
+            }
+            Expression::StringLiteral(s) => {
+                let tag_name = s.value.as_str();
+                if !self.ctx.config.jsx.is_component_tag(tag_name) {
+                    return None;
+                }
+                Some(ResolvedTag {
+                    category: MatchCategory::Jsx,
+                    name: Cow::Borrowed(tag_name),
+                    alias: Cow::Borrowed(tag_name),
+                    emit_empty: true,
+                })
+            }
+            Expression::StaticMemberExpression(member) => {
+                let (root, root_ident, path) = flatten_expr_member(member)?;
+                self.resolve_member(root, root_ident, &path)
+            }
+            _ => None,
+        }
+    }
 }
 
 impl<'a> Visit<'a> for Extractor<'_, '_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if let Some(extracted) =
+            jsx_react_runtime::extract_call(call, self.ctx, &self.react_runtime, self)
+        {
+            self.out.push(extracted);
+        }
+        walk::walk_call_expression(self, call);
+    }
+
     fn visit_jsx_opening_element(&mut self, element: &JSXOpeningElement<'a>) {
         if let Some(resolved) = self.resolve_tag(&element.name) {
             let tag_name = resolved.name.as_ref();

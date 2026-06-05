@@ -2,12 +2,13 @@ use indoc::indoc;
 use insta::assert_yaml_snapshot;
 mod common;
 
-use common::jsx_config;
+use common::{jsx_config, panda_config};
 use pandacss_extractor::{
-    CssSyntaxKind, ExtractedJsxResult, ImportSpecifierKind, JsxExtractionConfig, JsxStyleProps,
-    MatchCategory, MatchedImport, extract_jsx,
+    CssSyntaxKind, ExtractUsage, ExtractedJsx, ExtractedJsxResult, ImportSpecifierKind,
+    JsxExtractionConfig, JsxStyleProps, MatchCategory, MatchedImport, extract as extract_usage,
+    extract_jsx,
 };
-use serde_json::json;
+use serde_json::{Value, json};
 
 fn styled(alias: &str) -> MatchedImport {
     MatchedImport {
@@ -70,6 +71,29 @@ fn extract_with_jsx_config(
     )
 }
 
+fn extract_react_runtime(source: &str) -> ExtractUsage {
+    extract_usage(
+        source,
+        "fixture.tsx",
+        &panda_config().with_jsx_framework(true),
+    )
+}
+
+fn jsx_data_for(items: &[ExtractedJsx], name: &str) -> Vec<Value> {
+    items
+        .iter()
+        .filter(|item| item.name == name)
+        .map(|item| item.data.to_json())
+        .collect()
+}
+
+fn jsx_name_data(items: &[ExtractedJsx]) -> Vec<Value> {
+    items
+        .iter()
+        .map(|item| json!({ "name": item.name, "data": item.data.to_json() }))
+        .collect()
+}
+
 #[test]
 fn lowercase_html_tags_are_ignored() {
     assert_yaml_snapshot!(extract("<div color='red' />", &[styled("styled")]), @"
@@ -89,6 +113,376 @@ fn implicit_uppercase_component_extracts_valid_style_props() {
     assert_eq!(result.jsx.len(), 1);
     assert_eq!(result.jsx[0].name, "Panel");
     assert_eq!(result.jsx[0].data.to_json(), json!({ "color": "red" }));
+}
+
+#[test]
+fn compiled_react_runtime_css_prop_extracts_inline_identifier_and_spread_values() {
+    let source = indoc! {r"
+        import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
+        import { css } from '@panda/css';
+
+        const styles = css.raw({
+          color: 'white',
+          backgroundColor: 'AntiqueWhite',
+        });
+
+        const spreadStyles = css.raw({
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        });
+
+        export const CustomComponent = () => {
+          return jsxs(Fragment, {
+            children: [
+              jsx(Box, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Box',
+              }),
+              jsx(Box, {
+                css: styles,
+                children: 'Box',
+              }),
+              jsx(Box, {
+                css: {
+                  ...spreadStyles,
+                },
+                children: 'Box',
+              }),
+            ],
+          });
+        };
+    "};
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "Box"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    - css:
+        color: white
+        backgroundColor: AntiqueWhite
+    - css:
+        color: white
+        backgroundColor: SteelBlue
+    "#);
+}
+
+#[test]
+fn compiled_react_runtime_namespace_and_classic_create_element_extract_css_prop() {
+    let source = indoc! {r"
+        import * as jsxRuntime from 'react/jsx-runtime';
+        import React from 'react';
+        import * as ReactNamespace from 'react';
+
+        jsxRuntime.jsx(Box, {
+          css: { color: 'red' },
+          children: 'Box',
+        });
+
+        React.createElement(Box, {
+          css: { color: 'blue' },
+          children: 'Box',
+        });
+
+        ReactNamespace.createElement(Box, {
+          css: { color: 'green' },
+          children: 'Box',
+        });
+    "};
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "Box"), @r#"
+    - css:
+        color: red
+    - css:
+        color: blue
+    - css:
+        color: green
+    "#);
+}
+
+#[test]
+fn compiled_react_runtime_supports_classic_cjs_react_create_element() {
+    let source = indoc! {r"
+        var React = require('react');
+
+        React.createElement(Box, {
+          css: { color: 'blue' },
+          children: 'Box',
+        });
+    "};
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "Box"), @r#"
+    - css:
+        color: blue
+    "#);
+}
+
+#[test]
+fn compiled_react_runtime_emits_empty_for_matched_component_with_dynamic_props() {
+    let source = indoc! {r"
+        import { jsx } from 'react/jsx-runtime';
+        import { Box, styled } from '@panda/jsx';
+
+        jsx(Box, { css: cssProp, children });
+        jsx(styled.div, { children, ref });
+    "};
+
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_name_data(&result.jsx), @r#"
+    - name: Box
+      data: {}
+    - name: styled.div
+      data: {}
+    "#);
+}
+
+#[test]
+fn compiled_react_runtime_ignores_unrelated_jsx_member_calls() {
+    let source = indoc! {r"
+        someLibrary.jsx(Box, {
+          css: { color: 'red' },
+          children: 'Box',
+        });
+    "};
+
+    let result = extract_react_runtime(source);
+
+    assert!(result.jsx.is_empty());
+}
+
+#[test]
+fn compiled_react_runtime_supports_legacy_namespace_alias_and_babel_forms() {
+    let namespace = indoc! {r"
+        import * as jsxRuntime from 'react/jsx-runtime';
+
+        const sharedStyles = {
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        };
+
+        export const App = () => {
+          return jsxRuntime.jsxs(jsxRuntime.Fragment, {
+            children: [
+              jsxRuntime.jsx(ColorBox, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Inline',
+              }),
+              jsxRuntime.jsx(ColorBox, {
+                css: {
+                  ...sharedStyles,
+                },
+                children: 'Spread',
+              }),
+            ],
+          });
+        };
+    "};
+    let sequence_alias = indoc! {r"
+        import * as import_jsx_runtime from 'react/jsx-runtime';
+
+        const sharedStyles = {
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        };
+
+        export const App = () => {
+          return (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, {
+            children: [
+              (0, import_jsx_runtime.jsx)(ColorBox, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Inline',
+              }),
+              (0, import_jsx_runtime.jsx)(ColorBox, {
+                css: {
+                  ...sharedStyles,
+                },
+                children: 'Spread',
+              }),
+            ],
+          });
+        };
+    "};
+    let babel_alias = indoc! {r"
+        import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from 'react/jsx-runtime';
+
+        const sharedStyles = {
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        };
+
+        export const App = () => {
+          return _jsxs(_Fragment, {
+            children: [
+              _jsx(ColorBox, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Inline',
+              }),
+              _jsx(ColorBox, {
+                css: {
+                  ...sharedStyles,
+                },
+                children: 'Spread',
+              }),
+            ],
+          });
+        };
+    "};
+
+    insta::allow_duplicates! {
+        for source in [namespace, sequence_alias, babel_alias] {
+            let result = extract_react_runtime(source);
+            assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+            - css:
+                color: black
+                backgroundColor: RebeccaPurple
+            - css:
+                color: white
+                backgroundColor: SteelBlue
+            "#);
+        }
+    }
+}
+
+#[test]
+fn compiled_react_runtime_supports_legacy_bundled_namespace_forms() {
+    let vite_like = indoc! {r"
+        var jsxRuntimeExports = requireJsxRuntime();
+
+        const sharedStyles = {
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        };
+
+        const App = () => {
+          return jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
+            children: [
+              jsxRuntimeExports.jsx(ColorBox, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Inline',
+              }),
+              jsxRuntimeExports.jsx(ColorBox, {
+                css: {
+                  ...sharedStyles,
+                },
+                children: 'Spread',
+              }),
+            ],
+          });
+        };
+    "};
+    let webpack_like = indoc! {r"
+        var jsx_runtime = __webpack_require__(848);
+
+        const sharedStyles = {
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        };
+
+        const App = () => {
+          return (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+            children: [
+              (0, jsx_runtime.jsx)(ColorBox, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Inline',
+              }),
+              (0, jsx_runtime.jsx)(ColorBox, {
+                css: {
+                  ...sharedStyles,
+                },
+                children: 'Spread',
+              }),
+            ],
+          });
+        };
+    "};
+    let parcel_like = indoc! {r"
+        var parcelJsxExports = parcelRequire('1jDou');
+
+        const sharedStyles = {
+          color: 'white',
+          backgroundColor: 'SteelBlue',
+        };
+
+        const App = () => {
+          return (0, parcelJsxExports.jsxs)((0, parcelJsxExports.Fragment), {
+            children: [
+              (0, parcelJsxExports.jsx)(ColorBox, {
+                css: {
+                  color: 'black',
+                  backgroundColor: 'RebeccaPurple',
+                },
+                children: 'Inline',
+              }),
+              (0, parcelJsxExports.jsx)(ColorBox, {
+                css: {
+                  ...sharedStyles,
+                },
+                children: 'Spread',
+              }),
+            ],
+          });
+        };
+    "};
+
+    insta::allow_duplicates! {
+        for source in [vite_like, webpack_like, parcel_like] {
+            let result = extract_react_runtime(source);
+            assert_yaml_snapshot!(jsx_data_for(&result.jsx, "ColorBox"), @r#"
+            - css:
+                color: black
+                backgroundColor: RebeccaPurple
+            - css:
+                color: white
+                backgroundColor: SteelBlue
+            "#);
+        }
+    }
+}
+
+#[test]
+fn compiled_react_runtime_supports_legacy_jsx_dev_runtime() {
+    let source = indoc! {r#"
+        import { jsxDEV } from 'react/jsx-dev-runtime';
+
+        export const App = () =>
+          jsxDEV(Box, {
+            css: {
+              color: 'black',
+              backgroundColor: 'RebeccaPurple',
+            },
+          }, undefined, false, { fileName: "test.tsx", lineNumber: 1, columnNumber: 1 }, this);
+    "#};
+    let result = extract_react_runtime(source);
+
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "Box"), @r#"
+    - css:
+        color: black
+        backgroundColor: RebeccaPurple
+    "#);
 }
 
 #[test]

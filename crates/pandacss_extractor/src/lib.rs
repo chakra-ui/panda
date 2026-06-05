@@ -15,6 +15,7 @@ mod css_template;
 mod extract;
 mod imports;
 mod jsx;
+mod jsx_react_runtime;
 mod literal;
 mod matcher;
 mod scope;
