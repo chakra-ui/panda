@@ -55,8 +55,8 @@ fn layer_style_and_animation_style_get_their_own_classes_in_same_sublayer() {
     @layer utilities {
       @layer compositions {
         .animationStyle_fadeIn {
-          animation-name: fadeIn;
           animation-duration: 300ms;
+          animation-name: fadeIn;
         }
         .layerStyle_card {
           background: white;
@@ -94,6 +94,125 @@ fn composition_style_with_token_reference_resolves_to_var() {
       }
     }
     ");
+}
+
+#[test]
+fn composition_styles_resolve_token_categories_and_nested_conditions() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:is(:hover, [data-hover])"
+        },
+        "utilities": {
+            "animationDuration": { "className": "anim-dur", "values": "durations" },
+            "backgroundColor": { "className": "bg", "values": "colors" },
+            "color": { "className": "c", "values": "colors" },
+            "fontSize": { "className": "fs", "values": "fontSizes" },
+            "gap": { "className": "gap", "values": "spacing" }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "tokens": {
+                "colors": {
+                    "brand": {
+                        "500": { "value": "#0f766e" }
+                    }
+                },
+                "durations": {
+                    "slow": { "value": "300ms" }
+                },
+                "fontSizes": {
+                    "lg": { "value": "1.125rem" }
+                },
+                "spacing": {
+                    "2": { "value": "0.5rem" }
+                }
+            },
+            "textStyles": {
+                "heading": {
+                    "value": {
+                        "fontSize": "lg",
+                        "color": "brand.500",
+                        "_hover": { "color": "brand.500" },
+                        "md": { "gap": "2" }
+                    }
+                }
+            },
+            "layerStyles": {
+                "panel": {
+                    "value": {
+                        "backgroundColor": "brand.500",
+                        "_hover": { "backgroundColor": "brand.500" }
+                    }
+                }
+            },
+            "animationStyles": {
+                "enter": {
+                    "value": {
+                        "animationDuration": "slow",
+                        "_hover": { "animationDuration": "slow" }
+                    }
+                }
+            }
+        }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css';\ncss({ textStyle: 'heading' });\ncss({ layerStyle: 'panel' });\ncss({ animationStyle: 'enter' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        .animationStyle_enter {
+          animation-duration: var(--durations-slow);
+        }
+        .animationStyle_enter:is(:hover, [data-hover]) {
+          animation-duration: var(--durations-slow);
+        }
+        .layerStyle_panel {
+          background-color: var(--colors-brand-500);
+        }
+        .layerStyle_panel:is(:hover, [data-hover]) {
+          background-color: var(--colors-brand-500);
+        }
+        .textStyle_heading {
+          color: var(--colors-brand-500);
+          font-size: var(--font-sizes-lg);
+        }
+        .textStyle_heading:is(:hover, [data-hover]) {
+          color: var(--colors-brand-500);
+        }
+        @media (width >= 48rem) {
+          .textStyle_heading {
+            gap: var(--spacing-2);
+          }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn unknown_composition_value_does_not_emit_fallback_declaration() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "body": { "value": { "fontSize": "md" } }
+            }
+        }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css'; css({ textStyle: 'missing' });",
+        &[StylesheetLayer::Utilities],
+    );
+
+    assert!(!utilities.contains("text-style"));
+    assert!(!utilities.contains(".textStyle_missing"));
 }
 
 #[test]

@@ -2,12 +2,13 @@ use std::{borrow::Cow, ops::Range};
 
 use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
-    Atom, AtomValue, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot,
+    Atom, AtomValue, ConditionSet, EncodedRecipesSnapshot, Encoder, RecipeStyleEntry,
+    RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::Literal;
 use pandacss_shared::{number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
-use pandacss_utility::{Utility, UtilityTransformResult, hyphenate_property};
+use pandacss_utility::{StyleNormalizer, Utility, UtilityTransformResult, hyphenate_property};
 use rustc_hash::FxHashSet;
 use serde_json::Value;
 
@@ -767,14 +768,19 @@ fn find_matching_paren(value: &str) -> Option<usize> {
 
 struct EmitContext<'a> {
     config: &'a UserConfig,
+    conditions: ConditionSet,
+    breakpoints: Vec<String>,
     sort: SortContext<'a>,
     utility: &'a Utility,
 }
 
 impl<'a> EmitContext<'a> {
     fn new(config: &'a UserConfig, utility: &'a Utility) -> Self {
+        let condition_names = config.condition_names();
         Self {
             config,
+            conditions: ConditionSet::from_names(condition_names.iter().map(String::as_str)),
+            breakpoints: config.theme.breakpoint_names(),
             sort: SortContext::new(config),
             utility,
         }
@@ -831,6 +837,18 @@ impl<'a> EmitContext<'a> {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
+        if is_composition_prop(atom.prop()) {
+            if let Some(styles) = composition_style_object(atom.prop(), &result.styles) {
+                self.collect_grouped_style_usage(
+                    styles,
+                    atom.important(),
+                    token_dictionary,
+                    keyframes,
+                    marks,
+                );
+            }
+            return;
+        }
         Self::collect_literal_usage(&result.styles, token_dictionary, keyframes, marks);
     }
 
@@ -956,12 +974,31 @@ impl<'a> EmitContext<'a> {
         }
     }
 
+    fn collect_grouped_style_usage(
+        &self,
+        styles: &Literal,
+        important: bool,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        for entry in self.style_object_entries(styles) {
+            let Some(declarations) = self.style_entry_declarations(&entry, important) else {
+                continue;
+            };
+            Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+        }
+    }
+
     fn write_atom(&self, writer: &mut CssWriter, atom: &Atom, conditions: &[&str]) {
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
+        if self.write_composition_atom(writer, atom, conditions, &result) {
+            return;
+        }
         for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
             Self::write_style_rule(
                 writer,
@@ -970,6 +1007,81 @@ impl<'a> EmitContext<'a> {
                 atom.important(),
                 atom_numeric_hint(atom.value()),
             );
+        }
+    }
+
+    fn write_composition_atom(
+        &self,
+        writer: &mut CssWriter,
+        atom: &Atom,
+        conditions: &[&str],
+        result: &UtilityTransformResult,
+    ) -> bool {
+        if !is_composition_prop(atom.prop()) {
+            return false;
+        }
+
+        let Some(styles) = composition_style_object(atom.prop(), &result.styles) else {
+            return true;
+        };
+
+        let entries = self.style_object_entries(styles);
+        if entries.is_empty() {
+            return true;
+        }
+
+        let base_rules =
+            self.rule_targets_for_class(&result.class_name, conditions, atom.important());
+        self.write_style_entries_for_rules(writer, &entries, &base_rules, atom.important());
+        true
+    }
+
+    fn write_style_entries_for_rules(
+        &self,
+        writer: &mut CssWriter,
+        entries: &[RecipeStyleEntry],
+        base_rules: &[RuleTarget],
+        important: bool,
+    ) {
+        let mut pending: Option<PendingRecipeRule> = None;
+        for entry in self.sort.sorted_recipe_entries(entries) {
+            let Some(declarations) = self.style_entry_declarations(entry.entry, important) else {
+                continue;
+            };
+            if declarations.is_empty() {
+                continue;
+            }
+
+            for base_rule in base_rules {
+                for rule in self.rule_targets_from_rule(base_rule, &entry.conditions) {
+                    match &mut pending {
+                        Some(pending) if pending.rule == rule => {
+                            append_recipe_declarations(
+                                &mut pending.declarations,
+                                declarations.clone(),
+                            );
+                        }
+                        Some(_) => {
+                            let previous = pending.take().expect("pending grouped style rule");
+                            Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                            pending = Some(PendingRecipeRule {
+                                rule,
+                                declarations: declarations.clone(),
+                            });
+                        }
+                        None => {
+                            pending = Some(PendingRecipeRule {
+                                rule,
+                                declarations: declarations.clone(),
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Some(pending) = pending {
+            Self::write_recipe_rule(writer, &pending.rule, &pending.declarations);
         }
     }
 
@@ -1357,7 +1469,19 @@ impl<'a> EmitContext<'a> {
         &self,
         entry: &RecipeStyleEntry,
     ) -> Option<Vec<RecipeDeclaration>> {
-        self.property_declarations(entry.prop.as_ref(), &entry.value, entry.important)
+        self.style_entry_declarations(entry, false)
+    }
+
+    fn style_entry_declarations(
+        &self,
+        entry: &RecipeStyleEntry,
+        important: bool,
+    ) -> Option<Vec<RecipeDeclaration>> {
+        self.property_declarations(
+            entry.prop.as_ref(),
+            &entry.value,
+            important || entry.important,
+        )
     }
 
     fn property_declarations(
@@ -1466,10 +1590,17 @@ impl<'a> EmitContext<'a> {
         selector: String,
         conditions: &[&str],
     ) -> Vec<RuleTarget> {
-        let mut targets = vec![RuleTarget {
-            selector,
-            wrappers: Vec::new(),
-        }];
+        self.rule_targets_from_rule(
+            &RuleTarget {
+                selector,
+                wrappers: Vec::new(),
+            },
+            conditions,
+        )
+    }
+
+    fn rule_targets_from_rule(&self, rule: &RuleTarget, conditions: &[&str]) -> Vec<RuleTarget> {
+        let mut targets = vec![rule.clone()];
         for condition in conditions {
             let mut next = Vec::new();
             for target in &targets {
@@ -1484,6 +1615,24 @@ impl<'a> EmitContext<'a> {
             targets = next;
         }
         targets
+    }
+
+    /// Legacy's `transformStyles` hashes a style object, then decodes the group
+    /// by calling `utility.transform` for every leaf. This is the Rust equivalent
+    /// of the hashing half for grouped style objects.
+    fn style_object_entries(&self, styles: &Literal) -> Vec<RecipeStyleEntry> {
+        let normalizer = StyleNormalizer {
+            utility: Some(self.utility),
+            breakpoints: &self.breakpoints,
+            shorthand: true,
+        };
+        let mut encoder = Encoder::with_conditions(self.conditions.clone());
+        encoder.process_atomic_with(styles, &normalizer);
+        encoder
+            .into_atoms()
+            .into_iter()
+            .map(RecipeStyleEntry::from)
+            .collect()
     }
 
     fn rule_targets_with_base_parts(base: &str, conditions: &[ConditionPaths]) -> Vec<RuleTarget> {
@@ -1656,6 +1805,23 @@ fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCss
             writer.declaration(var.name, var.value, false);
         }
     });
+}
+
+fn is_composition_prop(prop: &str) -> bool {
+    matches!(prop, "textStyle" | "layerStyle" | "animationStyle")
+}
+
+fn composition_style_object<'a>(prop: &str, styles: &'a Literal) -> Option<&'a Literal> {
+    if !is_composition_prop(prop) {
+        return None;
+    }
+    let Literal::Object(entries) = styles else {
+        return None;
+    };
+    if matches!(entries.as_slice(), [(key, _)] if key == prop) {
+        return None;
+    }
+    Some(styles)
 }
 
 fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
