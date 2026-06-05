@@ -155,7 +155,7 @@ fn json_number(value: f64) -> Option<serde_json::Value> {
 /// resolved objects/arrays.
 pub(crate) fn expression_to_literal(
     expr: &Expression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match expr {
         Expression::StringLiteral(s) => Some(Literal::String(s.value.to_string())),
@@ -204,7 +204,7 @@ pub(crate) fn expression_to_literal(
 
 pub(crate) fn object_to_literal(
     obj: &ObjectExpression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     // PORT NOTE: lenient per-member folding to match the JS extractor. A
     // property whose key or value doesn't fold (a dynamic value, an
@@ -248,7 +248,10 @@ pub(crate) fn object_to_literal(
     Some(Literal::Object(entries))
 }
 
-fn array_to_literal(arr: &ArrayExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+fn array_to_literal(
+    arr: &ArrayExpression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<Literal> {
     let mut items = Vec::with_capacity(arr.elements.len());
     for element in &arr.elements {
         match element {
@@ -272,7 +275,7 @@ fn array_to_literal(arr: &ArrayExpression<'_>, resolver: Option<&Resolver<'_>>) 
 fn property_key_to_string(
     key: &PropertyKey<'_>,
     computed: bool,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<String> {
     if !computed {
         return match key {
@@ -292,7 +295,7 @@ fn property_key_to_string(
 
 fn static_member_to_literal(
     member: &StaticMemberExpression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     let object = expression_to_literal(&member.object, resolver)?;
     lookup_member(&object, member.property.name.as_str())
@@ -300,7 +303,7 @@ fn static_member_to_literal(
 
 fn computed_member_to_literal(
     member: &ComputedMemberExpression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     let object = expression_to_literal(&member.object, resolver)?;
     let key_literal = expression_to_literal(&member.expression, resolver)?;
@@ -330,7 +333,7 @@ fn lookup_member(object: &Literal, key: &str) -> Option<Literal> {
 
 fn chain_to_literal(
     chain: &ChainExpression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match &chain.expression {
         ChainElement::StaticMemberExpression(member) => static_member_to_literal(member, resolver),
@@ -345,12 +348,15 @@ fn chain_to_literal(
 
 fn tagged_template_to_literal(
     t: &TaggedTemplateExpression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     template_literal_to_literal(&t.quasi, resolver)
 }
 
-fn call_to_literal(call: &CallExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+fn call_to_literal(
+    call: &CallExpression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<Literal> {
     let resolver = resolver?;
     resolver
         .resolve_token_call(call)
@@ -361,7 +367,7 @@ fn number_as_key(value: f64) -> String {
     number_to_js_string(value)
 }
 
-fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
     let inner = expression_to_literal(&u.argument, resolver)?;
     match (u.operator, inner) {
         (UnaryOperator::UnaryPlus, Literal::Number(n)) => Some(Literal::Number(n)),
@@ -379,7 +385,7 @@ fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_>>) -> Optio
     }
 }
 
-fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
     let left = expression_to_literal(&b.left, resolver)?;
     let right = expression_to_literal(&b.right, resolver)?;
     match b.operator {
@@ -492,7 +498,7 @@ fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
     Some(l < r)
 }
 
-fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_>>) -> Option<Literal> {
+fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
     // Left folds → short-circuit. Left doesn't fold but both sides do →
     // emit Conditional alternatives (matches JS box.conditional).
     if let Some(left) = expression_to_literal(&l.left, resolver) {
@@ -525,7 +531,7 @@ fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_>>) -> O
 
 fn eval_conditional(
     c: &ConditionalExpression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     if let Some(test) = expression_to_literal(&c.test, resolver) {
         return if truthy(&test) {
@@ -542,7 +548,7 @@ fn eval_conditional(
 fn conditional_from_branches(
     a: &Expression<'_>,
     b: &Expression<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     let left = expression_to_literal(a, resolver)?;
     let right = expression_to_literal(b, resolver)?;
@@ -551,7 +557,7 @@ fn conditional_from_branches(
 
 pub(crate) fn template_literal_to_literal(
     t: &TemplateLiteral<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     let mut out = String::new();
     for (i, expr) in t.expressions.iter().enumerate() {

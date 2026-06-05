@@ -96,7 +96,7 @@ pub fn extract_calls(
 
 fn collect_calls_inner(
     program: &oxc_ast::ast::Program<'_>,
-    ctx: &crate::VisitorContext<'_>,
+    ctx: &crate::VisitorContext<'_, '_>,
     line_index: Option<&crate::LineIndex<'_>>,
 ) -> (Vec<ExtractedCall>, Vec<Diagnostic>) {
     let mut out = Vec::new();
@@ -114,7 +114,7 @@ fn collect_calls_inner(
 
 pub(crate) fn collect_calls_with_token_refs(
     program: &oxc_ast::ast::Program<'_>,
-    ctx: &crate::VisitorContext<'_>,
+    ctx: &crate::VisitorContext<'_, '_>,
     line_index: &crate::LineIndex<'_>,
 ) -> (Vec<ExtractedCall>, Vec<Diagnostic>, Vec<TokenRef>) {
     let mut calls = Vec::new();
@@ -132,7 +132,7 @@ pub(crate) fn collect_calls_with_token_refs(
 }
 
 struct Extractor<'walk, 'ctx> {
-    ctx: &'walk crate::VisitorContext<'ctx>,
+    ctx: &'walk crate::VisitorContext<'ctx, '_>,
     out: &'walk mut Vec<ExtractedCall>,
     diagnostics: &'walk mut Vec<Diagnostic>,
     line_index: Option<&'walk crate::LineIndex<'walk>>,
@@ -418,7 +418,7 @@ impl Extractor<'_, '_> {
 
 fn argument_to_literal(
     arg: &Argument<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<Literal> {
     arg.as_expression()
         .and_then(|e| expression_to_literal(e, resolver))

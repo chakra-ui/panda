@@ -356,16 +356,16 @@ impl Matchers {
 }
 
 /// Per-file context shared between the call and JSX visitors.
-pub(crate) struct VisitorContext<'a> {
+pub(crate) struct VisitorContext<'a, 'cb> {
     pub aliases: FxHashMap<&'a str, &'a MatchedImport>,
     pub config: &'a ExtractorConfig,
     /// `None` for staged entrypoints (`extract_calls`, `extract_jsx`)
     /// that skip semantic-build cost; `Some` for the combined `extract()`
     /// hot path.
-    pub resolver: Option<&'a Resolver<'a>>,
+    pub resolver: Option<&'a Resolver<'a, 'cb>>,
 }
 
-impl<'a> VisitorContext<'a> {
+impl<'a, 'cb> VisitorContext<'a, 'cb> {
     pub(crate) fn new(matched: &'a [MatchedImport], config: &'a ExtractorConfig) -> Self {
         Self {
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
@@ -374,7 +374,7 @@ impl<'a> VisitorContext<'a> {
         }
     }
 
-    pub(crate) fn with_resolver(mut self, resolver: &'a Resolver<'a>) -> Self {
+    pub(crate) fn with_resolver(mut self, resolver: &'a Resolver<'a, 'cb>) -> Self {
         self.resolver = Some(resolver);
         self
     }

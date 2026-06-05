@@ -474,7 +474,7 @@ fn parse_expression_literal(
 
 fn template_initializer_literal(
     var: &VariableDeclaration<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<Literal> {
     for declarator in &var.declarations {
         let BindingPattern::BindingIdentifier(id) = &declarator.id else {

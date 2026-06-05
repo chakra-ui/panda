@@ -94,7 +94,7 @@ pub fn extract_jsx(
     }
 }
 
-pub(crate) fn collect_jsx(program: &Program<'_>, ctx: &VisitorContext<'_>) -> Vec<ExtractedJsx> {
+pub(crate) fn collect_jsx(program: &Program<'_>, ctx: &VisitorContext<'_, '_>) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
     let react_runtime = jsx_react_runtime::ReactRuntimeImports::from_program(program);
     let mut extractor = Extractor {
@@ -106,8 +106,8 @@ pub(crate) fn collect_jsx(program: &Program<'_>, ctx: &VisitorContext<'_>) -> Ve
     out
 }
 
-pub(crate) struct Extractor<'walk, 'ctx> {
-    ctx: &'walk VisitorContext<'ctx>,
+pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
+    ctx: &'walk VisitorContext<'ctx, 'cb>,
     out: &'walk mut Vec<ExtractedJsx>,
     react_runtime: jsx_react_runtime::ReactRuntimeImports,
 }
@@ -119,7 +119,7 @@ pub(crate) struct ResolvedTag<'a> {
     pub(crate) emit_empty: bool,
 }
 
-impl Extractor<'_, '_> {
+impl Extractor<'_, '_, '_> {
     fn resolve_tag<'a>(&'a self, name: &'a JSXElementName<'_>) -> Option<ResolvedTag<'a>> {
         // Lowercase HTML idents, `JSXNamespacedName` (`<svg:circle>`),
         // and `ThisExpression` (`<this.X>`) are never Panda usages.
@@ -320,7 +320,7 @@ impl Extractor<'_, '_> {
     }
 }
 
-impl<'a> Visit<'a> for Extractor<'_, '_> {
+impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let Some(extracted) =
             jsx_react_runtime::extract_call(call, self.ctx, &self.react_runtime, self)
@@ -456,7 +456,7 @@ fn join_path(path: &[&str]) -> String {
 fn merge_attribute(
     item: &JSXAttributeItem<'_>,
     out: &mut Vec<(String, Literal)>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
     jsx: &crate::JsxExtractionConfig,
     tag_name: &str,
 ) {
@@ -513,7 +513,7 @@ pub(crate) fn merge_style_props(
 
 fn attribute_value(
     value: &JSXAttributeValue<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match value {
         JSXAttributeValue::StringLiteral(s) => Some(Literal::String(s.value.to_string())),

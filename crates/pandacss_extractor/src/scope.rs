@@ -40,7 +40,7 @@ pub(crate) type PatternRawTransformCell<'a> = RefCell<&'a mut PatternRawTransfor
 /// Also recognizes Panda `token()` / `token.var()` calls and resolves them
 /// through the supplied [`TokenDictionary`]; the alias table maps local
 /// names back to their `tokens`-category import.
-pub(crate) struct Resolver<'a> {
+pub(crate) struct Resolver<'a, 'cb> {
     semantic: Semantic<'a>,
     // PERF(port): FxHashMap keys are u32 newtypes — SipHash overhead is waste.
     cache: RefCell<FxHashMap<SymbolId, ResolutionState>>,
@@ -52,7 +52,7 @@ pub(crate) struct Resolver<'a> {
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
-    pattern_raw_transform: Option<&'a PatternRawTransformCell<'a>>,
+    pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
 }
 
 struct TokenCallResolution {
@@ -69,7 +69,7 @@ enum ResolutionState {
     Unresolvable,
 }
 
-impl<'a> Resolver<'a> {
+impl<'a, 'cb> Resolver<'a, 'cb> {
     pub(crate) fn build(
         program: &'a oxc_ast::ast::Program<'a>,
         matched: &'a [MatchedImport],
@@ -78,7 +78,7 @@ impl<'a> Resolver<'a> {
         cross_file: Option<&'a CrossFileResolver>,
         source_path: Option<PathBuf>,
         line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'a PatternRawTransformCell<'a>>,
+        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
     ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -104,7 +104,7 @@ impl<'a> Resolver<'a> {
         matchers: Option<&'a Matchers>,
         source_path: Option<PathBuf>,
         line_index: Option<&'a crate::LineIndex<'a>>,
-        pattern_raw_transform: Option<&'a PatternRawTransformCell<'a>>,
+        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
     ) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         Self {
@@ -522,7 +522,7 @@ fn resolve_pattern_path(
     pattern: &BindingPattern<'_>,
     source: &Literal,
     target: SymbolId,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match pattern {
         BindingPattern::BindingIdentifier(id) => {
@@ -606,7 +606,7 @@ fn resolve_pattern_path(
 fn binding_property_key(
     key: &PropertyKey<'_>,
     computed: bool,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<String> {
     if !computed {
         return match key {

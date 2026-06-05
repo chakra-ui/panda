@@ -13,7 +13,7 @@ use std::borrow::Cow;
 /// that CSS text into a style object. `None` if the template isn't static.
 pub(crate) fn css_template_to_object(
     t: &TemplateLiteral<'_>,
-    resolver: Option<&Resolver<'_>>,
+    resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     let Literal::String(text) = template_literal_to_literal(t, resolver)? else {
         return None;
