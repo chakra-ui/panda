@@ -30,6 +30,12 @@ Three perf choices worth noting:
 ## RecipeStyleEntry
 
 ```rust
+pub struct RecipeStyleGroup {
+    pub class_name: Box<str>,
+    pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    pub entries: FxHashSet<RecipeStyleEntry>,
+}
+
 pub struct RecipeStyleEntry {
     pub prop: Box<str>,
     pub value: AtomValue,
@@ -40,6 +46,10 @@ pub struct RecipeStyleEntry {
 
 `RecipeStyleEntry` is not a second style serializer. It is the grouped-recipe IR used after serialization, when the
 stylesheet emitter needs to write declarations under a recipe class name instead of atomic utility class names.
+`RecipeStyleGroup::conditions` are class conditions from the selected variant value, such as
+`size={{ md: "lg" }}`. They are allowed to prefix the recipe class because the generated recipe runtime returns that
+conditional class. `RecipeStyleEntry::conditions` are nested conditions from the recipe style object itself, such as
+`variants.size.lg._hover`; these apply to the fixed recipe class selector and must not be folded into the class name.
 
 The conversion is intentionally mechanical:
 
@@ -48,8 +58,8 @@ impl From<Atom> for RecipeStyleEntry { /* prop, value, conditions, important */ 
 ```
 
 This keeps the `(prop, value, condition_chain, important)` semantics owned by `Atom` / `Encoder`. Recipe-specific code
-may still prepend selection conditions such as `size={{ md: "lg" }}`, but it does that after atomic serialization by
-prefixing the entry's existing condition chain.
+keeps selection conditions on the surrounding `RecipeStyleGroup` after atomic serialization instead of mutating the
+entry's existing condition chain.
 
 ## Walker
 
@@ -155,12 +165,15 @@ Keeping one walker matters for condition correctness. Condition-first recipe sha
 ```
 
 The encoder's property rule still applies: first non-condition segment is the property, and every condition segment
-except `base` remains in the condition chain. If a recipe call selects a variant responsively, that selection condition
-is prepended after serialization:
+except `base` remains in the entry condition chain. If a recipe call selects a variant responsively, that selection
+condition is stored on the recipe group:
 
 ```rust
-let mut conditions = selected_variant_conditions;
-conditions.extend(entry.conditions);
+RecipeStyleGroup {
+    class_name: "btn--size_lg".into(),
+    conditions: selected_variant_conditions,
+    entries,
+}
 ```
 
 Recipe grouping, slot resolution, default variants, compound variants, and watch-mode refcounting remain in

@@ -488,8 +488,8 @@ fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictiona
 }
 
 /// Merge a static recipe snapshot into the dynamic one: recipe groups with the
-/// same `(recipe, slot, class)` key have their entries concatenated; atoms are
-/// unioned (deduped).
+/// same `(recipe, slot, class, conditions)` key have their entries
+/// concatenated; atoms are unioned (deduped).
 fn merge_encoded_recipes(
     base: &EncodedRecipesSnapshot,
     static_recipes: &EncodedRecipesSnapshot,
@@ -514,7 +514,7 @@ fn is_empty_encoded_recipes(recipes: &EncodedRecipesSnapshot) -> bool {
 }
 
 /// Append `source` groups into `target`, merging entries into an existing
-/// group when their `(recipe, slot, class)` key already exists.
+/// group when their `(recipe, slot, class, conditions)` key already exists.
 fn extend_recipe_groups(
     target: &mut Vec<RecipeStyleGroupSnapshot>,
     source: &[RecipeStyleGroupSnapshot],
@@ -535,10 +535,13 @@ fn extend_recipe_groups(
     }
 }
 
-fn recipe_group_key(group: &RecipeStyleGroupSnapshot) -> (Box<str>, String, Box<str>) {
+fn recipe_group_key(
+    group: &RecipeStyleGroupSnapshot,
+) -> (Box<str>, String, Box<str>, Vec<Box<str>>) {
     (
         group.recipe.clone(),
         group.slot.to_string(),
         group.class_name.clone(),
+        group.conditions.iter().cloned().collect(),
     )
 }

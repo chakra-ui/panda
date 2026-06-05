@@ -321,12 +321,18 @@ impl RecipeRegistry {
             if !self.has_recipe(&name) {
                 continue;
             }
-            encoded.process_usage(self, &name, &Literal::Object(Vec::new()), conditions);
+            encoded.process_usage(
+                self,
+                &name,
+                &Literal::Object(Vec::new()),
+                conditions,
+                breakpoints,
+            );
             self.extend_compound_atoms(&name, &mut encoded.atomic);
             let options = self.variant_options(&name);
             for rule in rules {
                 for selected in Self::static_rule_selections(&rule, &responsive, &options) {
-                    encoded.process_usage(self, &name, &selected, conditions);
+                    encoded.process_usage(self, &name, &selected, conditions, breakpoints);
                 }
             }
         }
@@ -754,6 +760,7 @@ pub(crate) struct EncodedRecipesCache {
 #[derive(Debug, Default)]
 struct CountedRecipeStyleGroup {
     class_name: Box<str>,
+    conditions: SmallVec<[Box<str>; 2]>,
     entries: FxHashMap<RecipeStyleEntry, u32>,
 }
 
@@ -768,6 +775,7 @@ struct RecipeVariantKey {
     recipe: Box<str>,
     slot: Option<Box<str>>,
     class_name: Box<str>,
+    conditions: SmallVec<[Box<str>; 2]>,
 }
 
 impl EncodedRecipes {
@@ -813,11 +821,12 @@ impl EncodedRecipes {
         recipe_name: &str,
         selected: &Literal,
         conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
     ) {
         if let Some(node) = recipes.recipe(recipe_name) {
-            self.process_recipe(node, selected, conditions);
+            self.process_recipe(node, selected, conditions, breakpoints);
         } else if let Some(node) = recipes.slot_recipe(recipe_name) {
-            self.process_slot_recipe(node, selected, conditions);
+            self.process_slot_recipe(node, selected, conditions, breakpoints);
         }
     }
 
@@ -826,16 +835,18 @@ impl EncodedRecipes {
         node: &RecipeNode,
         selected: &Literal,
         conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
     ) {
         if let Some(base) = node.base.as_ref() {
             let key = recipe_part_key(&node.name, None);
             self.base.entry(key).or_insert_with(|| RecipeStyleGroup {
                 class_name: base.class_name.clone(),
+                conditions: SmallVec::new(),
                 entries: base.entries.clone(),
             });
         }
 
-        let selected = selected_variants(&node.default_variants, selected, conditions);
+        let selected = selected_variants(&node.default_variants, selected, conditions, breakpoints);
         for group in &node.variants {
             let Some(selected_values) = selected.get(group.name.as_ref()) else {
                 continue;
@@ -844,16 +855,21 @@ impl EncodedRecipes {
                 let Some(option) = group.options.get(selected_value.key.as_ref()) else {
                     continue;
                 };
-                let key = recipe_variant_key(&node.name, None, &option.class_name);
-                let entries = with_entry_conditions(&option.entries, &selected_value.conditions);
+                let key = recipe_variant_key(
+                    &node.name,
+                    None,
+                    &option.class_name,
+                    &selected_value.conditions,
+                );
                 self.variants
                     .entry(key)
                     .or_insert_with(|| RecipeStyleGroup {
                         class_name: option.class_name.clone(),
+                        conditions: selected_value.conditions.clone(),
                         entries: FxHashSet::default(),
                     })
                     .entries
-                    .extend(entries);
+                    .extend(option.entries.iter().cloned());
             }
         }
 
@@ -865,6 +881,7 @@ impl EncodedRecipes {
         node: &SlotRecipeNode,
         selected: &Literal,
         conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
     ) {
         for slot in &node.slots {
             let key = recipe_part_key(&node.name, Some(slot));
@@ -878,12 +895,13 @@ impl EncodedRecipes {
                 key,
                 RecipeStyleGroup {
                     class_name: part.class_name.clone(),
+                    conditions: SmallVec::new(),
                     entries: part.entries.clone(),
                 },
             );
         }
 
-        let selected = selected_variants(&node.default_variants, selected, conditions);
+        let selected = selected_variants(&node.default_variants, selected, conditions, breakpoints);
         for group in &node.variants {
             let Some(selected_values) = selected.get(group.name.as_ref()) else {
                 continue;
@@ -893,16 +911,21 @@ impl EncodedRecipes {
                     continue;
                 };
                 for (slot, part) in slots {
-                    let key = recipe_variant_key(&node.name, Some(slot), &part.class_name);
-                    let entries = with_entry_conditions(&part.entries, &selected_value.conditions);
+                    let key = recipe_variant_key(
+                        &node.name,
+                        Some(slot),
+                        &part.class_name,
+                        &selected_value.conditions,
+                    );
                     self.variants
                         .entry(key)
                         .or_insert_with(|| RecipeStyleGroup {
                             class_name: part.class_name.clone(),
+                            conditions: selected_value.conditions.clone(),
                             entries: FxHashSet::default(),
                         })
                         .entries
-                        .extend(entries);
+                        .extend(part.entries.iter().cloned());
                 }
             }
         }
@@ -982,6 +1005,7 @@ fn extend_missing_recipe_groups<K>(
             .entry(key.clone())
             .or_insert_with(|| RecipeStyleGroup {
                 class_name: group.class_name.clone(),
+                conditions: group.conditions.clone(),
                 entries: FxHashSet::default(),
             });
         let mut missing_entries = FxHashSet::default();
@@ -995,6 +1019,7 @@ fn extend_missing_recipe_groups<K>(
                 key.clone(),
                 RecipeStyleGroup {
                     class_name: group.class_name.clone(),
+                    conditions: group.conditions.clone(),
                     entries: missing_entries,
                 },
             );
@@ -1157,10 +1182,12 @@ fn add_recipe_part_groups(
             .entry(key.clone())
             .or_insert_with(|| CountedRecipeStyleGroup {
                 class_name: group.class_name.clone(),
+                conditions: group.conditions.clone(),
                 entries: FxHashMap::default(),
             });
         let view_group = view.entry(key.clone()).or_insert_with(|| RecipeStyleGroup {
             class_name: counted.class_name.clone(),
+            conditions: counted.conditions.clone(),
             entries: FxHashSet::default(),
         });
         for entry in &group.entries {
@@ -1183,10 +1210,12 @@ fn add_recipe_variant_groups(
             .entry(key.clone())
             .or_insert_with(|| CountedRecipeStyleGroup {
                 class_name: group.class_name.clone(),
+                conditions: group.conditions.clone(),
                 entries: FxHashMap::default(),
             });
         let view_group = view.entry(key.clone()).or_insert_with(|| RecipeStyleGroup {
             class_name: counted.class_name.clone(),
+            conditions: counted.conditions.clone(),
             entries: FxHashSet::default(),
         });
         for entry in &group.entries {
@@ -1262,11 +1291,17 @@ fn recipe_part_key(recipe: &str, slot: Option<&str>) -> RecipePartKey {
     }
 }
 
-fn recipe_variant_key(recipe: &str, slot: Option<&str>, class_name: &str) -> RecipeVariantKey {
+fn recipe_variant_key(
+    recipe: &str,
+    slot: Option<&str>,
+    class_name: &str,
+    conditions: &SmallVec<[Box<str>; 2]>,
+) -> RecipeVariantKey {
     RecipeVariantKey {
         recipe: recipe.into(),
         slot: slot.map(Into::into),
         class_name: class_name.into(),
+        conditions: conditions.clone(),
     }
 }
 
@@ -1277,25 +1312,6 @@ fn recipe_variant_class_name(
     value: &str,
 ) -> String {
     format!("{class_name}--{variant}{separator}{value}")
-}
-
-fn with_entry_conditions(
-    entries: &FxHashSet<RecipeStyleEntry>,
-    prefix_conditions: &SmallVec<[Box<str>; 2]>,
-) -> FxHashSet<RecipeStyleEntry> {
-    if prefix_conditions.is_empty() {
-        return entries.clone();
-    }
-    entries
-        .iter()
-        .cloned()
-        .map(|mut entry| {
-            let mut conditions = prefix_conditions.clone();
-            conditions.extend(entry.conditions.iter().cloned());
-            entry.conditions = conditions;
-            entry
-        })
-        .collect()
 }
 
 fn with_atom_conditions(
@@ -1353,6 +1369,7 @@ fn selected_variants(
     defaults: &FxHashMap<Box<str>, Box<str>>,
     selected: &Literal,
     conditions: &ProjectConditionMatcher,
+    breakpoints: &[String],
 ) -> FxHashMap<Box<str>, Vec<SelectedVariantValue>> {
     let mut out: FxHashMap<Box<str>, Vec<SelectedVariantValue>> = defaults
         .iter()
@@ -1372,7 +1389,7 @@ fn selected_variants(
     for (key, value) in entries {
         let mut values = Vec::new();
         let mut path = SmallVec::<[Box<str>; 2]>::new();
-        collect_selected_variant_values(value, conditions, &mut path, &mut values);
+        collect_selected_variant_values(value, conditions, breakpoints, &mut path, &mut values);
         if !values.is_empty() {
             out.insert(key.clone().into_boxed_str(), values);
         }
@@ -1386,6 +1403,7 @@ fn selected_variants(
 fn collect_selected_variant_values(
     value: &Literal,
     conditions: &ProjectConditionMatcher,
+    breakpoints: &[String],
     path: &mut SmallVec<[Box<str>; 2]>,
     out: &mut Vec<SelectedVariantValue>,
 ) {
@@ -1397,16 +1415,33 @@ fn collect_selected_variant_values(
                     path.push(key.clone().into_boxed_str());
                 }
                 if is_condition {
-                    collect_selected_variant_values(value, conditions, path, out);
+                    collect_selected_variant_values(value, conditions, breakpoints, path, out);
                 }
                 if is_condition && key != "base" {
                     path.pop();
                 }
             }
         }
+        Literal::Array(items) => {
+            for (index, item) in items.iter().enumerate() {
+                if matches!(item, Literal::Null) {
+                    continue;
+                }
+                let Some(condition) = breakpoints.get(index) else {
+                    continue;
+                };
+                if condition != "base" {
+                    path.push(condition.clone().into_boxed_str());
+                }
+                collect_selected_variant_values(item, conditions, breakpoints, path, out);
+                if condition != "base" {
+                    path.pop();
+                }
+            }
+        }
         Literal::Conditional(branches) => {
             for branch in branches {
-                collect_selected_variant_values(branch, conditions, path, out);
+                collect_selected_variant_values(branch, conditions, breakpoints, path, out);
             }
         }
         _ => {
@@ -1441,6 +1476,7 @@ fn sorted_recipe_part_group_snapshots(
                 serde_json::Value::String(slot.to_string())
             }),
             class_name: group.class_name.clone(),
+            conditions: group.conditions.clone(),
             entries: sorted_recipe_entries(&group.entries),
         })
         .collect();
@@ -1464,6 +1500,7 @@ fn sorted_recipe_variant_group_snapshots(
                 serde_json::Value::String(slot.to_string())
             }),
             class_name: group.class_name.clone(),
+            conditions: group.conditions.clone(),
             entries: sorted_recipe_entries(&group.entries),
         })
         .collect();
@@ -1471,6 +1508,7 @@ fn sorted_recipe_variant_group_snapshots(
         a.recipe
             .cmp(&b.recipe)
             .then_with(|| slot_sort_key(&a.slot).cmp(slot_sort_key(&b.slot)))
+            .then_with(|| a.conditions.cmp(&b.conditions))
             .then_with(|| a.class_name.cmp(&b.class_name))
     });
     out

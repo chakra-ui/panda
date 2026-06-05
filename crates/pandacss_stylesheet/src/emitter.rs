@@ -1461,9 +1461,11 @@ impl<'a> EmitContext<'a> {
         &self,
         writer: &mut CssWriter,
         class_name: &str,
+        class_conditions: &[Box<str>],
         entries: &[RecipeStyleEntry],
     ) {
         let mut pending: Option<PendingRecipeRule> = None;
+        let class_conditions = self.sort.sorted_condition_names(class_conditions);
 
         for entry in self.sort.sorted_recipe_entries(entries) {
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
@@ -1473,7 +1475,9 @@ impl<'a> EmitContext<'a> {
                 continue;
             }
 
-            for rule in self.rule_targets_for_class(class_name, &entry.conditions, false) {
+            for rule in
+                self.rule_targets_for_recipe_class(class_name, &class_conditions, &entry.conditions)
+            {
                 match &mut pending {
                     Some(pending) if pending.rule == rule => {
                         append_recipe_declarations(&mut pending.declarations, declarations.clone());
@@ -1593,6 +1597,26 @@ impl<'a> EmitContext<'a> {
         }
         let base = format!(".{}", escape_selector(&finalized));
         self.rule_targets_with_base_owned(base, conditions)
+    }
+
+    fn rule_targets_for_recipe_class(
+        &self,
+        class_name: &str,
+        class_conditions: &[&str],
+        entry_conditions: &[&str],
+    ) -> Vec<RuleTarget> {
+        let finalized = if self.config.hash.class_name() {
+            self.utility
+                .format_class_name_owned(hash_class_name(class_name, class_conditions))
+        } else {
+            let class_name = self.utility.format_class_name(class_name);
+            finalized_class_name_owned(class_name, class_conditions)
+        };
+        let base = format!(".{}", escape_selector(&finalized));
+        let mut conditions = Vec::with_capacity(class_conditions.len() + entry_conditions.len());
+        conditions.extend_from_slice(class_conditions);
+        conditions.extend_from_slice(entry_conditions);
+        self.rule_targets_with_base_owned(base, &conditions)
     }
 
     fn rule_targets_with_base_owned(
@@ -1801,7 +1825,7 @@ fn write_recipe_base_groups(
     }
     writer.layer("base", |writer| {
         for group in groups {
-            cx.write_recipe_group(writer, &group.class_name, &group.entries);
+            cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
         }
     });
 }
@@ -1817,7 +1841,7 @@ fn write_recipe_variant_groups(
         .copied()
         .filter(|group| is_slot_recipe_group(group) == slots)
     {
-        cx.write_recipe_group(writer, &group.class_name, &group.entries);
+        cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
     }
 }
 

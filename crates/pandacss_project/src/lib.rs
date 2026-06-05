@@ -397,6 +397,7 @@ impl Project {
                         &call.name,
                         arg,
                         &compiled.conditions,
+                        &compiled.breakpoints,
                     );
                 }
                 (MatchCategory::Jsx, _) => {
@@ -414,6 +415,7 @@ impl Project {
                             recipe_name,
                             default_props,
                             &compiled.conditions,
+                            &compiled.breakpoints,
                         );
                         report.jsx_usages += 1;
                         continue;
@@ -473,6 +475,7 @@ impl Project {
                         recipe_name,
                         &jsx.data,
                         &compiled.conditions,
+                        &compiled.breakpoints,
                     );
                 }
                 report.jsx_usages += 1;

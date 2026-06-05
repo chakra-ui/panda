@@ -132,7 +132,8 @@ impl<'a> SortContext<'a> {
         out.into_iter().map(|(entry, _)| entry).collect()
     }
 
-    fn sorted_condition_names<'b>(&self, conditions: &'b [Box<str>]) -> Vec<&'b str> {
+    #[must_use]
+    pub fn sorted_condition_names<'b>(&self, conditions: &'b [Box<str>]) -> Vec<&'b str> {
         let mut out = conditions
             .iter()
             .map(std::convert::AsRef::as_ref)

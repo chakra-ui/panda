@@ -477,14 +477,6 @@ fn recipe_function_calls_support_conditional_variants() {
     variants:
       - recipe: button
         slot: ~
-        className: button--size_md
-        entries:
-          - prop: fontSize
-            value: 16px
-            conditions:
-              - md
-      - recipe: button
-        slot: ~
         className: button--size_sm
         entries:
           - prop: fontSize
@@ -497,8 +489,68 @@ fn recipe_function_calls_support_conditional_variants() {
           - prop: fontWeight
             value: "600"
             conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        conditions:
+          - md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
     atomic: []
     "###);
+}
+
+#[test]
+fn recipe_function_calls_support_responsive_array_variants() {
+    let mut project = create_project(json!({
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "recipes": {
+                "button": {
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "16px" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { button } from '@panda/recipes';
+            button({ size: ['sm', 'md'] });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        conditions:
+          - md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+    atomic: []
+    ");
 }
 
 #[test]
@@ -990,18 +1042,19 @@ fn recipe_compound_variants_emit_unconditional_atoms_by_default() {
             conditions: []
       - recipe: badge
         slot: ~
-        className: badge--size_md
-        entries:
-          - prop: fontSize
-            value: 16px
-            conditions:
-              - md
-      - recipe: badge
-        slot: ~
         className: badge--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--size_md
+        conditions:
+          - md
+        entries:
+          - prop: fontSize
+            value: 16px
             conditions: []
     atomic:
       - prop: color
@@ -1061,18 +1114,19 @@ fn recipe_compound_variants_inherit_selected_conditions_with_smart_mode() {
             conditions: []
       - recipe: badge
         slot: ~
-        className: badge--size_md
-        entries:
-          - prop: fontSize
-            value: 16px
-            conditions:
-              - md
-      - recipe: badge
-        slot: ~
         className: badge--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--size_md
+        conditions:
+          - md
+        entries:
+          - prop: fontSize
+            value: 16px
             conditions: []
     atomic:
       - prop: color
@@ -1133,18 +1187,19 @@ fn recipe_components_support_conditional_variants_and_style_props() {
             conditions: []
       - recipe: button
         slot: ~
-        className: btn--size_md
-        entries:
-          - prop: fontSize
-            value: 16px
-            conditions:
-              - md
-      - recipe: button
-        slot: ~
         className: btn--size_sm
         entries:
           - prop: fontSize
             value: 12px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: btn--size_md
+        conditions:
+          - md
+        entries:
+          - prop: fontSize
+            value: 16px
             conditions: []
     atomic: []
     ");
@@ -1314,12 +1369,76 @@ fn slot_recipe_function_calls_support_conditional_variants() {
     variants:
       - recipe: tabs
         slot: root
+        className: tabs__root--size_sm
+        entries:
+          - prop: gap
+            value: 4px
+            conditions: []
+      - recipe: tabs
+        slot: root
         className: tabs__root--size_md
+        conditions:
+          - md
         entries:
           - prop: gap
             value: 8px
-            conditions:
-              - md
+            conditions: []
+      - recipe: tabs
+        slot: trigger
+        className: tabs__trigger--size_sm
+        entries:
+          - prop: padding
+            value: 2px
+            conditions: []
+      - recipe: tabs
+        slot: trigger
+        className: tabs__trigger--size_md
+        conditions:
+          - md
+        entries:
+          - prop: padding
+            value: 4px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn slot_recipe_function_calls_support_responsive_array_variants() {
+    let mut project = create_project(json!({
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "slotRecipes": {
+                "tabs": {
+                    "slots": ["root"],
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "root": { "gap": "4px" }
+                            },
+                            "md": {
+                                "root": { "gap": "8px" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { tabs } from '@panda/recipes';
+            tabs({ size: ['sm', 'md'] });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
       - recipe: tabs
         slot: root
         className: tabs__root--size_sm
@@ -1328,19 +1447,13 @@ fn slot_recipe_function_calls_support_conditional_variants() {
             value: 4px
             conditions: []
       - recipe: tabs
-        slot: trigger
-        className: tabs__trigger--size_md
+        slot: root
+        className: tabs__root--size_md
+        conditions:
+          - md
         entries:
-          - prop: padding
-            value: 4px
-            conditions:
-              - md
-      - recipe: tabs
-        slot: trigger
-        className: tabs__trigger--size_sm
-        entries:
-          - prop: padding
-            value: 2px
+          - prop: gap
+            value: 8px
             conditions: []
     atomic: []
     ");

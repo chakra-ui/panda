@@ -63,6 +63,7 @@ pub enum AtomValue {
 #[derive(Debug, Clone, Default)]
 pub struct RecipeStyleGroup {
     pub class_name: Box<str>,
+    pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     pub entries: FxHashSet<RecipeStyleEntry>,
 }
 
@@ -108,6 +109,8 @@ pub struct RecipeStyleGroupSnapshot {
     pub recipe: Box<str>,
     pub slot: serde_json::Value,
     pub class_name: Box<str>,
+    #[serde(skip_serializing_if = "is_empty_conditions")]
+    pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     pub entries: Vec<RecipeStyleEntry>,
 }
 
@@ -508,6 +511,10 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
 )]
 fn is_false(value: &bool) -> bool {
     !*value
+}
+
+fn is_empty_conditions(value: &SmallVec<[Box<str>; INLINE_CONDS]>) -> bool {
+    value.is_empty()
 }
 
 fn is_absolute_url(value: &str) -> bool {
