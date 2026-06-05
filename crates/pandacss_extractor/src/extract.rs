@@ -131,11 +131,11 @@ struct ExtractResult {
     token_refs: Vec<TokenRef>,
 }
 
-fn run_extract(
+fn run_extract<'cb>(
     source: &str,
     path: &str,
     config: &ExtractorConfig,
-    pattern_raw_transform: Option<&PatternRawTransformCell<'_>>,
+    pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
 ) -> ExtractResult {
     let allocator = Allocator::default();
     let raw_source = source;

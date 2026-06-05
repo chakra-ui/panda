@@ -131,8 +131,8 @@ pub(crate) fn collect_calls_with_token_refs(
     (calls, diagnostics, token_refs)
 }
 
-struct Extractor<'walk, 'ctx> {
-    ctx: &'walk crate::VisitorContext<'ctx, '_>,
+struct Extractor<'walk, 'ctx, 'cb> {
+    ctx: &'walk crate::VisitorContext<'ctx, 'cb>,
     out: &'walk mut Vec<ExtractedCall>,
     diagnostics: &'walk mut Vec<Diagnostic>,
     line_index: Option<&'walk crate::LineIndex<'walk>>,
@@ -147,7 +147,7 @@ struct ResolvedCallee<'a> {
     alias: &'a str,
 }
 
-impl Extractor<'_, '_> {
+impl Extractor<'_, '_, '_> {
     fn resolve_callee<'a>(&'a self, call: &'a CallExpression<'_>) -> Option<ResolvedCallee<'a>> {
         self.resolve_callee_expr(&call.callee)
     }
@@ -310,7 +310,7 @@ fn member_display(root: &str, path: &[&str]) -> String {
     out
 }
 
-impl<'a> Visit<'a> for Extractor<'_, '_> {
+impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let (Some(resolver), Some(token_refs)) =
             (self.ctx.resolver, self.token_refs.as_deref_mut())
@@ -400,7 +400,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-impl Extractor<'_, '_> {
+impl Extractor<'_, '_, '_> {
     fn jsx_recipe_identifier(&self, call: &CallExpression<'_>) -> Option<String> {
         let arg = call.arguments.get(1)?.as_expression()?;
         let Expression::Identifier(ident) = arg else {
