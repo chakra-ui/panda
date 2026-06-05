@@ -48,16 +48,16 @@ fn emits_primitive_and_semantic_token_vars() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-    --spacing-2: 0.5rem;
-    --colors-fg: #f00;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+        --spacing-2: 0.5rem;
+        --colors-fg: var(--colors-red);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -145,27 +145,29 @@ fn optimize_tokens_keeps_referenced_semantic_conditions() {
         "import { css } from '@panda/css'; css({ textStyle: 'body' });",
     );
 
-    assert!(css.contains("--colors-fg: #f00;"));
-    assert!(css.contains("--colors-fg: #00f;"));
+    assert!(css.contains("--colors-fg: var(--colors-red);"));
+    assert!(css.contains("--colors-fg: var(--colors-blue);"));
     assert!(!css.contains("--colors-green: #0f0;"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-fg: #f00;
-  }
-  .dark {
-    --colors-fg: #00f;
-  }
-}
-@layer utilities {
-  @layer compositions {
-    .textStyle_body {
-      color: var(--colors-fg);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+        --colors-blue: #00f;
+        --colors-fg: var(--colors-red);
+      }
+      .dark {
+        --colors-fg: var(--colors-blue);
+      }
     }
-  }
-}
-");
+    @layer utilities {
+      @layer compositions {
+        .textStyle_body {
+          color: var(--colors-fg);
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -355,20 +357,22 @@ fn optimize_tokens_keeps_runtime_semantic_token_references_without_atoms() {
         "import { token } from '@panda/tokens'; export const fg = token.var('colors.fg');",
     );
 
-    assert!(css.contains("--colors-fg: #f00;"));
-    assert!(css.contains("--colors-fg: #00f;"));
+    assert!(css.contains("--colors-fg: var(--colors-red);"));
+    assert!(css.contains("--colors-fg: var(--colors-blue);"));
     assert!(!css.contains("--colors-green: #0f0;"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-fg: #f00;
-  }
-  .dark {
-    --colors-fg: #00f;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+        --colors-blue: #00f;
+        --colors-fg: var(--colors-red);
+      }
+      .dark {
+        --colors-fg: var(--colors-blue);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -562,24 +566,24 @@ fn emits_semantic_token_conditions() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-gray-100: #f4f4f5;
-    --colors-gray-900: #18181b;
-    --colors-fg: #18181b;
-  }
-  .dark {
-    --colors-fg: #f4f4f5;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    :where(:root, :host) {
-      --colors-fg: color-mix(in srgb, #18181b 80%, transparent);
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-gray-100: #f4f4f5;
+        --colors-gray-900: #18181b;
+        --colors-fg: var(--colors-gray-900);
+      }
+      .dark {
+        --colors-fg: var(--colors-gray-100);
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        :where(:root, :host) {
+          --colors-fg: color-mix(in srgb, var(--colors-gray-900) 80%, transparent);
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -613,24 +617,24 @@ fn block_conditions_emit_each_semantic_token_slot_path() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-    --colors-blue: #00f;
-    --colors-fg: #f00;
-  }
-  :where(.dark, .dark *) {
-    --colors-fg: #00f;
-  }
-  @media (prefers-color-scheme: dark) {
-    :where([data-color-mode=system], [data-color-mode=system] *) {
-      --colors-fg: #00f;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+        --colors-blue: #00f;
+        --colors-fg: var(--colors-red);
+      }
+      :where(.dark, .dark *) {
+        --colors-fg: var(--colors-blue);
+      }
+      @media (prefers-color-scheme: dark) {
+        :where([data-color-mode=system], [data-color-mode=system] *) {
+          --colors-fg: var(--colors-blue);
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -664,23 +668,23 @@ fn emits_nested_semantic_token_conditions() {
         }
     }));
     let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red: #f00;
-    --colors-blue: #00f;
-    --breakpoints-md: 48rem;
-    --sizes-breakpoint-md: 48rem;
-    --colors-accent: #f00;
-  }
-  @media (width >= 48rem) {
-    .dark {
-      --colors-accent: #00f;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red: #f00;
+        --colors-blue: #00f;
+        --breakpoints-md: 48rem;
+        --sizes-breakpoint-md: 48rem;
+        --colors-accent: var(--colors-red);
+      }
+      @media (width >= 48rem) {
+        .dark {
+          --colors-accent: var(--colors-blue);
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -872,35 +876,35 @@ fn static_css_themes_emit_selected_theme_token_vars() {
 
     assert!(css.contains("[data-panda-theme=primary]"));
     assert!(!css.contains("[data-panda-theme=primary-legacy]"));
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-text: blue;
-    --colors-blue-400: #60a5fa;
-    --colors-blue-600: #2563eb;
-    --colors-red-200: #fecaca;
-    --colors-red-400: #f87171;
-    --colors-red-600: #dc2626;
-    --colors-body: #2563eb;
-  }
-  @media (prefers-color-scheme: dark) {
-    :where(:root, :host) {
-      --colors-body: #60a5fa;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-text: blue;
+        --colors-blue-400: #60a5fa;
+        --colors-blue-600: #2563eb;
+        --colors-red-200: #fecaca;
+        --colors-red-400: #f87171;
+        --colors-red-600: #dc2626;
+        --colors-body: var(--colors-blue-600);
+      }
+      @media (prefers-color-scheme: dark) {
+        :where(:root, :host) {
+          --colors-body: var(--colors-blue-400);
+        }
+      }
+      :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+        --colors-text: red;
+        --colors-body: var(--colors-red-600);
+        --colors-muted: var(--colors-red-200);
+      }
+      @media (prefers-color-scheme: dark) {
+        :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+          --colors-body: var(--colors-red-400);
+        }
+      }
     }
-  }
-  :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
-    --colors-text: red;
-    --colors-body: #dc2626;
-    --colors-muted: #fecaca;
-  }
-  @media (prefers-color-scheme: dark) {
-    :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
-      --colors-body: #f87171;
-    }
-  }
-}
-");
+    ");
 }
 
 #[test]

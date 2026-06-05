@@ -851,7 +851,7 @@ fn expand_references(
             Cow::Borrowed(
                 by_path
                     .get(key)
-                    .map_or(key, |index| tokens[*index].value.as_ref()),
+                    .map_or(key, |index| tokens[*index].var.as_ref()),
             )
         };
         out.push_str(&replacement);

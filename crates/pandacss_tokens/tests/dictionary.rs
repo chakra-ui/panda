@@ -192,6 +192,42 @@ fn semantic_category_values_emit_var_refs() {
 }
 
 #[test]
+fn semantic_token_reference_expands_to_var_not_value() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "brand": {
+                        "500": { "value": "#111827" }
+                    }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "primary": { "value": "{colors.brand.500}" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    assert_eq!(
+        dict.get_str("colors.primary", None),
+        Some("var(--colors-brand-500)")
+    );
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    colors.brand.500: "#111827"
+    colors.colorPalette: colors.colorPalette
+    colors.colorPalette.500: colors.colorPalette.500
+    colors.primary: var(--colors-brand-500)
+    "##);
+}
+
+#[test]
 fn negative_category_values_emit_calc_values() {
     let mut negative = t(
         "spacing.-4",
@@ -744,7 +780,7 @@ fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
       deprecated: false
       description: ~
     - path: colors.fg
-      value: "#f00"
+      value: var(--colors-red-500)
       var: var(--colors-fg)
       category: colors
       condition: ~
@@ -830,7 +866,7 @@ fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
       deprecated: false
       description: ~
     - path: colors.fg
-      value: "#fff"
+      value: var(--colors-bg)
       var: var(--colors-fg)
       category: colors
       condition: _themeDark
@@ -919,14 +955,14 @@ fn from_config_transforms_composite_token_values() {
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     assets.logo: "url(\"/logo.svg\")"
     assets.mark: "url(\"data:image/svg+xml,%3csvg viewBox='0 0 1 1'%3e%3cpath fill='black'/%3e%3c/svg%3e\")"
-    borders.base: "1px solid #f00"
+    borders.base: 1px solid var(--colors-red)
     colors.colorPalette: colors.colorPalette
     colors.red: "#f00"
     easings.smooth: "cubic-bezier(0.4, 0, 0.2, 1)"
     fonts.body: "Inter, sans-serif"
-    gradients.brand: "linear-gradient(to right, #f00 0px, blue 100px)"
-    shadows.ring: "0px 1px 2px 0px rgb(0 0 0 / 0.1), 0px 0px 0px 1px #f00"
-    shadows.sm: "4px 10px 4px 0px #f00"
+    gradients.brand: "linear-gradient(to right, var(--colors-red) 0px, blue 100px)"
+    shadows.ring: "0px 1px 2px 0px rgb(0 0 0 / 0.1), 0px 0px 0px 1px var(--colors-red)"
+    shadows.sm: 4px 10px 4px 0px var(--colors-red)
     "##);
 }
 
@@ -967,7 +1003,7 @@ fn from_config_expands_color_mix_references() {
     colors.border: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
     colors.colorPalette: colors.colorPalette
     colors.fg: "color-mix(in srgb, var(--colors-pink) 87%, transparent)"
-    colors.fg@_dark: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
+    colors.fg@_dark: var(--colors-border)
     colors.overlay: "color-mix(in srgb, var(--colors-border) 50%, transparent)"
     colors.pink: "#ff00ff"
     colors.ref: "color-mix(in srgb, var(--colors-border) 40%, transparent)"
@@ -1098,7 +1134,7 @@ fn css_vars_view_uses_expanded_reference_and_color_mix_values() {
       - name: "--colors-border"
         value: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
       - name: "--colors-fg"
-        value: "#ff00ff"
+        value: var(--colors-pink)
     conditions:
       - condition: _dark
         vars:
@@ -1515,9 +1551,9 @@ fn from_config_resolves_alias_chains_like_js_dictionary() {
         .expect("non-empty dictionary");
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
-    colors.border: "#ff00ff"
+    colors.border: var(--colors-pink)
     colors.colorPalette: colors.colorPalette
-    colors.disabled: "#ff00ff"
+    colors.disabled: var(--colors-border)
     colors.pink: "#ff00ff"
     "##);
 }
@@ -1607,7 +1643,7 @@ fn from_config_applies_spacing_middlewares() {
         .expect("token dictionary")
         .expect("non-empty dictionary");
 
-    assert_yaml_snapshot!(snapshot_token_details(&dict), @r##"
+    assert_yaml_snapshot!(snapshot_token_details(&dict), @r#"
     - path: sizes.full
       value: 100%
       var: var(--sizes-full)
@@ -1630,7 +1666,7 @@ fn from_config_applies_spacing_middlewares() {
       originalValue: ~
       extensions: {}
     - path: spacing.gutter
-      value: 0.25rem
+      value: var(--spacing-sm)
       var: var(--spacing-gutter)
       category: spacing
       condition: ~
@@ -1683,7 +1719,7 @@ fn from_config_applies_spacing_middlewares() {
         isNegative: "true"
         originalPath: spacing.gutter
         prop: "-gutter"
-    "##);
+    "#);
 }
 
 fn snapshot_tokens(dict: &TokenDictionary) -> Vec<serde_json::Value> {

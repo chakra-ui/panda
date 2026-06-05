@@ -161,13 +161,13 @@ fn generates_theme_artifact_files() {
         .iter()
         .find(|file| file.path == "themes/theme-default.json")
         .expect("default theme json");
-    assert_snapshot!(default_theme.code, @r##"
+    assert_snapshot!(default_theme.code, @r#"
     {
       "name": "default",
       "id": "panda-theme-default",
-      "css": "[data-panda-theme=default] {\n  --colors-primary: blue;\n  --colors-text: #2563eb;\n}\n@media (prefers-color-scheme: dark) {\n  [data-panda-theme=default] {\n    --colors-text: #60a5fa;\n  }\n}"
+      "css": "[data-panda-theme=default] {\n  --colors-primary: blue;\n  --colors-text: var(--colors-blue-600);\n}\n@media (prefers-color-scheme: dark) {\n  [data-panda-theme=default] {\n    --colors-text: var(--colors-blue-400);\n  }\n}"
     }
-    "##);
+    "#);
     let empty_theme = artifact
         .files
         .iter()
