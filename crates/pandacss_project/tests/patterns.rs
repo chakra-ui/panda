@@ -179,6 +179,80 @@ fn pattern_raw_result_spread_uses_transformed_styles_in_nested_css() {
 }
 
 #[test]
+fn inline_pattern_raw_spread_uses_transformed_styles_in_nested_css() {
+    let mut project = create_project(json!({
+        "patterns": {
+            "stack": {
+                "properties": {
+                    "direction": { "type": "string" },
+                    "gap": { "type": "string" }
+                },
+                "defaultValues": { "direction": "column" }
+            }
+        }
+    }));
+    let mut transform = |name: &str, styles: &Literal| {
+        assert_eq!(name, "stack");
+        Ok(Some(Literal::Object(vec![
+            ("display".to_owned(), Literal::String("flex".to_owned())),
+            (
+                "flexDirection".to_owned(),
+                object_value(styles, "direction")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("missing".to_owned())),
+            ),
+            (
+                "gap".to_owned(),
+                object_value(styles, "gap")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("missing".to_owned())),
+            ),
+        ])))
+    };
+
+    project.parse_file_with(
+        "fixture.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { stack } from '@panda/patterns';
+
+            css({
+              bg: 'blue.100',
+              '& ul': {
+                ...stack.raw({ gap: '0.8rem' }),
+              },
+              '& li': {
+                bg: 'blue.200',
+              },
+            });
+        "},
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
+    );
+
+    let nested_atoms: Vec<_> = sorted_atoms(&project)
+        .into_iter()
+        .filter(|atom| atom.conditions().len() == 1 && atom.conditions()[0].as_ref() == "& ul")
+        .collect();
+    assert_yaml_snapshot!(nested_atoms, @r#"
+    - prop: display
+      value: flex
+      conditions:
+        - "& ul"
+    - prop: flexDirection
+      value: column
+      conditions:
+        - "& ul"
+    - prop: gap
+      value: 0.8rem
+      conditions:
+        - "& ul"
+    "#);
+}
+
+#[test]
 fn strict_pattern_components_only_extract_pattern_props() {
     let mut project = create_project(json!({
         "patterns": {
