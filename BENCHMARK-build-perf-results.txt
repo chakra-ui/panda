@@ -1,0 +1,104 @@
+Rust build perf benchmark — 2026-06-05T10:12:56Z
+
+=== A-baseline ===
+wall_ms=53917
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 48.71s
+     Summary [   4.754s] 930 tests run: 930 passed, 1 skipped
+
+=== B-profile-tuning ===
+wall_ms=158703
+    Finished `test` profile [optimized + debuginfo] target(s) in 2m 35s
+     Summary [   3.196s] 930 tests run: 930 passed, 1 skipped
+
+=== C-profile-mold ===
+wall_ms=160920
+    Finished `test` profile [optimized + debuginfo] target(s) in 2m 37s
+     Summary [   3.198s] 930 tests run: 930 passed, 1 skipped
+
+=== D-sccache-populate ===
+wall_ms=159537
+    Finished `test` profile [optimized + debuginfo] target(s) in 2m 35s
+     Summary [   3.296s] 930 tests run: 930 passed, 1 skipped
+
+=== E-sccache-hit ===
+wall_ms=132990
+    Finished `test` profile [optimized + debuginfo] target(s) in 2m 09s
+     Summary [   3.290s] 930 tests run: 930 passed, 1 skipped
+
+
+--- Round 2 (no test opt-level; compile-focused) ---
+
+=== B2-split-debuginfo-only ===
+wall_ms=60286
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 54.71s
+     Summary [   5.060s] 930 tests run: 930 passed, 1 skipped
+
+=== C2-split-debuginfo-mold ===
+wall_ms=61008
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 55.62s
+     Summary [   4.896s] 930 tests run: 930 passed, 1 skipped
+
+=== D2-sccache-populate ===
+wall_ms=60555
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 55.31s
+     Summary [   4.785s] 930 tests run: 930 passed, 1 skipped
+
+Compile requests                    333
+Compile requests executed           159
+Cache hits                            0
+Cache hits rate                    0.00 %
+Cache hits rate (Rust)             0.00 %
+Non-cacheable compilations            0
+Non-cacheable calls                 171
+Non-cacheable reasons:
+
+=== E2-sccache-hit ===
+wall_ms=44194
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.92s
+     Summary [   4.864s] 930 tests run: 930 passed, 1 skipped
+
+Compile requests                    665
+Compile requests executed           318
+Cache hits                          157
+Cache hits (Rust)                   157
+Cache hits rate                   50.00 %
+Cache hits rate (Rust)            50.00 %
+Non-cacheable compilations            0
+Non-cacheable calls                 341
+Non-cacheable reasons:
+
+Compile requests                    665
+Compile requests executed           318
+Cache hits                          157
+Cache hits (Rust)                   157
+Cache misses                        157
+Cache misses (Rust)                 157
+Cache hits rate                   50.00 %
+Cache hits rate (Rust)            50.00 %
+Cache timeouts                        0
+Cache read errors                     0
+Forced recaches                       0
+Cache write errors                    0
+Compilation failures                  4
+Cache errors                          0
+Non-cacheable compilations            0
+Non-cacheable calls                 341
+Non-compilation calls                 6
+Unsupported compiler calls            0
+Average cache write               0.000 s
+Average compiler                  0.361 s
+Average cache read hit            0.000 s
+Failed distributed compilations       0
+
+Non-cacheable reasons:
+incremental                         240
+crate-type                           78
+-                                    10
+missing input                         7
+-o                                    6
+
+Cache location                  Local disk: "/tmp/sccache-bench-store-r2"
+Use direct/preprocessor mode?   yes
+Version (client)                0.8.2
+Cache size                          108 MiB
+Max cache size                       10 GiB
