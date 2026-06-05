@@ -365,26 +365,24 @@ impl<'a> Resolver<'a> {
             return None;
         }
 
-        let name = if matched.kind == ImportSpecifierKind::Named {
-            if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
+        match matched.kind {
+            ImportSpecifierKind::Named => {
+                if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
+                    return None;
+                }
+            }
+            ImportSpecifierKind::Namespace => {
+                let (&property, raw_tail) = path.split_first()?;
+                if raw_tail != ["raw"] || !is_raw_category(matched.category) {
+                    return None;
+                }
+                if !matchers.category_accepts_name(matched.category, property) {
+                    return None;
+                }
+            }
+            ImportSpecifierKind::Default => {
                 return None;
             }
-            matched.name.as_str()
-        } else if matched.kind == ImportSpecifierKind::Namespace {
-            let (&property, raw_tail) = path.split_first()?;
-            if raw_tail != ["raw"] || !is_raw_category(matched.category) {
-                return None;
-            }
-            if !matchers.category_accepts_name(matched.category, property) {
-                return None;
-            }
-            property
-        } else {
-            return None;
-        };
-
-        if matched.category != MatchCategory::Css || name != "css" {
-            return None;
         }
 
         call.arguments
