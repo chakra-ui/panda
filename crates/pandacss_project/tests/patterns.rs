@@ -1,8 +1,6 @@
 //! Config-derived pattern behavior.
 
-mod common;
-
-use common::{create_project, sorted_atoms};
+use crate::common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::Literal;

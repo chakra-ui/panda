@@ -1,6 +1,4 @@
-mod common;
-
-use common::{compile_layer_css, config};
+use crate::common::{compile_layer_css, config};
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetLayer;
 

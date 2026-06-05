@@ -283,6 +283,12 @@ pub struct OptimizeConfig {
     pub remove_unused_tokens: bool,
     #[serde(default)]
     pub remove_unused_keyframes: bool,
+    /// When false (default), emit all config-recipe compound variant atoms on
+    /// first recipe usage (Node parity, runtime-safe with `getCompoundVariantCss`).
+    /// When true, only emit compound atoms whose variant keys match
+    /// statically-selected props (smaller CSS; pair with `staticCss.recipes`).
+    #[serde(default)]
+    pub smart_compound_variants: bool,
 }
 
 /// User-facing names for the five cascade layers. Matches v1's

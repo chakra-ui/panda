@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use rustc_hash::FxHashSet;
 
-use pandacss_config::UserConfig;
+use pandacss_config::{OptimizeConfig, UserConfig};
 use pandacss_extractor::ExtractorConfig;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_tokens::TokenDictionary;
@@ -31,6 +31,7 @@ pub struct Config {
     pub(crate) config_recipes: BTreeMap<RecipeKey, Recipe>,
     pub(crate) config_slot_recipes: BTreeMap<RecipeKey, SlotRecipe>,
     pub(crate) keyframes: FxHashSet<String>,
+    pub(crate) optimize: OptimizeConfig,
 }
 
 impl Config {

@@ -86,6 +86,7 @@ pub(crate) fn compile_config_with_token_dictionary(
             .as_object()
             .map(|frames| frames.keys().cloned().collect())
             .unwrap_or_default(),
+        optimize: config.optimize,
     })
 }
 

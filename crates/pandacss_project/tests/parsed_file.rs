@@ -1,8 +1,6 @@
 //! Read-only `ParsedFile` view behavior.
 
-mod common;
-
-use common::create_project;
+use crate::common::create_project;
 use indoc::indoc;
 use pandacss_project::DiagnosticSeverity;
 use serde_json::json;

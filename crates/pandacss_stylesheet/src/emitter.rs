@@ -13,8 +13,9 @@ use rustc_hash::FxHashSet;
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
+use crate::grouped::{GroupedDeclaration, GroupNode, RuleBody, write_grouped_rules};
 use crate::numeric_value;
-use crate::sort::{SortContext, condition_raw_paths};
+use crate::sort::{SortContext, SortedAtom, condition_raw_paths};
 use crate::writer::CssWriter;
 
 pub struct EmitOutput {
@@ -57,7 +58,7 @@ pub fn emit<'a>(
     }
     if has_base_layer(config) {
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
-            cx.serialize_styles(writer, &config.global_css);
+            cx.write_collected_styles(writer, &config.global_css);
             cx.serialize_global_vars(writer);
             serialize_global_fontface(writer, &config.global_fontface);
             serialize_global_position_try(writer, &config.global_position_try);
@@ -66,6 +67,7 @@ pub fn emit<'a>(
     if !recipes.atomic.is_empty() {
         atoms.extend(recipes.atomic.iter());
     }
+    atoms = dedup_atom_refs(atoms);
     let keyframes = as_non_empty_object(&config.theme.keyframes);
     let usage = if config.optimize.remove_unused_tokens || config.optimize.remove_unused_keyframes {
         Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
@@ -107,14 +109,10 @@ pub fn emit<'a>(
         let buckets = bucket_atoms_by_layer(&cx, sorted);
         if !buckets.default.is_empty() || !buckets.custom.is_empty() {
             layer_ranges.utilities = Some(write_layer(&mut writer, &layers.utilities, |writer| {
-                for atom in &buckets.default {
-                    cx.write_atom(writer, atom.atom, &atom.conditions);
-                }
+                cx.write_grouped_utilities(writer, &buckets.default);
                 for (name, atoms) in &buckets.custom {
                     writer.layer(name, |writer| {
-                        for atom in atoms {
-                            cx.write_atom(writer, atom.atom, &atom.conditions);
-                        }
+                        cx.write_grouped_utilities(writer, atoms);
                     });
                 }
             }));
@@ -990,32 +988,42 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    fn write_atom(&self, writer: &mut CssWriter, atom: &Atom, conditions: &[&str]) {
+    fn write_grouped_utilities(&self, writer: &mut CssWriter, atoms: &[SortedAtom<'_>]) {
+        let mut grouped = GroupNode::default();
+        for atom in atoms {
+            self.collect_atom_rules(atom.atom, &atom.conditions, &mut grouped);
+        }
+        if !grouped.is_empty() {
+            write_grouped_rules(writer, &grouped);
+        }
+    }
+
+    fn collect_atom_rules(&self, atom: &Atom, conditions: &[&str], grouped: &mut GroupNode) {
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
-        if self.write_composition_atom(writer, atom, conditions, &result) {
+        if self.collect_composition_atom_rules(atom, conditions, &result, grouped) {
             return;
         }
+        let numeric_hint = atom_numeric_hint(atom.value());
         for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
-            Self::write_style_rule(
-                writer,
-                &rule,
-                &result.styles,
-                atom.important(),
-                atom_numeric_hint(atom.value()),
-            );
+            let Some(declarations) =
+                self.declarations_from_literal(&result.styles, atom.important(), numeric_hint)
+            else {
+                continue;
+            };
+            push_grouped_rule(grouped, &rule, declarations);
         }
     }
 
-    fn write_composition_atom(
+    fn collect_composition_atom_rules(
         &self,
-        writer: &mut CssWriter,
         atom: &Atom,
         conditions: &[&str],
         result: &UtilityTransformResult,
+        grouped: &mut GroupNode,
     ) -> bool {
         if !is_composition_prop(atom.prop()) {
             return false;
@@ -1032,13 +1040,13 @@ impl<'a> EmitContext<'a> {
 
         let base_rules =
             self.rule_targets_for_class(&result.class_name, conditions, atom.important());
-        self.write_style_entries_for_rules(writer, &entries, &base_rules, atom.important());
+        self.collect_style_entries_for_rules(grouped, &entries, &base_rules, atom.important());
         true
     }
 
-    fn write_style_entries_for_rules(
+    fn collect_style_entries_for_rules(
         &self,
-        writer: &mut CssWriter,
+        grouped: &mut GroupNode,
         entries: &[RecipeStyleEntry],
         base_rules: &[RuleTarget],
         important: bool,
@@ -1063,7 +1071,7 @@ impl<'a> EmitContext<'a> {
                         }
                         Some(_) => {
                             let previous = pending.take().expect("pending grouped style rule");
-                            Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                            push_grouped_rule(grouped, &previous.rule, previous.declarations);
                             pending = Some(PendingRecipeRule {
                                 rule,
                                 declarations: declarations.clone(),
@@ -1081,27 +1089,61 @@ impl<'a> EmitContext<'a> {
         }
 
         if let Some(pending) = pending {
-            Self::write_recipe_rule(writer, &pending.rule, &pending.declarations);
+            push_grouped_rule(grouped, &pending.rule, pending.declarations);
         }
     }
 
-    fn serialize_styles(&self, writer: &mut CssWriter, value: &Value) {
+    fn declarations_from_literal(
+        &self,
+        styles: &Literal,
+        important: bool,
+        numeric_hint: Option<&str>,
+    ) -> Option<Vec<RecipeDeclaration>> {
+        let Literal::Object(entries) = styles else {
+            return None;
+        };
+        let mut declarations = Vec::with_capacity(entries.len());
+        for (prop, value) in entries {
+            if let Some(value) = literal_to_css(prop, value, numeric_hint) {
+                let (value, value_important) = split_important(&value);
+                append_recipe_declaration(
+                    &mut declarations,
+                    RecipeDeclaration {
+                        prop: hyphenate_property(prop),
+                        value: value.into_owned(),
+                        important: important || value_important,
+                    },
+                );
+            }
+        }
+        Some(declarations)
+    }
+
+    fn write_collected_styles(&self, writer: &mut CssWriter, value: &Value) {
+        let mut grouped = GroupNode::default();
+        self.collect_styles(&mut grouped, value);
+        if !grouped.is_empty() {
+            write_grouped_rules(writer, &grouped);
+        }
+    }
+
+    fn collect_styles(&self, grouped: &mut GroupNode, value: &Value) {
         let Value::Object(entries) = value else {
             return;
         };
         let mut conditions = Vec::new();
         for (selector, styles) in entries {
             if let Some(condition) = resolved_condition_paths(self.config, selector) {
-                self.serialize_scope(writer, styles, &mut conditions, condition);
+                self.collect_scope(grouped, styles, &mut conditions, condition);
             } else {
-                self.serialize_style_object(writer, selector, styles, &mut conditions);
+                self.collect_style_object(grouped, selector, styles, &mut conditions);
             }
         }
     }
 
-    fn serialize_scope(
+    fn collect_scope(
         &self,
-        writer: &mut CssWriter,
+        grouped: &mut GroupNode,
         value: &Value,
         conditions: &mut Vec<ConditionPaths>,
         condition: ConditionPaths,
@@ -1113,17 +1155,17 @@ impl<'a> EmitContext<'a> {
         conditions.push(condition);
         for (selector, styles) in entries {
             if let Some(condition) = resolved_condition_paths(self.config, selector) {
-                self.serialize_scope(writer, styles, conditions, condition);
+                self.collect_scope(grouped, styles, conditions, condition);
             } else {
-                self.serialize_style_object(writer, selector, styles, conditions);
+                self.collect_style_object(grouped, selector, styles, conditions);
             }
         }
         conditions.pop();
     }
 
-    fn serialize_style_object(
+    fn collect_style_object(
         &self,
-        writer: &mut CssWriter,
+        grouped: &mut GroupNode,
         selector: &str,
         value: &Value,
         conditions: &mut Vec<ConditionPaths>,
@@ -1170,14 +1212,14 @@ impl<'a> EmitContext<'a> {
 
         if !declarations.is_empty() {
             for rule in Self::rule_targets_with_base_parts(selector, conditions) {
-                Self::write_recipe_rule(writer, &rule, &declarations);
+                push_grouped_rule(grouped, &rule, declarations.clone());
             }
         }
 
         for conditional in conditional_declarations {
             conditions.push(conditional.condition);
             for rule in Self::rule_targets_with_base_parts(selector, conditions) {
-                Self::write_recipe_rule(writer, &rule, &conditional.declarations);
+                push_grouped_rule(grouped, &rule, conditional.declarations.clone());
             }
             conditions.pop();
         }
@@ -1185,10 +1227,10 @@ impl<'a> EmitContext<'a> {
         for nested in nested_rules {
             if let Some(condition) = nested.condition {
                 conditions.push(condition);
-                self.serialize_style_object(writer, &nested.selector, nested.value, conditions);
+                self.collect_style_object(grouped, &nested.selector, nested.value, conditions);
                 conditions.pop();
             } else {
-                self.serialize_style_object(writer, &nested.selector, nested.value, conditions);
+                self.collect_style_object(grouped, &nested.selector, nested.value, conditions);
             }
         }
     }
@@ -1539,32 +1581,6 @@ impl<'a> EmitContext<'a> {
         default_transform(prop, raw)
     }
 
-    fn write_style_rule(
-        writer: &mut CssWriter,
-        rule: &RuleTarget,
-        styles: &Literal,
-        important: bool,
-        numeric_hint: Option<&str>,
-    ) {
-        let Literal::Object(entries) = styles else {
-            return;
-        };
-        write_with_wrappers(writer, &rule.wrappers, |writer| {
-            writer.rule(&rule.selector, |writer| {
-                for (prop, value) in entries {
-                    if let Some(value) = literal_to_css(prop, value, numeric_hint) {
-                        let (value, value_important) = split_important(&value);
-                        writer.declaration(
-                            &hyphenate_property(prop),
-                            value.as_ref(),
-                            important || value_important,
-                        );
-                    }
-                }
-            });
-        });
-    }
-
     fn rule_targets_for_class(
         &self,
         class_name: &str,
@@ -1709,6 +1725,38 @@ struct PreparedTokenCondition<'a> {
 struct RuleTarget {
     selector: String,
     wrappers: Vec<String>,
+}
+
+fn dedup_atom_refs<'a>(atoms: Vec<&'a Atom>) -> Vec<&'a Atom> {
+    let mut seen = FxHashSet::with_capacity_and_hasher(atoms.len(), Default::default());
+    let mut deduped = Vec::with_capacity(atoms.len());
+    for atom in atoms {
+        if seen.insert(atom) {
+            deduped.push(atom);
+        }
+    }
+    deduped
+}
+
+fn push_grouped_rule(
+    grouped: &mut GroupNode,
+    rule: &RuleTarget,
+    declarations: Vec<RecipeDeclaration>,
+) {
+    grouped.push_rule(
+        &rule.wrappers,
+        RuleBody {
+            selector: rule.selector.clone(),
+            declarations: declarations
+                .into_iter()
+                .map(|declaration| GroupedDeclaration {
+                    prop: declaration.prop,
+                    value: declaration.value,
+                    important: declaration.important,
+                })
+                .collect(),
+        },
+    );
 }
 
 fn append_recipe_declarations(

@@ -36,6 +36,11 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Config loading](./config-loading-design.md) — `@pandacss/config-loader`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 
+### Testing
+
+- [Rust testing strategy](./rust-testing.md) — integration-test harness (`main.rs` + `autotests = false`), `insta`
+  snapshots, consolidated vs autodiscovered crates, fast iteration commands.
+
 ### Performance & operations
 
 - [Performance budget](./performance-budget.md) — `PERF(port)` markers, allocation choices, `FxHashMap` usage.

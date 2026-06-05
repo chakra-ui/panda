@@ -1,12 +1,10 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_encoder::EncodedRecipesSnapshot;
 use pandacss_project::{Project, System};
 use pandacss_shared::DiagnosticSeverity;
 use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css, compile_css_with_options, config};
+use crate::common::{compile_css, compile_css_with_options, config};
 
 fn compile_project_css(project: &mut Project, config: &pandacss_config::UserConfig) -> String {
     let snapshots = project.stylesheet_snapshots(config);
@@ -237,21 +235,21 @@ fn optimize_tokens_keeps_custom_property_direct_token_path_references() {
     assert!(css.contains("--colors-red-300: #f00;"));
     assert!(!css.contains("--colors-blue-300: #00f;"));
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red-300: #f00;
-  }
-}
-@layer utilities {
-  .--css-var_colors\.red\.300 {
-    --css-var: colors.red.300;
-  }
-  .color_var\(--css-var\) {
-    color: var(--css-var);
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red-300: #f00;
+      }
+    }
+    @layer utilities {
+      .\--css-var_colors\.red\.300 {
+        --css-var: colors.red.300;
+      }
+      .color_var\(--css-var\) {
+        color: var(--css-var);
+      }
+    }
+    ");
 }
 
 #[test]
@@ -276,21 +274,21 @@ fn optimize_tokens_keeps_custom_property_curly_token_modifier_references() {
     assert!(css.contains("--colors-red-300: #f00;"));
     assert!(!css.contains("--colors-blue-300: #00f;"));
     assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer tokens {
-  :where(:root, :host) {
-    --colors-red-300: #f00;
-  }
-}
-@layer utilities {
-  .--css-var_\{colors\.red\.300\/40\} {
-    --css-var: {colors.red.300/40};
-  }
-  .color_var\(--css-var\) {
-    color: var(--css-var);
-  }
-}
-");
+    @layer reset, base, tokens, recipes, utilities;
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-red-300: #f00;
+      }
+    }
+    @layer utilities {
+      .\--css-var_\{colors\.red\.300\/40\} {
+        --css-var: {colors.red.300/40};
+      }
+      .color_var\(--css-var\) {
+        color: var(--css-var);
+      }
+    }
+    ");
 }
 
 #[test]

@@ -3,9 +3,7 @@
 //! Unit coverage for the expansion itself lives in `pandacss_project`'s
 //! `tests/static_patterns.rs`.
 
-mod common;
-
-use common::config;
+use crate::common::config;
 use insta::assert_snapshot;
 use pandacss_extractor::Literal;
 use pandacss_project::{Diagnostic, Project, System};

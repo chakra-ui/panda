@@ -1,8 +1,6 @@
-mod common;
-
 use insta::assert_snapshot;
 
-use common::{config, split_output};
+use crate::common::{config, split_output};
 
 /// Render the split file set as `=== path ===\n<code>` blocks for snapshotting.
 fn render(files: &[pandacss_stylesheet::SplitCssFile]) -> String {

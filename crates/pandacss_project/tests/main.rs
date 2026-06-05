@@ -1,0 +1,17 @@
+mod codegen;
+mod common;
+mod compositions;
+mod config;
+mod config_recipes;
+mod deprecation;
+mod diagnostics;
+mod extraction_pipeline;
+mod lifecycle;
+mod parsed_file;
+mod patterns;
+mod scan;
+mod static_patterns;
+mod svelte;
+mod transform_cache;
+mod usages;
+mod vue_sfc;

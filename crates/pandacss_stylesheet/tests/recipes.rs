@@ -1,8 +1,6 @@
-mod common;
-
 use insta::assert_snapshot;
 
-use common::{compile_css, config};
+use crate::common::{compile_css, config};
 
 #[test]
 fn emits_config_recipe_css() {

@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_css, compile_layer_css, config};
+use crate::common::{compile_css, compile_layer_css, config};
 
 #[test]
 fn sorts_pseudo_selectors_by_cascade_priority() {
@@ -526,7 +524,7 @@ fn sorts_breakpoint_units_by_resolved_length() {
       color: red;
     }
   }
-  @media (width >= 960px) {
+  @media (width >= 60rem) {
     .widePx\:c_red {
       color: red;
     }
@@ -825,16 +823,16 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
         }
     }));
     let css = compile_css(&config, "import { button } from '@panda/recipes'; button()");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer recipes {
-  @layer base {
-    .button {
-      background-color: blue;
+    assert_snapshot!(css, @"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer recipes {
+      @layer base {
+        .button {
+          background-color: red;
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]

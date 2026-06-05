@@ -10,6 +10,7 @@ pub mod hash;
 pub mod important;
 pub mod regex;
 pub mod strings;
+pub mod unit_conversion;
 
 pub use diagnostic::{
     Diagnostic, DiagnosticSeverity, SourceLocation, SourceRange, Span, codes as diagnostic_codes,
@@ -22,3 +23,4 @@ pub use strings::{
     MAX_SAFE_INTEGER, capitalize, file_stem, is_js_safe_integer, js_ident, number_to_js_string,
     pascal_case, push_number_to_js_string,
 };
+pub use unit_conversion::to_rem;

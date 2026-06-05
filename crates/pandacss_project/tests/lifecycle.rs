@@ -1,9 +1,7 @@
 //! Stateful project behavior: file replacement, removal, refresh, and
 //! aggregate atom cache invariants.
 
-mod common;
-
-use common::{create_config, create_project, sorted_atoms};
+use crate::common::{create_config, create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use serde_json::json;

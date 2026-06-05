@@ -1,8 +1,6 @@
-mod common;
-
 use insta::assert_snapshot;
 
-use common::{compile_css, config};
+use crate::common::{compile_css, config};
 
 #[test]
 fn atom_with_layer_override_nests_inside_utilities() {

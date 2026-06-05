@@ -293,7 +293,8 @@ impl Project {
 
         let compiled = self.config.as_ref();
         let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
-        let mut encoded_recipes = EncodedRecipes::default();
+        let mut encoded_recipes =
+            EncodedRecipes::new(compiled.optimize.smart_compound_variants);
         let empty_object = Literal::Object(Vec::new());
         let diagnose_unextractable_calls = !compiled.extractor_config.has_jsx_framework;
         for call in result.calls {

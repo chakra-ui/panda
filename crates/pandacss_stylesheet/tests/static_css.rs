@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css, compile_layer_css, compile_output, config};
+use crate::common::{compile_css, compile_layer_css, compile_output, config};
 
 #[test]
 fn expands_static_css_utilities() {
@@ -209,8 +207,6 @@ fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
         .md\:c_blue\.500 {
           color: var(--colors-blue-500);
         }
-      }
-      @media (width >= 48rem) {
         .md\:c_red\.500 {
           color: var(--colors-red-500);
         }
@@ -219,8 +215,6 @@ fn expands_static_css_token_values_with_mixed_conditions_and_responsive() {
         .hoverFine\:c_blue\.500:hover {
           color: var(--colors-blue-500);
         }
-      }
-      @media (hover: hover) {
         .hoverFine\:c_red\.500:hover {
           color: var(--colors-red-500);
         }

@@ -1,8 +1,6 @@
-mod common;
-
 use std::path::PathBuf;
 
-use common::create_project;
+use crate::common::create_project;
 use pandacss_fs::{GlobOptions, MemoryFileSystem};
 use serde_json::json;
 

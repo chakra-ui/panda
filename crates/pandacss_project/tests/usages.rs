@@ -1,6 +1,4 @@
-mod common;
-
-use common::create_project;
+use crate::common::create_project;
 use indoc::indoc;
 use insta::assert_snapshot;
 use serde_json::json;

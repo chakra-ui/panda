@@ -1,6 +1,4 @@
-mod common;
-
-use common::create_config;
+use crate::common::create_config;
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactId, ConfigDependency, GenerateOptions};
 use pandacss_project::{Project, System};
@@ -46,6 +44,14 @@ fn generates_artifacts_from_resolved_project_state() {
     export interface Tokens {
       colors: ColorToken
     }
+
+    export type Token = `colors.${ColorToken}`
+
+    export type ColorOpacityModifier = `${number}`
+
+    export type ColorOpacityToken = `colors.${ColorToken}/${ColorOpacityModifier}`
+
+    export type TokenPath = Token | ColorOpacityToken
 
     export type ColorPalette = "red"
 

@@ -11,6 +11,7 @@ use std::cmp::Ordering;
 
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
+use pandacss_shared::to_rem;
 
 const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":is", 40),
@@ -417,9 +418,13 @@ fn compare_apply_selectors(a: &[SelectorKey], b: &[SelectorKey]) -> Ordering {
 }
 
 #[must_use]
+fn breakpoint_media_query(value: &str) -> String {
+    format!("@media (width >= {})", to_rem(value))
+}
+
 pub fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<Vec<String>> {
     if let Some(value) = config.theme.breakpoints.get(condition) {
-        return vec![vec![format!("@media (width >= {value})")]];
+        return vec![vec![breakpoint_media_query(value)]];
     }
 
     let key = condition.trim_start_matches('_');
@@ -450,7 +455,7 @@ fn collect_condition_parts(
     selectors: &mut Vec<SelectorKey>,
 ) {
     if let Some(value) = config.theme.breakpoints.get(condition) {
-        at_rules.push(AtRuleKey::new(&format!("@media (width >= {value})")));
+        at_rules.push(AtRuleKey::new(&breakpoint_media_query(value)));
         return;
     }
 

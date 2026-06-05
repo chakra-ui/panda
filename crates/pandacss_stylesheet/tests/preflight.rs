@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css, compile_layer_css, compile_output, config};
+use crate::common::{compile_css, compile_layer_css, compile_output, config};
 
 #[test]
 fn preflight_disabled_by_default() {

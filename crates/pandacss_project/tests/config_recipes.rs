@@ -1,8 +1,6 @@
 //! Config recipe and slot recipe project behavior.
 
-mod common;
-
-use common::{create_project, sorted_atoms};
+use crate::common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use serde_json::json;
@@ -709,8 +707,77 @@ fn recipe_variant_runtime_ternaries_encode_all_literal_branches() {
 }
 
 #[test]
-fn recipe_compound_variants_emit_only_when_selected() {
+fn recipe_compound_variants_emit_all_on_first_usage() {
     let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "badge": {
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "16px" }
+                        },
+                        "raised": {
+                            "true": { "boxShadow": "md" },
+                            "false": { "boxShadow": "none" }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": "sm",
+                            "raised": true,
+                            "css": { "color": "ButtonHighlight" }
+                        },
+                        {
+                            "size": "md",
+                            "raised": true,
+                            "css": { "color": "tomato" }
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { badge } from '@panda/recipes';
+            badge({ size: 'sm', raised: true });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: badge
+        slot: ~
+        className: badge--raised_true
+        entries:
+          - prop: boxShadow
+            value: md
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+    atomic:
+      - prop: color
+        value: ButtonHighlight
+        conditions: []
+      - prop: color
+        value: tomato
+        conditions: []
+    ");
+}
+
+#[test]
+fn recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
+    let mut project = create_project(json!({
+        "optimize": { "smartCompoundVariants": true },
         "theme": {
             "recipes": {
                 "badge": {
@@ -774,6 +841,57 @@ fn recipe_compound_variants_emit_only_when_selected() {
 }
 
 #[test]
+fn recipe_compound_variants_emit_runtime_combo_with_eager_mode() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" }
+                        },
+                        "variant": {
+                            "outline": { "border": "1px solid" }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": "sm",
+                            "variant": "outline",
+                            "css": { "color": "tomato" }
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { button } from '@panda/recipes';
+            button({ size: 'sm' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+    atomic:
+      - prop: color
+        value: tomato
+        conditions: []
+    ");
+}
+
+#[test]
 fn recipe_compound_variants_match_any_selected_value() {
     let mut project = create_project(json!({
         "theme": {
@@ -823,8 +941,79 @@ fn recipe_compound_variants_match_any_selected_value() {
 }
 
 #[test]
-fn recipe_compound_variants_inherit_selected_conditions() {
+fn recipe_compound_variants_emit_unconditional_atoms_by_default() {
     let mut project = create_project(json!({
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "recipes": {
+                "badge": {
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" },
+                            "md": { "fontSize": "16px" }
+                        },
+                        "raised": {
+                            "true": { "boxShadow": "md" }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": "md",
+                            "raised": true,
+                            "css": { "color": "tomato" }
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { badge } from '@panda/recipes';
+            badge({ size: { base: 'sm', md: 'md' }, raised: true });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: badge
+        slot: ~
+        className: badge--raised_true
+        entries:
+          - prop: boxShadow
+            value: md
+            conditions: []
+      - recipe: badge
+        slot: ~
+        className: badge--size_md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions:
+              - md
+      - recipe: badge
+        slot: ~
+        className: badge--size_sm
+        entries:
+          - prop: fontSize
+            value: 12px
+            conditions: []
+    atomic:
+      - prop: color
+        value: tomato
+        conditions: []
+    ");
+}
+
+#[test]
+fn recipe_compound_variants_inherit_selected_conditions_with_smart_mode() {
+    let mut project = create_project(json!({
+        "optimize": { "smartCompoundVariants": true },
         "theme": {
             "breakpoints": {
                 "md": "768px"
@@ -1234,8 +1423,87 @@ fn slot_recipe_base_and_variants_preserve_nested_conditions() {
 }
 
 #[test]
-fn slot_recipe_compound_variants_emit_only_when_selected() {
+fn slot_recipe_compound_variants_emit_all_on_first_usage() {
     let mut project = create_project(json!({
+        "theme": {
+            "slotRecipes": {
+                "tabs": {
+                    "slots": ["root", "trigger"],
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "root": { "gap": "4px" }
+                            },
+                            "md": {
+                                "root": { "gap": "8px" }
+                            }
+                        },
+                        "active": {
+                            "true": {
+                                "trigger": { "fontWeight": "600" }
+                            }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": "sm",
+                            "active": true,
+                            "css": {
+                                "trigger": { "color": "blue" }
+                            }
+                        },
+                        {
+                            "size": "md",
+                            "active": true,
+                            "css": {
+                                "trigger": { "color": "red" }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { tabs } from '@panda/recipes';
+            tabs({ size: 'sm', active: true });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r###"
+    base: []
+    variants:
+      - recipe: tabs
+        slot: root
+        className: tabs__root--size_sm
+        entries:
+          - prop: gap
+            value: 4px
+            conditions: []
+      - recipe: tabs
+        slot: trigger
+        className: tabs__trigger--active_true
+        entries:
+          - prop: fontWeight
+            value: "600"
+            conditions: []
+    atomic:
+      - prop: color
+        value: blue
+        conditions: []
+      - prop: color
+        value: red
+        conditions: []
+    "###);
+}
+
+#[test]
+fn slot_recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
+    let mut project = create_project(json!({
+        "optimize": { "smartCompoundVariants": true },
         "theme": {
             "slotRecipes": {
                 "tabs": {

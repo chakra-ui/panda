@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions, has_layer_declaration};
 
-use common::{compile_css, compile_output, config};
+use crate::common::{compile_css, compile_output, config};
 
 #[test]
 fn default_layer_names_emit_unchanged_preamble() {

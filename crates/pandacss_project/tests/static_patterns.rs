@@ -1,6 +1,4 @@
-mod common;
-
-use common::create_config;
+use crate::common::create_config;
 use insta::assert_snapshot;
 use pandacss_encoder::{Atom, AtomValue};
 use pandacss_extractor::Literal;

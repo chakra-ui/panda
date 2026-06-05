@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use common::{compile_css, compile_css_with_options, compile_layer_css, config};
+use crate::common::{compile_css, compile_css_with_options, compile_layer_css, config};
 
 #[test]
 fn emits_dynamic_atomic_css() {
@@ -648,6 +646,84 @@ fn block_conditions_emit_each_slot_path() {
   }
   @media (prefers-color-scheme: dark) {
     .darkOrSystem\:c_red:where([data-color-mode=system], [data-color-mode=system] *) {
+      color: red;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn dedupes_overlapping_recipe_atomic_and_direct_usage() {
+    let config = config(serde_json::json!({
+        "importMap": {
+            "css": ["@panda/css"],
+            "recipe": ["@panda/recipes"],
+            "pattern": [],
+            "jsx": [],
+            "tokens": []
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        },
+        "theme": {
+            "recipes": {
+                "badge": {
+                    "variants": {
+                        "size": {
+                            "sm": { "fontSize": "12px" }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": "sm",
+                            "css": { "color": "red" }
+                        }
+                    ]
+                }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css';\nimport { badge } from '@panda/recipes';\ncss({ color: 'red' });\nbadge({ size: 'sm' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .c_red {
+    color: red;
+  }
+}
+");
+}
+
+#[test]
+fn merges_utilities_under_same_breakpoint() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "sm": "40rem"
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" },
+            "padding": { "className": "p" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ sm: { color: 'red', padding: '4px' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (width >= 40rem) {
+    .sm\:p_4px {
+      padding: 4px;
+    }
+    .sm\:c_red {
       color: red;
     }
   }

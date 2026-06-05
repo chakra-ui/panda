@@ -6,6 +6,11 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 publish = false
+autotests = false
+
+[[test]]
+name = "integration"
+path = "tests/main.rs"
 
 [dependencies]
 pandacss_config = { workspace = true }

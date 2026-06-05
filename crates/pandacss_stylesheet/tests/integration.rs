@@ -1,6 +1,4 @@
-mod common;
-
-use common::{compile_css, config};
+use crate::common::{compile_css, config};
 use insta::assert_snapshot;
 
 #[test]

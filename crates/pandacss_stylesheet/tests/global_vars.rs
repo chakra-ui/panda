@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetOptions;
 
-use common::{compile_css, compile_css_with_options, config};
+use crate::common::{compile_css, compile_css_with_options, config};
 
 #[test]
 fn emits_global_vars_from_serialized_config() {

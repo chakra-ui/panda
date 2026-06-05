@@ -78,12 +78,20 @@ fn optimize_defaults_and_overrides() {
 
     assert!(!default_config.optimize.remove_unused_tokens);
     assert!(!default_config.optimize.remove_unused_keyframes);
+    assert!(!default_config.optimize.smart_compound_variants);
     assert!(configured.optimize.remove_unused_tokens);
     assert!(configured.optimize.remove_unused_keyframes);
     assert!(partial.optimize.remove_unused_tokens);
     assert!(!partial.optimize.remove_unused_keyframes);
     assert!(!legacy_boolean.optimize.remove_unused_tokens);
     assert!(!legacy_boolean.optimize.remove_unused_keyframes);
+    assert!(!legacy_boolean.optimize.smart_compound_variants);
+
+    let smart: UserConfig = serde_json::from_value(json!({
+        "optimize": { "smartCompoundVariants": true }
+    }))
+    .expect("smart compound config");
+    assert!(smart.optimize.smart_compound_variants);
 
     let serialized = serde_json::to_value(&configured).expect("serialized config");
     assert_eq!(

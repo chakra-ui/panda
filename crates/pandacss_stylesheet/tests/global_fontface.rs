@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_layer_css, config};
+use crate::common::{compile_layer_css, config};
 
 #[test]
 fn emits_global_fontface_into_base_layer() {

@@ -1,9 +1,7 @@
-mod common;
-
 use insta::assert_snapshot;
 use pandacss_stylesheet::StylesheetLayer;
 
-use common::{compile_layer_css, config};
+use crate::common::{compile_layer_css, config};
 
 #[test]
 fn emits_global_css_from_serialized_config() {
@@ -107,35 +105,35 @@ fn emits_global_css_direct_nesting_and_conditions() {
         }
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
-    assert_snapshot!(css, @r"
-@layer base {
-  .btn {
-    width: 40px;
-  }
-  @media (width >= 64rem) {
-    .btn {
-      width: 90px;
+    assert_snapshot!(css, @"
+    @layer base {
+      .btn {
+        width: 40px;
+      }
+      .btn:is(:focus, [data-focus]) {
+        color: var(--colors-red-200);
+      }
+      .btn:is(:focus, [data-focus]):is(:hover, [data-hover]) {
+        background-color: var(--colors-red-400);
+      }
+      .btn .aaa {
+        color: var(--colors-blue-200);
+      }
+      .btn .aaa .bbb {
+        color: var(--colors-blue-300);
+      }
+      @media (width >= 64rem) {
+        .btn {
+          width: 90px;
+        }
+      }
+      @media (width >= 40rem) {
+        .btn {
+          font-size: 12px;
+        }
+      }
     }
-  }
-  .btn:is(:focus, [data-focus]) {
-    color: var(--colors-red-200);
-  }
-  .btn:is(:focus, [data-focus]):is(:hover, [data-hover]) {
-    background-color: var(--colors-red-400);
-  }
-  @media (width >= 40rem) {
-    .btn {
-      font-size: 12px;
-    }
-  }
-  .btn .aaa {
-    color: var(--colors-blue-200);
-  }
-  .btn .aaa .bbb {
-    color: var(--colors-blue-300);
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -245,16 +243,10 @@ fn emits_global_css_at_rules() {
     body, :root {
       color: var(--colors-red-200);
     }
-  }
-  @media (min-width: 640px) {
     @supports (display: grid) and (display: contents) {
       body {
         color: var(--colors-red-200);
       }
-    }
-  }
-  @media (min-width: 640px) {
-    @supports (display: grid) and (display: contents) {
       body a {
         color: var(--colors-red-400);
       }

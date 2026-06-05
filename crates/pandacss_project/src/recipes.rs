@@ -728,11 +728,19 @@ fn intern_variant_condition_values(
         .collect()
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct EncodedRecipes {
     base: FxHashMap<RecipePartKey, RecipeStyleGroup>,
     variants: FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
     atomic: FxHashSet<Atom>,
+    smart_compound_variants: bool,
+    compounds_emitted: FxHashSet<Box<str>>,
+}
+
+impl Default for EncodedRecipes {
+    fn default() -> Self {
+        Self::new(false)
+    }
 }
 
 #[derive(Debug, Default)]
@@ -763,10 +771,21 @@ struct RecipeVariantKey {
 }
 
 impl EncodedRecipes {
+    pub(crate) fn new(smart_compound_variants: bool) -> Self {
+        Self {
+            base: FxHashMap::default(),
+            variants: FxHashMap::default(),
+            atomic: FxHashSet::default(),
+            smart_compound_variants,
+            compounds_emitted: FxHashSet::default(),
+        }
+    }
+
     pub(crate) fn clear(&mut self) {
         self.base.clear();
         self.variants.clear();
         self.atomic.clear();
+        self.compounds_emitted.clear();
     }
 
     pub(crate) fn is_empty(&self) -> bool {
@@ -838,7 +857,7 @@ impl EncodedRecipes {
             }
         }
 
-        self.process_matching_compounds(&node.compounds, &selected);
+        self.process_compounds(&node.name, &node.compounds, &selected);
     }
 
     fn process_slot_recipe(
@@ -888,7 +907,29 @@ impl EncodedRecipes {
             }
         }
 
-        self.process_matching_compounds(&node.compounds, &selected);
+        self.process_compounds(&node.name, &node.compounds, &selected);
+    }
+
+    fn process_compounds(
+        &mut self,
+        recipe_name: &str,
+        compounds: &[ResolvedCompoundVariant],
+        selected: &FxHashMap<Box<str>, Vec<SelectedVariantValue>>,
+    ) {
+        if self.smart_compound_variants {
+            self.process_matching_compounds(compounds, selected);
+        } else {
+            self.emit_eager_compounds(recipe_name, compounds);
+        }
+    }
+
+    fn emit_eager_compounds(&mut self, recipe_name: &str, compounds: &[ResolvedCompoundVariant]) {
+        if !self.compounds_emitted.insert(recipe_name.into()) {
+            return;
+        }
+        for compound in compounds {
+            self.atomic.extend(compound.atoms.iter().cloned());
+        }
     }
 
     fn process_matching_compounds(
