@@ -81,6 +81,7 @@ pub fn extract_calls(
         config.cross_file.as_ref(),
         Some(std::path::PathBuf::from(path)),
         None,
+        None,
     );
     let ctx = crate::VisitorContext::new(matched, config).with_resolver(&resolver);
     let line_index = crate::LineIndex::new(source);
@@ -95,7 +96,7 @@ pub fn extract_calls(
 
 fn collect_calls_inner(
     program: &oxc_ast::ast::Program<'_>,
-    ctx: &crate::VisitorContext<'_>,
+    ctx: &crate::VisitorContext<'_, '_>,
     line_index: Option<&crate::LineIndex<'_>>,
 ) -> (Vec<ExtractedCall>, Vec<Diagnostic>) {
     let mut out = Vec::new();
@@ -113,7 +114,7 @@ fn collect_calls_inner(
 
 pub(crate) fn collect_calls_with_token_refs(
     program: &oxc_ast::ast::Program<'_>,
-    ctx: &crate::VisitorContext<'_>,
+    ctx: &crate::VisitorContext<'_, '_>,
     line_index: &crate::LineIndex<'_>,
 ) -> (Vec<ExtractedCall>, Vec<Diagnostic>, Vec<TokenRef>) {
     let mut calls = Vec::new();
@@ -130,8 +131,8 @@ pub(crate) fn collect_calls_with_token_refs(
     (calls, diagnostics, token_refs)
 }
 
-struct Extractor<'walk, 'ctx> {
-    ctx: &'walk crate::VisitorContext<'ctx>,
+struct Extractor<'walk, 'ctx, 'cb> {
+    ctx: &'walk crate::VisitorContext<'ctx, 'cb>,
     out: &'walk mut Vec<ExtractedCall>,
     diagnostics: &'walk mut Vec<Diagnostic>,
     line_index: Option<&'walk crate::LineIndex<'walk>>,
@@ -146,7 +147,7 @@ struct ResolvedCallee<'a> {
     alias: &'a str,
 }
 
-impl Extractor<'_, '_> {
+impl Extractor<'_, '_, '_> {
     fn resolve_callee<'a>(&'a self, call: &'a CallExpression<'_>) -> Option<ResolvedCallee<'a>> {
         self.resolve_callee_expr(&call.callee)
     }
@@ -309,7 +310,7 @@ fn member_display(root: &str, path: &[&str]) -> String {
     out
 }
 
-impl<'a> Visit<'a> for Extractor<'_, '_> {
+impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let (Some(resolver), Some(token_refs)) =
             (self.ctx.resolver, self.token_refs.as_deref_mut())
@@ -399,7 +400,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_> {
     }
 }
 
-impl Extractor<'_, '_> {
+impl Extractor<'_, '_, '_> {
     fn jsx_recipe_identifier(&self, call: &CallExpression<'_>) -> Option<String> {
         let arg = call.arguments.get(1)?.as_expression()?;
         let Expression::Identifier(ident) = arg else {
@@ -417,7 +418,7 @@ impl Extractor<'_, '_> {
 
 fn argument_to_literal(
     arg: &Argument<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<Literal> {
     arg.as_expression()
         .and_then(|e| expression_to_literal(e, resolver))

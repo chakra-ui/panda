@@ -25,7 +25,10 @@ mod template_styles;
 mod vue_adapter;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
-pub use extract::{ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug};
+pub use extract::{
+    ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug,
+    extract_with_pattern_raw_transform,
+};
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
 };

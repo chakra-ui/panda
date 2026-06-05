@@ -5,9 +5,11 @@
 
 use crate::calls::collect_calls_with_token_refs;
 use crate::jsx::collect_jsx;
-use crate::scope::Resolver;
+use std::cell::RefCell;
+
+use crate::scope::{PatternRawTransformCell, PatternRawTransformFn, Resolver};
 use crate::{
-    Diagnostic, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, MatchCategory,
+    Diagnostic, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal, MatchCategory,
     MatchedImport, Span, VisitorContext, collect_imports, collect_parser_diagnostics,
     match_import_records,
 };
@@ -68,7 +70,34 @@ pub struct ExtractDebugResult {
 pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
     let _span =
         tracing::trace_span!("extraction", path = path, source_len = source.len()).entered();
-    let outcome = run_extract(source, path, config);
+    let outcome = run_extract(source, path, config, None);
+    ExtractUsage {
+        calls: outcome.calls,
+        jsx: outcome.jsx,
+        diagnostics: outcome.diagnostics,
+        token_refs: outcome.token_refs,
+    }
+}
+
+pub fn extract_with_pattern_raw_transform<F>(
+    source: &str,
+    path: &str,
+    config: &ExtractorConfig,
+    pattern_transform: &mut F,
+) -> ExtractUsage
+where
+    F: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
+{
+    let _span = tracing::trace_span!(
+        "extraction",
+        path = path,
+        source_len = source.len(),
+        pattern_raw_transform = true
+    )
+    .entered();
+    let erased: &mut PatternRawTransformFn<'_> = pattern_transform;
+    let transform_cell: PatternRawTransformCell<'_> = RefCell::new(erased);
+    let outcome = run_extract(source, path, config, Some(&transform_cell));
     ExtractUsage {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -81,7 +110,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
     let _span =
         tracing::trace_span!("extraction_debug", path = path, source_len = source.len()).entered();
-    let outcome = run_extract(source, path, config);
+    let outcome = run_extract(source, path, config, None);
     ExtractDebugResult {
         imports: outcome.imports,
         matched: outcome.matched,
@@ -102,7 +131,12 @@ struct ExtractResult {
     token_refs: Vec<TokenRef>,
 }
 
-fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractResult {
+fn run_extract<'cb>(
+    source: &str,
+    path: &str,
+    config: &ExtractorConfig,
+    pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+) -> ExtractResult {
     let allocator = Allocator::default();
     let raw_source = source;
     let source = crate::adapt_source(source, path);
@@ -144,6 +178,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
             config.cross_file.as_ref(),
             Some(std::path::PathBuf::from(path)),
             Some(&line_index),
+            pattern_raw_transform,
         )
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
@@ -168,7 +203,7 @@ fn run_extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractRes
     }
 
     diagnostics.extend(call_diagnostics);
-    diagnostics.extend(resolver.take_deprecations());
+    diagnostics.extend(resolver.take_diagnostics());
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
 

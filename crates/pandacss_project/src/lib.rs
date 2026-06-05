@@ -237,7 +237,26 @@ impl Project {
         }
         span.record("cache_hit", false);
 
-        let result = extract(source, path, &self.config.extractor_config);
+        let result = if pattern_transform.is_some() {
+            let compiled = self.config.as_ref();
+            let mut raw_transform = |name: &str, styles: &Literal| {
+                let pattern = compiled.patterns.transform_input(name, styles);
+                let Some(transform) = pattern_transform.as_deref_mut() else {
+                    return Ok(Some(styles.clone()));
+                };
+                transform(pattern.name, pattern.styles.as_ref()).map_err(|diagnostic| {
+                    with_callback_target(diagnostic, "pattern", pattern.name, None)
+                })
+            };
+            pandacss_extractor::extract_with_pattern_raw_transform(
+                source,
+                path,
+                &self.config.extractor_config,
+                &mut raw_transform,
+            )
+        } else {
+            extract(source, path, &self.config.extractor_config)
+        };
         let token_refs = result
             .token_refs
             .iter()

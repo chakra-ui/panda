@@ -99,7 +99,7 @@ impl ReactRuntimeImports {
     fn is_jsx_call(
         &self,
         callee: &Expression<'_>,
-        resolver: Option<&crate::Resolver<'_>>,
+        resolver: Option<&crate::Resolver<'_, '_>>,
         allow_bundled_runtime: bool,
     ) -> bool {
         match normalize_callee(callee) {
@@ -129,9 +129,9 @@ impl ReactRuntimeImports {
 
 pub(crate) fn extract_call(
     call: &CallExpression<'_>,
-    ctx: &VisitorContext<'_>,
+    ctx: &VisitorContext<'_, '_>,
     runtime: &ReactRuntimeImports,
-    extractor: &Extractor<'_, '_>,
+    extractor: &Extractor<'_, '_, '_>,
 ) -> Option<ExtractedJsx> {
     if !runtime.is_jsx_call(&call.callee, ctx.resolver, ctx.config.has_jsx_framework) {
         return None;
@@ -215,7 +215,7 @@ fn is_likely_bundled_jsx_runtime_name(name: &str) -> bool {
 
 fn props_to_entries(
     props: &Expression<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<Vec<(String, Literal)>> {
     if let Expression::ObjectExpression(obj) = props {
         return Some(object_props_to_entries(obj, resolver));
@@ -228,7 +228,7 @@ fn props_to_entries(
 
 fn object_props_to_entries(
     obj: &ObjectExpression<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Vec<(String, Literal)> {
     let mut entries = Vec::with_capacity(obj.properties.len());
     for prop in &obj.properties {
@@ -276,7 +276,7 @@ fn is_react_only_prop(key: &str) -> bool {
 fn property_key_to_string(
     key: &PropertyKey<'_>,
     computed: bool,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<String> {
     if !computed {
         return match key {

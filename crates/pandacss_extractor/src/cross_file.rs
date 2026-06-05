@@ -175,6 +175,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             matchers,
             Some(path.to_path_buf()),
             None,
+            None,
         );
 
         // Oxc returns a partial AST on parse errors; walk what we get,
@@ -244,7 +245,7 @@ fn collect_exports(
     program: &Program<'_>,
     path: &Path,
     lookup: &dyn CrossFileLookup,
-    resolver: &Resolver<'_>,
+    resolver: &Resolver<'_, '_>,
 ) -> FileExports {
     let mut exports = FxHashMap::default();
 
@@ -262,7 +263,7 @@ fn collect_from_named(
     decl: &ExportNamedDeclaration<'_>,
     path: &Path,
     lookup: &dyn CrossFileLookup,
-    resolver: &Resolver<'_>,
+    resolver: &Resolver<'_, '_>,
     out: &mut FileExports,
 ) {
     if let Some(Declaration::VariableDeclaration(var)) = &decl.declaration {
@@ -290,7 +291,11 @@ fn collect_from_named(
     }
 }
 
-fn collect_from_var(var: &VariableDeclaration<'_>, resolver: &Resolver<'_>, out: &mut FileExports) {
+fn collect_from_var(
+    var: &VariableDeclaration<'_>,
+    resolver: &Resolver<'_, '_>,
+    out: &mut FileExports,
+) {
     for declarator in &var.declarations {
         let Some(init) = &declarator.init else {
             continue;
@@ -311,7 +316,7 @@ fn collect_from_var(var: &VariableDeclaration<'_>, resolver: &Resolver<'_>, out:
 
 fn collect_pattern_bindings(
     pattern: &BindingPattern<'_>,
-    resolver: &Resolver<'_>,
+    resolver: &Resolver<'_, '_>,
     out: &mut FileExports,
 ) {
     match pattern {
