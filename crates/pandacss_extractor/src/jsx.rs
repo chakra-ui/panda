@@ -94,7 +94,10 @@ pub fn extract_jsx(
     }
 }
 
-pub(crate) fn collect_jsx(program: &Program<'_>, ctx: &VisitorContext<'_, '_>) -> Vec<ExtractedJsx> {
+pub(crate) fn collect_jsx(
+    program: &Program<'_>,
+    ctx: &VisitorContext<'_, '_>,
+) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
     let react_runtime = jsx_react_runtime::ReactRuntimeImports::from_program(program);
     let mut extractor = Extractor {

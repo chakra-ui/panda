@@ -228,7 +228,7 @@ fn props_to_entries(
 
 fn object_props_to_entries(
     obj: &ObjectExpression<'_>,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Vec<(String, Literal)> {
     let mut entries = Vec::with_capacity(obj.properties.len());
     for prop in &obj.properties {
@@ -276,7 +276,7 @@ fn is_react_only_prop(key: &str) -> bool {
 fn property_key_to_string(
     key: &PropertyKey<'_>,
     computed: bool,
-    resolver: Option<&crate::Resolver<'_>>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<String> {
     if !computed {
         return match key {
