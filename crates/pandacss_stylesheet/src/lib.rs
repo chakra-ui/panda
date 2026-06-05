@@ -523,25 +523,48 @@ fn extend_recipe_groups(
     for (index, group) in target.iter().enumerate() {
         indexes.insert(recipe_group_key(group), index);
     }
+    let target_len = target.len();
+    let mut merges = Vec::new();
+    let mut additions: Vec<RecipeStyleGroupSnapshot> = Vec::new();
     for group in source {
         let key = recipe_group_key(group);
         if let Some(index) = indexes.get(&key).copied() {
-            let existing = &mut target[index];
-            existing.entries.extend(group.entries.iter().cloned());
+            if index < target_len {
+                merges.push((index, group.entries.clone()));
+            } else {
+                additions[index - target_len]
+                    .entries
+                    .extend(group.entries.iter().cloned());
+            }
         } else {
-            indexes.insert(key, target.len());
-            target.push(group.clone());
+            indexes.insert(key, target_len + additions.len());
+            additions.push(group.clone());
         }
     }
+    drop(indexes);
+    for (index, entries) in merges {
+        target[index].entries.extend(entries);
+    }
+    target.extend(additions);
 }
 
-fn recipe_group_key(
-    group: &RecipeStyleGroupSnapshot,
-) -> (Box<str>, String, Box<str>, Vec<Box<str>>) {
-    (
-        group.recipe.clone(),
-        group.slot.to_string(),
-        group.class_name.clone(),
-        group.conditions.iter().cloned().collect(),
-    )
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct RecipeGroupKeyRef<'a> {
+    recipe: &'a str,
+    slot: Option<&'a str>,
+    class_name: &'a str,
+    conditions: &'a [Box<str>],
+}
+
+fn recipe_group_key(group: &RecipeStyleGroupSnapshot) -> RecipeGroupKeyRef<'_> {
+    debug_assert!(
+        group.slot.is_null() || group.slot.is_string(),
+        "recipe group slots are encoded as null or string"
+    );
+    RecipeGroupKeyRef {
+        recipe: &group.recipe,
+        slot: group.slot.as_str(),
+        class_name: &group.class_name,
+        conditions: &group.conditions,
+    }
 }

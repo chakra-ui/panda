@@ -13,9 +13,9 @@ use rustc_hash::FxHashSet;
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
-use crate::grouped::{GroupedDeclaration, GroupNode, RuleBody, write_grouped_rules};
+use crate::grouped::{GroupNode, GroupedDeclaration, RuleBody, write_grouped_rules};
 use crate::numeric_value;
-use crate::sort::{SortContext, SortedAtom, condition_raw_paths};
+use crate::sort::{SortContext, SortedAtom, condition_names, condition_raw_paths};
 use crate::writer::CssWriter;
 
 pub struct EmitOutput {
@@ -985,24 +985,46 @@ impl<'a> EmitContext<'a> {
     fn write_grouped_utilities(&self, writer: &mut CssWriter, atoms: &[SortedAtom<'_>]) {
         let mut grouped = GroupNode::default();
         for atom in atoms {
-            self.collect_atom_rules(atom.atom, &atom.conditions, &mut grouped);
+            self.collect_atom_rules(
+                atom.atom,
+                &atom.class_conditions,
+                &atom.rule_conditions,
+                &mut grouped,
+            );
         }
         if !grouped.is_empty() {
             write_grouped_rules(writer, &grouped);
         }
     }
 
-    fn collect_atom_rules(&self, atom: &Atom, conditions: &[&str], grouped: &mut GroupNode) {
+    fn collect_atom_rules(
+        &self,
+        atom: &Atom,
+        class_conditions: &[&str],
+        rule_conditions: &[&str],
+        grouped: &mut GroupNode,
+    ) {
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
         let result = self.transform_atom(atom.prop(), raw);
-        if self.collect_composition_atom_rules(atom, conditions, &result, grouped) {
+        if self.collect_composition_atom_rules(
+            atom,
+            class_conditions,
+            rule_conditions,
+            &result,
+            grouped,
+        ) {
             return;
         }
         let numeric_hint = atom_numeric_hint(atom.value());
-        for rule in self.rule_targets_for_class(&result.class_name, conditions, atom.important()) {
+        for rule in self.rule_targets_for_class(
+            &result.class_name,
+            class_conditions,
+            rule_conditions,
+            atom.important(),
+        ) {
             let Some(declarations) =
                 self.declarations_from_literal(&result.styles, atom.important(), numeric_hint)
             else {
@@ -1015,7 +1037,8 @@ impl<'a> EmitContext<'a> {
     fn collect_composition_atom_rules(
         &self,
         atom: &Atom,
-        conditions: &[&str],
+        class_conditions: &[&str],
+        rule_conditions: &[&str],
         result: &UtilityTransformResult,
         grouped: &mut GroupNode,
     ) -> bool {
@@ -1032,8 +1055,12 @@ impl<'a> EmitContext<'a> {
             return true;
         }
 
-        let base_rules =
-            self.rule_targets_for_class(&result.class_name, conditions, atom.important());
+        let base_rules = self.rule_targets_for_class(
+            &result.class_name,
+            class_conditions,
+            rule_conditions,
+            atom.important(),
+        );
         self.collect_style_entries_for_rules(grouped, &entries, &base_rules, atom.important());
         true
     }
@@ -1465,7 +1492,10 @@ impl<'a> EmitContext<'a> {
         entries: &[RecipeStyleEntry],
     ) {
         let mut pending: Option<PendingRecipeRule> = None;
-        let class_conditions = self.sort.sorted_condition_names(class_conditions);
+        let class_conditions = condition_names(class_conditions);
+        let rule_conditions = self.sort.sorted_condition_refs(&class_conditions);
+        let base_rules =
+            self.rule_targets_for_class(class_name, &class_conditions, &rule_conditions, false);
 
         for entry in self.sort.sorted_recipe_entries(entries) {
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
@@ -1475,26 +1505,29 @@ impl<'a> EmitContext<'a> {
                 continue;
             }
 
-            for rule in
-                self.rule_targets_for_recipe_class(class_name, &class_conditions, &entry.conditions)
-            {
-                match &mut pending {
-                    Some(pending) if pending.rule == rule => {
-                        append_recipe_declarations(&mut pending.declarations, declarations.clone());
-                    }
-                    Some(_) => {
-                        let previous = pending.take().expect("pending recipe rule");
-                        Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
-                        pending = Some(PendingRecipeRule {
-                            rule,
-                            declarations: declarations.clone(),
-                        });
-                    }
-                    None => {
-                        pending = Some(PendingRecipeRule {
-                            rule,
-                            declarations: declarations.clone(),
-                        });
+            for base_rule in &base_rules {
+                for rule in self.rule_targets_from_rule(base_rule, &entry.conditions) {
+                    match &mut pending {
+                        Some(pending) if pending.rule == rule => {
+                            append_recipe_declarations(
+                                &mut pending.declarations,
+                                declarations.clone(),
+                            );
+                        }
+                        Some(_) => {
+                            let previous = pending.take().expect("pending recipe rule");
+                            Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
+                            pending = Some(PendingRecipeRule {
+                                rule,
+                                declarations: declarations.clone(),
+                            });
+                        }
+                        None => {
+                            pending = Some(PendingRecipeRule {
+                                rule,
+                                declarations: declarations.clone(),
+                            });
+                        }
                     }
                 }
             }
@@ -1582,41 +1615,22 @@ impl<'a> EmitContext<'a> {
     fn rule_targets_for_class(
         &self,
         class_name: &str,
-        conditions: &[&str],
+        class_conditions: &[&str],
+        rule_conditions: &[&str],
         important: bool,
     ) -> Vec<RuleTarget> {
         let mut finalized = if self.config.hash.class_name() {
-            let hashed = hash_class_name(class_name, conditions);
+            let hashed = hash_class_name(class_name, class_conditions);
             self.utility.format_class_name_owned(hashed)
         } else {
             let class_name = self.utility.format_class_name(class_name);
-            finalized_class_name_owned(class_name, conditions)
+            finalized_class_name_owned(class_name, class_conditions)
         };
         if important {
             finalized.push('!');
         }
         let base = format!(".{}", escape_selector(&finalized));
-        self.rule_targets_with_base_owned(base, conditions)
-    }
-
-    fn rule_targets_for_recipe_class(
-        &self,
-        class_name: &str,
-        class_conditions: &[&str],
-        entry_conditions: &[&str],
-    ) -> Vec<RuleTarget> {
-        let finalized = if self.config.hash.class_name() {
-            self.utility
-                .format_class_name_owned(hash_class_name(class_name, class_conditions))
-        } else {
-            let class_name = self.utility.format_class_name(class_name);
-            finalized_class_name_owned(class_name, class_conditions)
-        };
-        let base = format!(".{}", escape_selector(&finalized));
-        let mut conditions = Vec::with_capacity(class_conditions.len() + entry_conditions.len());
-        conditions.extend_from_slice(class_conditions);
-        conditions.extend_from_slice(entry_conditions);
-        self.rule_targets_with_base_owned(base, &conditions)
+        self.rule_targets_with_base_owned(base, rule_conditions)
     }
 
     fn rule_targets_with_base_owned(

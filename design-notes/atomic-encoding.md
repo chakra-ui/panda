@@ -50,6 +50,9 @@ stylesheet emitter needs to write declarations under a recipe class name instead
 `size={{ md: "lg" }}`. They are allowed to prefix the recipe class because the generated recipe runtime returns that
 conditional class. `RecipeStyleEntry::conditions` are nested conditions from the recipe style object itself, such as
 `variants.size.lg._hover`; these apply to the fixed recipe class selector and must not be folded into the class name.
+Group condition order is runtime-visible and must be preserved in class names (`md:hover:btn--size_lg` differs from
+`hover:md:btn--size_lg`). The stylesheet sorter may keep a separate cascade-sorted view for rule placement and wrapper
+application, but it must not use that sorted view to build runtime class selectors.
 
 The conversion is intentionally mechanical:
 
@@ -175,6 +178,10 @@ RecipeStyleGroup {
     entries,
 }
 ```
+
+`selected_variant_conditions` retains the condition path as written by the user/generated runtime. For example,
+`size: { md: { _hover: "lg" } }` stores `[md, _hover]`, while `size: { _hover: { md: "lg" } }` stores
+`[_hover, md]`.
 
 Recipe grouping, slot resolution, default variants, compound variants, and watch-mode refcounting remain in
 `pandacss_project`; only style-object serialization is shared with atomics.

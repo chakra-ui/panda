@@ -71,7 +71,8 @@ pub struct SortContext<'a> {
 
 pub struct SortedAtom<'a> {
     pub atom: &'a Atom,
-    pub conditions: Vec<&'a str>,
+    pub class_conditions: Vec<&'a str>,
+    pub rule_conditions: Vec<&'a str>,
 }
 
 pub struct SortedRecipeEntry<'a> {
@@ -90,9 +91,17 @@ impl<'a> SortContext<'a> {
         let mut out = atoms
             .into_iter()
             .map(|atom| {
-                let conditions = self.sorted_condition_names(atom.conditions());
-                let key = CssRuleKey::new(self.config, &conditions, atom.prop());
-                (SortedAtom { atom, conditions }, key)
+                let class_conditions = condition_names(atom.conditions());
+                let rule_conditions = self.sorted_condition_refs(&class_conditions);
+                let key = CssRuleKey::new(self.config, &rule_conditions, atom.prop());
+                (
+                    SortedAtom {
+                        atom,
+                        class_conditions,
+                        rule_conditions,
+                    },
+                    key,
+                )
             })
             .collect::<Vec<_>>();
         out.sort_by(|a, b| {
@@ -102,7 +111,8 @@ impl<'a> SortContext<'a> {
                     atom_value_sort_key(a.0.atom.value())
                         .cmp(&atom_value_sort_key(b.0.atom.value()))
                 })
-                .then_with(|| a.0.conditions.cmp(&b.0.conditions))
+                .then_with(|| a.0.rule_conditions.cmp(&b.0.rule_conditions))
+                .then_with(|| a.0.class_conditions.cmp(&b.0.class_conditions))
         });
         out.into_iter().map(|(atom, _)| atom).collect()
     }
@@ -134,13 +144,22 @@ impl<'a> SortContext<'a> {
 
     #[must_use]
     pub fn sorted_condition_names<'b>(&self, conditions: &'b [Box<str>]) -> Vec<&'b str> {
-        let mut out = conditions
-            .iter()
-            .map(std::convert::AsRef::as_ref)
-            .collect::<Vec<_>>();
+        let mut out = condition_names(conditions);
         out.sort_by(|a, b| compare_condition_names(self.config, a, b));
         out
     }
+
+    #[must_use]
+    pub fn sorted_condition_refs<'b>(&self, conditions: &[&'b str]) -> Vec<&'b str> {
+        let mut out = conditions.to_vec();
+        out.sort_by(|a, b| compare_condition_names(self.config, a, b));
+        out
+    }
+}
+
+#[must_use]
+pub fn condition_names(conditions: &[Box<str>]) -> Vec<&str> {
+    conditions.iter().map(std::convert::AsRef::as_ref).collect()
 }
 
 /// Total sort key for one rule. Fields are compared in declaration order
@@ -951,14 +970,8 @@ mod tests {
 
     #[test]
     fn breakpoint_media_query_converts_px_to_rem() {
-        assert_eq!(
-            breakpoint_media_query("768px"),
-            "@media (width >= 48rem)"
-        );
-        assert_eq!(
-            breakpoint_media_query("960px"),
-            "@media (width >= 60rem)"
-        );
+        assert_eq!(breakpoint_media_query("768px"), "@media (width >= 48rem)");
+        assert_eq!(breakpoint_media_query("960px"), "@media (width >= 60rem)");
     }
 
     #[test]

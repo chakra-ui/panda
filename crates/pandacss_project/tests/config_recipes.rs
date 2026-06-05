@@ -554,6 +554,64 @@ fn recipe_function_calls_support_responsive_array_variants() {
 }
 
 #[test]
+fn recipe_function_calls_preserve_nested_variant_condition_order() {
+    let mut project = create_project(json!({
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "recipes": {
+                "button": {
+                    "variants": {
+                        "size": {
+                            "lg": { "fontSize": "16px" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { button } from '@panda/recipes';
+            button({ size: { _hover: { md: 'lg' } } });
+            button({ size: { md: { _hover: 'lg' } } });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_lg
+        conditions:
+          - _hover
+          - md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+      - recipe: button
+        slot: ~
+        className: button--size_lg
+        conditions:
+          - md
+          - _hover
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn recipe_base_and_variants_preserve_nested_conditions() {
     let mut project = create_project(json!({
         "conditions": {

@@ -624,6 +624,38 @@ fn emits_conditions_and_breakpoints() {
 }
 
 #[test]
+fn nested_breakpoint_then_condition_preserves_class_condition_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ md: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (width >= 48rem) {
+    .md\:hover\:c_red:hover {
+      color: red;
+    }
+  }
+}
+");
+}
+
+#[test]
 fn block_conditions_emit_each_slot_path() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -788,7 +820,7 @@ fn nested_child_selector_stacks_theme_and_direction_conditions() {
         font: sans;
       }
       @media (width >= 40rem) {
-        :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .dark .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p.dark:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p[data-theme=dark]:hover {
+        :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .dark .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p.dark:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p[data-theme=dark]:hover {
           font: serif;
         }
       }

@@ -273,6 +273,112 @@ fn emits_config_recipe_css_with_variant_and_nested_conditions() {
 }
 
 #[test]
+fn emits_config_recipe_css_with_condition_then_responsive_variant_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "recipes": {
+                "btn": {
+                    "className": "btn",
+                    "variants": {
+                        "size": {
+                            "lg": { "padding": "2px" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { btn } from '@panda/recipes'; btn({ size: { _hover: { md: 'lg' } } })",
+    );
+    assert_snapshot!(css, @r"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --breakpoints-md: 48rem;
+        --sizes-breakpoint-md: 48rem;
+      }
+    }
+    @layer recipes {
+      @media (width >= 48rem) {
+        .hover\:md\:btn--size_lg:hover {
+          padding: 2px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn emits_config_recipe_css_with_responsive_then_condition_variant_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "recipes": {
+                "btn": {
+                    "className": "btn",
+                    "variants": {
+                        "size": {
+                            "lg": { "padding": "2px" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { btn } from '@panda/recipes'; btn({ size: { md: { _hover: 'lg' } } })",
+    );
+    assert_snapshot!(css, @r"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --breakpoints-md: 48rem;
+        --sizes-breakpoint-md: 48rem;
+      }
+    }
+    @layer recipes {
+      @media (width >= 48rem) {
+        .md\:hover\:btn--size_lg:hover {
+          padding: 2px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_config_recipe_css_with_responsive_array_variant() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
@@ -602,6 +708,62 @@ fn emits_config_slot_recipe_css_with_nested_conditions() {
       }
       .checkbox__root--size_sm:hover {
         padding: 2px;
+      }
+    }
+    ");
+}
+
+#[test]
+fn emits_config_slot_recipe_css_with_responsive_then_condition_variant_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "slotRecipes": {
+                "checkbox": {
+                    "className": "checkbox",
+                    "slots": ["root"],
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "root": { "padding": "2px" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { checkbox } from '@panda/recipes'; checkbox({ size: { md: { _hover: 'sm' } } })",
+    );
+    assert_snapshot!(css, @r"
+    @layer reset, base, tokens, recipes, utilities;
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    @layer tokens {
+      :where(:root, :host) {
+        --breakpoints-md: 48rem;
+        --sizes-breakpoint-md: 48rem;
+      }
+    }
+    @layer recipes.slots {
+      @media (width >= 48rem) {
+        .md\:hover\:checkbox__root--size_sm:hover {
+          padding: 2px;
+        }
       }
     }
     ");

@@ -74,7 +74,7 @@ fn applies_every_part_of_block_form_conditions() {
     }
     @layer utilities {
       @media (hover: hover) {
-        .hoverFine\:before\:content_\"x\":hover::before {
+        .before\:hoverFine\:content_\"x\":hover::before {
           content: "x";
         }
       }
@@ -181,7 +181,7 @@ fn sorts_axis_shorthands_before_state_variants() {
       .hover\:p_4px:hover {
         padding: 4px;
       }
-      .hover\:focus\:p_12px:hover:focus {
+      .focus\:hover\:p_12px:hover:focus {
         padding: 12px;
       }
     }
@@ -462,7 +462,7 @@ fn applies_pseudo_elements_after_multiple_pseudo_classes() {
       }
     }
     @layer utilities {
-      .hover\:focus\:before\:content_\"x\":hover:focus::before {
+      .before\:focus\:hover\:content_\"x\":hover:focus::before {
         content: "x";
       }
     }
@@ -537,14 +537,14 @@ fn sorts_stacked_max_and_min_conditions_by_outer_priority() {
     @layer utilities {
       @media (width < 64rem) {
         @media (width >= 40rem) {
-          .maxLg\:minSm\:c_red {
+          .minSm\:maxLg\:c_red {
             color: red;
           }
         }
       }
       @media (width < 40rem) {
         @media (width >= 64rem) {
-          .maxSm\:minLg\:c_red {
+          .minLg\:maxSm\:c_red {
             color: red;
           }
         }
