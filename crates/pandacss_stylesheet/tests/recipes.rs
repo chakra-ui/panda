@@ -55,6 +55,156 @@ fn emits_config_recipe_css() {
 }
 
 #[test]
+fn emits_config_recipe_css_with_nested_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "disabled": "&:disabled",
+            "hover": "&:hover"
+        },
+        "utilities": {
+            "backgroundColor": { "className": "bg" },
+            "color": { "className": "c" },
+            "display": { "className": "d" },
+            "fontSize": { "className": "fs" },
+            "gap": { "className": "gap" },
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "recipes": {
+                "btn": {
+                    "className": "btn",
+                    "base": {
+                        "display": "inline-flex",
+                        "color": "red",
+                        "_hover": {
+                            "padding": "4px",
+                            "_disabled": { "backgroundColor": "initial" }
+                        },
+                        "md": { "gap": "2px" }
+                    },
+                    "variants": {
+                        "size": {
+                            "lg": {
+                                "fontSize": "16px",
+                                "&[data-disabled]": { "color": "gray" },
+                                "_hover": { "padding": "2px" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { btn } from '@panda/recipes'; btn({ size: 'lg' })",
+    );
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --breakpoints-md: 48rem;
+    --sizes-breakpoint-md: 48rem;
+  }
+}
+@layer recipes {
+  @layer base {
+    .btn {
+      color: red;
+      display: inline-flex;
+    }
+    .disabled\:hover\:btn:disabled:hover {
+      background-color: initial;
+    }
+    .hover\:btn:hover {
+      padding: 4px;
+    }
+    @media (width >= 48rem) {
+      .md\:btn {
+        gap: 2px;
+      }
+    }
+  }
+  .btn--size_lg {
+    font-size: 16px;
+  }
+  .\[\&\[data-disabled\]\]\:btn--size_lg[data-disabled] {
+    color: gray;
+  }
+  .hover\:btn--size_lg:hover {
+    padding: 2px;
+  }
+}
+");
+}
+
+#[test]
+fn emits_config_recipe_css_with_nested_selector_and_responsive_condition() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c" },
+            "marginRight": { "className": "mr" }
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "48rem"
+            },
+            "recipes": {
+                "text": {
+                    "className": "text",
+                    "variants": {
+                        "variant": {
+                            "sm": {
+                                "&:first-child": {
+                                    "marginRight": "4px",
+                                    "&:hover": {
+                                        "color": {
+                                            "base": "red",
+                                            "md": "gray"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_css(
+        &config,
+        "import { text } from '@panda/recipes'; text({ variant: 'sm' })",
+    );
+    assert_snapshot!(css, @r"
+@layer reset, base, tokens, recipes, utilities;
+@layer tokens {
+  :where(:root, :host) {
+    --breakpoints-md: 48rem;
+    --sizes-breakpoint-md: 48rem;
+  }
+}
+@layer recipes {
+  .\[\&\:first-child\]\:text--variant_sm:first-child {
+    margin-right: 4px;
+  }
+  .\[\&\:first-child\]\:\[\&\:hover\]\:text--variant_sm:first-child:hover {
+    color: red;
+  }
+  @media (width >= 48rem) {
+    .\[\&\:first-child\]\:\[\&\:hover\]\:md\:text--variant_sm:first-child:hover {
+      color: gray;
+    }
+  }
+}
+");
+}
+
+#[test]
 fn emits_config_recipe_css_with_configured_separator() {
     let config = config(serde_json::json!({
         "separator": "__",
