@@ -237,8 +237,8 @@ impl Project {
         }
         span.record("cache_hit", false);
 
-        let compiled = self.config.as_ref();
         let result = if pattern_transform.is_some() {
+            let compiled = self.config.as_ref();
             let mut raw_transform = |name: &str, styles: &Literal| {
                 let pattern = compiled.patterns.transform_input(name, styles);
                 let Some(transform) = pattern_transform.as_deref_mut() else {
@@ -291,6 +291,7 @@ impl Project {
         }
         let path_key: Arc<str> = Arc::from(path);
 
+        let compiled = self.config.as_ref();
         let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
         let mut encoded_recipes = EncodedRecipes::default();
         let empty_object = Literal::Object(Vec::new());
