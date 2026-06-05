@@ -1,6 +1,6 @@
-mod common;
+use super::common;
 
-use common::{panda_config, panda_config_with_jsx};
+use super::common::{panda_config, panda_config_with_jsx};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{JsxExtractionConfig, extract, extract_debug};

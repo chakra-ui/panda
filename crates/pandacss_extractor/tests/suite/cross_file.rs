@@ -6,9 +6,9 @@
 
 use std::path::{Path, PathBuf};
 
-mod common;
+use super::common;
 
-use common::panda_config;
+use super::common::panda_config;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{CrossFileResolver, ExtractUsage, extract};
 use pandacss_fs::MemoryFileSystem;

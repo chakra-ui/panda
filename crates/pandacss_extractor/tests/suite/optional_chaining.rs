@@ -6,9 +6,9 @@
 //! object/array lookup path. We don't model JS `undefined`; if the base
 //! isn't a resolvable object, the call is simply dropped.
 
-mod common;
+use super::common;
 
-use common::css_config;
+use super::common::css_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractUsage, extract};

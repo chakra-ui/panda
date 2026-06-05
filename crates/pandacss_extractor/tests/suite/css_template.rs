@@ -1,8 +1,8 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
+use super::common;
 
-use common::panda_config;
+use super::common::panda_config;
 use pandacss_extractor::{CssSyntaxKind, ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
