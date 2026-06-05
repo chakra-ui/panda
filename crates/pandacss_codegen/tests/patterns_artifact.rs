@@ -1,6 +1,4 @@
-mod common;
-
-use common::{artifact, file, paths};
+use crate::common::{artifact, file, paths};
 use indoc::indoc;
 use insta::assert_snapshot;
 use pandacss_codegen::{

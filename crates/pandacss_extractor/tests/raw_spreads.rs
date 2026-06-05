@@ -1,8 +1,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
 
-use common::{matcher, panda_config};
+use crate::common::{matcher, panda_config};
 use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matchers, extract};
 
 fn run(source: &str) -> ExtractUsage {

@@ -1,8 +1,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
 
-use common::css_matchers;
+use crate::common::css_matchers;
 use pandacss_extractor::{
     CssSyntaxKind, ExtractedCallsResult, ExtractorConfig, ImportSpecifierKind, MatchCategory,
     MatchedImport, Matcher, Matchers, NameMatcher, extract_calls,

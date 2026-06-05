@@ -1,8 +1,6 @@
-mod common;
-
 use std::collections::BTreeMap;
 
-use common::{artifact, file, paths};
+use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
 use pandacss_config::{CodegenFormat, TokenTypeData, TypeData, UserConfig};

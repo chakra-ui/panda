@@ -7,13 +7,15 @@ The Rust engine is validated through **public-API integration tests** in `crates
 and especially **CSS output** — using inline `insta` snapshots. CSS snapshots are sacred: a diff is a product change,
 not a housekeeping update.
 
-Heavy crates (`pandacss_stylesheet`, `pandacss_project`) consolidate their integration suites into **one test binary**
-to avoid linking the same dev-deps (notably `pandacss_project`) dozens of times. Lighter crates keep Cargo's default
-one-binary-per-`tests/*.rs` layout because compile cost and artifact lock contention are acceptable.
+Heavy crates (`pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen`) consolidate
+their integration suites into **one test binary** to avoid linking the same dev-deps dozens of times. Lighter crates
+keep Cargo's default one-binary-per-`tests/*.rs` layout because compile cost and artifact lock contention are
+acceptable.
 
 ## Integration test harness (consolidated crates)
 
-`pandacss_stylesheet` and `pandacss_project` use a single integration binary named `integration`:
+`pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen` use a single integration
+binary named `integration`:
 
 ```toml
 # Cargo.toml
@@ -44,6 +46,8 @@ Run the full consolidated suite for one crate:
 ```sh
 cargo test -p pandacss_stylesheet --locked
 cargo test -p pandacss_project --locked
+cargo test -p pandacss_extractor --locked
+cargo test -p pandacss_codegen --locked
 ```
 
 ## Module layout and shared helpers
@@ -68,8 +72,8 @@ Helper conventions:
 
 | Layout | Crates | Rationale |
 | --- | --- | --- |
-| **Consolidated** (`main.rs` + `autotests = false`) | `pandacss_stylesheet`, `pandacss_project` | Large suite surface; dev-deps pull in downstream tiers (`pandacss_project` for stylesheet, `pandacss_fs` memory for project). Many binaries ⇒ slow compiles and `target/` lock contention during parallel `cargo test`. |
-| **Autodiscovered** (one `tests/<feature>.rs` binary each) | `pandacss_extractor`, `pandacss_encoder`, `pandacss_codegen`, `pandacss_config`, `pandacss_tokens`, `pandacss_recipes`, `pandacss_fs`, `pandacss_shared`, `pandacss_utility`, `pandacss_tracing` | Fewer files and/or lighter dev-dep graphs; separate binaries aid targeted `cargo test -p … <file_stem>` filtering without maintaining `main.rs` module lists. |
+| **Consolidated** (`main.rs` + `autotests = false`) | `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen` | Large suite surface (15–18+ files); stylesheet dev-deps pull `pandacss_project`, extractor pulls `pandacss_fs` memory, codegen pulls the stylesheet tier transitively. Many binaries ⇒ slow compiles and `target/` lock contention during parallel `cargo test`. |
+| **Autodiscovered** (one `tests/<feature>.rs` binary each) | `pandacss_config`, `pandacss_encoder`, `pandacss_tokens`, `pandacss_recipes`, `pandacss_fs`, `pandacss_shared`, `pandacss_utility`, `pandacss_tracing` | Fewer files (1–6) and/or lighter dev-dep graphs; separate binaries aid targeted `cargo test -p … <file_stem>` filtering without maintaining `main.rs` module lists. |
 
 Adopt the consolidated harness when a crate's integration suite grows enough that **link time dominates iteration** or
 parallel test runs fight over the same test-binary artifacts. Do not consolidate crates with only a handful of small
@@ -104,21 +108,33 @@ Prefer **crate-scoped, filtered** commands over `pnpm rust:test` (full workspace
 # Typecheck test targets only — fast feedback after edits
 cargo check -p pandacss_stylesheet --tests --locked
 
-# Run one test (names are module::test_name in consolidated crates)
-cargo test -p pandacss_stylesheet atomic::emits_dynamic_atomic_css --locked
+# Run one test — nextest is the default for filtered runs
+cargo nextest run -p pandacss_stylesheet atomic::emits_dynamic_atomic_css --locked
 
 # Run all tests in one suite module
-cargo test -p pandacss_project config_recipes --locked
+cargo nextest run -p pandacss_project config_recipes --locked
+
+# Lib unit tests in src/ (private helpers)
+cargo nextest run -p pandacss_stylesheet grouped --lib --locked
+cargo nextest run -p pandacss_shared unit_conversion --lib --locked
 
 # Full integration binary for the crate
-cargo test -p pandacss_stylesheet --locked
+cargo nextest run -p pandacss_stylesheet --locked
 ```
 
 For autodiscovered crates, the filter is often the file stem:
 
 ```sh
-cargo test -p pandacss_extractor extract --locked
+cargo nextest run -p pandacss_extractor extract --locked
 ```
+
+Install [cargo-nextest](https://nexte.st/) once if it is not on PATH (CI uses `taiki-e/install-action@nextest`; root `pnpm rust:test` already runs nextest):
+
+```sh
+cargo install cargo-nextest --locked
+```
+
+Use `cargo test` when nextest is unavailable or you need unstable test flags. `pnpm rust:test:cargo` runs the full workspace with plain `cargo test`.
 
 **Stop on compiler warnings during iteration.** CI runs `clippy` with `-D warnings`; a warning left unfixed forces a
 full rebuild cycle later. Fix warnings before continuing to the next change.
@@ -127,7 +143,7 @@ full rebuild cycle later. Fix warnings before continuing to the next change.
 
 | When | Command |
 | --- | --- |
-| Local iteration on one crate | `cargo check/test -p <crate> …` (above) |
+| Local iteration on one crate | `cargo check/nextest -p <crate> …` (above) |
 | Pre-PR / cross-crate change | `pnpm rust:check` then `pnpm rust:test` |
 | CI | Same as pre-PR — workspace `cargo nextest run --workspace --locked` + doc tests |
 
@@ -137,15 +153,19 @@ Run workspace tests when touching shared types (`pandacss_config`, `pandacss_sha
 ## Private unit tests in `src/`
 
 `#[cfg(test)] mod tests` inside `src/` is **rare** and reserved for private helpers that are awkward to reach from
-integration tests — pure functions with no public API surface. Example: `pandacss_shared::unit_conversion::to_rem`.
+integration tests — pure functions with no public API surface. Examples:
+
+- `pandacss_shared::unit_conversion::to_rem`
+- `pandacss_stylesheet::grouped` — tree grouping + CSS emit
+- `pandacss_stylesheet::sort` — breakpoint rem conversion, sort keys
+- `pandacss_project::recipes::compound_tests` — eager vs smart compound variants
 
 Default to `tests/` for anything that exercises the crate's public API or documents expected behavior for porting
 parity. If a `src/` test starts needing dev-deps or sibling crates, move it to integration tests.
 
 ## Unresolved Questions
 
-- Whether `pandacss_extractor` should consolidate once its suite + dev-deps cross a compile-time threshold (it has the
-  largest file count today but lighter deps than stylesheet/project).
+- Whether `pandacss_fs` (6 suite files, light dev-deps) should consolidate once parallel test runs show measurable link-time savings.
 - Standardizing `tests/common/` helpers that are duplicated across `pandacss_stylesheet` and `pandacss_project`.
 
 ## Related

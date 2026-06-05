@@ -1,8 +1,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
 
-use common::{jsx_config, panda_config};
+use crate::common::{jsx_config, panda_config};
 use pandacss_extractor::{
     CssSyntaxKind, ExtractUsage, ExtractedJsx, ExtractedJsxResult, ImportSpecifierKind,
     JsxExtractionConfig, JsxStyleProps, MatchCategory, MatchedImport, extract as extract_usage,

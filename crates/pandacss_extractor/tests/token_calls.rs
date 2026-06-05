@@ -9,9 +9,8 @@
 
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
 
-use common::{panda_config, panda_config_with_token_dictionary};
+use crate::common::{panda_config, panda_config_with_token_dictionary};
 use pandacss_extractor::{ExtractUsage, Literal, TokenDictionary, extract};
 use pandacss_tokens::{Token, TokenCategory};
 

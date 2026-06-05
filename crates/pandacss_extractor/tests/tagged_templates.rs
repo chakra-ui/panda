@@ -9,9 +9,8 @@
 //! ``styled.div`...` `` — are a separate thing: their bodies parse into a
 //! style object and they extract as usages (see `calls.rs` / `jsx.rs`).
 
-mod common;
 
-use common::css_config;
+use crate::common::css_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{CssSyntaxKind, ExtractUsage, extract};

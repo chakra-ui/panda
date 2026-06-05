@@ -8,9 +8,8 @@
 
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
 
-use common::{matcher, panda_matchers};
+use crate::common::{matcher, panda_matchers};
 use pandacss_extractor::{ExtractUsage, ExtractorConfig, extract};
 
 fn matchers() -> pandacss_extractor::Matchers {

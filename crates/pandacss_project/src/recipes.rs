@@ -1496,3 +1496,91 @@ fn sorted_recipe_entries(entries: &FxHashSet<RecipeStyleEntry>) -> Vec<RecipeSty
     });
     out
 }
+
+#[cfg(test)]
+mod compound_tests {
+    use super::*;
+    use pandacss_encoder::{Atom, AtomValue};
+
+    fn test_atom(prop: &str, value: &str) -> Atom {
+        Atom::new(
+            prop.into(),
+            AtomValue::String(value.into()),
+            SmallVec::new(),
+            false,
+        )
+    }
+
+    fn compound(
+        conditions: Vec<(&str, Vec<&str>)>,
+        props: &[(&str, &str)],
+    ) -> ResolvedCompoundVariant {
+        ResolvedCompoundVariant {
+            conditions: conditions
+                .into_iter()
+                .map(|(name, values)| {
+                    (
+                        name.into(),
+                        values.into_iter().map(|value| value.into()).collect(),
+                    )
+                })
+                .collect(),
+            atoms: props
+                .iter()
+                .map(|(prop, value)| test_atom(prop, value))
+                .collect(),
+        }
+    }
+
+    fn selected(size: &str) -> FxHashMap<Box<str>, Vec<SelectedVariantValue>> {
+        let mut out = FxHashMap::default();
+        out.insert(
+            "size".into(),
+            vec![SelectedVariantValue {
+                key: size.into(),
+                conditions: SmallVec::new(),
+            }],
+        );
+        out
+    }
+
+    #[test]
+    fn eager_mode_emits_all_compound_atoms_on_first_recipe_touch() {
+        let compounds = vec![
+            compound(vec![("size", vec!["sm"])], &[("color", "red")]),
+            compound(vec![("size", vec!["md"])], &[("color", "blue")]),
+        ];
+        let mut encoded = EncodedRecipes::new(false);
+        let empty = FxHashMap::default();
+
+        encoded.process_compounds("badge", &compounds, &empty);
+        assert_eq!(encoded.atomic.len(), 2);
+
+        encoded.process_compounds("badge", &compounds, &empty);
+        assert_eq!(encoded.atomic.len(), 2);
+    }
+
+    #[test]
+    fn smart_mode_emits_only_matching_compound_atoms() {
+        let compounds = vec![
+            compound(vec![("size", vec!["sm"])], &[("color", "red")]),
+            compound(vec![("size", vec!["md"])], &[("color", "blue")]),
+        ];
+        let mut encoded = EncodedRecipes::new(true);
+
+        encoded.process_compounds("badge", &compounds, &selected("sm"));
+        assert_eq!(encoded.atomic.len(), 1);
+        let atom = encoded.atomic.iter().next().expect("one atom");
+        assert_eq!(atom.prop(), "color");
+        assert_eq!(atom.value(), &AtomValue::String("red".into()));
+    }
+
+    #[test]
+    fn smart_mode_skips_non_matching_compounds() {
+        let compounds = vec![compound(vec![("size", vec!["sm"])], &[("color", "red")])];
+        let mut encoded = EncodedRecipes::new(true);
+
+        encoded.process_compounds("badge", &compounds, &selected("md"));
+        assert!(encoded.atomic.is_empty());
+    }
+}

@@ -5,9 +5,8 @@
 //! `oxc_semantic` integration. These tests use the combined `extract()`
 //! entrypoint so the resolver is always present.
 
-mod common;
 
-use common::panda_config;
+use crate::common::panda_config;
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_extractor::{ExtractUsage, extract};

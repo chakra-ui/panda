@@ -1,6 +1,4 @@
-mod common;
-
-use common::{artifact, file, paths};
+use crate::common::{artifact, file, paths};
 use indoc::indoc;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;

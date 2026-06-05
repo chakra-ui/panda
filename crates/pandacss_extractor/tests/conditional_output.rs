@@ -6,9 +6,8 @@
 //! we emit both alternatives so the downstream encoder can generate
 //! atomic-CSS-style output.
 
-mod common;
 
-use common::panda_config;
+use crate::common::panda_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractUsage, extract};

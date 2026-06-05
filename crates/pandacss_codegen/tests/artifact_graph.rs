@@ -3,9 +3,7 @@ use pandacss_codegen::{
     ArtifactGraph, ArtifactId, CodegenInput, ConfigDependency, DependencySet, GenerateOptions,
 };
 
-mod common;
-
-use common::{artifact, file, file_dependencies};
+use crate::common::{artifact, file, file_dependencies};
 
 #[test]
 fn filters_artifacts_by_config_dependencies() {

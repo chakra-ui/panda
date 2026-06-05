@@ -943,3 +943,41 @@ fn is_longhand_logical(prop: &str) -> bool {
             | "transitionTimingFunction"
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn breakpoint_media_query_converts_px_to_rem() {
+        assert_eq!(
+            breakpoint_media_query("768px"),
+            "@media (width >= 48rem)"
+        );
+        assert_eq!(
+            breakpoint_media_query("960px"),
+            "@media (width >= 60rem)"
+        );
+    }
+
+    #[test]
+    fn parse_length_px_normalizes_units_for_sorting() {
+        assert_eq!(parse_length_px("768px"), Some(768.0));
+        assert_eq!(parse_length_px("48rem"), Some(768.0));
+        assert_eq!(parse_length_px("100%"), Some(f64::INFINITY));
+    }
+
+    #[test]
+    fn at_rule_key_orders_min_width_breakpoints_ascending() {
+        let sm = AtRuleKey::new("@media (width >= 40rem)");
+        let lg = AtRuleKey::new("@media (width >= 64rem)");
+        assert!(sm < lg);
+    }
+
+    #[test]
+    fn at_rule_key_orders_supports_before_media() {
+        let supports = AtRuleKey::new("@supports (display: grid)");
+        let media = AtRuleKey::new("@media (width >= 48rem)");
+        assert!(supports < media);
+    }
+}

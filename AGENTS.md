@@ -287,7 +287,8 @@ JS-facing APIs stay stable; Rust ships behind `@pandacss/compiler`.
 
 ```sh
 pnpm rust:check      # cargo check --workspace --locked
-pnpm rust:test       # cargo test --workspace --locked (+ doc tests)
+pnpm rust:test       # cargo nextest run --workspace --locked (+ doc tests)
+pnpm rust:test:cargo # cargo test --workspace --locked (fallback without nextest)
 pnpm rust:fmt        # cargo fmt --all --check
 pnpm rust:clippy     # cargo clippy --all-targets --locked -- -D warnings
 pnpm bench:rust-spike                          # TS baseline benchmark
@@ -301,19 +302,34 @@ pnpm --filter @pandacss/compiler test           # binding round-trip Vitest test
 # Typecheck test targets only — fast feedback after edits
 cargo check -p pandacss_stylesheet --tests --locked
 
-# Run one test (consolidated crates: module::test_name)
-cargo test -p pandacss_stylesheet atomic::emits_dynamic_atomic_css --locked
+# Run one test — nextest is faster than cargo test for filtered runs
+cargo nextest run -p pandacss_stylesheet atomic::emits_dynamic_atomic_css --locked
 
-# Run all tests in one suite module
-cargo test -p pandacss_project config_recipes --locked
+# Integration suites (consolidated crates: module::test_name)
+cargo nextest run -p pandacss_project config_recipes --locked
 
-# Full integration binary for a consolidated crate
-cargo test -p pandacss_stylesheet --locked
-cargo test -p pandacss_project --locked
+# Lib unit tests in src/ (private helpers)
+cargo nextest run -p pandacss_stylesheet grouped --lib --locked
+cargo nextest run -p pandacss_stylesheet sort --lib --locked
+cargo nextest run -p pandacss_project compound_tests --lib --locked
+
+# Full integration binary for a crate
+cargo nextest run -p pandacss_stylesheet --locked
+cargo nextest run -p pandacss_project --locked
+cargo nextest run -p pandacss_extractor --locked
+cargo nextest run -p pandacss_codegen --locked
 
 # Autodiscovered crates — filter by file stem
-cargo test -p pandacss_extractor extract --locked
+cargo nextest run -p pandacss_config codegen --locked
 ```
+
+Install [cargo-nextest](https://nexte.st/) once if it is not already on PATH (CI installs it via `taiki-e/install-action@nextest`; `pnpm rust:test` already uses nextest):
+
+```sh
+cargo install cargo-nextest --locked
+```
+
+Use `cargo test` instead of `cargo nextest run` when you need unstable test flags or nextest is unavailable. For pre-PR / CI, use `pnpm rust:test` (workspace nextest + doc tests) — not during everyday iteration.
 
 Run workspace tests when touching shared types (`pandacss_config`, `pandacss_shared`), workspace `Cargo.toml` /
 `rust-toolchain.toml`, or anything that could change a downstream crate's contract.
@@ -326,11 +342,13 @@ adds it to PATH, so pnpm child processes inherit it.
 See `design-notes/rust-testing.md` for the full testing strategy.
 
 - **Public-API tests live in `crates/<name>/tests/`** — not in `src/`. Inline `#[cfg(test)] mod tests` is reserved for
-  private helpers (rare), e.g. `pandacss_shared::unit_conversion::to_rem`.
-- **Consolidated harness** — `pandacss_stylesheet` and `pandacss_project` use one integration binary (`tests/main.rs`
-  - `autotests = false` in `Cargo.toml`). Suite files are submodules (`mod atomic;`, …), not separate binaries. Shared
-    helpers live under `tests/common/` and are imported via `use crate::common::…`.
-- **Autodiscovered layout** — lighter crates (`pandacss_extractor`, `pandacss_encoder`, `pandacss_config`, etc.) keep
+  private helpers (rare), e.g. `pandacss_shared::unit_conversion::to_rem`, `pandacss_stylesheet::grouped`,
+  `pandacss_stylesheet::sort`, `pandacss_project::recipes::compound_tests`.
+- **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen`
+  use one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files are submodules
+  (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via
+  `use crate::common::…`.
+- **Autodiscovered layout** — lighter crates (`pandacss_config`, `pandacss_encoder`, `pandacss_fs`, etc.) keep
   Cargo's default one-binary-per-`tests/*.rs` layout for targeted filtering without `main.rs` bookkeeping.
 - Use **inline snapshots**: `assert_yaml_snapshot!(value, @"…")` for structured results; `assert_snapshot!(text, @"…")`
   for CSS output (primary regression guard).

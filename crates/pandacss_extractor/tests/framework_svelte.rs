@@ -1,8 +1,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-mod common;
 
-use common::{extract_shape, import_shape, panda_config};
+use crate::common::{extract_shape, import_shape, panda_config};
 use pandacss_extractor::{extract, extract_jsx, match_imports, scan_imports};
 
 #[test]
