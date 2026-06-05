@@ -1,23 +1,18 @@
 {
-  "name": "@pandacss/cli",
+  "name": "@pandacss/postcss_v2",
   "version": "0.0.0",
-  "description": "Experimental v2 CLI for the Panda Rust compiler",
+  "description": "PostCSS integration for the Panda CSS v2 compiler",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
-  "bin": {
-    "panda": "bin.js",
-    "pandacss": "bin.js"
-  },
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./postcss": "./postcss.js",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
@@ -25,27 +20,28 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
-    "directory": "packages/cli_v2"
+    "directory": "packages/postcss_v2"
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/cli-main.ts --format=esm --dts --no-splitting --shims",
-    "build-fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
+    "build": "tsup src/index.ts --format=esm --platform=node --dts --no-splitting",
+    "build-fast": "tsup src/index.ts --format=esm --platform=node --no-dts --no-splitting",
     "dev": "pnpm build-fast --watch src",
     "test": "vitest run"
   },
   "files": [
-    "dist",
-    "bin.js",
-    "postcss.js"
+    "dist"
   ],
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
-    "@pandacss/compiler-shared": "workspace:*",
-    "@pandacss/postcss_v2": "workspace:*",
-    "@parcel/watcher": "2.5.1",
-    "citty": "0.1.6"
+    "@pandacss/compiler-shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "postcss": ">=8"
+  },
+  "devDependencies": {
+    "postcss": "8.5.6"
   }
 }
