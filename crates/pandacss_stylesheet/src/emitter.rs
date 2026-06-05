@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ops::Range};
+use std::{borrow::Cow, fmt::Write as _, ops::Range};
 
 use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
@@ -2036,13 +2036,37 @@ fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
-/// Backslash-escape every char in a class-name token that isn't a CSS identifier
-/// char (`[A-Za-z0-9_-]` or non-ASCII), so selector keys like `&:hover` emit a
-/// valid `.\&\:hover…` class. Mirrors v1's `esc` (its `[^\x80-￿\w-]` branch);
-/// real selector suffixes (`:hover`, `>`, …) are appended elsewhere, not here.
+/// Backslash-escape class-name tokens the same way the JS `esc` helper does.
+/// Real selector suffixes (`:hover`, `>`, …) are appended elsewhere, not here.
 fn escape_selector(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
-    for ch in value.chars() {
+    let mut chars = value.char_indices().peekable();
+    while let Some((index, ch)) = chars.next() {
+        if ch == '\0' {
+            out.push('\u{FFFD}');
+            continue;
+        }
+        if is_css_escape_codepoint(ch) {
+            push_escaped_codepoint(&mut out, ch);
+            continue;
+        }
+        if index == 0 {
+            if ch.is_ascii_digit() {
+                push_escaped_codepoint(&mut out, ch);
+                continue;
+            }
+            if ch == '-' {
+                if chars.peek().is_some_and(|(_, ch)| ch.is_ascii_digit()) {
+                    out.push('-');
+                    let (_, digit) = chars.next().expect("peeked leading digit");
+                    push_escaped_codepoint(&mut out, digit);
+                } else {
+                    out.push('\\');
+                    out.push('-');
+                }
+                continue;
+            }
+        }
         if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' || !ch.is_ascii() {
             out.push(ch);
         } else {
@@ -2051,6 +2075,14 @@ fn escape_selector(value: &str) -> String {
         }
     }
     out
+}
+
+fn is_css_escape_codepoint(ch: char) -> bool {
+    ch <= '\u{1F}' || ch == '\u{7F}'
+}
+
+fn push_escaped_codepoint(out: &mut String, ch: char) {
+    write!(out, "\\{:x}", ch as u32).expect("writing to String cannot fail");
 }
 
 fn resolved_condition_paths(config: &UserConfig, key: &str) -> Option<ConditionPaths> {

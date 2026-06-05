@@ -107,7 +107,7 @@ fn appends_px_to_numeric_values_except_unitless_and_custom_properties() {
     );
     assert_snapshot!(css, @r"
 @layer utilities {
-  .--foo_42 {
+  .\--foo_42 {
     --foo: 42;
   }
   .fw_700 {
@@ -357,6 +357,66 @@ fn escapes_nested_selector_keys_into_valid_class_names() {
 }
 
 #[test]
+fn escapes_leading_double_dash_class_names() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "--x" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ color: 'red' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .\--x_red {
+    color: red;
+  }
+}
+");
+}
+
+#[test]
+fn escapes_digit_leading_condition_class_names() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "2xl": "96rem"
+            },
+            "tokens": {
+                "colors": {
+                    "orange": {
+                        "500": { "value": "#f97316" }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "background": { "className": "bg", "shorthand": "bg", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css';\n",
+            "css({ bg: { '2xl': 'orange.500' } });\n",
+            "css({ '2xl': { bg: 'orange.500' } });",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (width >= 96rem) {
+    .\32xl\:bg_orange\.500 {
+      background: var(--colors-orange-500);
+    }
+  }
+}
+");
+}
+
+#[test]
 fn emits_custom_props_parent_selectors_selector_lists_and_raw_at_rules() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -379,7 +439,7 @@ fn emits_custom_props_parent_selectors_selector_lists_and_raw_at_rules() {
     );
     assert_snapshot!(css, @r"
     @layer utilities {
-      .--welcome-x_20 {
+      .\--welcome-x_20 {
         --welcome-x: 20;
       }
       .c_black {
