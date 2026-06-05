@@ -12,6 +12,7 @@ fn run(source: &str) -> ExtractUsage {
 fn run_styled_system(source: &str) -> ExtractUsage {
     let config = ExtractorConfig::new(Matchers {
         css: matcher("styled-system/css", ["css", "cva", "sva"]),
+        pattern: matcher("styled-system/patterns", ["stack"]),
         ..Default::default()
     });
     extract(source, "fixture.tsx", &config)
@@ -92,6 +93,48 @@ fn css_raw_identifier_values_fold_inside_nested_selectors() {
       "& h6":
         "&:not(:first-child)":
           marginBlockStart: 1em
+    "#);
+}
+
+#[test]
+fn pattern_raw_spread_inside_nested_selector_matches_issue_3278() {
+    let src = indoc! {r#"
+        import { css } from 'styled-system/css'
+        import { stack } from 'styled-system/patterns';
+
+        const mainCss = css({
+          bg: "blue.100",
+          "& ul": {
+            ...stack.raw({ gap: "0.8rem" }),
+          },
+          "& li": {
+            bg: "blue.200",
+          },
+        });
+    "#};
+    let calls = run_styled_system(src).calls;
+
+    assert_yaml_snapshot!(calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - bg: blue.100
+          "& ul":
+            gap: 0.8rem
+          "& li":
+            bg: blue.200
+      span:
+        start: 105
+        end: 222
+    - category: pattern
+      name: stack
+      alias: stack
+      data:
+        - gap: 0.8rem
+      span:
+        start: 148
+        end: 176
     "#);
 }
 
