@@ -76,6 +76,24 @@ pub struct RecipeStyleEntry {
     pub important: bool,
 }
 
+impl From<Atom> for RecipeStyleEntry {
+    fn from(atom: Atom) -> Self {
+        let Atom {
+            prop,
+            value,
+            conditions,
+            important,
+            hash: _,
+        } = atom;
+        Self {
+            prop,
+            value,
+            conditions,
+            important,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EncodedRecipesSnapshot {

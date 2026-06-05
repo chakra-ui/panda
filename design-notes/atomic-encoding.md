@@ -3,8 +3,10 @@
 ## Summary
 
 The `pandacss_encoder` crate decomposes typed style objects (`Literal::Object`) and recipe models (`Recipe`,
-`SlotRecipe`) into a flat set of `Atom` records — one per `(prop, value, condition_chain)` triple. The emitter turns
-those atoms into CSS rules; the encoder doesn't care about CSS syntax. Dedup happens via `FxHashSet<Atom>`.
+`SlotRecipe`) into a flat set of `Atom` records — one per `(prop, value, condition_chain)` triple. Config recipes reuse
+the same serialization path and then convert atoms into `RecipeStyleEntry` records so stylesheet emission can group
+rules under recipe class names. The encoder doesn't care about CSS syntax. Dedup happens via `FxHashSet<Atom>` for
+atomic styles and `FxHashSet<RecipeStyleEntry>` for grouped recipe entries.
 
 ## The Atom
 
@@ -24,6 +26,30 @@ Three perf choices worth noting:
   falls back to heap. The inline budget is sized to cover the common case at zero heap cost.
 - **Numbers stored as their JS string form** (`AtomValue::Number(Box<str>)`). `Atom` needs `Hash` for dedup; `f64` isn't
   `Eq`. Round-tripping through `to_string()` preserves the integer/float distinction the JS extractor produces.
+
+## RecipeStyleEntry
+
+```rust
+pub struct RecipeStyleEntry {
+    pub prop: Box<str>,
+    pub value: AtomValue,
+    pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
+    pub important: bool,
+}
+```
+
+`RecipeStyleEntry` is not a second style serializer. It is the grouped-recipe IR used after serialization, when the
+stylesheet emitter needs to write declarations under a recipe class name instead of atomic utility class names.
+
+The conversion is intentionally mechanical:
+
+```rust
+impl From<Atom> for RecipeStyleEntry { /* prop, value, conditions, important */ }
+```
+
+This keeps the `(prop, value, condition_chain, important)` semantics owned by `Atom` / `Encoder`. Recipe-specific code
+may still prepend selection conditions such as `size={{ md: "lg" }}`, but it does that after atomic serialization by
+prefixing the entry's existing condition chain.
 
 ## Walker
 
@@ -106,6 +132,42 @@ conditions into the encoder.
 
 `atomic_styles` and `atomic_styles_per_slot` return lazy iterators — no intermediate `Vec` allocation. The encoder
 consumes lazily so the caller never pays for a full materialization.
+
+## Config recipe serialization
+
+Config recipe `base` blocks and variant option style objects must pass through the same serialization path as normal
+`css()` calls. The project layer does this by driving `Encoder::process_atomic_with(style, &StyleNormalizer)` and then
+mapping each `Atom` into a `RecipeStyleEntry`.
+
+This is a deliberate parity rule with the legacy TypeScript engine: `StyleEncoder.hashStyleObject` serialized atomics,
+recipe base styles, and recipe variant selections. Rust should not maintain a separate recipe-only style walker.
+
+Keeping one walker matters for condition correctness. Condition-first recipe shapes are valid:
+
+```js
+{
+  _hover: { padding: "4" },
+  md: { gap: "2" },
+  "&:first-child": {
+    "&:hover": { color: { base: "red", md: "gray" } }
+  }
+}
+```
+
+The encoder's property rule still applies: first non-condition segment is the property, and every condition segment
+except `base` remains in the condition chain. If a recipe call selects a variant responsively, that selection condition
+is prepended after serialization:
+
+```rust
+let mut conditions = selected_variant_conditions;
+conditions.extend(entry.conditions);
+```
+
+Recipe grouping, slot resolution, default variants, compound variants, and watch-mode refcounting remain in
+`pandacss_project`; only style-object serialization is shared with atomics.
+
+Do not reintroduce a recipe-specific recursive walker in `pandacss_project`. If encoding semantics change, change
+`pandacss_encoder` and let both atomic styles and recipe entries inherit the behavior.
 
 ## Inline normalization — `NormalizeAtomic`
 

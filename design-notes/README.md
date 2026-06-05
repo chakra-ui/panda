@@ -28,7 +28,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (the ts-evaluator parity surface).
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape, cycle guard.
-- [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe decomposition.
+- [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe entry serialization.
 
 ### Boundary
 

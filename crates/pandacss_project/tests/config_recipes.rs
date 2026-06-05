@@ -504,6 +504,161 @@ fn recipe_function_calls_support_conditional_variants() {
 }
 
 #[test]
+fn recipe_base_and_variants_preserve_nested_conditions() {
+    let mut project = create_project(json!({
+        "conditions": {
+            "disabled": "&:disabled",
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "recipes": {
+                "btn": {
+                    "className": "btn",
+                    "base": {
+                        "color": "red",
+                        "_hover": {
+                            "padding": "4px",
+                            "_disabled": { "backgroundColor": "initial" }
+                        },
+                        "md": { "gap": "2px" }
+                    },
+                    "variants": {
+                        "size": {
+                            "lg": {
+                                "fontSize": "16px",
+                                "&[data-disabled]": {
+                                    "color": "gray"
+                                },
+                                "_hover": { "padding": "2px" }
+                            }
+                        }
+                    },
+                    "defaultVariants": {
+                        "size": "lg"
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { btn } from '@panda/recipes';
+            btn({ size: 'lg' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r#"
+    base:
+      - recipe: btn
+        slot: ~
+        className: btn
+        entries:
+          - prop: color
+            value: red
+            conditions: []
+          - prop: padding
+            value: 4px
+            conditions:
+              - _hover
+          - prop: backgroundColor
+            value: initial
+            conditions:
+              - _hover
+              - _disabled
+          - prop: gap
+            value: 2px
+            conditions:
+              - md
+    variants:
+      - recipe: btn
+        slot: ~
+        className: btn--size_lg
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+          - prop: color
+            value: gray
+            conditions:
+              - "&[data-disabled]"
+          - prop: padding
+            value: 2px
+            conditions:
+              - _hover
+    atomic: []
+    "#);
+}
+
+#[test]
+fn recipe_variants_preserve_nested_selector_and_responsive_conditions() {
+    let mut project = create_project(json!({
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "recipes": {
+                "text": {
+                    "className": "text",
+                    "variants": {
+                        "variant": {
+                            "sm": {
+                                "&:first-child": {
+                                    "marginRight": "4px",
+                                    "&:hover": {
+                                        "color": {
+                                            "base": "red",
+                                            "md": "gray"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { text } from '@panda/recipes';
+            text({ variant: 'sm' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r#"
+    base: []
+    variants:
+      - recipe: text
+        slot: ~
+        className: text--variant_sm
+        entries:
+          - prop: marginRight
+            value: 4px
+            conditions:
+              - "&:first-child"
+          - prop: color
+            value: red
+            conditions:
+              - "&:first-child"
+              - "&:hover"
+          - prop: color
+            value: gray
+            conditions:
+              - "&:first-child"
+              - "&:hover"
+              - md
+    atomic: []
+    "#);
+}
+
+#[test]
 fn recipe_variant_runtime_ternaries_encode_all_literal_branches() {
     let mut project = create_project(json!({
         "theme": {
@@ -998,6 +1153,82 @@ fn slot_recipe_function_calls_support_conditional_variants() {
           - prop: padding
             value: 2px
             conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn slot_recipe_base_and_variants_preserve_nested_conditions() {
+    let mut project = create_project(json!({
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            },
+            "slotRecipes": {
+                "tabs": {
+                    "slots": ["root"],
+                    "base": {
+                        "root": {
+                            "color": "red",
+                            "_hover": { "padding": "4px" },
+                            "md": { "gap": "2px" }
+                        }
+                    },
+                    "variants": {
+                        "size": {
+                            "lg": {
+                                "root": {
+                                    "fontSize": "16px",
+                                    "_hover": { "padding": "2px" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import * as recipes from '@panda/recipes';
+            recipes.tabs({ size: 'lg' });
+        "},
+    );
+
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: tabs
+        slot: root
+        className: tabs__root
+        entries:
+          - prop: color
+            value: red
+            conditions: []
+          - prop: padding
+            value: 4px
+            conditions:
+              - _hover
+          - prop: gap
+            value: 2px
+            conditions:
+              - md
+    variants:
+      - recipe: tabs
+        slot: root
+        className: tabs__root--size_lg
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+          - prop: padding
+            value: 2px
+            conditions:
+              - _hover
     atomic: []
     ");
 }

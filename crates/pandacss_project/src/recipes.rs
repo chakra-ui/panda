@@ -14,7 +14,6 @@ use regex::RegexSet;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 use smallvec::SmallVec;
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use pandacss_config::UserConfig;
@@ -24,9 +23,7 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{
-    diagnostic_codes, number_to_js_string, push_number_to_js_string, split_important,
-};
+use pandacss_shared::{diagnostic_codes, number_to_js_string};
 use pandacss_utility::{StyleNormalizer, Utility};
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
@@ -102,9 +99,9 @@ pub(crate) struct StyleResolver<'a> {
 
 impl StyleResolver<'_> {
     fn atoms(&self, style: &Literal) -> FxHashSet<Atom> {
-        let style = self.normalize_style_object(style);
+        let normalizer = self.normalizer();
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
-        encoder.process_atomic(style.as_ref());
+        encoder.process_atomic_with(style, &normalizer);
         encoder.into_atoms()
     }
 
@@ -117,31 +114,31 @@ impl StyleResolver<'_> {
         style: &Literal,
         prefix_conditions: &SmallVec<[Box<str>; 2]>,
     ) -> FxHashSet<RecipeStyleEntry> {
-        let style = self.normalize_style_object(style);
-        let mut entries = FxHashSet::default();
-        walk_style_object(style.as_ref(), self.conditions, |leaf| {
-            let Some(value) = literal_to_recipe_value(leaf.value) else {
-                return;
-            };
-            let mut conditions = prefix_conditions.clone();
-            conditions.extend(leaf.conditions);
-            entries.insert(RecipeStyleEntry {
-                prop: leaf.prop.into(),
-                value: value.value,
-                conditions,
-                important: value.important,
-            });
-        });
-        entries
+        let normalizer = self.normalizer();
+        let mut encoder = Encoder::with_conditions(self.conditions.clone());
+        encoder.process_atomic_with(style, &normalizer);
+
+        encoder
+            .into_atoms()
+            .into_iter()
+            .map(|atom| {
+                let mut entry = RecipeStyleEntry::from(atom);
+                if !prefix_conditions.is_empty() {
+                    let mut conditions = prefix_conditions.clone();
+                    conditions.extend(entry.conditions.iter().cloned());
+                    entry.conditions = conditions;
+                }
+                entry
+            })
+            .collect()
     }
 
-    fn normalize_style_object<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
+    fn normalizer(&self) -> StyleNormalizer<'_> {
         StyleNormalizer {
             utility: self.utility,
             breakpoints: self.breakpoints,
             shorthand: true,
         }
-        .normalize(style)
     }
 }
 
@@ -1389,147 +1386,6 @@ fn literal_to_variant_key(value: &Literal) -> Option<String> {
         Literal::Bool(true) => Some("true".to_owned()),
         Literal::Bool(false) => Some("false".to_owned()),
         Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
-    }
-}
-
-#[derive(Debug, Clone)]
-struct StylePathSegment {
-    name: Box<str>,
-    is_condition: bool,
-}
-
-struct StyleLeaf<'a> {
-    prop: &'a str,
-    value: &'a Literal,
-    conditions: SmallVec<[Box<str>; 2]>,
-}
-
-/// Visit each leaf of a recipe style object, handing the callback the property
-/// name (first non-condition segment) and the condition chain *below* it.
-/// Recipe-specific cousin of the encoder's atom walker, emitting
-/// [`RecipeStyleEntry`] rather than atoms.
-fn walk_style_object<F>(value: &Literal, conditions: &ProjectConditionMatcher, mut visit: F)
-where
-    F: FnMut(StyleLeaf<'_>),
-{
-    let mut path = SmallVec::<[StylePathSegment; 8]>::new();
-    walk_style_object_inner(value, conditions, &mut path, &mut visit);
-}
-
-fn walk_style_object_inner<F>(
-    value: &Literal,
-    conditions: &ProjectConditionMatcher,
-    path: &mut SmallVec<[StylePathSegment; 8]>,
-    visit: &mut F,
-) where
-    F: FnMut(StyleLeaf<'_>),
-{
-    if let Literal::Object(children) = value {
-        for (key, child) in children {
-            path.push(StylePathSegment {
-                name: key.clone().into_boxed_str(),
-                is_condition: key == "base" || conditions.is_condition(key),
-            });
-            walk_style_object_inner(child, conditions, path, visit);
-            path.pop();
-        }
-        return;
-    }
-
-    let Some(prop) = path.iter().find(|segment| !segment.is_condition) else {
-        return;
-    };
-    let conditions = path
-        .iter()
-        .skip_while(|segment| segment.name.as_ref() != prop.name.as_ref())
-        .skip(1)
-        .filter(|segment| segment.is_condition && &*segment.name != "base")
-        .map(|segment| segment.name.clone())
-        .collect();
-
-    visit(StyleLeaf {
-        prop: prop.name.as_ref(),
-        value,
-        conditions,
-    });
-}
-
-struct RecipeValue {
-    value: AtomValue,
-    important: bool,
-}
-
-fn literal_to_recipe_value(value: &Literal) -> Option<RecipeValue> {
-    match value {
-        Literal::String(value) => {
-            if is_absolute_url(value) {
-                return None;
-            }
-            let (value, important) = split_important(value);
-            Some(RecipeValue {
-                value: AtomValue::String(value.into_owned().into_boxed_str()),
-                important,
-            })
-        }
-        Literal::Number(value) => Some(RecipeValue {
-            value: AtomValue::Number(number_to_js_string(*value).into_boxed_str()),
-            important: false,
-        }),
-        Literal::Bool(value) => Some(RecipeValue {
-            value: AtomValue::Bool(*value),
-            important: false,
-        }),
-        Literal::Null => Some(RecipeValue {
-            value: AtomValue::Null,
-            important: false,
-        }),
-        Literal::Array(items) => {
-            let value = format!("[{}]", literal_join(items, ","));
-            let (value, important) = split_important(&value);
-            Some(RecipeValue {
-                value: AtomValue::String(value.into_owned().into_boxed_str()),
-                important,
-            })
-        }
-        Literal::Conditional(branches) => {
-            let value = format!("?({})", literal_join(branches, "|"));
-            let (value, important) = split_important(&value);
-            Some(RecipeValue {
-                value: AtomValue::String(value.into_owned().into_boxed_str()),
-                important,
-            })
-        }
-        Literal::Object(_) => None,
-    }
-}
-
-fn is_absolute_url(value: &str) -> bool {
-    value.starts_with("http://") || value.starts_with("https://")
-}
-
-fn literal_join(items: &[Literal], separator: &str) -> String {
-    let mut out = String::new();
-    for (index, item) in items.iter().enumerate() {
-        if index > 0 {
-            out.push_str(separator);
-        }
-        push_literal_repr(&mut out, item);
-    }
-    out
-}
-
-fn push_literal_repr(out: &mut String, value: &Literal) {
-    match value {
-        Literal::String(value) => out.push_str(value),
-        Literal::Number(value) => {
-            push_number_to_js_string(out, *value);
-        }
-        Literal::Bool(true) => out.push_str("true"),
-        Literal::Bool(false) => out.push_str("false"),
-        Literal::Null => out.push_str("null"),
-        Literal::Object(_) => out.push_str("{...}"),
-        Literal::Array(_) => out.push_str("[...]"),
-        Literal::Conditional(_) => out.push_str("?(...)"),
     }
 }
 
