@@ -70,6 +70,10 @@ enum ResolutionState {
 }
 
 impl<'a, 'cb> Resolver<'a, 'cb> {
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "resolver construction mirrors the extraction pipeline state"
+    )]
     pub(crate) fn build(
         program: &'a oxc_ast::ast::Program<'a>,
         matched: &'a [MatchedImport],
@@ -96,6 +100,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         }
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "cross-file resolver construction mirrors the extraction pipeline state"
+    )]
     pub(crate) fn build_with_cross_file_lookup(
         program: &'a oxc_ast::ast::Program<'a>,
         matched: &'a [MatchedImport],
