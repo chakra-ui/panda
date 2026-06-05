@@ -732,6 +732,114 @@ fn merges_utilities_under_same_breakpoint() {
 }
 
 #[test]
+fn nested_child_selector_stacks_theme_and_direction_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "light": "[data-theme=light] &, .light &, &.light, &[data-theme=light]",
+            "dark": "[data-theme=dark] &, .dark &, &.dark, &[data-theme=dark]",
+            "ltr": ":where([dir=ltr], :dir(ltr)) &",
+            "rtl": ":where([dir=rtl], :dir(rtl)) &",
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "sm": "40rem",
+                "md": "48rem"
+            }
+        },
+        "utilities": {
+            "left": { "className": "left" },
+            "background": { "className": "bg" },
+            "font": { "className": "font" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        indoc::indoc! {r"
+            import { css } from '@panda/css';
+            css({
+              '& > p': {
+                left: { base: '20px', md: '40px' },
+                bg: { _light: 'red400', _dark: 'green500' },
+                font: { _rtl: 'sans', _ltr: { _dark: { sm: { _hover: 'serif' } } } },
+              },
+            });
+        "},
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .\[\&_\>_p\]\:left_20px > p {
+        left: 20px;
+      }
+      [data-theme=dark] .\[\&_\>_p\]\:dark\:bg_green500 > p, .dark .\[\&_\>_p\]\:dark\:bg_green500 > p, .\[\&_\>_p\]\:dark\:bg_green500 > p.dark, .\[\&_\>_p\]\:dark\:bg_green500 > p[data-theme=dark] {
+        bg: green500;
+      }
+      [data-theme=light] .\[\&_\>_p\]\:light\:bg_red400 > p, .light .\[\&_\>_p\]\:light\:bg_red400 > p, .\[\&_\>_p\]\:light\:bg_red400 > p.light, .\[\&_\>_p\]\:light\:bg_red400 > p[data-theme=light] {
+        bg: red400;
+      }
+      :where([dir=rtl], :dir(rtl)) .\[\&_\>_p\]\:rtl\:font_sans > p {
+        font: sans;
+      }
+      @media (width >= 40rem) {
+        :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .dark .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p.dark:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:dark\:ltr\:hover\:sm\:font_serif > p[data-theme=dark]:hover {
+          font: serif;
+        }
+      }
+      @media (width >= 48rem) {
+        .\[\&_\>_p\]\:md\:left_40px > p {
+          left: 40px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn nested_group_selector_with_breakpoint() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "sm": "40rem",
+                "md": "48rem"
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" },
+            "background": { "className": "bg" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        indoc::indoc! {r"
+            import { css } from '@panda/css';
+            css({
+              '.group &': { color: 'blue' },
+              _hover: { bg: { sm: { _dark: 'red.300' } }, color: 'pink.400' },
+            });
+        "},
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      ._hover_pink\.400 {
+        _hover: pink.400;
+      }
+      .group .\[\.group_\&\]\:c_blue {
+        color: blue;
+      }
+      @media (width >= 40rem) {
+        .sm\:_hover_red\.300 {
+          _hover: red.300;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn minified_output_preserves_significant_spaces() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

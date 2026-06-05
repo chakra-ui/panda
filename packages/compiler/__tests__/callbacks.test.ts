@@ -591,7 +591,7 @@ describe('Compiler callbacks', () => {
     expect(report.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
       [
         {
-          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom (utility \`size\` with value \`4px\`)",
           "severity": "warning",
         },
       ]
@@ -600,7 +600,7 @@ describe('Compiler callbacks', () => {
       .toMatchInlineSnapshot(`
         [
           {
-            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom (utility \`size\` with value \`4px\`)",
             "severity": "warning",
           },
         ]
@@ -647,7 +647,7 @@ describe('Compiler callbacks', () => {
     expect(failed.diagnostics.map(({ message, severity }) => ({ message, severity }))).toMatchInlineSnapshot(`
       [
         {
-          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom",
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: Error: boom (utility \`size\` with value \`4px\`)",
           "severity": "warning",
         },
       ]
@@ -1243,6 +1243,223 @@ describe('Compiler callbacks', () => {
           "conditions": [],
         },
       ]
+    `)
+  })
+
+  it('routes stack and hstack imports to their pattern transforms', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          patterns: {
+            stack: {
+              properties: { align: {} },
+              defaultValues: { direction: 'column', gap: '8px' },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+            hstack: {
+              properties: { justify: {} },
+              defaultValues: { gap: '8px' },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.hstack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: props.align,
+            }),
+            'patterns.hstack.transform': (props) => ({
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: props.justify,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Button.tsx',
+      `import { stack, hstack as aliased } from '@panda/patterns'
+       stack({ align: 'center' })
+       aliased({ justify: 'flex-end' })`,
+    )
+
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "alignItems",
+          "value": "center",
+          "conditions": [],
+        },
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "flexDirection",
+          "value": "column",
+          "conditions": [],
+        },
+        {
+          "prop": "flexDirection",
+          "value": "row",
+          "conditions": [],
+        },
+        {
+          "prop": "justifyContent",
+          "value": "flex-end",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('applies pattern transform callbacks from JSX with align and conditional gap', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          conditions: {
+            hover: '&:hover',
+          },
+          patterns: {
+            stack: {
+              jsxName: 'Stack',
+              properties: {
+                align: {},
+                gap: {},
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props) => ({
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: props.align,
+              gap: props.gap,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Stack.tsx',
+      `import { Stack } from '@panda/jsx'
+       const el = <Stack align="center" gap={{ base: '4px', _hover: '8px' }} />`,
+    )
+
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "alignItems",
+          "value": "center",
+          "conditions": [],
+        },
+        {
+          "prop": "display",
+          "value": "flex",
+          "conditions": [],
+        },
+        {
+          "prop": "flexDirection",
+          "value": "column",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "gap",
+          "value": "8px",
+          "conditions": [
+            "_hover",
+          ],
+        },
+      ]
+    `)
+  })
+
+  it('expands staticCss.patterns through pattern transform callbacks', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            alignItems: { className: 'ai' },
+          },
+          patterns: {
+            stack: {
+              properties: {
+                align: { type: 'enum', value: ['center', 'start'] },
+              },
+              transform: {
+                kind: 'js-callback',
+                id: 'patterns.stack.transform',
+              },
+            },
+          },
+          staticCss: {
+            patterns: {
+              stack: [{ properties: { align: ['center'] } }],
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props) => ({
+              display: 'flex',
+              alignItems: props.align,
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    expect(compiler.staticPatternAtoms()).toMatchInlineSnapshot(`
+      {
+        "atoms": [
+          {
+            "prop": "alignItems",
+            "value": "center",
+            "conditions": [],
+          },
+          {
+            "prop": "display",
+            "value": "flex",
+            "conditions": [],
+          },
+        ],
+        "diagnostics": [],
+      }
     `)
   })
 })

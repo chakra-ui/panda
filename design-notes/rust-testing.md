@@ -150,6 +150,22 @@ full rebuild cycle later. Fix warnings before continuing to the next change.
 Run workspace tests when touching shared types (`pandacss_config`, `pandacss_shared`), workspace `Cargo.toml` /
 `rust-toolchain.toml`, or anything that could change a downstream crate's contract.
 
+## Layer placement (parser → CSS parity)
+
+Match legacy coverage at the layer that owns the behavior:
+
+| Concern | Test home | Assert |
+| --- | --- | --- |
+| Extraction shapes (calls, JSX, spreads) | `pandacss_extractor/tests/` | YAML snapshots on `ExtractUsage` |
+| Pattern routing, `defaultValues`, callback wiring | `pandacss_project/tests/patterns.rs` | Atom YAML via `parse_file_with` + mock `ParseTransforms` |
+| Preset pattern transforms (JS `patternFns`) | `packages/compiler/__tests__/callbacks.test.ts` | Atoms via real `pattern.transform` callbacks over NAPI |
+| Static pattern expansion | `pandacss_project/tests/static_patterns.rs` + `pandacss_stylesheet/tests/static_patterns.rs` | Atoms + CSS wire-up |
+| CSS / recipes / utilities emission | `pandacss_stylesheet/tests/` (`output.rs`, `atomic.rs`, …) | `assert_snapshot!` on CSS |
+
+Do **not** port `preset-patterns.test.ts` (per-preset CSS matrix) into `pandacss_stylesheet` — preset transforms
+live in JS. Stylesheet `compile_css()` helpers call `parse_file()` without `ParseTransforms`, so pattern function
+calls need the project driver or compiler binding tests instead.
+
 ## Private unit tests in `src/`
 
 `#[cfg(test)] mod tests` inside `src/` is **rare** and reserved for private helpers that are awkward to reach from

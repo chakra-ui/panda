@@ -321,6 +321,276 @@ fn pattern_blocklist_filters_style_props() {
     ");
 }
 
+#[test]
+fn pattern_local_import_alias_routes_to_export_pattern() {
+    // Preset-base models `stack` and `hstack` as separate patterns — not a jsx
+    // alias on one entry. A local rename (`hstack as aliased`) must still hit
+    // the `hstack` pattern transform, matching output.test.ts extraction names.
+    let mut project = create_project(json!({
+        "patterns": {
+            "stack": {
+                "properties": {
+                    "align": { "type": "string" }
+                },
+                "defaultValues": { "direction": "column", "gap": "8px" }
+            },
+            "hstack": {
+                "properties": {
+                    "justify": { "type": "string" }
+                },
+                "defaultValues": { "gap": "8px" }
+            }
+        }
+    }));
+    let mut names = Vec::new();
+    let mut transform = |name: &str, styles: &Literal| {
+        names.push(name.to_owned());
+        match name {
+            "stack" => Ok(Some(Literal::Object(vec![
+                ("display".to_owned(), Literal::String("flex".to_owned())),
+                (
+                    "flexDirection".to_owned(),
+                    Literal::String("column".to_owned()),
+                ),
+                (
+                    "alignItems".to_owned(),
+                    object_value(styles, "align")
+                        .cloned()
+                        .unwrap_or(Literal::Null),
+                ),
+            ]))),
+            "hstack" => Ok(Some(Literal::Object(vec![
+                ("display".to_owned(), Literal::String("flex".to_owned())),
+                (
+                    "flexDirection".to_owned(),
+                    Literal::String("row".to_owned()),
+                ),
+                (
+                    "justifyContent".to_owned(),
+                    object_value(styles, "justify")
+                        .cloned()
+                        .unwrap_or(Literal::Null),
+                ),
+            ]))),
+            other => panic!("unexpected pattern name: {other}"),
+        }
+    };
+
+    project.parse_file_with(
+        "fixture.tsx",
+        indoc! {r"
+            import { stack, hstack as aliased } from '@panda/patterns';
+            stack({ align: 'center' });
+            aliased({ justify: 'flex-end' });
+        "},
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
+    );
+
+    assert_eq!(names, ["stack", "hstack"]);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: alignItems
+      value: center
+      conditions: []
+    - prop: display
+      value: flex
+      conditions: []
+    - prop: flexDirection
+      value: column
+      conditions: []
+    - prop: flexDirection
+      value: row
+      conditions: []
+    - prop: justifyContent
+      value: flex-end
+      conditions: []
+    ");
+}
+
+#[test]
+fn pattern_function_and_jsx_share_transform_with_default_values() {
+    let mut project = create_project(json!({
+        "patterns": {
+            "stack": {
+                "jsxName": "Stack",
+                "properties": {
+                    "gap": { "type": "string" }
+                },
+                "defaultValues": { "gap": "8px", "direction": "column" }
+            }
+        }
+    }));
+    let mut transform = |name: &str, styles: &Literal| {
+        assert_eq!(name, "stack");
+        Ok(Some(Literal::Object(vec![
+            ("display".to_owned(), Literal::String("flex".to_owned())),
+            (
+                "flexDirection".to_owned(),
+                object_value(styles, "direction")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("column".to_owned())),
+            ),
+            (
+                "gap".to_owned(),
+                object_value(styles, "gap")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("missing".to_owned())),
+            ),
+        ])))
+    };
+
+    let report = project.parse_file_with(
+        "fixture.tsx",
+        indoc! {r"
+            import { stack } from '@panda/patterns';
+            import { Stack } from '@panda/jsx';
+            stack({});
+            const el = <Stack />;
+        "},
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
+    );
+
+    assert_eq!(report.css_calls, 0);
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: display
+      value: flex
+      conditions: []
+    - prop: flexDirection
+      value: column
+      conditions: []
+    - prop: gap
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
+fn pattern_conditional_props_produce_conditioned_atoms() {
+    let mut project = create_project(json!({
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "patterns": {
+            "stack": {
+                "properties": {
+                    "gap": { "type": "string" }
+                }
+            }
+        }
+    }));
+    let mut transform = |_name: &str, styles: &Literal| {
+        Ok(Some(Literal::Object(vec![
+            ("display".to_owned(), Literal::String("flex".to_owned())),
+            (
+                "gap".to_owned(),
+                object_value(styles, "gap")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("missing".to_owned())),
+            ),
+        ])))
+    };
+
+    project.parse_file_with(
+        "fixture.ts",
+        indoc! {r"
+            import { stack } from '@panda/patterns';
+            stack({ gap: { base: '4px', _hover: '8px' } });
+        "},
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
+    );
+
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: display
+      value: flex
+      conditions: []
+    - prop: gap
+      value: 4px
+      conditions: []
+    - prop: gap
+      value: 8px
+      conditions:
+        - _hover
+    ");
+}
+
+#[test]
+fn pattern_raw_composes_into_css_raw_spread() {
+    let mut project = create_project(json!({
+        "patterns": {
+            "stack": {
+                "properties": {
+                    "gap": { "type": "string" }
+                },
+                "defaultValues": { "direction": "column" }
+            }
+        }
+    }));
+    let mut transform = |name: &str, styles: &Literal| {
+        assert_eq!(name, "stack");
+        Ok(Some(Literal::Object(vec![
+            ("display".to_owned(), Literal::String("flex".to_owned())),
+            (
+                "flexDirection".to_owned(),
+                object_value(styles, "direction")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("missing".to_owned())),
+            ),
+            (
+                "gap".to_owned(),
+                object_value(styles, "gap")
+                    .cloned()
+                    .unwrap_or_else(|| Literal::String("missing".to_owned())),
+            ),
+        ])))
+    };
+
+    project.parse_file_with(
+        "fixture.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { stack } from '@panda/patterns';
+
+            const list = stack.raw({ gap: '1rem' });
+            const layout = css.raw({
+              ...list,
+              padding: '8px',
+            });
+            css({ color: 'red', ...layout });
+        "},
+        ParseTransforms {
+            pattern: Some(&mut transform),
+            utility: None,
+        },
+    );
+
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: display
+      value: flex
+      conditions: []
+    - prop: flexDirection
+      value: column
+      conditions: []
+    - prop: gap
+      value: 1rem
+      conditions: []
+    - prop: padding
+      value: 8px
+      conditions: []
+    ");
+}
+
 fn object_value<'a>(literal: &'a Literal, key: &str) -> Option<&'a Literal> {
     let Literal::Object(entries) = literal else {
         return None;

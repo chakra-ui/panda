@@ -80,6 +80,76 @@ fn static_pattern_atoms_flow_into_utilities_layer() {
 }
 
 #[test]
+fn stack_like_transform_emits_display_and_gap_utilities() {
+    let cfg = config(json!({
+        "utilities": {
+            "display": { "className": "d" },
+            "gap": { "className": "gap" }
+        },
+        "patterns": {
+            "stack": {
+                "properties": { "gap": { "type": "string" } },
+                "defaultValues": { "gap": "8px", "direction": "column" }
+            }
+        },
+        "staticCss": {
+            "patterns": { "stack": [{ "properties": { "gap": ["8px"] } }] }
+        }
+    }));
+
+    let mut transform = |_name: &str, styles: &Literal| -> Result<Option<Literal>, Diagnostic> {
+        let Literal::Object(entries) = styles else {
+            return Ok(Some(styles.clone()));
+        };
+        let gap = entries
+            .iter()
+            .find(|(k, _)| k == "gap")
+            .map(|(_, v)| v.clone())
+            .unwrap_or_else(|| Literal::String("8px".into()));
+        Ok(Some(Literal::Object(vec![
+            ("display".to_owned(), Literal::String("flex".to_owned())),
+            ("gap".to_owned(), gap),
+        ])))
+    };
+
+    let system = System::new(cfg.clone()).expect("project");
+    let mut project = Project::new(system);
+    let (pattern_atoms, diagnostics) = project.static_pattern_atoms(&cfg, Some(&mut transform));
+    assert!(diagnostics.is_empty());
+
+    let snapshots = project.stylesheet_snapshots(&cfg);
+    let output = pandacss_stylesheet::compile(
+        StylesheetInput {
+            config: &cfg,
+            token_dictionary: None,
+            atoms: snapshots.atoms,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &pattern_atoms,
+            token_refs: snapshots.token_refs,
+        },
+        &StylesheetOptions {
+            include_static: true,
+            ..Default::default()
+        },
+    );
+
+    let utilities = output
+        .layer_css(StylesheetLayer::Utilities)
+        .expect("utilities layer present");
+    assert_snapshot!(utilities, @"
+    @layer utilities {
+      .gap_8px {
+        gap: 8px;
+      }
+      .d_flex {
+        display: flex;
+      }
+    }
+    ");
+}
+
+#[test]
 fn static_pattern_conditions_and_responsive_flow_into_utilities_layer() {
     let cfg = config(json!({
         "conditions": {

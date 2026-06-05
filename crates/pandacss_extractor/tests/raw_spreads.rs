@@ -363,3 +363,140 @@ fn css_raw_spread_in_sva_slot_matches_js_fixture() {
           color: gray.700
     "#);
 }
+
+#[test]
+fn css_raw_child_selector_spread_matches_issue_1370() {
+    let src = indoc! {r#"
+        import { css } from '@panda/css';
+
+        const paragraphSpacingStyles = css.raw({
+          marginTop: '1rem',
+          lineHeight: 1.6,
+          color: 'gray.800',
+        });
+
+        const headingStyles = css.raw({
+          fontWeight: 'bold',
+          color: 'gray.900',
+          marginBottom: '0.5rem',
+        });
+
+        export const proseCss = css({
+          fontFamily: 'system-ui',
+          '& p': {
+            ...paragraphSpacingStyles,
+            fontSize: '1rem',
+          },
+          '& h2': {
+            ...headingStyles,
+            fontSize: '1.5rem',
+          },
+          '& blockquote': {
+            ...paragraphSpacingStyles,
+            fontStyle: 'italic',
+            borderLeft: '4px solid',
+            paddingLeft: '1rem',
+          },
+        });
+    "#};
+    let calls = run(src).calls;
+    assert_yaml_snapshot!(calls.last().expect("prose css call").data, @r#"
+    - fontFamily: system-ui
+      "& p":
+        marginTop: 1rem
+        lineHeight: 1.6
+        color: gray.800
+        fontSize: 1rem
+      "& h2":
+        fontWeight: bold
+        color: gray.900
+        marginBottom: 0.5rem
+        fontSize: 1.5rem
+      "& blockquote":
+        marginTop: 1rem
+        lineHeight: 1.6
+        color: gray.800
+        fontStyle: italic
+        borderLeft: 4px solid
+        paddingLeft: 1rem
+    "#);
+}
+
+#[test]
+fn css_raw_logical_and_spread_matches_js_fixture() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+
+        const errorStyles = css.raw({
+          borderColor: 'red.500',
+          color: 'red.700',
+          backgroundColor: 'red.50',
+        });
+
+        const focusStyles = css.raw({
+          outline: '2px solid',
+          outlineColor: 'blue.500',
+          outlineOffset: '2px',
+        });
+
+        const hasError = false;
+        const isFocused = true;
+
+        const input = css({
+          border: '1px solid',
+          borderColor: 'gray.300',
+          padding: '0.5rem',
+          borderRadius: '0.25rem',
+          ...(hasError && errorStyles),
+          ...(isFocused && focusStyles),
+          _focus: {
+            ...(hasError && errorStyles),
+            borderColor: 'blue.500',
+          },
+        });
+    "};
+    let calls = run(src).calls;
+    assert_yaml_snapshot!(calls.last().expect("input css call").data, @"
+    - border: 1px solid
+      borderColor: gray.300
+      padding: 0.5rem
+      borderRadius: 0.25rem
+      outline: 2px solid
+      outlineColor: blue.500
+      outlineOffset: 2px
+      _focus:
+        borderColor: blue.500
+    ");
+}
+
+#[test]
+fn css_raw_merges_native_properties_with_spread() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+
+        const baseStyles = css.raw({
+          color: 'blue.500',
+          padding: '8px',
+        });
+
+        const component = css({
+          display: 'flex',
+          gap: '4px',
+          ...baseStyles,
+          _hover: {
+            ...baseStyles,
+            color: 'blue.700',
+          },
+        });
+    "};
+    let calls = run(src).calls;
+    assert_yaml_snapshot!(calls.last().expect("component css call").data, @"
+    - display: flex
+      gap: 4px
+      color: blue.500
+      padding: 8px
+      _hover:
+        color: blue.700
+        padding: 8px
+    ");
+}
