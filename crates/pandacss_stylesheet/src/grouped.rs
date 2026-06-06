@@ -27,10 +27,7 @@ impl GroupNode {
     pub fn push_rule(&mut self, wrappers: &[String], body: RuleBody) {
         let mut node = self;
         for wrapper in wrappers {
-            node = node
-                .children
-                .entry(wrapper.clone())
-                .or_insert_with(GroupNode::default);
+            node = node.children.entry(wrapper.clone()).or_default();
         }
         node.rules.push(body);
     }
@@ -48,11 +45,7 @@ fn write_group_node(writer: &mut CssWriter, node: &GroupNode) {
     for body in &node.rules {
         writer.rule(&body.selector, |writer| {
             for declaration in &body.declarations {
-                writer.declaration(
-                    &declaration.prop,
-                    &declaration.value,
-                    declaration.important,
-                );
+                writer.declaration(&declaration.prop, &declaration.value, declaration.important);
             }
         });
     }
@@ -87,7 +80,7 @@ mod tests {
     fn merges_rules_under_same_media_wrapper() {
         let media = "@media (width >= 48rem)".to_owned();
         let mut root = GroupNode::default();
-        root.push_rule(&[media.clone()], rule(".a", "color", "red"));
+        root.push_rule(std::slice::from_ref(&media), rule(".a", "color", "red"));
         root.push_rule(&[media], rule(".b", "color", "blue"));
 
         let css = write_css(&root);
@@ -102,11 +95,8 @@ mod tests {
         let media = "@media (width >= 48rem)".to_owned();
         let supports = "@supports (display: grid)".to_owned();
         let mut root = GroupNode::default();
-        root.push_rule(&[media.clone()], rule(".a", "color", "red"));
-        root.push_rule(
-            &[media, supports],
-            rule(".b", "display", "grid"),
-        );
+        root.push_rule(std::slice::from_ref(&media), rule(".a", "color", "red"));
+        root.push_rule(&[media, supports], rule(".b", "display", "grid"));
 
         let css = write_css(&root);
         assert_eq!(
@@ -120,8 +110,8 @@ mod tests {
         let sm = "@media (width >= 40rem)".to_owned();
         let lg = "@media (width >= 64rem)".to_owned();
         let mut root = GroupNode::default();
-        root.push_rule(&[sm.clone()], rule(".sm", "color", "red"));
-        root.push_rule(&[lg.clone()], rule(".lg", "color", "blue"));
+        root.push_rule(std::slice::from_ref(&sm), rule(".sm", "color", "red"));
+        root.push_rule(std::slice::from_ref(&lg), rule(".lg", "color", "blue"));
         root.push_rule(&[sm], rule(".sm_again", "color", "green"));
 
         let css = write_css(&root);

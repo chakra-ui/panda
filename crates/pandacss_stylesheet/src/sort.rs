@@ -11,7 +11,8 @@ use std::cmp::Ordering;
 
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
-use pandacss_shared::to_rem;
+
+use crate::conditions::breakpoint_media_query;
 
 const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":is", 40),
@@ -437,37 +438,6 @@ fn compare_apply_selectors(a: &[SelectorKey], b: &[SelectorKey]) -> Ordering {
     }
 }
 
-#[must_use]
-fn breakpoint_media_query(value: &str) -> String {
-    format!("@media (width >= {})", to_rem(value))
-}
-
-pub fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<Vec<String>> {
-    if let Some(value) = config.theme.breakpoints.get(condition) {
-        return vec![vec![breakpoint_media_query(value)]];
-    }
-
-    let key = condition.trim_start_matches('_');
-    let query = config
-        .conditions
-        .get(condition)
-        .or_else(|| config.conditions.get(key));
-
-    if let Some(query) = query {
-        return query_raw_paths(query);
-    }
-
-    if let Some(raw) = config.theme_condition(condition) {
-        return vec![vec![raw]];
-    }
-
-    if condition.starts_with('@') || condition.contains('&') {
-        return vec![vec![condition.to_owned()]];
-    }
-
-    Vec::new()
-}
-
 fn collect_condition_parts(
     config: &UserConfig,
     condition: &str,
@@ -517,32 +487,6 @@ fn collect_query_parts(
             }
         }
     }
-}
-
-fn query_raw_paths(query: &ConditionQuery) -> Vec<Vec<String>> {
-    match query {
-        ConditionQuery::String(value) => vec![vec![value.clone()]],
-        ConditionQuery::Nested(items) => block_raw_paths(items),
-    }
-}
-
-fn block_raw_paths(items: &std::collections::BTreeMap<String, ConditionQuery>) -> Vec<Vec<String>> {
-    let mut paths = Vec::new();
-    for (raw, query) in items {
-        match query {
-            ConditionQuery::String(value) if value == "@slot" => {
-                paths.push(vec![raw.clone()]);
-            }
-            ConditionQuery::String(_) => {}
-            ConditionQuery::Nested(children) => {
-                for mut path in block_raw_paths(children) {
-                    path.insert(0, raw.clone());
-                    paths.push(path);
-                }
-            }
-        }
-    }
-    paths
 }
 
 fn collect_raw_part(raw: &str, at_rules: &mut Vec<AtRuleKey>, selectors: &mut Vec<SelectorKey>) {

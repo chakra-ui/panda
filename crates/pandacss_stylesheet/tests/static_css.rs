@@ -266,9 +266,7 @@ fn reports_empty_wildcards_without_rejecting_static_css_themes() {
       }
     }
     ");
-    assert_snapshot!(diagnostics.join("\n"), @r"
-    static_css_wildcard_empty
-    ");
+    assert_snapshot!(diagnostics.join("\n"), @"static_css_wildcard_empty");
 }
 
 #[test]

@@ -1,3 +1,9 @@
+//! CSS emission orchestration for the native stylesheet compiler.
+//!
+//! The emitter gathers atoms, tokens, globals, and recipes, lowers them through
+//! the shared style-rule model, groups compatible at-rule wrappers, and writes
+//! the final layered CSS string.
+
 use std::{borrow::Cow, fmt::Write as _, ops::Range};
 
 use pandacss_config::{UserConfig, theme_condition_name};
@@ -9,13 +15,21 @@ use pandacss_extractor::Literal;
 use pandacss_shared::{number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{StyleNormalizer, Utility, UtilityTransformResult, hyphenate_property};
-use rustc_hash::FxHashSet;
+use rustc_hash::{FxBuildHasher, FxHashSet};
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
-use crate::grouped::{GroupNode, GroupedDeclaration, RuleBody, write_grouped_rules};
+use crate::conditions::{
+    ConditionPaths, is_nested_selector_key, lower_selector_conditions, lower_target_conditions,
+    lower_token_conditions, nested_selector, resolved_condition_paths,
+};
+use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
-use crate::sort::{SortContext, SortedAtom, condition_names, condition_raw_paths};
+use crate::sort::{SortContext, SortedAtom, condition_names};
+use crate::style_rules::{
+    Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declarations,
+    flush_pending_rule, push_grouped_rule, push_pending_rule, write_rule, write_with_wrappers,
+};
 use crate::writer::CssWriter;
 
 pub struct EmitOutput {
@@ -936,7 +950,7 @@ impl<'a> EmitContext<'a> {
     }
 
     fn collect_declarations_usage(
-        declarations: &[RecipeDeclaration],
+        declarations: &[Declaration],
         token_dictionary: Option<&TokenDictionary>,
         keyframes: Option<&serde_json::Map<String, Value>>,
         marks: &mut UsageMarks,
@@ -1019,14 +1033,16 @@ impl<'a> EmitContext<'a> {
             return;
         }
         let numeric_hint = atom_numeric_hint(atom.value());
-        for rule in self.rule_targets_for_class(
-            &result.class_name,
-            class_conditions,
+        for rule in self.lower_target(
+            Target::Class {
+                name: &result.class_name,
+                conditions: class_conditions,
+                important: atom.important(),
+            },
             rule_conditions,
-            atom.important(),
         ) {
             let Some(declarations) =
-                self.declarations_from_literal(&result.styles, atom.important(), numeric_hint)
+                Self::declarations_from_literal(&result.styles, atom.important(), numeric_hint)
             else {
                 continue;
             };
@@ -1055,11 +1071,13 @@ impl<'a> EmitContext<'a> {
             return true;
         }
 
-        let base_rules = self.rule_targets_for_class(
-            &result.class_name,
-            class_conditions,
+        let base_rules = self.lower_target(
+            Target::Class {
+                name: &result.class_name,
+                conditions: class_conditions,
+                important: atom.important(),
+            },
             rule_conditions,
-            atom.important(),
         );
         self.collect_style_entries_for_rules(grouped, &entries, &base_rules, atom.important());
         true
@@ -1069,10 +1087,12 @@ impl<'a> EmitContext<'a> {
         &self,
         grouped: &mut GroupNode,
         entries: &[RecipeStyleEntry],
-        base_rules: &[RuleTarget],
+        base_rules: &[LoweredTarget],
         important: bool,
     ) {
-        let mut pending: Option<PendingRecipeRule> = None;
+        // Sorted recipe entries often lower to the same selector + wrapper
+        // target; keep that block pending so declarations coalesce in order.
+        let mut pending: Option<StyleRule> = None;
         for entry in self.sort.sorted_recipe_entries(entries) {
             let Some(declarations) = self.style_entry_declarations(entry.entry, important) else {
                 continue;
@@ -1082,44 +1102,24 @@ impl<'a> EmitContext<'a> {
             }
 
             for base_rule in base_rules {
-                for rule in self.rule_targets_from_rule(base_rule, &entry.conditions) {
-                    match &mut pending {
-                        Some(pending) if pending.rule == rule => {
-                            append_recipe_declarations(
-                                &mut pending.declarations,
-                                declarations.clone(),
-                            );
-                        }
-                        Some(_) => {
-                            let previous = pending.take().expect("pending grouped style rule");
-                            push_grouped_rule(grouped, &previous.rule, previous.declarations);
-                            pending = Some(PendingRecipeRule {
-                                rule,
-                                declarations: declarations.clone(),
-                            });
-                        }
-                        None => {
-                            pending = Some(PendingRecipeRule {
-                                rule,
-                                declarations: declarations.clone(),
-                            });
-                        }
-                    }
+                for rule in lower_target_conditions(self.config, base_rule, &entry.conditions) {
+                    push_pending_rule(&mut pending, rule, declarations.clone(), |previous| {
+                        push_grouped_rule(grouped, &previous.target, previous.declarations);
+                    });
                 }
             }
         }
 
-        if let Some(pending) = pending {
-            push_grouped_rule(grouped, &pending.rule, pending.declarations);
-        }
+        flush_pending_rule(pending, |pending| {
+            push_grouped_rule(grouped, &pending.target, pending.declarations);
+        });
     }
 
     fn declarations_from_literal(
-        &self,
         styles: &Literal,
         important: bool,
         numeric_hint: Option<&str>,
-    ) -> Option<Vec<RecipeDeclaration>> {
+    ) -> Option<Vec<Declaration>> {
         let Literal::Object(entries) = styles else {
             return None;
         };
@@ -1127,9 +1127,9 @@ impl<'a> EmitContext<'a> {
         for (prop, value) in entries {
             if let Some(value) = literal_to_css(prop, value, numeric_hint) {
                 let (value, value_important) = split_important(&value);
-                append_recipe_declaration(
+                append_declaration(
                     &mut declarations,
-                    RecipeDeclaration {
+                    Declaration {
                         prop: hyphenate_property(prop),
                         value: value.into_owned(),
                         important: important || value_important,
@@ -1195,6 +1195,8 @@ impl<'a> EmitContext<'a> {
             return;
         };
 
+        // Walk one style object in three buckets: direct declarations, nested
+        // selector/condition blocks, and property-level conditional values.
         let mut declarations = Vec::with_capacity(entries.len());
         let mut nested_rules = Vec::new();
         let mut conditional_declarations = Vec::new();
@@ -1227,19 +1229,19 @@ impl<'a> EmitContext<'a> {
             }
 
             if let Some(entry_declarations) = self.serialized_property_declarations(key, value) {
-                append_recipe_declarations(&mut declarations, entry_declarations);
+                append_declarations(&mut declarations, entry_declarations);
             }
         }
 
         if !declarations.is_empty() {
-            for rule in Self::rule_targets_with_base_parts(selector, conditions) {
+            for rule in self.lower_resolved_selector(selector, conditions) {
                 push_grouped_rule(grouped, &rule, declarations.clone());
             }
         }
 
         for conditional in conditional_declarations {
             conditions.push(conditional.condition);
-            for rule in Self::rule_targets_with_base_parts(selector, conditions) {
+            for rule in self.lower_resolved_selector(selector, conditions) {
                 push_grouped_rule(grouped, &rule, conditional.declarations.clone());
             }
             conditions.pop();
@@ -1260,7 +1262,7 @@ impl<'a> EmitContext<'a> {
         &self,
         prop: &str,
         value: &Value,
-        declarations: &mut Vec<RecipeDeclaration>,
+        declarations: &mut Vec<Declaration>,
         conditional_declarations: &mut Vec<ConditionalDeclarations>,
     ) -> bool {
         let Value::Object(entries) = value else {
@@ -1292,11 +1294,11 @@ impl<'a> EmitContext<'a> {
                     declarations: entry_declarations,
                 });
             } else {
-                append_recipe_declarations(&mut base_declarations, entry_declarations);
+                append_declarations(&mut base_declarations, entry_declarations);
             }
         }
 
-        append_recipe_declarations(declarations, base_declarations);
+        append_declarations(declarations, base_declarations);
         conditional_declarations.extend(condition_declarations);
         true
     }
@@ -1305,7 +1307,7 @@ impl<'a> EmitContext<'a> {
         &self,
         prop: &str,
         value: &Value,
-    ) -> Option<Vec<RecipeDeclaration>> {
+    ) -> Option<Vec<Declaration>> {
         let value = value_to_atom_value(value)?;
         self.property_declarations(prop, &value, false)
     }
@@ -1383,7 +1385,7 @@ impl<'a> EmitContext<'a> {
         }
 
         for group in &vars.conditions {
-            for rule in Self::token_rule_targets_with_base_parts(root, &group.conditions) {
+            for rule in lower_token_conditions(root, &group.conditions) {
                 write_with_wrappers(writer, &rule.wrappers, |writer| {
                     write_token_var_rule(writer, &rule.selector, group.vars);
                 });
@@ -1404,35 +1406,6 @@ impl<'a> EmitContext<'a> {
             conditions.push(resolved_condition_paths(self.config, segment)?);
         }
         (!conditions.is_empty()).then_some(conditions)
-    }
-
-    fn token_rule_targets_with_base_parts(
-        base: &str,
-        conditions: &[ConditionPaths],
-    ) -> Vec<RuleTarget> {
-        let mut targets = vec![RuleTarget {
-            selector: base.to_owned(),
-            wrappers: Vec::new(),
-        }];
-        for paths in conditions {
-            let mut next = Vec::new();
-            for target in &targets {
-                for path in paths {
-                    let mut target = target.clone();
-                    for raw in path {
-                        apply_token_raw_condition(
-                            base,
-                            &mut target.selector,
-                            &mut target.wrappers,
-                            raw,
-                        );
-                    }
-                    next.push(target);
-                }
-            }
-            targets = next;
-        }
-        targets
     }
 
     /// Emit one recipe class's rules. Entries are sorted then coalesced:
@@ -1491,11 +1464,19 @@ impl<'a> EmitContext<'a> {
         class_conditions: &[Box<str>],
         entries: &[RecipeStyleEntry],
     ) {
-        let mut pending: Option<PendingRecipeRule> = None;
+        let mut pending: Option<StyleRule> = None;
         let class_conditions = condition_names(class_conditions);
+        // Class conditions preserve runtime class-name order; rule conditions
+        // are separately sorted for cascade before selector lowering.
         let rule_conditions = self.sort.sorted_condition_refs(&class_conditions);
-        let base_rules =
-            self.rule_targets_for_class(class_name, &class_conditions, &rule_conditions, false);
+        let base_rules = self.lower_target(
+            Target::Class {
+                name: class_name,
+                conditions: &class_conditions,
+                important: false,
+            },
+            &rule_conditions,
+        );
 
         for entry in self.sort.sorted_recipe_entries(entries) {
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
@@ -1506,42 +1487,20 @@ impl<'a> EmitContext<'a> {
             }
 
             for base_rule in &base_rules {
-                for rule in self.rule_targets_from_rule(base_rule, &entry.conditions) {
-                    match &mut pending {
-                        Some(pending) if pending.rule == rule => {
-                            append_recipe_declarations(
-                                &mut pending.declarations,
-                                declarations.clone(),
-                            );
-                        }
-                        Some(_) => {
-                            let previous = pending.take().expect("pending recipe rule");
-                            Self::write_recipe_rule(writer, &previous.rule, &previous.declarations);
-                            pending = Some(PendingRecipeRule {
-                                rule,
-                                declarations: declarations.clone(),
-                            });
-                        }
-                        None => {
-                            pending = Some(PendingRecipeRule {
-                                rule,
-                                declarations: declarations.clone(),
-                            });
-                        }
-                    }
+                for rule in lower_target_conditions(self.config, base_rule, &entry.conditions) {
+                    push_pending_rule(&mut pending, rule, declarations.clone(), |previous| {
+                        write_rule(writer, &previous.target, &previous.declarations);
+                    });
                 }
             }
         }
 
-        if let Some(pending) = pending {
-            Self::write_recipe_rule(writer, &pending.rule, &pending.declarations);
-        }
+        flush_pending_rule(pending, |pending| {
+            write_rule(writer, &pending.target, &pending.declarations);
+        });
     }
 
-    fn recipe_entry_declarations(
-        &self,
-        entry: &RecipeStyleEntry,
-    ) -> Option<Vec<RecipeDeclaration>> {
+    fn recipe_entry_declarations(&self, entry: &RecipeStyleEntry) -> Option<Vec<Declaration>> {
         self.style_entry_declarations(entry, false)
     }
 
@@ -1549,7 +1508,7 @@ impl<'a> EmitContext<'a> {
         &self,
         entry: &RecipeStyleEntry,
         important: bool,
-    ) -> Option<Vec<RecipeDeclaration>> {
+    ) -> Option<Vec<Declaration>> {
         self.property_declarations(
             entry.prop.as_ref(),
             &entry.value,
@@ -1562,7 +1521,7 @@ impl<'a> EmitContext<'a> {
         prop: &str,
         value: &AtomValue,
         important: bool,
-    ) -> Option<Vec<RecipeDeclaration>> {
+    ) -> Option<Vec<Declaration>> {
         let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
         let result = self.transform_atom(prop, raw);
@@ -1574,9 +1533,9 @@ impl<'a> EmitContext<'a> {
         for (prop, literal) in entries {
             if let Some(value) = literal_to_css(prop, literal, atom_value_numeric_hint(value)) {
                 let (value, value_important) = split_important(&value);
-                append_recipe_declaration(
+                append_declaration(
                     &mut declarations,
-                    RecipeDeclaration {
+                    Declaration {
                         prop: hyphenate_property(prop),
                         value: value.into_owned(),
                         important: important || value_important,
@@ -1587,24 +1546,6 @@ impl<'a> EmitContext<'a> {
         Some(declarations)
     }
 
-    fn write_recipe_rule(
-        writer: &mut CssWriter,
-        rule: &RuleTarget,
-        declarations: &[RecipeDeclaration],
-    ) {
-        write_with_wrappers(writer, &rule.wrappers, |writer| {
-            writer.rule(&rule.selector, |writer| {
-                for declaration in declarations {
-                    writer.declaration(
-                        &declaration.prop,
-                        &declaration.value,
-                        declaration.important,
-                    );
-                }
-            });
-        });
-    }
-
     fn transform_atom(&self, prop: &str, raw: &str) -> UtilityTransformResult {
         if self.utility.should_transform(prop) {
             return self.utility.transform_str(prop, raw);
@@ -1612,57 +1553,47 @@ impl<'a> EmitContext<'a> {
         default_transform(prop, raw)
     }
 
-    fn rule_targets_for_class(
-        &self,
-        class_name: &str,
-        class_conditions: &[&str],
-        rule_conditions: &[&str],
-        important: bool,
-    ) -> Vec<RuleTarget> {
-        let mut finalized = if self.config.hash.class_name() {
-            let hashed = hash_class_name(class_name, class_conditions);
-            self.utility.format_class_name_owned(hashed)
-        } else {
-            let class_name = self.utility.format_class_name(class_name);
-            finalized_class_name_owned(class_name, class_conditions)
-        };
-        if important {
-            finalized.push('!');
-        }
-        let base = format!(".{}", escape_selector(&finalized));
-        self.rule_targets_with_base_owned(base, rule_conditions)
+    fn lower_target(&self, target: Target<'_>, conditions: &[&str]) -> Vec<LoweredTarget> {
+        // Build the base selector once, then apply condition wrappers/selectors
+        // through the shared lowering path for atom and recipe rules.
+        let selector = self.selector_for_target(target);
+        lower_target_conditions(self.config, &LoweredTarget::new(selector), conditions)
     }
 
-    fn rule_targets_with_base_owned(
+    fn lower_resolved_selector(
         &self,
-        selector: String,
-        conditions: &[&str],
-    ) -> Vec<RuleTarget> {
-        self.rule_targets_from_rule(
-            &RuleTarget {
-                selector,
-                wrappers: Vec::new(),
-            },
-            conditions,
-        )
+        selector: &str,
+        conditions: &[ConditionPaths],
+    ) -> Vec<LoweredTarget> {
+        let selector = self.selector_for_target(Target::Selector {
+            selector: Cow::Borrowed(selector),
+        });
+        lower_selector_conditions(&selector, conditions)
     }
 
-    fn rule_targets_from_rule(&self, rule: &RuleTarget, conditions: &[&str]) -> Vec<RuleTarget> {
-        let mut targets = vec![rule.clone()];
-        for condition in conditions {
-            let mut next = Vec::new();
-            for target in &targets {
-                for path in condition_raw_paths(self.config, condition) {
-                    let mut target = target.clone();
-                    for raw in path {
-                        apply_raw_condition(&mut target.selector, &mut target.wrappers, &raw);
-                    }
-                    next.push(target);
+    fn selector_for_target(&self, target: Target<'_>) -> String {
+        match target {
+            Target::Class {
+                name,
+                conditions,
+                important,
+            } => {
+                // The class name uses source-order conditions so it matches the
+                // recipe/runtime output; sorting only affects the CSS rule.
+                let mut finalized = if self.config.hash.class_name() {
+                    let hashed = hash_class_name(name, conditions);
+                    self.utility.format_class_name_owned(hashed)
+                } else {
+                    let class_name = self.utility.format_class_name(name);
+                    finalized_class_name_owned(class_name, conditions)
+                };
+                if important {
+                    finalized.push('!');
                 }
+                format!(".{}", escape_selector(&finalized))
             }
-            targets = next;
+            Target::Selector { selector } => selector.into_owned(),
         }
-        targets
     }
 
     /// Legacy's `transformStyles` hashes a style object, then decodes the group
@@ -1682,42 +1613,6 @@ impl<'a> EmitContext<'a> {
             .map(RecipeStyleEntry::from)
             .collect()
     }
-
-    fn rule_targets_with_base_parts(base: &str, conditions: &[ConditionPaths]) -> Vec<RuleTarget> {
-        let mut targets = vec![RuleTarget {
-            selector: base.to_owned(),
-            wrappers: Vec::new(),
-        }];
-        for paths in conditions {
-            let mut next = Vec::new();
-            for target in &targets {
-                for path in paths {
-                    let mut target = target.clone();
-                    for raw in path {
-                        apply_raw_condition(&mut target.selector, &mut target.wrappers, raw);
-                    }
-                    next.push(target);
-                }
-            }
-            targets = next;
-        }
-        targets
-    }
-}
-
-type ConditionPath = Vec<String>;
-type ConditionPaths = Vec<ConditionPath>;
-
-struct PendingRecipeRule {
-    rule: RuleTarget,
-    declarations: Vec<RecipeDeclaration>,
-}
-
-#[derive(Clone)]
-struct RecipeDeclaration {
-    prop: String,
-    value: String,
-    important: bool,
 }
 
 struct NestedStyleRule<'a> {
@@ -1728,7 +1623,7 @@ struct NestedStyleRule<'a> {
 
 struct ConditionalDeclarations {
     condition: ConditionPaths,
-    declarations: Vec<RecipeDeclaration>,
+    declarations: Vec<Declaration>,
 }
 
 struct GlobalVarDeclaration<'a> {
@@ -1753,14 +1648,8 @@ struct PreparedTokenCondition<'a> {
     conditions: Vec<ConditionPaths>,
 }
 
-#[derive(Clone, PartialEq, Eq)]
-struct RuleTarget {
-    selector: String,
-    wrappers: Vec<String>,
-}
-
-fn dedup_atom_refs<'a>(atoms: Vec<&'a Atom>) -> Vec<&'a Atom> {
-    let mut seen = FxHashSet::with_capacity_and_hasher(atoms.len(), Default::default());
+fn dedup_atom_refs(atoms: Vec<&Atom>) -> Vec<&Atom> {
+    let mut seen = FxHashSet::with_capacity_and_hasher(atoms.len(), FxBuildHasher);
     let mut deduped = Vec::with_capacity(atoms.len());
     for atom in atoms {
         if seen.insert(atom) {
@@ -1768,47 +1657,6 @@ fn dedup_atom_refs<'a>(atoms: Vec<&'a Atom>) -> Vec<&'a Atom> {
         }
     }
     deduped
-}
-
-fn push_grouped_rule(
-    grouped: &mut GroupNode,
-    rule: &RuleTarget,
-    declarations: Vec<RecipeDeclaration>,
-) {
-    grouped.push_rule(
-        &rule.wrappers,
-        RuleBody {
-            selector: rule.selector.clone(),
-            declarations: declarations
-                .into_iter()
-                .map(|declaration| GroupedDeclaration {
-                    prop: declaration.prop,
-                    value: declaration.value,
-                    important: declaration.important,
-                })
-                .collect(),
-        },
-    );
-}
-
-fn append_recipe_declarations(
-    target: &mut Vec<RecipeDeclaration>,
-    declarations: Vec<RecipeDeclaration>,
-) {
-    for declaration in declarations {
-        append_recipe_declaration(target, declaration);
-    }
-}
-
-fn append_recipe_declaration(target: &mut Vec<RecipeDeclaration>, declaration: RecipeDeclaration) {
-    if let Some(existing) = target
-        .iter_mut()
-        .find(|existing| existing.prop == declaration.prop)
-    {
-        *existing = declaration;
-        return;
-    }
-    target.push(declaration);
 }
 
 fn is_slot_recipe_group(group: &RecipeStyleGroupSnapshot) -> bool {
@@ -1857,26 +1705,6 @@ fn write_recipe_variant_groups(
     {
         cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
     }
-}
-
-fn write_with_wrappers(
-    writer: &mut CssWriter,
-    wrappers: &[String],
-    write: impl FnOnce(&mut CssWriter),
-) {
-    fn inner(
-        writer: &mut CssWriter,
-        wrappers: &[String],
-        index: usize,
-        write: impl FnOnce(&mut CssWriter),
-    ) {
-        if let Some(wrapper) = wrappers.get(index) {
-            writer.at_rule(wrapper, |writer| inner(writer, wrappers, index + 1, write));
-        } else {
-            write(writer);
-        }
-    }
-    inner(writer, wrappers, 0, write);
 }
 
 fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCssVar<'_>]) {
@@ -2019,99 +1847,6 @@ fn push_finalized_condition(out: &mut String, condition: &str) {
     }
 }
 
-/// Apply one resolved condition to a rule: at-rules (`@media …`) become
-/// wrappers; `&`-bearing selectors substitute the current selector for `&`;
-/// anything else becomes an ancestor (`raw selector`).
-fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &str) {
-    if raw.starts_with('@') {
-        wrappers.push(raw.to_owned());
-    } else if raw.contains('&') {
-        *selector = replace_selector_parent(raw, selector);
-    } else {
-        *selector = format!("{raw} {selector}");
-    }
-}
-
-/// Like [`apply_raw_condition`] but for token-var rules, which start from the
-/// `cssVarRoot` selector. A ` &` parent condition replaces the root outright
-/// (or nests into it); plain conditions append as descendants and the stray
-/// root is cleaned up afterward.
-fn apply_token_raw_condition(
-    css_var_root: &str,
-    selector: &mut String,
-    wrappers: &mut Vec<String>,
-    raw: &str,
-) {
-    if raw.starts_with('@') {
-        wrappers.push(raw.to_owned());
-        return;
-    }
-
-    if let Some(parent) = token_parent_selector(raw) {
-        *selector = if selector == css_var_root {
-            parent
-        } else if parent.contains('&') {
-            replace_selector_parent(&parent, selector)
-        } else {
-            format!("{selector}{parent}")
-        };
-        return;
-    }
-
-    if raw.contains('&') {
-        *selector = replace_selector_parent(raw, selector);
-        cleanup_token_selector(css_var_root, selector);
-    } else if selector == css_var_root {
-        raw.clone_into(selector);
-    } else {
-        *selector = format!("{selector} {raw}");
-    }
-}
-
-/// Extract the parent part of a ` &` condition (`.dark &` -> `.dark`). Multiple
-/// such selectors collapse into a single `:where(a, b)` group.
-fn token_parent_selector(raw: &str) -> Option<String> {
-    let selectors = split_selector_list(raw)
-        .into_iter()
-        .filter_map(|selector| {
-            let selector = selector.trim();
-            selector
-                .contains(" &")
-                .then(|| selector.replace(" &", "").trim().to_owned())
-        })
-        .filter(|selector| !selector.is_empty())
-        .collect::<Vec<_>>();
-
-    match selectors.len() {
-        0 => None,
-        1 => selectors.into_iter().next(),
-        _ => Some(format!(":where({})", selectors.join(", "))),
-    }
-}
-
-/// Strip the now-redundant `cssVarRoot` left behind after a `&` substitution
-/// nested a condition into the root selector.
-fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
-    if selector == css_var_root {
-        return;
-    }
-    let cleaned = split_selector_list(selector)
-        .into_iter()
-        .filter_map(|selector| {
-            let selector = selector.trim();
-            if selector == css_var_root {
-                None
-            } else {
-                let cleaned = selector.replace(css_var_root, "").trim().to_owned();
-                (!cleaned.is_empty()).then_some(cleaned)
-            }
-        })
-        .collect::<Vec<_>>();
-    if !cleaned.is_empty() {
-        *selector = cleaned.join(", ");
-    }
-}
-
 fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
@@ -2163,81 +1898,6 @@ fn is_css_escape_codepoint(ch: char) -> bool {
 
 fn push_escaped_codepoint(out: &mut String, ch: char) {
     write!(out, "\\{:x}", ch as u32).expect("writing to String cannot fail");
-}
-
-fn resolved_condition_paths(config: &UserConfig, key: &str) -> Option<ConditionPaths> {
-    let paths = condition_raw_paths(config, key);
-    (!paths.is_empty()).then_some(paths)
-}
-
-fn is_nested_selector_key(key: &str) -> bool {
-    key.contains('&')
-        || key.contains(',')
-        || key.contains(' ')
-        || key.contains('>')
-        || key.contains('+')
-        || key.contains('~')
-        || matches!(
-            key.as_bytes().first(),
-            Some(b'.' | b'#' | b':' | b'[' | b'*')
-        )
-}
-
-fn nested_selector(parent: &str, nested: &str) -> String {
-    if nested.contains('&') {
-        replace_selector_parent(nested, parent)
-    } else {
-        format!("{parent} {nested}")
-    }
-}
-
-fn replace_selector_parent(raw: &str, parent: &str) -> String {
-    let parent_selectors = split_selector_list(parent);
-    let raw_selectors = split_selector_list(raw);
-    let mut out = Vec::new();
-    for parent in &parent_selectors {
-        for raw in &raw_selectors {
-            out.push(raw.replace('&', parent));
-        }
-    }
-    out.join(", ")
-}
-
-fn split_selector_list(selector: &str) -> Vec<&str> {
-    let mut out = Vec::new();
-    let mut depth = 0u32;
-    let mut start = 0usize;
-    let mut escaped = false;
-
-    for (index, ch) in selector.char_indices() {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-
-        match ch {
-            '(' => depth += 1,
-            ')' => depth = depth.saturating_sub(1),
-            ',' if depth == 0 => {
-                let item = selector[start..index].trim();
-                if !item.is_empty() {
-                    out.push(item);
-                }
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let item = selector[start..].trim();
-    if !item.is_empty() {
-        out.push(item);
-    }
-    out
 }
 
 fn value_to_atom_value(value: &Value) -> Option<AtomValue> {

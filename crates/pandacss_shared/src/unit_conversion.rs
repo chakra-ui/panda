@@ -34,7 +34,6 @@ pub fn to_rem(value: &str) -> Cow<'_, str> {
             let rem = parsed / BASE_FONT_SIZE;
             Cow::Owned(format!("{rem}rem"))
         }
-        "rem" => Cow::Borrowed(value),
         "em" => Cow::Owned(format!("{number}rem")),
         _ => Cow::Borrowed(value),
     }

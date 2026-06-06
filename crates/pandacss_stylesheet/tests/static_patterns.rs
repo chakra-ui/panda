@@ -104,8 +104,7 @@ fn stack_like_transform_emits_display_and_gap_utilities() {
         let gap = entries
             .iter()
             .find(|(k, _)| k == "gap")
-            .map(|(_, v)| v.clone())
-            .unwrap_or_else(|| Literal::String("8px".into()));
+            .map_or_else(|| Literal::String("8px".into()), |(_, v)| v.clone());
         Ok(Some(Literal::Object(vec![
             ("display".to_owned(), Literal::String("flex".to_owned())),
             ("gap".to_owned(), gap),
