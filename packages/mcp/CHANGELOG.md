@@ -1,5 +1,16 @@
 # @pandacss/mcp
 
+## 1.11.3
+
+### Patch Changes
+
+- 6797864: Fix `panda mcp` orphaning and spinning at 100% CPU after the host disconnects. The server now exits on stdin
+  close and exits (instead of looping) on fatal errors.
+  - @pandacss/node@1.11.3
+  - @pandacss/logger@1.11.3
+  - @pandacss/token-dictionary@1.11.3
+  - @pandacss/types@1.11.3
+
 ## 1.11.2
 
 ### Patch Changes

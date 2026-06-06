@@ -1,5 +1,24 @@
 # @pandacss/dev
 
+## 1.11.3
+
+### Patch Changes
+
+- 9217a6b: Add an `engines` field (`node: >=20`) to every published package so consumers and tooling can see the
+  supported Node version.
+- Updated dependencies [b702571]
+- Updated dependencies [6797864]
+  - @pandacss/config@1.11.3
+  - @pandacss/mcp@1.11.3
+  - @pandacss/node@1.11.3
+  - @pandacss/postcss@1.11.3
+  - @pandacss/logger@1.11.3
+  - @pandacss/preset-base@1.11.3
+  - @pandacss/preset-panda@1.11.3
+  - @pandacss/shared@1.11.3
+  - @pandacss/token-dictionary@1.11.3
+  - @pandacss/types@1.11.3
+
 ## 1.11.2
 
 ### Patch Changes
