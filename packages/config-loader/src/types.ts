@@ -1,9 +1,12 @@
 import type { ProjectCallbacks, SerializedConfig } from '@pandacss/compiler-shared'
+import type { ConfigSources } from './sources'
 
 export interface LoadConfigOptions {
   cwd: string
   /** Explicit config file path (relative to `cwd`); otherwise discovered upward. */
   file?: string
+  /** Track which authored config or preset contributed resolved config entries. */
+  trackSources?: boolean
 }
 
 export interface LoadedPandaConfig {
@@ -15,4 +18,7 @@ export interface LoadedPandaConfig {
   callbacks: ProjectCallbacks
   /** Module ids the config depends on, for watch-mode invalidation. */
   dependencies: string[]
+  metadata?: {
+    sources?: ConfigSources
+  }
 }

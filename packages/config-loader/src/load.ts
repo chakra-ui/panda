@@ -30,7 +30,10 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
 
   // Resolve and default onto a copy — never mutate `config`: identical configs
   // share one cached `data:`-URL module, so mutation would leak `cwd` across loads.
-  const authored = await resolveAuthoredPresets(config as UserConfig, cwd)
+  const authored = await resolveAuthoredPresets(config as UserConfig, cwd, {
+    configFile: path,
+    trackSources: options.trackSources,
+  })
   const resolved = applyConfigDefaults(authored.config, cwd) as UserConfig
 
   // Explicit `config.dependencies` escape hatch, on top of bundled module ids.
@@ -45,5 +48,6 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
     config: snapshot.config,
     callbacks: snapshot.callbacks,
     dependencies: dependencyList,
+    ...(authored.metadata ? { metadata: authored.metadata } : {}),
   }
 }

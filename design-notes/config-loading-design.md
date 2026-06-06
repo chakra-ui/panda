@@ -24,9 +24,9 @@ in `escalade`, loader-specific errors stay local (`src/error.ts`), and preset me
 for config sections instead of the legacy generic merge helpers.
 
 The modules: `find.ts` (walk-up discovery), `bundle.ts` (Rolldown + `data:`-URL eval + dependency collection),
-`preset.ts` (authored preset recursion + `extend` merging), `serialize.ts` (`createConfigSnapshot` — function
-lowering + pattern source capture), `load.ts` (the `loadPandaConfig` entry that wires them together), plus
-`error.ts`/`types.ts`.
+`preset.ts` (authored preset recursion + `extend` merging), `sources.ts` (optional resolved-config source metadata),
+`serialize.ts` (`createConfigSnapshot` — function lowering + pattern source capture), `load.ts` (the
+`loadPandaConfig` entry that wires them together), plus `error.ts`/`types.ts`.
 
 ### Scope (for now)
 
@@ -105,6 +105,9 @@ interface LoadedPandaConfig {
   config: SerializedConfig // JSON-safe; functions lowered to { kind: 'js-callback', id }
   callbacks: ProjectCallbacks // the live utility/pattern functions, keyed by ref id
   dependencies: string[]
+  metadata?: {
+    sources?: ConfigSources
+  }
 }
 ```
 
@@ -116,6 +119,8 @@ The important split is:
 - `callbacks` holds the live `utility.transform` / `utility.values` / `pattern.transform` / `pattern.defaultValues`
   functions, keyed by the ref `id`, so the compiler can invoke them during extraction.
 - `dependencies` is the module list used by watch mode.
+- `metadata.sources` is optional and only present when requested with `trackSources: true`; it is for JS-side tooling and
+  is not part of the Rust compiler snapshot.
 
 An earlier draft proposed a `codegen: CodegenInput` field, with JS building the codegen payload. That is **not** the
 boundary: Rust's `from_config` deserializes `SerializedConfig` into `UserConfig` and computes `TypeData` / the full
@@ -150,6 +155,120 @@ strings — unlike `stringifyJson`), so esbuild/Rolldown-emitted transforms, inc
 
 So a pattern authored with a real `transform` emits that transform in the generated `patterns/<name>` module instead of
 the identity fallback.
+
+## Preset Resolution
+
+Preset resolution lives at the `@pandacss/config-loader` boundary, before defaults and before
+`createConfigSnapshot()`. The Rust compiler receives a resolved serialized config; it does not resolve JavaScript preset
+modules or execute preset functions.
+
+The loader resolves only presets explicitly authored in `config.presets`:
+
+- object presets,
+- async object presets,
+- string preset modules bundled with Rolldown relative to the current `cwd`,
+- recursively nested `presets`.
+
+Automatic default preset behavior is still deferred. The loader does not inject `@pandacss/preset-base` or
+`@pandacss/preset-panda`, does not special-case bundled names like `@pandacss/dev/presets`, and does not run preset or
+config hooks.
+
+Resolution is depth-first. Nested presets are merged before the preset that contains them, sibling presets preserve
+author order, and the user config is merged last. That gives this precedence:
+
+```txt
+nested preset base/extend
+  -> parent preset base/extend
+  -> later sibling preset base/extend
+  -> user config base/extend
+```
+
+`extend` is folded only for the config sections that support it:
+
+```txt
+conditions
+theme
+patterns
+utilities
+globalCss
+globalVars
+globalFontface
+globalPositionTry
+staticCss
+themes
+```
+
+Base section entries establish or replace values. `extend` section entries merge into the accumulated section. Arrays in
+base entries replace prior arrays; arrays in `extend` entries concatenate. Top-level runtime-only fields
+(`presets`, `plugins`, `hooks`, `name`, and unexpected top-level `extend`) are stripped from the resolved config.
+
+String preset dependencies are folded into `LoadedPandaConfig.dependencies` alongside root config bundle dependencies
+and explicit resolved `config.dependencies`. Dependency entries are deduped after resolution.
+
+`createConfigSnapshot(config)` remains a pure serializer. It assumes the caller already supplied a resolved config,
+strips runtime-only top-level keys, lowers supported functions to callback refs, serializes `RegExp`, and preserves
+pattern `codegenSource`.
+
+## Sources Metadata
+
+Source tracking is an optional JS-side debugging/tooling feature. It answers "which authored config or preset
+contributed this resolved config path?" without mutating user-authored metadata such as token `extensions`.
+
+It is opt-in:
+
+```ts
+const loaded = await loadPandaConfig({ cwd, trackSources: true })
+```
+
+When omitted or `false`, the loader uses the normal merge path and does not allocate source entries or path metadata.
+When enabled, the result may include:
+
+```ts
+interface ConfigSourceEntry {
+  kind: 'config' | 'preset'
+  name?: string
+  specifier?: string
+  file?: string
+}
+
+interface ConfigSources {
+  entries: ConfigSourceEntry[]
+  paths: Record<string, number | number[]>
+}
+```
+
+`entries` stores each source once in resolved merge order. `paths` maps final resolved config paths to integer source
+IDs. A `number[]` means multiple sources contributed to a path, usually because objects merged or `extend` concatenated
+arrays.
+
+Example:
+
+```ts
+{
+  entries: [
+    { kind: 'preset', name: 'base', specifier: './preset.ts', file: 'preset.ts' },
+    { kind: 'config', file: 'panda.config.ts' },
+  ],
+  paths: {
+    'conditions.hover': 0,
+    'theme.tokens.colors.brand': [0, 1],
+    'theme.tokens.colors.brand.value': 1,
+    'staticCss.recipes.badge': [0, 1],
+  },
+}
+```
+
+The paths are resolved paths, not authored `extend` paths. For example,
+`theme.extend.tokens.colors.brand.value` records as `theme.tokens.colors.brand.value`.
+
+The tracking policy is deliberately compact. It records useful named boundaries and fields such as conditions,
+utilities, patterns, token paths, recipes, slot recipes, global entries, themes, and static CSS groups. It does not record
+every scalar in the config. Token normalization also moves source entries when flat token metadata is folded into
+`DEFAULT`, so a flat token value that becomes `theme.tokens.colors.black.DEFAULT.value` keeps the original source ID.
+
+`sources` is not passed to Rust by default and is not part of `SerializedConfig`. The Rust compiler does not need it to
+produce CSS. If future diagnostics or Studio views need to explain config ownership, JS can use `metadata.sources` to
+decorate those results after compilation.
 
 ## Dependency Tracking
 

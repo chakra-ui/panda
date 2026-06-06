@@ -1,9 +1,15 @@
 import type { Config } from '@pandacss/types'
 import { PandaError } from './error'
+import { recordNestedSources, recordSource, SourceTracker, type ConfigSourceEntry, type SourceContext } from './sources'
 
 export type Dict = Record<string, any>
 export type Extendable<T> = T & { extend?: T }
 export type ExtendableConfig = Extendable<Config>
+
+export interface SourcedConfig {
+  config: ExtendableConfig
+  source: ConfigSourceEntry
+}
 
 const sectionKeys = [
   'conditions',
@@ -24,18 +30,32 @@ const runtimeOnlyKeys = new Set(['presets', 'plugins', 'hooks', 'name', 'extend'
 const tokenKeys = new Set(['description', 'extensions', 'type', 'value', 'deprecated'])
 
 export function mergeConfigs(configs: ExtendableConfig[]) {
+  return mergeConfigsInternal(configs)
+}
+
+export function mergeConfigsWithSources(configs: SourcedConfig[]) {
+  const tracker = new SourceTracker(configs.map((item) => item.source))
+  const config = mergeConfigsInternal(configs, tracker)
+  return { config, sources: tracker.sources }
+}
+
+function mergeConfigsInternal(configs: ExtendableConfig[] | SourcedConfig[], tracker?: SourceTracker) {
   const result: Dict = {}
   const sections = Object.fromEntries(sectionKeys.map((key) => [key, {}])) as Record<(typeof sectionKeys)[number], Dict>
 
-  for (const config of configs) {
+  for (let index = 0; index < configs.length; index++) {
+    const config = tracker ? (configs[index] as SourcedConfig).config : (configs[index] as ExtendableConfig)
+    const context = tracker ? { tracker, sourceId: index, path: [] } : undefined
+
     for (const [key, value] of Object.entries(config)) {
       if (value === undefined || sectionKeySet.has(key) || runtimeOnlyKeys.has(key) || omitKeys.has(key)) continue
       result[key] = clone(value)
+      context?.tracker.record([key], context.sourceId, 'replace')
     }
 
     for (const key of sectionKeys) {
       const section = config[key]
-      if (isPlainObject(section)) mergeSectionInto(key, sections[key], section)
+      if (isPlainObject(section)) mergeSectionInto(key, sections[key], section, context)
     }
   }
 
@@ -43,7 +63,7 @@ export function mergeConfigs(configs: ExtendableConfig[]) {
     if (!isEmptyObject(sections[key])) result[key] = sections[key]
   }
 
-  if (result.theme?.tokens) normalizeNestedTokens(result.theme.tokens)
+  if (result.theme?.tokens) normalizeNestedTokens(result.theme.tokens, tracker)
 
   return result
 }
@@ -54,10 +74,12 @@ export function isPlainObject(value: unknown): value is Dict {
   return proto === Object.prototype || proto === null
 }
 
-function mergeSectionInto(sectionName: string, target: Dict, section: Dict) {
+function mergeSectionInto(sectionName: string, target: Dict, section: Dict, context?: SourceContext) {
+  const childContext = context && { ...context, path: [sectionName] }
+
   for (const [key, value] of Object.entries(section)) {
     if (key === 'extend' || value === undefined || omitKeys.has(key)) continue
-    mergeValue(target, key, value, 'replace')
+    mergeValue(target, key, value, 'replace', childContext)
   }
 
   if (section.extend === undefined) return
@@ -67,26 +89,40 @@ function mergeSectionInto(sectionName: string, target: Dict, section: Dict) {
 
   for (const [key, value] of Object.entries(section.extend)) {
     if (value === undefined || omitKeys.has(key)) continue
-    mergeValue(target, key, value, 'concat')
+    mergeValue(target, key, value, 'concat', childContext)
   }
 }
 
-function mergeValue(target: Dict, key: string, value: unknown, arrayMode: 'replace' | 'concat') {
+function mergeValue(
+  target: Dict,
+  key: string,
+  value: unknown,
+  arrayMode: 'replace' | 'concat',
+  context?: SourceContext,
+) {
   const current = target[key]
+  const path = context?.path.concat(key)
 
   if (Array.isArray(current) && Array.isArray(value)) {
     target[key] = arrayMode === 'concat' ? current.concat(clone(value)) : clone(value)
+    recordSource(context, path, value, current, arrayMode === 'concat' ? 'append' : 'replace')
     return
   }
 
   if (isPlainObject(current) && isPlainObject(value)) {
+    recordSource(context, path, value, current, 'append')
+    const childContext = context && path ? { ...context, path } : undefined
+
     for (const [childKey, childValue] of Object.entries(value)) {
-      if (childValue !== undefined && !omitKeys.has(childKey)) mergeValue(current, childKey, childValue, arrayMode)
+      if (childValue !== undefined && !omitKeys.has(childKey))
+        mergeValue(current, childKey, childValue, arrayMode, childContext)
     }
     return
   }
 
   target[key] = clone(value)
+  recordSource(context, path, value, current, 'replace')
+  recordNestedSources(context, path, value)
 }
 
 function clone<T>(value: T): T {
@@ -103,25 +139,25 @@ function clone<T>(value: T): T {
   return value
 }
 
-function normalizeNestedTokens(tokens: Dict) {
-  const stack = [tokens]
+function normalizeNestedTokens(tokens: Dict, tracker?: SourceTracker) {
+  const stack = [{ value: tokens, path: ['theme', 'tokens'] }]
 
   while (stack.length > 0) {
     const current = stack.pop()!
 
-    for (const value of Object.values(current)) {
+    for (const [key, value] of Object.entries(current.value)) {
       if (!isPlainObject(value)) continue
 
       if (isValidToken(value)) {
-        normalizeToken(value)
+        normalizeToken(value, tracker, current.path.concat(key))
       } else {
-        stack.push(value)
+        stack.push({ value, path: current.path.concat(key) })
       }
     }
   }
 }
 
-function normalizeToken(token: Dict) {
+function normalizeToken(token: Dict, tracker: SourceTracker | undefined, path: string[]) {
   let hasNestedKeys = false
   for (const key of Object.keys(token)) {
     if (!tokenKeys.has(key)) {
@@ -134,7 +170,10 @@ function normalizeToken(token: Dict) {
   token.DEFAULT ||= {}
   for (const key of tokenKeys) {
     if (token[key] == null) continue
+    const moved = !token.DEFAULT[key]
     token.DEFAULT[key] ||= token[key]
+    if (moved) tracker?.moveIfMissing(path.concat(key), path.concat('DEFAULT', key))
+    else tracker?.delete(path.concat(key))
     delete token[key]
   }
 }
