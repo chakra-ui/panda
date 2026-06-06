@@ -44,7 +44,8 @@ pub use matcher::{
     match_imports,
 };
 pub use pandacss_shared::{
-    Diagnostic, DiagnosticSeverity, SourceLocation, SourceRange, Span, diagnostic_codes,
+    Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
+    diagnostic_codes,
 };
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out

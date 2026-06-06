@@ -108,6 +108,38 @@ describe('@pandacss/postcss_v2', () => {
     `)
   })
 
+  it('emits compiler warnings with severity and code', async () => {
+    const { driver, run } = await setup()
+    driver.cssgen.mockReturnValueOnce({
+      css: '.text_red { color: red }',
+      manifest: { files: [], tokens: [] },
+      layerRanges: {},
+      diagnostics: [{ severity: 'warning', code: 'panda_call_unextractable', message: 'dynamic style value' }],
+    })
+
+    const result = await run(INPUT)
+
+    expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
+      [
+        "warning panda_call_unextractable dynamic style value",
+      ]
+    `)
+  })
+
+  it('throws compiler errors through PostCSS', async () => {
+    const { driver, run } = await setup()
+    driver.cssgen.mockReturnValueOnce({
+      css: '',
+      manifest: { files: [], tokens: [] },
+      layerRanges: {},
+      diagnostics: [{ severity: 'error', code: 'js_parse_error', message: 'Unexpected token' }],
+    })
+
+    await expect(run(INPUT)).rejects.toThrowErrorMatchingInlineSnapshot(
+      `[CssSyntaxError: pandacss: /project/styles.css:1:1: error js_parse_error Unexpected token]`,
+    )
+  })
+
   it('uses dependency messages for source directories in Rollup watch mode', async () => {
     vi.stubEnv('ROLLUP_WATCH', 'true')
     const { run } = await setup()

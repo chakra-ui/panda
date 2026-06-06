@@ -20,15 +20,26 @@ export interface SourceRange {
   end: SourceLocation
 }
 
+export interface DiagnosticLabel {
+  message?: string
+  /** UTF-8 byte offsets. */
+  span?: Span
+  location?: SourceRange
+}
+
 export type DiagnosticSeverity = 'info' | 'warning' | 'error'
 
 export interface Diagnostic {
   code: string
   message: string
   severity: DiagnosticSeverity
+  file?: string
+  category?: string
   /** UTF-8 byte offsets. */
   span?: Span
   location?: SourceRange
+  labels?: DiagnosticLabel[]
+  help?: string[]
 }
 
 export type MatchCategory = 'css' | 'recipe' | 'pattern' | 'jsx' | 'tokens'

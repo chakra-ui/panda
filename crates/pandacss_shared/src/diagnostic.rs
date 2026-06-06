@@ -62,6 +62,16 @@ pub struct SourceRange {
     pub end: SourceLocation,
 }
 
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosticLabel {
+    pub message: Option<String>,
+    /// UTF-8 byte offsets.
+    pub span: Option<Span>,
+    /// 1-indexed line, 1-indexed UTF-16 column.
+    pub location: Option<SourceRange>,
+}
+
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum DiagnosticSeverity {
@@ -76,12 +86,22 @@ pub struct Diagnostic {
     pub code: String,
     pub message: String,
     pub severity: DiagnosticSeverity,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
     /// UTF-8 byte offsets. Useful for slicing the source. `None` when the
     /// underlying error didn't attribute a location.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub span: Option<Span>,
     /// Human-readable line/column range covering the same offsets as `span`.
     /// 1-indexed line, 1-indexed UTF-16 column — matches `tsc`/IDE output.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<SourceRange>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub labels: Option<Vec<DiagnosticLabel>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub help: Option<Vec<String>>,
 }
 
 impl Diagnostic {
@@ -95,8 +115,12 @@ impl Diagnostic {
             code: code.into(),
             message: message.into(),
             severity,
+            file: None,
+            category: None,
             span: None,
             location: None,
+            labels: None,
+            help: None,
         }
     }
 
@@ -124,6 +148,30 @@ impl Diagnostic {
     #[must_use]
     pub fn with_location(mut self, location: SourceRange) -> Self {
         self.location = Some(location);
+        self
+    }
+
+    #[must_use]
+    pub fn with_file(mut self, file: impl Into<String>) -> Self {
+        self.file = Some(file.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_category(mut self, category: impl Into<String>) -> Self {
+        self.category = Some(category.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_label(mut self, label: DiagnosticLabel) -> Self {
+        self.labels.get_or_insert_with(Vec::new).push(label);
+        self
+    }
+
+    #[must_use]
+    pub fn with_help(mut self, help: impl Into<String>) -> Self {
+        self.help.get_or_insert_with(Vec::new).push(help.into());
         self
     }
 }

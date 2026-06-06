@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createEventDebouncer, handleWatchBatch, isOutputEvent, normalizeParcelEvent } from '../src'
+import {
+  createEventDebouncer,
+  formatWatchReady,
+  formatWatchRebuildStart,
+  formatWatchRebuildSuccess,
+  handleWatchBatch,
+  isOutputEvent,
+  normalizeParcelEvent,
+} from '../src/watch'
 
 describe('watch helpers', () => {
   it('normalizes parcel event types', () => {
@@ -60,5 +68,21 @@ describe('watch helpers', () => {
     ).toBe(true)
     expect(isOutputEvent('/project', 'styled-system', { kind: 'change', path: 'styled-system/styles.css' })).toBe(true)
     expect(isOutputEvent('/project', 'styled-system', { kind: 'change', path: '/project/src/App.tsx' })).toBe(false)
+  })
+
+  it('formats watch lifecycle status messages', () => {
+    const batch = {
+      source: [{ kind: 'change' as const, path: '/src/App.tsx' }],
+      config: [],
+    }
+
+    expect(
+      formatWatchReady({ sourceDirs: 2, configFiles: 1, debounceMs: 25, outdir: 'styled-system' }),
+    ).toMatchInlineSnapshot(`"watch: ready (2 source dirs, 1 config files, debounce 25ms, outdir styled-system)"`)
+    expect(formatWatchRebuildStart(batch)).toMatchInlineSnapshot(`"watch: rebuilding (1 source, 0 config)"`)
+    expect(formatWatchRebuildSuccess(batch)).toMatchInlineSnapshot(`"watch: rebuilt 1 source events"`)
+    expect(
+      formatWatchRebuildSuccess({ source: [], config: [{ kind: 'change', path: '/panda.config.ts' }] }),
+    ).toMatchInlineSnapshot(`"watch: config reloaded"`)
   })
 })

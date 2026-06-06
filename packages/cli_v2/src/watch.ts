@@ -14,9 +14,15 @@ export interface ProjectWatchOptions {
   cwd: string
   outdir: string | (() => string)
   debounceMs?: number
+  onStatus?(message: string): void
   onError?(error: unknown): void
   onSourceChange(events: WatchEvent[]): Promise<void> | void
   onConfigChange(events: WatchEvent[]): Promise<void> | void
+}
+
+export function formatWatchError(error: unknown): string {
+  if (error instanceof Error) return error.stack ?? error.message
+  return String(error)
 }
 
 export function normalizeParcelEvent(event: { type: string; path: string }): WatchEvent | undefined {
@@ -72,11 +78,14 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   const configFiles = new Set(targets.config.map((path) => resolve(options.cwd, path)))
   const configDirs = new Set([...configFiles].map((path) => dirname(path)))
   const sourceDirs = new Set(targets.dirs.map((dir) => resolve(options.cwd, dir)))
+  const debounceMs = options.debounceMs ?? 0
   let serialGate: Promise<void> = Promise.resolve()
   const currentOutdir = () => (typeof options.outdir === 'function' ? options.outdir() : options.outdir)
 
   const runSerialized = (task: () => Promise<void>): Promise<void> => {
+    // Rebuilds must not overlap; each batch waits for the previous one to settle.
     serialGate = serialGate.then(task).catch((error) => {
+      options.onStatus?.('watch: rebuild failed')
       options.onError?.(error)
     })
     return serialGate
@@ -85,15 +94,18 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   const debouncer = createEventDebouncer<WatchEvent>(async (events) => {
     const batch = splitEvents(events, options.driver)
     await runSerialized(async () => {
+      options.onStatus?.(formatWatchRebuildStart(batch))
       if (batch.config.length > 0) {
         await options.onConfigChange(batch.config)
+        options.onStatus?.(formatWatchRebuildSuccess(batch))
         return
       }
       if (batch.source.length > 0) {
         await options.onSourceChange(batch.source)
+        options.onStatus?.(formatWatchRebuildSuccess(batch))
       }
     })
-  }, options.debounceMs ?? 0)
+  }, debounceMs)
 
   const subscriptions: parcelWatcher.AsyncSubscription[] = []
   const subscribe = async (dir: string, filter?: (event: WatchEvent) => boolean) => {
@@ -117,10 +129,26 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
     ...[...sourceDirs].map((dir) => subscribe(dir)),
     ...[...configDirs].map((dir) => subscribe(dir, (event) => options.driver.isConfigFile(event.path))),
   ])
+  options.onStatus?.(
+    formatWatchReady({
+      sourceDirs: sourceDirs.size,
+      configFiles: configFiles.size + (options.driver.configPath ? 1 : 0),
+      debounceMs,
+      outdir: currentOutdir(),
+    }),
+  )
 
+  let stopped = false
   const stop = async () => {
+    if (stopped) return
+    stopped = true
     debouncer.close()
     await Promise.all(subscriptions.map((subscription) => subscription.unsubscribe()))
+
+    // Tests and embedded callers may start multiple watchers in one process.
+    process.off('SIGINT', exit)
+    process.off('SIGTERM', exit)
+    options.onStatus?.('watch: stopped')
   }
 
   const exit = () => {
@@ -130,6 +158,24 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   process.once('SIGTERM', exit)
 
   return stop
+}
+
+export function formatWatchReady(summary: {
+  sourceDirs: number
+  configFiles: number
+  debounceMs: number
+  outdir: string
+}): string {
+  return `watch: ready (${summary.sourceDirs} source dirs, ${summary.configFiles} config files, debounce ${summary.debounceMs}ms, outdir ${summary.outdir})`
+}
+
+export function formatWatchRebuildStart(batch: WatchBatch): string {
+  return `watch: rebuilding (${batch.source.length} source, ${batch.config.length} config)`
+}
+
+export function formatWatchRebuildSuccess(batch: WatchBatch): string {
+  if (batch.config.length > 0) return 'watch: config reloaded'
+  return `watch: rebuilt ${batch.source.length} source events`
 }
 
 export function isOutputEvent(cwd: string, outdir: string, event: WatchEvent): boolean {

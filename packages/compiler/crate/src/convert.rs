@@ -2,8 +2,9 @@
 //! types in sibling modules. Centralized so NAPI entrypoints stay clean.
 
 use crate::{
-    Diagnostic, DiagnosticSeverity, ExtractedCall, ExtractedJsx, ImportKind, ImportRecord,
-    ImportSpecifier, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher, Matchers, Span,
+    Diagnostic, DiagnosticLabel, DiagnosticSeverity, ExtractedCall, ExtractedJsx, ImportKind,
+    ImportRecord, ImportSpecifier, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher,
+    Matchers, Span,
 };
 
 pub(crate) fn convert_span(span: pandacss_extractor::Span) -> Span {
@@ -26,8 +27,22 @@ pub(crate) fn convert_diagnostic(d: pandacss_extractor::Diagnostic) -> Diagnosti
         code: d.code,
         message: d.message,
         severity: convert_severity(d.severity),
+        file: d.file,
+        category: d.category,
         span: d.span.map(convert_span),
         location: d.location.map(convert_range),
+        labels: d
+            .labels
+            .map(|labels| labels.into_iter().map(convert_label).collect()),
+        help: d.help,
+    }
+}
+
+fn convert_label(label: pandacss_extractor::DiagnosticLabel) -> DiagnosticLabel {
+    DiagnosticLabel {
+        message: label.message,
+        span: label.span.map(convert_span),
+        location: label.location.map(convert_range),
     }
 }
 

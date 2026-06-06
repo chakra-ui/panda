@@ -1684,8 +1684,12 @@ fn callback_diagnostic(message: String) -> pandacss_extractor::Diagnostic {
         code: diagnostic_codes::TRANSFORM_CALLBACK_FAILED.to_owned(),
         message,
         severity: DiagnosticSeverity::Warning,
+        file: None,
+        category: None,
         span: None,
         location: None,
+        labels: None,
+        help: None,
     }
 }
 

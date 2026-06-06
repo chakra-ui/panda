@@ -320,8 +320,12 @@ fn error_output(code: &str, message: String) -> CompileOutput {
         code: code.to_owned(),
         message,
         severity: DiagnosticSeverity::Error,
+        file: None,
+        category: None,
         span: None,
         location: None,
+        labels: None,
+        help: None,
     });
     output
 }

@@ -143,7 +143,11 @@ describe('@pandacss/vite', () => {
     server.watcher.emit('change', appFile)
 
     expect(await waitForCss(server, 'red')).toContain('red')
-    expect(await waitForWarning(warnings, 'while parsing')).toContain('diagnostic')
+    const warning = await waitForWarning(warnings, 'while parsing')
+    expect(warning.replaceAll(dir, '<root>')).toMatchInlineSnapshot(`
+      "panda: 1 diagnostic(s) while parsing <root>/App.tsx
+      error js_parse_error <root>/App.tsx:3:55 Unexpected token"
+    `)
 
     writeFileSync(appFile, APP(`{ color: 'blue' }`))
     server.watcher.emit('change', appFile)

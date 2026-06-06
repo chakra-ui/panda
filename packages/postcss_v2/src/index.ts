@@ -1,6 +1,7 @@
-import { createNodeDriver, type Driver } from '@pandacss/compiler'
+import { createNodeDriver } from '@pandacss/compiler'
+import type { Diagnostic, Driver } from '@pandacss/compiler-shared'
 import { extname, normalize, resolve } from 'node:path'
-import type { Message, PluginCreator, Result, Root, TransformCallback } from 'postcss'
+import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root, TransformCallback } from 'postcss'
 
 const PLUGIN_NAME = 'pandacss'
 
@@ -23,8 +24,8 @@ interface DriverState {
 const driverStates = new Map<string, DriverState>()
 let driverGuard: Promise<void> | undefined
 
-export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
-  const postcssProcess: TransformCallback = async (root, result) => {
+export const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => {
+  const postcssProcess: TransformCallback = async (root: Root, result: Result) => {
     const fileName = result.opts.from
 
     if (shouldSkip(fileName, options.allow)) return
@@ -56,10 +57,10 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
     registerDependencies(driver, result, cwd, fileName)
 
     const output = driver.cssgen({ emitLayerDeclaration: false })
-    emitDiagnostics(result, output.diagnostics)
+    emitDiagnostics(root, result, output.diagnostics)
     root.append(output.css)
 
-    root.walk((node) => {
+    root.walk((node: ChildNode) => {
       if (!node.source) {
         node.source = root.source
       }
@@ -68,17 +69,15 @@ export const pandacss: PluginCreator<PluginOptions> = (options = {}) => {
 
   return {
     postcssPlugin: PLUGIN_NAME,
-    plugins: [
-      function (...args) {
-        driverGuard = Promise.resolve(driverGuard)
-          .catch(() => {
-            /** keep the queue alive after a failed run */
-          })
-          .then(() => postcssProcess(...args))
-        return driverGuard
-      },
-    ],
-  }
+    Once(root: Root, helpers: Helpers) {
+      driverGuard = Promise.resolve(driverGuard)
+        .catch(() => {
+          /** keep the queue alive after a failed run */
+        })
+        .then(() => postcssProcess(root, helpers.result))
+      return driverGuard
+    },
+  } satisfies Plugin
 }
 
 pandacss.postcss = true
@@ -129,7 +128,7 @@ function registerDependencies(driver: Driver, result: Result, cwd: string, paren
     )
   }
 
-  const configDeps = new Set(driver.configDependencies.map((file) => normalize(resolve(cwd, file))))
+  const configDeps = new Set(driver.configDependencies.map((file: string) => normalize(resolve(cwd, file))))
   if (driver.configPath) {
     configDeps.add(normalize(resolve(cwd, driver.configPath)))
   }
@@ -163,8 +162,23 @@ function withPluginMetadata(message: Message, parent: string | undefined): Messa
   }
 }
 
-function emitDiagnostics(result: Result, diagnostics: { message: string }[]) {
+function formatDiagnostic(diagnostic: Diagnostic) {
+  const file = diagnostic.file ? `${diagnostic.file}` : ''
+  const location = diagnostic.location
+    ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
+    : diagnostic.span
+      ? `:${diagnostic.span.start}`
+      : ''
+  return `${diagnostic.severity} ${diagnostic.code} ${file}${location} ${diagnostic.message}`.replace(/\s+/g, ' ')
+}
+
+function emitDiagnostics(root: Root, result: Result, diagnostics: Diagnostic[]) {
+  const error = diagnostics.find((diagnostic) => diagnostic.severity === 'error')
+  if (error) {
+    throw root.error(formatDiagnostic(error), { plugin: PLUGIN_NAME })
+  }
+
   for (const diagnostic of diagnostics) {
-    result.warn(diagnostic.message, { plugin: PLUGIN_NAME })
+    result.warn(formatDiagnostic(diagnostic), { plugin: PLUGIN_NAME })
   }
 }

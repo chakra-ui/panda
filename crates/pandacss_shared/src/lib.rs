@@ -13,7 +13,8 @@ pub mod strings;
 pub mod unit_conversion;
 
 pub use diagnostic::{
-    Diagnostic, DiagnosticSeverity, SourceLocation, SourceRange, Span, codes as diagnostic_codes,
+    Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
+    codes as diagnostic_codes,
 };
 pub use error::{PandaError, PandaResult};
 pub use hash::to_hash;

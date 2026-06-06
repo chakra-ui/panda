@@ -12,23 +12,33 @@ export interface PandaPluginOptions {
 }
 
 function formatDiagnostic(diagnostic: Diagnostic): string {
+  const file = diagnostic.file ?? ''
   const location = diagnostic.location
     ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
     : diagnostic.span
       ? `:${diagnostic.span.start}`
       : ''
-  return `${diagnostic.severity} ${diagnostic.code}${location} ${diagnostic.message}`
+  return `${diagnostic.severity} ${diagnostic.code} ${file}${location} ${diagnostic.message}`.replace(/\s+/g, ' ')
 }
 
 function warnDiagnostics(
   warn: (message: string) => void,
   diagnostics: readonly Diagnostic[] | undefined,
   context: string,
+  file?: string,
 ) {
   if (!diagnostics?.length) return
-  const shown = diagnostics.slice(0, 3).map(formatDiagnostic).join('\n')
+  const shown = diagnostics
+    .slice(0, 3)
+    .map((diagnostic) => formatDiagnostic(withDiagnosticFile(diagnostic, file)))
+    .join('\n')
   const hidden = diagnostics.length > 3 ? `\n...and ${diagnostics.length - 3} more` : ''
   warn(`panda: ${diagnostics.length} diagnostic(s) ${context}\n${shown}${hidden}`)
+}
+
+function withDiagnosticFile(diagnostic: Diagnostic, file: string | undefined): Diagnostic {
+  if (!file || diagnostic.file) return diagnostic
+  return { ...diagnostic, file }
 }
 
 /**
@@ -117,6 +127,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
           (message) => ctx.server.config.logger.warn(message),
           driver.compiler.getFile(ctx.file)?.diagnostics,
           `while parsing ${ctx.file}`,
+          ctx.file,
         )
         return [...ctx.modules, ...invalidateRoots(ctx.server)]
       }

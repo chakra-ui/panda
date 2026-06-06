@@ -117,14 +117,27 @@ pub enum DiagnosticSeverity {
 }
 
 #[napi(object)]
-pub struct Diagnostic {
-    pub code: String,
-    pub message: String,
-    pub severity: DiagnosticSeverity,
+pub struct DiagnosticLabel {
+    pub message: Option<String>,
     /// UTF-8 byte offsets.
     pub span: Option<Span>,
     /// Human-readable line/column range covering `span`.
     pub location: Option<SourceRange>,
+}
+
+#[napi(object)]
+pub struct Diagnostic {
+    pub code: String,
+    pub message: String,
+    pub severity: DiagnosticSeverity,
+    pub file: Option<String>,
+    pub category: Option<String>,
+    /// UTF-8 byte offsets.
+    pub span: Option<Span>,
+    /// Human-readable line/column range covering `span`.
+    pub location: Option<SourceRange>,
+    pub labels: Option<Vec<DiagnosticLabel>>,
+    pub help: Option<Vec<String>>,
 }
 
 /// Tagged so a real `null` literal (`{ kind: "value", value: null }`) is
