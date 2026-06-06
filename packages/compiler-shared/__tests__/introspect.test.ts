@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { type Spec, introspect } from '../src'
 
 const spec: Spec = {
-  conditions: { keys: ['base', '_hover', 'md'], breakpoints: ['md'] },
+  conditions: { keys: ['base', '_hover', 'md'], breakpoints: ['md'], containers: [] },
   tokens: {
     categories: { colors: { name: 'colors', typeName: 'ColorToken', values: ['red.500'] } },
     colorPalettes: ['red'],

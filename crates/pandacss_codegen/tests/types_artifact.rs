@@ -17,6 +17,7 @@ fn input() -> CodegenInput {
             conditions: ConditionTypeData {
                 keys: vec!["base".into(), "_hover".into()],
                 breakpoints: vec!["base".into(), "sm".into()],
+                containers: vec!["card".into()],
             },
             tokens: token_type_data(),
             utilities: utility_type_data(),
@@ -275,6 +276,10 @@ fn emits_ts_source_types() {
     assert!(system.contains("  \"base\": string"));
     assert!(system.contains("  \"_hover\": string"));
     assert!(system.contains("export interface Breakpoints {"));
+    assert!(system.contains("export type ContainerName = \"card\" | AnyString"));
+    assert!(system.contains(
+        "export type ContainerValue = ContainerName | `${ContainerName} / inline-size` | `${ContainerName} / size` | AnyString"
+    ));
     assert!(system.contains("export type Condition = keyof Conditions"));
     assert!(system.contains("export type ConditionalValue<T> ="));
     // value aliases live in system because they are only used by system properties
@@ -299,6 +304,8 @@ fn emits_ts_source_types() {
     assert!(system.contains("  WebkitLineClamp?: ConditionalValue<CssValue>"));
     // SystemProperties extends CssProperties, overriding configured utilities with their alias
     assert!(system.contains("export interface SystemProperties extends CssProperties {"));
+    assert!(system.contains("  container?: ConditionalValue<ContainerValue>"));
+    assert!(system.contains("  containerName?: ConditionalValue<ContainerName>"));
     assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
     assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
     // selectors + the recursive style object live here too

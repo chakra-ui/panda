@@ -4,7 +4,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::JsxSpecifier;
+use crate::{JsxSpecifier, ranges};
 
 pub type StyleConfig = Value;
 pub type TokenGroup<T> = IndexMap<String, TokenNode<T>>;
@@ -31,6 +31,8 @@ pub struct Theme {
     #[serde(default)]
     pub slot_recipes: BTreeMap<String, RecipeConfig>,
     #[serde(default)]
+    pub containers: BTreeMap<String, String>,
+    #[serde(default)]
     pub container_names: Vec<String>,
     #[serde(default)]
     pub container_sizes: BTreeMap<String, String>,
@@ -41,34 +43,115 @@ pub struct Theme {
 impl Theme {
     #[must_use]
     pub fn breakpoint_names(&self) -> Vec<String> {
-        let mut entries: Vec<_> = self
-            .breakpoints
-            .iter()
-            .map(|(name, value)| (name.clone(), breakpoint_sort_value(value)))
-            .collect();
-        entries.sort_by(|(name_a, value_a), (name_b, value_b)| {
-            value_a
-                .partial_cmp(value_b)
-                .unwrap_or(std::cmp::Ordering::Equal)
-                .then_with(|| name_a.cmp(name_b))
-        });
-
+        let entries = ranges::sorted_scale(&self.breakpoints);
         let mut names = Vec::with_capacity(entries.len() + 1);
         names.push("base".to_owned());
-        names.extend(entries.into_iter().map(|(name, _)| name));
+        names.extend(entries.into_iter().map(|entry| entry.name));
         names
+    }
+
+    #[must_use]
+    pub fn breakpoint_condition_names(&self) -> Vec<String> {
+        self.breakpoint_conditions()
+            .into_iter()
+            .map(|rule| rule.key)
+            .collect()
+    }
+
+    #[must_use]
+    pub fn breakpoint_condition_query(&self, key: &str) -> Option<String> {
+        self.breakpoint_conditions()
+            .into_iter()
+            .find(|rule| rule.key == key)
+            .map(|rule| rule.query)
+    }
+
+    #[must_use]
+    pub fn container_names(&self) -> Vec<String> {
+        self.container_names.clone()
+    }
+
+    #[must_use]
+    pub fn container_condition_names(&self) -> Vec<String> {
+        self.container_conditions()
+            .into_iter()
+            .map(|condition| condition.key)
+            .collect()
+    }
+
+    #[must_use]
+    pub fn container_condition_query(&self, key: &str) -> Option<String> {
+        self.container_conditions()
+            .into_iter()
+            .find(|condition| condition.key == key)
+            .map(|condition| condition.query)
+    }
+
+    #[must_use]
+    pub fn container_conditions(&self) -> Vec<ContainerCondition> {
+        let mut conditions = BTreeMap::new();
+        let scale = self.container_scale();
+
+        insert_container_conditions(&mut conditions, "", &scale);
+        for name in self.container_names.iter().filter(|name| !name.is_empty()) {
+            insert_container_conditions(&mut conditions, name, &scale);
+        }
+
+        conditions
+            .into_iter()
+            .map(|(key, query)| ContainerCondition { key, query })
+            .collect()
+    }
+
+    fn container_scale(&self) -> BTreeMap<String, String> {
+        let mut scale = self.container_sizes.clone();
+        scale.extend(self.containers.clone());
+        scale
+    }
+
+    fn breakpoint_conditions(&self) -> Vec<ranges::RangeRule> {
+        ranges::range_rules(&self.breakpoints, str::to_owned, |min, max| {
+            format!("@media {}", ranges::range_query("width", min, max))
+        })
     }
 }
 
-/// Numeric weight for sorting breakpoints by their leading magnitude
-/// (`"48rem"` -> `48`). Unparseable values sort last via `INFINITY`.
-fn breakpoint_sort_value(value: &str) -> f64 {
-    value
-        .chars()
-        .take_while(|ch| ch.is_ascii_digit() || *ch == '.')
-        .collect::<String>()
-        .parse()
-        .unwrap_or(f64::INFINITY)
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ContainerCondition {
+    pub key: String,
+    pub query: String,
+}
+
+fn insert_container_conditions(
+    conditions: &mut BTreeMap<String, String>,
+    name: &str,
+    scale: &BTreeMap<String, String>,
+) {
+    if scale.is_empty() {
+        return;
+    }
+
+    for rule in ranges::range_rules(
+        scale,
+        |range| container_condition_key(name, range),
+        |min, max| container_query(name, min, max),
+    ) {
+        conditions.insert(rule.key, rule.query);
+    }
+}
+
+fn container_condition_key(name: &str, range: &str) -> String {
+    format!("@{name}/{range}")
+}
+
+fn container_query(name: &str, min: Option<&str>, max: Option<&str>) -> String {
+    let query = ranges::range_query("inline-size", min, max);
+
+    if name.is_empty() {
+        format!("@container {query}")
+    } else {
+        format!("@container {name} {query}")
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

@@ -57,6 +57,18 @@ describe('diffConfig', () => {
     `)
   })
 
+  test('container scale change → token and condition dependencies', () => {
+    const next = clone(base)
+    ;(next.theme as any).containers = { md: '32rem' }
+    const result = diffConfig(base, next)
+    expect(result.dependencies).toMatchInlineSnapshot(`
+      [
+        "tokens",
+        "conditions",
+      ]
+    `)
+  })
+
   test('recipe change → recipes dependency + recipe name', () => {
     const next = clone(base)
     ;(next.theme as any).recipes.button.base.color = 'blue'

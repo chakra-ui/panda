@@ -14,7 +14,11 @@ fn config_exposes_typegen_options_conditions_and_patterns() {
         "theme": {
             "breakpoints": {
                 "sm": "640px"
-            }
+            },
+            "containers": {
+                "sm": "20rem"
+            },
+            "containerNames": ["card"]
         },
         "patterns": {
             "stack": {
@@ -41,12 +45,22 @@ fn config_exposes_typegen_options_conditions_and_patterns() {
       jsxStyleProps: minimal
     conditions:
       keys:
+        - "@/sm"
+        - "@/smDown"
+        - "@/smOnly"
+        - "@card/sm"
+        - "@card/smDown"
+        - "@card/smOnly"
         - _hover
         - base
         - sm
+        - smDown
+        - smOnly
       breakpoints:
         - base
         - sm
+      containers:
+        - card
     patterns:
       patterns:
         stack:

@@ -56,6 +56,8 @@ pub struct TypegenOptions {
 pub struct ConditionTypeData {
     pub keys: Vec<String>,
     pub breakpoints: Vec<String>,
+    #[serde(default)]
+    pub containers: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -230,6 +232,7 @@ impl UserConfig {
         ConditionTypeData {
             keys: self.condition_names(),
             breakpoints: self.theme.breakpoint_names(),
+            containers: self.theme.container_names(),
         }
     }
 

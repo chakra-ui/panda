@@ -37,6 +37,7 @@ const directFieldSections = new Set(['patterns', 'utilities'])
 const themeEntryKeys = new Set([
   'animationStyles',
   'breakpoints',
+  'containers',
   'containerSizes',
   'keyframes',
   'layerStyles',

@@ -12,8 +12,6 @@ use std::cmp::Ordering;
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
 
-use crate::conditions::breakpoint_media_query;
-
 const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":is", 40),
     (":where", 40),
@@ -444,8 +442,13 @@ fn collect_condition_parts(
     at_rules: &mut Vec<AtRuleKey>,
     selectors: &mut Vec<SelectorKey>,
 ) {
-    if let Some(value) = config.theme.breakpoints.get(condition) {
-        at_rules.push(AtRuleKey::new(&breakpoint_media_query(value)));
+    if let Some(raw) = config.breakpoint_condition(condition) {
+        collect_raw_part(&raw, at_rules, selectors);
+        return;
+    }
+
+    if let Some(raw) = config.container_condition(condition) {
+        collect_raw_part(&raw, at_rules, selectors);
         return;
     }
 
@@ -911,12 +914,6 @@ fn is_longhand_logical(prop: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn breakpoint_media_query_converts_px_to_rem() {
-        assert_eq!(breakpoint_media_query("768px"), "@media (width >= 48rem)");
-        assert_eq!(breakpoint_media_query("960px"), "@media (width >= 60rem)");
-    }
 
     #[test]
     fn parse_length_px_normalizes_units_for_sorting() {

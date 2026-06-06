@@ -65,9 +65,13 @@ fn deserializes_typed_theme_shape() {
                     "slots": ["root"]
                 }
             },
-            "containerNames": ["sidebar"],
+            "containers": {
+                "sm": "24rem",
+                "md": "36rem"
+            },
+            "containerNames": ["card", "sidebar"],
             "containerSizes": {
-                "sm": "320px"
+                "xs": "320px"
             },
             "colorPalette": {
                 "enabled": true,
@@ -98,6 +102,7 @@ fn deserializes_typed_theme_shape() {
 
     assert_yaml_snapshot!(json!({
         "breakpointNames": config.theme.breakpoint_names(),
+        "breakpointCondition": config.breakpoint_condition("smToMd"),
         "recipes": config.theme.recipes.keys().collect::<Vec<_>>(),
         "button": config.theme.recipes.get("button").map(|recipe| json!({
             "className": recipe.class_name.as_deref(),
@@ -108,6 +113,8 @@ fn deserializes_typed_theme_shape() {
             "compoundVariants": recipe.compound_variants.len(),
         })),
         "slotRecipes": config.theme.slot_recipes.keys().collect::<Vec<_>>(),
+        "containers": config.theme.container_names(),
+        "containerCondition": config.container_condition("@card/md"),
         "containerNames": &config.theme.container_names,
         "colorPalette": {
             "enabled": config.theme.color_palette.enabled,
@@ -115,11 +122,12 @@ fn deserializes_typed_theme_shape() {
             "exclude": &config.theme.color_palette.exclude,
         },
         "themes": config.themes.keys().collect::<Vec<_>>(),
-    }), @r"
+    }), @r##"
     breakpointNames:
       - base
       - sm
       - md
+    breakpointCondition: "@media (width >= 40rem) and (width < 48rem)"
     recipes:
       - button
     button:
@@ -134,7 +142,12 @@ fn deserializes_typed_theme_shape() {
       compoundVariants: 1
     slotRecipes:
       - card
+    containers:
+      - card
+      - sidebar
+    containerCondition: "@container card (inline-size >= 36rem)"
     containerNames:
+      - card
       - sidebar
     colorPalette:
       enabled: true
@@ -144,7 +157,7 @@ fn deserializes_typed_theme_shape() {
         - gray
     themes:
       - dark
-    ");
+    "##);
 }
 
 #[test]
@@ -158,7 +171,12 @@ fn condition_names_are_derived_from_config() {
             "breakpoints": {
                 "md": "768px",
                 "sm": "640px"
-            }
+            },
+            "containers": {
+                "sm": "24rem",
+                "md": "36rem"
+            },
+            "containerNames": ["card"]
         },
         "themes": {
             "primary": {},
@@ -167,15 +185,34 @@ fn condition_names_are_derived_from_config() {
     }))
     .expect("valid typed config");
 
-    assert_yaml_snapshot!(config.condition_names(), @r"
+    assert_yaml_snapshot!(config.condition_names(), @r##"
+    - "@/md"
+    - "@/mdDown"
+    - "@/mdOnly"
+    - "@/sm"
+    - "@/smDown"
+    - "@/smOnly"
+    - "@/smToMd"
+    - "@card/md"
+    - "@card/mdDown"
+    - "@card/mdOnly"
+    - "@card/sm"
+    - "@card/smDown"
+    - "@card/smOnly"
+    - "@card/smToMd"
     - _hover
     - _supportsGrid
     - _themePrimary
     - _themePrimary-legacy
     - base
     - md
+    - mdDown
+    - mdOnly
     - sm
-    ");
+    - smDown
+    - smOnly
+    - smToMd
+    "##);
 }
 
 #[test]

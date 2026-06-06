@@ -624,6 +624,80 @@ fn emits_conditions_and_breakpoints() {
 }
 
 #[test]
+fn emits_breakpoint_range_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "sm": "40rem",
+                "md": "48rem"
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ color: { smDown: 'red', smOnly: 'blue', smToMd: 'green' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (width < 40rem) {
+    .smDown\:c_red {
+      color: red;
+    }
+  }
+  @media (width >= 40rem) and (width < 48rem) {
+    .smOnly\:c_blue {
+      color: blue;
+    }
+    .smToMd\:c_green {
+      color: green;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn emits_theme_container_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "containers": {
+                "sm": "24rem",
+                "md": "32rem"
+            },
+            "containerNames": ["card"]
+        },
+        "utilities": {
+            "gap": { "className": "gap" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ gap: { '@/sm': '2', '@card/md': '4' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @container (inline-size >= 24rem) {
+    .\@\/sm\:gap_2 {
+      gap: 2;
+    }
+  }
+  @container card (inline-size >= 32rem) {
+    .\@card\/md\:gap_4 {
+      gap: 4;
+    }
+  }
+}
+");
+}
+
+#[test]
 fn nested_breakpoint_then_condition_preserves_class_condition_order() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

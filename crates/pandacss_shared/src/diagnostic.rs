@@ -4,6 +4,10 @@ pub mod codes {
     pub const COMPILE_PLACEHOLDER: &str = "compile_placeholder";
     pub const CONFIG_ARTIFACT_NAME_CONFLICT: &str = "config_artifact_name_conflict";
     pub const CONFIG_BREAKPOINT_UNITS_MIXED: &str = "config_breakpoint_units_mixed";
+    pub const CONFIG_CONTAINER_CONDITION_CONFLICT: &str = "config_container_condition_conflict";
+    pub const CONFIG_CONTAINER_INVALID: &str = "config_container_invalid";
+    pub const CONFIG_CONTAINER_NAME_INVALID: &str = "config_container_name_invalid";
+    pub const CONFIG_CONTAINER_UNITS_MIXED: &str = "config_container_units_mixed";
     pub const CONFIG_CONDITION_ARRAY_UNSUPPORTED: &str = "config_condition_array_unsupported";
     pub const CONFIG_CONDITION_SELECTOR_INVALID: &str = "config_condition_selector_invalid";
     pub const CONFIG_TOKEN_CIRCULAR_REFERENCE: &str = "config_token_circular_reference";

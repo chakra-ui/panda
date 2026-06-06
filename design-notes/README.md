@@ -29,6 +29,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (the ts-evaluator parity surface).
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape, cycle guard.
 - [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe entry serialization.
+- [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
+  container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
+  compatibility-only treatment of legacy `containerSizes`/`cq` concepts.
 
 ### Boundary
 

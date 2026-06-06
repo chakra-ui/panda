@@ -1,9 +1,9 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use pandacss_shared::{Diagnostic, diagnostic_codes};
+use pandacss_shared::{Diagnostic, diagnostic_codes, to_rem};
 use serde_json::Value;
 
-use crate::{UserConfig, ValidationMode};
+use crate::{UserConfig, ValidationMode, ranges};
 
 type TokenMap = BTreeMap<String, Value>;
 type RefMap = BTreeMap<String, BTreeSet<String>>;
@@ -34,6 +34,7 @@ pub fn validate_config_value(config: &Value) -> Vec<Diagnostic> {
     let mut tokens = TokenData::default();
 
     if let Some(theme) = config.get("theme").and_then(Value::as_object) {
+        validate_containers(theme, &mut diagnostics);
         validate_tokens(theme, &mut tokens, &mut diagnostics);
         collect_recipe_names(theme.get("recipes"), &mut artifacts.recipes);
         collect_recipe_names(theme.get("slotRecipes"), &mut artifacts.slot_recipes);
@@ -127,6 +128,230 @@ fn validate_conditions(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>)
             validate_condition_block(block, diagnostics);
         }
     }
+}
+
+fn validate_containers(theme: &serde_json::Map<String, Value>, diagnostics: &mut Vec<Diagnostic>) {
+    let mut generated = BTreeMap::new();
+    let names = container_names(theme.get("containerNames"), diagnostics);
+
+    let container_sizes = validate_container_scale(
+        "theme.containerSizes",
+        theme.get("containerSizes"),
+        diagnostics,
+    );
+    if !container_sizes.is_empty() {
+        collect_container_conditions(
+            "",
+            "theme.containerSizes",
+            &container_sizes,
+            &mut generated,
+            diagnostics,
+        );
+        for name in &names {
+            collect_container_conditions(
+                name,
+                &format!("theme.containerNames.{name} + theme.containerSizes"),
+                &container_sizes,
+                &mut generated,
+                diagnostics,
+            );
+        }
+    }
+
+    let containers =
+        validate_container_scale("theme.containers", theme.get("containers"), diagnostics);
+    if !containers.is_empty() {
+        collect_container_conditions(
+            "",
+            "theme.containers",
+            &containers,
+            &mut generated,
+            diagnostics,
+        );
+        for name in &names {
+            collect_container_conditions(
+                name,
+                &format!("theme.containerNames.{name} + theme.containers"),
+                &containers,
+                &mut generated,
+                diagnostics,
+            );
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ContainerConditionDefinition {
+    source: String,
+    query: String,
+}
+
+fn container_names(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>) -> Vec<String> {
+    let Some(value) = value else {
+        return Vec::new();
+    };
+    let Some(items) = value.as_array() else {
+        diagnostics.push(warn(
+            diagnostic_codes::CONFIG_CONTAINER_INVALID,
+            "`theme.containerNames` must be an array of container names",
+        ));
+        return Vec::new();
+    };
+
+    items
+        .iter()
+        .filter_map(|item| {
+            let Some(name) = item.as_str() else {
+                diagnostics.push(warn(
+                    diagnostic_codes::CONFIG_CONTAINER_NAME_INVALID,
+                    "`theme.containerNames` entries must be strings",
+                ));
+                return None;
+            };
+            if !is_valid_container_name(name) {
+                diagnostics.push(warn(
+                    diagnostic_codes::CONFIG_CONTAINER_NAME_INVALID,
+                    format!("Container name must be a valid CSS identifier segment: `{name}`"),
+                ));
+                return None;
+            }
+            Some(name.to_owned())
+        })
+        .collect()
+}
+
+fn validate_container_scale(
+    path: &str,
+    value: Option<&Value>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> BTreeMap<String, String> {
+    let Some(value) = value else {
+        return BTreeMap::new();
+    };
+    let Some(scale) = value.as_object() else {
+        diagnostics.push(warn(
+            diagnostic_codes::CONFIG_CONTAINER_INVALID,
+            format!("`{path}` must be an object of string sizes"),
+        ));
+        return BTreeMap::new();
+    };
+    validate_container_scale_map(path, scale, diagnostics)
+}
+
+fn validate_container_scale_map(
+    path: &str,
+    scale: &serde_json::Map<String, Value>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> BTreeMap<String, String> {
+    let entries = scale
+        .iter()
+        .filter_map(|(name, value)| {
+            let Some(size) = value.as_str() else {
+                diagnostics.push(warn(
+                    diagnostic_codes::CONFIG_CONTAINER_INVALID,
+                    format!("`{path}.{name}` must be a string size"),
+                ));
+                return None;
+            };
+            Some((name.clone(), size.to_owned()))
+        })
+        .collect::<Vec<_>>();
+
+    validate_container_scale_entries(path, entries, diagnostics)
+}
+
+fn validate_container_scale_entries(
+    path: &str,
+    entries: Vec<(String, String)>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> BTreeMap<String, String> {
+    let mut scale = BTreeMap::new();
+    for (name, size) in entries {
+        if !is_valid_container_scale_key(&name) {
+            diagnostics.push(warn(
+                diagnostic_codes::CONFIG_CONTAINER_NAME_INVALID,
+                format!("Container size key must be a valid condition segment: `{path}.{name}`"),
+            ));
+            continue;
+        }
+        scale.insert(name, size);
+    }
+
+    validate_container_units(path, &scale, diagnostics);
+    scale
+}
+
+fn collect_container_conditions(
+    name: &str,
+    source: &str,
+    scale: &BTreeMap<String, String>,
+    generated: &mut BTreeMap<String, ContainerConditionDefinition>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for range in ranges::expanded_range_conditions(scale) {
+        let key = format!("@{name}/{}", range.key);
+        let query = container_query_signature(name, range.min.as_deref(), range.max.as_deref());
+        let next = ContainerConditionDefinition {
+            source: source.to_owned(),
+            query,
+        };
+        if let Some(previous) = generated.get(&key) {
+            if previous.query != next.query {
+                diagnostics.push(warn(
+                    diagnostic_codes::CONFIG_CONTAINER_CONDITION_CONFLICT,
+                    format!(
+                        "Container condition `{key}` is generated with conflicting queries by `{}` and `{}`",
+                        previous.source, next.source
+                    ),
+                ));
+            }
+            continue;
+        }
+        generated.insert(key, next);
+    }
+}
+
+fn validate_container_units(
+    path: &str,
+    scale: &BTreeMap<String, String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut units = BTreeSet::new();
+    let mut values = Vec::new();
+    for value in scale.values() {
+        values.push(value.clone());
+        units.insert(unit_of(value).unwrap_or("px").to_owned());
+    }
+
+    if units.len() > 1 {
+        values.sort();
+        diagnostics.push(warn(
+            diagnostic_codes::CONFIG_CONTAINER_UNITS_MIXED,
+            format!(
+                "All container sizes in `{path}` must use the same unit: `{}`",
+                values.join(", ")
+            ),
+        ));
+    }
+}
+
+fn is_valid_container_name(name: &str) -> bool {
+    !name.is_empty()
+        && !name
+            .chars()
+            .any(|ch| ch.is_whitespace() || matches!(ch, '/' | '@'))
+}
+
+fn is_valid_container_scale_key(name: &str) -> bool {
+    is_valid_container_name(name)
+}
+
+fn container_query_signature(name: &str, min: Option<&str>, max: Option<&str>) -> String {
+    format!(
+        "{name}|{}|{}",
+        min.map(to_rem).unwrap_or_default(),
+        max.map(to_rem).unwrap_or_default()
+    )
 }
 
 fn validate_condition_block(

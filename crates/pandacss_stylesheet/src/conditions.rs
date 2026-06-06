@@ -5,7 +5,6 @@
 //! lowered rule targets.
 
 use pandacss_config::{ConditionQuery, UserConfig};
-use pandacss_shared::to_rem;
 
 use crate::style_rules::LoweredTarget;
 
@@ -14,14 +13,13 @@ pub(crate) type ConditionPath = Vec<String>;
 /// Alternative raw condition chains for a single condition key.
 pub(crate) type ConditionPaths = Vec<ConditionPath>;
 
-#[must_use]
-pub(crate) fn breakpoint_media_query(value: &str) -> String {
-    format!("@media (width >= {})", to_rem(value))
-}
-
 pub(crate) fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<ConditionPath> {
-    if let Some(value) = config.theme.breakpoints.get(condition) {
-        return vec![vec![breakpoint_media_query(value)]];
+    if let Some(raw) = config.breakpoint_condition(condition) {
+        return vec![vec![raw]];
+    }
+
+    if let Some(raw) = config.container_condition(condition) {
+        return vec![vec![raw]];
     }
 
     let key = condition.trim_start_matches('_');

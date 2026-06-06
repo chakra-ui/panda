@@ -202,7 +202,7 @@ export interface SpecTokenCategory {
 /** Tooling introspection snapshot — read once, index on the host (never query
  *  the engine per-item in a hot loop). Powers reporting / formatting / linting. */
 export interface Spec {
-  conditions: { keys: string[]; breakpoints: string[] }
+  conditions: { keys: string[]; breakpoints: string[]; containers: string[] }
   tokens: {
     categories: Record<string, SpecTokenCategory>
     colorPalettes: string[]

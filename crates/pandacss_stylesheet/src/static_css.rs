@@ -157,12 +157,11 @@ fn expand_css_rule(
 
 /// Wrap a value as `{ base: value, <cond>: value, … }` so it emits both
 /// unconditionally and under each condition. Bare names are prefixed with `_`
-/// unless they're a breakpoint.
+/// unless they're configured condition keys.
 fn conditional_value(config: &UserConfig, conditions: &[String], value: &Literal) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];
     for condition in conditions {
-        let key = if condition.starts_with('_') || config.theme.breakpoints.contains_key(condition)
-        {
+        let key = if config.is_condition_key(condition) {
             condition.clone()
         } else {
             format!("_{condition}")

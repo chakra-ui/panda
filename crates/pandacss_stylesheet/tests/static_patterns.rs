@@ -157,7 +157,11 @@ fn static_pattern_conditions_and_responsive_flow_into_utilities_layer() {
         "theme": {
             "breakpoints": {
                 "md": "48rem"
-            }
+            },
+            "containers": {
+                "md": "32rem"
+            },
+            "containerNames": ["card"]
         },
         "utilities": {
             "alignItems": { "className": "ai" }
@@ -172,7 +176,7 @@ fn static_pattern_conditions_and_responsive_flow_into_utilities_layer() {
                 "stack": [
                     {
                         "properties": { "align": ["center"] },
-                        "conditions": ["hover"],
+                        "conditions": ["hover", "@card/md"],
                         "responsive": true
                     }
                 ]
@@ -234,6 +238,11 @@ fn static_pattern_conditions_and_responsive_flow_into_utilities_layer() {
       }
       @media (width >= 48rem) {
         .md\:ai_center {
+          align-items: center;
+        }
+      }
+      @container card (inline-size >= 32rem) {
+        .\@card\/md\:ai_center {
           align-items: center;
         }
       }

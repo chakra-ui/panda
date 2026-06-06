@@ -77,7 +77,10 @@ function classify([head, second, third]: string[]): Classified {
     if (second === 'recipes' || second === 'slotRecipes') {
       return { deps: ['recipes'], recipe: third }
     }
-    // tokens, semanticTokens, breakpoints, containerNames/Sizes, keyframes, …
+    if (second === 'containers' || second === 'containerNames' || second === 'containerSizes') {
+      return { deps: ['tokens', 'conditions'] }
+    }
+    // tokens, semanticTokens, breakpoints, keyframes, …
     return { deps: ['tokens'] }
   }
 

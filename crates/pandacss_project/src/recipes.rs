@@ -331,7 +331,7 @@ impl RecipeRegistry {
             self.extend_compound_atoms(&name, &mut encoded.atomic);
             let options = self.variant_options(&name);
             for rule in rules {
-                for selected in Self::static_rule_selections(&rule, &responsive, &options) {
+                for selected in Self::static_rule_selections(config, &rule, &responsive, &options) {
                     encoded.process_usage(self, &name, &selected, conditions, breakpoints);
                 }
             }
@@ -360,6 +360,7 @@ impl RecipeRegistry {
     }
 
     fn static_rule_selections(
+        config: &UserConfig,
         rule: &Literal,
         breakpoints: &[String],
         options: &FxHashMap<Box<str>, Vec<String>>,
@@ -401,7 +402,7 @@ impl RecipeRegistry {
                 let value = if conditions.is_empty() {
                     value
                 } else {
-                    conditional_static_value(&conditions, breakpoints, &value)
+                    conditional_static_value(config, &conditions, &value)
                 };
                 Literal::Object(vec![(variant.clone(), value)])
             }));
@@ -546,13 +547,13 @@ fn static_variant_values(value: &Literal, wildcard_values: Option<&Vec<String>>)
 }
 
 fn conditional_static_value(
+    config: &UserConfig,
     conditions: &[String],
-    breakpoints: &[String],
     value: &Literal,
 ) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];
     entries.extend(conditions.iter().map(|condition| {
-        let key = if condition.starts_with('_') || breakpoints.iter().any(|key| key == condition) {
+        let key = if config.is_condition_key(condition) {
             condition.clone()
         } else {
             format!("_{condition}")

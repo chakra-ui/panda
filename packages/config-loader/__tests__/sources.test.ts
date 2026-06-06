@@ -34,6 +34,9 @@ describe('config sources', () => {
             },
             theme: {
               containerNames: ['preset-container'],
+              containers: {
+                sm: '20rem',
+              },
               tokens: {
                 colors: {
                   brand: { value: 'preset-brand', description: 'from preset' },
@@ -66,6 +69,9 @@ describe('config sources', () => {
           },
           extend: {
             containerNames: ['user-container'],
+            containers: {
+              md: '32rem',
+            },
             tokens: {
               colors: {
                 accent: { value: 'user-accent' },
@@ -113,6 +119,8 @@ describe('config sources', () => {
       accentValue: sources?.paths['theme.tokens.colors.accent.value'],
       recipe: sources?.paths['theme.recipes.badge'],
       containerNames: sources?.paths['theme.containerNames'],
+      containerSm: sources?.paths['theme.containers.sm'],
+      containerMd: sources?.paths['theme.containers.md'],
       staticRecipe: sources?.paths['staticCss.recipes.badge'],
     }).toMatchInlineSnapshot(`
       {
@@ -131,10 +139,12 @@ describe('config sources', () => {
         ],
         "brandDescription": 0,
         "brandValue": 1,
+        "containerMd": 1,
         "containerNames": [
           0,
           1,
         ],
+        "containerSm": 0,
         "hover": 0,
         "outdir": 1,
         "recipe": 0,

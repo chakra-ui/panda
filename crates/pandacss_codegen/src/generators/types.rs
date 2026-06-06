@@ -153,10 +153,13 @@ fn condition_type_parts(data: &ConditionTypeData) -> Vec<String> {
         .map(|key| format!("  {key:?}: string"))
         .collect::<Vec<_>>()
         .join("\n");
+    let container_name = string_union_with_fallback(&data.containers, "AnyString");
 
     vec![format!(
         "export interface Conditions {{\n{condition_members}\n}}\n\n\
          export interface Breakpoints {{\n{breakpoint_members}\n}}\n\n\
+         export type ContainerName = {container_name}\n\
+         export type ContainerValue = ContainerName | `${{ContainerName}} / inline-size` | `${{ContainerName}} / size` | AnyString\n\n\
          export type Condition = keyof Conditions\n\n\
          export type ConditionalValue<T> =\n  | T\n  | Array<T | null>\n  | {{ [K in Condition]?: ConditionalValue<T> }}"
     )]
@@ -288,6 +291,7 @@ fn system_module(
     let system_members = data
         .properties
         .values()
+        .filter(|property| !matches!(property.name.as_str(), "container" | "containerName"))
         .map(|property| {
             format!(
                 "  {}?: ConditionalValue<{}>",
@@ -295,6 +299,11 @@ fn system_module(
                 property.alias
             )
         })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let system_members = [system_members, container_property_members()]
+        .into_iter()
+        .filter(|part| !part.is_empty())
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -351,6 +360,14 @@ export interface GlobalFontface {
     Module::new()
         .with_import(ImportDecl::ty(["TokenValue"], "./tokens"))
         .with_item(type_raw(parts.join("\n\n")))
+}
+
+fn container_property_members() -> String {
+    [
+        "  container?: ConditionalValue<ContainerValue>",
+        "  containerName?: ConditionalValue<ContainerName>",
+    ]
+    .join("\n")
 }
 
 fn jsx_style_type_parts(mode: JsxStylePropsConfig) -> Vec<String> {
@@ -585,6 +602,13 @@ fn string_union(values: &[String], fallback: &str) -> String {
         .map(|value| string_literal(value))
         .collect::<Vec<_>>()
         .join(" | ")
+}
+
+fn string_union_with_fallback(values: &[String], fallback: &str) -> String {
+    if values.is_empty() {
+        return fallback.into();
+    }
+    format!("{} | {fallback}", string_union(values, fallback))
 }
 
 fn string_literal(value: &str) -> String {

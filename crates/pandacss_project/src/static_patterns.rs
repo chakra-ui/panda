@@ -264,7 +264,7 @@ impl ExpansionCtx<'_> {
     }
 
     fn condition_key(&self, condition: &str) -> String {
-        if condition.starts_with('_') || self.config.theme.breakpoints.contains_key(condition) {
+        if self.config.is_condition_key(condition) {
             condition.to_owned()
         } else {
             format!("_{condition}")

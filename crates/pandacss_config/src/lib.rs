@@ -1,5 +1,6 @@
 //! Serialized configuration types consumed by the Panda Rust runtime.
 
+mod ranges;
 mod theme;
 mod type_data;
 mod validate;
@@ -11,10 +12,10 @@ use serde_json::Value;
 
 pub use theme::{
     Asset, AssetType, AssetValue, Border, BorderStyle, BorderValue, ColorPaletteOptions,
-    CompoundVariantConfig, Deprecated, EasingValue, FontValue, Gradient, GradientStop,
-    GradientStops, GradientValue, RecipeConfig, SemanticTokens, SemanticValue, Shadow, ShadowValue,
-    StringOrNumber, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap, TokenEntry, TokenGroup,
-    TokenNode, Tokens, VariantSelection,
+    CompoundVariantConfig, ContainerCondition, Deprecated, EasingValue, FontValue, Gradient,
+    GradientStop, GradientStops, GradientValue, RecipeConfig, SemanticTokens, SemanticValue,
+    Shadow, ShadowValue, StringOrNumber, StyleConfig, Theme, ThemeVariant, ThemeVariantsMap,
+    TokenEntry, TokenGroup, TokenNode, Tokens, VariantSelection,
 };
 pub use type_data::{
     ConditionTypeData, PatternPropertyTypeData, PatternPropertyTypeKind, PatternTypeData,
@@ -237,8 +238,29 @@ impl UserConfig {
             names.insert(theme_condition_name(key));
         }
 
-        names.extend(self.theme.breakpoint_names());
+        names.extend(self.theme.breakpoint_condition_names());
+        names.extend(self.theme.container_condition_names());
         names.into_iter().collect()
+    }
+
+    #[must_use]
+    pub fn breakpoint_condition(&self, condition: &str) -> Option<String> {
+        self.theme.breakpoint_condition_query(condition)
+    }
+
+    #[must_use]
+    pub fn container_condition(&self, condition: &str) -> Option<String> {
+        self.theme.container_condition_query(condition)
+    }
+
+    #[must_use]
+    pub fn is_condition_key(&self, condition: &str) -> bool {
+        condition == "base"
+            || condition.starts_with('_')
+            || condition.starts_with('@')
+            || condition.contains('&')
+            || self.breakpoint_condition(condition).is_some()
+            || self.container_condition(condition).is_some()
     }
 
     #[must_use]

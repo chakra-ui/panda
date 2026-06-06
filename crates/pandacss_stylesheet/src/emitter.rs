@@ -1581,11 +1581,11 @@ impl<'a> EmitContext<'a> {
                 // The class name uses source-order conditions so it matches the
                 // recipe/runtime output; sorting only affects the CSS rule.
                 let mut finalized = if self.config.hash.class_name() {
-                    let hashed = hash_class_name(name, conditions);
+                    let hashed = hash_class_name(self.config, name, conditions);
                     self.utility.format_class_name_owned(hashed)
                 } else {
                     let class_name = self.utility.format_class_name(name);
-                    finalized_class_name_owned(class_name, conditions)
+                    finalized_class_name_owned(self.config, class_name, conditions)
                 };
                 if important {
                     finalized.push('!');
@@ -1799,7 +1799,11 @@ fn join_css_values(values: &[Cow<'_, str>]) -> String {
     out
 }
 
-fn finalized_class_name_owned(class_name: String, conditions: &[&str]) -> String {
+fn finalized_class_name_owned(
+    config: &UserConfig,
+    class_name: String,
+    conditions: &[&str],
+) -> String {
     if conditions.is_empty() {
         return class_name;
     }
@@ -1812,14 +1816,14 @@ fn finalized_class_name_owned(class_name: String, conditions: &[&str]) -> String
         // Mirror the runtime `finalizeConditions` so the emitted selector matches
         // the class the runtime puts on the element: raw selectors / at-rules
         // (`&`, `@`) wrap in `[…]` (spaces→`_`); named conditions drop leading `_`.
-        push_finalized_condition(&mut out, condition);
+        push_finalized_condition(config, &mut out, condition);
     }
     out.push(':');
     out.push_str(&class_name);
     out
 }
 
-fn hash_class_name(class_name: &str, conditions: &[&str]) -> String {
+fn hash_class_name(config: &UserConfig, class_name: &str, conditions: &[&str]) -> String {
     if conditions.is_empty() {
         return to_hash(class_name);
     }
@@ -1830,15 +1834,17 @@ fn hash_class_name(class_name: &str, conditions: &[&str]) -> String {
         if !input.is_empty() {
             input.push(':');
         }
-        push_finalized_condition(&mut input, condition);
+        push_finalized_condition(config, &mut input, condition);
     }
     input.push(':');
     input.push_str(class_name);
     to_hash(&input)
 }
 
-fn push_finalized_condition(out: &mut String, condition: &str) {
-    if condition.contains('&') || condition.contains('@') {
+fn push_finalized_condition(config: &UserConfig, out: &mut String, condition: &str) {
+    if config.container_condition(condition).is_none()
+        && (condition.contains('&') || condition.contains('@'))
+    {
         out.push('[');
         out.push_str(&without_space(condition.trim()));
         out.push(']');
