@@ -18,20 +18,36 @@ a serialized input; it should not become responsible for executing arbitrary use
 This is implemented by a **new, self-contained package `@pandacss/config-loader`**. It owns the whole load → serialize
 pipeline itself and keeps its dependency surface deliberately small: `@pandacss/types` (config types),
 `@pandacss/compiler-shared` (the `SerializedConfig`/`ProjectCallbacks` contract), `rolldown` (bundling), and
-`javascript-stringify` (pattern source capture). Neutral helpers it used to borrow from `@pandacss/shared` — `PandaError`
-and `compact` — are **inlined** (`src/error.ts`, a local `compact`), and config discovery walks up the tree itself rather
-than pulling in `escalade`. It does **not** depend on or wrap the v1 `@pandacss/config`, which stays as
-legacy/reference code.
+`javascript-stringify` (pattern source capture). It does **not** depend on `@pandacss/shared` or wrap the v1
+`@pandacss/config`, which stays as legacy/reference code. Config discovery walks up the tree itself rather than pulling
+in `escalade`, loader-specific errors stay local (`src/error.ts`), and preset merging uses a narrow local implementation
+for config sections instead of the legacy generic merge helpers.
 
 The modules: `find.ts` (walk-up discovery), `bundle.ts` (Rolldown + `data:`-URL eval + dependency collection),
-`serialize.ts` (`createConfigSnapshot` — function lowering + pattern source capture), `load-panda-config.ts` (the
-`loadPandaConfig` entry that wires them together), plus `error.ts`/`types.ts`.
+`preset.ts` (authored preset recursion + `extend` merging), `serialize.ts` (`createConfigSnapshot` — function
+lowering + pattern source capture), `load.ts` (the `loadPandaConfig` entry that wires them together), plus
+`error.ts`/`types.ts`.
 
 ### Scope (for now)
 
-Preset, plugin, and hook resolution are **intentionally out of scope** in this first cut. The loader bundles and
-serializes the user's own config as-authored; presets/hooks will be layered back in once the compiler boundary for them
-is settled. Validation is also deferred — the Rust compiler surfaces config diagnostics.
+Authored preset resolution is in scope: the loader resolves only presets explicitly listed in `config.presets`, supports
+object/async/string-module presets, recursively resolves nested presets, and folds `extend` into the resolved config
+before Rust sees it.
+
+Automatic default preset behavior is deferred. The loader does **not** auto-add `@pandacss/preset-base` or
+`@pandacss/preset-panda`, and it does not special-case bundled names like `@pandacss/dev/presets`. Plugin and config
+hook resolution (`preset:resolved`, `config:resolved`) are also deferred. Validation remains deferred — the Rust
+compiler surfaces config diagnostics.
+
+Current flow:
+
+```txt
+bundle user config
+  -> resolve authored presets + fold extend
+  -> apply config defaults
+  -> serialize callbacks + pattern codegen source
+  -> Rust compiler snapshot
+```
 
 ## Legacy Behavior
 
@@ -141,10 +157,11 @@ Dependency tracking should be conservative and cheap:
 
 - include the entry config path,
 - include every absolute module id reported by Rolldown chunks,
+- include dependencies reported by every bundled string preset module,
 - **canonicalize through symlinks (`realpathSync`) before computing the path relative to `cwd`**, then dedupe — Rolldown
   reports module ids by realpath, so a symlinked `cwd` (e.g. macOS `/tmp` → `/private/tmp`) would otherwise list the
   entry config twice, once as a messy `../../…` path and once relative,
-- preserve the explicit `config.dependencies` escape hatch as an additional dependency source.
+- preserve the explicit resolved `config.dependencies` escape hatch as an additional dependency source.
 
 This gives watch mode two layers of invalidation:
 

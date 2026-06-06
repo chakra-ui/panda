@@ -3,7 +3,9 @@ import type { Config, UserConfig } from '@pandacss/types'
 import { bundle } from './bundle'
 import { PandaError } from './error'
 import { findConfig } from './find'
+import { resolveAuthoredPresets } from './preset'
 import { createConfigSnapshot } from './serialize'
+import { isPlainObject } from './shared'
 import type { LoadConfigOptions, LoadedPandaConfig } from './types'
 
 /**
@@ -12,7 +14,8 @@ import type { LoadConfigOptions, LoadedPandaConfig } from './types'
  * refs and captures pattern transform source. The result feeds
  * `createCompilerFromSnapshot({ config, callbacks })`.
  *
- * Preset and hook resolution are intentionally out of scope for now.
+ * Authored presets are resolved before defaults are applied; automatic preset
+ * injection and config hooks are intentionally out of scope for now.
  */
 export async function loadPandaConfig(options: LoadConfigOptions): Promise<LoadedPandaConfig> {
   const { cwd, file } = options
@@ -21,16 +24,19 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
 
   const { config, dependencies } = await bundle<Config>(path, cwd)
 
-  if (typeof config !== 'object') {
+  if (!isPlainObject(config)) {
     throw new PandaError('CONFIG_ERROR', '💥 Config must export or return an object.')
   }
 
-  // Defaults onto a copy — never mutate `config`: identical configs share one
-  // cached `data:`-URL module, so mutation would leak `cwd` across loads.
-  const resolved = applyConfigDefaults(config as UserConfig, cwd) as UserConfig
+  // Resolve and default onto a copy — never mutate `config`: identical configs
+  // share one cached `data:`-URL module, so mutation would leak `cwd` across loads.
+  const authored = await resolveAuthoredPresets(config as UserConfig, cwd)
+  const resolved = applyConfigDefaults(authored.config, cwd) as UserConfig
 
   // Explicit `config.dependencies` escape hatch, on top of bundled module ids.
-  const dependencyList = Array.from(new Set([...dependencies, ...(resolved.dependencies ?? [])]))
+  const dependencyList = Array.from(
+    new Set([...dependencies, ...authored.dependencies, ...(resolved.dependencies ?? [])]),
+  )
 
   const snapshot = createConfigSnapshot(resolved)
 

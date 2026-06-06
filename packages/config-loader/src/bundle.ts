@@ -26,8 +26,12 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
     treeshake: false,
   })
 
-  const chunks = await build.generate({ format: 'esm', exports: 'named' })
-  await build.close?.()
+  let chunks: Awaited<ReturnType<typeof build.generate>>
+  try {
+    chunks = await build.generate({ format: 'esm', exports: 'named' })
+  } finally {
+    await build.close?.()
+  }
 
   const output = chunks.output.find((item) => item.type === 'chunk')
   if (!output || output.type !== 'chunk') {
@@ -36,7 +40,7 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
   const mod = await importBundledConfig(output.code)
-  const config = (mod?.default ?? mod) as T
+  const config = (Object.hasOwn(mod ?? {}, 'default') ? mod.default : mod) as T
 
   return { config, dependencies }
 }
@@ -64,7 +68,7 @@ function collectDependencies(
     })
   }
 
-  add(entry)
+  if (isAbsolute(entry)) add(entry)
   return Array.from(dependencies)
 }
 

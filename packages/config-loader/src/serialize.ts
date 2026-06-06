@@ -1,6 +1,5 @@
 import {
   getResolvedConfigOutdir,
-  applyConfigDefaults,
   type ProjectCallbackKind,
   type ProjectCallbacks,
   type SerializedConfig,
@@ -27,13 +26,12 @@ export interface ConfigSnapshot {
  * pattern generator.
  */
 export function createConfigSnapshot(config: UserConfig): ConfigSnapshot {
-  const resolved = applyConfigDefaults(config) as UserConfig
   const callbacks: Callbacks = {}
   const serialized: SerializedConfig = {
-    ...sanitize(resolved, [], callbacks),
-    importMap: normalizeImportMap(resolved),
+    ...sanitize(config, [], callbacks),
+    importMap: normalizeImportMap(config),
   }
-  attachPatternCodegenSource(serialized, resolved)
+  attachPatternCodegenSource(serialized, config)
   return { config: serialized, callbacks: callbacks as ProjectCallbacks }
 }
 

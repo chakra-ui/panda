@@ -69,4 +69,62 @@ describe('loadCompiler', () => {
       }, { raw: stackRaw })"
     `)
   })
+
+  it('passes explicit preset tokens, utilities, and recipes through to Rust', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-compiler-loader-preset-'))
+    try {
+      writeFileSync(
+        join(dir, 'preset.ts'),
+        `export default {
+          name: 'explicit-preset',
+          theme: {
+            tokens: { colors: { brand: { value: '#123456' } } },
+            recipes: {
+              badge: {
+                className: 'badge',
+                base: { color: 'brand' },
+                variants: { size: { sm: { fontSize: '12px' } } },
+              },
+            },
+          },
+          utilities: {
+            brandColor: { className: 'bc', values: 'colors', property: 'color' },
+          },
+        }`,
+      )
+      writeFileSync(
+        join(dir, 'panda.config.ts'),
+        `export default {
+          outdir: 'styled-system',
+          presets: ['./preset.ts'],
+        }`,
+      )
+
+      const loaded = await loadCompiler({ cwd: dir }, { crossFile: false })
+      const spec = loaded.compiler.spec()
+
+      expect({
+        token: spec.tokens.values['colors.brand'],
+        utility: spec.utilities.properties.brandColor,
+        recipes: loaded.compiler.recipes().map((recipe) => recipe.file),
+      }).toMatchInlineSnapshot(`
+        {
+          "token": "#123456",
+          "utility": {
+            "name": "brandColor",
+            "cssProperty": "color",
+            "tokenCategory": "colors",
+            "literals": [],
+            "primitive": null,
+            "alias": "ColorsValue",
+          },
+          "recipes": [
+            "theme.recipes.badge",
+          ],
+        }
+      `)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })

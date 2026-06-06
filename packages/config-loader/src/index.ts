@@ -1,4 +1,4 @@
-export { loadPandaConfig } from './load-panda-config'
+export { loadPandaConfig } from './load'
 export { createConfigSnapshot } from './serialize'
 export { diffConfig } from './diff'
 export { findConfig } from './find'
