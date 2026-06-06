@@ -4,6 +4,50 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.11.3](#1.11.3) - 2026-06-06
+
+### Fixed
+
+- Fix `panda mcp` orphaning and spinning at 100% CPU after the host disconnects. The server now exits on stdin close and exits (instead of looping) on fatal errors.
+
+- Fix config load errors being hidden behind a confusing `Please pass in filename to use require` message (most common under Bun). Panda now surfaces the actual config error.
+
+### Changed
+
+- Add an `engines` field (`node: >=20`) to every published package so consumers and tooling can see the supported Node version.
+
+- Update `@atlaskit/tokens` to v13 and regenerate the `preset-atlaskit`. The generated theme had been stuck on ~v7-era values; this brings it in line with the current Atlassian Design System.
+
+  **What changed:**
+  - Core colors refreshed (e.g. yellow palette; chart palette restructured from `chart.1`-`chart.3` to `chart.5`-`chart.7` plus `danger`/`warning`/`success`/`discovery` accents).
+  - Elevation/shadow colors moved to the new neutral base.
+  - Several dark-mode semantic colors retuned.
+  - Added `radii.xxlarge` (16px).
+  - Removed the deprecated `UNSAFE_small` text style and its `fontSizes`/`lineHeights` tokens.
+
+  **Migration:** No code changes needed for most users; expect visual updates to colors and shadows. If you reference `UNSAFE_small`, switch to the supported `small` scale. If you reference the old `chart.1`-`chart.3` tokens, remap to `chart.5`-`chart.7` or the named accent tokens.
+
+## [1.11.2](#1.11.2) - 2026-06-04
+
+### Fixed
+
+- Fix `Could not find source file: '<path>.svelte'` crash in `panda cssgen` when a Svelte `<script>` contains an unresolved call expression (e.g. Svelte 5 runes like `$state`, `$derived`). The extractor now resolves same-file declarations from the AST instead of the TypeScript language service, which cannot see non-TS file extensions.
+
+- Fix `forwardProps` being ignored by `withProvider` in `createStyleContext`. Previously, variant props listed in `forwardProps` were silently dropped before reaching the wrapped component. They now drive slot styles and are forwarded to the component. Fixed across React, Preact, Vue, and Solid outputs.
+
+  ```tsx
+  const { withProvider } = createStyleContext(tabs)
+
+  function TabsRoot({ orientation, ...rest }) {
+    // `orientation` is now defined here instead of `undefined`
+    return <div aria-orientation={orientation} {...rest} />
+  }
+
+  export const Tabs = withProvider(TabsRoot, 'root', { forwardProps: ['orientation'] })
+  ```
+
+- Fix `polyfill: true` leaving a duplicate `@layer reset, base, tokens, recipes, utilities;` order declaration in the PostCSS plugin output.
+
 ## [1.11.1](#1.11.1) - 2026-05-08
 
 ### Added
