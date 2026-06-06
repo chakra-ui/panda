@@ -70,19 +70,19 @@ export interface CommandContext {
 }
 
 export interface CommandResult extends CliResult {
-  driver: Driver
+  driver?: Driver
   stop?: () => Promise<void>
 }
 
 export interface CodegenResult extends CommandResult {
-  outdir: string
+  outdir?: string
   files: string[]
   missing: string[]
   stale: string[]
 }
 
 export interface CssgenResult extends CommandResult {
-  outfile: string
+  outfile?: string
   parsed: ParseFileReport[]
   cssBytes: number
   diagnosticCount: number

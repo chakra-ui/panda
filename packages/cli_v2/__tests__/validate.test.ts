@@ -71,4 +71,31 @@ describe('validate command', () => {
 
     expect(logs.some((message) => message.startsWith('trace: '))).toBe(true)
   })
+
+  it('reports config load failures as diagnostics', async () => {
+    dir = createFixture()
+
+    const logs: string[] = []
+    const result = await runValidate(
+      { cwd: dir, config: 'missing.config.ts', format: 'github' },
+      { log: (message) => logs.push(message), error: (message) => logs.push(message) },
+    )
+
+    expect(result).toMatchObject({
+      ok: false,
+      command: 'validate',
+      exitCode: 1,
+      diagnosticCount: 1,
+      errors: 1,
+    })
+
+    expect(result.diagnostics[0]).toMatchObject({
+      code: 'config_load_error',
+      severity: 'error',
+      file: 'missing.config.ts',
+    })
+
+    expect(logs.join('\n')).toContain('::error file=missing.config.ts,title=config_load_error::')
+    expect(logs.join('\n')).toContain('Cannot resolve config file missing.config.ts')
+  })
 })

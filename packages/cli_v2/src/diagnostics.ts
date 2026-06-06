@@ -37,6 +37,42 @@ export function collectParseDiagnostics(parsed: ParseFileReport[], cwd: string):
   return parsed.flatMap((report) => normalizeDiagnostics(report.diagnostics, { cwd, file: report.path }))
 }
 
+export function configLoadDiagnostic(error: unknown, options: { cwd: string; file?: string }): CliDiagnostic {
+  return normalizeDiagnostics(
+    [
+      {
+        code: 'config_load_error',
+        severity: 'error',
+        message: errorMessage(error),
+        category: 'config',
+        help: ['Check that the config path exists and can be bundled.'],
+      },
+    ],
+    options,
+  )[0]
+}
+
+export function missingConfigDiagnostic(configPath: string | undefined, cwd: string): CliDiagnostic | undefined {
+  if (!configPath) return undefined
+
+  const filePath = isAbsolute(configPath) ? configPath : resolve(cwd, configPath)
+
+  if (existsSync(filePath)) return undefined
+
+  return normalizeDiagnostics(
+    [
+      {
+        code: 'config_load_error',
+        severity: 'error',
+        message: `Cannot resolve config file ${configPath}.`,
+        category: 'config',
+        help: ['Check that the config path exists and can be bundled.'],
+      },
+    ],
+    { cwd, file: configPath },
+  )[0]
+}
+
 export function renderDiagnostics(diagnostics: Diagnostic[], options: DiagnosticRenderOptions): string {
   const normalized = normalizeDiagnostics(diagnostics, { cwd: options.cwd })
   const visible = options.quiet ? normalized.filter((diagnostic) => diagnostic.severity === 'error') : normalized
@@ -184,4 +220,14 @@ function parseMaxWarnings(value: number | string | undefined): number | undefine
   const number = typeof value === 'number' ? value : Number(value)
 
   return Number.isFinite(number) ? number : undefined
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return stripAnsi(error.message).replace(/\s+/g, ' ').trim()
+
+  return stripAnsi(String(error)).replace(/\s+/g, ' ').trim()
+}
+
+function stripAnsi(value: string): string {
+  return value.replace(/\u001b\[[0-9;]*m/g, '')
 }

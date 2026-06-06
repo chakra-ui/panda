@@ -67,4 +67,30 @@ describe('codegen command', () => {
 
     expect(result.missing.some((path) => path.endsWith('css/css.mjs'))).toBe(true)
   })
+
+  it('emits a failed json envelope when config loading fails', async () => {
+    dir = createFixture()
+
+    const logs: string[] = []
+    const result = await runCodegen(
+      { cwd: dir, config: 'missing.config.ts', json: true },
+      { log: (message) => logs.push(message) },
+    )
+    const payload = JSON.parse(logs[0])
+
+    expect(result).toMatchObject({ ok: false, command: 'codegen', exitCode: 1, files: [], missing: [], stale: [] })
+
+    expect(payload).toMatchObject({
+      ok: false,
+      command: 'codegen',
+      exitCode: 1,
+      diagnostics: [
+        {
+          code: 'config_load_error',
+          severity: 'error',
+          file: 'missing.config.ts',
+        },
+      ],
+    })
+  })
 })

@@ -11,7 +11,13 @@ import {
 } from '../output'
 import { renderTimings, timeAsync } from '../timing'
 import { startCommandTracing } from '../tracing'
-import { countErrors, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import {
+  configLoadDiagnostic,
+  countErrors,
+  diagnosticsPass,
+  missingConfigDiagnostic,
+  normalizeDiagnostics,
+} from '../diagnostics'
 import { createResult, setExitCode, toJsonPayload } from '../result'
 import type { CommandContext, PhaseTimings, ValidateFlags, ValidateResult } from '../types'
 
@@ -48,8 +54,56 @@ export async function runValidate(
   const commandOutput = createCommandOutput(output, flags, cwd)
   const timings: PhaseTimings = {}
   const stopTracing = startCommandTracing(flags, cwd, commandOutput)
+  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
 
-  const driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
+  let driver
+
+  if (missingConfig) {
+    const diagnostics = [missingConfig]
+    const result: ValidateResult = createResult(
+      'validate',
+      startedAt,
+      { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
+      diagnostics,
+      false,
+    )
+
+    if (shouldPrintJson(flags)) {
+      output.log(JSON.stringify(toJsonPayload(result), null, 2))
+    } else if (!flags.silent) {
+      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
+      renderTimings('validate', timings, commandOutput, flags)
+    }
+
+    stopTracing()
+
+    return result
+  }
+
+  try {
+    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
+  } catch (error) {
+    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
+    const result: ValidateResult = createResult(
+      'validate',
+      startedAt,
+      { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
+      diagnostics,
+      false,
+    )
+
+    if (shouldPrintJson(flags)) {
+      output.log(JSON.stringify(toJsonPayload(result), null, 2))
+    } else if (!flags.silent) {
+      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
+      renderTimings('validate', timings, commandOutput, flags)
+    }
+
+    stopTracing()
+
+    return result
+  }
+
   const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
   const errors = countErrors(diagnostics)
 

@@ -12,7 +12,13 @@ import {
 } from '../output'
 import { parseMilliseconds, renderTimings, time, timeAsync } from '../timing'
 import { startCommandTracing } from '../tracing'
-import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import {
+  collectParseDiagnostics,
+  configLoadDiagnostic,
+  diagnosticsPass,
+  missingConfigDiagnostic,
+  normalizeDiagnostics,
+} from '../diagnostics'
 import { createResult, setExitCode, toJsonPayload } from '../result'
 import type { CommandContext, CssgenFlags, CssgenResult, PhaseTimings, RunContext } from '../types'
 import { formatWatchError, startProjectWatch } from '../watch'
@@ -52,8 +58,56 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
   const commandOutput = createCommandOutput(output, flags, cwd)
   const timings: PhaseTimings = {}
   const stopTracing = startCommandTracing(flags, cwd, commandOutput)
+  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
 
-  const driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
+  let driver
+
+  if (missingConfig) {
+    const diagnostics = [missingConfig]
+    const result: CssgenResult = createResult(
+      'cssgen',
+      startedAt,
+      { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
+      diagnostics,
+      false,
+    )
+
+    if (shouldPrintJson(flags)) {
+      output.log(JSON.stringify(toJsonPayload(result), null, 2))
+    } else {
+      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
+      renderTimings('cssgen', timings, commandOutput, flags)
+    }
+
+    stopTracing()
+
+    return result
+  }
+
+  try {
+    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
+  } catch (error) {
+    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
+    const result: CssgenResult = createResult(
+      'cssgen',
+      startedAt,
+      { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
+      diagnostics,
+      false,
+    )
+
+    if (shouldPrintJson(flags)) {
+      output.log(JSON.stringify(toJsonPayload(result), null, 2))
+    } else {
+      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
+      renderTimings('cssgen', timings, commandOutput, flags)
+    }
+
+    stopTracing()
+
+    return result
+  }
+
   const resolveOutfile = () =>
     flags.splitting || !flags.outfile ? driver.paths().styleFile : driver.resolvePath(flags.outfile)
   const resolveOutdir = () => driver.paths().root

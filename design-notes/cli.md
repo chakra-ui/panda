@@ -147,17 +147,43 @@ systems.
 
 ### Observability
 
-Large projects need a way to debug slow builds. The compiler exposes tracing hooks, but `cli_v2` does not surface them.
-Add flags like:
+Large projects need a way to debug slow builds. The CLI should separate three levels of observability:
+
+- command phase timings for quick terminal feedback,
+- Rust compiler tracing for engine internals,
+- full profiling artifacts for performance investigations.
+
+Phase timings should stay lightweight and human-readable:
 
 ```sh
 --logfile panda.log
 --verbose
 --trace
---cpu-prof
 ```
 
-The output should include phase timings: config load, scan, parse, codegen, css emit, and write time.
+The output should include phase timings: config load, scan, parse, codegen, css emit, and write time. `--trace` should
+remain the Rust tracing escape hatch and support standard tracing outputs such as Chrome trace JSON.
+
+Profiling needs a separate design pass. Mature native-backed tools do not usually collapse all profiling data into one
+custom artifact:
+
+- Vite uses `--profile` for a Node/V8 `.cpuprofile`.
+- Bun exposes `--cpu-prof`, `--cpu-prof-dir`, and related CPU-profile controls.
+- Rolldown uses opt-in devtools/tracing logs for native bundler internals.
+- Next/Turbopack groups CPU profiles and Turbopack traces under a profile directory.
+
+Panda should follow the profile-directory pattern if it adds `--profile`: one command creates one profile bundle
+directory containing standard files, for example:
+
+```txt
+.panda/profiles/cssgen-<timestamp>/
+  cpu.cpuprofile
+  rust.trace.json
+  summary.json
+```
+
+This keeps artifacts compatible with existing tooling while still feeling like one Panda profile. Do not introduce a
+single custom combined profile file unless there is a concrete viewer/consumer that justifies it.
 
 ### Lifecycle and Migration
 
@@ -349,7 +375,9 @@ adapt diagnostics to their own surfaces rather than sharing CLI formatting.
 - Improve watch startup/rebuild/shutdown output.
 - Add focused tests for failed parse, no files matched, stale generated output, timing output, logfile teeing, tracing,
   and watch status messages.
-- Defer `--cpu-prof` until there is a concrete v2 profiling consumer.
+- Harden config load failures so missing or invalid config paths render as `config_load_error` diagnostics instead of
+  raw bundler stack traces.
+- Defer `--profile`/`--cpu-prof` until there is a concrete profile-bundle design and consumer.
 
 Phase 3 command results include a `timings` object when phases run:
 
