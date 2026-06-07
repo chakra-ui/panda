@@ -482,20 +482,14 @@ struct EncodedLeaf {
     important: bool,
 }
 
-/// A canonical JS number literal string (`"1"`, `"1.5"`, `"-2"`, `"0"`), so a
-/// quoted number dedupes with the bare number and gets px. Strict on purpose: no
-/// leading-zero ints, exponents, hex, units, leading dot, or whitespace.
+/// Coerce a numeric string to its JS `Number()` value so it dedupes with the bare
+/// number and gets px (`"1e3"` → 1000, `".5"` → 0.5). Leading-zero ints stay
+/// strings (`"01"`, like node); non-finite parses are rejected.
 fn canonical_number(s: &str) -> Option<f64> {
-    let unsigned = s.strip_prefix('-').unwrap_or(s);
-    let (int, frac) = unsigned
-        .split_once('.')
-        .map_or((unsigned, None), |(i, f)| (i, Some(f)));
-
-    let digits = |part: &str| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit());
-    let int_ok = int == "0" || (digits(int) && !int.starts_with('0'));
-    let frac_ok = frac.is_none_or(digits);
-
-    (int_ok && frac_ok).then(|| s.parse().ok()).flatten()
+    if s.starts_with('0') && s.as_bytes().get(1).is_some_and(u8::is_ascii_digit) {
+        return None;
+    }
+    s.parse::<f64>().ok().filter(|n| n.is_finite())
 }
 
 fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
@@ -591,13 +585,18 @@ mod canonical_number_tests {
     use super::canonical_number;
 
     #[test]
-    fn accepts_canonical_numbers() {
+    fn accepts_plain_numbers() {
         assert_eq!(canonical_number("0"), Some(0.0));
-        assert_eq!(canonical_number("1"), Some(1.0));
         assert_eq!(canonical_number("42"), Some(42.0));
         assert_eq!(canonical_number("1.5"), Some(1.5));
-        assert_eq!(canonical_number("-2"), Some(-2.0));
         assert_eq!(canonical_number("-0.25"), Some(-0.25));
+    }
+
+    #[test]
+    fn accepts_js_number_forms() {
+        assert_eq!(canonical_number("1e3"), Some(1000.0));
+        assert_eq!(canonical_number(".5"), Some(0.5));
+        assert_eq!(canonical_number("+2"), Some(2.0));
     }
 
     #[test]
@@ -613,19 +612,14 @@ mod canonical_number_tests {
     }
 
     #[test]
-    fn rejects_exponent_and_hex_forms() {
-        assert_eq!(canonical_number("1e3"), None);
+    fn rejects_non_finite() {
+        assert_eq!(canonical_number("Infinity"), None);
+        assert_eq!(canonical_number("NaN"), None);
+    }
+
+    #[test]
+    fn rejects_non_numeric_and_whitespace() {
         assert_eq!(canonical_number("0x10"), None);
-    }
-
-    #[test]
-    fn rejects_malformed_decimals() {
-        assert_eq!(canonical_number(".5"), None);
-        assert_eq!(canonical_number("1."), None);
-    }
-
-    #[test]
-    fn rejects_empty_sign_only_and_whitespace() {
         assert_eq!(canonical_number(""), None);
         assert_eq!(canonical_number("-"), None);
         assert_eq!(canonical_number(" 1"), None);

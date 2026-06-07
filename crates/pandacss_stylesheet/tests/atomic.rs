@@ -150,6 +150,31 @@ fn numeric_and_string_scalars_dedupe_to_one_rule() {
 }
 
 #[test]
+fn js_number_string_forms_coerce_and_get_px() {
+    // `'1e3'` / `'.5'` coerce via JS Number() to 1000 / 0.5 and pick up px,
+    // deduping with the bare numbers (matches node).
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "padding": { "className": "p" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ padding: '1e3' }); css({ padding: 1000 }); css({ padding: '.5' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .p_0\.5 {
+        padding: 0.5px;
+      }
+      .p_1000 {
+        padding: 1000px;
+      }
+    }
+    ");
+}
+
+#[test]
 fn numeric_and_string_token_values_dedupe_to_one_rule() {
     // When the scalar resolves to a token, `4` and `'4'` resolve identically and
     // dedupe — the token wins over px.
