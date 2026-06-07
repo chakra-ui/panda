@@ -134,7 +134,7 @@ export interface NativeCompilerOptions {
  *  methods the facade hides. */
 export interface RawCompiler extends Compiler {
   token_dictionary?(): TokenDictionary | undefined
-  registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
+  registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
 }
 

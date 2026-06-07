@@ -30,7 +30,6 @@ use pandacss_config::{
     CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues, ValidationMode,
     validate_config_value, validation_mode_from_value,
 };
-use smallvec::SmallVec;
 
 /// JS-facing project handle. Constructed once per session with a
 /// [`WasmFileSystem`] (whose contents the cross-file resolver reads),
@@ -311,10 +310,11 @@ impl WasmCompiler {
                 pattern_cache,
             )
         };
-        let mut utility_transform = |prop: &str, value: &AtomValue| {
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
             apply_utility_transform(
                 prop,
-                value,
+                resolved,
+                original,
                 &callbacks.utility_transform_refs,
                 &callbacks.utility_transforms,
                 utility_cache,
@@ -386,10 +386,11 @@ impl WasmCompiler {
                 pattern_cache,
             )
         };
-        let mut utility_transform = |prop: &str, value: &AtomValue| {
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
             apply_utility_transform(
                 prop,
-                value,
+                resolved,
+                original,
                 &callbacks.utility_transform_refs,
                 &callbacks.utility_transforms,
                 utility_cache,
@@ -1236,6 +1237,7 @@ fn build_split_css(
             config: user_config,
             token_dictionary,
             atoms: snapshots.atoms,
+            utility_styles: snapshots.utility_styles,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
@@ -1276,6 +1278,7 @@ fn build_stylesheet_output(
             config: user_config,
             token_dictionary,
             atoms: snapshots.atoms,
+            utility_styles: snapshots.utility_styles,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms,
@@ -1547,13 +1550,18 @@ fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
     values.get("id")?.as_str()
 }
 
+#[allow(
+    clippy::result_large_err,
+    reason = "Err mirrors the shared Result<_, Diagnostic> transform-callback contract; boxing would diverge from UtilityTransformFn"
+)]
 fn apply_utility_transform(
     prop: &str,
-    value: &AtomValue,
+    resolved: &AtomValue,
+    original: &AtomValue,
     utility_transform_refs: &HashMap<String, String>,
     callbacks: &HashMap<String, js_sys::Function>,
-    cache: &mut LruCache<UtilityTransformCacheKey, Vec<AtomSerde>>,
-) -> Result<Option<Vec<CoreAtom>>, pandacss_extractor::Diagnostic> {
+    cache: &mut LruCache<UtilityTransformCacheKey, Literal>,
+) -> Result<Option<Literal>, pandacss_extractor::Diagnostic> {
     let Some(id) = utility_transform_refs.get(prop) else {
         return Ok(None);
     };
@@ -1563,10 +1571,11 @@ fn apply_utility_transform(
         )));
     };
 
+    // Keyed on the original alias (the resolved value is a function of it).
     let cache_key = UtilityTransformCacheKey {
         id: id.clone(),
         prop: prop.to_owned(),
-        value: pandacss_project::atom_value_cache_key(value),
+        value: pandacss_project::atom_value_cache_key(original),
     };
     if let Some(cached) = cache.get(&cache_key).cloned() {
         tracing::trace!(
@@ -1575,12 +1584,7 @@ fn apply_utility_transform(
             target = prop,
             entries = cache.len()
         );
-        return Ok(Some(
-            cached
-                .iter()
-                .filter_map(core_atom_from_atom_serde)
-                .collect(),
-        ));
+        return Ok(Some(cached));
     }
     tracing::trace!(
         cache = "utility_transform",
@@ -1589,112 +1593,51 @@ fn apply_utility_transform(
         entries = cache.len()
     );
 
-    let value = atom_value_to_json(value);
-    let value = serde_wasm_bindgen::to_value(&value).map_err(|err| {
-        callback_diagnostic(format!(
-            "Failed to serialize utility transform value for `{prop}`: {err}"
-        ))
-    })?;
-    let result = callback.call1(&JsValue::NULL, &value).map_err(|err| {
-        callback_diagnostic(format!(
-            "Utility transform callback `{id}` for `{prop}` threw: {}",
-            js_error_message(&err)
-        ))
-    })?;
-    if result.is_null() || result.is_undefined() {
-        return Ok(Some(Vec::new()));
-    }
-    let style: serde_json::Value = serde_wasm_bindgen::from_value(result).map_err(|err| {
-        callback_diagnostic(format!(
-            "Utility transform callback `{id}` for `{prop}` returned an invalid style object: {err}"
-        ))
-    })?;
-    let Some(style) = style.as_object() else {
-        return Ok(Some(Vec::new()));
+    // Positional = resolved value; second arg = original alias (`args.raw`).
+    let resolved_js =
+        serde_wasm_bindgen::to_value(&atom_value_to_json(resolved)).map_err(|err| {
+            callback_diagnostic(format!(
+                "Failed to serialize utility transform value for `{prop}`: {err}"
+            ))
+        })?;
+    let original_js =
+        serde_wasm_bindgen::to_value(&atom_value_to_json(original)).map_err(|err| {
+            callback_diagnostic(format!(
+                "Failed to serialize utility transform value for `{prop}`: {err}"
+            ))
+        })?;
+    let result = callback
+        .call2(&JsValue::NULL, &resolved_js, &original_js)
+        .map_err(|err| {
+            callback_diagnostic(format!(
+                "Utility transform callback `{id}` for `{prop}` threw: {}",
+                js_error_message(&err)
+            ))
+        })?;
+    // Keep the style object whole for the emitter; non-object/empty → empty
+    // object, which drops the carrier atom downstream.
+    let styles = if result.is_null() || result.is_undefined() {
+        Literal::Object(Vec::new())
+    } else {
+        let value: serde_json::Value = serde_wasm_bindgen::from_value(result).map_err(|err| {
+            callback_diagnostic(format!(
+                "Utility transform callback `{id}` for `{prop}` returned an invalid style object: {err}"
+            ))
+        })?;
+        match json_value_to_literal(&value) {
+            Some(object @ Literal::Object(_)) => object,
+            _ => Literal::Object(Vec::new()),
+        }
     };
-    if style.is_empty() {
-        trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
-        cache.put(cache_key, Vec::new());
-        return Ok(Some(Vec::new()));
-    }
-    let transformed = style_object_to_atoms(style, &[]);
-    let core = transformed
-        .iter()
-        .filter_map(core_atom_from_atom_serde)
-        .collect();
     trace_cache_store("utility_transform", prop, cache.len(), cache.cap().get());
-    cache.put(cache_key, transformed);
-    Ok(Some(core))
+    cache.put(cache_key, styles.clone());
+    Ok(Some(styles))
 }
 
-fn style_object_to_atoms(
-    style: &serde_json::Map<String, serde_json::Value>,
-    base_conditions: &[String],
-) -> Vec<AtomSerde> {
-    let mut atoms = Vec::new();
-    let mut path = Vec::new();
-    walk_style(
-        &serde_json::Value::Object(style.clone()),
-        &mut path,
-        base_conditions,
-        &mut atoms,
-    );
-    atoms.sort_by(|a, b| {
-        a.prop
-            .cmp(&b.prop)
-            .then_with(|| a.conditions.cmp(&b.conditions))
-            .then_with(|| a.value.to_string().cmp(&b.value.to_string()))
-    });
-    atoms
-}
-
-fn walk_style(
-    value: &serde_json::Value,
-    path: &mut Vec<String>,
-    base_conditions: &[String],
-    atoms: &mut Vec<AtomSerde>,
-) {
-    if let serde_json::Value::Object(entries) = value {
-        for (key, child) in entries {
-            path.push(key.clone());
-            walk_style(child, path, base_conditions, atoms);
-            path.pop();
-        }
-        return;
-    }
-
-    let Some(prop) = path.first() else {
-        return;
-    };
-
-    atoms.push(AtomSerde {
-        prop: prop.clone(),
-        value: normalize_atom_value(value),
-        conditions: base_conditions.to_vec(),
-    });
-}
-
-fn normalize_atom_value(value: &serde_json::Value) -> serde_json::Value {
-    match value {
-        serde_json::Value::String(_)
-        | serde_json::Value::Number(_)
-        | serde_json::Value::Bool(_)
-        | serde_json::Value::Null => value.clone(),
-        serde_json::Value::Array(items) => {
-            let joined = items
-                .iter()
-                .map(|item| match item {
-                    serde_json::Value::String(value) => value.clone(),
-                    other => other.to_string(),
-                })
-                .collect::<Vec<_>>()
-                .join(",");
-            serde_json::Value::String(format!("[{joined}]"))
-        }
-        serde_json::Value::Object(_) => serde_json::Value::String("[object Object]".to_owned()),
-    }
-}
-
+#[allow(
+    clippy::result_large_err,
+    reason = "Err mirrors the shared Result<_, Diagnostic> transform-callback contract; boxing would diverge from PatternTransformFn"
+)]
 fn apply_pattern_transform(
     name: &str,
     styles: &Literal,
@@ -1912,34 +1855,6 @@ fn atom_value_to_json(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
         pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
         pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
         pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
-    }
-}
-
-fn core_atom_from_atom_serde(atom: &AtomSerde) -> Option<CoreAtom> {
-    let value = atom_value_from_json(&atom.value)?;
-    let conditions: SmallVec<[Box<str>; 2]> = atom
-        .conditions
-        .iter()
-        .cloned()
-        .map(String::into_boxed_str)
-        .collect();
-    Some(CoreAtom::new(
-        atom.prop.clone().into_boxed_str(),
-        value,
-        conditions,
-        false,
-    ))
-}
-
-fn atom_value_from_json(value: &serde_json::Value) -> Option<AtomValue> {
-    match value {
-        serde_json::Value::String(value) => Some(AtomValue::String(value.clone().into_boxed_str())),
-        serde_json::Value::Number(value) => {
-            Some(AtomValue::Number(value.to_string().into_boxed_str()))
-        }
-        serde_json::Value::Bool(value) => Some(AtomValue::Bool(*value)),
-        serde_json::Value::Null => Some(AtomValue::Null),
-        serde_json::Value::Array(_) | serde_json::Value::Object(_) => None,
     }
 }
 

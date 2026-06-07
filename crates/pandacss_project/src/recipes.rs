@@ -985,12 +985,47 @@ impl EncodedRecipes {
 
     pub(crate) fn transform_utilities(
         &mut self,
+        utility: Option<&Utility>,
+        conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
         transform: &mut crate::UtilityTransformFn<'_>,
         diagnostics: &mut Vec<Diagnostic>,
     ) {
-        transform_recipe_groups(&mut self.base, transform, diagnostics);
-        transform_recipe_groups(&mut self.variants, transform, diagnostics);
-        self.atomic = transform_atoms(std::mem::take(&mut self.atomic), transform, diagnostics);
+        let ctx = RecipeTransformCtx {
+            utility,
+            conditions,
+            breakpoints,
+        };
+        transform_recipe_groups(&mut self.base, &ctx, transform, diagnostics);
+        transform_recipe_groups(&mut self.variants, &ctx, transform, diagnostics);
+        self.atomic = transform_atoms(
+            std::mem::take(&mut self.atomic),
+            &ctx,
+            transform,
+            diagnostics,
+        );
+    }
+}
+
+/// Context for re-encoding a recipe utility transform's style object into atoms.
+struct RecipeTransformCtx<'a> {
+    utility: Option<&'a Utility>,
+    conditions: &'a ProjectConditionMatcher,
+    breakpoints: &'a [String],
+}
+
+impl RecipeTransformCtx<'_> {
+    /// Encode a transform's style object into atoms via the normal encoder path,
+    /// so nested conditions/selectors resolve instead of becoming junk props.
+    fn encode(&self, styles: &Literal) -> FxHashSet<Atom> {
+        let normalizer = StyleNormalizer {
+            utility: self.utility,
+            breakpoints: self.breakpoints,
+            shorthand: true,
+        };
+        let mut encoder = Encoder::with_conditions(self.conditions.clone());
+        encoder.process_atomic_with(styles, &normalizer);
+        encoder.into_atoms()
     }
 }
 
@@ -1030,17 +1065,23 @@ fn extend_missing_recipe_groups<K>(
 
 fn transform_atoms(
     atoms: FxHashSet<Atom>,
+    ctx: &RecipeTransformCtx<'_>,
     transform: &mut crate::UtilityTransformFn<'_>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> FxHashSet<Atom> {
     let mut out = FxHashSet::default();
     for atom in atoms {
-        match transform(atom.prop(), atom.value()) {
-            Ok(Some(transformed)) => {
+        let resolved = crate::resolved_atom_value(ctx.utility, atom.prop(), atom.value());
+        match transform(atom.prop(), &resolved, atom.value()) {
+            // Empty result drops the carrier atom (parity with node).
+            Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
+            Ok(Some(styles)) => {
+                // Recipe atomic has no per-utility class: re-encode into atoms
+                // and prefix the carrier atom's conditions.
                 let conditions: SmallVec<[Box<str>; 2]> =
                     atom.conditions().iter().cloned().collect();
                 out.extend(
-                    transformed
+                    ctx.encode(&styles)
                         .into_iter()
                         .map(|next| next.with_prefixed_conditions(&conditions)),
                 );
@@ -1060,25 +1101,35 @@ fn transform_atoms(
 
 fn transform_recipe_groups<K: Eq + std::hash::Hash>(
     groups: &mut FxHashMap<K, RecipeStyleGroup>,
+    ctx: &RecipeTransformCtx<'_>,
     transform: &mut crate::UtilityTransformFn<'_>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for group in groups.values_mut() {
-        group.entries =
-            transform_recipe_entries(std::mem::take(&mut group.entries), transform, diagnostics);
+        group.entries = transform_recipe_entries(
+            std::mem::take(&mut group.entries),
+            ctx,
+            transform,
+            diagnostics,
+        );
     }
 }
 
 fn transform_recipe_entries(
     entries: FxHashSet<RecipeStyleEntry>,
+    ctx: &RecipeTransformCtx<'_>,
     transform: &mut crate::UtilityTransformFn<'_>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> FxHashSet<RecipeStyleEntry> {
     let mut out = FxHashSet::default();
     for entry in entries {
-        match transform(entry.prop.as_ref(), &entry.value) {
-            Ok(Some(transformed)) => {
-                for atom in transformed {
+        let resolved = crate::resolved_atom_value(ctx.utility, entry.prop.as_ref(), &entry.value);
+        match transform(entry.prop.as_ref(), &resolved, &entry.value) {
+            Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
+            Ok(Some(styles)) => {
+                // Re-encode into entries, prefixing the originating entry's
+                // conditions / important.
+                for atom in ctx.encode(&styles) {
                     let mut conditions = entry.conditions.clone();
                     conditions.extend(atom.conditions().iter().cloned());
                     out.insert(RecipeStyleEntry {
@@ -1557,12 +1608,7 @@ mod compound_tests {
         ResolvedCompoundVariant {
             conditions: conditions
                 .into_iter()
-                .map(|(name, values)| {
-                    (
-                        name.into(),
-                        values.into_iter().map(|value| value.into()).collect(),
-                    )
-                })
+                .map(|(name, values)| (name.into(), values.into_iter().map(Into::into).collect()))
                 .collect(),
             atoms: props
                 .iter()

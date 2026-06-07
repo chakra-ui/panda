@@ -2,7 +2,9 @@ use insta::assert_snapshot;
 use pandacss_encoder::EncodedRecipesSnapshot;
 use pandacss_project::{Project, System};
 use pandacss_shared::DiagnosticSeverity;
-use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
+use pandacss_stylesheet::{
+    StylesheetInput, StylesheetLayer, StylesheetOptions, UtilityStyleOverrides,
+};
 
 use crate::common::{compile_css, compile_css_with_options, config};
 
@@ -13,6 +15,7 @@ fn compile_project_css(project: &mut Project, config: &pandacss_config::UserConf
             config,
             token_dictionary: None,
             atoms: snapshots.atoms,
+            utility_styles: snapshots.utility_styles,
             encoded_recipes: snapshots.encoded_recipes,
             static_encoded_recipes: Some(snapshots.static_encoded_recipes),
             static_pattern_atoms: &[],
@@ -783,11 +786,13 @@ fn get_layer_css_concatenates_layers_without_extra_blank_line() {
         variants: Vec::new(),
         atomic: Vec::new(),
     };
+    let empty_utility_styles = UtilityStyleOverrides::default();
     let output = pandacss_stylesheet::compile(
         StylesheetInput {
             config: &config,
             token_dictionary: None,
             atoms: &[],
+            utility_styles: &empty_utility_styles,
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
             static_pattern_atoms: &[],
@@ -830,11 +835,13 @@ fn token_build_errors_are_reported_as_diagnostics() {
         variants: Vec::new(),
         atomic: Vec::new(),
     };
+    let empty_utility_styles = UtilityStyleOverrides::default();
     let output = pandacss_stylesheet::compile(
         StylesheetInput {
             config: &config,
             token_dictionary: None,
             atoms: &[],
+            utility_styles: &empty_utility_styles,
             encoded_recipes: &recipes,
             static_encoded_recipes: None,
             static_pattern_atoms: &[],

@@ -27,6 +27,7 @@ describe('compiler.splitCss()', () => {
     expect(compiler.splitCss().map((file) => file.path)).toMatchInlineSnapshot(`
       [
         "styles.css",
+        "styles/global.css",
         "styles/tokens.css",
         "styles/utilities.css",
         "styles/recipes/button.css",
@@ -48,6 +49,7 @@ describe('compiler.splitCss()', () => {
     `)
     expect(compiler.splitCss().find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @import './styles/global.css';
       @import './styles/tokens.css';
       @import './styles/utilities.css';
       @import './styles/recipes.css';

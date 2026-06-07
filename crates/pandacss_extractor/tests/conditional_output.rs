@@ -6,7 +6,6 @@
 //! we emit both alternatives so the downstream encoder can generate
 //! atomic-CSS-style output.
 
-
 use crate::common::panda_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;

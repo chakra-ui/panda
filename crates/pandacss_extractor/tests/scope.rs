@@ -5,7 +5,6 @@
 //! `oxc_semantic` integration. These tests use the combined `extract()`
 //! entrypoint so the resolver is always present.
 
-
 use crate::common::panda_config;
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};

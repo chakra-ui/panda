@@ -45,12 +45,7 @@ describe('Compiler callbacks', () => {
           "conditions": [],
         },
         {
-          "prop": "height",
-          "value": "4px",
-          "conditions": [],
-        },
-        {
-          "prop": "width",
+          "prop": "size",
           "value": "4px",
           "conditions": [],
         },
@@ -112,23 +107,8 @@ describe('Compiler callbacks', () => {
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
-          "prop": "--raw",
+          "prop": "tint",
           "value": "red.500/50",
-          "conditions": [],
-        },
-        {
-          "prop": "backgroundColor",
-          "value": "color-mix(in srgb, var(--colors-red-500) 50%, transparent)",
-          "conditions": [],
-        },
-        {
-          "prop": "color",
-          "value": "var(--colors-red-500)",
-          "conditions": [],
-        },
-        {
-          "prop": "opacity",
-          "value": "0.5",
           "conditions": [],
         },
       ]
@@ -448,14 +428,7 @@ describe('Compiler callbacks', () => {
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
-          "prop": "height",
-          "value": "4px",
-          "conditions": [
-            "_hover",
-          ],
-        },
-        {
-          "prop": "width",
+          "prop": "size",
           "value": "4px",
           "conditions": [
             "_hover",
@@ -502,12 +475,7 @@ describe('Compiler callbacks', () => {
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
-          "prop": "height",
-          "value": "4px",
-          "conditions": [],
-        },
-        {
-          "prop": "width",
+          "prop": "size",
           "value": "4px",
           "conditions": [],
         },
@@ -657,12 +625,7 @@ describe('Compiler callbacks', () => {
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
-          "prop": "height",
-          "value": "4px",
-          "conditions": [],
-        },
-        {
-          "prop": "width",
+          "prop": "size",
           "value": "4px",
           "conditions": [],
         },
@@ -711,22 +674,12 @@ describe('Compiler callbacks', () => {
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
-          "prop": "height",
+          "prop": "size",
           "value": "4px",
           "conditions": [],
         },
         {
-          "prop": "height",
-          "value": "8px",
-          "conditions": [],
-        },
-        {
-          "prop": "width",
-          "value": "4px",
-          "conditions": [],
-        },
-        {
-          "prop": "width",
+          "prop": "size",
           "value": "8px",
           "conditions": [],
         },
@@ -1460,6 +1413,118 @@ describe('Compiler callbacks', () => {
         ],
         "diagnostics": [],
       }
+    `)
+  })
+
+  it('emits one grouped class with token-resolved values for a multi-declaration transform', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          theme: { tokens: { spacing: { '4': { value: '1rem' } } } },
+          utilities: {
+            spaceX: {
+              className: 'space-x',
+              values: 'spacing',
+              transform: { kind: 'js-callback', id: 'utilities.spaceX.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            // `value` is the resolved token (`var(--spacing-4)`).
+            'utilities.spaceX.transform': (value) => ({ marginLeft: value, marginRight: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ spaceX: '4' })`)
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .space-x_4 {
+          margin-left: var(--spacing-4);
+          margin-right: var(--spacing-4);
+        }
+      }
+      "
+    `)
+  })
+
+  it('preserves !important across a transform result', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          theme: { tokens: { colors: { red: { '500': { value: '#f00' } } } } },
+          utilities: {
+            boxColor: {
+              className: 'bc',
+              values: 'colors',
+              transform: { kind: 'js-callback', id: 'utilities.boxColor.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.boxColor.transform': (value) => ({ color: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ boxColor: 'red.500!' })`)
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .bc_red\\.500\\! {
+          color: var(--colors-red-500) !important;
+        }
+      }
+      "
+    `)
+  })
+
+  it('lowers a condition returned by a transform to a selector', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          conditions: { hover: '&:hover' },
+          utilities: {
+            debug: {
+              className: 'debug',
+              transform: { kind: 'js-callback', id: 'utilities.debug.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.debug.transform': () => ({ _hover: { border: '2px solid blue' } }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ debug: true })`)
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .debug_true:hover {
+          border: 2px solid blue;
+        }
+      }
+      "
     `)
   })
 })

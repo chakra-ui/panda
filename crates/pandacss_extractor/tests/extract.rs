@@ -1,4 +1,3 @@
-
 use crate::common::{panda_config, panda_config_with_jsx};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;

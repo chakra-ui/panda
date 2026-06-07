@@ -10,6 +10,7 @@ mod static_css_diagnostics;
 mod style_rules;
 mod writer;
 
+pub use emitter::UtilityStyleOverrides;
 pub use layers::has_layer_declaration;
 pub use sort::order_properties;
 
@@ -137,6 +138,8 @@ pub struct StylesheetInput<'a> {
     pub static_encoded_recipes: Option<&'a EncodedRecipesSnapshot>,
     pub static_pattern_atoms: &'a [Atom],
     pub token_refs: &'a [String],
+    /// Custom-utility transform styles by `(prop, value)`, from the snapshot.
+    pub utility_styles: &'a emitter::UtilityStyleOverrides,
 }
 
 /// Whether the config has any static CSS work that stylesheet compilation should
@@ -219,6 +222,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         },
         atoms,
         recipes,
+        input.utility_styles,
         options.minify,
         options.emit_layer_declaration,
     );
@@ -285,6 +289,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         },
         atoms,
         recipes,
+        input.utility_styles,
         options.minify,
         true,
     );

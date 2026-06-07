@@ -120,7 +120,7 @@ export declare class WasmCompiler {
   writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
   writeSplitCss(outdir: string, cwd?: string): WriteFilesResult
   isEmpty(): boolean
-  registerUtilityTransform?(id: string, callback: (value: unknown) => unknown): void
+  registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
   atoms(): Atom[]
   recipes(): RecipeEntry[]

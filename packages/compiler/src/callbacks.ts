@@ -49,9 +49,9 @@ export function registerCallbacks(
   }
   if (project.registerUtilityTransform && utilityTransforms) {
     for (const [id, callback] of Object.entries(utilityTransforms)) {
-      project.registerUtilityTransform(id, (value) => {
-        const raw = value as string
-        return callback(raw, createTransformArgs(raw, tokenDictionary))
+      // Native passes the resolved value first, the original alias second (`args.raw`).
+      project.registerUtilityTransform(id, (resolved, original) => {
+        return callback(resolved as string, createTransformArgs(original, tokenDictionary))
       })
     }
   }

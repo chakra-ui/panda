@@ -366,7 +366,7 @@ fn css_raw_spread_in_sva_slot_matches_js_fixture() {
 
 #[test]
 fn css_raw_child_selector_spread_matches_issue_1370() {
-    let src = indoc! {r#"
+    let src = indoc! {r"
         import { css } from '@panda/css';
 
         const paragraphSpacingStyles = css.raw({
@@ -398,7 +398,7 @@ fn css_raw_child_selector_spread_matches_issue_1370() {
             paddingLeft: '1rem',
           },
         });
-    "#};
+    "};
     let calls = run(src).calls;
     assert_yaml_snapshot!(calls.last().expect("prose css call").data, @r#"
     - fontFamily: system-ui

@@ -15,7 +15,7 @@ use pandacss_extractor::Literal;
 use pandacss_shared::{number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{StyleNormalizer, Utility, UtilityTransformResult, hyphenate_property};
-use rustc_hash::{FxBuildHasher, FxHashSet};
+use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
@@ -43,16 +43,21 @@ pub struct EmitTokenContext<'a> {
     pub refs: &'a [String],
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "emit is the single CSS assembly entry point; a context struct would only relocate the same inputs"
+)]
 pub fn emit<'a>(
     config: &'a UserConfig,
     utility: &'a Utility,
     tokens: EmitTokenContext<'a>,
     mut atoms: Vec<&'a Atom>,
     recipes: &'a EncodedRecipesSnapshot,
+    utility_styles: &'a UtilityStyleOverrides,
     minify: bool,
     emit_layer_declaration: bool,
 ) -> EmitOutput {
-    let cx = EmitContext::new(config, utility);
+    let cx = EmitContext::new(config, utility, utility_styles);
     let layers = &config.layers;
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
@@ -231,7 +236,8 @@ pub fn emit_recipe_split<'a>(
     recipes: &'a EncodedRecipesSnapshot,
     minify: bool,
 ) -> Vec<(String, String)> {
-    let cx = EmitContext::new(config, utility);
+    let empty_utility_styles = UtilityStyleOverrides::default();
+    let cx = EmitContext::new(config, utility, &empty_utility_styles);
     let recipes_layer = &config.layers.recipes;
     let mut grouped: indexmap::IndexMap<&str, SplitRecipeGroups<'_>> = indexmap::IndexMap::new();
     for group in &recipes.base {
@@ -772,16 +778,26 @@ fn find_matching_paren(value: &str) -> Option<usize> {
     None
 }
 
+/// Custom-utility transform styles by `(prop, original_value)` — the structural
+/// match of `pandacss_project::UtilityStyleKey`'s map.
+pub type UtilityStyleOverrides = FxHashMap<(Box<str>, AtomValue), Literal>;
+
 struct EmitContext<'a> {
     config: &'a UserConfig,
     conditions: ConditionSet,
     breakpoints: Vec<String>,
     sort: SortContext<'a>,
     utility: &'a Utility,
+    /// Transform styles to swap in (empty for paths with no utility atoms).
+    utility_styles: &'a UtilityStyleOverrides,
 }
 
 impl<'a> EmitContext<'a> {
-    fn new(config: &'a UserConfig, utility: &'a Utility) -> Self {
+    fn new(
+        config: &'a UserConfig,
+        utility: &'a Utility,
+        utility_styles: &'a UtilityStyleOverrides,
+    ) -> Self {
         let condition_names = config.condition_names();
         Self {
             config,
@@ -789,6 +805,7 @@ impl<'a> EmitContext<'a> {
             breakpoints: config.theme.breakpoint_names(),
             sort: SortContext::new(config),
             utility,
+            utility_styles,
         }
     }
 
@@ -842,7 +859,7 @@ impl<'a> EmitContext<'a> {
         let Some(raw) = raw.as_deref() else {
             return;
         };
-        let result = self.transform_atom(atom.prop(), raw);
+        let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
         if is_composition_prop(atom.prop()) {
             if let Some(styles) = composition_style_object(atom.prop(), &result.styles) {
                 self.collect_grouped_style_usage(
@@ -853,6 +870,16 @@ impl<'a> EmitContext<'a> {
                     marks,
                 );
             }
+            return;
+        }
+        if is_nested_style_object(&result.styles) {
+            self.collect_grouped_style_usage(
+                &result.styles,
+                atom.important(),
+                token_dictionary,
+                keyframes,
+                marks,
+            );
             return;
         }
         Self::collect_literal_usage(&result.styles, token_dictionary, keyframes, marks);
@@ -1022,8 +1049,8 @@ impl<'a> EmitContext<'a> {
         let Some(raw) = raw.as_deref() else {
             return;
         };
-        let result = self.transform_atom(atom.prop(), raw);
-        if self.collect_composition_atom_rules(
+        let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
+        if self.collect_grouped_atom_rules(
             atom,
             class_conditions,
             rule_conditions,
@@ -1050,7 +1077,10 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    fn collect_composition_atom_rules(
+    /// Emit one grouped class for compositions and transforms whose result
+    /// nests conditions / child selectors. Returns `false` for a flat object,
+    /// which the caller emits via the direct declaration path.
+    fn collect_grouped_atom_rules(
         &self,
         atom: &Atom,
         class_conditions: &[&str],
@@ -1058,12 +1088,16 @@ impl<'a> EmitContext<'a> {
         result: &UtilityTransformResult,
         grouped: &mut GroupNode,
     ) -> bool {
-        if !is_composition_prop(atom.prop()) {
+        let styles = if is_composition_prop(atom.prop()) {
+            // A composition resolving to its own key emits nothing (still handled).
+            let Some(styles) = composition_style_object(atom.prop(), &result.styles) else {
+                return true;
+            };
+            styles
+        } else if is_nested_style_object(&result.styles) {
+            &result.styles
+        } else {
             return false;
-        }
-
-        let Some(styles) = composition_style_object(atom.prop(), &result.styles) else {
-            return true;
         };
 
         let entries = self.style_object_entries(styles);
@@ -1553,6 +1587,28 @@ impl<'a> EmitContext<'a> {
         default_transform(prop, raw)
     }
 
+    /// [`Self::transform_atom`] with the JS transform's styles swapped in
+    /// (className/layer still from `transform_str`). Top-level atoms only.
+    fn transform_atom_styles(
+        &self,
+        prop: &str,
+        raw: &str,
+        value: &AtomValue,
+    ) -> UtilityTransformResult {
+        let mut result = self.transform_atom(prop, raw);
+        if let Some(styles) = self.utility_style_override(prop, value) {
+            result.styles = styles.clone();
+        }
+        result
+    }
+
+    fn utility_style_override(&self, prop: &str, value: &AtomValue) -> Option<&Literal> {
+        if self.utility_styles.is_empty() {
+            return None;
+        }
+        self.utility_styles.get(&(Box::from(prop), value.clone()))
+    }
+
     fn lower_target(&self, target: Target<'_>, conditions: &[&str]) -> Vec<LoweredTarget> {
         // Build the base selector once, then apply condition wrappers/selectors
         // through the shared lowering path for atom and recipe rules.
@@ -1717,6 +1773,19 @@ fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCss
 
 fn is_composition_prop(prop: &str) -> bool {
     matches!(prop, "textStyle" | "layerStyle" | "animationStyle")
+}
+
+/// Whether a transform's styles nest further objects (a returned `_hover` or a
+/// child selector) — those take the grouped path; flat objects emit directly.
+fn is_nested_style_object(styles: &Literal) -> bool {
+    matches!(
+        styles,
+        Literal::Object(entries)
+            if entries.iter().any(|(_, value)| matches!(
+                value,
+                Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_)
+            ))
+    )
 }
 
 fn composition_style_object<'a>(prop: &str, styles: &'a Literal) -> Option<&'a Literal> {

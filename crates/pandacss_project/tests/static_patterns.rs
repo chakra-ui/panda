@@ -53,7 +53,8 @@ fn format_atom(atom: &Atom) -> String {
 
 #[allow(
     clippy::unnecessary_wraps,
-    reason = "matches the PatternTransformFn callback signature"
+    clippy::result_large_err,
+    reason = "matches the PatternTransformFn callback signature (Result<_, Diagnostic>)"
 )]
 fn shorthand_to_css(_name: &str, styles: &Literal) -> Result<Option<Literal>, Diagnostic> {
     let Literal::Object(entries) = styles else {

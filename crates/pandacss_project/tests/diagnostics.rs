@@ -70,12 +70,13 @@ fn utility_callback_failure_includes_target_context() {
             }
         }
     }));
-    let mut transform = |_prop: &str, _value: &AtomValue| -> Result<_, Diagnostic> {
-        Err(Diagnostic::warning(
-            diagnostic_codes::TRANSFORM_CALLBACK_FAILED,
-            "transform callback failed",
-        ))
-    };
+    let mut transform =
+        |_prop: &str, _resolved: &AtomValue, _original: &AtomValue| -> Result<_, Diagnostic> {
+            Err(Diagnostic::warning(
+                diagnostic_codes::TRANSFORM_CALLBACK_FAILED,
+                "transform callback failed",
+            ))
+        };
     let report = project.parse_file_with(
         "style.ts",
         indoc! {r"

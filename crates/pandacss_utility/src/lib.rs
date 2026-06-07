@@ -347,6 +347,18 @@ impl Utility {
         }
     }
 
+    /// Resolve a raw value through the utility's `values` category (token refs,
+    /// `[arbitrary]`, then category lookup `spacing.4` → `var(--spacing-4)`) —
+    /// the value node feeds a `transform` callback as its positional arg.
+    /// Passes the input through unchanged when no category matches.
+    #[must_use]
+    pub fn resolve_values_value(&self, prop: &str, value: &str) -> String {
+        let key = self.resolve_shorthand(prop);
+        let style_value = self.expand_reference_in_value(&arbitrary_value(value));
+        let resolved = self.raw_property_value(key, &style_value);
+        literal_to_class_value(&resolved).unwrap_or(style_value)
+    }
+
     #[must_use]
     pub fn normalize_style_object(&self, style: &Literal) -> Literal {
         StyleNormalizer {

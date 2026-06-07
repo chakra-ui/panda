@@ -37,7 +37,7 @@ describe('compiler.layerCss()', () => {
     expect(build().layerCss(['utilities'])).toMatchInlineSnapshot(`
       "@layer utilities {
         .c_red {
-          color: #f00;
+          color: var(--colors-red);
         }
       }
       "
@@ -48,7 +48,7 @@ describe('compiler.layerCss()', () => {
     expect(build().layerCss(['utilities', 'tokens'])).toMatchInlineSnapshot(`
       "@layer utilities {
         .c_red {
-          color: #f00;
+          color: var(--colors-red);
         }
       }
       @layer tokens {

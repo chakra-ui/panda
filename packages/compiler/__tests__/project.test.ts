@@ -44,6 +44,11 @@ describe('Compiler', () => {
     expect(compiler.compile()).toMatchInlineSnapshot(`
       {
         "css": "@layer reset, base, tokens, recipes, utilities;
+      @layer base {
+        :root {
+          --made-with-panda: '🐼';
+        }
+      }
       @layer utilities {
         .bg_blue {
           background-color: blue;
@@ -63,9 +68,13 @@ describe('Compiler', () => {
           "tokens": [],
         },
         "layerRanges": {
-          "utilities": {
+          "base": {
             "start": 48,
-            "end": 145,
+            "end": 109,
+          },
+          "utilities": {
+            "start": 109,
+            "end": 206,
           },
         },
         "diagnostics": [],
@@ -85,7 +94,9 @@ describe('Compiler', () => {
 
     expect(output.css).not.toContain('@layer reset, base, tokens, recipes, utilities;')
     expect(output.css).toContain('@layer utilities')
-    expect(output.layerRanges.utilities?.start).toBe(0)
+    // The base layer precedes utilities; layerRanges are byte offsets (not UTF-16).
+    const utilitiesByteStart = Buffer.byteLength(output.css.slice(0, output.css.indexOf('@layer utilities')))
+    expect(output.layerRanges.utilities?.start).toBe(utilitiesByteStart)
   })
 
   it('generates codegen artifacts from the resolved project', () => {
@@ -119,6 +130,14 @@ describe('Compiler', () => {
         colors: ColorToken
       }
 
+      export type Token = \`colors.\${ColorToken}\`
+
+      export type ColorOpacityModifier = \`\${number}\`
+
+      export type ColorOpacityToken = \`colors.\${ColorToken}/\${ColorOpacityModifier}\`
+
+      export type TokenPath = Token | ColorOpacityToken
+
       export type ColorPalette = "red"
 
       export type TokenValue<T extends keyof Tokens> = Tokens[T]"
@@ -131,6 +150,7 @@ describe('Compiler', () => {
     expect(compiler.generateAffectedArtifacts(['tokens']).map((artifact) => artifact.id)).toMatchInlineSnapshot(`
       [
         "patterns",
+        "themes",
         "types",
         "tokens",
         "conditions",
@@ -162,6 +182,11 @@ describe('Compiler', () => {
     })
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer base {
+        :root {
+          --made-with-panda: '🐼';
+        }
+      }
       @layer utilities {
         .display_flex {
           display: flex;
@@ -264,7 +289,7 @@ describe('Compiler', () => {
     const utilities = output.layerRanges.utilities
     expect(utilities).toBeDefined()
     expect(output.css.slice(utilities!.start, utilities!.end)).toMatchInlineSnapshot(`
-      "@layer utilities {
+      "ayer utilities {
         .color_red {
           color: red;
         }
@@ -285,6 +310,11 @@ describe('Compiler', () => {
     })
     expect(output.css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer base {
+        :root {
+          --made-with-panda: '🐼';
+        }
+      }
       @layer utilities {
         .color_red {
           color: red;
@@ -492,6 +522,11 @@ describe('Compiler', () => {
 
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer base {
+        :root {
+          --made-with-panda: '🐼';
+        }
+      }
       @layer utilities {
         .background_pink {
           background: pink;
@@ -546,6 +581,11 @@ describe('Compiler', () => {
 
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer base {
+        :root {
+          --made-with-panda: '🐼';
+        }
+      }
       @layer utilities {
         .color_blue {
           color: blue;
@@ -620,9 +660,9 @@ describe('Compiler', () => {
         "cvaCalls": 1,
         "svaCalls": 0,
         "jsxUsages": 1,
-      "diagnostics": [],
-    }
-  `)
+        "diagnostics": [],
+      }
+    `)
   })
 
   it('project compile() includes parse diagnostics from files', () => {

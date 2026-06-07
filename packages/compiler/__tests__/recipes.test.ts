@@ -333,25 +333,26 @@ describe('Compiler recipes', () => {
           {
             "recipe": "button",
             "slot": null,
-            "className": "button--size_md",
+            "className": "button--size_sm",
             "entries": [
               {
                 "prop": "fontSize",
-                "value": "16px",
-                "conditions": [
-                  "md",
-                ],
+                "value": "12px",
+                "conditions": [],
               },
             ],
           },
           {
             "recipe": "button",
             "slot": null,
-            "className": "button--size_sm",
+            "className": "button--size_md",
+            "conditions": [
+              "md",
+            ],
             "entries": [
               {
                 "prop": "fontSize",
-                "value": "12px",
+                "value": "16px",
                 "conditions": [],
               },
             ],

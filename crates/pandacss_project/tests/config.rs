@@ -370,8 +370,6 @@ fn config_validation_warnings_are_project_diagnostics() {
     - code: config_condition_selector_invalid
       message: "Selectors should contain the `&` character: `[data-theme=pink]`"
       severity: warning
-      span: ~
-      location: ~
     "#);
 }
 

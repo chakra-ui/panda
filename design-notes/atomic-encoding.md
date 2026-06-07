@@ -2,11 +2,10 @@
 
 ## Summary
 
-The `pandacss_encoder` crate decomposes typed style objects (`Literal::Object`) and recipe models (`Recipe`,
-`SlotRecipe`) into a flat set of `Atom` records — one per `(prop, value, condition_chain)` triple. Config recipes reuse
-the same serialization path and then convert atoms into `RecipeStyleEntry` records so stylesheet emission can group
-rules under recipe class names. The encoder doesn't care about CSS syntax. Dedup happens via `FxHashSet<Atom>` for
-atomic styles and `FxHashSet<RecipeStyleEntry>` for grouped recipe entries.
+`pandacss_encoder` decomposes typed style objects (`Literal::Object`) and recipe models (`Recipe`, `SlotRecipe`) into a
+flat `FxHashSet<Atom>` — one `Atom` per `(prop, value, condition_chain)`. Config recipes reuse the same path, then map
+atoms into `RecipeStyleEntry` so the emitter can group rules under recipe class names. The encoder is CSS-syntax-agnostic;
+dedup is via the hash sets.
 
 ## The Atom
 
@@ -18,14 +17,12 @@ pub struct Atom {
 }
 ```
 
-Three perf choices worth noting:
+Three perf choices:
 
-- **`Box<str>` not `String`.** Atoms are write-once after the encoder records them — no capacity field needed. Saves 8
-  bytes per string.
-- **`SmallVec<[…; 2]>` for conditions.** Real Panda usage shows 0-2 conditions per atom (`{ _hover: { md: … } }`); 3+
-  falls back to heap. The inline budget is sized to cover the common case at zero heap cost.
-- **Numbers stored as their JS string form** (`AtomValue::Number(Box<str>)`). `Atom` needs `Hash` for dedup; `f64` isn't
-  `Eq`. Round-tripping through `to_string()` preserves the integer/float distinction the JS extractor produces.
+- **`Box<str>` not `String`** — atoms are write-once, so no capacity field (−8 bytes/string).
+- **`SmallVec<[…; 2]>` conditions** — real usage is 0–2 conditions/atom (`{ _hover: { md: … } }`); 3+ spills to heap.
+- **Numbers as their JS string form** (`AtomValue::Number(Box<str>)`) — `Atom: Hash` needs `Eq`, which `f64` lacks; the
+  string round-trips and preserves the integer/float distinction.
 
 ## RecipeStyleEntry
 
@@ -44,29 +41,21 @@ pub struct RecipeStyleEntry {
 }
 ```
 
-`RecipeStyleEntry` is not a second style serializer. It is the grouped-recipe IR used after serialization, when the
-stylesheet emitter needs to write declarations under a recipe class name instead of atomic utility class names.
-`RecipeStyleGroup::conditions` are class conditions from the selected variant value, such as
-`size={{ md: "lg" }}`. They are allowed to prefix the recipe class because the generated recipe runtime returns that
-conditional class. `RecipeStyleEntry::conditions` are nested conditions from the recipe style object itself, such as
-`variants.size.lg._hover`; these apply to the fixed recipe class selector and must not be folded into the class name.
-Group condition order is runtime-visible and must be preserved in class names (`md:hover:btn--size_lg` differs from
-`hover:md:btn--size_lg`). The stylesheet sorter may keep a separate cascade-sorted view for rule placement and wrapper
-application, but it must not use that sorted view to build runtime class selectors.
+`RecipeStyleEntry` is the grouped-recipe IR (not a second serializer): the emitter writes declarations under a recipe
+class name. `RecipeStyleGroup::conditions` are class conditions from the selected variant (`size={{ md: "lg" }}`) — they
+may prefix the recipe class because the runtime returns that conditional class. `RecipeStyleEntry::conditions` are nested
+conditions from the style object (`variants.size.lg._hover`) — they apply to the fixed class selector and must **not**
+fold into the class name. Group condition order is runtime-visible and must be preserved in class names
+(`md:hover:btn--size_lg` ≠ `hover:md:btn--size_lg`); the sorter's cascade-sorted view is for rule placement only, never
+runtime selectors.
 
-The conversion is intentionally mechanical:
-
-```rust
-impl From<Atom> for RecipeStyleEntry { /* prop, value, conditions, important */ }
-```
-
-This keeps the `(prop, value, condition_chain, important)` semantics owned by `Atom` / `Encoder`. Recipe-specific code
-keeps selection conditions on the surrounding `RecipeStyleGroup` after atomic serialization instead of mutating the
-entry's existing condition chain.
+Conversion is mechanical (`impl From<Atom> for RecipeStyleEntry`), keeping `(prop, value, conditions, important)` owned
+by `Atom`/`Encoder`. Recipe code keeps selection conditions on the surrounding `RecipeStyleGroup` rather than mutating
+the entry chain.
 
 ## Walker
 
-The encoder is stateful — `Encoder<C>` owns a `path` buffer reused across walks:
+`Encoder<C>` is stateful, reusing a `path` buffer across walks:
 
 ```rust
 pub struct Encoder<C: ConditionMatcher> {
@@ -76,7 +65,7 @@ pub struct Encoder<C: ConditionMatcher> {
 }
 ```
 
-The walker descends with push, ascends with pop on the shared `path`:
+It descends with push, ascends with pop:
 
 ```rust
 fn walk(&mut self, value: &Literal) {
@@ -94,12 +83,12 @@ fn walk(&mut self, value: &Literal) {
 }
 ```
 
-That gives O(depth) allocation per walk root, not O(depth²) as a clone-on-descend implementation would. The 8-segment
-inline budget covers the ≤8-deep case (every real style object) without spilling.
+O(depth) allocation per root (not O(depth²) like clone-on-descend); the 8-segment inline budget covers every real
+(≤8-deep) object.
 
 ## Property selection rule
 
-For a leaf, the property name is the **outermost non-condition key**:
+The leaf property is the **outermost non-condition key**:
 
 ```js
 {
@@ -112,8 +101,8 @@ For a leaf, the property name is the **outermost non-condition key**:
 //   condition  condition  property = "color"
 ```
 
-`find` walks outer→inner so the first non-condition wins. The condition chain is everything that _was_ a condition, in
-the same order, with `"base"` filtered out (it's not a real condition, just a shorthand for "no conditions apply").
+`find` walks outer→inner (first non-condition wins); the condition chain keeps every condition segment in order, minus
+`base` (a "no conditions apply" shorthand).
 
 ## Condition matcher
 
@@ -123,39 +112,32 @@ pub trait ConditionMatcher {
 }
 ```
 
-There is no built-in default condition set in the encoder. Callers must derive condition names from the resolved Panda
-config and pass a matcher explicitly. In practice that means `base`, underscore-prefixed aliases for configured
-condition keys (`hover` → `_hover`), and configured breakpoint names. Test fixtures that rely on the standard breakpoint
-names provide `base`, `sm`, `md`, `lg`, `xl`, and `2xl` explicitly.
-
-`ConditionSet` is the shared matcher for callers that only need name lookup. It also treats raw selector / at-rule
-keys as conditions (`&:hover`, `@media ...`), matching Panda's inline condition behavior without hard-coding named
-conditions into the encoder.
+No built-in default set — callers derive condition names from the resolved config: `base`, underscore aliases for
+condition keys (`hover` → `_hover`), and breakpoint names. (Test fixtures supply `base, sm, md, lg, xl, 2xl`.)
+`ConditionSet` is the shared name-lookup matcher; it also treats raw selector / at-rule keys (`&:hover`, `@media …`) as
+conditions, matching Panda's inline behavior.
 
 ## Recipe decomposition
 
-`Recipe` and `SlotRecipe` (the `pandacss_recipes` crate) decompose into the same `Atom` shape via four entry points:
+`Recipe` / `SlotRecipe` (`pandacss_recipes`) decompose into `Atom`s via four entry points:
 
-- `process_atomic(style)` — one style object, no normalization.
-- `process_atomic_with(style, &normalizer)` — fused walker: applies inline key resolution + leaf normalization +
-  responsive-array expansion in a single pass over the input. Avoids the upfront `StyleNormalizer.normalize` call and
-  the `Cow<Literal>` it produces. The project layer drives this with `pandacss_utility::StyleNormalizer`.
-- `process_atomic_recipe(recipe)` — every style across `base`, variant options, and compound variants.
+- `process_atomic(style)` — one object, no normalization.
+- `process_atomic_with(style, &normalizer)` — fused walker (inline key resolution + leaf normalization +
+  responsive-array expansion in one pass), avoiding the upfront `StyleNormalizer.normalize` and its `Cow<Literal>`.
+  Driven with `pandacss_utility::StyleNormalizer`.
+- `process_atomic_recipe(recipe)` — base, variant options, compound variants.
 - `process_atomic_slot_recipe(slot_recipe)` — same, per slot.
 
-`atomic_styles` and `atomic_styles_per_slot` return lazy iterators — no intermediate `Vec` allocation. The encoder
-consumes lazily so the caller never pays for a full materialization.
+`atomic_styles` / `atomic_styles_per_slot` return lazy iterators — no intermediate `Vec`.
 
 ## Config recipe serialization
 
-Config recipe `base` blocks and variant option style objects must pass through the same serialization path as normal
-`css()` calls. The project layer does this by driving `Encoder::process_atomic_with(style, &StyleNormalizer)` and then
-mapping each `Atom` into a `RecipeStyleEntry`.
+Recipe `base` blocks and variant option styles pass through the same path as `css()` calls:
+`Encoder::process_atomic_with(style, &StyleNormalizer)`, then map each `Atom` → `RecipeStyleEntry`. This mirrors legacy
+`StyleEncoder.hashStyleObject` (which serialized atomics, recipe base, and variant selections) — Rust keeps no separate
+recipe walker.
 
-This is a deliberate parity rule with the legacy TypeScript engine: `StyleEncoder.hashStyleObject` serialized atomics,
-recipe base styles, and recipe variant selections. Rust should not maintain a separate recipe-only style walker.
-
-Keeping one walker matters for condition correctness. Condition-first recipe shapes are valid:
+One walker matters for condition correctness; condition-first shapes are valid:
 
 ```js
 {
@@ -167,9 +149,8 @@ Keeping one walker matters for condition correctness. Condition-first recipe sha
 }
 ```
 
-The encoder's property rule still applies: first non-condition segment is the property, and every condition segment
-except `base` remains in the entry condition chain. If a recipe call selects a variant responsively, that selection
-condition is stored on the recipe group:
+The property rule still holds (first non-condition segment is the prop; every condition except `base` stays in the
+chain). A responsively-selected variant stores its selection on the group:
 
 ```rust
 RecipeStyleGroup {
@@ -179,19 +160,16 @@ RecipeStyleGroup {
 }
 ```
 
-`selected_variant_conditions` retains the condition path as written by the user/generated runtime. For example,
-`size: { md: { _hover: "lg" } }` stores `[md, _hover]`, while `size: { _hover: { md: "lg" } }` stores
-`[_hover, md]`.
+`selected_variant_conditions` keeps the path as written: `size: { md: { _hover: "lg" } }` → `[md, _hover]`;
+`size: { _hover: { md: "lg" } }` → `[_hover, md]`.
 
-Recipe grouping, slot resolution, default variants, compound variants, and watch-mode refcounting remain in
-`pandacss_project`; only style-object serialization is shared with atomics.
-
-Do not reintroduce a recipe-specific recursive walker in `pandacss_project`. If encoding semantics change, change
-`pandacss_encoder` and let both atomic styles and recipe entries inherit the behavior.
+Recipe grouping, slot resolution, default / compound variants, and watch refcounting stay in `pandacss_project`; only
+style-object serialization is shared. Don't reintroduce a recipe-specific walker — change `pandacss_encoder` and both
+atomic styles and recipe entries inherit it.
 
 ## Inline normalization — `NormalizeAtomic`
 
-`process_atomic_with` takes any `&N` where `N: NormalizeAtomic`. The trait has three method hooks with no-op defaults:
+`process_atomic_with` takes any `&N: NormalizeAtomic`, a trait with three no-op-default hooks:
 
 ```rust
 pub trait NormalizeAtomic {
@@ -203,25 +181,38 @@ pub trait NormalizeAtomic {
 }
 ```
 
-Encoder doesn't depend on `pandacss_utility`; `StyleNormalizer` implements the trait inside `pandacss_utility` (the
-one sibling-Tier-2 dep utility takes on encoder). Callers that don't need normalization can pass the zero-cost
-`NoNormalize` marker or just call `process_atomic` instead.
-
-The fusion eliminates the prior "normalize tree → walk normalized tree" double walk; on the sandbox bench it dropped
-the `encoding_atomic` span from ~3.47 ms to ~1.67 ms (-52%), ~12 % of cold path at 500 unique files.
+Encoder doesn't depend on `pandacss_utility`; `StyleNormalizer` implements the trait there. Callers needing no
+normalization pass the zero-cost `NoNormalize` marker or call `process_atomic`. The fusion drops the prior
+normalize-then-walk double pass — `encoding_atomic` ~3.47 ms → ~1.67 ms (−52%) on the sandbox bench (500 files).
 
 ## Atomic styles per slot — PERF tradeoff
 
-`SlotRecipe::atomic_styles_per_slot` filters base / variants / compound for every slot, giving O(slots × styles) total
-work. The lazy iterator shape is deliberate: callers that only need one slot pay only that slot's cost. If multi-slot
-consumers come to dominate a profile, pre-bucketize once into `FxHashMap<&str, Vec<&Literal>>` and hand out borrowed
-slices — but until benches force the change, the simpler shape wins.
+`SlotRecipe::atomic_styles_per_slot` re-filters base / variants / compound per slot — O(slots × styles). The lazy shape
+is deliberate (one-slot callers pay one slot's cost). If multi-slot consumers dominate a profile, pre-bucketize into
+`FxHashMap<&str, Vec<&Literal>>`; until benches force it, the simpler shape wins.
 
 ## Encoder is single-pass per file
 
-The project creates `Encoder::with_conditions(config_conditions)` per file, feeds every style / recipe extracted from
-that file, then calls `into_atoms()` to hand the set off to the project. The project's `parse_file` does exactly this.
-`into_atoms()` is cheaper than `atoms().clone()` — the inner set moves out, no re-hash.
+The project creates `Encoder::with_conditions(config_conditions)` per file, feeds every extracted style / recipe, then
+`into_atoms()` hands off the set (cheaper than `atoms().clone()` — moves, no re-hash). `parse_file` does exactly this.
+
+## Custom-utility JS transforms — carrier atom + override map
+
+A custom utility's `transform` returns a multi-declaration object that must emit **one** class keyed on the utility
+(`spaceX: '4'` → `.space-x_4 { … }`), not per-property atoms. The callback runs at the binding (the Rust emitter can't
+call JS), so its result is carried to emit, not decomposed:
+
+- **Carrier atom.** `transform_atoms` keeps the original `{prop, value, conditions, important}` atom (node's
+  `StyleEntry` keying) and records the JS result in a `(prop, value) → Literal` override map.
+- **Token resolution.** `Utility::resolve_values_value` resolves the `values` category before the call; the callback
+  gets the resolved value, `args.raw` the original (node's `getPropertyRawValue` order).
+- **Override map.** Refcounted alongside `atoms_cache` (atom + styles add/remove together); surfaced via
+  `StylesheetInput.utility_styles`.
+- **Emit.** `transform_atom_styles` swaps the styles into the `transform_str` result (className/layer stay in one
+  place). Flat objects emit as direct declarations (source order); nested ones (conditions / child selectors) take the
+  composition grouping path (`style_object_entries`).
+- **Recipes** re-encode the resolved object through the `Encoder` into `RecipeStyleEntry`s (no per-utility class —
+  entries flatten into the recipe).
 
 ## Related
 

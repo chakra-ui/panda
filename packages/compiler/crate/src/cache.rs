@@ -8,7 +8,9 @@ const MAX_TRANSFORM_CACHE_ENTRIES: usize = 4096;
 pub(crate) const MAX_TRANSFORM_CACHE_KEY_BYTES: usize = 16 * 1024;
 
 pub(crate) struct TransformCache {
-    pub(crate) utility: LruCache<UtilityTransformCacheKey, Vec<crate::Atom>>,
+    /// The raw style object a utility transform returned (className/layer are
+    /// recomputed by the emitter, not cached).
+    pub(crate) utility: LruCache<UtilityTransformCacheKey, Literal>,
     pub(crate) pattern: LruCache<PatternTransformCacheKey, Option<Literal>>,
 }
 

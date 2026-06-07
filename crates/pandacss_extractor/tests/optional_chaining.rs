@@ -6,7 +6,6 @@
 //! object/array lookup path. We don't model JS `undefined`; if the base
 //! isn't a resolvable object, the call is simply dropped.
 
-
 use crate::common::css_config;
 use indoc::indoc;
 use insta::assert_yaml_snapshot;

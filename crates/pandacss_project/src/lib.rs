@@ -53,6 +53,11 @@ use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::diagnostic_codes;
 use pandacss_utility::{StyleNormalizer, Utility};
 
+/// Key into the utility-transform override map: `(prop, original_value)`. The
+/// style object is a pure function of this key (conditions ride on the carrier
+/// atom), so the map refcounts as a plain key→value union.
+pub type UtilityStyleKey = (Box<str>, AtomValue);
+
 pub use error::{ConfigError, Result};
 pub use pandacss_encoder::{
     EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
@@ -79,6 +84,10 @@ pub struct Project {
     /// `&FxHashSet` without walking the whole project on each save.
     atoms_cache: FxHashSet<Atom>,
     atom_counts: FxHashMap<Atom, u32>,
+    /// Deduplicated union of every file's `utility_styles`, refcounted in
+    /// lockstep with `atoms_cache` (see [`Self::add_file_state`]).
+    utility_styles_cache: FxHashMap<UtilityStyleKey, Literal>,
+    utility_styles_counts: FxHashMap<UtilityStyleKey, u32>,
     encoded_recipes_cache: EncodedRecipesCache,
     atoms_snapshot_cache: Option<Vec<Atom>>,
     encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
@@ -101,6 +110,9 @@ pub struct ProjectStylesheetSnapshots<'a> {
     pub encoded_recipes: &'a EncodedRecipesSnapshot,
     pub static_encoded_recipes: &'a EncodedRecipesSnapshot,
     pub token_refs: &'a [String],
+    /// Custom-utility transform styles by `(prop, value)`; the emitter looks
+    /// these up in `transform_atom` to emit one class per usage.
+    pub utility_styles: &'a FxHashMap<UtilityStyleKey, Literal>,
 }
 
 // Private so the bucket shape (cached LineIndex, structured stats, …) can
@@ -111,6 +123,9 @@ struct FileEntry {
     cacheable: bool,
     atoms: FxHashSet<Atom>,
     encoded_recipes: EncodedRecipes,
+    /// Custom-utility transform styles, refcounted alongside `atoms` so a
+    /// carrier atom and its styles add/remove together.
+    utility_styles: FxHashMap<UtilityStyleKey, Literal>,
     token_refs: Vec<String>,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
@@ -144,6 +159,8 @@ impl Project {
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
+            utility_styles_cache: FxHashMap::default(),
+            utility_styles_counts: FxHashMap::default(),
             encoded_recipes_cache: EncodedRecipesCache::default(),
             atoms_snapshot_cache: None,
             encoded_recipes_snapshot_cache: None,
@@ -300,8 +317,7 @@ impl Project {
 
         let compiled = self.config.as_ref();
         let mut encoder = Encoder::with_conditions(compiled.conditions.clone());
-        let mut encoded_recipes =
-            EncodedRecipes::new(compiled.optimize.smart_compound_variants);
+        let mut encoded_recipes = EncodedRecipes::new(compiled.optimize.smart_compound_variants);
         let empty_object = Literal::Object(Vec::new());
         let diagnose_unextractable_calls = !compiled.extractor_config.has_jsx_framework;
         for call in result.calls {
@@ -502,9 +518,23 @@ impl Project {
         }
 
         let mut atoms = encoder.into_atoms();
+        let mut utility_styles = FxHashMap::default();
         if let Some(transform) = utility_transform {
-            atoms = transform_atoms(atoms, transform, &mut report.diagnostics);
-            encoded_recipes.transform_utilities(transform, &mut report.diagnostics);
+            let utility = compiled.utility.as_ref();
+            atoms = transform_atoms(
+                atoms,
+                utility,
+                transform,
+                &mut utility_styles,
+                &mut report.diagnostics,
+            );
+            encoded_recipes.transform_utilities(
+                utility,
+                &compiled.conditions,
+                &compiled.breakpoints,
+                transform,
+                &mut report.diagnostics,
+            );
         }
 
         let entry = FileEntry {
@@ -516,6 +546,7 @@ impl Project {
                 .any(|diagnostic| diagnostic.code == diagnostic_codes::TRANSFORM_CALLBACK_FAILED),
             atoms,
             encoded_recipes,
+            utility_styles,
             token_refs,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
@@ -589,6 +620,8 @@ impl Project {
         self.files.clear();
         self.atoms_cache.clear();
         self.atom_counts.clear();
+        self.utility_styles_cache.clear();
+        self.utility_styles_counts.clear();
         self.encoded_recipes_cache.clear();
         self.invalidate_stylesheet_snapshots();
         self.inline_recipes.clear();
@@ -619,6 +652,14 @@ impl Project {
                 self.atoms_cache.insert(atom.clone());
             }
         }
+        for (key, styles) in &entry.utility_styles {
+            let count = self.utility_styles_counts.entry(key.clone()).or_insert(0);
+            *count += 1;
+            if *count == 1 {
+                self.utility_styles_cache
+                    .insert(key.clone(), styles.clone());
+            }
+        }
         self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
         self.files.insert(path, entry);
     }
@@ -631,6 +672,7 @@ impl Project {
 
         self.invalidate_stylesheet_snapshots();
         let mut missing_atoms = Vec::new();
+        let mut missing_utility_styles = Vec::new();
         let missing_recipes = {
             let existing = self
                 .files
@@ -639,6 +681,12 @@ impl Project {
             for atom in &entry.atoms {
                 if existing.atoms.insert(atom.clone()) {
                     missing_atoms.push(atom.clone());
+                }
+            }
+            for (key, styles) in &entry.utility_styles {
+                if !existing.utility_styles.contains_key(key) {
+                    existing.utility_styles.insert(key.clone(), styles.clone());
+                    missing_utility_styles.push((key.clone(), styles.clone()));
                 }
             }
             let missing_recipes = existing
@@ -661,6 +709,14 @@ impl Project {
             }
         }
 
+        for (key, styles) in missing_utility_styles {
+            let count = self.utility_styles_counts.entry(key.clone()).or_insert(0);
+            *count += 1;
+            if *count == 1 {
+                self.utility_styles_cache.insert(key, styles);
+            }
+        }
+
         self.encoded_recipes_cache.add_from(&missing_recipes);
     }
 
@@ -673,6 +729,15 @@ impl Project {
                 if *count == 0 {
                     self.atom_counts.remove(atom);
                     self.atoms_cache.remove(atom);
+                }
+            }
+        }
+        for key in entry.utility_styles.keys() {
+            if let Some(count) = self.utility_styles_counts.get_mut(key) {
+                *count -= 1;
+                if *count == 0 {
+                    self.utility_styles_counts.remove(key);
+                    self.utility_styles_cache.remove(key);
                 }
             }
         }
@@ -857,6 +922,7 @@ impl Project {
                 .token_refs_snapshot_cache
                 .as_deref()
                 .expect("token refs snapshot was initialized"),
+            utility_styles: &self.utility_styles_cache,
         }
     }
 
@@ -1006,8 +1072,11 @@ where
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
 
-pub type UtilityTransformFn<'a> =
-    dyn FnMut(&str, &AtomValue) -> std::result::Result<Option<Vec<Atom>>, Diagnostic> + 'a;
+/// JS `transform` for a custom utility: `(prop, resolved_value, original_value)`
+/// → raw style object (NOT decomposed atoms; className/layer stay with the
+/// [`Utility`]). `Ok(None)` = no transform for this prop, keep the atom.
+pub type UtilityTransformFn<'a> = dyn FnMut(&str, &AtomValue, &AtomValue) -> std::result::Result<Option<Literal>, Diagnostic>
+    + 'a;
 
 /// Per-call transform callbacks for [`Project::parse_file_with`] /
 /// [`Project::refresh_file_with`]. The binding layer builds these fresh per
@@ -1103,9 +1172,7 @@ fn push_invalid_color_opacity_modifier_diagnostics(
         }
         for value in values.drain(..) {
             out.push(invalid_color_opacity_modifier_diagnostic(
-                &value,
-                call.span,
-                line_index,
+                &value, call.span, line_index,
             ));
         }
     }
@@ -1114,9 +1181,7 @@ fn push_invalid_color_opacity_modifier_diagnostics(
         collect_invalid_color_opacity_modifiers(&entry.data, utility, &mut values);
         for value in values.drain(..) {
             out.push(invalid_color_opacity_modifier_diagnostic(
-                &value,
-                entry.span,
-                line_index,
+                &value, entry.span, line_index,
             ));
         }
     }
@@ -1166,23 +1231,28 @@ fn invalid_color_opacity_modifier_diagnostic(
     diagnostic
 }
 
+/// Run the JS transform per atom WITHOUT decomposing: the atom carries
+/// `(prop, value, conditions, important)`, and the returned style object is
+/// recorded in `overrides` for the emitter to swap in as one grouped class.
 fn transform_atoms(
     atoms: FxHashSet<Atom>,
+    utility: Option<&Utility>,
     transform: &mut UtilityTransformFn<'_>,
+    overrides: &mut FxHashMap<UtilityStyleKey, Literal>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> FxHashSet<Atom> {
     let mut out = FxHashSet::default();
     for atom in atoms {
-        match transform(atom.prop(), atom.value()) {
-            Ok(Some(transformed)) => {
-                let conditions: SmallVec<[Box<str>; 2]> =
-                    atom.conditions().iter().cloned().collect();
-                out.extend(
-                    transformed
-                        .into_iter()
-                        .map(|next| next.with_prefixed_conditions(&conditions)),
-                );
+        let resolved = resolved_atom_value(utility, atom.prop(), atom.value());
+        match transform(atom.prop(), &resolved, atom.value()) {
+            // Empty result drops the carrier atom — parity with node, which
+            // emits nothing for a transform that returns `{}`.
+            Ok(Some(styles)) if is_empty_style_object(&styles) => {}
+            Ok(Some(styles)) => {
+                overrides.insert((Box::from(atom.prop()), atom.value().clone()), styles);
+                out.insert(atom);
             }
+            // No transform registered for this prop — keep the atom verbatim.
             Ok(None) => {
                 out.insert(atom);
             }
@@ -1197,6 +1267,33 @@ fn transform_atoms(
         }
     }
     out
+}
+
+/// The `values`-resolved value to feed the transform (`spacing.4` →
+/// `var(--spacing-4)`); returns the original verbatim (type preserved) when no
+/// category matches.
+pub(crate) fn resolved_atom_value(
+    utility: Option<&Utility>,
+    prop: &str,
+    value: &AtomValue,
+) -> AtomValue {
+    let raw = match value {
+        AtomValue::String(raw) | AtomValue::Number(raw) => raw,
+        AtomValue::Bool(_) | AtomValue::Null => return value.clone(),
+    };
+    let Some(utility) = utility else {
+        return value.clone();
+    };
+    let resolved = utility.resolve_values_value(prop, raw);
+    if resolved.as_str() == raw.as_ref() {
+        value.clone()
+    } else {
+        AtomValue::String(resolved.into())
+    }
+}
+
+pub(crate) fn is_empty_style_object(styles: &Literal) -> bool {
+    matches!(styles, Literal::Object(entries) if entries.is_empty())
 }
 
 fn dynamic_style_value_diagnostic(
