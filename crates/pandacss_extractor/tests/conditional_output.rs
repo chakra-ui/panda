@@ -62,20 +62,64 @@ fn ternary_with_literal_test_still_picks_one_branch() {
 }
 
 #[test]
-fn ternary_with_one_unresolvable_branch_drops() {
-    // When the test isn't foldable AND one branch can't fold, we drop
-    // rather than emit a partial conditional — the encoder needs both
-    // alternatives. Matches the conservative read of JS box.conditional
-    // when an Unresolvable branch shows up.
+fn ternary_with_one_unresolvable_branch_keeps_the_resolvable_one() {
+    // The test isn't foldable and one branch (`maybeFn()`) can't fold, but the
+    // other (`'black'`) can — and it's a possible runtime value, so emit it.
+    // Matches node's `maybeResolveConditionalExpression`, which returns the
+    // single resolvable branch.
     let src = indoc! {r"
         import { css } from '@panda/css';
         css({ color: dark ? maybeFn() : 'black' });
     "};
-    let calls = run(src).calls;
-    assert!(
-        calls.is_empty(),
-        "partial conditional should drop: {calls:#?}"
-    );
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: black
+      span:
+        start: 34
+        end: 76
+    ");
+}
+
+#[test]
+fn ternary_with_unresolvable_alternate_keeps_the_consequent() {
+    // Mirror of the above, resolvable branch on the consequent side.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: dark ? 'red' : maybeFn() });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 74
+    ");
+}
+
+#[test]
+fn ternary_with_equal_branches_collapses_to_a_single_value() {
+    // Both branches fold to the same value — node returns it directly rather
+    // than a `Conditional`, so no duplicate atom shows up.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: dark ? 'red' : 'red' });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 70
+    ");
 }
 
 #[test]
@@ -318,6 +362,32 @@ fn ternary_spread_colliding_with_static_parent_unions_all_values() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         css({ padding: '0', ...(unk ? { padding: '1' } : { padding: '2' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - padding:
+            kind: conditional
+            branches:
+              - "0"
+              - "1"
+              - "2"
+      span:
+        start: 34
+        end: 103
+    "#);
+}
+
+#[test]
+fn ternary_spread_before_a_colliding_static_key_still_unions_all_values() {
+    // Spread *before* the static override of the same key: at runtime `padding`
+    // is always '0', but static extraction is order-independent and emits every
+    // possibly-applied value (0, 1, 2), matching node's separate spreadConditions.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ ...(unk ? { padding: '1' } : { padding: '2' }), padding: '0' });
     "};
     assert_yaml_snapshot!(run(src).calls, @r#"
     - category: css

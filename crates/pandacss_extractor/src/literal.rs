@@ -239,6 +239,12 @@ pub(crate) fn object_to_literal(
     // extract. e.g. `css({ color: 'red', width: props.w })` keeps `color`, and
     // `sva({ slots: [...anatomy.keys()], base })` keeps `base` (slots infer).
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(obj.properties.len());
+    // Conditional-spread keys accumulate here, separate from the regular
+    // last-wins `entries`, and fold in *after* every property is processed. node
+    // tracks these as a standalone `spreadConditions` channel that a later
+    // static key can't overwrite, so the branch values survive regardless of
+    // where the spread sits in the object literal.
+    let mut spread_conditions: Vec<(String, Literal)> = Vec::new();
     for prop in &obj.properties {
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
@@ -264,12 +270,12 @@ pub(crate) fn object_to_literal(
                     }
                     // A conditional spread (`...(cond ? a : b)`) contributes each
                     // branch's keys as separately-applicable styles; accumulate
-                    // every branch value per key so the encoder emits the union.
+                    // every branch value per key into the spread channel.
                     Some(Literal::Conditional(branches)) => {
                         for branch in branches {
                             if let Literal::Object(inner_entries) = branch {
                                 for (k, v) in inner_entries {
-                                    Literal::combine_object_entry(&mut entries, k, v);
+                                    Literal::combine_object_entry(&mut spread_conditions, k, v);
                                 }
                             }
                         }
@@ -278,6 +284,12 @@ pub(crate) fn object_to_literal(
                 }
             }
         }
+    }
+
+    // Union the conditional-spread values into the final object — combining (not
+    // overwriting) so a colliding static value is kept alongside the branches.
+    for (k, v) in spread_conditions {
+        Literal::combine_object_entry(&mut entries, k, v);
     }
 
     // An object whose members were *all* unresolvable carries nothing static to
@@ -586,16 +598,25 @@ fn eval_conditional(
     conditional_from_branches(&c.consequent, &c.alternate, resolver)
 }
 
-/// Build a `Literal::Conditional` from two branches. Both must fold —
-/// the encoder needs both alternatives to generate correct atomic CSS.
+/// Resolve a ternary's two branches the way node's `maybeResolveConditionalExpression`
+/// does: keep whatever folds. Both fold → `Conditional` alternatives (collapsed
+/// to one when equal); only one folds → that branch alone (the other is dynamic,
+/// but the static branch is still a possible value worth emitting); neither
+/// folds → drop.
 fn conditional_from_branches(
     a: &Expression<'_>,
     b: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
-    let left = expression_to_literal(a, resolver)?;
-    let right = expression_to_literal(b, resolver)?;
-    Some(Literal::Conditional(vec![left, right]))
+    match (
+        expression_to_literal(a, resolver),
+        expression_to_literal(b, resolver),
+    ) {
+        (Some(left), Some(right)) if left == right => Some(left),
+        (Some(left), Some(right)) => Some(Literal::Conditional(vec![left, right])),
+        (Some(only), None) | (None, Some(only)) => Some(only),
+        (None, None) => None,
+    }
 }
 
 pub(crate) fn template_literal_to_literal(
