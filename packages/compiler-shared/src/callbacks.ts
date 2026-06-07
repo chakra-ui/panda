@@ -193,7 +193,7 @@ function compactObject(value: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined))
 }
 
-function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: string } {
+function isCallbackRef(value: unknown): value is { kind: 'js-callback'; id: string; hash?: string } {
   return (
     !!value &&
     typeof value === 'object' &&

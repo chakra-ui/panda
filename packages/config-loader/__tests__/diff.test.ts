@@ -118,15 +118,23 @@ describe('diffConfig', () => {
     `)
   })
 
-  test('documented gap: a utility transform body edit is invisible (lowered to a stable ref)', () => {
+  test('a utility transform body edit is visible via the callback ref hash', () => {
     const prev: SerializedConfig = {
-      utilities: { size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } } },
+      utilities: { size: { transform: { kind: 'js-callback', id: 'utilities.size.transform', hash: 'fn1-aaa' } } },
     }
     const next: SerializedConfig = {
-      // same ref id even though the live function body differs
-      utilities: { size: { transform: { kind: 'js-callback', id: 'utilities.size.transform' } } },
+      // same id, different hash — the body changed
+      utilities: { size: { transform: { kind: 'js-callback', id: 'utilities.size.transform', hash: 'fn1-bbb' } } },
     }
     const result = diffConfig(prev, next)
-    expect(result.hasChanged).toBe(false)
+    expect(result.hasChanged).toBe(true)
+    expect(result.dependencies).toContain('utilities')
+  })
+
+  test('an unchanged utility transform (same ref hash) is not a change', () => {
+    const ref = { kind: 'js-callback', id: 'utilities.size.transform', hash: 'fn1-aaa' } as const
+    const prev: SerializedConfig = { utilities: { size: { transform: { ...ref } } } }
+    const next: SerializedConfig = { utilities: { size: { transform: { ...ref } } } }
+    expect(diffConfig(prev, next).hasChanged).toBe(false)
   })
 })

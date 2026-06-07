@@ -92,6 +92,7 @@ describe('loadPandaConfig', () => {
             },
           },
           "transform": {
+            "hash": "fn1-1ydydk6",
             "id": "patterns.stack.transform",
             "kind": "js-callback",
           },
@@ -105,6 +106,7 @@ describe('loadPandaConfig', () => {
       {
         "size": {
           "transform": {
+            "hash": "fn1-25sv67",
             "id": "utilities.size.transform",
             "kind": "js-callback",
           },

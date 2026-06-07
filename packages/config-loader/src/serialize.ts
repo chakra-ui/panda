@@ -57,7 +57,19 @@ function serializeFunction(fn: Function, path: string[], callbacks: Callbacks) {
   if (!ref) return undefined
   callbacks[ref.kind] ??= {}
   callbacks[ref.kind]![ref.id] = fn
-  return { kind: 'js-callback', id: ref.id }
+  // `hash` is an invalidation key only — never executed. It lets `diffConfig`
+  // notice a callback body edit (the `id` is stable, so without it a body change
+  // is invisible and watch mode keeps stale CSS). Best-effort: it tracks the
+  // function *source*, not values it closes over.
+  return { kind: 'js-callback', id: ref.id, hash: hashCallbackSource(fn) }
+}
+
+function hashCallbackSource(fn: Function): string {
+  const source = stringify(fn) ?? String(fn)
+  // djb2 over the source text — stable across runs, dependency-free.
+  let hash = 5381
+  for (let i = source.length - 1; i >= 0; i--) hash = (hash * 33) ^ source.charCodeAt(i)
+  return `fn1-${(hash >>> 0).toString(36)}`
 }
 
 function getCallbackRef(path: string[]): { kind: ProjectCallbackKind; id: string } | undefined {
