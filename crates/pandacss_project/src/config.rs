@@ -350,7 +350,7 @@ fn jsx_extraction_config_from_definitions(
             &mut component_regex_props,
         );
     }
-    let valid_style_props = valid_jsx_style_props_from_config(utility);
+    let valid_style_props = valid_jsx_style_props_from_config(utility, &entries.condition_names);
     JsxExtractionConfig {
         style_props: jsx_style_props_from_config(config),
         component_names,
@@ -433,12 +433,21 @@ fn collect_pattern_prop_controls(
     );
 }
 
-fn valid_jsx_style_props_from_config(utility: &Utility) -> FxHashSet<String> {
+fn valid_jsx_style_props_from_config(
+    utility: &Utility,
+    condition_names: &[String],
+) -> FxHashSet<String> {
     let mut props: FxHashSet<String> = css_property_names()
         .iter()
         .map(|prop| (*prop).to_owned())
         .collect();
     props.extend(utility.known_prop_names().map(str::to_owned));
+    props.extend(
+        condition_names
+            .iter()
+            .filter(|name| name.as_str() != "base")
+            .cloned(),
+    );
     props
 }
 

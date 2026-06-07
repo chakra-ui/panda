@@ -84,6 +84,41 @@ fn jsx_style_props_feed_the_encoder() {
 }
 
 #[test]
+fn jsx_condition_props_feed_conditioned_atoms() {
+    let mut project = create_project(json!({
+        "conditions": {
+            "hover": "&:hover"
+        },
+        "theme": {
+            "breakpoints": {
+                "md": "768px"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "a.tsx",
+        indoc! {r"
+            import { Box } from '@panda/jsx';
+            const el = <Box color='blue' _hover={{ color: 'red' }} md={{ padding: '4px' }} />;
+        "},
+    );
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions:
+        - _hover
+    - prop: padding
+      value: 4px
+      conditions:
+        - md
+    ");
+}
+
+#[test]
 fn jsx_factory_call_base_styles_feed_the_encoder() {
     let mut project = create_project(json!({
         "jsxFactory": "panda"

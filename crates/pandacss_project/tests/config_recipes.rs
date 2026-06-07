@@ -430,6 +430,58 @@ fn no_arg_recipe_calls_use_base_and_defaults() {
 }
 
 #[test]
+fn dynamic_recipe_call_args_still_emit_base_and_defaults() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "display": "inline-flex" },
+                    "defaultVariants": {
+                        "size": "md"
+                    },
+                    "variants": {
+                        "size": {
+                            "md": { "fontSize": "16px" }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { button } from '@panda/recipes';
+            button(dynamic);
+            button({ size: undefined });
+            button({ size: maybe });
+        "},
+    );
+
+    assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: display
+            value: inline-flex
+            conditions: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn recipe_function_calls_support_conditional_variants() {
     let mut project = create_project(json!({
         "theme": {

@@ -328,7 +328,10 @@ impl Project {
         let empty_object = Literal::Object(Vec::new());
         let diagnose_unextractable_calls = !compiled.extractor_config.has_jsx_framework;
         for call in result.calls {
-            if diagnose_unextractable_calls && call.data.iter().any(Option::is_none) {
+            if diagnose_unextractable_calls
+                && call.category != MatchCategory::Recipe
+                && call.data.iter().any(Option::is_none)
+            {
                 report.diagnostics.push(dynamic_style_value_diagnostic(
                     call.category,
                     &call.name,

@@ -253,7 +253,13 @@ fn should_emit_call(
                 .flatten()
                 .any(|literal| matches!(literal, Literal::Object(_)));
     }
-    data.iter().any(Option::is_some) || (category == MatchCategory::Recipe && data.is_empty())
+    if category == MatchCategory::Recipe {
+        return data.first().is_none_or(|arg| {
+            arg.as_ref()
+                .is_none_or(|literal| matches!(literal, Literal::Object(_)))
+        });
+    }
+    data.iter().any(Option::is_some)
 }
 
 fn dynamic_style_value_diagnostic(
