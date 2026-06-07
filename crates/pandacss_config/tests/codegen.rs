@@ -96,7 +96,11 @@ fn optimize_defaults_and_overrides() {
     let serialized = serde_json::to_value(&configured).expect("serialized config");
     assert_eq!(
         serialized.get("optimize"),
-        Some(&json!({ "removeUnusedTokens": true, "removeUnusedKeyframes": true }))
+        Some(&json!({
+            "removeUnusedTokens": true,
+            "removeUnusedKeyframes": true,
+            "smartCompoundVariants": false
+        }))
     );
 }
 

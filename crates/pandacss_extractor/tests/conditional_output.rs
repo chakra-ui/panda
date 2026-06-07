@@ -103,22 +103,25 @@ fn ternary_in_jsx_attribute_emits_conditional() {
 // --- logical && / || / ?? ---
 
 #[test]
-fn logical_and_with_non_literal_left_drops_when_left_unresolvable() {
-    // `isFocused && focusColor` — `isFocused` is a free identifier. Our
-    // contract requires both branches to fold; since left doesn't, we
-    // drop. (JS encodes this as `Conditional(Unresolvable, X)`, but
-    // until we add a distinct Unresolvable variant, conflating with
-    // `null` would lose information — better to drop.)
+fn logical_and_with_unresolvable_left_emits_right_operand() {
+    // `isFocused && focusColor` — `isFocused` is the dynamic condition, not a
+    // style alternative. The extractable style is the right operand (matches
+    // node, which evaluates this to the right side).
     let src = indoc! {r"
         import { css } from '@panda/css';
         const focusColor = 'red';
         css({ color: isFocused && focusColor });
     "};
-    let calls = run(src).calls;
-    assert!(
-        calls.is_empty(),
-        "logical && with unresolvable left should drop: {calls:#?}"
-    );
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 60
+        end: 99
+    ");
 }
 
 #[test]
@@ -176,19 +179,44 @@ fn logical_or_with_literal_left_short_circuits() {
 }
 
 #[test]
-fn nullish_coalesce_with_non_literal_left_drops() {
-    // Same contract as logical &&: when left doesn't fold, drop. Once
-    // we add a distinct Unresolvable variant we can revisit this.
+fn logical_or_with_unresolvable_left_emits_right_operand() {
+    // `maybeColor || fallback` — dynamic left, so emit the right operand.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const fallback = 'gray';
+        css({ color: maybeColor || fallback });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: gray
+      span:
+        start: 59
+        end: 97
+    ");
+}
+
+#[test]
+fn nullish_coalesce_with_unresolvable_left_emits_right_operand() {
+    // Same as `&&`: a dynamic left isn't a style alternative; emit the right
+    // operand (the fallback), matching node.
     let src = indoc! {r"
         import { css } from '@panda/css';
         const fallback = 'gray';
         css({ color: maybeColor ?? fallback });
     "};
-    let calls = run(src).calls;
-    assert!(
-        calls.is_empty(),
-        "?? with unresolvable left should drop: {calls:#?}"
-    );
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: gray
+      span:
+        start: 59
+        end: 97
+    ");
 }
 
 // --- nesting ---

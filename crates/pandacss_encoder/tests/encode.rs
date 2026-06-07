@@ -379,3 +379,100 @@ fn custom_property_names_are_unaffected() {
       conditions: []
     "#);
 }
+
+#[test]
+fn value_level_conditional_expands_both_branches() {
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ color: cond ? 'red' : 'blue' });",
+        "css",
+    );
+    let mut encoder = encoder_with(&[]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn nested_conditional_expands_every_branch() {
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ color: a ? 'red' : (b ? 'green' : 'blue') });",
+        "css",
+    );
+    let mut encoder = encoder_with(&[]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: green
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn conditional_under_a_condition_keeps_the_condition_on_both_branches() {
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ _hover: { color: cond ? 'red' : 'blue' } });",
+        "css",
+    );
+    let mut encoder = encoder_with(&["_hover"]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: blue
+      conditions:
+        - _hover
+    - prop: color
+      value: red
+      conditions:
+        - _hover
+    ");
+}
+
+#[test]
+fn conditional_branch_important_is_preserved() {
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ color: cond ? 'red !important' : 'blue' });",
+        "css",
+    );
+    let mut encoder = encoder_with(&[]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+      important: true
+    ");
+}
+
+#[test]
+fn fused_walker_also_expands_conditionals() {
+    use pandacss_encoder::NoNormalize;
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ color: cond ? 'red' : 'blue' });",
+        "css",
+    );
+    let mut encoder = encoder_with(&[]);
+    encoder.process_atomic_with(&lit, &NoNormalize);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: blue
+      conditions: []
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}

@@ -41,6 +41,26 @@ fn parse_file_routes_css_cva_and_sva_to_the_right_pipelines() {
 }
 
 #[test]
+fn cva_base_conditional_value_emits_both_branches() {
+    // A ternary value inside a cva base resolves to either branch at runtime;
+    // the encoder expands it into both atoms.
+    let mut project = create_project(json!({}));
+    let src = indoc! {r"
+        import { cva } from '@panda/css';
+        export function C(props){ return cva({ base: { padding: props.cond ? '4px' : '8px' } }); }
+    "};
+    project.parse_file("fixture.tsx", src);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: padding
+      value: 4px
+      conditions: []
+    - prop: padding
+      value: 8px
+      conditions: []
+    ");
+}
+
+#[test]
 fn jsx_style_props_feed_the_encoder() {
     // A JSX usage routes into the same encoder pipeline as css().
     let mut project = create_project(json!({}));

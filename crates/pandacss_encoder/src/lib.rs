@@ -342,6 +342,15 @@ impl<C: ConditionMatcher> Encoder<C> {
             return;
         }
 
+        // A conditional (`cond ? a : b`) could resolve to either branch at
+        // runtime, so emit each branch's atoms under the same path.
+        if let Literal::Conditional(branches) = value {
+            for branch in branches {
+                self.walk(branch, path);
+            }
+            return;
+        }
+
         // Leaf: the accumulated path becomes one atom.
         if let Some(atom) = Self::atom_from_path(path, value) {
             self.atoms.insert(atom);
@@ -383,9 +392,12 @@ impl<C: ConditionMatcher> Encoder<C> {
                     path.pop();
                 }
             }
-            Literal::Conditional(_) => {
-                // Match the unfused walker: `leaf_to_atom_value` rejects
-                // Conditional, so it emits no atom and does not recurse.
+            Literal::Conditional(branches) => {
+                // A conditional could resolve to either branch at runtime;
+                // emit each branch's atoms under the same path.
+                for branch in branches {
+                    self.walk_with(branch, norm, path);
+                }
             }
             _ => {
                 let prop = path.iter().find(|s| !s.is_condition).map(|s| s.name);
@@ -505,18 +517,9 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
                 important,
             })
         }
-        Literal::Conditional(branches) => {
-            let mut out = String::with_capacity(branches.len().saturating_mul(8) + 3);
-            out.push_str("?(");
-            append_joined_literal_repr(&mut out, branches, "|");
-            out.push(')');
-            let (value, important) = split_important(&out);
-            Some(EncodedLeaf {
-                value: AtomValue::String(value.into_owned().into_boxed_str()),
-                important,
-            })
-        }
-        Literal::Object(_) => None,
+        // Conditionals are expanded into their branches by the walkers before
+        // reaching a leaf, so they never arrive here.
+        Literal::Conditional(_) | Literal::Object(_) => None,
     }
 }
 

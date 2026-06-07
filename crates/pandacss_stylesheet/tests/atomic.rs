@@ -998,3 +998,264 @@ fn merges_adjacent_selectors_that_share_a_declaration_block() {
     }
     ");
 }
+
+#[test]
+fn multi_arg_css_emits_every_argument() {
+    // Panda merges args last-wins at runtime, so both atoms must be emitted
+    // (the runtime applies `.m_3`).
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ margin: '1' }, { margin: '3' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_3 {
+        margin: 3;
+      }
+    }
+    ");
+}
+
+#[test]
+fn array_css_arg_is_a_merge_list_not_a_responsive_array() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "breakpoints": { "sm": "40rem" } },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css([{ margin: '1' }, { margin: '3' }, false]);",
+        &[StylesheetLayer::Utilities],
+    );
+    // Both unconditional (no `@media (width >= 40rem)` from responsive
+    // expansion); the falsy entry is skipped.
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_3 {
+        margin: 3;
+      }
+    }
+    ");
+}
+
+#[test]
+fn conditional_css_arg_emits_both_branches() {
+    // A `cond ? a : b` arg can resolve to either branch at runtime, so both
+    // sets of atoms must be emitted.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(props){ return css({ margin: '1' }, props.cond ? { margin: '3' } : { margin: '5' }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_3 {
+        margin: 3;
+      }
+      .m_5 {
+        margin: 5;
+      }
+    }
+    ");
+}
+
+#[test]
+fn value_level_ternary_emits_both_branches() {
+    // `{ margin: cond ? '3' : '5' }` — the value resolves to either branch at
+    // runtime, so emit both atoms.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(props){ return css({ margin: props.cond ? '3' : '5' }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_3 {
+        margin: 3;
+      }
+      .m_5 {
+        margin: 5;
+      }
+    }
+    ");
+}
+
+#[test]
+fn value_level_logical_and_emits_right_operand() {
+    // `{ margin: cond && '3' }` — `cond` is the dynamic test, not a style
+    // alternative, so only the right operand is extractable.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(props){ return css({ margin: props.cond && '3' }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_3 {
+        margin: 3;
+      }
+    }
+    ");
+}
+
+#[test]
+fn value_level_nullish_emits_fallback() {
+    // `{ margin: maybe ?? '3' }` — emit the fallback (right operand).
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(props){ return css({ margin: props.maybe ?? '3' }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_3 {
+        margin: 3;
+      }
+    }
+    ");
+}
+
+#[test]
+fn four_args_css_emits_every_argument() {
+    // No 3-arg cap: every arg's atoms are emitted.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ margin: '1' }, { margin: '2' }, { margin: '3' }, { margin: '4' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_2 {
+        margin: 2;
+      }
+      .m_3 {
+        margin: 3;
+      }
+      .m_4 {
+        margin: 4;
+      }
+    }
+    ");
+}
+
+#[test]
+fn arg_level_logical_and_emits_right_operand() {
+    // `css({...}, cond && { margin: '3' })` — the `&&` arg resolves to its right
+    // operand (an object), merged after the first arg.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(props){ return css({ margin: '1' }, props.cond && { margin: '3' }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_3 {
+        margin: 3;
+      }
+    }
+    ");
+}
+
+#[test]
+fn array_nested_in_a_conditional_arg_stays_a_merge_list() {
+    // `css(cond ? [a, b] : c)` — the array is a branch of an arg-level ternary,
+    // so it's still a merge-list (both unconditional), NOT a responsive array.
+    // Matches node, which flattens arg-level conditionals before encoding.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "breakpoints": { "sm": "40rem" } },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(p){ return css(p.cond ? [{ margin: '1' }, { margin: '3' }] : { margin: '5' }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    // No `@media (width >= 40rem)` — `margin: '3'` is unconditional, not `sm`.
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_3 {
+        margin: 3;
+      }
+      .m_5 {
+        margin: 5;
+      }
+    }
+    ");
+}
+
+#[test]
+fn array_css_arg_with_conditional_element_emits_every_branch() {
+    // A merge-list array whose element is a ternary: flatten the array, then
+    // expand the conditional element's branches.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(props){ return css([{ margin: '1' }, props.cond ? { margin: '3' } : { margin: '5' }]); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .m_3 {
+        margin: 3;
+      }
+      .m_5 {
+        margin: 5;
+      }
+    }
+    ");
+}

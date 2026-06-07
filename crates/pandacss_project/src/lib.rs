@@ -336,20 +336,24 @@ impl Project {
                     &line_index,
                 ));
             }
-            let mut args = call.data.into_iter();
-            let arg = args.next().flatten();
-            let second_arg = args.next().flatten();
-            let third_arg = args.next().flatten();
+            // Move the whole arg vector out so each arm consumes exactly what it
+            // needs; `css` takes all args, the rest take theirs by position.
+            let data = call.data;
             match (call.category, call.name.as_str()) {
                 (MatchCategory::Css, "css") => {
-                    let Some(arg) = arg else {
-                        continue;
-                    };
-                    self.process_atomic(&mut encoder, &arg);
-                    report.css_calls += 1;
+                    // Panda merges every css() arg (last-wins) at runtime, so
+                    // emit every arg's atoms, not just the first.
+                    let mut processed = false;
+                    for arg in data.into_iter().flatten() {
+                        self.process_css_arg(&mut encoder, &arg);
+                        processed = true;
+                    }
+                    if processed {
+                        report.css_calls += 1;
+                    }
                 }
                 (MatchCategory::Css, "cva") => {
-                    let Some(arg) = arg else {
+                    let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
                     let _span = tracing::trace_span!("recipe_resolution", kind = "cva").entered();
@@ -370,7 +374,7 @@ impl Project {
                     }
                 }
                 (MatchCategory::Css, "sva") => {
-                    let Some(arg) = arg else {
+                    let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
                     let _span = tracing::trace_span!("recipe_resolution", kind = "sva").entered();
@@ -391,7 +395,7 @@ impl Project {
                     }
                 }
                 (MatchCategory::Pattern, _) => {
-                    let Some(arg) = arg else {
+                    let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
                     if let Some(transform) = pattern_transform.as_deref_mut() {
@@ -408,6 +412,7 @@ impl Project {
                     }
                 }
                 (MatchCategory::Recipe, _) => {
+                    let arg = data.into_iter().next().flatten();
                     let arg = arg.as_ref().unwrap_or(&empty_object);
                     let _span = tracing::trace_span!(
                         "recipe_resolution",
@@ -424,6 +429,10 @@ impl Project {
                     );
                 }
                 (MatchCategory::Jsx, _) => {
+                    let mut args = data.into_iter();
+                    let arg = args.next().flatten();
+                    let second_arg = args.next().flatten();
+                    let third_arg = args.next().flatten();
                     if let Some(recipe_name) = call.jsx_recipe_ident.as_deref()
                         && let Some(default_props) = default_props_from_options(third_arg.as_ref())
                     {
@@ -788,6 +797,25 @@ impl Project {
             shorthand: true,
         };
         encoder.process_atomic_with(style, &normalizer);
+    }
+
+    /// One `css()` arg. At the argument level an array is a merge-list of style
+    /// objects (not a responsive array) and a conditional (`cond ? a : b`) could
+    /// resolve to either branch — and each branch is itself an arg, so an array
+    /// inside a branch stays a merge-list too. Recurse into both, treating each
+    /// element/branch as its own arg; only style objects reach `process_atomic`
+    /// (where the encoder still expands any *value*-level conditionals).
+    fn process_css_arg(&self, encoder: &mut Encoder<ProjectConditionMatcher>, arg: &Literal) {
+        match arg {
+            Literal::Array(items) | Literal::Conditional(items) => {
+                for item in items {
+                    if !matches!(item, Literal::Null | Literal::Bool(false)) {
+                        self.process_css_arg(encoder, item);
+                    }
+                }
+            }
+            _ => self.process_atomic(encoder, arg),
+        }
     }
 
     fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {

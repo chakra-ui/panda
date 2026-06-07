@@ -86,6 +86,28 @@ fn walk(&mut self, value: &Literal) {
 O(depth) allocation per root (not O(depth²) like clone-on-descend); the 8-segment inline budget covers every real
 (≤8-deep) object.
 
+## Conditional expansion
+
+A `Literal::Conditional(branches)` (a non-foldable ternary — see `literal-evaluator.md`) could resolve to **any** branch
+at runtime, so both walkers (`walk` and `walk_with`) recurse into every branch under the **same** path and emit each
+branch's atoms — the union, not a choice. `{ color: cond ? 'red' : 'blue' }` → `.c_red` + `.c_blue`; a conditional value
+under a condition (`{ _hover: cond ? a : b }`) keeps `_hover` on both branches; nested conditionals expand recursively.
+Conditionals are therefore consumed before reaching a leaf and never produce a degenerate `?(red|blue)` value. The two
+walkers must stay in sync here.
+
+Conditionals expand at **two levels**, because an array means different things in each position (merge-list as a `css()`
+arg, responsive array as a property value):
+
+- **Value-level** (a conditional *inside* a style object, `{ margin: cond ? '3' : '5' }`, or a recipe / cva / sva
+  value) — the encoder walker expands it here. An array branch at this level (`{ margin: cond ? ['1', '2'] : '5' }`) is
+  correctly responsive.
+- **Arg-level** (a conditional *as* a `css()` argument, `css(cond ? a : b)`) — `Project::process_css_arg` expands it
+  before the encoder, recursing into each branch as its own arg. This is what keeps an array inside a branch
+  (`css(cond ? [a, b] : c)`) a **merge-list** (both unconditional), matching node's arg-level flattening — the encoder
+  never sees that array, so it can't mistake it for responsive. `process_css_arg` handles `Literal::Array` (merge-list)
+  and `Literal::Conditional` (branches) identically: recurse, skip `null` / `false`, send only leaf objects to
+  `process_atomic`.
+
 ## Property selection rule
 
 The leaf property is the **outermost non-condition key**:

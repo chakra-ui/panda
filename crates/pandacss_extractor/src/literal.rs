@@ -499,8 +499,7 @@ fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
 }
 
 fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
-    // Left folds → short-circuit. Left doesn't fold but both sides do →
-    // emit Conditional alternatives (matches JS box.conditional).
+    // Left folds → short-circuit to the chosen side.
     if let Some(left) = expression_to_literal(&l.left, resolver) {
         return match l.operator {
             LogicalOperator::And => {
@@ -526,7 +525,10 @@ fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) 
             }
         };
     }
-    conditional_from_branches(&l.left, &l.right, resolver)
+    // Left didn't fold: it's the dynamic condition / short-circuit value, not a
+    // style alternative. For `&&`/`||`/`??` the only extractable style is the
+    // right operand (matches node's `maybeResolveConditionalExpression`).
+    expression_to_literal(&l.right, resolver)
 }
 
 fn eval_conditional(

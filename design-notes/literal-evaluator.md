@@ -28,9 +28,10 @@ Three notable choices:
   as the property name.
 - **`Number` is `f64`**, not split into int/float. JS only has one number type. The custom `Serialize` impl re-emits
   integers as `i64` when they fit (precision boundary at 2^53) to match the shape the JS extractor produces.
-- **`Conditional`** carries alternative branches from a non-foldable ternary or logical expression — both sides resolved
-  independently. Serializes as `{ "kind": "conditional", "branches": [...] }` so downstream consumers can distinguish it
-  from a regular object.
+- **`Conditional`** carries alternative branches from a non-foldable **ternary** (both sides resolved independently);
+  the downstream encoder expands every branch (see `atomic-encoding.md`). Logical operators don't produce it — a
+  non-foldable `&&` / `||` / `??` resolves to its right operand instead. Serializes as
+  `{ "kind": "conditional", "branches": [...] }` so downstream consumers can distinguish it from a regular object.
 
 ## What folds (with a Resolver)
 
@@ -44,8 +45,8 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 | `ParenthesizedExpression`, `TSAsExpression`, `TSSatisfiesExpression`, `TSNonNullExpression`, `TSTypeAssertion`, `TSInstantiationExpression` | Syntactic no-ops — recurse on the inner expression.                                                                  |
 | `UnaryExpression`                                                                                                                           | `+`, `-`, `!`, `~`. Skips `typeof`, `void`, `delete`.                                                                |
 | `BinaryExpression`                                                                                                                          | Arithmetic, comparison, equality. JS `+` keeps the string-vs-number split.                                           |
-| `LogicalExpression`                                                                                                                         | `&&`, `\|\|`, `??`. Non-foldable test emits `Conditional` branches.                                                  |
-| `ConditionalExpression`                                                                                                                     | Ternary. Non-foldable test emits `Conditional` branches.                                                             |
+| `LogicalExpression`                                                                                                                         | `&&`, `\|\|`, `??`. A foldable left short-circuits to the chosen side. A non-foldable left is the dynamic condition, not a style alternative, so we emit the **right operand** (matches node's `maybeResolveConditionalExpression`): `cond && X` / `a \|\| X` / `a ?? X` → `X`. |
+| `ConditionalExpression`                                                                                                                     | Ternary. A foldable test picks the chosen branch; a non-foldable test emits `Conditional` branches (both are styles). |
 | `TemplateLiteral`                                                                                                                           | Including tagged templates — tag identity is ignored.                                                                |
 | `Identifier`                                                                                                                                | Same-file `const` / `let` / `var` with literal initializer, never mutated.                                           |
 | `StaticMemberExpression`, `ComputedMemberExpression`                                                                                        | After resolving the object to a literal.                                                                             |
@@ -62,7 +63,8 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 - Free identifiers (no scope binding).
 - `let` / `var` after any mutation.
 - Function parameters without a `TSTypeLiteral` annotation.
-- Conditional / logical operators where _neither_ side folds.
+- A ternary where the non-foldable test's branches can't both fold (a partial conditional drops rather than emit a
+  half-branch). A logical operator whose right operand doesn't fold.
 - Objects where _every_ member is unresolvable (a partially-static object keeps the static members; see the lenient
   `ObjectExpression` rule above — this matches the JS extractor, e.g. `sva({ slots: [...anatomy.keys()], base })` keeps
   `base` and infers slots).
