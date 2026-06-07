@@ -416,7 +416,13 @@ impl Project {
                 }
                 (MatchCategory::Recipe, _) => {
                     let arg = data.into_iter().next().flatten();
-                    let arg = arg.as_ref().unwrap_or(&empty_object);
+                    // A non-object arg (scalar / dynamic) carries no variant
+                    // selection — fall back to the empty object so base +
+                    // defaults still resolve.
+                    let arg = arg
+                        .as_ref()
+                        .filter(|literal| matches!(literal, Literal::Object(_)))
+                        .unwrap_or(&empty_object);
                     let _span = tracing::trace_span!(
                         "recipe_resolution",
                         kind = "config_call",

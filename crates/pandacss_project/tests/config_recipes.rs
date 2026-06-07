@@ -482,6 +482,96 @@ fn dynamic_recipe_call_args_still_emit_base_and_defaults() {
 }
 
 #[test]
+fn scalar_recipe_call_args_still_emit_base_and_defaults() {
+    // A non-object arg (string / number / null) carries no variant selection —
+    // it destructures to defaults at runtime, so base + default variants emit.
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "display": "inline-flex" },
+                    "defaultVariants": { "size": "md" },
+                    "variants": { "size": { "md": { "fontSize": "16px" } } }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.ts",
+        indoc! {r#"
+            import { button } from '@panda/recipes';
+            button("sm");
+            button(0);
+            button(null);
+        "#},
+    );
+
+    assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: display
+            value: inline-flex
+            conditions: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--size_md
+        entries:
+          - prop: fontSize
+            value: 16px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn explicit_empty_variant_selection_overrides_default() {
+    // An explicitly-present variant key (even empty/unusable: `[]`, `{}`,
+    // unknown key) overrides its default — matching JS destructuring, where a
+    // default applies only to an absent key. So only base emits, no `size_md`.
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "base": { "display": "inline-flex" },
+                    "defaultVariants": { "size": "md" },
+                    "variants": { "size": { "md": { "fontSize": "16px" } } }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.ts",
+        indoc! {r#"
+            import { button } from '@panda/recipes';
+            button({ size: [] });
+            button({ size: {} });
+            button({ size: { nope: "md" } });
+        "#},
+    );
+
+    assert!(report.diagnostics.is_empty(), "{:?}", report.diagnostics);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base:
+      - recipe: button
+        slot: ~
+        className: button
+        entries:
+          - prop: display
+            value: inline-flex
+            conditions: []
+    variants: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn recipe_function_calls_support_conditional_variants() {
     let mut project = create_project(json!({
         "theme": {

@@ -189,7 +189,7 @@ pub(crate) fn expression_to_literal(
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match expr {
-        Expression::StringLiteral(s) => Some(Literal::String(s.value.to_string())),
+        Expression::StringLiteral(s) => Some(Literal::String(collapse_whitespace(&s.value))),
         Expression::NumericLiteral(n) => Some(Literal::Number(n.value)),
         Expression::BooleanLiteral(b) => Some(Literal::Bool(b.value)),
         Expression::NullLiteral(_) => Some(Literal::Null),
@@ -231,6 +231,30 @@ pub(crate) fn expression_to_literal(
 
         _ => None,
     }
+}
+
+/// Collapse runs of whitespace to a single space (like JS `trimWhitespace`), but
+/// leave whitespace *inside* quoted substrings untouched — it's significant for
+/// `content`, quoted font names, etc. (node collapses those too and loses it).
+pub(crate) fn collapse_whitespace(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut quote: Option<char> = None;
+    for ch in value.chars() {
+        if let Some(open) = quote {
+            out.push(ch);
+            if ch == open {
+                quote = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+            out.push(ch);
+        } else if !ch.is_whitespace() {
+            out.push(ch);
+        } else if !out.ends_with(' ') {
+            out.push(' ');
+        }
+    }
+    out
 }
 
 pub(crate) fn object_to_literal(
@@ -320,10 +344,15 @@ fn array_to_literal(
                 };
                 items.extend(inner_items);
             }
-            _ => {
-                let expr = element.as_expression()?;
-                items.push(expression_to_literal(expr, resolver)?);
-            }
+            // An unresolvable or `undefined` element holds its slot as `Null`
+            // (like an elision) rather than dropping the whole array, so later
+            // responsive values keep their breakpoint positions — matching node.
+            _ => items.push(
+                element
+                    .as_expression()
+                    .and_then(|expr| expression_to_literal(expr, resolver))
+                    .unwrap_or(Literal::Null),
+            ),
         }
     }
     Some(Literal::Array(items))

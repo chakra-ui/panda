@@ -1442,7 +1442,13 @@ fn selected_variants(
         let mut values = Vec::new();
         let mut path = SmallVec::<[Box<str>; 2]>::new();
         collect_selected_variant_values(value, conditions, breakpoints, &mut path, &mut values);
-        if !values.is_empty() {
+        // An explicitly-provided key overrides its default even when the value
+        // yields no usable variant (`size: []` / `{}` / `null`) — matching JS
+        // destructuring, where a default applies only to an *absent* key.
+        // (`size: undefined` is dropped upstream, so it never reaches here.)
+        if values.is_empty() {
+            out.remove(key.as_str());
+        } else {
             out.insert(key.clone().into_boxed_str(), values);
         }
     }

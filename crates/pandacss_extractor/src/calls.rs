@@ -254,10 +254,10 @@ fn should_emit_call(
                 .any(|literal| matches!(literal, Literal::Object(_)));
     }
     if category == MatchCategory::Recipe {
-        return data.first().is_none_or(|arg| {
-            arg.as_ref()
-                .is_none_or(|literal| matches!(literal, Literal::Object(_)))
-        });
+        // A config-recipe call always renders its base + default variants, even
+        // with a missing, dynamic, or non-object arg (which destructures to "no
+        // selection" at runtime), so it always emits.
+        return true;
     }
     data.iter().any(Option::is_some)
 }

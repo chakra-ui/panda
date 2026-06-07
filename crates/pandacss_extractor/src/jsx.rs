@@ -4,8 +4,11 @@
 
 use crate::{
     CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
-    MatchedImport, Matchers, Span, VisitorContext, css_template::css_template_to_object,
-    jsx_react_runtime, literal::expression_to_literal, span_from_oxc,
+    MatchedImport, Matchers, Span, VisitorContext,
+    css_template::css_template_to_object,
+    jsx_react_runtime,
+    literal::{collapse_whitespace, expression_to_literal},
+    span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -541,7 +544,7 @@ fn attribute_value(
     resolver: Option<&crate::Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match value {
-        JSXAttributeValue::StringLiteral(s) => Some(Literal::String(s.value.to_string())),
+        JSXAttributeValue::StringLiteral(s) => Some(Literal::String(collapse_whitespace(&s.value))),
         JSXAttributeValue::ExpressionContainer(container) => match &container.expression {
             JSXExpression::EmptyExpression(_) => None,
             other => other

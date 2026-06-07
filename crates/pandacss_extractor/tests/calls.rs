@@ -161,6 +161,29 @@ fn duplicate_object_keys_keep_first_position_with_last_value() {
 }
 
 #[test]
+fn string_value_whitespace_is_collapsed_outside_quotes() {
+    // Structural whitespace collapses (so `1px  solid  red` dedupes with its
+    // single-spaced twin), but whitespace inside quotes is significant (e.g.
+    // `content`) and is preserved.
+    assert_yaml_snapshot!(
+        extract(r#"css({ border: '1px  solid   red', content: '"a  b"' })"#, &[css("css")]),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - border: 1px solid red
+            content: "\"a  b\""
+        span:
+          start: 0
+          end: 54
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
 fn spread_overwrite_keeps_spread_position() {
     // Same upsert semantics but the duplicate enters through an inline
     // literal spread. The key from the spread keeps its position; the
@@ -1873,6 +1896,30 @@ fn array_value_preserves_null_elements() {
         span:
           start: 0
           end: 48
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn array_unresolvable_element_becomes_null_slot() {
+    // `undefined` / dynamic elements null their slot instead of dropping the
+    // array, so `red` keeps its breakpoint position (matches node).
+    assert_yaml_snapshot!(
+        extract("css({ color: [undefined, dynamic, 'red'] })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color:
+              - ~
+              - ~
+              - red
+        span:
+          start: 0
+          end: 43
     diagnostics: []
     ",
     );
