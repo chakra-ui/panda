@@ -972,3 +972,25 @@ fn minified_output_preserves_significant_spaces() {
     );
     assert_snapshot!(css, @r#"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}}@layer utilities{.m_1px_2px{margin:1px 2px;}.content_\"a__b\"{content:"a  b";}.descendantHover\:m_3px_4px :hover{margin:3px 4px;}}"#);
 }
+
+#[test]
+fn merges_adjacent_selectors_that_share_a_declaration_block() {
+    // N3: distinct selectors with identical declarations collapse into one
+    // comma-joined rule (parity with node's merge-rules pass).
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "hover": "&:hover" }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ _hover: { color: 'red' } }); css({ '[data-x] &': { color: 'red' } });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      [data-x] .\[\[data-x\]_\&\]\:color_red, .hover\:color_red:hover {
+        color: red;
+      }
+    }
+    ");
+}

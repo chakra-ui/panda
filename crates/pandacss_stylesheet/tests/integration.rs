@@ -116,10 +116,7 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
       .c_red\.500 {
         color: var(--colors-red-500);
       }
-      .dark .dark\:c_blue\.500 {
-        color: var(--colors-blue-500);
-      }
-      .hover\:c_blue\.500:hover {
+      .dark .dark\:c_blue\.500, .hover\:c_blue\.500:hover {
         color: var(--colors-blue-500);
       }
       @media (width >= 48rem) {

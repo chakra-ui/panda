@@ -29,16 +29,7 @@ fn sorts_pseudo_selectors_by_cascade_priority() {
       }
     }
     @layer utilities {
-      .custom\:c_red[data-open] {
-        color: red;
-      }
-      .hover\:c_red:hover {
-        color: red;
-      }
-      .focus\:c_red:focus {
-        color: red;
-      }
-      .active\:c_red:active {
+      .custom\:c_red[data-open], .hover\:c_red:hover, .focus\:c_red:focus, .active\:c_red:active {
         color: red;
       }
     }
@@ -265,19 +256,7 @@ fn sorts_same_root_attribute_variants_deterministically() {
       }
     }
     @layer utilities {
-      .dataActive\:d_flex[data-active] {
-        display: flex;
-      }
-      .dataBar\:d_flex[data-bar] {
-        display: flex;
-      }
-      .dataFocus\:d_flex[data-focus] {
-        display: flex;
-      }
-      .dataFoo\:d_flex[data-foo] {
-        display: flex;
-      }
-      .dataHover\:d_flex[data-hover] {
+      .dataActive\:d_flex[data-active], .dataBar\:d_flex[data-bar], .dataFocus\:d_flex[data-focus], .dataFoo\:d_flex[data-foo], .dataHover\:d_flex[data-hover] {
         display: flex;
       }
     }
@@ -308,10 +287,7 @@ fn sorts_base_rules_before_selector_and_at_rule_variants() {
       }
     }
     @layer utilities {
-      .c_red {
-        color: red;
-      }
-      .hover\:c_red:hover {
+      .c_red, .hover\:c_red:hover {
         color: red;
       }
       @media (width >= 64rem) {
@@ -409,28 +385,7 @@ fn sorts_structural_form_and_interactive_pseudos() {
       }
     }
     @layer utilities {
-      .first\:d_flex:first-child {
-        display: flex;
-      }
-      .empty\:d_flex:empty {
-        display: flex;
-      }
-      .disabled\:d_flex:disabled {
-        display: flex;
-      }
-      .checked\:d_flex:checked {
-        display: flex;
-      }
-      .focusWithin\:d_flex:focus-within {
-        display: flex;
-      }
-      .hover\:d_flex:hover {
-        display: flex;
-      }
-      .focus\:d_flex:focus {
-        display: flex;
-      }
-      .active\:d_flex:active {
+      .first\:d_flex:first-child, .empty\:d_flex:empty, .disabled\:d_flex:disabled, .checked\:d_flex:checked, .focusWithin\:d_flex:focus-within, .hover\:d_flex:hover, .focus\:d_flex:focus, .active\:d_flex:active {
         display: flex;
       }
     }
@@ -1006,10 +961,7 @@ fn sorts_unknown_selector_conditions_before_known_pseudos() {
       }
     }
     @layer utilities {
-      .dataOpen\:c_red[data-open] {
-        color: red;
-      }
-      .hover\:c_red:hover {
+      .dataOpen\:c_red[data-open], .hover\:c_red:hover {
         color: red;
       }
     }
@@ -1040,10 +992,7 @@ fn sorts_compound_pseudo_conditions_by_total_pseudo_priority() {
       }
     }
     @layer utilities {
-      .hover\:c_red:hover {
-        color: red;
-      }
-      .hoverFocus\:c_red:hover:focus {
+      .hover\:c_red:hover, .hoverFocus\:c_red:hover:focus {
         color: red;
       }
     }

@@ -161,19 +161,13 @@ fn composition_styles_resolve_token_categories_and_nested_conditions() {
         "import { css } from '@panda/css';\ncss({ textStyle: 'heading' });\ncss({ layerStyle: 'panel' });\ncss({ animationStyle: 'enter' });",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(utilities, @r"
+    assert_snapshot!(utilities, @"
     @layer utilities {
       @layer compositions {
-        .animationStyle_enter {
+        .animationStyle_enter, .animationStyle_enter:is(:hover, [data-hover]) {
           animation-duration: var(--durations-slow);
         }
-        .animationStyle_enter:is(:hover, [data-hover]) {
-          animation-duration: var(--durations-slow);
-        }
-        .layerStyle_panel {
-          background-color: var(--colors-brand-500);
-        }
-        .layerStyle_panel:is(:hover, [data-hover]) {
+        .layerStyle_panel, .layerStyle_panel:is(:hover, [data-hover]) {
           background-color: var(--colors-brand-500);
         }
         .textStyle_heading {

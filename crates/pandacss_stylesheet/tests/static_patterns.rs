@@ -233,10 +233,7 @@ fn static_pattern_conditions_and_responsive_flow_into_utilities_layer() {
         .expect("utilities layer present");
     assert_snapshot!(utilities, @r"
     @layer utilities {
-      .ai_center {
-        align-items: center;
-      }
-      .hover\:ai_center:hover {
+      .ai_center, .hover\:ai_center:hover {
         align-items: center;
       }
       @media (width >= 48rem) {

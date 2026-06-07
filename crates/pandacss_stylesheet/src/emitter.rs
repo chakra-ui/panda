@@ -1034,7 +1034,7 @@ impl<'a> EmitContext<'a> {
             );
         }
         if !grouped.is_empty() {
-            write_grouped_rules(writer, &grouped);
+            write_grouped_rules(writer, &mut grouped);
         }
     }
 
@@ -1178,7 +1178,7 @@ impl<'a> EmitContext<'a> {
         let mut grouped = GroupNode::default();
         self.collect_styles(&mut grouped, value);
         if !grouped.is_empty() {
-            write_grouped_rules(writer, &grouped);
+            write_grouped_rules(writer, &mut grouped);
         }
     }
 

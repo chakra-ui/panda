@@ -3,8 +3,10 @@
 ## Summary
 
 `pandacss_stylesheet` emits native CSS from resolved config, borrowed atoms, token data, and encoded recipes. It owns CSS
-emission, supported static CSS expansion, layer slicing metadata, and writer formatting. It does not run a CSS optimizer;
-if one lands, it should be CSS-aware, for example `lightningcss`, not a raw whitespace pass.
+emission, supported static CSS expansion, layer slicing metadata, and writer formatting. It runs one CSS-aware pass at
+the IR level — adjacent rules sharing a declaration block are coalesced into a selector list (`grouped.rs`) — but no full
+optimizer (no parsing, prefixing, shorthand folding, or value minification); if those land, they belong in a CSS-aware
+optimizer such as `lightningcss`, not a raw whitespace pass.
 
 ## Scope
 
@@ -18,12 +20,14 @@ Owned:
 - Supported native `staticCss`: `css`, `recipes`, global recipe wildcard, recipe-level `staticCss`, recipe wildcards,
   base recipe styles, slot recipes, compound variants, responsive values, and configured conditions.
 - Layer preamble/ranges, custom layer names, modern breakpoint media syntax, and writer-level minification.
+- Adjacent rule merging: consecutive rules with an identical declaration block collapse into one comma-joined selector
+  list (cascade-safe, adjacency-only — mirrors lightningcss's `CssRuleList::minify`).
 
 Not owned:
 
 - Theme artifact/codegen files.
 - `staticCss.patterns` or `staticCss.themes` beyond diagnostics for unsupported native paths.
-- CSS parsing, rule merging, prefixing, shorthand folding, AST minification, or incremental watch-mode patching.
+- CSS parsing, prefixing, shorthand folding, AST/value minification, or incremental watch-mode patching.
 
 `globalVars` emits regular CSS variables. Object values become `@property` registrations only when the resulting CSS
 would be valid: `syntax` and `inherits` are required, and `initialValue` is required unless `syntax` is `"*"`.
@@ -66,7 +70,7 @@ flowchart TD
   GP --> X
 
   X --> T[LoweredTarget: selector + wrappers]
-  T --> B[grouped.rs groups shared wrapper prefixes]
+  T --> B[grouped.rs groups shared wrapper prefixes, merges adjacent same-declaration rules]
   B --> W[CssWriter writes formatted or minified CSS]
 ```
 
