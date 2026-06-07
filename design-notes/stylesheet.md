@@ -82,7 +82,8 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
 `sort.rs` owns final cascade order. It sorts by:
 
 1. Rule bucket: base, selector-only, then at-rule/mixed variants.
-2. At-rule priority: supports, media, container, print, then other at-rules; width queries sort by resolved length.
+2. At-rule priority: supports, media, container, print, then other at-rules; size queries sort by resolved length and
+   direction across every axis — `width`, `inline-size` (container queries), `height`, and `block-size`.
 3. Selector priority: pseudo selectors use the configured pseudo-class priority table.
 4. Property priority: broad shorthands before shorthand groups before longhands.
 5. Deterministic ties: property name, atom value key, rule conditions, then class conditions.

@@ -296,7 +296,7 @@ struct QueryKey {
 
 impl QueryKey {
     fn new(raw: &str) -> Self {
-        query_width(raw).map_or(
+        query_size(raw).map_or(
             Self {
                 direction: QueryDirection::Unknown,
                 value: OrderedLength(f64::INFINITY),
@@ -331,15 +331,14 @@ enum QueryDirection {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct QueryWidth {
+struct QuerySize {
     direction: QueryDirection,
     value: f64,
 }
 
-impl QueryWidth {
-    /// Sort weight: `min-width` ascends (mobile-first), `max-width` descends
-    /// (negated) so the larger breakpoint comes first — matching how each
-    /// direction must cascade.
+impl QuerySize {
+    /// Sort weight: min ascends (mobile-first), max descends (negated) so the
+    /// larger breakpoint comes first — matching how each direction must cascade.
     fn sort_value(self) -> f64 {
         match self.direction {
             QueryDirection::Min | QueryDirection::Unknown => self.value,
@@ -504,22 +503,60 @@ fn collect_raw_part(raw: &str, at_rules: &mut Vec<AtRuleKey>, selectors: &mut Ve
     }
 }
 
-fn query_width(query: &str) -> Option<QueryWidth> {
+/// Min-direction needles across every size axis. Modern (`feature >=`, what the
+/// emitter writes for both `@media (width …)` and `@container (inline-size …)`)
+/// plus legacy `min-*` forms for user-authored conditions.
+const MIN_SIZE_NEEDLES: [&str; 12] = [
+    "width >=",
+    "min-width:",
+    "min-width ",
+    "inline-size >=",
+    "min-inline-size:",
+    "min-inline-size ",
+    "height >=",
+    "min-height:",
+    "min-height ",
+    "block-size >=",
+    "min-block-size:",
+    "min-block-size ",
+];
+
+/// Max-direction needles, mirroring [`MIN_SIZE_NEEDLES`] (`feature <` + `max-*`).
+const MAX_SIZE_NEEDLES: [&str; 12] = [
+    "width <",
+    "max-width:",
+    "max-width ",
+    "inline-size <",
+    "max-inline-size:",
+    "max-inline-size ",
+    "height <",
+    "max-height:",
+    "max-height ",
+    "block-size <",
+    "max-block-size:",
+    "max-block-size ",
+];
+
+/// Resolve a `@media`/`@container` query's direction + length so breakpoints
+/// sort by magnitude. Covers every size axis (`width`, `inline-size`, `height`,
+/// `block-size`) — container queries use `inline-size`, so they must sort the
+/// same way media queries do. Min wins for range queries (checked first).
+fn query_size(query: &str) -> Option<QuerySize> {
     let lower = query.to_ascii_lowercase();
-    if let Some(value) = length_after(&lower, "width >=")
-        .or_else(|| length_after(&lower, "min-width:"))
-        .or_else(|| length_after(&lower, "min-width "))
+    if let Some(value) = MIN_SIZE_NEEDLES
+        .iter()
+        .find_map(|needle| length_after(&lower, needle))
     {
-        return Some(QueryWidth {
+        return Some(QuerySize {
             direction: QueryDirection::Min,
             value,
         });
     }
-    if let Some(value) = length_after(&lower, "width <")
-        .or_else(|| length_after(&lower, "max-width:"))
-        .or_else(|| length_after(&lower, "max-width "))
+    if let Some(value) = MAX_SIZE_NEEDLES
+        .iter()
+        .find_map(|needle| length_after(&lower, needle))
     {
-        return Some(QueryWidth {
+        return Some(QuerySize {
             direction: QueryDirection::Max,
             value,
         });
@@ -934,5 +971,113 @@ mod tests {
         let supports = AtRuleKey::new("@supports (display: grid)");
         let media = AtRuleKey::new("@media (width >= 48rem)");
         assert!(supports < media);
+    }
+
+    fn resolved(query: &str) -> Option<(QueryDirection, f64)> {
+        query_size(query).map(|size| (size.direction, size.value))
+    }
+
+    #[test]
+    fn query_size_resolves_modern_width() {
+        assert_eq!(
+            resolved("@media (width >= 48rem)"),
+            Some((QueryDirection::Min, 768.0))
+        );
+        assert_eq!(
+            resolved("@media (width < 48rem)"),
+            Some((QueryDirection::Max, 768.0))
+        );
+    }
+
+    #[test]
+    fn query_size_resolves_container_inline_size() {
+        // Theme container conditions emit `inline-size`; they must resolve to a
+        // direction + length the same way `@media (width …)` does.
+        assert_eq!(
+            resolved("@container (inline-size >= 24rem)"),
+            Some((QueryDirection::Min, 384.0))
+        );
+        assert_eq!(
+            resolved("@container (inline-size < 24rem)"),
+            Some((QueryDirection::Max, 384.0))
+        );
+    }
+
+    #[test]
+    fn query_size_resolves_named_container_inline_size() {
+        assert_eq!(
+            resolved("@container card (inline-size >= 32rem)"),
+            Some((QueryDirection::Min, 512.0))
+        );
+    }
+
+    #[test]
+    fn query_size_resolves_height_and_block_size_axes() {
+        assert_eq!(
+            resolved("@media (height >= 40rem)"),
+            Some((QueryDirection::Min, 640.0))
+        );
+        assert_eq!(
+            resolved("@container (block-size < 20rem)"),
+            Some((QueryDirection::Max, 320.0))
+        );
+    }
+
+    #[test]
+    fn query_size_resolves_legacy_min_max_forms() {
+        assert_eq!(
+            resolved("@media (min-width: 768px)"),
+            Some((QueryDirection::Min, 768.0))
+        );
+        assert_eq!(
+            resolved("@media (max-width: 768px)"),
+            Some((QueryDirection::Max, 768.0))
+        );
+        assert_eq!(
+            resolved("@container (min-inline-size: 24rem)"),
+            Some((QueryDirection::Min, 384.0))
+        );
+        assert_eq!(
+            resolved("@container (max-inline-size: 24rem)"),
+            Some((QueryDirection::Max, 384.0))
+        );
+    }
+
+    #[test]
+    fn query_size_uses_the_min_bound_for_range_queries() {
+        assert_eq!(
+            resolved("@container (inline-size >= 8rem) and (inline-size < 16rem)"),
+            Some((QueryDirection::Min, 128.0))
+        );
+    }
+
+    #[test]
+    fn query_size_returns_none_for_non_size_queries() {
+        assert_eq!(resolved("@supports (display: grid)"), None);
+        assert_eq!(resolved("@media print"), None);
+    }
+
+    #[test]
+    fn at_rule_key_orders_container_inline_size_breakpoints_ascending() {
+        // Regression: container queries use `inline-size`, so the smaller
+        // breakpoint must sort first (mobile-first), not by raw-string order
+        // (where `"16rem" < "8rem"` would invert them).
+        let sm = AtRuleKey::new("@container (inline-size >= 8rem)");
+        let lg = AtRuleKey::new("@container (inline-size >= 16rem)");
+        assert!(sm < lg);
+    }
+
+    #[test]
+    fn at_rule_key_orders_max_inline_size_descending() {
+        let lg = AtRuleKey::new("@container (max-inline-size: 16rem)");
+        let sm = AtRuleKey::new("@container (max-inline-size: 8rem)");
+        assert!(lg < sm);
+    }
+
+    #[test]
+    fn at_rule_key_orders_media_before_container() {
+        let media = AtRuleKey::new("@media (width >= 48rem)");
+        let container = AtRuleKey::new("@container (inline-size >= 24rem)");
+        assert!(media < container);
     }
 }

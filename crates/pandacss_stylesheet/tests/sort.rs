@@ -998,3 +998,38 @@ fn sorts_compound_pseudo_conditions_by_total_pseudo_priority() {
     }
     ");
 }
+
+#[test]
+fn sorts_theme_container_inline_size_breakpoints_mobile_first() {
+    // Theme container conditions emit `@container (inline-size >= …)`; the
+    // smaller breakpoint must cascade first even though it's authored second
+    // and `"16rem" < "8rem"` lexicographically.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "containers": { "sm": "8rem", "lg": "16rem" }
+        },
+        "utilities": {
+            "gap": { "className": "gap" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ gap: { '@/lg': '4', '@/sm': '2' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      @container (inline-size >= 8rem) {
+        .\@\/sm\:gap_2 {
+          gap: 2;
+        }
+      }
+      @container (inline-size >= 16rem) {
+        .\@\/lg\:gap_4 {
+          gap: 4;
+        }
+      }
+    }
+    ");
+}
