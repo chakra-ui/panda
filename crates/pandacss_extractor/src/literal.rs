@@ -57,6 +57,33 @@ impl Literal {
         }
     }
 
+    /// Accumulate a value into `entries` instead of overwriting: if the key
+    /// already holds a value, keep both as `Conditional` alternatives. Used for
+    /// conditional-spread branches (`...(cond ? a : b)`) so each branch's keys
+    /// stay separately applicable and the encoder emits the union of atoms —
+    /// node models these as separate `spreadConditions` objects.
+    fn combine_object_entry(entries: &mut Vec<(String, Self)>, key: String, value: Self) {
+        if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
+            let prev = std::mem::replace(&mut entry.1, Self::Null);
+            entry.1 = prev.combine_alternative(value);
+        } else {
+            entries.push((key, value));
+        }
+    }
+
+    /// Fold two values into a flat `Conditional` of alternatives.
+    fn combine_alternative(self, other: Self) -> Self {
+        let mut branches = match self {
+            Self::Conditional(existing) => existing,
+            single => vec![single],
+        };
+        match other {
+            Self::Conditional(more) => branches.extend(more),
+            single => branches.push(single),
+        }
+        Self::Conditional(branches)
+    }
+
     #[must_use]
     pub fn to_json(&self) -> serde_json::Value {
         match self {
@@ -228,12 +255,26 @@ pub(crate) fn object_to_literal(
                 Literal::upsert_object_entry(&mut entries, key, value);
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
-                if let Some(Literal::Object(inner_entries)) =
-                    expression_to_literal(&spread.argument, resolver)
-                {
-                    for (k, v) in inner_entries {
-                        Literal::upsert_object_entry(&mut entries, k, v);
+                match expression_to_literal(&spread.argument, resolver) {
+                    // A static object spread overrides earlier keys (last-wins).
+                    Some(Literal::Object(inner_entries)) => {
+                        for (k, v) in inner_entries {
+                            Literal::upsert_object_entry(&mut entries, k, v);
+                        }
                     }
+                    // A conditional spread (`...(cond ? a : b)`) contributes each
+                    // branch's keys as separately-applicable styles; accumulate
+                    // every branch value per key so the encoder emits the union.
+                    Some(Literal::Conditional(branches)) => {
+                        for branch in branches {
+                            if let Literal::Object(inner_entries) = branch {
+                                for (k, v) in inner_entries {
+                                    Literal::combine_object_entry(&mut entries, k, v);
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
         }

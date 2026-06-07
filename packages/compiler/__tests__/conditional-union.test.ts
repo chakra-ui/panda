@@ -7,7 +7,7 @@ import { createProject } from './test-utils'
 // union reaches the utilities layer, matching the node parser.
 function compile(source: string) {
   const compiler = createProject({
-    utilities: { margin: { className: 'm' } },
+    utilities: { margin: { className: 'm' }, padding: { className: 'p' } },
   })
   compiler.parseFileSource('app.tsx', source)
   return compiler.layerCss(['utilities'])
@@ -103,6 +103,47 @@ describe('conditional / multi-arg union extraction', () => {
         }
         .m_5 {
           margin: 5;
+        }
+      }
+      "
+    `)
+  })
+
+  it('emits every branch of a conditional spread (...(cond ? a : b))', () => {
+    // node tracks conditional spreads as separate spreadConditions; both
+    // branches are separately applicable, so both padding atoms emit.
+    expect(
+      compile(
+        "import { css } from '@panda/css'\nexport function C(p){ return css({ margin: '1', ...(p.cond ? { padding: '2' } : { padding: '3' }) }) }",
+      ),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_1 {
+          margin: 1;
+        }
+        .p_2 {
+          padding: 2;
+        }
+        .p_3 {
+          padding: 3;
+        }
+      }
+      "
+    `)
+  })
+
+  it('emits the right operand of a conditional && spread', () => {
+    expect(
+      compile(
+        "import { css } from '@panda/css'\nexport function C(p){ return css({ margin: '1', ...(p.cond && { padding: '2' }) }) }",
+      ),
+    ).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .m_1 {
+          margin: 1;
+        }
+        .p_2 {
+          padding: 2;
         }
       }
       "

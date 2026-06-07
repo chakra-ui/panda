@@ -219,6 +219,123 @@ fn nullish_coalesce_with_unresolvable_left_emits_right_operand() {
     ");
 }
 
+// --- conditional spreads ---
+
+#[test]
+fn logical_and_spread_merges_the_right_operand_object() {
+    // `...(unk && { padding: '1' })` — node always extracts the spread object;
+    // the `&&` resolves to its right operand, which merges into the parent.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: 'red', ...(unk && { padding: '1' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+          padding: "1"
+      span:
+        start: 34
+        end: 85
+    "#);
+}
+
+#[test]
+fn logical_or_spread_merges_the_right_operand_object() {
+    // `...(unk || { padding: '1' })` — same: emit the right operand and merge.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: 'red', ...(unk || { padding: '1' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+          padding: "1"
+      span:
+        start: 34
+        end: 85
+    "#);
+}
+
+#[test]
+fn ternary_spread_with_same_key_emits_conditional_value() {
+    // `...(cond ? { padding: '1' } : { padding: '2' })` — node tracks each branch
+    // as a separate spreadCondition; the union is both values, so the key folds
+    // to a Conditional the encoder expands.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: 'red', ...(unk ? { padding: '1' } : { padding: '2' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+          padding:
+            kind: conditional
+            branches:
+              - "1"
+              - "2"
+      span:
+        start: 34
+        end: 103
+    "#);
+}
+
+#[test]
+fn ternary_spread_with_distinct_keys_merges_both_branches() {
+    // Distinct keys: each branch contributes its own key unconditionally (both
+    // are separately applicable).
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: 'red', ...(unk ? { padding: '1' } : { margin: '2' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+          padding: "1"
+          margin: "2"
+      span:
+        start: 34
+        end: 102
+    "#);
+}
+
+#[test]
+fn ternary_spread_colliding_with_static_parent_unions_all_values() {
+    // The static `padding: '0'` is overridden at runtime, but Panda's static
+    // extraction conservatively emits every possibly-applied value, so the
+    // union is 0, 1, 2 (matches node's raw + spreadConditions).
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ padding: '0', ...(unk ? { padding: '1' } : { padding: '2' }) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - padding:
+            kind: conditional
+            branches:
+              - "0"
+              - "1"
+              - "2"
+      span:
+        start: 34
+        end: 103
+    "#);
+}
+
 // --- nesting ---
 
 #[test]

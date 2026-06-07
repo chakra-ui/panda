@@ -1202,6 +1202,35 @@ fn arg_level_logical_and_emits_right_operand() {
 }
 
 #[test]
+fn conditional_spread_emits_every_branch() {
+    // `css({ margin: '1', ...(cond ? { padding: '2' } : { padding: '3' }) })` —
+    // the conditional spread's branches are each separately applicable, so both
+    // padding atoms emit alongside the static margin.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "margin": { "className": "m" }, "padding": { "className": "p" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; export function C(p){ return css({ margin: '1', ...(p.cond ? { padding: '2' } : { padding: '3' }) }); }",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_1 {
+        margin: 1;
+      }
+      .p_2 {
+        padding: 2;
+      }
+      .p_3 {
+        padding: 3;
+      }
+    }
+    ");
+}
+
+#[test]
 fn array_nested_in_a_conditional_arg_stays_a_merge_list() {
     // `css(cond ? [a, b] : c)` — the array is a branch of an arg-level ternary,
     // so it's still a merge-list (both unconditional), NOT a responsive array.
