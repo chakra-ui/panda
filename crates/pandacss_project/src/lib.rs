@@ -300,6 +300,13 @@ impl Project {
                 &mut diagnostics,
             );
         }
+        push_unknown_condition_diagnostics(
+            &result.calls,
+            &result.jsx,
+            &self.config.conditions,
+            &line_index,
+            &mut diagnostics,
+        );
         let mut report = ParseFileReport {
             css_calls: 0,
             cva_calls: 0,
@@ -1151,6 +1158,84 @@ fn deprecated_utility_diagnostic(
     let mut diagnostic = Diagnostic::warning(
         diagnostic_codes::DEPRECATED_UTILITY_USED,
         format!("utility \"{prop}\" is deprecated"),
+    );
+    diagnostic.span = Some(span);
+    diagnostic.location = Some(line_index.locate_range(span.start, span.end));
+    diagnostic
+}
+
+/// Warn on `_`-prefixed style keys that aren't a known condition (typos like
+/// `_hovr`). The encoder drops these — see `pandacss_encoder::atom_from_path` —
+/// so this surfaces the user's mistake instead of silently emitting nothing.
+fn push_unknown_condition_diagnostics(
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    conditions: &ProjectConditionMatcher,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut seen: Vec<String> = Vec::new();
+    for call in calls {
+        seen.clear();
+        for lit in call.data.iter().flatten() {
+            collect_unknown_conditions(lit, conditions, &mut seen);
+        }
+        for key in seen.drain(..) {
+            out.push(unknown_condition_diagnostic(
+                &key, conditions, call.span, line_index,
+            ));
+        }
+    }
+    for entry in jsx {
+        seen.clear();
+        collect_unknown_conditions(&entry.data, conditions, &mut seen);
+        for key in seen.drain(..) {
+            out.push(unknown_condition_diagnostic(
+                &key, conditions, entry.span, line_index,
+            ));
+        }
+    }
+}
+
+fn collect_unknown_conditions(
+    value: &Literal,
+    conditions: &ProjectConditionMatcher,
+    out: &mut Vec<String>,
+) {
+    match value {
+        Literal::Object(entries) => {
+            for (key, child) in entries {
+                if key.starts_with('_')
+                    && !conditions.is_condition(key)
+                    && !out.iter().any(|seen| seen == key)
+                {
+                    out.push(key.clone());
+                }
+                collect_unknown_conditions(child, conditions, out);
+            }
+        }
+        Literal::Array(items) | Literal::Conditional(items) => {
+            for item in items {
+                collect_unknown_conditions(item, conditions, out);
+            }
+        }
+        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+    }
+}
+
+fn unknown_condition_diagnostic(
+    key: &str,
+    conditions: &ProjectConditionMatcher,
+    span: pandacss_extractor::Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    let suggestion =
+        pandacss_shared::closest_match(key, conditions.names().filter(|n| n.starts_with('_')))
+            .map(|name| format!(", did you mean `{name}`?"))
+            .unwrap_or_default();
+    let mut diagnostic = Diagnostic::warning(
+        diagnostic_codes::UNKNOWN_CONDITION,
+        format!("unknown condition `{key}`{suggestion}"),
     );
     diagnostic.span = Some(span);
     diagnostic.location = Some(line_index.locate_range(span.start, span.end));

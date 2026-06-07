@@ -117,6 +117,16 @@ condition keys (`hover` → `_hover`), and breakpoint names. (Test fixtures supp
 `ConditionSet` is the shared name-lookup matcher; it also treats raw selector / at-rule keys (`&:hover`, `@media …`) as
 conditions, matching Panda's inline behavior.
 
+### Unresolved `_`-prefixed conditions are dropped
+
+A `_`-prefixed key that the matcher doesn't recognize (a typo like `_hovr`, or `_print` when `print` isn't configured)
+is an unresolved condition reference — the `_` prefix is exclusively Panda's condition marker (custom properties use
+`--`), so it's never a valid property. `atom_from_path` emits **nothing** for any path carrying such a segment, rather
+than the old degenerate `_hovr: …` declaration. The project surfaces the mistake during parse with an
+`unknown_condition` warning (plus a closest-match "did you mean `_hover`?" via `pandacss_shared::closest_match`); the
+encoder drop and the diagnostic share the same predicate (`_`-prefixed && not a condition) so they never disagree. Bare
+non-condition keys (no `_`) are unaffected — they stay on the property path.
+
 ## Recipe decomposition
 
 `Recipe` / `SlotRecipe` (`pandacss_recipes`) decompose into `Atom`s via four entry points:

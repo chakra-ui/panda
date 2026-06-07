@@ -120,3 +120,64 @@ pub fn file_stem(value: &str) -> String {
     }
     if out.is_empty() { "_".into() } else { out }
 }
+
+/// The closest candidate to `target` by Levenshtein distance, if within an
+/// edit distance of 2. Used for "did you mean …?" diagnostics. Ties keep the
+/// first candidate seen.
+#[must_use]
+pub fn closest_match<'a>(
+    target: &str,
+    candidates: impl IntoIterator<Item = &'a str>,
+) -> Option<&'a str> {
+    const MAX_DISTANCE: usize = 2;
+    let mut best: Option<(&str, usize)> = None;
+    for candidate in candidates {
+        let distance = levenshtein(target, candidate);
+        if distance <= MAX_DISTANCE
+            && best.is_none_or(|(_, best_distance)| distance < best_distance)
+        {
+            best = Some((candidate, distance));
+        }
+    }
+    best.map(|(candidate, _)| candidate)
+}
+
+/// Standard two-row Levenshtein edit distance over Unicode scalar values.
+fn levenshtein(a: &str, b: &str) -> usize {
+    let b_chars: Vec<char> = b.chars().collect();
+    let mut prev: Vec<usize> = (0..=b_chars.len()).collect();
+    let mut curr = vec![0usize; b_chars.len() + 1];
+    for (i, a_char) in a.chars().enumerate() {
+        curr[0] = i + 1;
+        for (j, &b_char) in b_chars.iter().enumerate() {
+            let cost = usize::from(a_char != b_char);
+            curr[j + 1] = (prev[j + 1] + 1).min(curr[j] + 1).min(prev[j] + cost);
+        }
+        std::mem::swap(&mut prev, &mut curr);
+    }
+    prev[b_chars.len()]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn closest_match_suggests_a_near_miss() {
+        assert_eq!(
+            closest_match("_hovr", ["_hover", "_focus", "_active"]),
+            Some("_hover")
+        );
+    }
+
+    #[test]
+    fn closest_match_returns_none_when_nothing_is_close() {
+        assert_eq!(closest_match("_zzz", ["_hover", "_focus"]), None);
+    }
+
+    #[test]
+    fn closest_match_prefers_the_smallest_distance() {
+        // "_hoer" is distance 1 from "_hover", 2 from "_focus".
+        assert_eq!(closest_match("_hoer", ["_focus", "_hover"]), Some("_hover"));
+    }
+}

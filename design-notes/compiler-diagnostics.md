@@ -43,6 +43,7 @@ Current codes:
 - `static_css_wildcard_empty`
 - `token_dictionary_build_failed`
 - `transform_callback_failed`
+- `unknown_condition`
 
 ## Shape
 

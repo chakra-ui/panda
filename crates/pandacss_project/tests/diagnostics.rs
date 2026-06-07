@@ -123,3 +123,67 @@ fn invalid_color_opacity_modifier_emits_warning_with_span() {
 
     assert_snapshot!(summary(&report.diagnostics), @"Warning invalid_color_opacity_modifier Color value `red/abc` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`) [34..56]");
 }
+
+#[test]
+fn unknown_underscore_condition_warns_with_suggestion() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ _hovr: { color: 'red' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning unknown_condition unknown condition `_hovr`, did you mean `_hover`? [34..66]");
+}
+
+#[test]
+fn unknown_underscore_condition_without_close_match_omits_suggestion() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ _zzzzz: { color: 'red' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning unknown_condition unknown condition `_zzzzz` [34..67]");
+}
+
+#[test]
+fn known_underscore_condition_is_not_diagnosed() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ _hover: { color: 'red' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"");
+}
+
+#[test]
+fn bare_condition_name_is_not_an_unknown_condition() {
+    let mut project = create_project(json!({
+        "conditions": { "print": "@media print" },
+        "utilities": { "display": { "className": "d" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ print: { display: 'none' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"");
+}

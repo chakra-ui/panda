@@ -37,6 +37,7 @@ pub mod codes {
     pub const PANDA_CALL_UNEXTRACTABLE: &str = "panda_call_unextractable";
     pub const TOKEN_DICTIONARY_BUILD_FAILED: &str = "token_dictionary_build_failed";
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
+    pub const UNKNOWN_CONDITION: &str = "unknown_condition";
 }
 
 /// UTF-8 byte offsets.

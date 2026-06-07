@@ -209,6 +209,11 @@ impl ConditionSet {
                 .collect(),
         }
     }
+
+    /// The configured condition names, for "did you mean …?" suggestions.
+    pub fn names(&self) -> impl Iterator<Item = &str> {
+        self.names.iter().map(AsRef::as_ref)
+    }
 }
 
 impl ConditionMatcher for ConditionSet {
@@ -397,6 +402,16 @@ impl<C: ConditionMatcher> Encoder<C> {
     }
 
     fn atom_from_path(path: &[PathSegment<'_>], leaf: &Literal) -> Option<Atom> {
+        // An `_`-prefixed key that isn't a known condition is an unresolved
+        // condition reference (typo like `_hovr`) — never a valid property in
+        // Panda — so emit nothing rather than a bogus `_hovr: …` declaration.
+        if path
+            .iter()
+            .any(|s| !s.is_condition && s.name.starts_with('_'))
+        {
+            return None;
+        }
+
         // `find` walks outer→inner so the *first* non-condition key wins,
         // matching JS semantics for the property name.
         let prop = path.iter().find(|s| !s.is_condition)?.name.into();

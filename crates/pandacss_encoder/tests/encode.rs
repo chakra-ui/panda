@@ -323,3 +323,59 @@ fn array_value_serializes_as_joined_repr() {
       conditions: []
     "#);
 }
+
+#[test]
+fn unresolved_underscore_condition_emits_nothing() {
+    // `_hovr` (typo for `_hover`) is `_`-prefixed but not a known condition,
+    // so it's an unresolved condition reference — emit no atom.
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ _hovr: { color: 'red' } });",
+        "css",
+    );
+    let mut encoder = encoder_with(&["_hover"]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @"[]");
+}
+
+#[test]
+fn unresolved_underscore_condition_nested_under_property_emits_nothing() {
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ color: { _hovr: 'red' } });",
+        "css",
+    );
+    let mut encoder = encoder_with(&["_hover"]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @"[]");
+}
+
+#[test]
+fn known_underscore_condition_still_emits() {
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ _hover: { color: 'red' } });",
+        "css",
+    );
+    let mut encoder = encoder_with(&["_hover"]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r"
+    - prop: color
+      value: red
+      conditions:
+        - _hover
+    ");
+}
+
+#[test]
+fn custom_property_names_are_unaffected() {
+    // `--foo` starts with `-`, not `_`, so it's a real custom property.
+    let lit = first_arg(
+        "import { css } from '@panda/css';\ncss({ '--foo': 'red' });",
+        "css",
+    );
+    let mut encoder = encoder_with(&[]);
+    encoder.process_atomic(&lit);
+    assert_yaml_snapshot!(sorted(encoder.atoms()), @r#"
+    - prop: "--foo"
+      value: red
+      conditions: []
+    "#);
+}

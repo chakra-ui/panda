@@ -911,6 +911,10 @@ fn nested_child_selector_stacks_theme_and_direction_conditions() {
 fn nested_group_selector_with_breakpoint() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:hover",
+            "dark": "[data-theme=dark] &"
+        },
         "theme": {
             "breakpoints": {
                 "sm": "40rem",
@@ -935,15 +939,15 @@ fn nested_group_selector_with_breakpoint() {
     );
     assert_snapshot!(css, @r"
     @layer utilities {
-      ._hover_pink\.400 {
-        _hover: pink.400;
-      }
       .group .\[\.group_\&\]\:c_blue {
         color: blue;
       }
+      .hover\:c_pink\.400:hover {
+        color: pink.400;
+      }
       @media (width >= 40rem) {
-        .sm\:_hover_red\.300 {
-          _hover: red.300;
+        [data-theme=dark] .hover\:sm\:dark\:bg_red\.300:hover {
+          bg: red.300;
         }
       }
     }
