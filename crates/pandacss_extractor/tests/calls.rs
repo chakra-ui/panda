@@ -1878,6 +1878,30 @@ fn array_value_preserves_null_elements() {
     );
 }
 
+#[test]
+fn array_value_preserves_elision_holes() {
+    // A sparse array hole (`[a, , b]`) is an elision, not an explicit `null`;
+    // it must still occupy its slot so breakpoint arity is preserved.
+    assert_yaml_snapshot!(
+        extract("css({ color: ['black', , 'orange'] })", &[css("css")]),
+        @"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - color:
+              - black
+              - ~
+              - orange
+        span:
+          start: 0
+          end: 37
+    diagnostics: []
+    ",
+    );
+}
+
 // --- multiline template literal ---
 
 #[test]

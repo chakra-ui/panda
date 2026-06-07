@@ -337,14 +337,22 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         if let Some(resolved) = self.resolve_tag(&element.name) {
             let tag_name = resolved.name.as_ref();
             let mut entries: Vec<(String, Literal)> = Vec::with_capacity(element.attributes.len());
+            // Conditional-spread branches accumulate separately and fold in after
+            // all attributes (node's `spreadConditions`), so their union survives
+            // regardless of a colliding explicit prop's position.
+            let mut spread_conditions: Vec<(String, Literal)> = Vec::new();
             for item in &element.attributes {
                 merge_attribute(
                     item,
                     &mut entries,
+                    &mut spread_conditions,
                     self.ctx.resolver,
                     &self.ctx.config.jsx,
                     tag_name,
                 );
+            }
+            for (key, value) in spread_conditions {
+                Literal::combine_object_entry(&mut entries, key, value);
             }
             if entries.is_empty() && !resolved.emit_empty {
                 walk::walk_jsx_opening_element(self, element);
@@ -459,6 +467,7 @@ fn join_path(path: &[&str]) -> String {
 fn merge_attribute(
     item: &JSXAttributeItem<'_>,
     out: &mut Vec<(String, Literal)>,
+    spread_conditions: &mut Vec<(String, Literal)>,
     resolver: Option<&crate::Resolver<'_, '_>>,
     jsx: &crate::JsxExtractionConfig,
     tag_name: &str,
@@ -482,10 +491,23 @@ fn merge_attribute(
             merge_style_prop(out, jsx, tag_name, key, value);
         }
         JSXAttributeItem::SpreadAttribute(spread) => {
-            if let Some(Literal::Object(entries)) =
-                expression_to_literal(&spread.argument, resolver)
-            {
-                merge_style_props(out, jsx, tag_name, entries);
+            match expression_to_literal(&spread.argument, resolver) {
+                // A static object spread merges last-wins.
+                Some(Literal::Object(entries)) => merge_style_props(out, jsx, tag_name, entries),
+                // A conditional spread (`{...(cond ? a : b)}`) contributes each
+                // branch's keys as separately-applicable styles.
+                Some(Literal::Conditional(branches)) => {
+                    for branch in branches {
+                        if let Literal::Object(entries) = branch {
+                            for (key, value) in entries {
+                                if jsx.should_extract_prop(tag_name, &key) {
+                                    Literal::combine_object_entry(spread_conditions, key, value);
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => {}
             }
         }
     }

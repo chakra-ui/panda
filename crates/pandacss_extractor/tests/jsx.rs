@@ -769,6 +769,87 @@ fn literal_object_spread_is_merged() {
 }
 
 #[test]
+fn conditional_spread_unions_both_branches() {
+    // <Box {...(cond ? { color: 'a' } : { color: 'b' })} /> — node tracks the
+    // branches as spreadConditions; both are separately applicable, so the key
+    // folds to a Conditional the encoder expands.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box {...(cond ? { color: 'a' } : { color: 'b' })} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          color:
+            kind: conditional
+            branches:
+              - a
+              - b
+        span:
+          start: 0
+          end: 53
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn conditional_spread_with_distinct_keys_merges_both() {
+    assert_yaml_snapshot!(
+        extract(
+            "<Box {...(cond ? { color: 'a' } : { padding: 'b' })} />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          color: a
+          padding: b
+        span:
+          start: 0
+          end: 55
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
+fn conditional_spread_colliding_with_explicit_prop_unions_all_order_independently() {
+    // The explicit `color` comes *after* the spread, but its value still unions
+    // with the branches rather than overwriting them.
+    assert_yaml_snapshot!(
+        extract(
+            "<Box {...(cond ? { color: 'a' } : { color: 'b' })} color='c' />",
+            &[pattern_component("Box")],
+        ),
+        @"
+    jsx:
+      - category: jsx
+        name: Box
+        alias: Box
+        data:
+          color:
+            kind: conditional
+            branches:
+              - c
+              - a
+              - b
+        span:
+          start: 0
+          end: 63
+    diagnostics: []
+    ",
+    );
+}
+
+#[test]
 fn non_literal_spread_is_ignored() {
     // <Box {...rest} color='red' /> — identifier spread skipped, color kept
     assert_yaml_snapshot!(

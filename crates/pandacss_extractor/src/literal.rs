@@ -62,7 +62,11 @@ impl Literal {
     /// conditional-spread branches (`...(cond ? a : b)`) so each branch's keys
     /// stay separately applicable and the encoder emits the union of atoms —
     /// node models these as separate `spreadConditions` objects.
-    fn combine_object_entry(entries: &mut Vec<(String, Self)>, key: String, value: Self) {
+    pub(crate) fn combine_object_entry(
+        entries: &mut Vec<(String, Self)>,
+        key: String,
+        value: Self,
+    ) {
         if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
             let prev = std::mem::replace(&mut entry.1, Self::Null);
             entry.1 = prev.combine_alternative(value);

@@ -459,6 +459,26 @@ fn constant_comparison_test_folds_to_chosen_branch() {
 }
 
 #[test]
+fn nested_ternary_with_static_tests_folds_to_one_branch() {
+    // Both tests are statically known, so the chain folds to a single value
+    // (the middle branch) — no Conditional.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: false ? 'a' : true ? 'b' : 'c' });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: b
+      span:
+        start: 34
+        end: 80
+    ");
+}
+
+#[test]
 fn nested_ternary_emits_nested_conditional() {
     // Nesting is preserved rather than flattened.
     let src = indoc! {r"

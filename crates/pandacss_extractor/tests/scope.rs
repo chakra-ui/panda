@@ -404,6 +404,139 @@ fn array_numeric_index_resolves() {
     ");
 }
 
+#[test]
+fn inline_array_literal_numeric_index_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: ['red', 'blue'][0] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 68
+    ");
+}
+
+#[test]
+fn inline_array_literal_indexed_by_identifier_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const i = 1;
+        css({ color: ['red', 'blue'][i] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: blue
+      span:
+        start: 47
+        end: 81
+    ");
+}
+
+#[test]
+fn array_string_numeric_index_resolves() {
+    // A string index that names a numeric position (`"1"`) reads the element.
+    let src = indoc! {r#"
+        import { css } from '@panda/css';
+        css({ color: ['red', 'blue']["1"] });
+    "#};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: blue
+      span:
+        start: 34
+        end: 70
+    ");
+}
+
+#[test]
+fn inline_object_literal_element_access_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: ({ a: 'red' })['a'] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 69
+    ");
+}
+
+#[test]
+fn element_access_with_concatenated_key_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const m = { ab: 'red' };
+        css({ color: m['a' + 'b'] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 59
+        end: 87
+    ");
+}
+
+#[test]
+fn element_access_with_template_key_resolves() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const m = { ab: 'red' };
+        css({ color: m[`a${'b'}`] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 59
+        end: 87
+    ");
+}
+
+#[test]
+fn element_access_with_key_from_another_object_resolves() {
+    // The access key is itself a member access (`w.k` -> "a").
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const m = { a: 'red' };
+        const w = { k: 'a' };
+        css({ color: m[w.k] });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 80
+        end: 102
+    ");
+}
+
 // --- destructuring ---
 
 #[test]
@@ -742,6 +875,48 @@ fn template_literal_with_identifier_interpolation_folds() {
         start: 47
         end: 73
     ");
+}
+
+#[test]
+fn template_literal_with_member_interpolation_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const o = { p: 'red' };
+        css({ color: `${o.p}` });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 58
+        end: 82
+    ");
+}
+
+// --- evaluation boundary: function calls aren't resolved ---
+
+#[test]
+fn local_function_call_return_is_not_resolved() {
+    // The same-file evaluator folds values, not arbitrary call results, so a
+    // call to a local function drops the call.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const f = () => 'red';
+        css({ color: f() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn iife_is_not_resolved() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: (() => 'red')() });
+    "};
+    assert!(run(src).calls.is_empty());
 }
 
 #[test]
