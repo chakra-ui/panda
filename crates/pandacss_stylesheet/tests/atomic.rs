@@ -125,6 +125,54 @@ fn appends_px_to_numeric_values_except_unitless_and_custom_properties() {
 }
 
 #[test]
+fn numeric_and_string_scalars_dedupe_to_one_rule() {
+    // `1` and `'1'` are the same value: one `.p_1 { padding: 1px }` (not two
+    // colliding rules), and unitless `lineHeight` dedupes to one rule too.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "padding": { "className": "p" }, "lineHeight": { "className": "lh" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ padding: 1 }); css({ padding: '1' }); css({ lineHeight: 2 }); css({ lineHeight: '2' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .p_1 {
+        padding: 1px;
+      }
+      .lh_2 {
+        line-height: 2;
+      }
+    }
+    ");
+}
+
+#[test]
+fn numeric_and_string_token_values_dedupe_to_one_rule() {
+    // When the scalar resolves to a token, `4` and `'4'` resolve identically and
+    // dedupe — the token wins over px.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": { "tokens": { "spacing": { "4": { "value": "1rem" } } } },
+        "utilities": { "margin": { "className": "m", "values": "spacing" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ margin: 4 }); css({ margin: '4' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .m_4 {
+        margin: var(--spacing-4);
+      }
+    }
+    ");
+}
+
+#[test]
 fn resolves_semantic_token_category_values_to_css_vars() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -682,19 +730,19 @@ fn emits_theme_container_conditions() {
         &[StylesheetLayer::Utilities],
     );
     assert_snapshot!(css, @r"
-@layer utilities {
-  @container (inline-size >= 24rem) {
-    .\@\/sm\:gap_2 {
-      gap: 2;
+    @layer utilities {
+      @container (inline-size >= 24rem) {
+        .\@\/sm\:gap_2 {
+          gap: 2px;
+        }
+      }
+      @container card (inline-size >= 32rem) {
+        .\@card\/md\:gap_4 {
+          gap: 4px;
+        }
+      }
     }
-  }
-  @container card (inline-size >= 32rem) {
-    .\@card\/md\:gap_4 {
-      gap: 4;
-    }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -1012,13 +1060,13 @@ fn multi_arg_css_emits_every_argument() {
         "import { css } from '@panda/css'; css({ margin: '1' }, { margin: '3' });",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
     }
     ");
@@ -1038,13 +1086,13 @@ fn array_css_arg_is_a_merge_list_not_a_responsive_array() {
     );
     // Both unconditional (no `@media (width >= 40rem)` from responsive
     // expansion); the falsy entry is skipped.
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
     }
     ");
@@ -1063,16 +1111,16 @@ fn conditional_css_arg_emits_both_branches() {
         "import { css } from '@panda/css'; export function C(props){ return css({ margin: '1' }, props.cond ? { margin: '3' } : { margin: '5' }); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
       .m_5 {
-        margin: 5;
+        margin: 5px;
       }
     }
     ");
@@ -1091,13 +1139,13 @@ fn value_level_ternary_emits_both_branches() {
         "import { css } from '@panda/css'; export function C(props){ return css({ margin: props.cond ? '3' : '5' }); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
       .m_5 {
-        margin: 5;
+        margin: 5px;
       }
     }
     ");
@@ -1116,10 +1164,10 @@ fn value_level_logical_and_emits_right_operand() {
         "import { css } from '@panda/css'; export function C(props){ return css({ margin: props.cond && '3' }); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
     }
     ");
@@ -1137,10 +1185,10 @@ fn value_level_nullish_emits_fallback() {
         "import { css } from '@panda/css'; export function C(props){ return css({ margin: props.maybe ?? '3' }); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
     }
     ");
@@ -1158,19 +1206,19 @@ fn four_args_css_emits_every_argument() {
         "import { css } from '@panda/css'; css({ margin: '1' }, { margin: '2' }, { margin: '3' }, { margin: '4' });",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_2 {
-        margin: 2;
+        margin: 2px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
       .m_4 {
-        margin: 4;
+        margin: 4px;
       }
     }
     ");
@@ -1189,13 +1237,13 @@ fn arg_level_logical_and_emits_right_operand() {
         "import { css } from '@panda/css'; export function C(props){ return css({ margin: '1' }, props.cond && { margin: '3' }); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
     }
     ");
@@ -1215,16 +1263,16 @@ fn conditional_spread_emits_every_branch() {
         "import { css } from '@panda/css'; export function C(p){ return css({ margin: '1', ...(p.cond ? { padding: '2' } : { padding: '3' }) }); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .p_2 {
-        padding: 2;
+        padding: 2px;
       }
       .p_3 {
-        padding: 3;
+        padding: 3px;
       }
     }
     ");
@@ -1246,16 +1294,16 @@ fn array_nested_in_a_conditional_arg_stays_a_merge_list() {
         &[StylesheetLayer::Utilities],
     );
     // No `@media (width >= 40rem)` — `margin: '3'` is unconditional, not `sm`.
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
       .m_5 {
-        margin: 5;
+        margin: 5px;
       }
     }
     ");
@@ -1274,16 +1322,16 @@ fn array_css_arg_with_conditional_element_emits_every_branch() {
         "import { css } from '@panda/css'; export function C(props){ return css([{ margin: '1' }, props.cond ? { margin: '3' } : { margin: '5' }]); }",
         &[StylesheetLayer::Utilities],
     );
-    assert_snapshot!(css, @r"
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_3 {
-        margin: 3;
+        margin: 3px;
       }
       .m_5 {
-        margin: 5;
+        margin: 5px;
       }
     }
     ");

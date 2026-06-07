@@ -1022,12 +1022,12 @@ fn sorts_theme_container_inline_size_breakpoints_mobile_first() {
     @layer utilities {
       @container (inline-size >= 8rem) {
         .\@\/sm\:gap_2 {
-          gap: 2;
+          gap: 2px;
         }
       }
       @container (inline-size >= 16rem) {
         .\@\/lg\:gap_4 {
-          gap: 4;
+          gap: 4px;
         }
       }
     }

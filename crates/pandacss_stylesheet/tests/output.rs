@@ -136,7 +136,7 @@ fn output_config_recipe() {
         }
       }
       .button--size_md {
-        padding: 4;
+        padding: 4px;
       }
       .button--variant_danger {
         background-color: red.500;

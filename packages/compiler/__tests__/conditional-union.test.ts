@@ -22,16 +22,16 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_1 {
-          margin: 1;
+          margin: 1px;
         }
         .m_2 {
-          margin: 2;
+          margin: 2px;
         }
         .m_3 {
-          margin: 3;
+          margin: 3px;
         }
         .m_4 {
-          margin: 4;
+          margin: 4px;
         }
       }
       "
@@ -41,16 +41,16 @@ describe('conditional / multi-arg union extraction', () => {
   it('treats a top-level array arg as a merge-list (skips falsy entries)', () => {
     expect(compile("import { css } from '@panda/css'\ncss([{ margin: '1' }, { margin: '3' }, false])"))
       .toMatchInlineSnapshot(`
-      "@layer utilities {
-        .m_1 {
-          margin: 1;
+        "@layer utilities {
+          .m_1 {
+            margin: 1px;
+          }
+          .m_3 {
+            margin: 3px;
+          }
         }
-        .m_3 {
-          margin: 3;
-        }
-      }
-      "
-    `)
+        "
+      `)
   })
 
   it('expands a value-level ternary into both branches', () => {
@@ -61,10 +61,10 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_3 {
-          margin: 3;
+          margin: 3px;
         }
         .m_5 {
-          margin: 5;
+          margin: 5px;
         }
       }
       "
@@ -79,7 +79,7 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_3 {
-          margin: 3;
+          margin: 3px;
         }
       }
       "
@@ -96,13 +96,13 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_1 {
-          margin: 1;
+          margin: 1px;
         }
         .m_3 {
-          margin: 3;
+          margin: 3px;
         }
         .m_5 {
-          margin: 5;
+          margin: 5px;
         }
       }
       "
@@ -119,13 +119,13 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_1 {
-          margin: 1;
+          margin: 1px;
         }
         .p_2 {
-          padding: 2;
+          padding: 2px;
         }
         .p_3 {
-          padding: 3;
+          padding: 3px;
         }
       }
       "
@@ -140,10 +140,10 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_1 {
-          margin: 1;
+          margin: 1px;
         }
         .p_2 {
-          padding: 2;
+          padding: 2px;
         }
       }
       "
@@ -158,10 +158,10 @@ describe('conditional / multi-arg union extraction', () => {
     ).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_1 {
-          margin: 1;
+          margin: 1px;
         }
         .m_3 {
-          margin: 3;
+          margin: 3px;
         }
       }
       "

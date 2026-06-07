@@ -259,10 +259,10 @@ fn reports_empty_wildcards_without_rejecting_static_css_themes() {
     }
     @layer utilities {
       .m_1 {
-        margin: 1;
+        margin: 1px;
       }
       .m_2 {
-        margin: 2;
+        margin: 2px;
       }
     }
     ");

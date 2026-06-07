@@ -53,7 +53,7 @@ fn atoms_without_layer_override_stay_in_utilities_top_level() {
     }
     @layer utilities {
       .p_4 {
-        padding: 4;
+        padding: 4px;
       }
       .c_red {
         color: red;
@@ -84,7 +84,7 @@ fn default_atoms_emit_first_custom_sublayers_after() {
     }
     @layer utilities {
       .p_4 {
-        padding: 4;
+        padding: 4px;
       }
       @layer components {
         .c_red {
@@ -119,7 +119,7 @@ fn distinct_custom_sublayers_each_get_their_own_nested_block() {
     @layer utilities {
       @layer compositions {
         .p_4 {
-          padding: 4;
+          padding: 4px;
         }
       }
       @layer components {

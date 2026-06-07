@@ -422,7 +422,7 @@ describe('Compiler', () => {
       [
         {
           "prop": "gap",
-          "value": "4",
+          "value": 4,
           "conditions": [],
         },
       ]
@@ -495,7 +495,7 @@ describe('Compiler', () => {
         },
         {
           "prop": "padding",
-          "value": "4",
+          "value": 4,
           "conditions": [],
         },
       ]

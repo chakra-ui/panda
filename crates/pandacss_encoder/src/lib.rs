@@ -482,6 +482,22 @@ struct EncodedLeaf {
     important: bool,
 }
 
+/// A canonical JS number literal string (`"1"`, `"1.5"`, `"-2"`, `"0"`), so a
+/// quoted number dedupes with the bare number and gets px. Strict on purpose: no
+/// leading-zero ints, exponents, hex, units, leading dot, or whitespace.
+fn canonical_number(s: &str) -> Option<f64> {
+    let unsigned = s.strip_prefix('-').unwrap_or(s);
+    let (int, frac) = unsigned
+        .split_once('.')
+        .map_or((unsigned, None), |(i, f)| (i, Some(f)));
+
+    let digits = |part: &str| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit());
+    let int_ok = int == "0" || (digits(int) && !int.starts_with('0'));
+    let frac_ok = frac.is_none_or(digits);
+
+    (int_ok && frac_ok).then(|| s.parse().ok()).flatten()
+}
+
 fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
     match value {
         Literal::String(s) => {
@@ -489,10 +505,13 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
                 return None;
             }
             let (value, important) = split_important(s);
-            Some(EncodedLeaf {
-                value: AtomValue::String(value.into_owned().into_boxed_str()),
-                important,
-            })
+            // A numeric string == the bare number: encode as `Number` so it
+            // dedupes with `1` and gets px (tokens still resolve by string form).
+            let value = match canonical_number(&value) {
+                Some(n) => AtomValue::Number(number_to_js_string(n).into_boxed_str()),
+                None => AtomValue::String(value.into_owned().into_boxed_str()),
+            };
+            Some(EncodedLeaf { value, important })
         }
         Literal::Number(n) => Some(EncodedLeaf {
             value: AtomValue::Number(number_to_js_string(*n).into_boxed_str()),
@@ -564,5 +583,52 @@ fn append_literal_repr(out: &mut String, value: &Literal) {
         Literal::Object(_) => out.push_str("{…}"),
         Literal::Array(_) => out.push_str("[…]"),
         Literal::Conditional(_) => out.push_str("?(…)"),
+    }
+}
+
+#[cfg(test)]
+mod canonical_number_tests {
+    use super::canonical_number;
+
+    #[test]
+    fn accepts_canonical_numbers() {
+        assert_eq!(canonical_number("0"), Some(0.0));
+        assert_eq!(canonical_number("1"), Some(1.0));
+        assert_eq!(canonical_number("42"), Some(42.0));
+        assert_eq!(canonical_number("1.5"), Some(1.5));
+        assert_eq!(canonical_number("-2"), Some(-2.0));
+        assert_eq!(canonical_number("-0.25"), Some(-0.25));
+    }
+
+    #[test]
+    fn rejects_leading_zero_integers() {
+        assert_eq!(canonical_number("01"), None);
+        assert_eq!(canonical_number("00"), None);
+    }
+
+    #[test]
+    fn rejects_values_with_units() {
+        assert_eq!(canonical_number("1px"), None);
+        assert_eq!(canonical_number("1rem"), None);
+    }
+
+    #[test]
+    fn rejects_exponent_and_hex_forms() {
+        assert_eq!(canonical_number("1e3"), None);
+        assert_eq!(canonical_number("0x10"), None);
+    }
+
+    #[test]
+    fn rejects_malformed_decimals() {
+        assert_eq!(canonical_number(".5"), None);
+        assert_eq!(canonical_number("1."), None);
+    }
+
+    #[test]
+    fn rejects_empty_sign_only_and_whitespace() {
+        assert_eq!(canonical_number(""), None);
+        assert_eq!(canonical_number("-"), None);
+        assert_eq!(canonical_number(" 1"), None);
+        assert_eq!(canonical_number("1 "), None);
     }
 }
