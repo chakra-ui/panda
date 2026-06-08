@@ -325,10 +325,44 @@ impl Utility {
         Some(self.transform_str(prop, &value))
     }
 
+    /// Value alias for class naming (author key, not resolved CSS).
+    #[must_use]
+    pub fn class_name_value(&self, prop: &str, value: &str) -> String {
+        let key = self.resolve_shorthand(prop);
+        let normalized = without_space(value);
+        let Some(config) = self.properties.get(key) else {
+            return normalized;
+        };
+
+        if config.values.contains_key(normalized.as_str()) {
+            return normalized;
+        }
+
+        if !config.values.is_empty() {
+            for (alias, literal) in &config.values {
+                if literal_matches_class_input(literal, &normalized) {
+                    return without_space(alias);
+                }
+            }
+        }
+
+        normalized
+    }
+
     #[must_use]
     pub fn transform_str(&self, prop: &str, value: &str) -> UtilityTransformResult {
+        self.transform_str_with_class(prop, value, None)
+    }
+
+    #[must_use]
+    pub fn transform_str_with_class(
+        &self,
+        prop: &str,
+        value: &str,
+        class_input: Option<&str>,
+    ) -> UtilityTransformResult {
         let key = self.resolve_shorthand(prop);
-        let class_value = without_space(value);
+        let class_value = class_input.map_or_else(|| self.class_name_value(key, value), without_space);
         let style_value = self.expand_reference_in_value(&arbitrary_value(value));
         let style_prop = self
             .properties
@@ -888,6 +922,15 @@ fn join_class_name(prop: &str, separator: &str, value: &str) -> String {
 
 fn without_space(value: &str) -> String {
     value.replace(' ', "_")
+}
+
+fn literal_matches_class_input(literal: &Literal, value: &str) -> bool {
+    match literal {
+        Literal::String(s) | Literal::Token { value: s, .. } => without_space(s) == value,
+        Literal::Number(n) => number_to_js_string(*n) == value,
+        Literal::Bool(b) => b.to_string() == value,
+        Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => false,
+    }
 }
 
 #[must_use]

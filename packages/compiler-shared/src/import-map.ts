@@ -10,20 +10,7 @@ export interface ImportMapConfig {
   cwd?: string
 }
 
-/**
- * Normalize author `importMap` (string | object | array) to the wire shape the
- * Rust extractor consumes — category keys with `string[]` values (`recipe`, not
- * `recipes`). Ports v1 `packages/core/src/import-map.ts`.
- *
- * @example
- * ```ts
- * normalizeImportMap({ outdir: 'styled-system', importMap: '@acme/ui' })
- * // → { css: ['@acme/ui/css'], recipe: ['@acme/ui/recipes'], … }
- *
- * normalizeImportMap({ outdir: 'styled-system', importMap: ['@acme/ui', 'styled-system'] })
- * // → { css: ['@acme/ui/css', 'styled-system/css'], … }
- * ```
- */
+/** Normalize author `importMap` to wire `ImportMapOutput` (v1 parity). */
 export function normalizeImportMap(config: ImportMapConfig): ImportMapOutput {
   const outdir = outdirBasename(config.outdir ?? defaultConfig.outdir)
   const inputs = config.importMap === undefined ? [undefined] : asArray(config.importMap)
@@ -41,7 +28,7 @@ export function normalizeImportMap(config: ImportMapConfig): ImportMapOutput {
   return output
 }
 
-/** Ensure `SerializedConfig.importMap` is normalized before crossing the binding. */
+/** Normalize `importMap` before the native/wasm binding. */
 export function prepareCompilerConfig(config: SerializedConfig): SerializedConfig {
   const importMap = normalizeImportMap(config)
   return { ...config, importMap }

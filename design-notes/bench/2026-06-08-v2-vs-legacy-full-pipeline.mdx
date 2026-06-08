@@ -1,0 +1,196 @@
+---
+title: Full pipeline — v2 (Rust/Oxc) vs legacy (ts-morph)
+date: 2026-06-08
+fixtures:
+  - synth-100 (css + cva + jsx + patterns + conditions)
+  - 12 sandbox projects (vite-ts, next-js-app, solid-ts, preact-ts, qwik-ts, …)
+  - 20-case emitter battery
+hardware: darwin arm64 (local dev machine; not a clean-room CI box)
+caveat: >
+  v2 emit skips the optimizer (lightningcss deferred), so emit timings and byte
+  sizes are not apples-to-apples with legacy's PostCSS pass. The emitter diff is
+  measured by cross-feeding the SAME resolved config into both engines, since
+  v2's own config-loader cannot yet load most real configs (see §Gaps A1–A3).
+---
+
+# Full pipeline: v2 (Rust/Oxc) vs legacy (ts-morph)
+
+> First end-to-end comparison beyond extraction: perf **and** style-output parity **and** feature gaps,
+> across the whole `parse → encode → emit` path. Harnesses live in `bench/__tests__/`. Full write-up:
+> [`bench/V2_VS_LEGACY_REPORT.md`](../../bench/V2_VS_LEGACY_REPORT.md).
+
+## TL;DR
+
+The v2 **emitter** is close to byte-parity on the core surface and **25–390× faster** on the hot path.
+The remaining work is concentrated in the **front-end** (config loading, glob normalization, preset
+injection), plus a short list of emitter edge cases.
+
+Setup excluded, same config, 100-file corpus:
+
+- **Cold parse** (100 files, once) — legacy 187 ms → v2 7.5 ms = **25×**
+- **Warm re-parse** (single file, steady state) — legacy 690 µs/file → v2 1.8 µs/file = **~390×**
+- **CSS emit** (atoms → stylesheet) — legacy 6.0 ms → v2 4.7 ms = ~1.3× (not equal-work; v2 skips the optimizer)
+
+Real-sandbox sweep corroborates on larger projects: `next-js-pages` ≈ 25×, `qwik-ts` ≈ 16×. Trivial
+2-file projects can favor legacy purely because v2's native compiler construction dominates when there
+is almost nothing to parse.
+
+## Style-output parity — emitter byte-identical on the core surface
+
+20-case battery, clean fixture config, comparing utilities+recipes layers. **At parity (✅):** pseudo
+conditions, nested conditions, `!important`, **cva recipes incl. compound + default variants**,
+patterns, `token()`, **color tokens** (`var()` + token-key class), conditional value maps, arbitrary
+raw values. Across the 12-sandbox sweep, **selector counts match within ±a few** on every project.
+
+## Gaps found
+
+### A. Front-end / config-loader (block drop-in replacement)
+
+- **A1 — Dynamic-import configs crash.** `await import()` makes Rolldown code-split; `bundle.ts` evals
+  only the entry chunk via a `data:` URL → `Failed to resolve "./dist-*.js"` (`vite-ts`).
+  `packages/config-loader/src/bundle.ts:48`.
+
+  ```ts
+  // panda.config.ts — minimal crash
+  export default defineConfig({
+    hooks: {
+      'config:resolved': async ({ config }) => {
+        const { someRecipe } = await import('./some-recipe')
+        config.theme!.recipes!.someRecipe = someRecipe
+      },
+    },
+  })
+  ```
+
+  Real fixture: `sandbox/vite-ts/panda.config.ts`.
+
+- **A2 — `./`-prefixed include globs find 0 files** → silent empty stylesheet — ✅ **FIXED**. Isolated to
+  the leading `./` (`./src/**/*.tsx` → false; `src/**/*.{ts,tsx}` braces → true). Hit `next-js-app`,
+  `preact-ts`. Fix: `normalize_pattern` strips a leading `./` in both `glob.rs` (`matches_globs`/
+  `default_walk`/`base_dir`) and the separate `os.rs` walker (real driver scan). Now scans 2 / 3 files,
+  matching legacy. Tests in `crates/pandacss_fs/tests/{glob,matches_globs,base_dir,os}.rs`.
+
+  ```ts
+  export default {
+    include: ['./src/**/*.tsx'], // v2: scan → 0 files, empty CSS
+    // include: ['src/**/*.tsx'], // works
+  }
+  ```
+
+  Real fixture: `sandbox/next-js-app/panda.config.ts`.
+
+- **A3 — No preset auto-injection.** Standard configs resolve incompletely → genuine `solid-ts` emits
+  `color: blue .500`, `bg-gradient: to-r`. `packages/config-loader/src/load.ts:18`.
+
+  ```tsx
+  // no presets in config — typical sandbox
+  css({ color: 'blue.500', bgGradient: 'to-r', gradientFrom: 'red.200' })
+  // v2 CSS: `color: blue .500`, `bg-gradient: to-r` (invalid)
+  ```
+
+  Real sources: `sandbox/solid-ts/src/scenarios/css-prop.tsx`, `gradient.tsx`.
+
+- **A4 — Config hooks don't run.** `removeUnusedCssVars` ignored → 472 token vars vs legacy's 47 used
+  (+14 KB on `vite-ts`). Documented scope boundary, but a real output delta.
+
+  ```ts
+  hooks: {
+    'cssgen:done': ({ artifact, content }) =>
+      artifact === 'styles.css' ? removeUnusedCssVars(content) : content,
+  }
+  ```
+
+  Real fixture: `sandbox/vite-ts/panda.config.ts` + `remove-unused-css-vars.ts`.
+
+- **A5 — SFC preprocessing not wired.** `.vue` / `.svelte` need JS extract before Oxc; `sandbox/nuxt` fails or misses styles.
+
+  ```ts
+  include: ['./pages/**/*.{vue,ts,tsx}', './components/**/*.{vue,ts,tsx}']
+  ```
+
+### B. Emitter divergences (given a correct config)
+
+- **B1 — `color-mix` opacity drops the `--mix-*` fallback.** `red.500/40`: legacy emits
+  `--mix-color` + `var(--mix-color, …)` fallback; v2 inlines bare `color-mix(...)`. Confirmed genuine
+  via `crates/pandacss_stylesheet/tests/static_css.rs:113`. Behavioral (no fallback for old browsers).
+
+  ```tsx
+  css({ color: 'red.500/40', bg: 'blue.300/50' })
+  ```
+
+  ```css
+  /* legacy */ .c_red\.500\/40 { --mix-color: color-mix(...); color: var(--mix-color, var(--colors-red-500)); }
+  /* v2     */ .c_red\.500\/40 { color: color-mix(in srgb, var(--colors-red-500) 40%, transparent); }
+  ```
+
+  Harness: `edgecases.test.ts` → `color_opacity` → `bench/.parity-out/case_color_opacity.*.css`.
+
+- **B2 — Object-form utility `values` class naming** _(Fixed 2026-06-08)_. Object-map aliases must hash by key (`mb_2`),
+  not resolved CSS (`mb_0\.5rem`). v2 now uses `Utility::class_name_value` + token `path` for class input. String-category
+  `values: 'spacing'` was already correct.
+
+  ```ts
+  utilities: {
+    marginBottom: { className: 'mb', values: { '2': '0.5rem', '4': '1rem' } },
+  }
+  // css({ marginBottom: '2' }) → .mb_2 { margin-bottom: 0.5rem; }
+  ```
+
+  ```sh
+  cargo nextest run -p pandacss_stylesheet object_map_values_name_classes_by_alias_key --locked
+  ```
+
+  ```ts
+  utilities: {
+    extend: {
+      customMb: { className: 'mb', values: { '2': '0.5rem' }, transform: (v) => ({ marginBottom: v }) },
+    },
+  }
+  // css({ customMb: '2' }) — runtime expects `.mb_2`, v2 emits `.mb_0\.5rem`
+  ```
+
+- **B4 — Gradient utility group** emits invalid CSS (`background-image: to right`); likely unimplemented.
+
+  ```tsx
+  css({ bgGradient: 'to-r', gradientFrom: 'red.200', gradientTo: 'blue.500' })
+  ```
+
+  ```css
+  /* legacy */ .bg-grad_to-r { background-image: linear-gradient(var(--gradient-stops)); … }
+  /* v2     */ .bg-grad_to_right { background-image: to right; }
+  ```
+
+  Harness: `edgecases.test.ts` → `gradient` → `bench/.parity-out/case_gradient.*.css`.
+
+- **B3/B5** — empty `@layer compositions {}` (`css({ textStyle: 'lg' })` with no definition); `0.5` vs `.5` formatting. Cosmetic.
+
+### C. Intentional (confirm desired)
+
+- **Modern breakpoint syntax** `@media (width >= 48rem)` vs legacy `@media screen and (min-width: 48rem)`
+  (documented `to_rem` normalization; also drops `screen and`). Intra-rule declaration order differs in
+  reset/base (visually identical).
+
+  ```tsx
+  css({ padding: { base: '2', md: '4' } })
+  ```
+
+### D. Ruled out (harness artifacts)
+
+- The literal-value class names in the e2e sweep (`mb_0.5rem`) came from feeding legacy's
+  *post-resolution* config (object-map `values`) to v2 — same root as **B2**. With canonical
+  string-category `values`, v2 is correct (verified vs `static_css.rs`).
+
+## Note on existing harnesses
+
+`bench/src/extract-compare.ts` and `jsx-heavy-compare.ts` are **broken by API drift** — they import a
+default-export `createCompiler` that no longer exists in `@pandacss/compiler`. Worth fixing or retiring.
+
+## Reproduce
+
+```sh
+pnpm exec vitest run bench/__tests__/perf.test.ts       # timing (cold/warm/emit)
+pnpm exec vitest run bench/__tests__/edgecases.test.ts  # 20-case emitter battery
+pnpm exec vitest run bench/__tests__/parity.test.ts     # 12-sandbox e2e sweep
+pnpm exec vitest run bench/__tests__/genuine.test.ts    # real config-loader path
+# per-case CSS + summary written to bench/.parity-out/
+```

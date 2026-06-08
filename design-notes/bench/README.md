@@ -39,3 +39,9 @@ design note explaining the trade-off.
   React JSX codegen surface (`styled`, `StyledVariantProps`, `createRecipeContext`, `createSlotRecipeContext`). Rust JSX
   type-checks cleanly; simplification cut JSX instantiations by 14–32% from the first clean run. Legacy JSX rows are
   documented as non-comparable because legacy lacks the split-context APIs.
+- [2026-06-08 — v2-vs-legacy-full-pipeline](./2026-06-08-v2-vs-legacy-full-pipeline.mdx) — first whole-pipeline
+  (`parse → encode → emit`) comparison: perf **+** style-output parity **+** gaps. Emitter is **25–390× faster** and
+  byte-identical on the core surface (atomic css, conditions, `!important`, recipes incl. compound/default variants,
+  patterns, `token()`, color tokens). Remaining work is front-end (config-loader `data:`-URL crash on dynamic imports,
+  `./`-glob → 0 files, no preset injection) plus emitter edge cases (gradients, color-mix fallback). Object-map utility
+  class naming (B2) fixed 2026-06-08. Full write-up in `bench/V2_VS_LEGACY_REPORT.md`.

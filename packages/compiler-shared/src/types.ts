@@ -234,7 +234,7 @@ export interface Spec {
   /** Canonical emit order for property names (for a stable property sort). */
   propertyOrder: string[]
   jsxFactory?: string
-  /** Normalized import paths per category (post-{@link normalizeImportMap}). */
+  /** Normalized import map. */
   importMap?: ImportMapOutput
 }
 
@@ -334,7 +334,7 @@ export interface FileInspectionResult {
   diagnostics: Diagnostic[]
 }
 
-/** Author-facing import map — per-category `string | string[]` (v1 `ImportMapInput`). */
+/** Author import map (`ImportMapInput`). */
 export interface ImportMapInput {
   css?: string | string[]
   recipes?: string | string[]
@@ -343,7 +343,7 @@ export interface ImportMapInput {
   tokens?: string | string[]
 }
 
-/** Wire / snapshot import map — always expanded category arrays (`recipe` key). */
+/** Normalized import map for snapshots and Rust. */
 export interface ImportMapOutput {
   css: string[]
   recipe: string[]
@@ -352,7 +352,7 @@ export interface ImportMapOutput {
   tokens: string[]
 }
 
-/** One import-map entry: styled-system root string or per-category object. */
+/** Styled-system root string or per-category object. */
 export type ImportMapOption = string | ImportMapInput
 
 /** JSON-safe, fully-resolved Panda config the compiler consumes.
@@ -361,10 +361,7 @@ export type ImportMapOption = string | ImportMapInput
  *  are already lowered to `{ kind: 'js-callback', id }` refs, with the live
  *  functions supplied via {@link CompilerOptions.callbacks}. `@pandacss/config`
  *  produces values conforming to this; the compiler never imports config.
- *
- *  Author configs may pass `importMap` as {@link ImportMapOption} |
- *  {@link ImportMapOption}[]; {@link prepareCompilerConfig} /
- *  `createConfigSnapshot` expand it to {@link ImportMapOutput} before Rust. */
+ *  `importMap` is expanded to {@link ImportMapOutput} before Rust. */
 export type SerializedConfig = Record<string, unknown>
 
 export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'

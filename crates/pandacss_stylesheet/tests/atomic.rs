@@ -57,6 +57,31 @@ fn emits_dynamic_atomic_css_with_configured_separator() {
 }
 
 #[test]
+fn object_map_values_name_classes_by_alias_key() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "marginBottom": {
+                "className": "mb",
+                "values": { "2": "0.5rem", "4": "1rem" }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ marginBottom: '2' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .mb_2 {
+    margin-bottom: 0.5rem;
+  }
+}
+");
+}
+
+#[test]
 fn hashes_atomic_class_names_with_prefix_conditions_and_important() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

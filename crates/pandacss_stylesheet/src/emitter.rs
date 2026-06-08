@@ -1558,7 +1558,7 @@ impl<'a> EmitContext<'a> {
     ) -> Option<Vec<Declaration>> {
         let raw = atom_value_to_string(value);
         let raw = raw.as_deref()?;
-        let result = self.transform_atom(prop, raw);
+        let result = self.transform_atom(prop, raw, Some(value));
         let Literal::Object(entries) = &result.styles else {
             return None;
         };
@@ -1580,9 +1580,20 @@ impl<'a> EmitContext<'a> {
         Some(declarations)
     }
 
-    fn transform_atom(&self, prop: &str, raw: &str) -> UtilityTransformResult {
+    fn transform_atom(
+        &self,
+        prop: &str,
+        raw: &str,
+        value: Option<&AtomValue>,
+    ) -> UtilityTransformResult {
         if self.utility.should_transform(prop) {
-            return self.utility.transform_str(prop, raw);
+            let class_input = value.and_then(|value| match value {
+                AtomValue::Token { path, .. } => Some(path.as_ref()),
+                _ => None,
+            });
+            return self
+                .utility
+                .transform_str_with_class(prop, raw, class_input);
         }
         default_transform(prop, raw)
     }
@@ -1595,7 +1606,7 @@ impl<'a> EmitContext<'a> {
         raw: &str,
         value: &AtomValue,
     ) -> UtilityTransformResult {
-        let mut result = self.transform_atom(prop, raw);
+        let mut result = self.transform_atom(prop, raw, Some(value));
         if let Some(styles) = self.utility_style_override(prop, value) {
             result.styles = styles.clone();
         }

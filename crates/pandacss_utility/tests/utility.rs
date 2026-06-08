@@ -976,3 +976,20 @@ fn resolve_values_value_passes_through_when_no_category_matches() {
     // No `values` category — the original value reaches the transform verbatim.
     assert_snapshot!(utility.resolve_values_value("size", "4px"), @"4px");
 }
+
+#[test]
+fn class_name_value_uses_object_map_alias_not_resolved_css() {
+    let utility = Utility::from_config(&utility_config(json!({
+        "marginBottom": {
+            "className": "mb",
+            "values": { "2": "0.5rem", "4": "1rem" }
+        }
+    })));
+
+    assert_eq!(utility.class_name_value("marginBottom", "2"), "2");
+    assert_eq!(utility.class_name_value("marginBottom", "0.5rem"), "2");
+    assert_snapshot!(
+        utility.transform_str("marginBottom", "0.5rem").class_name,
+        @"mb_2"
+    );
+}
