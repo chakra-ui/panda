@@ -362,7 +362,8 @@ impl Utility {
         class_input: Option<&str>,
     ) -> UtilityTransformResult {
         let key = self.resolve_shorthand(prop);
-        let class_value = class_input.map_or_else(|| self.class_name_value(key, value), without_space);
+        let class_value =
+            class_input.map_or_else(|| self.class_name_value(key, value), without_space);
         let style_value = self.expand_reference_in_value(&arbitrary_value(value));
         let style_prop = self
             .properties
@@ -421,6 +422,12 @@ impl Utility {
         let Some(config) = self.properties.get(prop) else {
             return Cow::Borrowed(value);
         };
+        // Props with a JS transform need the original alias as `args.raw`
+        // (legacy passes the alias, resolving the value separately). Keep the
+        // alias on the atom; the transform/emit path resolves it.
+        if config.transform_callback_id.is_some() {
+            return Cow::Borrowed(value);
+        }
         let mapped = match value {
             Literal::String(value) | Literal::Token { value, .. } => {
                 config.values.get(value.as_str())

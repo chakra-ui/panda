@@ -251,15 +251,17 @@ function assignCallbacks<K extends keyof ProjectCallbacks>(
   result[kind] = { ...result[kind], ...callbacks } as ProjectCallbacks[K]
 }
 
-/** Project a token dictionary down to a single category's `name → value` map
- *  (used to resolve `utility.values` callbacks at construction time). */
+/** Project a token dictionary down to a single category's `name → varRef` map
+ *  for `utility.values` callbacks. Returns the CSS-var ref (`var(--spacing-2)`),
+ *  matching legacy `getCategoryValues`, so `(theme) => theme('spacing')` keeps
+ *  token indirection instead of inlining the raw value. */
 export function getTokenCategoryValues(category: string, tokenDictionary: TokenLookup | undefined) {
   if (!tokenDictionary) return undefined
 
   const prefix = `${category}.`
   const out: Record<string, string> = {}
   for (const [path, value] of Object.entries(tokenDictionary.values)) {
-    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = value
+    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = tokenDictionary.vars[path] ?? value
   }
 
   return Object.keys(out).length > 0 ? out : undefined

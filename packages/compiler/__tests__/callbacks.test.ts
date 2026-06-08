@@ -362,7 +362,7 @@ describe('Compiler callbacks', () => {
       [
         {
           "prop": "space",
-          "value": "1rem",
+          "value": "var(--spacing-4)",
           "conditions": [],
         },
         {
@@ -427,12 +427,12 @@ describe('Compiler callbacks', () => {
       [
         {
           "prop": "inset",
-          "value": "0.5rem",
+          "value": "100%",
           "conditions": [],
         },
         {
           "prop": "inset",
-          "value": "100%",
+          "value": "var(--spacing-2)",
           "conditions": [],
         },
       ]

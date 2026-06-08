@@ -1595,8 +1595,10 @@ impl<'a> EmitContext<'a> {
         value: Option<&AtomValue>,
     ) -> UtilityTransformResult {
         if self.utility.should_transform(prop) {
+            // Class hashes by the resolved value (`#ef4444`), matching legacy and
+            // the runtime `token()` — `path` stays build-info only.
             let class_input = value.and_then(|value| match value {
-                AtomValue::Token { path, .. } => Some(path.as_ref()),
+                AtomValue::Token { value, .. } => Some(value.as_ref()),
                 _ => None,
             });
             return self
