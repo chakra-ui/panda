@@ -52,6 +52,11 @@ export const docsConfig: DocsConfig = {
       href: '/docs'
     },
     {
+      title: 'Blog',
+      type: 'page',
+      href: '/blog'
+    },
+    {
       title: 'Team',
       type: 'page',
       href: '/team'

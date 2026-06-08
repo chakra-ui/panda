@@ -70,6 +70,27 @@ const transformerEmptyLineSpace: ShikiTransformer = {
   }
 }
 
+const blog = defineCollection({
+  name: 'Blog',
+  pattern: ['blog/**/*.mdx'],
+  schema: s
+    .object({
+      title: s.string(),
+      description: s.string().optional(),
+      date: s.isodate(),
+      author: s.string().optional(),
+      tags: s.array(s.string()).optional(),
+      image: s.string().optional(),
+      slug: s.path(),
+      code: s.mdx(),
+      toc: s.toc()
+    })
+    .transform(data => ({
+      ...data,
+      toc: flattenToc(data.toc)
+    }))
+})
+
 const docs = defineCollection({
   name: 'Docs',
   pattern: ['docs/**/*.mdx'],
@@ -100,7 +121,8 @@ const docs = defineCollection({
 export default defineConfig({
   root: 'content',
   collections: {
-    docs
+    docs,
+    blog
   },
   mdx: {
     remarkPlugins: [remarkCodeTitle],
