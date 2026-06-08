@@ -1,3 +1,4 @@
+mod build_info;
 mod codegen;
 mod common;
 mod compositions;

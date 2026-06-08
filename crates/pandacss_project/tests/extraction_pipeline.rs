@@ -1109,8 +1109,12 @@ fn config_theme_tokens_attach_token_dictionary() {
         .find(|a| a.prop() == "color")
         .expect("color atom");
     assert!(
-        matches!(color.value(), AtomValue::String(s) if &**s == "#ef4444"),
-        "token() resolved to dictionary value, got {:?}",
+        matches!(
+            color.value(),
+            AtomValue::Token { path, value }
+                if &**path == "colors.red.500" && &**value == "#ef4444"
+        ),
+        "token() preserved identity and resolved value, got {:?}",
         color.value(),
     );
 }

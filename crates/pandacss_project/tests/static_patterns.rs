@@ -38,7 +38,9 @@ fn summary(atoms: &[Atom], diagnostics: &[Diagnostic]) -> String {
 #[allow(clippy::format_collect, reason = "test display helper")]
 fn format_atom(atom: &Atom) -> String {
     let value = match atom.value() {
-        AtomValue::String(s) | AtomValue::Number(s) => s.to_string(),
+        AtomValue::String(s) | AtomValue::Number(s) | AtomValue::Token { value: s, .. } => {
+            s.to_string()
+        }
         AtomValue::Bool(true) => "true".to_owned(),
         AtomValue::Bool(false) => "false".to_owned(),
         AtomValue::Null => "null".to_owned(),

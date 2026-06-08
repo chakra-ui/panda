@@ -12,7 +12,9 @@ fn atoms(project: &Project) -> String {
         .iter()
         .map(|a| {
             let value = match a.value() {
-                AtomValue::String(s) | AtomValue::Number(s) => s.to_string(),
+                AtomValue::String(s) | AtomValue::Number(s) | AtomValue::Token { value: s, .. } => {
+                    s.to_string()
+                }
                 AtomValue::Bool(true) => "true".to_owned(),
                 AtomValue::Bool(false) => "false".to_owned(),
                 AtomValue::Null => "null".to_owned(),

@@ -1167,7 +1167,9 @@ fn with_callback_target(mut diagnostic: Diagnostic, prop: &str, value: Option<&s
 
 fn atom_value_summary(value: &AtomValue) -> String {
     match value {
-        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
+            value.to_string()
+        }
         AtomValue::Bool(value) => value.to_string(),
         AtomValue::Null => "null".to_owned(),
     }
@@ -1515,7 +1517,7 @@ fn collect_selected_variant_values(
 
 fn literal_to_variant_key(value: &Literal) -> Option<String> {
     match value {
-        Literal::String(value) => Some(value.clone()),
+        Literal::String(value) | Literal::Token { value, .. } => Some(value.clone()),
         Literal::Number(value) => Some(number_to_js_string(*value)),
         Literal::Bool(true) => Some("true".to_owned()),
         Literal::Bool(false) => Some("false".to_owned()),

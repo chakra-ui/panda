@@ -25,6 +25,7 @@
 //! let summary = project.summary();      // counts for tooling / reporting
 //! ```
 
+mod build_info;
 mod codegen;
 mod config;
 mod error;
@@ -47,7 +48,8 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileResolver, ExtractedCall, ExtractedJsx, LineIndex, Literal, MatchCategory, extract,
+    CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, LineIndex, Literal, MatchCategory,
+    extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::diagnostic_codes;
@@ -58,6 +60,7 @@ use pandacss_utility::{StyleNormalizer, Utility};
 /// atom), so the map refcounts as a plain key→value union.
 pub type UtilityStyleKey = (Box<str>, AtomValue);
 
+pub use build_info::{BuildAtom, BuildInfo, BuildValue, ModuleEntry, SCHEMA_VERSION};
 pub use error::{ConfigError, Result};
 pub use pandacss_encoder::{
     EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
@@ -78,6 +81,7 @@ pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 /// every file through `parse_file`.
 pub struct Project {
     config: Arc<Config>,
+    config_fingerprint: Arc<str>,
     files: FxHashMap<Arc<str>, FileEntry>,
     /// Deduplicated union of every value in `files`. Updated by reference
     /// counts on add/remove so [`Self::atoms`] hands out a stable
@@ -103,6 +107,9 @@ pub struct Project {
     inline_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     inline_slot_recipe_spans: FxHashMap<Arc<str>, SmallVec<[u32; 4]>>,
     config_diagnostics: Vec<Diagnostic>,
+    /// Recipe snapshots hydrated from external build info, keyed by the source
+    /// library name. Merged into the emit snapshot in [`Self::stylesheet_snapshots`].
+    hydrated_recipes: FxHashMap<Arc<str>, EncodedRecipesSnapshot>,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -127,6 +134,9 @@ struct FileEntry {
     /// carrier atom and its styles add/remove together.
     utility_styles: FxHashMap<UtilityStyleKey, Literal>,
     token_refs: Vec<String>,
+    /// Top-level export facts for the build-info `exports` map. Empty for
+    /// hydrated/synthetic files.
+    exports: ExportInfo,
     diagnostics: Vec<Diagnostic>,
     report: ParseFileReport,
 }
@@ -151,11 +161,13 @@ impl Project {
     )]
     pub fn new(system: System) -> Self {
         let config = system.config_arc();
+        let config_fingerprint = system.config_fingerprint_arc();
         let config_diagnostics = system.diagnostics().to_vec();
         let config_recipes = config.config_recipes.clone();
         let config_slot_recipes = config.config_slot_recipes.clone();
         Self {
             config,
+            config_fingerprint,
             files: FxHashMap::default(),
             atoms_cache: FxHashSet::default(),
             atom_counts: FxHashMap::default(),
@@ -174,6 +186,7 @@ impl Project {
             inline_recipe_spans: FxHashMap::default(),
             inline_slot_recipe_spans: FxHashMap::default(),
             config_diagnostics,
+            hydrated_recipes: FxHashMap::default(),
         }
     }
 
@@ -280,6 +293,10 @@ impl Project {
             .filter(|token_ref| token_ref.needs_css_var)
             .map(|token_ref| token_ref.path.clone())
             .collect::<Vec<_>>();
+
+        // Per-file export facts feed build-info barrel resolution (project-side).
+        let exports = result.exports;
+
         let mut diagnostics = result.diagnostics;
         let line_index = LineIndex::new(source);
         if let Some(utility) = self.config.utility.as_ref() {
@@ -573,6 +590,7 @@ impl Project {
             encoded_recipes,
             utility_styles,
             token_refs,
+            exports,
             diagnostics: report.diagnostics.clone(),
             report: report.clone(),
         };
@@ -668,6 +686,18 @@ impl Project {
         self.drop_recipes_for(path);
     }
 
+    /// Store a recipe snapshot hydrated from build info, keyed by source library
+    /// name (re-hydration replaces). Merged into the emit snapshot in
+    /// [`Self::stylesheet_snapshots`].
+    pub(crate) fn set_hydrated_recipes(&mut self, name: &str, snapshot: EncodedRecipesSnapshot) {
+        self.invalidate_stylesheet_snapshots();
+        if snapshot.base.is_empty() && snapshot.variants.is_empty() && snapshot.atomic.is_empty() {
+            self.hydrated_recipes.remove(name);
+        } else {
+            self.hydrated_recipes.insert(Arc::from(name), snapshot);
+        }
+    }
+
     fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
@@ -721,6 +751,7 @@ impl Project {
             existing.parse_epoch = entry.parse_epoch;
             existing.cacheable = entry.cacheable;
             existing.token_refs = entry.token_refs;
+            existing.exports = entry.exports;
             existing.diagnostics = entry.diagnostics;
             existing.report = entry.report;
             missing_recipes
@@ -924,8 +955,18 @@ impl Project {
             self.atoms_snapshot_cache = Some(atoms);
         }
         if self.encoded_recipes_snapshot_cache.is_none() {
-            self.encoded_recipes_snapshot_cache =
-                Some(self.encoded_recipes_cache.view().snapshot());
+            let mut snapshot = self.encoded_recipes_cache.view().snapshot();
+            // Merge externally hydrated recipes (from build info) into the emit
+            // snapshot. Sorted by source name so multi-library output is stable.
+            let mut names: Vec<&Arc<str>> = self.hydrated_recipes.keys().collect();
+            names.sort();
+            for name in names {
+                let hydrated = &self.hydrated_recipes[name];
+                snapshot.base.extend(hydrated.base.iter().cloned());
+                snapshot.variants.extend(hydrated.variants.iter().cloned());
+                snapshot.atomic.extend(hydrated.atomic.iter().cloned());
+            }
+            self.encoded_recipes_snapshot_cache = Some(snapshot);
         }
         if self.token_refs_snapshot_cache.is_none() {
             let mut token_refs = self
@@ -996,6 +1037,7 @@ impl Project {
             && self.inline_slot_recipes.is_empty()
             && self.inline_recipe_spans.is_empty()
             && self.inline_slot_recipe_spans.is_empty()
+            && self.hydrated_recipes.is_empty()
     }
 
     /// Every `cva()` recipe, keyed by `(file, span_start)`. Stable order
@@ -1043,6 +1085,13 @@ impl Project {
     #[must_use]
     pub fn config(&self) -> &Config {
         &self.config
+    }
+
+    /// Engine-owned fingerprint of the resolved config's output-affecting fields,
+    /// stamped into [`BuildInfo`] as `configFingerprint`.
+    #[must_use]
+    pub fn config_fingerprint(&self) -> &str {
+        &self.config_fingerprint
     }
 }
 
@@ -1183,7 +1232,11 @@ fn collect_deprecated_props(
                 collect_deprecated_props(item, utility, deprecated, out);
             }
         }
-        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+        Literal::String(_)
+        | Literal::Token { .. }
+        | Literal::Number(_)
+        | Literal::Bool(_)
+        | Literal::Null => {}
     }
 }
 
@@ -1256,7 +1309,11 @@ fn collect_unknown_conditions(
                 collect_unknown_conditions(item, conditions, out);
             }
         }
-        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+        Literal::String(_)
+        | Literal::Token { .. }
+        | Literal::Number(_)
+        | Literal::Bool(_)
+        | Literal::Null => {}
     }
 }
 
@@ -1319,7 +1376,7 @@ fn collect_invalid_color_opacity_modifiers(
             for (key, child) in entries {
                 let canonical = utility.resolve_shorthand(key);
                 if utility.token_category(canonical) == Some("colors")
-                    && let Literal::String(value) = child
+                    && let Literal::String(value) | Literal::Token { value, .. } = child
                     && utility.is_invalid_color_opacity_modifier(value)
                     && !out.contains(value)
                 {
@@ -1333,7 +1390,11 @@ fn collect_invalid_color_opacity_modifiers(
                 collect_invalid_color_opacity_modifiers(item, utility, out);
             }
         }
-        Literal::String(_) | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+        Literal::String(_)
+        | Literal::Token { .. }
+        | Literal::Number(_)
+        | Literal::Bool(_)
+        | Literal::Null => {}
     }
 }
 
@@ -1400,7 +1461,9 @@ pub(crate) fn resolved_atom_value(
     value: &AtomValue,
 ) -> AtomValue {
     let raw = match value {
-        AtomValue::String(raw) | AtomValue::Number(raw) => raw,
+        AtomValue::String(raw) | AtomValue::Number(raw) | AtomValue::Token { value: raw, .. } => {
+            raw
+        }
         AtomValue::Bool(_) | AtomValue::Null => return value.clone(),
     };
     let Some(utility) = utility else {
@@ -1454,7 +1517,9 @@ fn with_callback_target(
 
 fn atom_value_summary(value: &AtomValue) -> String {
     match value {
-        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
+            value.to_string()
+        }
         AtomValue::Bool(value) => value.to_string(),
         AtomValue::Null => "null".to_owned(),
     }

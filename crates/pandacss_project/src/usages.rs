@@ -127,13 +127,17 @@ fn walk_prop(
     sites: &mut Vec<UsageSite>,
 ) {
     match value {
-        Literal::String(raw) => {
+        Literal::String(raw) | Literal::Token { value: raw, .. } => {
             let canonical = cx
                 .utility
                 .map_or(prop, |utility| utility.resolve_shorthand(prop));
             sites.push(site(UsageKind::Property, canonical, range));
 
-            if let Some(dict) = cx.tokens {
+            if let Some(dict) = cx.tokens
+                // `Literal::Token` already records the path via `token_refs` — skip
+                // the category-relative heuristic to avoid duplicate sites.
+                && !matches!(value, Literal::Token { .. })
+            {
                 // Bare category-relative value on a known utility — `color: 'red.300'`,
                 // with an optional `/opacity` modifier (`red.300/40`).
                 if let Some(utility) = cx.utility

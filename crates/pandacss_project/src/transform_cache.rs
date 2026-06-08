@@ -1,3 +1,7 @@
+//! Owned cache keys for transform memoization. Token variants keep path + value
+//! so two token-backed inputs with the same resolved CSS still cache separately
+//! when their paths differ (relevant for build-info round-trips).
+
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::Literal;
 
@@ -5,6 +9,7 @@ use pandacss_extractor::Literal;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AtomValueCacheKey {
     String(String),
+    Token { path: String, value: String },
     Number(String),
     Bool(bool),
     Null,
@@ -14,6 +19,7 @@ pub enum AtomValueCacheKey {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LiteralCacheKey {
     String(String),
+    Token { path: String, value: String },
     Number(u64),
     Bool(bool),
     Null,
@@ -27,6 +33,10 @@ pub enum LiteralCacheKey {
 pub fn atom_value_cache_key(value: &AtomValue) -> AtomValueCacheKey {
     match value {
         AtomValue::String(value) => AtomValueCacheKey::String(value.to_string()),
+        AtomValue::Token { path, value } => AtomValueCacheKey::Token {
+            path: path.to_string(),
+            value: value.to_string(),
+        },
         AtomValue::Number(value) => AtomValueCacheKey::Number(value.to_string()),
         AtomValue::Bool(value) => AtomValueCacheKey::Bool(*value),
         AtomValue::Null => AtomValueCacheKey::Null,
@@ -53,6 +63,13 @@ fn literal_cache_key_inner(
         Literal::String(value) => {
             budget.take(value.len())?;
             Some(LiteralCacheKey::String(value.clone()))
+        }
+        Literal::Token { path, value } => {
+            budget.take(path.len() + value.len())?;
+            Some(LiteralCacheKey::Token {
+                path: path.clone(),
+                value: value.clone(),
+            })
         }
         Literal::Number(value) => Some(LiteralCacheKey::Number(value.to_bits())),
         Literal::Bool(value) => Some(LiteralCacheKey::Bool(*value)),
