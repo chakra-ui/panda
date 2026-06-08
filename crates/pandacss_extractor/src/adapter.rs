@@ -11,6 +11,9 @@ pub(crate) fn adapt_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
     if has_extension(path, "svelte") {
         return Cow::Owned(crate::svelte_adapter::mask_svelte(source));
     }
+    if has_extension(path, "astro") {
+        return Cow::Owned(crate::astro_adapter::mask_astro(source));
+    }
     Cow::Borrowed(source)
 }
 

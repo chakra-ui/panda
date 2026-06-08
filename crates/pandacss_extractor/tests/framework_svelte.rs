@@ -1,5 +1,5 @@
 use indoc::indoc;
-use insta::assert_yaml_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 
 use crate::common::{extract_shape, import_shape, panda_config};
 use pandacss_extractor::{extract, extract_jsx, match_imports, scan_imports};
@@ -474,4 +474,21 @@ fn typescript_assertions_in_markup_style_props_fold() {
           color: red
           padding: 4px
     ");
+}
+
+#[test]
+fn spans_point_into_the_original_svelte_source() {
+    // The mask is a same-length blank-and-copy, so a markup expression keeps its
+    // original byte offset: the reported span slices the ORIGINAL `.svelte` verbatim.
+    let source = indoc! {r#"
+        <script lang="ts">
+        import { css } from '@panda/css';
+        </script>
+
+        <p class={css({ color: 'red' })} />
+    "#};
+    let result = extract(source, "Card.svelte", &panda_config());
+    assert_eq!(result.calls.len(), 1);
+    let span = &result.calls[0].span;
+    assert_snapshot!(&source[span.start as usize..span.end as usize], @"css({ color: 'red' })");
 }

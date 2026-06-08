@@ -51,7 +51,52 @@ pub(crate) fn collect_template_styles(
     if has_extension(path, "svelte") {
         return collect_svelte_template_styles(source, matched, config, &context);
     }
+    if has_extension(path, "astro") {
+        return collect_astro_template_styles(source, matched, config, &context);
+    }
     Vec::new()
+}
+
+/// Astro markup uses the same JSX attribute syntax as Svelte (`attr="x"`,
+/// `attr={expr}`, `{...spread}`), so it reuses [`Framework::Svelte`] semantics.
+/// Only the `---` frontmatter plus `<script>`/`<style>` blocks are skipped.
+fn collect_astro_template_styles(
+    source: &str,
+    matched: &[MatchedImport],
+    config: &ExtractorConfig,
+    context: &TemplateContext<'_>,
+) -> Vec<ExtractedJsx> {
+    let mut excluded: Vec<(usize, usize)> = Vec::new();
+    if let Some(end) = crate::astro_adapter::frontmatter_end(source) {
+        excluded.push((0, end));
+    }
+    for tag in ["script", "style"] {
+        excluded.extend(
+            tag_blocks(source, tag)
+                .iter()
+                .map(|block| (block.open_start, block.close_end)),
+        );
+    }
+    excluded.sort_unstable();
+
+    let mut out = Vec::new();
+    let scan = TemplateScan {
+        framework: Framework::Svelte,
+        matched,
+        config,
+        context,
+    };
+    let mut cursor = 0;
+    for (start, end) in excluded {
+        if cursor < start {
+            collect_markup_range(source, cursor, start, &scan, &mut out);
+        }
+        cursor = cursor.max(end);
+    }
+    if cursor < source.len() {
+        collect_markup_range(source, cursor, source.len(), &scan, &mut out);
+    }
+    out
 }
 
 fn template_context_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {

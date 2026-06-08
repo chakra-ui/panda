@@ -102,10 +102,20 @@ raw values. Across the 12-sandbox sweep, **selector counts match within ±a few*
 
   Real fixture: `sandbox/vite-ts/panda.config.ts` + `remove-unused-css-vars.ts`.
 
-- **A5 — SFC preprocessing not wired.** `.vue` / `.svelte` need JS extract before Oxc; `sandbox/nuxt` fails or misses styles.
+- **A5 — SFC support (Vue/Svelte/Astro)** — ✅ **FIXED** (all three). `adapt_source`
+  (`crates/pandacss_extractor/src/adapter.rs`) masks `.vue`/`.svelte`/`.astro` into TSX before Oxc:
+  genuine driver extracts `sandbox/nuxt` → 7 usages from 5 `.vue`, `sandbox/svelte` → 2 from 2, and
+  `sandbox/astro` → `index.astro` `css=1`, all **0 diagnostics**. Astro was the only gap (no `mask_astro`);
+  added `astro_adapter.rs` + branches in `adapt_source`/`template_styles`, with `;`-terminated frontmatter
+  (ASI guard) and dropped `{/* … */}` comments. Masks are position-preserving, so spans stay exact (pinned by
+  `spans_point_into_the_original_*` tests). The earlier "nuxt fails" was a harness artifact (legacy needs
+  `plugin-vue`; `./`-globs scanned 0 files pre-A2).
 
-  ```ts
-  include: ['./pages/**/*.{vue,ts,tsx}', './components/**/*.{vue,ts,tsx}']
+  ```astro
+  ---
+  import { css } from '../../styled-system/css' // mask_astro strips the `---` fence, keeps the JS
+  ---
+  <div class={css({ bg: 'green.600' })}>hi</div>
   ```
 
 ### B. Emitter divergences (given a correct config)

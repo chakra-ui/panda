@@ -9,6 +9,7 @@
 //! entrypoints exist for tooling and parity tests.
 
 mod adapter;
+mod astro_adapter;
 mod calls;
 mod cross_file;
 mod css_template;

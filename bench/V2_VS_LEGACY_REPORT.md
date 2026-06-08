@@ -203,32 +203,25 @@ These are why v2 cannot yet drop-in replace legacy on most projects. All reprodu
 
   Real fixture: `sandbox/vite-ts/panda.config.ts` + `sandbox/vite-ts/remove-unused-css-vars.ts`.
 
-- **A5 — Vue/Svelte/Astro need JS preprocessing** _(Med)_. `sandbox/nuxt` `.vue` files aren't handled by the raw path.
-  By design (SFC preprocessing stays in JS), but the wiring isn't in the driver path yet. Evidence:
-  `design-notes/scope-and-boundaries.md`.
+- **A5 — SFC support (Vue/Svelte/Astro)** _(Med)_ — ✅ **FIXED** (all three work). **Vue and Svelte** were already wired
+  in the Rust extractor (`crates/pandacss_extractor/src/adapter.rs` `adapt_source` → `mask_vue` / `mask_svelte`):
+  genuine driver extracts `sandbox/nuxt` 7 usages from 5 `.vue` (0 diags), `sandbox/svelte` 2 from 2 (0 diags). **Astro**
+  was the only gap — no `mask_astro` branch, so the `---` frontmatter reached Oxc and `sandbox/astro`'s 3 `.astro` files
+  yielded **0 usages + 3 parse diagnostics**.
 
-  **Minimal repro** — `panda.config.ts`:
+  Fix: added `crates/pandacss_extractor/src/astro_adapter.rs` (`mask_astro`) + a `.astro` branch in `adapt_source` and
+  `template_styles`. Same position-preserving blank-and-copy as vue/svelte (so spans stay exact — pinned by
+  `spans_point_into_the_original_*` tests across all three). Two Astro-specific subtleties handled: the frontmatter is
+  `;`-terminated to avoid an ASI merge (`const x = {…}` + `(expr)` → `{…}(expr)`), and comment-only `{/* … */}`
+  expressions are dropped (would emit `(/* … */)`, an empty paren Oxc rejects). Verified: genuine `sandbox/astro` now
+  **0 diagnostics**, `index.astro` extracts `css=1` (matching legacy); `class:list`/`set:html`/`{cond && …}`/`.map()`
+  all extract. Covered by `crates/pandacss_extractor/tests/framework_astro.rs` (9 tests).
 
-  ```ts
-  export default defineConfig({
-    include: ['./pages/**/*.{vue,ts,tsx}', './components/**/*.{vue,ts,tsx}'],
-    jsxFramework: 'vue',
-  })
-  ```
+  > Original "nuxt fails / SFC not wired" was a harness artifact: the cross-fed sweep ran legacy (which needs
+  > `plugin-vue` preprocessing my harness didn't run) and these configs use `./`-globs that scanned 0 files before the
+  > A2 fix. The genuine v2 driver handles all three.
 
-  ```vue
-  <!-- pages/index.vue — styles inside <script> or css() in setup; needs SFC extract before Oxc -->
-  <script setup lang="ts">
-  import { css } from '../styled-system/css'
-  const styles = css({ color: 'red.500' })
-  </script>
-  ```
-
-  ```sh
-  pnpm exec vitest run bench/__tests__/parity.test.ts  # sandbox/nuxt, svelte, astro error or miss styles
-  ```
-
-  Real fixture: `sandbox/nuxt/panda.config.ts`.
+  Real fixtures: `sandbox/nuxt` (Vue ✅), `sandbox/svelte` (✅), `sandbox/astro` (✅).
 
 ### B. Emitter divergences (genuine, given a correct config)
 

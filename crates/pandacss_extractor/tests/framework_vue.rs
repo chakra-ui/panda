@@ -1,5 +1,5 @@
 use indoc::indoc;
-use insta::assert_yaml_snapshot;
+use insta::{assert_snapshot, assert_yaml_snapshot};
 
 use crate::common::{extract_shape, import_shape, panda_config};
 use pandacss_extractor::{extract, extract_jsx, match_imports, scan_imports};
@@ -498,4 +498,22 @@ fn script_tag_attrs_with_gt_do_not_break_import_scan() {
         data:
           color: red
     ");
+}
+
+#[test]
+fn spans_point_into_the_original_vue_source() {
+    // The mask is a same-length blank-and-copy, so a template expression keeps its
+    // original byte offset: the reported span slices the ORIGINAL `.vue` verbatim.
+    let source = indoc! {r#"
+        <template>
+          <p :class="css({ color: 'red' })" />
+        </template>
+        <script setup lang="ts">
+        import { css } from '@panda/css';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_eq!(result.calls.len(), 1);
+    let span = &result.calls[0].span;
+    assert_snapshot!(&source[span.start as usize..span.end as usize], @"css({ color: 'red' })");
 }
