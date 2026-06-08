@@ -1065,6 +1065,87 @@ mod panda {
     }
 
     #[test]
+    fn dot_slash_prefixed_include_matches() {
+        // `./src/**` (next-js-app / preact-ts convention) must equal `src/**`.
+        let fs = project();
+        let results = glob_abs(&fs, "/proj", &["./src/**/*.{ts,tsx,jsx}"]);
+        assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
+        assert!(results.contains(&PathBuf::from("/proj/src/index.ts")));
+        assert_eq!(results, glob_abs(&fs, "/proj", &["src/**/*.{ts,tsx,jsx}"]));
+    }
+
+    #[test]
+    fn dot_slash_prefixed_multi_include() {
+        let fs = project();
+        let results = glob_abs(
+            &fs,
+            "/proj",
+            &["./src/**/*.{ts,tsx}", "./pages/**/*.{ts,tsx}"],
+        );
+        assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
+        assert!(results.contains(&PathBuf::from("/proj/pages/index.tsx")));
+        assert_eq!(
+            results,
+            glob_abs(&fs, "/proj", &["src/**/*.{ts,tsx}", "pages/**/*.{ts,tsx}"]),
+        );
+    }
+
+    #[test]
+    fn dot_slash_prefixed_exclude_still_prunes() {
+        let fs = project();
+        let results = glob_filtered(
+            &fs,
+            "/proj",
+            &["./src/**/*.{ts,tsx}"],
+            &["./**/*.test.{ts,tsx}"],
+        );
+        assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
+        assert!(!results.contains(&PathBuf::from("/proj/src/components/Button.test.tsx")));
+    }
+
+    #[test]
+    fn dot_slash_with_bare_globstar() {
+        // `./**/*.tsx` — whole-tree include with the leading `./`.
+        let fs = project();
+        let results = glob_abs(&fs, "/proj", &["./**/*.tsx"]);
+        assert_eq!(results, glob_abs(&fs, "/proj", &["**/*.tsx"]));
+        assert!(results.contains(&PathBuf::from("/proj/app/page.tsx")));
+        assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
+    }
+
+    #[test]
+    fn mixed_dot_slash_and_plain_union() {
+        // Configs often mix conventions across an include array.
+        let fs = project();
+        let results = glob_abs(&fs, "/proj", &["./src/**/*.tsx", "pages/**/*.tsx"]);
+        assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
+        assert!(results.contains(&PathBuf::from("/proj/pages/index.tsx")));
+    }
+
+    #[test]
+    fn dot_slash_only_stripped_at_start_not_mid_path() {
+        // The `.` inside `a/./b` is literal — only a *leading* `./` is normalized.
+        let fs = MemoryFileSystem::from_entries([("/proj/src/a.tsx", ""), ("/proj/x/a.tsx", "")]);
+        assert!(glob_abs(&fs, "/proj", &["src/./**/*.tsx"]).is_empty());
+    }
+
+    #[test]
+    fn full_default_panda_include_with_dot_slash() {
+        // The shape `@pandacss/dev`'s default config ships.
+        let fs = project();
+        let results = glob_filtered(
+            &fs,
+            "/proj",
+            &["./src/**/*.{js,jsx,ts,tsx,vue,svelte,astro}"],
+            &["./node_modules/**", "./styled-system/**"],
+        );
+        assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
+        assert!(results.contains(&PathBuf::from("/proj/src/index.ts")));
+        assert!(!results.iter().any(|p| p.to_string_lossy().contains("/node_modules/")));
+        assert!(!results.iter().any(|p| p.to_string_lossy().contains("/styled-system/")));
+    }
+
+    #[test]
     fn large_node_modules_doesnt_blow_up() {
         let mut entries: Vec<(String, &'static str)> = Vec::new();
         for pkg in 0..30 {

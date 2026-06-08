@@ -65,6 +65,33 @@ fn glob_against_real_fs() {
 }
 
 #[test]
+fn glob_dot_slash_prefixed_include() {
+    // A2 regression: `OsFileSystem::glob` has its own walk; `./src/**` must match
+    // the same files as `src/**` here too, not just in the memory walker.
+    let tmp = tempfile::tempdir().unwrap();
+    fs::create_dir_all(tmp.path().join("src/nested")).unwrap();
+    fs::write(tmp.path().join("src/Button.tsx"), "").unwrap();
+    fs::write(tmp.path().join("src/nested/Modal.tsx"), "").unwrap();
+
+    let osfs = OsFileSystem::default();
+    let glob = |include: &str| {
+        let mut r = osfs
+            .glob(&GlobOptions {
+                include: vec![include.into()],
+                cwd: tmp.path().to_path_buf(),
+                absolute: true,
+                ..Default::default()
+            })
+            .unwrap();
+        r.sort();
+        r
+    };
+
+    assert_eq!(glob("./src/**/*.tsx"), glob("src/**/*.tsx"));
+    assert_eq!(glob("./src/**/*.tsx").len(), 2);
+}
+
+#[test]
 fn create_dir_all_and_remove_dir_all() {
     let tmp = tempfile::tempdir().unwrap();
     let nested = tmp.path().join("a/b/c");

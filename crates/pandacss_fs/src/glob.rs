@@ -5,6 +5,12 @@ use fast_glob::glob_match;
 
 use crate::FileSystem;
 
+/// Strip a leading `./` so `./src/**` matches the cwd-relative `src/App.tsx`, like
+/// fast-glob/tinyglobby do on the JS side. `../x` (outside cwd) passes through.
+pub(crate) fn normalize_pattern(pattern: &str) -> &str {
+    pattern.strip_prefix("./").unwrap_or(pattern)
+}
+
 /// Discovery options. Mirrors `Runtime.fs.glob` from `@pandacss/types` so the Rust
 /// engine sees the same shape JS Panda already uses.
 #[derive(Debug, Clone)]
@@ -53,13 +59,13 @@ pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
     };
     if excludes
         .iter()
-        .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
     {
         return false;
     }
     opts.include
         .iter()
-        .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
 }
 
 /// The static directory prefix of a glob pattern — the part before the first
@@ -67,6 +73,9 @@ pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
 /// to these directories instead of every matched file.
 #[must_use]
 pub fn base_dir(pattern: &str) -> &str {
+    // Normalize first so `./src/**` hoists to `src` (not `./src`), keeping walk roots
+    // free of `.` components that `read_dir` on an exact-path FS would miss.
+    let pattern = normalize_pattern(pattern);
     let glob_at = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
     match pattern[..glob_at].rfind('/') {
         Some(slash) => &pattern[..slash],
@@ -146,7 +155,7 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
 
             if excludes
                 .iter()
-                .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+                .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
             {
                 continue;
             }
@@ -159,7 +168,7 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
                 && opts
                     .include
                     .iter()
-                    .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+                    .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
             {
                 if opts.absolute {
                     results.push(entry);

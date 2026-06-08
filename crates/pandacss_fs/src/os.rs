@@ -8,7 +8,7 @@ use oxc_resolver::{FileMetadata, FileSystem as OxcResolverFileSystem, FileSystem
 use walkdir::WalkDir;
 
 use crate::FileSystem;
-use crate::glob::GlobOptions;
+use crate::glob::{GlobOptions, normalize_pattern};
 
 /// Native filesystem impl. Read primitives delegate to `oxc_resolver::FileSystemOs`;
 /// write primitives call `std::fs` directly; `glob` overrides the default walker to
@@ -92,7 +92,7 @@ impl FileSystem for OsFileSystem {
                     let rel_bytes = rel_str.as_bytes();
                     !excludes
                         .iter()
-                        .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+                        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
                 });
 
             for entry in walker {
@@ -124,7 +124,7 @@ impl FileSystem for OsFileSystem {
                 if opts
                     .include
                     .iter()
-                    .any(|pat| glob_match(pat.as_bytes(), rel_bytes))
+                    .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
                 {
                     if opts.absolute {
                         results.push(entry.path().to_path_buf());
