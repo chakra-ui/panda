@@ -153,6 +153,143 @@ This also means `configFingerprint` should likely evolve from strict full-config
 check for design-system consumption: utility names/categories, class-name rules, conditions, recipe names, and similar
 output-affecting contracts must match, while token values can differ so consumers can theme the same token paths.
 
+## Stacked design systems (DS on DS)
+
+A design system built on another design system still ships **its own** build info + preset. Build info answers “what did
+**this package’s source files** extract?” — not “what does the whole inherited stack know?” Preset merge answers “what
+**config contract** does the consumer need?” — including upstream tokens, utilities, and recipes.
+
+**Rule of thumb:** preset chain = config inheritance; build info = per-package extraction cache.
+
+### What each package ships
+
+Every design-system package publishes a manifest (see above) with two artifacts:
+
+| Artifact | Role |
+| -------- | ---- |
+| `preset` | Executable config — usually `presets: ['@acme/base/preset']` plus local extensions. Defines the encoding contract (utilities, recipes, conditions, token paths). |
+| `buildInfo` | Portable encoder state from **`panda buildinfo` on this repo’s sources only**. Does not embed upstream build info. |
+
+Example stack:
+
+```txt
+@acme/base
+  ├── panda.preset.js
+  └── panda.buildinfo.json          ← styles extracted from base’s components
+
+@acme/ui   (presets: [@acme/base])
+  ├── panda.preset.js               ← extends base (tokens, recipes, …)
+  └── panda.buildinfo.json          ← styles extracted from ui’s source only
+
+@app
+  ├── presets: [@acme/ui]           ← merged config contract (ui ⊃ base)
+  └── hydrate: one or more build-info artifacts (see below)
+```
+
+### Producer behavior (middle DS)
+
+When `@acme/ui` runs `panda buildinfo`:
+
+- Scans **ui repo files** with ui’s **fully merged config** (base preset folded in + ui overrides).
+- Stamps `configFingerprint` for that **merged** encoding contract — not base alone.
+- Captures token usages, atoms, and recipes **at ui call sites** only.
+
+Styles that live purely in base and are never touched in ui source **do not** appear in ui’s build info. Pure re-exports
+(`export { Button } from '@acme/base'`) contribute export names to ui’s package surface but not base’s extracted styles
+— those remain in **base’s** artifact.
+
+Ui wrappers that add local `css()` / JSX / recipe usage **do** land in ui’s build info (the delta on top of base).
+
+### Consumer behavior (engine today)
+
+The engine supports **multiple hydrates** with distinct `name`s — additive per package, replace-on-rehydrate for the
+same name:
+
+```ts
+app.buildInfo.hydrate(baseInfo, { name: '@acme/base', only: baseModules })
+app.buildInfo.hydrate(uiInfo, { name: '@acme/ui', only: uiModules })
+```
+
+Under the hood:
+
+- Atoms attach to synthetic files `buildinfo:{name}` (re-hydrating the same `name` replaces that layer).
+- Recipe snapshots store in `hydrated_recipes` keyed by `name` and **merge** into the emit snapshot at CSS generation.
+- Atom dedup is content-addressed — identical atoms from two libs collapse to one utility class.
+
+Tree-shaking is **per artifact, per module key**: `modulesFor(uiInfo, ['Card'])` → ui module keys; base modules need
+a separate `modulesFor(baseInfo, …)` pass when the app imports base components directly or via re-exports ui does not
+cover in its artifact.
+
+### Scenarios
+
+**App imports only from `@acme/ui` (ui re-exports base components).**
+
+- **Preset:** App merges ui preset → inherits base contract through ui’s preset chain.
+- **Build info:** Hydrate ui for ui-native modules. Also hydrate base when the app uses re-exported base components
+  whose styles are **not** in ui’s artifact (common when ui is a thin barrel over base).
+
+**`@acme/ui` is itself a library producer.**
+
+- Ui’s `configFingerprint` reflects base + ui — consumers must match that **full** contract (via ui preset), not base
+  alone.
+- Ui’s build info remains ui-local extraction; base consumers still need base’s artifact for base-only components.
+
+**Token theming across the stack.**
+
+- Build info carries token _path_ + producer-resolved value (`{ t, v }`); emit uses the **consumer’s** token layer.
+- Base defines `colors.brand.500`; ui may extend in preset; app themes the same path — works when utility/token
+  contracts align.
+
+### Proposed `designSystem` consume wiring (not built)
+
+Host orchestration for a stacked consumer — sketch for Phase 4:
+
+```ts
+// panda.config.ts (sketch)
+export default {
+  presets: ['@acme/ui/preset'],           // config contract: ui ⊃ base
+  designSystems: ['@acme/ui', '@acme/base'], // ordered; see resolution below
+}
+```
+
+Per design system at build time:
+
+1. Resolve manifest (`name`, `preset`, `buildInfo`, `panda` range).
+2. Merge preset into the consumer config **once** (top-level `presets` and/or manifest presets — exact merge order TBD;
+   ui preset should already extend base so apps usually list ui only).
+3. `validate(buildInfo)` — schema + peer range + contract/fingerprint check against the consumer compiler.
+4. Scan consumer imports from that package (subpath → module key; barrel → `modulesFor(exports, importNames)`).
+5. `hydrate(buildInfo, { name, only })` for the resolved module set.
+6. Emit hydrated CSS under a package-scoped layer (e.g. `@layer ds-acme-ui { … }`) — layer naming TBD.
+
+**Resolution order (proposal):**
+
+- Process `designSystems` **leaf-to-root** or **root-to-leaf** consistently; prefer **dependency order declared in the
+  manifest** (ui manifest may declare `"extends": "@acme/base"`) over config array order.
+- Hydrate each package independently; never merge build-info JSON blobs — only merge **emit output** and **presets**.
+- On fingerprint mismatch for one layer: fall back to re-extracting **that package’s** published source (if shipped)
+  or fail closed for that layer only.
+
+**Transitive discovery (deferred):**
+
+- Today: no automatic “ui depends on base → pull base build info.” Host must list both or ui manifest must point at
+  base (`"dependencies": ["@acme/base"]` + resolve sibling manifest).
+- Build-info `exports` maps are **in-repo only** — they do not resolve into `node_modules`. Cross-package barrel
+  resolution is a host concern (manifest + import graph).
+
+### Practical guidance (until consume wiring lands)
+
+```txt
+1. Ship both artifacts from every layer consumers can import from.
+2. Middle DS preset extends base; app preset extends middle (single chain).
+3. App hydrates each package it imports styles from, tree-shaken via modulesFor + only.
+4. Compare configFingerprint per artifact against the consumer after preset merge.
+5. When in doubt, hydrate base + ui — over-including is safe; tree-shaking trims unused modules.
+```
+
+Track stacked-DS consume work under [Remaining — consume half](#remaining--consume-half-phase-4-the-value) below
+(`designSystem` wiring, manifest `extends` / dependency resolution, per-package CSS layers).
+
 ## vs legacy (v1)
 
 v1 (`StyleEncoder.toJSON`/`fromJSON` + `panda ship`, ~30 LOC of JS) dumps the encoder's whole atomic `Set` + recipe map
@@ -192,11 +329,14 @@ is mostly the **consume** half (manifest → preset merge → `designSystem` wir
 
 - ⬜ **`designSystem` consume wiring** — `designSystem: '@acme/ds'` → resolve manifest → merge lib preset → scan the
   consumer's DS imports → `modulesFor` → `hydrate({ only })` → emit under `@layer ds-{name}`. The "app actually uses it"
-  path; not built.
+  path; not built. See [Stacked design systems (DS on DS)](#stacked-design-systems-ds-on-ds) for multi-package hydrate +
+  manifest dependency sketch.
 - ⬜ **Preset delivery via manifest.** Build info does not ship token/utility/recipe _definitions_ — the manifest's
   `preset` field does. Real apps still need `designSystem` to import/merge the lib preset into the consumer config before
   hydration so token paths, utilities, and recipes exist on the consumer side. The engine cross-config test simulates
   this by giving both sides matching utility/token contracts manually.
+- ⬜ **Stacked DS manifest dependencies** — transitive base build info when a middle DS re-exports upstream components;
+  manifest `extends` / `dependencies` resolution; per-package `@layer ds-{name}` emit ordering.
 
 ### Remaining — `exports` completeness
 

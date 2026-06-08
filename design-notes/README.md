@@ -30,7 +30,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape, cycle guard.
 - [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe entry serialization.
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
-  condensed format, per-module tree-shaking + import resolution, the version guard, and the engine/JS/CLI layering.
+  condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
+  the engine/JS/CLI layering.
 - [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
   container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
   compatibility-only treatment of legacy `containerSizes`/`cq` concepts.
