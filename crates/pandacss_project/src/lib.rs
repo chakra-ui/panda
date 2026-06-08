@@ -29,6 +29,7 @@ mod build_info;
 mod codegen;
 mod config;
 mod error;
+mod hook_filter;
 mod parsed_file;
 mod patterns;
 mod recipes;
@@ -62,6 +63,7 @@ pub type UtilityStyleKey = (Box<str>, AtomValue);
 
 pub use build_info::{BuildAtom, BuildInfo, BuildValue, ModuleEntry, SCHEMA_VERSION};
 pub use error::{ConfigError, Result};
+pub use hook_filter::HookFilter;
 pub use pandacss_encoder::{
     EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
 };
@@ -206,7 +208,7 @@ impl Project {
     /// bucket. Re-parsing a path *replaces* the previous bucket (atoms
     /// and recipes) so full rebuilds can clear stale styles.
     pub fn parse_file(&mut self, path: &str, source: &str) -> ParseFileReport {
-        self.parse_file_inner(path, source, None, None, ParseMode::Replace)
+        self.parse_file_inner(path, source, None, None, None, ParseMode::Replace)
     }
 
     /// [`Self::parse_file`] with transform callbacks. The binding layer
@@ -221,6 +223,7 @@ impl Project {
         self.parse_file_inner(
             path,
             source,
+            transforms.source,
             transforms.pattern,
             transforms.utility,
             ParseMode::Replace,
@@ -245,6 +248,7 @@ impl Project {
         &mut self,
         path: &str,
         source: &str,
+        source_transform: Option<&mut SourceTransformFn<'_>>,
         mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
         utility_transform: Option<&mut UtilityTransformFn<'_>>,
         mode: ParseMode,
@@ -266,6 +270,30 @@ impl Project {
             return self.files.get(path).expect("checked above").report.clone();
         }
         span.record("cache_hit", false);
+
+        let transformed_source;
+        let source = match source_transform {
+            Some(transform) => match transform(path, source) {
+                Ok(Some(next)) => {
+                    transformed_source = next;
+                    transformed_source.as_str()
+                }
+                Ok(None) => source,
+                Err(diagnostic) => {
+                    if matches!(mode, ParseMode::Replace) {
+                        self.drop_file_state(path);
+                    }
+                    return ParseFileReport {
+                        css_calls: 0,
+                        cva_calls: 0,
+                        sva_calls: 0,
+                        jsx_usages: 0,
+                        diagnostics: vec![diagnostic],
+                    };
+                }
+            },
+            None => source,
+        };
 
         let result = if pattern_transform.is_some() {
             let compiled = self.config.as_ref();
@@ -609,7 +637,7 @@ impl Project {
         if !self.files.contains_key(path) {
             return false;
         }
-        self.parse_file_inner(path, source, None, None, ParseMode::Additive);
+        self.parse_file_inner(path, source, None, None, None, ParseMode::Additive);
         true
     }
 
@@ -625,6 +653,7 @@ impl Project {
         self.parse_file_inner(
             path,
             source,
+            transforms.source,
             transforms.pattern,
             transforms.utility,
             ParseMode::Additive,
@@ -1165,6 +1194,9 @@ where
 pub type PatternTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> std::result::Result<Option<Literal>, Diagnostic> + 'a;
 
+pub type SourceTransformFn<'a> =
+    dyn FnMut(&str, &str) -> std::result::Result<Option<String>, Diagnostic> + 'a;
+
 /// JS `transform` for a custom utility: `(prop, resolved_value, original_value)`
 /// → raw style object (NOT decomposed atoms; className/layer stay with the
 /// [`Utility`]). `Ok(None)` = no transform for this prop, keep the atom.
@@ -1177,6 +1209,7 @@ pub type UtilityTransformFn<'a> = dyn FnMut(&str, &AtomValue, &AtomValue) -> std
 /// in rather than stored on the project.
 #[derive(Default)]
 pub struct ParseTransforms<'a> {
+    pub source: Option<&'a mut SourceTransformFn<'a>>,
     pub pattern: Option<&'a mut PatternTransformFn<'a>>,
     pub utility: Option<&'a mut UtilityTransformFn<'a>>,
 }

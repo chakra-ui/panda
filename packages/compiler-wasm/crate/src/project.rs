@@ -61,7 +61,13 @@ struct CallbackHost {
     pattern_transform_refs: HashMap<String, String>,
     utility_transforms: HashMap<String, js_sys::Function>,
     pattern_transforms: HashMap<String, js_sys::Function>,
+    source_transforms: Vec<(String, SourceTransformCallback)>,
     transform_cache: TransformCache,
+}
+
+struct SourceTransformCallback {
+    filter: pandacss_project::HookFilter,
+    callback: js_sys::Function,
 }
 
 impl CallbackHost {
@@ -71,8 +77,13 @@ impl CallbackHost {
             pattern_transform_refs: get_pattern_transform_refs(config),
             utility_transforms: HashMap::new(),
             pattern_transforms: HashMap::new(),
+            source_transforms: Vec::new(),
             transform_cache: TransformCache::default(),
         }
+    }
+
+    fn has_source_transforms(&self) -> bool {
+        !self.source_transforms.is_empty()
     }
 
     fn has_pattern_transforms(&self) -> bool {
@@ -156,6 +167,35 @@ impl WasmCompiler {
         self.callbacks.pattern_transforms.insert(id, callback);
         self.callbacks.transform_cache.clear_pattern();
         self.inner.bump_parse_epoch();
+    }
+
+    /// Register a JS-backed `parser:before` source transform with a Rust-side
+    /// filter. The filter is evaluated before calling into JS.
+    #[wasm_bindgen(js_name = registerSourceTransform)]
+    pub fn register_source_transform(
+        &mut self,
+        id: String,
+        filter: JsValue,
+        callback: js_sys::Function,
+    ) -> Result<(), JsValue> {
+        let filter = if filter.is_null() || filter.is_undefined() {
+            pandacss_project::HookFilter::default()
+        } else {
+            let value: serde_json::Value =
+                serde_wasm_bindgen::from_value(filter).map_err(|err| {
+                    JsValue::from_str(&format!("invalid parser:before filter: {err}"))
+                })?;
+            pandacss_project::HookFilter::from_json(&value).map_err(|err| {
+                JsValue::from_str(&format!(
+                    "Invalid parser:before filter for callback `{id}`: {err}"
+                ))
+            })?
+        };
+        self.callbacks
+            .source_transforms
+            .push((id, SourceTransformCallback { filter, callback }));
+        self.inner.bump_parse_epoch();
+        Ok(())
     }
 
     /// Read a source file from the in-memory filesystem and parse it.
@@ -291,9 +331,10 @@ impl WasmCompiler {
     /// Shared parse path used by `parse_file` and `parseFiles` — wires the
     /// registered transform callbacks (if any) and returns the core report.
     fn parse_inner(&mut self, path: &str, source: &str) -> pandacss_project::ParseFileReport {
+        let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
-        if !has_pattern_transforms && !has_utility_transforms {
+        if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
             return self.inner.parse_file(path, source);
         }
         let WasmCompiler {
@@ -320,10 +361,16 @@ impl WasmCompiler {
                 utility_cache,
             )
         };
+        let mut source_transform = |path: &str, source: &str| {
+            apply_source_transforms(path, source, &callbacks.source_transforms)
+        };
         inner.parse_file_with(
             path,
             source,
             pandacss_project::ParseTransforms {
+                source: has_source_transforms.then_some(
+                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                ),
                 pattern: has_pattern_transforms
                     .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
                 utility: has_utility_transforms.then_some(
@@ -366,9 +413,10 @@ impl WasmCompiler {
     #[wasm_bindgen(js_name = refreshFileSource)]
     #[must_use]
     pub fn refresh_file_source(&mut self, path: &str, source: &str) -> bool {
+        let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
-        if !has_pattern_transforms && !has_utility_transforms {
+        if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
             return self.inner.refresh_file(path, source);
         }
 
@@ -396,10 +444,16 @@ impl WasmCompiler {
                 utility_cache,
             )
         };
+        let mut source_transform = |path: &str, source: &str| {
+            apply_source_transforms(path, source, &callbacks.source_transforms)
+        };
         inner.refresh_file_with(
             path,
             source,
             pandacss_project::ParseTransforms {
+                source: has_source_transforms.then_some(
+                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                ),
                 pattern: has_pattern_transforms
                     .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
                 utility: has_utility_transforms.then_some(
@@ -1606,6 +1660,49 @@ fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
         return None;
     }
     values.get("id")?.as_str()
+}
+
+#[allow(
+    clippy::result_large_err,
+    reason = "Err mirrors the shared Result<_, Diagnostic> transform-callback contract used by other JS callbacks"
+)]
+fn apply_source_transforms(
+    path: &str,
+    source: &str,
+    callbacks: &[(String, SourceTransformCallback)],
+) -> Result<Option<String>, pandacss_extractor::Diagnostic> {
+    let mut current: Option<String> = None;
+    for (id, entry) in callbacks {
+        let input = current.as_deref().unwrap_or(source);
+        if !entry.filter.admits(path, input) {
+            continue;
+        }
+
+        let result = entry
+            .callback
+            .call2(
+                &JsValue::NULL,
+                &JsValue::from_str(path),
+                &JsValue::from_str(input),
+            )
+            .map_err(|err| {
+                callback_diagnostic(format!(
+                    "parser:before callback `{id}` for `{path}` threw: {}",
+                    js_error_message(&err)
+                ))
+            })?;
+        if result.is_null() || result.is_undefined() {
+            continue;
+        }
+        let Some(next) = result.as_string() else {
+            return Err(callback_diagnostic(format!(
+                "parser:before callback `{id}` for `{path}` must return a string or undefined"
+            )));
+        };
+        current = Some(next);
+    }
+
+    Ok(current)
 }
 
 #[allow(

@@ -1,13 +1,29 @@
 // Binding-agnostic callback runtime. Only `registerCallbacks` (which talks to a
 // native vs wasm instance) lives in each binding package.
 
-import type { ColorMixResult, PatternHelpers, ProjectCallbacks, RawToken, TokenLookup, TransformArgs } from './types'
+import type {
+  ColorMixResult,
+  PatternHelpers,
+  ProjectCallbacks,
+  ProjectHooks,
+  RawToken,
+  TokenLookup,
+  TransformArgs,
+} from './types'
 
 export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: ProjectCallbacks) {
   assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])
   assertCallbackRefs('utility.transform', getUtilityTransformRefs(config), callbacks['utility.transform'])
   assertCallbackRefs('pattern.transform', getPatternTransformRefs(config), callbacks['pattern.transform'])
   assertCallbackRefs('pattern.defaultValues', getPatternDefaultValueRefs(config), callbacks['pattern.defaultValues'])
+}
+
+export function assertProjectHooks(hooks: ProjectHooks | undefined, callbacks: ProjectCallbacks) {
+  for (const hook of hooks?.['parser:before'] ?? []) {
+    if (!callbacks['parser:before']?.[hook.id]) {
+      throw new Error(`Missing parser:before callback \`${hook.id}\``)
+    }
+  }
 }
 
 function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: Record<string, Function> | undefined) {
@@ -220,6 +236,11 @@ export function mergeCallbacks(...items: Array<ProjectCallbacks | undefined>): P
     }
   }
   return result
+}
+
+export function mergeHooks(...items: Array<ProjectHooks | undefined>): ProjectHooks | undefined {
+  const parserBefore = items.flatMap((item) => item?.['parser:before'] ?? [])
+  return parserBefore.length > 0 ? { 'parser:before': parserBefore } : undefined
 }
 
 function assignCallbacks<K extends keyof ProjectCallbacks>(

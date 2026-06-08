@@ -1143,6 +1143,7 @@ dependencies = [
 name = "pandacss_project"
 version = "0.0.0"
 dependencies = [
+ "fast-glob",
  "indoc",
  "insta",
  "pandacss_codegen",

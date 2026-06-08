@@ -1,4 +1,4 @@
-import type { ProjectCallbacks, SerializedConfig } from '@pandacss/compiler-shared'
+import type { ProjectCallbacks, ProjectHooks, SerializedConfig } from '@pandacss/compiler-shared'
 import type { ConfigSources } from './sources'
 
 export interface LoadConfigOptions {
@@ -16,6 +16,8 @@ export interface LoadedPandaConfig {
   config: SerializedConfig
   /** Live utility/pattern transform callbacks, paired with `config`. */
   callbacks: ProjectCallbacks
+  /** JSON-safe hot-path hook metadata paired with live callbacks. */
+  hooks?: ProjectHooks
   /** Module ids the config depends on, for watch-mode invalidation. */
   dependencies: string[]
   metadata?: {

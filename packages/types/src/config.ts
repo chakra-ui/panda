@@ -1,6 +1,6 @@
 import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
-import type { PandaHooks } from './hooks'
+import type { PandaHookRegistry } from './hooks'
 import type { PatternConfig } from './pattern'
 import type { Keys, LiteralUnion, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
@@ -432,12 +432,9 @@ interface PresetOptions {
   presets?: (string | Preset | Promise<Preset>)[]
 }
 
-export interface HooksOptions {
-  hooks?: Partial<PandaHooks>
-}
-
-export interface PandaPlugin extends HooksOptions {
+export interface PandaPlugin {
   name: string
+  hooks?: Partial<PandaHookRegistry>
 }
 
 export interface PluginsOptions {
@@ -452,7 +449,6 @@ export interface Config
     FileSystemOptions,
     JsxOptions,
     PresetOptions,
-    HooksOptions,
     PluginsOptions {
   /**
    * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
@@ -470,7 +466,7 @@ export interface Config
   validation?: 'none' | 'warn' | 'error'
 }
 
-export interface Preset extends ExtendableOptions, PresetOptions {
+export interface Preset extends ExtendableOptions, PresetOptions, PluginsOptions {
   name: string
 }
 

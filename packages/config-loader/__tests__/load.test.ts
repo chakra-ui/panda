@@ -465,9 +465,121 @@ describe('loadPandaConfig preset resolution', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
+
+  test('serializes plugins into ordered parser:before hooks', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `const sfc = {
+        name: 'sfc',
+        hooks: {
+          'parser:before': {
+            filter: { id: { include: ['**/*.vue'] }, code: { include: /css\\(/ } },
+            handler({ content }) {
+              return content.replace('__COLOR__', "'red'")
+            },
+          },
+        },
+      }
+
+      export default {
+        outdir: 'styled-system',
+        plugins: [
+          sfc,
+          {
+            name: 'local',
+            hooks: {
+              'parser:before'({ content }) {
+                return content.replace('__BG__', "'blue'")
+              },
+            },
+          },
+        ],
+      }`,
+    })
+
+    try {
+      expect(result.hooks?.['parser:before']).toMatchObject([
+        {
+          id: 'plugins.0.hooks.parser:before.0',
+          name: 'sfc',
+          filter: {
+            id: { include: ['**/*.vue'] },
+            code: { include: { kind: 'regex', source: 'css\\(', flags: '' } },
+          },
+        },
+        {
+          id: 'plugins.1.hooks.parser:before.1',
+          name: 'local',
+        },
+      ])
+      expect(result.hooks?.['parser:before']?.map((hook) => hook.hash)).toEqual([
+        expect.stringMatching(/^fn1-/),
+        expect.stringMatching(/^fn1-/),
+      ])
+      expect(Object.keys(result.callbacks['parser:before'] ?? {})).toEqual([
+        'plugins.0.hooks.parser:before.0',
+        'plugins.1.hooks.parser:before.1',
+      ])
+      expect((result.config as any).plugins).toBeUndefined()
+      expect((result.config as any).hooks).toBeUndefined()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('appends extend.plugins after base plugins', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        plugins: [
+          { name: 'base', hooks: { 'parser:before': ({ content }) => content } },
+        ],
+        extend: {
+          plugins: [
+            { name: 'extra', hooks: { 'parser:before': ({ content }) => content } },
+          ],
+        },
+      }`,
+    })
+
+    try {
+      expect(result.hooks?.['parser:before']?.map((hook) => hook.name)).toEqual(['base', 'extra'])
+      expect(Object.keys(result.callbacks['parser:before'] ?? {})).toEqual([
+        'plugins.0.hooks.parser:before.0',
+        'plugins.1.hooks.parser:before.1',
+      ])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('loadPandaConfig errors', () => {
+  test('rejects removed root hooks with a migration hint', async () => {
+    await expectLoadError(
+      {
+        'panda.config.ts': `export default {
+          outdir: 'styled-system',
+          hooks: {
+            'parser:before': ({ content }) => content,
+          },
+        }`,
+      },
+      /`config\.hooks` was removed in v2/,
+    )
+  })
+
+  test('rejects plugins without a name', async () => {
+    await expectLoadError(
+      {
+        'panda.config.ts': `export default {
+          outdir: 'styled-system',
+          plugins: [{ hooks: { 'parser:before': ({ content }) => content } }],
+        }`,
+      },
+      /Every plugin in `config\.plugins` must be an object with a non-empty `name`/,
+    )
+  })
+
   test('rejects invalid root config exports', async () => {
     await expectLoadError(
       {

@@ -221,29 +221,24 @@ v2's **coarse `CodegenDependency` enum** (the engine's `generateAffectedArtifact
 v1's per-file `ArtifactId` set. The fine-grained `recipes[]` / `patterns[]` ride alongside for when we want per-entry
 file scoping.
 
-### The serialized-config caveat (known gap)
+### Callback source hashing
 
-Diffing runs on the **`SerializedConfig`**, where functions are lowered to `{ kind: 'js-callback', id }` with a *stable*
-id. So editing a `utilities.*.transform` **body** produces a byte-identical ref → `microdiff` sees no change → the
-utility artifact would not regenerate. Patterns are the exception: we capture `pattern.transform` as a `codegenSource`
-*string* (see [config-loading-design](./config-loading-design.md)), so a pattern body edit *does* diff. The current
-`diffConfig` is **structural-only** — it ships with this gap documented (in code + tests) and the hashing fix deferred.
-Resolution options:
+Diffing runs on the **`SerializedConfig`**, where functions are lowered to
+`{ kind: 'js-callback', id, hash }` with a stable id and a best-effort source hash. A body edit flips the hash, so
+`microdiff` can see callback changes while `diffConfig` remains a pure structural diff.
 
-1. **Hash callback sources into the serialized config** — attach a short content hash of each lowered function's
-   `.toString()` (`{ kind: 'js-callback', id, hash }`). A body edit flips the hash → diffs precisely, `diffConfig` stays
-   a pure structural diff, and pattern/utility handling becomes symmetric. **Preferred.**
-2. **Coarse fallback on config-file change** — any change to the config *file* (already dep-watched) forces regen of all
-   function-dependent artifacts (`patterns`, `recipes`, `utilities`). Simple, over-regenerates slightly, never wrong.
-3. **Diff pre-serialization** (the live resolved config) — most faithful to v1, but the diff input would no longer be the
-   artifact we ship to Rust, and live functions compare by reference (every reload = new refs = always "changed") unless
-   stringified — which collapses back into option 1.
+The hash tracks the function source text, not values it closes over. Closures that depend on external modules are handled
+by the config loader's dependency list: a watched dependency change reloads the config and produces a fresh snapshot.
+Patterns still capture `pattern.transform` as a `codegenSource` string (see
+[config-loading-design](./config-loading-design.md)) because codegen needs to embed the function source, not just detect
+that it changed.
+
+Hook filters follow the same structural rule: filters are serialized data and diff without hashing; hook handlers carry
+the callback hash. A `parser:before` filter change is conservative-invalidation worthy because it can change which files
+are preprocessed before parse.
 
 ## Unresolved Questions
 
-- **Callback-change detection** — `diffConfig` is structural-only today (gap above). Implement option 1 (hash lowered
-  callback sources during serialization) when utility-transform-edit invalidation matters; needs the Rust
-  `SerializedConfig` deserialize to tolerate the extra `hash` field on the callback ref.
 - **`writeArtifacts` clean step** — current helper writes full-or-affected sets; it does **not** delete stale files
   (renamed/removed recipes/patterns leave orphans). Add a clean pass when watch cadence needs it.
 - **CLI / plugin adapters** — `createNodeDriver` (in `@pandacss/compiler`) exists; the consumer adapters (CLI commands,

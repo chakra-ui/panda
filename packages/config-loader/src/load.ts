@@ -33,6 +33,7 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
   const authored = await resolveAuthoredPresets(config as UserConfig, cwd, {
     configFile: path,
     trackSources: options.trackSources,
+    preserveRuntimeHooks: true,
   })
   const resolved = applyConfigDefaults(authored.config, cwd) as UserConfig
 
@@ -47,6 +48,7 @@ export async function loadPandaConfig(options: LoadConfigOptions): Promise<Loade
     path,
     config: snapshot.config,
     callbacks: snapshot.callbacks,
+    ...(snapshot.hooks ? { hooks: snapshot.hooks } : {}),
     dependencies: dependencyList,
     ...(authored.metadata ? { metadata: authored.metadata } : {}),
   }

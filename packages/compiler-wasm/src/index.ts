@@ -14,7 +14,7 @@
  * facade with no `pkg-node` / `loadWasm` in its module graph.
  */
 
-import { mergeCallbacks } from '@pandacss/compiler-shared'
+import { mergeCallbacks, mergeHooks } from '@pandacss/compiler-shared'
 import type { Compiler, CompilerOptions, ConfigSnapshot, SerializedConfig } from '@pandacss/compiler-shared'
 import { build } from './web'
 import type { WasmModule } from './web'
@@ -62,5 +62,6 @@ export async function createCompilerFromSnapshot(
   options?: CompilerOptions,
 ): Promise<Compiler> {
   const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
-  return build(await loadWasm(), snapshot.config, callbacks)
+  const hooks = mergeHooks(snapshot.hooks, options?.hooks)
+  return build(await loadWasm(), snapshot.config, callbacks, hooks)
 }

@@ -4,7 +4,7 @@ import {
   getPatternDefaultValueRefsByTransformId,
   mergePatternDefaultValues,
 } from '@pandacss/compiler-shared'
-import type { ProjectCallbacks, TokenLookup } from '@pandacss/compiler-shared'
+import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
 import type { WasmCompiler } from './types'
 
 export type { PatternHelpers } from '@pandacss/compiler-shared'
@@ -12,6 +12,7 @@ export type { PatternHelpers } from '@pandacss/compiler-shared'
 export function registerCallbacks(
   project: WasmCompiler,
   callbacks: ProjectCallbacks,
+  hooks: ProjectHooks | undefined,
   tokenDictionary: TokenLookup | undefined,
 ) {
   const utilityTransforms = callbacks['utility.transform']
@@ -49,4 +50,28 @@ export function registerCallbacks(
       })
     }
   }
+
+  const sourceTransforms = hooks?.['parser:before']
+  if (sourceTransforms?.length && !project.registerSourceTransform) {
+    throw new Error('WASM project does not support parser:before callbacks')
+  }
+  if (project.registerSourceTransform && sourceTransforms) {
+    for (const hook of sourceTransforms) {
+      const callback = callbacks['parser:before']?.[hook.id]
+      if (!callback) continue
+      project.registerSourceTransform(hook.id, hook.filter, (filePath, content) => {
+        const result = callback({ filePath: String(filePath), content: String(content), original: String(content) })
+        if (isPromiseLike(result)) {
+          throw new Error(`parser:before callback \`${hook.id}\` must be synchronous`)
+        }
+        return typeof result === 'string' ? result : undefined
+      })
+    }
+  }
+}
+
+function isPromiseLike(value: unknown): value is Promise<unknown> {
+  return (
+    !!value && (typeof value === 'object' || typeof value === 'function') && typeof (value as any).then === 'function'
+  )
 }

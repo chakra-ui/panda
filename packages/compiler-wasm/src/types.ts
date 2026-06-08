@@ -30,6 +30,7 @@ import type {
   ParsedFileView,
   ProjectSummary,
   RecipeEntry,
+  SerializedHookFilter,
   SourceEntry,
   Spec,
   StaticPatternResult,
@@ -123,6 +124,11 @@ export declare class WasmCompiler {
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void
+  registerSourceTransform?(
+    id: string,
+    filter: SerializedHookFilter | undefined,
+    callback: (filePath: string, content: string) => string | undefined,
+  ): void
   atoms(): Atom[]
   recipes(): RecipeEntry[]
   slotRecipes(): RecipeEntry[]

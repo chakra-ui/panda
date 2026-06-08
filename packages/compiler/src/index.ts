@@ -8,10 +8,12 @@ import type {
   SerializedConfig,
 } from '@pandacss/compiler-shared'
 import {
+  assertProjectHooks,
   assertProjectCallbacks,
   getTokenCategoryValues,
   makeBuildInfoApi,
   mergeCallbacks,
+  mergeHooks,
   prepareCompilerConfig,
 } from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
@@ -59,7 +61,8 @@ export function createCompiler(config: SerializedConfig, options?: CompilerOptio
  *  any in `options.callbacks`. */
 export function createCompilerFromSnapshot(snapshot: ConfigSnapshot, options?: CompilerOptions): Compiler {
   const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
-  return build(snapshot.config, callbacks, options)
+  const hooks = mergeHooks(snapshot.hooks, options?.hooks)
+  return build(snapshot.config, callbacks, { ...options, hooks })
 }
 
 export function getBindingInfo() {
@@ -70,6 +73,7 @@ export function getBindingInfo() {
 
 function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: CompilerOptions): Compiler {
   assertProjectCallbacks(config, callbacks)
+  assertProjectHooks(options?.hooks, callbacks)
 
   if (!nativeCompilerFromConfig) {
     throw new Error('createCompiler is not available in this binding')
@@ -77,7 +81,7 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
 
   const prepared = prepareCompilerConfig(config)
   const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
-  registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
+  registerCallbacks(compiler, callbacks, options?.hooks, compiler.token_dictionary?.())
   attachBuildInfo(compiler)
 
   return compiler

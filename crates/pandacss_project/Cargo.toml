@@ -27,6 +27,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 smallvec = { workspace = true }
 pandacss_tokens = { workspace = true }
+fast-glob = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]

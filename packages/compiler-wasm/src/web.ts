@@ -19,6 +19,7 @@
 
 import {
   assertProjectCallbacks,
+  assertProjectHooks,
   getTokenCategoryValues,
   makeBuildInfoApi,
   mergeCallbacks,
@@ -29,6 +30,7 @@ import type {
   Compiler,
   CompilerOptions,
   ProjectCallbacks,
+  ProjectHooks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
@@ -78,16 +80,22 @@ export function createCompilerFromWasmModule(
   config: SerializedConfig,
   options?: CompilerOptions,
 ): Compiler {
-  return build(mod, config, options?.callbacks ?? {})
+  return build(mod, config, options?.callbacks ?? {}, options?.hooks)
 }
 
-export function build(mod: WasmModule, config: SerializedConfig, callbacks: ProjectCallbacks): Compiler {
+export function build(
+  mod: WasmModule,
+  config: SerializedConfig,
+  callbacks: ProjectCallbacks,
+  hooks?: ProjectHooks,
+): Compiler {
   const fs = new mod.WasmFileSystem()
   assertProjectCallbacks(config, callbacks)
+  assertProjectHooks(hooks, callbacks)
 
   const prepared = prepareCompilerConfig(config)
   const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks))
-  registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
+  registerCallbacks(compiler, callbacks, hooks, compiler.token_dictionary?.())
 
   // Expose the shared FS as a field so the return shape matches native.
   ;(compiler as unknown as { fs: WasmFileSystem }).fs = fs

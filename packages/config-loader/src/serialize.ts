@@ -2,21 +2,24 @@ import {
   normalizeImportMap,
   type ProjectCallbackKind,
   type ProjectCallbacks,
+  type ProjectHooks,
   type SerializedConfig,
 } from '@pandacss/compiler-shared'
 import type { UserConfig } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
+import { serializeHooks, type HookSerializationCallbacks } from './hooks'
 
 const compact = <T extends Record<string, any>>(value: T): T =>
   Object.fromEntries(Object.entries(value ?? {}).filter(([, item]) => item !== undefined)) as T
 
 const runtimeOnlyKeys = new Set(['hooks', 'plugins', 'presets', 'name'])
 
-type Callbacks = Partial<Record<ProjectCallbackKind, Record<string, Function>>>
+type Callbacks = HookSerializationCallbacks
 
 export interface ConfigSnapshot {
   config: SerializedConfig
   callbacks: ProjectCallbacks
+  hooks?: ProjectHooks
 }
 
 /**
@@ -27,12 +30,13 @@ export interface ConfigSnapshot {
  */
 export function createConfigSnapshot(config: UserConfig): ConfigSnapshot {
   const callbacks: Callbacks = {}
+  const hooks = serializeHooks(config, callbacks, sanitize, hashCallbackSource)
   const serialized: SerializedConfig = {
     ...sanitize(config, [], callbacks),
     importMap: normalizeImportMap(config),
   }
   attachPatternCodegenSource(serialized, config)
-  return { config: serialized, callbacks: callbacks as ProjectCallbacks }
+  return { config: serialized, callbacks: callbacks as ProjectCallbacks, ...(hooks ? { hooks } : {}) }
 }
 
 function sanitize(value: unknown, path: string[], callbacks: Callbacks): any {

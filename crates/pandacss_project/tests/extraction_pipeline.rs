@@ -4,6 +4,7 @@
 use crate::common::{create_project, sorted_atoms};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
+use pandacss_project::{HookFilter, ParseTransforms, SourceTransformFn};
 use serde_json::json;
 
 #[test]
@@ -38,6 +39,80 @@ fn parse_file_routes_css_cva_and_sva_to_the_right_pipelines() {
       value: 4px
       conditions: []
     ");
+}
+
+#[test]
+fn parser_before_source_transform_runs_before_extraction() {
+    let mut project = create_project(json!({}));
+    let mut transform = |_path: &str, source: &str| Ok(Some(source.replace("__COLOR__", "'red'")));
+
+    let report = project.parse_file_with(
+        "fixture.tsx",
+        "import { css } from '@panda/css'; css({ color: __COLOR__ });",
+        ParseTransforms {
+            source: Some(&mut transform as &mut SourceTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(report.css_calls, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn parser_before_source_transform_is_skipped_for_cached_source() {
+    let mut project = create_project(json!({}));
+    let mut calls = 0;
+    let mut transform = |_path: &str, source: &str| {
+        calls += 1;
+        Ok(Some(source.replace("__COLOR__", "'red'")))
+    };
+    let source = "import { css } from '@panda/css'; css({ color: __COLOR__ });";
+
+    project.parse_file_with(
+        "fixture.tsx",
+        source,
+        ParseTransforms {
+            source: Some(&mut transform as &mut SourceTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+    project.parse_file_with(
+        "fixture.tsx",
+        source,
+        ParseTransforms {
+            source: Some(&mut transform as &mut SourceTransformFn<'_>),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(calls, 1);
+}
+
+#[test]
+fn hook_filter_admits_by_id_and_code() {
+    let filter = HookFilter::from_json(&json!({
+        "id": {
+            "include": ["src/**/*.vue", { "kind": "regex", "source": "\\.astro$", "flags": "" }],
+            "exclude": ["src/vendor/**"]
+        },
+        "code": {
+            "include": { "kind": "regex", "source": "css\\(", "flags": "" },
+            "exclude": "no-panda"
+        }
+    }))
+    .expect("valid filter");
+
+    assert!(filter.admits("src/App.vue", "css({ color: 'red' })"));
+    assert!(filter.admits("src/page.astro", "css({ color: 'red' })"));
+    assert!(!filter.admits("src/App.tsx", "css({ color: 'red' })"));
+    assert!(!filter.admits("src/vendor/App.vue", "css({ color: 'red' })"));
+    assert!(!filter.admits("src/App.vue", "console.log('no panda')"));
+    assert!(!filter.admits("src/App.vue", "no-panda; css({ color: 'red' })"));
 }
 
 #[test]

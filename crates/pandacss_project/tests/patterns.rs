@@ -44,6 +44,7 @@ fn pattern_defaults_apply_before_transform() {
             const el = <Stack />;
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -89,6 +90,7 @@ fn pattern_props_override_default_values() {
             stack({ gap: '8px' });
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -151,6 +153,7 @@ fn pattern_raw_result_spread_uses_transformed_styles_in_nested_css() {
             });
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -225,6 +228,7 @@ fn inline_pattern_raw_spread_uses_transformed_styles_in_nested_css() {
             });
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -272,6 +276,7 @@ fn strict_pattern_components_only_extract_pattern_props() {
             const el = <Panel tone='info' color='red' css={{ bg: 'blue' }} />;
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -306,6 +311,7 @@ fn pattern_blocklist_filters_style_props() {
             const el = <Panel tone='info' color='red' backgroundColor='blue' />;
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -384,6 +390,7 @@ fn pattern_local_import_alias_routes_to_export_pattern() {
             aliased({ justify: 'flex-end' });
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -450,6 +457,7 @@ fn pattern_function_and_jsx_share_transform_with_default_values() {
             const el = <Stack />;
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -503,6 +511,7 @@ fn pattern_conditional_props_produce_conditioned_atoms() {
             stack({ gap: { base: '4px', _hover: '8px' } });
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },
@@ -567,6 +576,7 @@ fn pattern_raw_composes_into_css_raw_spread() {
             css({ color: 'red', ...layout });
         "},
         ParseTransforms {
+            source: None,
             pattern: Some(&mut transform),
             utility: None,
         },

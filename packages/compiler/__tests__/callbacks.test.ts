@@ -3,6 +3,84 @@ import { createCompilerFromSnapshot } from '../src'
 import { importMap } from './test-utils'
 
 describe('Compiler callbacks', () => {
+  it('applies filtered parser:before callbacks before extraction', () => {
+    const seen: string[] = []
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+        },
+        hooks: {
+          'parser:before': [
+            {
+              id: 'plugins.0.hooks.parser:before.0',
+              hash: 'fn1-test',
+              filter: { id: { include: ['**/*.tsx'] }, code: { include: 'css(' } },
+            },
+          ],
+        },
+        callbacks: {
+          'parser:before': {
+            'plugins.0.hooks.parser:before.0': ({ filePath, content }) => {
+              seen.push(filePath)
+              return content.replace('__COLOR__', "'red'")
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource('/virtual/Button.js', `import { css } from '@panda/css'; css({ color: __COLOR__ })`)
+    compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'; css({ color: __COLOR__ })`)
+
+    expect(seen).toEqual(['/virtual/Button.tsx'])
+    expect(compiler.atoms()).toMatchInlineSnapshot(`
+      [
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
+      ]
+    `)
+  })
+
+  it('rejects async parser:before callbacks on the hot path', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+        },
+        hooks: {
+          'parser:before': [
+            {
+              id: 'plugins.0.hooks.parser:before.0',
+              hash: 'fn1-test',
+            },
+          ],
+        },
+        callbacks: {
+          'parser:before': {
+            'plugins.0.hooks.parser:before.0': (() => Promise.resolve('')) as any,
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    const report = compiler.parseFileSource(
+      '/virtual/Button.tsx',
+      `import { css } from '@panda/css'; css({ color: 'red' })`,
+    )
+    expect(report.diagnostics[0]?.message).toContain('must be synchronous')
+    expect(compiler.atoms()).toEqual([])
+  })
+
   it('applies js-backed utility transform callbacks from a config bundle', () => {
     const compiler = createCompilerFromSnapshot(
       {

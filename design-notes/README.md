@@ -22,6 +22,10 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Output & host layer (Driver)](./output-and-host-layer.md) — the JS orchestration layer above the pure compiler:
   the `Driver` contract + shared `BaseDriver` (hosts ship in `@pandacss/compiler` node / `@pandacss/compiler-wasm`
   browser), CSS-vs-artifact cadence, sink routing, fs-engine `scan`, and the config-diff algorithm.
+- [Hooks](./hooks.md) — proposed extension surface for the Rust engine: public `plugins` are named hook bundles over
+  one ordered hook registry. Covers the boundary-cost hook taxonomy (config/output hooks are host-only and free;
+  `parser:before` needs Rust-evaluated filters), Rolldown-style `{ filter, handler }` object hooks, native plugins, the
+  span/sourcemap contract, and a phased rollout.
 
 ### Subsystems
 

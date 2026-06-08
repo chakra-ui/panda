@@ -71,6 +71,30 @@ export interface PandaHooks {
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
 
+export type HookFilterPattern =
+  | string
+  | RegExp
+  | {
+      include?: Array<string | RegExp> | undefined
+      exclude?: Array<string | RegExp> | undefined
+    }
+
+export interface HookFilter {
+  id?: HookFilterPattern | undefined
+  code?:
+    | {
+        include?: string | RegExp | undefined
+        exclude?: string | RegExp | undefined
+      }
+    | undefined
+}
+
+export type PandaHook<Handler extends (...args: any[]) => any> = Handler | { filter?: HookFilter; handler: Handler }
+
+export type PandaHookRegistry = {
+  [Name in keyof PandaHooks]: PandaHook<PandaHooks[Name]>
+}
+
 /* -----------------------------------------------------------------------------
  * Token hooks
  * -----------------------------------------------------------------------------*/

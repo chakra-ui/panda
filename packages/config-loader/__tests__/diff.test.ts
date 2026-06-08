@@ -137,4 +137,35 @@ describe('diffConfig', () => {
     const next: SerializedConfig = { utilities: { size: { transform: { ...ref } } } }
     expect(diffConfig(prev, next).hasChanged).toBe(false)
   })
+
+  test('a parser:before filter edit is visible through the hook snapshot', () => {
+    const prev = {
+      config: base,
+      hooks: {
+        'parser:before': [
+          {
+            id: 'plugins.0.hooks.parser:before.0',
+            hash: 'fn1-aaa',
+            filter: { id: { include: ['**/*.vue'] } },
+          },
+        ],
+      },
+    }
+    const next = {
+      config: base,
+      hooks: {
+        'parser:before': [
+          {
+            id: 'plugins.0.hooks.parser:before.0',
+            hash: 'fn1-aaa',
+            filter: { id: { include: ['**/*.astro'] } },
+          },
+        ],
+      },
+    }
+
+    const result = diffConfig(prev, next)
+    expect(result.hasChanged).toBe(true)
+    expect(result.dependencies).toEqual([])
+  })
 })

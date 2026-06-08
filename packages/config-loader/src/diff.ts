@@ -1,4 +1,4 @@
-import type { CodegenDependency, ConfigDiff, SerializedConfig } from '@pandacss/compiler-shared'
+import type { CodegenDependency, ConfigDiff, ConfigSnapshot, SerializedConfig } from '@pandacss/compiler-shared'
 import diff from 'microdiff'
 
 export type { ConfigDiff } from '@pandacss/compiler-shared'
@@ -29,18 +29,21 @@ const ALL_DEPENDENCIES: CodegenDependency[] = [
  * engine's `generateAffectedArtifacts(CodegenDependency[])` seam rather than v1's
  * per-file `ArtifactId` set.
  *
- * **Known gap:** the diff runs on the `SerializedConfig`, where functions are
- * lowered to stable `{ kind:'js-callback', id }` refs — so a `utilities.*.transform`
- * *body* edit is invisible here. Pattern transform bodies escape this because
- * they're captured as a `codegenSource` string. Precise callback-change detection
- * (hashing lowered sources) is deferred.
+ * Callback refs carry a source hash, and hook filters are serialized data in
+ * the optional `hooks` snapshot, so callback and filter edits remain visible to
+ * this structural diff.
  */
-export function diffConfig(prev: SerializedConfig | undefined, next: SerializedConfig): ConfigDiff {
+export function diffConfig(
+  prev: SerializedConfig | ConfigSnapshot | undefined,
+  next: SerializedConfig | ConfigSnapshot,
+): ConfigDiff {
   if (!prev) {
     return { hasChanged: true, dependencies: [...ALL_DEPENDENCIES], recipes: [], patterns: [], changes: [] }
   }
 
-  const changes = diff(prev, next)
+  const prevInput = diffInput(prev)
+  const nextInput = diffInput(next)
+  const changes = diff(prevInput, nextInput)
   if (changes.length === 0) {
     return { hasChanged: false, dependencies: [], recipes: [], patterns: [], changes }
   }
@@ -72,7 +75,11 @@ interface Classified {
 }
 
 /** Map one changed config path to the dependency bits (and recipe/pattern name) it affects. */
-function classify([head, second, third]: string[]): Classified {
+function classify(path: string[]): Classified {
+  const [head, second, third] = path
+  if (head === 'config') return classify(path.slice(1))
+  if (head === 'hooks') return { deps: [] }
+
   if (head === 'theme') {
     if (second === 'recipes' || second === 'slotRecipes') {
       return { deps: ['recipes'], recipe: third }
@@ -120,4 +127,27 @@ function classify([head, second, third]: string[]): Classified {
     default:
       return { deps: [] }
   }
+}
+
+function diffInput(input: SerializedConfig | ConfigSnapshot): {
+  config: SerializedConfig
+  hooks?: ConfigSnapshot['hooks']
+} {
+  if (isConfigSnapshot(input)) {
+    return { config: input.config, ...(input.hooks ? { hooks: input.hooks } : {}) }
+  }
+  return { config: input }
+}
+
+function isConfigSnapshot(input: SerializedConfig | ConfigSnapshot): input is ConfigSnapshot {
+  return (
+    !!input &&
+    typeof input === 'object' &&
+    !Array.isArray(input) &&
+    ('callbacks' in input || 'hooks' in input) &&
+    'config' in input &&
+    !!input.config &&
+    typeof input.config === 'object' &&
+    !Array.isArray(input.config)
+  )
 }

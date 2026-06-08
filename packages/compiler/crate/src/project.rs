@@ -164,6 +164,12 @@ pub struct Compiler {
 /// JS utility transform ref: `(resolvedValue, originalValue) -> styleObject`.
 type UtilityTransformRef =
     FunctionRef<FnArgs<(serde_json::Value, serde_json::Value)>, serde_json::Value>;
+type SourceTransformRef = FunctionRef<FnArgs<(String, String)>, Option<String>>;
+
+struct SourceTransformCallback {
+    filter: pandacss_project::HookFilter,
+    callback: SourceTransformRef,
+}
 
 struct CallbackHost {
     utility_transform_refs: HashMap<String, String>,
@@ -171,6 +177,7 @@ struct CallbackHost {
     utility_transforms: HashMap<String, UtilityTransformRef>,
     pattern_transforms:
         HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>,
+    source_transforms: Vec<(String, SourceTransformCallback)>,
     transform_cache: TransformCache,
 }
 
@@ -181,8 +188,13 @@ impl CallbackHost {
             pattern_transform_refs: get_pattern_transform_refs(config),
             utility_transforms: HashMap::new(),
             pattern_transforms: HashMap::new(),
+            source_transforms: Vec::new(),
             transform_cache: TransformCache::default(),
         }
+    }
+
+    fn has_source_transforms(&self) -> bool {
+        !self.source_transforms.is_empty()
     }
 
     fn has_pattern_transforms(&self) -> bool {
@@ -517,6 +529,36 @@ impl Compiler {
         self.inner.bump_parse_epoch();
     }
 
+    /// Register a JS-backed `parser:before` source transform with a Rust-side
+    /// filter. The filter is evaluated before calling into JS.
+    #[napi(js_name = "registerSourceTransform")]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn register_source_transform(
+        &mut self,
+        id: String,
+        filter: Option<serde_json::Value>,
+        callback: SourceTransformRef,
+    ) -> napi::Result<()> {
+        let filter = filter
+            .as_ref()
+            .map(pandacss_project::HookFilter::from_json)
+            .transpose()
+            .map_err(|err| {
+                napi::Error::from_reason(format!(
+                    "Invalid parser:before filter for callback `{id}`: {err}"
+                ))
+            })?
+            .unwrap_or_default();
+        self.callbacks
+            .source_transforms
+            .push((id, SourceTransformCallback { filter, callback }));
+        self.inner.bump_parse_epoch();
+        Ok(())
+    }
+
     /// Read a source file from the native filesystem and parse it.
     #[napi(js_name = parseFile)]
     #[allow(
@@ -556,9 +598,10 @@ impl Compiler {
         path: &str,
         source: &str,
     ) -> pandacss_project::ParseFileReport {
+        let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
-        if !has_pattern_transforms && !has_utility_transforms {
+        if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
             return self.inner.parse_file(path, source);
         }
         let Compiler {
@@ -587,10 +630,16 @@ impl Compiler {
                 env,
             )
         };
+        let mut source_transform = |path: &str, source: &str| {
+            apply_source_transforms(path, source, &callbacks.source_transforms, env)
+        };
         inner.parse_file_with(
             path,
             source,
             pandacss_project::ParseTransforms {
+                source: has_source_transforms.then_some(
+                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                ),
                 pattern: has_pattern_transforms
                     .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
                 utility: has_utility_transforms.then_some(
@@ -762,9 +811,10 @@ impl Compiler {
         reason = "NAPI requires owned arguments"
     )]
     pub fn refresh_file_source(&mut self, env: Env, path: String, source: String) -> bool {
+        let has_source_transforms = self.callbacks.has_source_transforms();
         let has_pattern_transforms = self.callbacks.has_pattern_transforms();
         let has_utility_transforms = self.callbacks.has_utility_transforms();
-        if !has_pattern_transforms && !has_utility_transforms {
+        if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
             return self.inner.refresh_file(&path, &source);
         }
 
@@ -794,10 +844,16 @@ impl Compiler {
                 &env,
             )
         };
+        let mut source_transform = |path: &str, source: &str| {
+            apply_source_transforms(path, source, &callbacks.source_transforms, &env)
+        };
         inner.refresh_file_with(
             &path,
             &source,
             pandacss_project::ParseTransforms {
+                source: has_source_transforms.then_some(
+                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                ),
                 pattern: has_pattern_transforms
                     .then_some(&mut transform as &mut pandacss_project::PatternTransformFn<'_>),
                 utility: has_utility_transforms.then_some(
@@ -1413,6 +1469,44 @@ fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
         return None;
     }
     values.get("id")?.as_str()
+}
+
+#[allow(
+    clippy::result_large_err,
+    reason = "Err mirrors the shared Result<_, Diagnostic> transform-callback contract used by other JS callbacks"
+)]
+fn apply_source_transforms(
+    path: &str,
+    source: &str,
+    callbacks: &[(String, SourceTransformCallback)],
+    env: &Env,
+) -> Result<Option<String>, pandacss_extractor::Diagnostic> {
+    let mut current: Option<String> = None;
+    for (id, entry) in callbacks {
+        let input = current.as_deref().unwrap_or(source);
+        if !entry.filter.admits(path, input) {
+            continue;
+        }
+
+        let transform = entry.callback.borrow_back(env).map_err(|err| {
+            callback_diagnostic(format!(
+                "Failed to borrow parser:before callback `{id}` for `{path}`: {err}"
+            ))
+        })?;
+        let result = transform
+            .call(FnArgs::from((path.to_owned(), input.to_owned())))
+            .map_err(|err| {
+                callback_diagnostic(format!(
+                    "parser:before callback `{id}` for `{path}` threw: {}",
+                    err.reason
+                ))
+            })?;
+        if let Some(next) = result {
+            current = Some(next);
+        }
+    }
+
+    Ok(current)
 }
 
 #[allow(

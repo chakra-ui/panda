@@ -42,7 +42,7 @@ class NodeDriver extends BaseDriver {
 
   async reload(): Promise<ConfigDiff> {
     const next = await loadPandaConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
-    const diff = diffConfig(this.#loaded.config, next.config)
+    const diff = diffConfig(this.#loaded, next)
     if (diff.hasChanged) {
       this.#loaded = next
       this.setCompiler(buildFromConfig(next))
@@ -86,5 +86,5 @@ class NodeDriver extends BaseDriver {
 }
 
 function buildFromConfig(loaded: LoadedPandaConfig): Compiler {
-  return createCompilerFromSnapshot({ config: loaded.config, callbacks: loaded.callbacks })
+  return createCompilerFromSnapshot({ config: loaded.config, callbacks: loaded.callbacks, hooks: loaded.hooks })
 }

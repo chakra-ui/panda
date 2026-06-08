@@ -32,6 +32,7 @@ export interface ResolveAuthoredPresetsResult {
 export interface ResolveAuthoredPresetsOptions {
   trackSources?: boolean
   configFile?: string
+  preserveRuntimeHooks?: boolean
 }
 
 export async function resolveAuthoredPresets(
@@ -53,6 +54,7 @@ export async function resolveAuthoredPresets(
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
+    if (options.preserveRuntimeHooks) attachRuntimeHooks(merged.config, ctx.configs)
     return {
       config: merged.config as UserConfig,
       dependencies: Array.from(ctx.dependencies),
@@ -61,9 +63,38 @@ export async function resolveAuthoredPresets(
   }
 
   return {
-    config: mergeConfigs(ctx.configs) as UserConfig,
+    config: (options.preserveRuntimeHooks
+      ? attachRuntimeHooks(mergeConfigs(ctx.configs), ctx.configs)
+      : mergeConfigs(ctx.configs)) as UserConfig,
     dependencies: Array.from(ctx.dependencies),
   }
+}
+
+function attachRuntimeHooks(config: ExtendableConfig, configs: ExtendableConfig[]): ExtendableConfig {
+  const plugins = configs.flatMap((item) => {
+    if ('hooks' in item && item.hooks != null) {
+      throw new PandaError(
+        'CONFIG_ERROR',
+        '💥 `config.hooks` was removed in v2. Use `plugins: [{ name: "local", hooks: { ... } }]` instead.',
+      )
+    }
+    return [...(item.plugins ?? []), ...(item.extend?.plugins ?? [])]
+  })
+
+  for (const plugin of plugins) {
+    if (!isPlainObject(plugin) || typeof plugin.name !== 'string' || plugin.name.length === 0) {
+      throw new PandaError(
+        'CONFIG_ERROR',
+        '💥 Every plugin in `config.plugins` must be an object with a non-empty `name`.',
+      )
+    }
+  }
+
+  if (plugins.length > 0) {
+    config.plugins = plugins
+  }
+
+  return config
 }
 
 async function collectConfigs(

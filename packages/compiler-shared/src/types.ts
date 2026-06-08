@@ -337,7 +337,9 @@ export interface FileInspectionResult {
 /** Author import map (`ImportMapInput`). */
 export interface ImportMapInput {
   css?: string | string[]
+  recipe?: string | string[]
   recipes?: string | string[]
+  pattern?: string | string[]
   patterns?: string | string[]
   jsx?: string | string[]
   tokens?: string | string[]
@@ -364,7 +366,45 @@ export type ImportMapOption = string | ImportMapInput
  *  `importMap` is expanded to {@link ImportMapOutput} before Rust. */
 export type SerializedConfig = Record<string, unknown>
 
-export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'
+export interface SerializedRegex {
+  kind: 'regex'
+  source: string
+  flags?: string
+}
+
+export type SerializedHookPattern =
+  | string
+  | SerializedRegex
+  | {
+      include?: Array<string | SerializedRegex>
+      exclude?: Array<string | SerializedRegex>
+    }
+
+export interface SerializedHookFilter {
+  id?: SerializedHookPattern
+  code?: {
+    include?: string | SerializedRegex
+    exclude?: string | SerializedRegex
+  }
+}
+
+export interface SerializedSourceTransformHook {
+  id: string
+  name?: string
+  filter?: SerializedHookFilter
+  hash: string
+}
+
+export interface ProjectHooks {
+  'parser:before'?: SerializedSourceTransformHook[]
+}
+
+export type ProjectCallbackKind =
+  | 'utility.transform'
+  | 'utility.values'
+  | 'pattern.transform'
+  | 'pattern.defaultValues'
+  | 'parser:before'
 
 /** Common subset of the native `TokenDictionary` / wasm `TokenDictionaryInput`. */
 export interface TokenLookup {
@@ -404,12 +444,19 @@ export type UtilityValuesCallback = (theme: UtilityValuesTheme) => Record<string
 export type UtilityTransformCallback = (value: string, args: TransformArgs) => unknown
 export type PatternTransformCallback = (props: Record<string, any>, helpers: PatternHelpers) => unknown
 export type PatternDefaultValuesCallback = (props: Record<string, any>) => unknown
+export interface SourceTransformArgs {
+  filePath: string
+  content: string
+  original?: string
+}
+export type SourceTransformCallback = (args: SourceTransformArgs) => string | void
 
 export interface ProjectCallbackMap {
   'utility.transform': Record<string, UtilityTransformCallback>
   'utility.values': Record<string, UtilityValuesCallback>
   'pattern.transform': Record<string, PatternTransformCallback>
   'pattern.defaultValues': Record<string, PatternDefaultValuesCallback>
+  'parser:before': Record<string, SourceTransformCallback>
 }
 
 export type ProjectCallbacks = Partial<ProjectCallbackMap>
@@ -419,12 +466,14 @@ export type ProjectCallbacks = Partial<ProjectCallbackMap>
 export interface ConfigSnapshot {
   config: SerializedConfig
   callbacks?: ProjectCallbacks
+  hooks?: ProjectHooks
 }
 
 export interface CompilerOptions {
   /** Defaults to `true`; lets `token('…')` and `import { x } from './tokens'` fold. */
   crossFile?: boolean
   callbacks?: ProjectCallbacks
+  hooks?: ProjectHooks
 }
 
 /** In-memory filesystem handle, exposed as `Compiler.fs` on the wasm binding
