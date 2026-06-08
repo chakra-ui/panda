@@ -245,7 +245,12 @@ pub(crate) fn to_jsx(j: pandacss_extractor::ExtractedJsx) -> ExtractedJsx {
 /// boundary).
 pub(crate) fn to_atom_value(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
     match v {
-        pandacss_encoder::AtomValue::String(s) => serde_json::Value::String(s.to_string()),
+        // Token atoms expose the resolved CSS string at the JS boundary; path
+        // identity is preserved only in build-info serialization.
+        pandacss_encoder::AtomValue::String(s)
+        | pandacss_encoder::AtomValue::Token { value: s, .. } => {
+            serde_json::Value::String(s.to_string())
+        }
         pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
         pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
         pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
@@ -309,7 +314,8 @@ fn serialize_atom(atom: &pandacss_encoder::Atom) -> crate::Atom {
 // Lexicographic sort key over the variant tag + raw bytes — stable, cheap.
 fn value_sort_key(v: &pandacss_encoder::AtomValue) -> String {
     match v {
-        pandacss_encoder::AtomValue::String(s) => format!("s:{s}"),
+        pandacss_encoder::AtomValue::String(s)
+        | pandacss_encoder::AtomValue::Token { value: s, .. } => format!("s:{s}"),
         pandacss_encoder::AtomValue::Number(s) => format!("n:{s}"),
         pandacss_encoder::AtomValue::Bool(b) => format!("b:{b}"),
         pandacss_encoder::AtomValue::Null => "z:".to_owned(),

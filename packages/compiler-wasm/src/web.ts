@@ -17,8 +17,19 @@
  * ```
  */
 
-import { assertProjectCallbacks, getTokenCategoryValues, mergeCallbacks } from '@pandacss/compiler-shared'
-import type { Compiler, CompilerOptions, ProjectCallbacks, SerializedConfig } from '@pandacss/compiler-shared'
+import {
+  assertProjectCallbacks,
+  getTokenCategoryValues,
+  makeBuildInfoApi,
+  mergeCallbacks,
+} from '@pandacss/compiler-shared'
+import type {
+  BuildInfoNative,
+  Compiler,
+  CompilerOptions,
+  ProjectCallbacks,
+  SerializedConfig,
+} from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
 import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
 
@@ -72,10 +83,20 @@ export function createCompilerFromWasmModule(
 export function build(mod: WasmModule, config: SerializedConfig, callbacks: ProjectCallbacks): Compiler {
   const fs = new mod.WasmFileSystem()
   assertProjectCallbacks(config, callbacks)
+
   const compiler = mod.WasmCompiler.fromConfig(fs, config, buildFromConfigOptions(callbacks))
   registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
+
   // Expose the shared FS as a field so the return shape matches native.
   ;(compiler as unknown as { fs: WasmFileSystem }).fs = fs
+
+  // Wire the ergonomic `compiler.buildInfo` namespace over the wasm primitives,
+  // mirroring the native binding. Non-enumerable so it stays off snapshots.
+  Object.defineProperty(compiler, 'buildInfo', {
+    value: makeBuildInfoApi(compiler as unknown as BuildInfoNative),
+    enumerable: false,
+  })
+
   return compiler as unknown as Compiler
 }
 

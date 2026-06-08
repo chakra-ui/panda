@@ -1,5 +1,22 @@
 import type { Atom, Compiler, Diagnostic } from '@pandacss/compiler-shared'
+import { makeBuildInfoApi } from '@pandacss/compiler-shared'
 import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
+
+/** No-op build-info primitives so the fallback compiler still satisfies the
+ *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
+const fallbackBuildInfo = makeBuildInfoApi({
+  serializeBuildInfo: () => ({
+    schemaVersion: -1,
+    panda: '',
+    configFingerprint: '',
+    strings: [],
+    atoms: [],
+    modules: {},
+  }),
+  applyBuildInfo: () => false,
+  buildInfoSchemaVersion: () => -1,
+  configFingerprint: () => '',
+})
 
 class FallbackExtractor implements ExtractorSession {
   extract() {
@@ -146,6 +163,7 @@ class FallbackCompiler implements Compiler {
   splitCss() {
     return []
   }
+  readonly buildInfo = fallbackBuildInfo
   generateArtifacts() {
     return []
   }

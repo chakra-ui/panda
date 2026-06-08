@@ -12,6 +12,7 @@
 
 import type {
   Atom,
+  BuildInfo,
   CodegenArtifact,
   CodegenArtifactId,
   CodegenDependency,
@@ -138,4 +139,10 @@ export declare class WasmCompiler {
   /** Per-file view, or `null` when `path` isn't known. */
   getFile(path: string): ParsedFileView | null
   staticPatternAtoms(): StaticPatternResult
+  // Flat build-info primitives (the `makeBuildInfoApi` namespace is built over
+  // these in `web.ts`, mirroring the native binding).
+  serializeBuildInfo(panda: string): BuildInfo
+  applyBuildInfo(name: string, buildInfo: BuildInfo, only?: string[]): boolean
+  buildInfoSchemaVersion(): number
+  configFingerprint(): string
 }

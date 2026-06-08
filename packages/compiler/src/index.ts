@@ -1,4 +1,5 @@
 import type {
+  BuildInfoNative,
   Compiler,
   CompileOutput,
   CompilerOptions,
@@ -6,7 +7,12 @@ import type {
   ProjectCallbacks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
-import { assertProjectCallbacks, getTokenCategoryValues, mergeCallbacks } from '@pandacss/compiler-shared'
+import {
+  assertProjectCallbacks,
+  getTokenCategoryValues,
+  makeBuildInfoApi,
+  mergeCallbacks,
+} from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
 import { fallback } from './fallback'
 import { loadNativeBinding } from './load-binary'
@@ -63,12 +69,25 @@ export function getBindingInfo() {
 
 function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: CompilerOptions): Compiler {
   assertProjectCallbacks(config, callbacks)
+
   if (!nativeCompilerFromConfig) {
     throw new Error('createCompiler is not available in this binding')
   }
+
   const compiler = nativeCompilerFromConfig(config, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
   registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
+  attachBuildInfo(compiler)
+
   return compiler
+}
+
+/** Wire the ergonomic `compiler.buildInfo` namespace over the native primitives.
+ *  Non-enumerable so it doesn't surface in snapshots of the native instance. */
+function attachBuildInfo(compiler: Compiler): void {
+  Object.defineProperty(compiler, 'buildInfo', {
+    value: makeBuildInfoApi(compiler as unknown as BuildInfoNative),
+    enumerable: false,
+  })
 }
 
 function toNativeOptions(options: CompilerOptions | undefined): NativeCompilerOptions | undefined {

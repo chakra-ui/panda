@@ -4,13 +4,15 @@
  * public surface and the callback runtime live in exactly one place.
  *
  * This module is a barrel; the surface is split by concern:
- * - `./types`     — data-shape contract (the serialized `Compiler` surface)
- * - `./callbacks` — the JS-callback runtime (`utility.transform`, …)
- * - `./introspect`— the `introspect(spec)` query/sort helper
- * - `./driver`    — the host orchestration layer (`Driver`, `BaseDriver`)
+ * - `./types`      — data-shape contract (the serialized `Compiler` surface)
+ * - `./build-info` — the `buildInfo` namespace factory over binding primitives
+ * - `./callbacks`  — the JS-callback runtime (`utility.transform`, …)
+ * - `./introspect` — the `introspect(spec)` query/sort helper
+ * - `./driver`     — the host orchestration layer (`Driver`, `BaseDriver`)
  */
 
 export * from './types'
+export * from './build-info'
 export * from './callbacks'
 export * from './defaults'
 export { introspect } from './introspect'
