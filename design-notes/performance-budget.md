@@ -26,14 +26,15 @@ project, this adds up.
 
 ## SmallVec for the common case
 
-Two places use `SmallVec` to skip heap allocation in the common case:
+Two places use `SmallVec` to skip heap allocation when inline capacity suffices:
 
-| Site                     | Inline budget      | Common case                                       |
-| ------------------------ | ------------------ | ------------------------------------------------- |
-| `Atom::conditions`       | `INLINE_CONDS = 2` | 0-2 conditions per atom (`{ _hover: { md: … } }`) |
-| `Encoder::path` (walker) | `INLINE_PATH = 8`  | Style objects nest ≤8 deep                        |
+| Site                     | Inline budget      | Role                                                                 |
+| ------------------------ | ------------------ | -------------------------------------------------------------------- |
+| `Atom::conditions`       | `INLINE_CONDS = 2` | Inline storage for condition chains; longer chains spill to heap     |
+| `Encoder::path` (walker) | `INLINE_PATH = 8`  | Reused traversal buffer; deeper nesting spills to heap               |
 
-Spilling to heap still works correctly; the inline budget is sized so we don't spill in real code.
+These are **not semantic limits** — arbitrarily nested styles and long condition chains remain correct. Spilling only
+costs a heap allocation; the inline budget is tuned so typical shallow shapes avoid that cost.
 
 ## Linear scan vs HashMap: `upsert` on `Vec<(String, Literal)>`
 

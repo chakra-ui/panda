@@ -20,7 +20,8 @@ pub struct Atom {
 Three perf choices:
 
 - **`Box<str>` not `String`** — atoms are write-once, so no capacity field (−8 bytes/string).
-- **`SmallVec<[…; 2]>` conditions** — real usage is 0–2 conditions/atom (`{ _hover: { md: … } }`); 3+ spills to heap.
+- **`SmallVec<[…; 2]>` conditions** — inline storage budget, not a cap. Arbitrary condition depth is supported; longer
+  chains spill to the heap (`{ _hover: { md: … } }` is the usual inline case).
 - **Numbers as their JS string form** (`AtomValue::Number(Box<str>)`) — `Atom: Hash` needs `Eq`, which `f64` lacks; the
   string round-trips and preserves the integer/float distinction.
 
@@ -83,8 +84,8 @@ fn walk(&mut self, value: &Literal) {
 }
 ```
 
-O(depth) allocation per root (not O(depth²) like clone-on-descend); the 8-segment inline budget covers every real
-(≤8-deep) object.
+O(depth) allocation per root (not O(depth²) like clone-on-descend). The inline budget is an allocation heuristic — deeper
+nesting spills to the heap and remains correct.
 
 ## Conditional expansion
 
