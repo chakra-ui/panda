@@ -10,8 +10,9 @@
 //!
 //! - Single reused path buffer during recursion → O(depth) allocation,
 //!   not O(depth²).
-//! - `SmallVec` for `Atom::conditions` and the traversal buffer →
-//!   no-heap for the 0-2-condition / ≤8-deep common case.
+//! - `SmallVec` inline budgets for `Atom::conditions` and the walk path →
+//!   fewer heap allocs on shallow shapes; arbitrary nesting/condition depth
+//!   still works via transparent spill.
 //! - `Box<str>` for `Atom` strings → 8 bytes saved per string vs `String`
 //!   (no capacity field); fine because atoms are immutable.
 //! - `FxHashSet<Atom>` for dedup — non-cryptographic hash for internal
@@ -22,18 +23,25 @@ use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
 use rustc_hash::{FxHashSet, FxHasher};
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use smallvec::SmallVec;
 
 use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
 
-// PERF(port): inline budget for `Atom::conditions`. Picked from real
-// Panda usage where atoms typically have 0-2 conditions; 3+ spills.
+// PERF(port): SmallVec inline capacity for `Atom::conditions` — not a semantic
+// limit. Longer condition chains still work (heap spill). Tuned to avoid an
+// extra allocation on the common shallow case.
 const INLINE_CONDS: usize = 2;
-// PERF(port): inline budget for path traversal. Most style objects nest
-// ≤8 deep; deeper spills.
+
+/// Inline-allocated condition list (outer→inner) shared by atoms and recipe
+/// style entries. A concrete `SmallVec` size — naming it keeps downstream code
+/// off generic `[T; N]`, which needs smallvec's `const_generics` feature.
+pub type ConditionList = SmallVec<[Box<str>; INLINE_CONDS]>;
+
+// PERF(port): SmallVec inline capacity for the encoder walk `path` buffer — not
+// a max nesting depth. Deeper style objects spill to the heap transparently.
 const INLINE_PATH: usize = 8;
 
 /// One atomic style declaration: `(prop, value, conditions)`.
@@ -49,15 +57,33 @@ pub struct Atom {
     hash: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AtomValue {
     String(Box<str>),
+    /// A token-derived value. `path` preserves author intent for build info,
+    /// while `value` is the resolved CSS string used for emission.
+    Token {
+        path: Box<str>,
+        value: Box<str>,
+    },
     /// Numbers stored as their JS string form so `Atom` can be `Hash`
     /// (f64 isn't `Eq`). Round-trips through `to_string()` exactly.
     Number(Box<str>),
     Bool(bool),
     Null,
+}
+
+impl Serialize for AtomValue {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            // Token identity lives in build info; wire JSON keeps the resolved CSS string.
+            Self::String(value) | Self::Token { value, .. } | Self::Number(value) => {
+                serializer.serialize_str(value)
+            }
+            Self::Bool(value) => serializer.serialize_bool(*value),
+            Self::Null => serializer.serialize_unit(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -444,7 +470,7 @@ pub fn atom_value_sort_key(value: &AtomValue) -> (u8, &str) {
         AtomValue::Bool(false) => (0, "false"),
         AtomValue::Bool(true) => (0, "true"),
         AtomValue::Number(value) => (1, value),
-        AtomValue::String(value) => (2, value),
+        AtomValue::String(value) | AtomValue::Token { value, .. } => (2, value),
         AtomValue::Null => (3, ""),
     }
 }
@@ -507,6 +533,16 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
             };
             Some(EncodedLeaf { value, important })
         }
+        Literal::Token { path, value } => {
+            let (value, important) = split_important(value);
+            Some(EncodedLeaf {
+                value: AtomValue::Token {
+                    path: path.clone().into_boxed_str(),
+                    value: value.into_owned().into_boxed_str(),
+                },
+                important,
+            })
+        }
         Literal::Number(n) => Some(EncodedLeaf {
             value: AtomValue::Number(number_to_js_string(*n).into_boxed_str()),
             important: false,
@@ -567,7 +603,7 @@ fn append_joined_literal_repr(out: &mut String, items: &[Literal], sep: &str) {
 
 fn append_literal_repr(out: &mut String, value: &Literal) {
     match value {
-        Literal::String(s) => out.push_str(s),
+        Literal::String(s) | Literal::Token { value: s, .. } => out.push_str(s),
         Literal::Number(n) => {
             push_number_to_js_string(out, *n);
         }

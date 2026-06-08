@@ -173,6 +173,74 @@ fn deeply_nested_conditions_stack_in_order() {
     ");
 }
 
+// --- SmallVec inline-budget smoke tests (heap spill, not semantic limits) ---
+
+#[test]
+fn long_condition_chain_spills_past_inline_budget() {
+    // `INLINE_CONDS = 2` — four stacked conditions must still encode correctly.
+    let lit = first_arg(
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ color: { _hover: { md: { lg: { xl: 'red' } } } } });
+        "},
+        "css",
+    );
+    let mut encoder = encoder_with(&["_hover"]);
+    encoder.process_atomic(&lit);
+
+    let atoms = sorted(encoder.atoms());
+    assert_eq!(atoms.len(), 1);
+    assert_eq!(atoms[0].conditions().len(), 4);
+
+    assert_yaml_snapshot!(atoms, @r"
+    - prop: color
+      value: red
+      conditions:
+        - _hover
+        - md
+        - lg
+        - xl
+    ");
+}
+
+#[test]
+fn deep_walk_path_spills_past_inline_budget() {
+    // `INLINE_PATH = 8` — nine nested condition layers on the walk path must
+    // still reach the leaf and emit one atom.
+    let lit = first_arg(
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({
+              color: {
+                d1: { d2: { d3: { d4: { d5: { d6: { d7: { d8: { d9: 'red' } } } } } } } },
+              },
+            });
+        "},
+        "css",
+    );
+    let mut encoder = encoder_with(&["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9"]);
+    encoder.process_atomic(&lit);
+
+    let atoms = sorted(encoder.atoms());
+    assert_eq!(atoms.len(), 1);
+    assert_eq!(atoms[0].conditions().len(), 9);
+
+    assert_yaml_snapshot!(atoms, @r"
+    - prop: color
+      value: red
+      conditions:
+        - d1
+        - d2
+        - d3
+        - d4
+        - d5
+        - d6
+        - d7
+        - d8
+        - d9
+    ");
+}
+
 #[test]
 fn dedup_keeps_only_one_atom_for_repeated_pairs() {
     // Behavioral assertion: feed the same object three times, get

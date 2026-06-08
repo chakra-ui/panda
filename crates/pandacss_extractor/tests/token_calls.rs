@@ -16,14 +16,16 @@ use pandacss_tokens::{Token, TokenCategory};
 
 /// Pull a string-valued property out of the first `css({...})` argument.
 /// Returns `None` if the `css` call dropped, the arg isn't an object, or the
-/// property isn't a folded string — so a divergence fails the assertion.
+/// property isn't a folded string-like value — so a divergence fails the assertion.
 fn css_string_prop(usage: &ExtractUsage, prop: &str) -> Option<String> {
     let css = usage.calls.iter().find(|c| c.name == "css")?;
     let Some(Literal::Object(entries)) = css.data.first().and_then(Option::as_ref) else {
         return None;
     };
     entries.iter().find_map(|(key, value)| match value {
-        Literal::String(text) if key == prop => Some(text.clone()),
+        Literal::String(text) | Literal::Token { value: text, .. } if key == prop => {
+            Some(text.clone())
+        }
         _ => None,
     })
 }

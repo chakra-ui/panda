@@ -1812,7 +1812,10 @@ fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {
 
 fn atom_value_to_string(value: &AtomValue) -> Option<Cow<'_, str>> {
     match value {
-        AtomValue::String(value) | AtomValue::Number(value) => Some(Cow::Borrowed(value)),
+        // Token atoms emit via their resolved CSS value; path is build-info-only.
+        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
+            Some(Cow::Borrowed(value))
+        }
         AtomValue::Bool(true) => Some(Cow::Borrowed("true")),
         AtomValue::Bool(false) | AtomValue::Null => None,
     }
@@ -1824,7 +1827,7 @@ fn literal_to_css<'a>(
     numeric_hint: Option<&str>,
 ) -> Option<Cow<'a, str>> {
     match value {
-        Literal::String(value) => {
+        Literal::String(value) | Literal::Token { value, .. } => {
             if numeric_hint == Some(value.as_str()) {
                 Some(Cow::Owned(numeric_value::format_number_str(prop, value)))
             } else {

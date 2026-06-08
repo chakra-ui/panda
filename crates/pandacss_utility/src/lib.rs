@@ -388,7 +388,9 @@ impl Utility {
             return Cow::Borrowed(value);
         };
         let mapped = match value {
-            Literal::String(value) => config.values.get(value.as_str()),
+            Literal::String(value) | Literal::Token { value, .. } => {
+                config.values.get(value.as_str())
+            }
             Literal::Bool(true) => config.values.get("true"),
             Literal::Bool(false) => config.values.get("false"),
             Literal::Number(value) => {
@@ -405,6 +407,7 @@ impl Utility {
         match mapped {
             Some(
                 scalar @ (Literal::String(_)
+                | Literal::Token { .. }
                 | Literal::Number(_)
                 | Literal::Bool(_)
                 | Literal::Null),
@@ -475,7 +478,7 @@ impl Utility {
 
         // A `--custom-prop` string value may itself reference a token var.
         let value = if prop.starts_with("--") {
-            if let Literal::String(value) = value
+            if let Literal::String(value) | Literal::Token { value, .. } = value
                 && let Some(tokens) = &self.tokens
                 && let Some(value) = tokens.get_var_str(value, None)
             {
@@ -507,7 +510,9 @@ impl Utility {
                     .map(|v| self.expand_styles_tree(v))
                     .collect(),
             ),
-            Literal::String(s) => Literal::String(self.expand_reference_in_value(s)),
+            Literal::String(s) | Literal::Token { value: s, .. } => {
+                Literal::String(self.expand_reference_in_value(s))
+            }
             Literal::Number(_) | Literal::Bool(_) | Literal::Null => value.clone(),
         }
     }
@@ -688,6 +693,10 @@ impl StyleNormalizer<'_> {
                     .collect(),
             ),
             Literal::String(value) => Literal::String(value.clone()),
+            Literal::Token { path, value } => Literal::Token {
+                path: path.clone(),
+                value: value.clone(),
+            },
             Literal::Number(value) => Literal::Number(*value),
             Literal::Bool(value) => Literal::Bool(*value),
             Literal::Null => Literal::Null,
@@ -862,7 +871,7 @@ fn values_map(value: Option<&UtilityValues>) -> FxHashMap<String, Literal> {
 
 fn literal_to_class_value(value: &Literal) -> Option<String> {
     match value {
-        Literal::String(value) => Some(value.clone()),
+        Literal::String(value) | Literal::Token { value, .. } => Some(value.clone()),
         Literal::Number(value) => Some(number_to_js_string(*value)),
         Literal::Bool(value) => Some(value.to_string()),
         Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,

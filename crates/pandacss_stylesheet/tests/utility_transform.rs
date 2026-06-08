@@ -18,7 +18,9 @@ fn decl(prop: &str, value: &str) -> (String, Literal) {
 
 fn atom_value_str(value: &AtomValue) -> String {
     match value {
-        AtomValue::String(value) | AtomValue::Number(value) => value.to_string(),
+        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
+            value.to_string()
+        }
         AtomValue::Bool(value) => value.to_string(),
         AtomValue::Null => "null".to_owned(),
     }

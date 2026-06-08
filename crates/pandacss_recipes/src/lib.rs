@@ -414,7 +414,7 @@ fn variant_condition_values(value: &Literal) -> Option<Vec<String>> {
 
 fn variant_condition_value(value: &Literal) -> Option<String> {
     match value {
-        Literal::String(value) => Some(value.clone()),
+        Literal::String(value) | Literal::Token { value, .. } => Some(value.clone()),
         Literal::Number(value) => Some(number_to_js_string(*value)),
         Literal::Bool(true) => Some("true".to_owned()),
         Literal::Bool(false) => Some("false".to_owned()),

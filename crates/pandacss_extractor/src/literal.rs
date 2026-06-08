@@ -30,6 +30,12 @@ use crate::Resolver;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
     String(String),
+    /// A resolved `token()` / `token.var()` call. `value` is the CSS value the
+    /// current config emits; `path` preserves token identity for build info.
+    Token {
+        path: String,
+        value: String,
+    },
     Number(f64),
     Bool(bool),
     Null,
@@ -92,6 +98,7 @@ impl Literal {
     pub fn to_json(&self) -> serde_json::Value {
         match self {
             Self::String(s) => serde_json::Value::String(s.clone()),
+            Self::Token { value, .. } => serde_json::Value::String(value.clone()),
             Self::Number(n) => json_number(*n).unwrap_or(serde_json::Value::Null),
             Self::Bool(b) => serde_json::Value::Bool(*b),
             Self::Null => serde_json::Value::Null,
@@ -125,6 +132,7 @@ impl Serialize for Literal {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
             Self::String(s) => serializer.serialize_str(s),
+            Self::Token { value, .. } => serializer.serialize_str(value),
             Self::Number(n) => serialize_number(*n, serializer),
             Self::Bool(b) => serializer.serialize_bool(*b),
             Self::Null => serializer.serialize_unit(),
@@ -373,7 +381,7 @@ fn property_key_to_string(
     }
     let expr = key.as_expression()?;
     match expression_to_literal(expr, resolver)? {
-        Literal::String(s) => Some(s),
+        Literal::String(s) | Literal::Token { value: s, .. } => Some(s),
         Literal::Number(n) => Some(number_as_key(n)),
         _ => None,
     }
@@ -394,7 +402,7 @@ fn computed_member_to_literal(
     let object = expression_to_literal(&member.object, resolver)?;
     let key_literal = expression_to_literal(&member.expression, resolver)?;
     let key = match key_literal {
-        Literal::String(s) => s,
+        Literal::String(s) | Literal::Token { value: s, .. } => s,
         Literal::Number(n) => number_as_key(n),
         // `obj[true]` / `obj[null]` are valid JS but don't show up in real
         // Panda code — drop to keep the surface narrow.
@@ -477,7 +485,7 @@ fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) ->
     match b.operator {
         BinaryOperator::Addition => {
             // JS `+`: any string operand → concatenation, else numeric add.
-            if matches!(left, Literal::String(_)) || matches!(right, Literal::String(_)) {
+            if is_string_like(&left) || is_string_like(&right) {
                 let l = coerce_to_string(&left)?;
                 let r = coerce_to_string(&right)?;
                 Some(Literal::String(format!("{l}{r}")))
@@ -540,6 +548,9 @@ fn strict_eq(a: &Literal, b: &Literal) -> bool {
     match (a, b) {
         (Literal::Null, Literal::Null) => true,
         (Literal::String(x), Literal::String(y)) => x == y,
+        (left, right) if is_string_like(left) && is_string_like(right) => {
+            coerce_to_string(left) == coerce_to_string(right)
+        }
         // f64 `==` already yields false for NaN == NaN, matching JS.
         (Literal::Number(x), Literal::Number(y)) => x == y,
         (Literal::Bool(x), Literal::Bool(y)) => x == y,
@@ -553,7 +564,10 @@ fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
     if matches!(
         (a, b),
         (Literal::Null, Literal::Null)
-            | (Literal::String(_), Literal::String(_))
+            | (
+                Literal::String(_) | Literal::Token { .. },
+                Literal::String(_) | Literal::Token { .. },
+            )
             | (Literal::Number(_), Literal::Number(_))
             | (Literal::Bool(_), Literal::Bool(_))
     ) {
@@ -562,7 +576,8 @@ fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
     match (a, b) {
         // null == undefined; we model both as Null.
         (Literal::Null, _) | (_, Literal::Null) => Some(false),
-        (Literal::String(s), Literal::Number(n)) | (Literal::Number(n), Literal::String(s)) => {
+        (Literal::String(s) | Literal::Token { value: s, .. }, Literal::Number(n))
+        | (Literal::Number(n), Literal::String(s) | Literal::Token { value: s, .. }) => {
             Some(s.trim().parse::<f64>().is_ok_and(|sn| sn == *n))
         }
         (Literal::Bool(b1), other) | (other, Literal::Bool(b1)) => {
@@ -576,8 +591,8 @@ fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
 /// JS `<`: lexicographic for two strings, else numeric with `ToNumber`
 /// coercion. `None` when coercion fails on either side.
 fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
-    if let (Literal::String(x), Literal::String(y)) = (a, b) {
-        return Some(x < y);
+    if is_string_like(a) && is_string_like(b) {
+        return Some(coerce_to_string(a)? < coerce_to_string(b)?);
     }
     let l = coerce_to_number(a)?;
     let r = coerce_to_number(b)?;
@@ -674,7 +689,7 @@ fn truthy(value: &Literal) -> bool {
         Literal::Null => false,
         Literal::Bool(b) => *b,
         Literal::Number(n) => *n != 0.0 && !n.is_nan(),
-        Literal::String(s) => !s.is_empty(),
+        Literal::String(s) | Literal::Token { value: s, .. } => !s.is_empty(),
         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => true,
     }
 }
@@ -684,7 +699,7 @@ fn truthy(value: &Literal) -> bool {
 /// `Conditional` has no single string form.
 fn coerce_to_string(lit: &Literal) -> Option<String> {
     match lit {
-        Literal::String(s) => Some(s.clone()),
+        Literal::String(s) | Literal::Token { value: s, .. } => Some(s.clone()),
         Literal::Number(n) => Some(number_to_js_string(*n)),
         Literal::Bool(b) => Some(if *b { "true".into() } else { "false".into() }),
         Literal::Null => Some("null".into()),
@@ -699,7 +714,7 @@ fn coerce_to_number(lit: &Literal) -> Option<f64> {
         Literal::Number(n) => Some(*n),
         Literal::Bool(b) => Some(if *b { 1.0 } else { 0.0 }),
         Literal::Null => Some(0.0),
-        Literal::String(s) => {
+        Literal::String(s) | Literal::Token { value: s, .. } => {
             let trimmed = s.trim();
             if trimmed.is_empty() {
                 Some(0.0)
@@ -709,4 +724,10 @@ fn coerce_to_number(lit: &Literal) -> Option<f64> {
         }
         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
     }
+}
+
+/// Token literals behave like strings for JS coercion/equality but keep a
+/// separate path for build-info identity.
+fn is_string_like(value: &Literal) -> bool {
+    matches!(value, Literal::String(_) | Literal::Token { .. })
 }
