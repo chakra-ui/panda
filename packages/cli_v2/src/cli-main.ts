@@ -1,4 +1,5 @@
 import { defineCommand, runMain } from 'citty'
+import { buildinfoCommand } from './commands/buildinfo'
 import { codegenCommand } from './commands/codegen'
 import { cssgenCommand } from './commands/cssgen'
 import { inspectCommand } from './commands/inspect'
@@ -14,6 +15,7 @@ export async function main(argv = process.argv): Promise<void> {
       description: 'Experimental v2 CLI for the Panda Rust compiler',
     },
     subCommands: {
+      buildinfo: buildinfoCommand(ctx),
       codegen: codegenCommand(ctx),
       cssgen: cssgenCommand(ctx),
       inspect: inspectCommand(ctx),

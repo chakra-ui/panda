@@ -64,13 +64,13 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
 
   if (missingConfig) {
     const diagnostics = [missingConfig]
-    const result: CssgenResult = createResult(
-      'cssgen',
+    const result: CssgenResult = createResult({
+      command: 'cssgen',
       startedAt,
-      { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
+      data: { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -88,13 +88,13 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
     driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
   } catch (error) {
     const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: CssgenResult = createResult(
-      'cssgen',
+    const result: CssgenResult = createResult({
+      command: 'cssgen',
       startedAt,
-      { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
+      data: { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -118,13 +118,13 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
   let current = await cssgenOnce({ driver, cwd, outdir, output: commandOutput, timings }, outfile, flags)
   const ok = diagnosticsPass(current.diagnostics, flags.maxWarnings) && isCheckClean(current)
 
-  const result: CssgenResult = createResult(
-    'cssgen',
+  const result: CssgenResult = createResult({
+    command: 'cssgen',
     startedAt,
-    { driver, outfile, timings, ...current },
-    current.diagnostics,
+    data: { driver, outfile, timings, ...current },
+    diagnostics: current.diagnostics,
     ok,
-  )
+  })
 
   if (shouldPrintJson(flags)) {
     output.log(JSON.stringify(toJsonPayload(result), null, 2))

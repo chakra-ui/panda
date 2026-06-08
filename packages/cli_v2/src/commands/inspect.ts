@@ -49,10 +49,10 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
 
   if (missingConfig) {
     const diagnostics = [missingConfig]
-    const result: InspectResult = createResult(
-      'inspect',
+    const result: InspectResult = createResult({
+      command: 'inspect',
       startedAt,
-      {
+      data: {
         timings,
         sourceCount: 0,
         watchDirs: [],
@@ -62,8 +62,8 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
         utilityCount: 0,
       },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -81,10 +81,10 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
     driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
   } catch (error) {
     const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: InspectResult = createResult(
-      'inspect',
+    const result: InspectResult = createResult({
+      command: 'inspect',
       startedAt,
-      {
+      data: {
         timings,
         sourceCount: 0,
         watchDirs: [],
@@ -94,8 +94,8 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
         utilityCount: 0,
       },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -111,13 +111,13 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
 
   const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
 
-  const result: InspectResult = createResult(
-    'inspect',
+  const result: InspectResult = createResult({
+    command: 'inspect',
     startedAt,
-    { timings, ...inspectDriver(driver) },
+    data: { timings, ...inspectDriver(driver) },
     diagnostics,
-    diagnosticsPass(diagnostics, flags.maxWarnings),
-  )
+    ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+  })
 
   if (shouldPrintJson(flags)) {
     output.log(JSON.stringify(toJsonPayload(result), null, 2))

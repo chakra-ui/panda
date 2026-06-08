@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import type { Diagnostic } from '@pandacss/compiler'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runCssgen, writeCssgenOutput } from '../src'
 import {
@@ -76,7 +77,7 @@ describe('cssgen command', () => {
 
     await runCssgen({ cwd: dir, format: 'json' }, { log: (message) => logs.push(message) })
 
-    const payload = JSON.parse(logs[0])
+    const payload = JSON.parse(logs[0]) as { diagnostics: Diagnostic[] }
 
     expect(payload.diagnostics.map(({ code, file, severity }) => ({ code, file, severity }))).toMatchInlineSnapshot(`
       [
@@ -101,7 +102,7 @@ describe('cssgen command', () => {
     )
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(`
-      "cssgen: parsed 1 files, wrote 48 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
+      "cssgen: parsed 1 files, wrote 109 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
       error js_parse_error: Unexpected token
         ┌─ App.tsx:1:48
         │
@@ -146,7 +147,7 @@ describe('cssgen command', () => {
     `)
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(
-      `"cssgen: parsed 1 files, wrote 48 bytes to <cwd>/styled-system/styles.css, diagnostics: 1"`,
+      `"cssgen: parsed 1 files, wrote 109 bytes to <cwd>/styled-system/styles.css, diagnostics: 1"`,
     )
 
     expect({ exitCode: strict.exitCode, ok: strict.ok }).toMatchInlineSnapshot(`
@@ -227,38 +228,42 @@ describe('cssgen command', () => {
     writeFileSync(appFile, "import { css } from '@panda/css'; css({ padding: '4px' })")
 
     const result = await runCssgen({ cwd: dir, silent: true })
+    const { driver } = result
+
+    if (!driver) throw new Error('expected cssgen result to include a driver')
 
     expect(result.parsed.map((report) => report.path)).toEqual([appFile])
-    expect(result.driver.compiler.atoms().map((atom) => atom.value)).toEqual(['4px'])
+    expect(driver.compiler.atoms().map((atom) => atom.value)).toEqual(['4px'])
 
-    const parseFiles = vi.spyOn(result.driver, 'parseFiles')
+    const parseFiles = vi.spyOn(driver, 'parseFiles')
 
-    result.driver.applyChange({
+    // Watch path: additive refresh — old atoms stay, new ones append.
+    driver.applyChange({
       path: appFile,
       kind: 'change',
       content: "import { css } from '@panda/css'; css({ padding: '8px' })",
     })
 
     expect(
-      result.driver.compiler
+      driver.compiler
         .atoms()
         .map((atom) => atom.value)
         .sort(),
     ).toEqual(['4px', '8px'])
 
     const ctx = {
-      driver: result.driver,
+      driver,
       cwd: dir,
       outdir: join(dir, 'styled-system'),
       output: { log: () => {} },
     }
 
+    // Re-emit CSS from the existing driver — no full re-parse.
     await writeCssgenOutput(ctx, stylesFile, { cwd: dir, silent: true }, result.parsed)
 
     const css = readFileSync(stylesFile, 'utf8')
 
     expect(parseFiles).not.toHaveBeenCalled()
-
     expect(css).toContain('4px')
     expect(css).toContain('8px')
   })

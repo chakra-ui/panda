@@ -60,13 +60,13 @@ export async function runValidate(
 
   if (missingConfig) {
     const diagnostics = [missingConfig]
-    const result: ValidateResult = createResult(
-      'validate',
+    const result: ValidateResult = createResult({
+      command: 'validate',
       startedAt,
-      { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
+      data: { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -84,13 +84,13 @@ export async function runValidate(
     driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
   } catch (error) {
     const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: ValidateResult = createResult(
-      'validate',
+    const result: ValidateResult = createResult({
+      command: 'validate',
       startedAt,
-      { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
+      data: { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -107,10 +107,10 @@ export async function runValidate(
   const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
   const errors = countErrors(diagnostics)
 
-  const result: ValidateResult = createResult(
-    'validate',
+  const result: ValidateResult = createResult({
+    command: 'validate',
     startedAt,
-    {
+    data: {
       driver,
       timings,
       configPath: driver.configPath,
@@ -118,8 +118,8 @@ export async function runValidate(
       errors,
     },
     diagnostics,
-    diagnosticsPass(diagnostics, flags.maxWarnings),
-  )
+    ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+  })
 
   if (shouldPrintJson(flags)) {
     output.log(JSON.stringify(toJsonPayload(result), null, 2))

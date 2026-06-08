@@ -16,13 +16,24 @@ export interface CliResult {
   diagnostics: Diagnostic[]
 }
 
-export function createResult<T extends object>(
-  command: string,
-  startedAt: number,
-  data: T,
-  diagnostics: Diagnostic[] = [],
+export interface CreateResultOptions<T extends object> {
+  command: string
+  /** `performance.now()` captured when the command started, for `durationMs`. */
+  startedAt: number
+  /** Command-specific payload merged into the result. */
+  data: T
+  diagnostics?: Diagnostic[]
+  /** Override success; defaults to "no error-severity diagnostics". */
+  ok?: boolean
+}
+
+export function createResult<T extends object>({
+  command,
+  startedAt,
+  data,
+  diagnostics = [],
   ok = diagnostics.every((diagnostic) => diagnostic.severity !== 'error'),
-): T & CliResult {
+}: CreateResultOptions<T>): T & CliResult {
   return {
     ...data,
     ok,

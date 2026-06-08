@@ -1,4 +1,4 @@
-import type { Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
+import type { BuildInfo, Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
 import type { DiagnosticFormat } from './diagnostics'
 import type { OutputSink } from './output'
 import type { CliResult } from './result'
@@ -29,6 +29,22 @@ export interface CssgenFlags extends CommonFlags {
   outfile?: string
   splitting?: boolean
   check?: boolean
+}
+
+/** Flags for `panda buildinfo` — produce a portable `panda.buildinfo.json`. */
+export interface BuildinfoFlags extends Omit<CommonFlags, 'watch' | 'watchDebounce'> {
+  outfile?: string
+  panda?: string
+  minify?: boolean
+}
+
+export interface BuildinfoResult extends CommandResult {
+  outfile?: string
+  buildInfo?: BuildInfo
+  moduleCount: number
+  atomCount: number
+  recipeCount: number
+  bytes: number
 }
 
 export interface InspectFlags

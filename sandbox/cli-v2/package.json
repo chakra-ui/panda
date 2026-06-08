@@ -13,6 +13,7 @@
     "v2:codegen:watch": "node ../../packages/cli_v2/bin.js codegen --cwd . --watch",
     "v2:cssgen": "node ../../packages/cli_v2/bin.js cssgen --cwd .",
     "v2:cssgen:watch": "node ../../packages/cli_v2/bin.js cssgen --cwd . --watch",
+    "v2:buildinfo": "node ../../packages/cli_v2/bin.js buildinfo --cwd .",
     "v2:clean": "rm -rf styled-system",
     "old:codegen": "node ../../packages/cli/bin.js codegen --cwd . --silent",
     "old:cssgen": "node ../../packages/cli/bin.js cssgen --cwd . --silent",

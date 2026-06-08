@@ -57,13 +57,13 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
 
   if (missingConfig) {
     const diagnostics = [missingConfig]
-    const result: CodegenResult = createResult(
-      'codegen',
+    const result: CodegenResult = createResult({
+      command: 'codegen',
       startedAt,
-      { timings, files: [], missing: [], stale: [] },
+      data: { timings, files: [], missing: [], stale: [] },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -81,13 +81,13 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
     driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
   } catch (error) {
     const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: CodegenResult = createResult(
-      'codegen',
+    const result: CodegenResult = createResult({
+      command: 'codegen',
       startedAt,
-      { timings, files: [], missing: [], stale: [] },
+      data: { timings, files: [], missing: [], stale: [] },
       diagnostics,
-      false,
-    )
+      ok: false,
+    })
 
     if (shouldPrintJson(flags)) {
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
@@ -109,13 +109,13 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
   const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
   const ok = diagnosticsPass(diagnostics, flags.maxWarnings) && isCheckClean(current)
 
-  const result: CodegenResult = createResult(
-    'codegen',
+  const result: CodegenResult = createResult({
+    command: 'codegen',
     startedAt,
-    { driver, outdir, timings, ...current },
+    data: { driver, outdir, timings, ...current },
     diagnostics,
     ok,
-  )
+  })
 
   if (shouldPrintJson(flags)) {
     output.log(JSON.stringify(toJsonPayload(result), null, 2))
