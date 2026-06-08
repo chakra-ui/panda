@@ -32,6 +32,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.
+- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems` resolves
+  manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS modules.
 - [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
   container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
   compatibility-only treatment of legacy `containerSizes`/`cq` concepts.

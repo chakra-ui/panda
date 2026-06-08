@@ -149,6 +149,29 @@ consumer `System`, read `buildInfo`, scan consumer imports, call `modulesFor()`,
 linking to a JS preset over embedding it in JSON: presets may carry utilities, recipes, conditions, transforms, and other
 config shape that should remain executable/config-native.
 
+**Preset via entrypoint (goal).** When `designSystems` is registered, the consumer should **not** also list the DS preset
+in `presets` — the manifest is the entrypoint and its `preset` field is authoritative. Config-loader (or the consume host)
+resolves each design system → manifest → preset module, merges those presets into the effective config, then applies the
+user's local `panda.config` on top (app-only `patterns`, `conditions`, `theme.extend`, etc.). Duplicating
+`presets: ['@acme/ds/preset']` alongside `designSystems: ['@acme/ds']` should be unnecessary and ideally warned against.
+
+```ts
+// panda.config.ts — target consumer shape (sketch)
+export default {
+  designSystems: ['@acme/ui'], // manifest → preset + buildInfo + styled-system surface
+  patterns: { hero: { … } }, // app overlay only — not a second DS preset import
+  conditions: { sidebar: '…' },
+}
+```
+
+Stacked DS: if `@acme/ui`'s manifest declares `"extends": "@acme/base"`, the host resolves and merges **both** presets
+transitively — the app still lists only `designSystems: ['@acme/ui']` unless it imports base directly (then base may
+appear explicitly or via manifest dependency resolution). An escape hatch (`presets` for non-DS presets like
+`@pandacss/preset-base`, or an explicit override) can remain for advanced setups; DS presets should flow from
+`designSystems` by default.
+
+Consume-side layout (dual `importMap`, overlay codegen, DS npm exports): [virtual-styled-system.md](./virtual-styled-system.md).
+
 This also means `configFingerprint` should likely evolve from strict full-config equality toward a **contract shape**
 check for design-system consumption: utility names/categories, class-name rules, conditions, recipe names, and similar
 output-affecting contracts must match, while token values can differ so consumers can theme the same token paths.
@@ -182,8 +205,8 @@ Example stack:
   └── panda.buildinfo.json          ← styles extracted from ui’s source only
 
 @app
-  ├── presets: [@acme/ui]           ← merged config contract (ui ⊃ base)
-  └── hydrate: one or more build-info artifacts (see below)
+  ├── designSystems: ['@acme/ui']    ← manifest resolves ui preset (ui preset already extends base)
+  └── hydrate: ui buildInfo (+ base if needed; see stacked scenarios)
 ```
 
 ### Producer behavior (middle DS)
@@ -247,25 +270,25 @@ Host orchestration for a stacked consumer — sketch for Phase 4:
 ```ts
 // panda.config.ts (sketch)
 export default {
-  presets: ['@acme/ui/preset'],           // config contract: ui ⊃ base
-  designSystems: ['@acme/ui', '@acme/base'], // ordered; see resolution below
+  designSystems: ['@acme/ui'], // manifest → preset + buildInfo; no duplicate presets entry
+  patterns: { hero: { … } }, // app-only overlay
 }
 ```
 
 Per design system at build time:
 
-1. Resolve manifest (`name`, `preset`, `buildInfo`, `panda` range).
-2. Merge preset into the consumer config **once** (top-level `presets` and/or manifest presets — exact merge order TBD;
-   ui preset should already extend base so apps usually list ui only).
-3. `validate(buildInfo)` — schema + peer range + contract/fingerprint check against the consumer compiler.
-4. Scan consumer imports from that package (subpath → module key; barrel → `modulesFor(exports, importNames)`).
-5. `hydrate(buildInfo, { name, only })` for the resolved module set.
-6. Emit hydrated CSS under a package-scoped layer (e.g. `@layer ds-acme-ui { … }`) — layer naming TBD.
+1. Resolve manifest (`name`, `preset`, `buildInfo`, `panda` range, optional `extends` / `dependencies`).
+2. Import and merge manifest preset(s) into the effective config — **not** from a parallel `presets: ['@acme/ui']` entry.
+3. Apply the user's local config on top (app patterns, conditions, theme overrides).
+4. `validate(buildInfo)` — schema + peer range + contract/fingerprint check against the consumer compiler.
+5. Scan consumer imports from that package (subpath → module key; barrel → `modulesFor(exports, importNames)`).
+6. `hydrate(buildInfo, { name, only })` for the resolved module set.
+7. Emit hydrated CSS under a package-scoped layer (e.g. `@layer ds-acme-ui { … }`) — layer naming TBD.
 
 **Resolution order (proposal):**
 
-- Process `designSystems` **leaf-to-root** or **root-to-leaf** consistently; prefer **dependency order declared in the
-  manifest** (ui manifest may declare `"extends": "@acme/base"`) over config array order.
+- Resolve preset chain from manifest metadata (`extends`, `dependencies`) before merging local config.
+- Process `designSystems` in dependency order (leaf DS first or as declared in manifest — TBD).
 - Hydrate each package independently; never merge build-info JSON blobs — only merge **emit output** and **presets**.
 - On fingerprint mismatch for one layer: fall back to re-extracting **that package’s** published source (if shipped)
   or fail closed for that layer only.
@@ -281,10 +304,11 @@ Per design system at build time:
 
 ```txt
 1. Ship both artifacts from every layer consumers can import from.
-2. Middle DS preset extends base; app preset extends middle (single chain).
-3. App hydrates each package it imports styles from, tree-shaken via modulesFor + only.
-4. Compare configFingerprint per artifact against the consumer after preset merge.
-5. When in doubt, hydrate base + ui — over-including is safe; tree-shaking trims unused modules.
+2. App lists designSystems only — host resolves presets from manifests (stacked extends via manifest metadata).
+3. App config holds app-only overlay (patterns, conditions, theme); not a duplicate DS preset import.
+4. App hydrates each package it imports styles from, tree-shaken via modulesFor + only.
+5. Compare configFingerprint per artifact against the consumer after preset merge.
+6. When in doubt, hydrate base + ui — over-including is safe; tree-shaking trims unused modules.
 ```
 
 Track stacked-DS consume work under [Remaining — consume half](#remaining--consume-half-phase-4-the-value) below
