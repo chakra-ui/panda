@@ -1,5 +1,5 @@
 import {
-  getResolvedConfigOutdir,
+  normalizeImportMap,
   type ProjectCallbackKind,
   type ProjectCallbacks,
   type SerializedConfig,
@@ -95,52 +95,4 @@ function attachPatternCodegenSource(serialized: SerializedConfig, config: UserCo
     const source = stringify(compact({ transform: pattern.transform, defaultValues: pattern.defaultValues })) ?? ''
     if (serializedPatterns[name]) serializedPatterns[name].codegenSource = source
   }
-}
-
-function normalizeImportMap(config: UserConfig) {
-  const outdir = getResolvedConfigOutdir(config as unknown as SerializedConfig)
-    .split('/')
-    .at(-1)!
-  const inputs = Array.isArray(config.importMap) ? config.importMap : [config.importMap]
-  const output = {
-    css: [] as string[],
-    recipe: [] as string[],
-    pattern: [] as string[],
-    jsx: [] as string[],
-    tokens: [] as string[],
-  }
-
-  for (const input of inputs) {
-    const normalized = normalizeImportMapInput(input, outdir)
-    output.css.push(...normalized.css)
-    output.recipe.push(...normalized.recipe)
-    output.pattern.push(...normalized.pattern)
-    output.jsx.push(...normalized.jsx)
-    output.tokens.push(...normalized.tokens)
-  }
-
-  return output
-}
-
-function normalizeImportMapInput(input: any, outdir: string) {
-  if (typeof input === 'string') {
-    return {
-      css: [`${input}/css`],
-      recipe: [`${input}/recipes`],
-      pattern: [`${input}/patterns`],
-      jsx: [`${input}/jsx`],
-      tokens: [`${input}/tokens`],
-    }
-  }
-  return {
-    css: asArray(input?.css ?? `${outdir}/css`),
-    recipe: asArray(input?.recipes ?? `${outdir}/recipes`),
-    pattern: asArray(input?.patterns ?? `${outdir}/patterns`),
-    jsx: asArray(input?.jsx ?? `${outdir}/jsx`),
-    tokens: asArray(input?.tokens ?? `${outdir}/tokens`),
-  }
-}
-
-function asArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value]
 }

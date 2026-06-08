@@ -22,6 +22,7 @@ import {
   getTokenCategoryValues,
   makeBuildInfoApi,
   mergeCallbacks,
+  prepareCompilerConfig,
 } from '@pandacss/compiler-shared'
 import type {
   BuildInfoNative,
@@ -84,7 +85,8 @@ export function build(mod: WasmModule, config: SerializedConfig, callbacks: Proj
   const fs = new mod.WasmFileSystem()
   assertProjectCallbacks(config, callbacks)
 
-  const compiler = mod.WasmCompiler.fromConfig(fs, config, buildFromConfigOptions(callbacks))
+  const prepared = prepareCompilerConfig(config)
+  const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks))
   registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
 
   // Expose the shared FS as a field so the return shape matches native.

@@ -234,7 +234,8 @@ export interface Spec {
   /** Canonical emit order for property names (for a stable property sort). */
   propertyOrder: string[]
   jsxFactory?: string
-  importMap?: { css: string[]; recipe: string[]; pattern: string[]; jsx: string[]; tokens: string[] }
+  /** Normalized import paths per category (post-{@link normalizeImportMap}). */
+  importMap?: ImportMapOutput
 }
 
 export interface CodegenFile {
@@ -333,12 +334,37 @@ export interface FileInspectionResult {
   diagnostics: Diagnostic[]
 }
 
-/** The JSON-safe, fully-resolved Panda config the compiler consumes.
+/** Author-facing import map — per-category `string | string[]` (v1 `ImportMapInput`). */
+export interface ImportMapInput {
+  css?: string | string[]
+  recipes?: string | string[]
+  patterns?: string | string[]
+  jsx?: string | string[]
+  tokens?: string | string[]
+}
+
+/** Wire / snapshot import map — always expanded category arrays (`recipe` key). */
+export interface ImportMapOutput {
+  css: string[]
+  recipe: string[]
+  pattern: string[]
+  jsx: string[]
+  tokens: string[]
+}
+
+/** One import-map entry: styled-system root string or per-category object. */
+export type ImportMapOption = string | ImportMapInput
+
+/** JSON-safe, fully-resolved Panda config the compiler consumes.
  *
  *  Intentionally opaque: function-valued options (`utilities.*.transform`, …)
  *  are already lowered to `{ kind: 'js-callback', id }` refs, with the live
  *  functions supplied via {@link CompilerOptions.callbacks}. `@pandacss/config`
- *  produces values conforming to this; the compiler never imports config. */
+ *  produces values conforming to this; the compiler never imports config.
+ *
+ *  Author configs may pass `importMap` as {@link ImportMapOption} |
+ *  {@link ImportMapOption}[]; {@link prepareCompilerConfig} /
+ *  `createConfigSnapshot` expand it to {@link ImportMapOutput} before Rust. */
 export type SerializedConfig = Record<string, unknown>
 
 export type ProjectCallbackKind = 'utility.transform' | 'utility.values' | 'pattern.transform' | 'pattern.defaultValues'

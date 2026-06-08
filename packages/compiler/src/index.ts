@@ -12,6 +12,7 @@ import {
   getTokenCategoryValues,
   makeBuildInfoApi,
   mergeCallbacks,
+  prepareCompilerConfig,
 } from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
 import { fallback } from './fallback'
@@ -74,7 +75,8 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
     throw new Error('createCompiler is not available in this binding')
   }
 
-  const compiler = nativeCompilerFromConfig(config, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
+  const prepared = prepareCompilerConfig(config)
+  const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
   registerCallbacks(compiler, callbacks, compiler.token_dictionary?.())
   attachBuildInfo(compiler)
 
