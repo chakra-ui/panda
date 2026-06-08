@@ -31,6 +31,9 @@
     "url": "git+https://github.com/chakra-ui/panda.git",
     "directory": "packages/mcp"
   },
+  "bugs": {
+    "url": "https://github.com/chakra-ui/panda/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
