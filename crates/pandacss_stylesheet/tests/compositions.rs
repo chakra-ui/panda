@@ -205,6 +205,21 @@ fn unknown_composition_value_does_not_emit_fallback_declaration() {
 
     assert!(!utilities.contains("text-style"));
     assert!(!utilities.contains(".textStyle_missing"));
+    assert_snapshot!(utilities, @"");
+}
+
+#[test]
+fn unknown_composition_with_no_theme_styles_emits_nothing() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css'; css({ textStyle: 'lg' });",
+        &[StylesheetLayer::Utilities],
+    );
+
+    assert_snapshot!(utilities, @"");
 }
 
 #[test]

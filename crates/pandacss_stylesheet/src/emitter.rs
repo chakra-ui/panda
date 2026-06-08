@@ -127,12 +127,22 @@ pub fn emit<'a>(
     if !atoms.is_empty() {
         let sorted = cx.sort.sorted_atoms(atoms);
         let buckets = bucket_atoms_by_layer(&cx, sorted);
-        if !buckets.default.is_empty() || !buckets.custom.is_empty() {
+        let mut default_grouped = cx.group_atoms(&buckets.default);
+        let mut custom_grouped = indexmap::IndexMap::new();
+        for (name, layer_atoms) in &buckets.custom {
+            let grouped = cx.group_atoms(layer_atoms);
+            if !grouped.is_empty() {
+                custom_grouped.insert(*name, grouped);
+            }
+        }
+        if !default_grouped.is_empty() || !custom_grouped.is_empty() {
             layer_ranges.utilities = Some(write_layer(&mut writer, &layers.utilities, |writer| {
-                cx.write_grouped_utilities(writer, &buckets.default);
-                for (name, atoms) in &buckets.custom {
+                if !default_grouped.is_empty() {
+                    write_grouped_rules(writer, &mut default_grouped);
+                }
+                for (name, mut grouped) in custom_grouped {
                     writer.layer(name, |writer| {
-                        cx.write_grouped_utilities(writer, atoms);
+                        write_grouped_rules(writer, &mut grouped);
                     });
                 }
             }));
@@ -1023,7 +1033,7 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    fn write_grouped_utilities(&self, writer: &mut CssWriter, atoms: &[SortedAtom<'_>]) {
+    fn group_atoms(&self, atoms: &[SortedAtom<'_>]) -> GroupNode {
         let mut grouped = GroupNode::default();
         for atom in atoms {
             self.collect_atom_rules(
@@ -1033,9 +1043,7 @@ impl<'a> EmitContext<'a> {
                 &mut grouped,
             );
         }
-        if !grouped.is_empty() {
-            write_grouped_rules(writer, &mut grouped);
-        }
+        grouped
     }
 
     fn collect_atom_rules(
