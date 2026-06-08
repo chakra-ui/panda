@@ -58,6 +58,7 @@ pub(crate) struct Resolver<'a, 'cb> {
 struct TokenCallResolution {
     value: String,
     ref_path: String,
+    token_path: Option<String>,
     needs_css_var: bool,
 }
 
@@ -194,7 +195,17 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             span: crate::span_from_oxc(call.span),
             needs_css_var: resolution.needs_css_var,
         });
-        Some(Literal::String(resolution.value))
+
+        // Preserve token path + resolved value when the dictionary knows the path;
+        // fall back to a plain string for synthetic/alias-only resolutions.
+        Some(if let Some(path) = resolution.token_path {
+            Literal::Token {
+                path,
+                value: resolution.value,
+            }
+        } else {
+            Literal::String(resolution.value)
+        })
     }
 
     pub(crate) fn resolved_token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
@@ -242,7 +253,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         }
 
         let path_arg = call.arguments.first()?.as_expression()?;
-        let Literal::String(path) = expression_to_literal(path_arg, Some(self))? else {
+        let (Literal::String(path) | Literal::Token { value: path, .. }) =
+            expression_to_literal(path_arg, Some(self))?
+        else {
             return None;
         };
 
@@ -252,7 +265,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .and_then(|a| a.as_expression())
             .and_then(|e| expression_to_literal(e, Some(self)))
             .and_then(|l| match l {
-                Literal::String(s) => Some(s),
+                Literal::String(s) | Literal::Token { value: s, .. } => Some(s),
                 _ => None,
             });
 
@@ -461,6 +474,7 @@ fn token_call_resolution(
         return Some(TokenCallResolution {
             value,
             ref_path: path.to_owned(),
+            token_path: dict.token(path).map(|_| path.to_owned()),
             needs_css_var: true,
         });
     }
@@ -470,6 +484,7 @@ fn token_call_resolution(
             needs_css_var: is_css_var_value(&value),
             value,
             ref_path: path.to_owned(),
+            token_path: Some(path.to_owned()),
         });
     }
 
@@ -482,6 +497,7 @@ fn token_call_resolution(
         return Some(TokenCallResolution {
             value,
             ref_path: color_path.to_owned(),
+            token_path: Some(path.to_owned()),
             needs_css_var: true,
         });
     }
@@ -489,6 +505,7 @@ fn token_call_resolution(
     fallback.map(|value| TokenCallResolution {
         value: value.to_owned(),
         ref_path: path.to_owned(),
+        token_path: None,
         needs_css_var: is_css_var_value(value),
     })
 }
@@ -626,7 +643,7 @@ fn binding_property_key(
     }
     let expr = key.as_expression()?;
     match expression_to_literal(expr, resolver)? {
-        Literal::String(value) => Some(value),
+        Literal::String(value) | Literal::Token { value, .. } => Some(value),
         Literal::Number(value) => Some(value.to_string()),
         _ => None,
     }

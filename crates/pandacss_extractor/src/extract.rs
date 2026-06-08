@@ -9,9 +9,9 @@ use std::cell::RefCell;
 
 use crate::scope::{PatternRawTransformCell, PatternRawTransformFn, Resolver};
 use crate::{
-    Diagnostic, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal, MatchCategory,
-    MatchedImport, Span, VisitorContext, collect_imports, collect_parser_diagnostics,
-    match_import_records,
+    Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal,
+    MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
+    collect_parser_diagnostics, match_import_records,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -43,6 +43,10 @@ pub struct ExtractUsage {
     /// it never crosses the binding boundary and stays off the hot path's wire.
     #[serde(skip)]
     pub token_refs: Vec<TokenRef>,
+    /// Top-level export facts — drives the build-info `exports` map. Off the
+    /// wire (consumed project-side only).
+    #[serde(skip)]
+    pub exports: ExportInfo,
 }
 
 /// Kitchen-sink extraction result — includes raw imports and matched
@@ -76,6 +80,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
         jsx: outcome.jsx,
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
+        exports: outcome.exports,
     }
 }
 
@@ -103,6 +108,7 @@ where
         jsx: outcome.jsx,
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
+        exports: outcome.exports,
     }
 }
 
@@ -129,6 +135,7 @@ struct ExtractResult {
     jsx: Vec<ExtractedJsx>,
     diagnostics: Vec<Diagnostic>,
     token_refs: Vec<TokenRef>,
+    exports: ExportInfo,
 }
 
 fn run_extract<'cb>(
@@ -156,6 +163,12 @@ fn run_extract<'cb>(
         match_import_records(&imports, &config.matchers)
     };
 
+    // Export surface is collected from the same parse — no second AST walk.
+    let exports = {
+        let _span = tracing::trace_span!("collect_export_info").entered();
+        crate::collect_export_info(&parser_return.program)
+    };
+
     if should_skip_extraction(&matched, config) {
         return ExtractResult {
             imports,
@@ -164,6 +177,7 @@ fn run_extract<'cb>(
             jsx: Vec::new(),
             diagnostics,
             token_refs: Vec::new(),
+            exports,
         };
     }
 
@@ -214,6 +228,7 @@ fn run_extract<'cb>(
         jsx,
         diagnostics,
         token_refs,
+        exports,
     }
 }
 
