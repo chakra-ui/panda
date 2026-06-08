@@ -1141,8 +1141,16 @@ mod panda {
         );
         assert!(results.contains(&PathBuf::from("/proj/src/components/Button.tsx")));
         assert!(results.contains(&PathBuf::from("/proj/src/index.ts")));
-        assert!(!results.iter().any(|p| p.to_string_lossy().contains("/node_modules/")));
-        assert!(!results.iter().any(|p| p.to_string_lossy().contains("/styled-system/")));
+        assert!(
+            !results
+                .iter()
+                .any(|p| p.to_string_lossy().contains("/node_modules/"))
+        );
+        assert!(
+            !results
+                .iter()
+                .any(|p| p.to_string_lossy().contains("/styled-system/"))
+        );
     }
 
     #[test]
