@@ -110,15 +110,17 @@ export function useEditor(props: PandaEditorProps) {
     monacoEditorRef.current?.updateOptions({ wordWrap })
   }, [wordWrap])
 
-  // Memoize based on actual data, not context reference, to prevent unnecessary re-renders
-  const patterns = context.patterns.details
-  const recipeKeys = context.recipes.keys
+  // Derive auto-import targets from the resolved config (carries the accurate
+  // pattern `jsxName`s and recipe keys).
+  const cfg = context.config
   const autoImportCtx = useMemo(() => {
-    return {
-      patterns,
-      recipes: Array.from(recipeKeys),
-    }
-  }, [patterns, recipeKeys])
+    const patterns = Object.entries(cfg?.patterns ?? {}).map(([name, pattern]) => ({
+      baseName: name,
+      jsxName: (pattern as { jsxName?: string })?.jsxName ?? name.charAt(0).toUpperCase() + name.slice(1),
+    }))
+    const recipes = [...Object.keys(cfg?.theme?.recipes ?? {}), ...Object.keys(cfg?.theme?.slotRecipes ?? {})]
+    return { patterns, recipes }
+  }, [cfg])
 
   const configureEditor: OnMount = useCallback(
     (editor, monaco) => {

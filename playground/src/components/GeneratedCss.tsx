@@ -16,7 +16,15 @@ export const GeneratedCss = React.memo(function GeneratedCss({
   cssArtifacts: CssFileArtifact[]
   visible: boolean
 }) {
-  const [activeTab, setActiveTab] = useState(cssArtifacts[0]?.file ?? 'styles.css')
+  const [selectedTab, setSelectedTab] = useState<string | null>(null)
+
+  // `cssArtifacts` is empty until the compiler is ready, so a `useState`
+  // initializer captures the fallback and never corrects. Derive the active tab
+  // instead, falling back to the first artifact when nothing valid is selected.
+  const activeTab =
+    selectedTab && cssArtifacts.some((file) => file.file === selectedTab)
+      ? selectedTab
+      : (cssArtifacts[0]?.file ?? 'styles.css')
 
   const wordWrap = useReadLocalStorage<'off' | 'on' | undefined>('wordWrap') ?? undefined
 
@@ -45,7 +53,7 @@ export const GeneratedCss = React.memo(function GeneratedCss({
           borderBottomWidth: '1px',
         })}
         value={activeTab}
-        onValueChange={(e) => setActiveTab(e.value as any)}
+        onValueChange={(e) => setSelectedTab(e.value)}
       >
         <SegmentGroup.Indicator
           data-expanded={visible ? '' : undefined}

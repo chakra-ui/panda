@@ -57,8 +57,9 @@ export const Preview = memo(function Preview(props: PreviewProps) {
   } as const
 
   function renderContent() {
-    // if (1 + 1 == 2) return null
-    if (!isReady) {
+    // Wait for the iframe and the styled-system runtime (previewJs) — rendering
+    // user code before the wasm compiler is ready throws `x is not defined`.
+    if (!isReady || !previewJs) {
       return null
     }
 

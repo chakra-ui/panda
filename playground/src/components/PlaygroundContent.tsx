@@ -3,6 +3,7 @@ import { UseConfig } from '@/src/hooks/useConfig'
 import { usePanda } from '@/src/hooks/usePanda'
 import { UsePlayground } from '@/src/hooks/usePlayground'
 import { useResponsiveView } from '@/src/hooks/useResponsiveView'
+import { useWasm } from '@/src/hooks/useWasm'
 import { css, cx } from '@/styled-system/css'
 import { flex } from '@/styled-system/patterns'
 import { button, splitter } from '@/styled-system/recipes'
@@ -45,8 +46,9 @@ export const PlaygroundContent = (props: Props) => {
   const _state = diffState ?? deferredState
 
   const { config, isLoading, error } = _config
-  const panda = usePanda(_state, config)
-  const responsiveView = useResponsiveView(panda.context.config.theme?.breakpoints)
+  const wasm = useWasm()
+  const panda = usePanda(wasm, _state, config)
+  const responsiveView = useResponsiveView(panda.context.config?.theme?.breakpoints)
 
   return (
     <>
