@@ -1,4 +1,5 @@
 use crate::common::{artifact, file, paths};
+use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::UserConfig;
 
@@ -105,6 +106,34 @@ fn react_jsx_index_exports_split_context_helpers_only() {
     assert!(index.contains("export * from './stack'"));
     assert!(!index.contains("create-style-context"));
     assert!(!index.contains("createStyleContext"));
+}
+
+#[test]
+fn react_jsx_pattern_component_spreads_raw_styles() {
+    let artifacts = ArtifactGraph.generate_with_config(&react_config(), GenerateOptions::default());
+    let stack = file(
+        artifact(&artifacts, ArtifactId::JsxPatterns),
+        "jsx/stack.mjs",
+    );
+
+    // The component must spread the raw style *object* (`stackRaw`), not the
+    // public `stack()` (a className string), and the `forwardRef(...)` call
+    // must be closed.
+    assert_snapshot!(stack, @r#"
+    "use client";
+
+    import { createElement, forwardRef } from 'react';
+    import { splitProps } from '../helpers';
+    import { stackRaw } from '../patterns/stack';
+    import { panda } from './factory';
+
+    export const Stack = /* @__PURE__ */ forwardRef(function Stack(props, ref) {
+      const [patternProps, restProps] = splitProps(props, ["direction","gap"])
+      const styleProps = stackRaw(patternProps)
+      const mergedProps = { ref, ...styleProps, ...restProps }
+      return createElement(panda["section"], mergedProps)
+    })
+    "#);
 }
 
 #[test]

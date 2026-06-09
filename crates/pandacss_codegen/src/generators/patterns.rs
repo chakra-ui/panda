@@ -96,10 +96,13 @@ pub fn module_with_type_data(
     let fn_type_name = format!("{}PatternFn", pascal_case(name));
 
     let type_imports = type_imports(pattern, definition);
-    let mut module = Module::new().with_import(ImportDecl::value(
-        ["getPatternStyles", "patternFns"],
-        "./runtime",
-    ));
+    let mut module = Module::new()
+        .with_import(ImportDecl::value(
+            ["getPatternStyles", "patternFns"],
+            "./runtime",
+        ))
+        // The public fn pipes styles through `css()` to return a className.
+        .with_import(ImportDecl::value(["css"], "../css/index"));
 
     let pattern_imports = filtered_type_imports(&type_imports, &["PatternRuntimeConfig"]);
     if !pattern_imports.is_empty() {
@@ -391,10 +394,11 @@ fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
         name: name.into(),
         extends: Vec::new(),
         members: vec![
+            // Normal call returns a className string; only `.raw` returns styles.
             TsMember {
                 name: TsMemberName::Raw(format!("(styles?: {styles_name})")),
                 optional: false,
-                ty: TsType::Ref("SystemStyleObject".into()),
+                ty: TsType::Ref("string".into()),
                 js_doc: None,
             },
             TsMember {
@@ -431,7 +435,7 @@ fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str) -> Item
         name: name.into(),
         type_annotation: Some(TsType::Ref(fn_type_name.into())),
         init: Some(crate::Expr::Raw(format!(
-            "Object.assign(function {name}(styles = {{}}) {{\n  return {raw_name}(styles)\n}}, {{ raw: {raw_name} }})"
+            "/* @__PURE__ */ Object.assign(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}, {{ raw: {raw_name} }})"
         ))),
         js_doc: None,
     }))

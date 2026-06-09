@@ -149,7 +149,9 @@ fn recipe_module(
             declare: false,
             name: export_name,
             type_annotation: Some(TsType::Ref(recipe_type)),
-            init: Some(Expr::Raw(format!("{factory}({config_name})"))),
+            init: Some(Expr::Raw(format!(
+                "/* @__PURE__ */ {factory}({config_name})"
+            ))),
             js_doc: None,
         })))
 }
@@ -294,13 +296,7 @@ fn variant_map_json(variants: &BTreeMap<String, VariantTypeData>) -> BTreeMap<St
         .collect()
 }
 
-const RECIPE_RUNTIME_TEMPLATE: &str = r#"const conditions = {
-  shift: sortConditions,
-  finalize: finalizeConditions,
-  breakpoints: { keys: __BREAKPOINTS__ },
-}
-
-function normalize(config: Record<string, any>) {
+const RECIPE_RUNTIME_TEMPLATE: &str = r#"function normalize(config: Record<string, any>) {
   const variantMap = config.variantMap ?? {}
   return {
     name: config.name,
@@ -318,7 +314,11 @@ export function createRecipe(config: Record<string, any>) {
 
   const recipeCss = createCss({
     hash: __HASH__,
-    conditions,
+    conditions: {
+      shift: sortConditions,
+      finalize: finalizeConditions,
+      breakpoints: { keys: __BREAKPOINTS__ },
+    },
     utility: {
       prefix: __PREFIX__,
       toHash,

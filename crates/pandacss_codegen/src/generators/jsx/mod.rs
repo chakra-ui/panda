@@ -443,7 +443,10 @@ export const __FACTORY__ = /* @__PURE__ */ createJsxFactory()";
 fn pattern_module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
     let factory = factory_name(ctx);
     let stem = file_stem(name);
-    let function_name = js_ident(name);
+    // The JSX component spreads the pattern's *style object* into the element,
+    // so it uses the raw getter (`stackRaw`), not the public `stack()` (which
+    // returns a className string).
+    let raw_name = format!("{}Raw", js_ident(name));
     let upper_name = pascal_case(name);
     let jsx_name = pattern
         .jsx_name
@@ -463,7 +466,7 @@ fn pattern_module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) 
         .with_import(value_import(&["createElement", "forwardRef"], "react"))
         .with_import(ImportDecl::value(["splitProps"], "../helpers"))
         .with_import(value_import(
-            &[function_name.as_str()],
+            &[raw_name.as_str()],
             &format!("../patterns/{stem}"),
         ))
         .with_import(value_import(&[factory.as_str()], "./factory"))
@@ -480,14 +483,13 @@ fn pattern_module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) 
     }
 
     module
-        .with_item(raw_runtime(format!(
-            "const PatternElement = /* @__PURE__ */ {factory}({jsx_element:?})\n\n{}",
-            pattern_runtime_body(
-                &jsx_name,
-                &function_name,
-                &pattern_keys_json,
-                style_props(ctx)
-            )
+        .with_item(raw_runtime(pattern_runtime_body(
+            &jsx_name,
+            &factory,
+            &jsx_element,
+            &raw_name,
+            &pattern_keys_json,
+            style_props(ctx),
         )))
         .with_item(raw_type(format!(
             "export interface {component_props} extends {props_name}, DistributiveOmit<{html_props}<{jsx_element:?}>, {omit_keys}> {{}}\n\nexport declare const {jsx_name}: FunctionComponent<{component_props}>",
@@ -496,7 +498,9 @@ fn pattern_module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) 
 
 fn pattern_runtime_body(
     jsx_name: &str,
-    function_name: &str,
+    factory: &str,
+    jsx_element: &str,
+    style_getter: &str,
     pattern_keys_json: &str,
     mode: JsxStylePropsConfig,
 ) -> String {
@@ -516,10 +520,10 @@ fn pattern_runtime_body(
     format!(
         r"export const {jsx_name} = /* @__PURE__ */ forwardRef(function {jsx_name}(props, ref) {{
   const [patternProps, restProps] = splitProps(props, {pattern_keys_json})
-  const styleProps = {function_name}(patternProps)
+  const styleProps = {style_getter}(patternProps)
   {body}
-  return createElement(PatternElement, mergedProps)
-}}"
+  return createElement({factory}[{jsx_element:?}], mergedProps)
+}})"
     )
 }
 

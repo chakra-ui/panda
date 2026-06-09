@@ -50,6 +50,7 @@ describe('loadCompiler', () => {
 
     expect(stack?.code).toMatchInlineSnapshot(`
       "import { getPatternStyles, patternFns } from './runtime';
+      import { css } from '../css/index';
 
       const stackConfig = {transform(props) {
       	return {
@@ -64,8 +65,8 @@ describe('loadCompiler', () => {
         return stackConfig.transform(s, patternFns)
       }
 
-      export const stack = Object.assign(function stack(styles = {}) {
-        return stackRaw(styles)
+      export const stack = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        return css(stackRaw(styles))
       }, { raw: stackRaw })"
     `)
   })

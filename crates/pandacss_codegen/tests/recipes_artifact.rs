@@ -91,12 +91,6 @@ fn emits_ts_source_recipes() {
     import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
     import { finalizeConditions, sortConditions } from '../css/conditions';
 
-    const conditions = {
-      shift: sortConditions,
-      finalize: finalizeConditions,
-      breakpoints: { keys: ["base","sm"] },
-    }
-
     function normalize(config: Record<string, any>) {
       const variantMap = config.variantMap ?? {}
       return {
@@ -115,7 +109,11 @@ fn emits_ts_source_recipes() {
 
       const recipeCss = createCss({
         hash: false,
-        conditions,
+        conditions: {
+          shift: sortConditions,
+          finalize: finalizeConditions,
+          breakpoints: { keys: ["base","sm"] },
+        },
         utility: {
           prefix: "p",
           toHash,
@@ -222,7 +220,7 @@ fn emits_ts_source_recipes() {
 
     const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
 
-    export const button: ButtonRecipe = createRecipe(buttonConfig)
+    export const button: ButtonRecipe = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/card.ts"), @r#"
     import { createSlotRecipe } from './runtime';
@@ -245,7 +243,7 @@ fn emits_ts_source_recipes() {
 
     const cardConfig = {"name":"card","slots":["root","label"],"variantMap":{"tone":["danger","info"]}}
 
-    export const card: CardRecipe = createSlotRecipe(cardConfig)
+    export const card: CardRecipe = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/index.ts"), @r#"
     export * from './button';
@@ -303,12 +301,6 @@ fn emits_js_runtime_and_declarations() {
     import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
     import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
 
-    const conditions = {
-      shift: sortConditions,
-      finalize: finalizeConditions,
-      breakpoints: { keys: ["base","sm"] },
-    }
-
     function normalize(config) {
       const variantMap = config.variantMap ?? {}
       return {
@@ -327,7 +319,11 @@ fn emits_js_runtime_and_declarations() {
 
       const recipeCss = createCss({
         hash: false,
-        conditions,
+        conditions: {
+          shift: sortConditions,
+          finalize: finalizeConditions,
+          breakpoints: { keys: ["base","sm"] },
+        },
         utility: {
           prefix: "p",
           toHash,
@@ -419,7 +415,7 @@ fn emits_js_runtime_and_declarations() {
 
     const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
 
-    export const button = createRecipe(buttonConfig)
+    export const button = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/button.d.mts"), @r#"
     import type { ConditionalValue } from '../types/system.d.mts';
@@ -445,7 +441,7 @@ fn emits_js_runtime_and_declarations() {
 
     const cardConfig = {"name":"card","slots":["root","label"],"variantMap":{"tone":["danger","info"]}}
 
-    export const card = createSlotRecipe(cardConfig)
+    export const card = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/card.d.mts"), @r#"
     import type { ConditionalValue } from '../types/system.d.mts';
