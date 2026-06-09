@@ -80,6 +80,7 @@ fn panda_matchers(prefix: &str) -> Matchers {
             names: NameMatcher::only(["token"]),
         },
         jsx_factories: Some(vec!["styled".into()]),
+        ..Default::default()
     }
 }
 

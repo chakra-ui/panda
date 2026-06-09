@@ -171,6 +171,7 @@ fn custom_jsx_factory_extracts_member_chain() {
     "};
     assert_yaml_snapshot!(run_with_factories(src, vec!["Panda"]).jsx, @"
     - category: jsx
+      kind: factory
       name: Panda.div
       alias: Panda
       data:

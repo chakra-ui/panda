@@ -149,8 +149,10 @@ pub(crate) fn extract_call(
         return None;
     }
 
+    let kind = crate::jsx::jsx_kind(&ctx.config.matchers, &resolved.name, &resolved.alias);
     Some(ExtractedJsx {
         category: resolved.category,
+        kind,
         name: resolved.name.into_owned(),
         alias: resolved.alias.into_owned(),
         data: Literal::Object(out),

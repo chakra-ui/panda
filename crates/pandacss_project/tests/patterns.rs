@@ -610,3 +610,45 @@ fn object_value<'a>(literal: &'a Literal, key: &str) -> Option<&'a Literal> {
         .find(|(name, _)| name == key)
         .map(|(_, value)| value)
 }
+
+#[test]
+fn extracted_jsx_carries_kind_from_config() {
+    let project = create_project(json!({
+        "patterns": {
+            "stack": { "jsxName": "Stack", "properties": { "gap": { "type": "string" } } }
+        },
+        "theme": {
+            "recipes": {
+                "button": { "base": {}, "variants": { "size": { "sm": {} } } }
+            }
+        }
+    }));
+
+    let result = project.extract(
+        "fixture.tsx",
+        indoc! {r"
+            import { styled, Stack, Button } from '@panda/jsx';
+
+            const a = <styled.div color='red' />;
+            const b = <Stack gap='4' />;
+            const c = <Button size='sm' />;
+            const d = <Panel color='red' />;
+        "},
+    );
+
+    let kinds: Vec<(String, String)> = result
+        .jsx
+        .iter()
+        .map(|j| (j.name.clone(), format!("{:?}", j.kind)))
+        .collect();
+
+    assert_eq!(
+        kinds,
+        vec![
+            ("styled.div".to_owned(), "Factory".to_owned()),
+            ("Stack".to_owned(), "Pattern".to_owned()),
+            ("Button".to_owned(), "Recipe".to_owned()),
+            ("Panel".to_owned(), "Component".to_owned()),
+        ]
+    );
+}

@@ -763,6 +763,7 @@ fn jsx_attribute_resolves_identifier() {
     "};
     assert_yaml_snapshot!(run(src).jsx, @"
     - category: jsx
+      kind: component
       name: Box
       alias: Box
       data:
@@ -782,6 +783,7 @@ fn jsx_spread_of_local_identifier_resolves() {
     "};
     assert_yaml_snapshot!(run(src).jsx, @"
     - category: jsx
+      kind: component
       name: Box
       alias: Box
       data:

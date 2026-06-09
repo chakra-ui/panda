@@ -14,6 +14,7 @@ describe('compiler.extract → jsx', () => {
       [
         {
           "category": "jsx",
+          "kind": "factory",
           "name": "styled.div",
           "alias": "styled",
           "data": {
@@ -35,6 +36,7 @@ describe('compiler.extract → jsx', () => {
       [
         {
           "category": "jsx",
+          "kind": "component",
           "name": "Box",
           "alias": "Box",
           "data": {
@@ -65,6 +67,7 @@ describe('compiler.extract → jsx', () => {
       [
         {
           "category": "jsx",
+          "kind": "factory",
           "name": "styled.div",
           "alias": "JSX",
           "data": {

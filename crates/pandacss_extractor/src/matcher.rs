@@ -25,6 +25,20 @@ pub enum MatchCategory {
     Tokens,
 }
 
+/// Fine-grained classification of a matched JSX usage, carried on
+/// [`crate::ExtractedJsx`] so consumers don't re-derive it from config.
+/// `Factory` is detected via [`Matchers::jsx_factories`]; `Pattern`/`Recipe`
+/// come from [`Matchers::jsx_kinds`]; everything else is `Component`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum JsxKind {
+    Factory,
+    Pattern,
+    Recipe,
+    #[default]
+    Component,
+}
+
 /// `Any` matches anything (recipes/patterns where names are user-defined);
 /// `Only(set)` restricts to an allowlist (css → css/cva/sva).
 // PERF(port): FxHashSet on short trusted keys like "css" is ~2× faster
@@ -91,6 +105,11 @@ pub struct Matchers {
     /// `<styled.div>`. The host/config layer should pass the default
     /// factory explicitly.
     pub jsx_factories: Option<Vec<String>>,
+    /// Maps a pattern/recipe JSX name to its [`JsxKind`]. Holds only
+    /// patterns (→ `Pattern`) and recipes/slot-recipes (→ `Recipe`);
+    /// factories resolve via `jsx_factories` and everything else defaults
+    /// to `Component`. Populated by the project/config layer.
+    pub jsx_kinds: FxHashMap<String, JsxKind>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]

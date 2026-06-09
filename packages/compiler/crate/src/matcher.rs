@@ -11,6 +11,14 @@ pub enum MatchCategory {
     Tokens,
 }
 
+#[napi(string_enum = "camelCase")]
+pub enum JsxKind {
+    Factory,
+    Pattern,
+    Recipe,
+    Component,
+}
+
 #[napi(object)]
 pub struct Matcher {
     pub modules: Vec<String>,

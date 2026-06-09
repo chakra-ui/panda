@@ -1,11 +1,11 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
-use crate::common::{jsx_config, panda_config};
+use crate::common::{jsx_config, jsx_kind_config, panda_config};
 use pandacss_extractor::{
     CssSyntaxKind, ExtractUsage, ExtractedJsx, ExtractedJsxResult, ImportSpecifierKind,
-    JsxExtractionConfig, JsxStyleProps, MatchCategory, MatchedImport, extract as extract_usage,
-    extract_jsx,
+    JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory, MatchedImport,
+    extract as extract_usage, extract_jsx,
 };
 use serde_json::{Value, json};
 
@@ -545,6 +545,7 @@ fn named_component_with_string_attrs() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -566,6 +567,7 @@ fn styled_factory_member() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -588,6 +590,7 @@ fn styled_factory_with_multiple_attrs() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.button
         alias: styled
         data:
@@ -615,6 +618,7 @@ fn configured_named_member_component_extracts() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Tabs.Trigger
         alias: Tabs
         data:
@@ -639,6 +643,7 @@ fn expression_container_literal_values() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -659,6 +664,7 @@ fn boolean_shorthand_attribute() {
     assert_yaml_snapshot!(extract("<Box rounded />", &[pattern_component("Box")]), @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -681,6 +687,7 @@ fn object_value_attribute() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -706,6 +713,7 @@ fn responsive_object_value() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -731,6 +739,7 @@ fn non_literal_attribute_is_skipped() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -754,6 +763,7 @@ fn literal_object_spread_is_merged() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -781,6 +791,7 @@ fn conditional_spread_unions_both_branches() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -807,6 +818,7 @@ fn conditional_spread_with_distinct_keys_merges_both() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -832,6 +844,7 @@ fn conditional_spread_colliding_with_explicit_prop_unions_all_order_independentl
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -860,6 +873,7 @@ fn non_literal_spread_is_ignored() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -887,6 +901,7 @@ fn nested_jsx_elements() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -895,6 +910,7 @@ fn nested_jsx_elements() {
           start: 0
           end: 17
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -920,6 +936,7 @@ fn extracts_unmatched_uppercase_components_with_style_props() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -928,6 +945,7 @@ fn extracts_unmatched_uppercase_components_with_style_props() {
           start: 2
           end: 21
       - category: jsx
+        kind: component
         name: Unrelated
         alias: Unrelated
         data:
@@ -961,6 +979,7 @@ fn js_parity_namespace_styled_member() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: JSX
         data:
@@ -969,6 +988,7 @@ fn js_parity_namespace_styled_member() {
           start: 5
           end: 35
       - category: jsx
+        kind: component
         name: Stack
         alias: JSX
         data:
@@ -977,6 +997,7 @@ fn js_parity_namespace_styled_member() {
           start: 38
           end: 64
       - category: jsx
+        kind: component
         name: Grid
         alias: JSX
         data:
@@ -1007,6 +1028,7 @@ fn js_parity_aliased_styled() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.button
         alias: aliased
         data:
@@ -1051,6 +1073,7 @@ fn styled_factory_member_chain_is_extracted() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.section
         alias: styled
         data:
@@ -1071,6 +1094,7 @@ fn matched_jsx_element_with_no_props_emits_empty_object() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data: {}
@@ -1095,6 +1119,7 @@ fn parenthesized_attribute_value() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1118,6 +1143,7 @@ fn ts_as_const_attribute_value() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1141,6 +1167,7 @@ fn ts_satisfies_attribute_value() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1164,6 +1191,7 @@ fn unary_in_attribute_value() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1188,6 +1216,7 @@ fn binary_in_attribute_value() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1212,6 +1241,7 @@ fn template_literal_attribute_value() {
         @r#"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1237,6 +1267,7 @@ fn template_literal_with_interpolation_attribute_is_skipped() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1259,6 +1290,7 @@ fn literal_object_spread_inside_attribute_object() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1284,6 +1316,7 @@ fn computed_key_inside_attribute_object() {
         @r#"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1311,6 +1344,7 @@ fn literal_object_spread_attribute() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1335,6 +1369,7 @@ fn nested_folding_inside_attribute() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -1359,6 +1394,7 @@ fn css_prop_aliases_extract_like_js_parser_fixture() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -1384,6 +1420,7 @@ fn css_prop_aliases_with_array_values_extract_like_js_parser_fixture() {
         @"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -1412,6 +1449,7 @@ fn css_prop_aliases_extract_in_minimal_mode_like_js_parser_fixture() {
         @r#"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -1444,6 +1482,7 @@ fn css_prop_aliases_extract_on_configured_components_in_minimal_mode() {
         @"
     jsx:
       - category: jsx
+        kind: component
         name: MyComponent
         alias: MyComponent
         data:
@@ -1472,20 +1511,21 @@ fn explicit_then_spread_then_explicit_keeps_first_position() {
             "<Box color='never.100' padding='4' {...{ color: 'never.200' }} color='after.300' margin={2} />",
             &[pattern_component("Box")],
         ),
-        @"
+        @r#"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
           color: after.300
-          padding: \"4\"
+          padding: "4"
           margin: 2
         span:
           start: 0
           end: 94
     diagnostics: []
-    ",
+    "#,
     );
 }
 
@@ -1500,18 +1540,19 @@ fn attribute_with_nested_jsx_element_drops_that_attribute() {
             "<Box icon={<svg />} ml='2' />",
             &[pattern_component("Box")],
         ),
-        @"
+        @r#"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
-          ml: \"2\"
+          ml: "2"
         span:
           start: 0
           end: 29
     diagnostics: []
-    ",
+    "#,
     );
 }
 
@@ -1525,18 +1566,19 @@ fn spread_with_nested_jsx_element_drops_the_spread() {
             "<Box ml='4' {...{ icon: <svg /> }} />",
             &[pattern_component("Box")],
         ),
-        @"
+        @r#"
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
-          ml: \"4\"
+          ml: "4"
         span:
           start: 0
           end: 37
     diagnostics: []
-    ",
+    "#,
     );
 }
 
@@ -1561,6 +1603,7 @@ fn styled_factory_tagged_template_css() {
     "};
     assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"
     - category: jsx
+      kind: factory
       name: styled.div
       alias: styled
       data:
@@ -1603,6 +1646,7 @@ fn tagged_template_css_splits_value_on_first_colon() {
         @r#"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -1630,6 +1674,7 @@ fn tagged_template_css_nests_at_rules_and_selectors() {
         @r#"
     jsx:
       - category: jsx
+        kind: factory
         name: styled.div
         alias: styled
         data:
@@ -1663,6 +1708,7 @@ fn tagged_template_css_joins_multiline_selectors() {
     "};
     assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @r#"
     - category: jsx
+      kind: factory
       name: styled.div
       alias: styled
       data:
@@ -1734,4 +1780,50 @@ fn tagged_template_css_supports_native_nesting_and_custom_props() {
       font-weight: bold
       margin-bottom: 1rem
     "#);
+}
+
+// --- JSX kind classification ---
+
+#[test]
+fn styled_factory_member_tag_is_classified_as_factory() {
+    let result = extract("<styled.div color='red' />", &[styled("styled")]);
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(result.jsx[0].name, "styled.div");
+    assert_eq!(result.jsx[0].kind, JsxKind::Factory);
+}
+
+#[test]
+fn pattern_jsx_name_is_classified_as_pattern() {
+    let config = jsx_kind_config(["styled", "Stack"], &[("Stack", JsxKind::Pattern)]);
+    let result = extract_jsx(
+        "<Stack gap='4' />",
+        "fixture.tsx",
+        &[pattern_component("Stack")],
+        &config,
+    );
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(result.jsx[0].name, "Stack");
+    assert_eq!(result.jsx[0].kind, JsxKind::Pattern);
+}
+
+#[test]
+fn recipe_jsx_name_is_classified_as_recipe() {
+    let config = jsx_kind_config(["styled", "Button"], &[("Button", JsxKind::Recipe)]);
+    let result = extract_jsx(
+        "<Button size='lg' />",
+        "fixture.tsx",
+        &[pattern_component("Button")],
+        &config,
+    );
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(result.jsx[0].name, "Button");
+    assert_eq!(result.jsx[0].kind, JsxKind::Recipe);
+}
+
+#[test]
+fn plain_configured_component_is_classified_as_component() {
+    let result = extract("<Box color='red' />", &[pattern_component("Box")]);
+    assert_eq!(result.jsx.len(), 1);
+    assert_eq!(result.jsx[0].name, "Box");
+    assert_eq!(result.jsx[0].kind, JsxKind::Component);
 }

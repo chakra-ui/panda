@@ -256,8 +256,10 @@ fn collect_tag(
     );
 
     if !entries.is_empty() {
+        let kind = crate::jsx::jsx_kind(&scan.config.matchers, &resolved.name, &resolved.alias);
         out.push(ExtractedJsx {
             category: resolved.category,
+            kind,
             name: resolved.name.into_owned(),
             alias: resolved.alias.into_owned(),
             data: Literal::Object(entries),

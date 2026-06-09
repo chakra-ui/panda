@@ -71,6 +71,7 @@ fn single_pass_extract_combines_calls_and_jsx() {
           end: 97
     jsx:
       - category: jsx
+        kind: component
         name: Box
         alias: Box
         data:
@@ -224,10 +225,11 @@ fn configured_jsx_components_still_extract_without_imports() {
             "fixture.tsx",
             &panda_config_with_jsx(jsx),
         ),
-        @r#"
+        @"
     calls: []
     jsx:
       - category: jsx
+        kind: component
         name: Card
         alias: Card
         data:
@@ -236,7 +238,7 @@ fn configured_jsx_components_still_extract_without_imports() {
           start: 0
           end: 38
     diagnostics: []
-    "#
+    "
     );
 }
 

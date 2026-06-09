@@ -130,6 +130,7 @@ fn ternary_in_jsx_attribute_emits_conditional() {
     "};
     assert_yaml_snapshot!(run(src).jsx, @"
     - category: jsx
+      kind: component
       name: Box
       alias: Box
       data:

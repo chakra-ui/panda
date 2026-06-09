@@ -44,6 +44,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
         "jsx": [
           {
             "category": "jsx",
+            "kind": "factory",
             "name": "styled.div",
             "alias": "styled",
             "data": {

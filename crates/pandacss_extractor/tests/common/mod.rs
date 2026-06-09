@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
 use pandacss_extractor::{
-    ExtractUsage, ExtractorConfig, ImportScanResult, JsxExtractionConfig, Literal, Matcher,
-    Matchers, NameMatcher, TokenDictionary,
+    ExtractUsage, ExtractorConfig, ImportScanResult, JsxExtractionConfig, JsxKind, Literal,
+    Matcher, Matchers, NameMatcher, TokenDictionary,
 };
 use serde::Serialize;
 
@@ -28,6 +28,7 @@ pub fn panda_matchers() -> Matchers {
         jsx: Some(matcher("@panda/jsx", ["styled", "Box"])),
         tokens: matcher("@panda/tokens", ["token"]),
         jsx_factories: Some(vec!["styled".into()]),
+        ..Default::default()
     }
 }
 
@@ -64,6 +65,20 @@ pub fn jsx_matchers<const N: usize>(names: [&str; N]) -> Matchers {
 
 pub fn jsx_config<const N: usize>(names: [&str; N]) -> ExtractorConfig {
     ExtractorConfig::new(jsx_matchers(names))
+}
+
+/// JSX config plus a `name → JsxKind` classification map, mirroring what the
+/// project/config layer populates for patterns and recipes.
+pub fn jsx_kind_config<const N: usize>(
+    names: [&str; N],
+    kinds: &[(&str, JsxKind)],
+) -> ExtractorConfig {
+    let mut matchers = jsx_matchers(names);
+    matchers.jsx_kinds = kinds
+        .iter()
+        .map(|(name, kind)| ((*name).to_owned(), *kind))
+        .collect();
+    ExtractorConfig::new(matchers)
 }
 
 #[derive(Serialize)]

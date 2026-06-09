@@ -3,8 +3,8 @@
 //! `{...spread}` attributes in source order.
 
 use crate::{
-    CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
-    MatchedImport, Matchers, Span, VisitorContext,
+    CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, JsxKind, Literal,
+    MatchCategory, MatchedImport, Matchers, Span, VisitorContext,
     css_template::css_template_to_object,
     jsx_react_runtime,
     literal::{collapse_whitespace, expression_to_literal},
@@ -31,10 +31,30 @@ fn is_jsx_factory(matchers: &Matchers, name: &str) -> bool {
         .is_some_and(|factories| factories.iter().any(|factory| factory == name))
 }
 
+/// Classify a resolved JSX tag. Factories win (matched against the local
+/// `alias` or canonical `name`); pattern/recipe names come from
+/// `jsx_kinds`; anything else is a plain component.
+pub(crate) fn jsx_kind(matchers: &Matchers, name: &str, alias: &str) -> JsxKind {
+    // The factory is the leading segment: `<styled.div>` (alias `styled`) and
+    // `<JSX.styled.div>` (alias `JSX`) both have name `styled.div`.
+    let leading = name.split('.').next().unwrap_or(name);
+    if is_jsx_factory(matchers, alias) || is_jsx_factory(matchers, leading) {
+        return JsxKind::Factory;
+    }
+    matchers
+        .jsx_kinds
+        .get(name)
+        .copied()
+        .unwrap_or(JsxKind::Component)
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractedJsx {
     pub category: MatchCategory,
+    /// Fine-grained classification (factory / pattern / recipe / component)
+    /// so consumers don't re-derive it from config.
+    pub kind: JsxKind,
     /// Canonical name. `<styled.div>` → `"styled.div"`;
     /// `<JSX.Stack>` (namespace) → `"Stack"`.
     pub name: String,
@@ -361,8 +381,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 walk::walk_jsx_opening_element(self, element);
                 return;
             }
+            let kind = jsx_kind(&self.ctx.config.matchers, &resolved.name, &resolved.alias);
             self.out.push(ExtractedJsx {
                 category: resolved.category,
+                kind,
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.into_owned(),
                 data: Literal::Object(entries),
@@ -382,8 +404,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             && let Some(data @ Literal::Object(_)) =
                 css_template_to_object(&tagged.quasi, self.ctx.resolver)
         {
+            let kind = jsx_kind(&self.ctx.config.matchers, &resolved.name, &resolved.alias);
             self.out.push(ExtractedJsx {
                 category: resolved.category,
+                kind,
                 name: resolved.name.into_owned(),
                 alias: resolved.alias.into_owned(),
                 data,

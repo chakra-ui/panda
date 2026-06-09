@@ -1,10 +1,11 @@
 use crate::convert::{convert_diagnostic, to_core_config, to_jsx, to_matched};
-use crate::{Diagnostic, MatchCategory, MatchedImport, Matchers, Span};
+use crate::{Diagnostic, JsxKind, MatchCategory, MatchedImport, Matchers, Span};
 use napi_derive::napi;
 
 #[napi(object)]
 pub struct ExtractedJsx {
     pub category: MatchCategory,
+    pub kind: JsxKind,
     pub name: String,
     pub alias: String,
     pub data: serde_json::Value,

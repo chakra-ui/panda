@@ -315,8 +315,15 @@ export interface ExtractedCall {
   span: Span
 }
 
+/** Fine-grained JSX classification: a styled factory (`<styled.div>`), a
+ *  pattern component (`<Stack>`), a recipe component (`<Button>`), or a plain
+ *  configured component. */
+export type JsxKind = 'factory' | 'pattern' | 'recipe' | 'component'
+
 export interface ExtractedJsx {
   category: MatchCategory
+  /** Origin of the component — distinguishes jsx-factory/pattern/recipe. */
+  kind: JsxKind
   name: string
   alias: string
   data: Record<string, unknown>

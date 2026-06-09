@@ -33,7 +33,7 @@ pub use imports::{
 };
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use matcher::{
-    MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
+    JsxKind, MatchCategory, MatchedImport, Matcher, Matchers, TokenDictionary, match_imports,
 };
 pub use project::{
     CodegenArtifact, CodegenFile, Compiler, GenerateArtifactOptions, ParseFileReport,

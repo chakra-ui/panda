@@ -10,7 +10,7 @@ use pandacss_config::{
     JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
-    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxStyleProps, Literal,
+    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
     Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
@@ -268,6 +268,22 @@ fn config_slot_recipes_from_definitions(
 }
 
 fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
+    let mut jsx_kinds: FxHashMap<String, JsxKind> = FxHashMap::default();
+    for pattern in &config.patterns {
+        for name in &pattern.jsx_names {
+            jsx_kinds.insert(name.clone(), JsxKind::Pattern);
+        }
+    }
+    for recipe in &config.recipes {
+        for name in &recipe.jsx_names {
+            jsx_kinds.insert(name.clone(), JsxKind::Recipe);
+        }
+    }
+    for recipe in &config.slot_recipes {
+        for name in &recipe.jsx_names {
+            jsx_kinds.insert(name.clone(), JsxKind::Recipe);
+        }
+    }
     Matchers {
         css: ExtractorMatcher {
             modules: config.import_map.css.clone(),
@@ -290,6 +306,7 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
             names: ExtractorNameMatcher::only(["token"]),
         },
         jsx_factories: Some(vec![config.jsx_factory.clone()]),
+        jsx_kinds,
     }
 }
 

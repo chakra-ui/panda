@@ -43,7 +43,7 @@ pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
 pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
 pub use literal::Literal;
 pub use matcher::{
-    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxStyleProps, MatchCategory,
+    CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory,
     MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
     match_imports,
 };

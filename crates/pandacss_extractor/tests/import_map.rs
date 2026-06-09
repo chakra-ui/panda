@@ -37,6 +37,7 @@ fn panda_org(prefix: &str) -> Matchers {
             names: NameMatcher::only(["token"]),
         },
         jsx_factories: None,
+        ..Default::default()
     }
 }
 

@@ -47,6 +47,10 @@ pub(crate) fn from_core_token_dictionary(
     }
 }
 
+#[allow(
+    clippy::default_trait_access,
+    reason = "jsx_kinds is an opaque FxHashMap; the stateless extract path leaves it empty"
+)]
 pub(crate) fn to_core_matchers(input: MatchersInput) -> Matchers {
     Matchers {
         css: to_core_matcher(input.css),
@@ -55,6 +59,9 @@ pub(crate) fn to_core_matchers(input: MatchersInput) -> Matchers {
         jsx: input.jsx.map(to_core_matcher),
         tokens: to_core_matcher(input.tokens),
         jsx_factories: input.jsx_factories,
+        // The stateless WasmExtractor path has no kinds input; only the
+        // Compiler/project path populates classification.
+        jsx_kinds: Default::default(),
     }
 }
 

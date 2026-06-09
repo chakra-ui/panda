@@ -127,6 +127,7 @@ fn config() -> ExtractorConfig {
             names: NameMatcher::only(["token"]),
         },
         jsx_factories: None,
+        ..Default::default()
     })
     .with_jsx(JsxExtractionConfig {
         style_props: JsxStyleProps::All,

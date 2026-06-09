@@ -3,8 +3,8 @@
 
 use crate::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, ExtractedCall, ExtractedJsx, ImportKind,
-    ImportRecord, ImportSpecifier, ImportSpecifierKind, MatchCategory, MatchedImport, Matcher,
-    Matchers, Span,
+    ImportRecord, ImportSpecifier, ImportSpecifierKind, JsxKind, MatchCategory, MatchedImport,
+    Matcher, Matchers, Span,
 };
 
 pub(crate) fn convert_span(span: pandacss_extractor::Span) -> Span {
@@ -111,6 +111,15 @@ pub(crate) fn convert_category(c: pandacss_extractor::MatchCategory) -> MatchCat
     }
 }
 
+pub(crate) fn convert_jsx_kind(k: pandacss_extractor::JsxKind) -> JsxKind {
+    match k {
+        pandacss_extractor::JsxKind::Factory => JsxKind::Factory,
+        pandacss_extractor::JsxKind::Pattern => JsxKind::Pattern,
+        pandacss_extractor::JsxKind::Recipe => JsxKind::Recipe,
+        pandacss_extractor::JsxKind::Component => JsxKind::Component,
+    }
+}
+
 pub(crate) fn to_matched(m: MatchedImport) -> pandacss_extractor::MatchedImport {
     pandacss_extractor::MatchedImport {
         category: match m.category {
@@ -181,6 +190,10 @@ fn syntax_from_string(value: Option<&str>) -> pandacss_extractor::CssSyntaxKind 
     }
 }
 
+#[allow(
+    clippy::default_trait_access,
+    reason = "jsx_kinds is an opaque FxHashMap; the stateless extract path leaves it empty"
+)]
 pub(crate) fn to_core_matchers(m: Matchers) -> pandacss_extractor::Matchers {
     pandacss_extractor::Matchers {
         css: to_core_matcher(m.css),
@@ -189,6 +202,9 @@ pub(crate) fn to_core_matchers(m: Matchers) -> pandacss_extractor::Matchers {
         jsx: m.jsx.map(to_core_matcher),
         tokens: to_core_matcher(m.tokens),
         jsx_factories: m.jsx_factories,
+        // The stateless extract API has no kinds input; only the
+        // Compiler/project path populates classification.
+        jsx_kinds: Default::default(),
     }
 }
 
@@ -229,6 +245,7 @@ pub(crate) fn to_call(c: pandacss_extractor::ExtractedCall) -> ExtractedCall {
 pub(crate) fn to_jsx(j: pandacss_extractor::ExtractedJsx) -> ExtractedJsx {
     ExtractedJsx {
         category: convert_category(j.category),
+        kind: convert_jsx_kind(j.kind),
         name: j.name,
         alias: j.alias,
         data: j.data.to_json(),
