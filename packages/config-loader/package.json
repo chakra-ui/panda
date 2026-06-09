@@ -23,6 +23,11 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./serialize": {
+      "source": "./src/serialize.ts",
+      "types": "./dist/serialize.d.ts",
+      "default": "./dist/serialize.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
