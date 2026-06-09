@@ -33,6 +33,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (the ts-evaluator parity surface).
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape, cycle guard.
 - [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe entry serialization.
+- [Compound variant cascade](./compound-variant-cascade.md) — give compounds their own `recipes.compound_variants`
+  sub-layer (below `utilities`) so `css()` can override them; how the named compound class carries into the codegen
+  recipe runtime, and the config-recipe vs `cva` fork.
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.
