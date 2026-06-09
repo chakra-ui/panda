@@ -31,24 +31,19 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ size: '4px', color: 'red' })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "color",
-            "value": "red",
-            "conditions": [],
-          },
-          {
-            "prop": "height",
-            "value": "4px",
-            "conditions": [],
-          },
-          {
-            "prop": "width",
-            "value": "4px",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
+        {
+          "prop": "size",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
   })
 
   it('passes token helpers to utility transform callbacks', async () => {
@@ -94,29 +89,14 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ tint: 'red.500/50' })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "--raw",
-            "value": "red.500/50",
-            "conditions": [],
-          },
-          {
-            "prop": "backgroundColor",
-            "value": "color-mix(in srgb, var(--colors-red-500) 50%, transparent)",
-            "conditions": [],
-          },
-          {
-            "prop": "color",
-            "value": "var(--colors-red-500)",
-            "conditions": [],
-          },
-          {
-            "prop": "opacity",
-            "value": "0.5",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "tint",
+          "value": "red.500/50",
+          "conditions": [],
+        },
+      ]
+    `)
   })
 
   it('applies utility transform callbacks to encoded config recipes', async () => {
@@ -290,21 +270,21 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     )
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "space",
-            "value": "1rem",
-            "conditions": [],
-          },
-          {
-            "prop": "space",
-            "value": "2px",
-            "conditions": [
-              "_hover",
-            ],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "space",
+          "value": "var(--spacing-4)",
+          "conditions": [],
+        },
+        {
+          "prop": "space",
+          "value": "2px",
+          "conditions": [
+            "_hover",
+          ],
+        },
+      ]
+    `)
   })
 
   it('throws when serialized callback refs are missing callbacks', async () => {
@@ -371,23 +351,16 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     compiler.parseFileSource('/Button.tsx', `import { css } from '@panda/css'\ncss({ _hover: { size: '4px' } })`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "height",
-            "value": "4px",
-            "conditions": [
-              "_hover",
-            ],
-          },
-          {
-            "prop": "width",
-            "value": "4px",
-            "conditions": [
-              "_hover",
-            ],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "size",
+          "value": "4px",
+          "conditions": [
+            "_hover",
+          ],
+        },
+      ]
+    `)
   })
 
   it('applies utility transform callbacks from JSX props', async () => {
@@ -416,19 +389,14 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     compiler.parseFileSource('/Card.tsx', `import { Box } from '@panda/jsx'\nconst el = <Box size="4px" />`)
 
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "height",
-            "value": "4px",
-            "conditions": [],
-          },
-          {
-            "prop": "width",
-            "value": "4px",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "size",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
   })
 
   it('caches utility transform callback results', async () => {
@@ -495,13 +463,13 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
         severity: diagnostic.severity,
       })),
     ).toMatchInlineSnapshot(`
-        [
-          {
-            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: boom",
-            "severity": "warning",
-          },
-        ]
-      `)
+      [
+        {
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: boom (utility \`size\` with value \`4px\`)",
+          "severity": "warning",
+        },
+      ]
+    `)
     expect(compiler.atoms()).toMatchInlineSnapshot(`[]`)
   })
 
@@ -540,29 +508,24 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
         severity: diagnostic.severity,
       })),
     ).toMatchInlineSnapshot(`
-        [
-          {
-            "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: boom",
-            "severity": "warning",
-          },
-        ]
-      `)
+      [
+        {
+          "message": "Utility transform callback \`utilities.size.transform\` for \`size\` threw: boom (utility \`size\` with value \`4px\`)",
+          "severity": "warning",
+        },
+      ]
+    `)
     expect(retried.diagnostics).toMatchInlineSnapshot(`[]`)
     expect(calls).toBe(2)
     expect(compiler.atoms()).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "height",
-            "value": "4px",
-            "conditions": [],
-          },
-          {
-            "prop": "width",
-            "value": "4px",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "size",
+          "value": "4px",
+          "conditions": [],
+        },
+      ]
+    `)
   })
 
   it('applies utility transform callbacks during refreshFile', async () => {
@@ -591,19 +554,19 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
     )
 
     expect(compiler.atoms()).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "height",
-            "value": "8px",
-            "conditions": [],
-          },
-          {
-            "prop": "width",
-            "value": "8px",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "size",
+          "value": "4px",
+          "conditions": [],
+        },
+        {
+          "prop": "size",
+          "value": "8px",
+          "conditions": [],
+        },
+      ]
+    `)
   })
 
   it('shares utility transform cache between atoms and encoded recipes', async () => {

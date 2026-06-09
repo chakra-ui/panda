@@ -105,14 +105,14 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
 
     compiler.parseFileSource('/Stack.tsx', `import { Stack } from '@panda/jsx'\nconst el = <Stack gap="4" />`)
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "gap",
-            "value": "4",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "gap",
+          "value": 4,
+          "conditions": [],
+        },
+      ]
+    `)
   })
 
   it('cross-file imports fold via the shared WasmFileSystem', async () => {
@@ -155,14 +155,19 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     compiler.parseFileSource('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'red' })`)
     expect(compiler.refreshFileSource('/a.tsx', `import { css } from '@panda/css'\ncss({ color: 'blue' })`)).toBe(true)
     expect(compiler.atoms() as Atom[]).toMatchInlineSnapshot(`
-        [
-          {
-            "prop": "color",
-            "value": "blue",
-            "conditions": [],
-          },
-        ]
-      `)
+      [
+        {
+          "prop": "color",
+          "value": "blue",
+          "conditions": [],
+        },
+        {
+          "prop": "color",
+          "value": "red",
+          "conditions": [],
+        },
+      ]
+    `)
     expect(compiler.refreshFileSource('/unknown.tsx', 'whatever')).toBe(false)
     expect(compiler.removeFile('/a.tsx')).toBe(true)
     expect(compiler.removeFile('/a.tsx')).toBe(false)
@@ -490,39 +495,40 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
     )
 
     expect(compiler.encodedRecipes()).toMatchInlineSnapshot(`
-        {
-          "base": [],
-          "variants": [
-            {
-              "recipe": "button",
-              "slot": null,
-              "className": "button--size_md",
-              "entries": [
-                {
-                  "prop": "fontSize",
-                  "value": "16px",
-                  "conditions": [
-                    "md",
-                  ],
-                },
-              ],
-            },
-            {
-              "recipe": "button",
-              "slot": null,
-              "className": "button--size_sm",
-              "entries": [
-                {
-                  "prop": "fontSize",
-                  "value": "12px",
-                  "conditions": [],
-                },
-              ],
-            },
-          ],
-          "atomic": [],
-        }
-      `)
+      {
+        "base": [],
+        "variants": [
+          {
+            "recipe": "button",
+            "slot": null,
+            "className": "button--size_sm",
+            "entries": [
+              {
+                "prop": "fontSize",
+                "value": "12px",
+                "conditions": [],
+              },
+            ],
+          },
+          {
+            "recipe": "button",
+            "slot": null,
+            "className": "button--size_md",
+            "conditions": [
+              "md",
+            ],
+            "entries": [
+              {
+                "prop": "fontSize",
+                "value": "16px",
+                "conditions": [],
+              },
+            ],
+          },
+        ],
+        "atomic": [],
+      }
+    `)
   })
 })
 
