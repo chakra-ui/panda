@@ -1623,6 +1623,43 @@ fn styled_factory_tagged_template_css() {
 }
 
 #[test]
+fn styled_factory_tagged_template_folds_interpolations() {
+    // `${size}` resolves through the same-file scope evaluator before the
+    // template body parses into a style object.
+    let source = indoc! {r"
+        const size = 300;
+        const One = styled.div`
+          display: flex;
+          width: ${size}px;
+        `
+    "};
+    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"
+    - category: jsx
+      kind: factory
+      name: styled.div
+      alias: styled
+      data:
+        display: flex
+        width: 300px
+      span:
+        start: 30
+        end: 80
+    ");
+}
+
+#[test]
+fn styled_factory_tagged_template_with_unresolvable_interpolation_is_skipped() {
+    // A runtime-only interpolation can't fold; the whole template drops
+    // instead of emitting a bogus style value.
+    let source = indoc! {r"
+        const One = styled.div`
+          width: ${props.width}px;
+        `
+    "};
+    assert_yaml_snapshot!(extract_template(source, &[styled("styled")]).jsx, @"[]");
+}
+
+#[test]
 fn styled_factory_tagged_template_ignored_in_object_syntax() {
     assert_yaml_snapshot!(
         extract("const baseStyle = styled.div`color: red;`", &[styled("styled")]),

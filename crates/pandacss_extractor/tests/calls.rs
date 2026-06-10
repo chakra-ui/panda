@@ -329,6 +329,34 @@ fn aliased_raw_css_cva_and_sva_calls_normalize_to_imported_names() {
 }
 
 #[test]
+fn zero_arg_pattern_call_emits_base_styles() {
+    // `center()` with no props still renders the pattern's base styles, so it
+    // must extract (with empty data) instead of being dropped.
+    let result = extract(
+        "const x = center()",
+        &[MatchedImport {
+            category: MatchCategory::Pattern,
+            module: "@panda/patterns".into(),
+            name: "center".into(),
+            alias: "center".into(),
+            kind: ImportSpecifierKind::Named,
+        }],
+    );
+
+    assert_yaml_snapshot!(result, @r"
+    calls:
+      - category: pattern
+        name: center
+        alias: center
+        data: []
+        span:
+          start: 10
+          end: 18
+    diagnostics: []
+    ");
+}
+
+#[test]
 fn namespace_raw_pattern_call_normalizes_to_property_name() {
     let matchers = panda_matchers("@panda");
     assert_yaml_snapshot!(
@@ -821,6 +849,36 @@ fn jsx_factory_call_tagged_template_extracts_as_css() {
         span:
           start: 0
           end: 41
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn bare_jsx_factory_tagged_template_does_not_extract() {
+    // `styled` without an element has no target; only member
+    // (`styled.div`) and call (`styled('div')`) tags extract.
+    let result = extract_with_template(
+        "styled`display: flex;`",
+        &[jsx_factory("styled")],
+        &panda_matchers("@panda"),
+    );
+
+    assert_yaml_snapshot!(result, @r"
+    calls: []
+    diagnostics: []
+    ");
+}
+
+#[test]
+fn unmatched_member_tagged_template_does_not_extract() {
+    let result = extract_with_template(
+        "other.div`display: flex;`",
+        &[jsx_factory("styled")],
+        &panda_matchers("@panda"),
+    );
+
+    assert_yaml_snapshot!(result, @r"
+    calls: []
     diagnostics: []
     ");
 }

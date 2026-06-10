@@ -443,11 +443,16 @@ impl Project {
                     }
                 }
                 (MatchCategory::Pattern, _) => {
-                    let Some(arg) = data.into_iter().next().flatten() else {
-                        continue;
-                    };
+                    // A missing or non-object arg (`center()`, dynamic props)
+                    // still renders the pattern's base styles — fall back to
+                    // the empty object so the transform runs with defaults.
+                    let arg = data.into_iter().next().flatten();
+                    let arg = arg
+                        .as_ref()
+                        .filter(|literal| matches!(literal, Literal::Object(_)))
+                        .unwrap_or(&empty_object);
                     if let Some(transform) = pattern_transform.as_deref_mut() {
-                        let pattern = compiled.patterns.transform_input(&call.name, &arg);
+                        let pattern = compiled.patterns.transform_input(&call.name, arg);
                         match transform(pattern.name, pattern.styles.as_ref()) {
                             Ok(Some(style)) => {
                                 self.process_style_props(&mut encoder, &style);
