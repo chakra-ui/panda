@@ -17,10 +17,10 @@ pnpm install
 Generate the styled-system directories
 ```
 cd packages/css-lib
-pnpm css
+pnpm codegen
 
 cd packages/nuxt-app
-pnpm css
+pnpm codegen
 ```
 
 To start the nuxt application

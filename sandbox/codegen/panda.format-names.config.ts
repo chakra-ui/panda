@@ -1,14 +1,10 @@
-import { defineConfig } from '@pandacss/dev'
 import codegenPreset from './preset'
 
-const dasherize = (token) =>
-  token
-    .toString()
-    .replace(/[^a-zA-Z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-
-export default defineConfig({
-  presets: ['@pandacss/dev/presets', codegenPreset],
+// PORT NOTE: the v1 `hooks['tokens:created']` customization (formatTokenName /
+// formatCssVar via `configure`) was removed in v2 and has no replacement yet,
+// so this scenario only keeps the custom separator.
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', codegenPreset],
   // Whether to use css reset
   preflight: true,
 
@@ -26,18 +22,4 @@ export default defineConfig({
 
   // Stitches preset
   separator: '-',
-  hooks: {
-    'tokens:created': ({ configure }) => {
-      configure({
-        formatTokenName: (path) => `$${path.join('-')}`,
-        formatCssVar: (path) => {
-          const variable = dasherize(path.join('-'))
-          return {
-            var: variable,
-            ref: `var(--${variable})`,
-          }
-        },
-      })
-    },
-  },
-})
+}

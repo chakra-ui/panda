@@ -1,9 +1,7 @@
-import { defineRecipe } from '@pandacss/dev'
-
-export const aaa = defineRecipe({
+export const aaa = {
   className: 'aaa',
   base: {
     fontSize: 'sm',
     color: 'blue.50',
   },
-})
+}

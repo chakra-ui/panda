@@ -1,12 +1,8 @@
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./src/**/*.{js,jsx,ts,tsx}', './pages/**/*.{js,jsx,ts,tsx}'],
   exclude: [],
-  theme: {
-    extend: {},
-  },
   themes: {
     primary: {
       tokens: {
@@ -46,6 +42,6 @@ export default defineConfig({
     },
   },
   outdir: 'styled-system',
-  outExtension: 'js',
-  forceConsistentTypeExtension: true,
-})
+  codegenFormat: 'js',
+  codegenImportExtensions: true,
+}

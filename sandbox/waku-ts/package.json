@@ -4,9 +4,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "waku dev --with-ssr",
-    "build": "waku build --with-ssr",
-    "start": "waku start --with-ssr"
+    "prepare": "panda codegen",
+    "dev": "waku dev",
+    "build": "waku build",
+    "start": "waku start",
+    "codegen": "panda codegen",
+    "cssgen": "panda cssgen"
   },
   "dependencies": {
     "react": "19.2.0",
@@ -15,9 +18,13 @@
     "waku": "0.27.2"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/postcss_v2": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "postcss": "8.5.6",
     "typescript": "6.0.2"
   }
 }

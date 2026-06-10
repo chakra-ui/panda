@@ -10,7 +10,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@pandacss/dev": "workspace:*",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "eslint-config-next": "16.0.6",
@@ -18,5 +17,11 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "typescript": "6.0.2"
+  },
+  "devDependencies": {
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/postcss_v2": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*"
   }
 }

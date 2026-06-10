@@ -1,6 +1,6 @@
-import { defineConfig } from '@pandacss/dev'
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
 
-export default defineConfig({
   // Whether to use css reset
   preflight: true,
 
@@ -10,12 +10,9 @@ export default defineConfig({
   // Files to exclude
   exclude: [],
 
-  // Useful for theme customization
-  theme: {
-    extend: {},
-  },
-
   // The output directory for your css system
   outdir: 'styled-system',
+  codegenFormat: 'js',
+  codegenImportExtensions: true,
   importMap: '@site/styled-system',
-})
+}

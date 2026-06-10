@@ -6,15 +6,17 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "css": "PANDA_DEBUG=ast:* panda",
-    "css:gen": "PANDA_DEBUG=* panda codegen",
-    "css:dev": "PANDA_DEBUG=file:* panda --watch",
+    "prepare": "panda codegen",
+    "codegen": "panda codegen",
+    "cssgen": "panda cssgen",
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "postcss": "8.5.6",
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/vite": "workspace:*",
     "nuxt": "4.2.1",
-    "vue": "3.5.25",
-    "@pandacss/dev": "workspace:*"
+    "vue": "3.5.25"
   }
 }

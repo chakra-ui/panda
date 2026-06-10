@@ -1,8 +1,7 @@
-import { defineConfig } from '@pandacss/dev'
 import codegenPreset from './preset'
 
-export default defineConfig({
-  presets: ['@pandacss/dev/presets', codegenPreset],
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda', codegenPreset],
   // Whether to use css reset
   preflight: true,
 
@@ -17,4 +16,4 @@ export default defineConfig({
 
   // The JSX framework to use
   jsxFramework: 'solid',
-})
+}

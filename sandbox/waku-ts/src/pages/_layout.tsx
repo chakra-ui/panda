@@ -8,7 +8,7 @@ import { Header } from '../components/header.js'
 
 type RootLayoutProps = { children: ReactNode }
 
-export const RootLayout = async ({ children }: RootLayoutProps) => {
+export default async function RootLayout({ children }: RootLayoutProps) {
   const data = await getData()
 
   return (
@@ -36,4 +36,10 @@ const getData = async () => {
   }
 
   return data
+}
+
+export const getConfig = async () => {
+  return {
+    render: 'static',
+  } as const
 }

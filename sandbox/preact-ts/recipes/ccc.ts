@@ -1,6 +1,4 @@
-import { defineRecipe } from '@pandacss/dev'
-
-export const ccc = defineRecipe({
+export const ccc = {
   className: 'ccc1',
   base: {
     fontSize: 'lg',
@@ -13,4 +11,4 @@ export const ccc = defineRecipe({
       },
     },
   },
-})
+}

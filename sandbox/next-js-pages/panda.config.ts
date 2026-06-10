@@ -1,6 +1,6 @@
-import { defineConfig } from '@pandacss/dev'
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
 
-export default defineConfig({
   // Whether to use css reset
   preflight: true,
 
@@ -12,41 +12,41 @@ export default defineConfig({
 
   // The output directory for your css system
   outdir: 'styled-system',
+  codegenFormat: 'js',
+  codegenImportExtensions: true,
   jsxFramework: 'react',
   theme: {
-    extend: {
-      slotRecipes: {
-        custom: {
-          slots: ['root', 'label'],
-          className: 'custom',
-          base: {
-            root: {
-              color: 'red',
-              bg: 'red.300',
-            },
-            label: {
-              fontWeight: 'medium',
-            },
+    slotRecipes: {
+      custom: {
+        slots: ['root', 'label'],
+        className: 'custom',
+        base: {
+          root: {
+            color: 'red',
+            bg: 'red.300',
           },
-          variants: {
-            size: {
-              sm: {
-                root: {
-                  padding: '10px',
-                },
+          label: {
+            fontWeight: 'medium',
+          },
+        },
+        variants: {
+          size: {
+            sm: {
+              root: {
+                padding: '10px',
               },
-              md: {
-                root: {
-                  padding: '20px',
-                },
+            },
+            md: {
+              root: {
+                padding: '20px',
               },
             },
           },
-          defaultVariants: {
-            size: 'sm',
-          },
+        },
+        defaultVariants: {
+          size: 'sm',
         },
       },
     },
   },
-})
+}

@@ -4,26 +4,24 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prepare": "panda",
+    "prepare": "panda codegen",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "explore": "source-map-explorer 'dist/assets/*.js' --no-border-checks",
-    "analyze": "pnpm panda codegen --clean && ANALYZE=true vite build && pnpm explore",
-    "visualize": "pnpm panda codegen --clean && vite-bundle-visualizer"
+    "visualize": "pnpm panda codegen && vite-bundle-visualizer"
   },
   "dependencies": {
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
-    "@pandacss/studio": "workspace:*",
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/vite": "workspace:*",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
-    "postcss": "8.5.6",
-    "source-map-explorer": "2.5.3",
     "typescript": "6.0.2",
     "vite": "7.2.6",
     "vite-bundle-visualizer": "1.2.1"

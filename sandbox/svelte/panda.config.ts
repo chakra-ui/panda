@@ -1,9 +1,5 @@
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  studio: {
-    logo: 'https://place-hold.it/36x24',
-  },
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./src/**/*.{js,svelte,ts}'],
   outdir: 'styled-system',
@@ -55,4 +51,4 @@ export default defineConfig({
       textDecoration: 'none',
     },
   },
-})
+}

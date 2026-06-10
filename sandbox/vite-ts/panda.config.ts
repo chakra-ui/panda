@@ -1,40 +1,18 @@
-import { defineConfig } from '@pandacss/dev'
-import { removeUnusedCssVars } from './remove-unused-css-vars'
-import { removeUnusedKeyframes } from './remove-unused-keyframes'
+import { someRecipe } from './some-recipe'
 
-export default defineConfig({
-  hooks: {
-    // Dynamically add a recipe
-    'config:resolved': async ({ config }) => {
-      const { someRecipe } = await import('./some-recipe')
-      const recipes = config.theme?.recipes
-      if (recipes) {
-        recipes['someRecipe'] = someRecipe
-      }
-    },
-    // Change the hash function
-    'utility:created': ({ configure }) => {
-      configure({
-        toHash: (paths, toHash) => {
-          const stringConds = paths.join(':')
-          const splitConds = stringConds.split('_')
-          const hashConds = splitConds.map(toHash)
-          return hashConds.join('_')
-        },
-      })
-    },
-    // Dynamically create a CSS rule
-    'context:created': ({ ctx }) => {
-      ctx.processor.css({ color: 'lime.300' })
-    },
-    // Remove unused CSS vars
-    'cssgen:done': ({ artifact, content }) => {
-      if (artifact === 'styles.css') {
-        return removeUnusedCssVars(removeUnusedKeyframes(content))
-      }
-    },
-  },
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
+  codegenFormat: 'js',
   preflight: true,
+  // v1 sandbox used a `cssgen:done` hook to strip unused vars/keyframes and a
+  // `context:created` hook to inject the lime.300 rule — both native in v2.
+  optimize: {
+    removeUnusedTokens: true,
+    removeUnusedKeyframes: true,
+  },
+  staticCss: {
+    css: [{ properties: { color: ['lime.300'] } }],
+  },
   include: ['./src/**/*.{tsx,jsx}', './pages/**/*.{jsx,tsx}'],
   exclude: [],
   outdir: 'styled-system',
@@ -47,7 +25,7 @@ export default defineConfig({
       },
     },
     recipes: {
-      // someRecipe,
+      someRecipe,
       button: {
         className: 'button',
         jsx: ['Button', 'ListedButton', /WithRegex$/, 'PrimaryButtonLike'],
@@ -129,4 +107,4 @@ export default defineConfig({
       textDecoration: 'none',
     },
   },
-})
+}

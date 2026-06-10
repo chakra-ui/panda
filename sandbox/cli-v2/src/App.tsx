@@ -1,8 +1,15 @@
 import { css, cva, cx } from 'styled-system/css/index.mjs'
-import { createRecipeContext, panda } from 'styled-system/jsx/index.mjs'
+import { createRecipeContext, createSlotRecipeContext, panda } from 'styled-system/jsx/index.mjs'
 import { button, card } from 'styled-system/recipes/index.mjs'
 
 const Button = createRecipeContext(button).withContext('button')
+
+const cardContext = createSlotRecipeContext(card)
+const Card = {
+  Root: cardContext.withProvider('article', 'root'),
+  Title: cardContext.withContext('h2', 'title'),
+  Content: cardContext.withContext('p', 'content'),
+}
 
 const badge = cva({
   base: {
@@ -90,6 +97,10 @@ export function App() {
             <h2 className={dangerCard.title}>Danger card compound</h2>
             <p className={dangerCard.content}>Slot recipe compound from size md + tone danger.</p>
           </article>
+          <Card.Root size="md" tone="brand">
+            <Card.Title>Slot context card</Card.Title>
+            <Card.Content>Rendered via createSlotRecipeContext with data-slot attributes.</Card.Content>
+          </Card.Root>
         </div>
 
         <panda.div display="grid" gap="16px">

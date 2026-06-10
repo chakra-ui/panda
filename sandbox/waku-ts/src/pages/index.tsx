@@ -4,7 +4,7 @@ import { Counter } from '../components/counter.js'
 import { css } from '../../styled-system/css/index.js'
 import { MultiThemes } from '../components/multi-themes.js'
 
-export const HomePage = async () => {
+export default async function HomePage() {
   const data = await getData()
 
   return (
@@ -29,4 +29,10 @@ const getData = async () => {
   }
 
   return data
+}
+
+export const getConfig = async () => {
+  return {
+    render: 'static',
+  } as const
 }

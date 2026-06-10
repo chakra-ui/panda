@@ -1,5 +1,5 @@
 import { sva } from '../styled-system/css'
-import { createStyleContext } from '../styled-system/jsx'
+import { createSlotRecipeContext } from '../styled-system/jsx'
 import { custom } from '../styled-system/recipes'
 
 const _custom = sva({
@@ -33,7 +33,7 @@ const _custom = sva({
   },
 })
 
-const { withProvider, withContext } = createStyleContext(custom)
+const { withProvider, withContext } = createSlotRecipeContext(custom)
 
 export const Root = withProvider('div', 'root', { defaultProps: { class: 'group' } })
 export const Label = withContext('label', 'label', { defaultProps: { class: 'group__item' } })

@@ -15,7 +15,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/postcss_v2": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
     "@storybook/addon-docs": "10.1.2",
     "@storybook/addon-links": "10.1.2",
     "@storybook/react": "^10.1.2",
@@ -24,7 +27,6 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
     "eslint-plugin-storybook": "10.1.4",
-    "postcss": "8.5.6",
     "storybook": "10.1.2",
     "vite": "7.2.6"
   },

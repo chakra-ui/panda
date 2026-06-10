@@ -1,6 +1,4 @@
-import { definePreset, defineRecipe, defineSlotRecipe } from '@pandacss/dev'
-
-const buttonRecipe = defineRecipe({
+const buttonRecipe = {
   className: 'button',
   description: 'The styles for the Button component',
   base: {
@@ -22,9 +20,9 @@ const buttonRecipe = defineRecipe({
       },
     },
   },
-})
+}
 
-const slotButton = defineSlotRecipe({
+const slotButton = {
   className: 'slot-button',
   slots: ['root', 'icon'],
   base: {
@@ -58,9 +56,9 @@ const slotButton = defineSlotRecipe({
   defaultVariants: {
     visual: 'unstyled',
   },
-})
+}
 
-const buttonWithCompoundVariantsRecipe = defineRecipe({
+const buttonWithCompoundVariantsRecipe = {
   className: 'button',
   description: 'The styles for the Button component',
   base: {
@@ -107,9 +105,9 @@ const buttonWithCompoundVariantsRecipe = defineRecipe({
   defaultVariants: {
     visual: 'unstyled',
   },
-})
+}
 
-export default definePreset({
+export default {
   name: 'codegen',
   // Useful for theme customization
   theme: {
@@ -123,4 +121,4 @@ export default definePreset({
       },
     },
   },
-})
+}

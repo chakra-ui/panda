@@ -1,6 +1,7 @@
-import { defineConfig } from '@pandacss/dev'
+export default {
+  // No presets: template-literal syntax serializes prop-based class names
+  // (`display_flex`); preset utility classNames would diverge from the runtime.
 
-export default defineConfig({
   // Whether to use css reset
   preflight: true,
 
@@ -12,9 +13,7 @@ export default defineConfig({
 
   // The output directory for your css system
   outdir: 'styled-system',
-  theme: {
-    extend: {},
-  },
+  codegenImportExtensions: true,
   syntax: 'template-literal',
   jsxFramework: 'react',
-})
+}

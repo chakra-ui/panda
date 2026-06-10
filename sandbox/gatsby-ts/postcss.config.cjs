@@ -1,3 +1,5 @@
 module.exports = {
-  plugins: [require('@pandacss/dev/postcss')],
+  plugins: {
+    '@pandacss/postcss_v2': {},
+  },
 }

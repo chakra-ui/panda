@@ -1,11 +1,17 @@
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./pages/**/*.{vue,ts,tsx}', './components/**/*.{vue,ts,tsx}'],
   exclude: [],
   outdir: 'styled-system',
   jsxFramework: 'vue',
+  // The recipe components are consumed from a .vue template, which extraction
+  // can't trace back to the config recipe yet — emit its CSS via staticCss.
+  staticCss: {
+    recipes: {
+      custom: ['*'],
+    },
+  },
   theme: {
     extend: {
       slotRecipes: {
@@ -42,4 +48,4 @@ export default defineConfig({
       },
     },
   },
-})
+}

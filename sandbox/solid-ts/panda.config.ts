@@ -1,6 +1,5 @@
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['src/**/*.tsx'],
   jsxFramework: 'solid',
@@ -77,4 +76,4 @@ export default defineConfig({
       },
     },
   },
-})
+}

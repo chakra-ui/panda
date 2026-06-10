@@ -14,12 +14,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@pandacss/dev": "workspace:^",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
   "devDependencies": {
     "@builder.io/qwik": "1.17.2",
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/vite": "workspace:*",
     "@preact/preset-vite": "2.10.2",
     "@solidjs/testing-library": "0.8.10",
     "@testing-library/jest-dom": "6.9.1",

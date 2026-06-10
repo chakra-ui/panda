@@ -4,15 +4,19 @@
   "description": "",
   "private": true,
   "scripts": {
+    "prepare": "panda codegen",
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "css": "PANDA_DEBUG=* panda",
-    "css:dev": "PANDA_DEBUG=* panda -w"
+    "codegen": "panda codegen",
+    "cssgen": "panda cssgen"
   },
   "license": "MIT",
   "devDependencies": {
-    "@pandacss/dev": "workspace:*",
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/vite": "workspace:*",
     "typescript": "6.0.2",
     "vite": "7.2.6",
     "vite-plugin-solid": "2.11.10"

@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite'
+import pandacss from '@pandacss/vite'
 import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [pandacss(), react()],
 })

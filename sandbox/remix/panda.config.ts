@@ -1,14 +1,11 @@
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  outExtension: 'js',
-  studio: {
-    logo: 'https://place-hold.it/36x24',
-  },
+export default {
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   include: ['./app/routes/**/*.{tsx,jsx}', './app/components/**/*.{tsx,jsx}'],
   exclude: [],
   outdir: 'styled-system',
+  codegenFormat: 'js',
+  codegenImportExtensions: true,
   globalFontface: {
     Dosis: {
       src: "url(/Dosis-VariableFont_wght.ttf) format('truetype')",
@@ -65,4 +62,4 @@ export default defineConfig({
       textDecoration: 'none',
     },
   },
-})
+}
