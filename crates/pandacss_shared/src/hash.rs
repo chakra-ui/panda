@@ -8,7 +8,7 @@ pub fn compound_combo_string(pairs: &[(impl AsRef<str>, impl AsRef<str>)]) -> St
     sorted.sort_by_key(|(key, _)| *key);
     sorted
         .iter()
-        .map(|(key, value)| format!("{}={}", key, value))
+        .map(|(key, value)| format!("{key}={value}"))
         .collect::<Vec<_>>()
         .join(",")
 }

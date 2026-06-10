@@ -2048,6 +2048,10 @@ fn slot_recipe_compound_variants_emit_only_when_selected_with_smart_mode() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "exhaustive compound-variant CSS fixture"
+)]
 fn slot_recipe_compound_variant_array_value_means_any_of() {
     let config = json!({
         "optimize": {

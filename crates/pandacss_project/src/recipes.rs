@@ -749,7 +749,7 @@ fn canonical_compound_pairs(conditions: &[(Box<str>, Vec<Box<str>>)]) -> Vec<(St
         .map(|(name, values)| {
             let value = values
                 .iter()
-                .map(|value| value.as_ref())
+                .map(std::convert::AsRef::as_ref)
                 .collect::<Vec<_>>()
                 .join("|");
             (name.to_string(), value)
@@ -1053,12 +1053,7 @@ impl EncodedRecipes {
         part: &ResolvedRecipePart,
         extra_conditions: &SmallVec<[Box<str>; 2]>,
     ) {
-        let key = recipe_variant_key(
-            recipe_name,
-            slot.map(|slot| slot.into()),
-            &part.class_name,
-            extra_conditions,
-        );
+        let key = recipe_variant_key(recipe_name, slot, &part.class_name, extra_conditions);
         let group = self
             .compounds
             .entry(key)
