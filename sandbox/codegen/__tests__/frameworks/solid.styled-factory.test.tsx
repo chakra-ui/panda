@@ -230,7 +230,7 @@ describe('styled factory - cva', () => {
     const { firstChild } = container as HTMLElement
     expect(firstChild).toMatchInlineSnapshot(`
       <button
-        class="fw_semibold h_10 fw_semibold h_20 color-palette_red bd-w_4px bd-c_currentColor px_12 fs_32px"
+        class="fw_semibold h_20 color-palette_red bd-w_4px bd-c_currentColor px_12 fs_32px"
       >
         Click me
       </button>
@@ -244,7 +244,7 @@ describe('styled factory - cva', () => {
       )).container.firstChild,
     ).toMatchInlineSnapshot(`
       <button
-        class="fw_semibold h_10 fw_semibold h_20 color-palette_blue bd-w_4px c_white px_20 fs_40px"
+        class="fw_semibold h_20 color-palette_blue bd-w_4px c_white px_20 fs_40px"
       >
         Click me
       </button>
@@ -301,7 +301,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual_solid c_blue"
+        class="button button--visual_solid button--compound__visual_solid"
       >
         Click me
       </button>
@@ -397,7 +397,7 @@ describe('styled factory - button recipe', () => {
 
     expect(container.firstChild).toMatchInlineSnapshot(`
       <button
-        class="button button--visual_outline button--size_md c_red.200 mx_2 fs_xl custom-btn"
+        class="button button--visual_outline button--size_md button--compound__size_md__visual_outline mx_2 c_red.200 fs_xl custom-btn"
       >
         Click me
       </button>

@@ -77,6 +77,14 @@ cli
 cli.command('codegen [scenario]', 'Generate code').action(async (scenario) => {
   if (scenario && !isValidScenario(scenario)) return
 
+  // the v2 CLI has no --clean; drop stale artifacts (e.g. old .d.ts files)
+  // so they can't shadow freshly generated ones during typecheck
+  const { rmSync } = await import('node:fs')
+  for (const fw of scenario ? [scenario] : scenarioList) {
+    rmSync(`styled-system-${fw}`, { recursive: true, force: true })
+  }
+  if (!scenario) rmSync('styled-system', { recursive: true, force: true })
+
   const commands = (scenario ? [scenario] : scenarioList).map(
     (fw) => `pnpm panda codegen --config panda.${fw}.config.ts`,
   )

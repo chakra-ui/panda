@@ -1,10 +1,10 @@
 /** @jsxImportSource solid-js */
 import { render } from '@solidjs/testing-library'
 import { describe, expect, test } from 'vitest'
-import { createStyleContext } from '../../styled-system-solid/jsx/create-style-context'
+import { createSlotRecipeContext } from '../../styled-system-solid/jsx'
 import { slotButton } from '../../styled-system-solid/recipes'
 
-const { withProvider, withContext } = createStyleContext(slotButton)
+const { withProvider, withContext } = createSlotRecipeContext(slotButton)
 
 const Root = withProvider('div', 'root')
 const Icon = withProvider('span', 'icon')
@@ -22,14 +22,17 @@ describe('style context - solid', () => {
     expect(container.firstChild).toMatchInlineSnapshot(`
       <div
         class="slot-button__root slot-button__root--visual_outline"
+        data-slot="root"
       >
         <span
           class="slot-button__icon slot-button__icon--visual_unstyled"
+          data-slot="icon"
         >
           Icon
         </span>
         <span
           class="slot-button__root slot-button__root--visual_outline"
+          data-slot="root"
         >
           Click me
         </span>
@@ -47,9 +50,11 @@ describe('style context - solid', () => {
     expect(container.firstChild).toMatchInlineSnapshot(`
       <div
         class="slot-button__root slot-button__root--visual_solid"
+        data-slot="root"
       >
         <span
           class="slot-button__root slot-button__root--visual_solid"
+          data-slot="root"
         >
           Click me
         </span>
@@ -69,10 +74,12 @@ describe('style context - solid', () => {
     expect(container.firstChild).toMatchInlineSnapshot(`
       <div
         class="slot-button__root slot-button__root--visual_solid"
+        data-slot="root"
         data-testid="button-root"
       >
         <span
           class="slot-button__root slot-button__root--visual_solid"
+          data-slot="root"
         >
           Click me
         </span>
@@ -98,10 +105,12 @@ describe('style context - solid', () => {
       <div
         class="slot-button__root slot-button__root--visual_solid"
         data-framework="solid"
+        data-slot="root"
         data-testid="button-root-function"
       >
         <span
           class="slot-button__root slot-button__root--visual_solid"
+          data-slot="root"
         >
           Click me
         </span>
