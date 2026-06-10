@@ -63,7 +63,7 @@ fn runtime_module(keys: &[String], breakpoint_keys: &[String]) -> Module {
             "sortConditions",
             vec![Param::typed("paths", TsType::Raw("string[]".into()))],
             TsType::Raw("string[]".into()),
-            r"return paths.sort((a, b) => {
+            r"return [...paths].sort((a, b) => {
   const aa = isCondition(a)
   const bb = isCondition(b)
   return aa && !bb ? 1 : !aa && bb ? -1 : 0

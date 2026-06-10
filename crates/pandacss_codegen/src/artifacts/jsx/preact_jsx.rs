@@ -65,10 +65,11 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
     if (unstyled) {
       className = cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), combinedProps.className)
     } else if (recipeOrConfig.__recipe__) {
-      const compoundVariantStyles = composedRecipeFn.__getCompoundVariantCss__?.(variantProps)
+      const compoundVariantClasses = composedRecipeFn.__getCompoundVariantClasses__?.(variantProps)
       className = cx(
         composedRecipeFn(variantProps, false),
-        (compoundVariantStyles || hasStyles) && serializeSplitStyles(propStyles, cssStyles, compoundVariantStyles),
+        compoundVariantClasses,
+        hasStyles && serializeSplitStyles(propStyles, cssStyles),
         combinedProps.className,
       )
     } else {

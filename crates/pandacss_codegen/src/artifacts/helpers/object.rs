@@ -50,9 +50,7 @@ pub(super) fn with_defaults() -> Item {
         ],
         TsType::Raw("Record<string, any>".into()),
         indoc! {r"
-            const result = compact(props)
-            for (const key in defaults) if (result[key] === void 0) result[key] = defaults[key]
-            return result
+            return { ...defaults, ...compact(props) }
         "}
         .trim(),
         [],

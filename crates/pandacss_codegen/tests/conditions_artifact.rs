@@ -63,7 +63,7 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
         }
 
         export function sortConditions(paths: string[]): string[] {
-          return paths.sort((a, b) => {
+          return [...paths].sort((a, b) => {
             const aa = isCondition(a)
             const bb = isCondition(b)
             return aa && !bb ? 1 : !aa && bb ? -1 : 0
@@ -132,7 +132,7 @@ fn emits_js_runtime_and_declarations() {
         }
 
         export function sortConditions(paths) {
-          return paths.sort((a, b) => {
+          return [...paths].sort((a, b) => {
             const aa = isCondition(a)
             const bb = isCondition(b)
             return aa && !bb ? 1 : !aa && bb ? -1 : 0
@@ -221,7 +221,7 @@ fn template_literal_syntax_emits_selector_only_conditions() {
         }
 
         export function sortConditions(paths) {
-          return paths.sort((a, b) => {
+          return [...paths].sort((a, b) => {
             const aa = isCondition(a)
             const bb = isCondition(b)
             if (aa && !bb) return 1

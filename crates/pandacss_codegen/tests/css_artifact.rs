@@ -70,12 +70,14 @@ fn emits_ts_source_css() {
       (styles: Styles): SystemStyleObject
       (styles: Styles[]): SystemStyleObject
       (...styles: Array<Styles | Styles[]>): SystemStyleObject
+      (styles: Styles): SystemStyleObject
     }
 
     interface CssFunction {
       (styles: Styles): string
       (styles: Styles[]): string
       (...styles: Array<Styles | Styles[]>): string
+      (styles: Styles): string
 
       raw: CssRawFunction
     }
@@ -231,12 +233,14 @@ fn emits_js_runtime_and_declarations() {
       (styles: Styles): SystemStyleObject
       (styles: Styles[]): SystemStyleObject
       (...styles: Array<Styles | Styles[]>): SystemStyleObject
+      (styles: Styles): SystemStyleObject
     }
 
     interface CssFunction {
       (styles: Styles): string
       (styles: Styles[]): string
       (...styles: Array<Styles | Styles[]>): string
+      (styles: Styles): string
 
       raw: CssRawFunction
     }

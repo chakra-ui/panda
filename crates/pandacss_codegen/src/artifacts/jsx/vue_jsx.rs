@@ -57,10 +57,11 @@ const VUE_FACTORY_RUNTIME: &str = r"function styledFn(Dynamic, configOrCva = {},
         const hasStyles = propStyles || cssStyles !== void 0
         if (props.unstyled) return cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), combinedProps.value.className, combinedProps.value.class)
         if (configOrCva.__recipe__) {
-          const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps)
+          const compoundVariantClasses = __cvaFn__.__getCompoundVariantClasses__?.(variantProps)
           return cx(
             __cvaFn__(variantProps, false),
-            (compoundVariantStyles || hasStyles) && serializeSplitStyles(propStyles, cssStyles, compoundVariantStyles),
+            compoundVariantClasses,
+            hasStyles && serializeSplitStyles(propStyles, cssStyles),
             combinedProps.value.className,
             combinedProps.value.class,
           )

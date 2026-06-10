@@ -611,9 +611,10 @@ fn strict_tokens_keep_per_category_globals() {
     assert!(system.contains(
         r#"export type SizeValue = WithEscapeHatch<DimensionGlobals | TokenValue<"sizes"> | CssVars>"#
     ));
-    // strictPropertyValues keyword property keeps the base Globals alongside OnlyKnown.
+    // strictPropertyValues keyword property keeps the base Globals + CssVars alongside
+    // OnlyKnown; configured utility values take precedence over the csstype table.
     assert!(system.contains(
-        r#"export type DisplayValue = WithEscapeHatch<Globals | OnlyKnown<"flex" | "block">>"#
+        r#"export type DisplayValue = WithEscapeHatch<Globals | CssVars | OnlyKnown<"flex" | "block">>"#
     ));
 }
 

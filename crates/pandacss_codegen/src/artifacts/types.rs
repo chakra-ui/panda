@@ -5,10 +5,11 @@
 mod jsx_types;
 mod pattern_types;
 mod recipe_types;
+mod strict_props;
 
 use pandacss_config::{
-    ConditionTypeData, JsxFramework, JsxStylePropsConfig, PatternPropertyTypeKind, TokenTypeData,
-    UtilityTypeData, ValueTypePart,
+    ConditionTypeData, JsxFramework, JsxStylePropsConfig, PatternPropertyTypeKind, PrimitiveType,
+    TokenTypeData, UtilityTypeData, ValueTypePart,
 };
 
 use crate::{
@@ -146,7 +147,10 @@ fn emit_type_file(
     )
 }
 
-fn condition_type_parts(data: &ConditionTypeData) -> Vec<String> {
+fn condition_type_parts(
+    data: &ConditionTypeData,
+    options: pandacss_config::TypegenOptions,
+) -> Vec<String> {
     let condition_members = data
         .keys
         .iter()
@@ -161,13 +165,22 @@ fn condition_type_parts(data: &ConditionTypeData) -> Vec<String> {
         .join("\n");
     let container_name = string_union_with_fallback(&data.containers, "AnyString");
 
+    // PORT NOTE: v1 arrays are `Array<V | null>`; the `undefined` member only
+    // leaked in through csstype's optional-property fallback, which strictTokens
+    // dropped — so sparse `undefined` entries error exactly when strictTokens is on.
+    let array_member = if options.strict_tokens {
+        "Array<T | null>"
+    } else {
+        "Array<T | null | undefined>"
+    };
+
     vec![format!(
         "export interface Conditions {{\n{condition_members}\n}}\n\n\
          export interface Breakpoints {{\n{breakpoint_members}\n}}\n\n\
          export type ContainerName = {container_name}\n\
          export type ContainerValue = ContainerName | `${{ContainerName}} / inline-size` | `${{ContainerName}} / size` | AnyString\n\n\
          export type Condition = keyof Conditions\n\n\
-         export type ConditionalValue<T> =\n  | T\n  | Array<T | null>\n  | {{ [K in Condition]?: ConditionalValue<T> }}"
+         export type ConditionalValue<T> =\n  | T\n  | {array_member}\n  | {{ [K in Condition]?: ConditionalValue<T> }}"
     )]
 }
 
@@ -254,23 +267,63 @@ fn value_alias_parts(
     data: &UtilityTypeData,
     options: pandacss_config::TypegenOptions,
 ) -> Vec<String> {
+    let strict = options.strict_tokens || options.strict_property_values;
+
+    // The color-opacity / important modifiers are only reachable from strict
+    // aliases — keep the default (non-strict) output on the lean escape hatch.
+    let escape_hatch = if strict {
+        "type WithColorOpacityModifier<T> = [T] extends [string] ? `${T}/${string}` & { __colorOpacityModifier?: true } : never\n\n\
+         type ImportantMark = \"!\" | \"!important\"\n\
+         type WhitespaceImportant = ` ${ImportantMark}`\n\
+         type Important = ImportantMark | WhitespaceImportant\n\
+         type WithImportant<T> = [T] extends [string] ? `${T}${Important}` & { __important?: true } : never\n\n\
+         export type WithEscapeHatch<T> = T | `[${string}]` | WithColorOpacityModifier<T> | WithImportant<T>"
+            .to_owned()
+    } else {
+        "export type WithEscapeHatch<T> = T | `[${string}]`".to_owned()
+    };
+
     let mut parts = vec![
         "export type AnyString = string & {}".to_owned(),
         "export type AnyNumber = number & {}".to_owned(),
         "export type CssVars = `var(--${string})`".to_owned(),
-        "export type WithEscapeHatch<T> = T | `[${string}]`".to_owned(),
+        escape_hatch,
         "export type OnlyKnown<Value> = Value extends boolean ? Value : Value extends `${infer _}` ? Value : never".to_owned(),
     ];
+
+    let strict_entries = strict_alias_entries(data);
 
     for alias in data.aliases.values() {
         parts.push(format!(
             "export type {} = {}",
             alias.name,
-            value_alias_type(&alias.parts, options)
+            value_alias_type(
+                &alias.parts,
+                options,
+                strict_entries.get(alias.name.as_str()).copied()
+            )
         ));
     }
 
     parts
+}
+
+/// Map each utility value alias to its strict-property-list entry, for aliases
+/// whose underlying css property is in the v1 `strictPropertyList`.
+fn strict_alias_entries(
+    data: &UtilityTypeData,
+) -> std::collections::BTreeMap<&str, &'static strict_props::StrictPropertyEntry> {
+    let mut entries = std::collections::BTreeMap::new();
+    for property in data.properties.values() {
+        if property.token_category.is_some() {
+            continue;
+        }
+        let css_property = property.css_property.as_deref().unwrap_or(&property.name);
+        if let Some(entry) = strict_props::strict_property_entry(css_property) {
+            entries.insert(property.alias.as_str(), entry);
+        }
+    }
+    entries
 }
 
 /// The single combined type surface: our own csstype (`CssValue` + `CssProperties`),
@@ -307,11 +360,15 @@ fn system_module(
         })
         .collect::<Vec<_>>()
         .join("\n");
-    let system_members = [system_members, container_property_members()]
-        .into_iter()
-        .filter(|part| !part.is_empty())
-        .collect::<Vec<_>>()
-        .join("\n");
+    let system_members = [
+        system_members,
+        container_property_members(),
+        strict_property_members(data, options),
+    ]
+    .into_iter()
+    .filter(|part| !part.is_empty())
+    .collect::<Vec<_>>()
+    .join("\n");
 
     let mut parts: Vec<String> = vec![
         "export type Pretty<T> = { [K in keyof T]: T[K] } & {}".into(),
@@ -319,7 +376,7 @@ fn system_module(
         "export type DistributiveUnion<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] | T[K] : T[K]\n} & DistributiveOmit<U, keyof T>".into(),
         "export type Assign<T, U> = Omit<T, keyof U> & U".into(),
     ];
-    parts.extend(condition_type_parts(conditions));
+    parts.extend(condition_type_parts(conditions, options));
     parts.extend(value_alias_parts(data, options));
     parts.extend(vec![
         "export type Selector = `&${string}` | `@${string}`".into(),
@@ -374,6 +431,39 @@ fn container_property_members() -> String {
         "  containerName?: ConditionalValue<ContainerName>",
     ]
     .join("\n")
+}
+
+/// `SystemProperties` overrides that narrow strict-property-list css properties
+/// with no configured utility (utility-backed ones narrow via their value
+/// alias). Emitted only under the strict options, so the default output keeps
+/// the single shared `CssValue` member from `CssProperties`.
+fn strict_property_members(
+    data: &UtilityTypeData,
+    options: pandacss_config::TypegenOptions,
+) -> String {
+    if !options.strict_property_values && !options.strict_tokens {
+        return String::new();
+    }
+
+    let covered = data
+        .properties
+        .values()
+        .map(|property| property.css_property.as_deref().unwrap_or(&property.name))
+        .collect::<std::collections::BTreeSet<_>>();
+
+    strict_props::STRICT_PROPERTIES
+        .iter()
+        .filter(|entry| !covered.contains(entry.name))
+        .filter(|entry| options.strict_property_values || (options.strict_tokens && !entry.open))
+        .map(|entry| {
+            format!(
+                "  {}?: ConditionalValue<{}>",
+                quote_member(entry.name),
+                strict_keyword_type(entry, &[])
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn jsx_style_type_parts(mode: JsxStylePropsConfig) -> Vec<String> {
@@ -434,7 +524,11 @@ fn type_raw(code: impl Into<String>) -> Item {
     Item::ty(ItemNode::RawStmt(code.into()))
 }
 
-fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOptions) -> String {
+fn value_alias_type(
+    parts: &[ValueTypePart],
+    options: pandacss_config::TypegenOptions,
+    strict_entry: Option<&'static strict_props::StrictPropertyEntry>,
+) -> String {
     let token_backed = has_token_part(parts);
 
     // Strictness is baked into the alias (computed once per category) rather than
@@ -467,25 +561,73 @@ fn value_alias_type(parts: &[ValueTypePart], options: pandacss_config::TypegenOp
         return format!("WithEscapeHatch<{globals} | {strict_type}>");
     }
 
-    // Keyword properties (e.g. `display`) restrict to their configured literal
-    // values via `OnlyKnown`, with `[arbitrary]` as the escape hatch. Keywords come
-    // from the utility config now, not csstype.
-    if options.strict_property_values && !token_backed {
-        let keyword_parts = parts
+    // Properties in the v1 `strictPropertyList` narrow to their CSS keyword
+    // union (configured utility values take precedence over the csstype-derived
+    // table). v1's strictTokens also narrowed these when the csstype union was
+    // closed (no `(string & {})` member), e.g. `position` — mirror that.
+    if let Some(entry) = strict_entry
+        && (options.strict_property_values || (options.strict_tokens && !entry.open))
+    {
+        let literals = parts
             .iter()
             .filter(|part| matches!(part, ValueTypePart::Literal(_)))
             .map(value_part)
             .collect::<Vec<_>>();
+        return strict_keyword_type(entry, &literals);
+    }
 
-        if !keyword_parts.is_empty() {
-            return format!(
-                "WithEscapeHatch<Globals | OnlyKnown<{}>>",
-                keyword_parts.join(" | ")
-            );
+    // strictTokens: utilities with configured values are strict even without a
+    // token category — v1 dropped the freeform csstype fallback for any utility
+    // that had a values map. Number/boolean primitive hints keep their primitive
+    // (mirrors v1's `UtilityValues` entries); a freeform `string` primitive makes
+    // the wrap a no-op, so those aliases stay on the plain loose union.
+    let freeform = parts
+        .iter()
+        .any(|part| matches!(part, ValueTypePart::Primitive(PrimitiveType::String)));
+    if options.strict_tokens && !freeform {
+        let strict_parts = parts
+            .iter()
+            .filter(|part| {
+                !matches!(
+                    part,
+                    ValueTypePart::AnyString
+                        | ValueTypePart::AnyNumber
+                        | ValueTypePart::CssProperty(_)
+                )
+            })
+            .map(value_part)
+            .collect::<Vec<_>>();
+
+        if !strict_parts.is_empty() {
+            return format!("WithEscapeHatch<Globals | {}>", strict_parts.join(" | "));
         }
     }
 
     value_parts_union(parts)
+}
+
+/// The narrowed type for a strict-property-list entry: CSS-wide keywords, css
+/// vars, the keyword union, and the `[arbitrary]`/`!important` escape hatches.
+fn strict_keyword_type(entry: &strict_props::StrictPropertyEntry, literals: &[String]) -> String {
+    let keywords = if literals.is_empty() {
+        entry
+            .keywords
+            .iter()
+            .map(|keyword| string_literal(keyword))
+            .collect::<Vec<_>>()
+    } else {
+        literals.to_vec()
+    };
+
+    if keywords.is_empty() {
+        // `all` accepts only the CSS-wide keywords.
+        "WithEscapeHatch<Globals | CssVars>".to_owned()
+    } else {
+        format!(
+            "WithEscapeHatch<Globals | CssVars | OnlyKnown<{}>>",
+            keywords.join(" | ")
+        )
+    }
 }
 
 fn value_parts_union(parts: &[ValueTypePart]) -> String {

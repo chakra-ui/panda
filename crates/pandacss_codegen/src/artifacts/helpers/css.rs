@@ -67,7 +67,7 @@ pub(super) fn create_css_runtime() -> Item {
               return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
             }
             const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
-              const obj = mapObject(base ? Object.assign(styles, base) : styles, (v: any) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
+              const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
               const set = new Set<string>()
               walkObject(obj, (value: any, paths: string[]) => {
                 if (value == null) return

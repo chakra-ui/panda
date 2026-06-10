@@ -65,10 +65,11 @@ const SOLID_FACTORY_RUNTIME: &str = r"function styledFn(element, configOrCva = {
     function recipeClass() {
       const [propStyles, cssStyles] = splitStyleProps(styleProps)
       const hasStyles = propStyles || cssStyles !== void 0
-      const compoundVariantStyles = __cvaFn__.__getCompoundVariantCss__?.(variantProps)
+      const compoundVariantClasses = __cvaFn__.__getCompoundVariantClasses__?.(variantProps)
       return cx(
         __cvaFn__(variantProps, false),
-        (compoundVariantStyles || hasStyles) && serializeSplitStyles(propStyles, cssStyles, compoundVariantStyles),
+        compoundVariantClasses,
+        hasStyles && serializeSplitStyles(propStyles, cssStyles),
         localProps.class,
         localProps.className,
       )

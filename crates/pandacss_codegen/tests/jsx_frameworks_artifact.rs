@@ -251,7 +251,7 @@ fn emits_object_jsx_factory_for_non_react_frameworks() {
                 || helper_code.contains("function splitStyleProps")
         );
         assert!(helper_code.contains("serializeSplitStyles"));
-        assert!(code.contains("__getCompoundVariantCss__"));
+        assert!(code.contains("__getCompoundVariantClasses__"));
         assert!(jsx.contains(type_marker), "{framework} type import missing");
         assert!(jsx.contains("export type Panda = JsxFactory & JsxElements"));
     }

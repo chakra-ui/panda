@@ -678,7 +678,7 @@ fn emits_ts_source() {
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
       const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
-        const obj = mapObject(base ? Object.assign(styles, base) : styles, (v: any) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
+        const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set<string>()
         walkObject(obj, (value: any, paths: string[]) => {
           if (value == null) return
@@ -738,13 +738,11 @@ fn emits_ts_with_defaults() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.ts");
-    assert_snapshot!(function_block(source, "withDefaults"), @r#"
+    assert_snapshot!(function_block(source, "withDefaults"), @"
     export function withDefaults(defaults: Record<string, any>, props: Record<string, any>): Record<string, any> {
-      const result = compact(props)
-      for (const key in defaults) if (result[key] === void 0) result[key] = defaults[key]
-      return result
+      return { ...defaults, ...compact(props) }
     }
-    "#);
+    ");
 }
 
 #[test]
@@ -757,13 +755,11 @@ fn emits_js_with_defaults() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     let source = file(helpers, "helpers.js");
-    assert_snapshot!(function_block(source, "withDefaults"), @r#"
+    assert_snapshot!(function_block(source, "withDefaults"), @"
     export function withDefaults(defaults, props) {
-      const result = compact(props)
-      for (const key in defaults) if (result[key] === void 0) result[key] = defaults[key]
-      return result
+      return { ...defaults, ...compact(props) }
     }
-    "#);
+    ");
 }
 
 #[test]
@@ -947,7 +943,9 @@ fn emits_js_runtime() {
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
       const serializeCss = weakMemo(function serializeCss({ base, ...styles } = {}) {
-        const obj = mapObject(base ? Object.assign(styles, base) : styles, (v) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
+        // Normalizes shorthand keys (last write wins) and expands
+        // responsive arrays at any depth before class emission.
+        const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set()
         walkObject(obj, (value, paths) => {
           if (value == null) return

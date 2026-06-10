@@ -146,9 +146,17 @@ fn emits_ts_source_recipes() {
       }
 
       function resolve(props: Record<string, any> = {}) {
-        const result = withDefaults(defaults, props)
-        result[className] = "__ignore__"
-        return result
+        return { [className]: "__ignore__", ...withDefaults(defaults, props) }
+      }
+
+      function assertNoConditions(props: Record<string, any>) {
+        if (compounds.length === 0) return
+        for (const key of variantKeys) {
+          const value = props[key]
+          if (value != null && typeof value === "object") {
+            throw new Error(`[recipe:${className}:${key}] Conditions are not supported when using compound variants.`)
+          }
+        }
       }
 
       function compoundClasses(props: Record<string, any>) {
@@ -156,13 +164,14 @@ fn emits_ts_source_recipes() {
       }
 
       const recipe = attach(memo(function recipeFn(props: Record<string, any> = {}, withCompoundVariants = true) {
+        assertNoConditions(props)
         const recipeClass = recipeCss(resolve(props))
         if (!withCompoundVariants) return recipeClass
         const compoundsClass = compoundClasses(props)
         return cx(recipeClass, compoundsClass)
       }), name, variantKeys, variantMap, resolve)
       recipe.__recipe__ = true
-      recipe.__getCompoundVariantCss__ = compoundClasses
+      recipe.__getCompoundVariantClasses__ = compoundClasses
       recipe.merge = function merge(other: any) {
         return mergeRecipes(recipe, other)
       }
@@ -238,7 +247,7 @@ fn emits_ts_source_recipes() {
     }
 
     export type ButtonVariantProps = {
-      [K in keyof ButtonVariant]?: ConditionalValue<ButtonVariant[K]>
+      [K in keyof ButtonVariant]?: ButtonVariant[K]
     }
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
@@ -259,7 +268,7 @@ fn emits_ts_source_recipes() {
     }
 
     export type CardVariantProps = {
-      [K in keyof CardVariant]?: ConditionalValue<CardVariant[K]>
+      [K in keyof CardVariant]?: CardVariant[K]
     }
 
     export type CardVariantMap = RecipeVariantMap<CardVariant>
@@ -367,9 +376,17 @@ fn emits_js_runtime_and_declarations() {
       }
 
       function resolve(props = {}) {
-        const result = withDefaults(defaults, props)
-        result[className] = "__ignore__"
-        return result
+        return { [className]: "__ignore__", ...withDefaults(defaults, props) }
+      }
+
+      function assertNoConditions(props) {
+        if (compounds.length === 0) return
+        for (const key of variantKeys) {
+          const value = props[key]
+          if (value != null && typeof value === "object") {
+            throw new Error(`[recipe:${className}:${key}] Conditions are not supported when using compound variants.`)
+          }
+        }
       }
 
       function compoundClasses(props) {
@@ -377,13 +394,14 @@ fn emits_js_runtime_and_declarations() {
       }
 
       const recipe = attach(memo(function recipeFn(props = {}, withCompoundVariants = true) {
+        assertNoConditions(props)
         const recipeClass = recipeCss(resolve(props))
         if (!withCompoundVariants) return recipeClass
         const compoundsClass = compoundClasses(props)
         return cx(recipeClass, compoundsClass)
       }), name, variantKeys, variantMap, resolve)
       recipe.__recipe__ = true
-      recipe.__getCompoundVariantCss__ = compoundClasses
+      recipe.__getCompoundVariantClasses__ = compoundClasses
       recipe.merge = function merge(other) {
         return mergeRecipes(recipe, other)
       }
@@ -465,7 +483,7 @@ fn emits_js_runtime_and_declarations() {
     }
 
     export type ButtonVariantProps = {
-      [K in keyof ButtonVariant]?: ConditionalValue<ButtonVariant[K]>
+      [K in keyof ButtonVariant]?: ButtonVariant[K]
     }
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
@@ -490,7 +508,7 @@ fn emits_js_runtime_and_declarations() {
     }
 
     export type CardVariantProps = {
-      [K in keyof CardVariant]?: ConditionalValue<CardVariant[K]>
+      [K in keyof CardVariant]?: CardVariant[K]
     }
 
     export type CardVariantMap = RecipeVariantMap<CardVariant>

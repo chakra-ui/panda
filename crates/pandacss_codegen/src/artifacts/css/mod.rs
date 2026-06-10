@@ -174,18 +174,24 @@ fn js_hyphenate_property(property: &str) -> String {
     out.to_lowercase()
 }
 
+// PORT NOTE: the trailing duplicate `(styles: Styles)` overload is load-bearing
+// (same as v1): it makes tsc elaborate argument mismatches at the offending
+// property instead of collapsing them into a call-site "No overload matches"
+// error, which property-level `@ts-expect-error` directives rely on.
 const CSS_TYPES: &str = r"type Styles = SystemStyleObject | undefined | null | false
 
 interface CssRawFunction {
   (styles: Styles): SystemStyleObject
   (styles: Styles[]): SystemStyleObject
   (...styles: Array<Styles | Styles[]>): SystemStyleObject
+  (styles: Styles): SystemStyleObject
 }
 
 interface CssFunction {
   (styles: Styles): string
   (styles: Styles[]): string
   (...styles: Array<Styles | Styles[]>): string
+  (styles: Styles): string
 
   raw: CssRawFunction
 }";

@@ -125,8 +125,13 @@ fn recipe_module(
     let empty = BTreeMap::new();
     let variants = recipe_variant_data(ctx, name, slot).unwrap_or(&empty);
     let slots = slot.then_some(recipe.slots.as_slice());
-    let type_code =
-        crate::artifacts::types::concrete_recipe_types(type_name, slots, variants).join("\n\n");
+    let type_code = crate::artifacts::types::concrete_recipe_types(
+        type_name,
+        slots,
+        variants,
+        !recipe.compound_variants.is_empty(),
+    )
+    .join("\n\n");
 
     Module::new()
         .with_import(ImportDecl::value([factory], "./runtime"))
@@ -447,9 +452,17 @@ export function createRecipe(config: Record<string, any>) {
   }
 
   function resolve(props: Record<string, any> = {}) {
-    const result = withDefaults(defaults, props)
-    result[className] = "__ignore__"
-    return result
+    return { [className]: "__ignore__", ...withDefaults(defaults, props) }
+  }
+
+  function assertNoConditions(props: Record<string, any>) {
+    if (compounds.length === 0) return
+    for (const key of variantKeys) {
+      const value = props[key]
+      if (value != null && typeof value === "object") {
+        throw new Error(`[recipe:${className}:${key}] Conditions are not supported when using compound variants.`)
+      }
+    }
   }
 
   function compoundClasses(props: Record<string, any>) {
@@ -457,13 +470,14 @@ export function createRecipe(config: Record<string, any>) {
   }
 
   const recipe = attach(memo(function recipeFn(props: Record<string, any> = {}, withCompoundVariants = true) {
+    assertNoConditions(props)
     const recipeClass = recipeCss(resolve(props))
     if (!withCompoundVariants) return recipeClass
     const compoundsClass = compoundClasses(props)
     return cx(recipeClass, compoundsClass)
   }), name, variantKeys, variantMap, resolve)
   recipe.__recipe__ = true
-  recipe.__getCompoundVariantCss__ = compoundClasses
+  recipe.__getCompoundVariantClasses__ = compoundClasses
   recipe.merge = function merge(other: any) {
     return mergeRecipes(recipe, other)
   }

@@ -19,7 +19,7 @@ export const finalizeConditions = (paths: string[]) => {
 }
 
 export function sortConditions(paths: string[]) {
-  return paths.sort((a, b) => {
+  return [...paths].sort((a, b) => {
     const aa = isCondition(a)
     const bb = isCondition(b)
     if (aa && !bb) return 1

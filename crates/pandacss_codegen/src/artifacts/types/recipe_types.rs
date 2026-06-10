@@ -91,13 +91,14 @@ pub(crate) fn concrete_recipe_types(
     type_name: &str,
     slots: Option<&[String]>,
     variants: &BTreeMap<String, VariantTypeData>,
+    has_compound_variants: bool,
 ) -> Vec<String> {
     let variant_name = format!("{type_name}Variant");
     let props_name = format!("{type_name}VariantProps");
     let map_name = format!("{type_name}VariantMap");
     let mut out = vec![
         variant_type(&variant_name, variants),
-        variant_props_type(&props_name, &variant_name),
+        variant_props_type(&props_name, &variant_name, has_compound_variants),
         variant_map_type(&map_name, &variant_name),
     ];
 
@@ -133,7 +134,14 @@ fn variant_type(type_name: &str, variants: &BTreeMap<String, VariantTypeData>) -
     format!("export type {type_name} = {{\n{members}\n}}")
 }
 
-fn variant_props_type(props_name: &str, variant_name: &str) -> String {
+fn variant_props_type(props_name: &str, variant_name: &str, has_compound_variants: bool) -> String {
+    // The runtime rejects conditional variant values when compound variants
+    // exist, so the props type drops the ConditionalValue wrapper too.
+    if has_compound_variants {
+        return format!(
+            "export type {props_name} = {{\n  [K in keyof {variant_name}]?: {variant_name}[K]\n}}"
+        );
+    }
     format!(
         "export type {props_name} = {{\n  [K in keyof {variant_name}]?: ConditionalValue<{variant_name}[K]>\n}}"
     )
