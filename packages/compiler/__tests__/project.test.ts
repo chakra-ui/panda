@@ -44,6 +44,8 @@ describe('Compiler', () => {
     expect(compiler.compile()).toMatchInlineSnapshot(`
       {
         "css": "@layer reset, base, tokens, recipes, utilities;
+      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -69,12 +71,12 @@ describe('Compiler', () => {
         },
         "layerRanges": {
           "base": {
-            "start": 48,
-            "end": 109,
+            "start": 213,
+            "end": 274,
           },
           "utilities": {
-            "start": 109,
-            "end": 206,
+            "start": 274,
+            "end": 371,
           },
         },
         "diagnostics": [],
@@ -182,6 +184,8 @@ describe('Compiler', () => {
     })
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -310,6 +314,8 @@ describe('Compiler', () => {
     })
     expect(output.css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -522,6 +528,8 @@ describe('Compiler', () => {
 
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
       @layer base {
         :root {
           --made-with-panda: '🐼';
@@ -581,6 +589,8 @@ describe('Compiler', () => {
 
     expect(compiler.compile().css).toMatchInlineSnapshot(`
       "@layer reset, base, tokens, recipes, utilities;
+      @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+      @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
       @layer base {
         :root {
           --made-with-panda: '🐼';

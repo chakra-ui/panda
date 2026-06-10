@@ -65,7 +65,7 @@ describe('buildinfo command', () => {
           },
         },
         "panda": "^2.0.0",
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "strings": [
           "background",
           "blue",

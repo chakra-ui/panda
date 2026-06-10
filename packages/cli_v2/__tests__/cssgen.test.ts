@@ -102,7 +102,7 @@ describe('cssgen command', () => {
     )
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(`
-      "cssgen: parsed 1 files, wrote 109 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
+      "cssgen: parsed 1 files, wrote 274 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
       error js_parse_error: Unexpected token
         ┌─ App.tsx:1:48
         │
@@ -147,7 +147,7 @@ describe('cssgen command', () => {
     `)
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(
-      `"cssgen: parsed 1 files, wrote 109 bytes to <cwd>/styled-system/styles.css, diagnostics: 1"`,
+      `"cssgen: parsed 1 files, wrote 274 bytes to <cwd>/styled-system/styles.css, diagnostics: 1"`,
     )
 
     expect({ exitCode: strict.exitCode, ok: strict.ok }).toMatchInlineSnapshot(`

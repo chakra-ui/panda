@@ -30,7 +30,7 @@ describe('compiler.buildInfo', () => {
     // modules; `padding`/`margin` are module-local.
     expect(libBuildInfo()).toMatchInlineSnapshot(`
       {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "panda": "^2.0.0",
         "configFingerprint": "cfg1-acd4ae252eabf6f9",
         "strings": [
@@ -257,8 +257,10 @@ describe('compiler.buildInfo', () => {
             display: inline-flex;
           }
         }
-        .button--size_sm {
-          font-size: 12px;
+        @layer variants {
+          .button--size_sm {
+            font-size: 12px;
+          }
         }
       }
       "
@@ -355,8 +357,10 @@ describe('compiler.buildInfo', () => {
             display: inline-flex;
           }
         }
-        .button--size_sm {
-          font-size: 12px;
+        @layer variants {
+          .button--size_sm {
+            font-size: 12px;
+          }
         }
       }
       "
@@ -503,8 +507,10 @@ describe('compiler.buildInfo', () => {
             display: inline-flex;
           }
         }
-        .button--size_sm {
-          font-size: 12px;
+        @layer variants {
+          .button--size_sm {
+            font-size: 12px;
+          }
         }
       }
       "

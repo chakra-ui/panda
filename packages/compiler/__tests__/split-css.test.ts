@@ -41,14 +41,18 @@ describe('compiler.splitCss()', () => {
             display: inline-flex;
           }
         }
-        .button--size_sm {
-          padding: 8px;
+        @layer variants {
+          .button--size_sm {
+            padding: 8px;
+          }
         }
       }
       "
     `)
     expect(compiler.splitCss().find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
-      "@layer reset, base, tokens, recipes, utilities;
+      "@layer reset, base, tokens,
+             recipes,
+             utilities;
       @import './styles/global.css';
       @import './styles/tokens.css';
       @import './styles/utilities.css';
