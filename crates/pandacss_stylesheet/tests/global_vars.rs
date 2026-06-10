@@ -1,7 +1,7 @@
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetOptions;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, compile_css_with_options, config};
+use crate::common::{compile_output, config};
 
 #[test]
 fn emits_global_vars_from_serialized_config() {
@@ -15,9 +15,9 @@ fn emits_global_vars_from_serialized_config() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -41,9 +41,9 @@ fn emits_global_vars_without_global_css() {
             "--random-color": "red"
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -71,9 +71,9 @@ fn emits_global_css_before_global_vars_in_base_layer() {
             "--random-color": "red"
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -98,9 +98,9 @@ fn global_vars_property_allows_missing_initial_value_for_universal_syntax() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -123,9 +123,9 @@ fn global_vars_property_ignores_missing_initial_value_for_typed_syntax() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -146,13 +146,14 @@ fn minified_output_preserves_global_vars_syntax() {
             }
         }
     }));
-    let css = compile_css_with_options(
+    let css = compile_output(
         &config,
         "",
         StylesheetOptions {
             minify: true,
             ..StylesheetOptions::default()
         },
-    );
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}:where(:root, :host){--random-color:red;}@property --button-color{syntax:'<color>';inherits:false;initial-value:blue;}}");
+    )
+    .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"@layer base{:root{--made-with-panda:'🐼';}:where(:root, :host){--random-color:red;}@property --button-color{syntax:'<color>';inherits:false;initial-value:blue;}}");
 }

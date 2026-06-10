@@ -79,6 +79,43 @@ pub(super) fn to_variant_map() -> Item {
     )
 }
 
+pub(super) fn get_compound_variant_class_names() -> Item {
+    helper_function(
+        "getCompoundVariantClassNames",
+        vec![
+            Param::typed(
+                "compoundVariants",
+                TsType::Raw("Array<Record<string, any>>".into()),
+            ),
+            Param::typed("variants", TsType::Raw("Record<string, any>".into())),
+            Param::optional(
+                "formatClassName",
+                TsType::Raw("(className: string) => string".into()),
+            ),
+        ],
+        TsType::Ref("string".into()),
+        indoc! {r#"
+            const classes: string[] = []
+            outer: for (const compound of compoundVariants) {
+              for (const key in compound) {
+                if (key === "css" || key === "className" || key === "classNames") continue
+                const expected = compound[key]
+                const actual = variants[key]
+                if (Array.isArray(expected)) {
+                  if (!expected.includes(actual)) continue outer
+                } else if (actual !== expected) {
+                  continue outer
+                }
+              }
+              if (compound.className) classes.push(formatClassName ? formatClassName(compound.className) : compound.className)
+            }
+            return classes.join(" ")
+        "#}
+        .trim(),
+        [],
+    )
+}
+
 pub(super) fn get_compound_variant_css() -> Item {
     helper_function(
         "getCompoundVariantCss",
@@ -94,7 +131,7 @@ pub(super) fn get_compound_variant_css() -> Item {
             let result = {}
             outer: for (const variant of compoundVariants) {
               for (const key in variant) {
-                if (key === "css") continue
+                if (key === "css" || key === "className" || key === "classNames") continue
                 const expected = variant[key]
                 const actual = variants[key]
                 if (Array.isArray(expected)) {
@@ -127,9 +164,14 @@ pub(super) fn get_slot_compound_variant() -> Item {
             const result = []
             for (const variant of compoundVariants) {
               const css = variant.css?.[slot]
-              if (!css) continue
-              const next: Record<string, any> = { css }
-              for (const key in variant) if (key !== "css") next[key] = variant[key]
+              const className = variant.classNames?.[slot] ?? variant.className
+              if (!css && !className) continue
+              const next: Record<string, any> = css ? { css } : {}
+              for (const key in variant) {
+                if (key === "css" || key === "className" || key === "classNames") continue
+                next[key] = variant[key]
+              }
+              if (className) next.className = className
               result.push(next)
             }
             return result

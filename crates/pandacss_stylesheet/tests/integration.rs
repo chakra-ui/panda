@@ -1,5 +1,6 @@
-use crate::common::{compile_css, config};
+use crate::common::{compile_output, config};
 use insta::assert_snapshot;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
 #[test]
 #[allow(
@@ -67,7 +68,7 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
             "padding": { "className": "p" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         concat!(
             "import { css } from '@panda/css';\n",
@@ -75,10 +76,16 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
             "css({ color: 'red.500', md: { bg: 'blue.500' }, _dark: { color: 'blue.500' } });\n",
             "button({ tone: 'solid' });",
         ),
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[
+        StylesheetLayer::Base,
+        StylesheetLayer::Tokens,
+        StylesheetLayer::Recipes,
+        StylesheetLayer::Utilities,
+    ]);
 
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -102,11 +109,13 @@ fn compiles_realistic_static_dynamic_tokens_global_and_recipes() {
           display: inline-flex;
         }
       }
-      .button--tone_solid {
-        background-color: var(--colors-red-500);
-      }
-      .button--size_sm {
-        padding: 4px;
+      @layer variants {
+        .button--tone_solid {
+          background-color: var(--colors-red-500);
+        }
+        .button--size_sm {
+          padding: 4px;
+        }
       }
     }
     @layer utilities {

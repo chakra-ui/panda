@@ -1,6 +1,7 @@
 use insta::assert_snapshot;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, config};
+use crate::common::{compile_output, config};
 
 #[test]
 fn atom_with_layer_override_nests_inside_utilities() {
@@ -10,17 +11,13 @@ fn atom_with_layer_override_nests_inside_utilities() {
             "color": { "className": "c", "layer": "components" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ color: 'red' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @layer components {
         .c_red {
@@ -40,17 +37,13 @@ fn atoms_without_layer_override_stay_in_utilities_top_level() {
             "padding": { "className": "p" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ color: 'red', padding: '4' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .p_4 {
         padding: 4px;
@@ -71,17 +64,13 @@ fn default_atoms_emit_first_custom_sublayers_after() {
             "padding": { "className": "p" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ color: 'red', padding: '4' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .p_4 {
         padding: 4px;
@@ -105,17 +94,13 @@ fn distinct_custom_sublayers_each_get_their_own_nested_block() {
             "padding": { "className": "p", "layer": "compositions" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ color: 'red', padding: '4' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @layer compositions {
         .p_4 {
@@ -144,17 +129,13 @@ fn shorthand_prop_inherits_layer_override_from_canonical() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ bg: 'red' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @layer components {
         .bg_red {
@@ -174,10 +155,12 @@ fn utilities_wrapper_emits_even_when_default_bucket_is_empty() {
             "color": { "className": "c", "layer": "components" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ color: 'red' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert!(css.contains("@layer utilities {"));
     assert!(css.contains("@layer components {"));
     // sub-layer must be NESTED, not a sibling.
@@ -195,13 +178,6 @@ fn no_atoms_means_no_utilities_block_at_all() {
             "color": { "className": "c", "layer": "components" }
         }
     }));
-    let css = compile_css(&config, "");
-    assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    ");
+    let output = compile_output(&config, "", StylesheetOptions::default());
+    assert!(output.layer_css(StylesheetLayer::Utilities).is_none());
 }

@@ -68,6 +68,7 @@ pub(crate) fn compile_config_with_token_dictionary(
             conditions: &conditions,
             breakpoints: &entries.breakpoints,
             separator: config.separator(),
+            hash_class_names: config.hash.class_name(),
         },
     );
 
@@ -633,6 +634,9 @@ fn compound_variant_to_literal(config: &CompoundVariantConfig) -> Option<Literal
         .map(|(key, value)| (key.clone(), variant_selection_to_literal(value)))
         .collect();
     entries.push(("css".to_owned(), json_value_to_literal(&config.css)?));
+    if let Some(class_name) = &config.class_name {
+        entries.push(("className".to_owned(), Literal::String(class_name.clone())));
+    }
     Some(Literal::Object(entries))
 }
 

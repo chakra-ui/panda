@@ -62,7 +62,7 @@ pub fn emit<'a>(
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
     if emit_layer_declaration {
-        write_layer_order(&mut writer, layers);
+        write_layer_order(&mut writer, layers, minify);
         writer.newline();
     }
     if config.preflight.enabled() {
@@ -264,11 +264,24 @@ pub fn emit_recipe_split<'a>(
             .variants
             .push(group);
     }
+    for group in &recipes.compounds {
+        grouped
+            .entry(group.recipe.as_ref())
+            .or_default()
+            .compounds
+            .push(group);
+    }
     grouped
         .into_iter()
         .map(|(name, groups)| {
             let mut writer = CssWriter::new(minify, 256);
-            cx.write_recipe_group_refs(&mut writer, recipes_layer, &groups.base, &groups.variants);
+            cx.write_recipe_group_refs(
+                &mut writer,
+                recipes_layer,
+                &groups.base,
+                &groups.variants,
+                &groups.compounds,
+            );
             (name.to_owned(), writer.finish())
         })
         .collect()
@@ -278,6 +291,7 @@ pub fn emit_recipe_split<'a>(
 struct SplitRecipeGroups<'a> {
     base: Vec<&'a RecipeStyleGroupSnapshot>,
     variants: Vec<&'a RecipeStyleGroupSnapshot>,
+    compounds: Vec<&'a RecipeStyleGroupSnapshot>,
 }
 
 /// `IndexMap` keeps custom-layer emit order deterministic (first-seen).
@@ -314,16 +328,27 @@ fn write_layer(
     start..end
 }
 
-/// Writes the `@layer …;` order declaration using the user-configured names
-/// from `CascadeLayers::ordered()` — single source of truth for the order.
-fn write_layer_order(writer: &mut CssWriter, layers: &pandacss_config::CascadeLayers) {
-    writer.write_str("@layer ");
-    for (index, (_, name)) in layers.ordered().into_iter().enumerate() {
-        if index > 0 {
-            writer.write_str(", ");
-        }
-        writer.write_str(name);
+/// Writes the public `@layer …;` order declaration, followed by Panda's
+/// internal recipe sub-layer order.
+fn write_layer_order(
+    writer: &mut CssWriter,
+    layers: &pandacss_config::CascadeLayers,
+    minify: bool,
+) {
+    write_layer_declaration(writer, &layers.declaration_names());
+    if !minify {
+        writer.newline();
     }
+    write_layer_declaration(writer, &layers.recipe_declaration_names());
+    if !minify {
+        writer.newline();
+    }
+    write_layer_declaration(writer, &layers.slot_recipe_declaration_names());
+}
+
+fn write_layer_declaration(writer: &mut CssWriter, names: &[String]) {
+    writer.write_str("@layer ");
+    writer.write_str(&names.join(", "));
     writer.write_str(";");
 }
 
@@ -571,6 +596,7 @@ fn has_recipe_rules(recipes: &EncodedRecipesSnapshot) -> bool {
         .base
         .iter()
         .chain(&recipes.variants)
+        .chain(&recipes.compounds)
         .any(|group| !group.entries.is_empty())
 }
 
@@ -591,6 +617,7 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
         .base
         .iter()
         .chain(&recipes.variants)
+        .chain(&recipes.compounds)
         .map(|group| group.entries.len())
         .sum::<usize>();
     64 + atoms
@@ -841,7 +868,12 @@ impl<'a> EmitContext<'a> {
             self.collect_atom_usage(atom, token_dictionary, keyframes, &mut marks);
         }
 
-        for group in recipes.base.iter().chain(&recipes.variants) {
+        for group in recipes
+            .base
+            .iter()
+            .chain(&recipes.variants)
+            .chain(&recipes.compounds)
+        {
             for entry in &group.entries {
                 let Some(declarations) = self.recipe_entry_declarations(entry) else {
                     continue;
@@ -1460,7 +1492,13 @@ impl<'a> EmitContext<'a> {
         recipes_layer: &str,
     ) -> Range<usize> {
         let start = writer.len();
-        self.write_recipe_groups(writer, recipes_layer, &recipes.base, &recipes.variants);
+        self.write_recipe_groups(
+            writer,
+            recipes_layer,
+            &recipes.base,
+            &recipes.variants,
+            &recipes.compounds,
+        );
         let end = writer.len();
         start..end
     }
@@ -1471,10 +1509,12 @@ impl<'a> EmitContext<'a> {
         recipes_layer: &str,
         base: &[RecipeStyleGroupSnapshot],
         variants: &[RecipeStyleGroupSnapshot],
+        compounds: &[RecipeStyleGroupSnapshot],
     ) {
         let base = base.iter().collect::<Vec<_>>();
         let variants = variants.iter().collect::<Vec<_>>();
-        self.write_recipe_group_refs(writer, recipes_layer, &base, &variants);
+        let compounds = compounds.iter().collect::<Vec<_>>();
+        self.write_recipe_group_refs(writer, recipes_layer, &base, &variants, &compounds);
     }
 
     fn write_recipe_group_refs(
@@ -1483,18 +1523,28 @@ impl<'a> EmitContext<'a> {
         recipes_layer: &str,
         base: &[&RecipeStyleGroupSnapshot],
         variants: &[&RecipeStyleGroupSnapshot],
+        compounds: &[&RecipeStyleGroupSnapshot],
     ) {
-        let slot_layer = format!("{recipes_layer}.slots");
-        if has_slot_recipe_groups(base) || has_slot_recipe_groups(variants) {
-            writer.layer(&slot_layer, |writer| {
-                write_recipe_base_groups(self, writer, base, true);
-                write_recipe_variant_groups(self, writer, variants, true);
-            });
-        }
-        if has_regular_recipe_groups(base) || has_regular_recipe_groups(variants) {
+        if has_regular_recipe_groups(base)
+            || has_regular_recipe_groups(variants)
+            || has_regular_recipe_groups(compounds)
+        {
             writer.layer(recipes_layer, |writer| {
                 write_recipe_base_groups(self, writer, base, false);
                 write_recipe_variant_groups(self, writer, variants, false);
+                write_recipe_compound_groups(self, writer, compounds, false);
+            });
+        }
+
+        let slot_layer = format!("{recipes_layer}.slots");
+        if has_slot_recipe_groups(base)
+            || has_slot_recipe_groups(variants)
+            || has_slot_recipe_groups(compounds)
+        {
+            writer.layer(&slot_layer, |writer| {
+                write_recipe_base_groups(self, writer, base, true);
+                write_recipe_variant_groups(self, writer, variants, true);
+                write_recipe_compound_groups(self, writer, compounds, true);
             });
         }
     }
@@ -1775,13 +1825,40 @@ fn write_recipe_variant_groups(
     groups: &[&RecipeStyleGroupSnapshot],
     slots: bool,
 ) {
-    for group in groups
+    let groups = groups
         .iter()
         .copied()
         .filter(|group| is_slot_recipe_group(group) == slots)
-    {
-        cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
+        .collect::<Vec<_>>();
+    if groups.is_empty() {
+        return;
     }
+    writer.layer("variants", |writer| {
+        for group in groups {
+            cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
+        }
+    });
+}
+
+fn write_recipe_compound_groups(
+    cx: &EmitContext<'_>,
+    writer: &mut CssWriter,
+    groups: &[&RecipeStyleGroupSnapshot],
+    slots: bool,
+) {
+    let groups = groups
+        .iter()
+        .copied()
+        .filter(|group| is_slot_recipe_group(group) == slots)
+        .collect::<Vec<_>>();
+    if groups.is_empty() {
+        return;
+    }
+    writer.layer("compound_variants", |writer| {
+        for group in groups {
+            cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
+        }
+    });
 }
 
 fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCssVar<'_>]) {

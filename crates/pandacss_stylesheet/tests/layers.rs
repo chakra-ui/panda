@@ -9,6 +9,8 @@ fn default_layer_names_emit_unchanged_preamble() {
     let css = compile_css(&config, "");
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
+    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -47,9 +49,11 @@ fn partial_rename_keeps_other_defaults() {
         "layers": { "reset": "preflight" }
     }));
     let css = compile_css(&config, "");
-    let lines: Vec<&str> = css.lines().take(2).collect();
-    assert_snapshot!(lines.join("\n"), @r"
+    let lines: Vec<&str> = css.lines().take(4).collect();
+    assert_snapshot!(lines.join("\n"), @"
     @layer preflight, base, tokens, recipes, utilities;
+    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
+    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
     @layer preflight {
     ");
 }
@@ -72,12 +76,16 @@ fn full_rename_reflects_in_preamble_and_all_blocks() {
     }));
     let css = compile_css(&config, "");
     // The preamble + the open of each non-empty layer block, in order.
-    let openers: Vec<&str> = css
-        .lines()
-        .filter(|line| line.starts_with("@layer "))
-        .collect();
-    assert_snapshot!(openers.join("\n"), @r"
+    let mut openers: Vec<&str> = css.lines().take(3).collect();
+    openers.extend(
+        css.lines()
+            .skip(3)
+            .filter(|line| line.starts_with("@layer ")),
+    );
+    assert_snapshot!(openers.join("\n"), @"
     @layer r, b, t, rc, u;
+    @layer rc.base, rc.slots, rc.variants, rc.compound_variants;
+    @layer rc.slots.base, rc.slots.variants, rc.slots.compound_variants;
     @layer r {
     @layer b {
     @layer t {
@@ -168,6 +176,10 @@ const LAYERS: [&str; 5] = ["reset", "base", "tokens", "recipes", "utilities"];
 fn has_layer_declaration_matches_an_exact_or_superset_statement() {
     assert!(has_layer_declaration(
         "@layer reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    ));
+    assert!(has_layer_declaration(
+        "@layer reset, base, tokens, recipes.base, recipes.variants, recipes.compound_variants, recipes.slots, utilities;",
         &LAYERS
     ));
     assert!(has_layer_declaration(

@@ -400,7 +400,8 @@ function styledFn(BaseComponent, recipeOrConfig = {}, options = {}) {
     } else if (recipeOrConfig.__recipe__) {
       className = cx(
         composedRecipeFn(variantProps, false),
-        css(composedRecipeFn.__getCompoundVariantCss__?.(variantProps), propStyles, cssStyles),
+        composedRecipeFn.__getCompoundVariantCss__?.(variantProps),
+        css(propStyles, cssStyles),
         combinedProps.className,
       )
     } else {

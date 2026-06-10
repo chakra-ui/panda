@@ -1,3 +1,69 @@
+/// Canonical `key=value` pairs for a compound-variant definition (sorted keys).
+#[must_use]
+pub fn compound_combo_string(pairs: &[(impl AsRef<str>, impl AsRef<str>)]) -> String {
+    let mut sorted: Vec<_> = pairs
+        .iter()
+        .map(|(key, value)| (key.as_ref(), value.as_ref()))
+        .collect();
+    sorted.sort_by_key(|(key, _)| *key);
+    sorted
+        .iter()
+        .map(|(key, value)| format!("{}={}", key, value))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+/// Class name for a config-recipe compound variant: author `className` or
+/// `{base}--{hash(combo)}` / `{base}--compound__{key}{separator}{value}__...`
+/// when hashing is disabled.
+#[must_use]
+pub fn compound_class_name(
+    base_class: &str,
+    pairs: &[(impl AsRef<str>, impl AsRef<str>)],
+    author_class_name: Option<&str>,
+    separator: &str,
+    hash_class_names: bool,
+) -> String {
+    if let Some(name) = author_class_name {
+        return name.to_owned();
+    }
+    let combo = compound_combo_string(pairs);
+    let suffix = if hash_class_names {
+        to_hash(&combo)
+    } else {
+        compound_readable_suffix(pairs, separator)
+    };
+    format!("{base_class}--{suffix}")
+}
+
+fn compound_readable_suffix(
+    pairs: &[(impl AsRef<str>, impl AsRef<str>)],
+    separator: &str,
+) -> String {
+    let mut sorted: Vec<_> = pairs
+        .iter()
+        .map(|(key, value)| (key.as_ref(), value.as_ref()))
+        .collect();
+    sorted.sort_by_key(|(key, _)| *key);
+    let pairs = sorted
+        .iter()
+        .map(|(key, value)| {
+            format!(
+                "{}{}{}",
+                without_space(key),
+                separator,
+                without_space(value)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("__");
+    format!("compound__{pairs}")
+}
+
+fn without_space(value: &str) -> String {
+    value.replace(' ', "_")
+}
+
 /// JS-compatible hash used by Panda's CSS variable hashing.
 ///
 /// This mirrors `packages/shared/src/hash.ts` but keeps the hot path
@@ -59,4 +125,67 @@ fn to_char(code: u32) -> u8 {
 
     let byte = code + if code > 25 { 39 } else { 97 };
     u8::try_from(byte).expect("base52 hash character fits in ASCII")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{compound_class_name, to_hash};
+
+    #[test]
+    fn compound_class_name_uses_readable_variant_pairs_when_unhashed() {
+        assert_eq!(
+            compound_class_name(
+                "badge",
+                &[("size", "md"), ("raised", "true")],
+                None,
+                "_",
+                false,
+            ),
+            "badge--compound__raised_true__size_md"
+        );
+    }
+
+    #[test]
+    fn compound_class_name_uses_configured_separator_when_unhashed() {
+        assert_eq!(
+            compound_class_name(
+                "badge",
+                &[("size", "md"), ("raised", "true")],
+                None,
+                "-",
+                false,
+            ),
+            "badge--compound__raised-true__size-md"
+        );
+    }
+
+    #[test]
+    fn compound_class_name_does_not_collide_with_single_variant_class() {
+        assert_eq!(
+            compound_class_name("badge", &[("size", "md")], None, "_", false),
+            "badge--compound__size_md"
+        );
+    }
+
+    #[test]
+    fn compound_class_name_hashes_canonical_pairs() {
+        assert_eq!(
+            compound_class_name(
+                "badge",
+                &[("size", "md"), ("raised", "true")],
+                None,
+                "_",
+                true,
+            ),
+            format!("badge--{}", to_hash("raised=true,size=md"))
+        );
+    }
+
+    #[test]
+    fn compound_class_name_preserves_author_class_name() {
+        assert_eq!(
+            compound_class_name("badge", &[("size", "md")], Some("custom"), "_", false),
+            "custom"
+        );
+    }
 }

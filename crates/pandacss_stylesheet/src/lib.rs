@@ -440,8 +440,13 @@ fn ensure_trailing_newline(css: &str) -> String {
 }
 
 fn layer_order_line(layers: &pandacss_config::CascadeLayers) -> String {
-    let names: Vec<&str> = layers.ordered().into_iter().map(|(_, name)| name).collect();
-    format!("@layer {};", names.join(", "))
+    let names = layers.declaration_names();
+    format!(
+        "@layer {},\n       {},\n       {};",
+        names[..3].join(", "),
+        names[3..names.len() - 1].join(", "),
+        names.last().expect("layer declaration names")
+    )
 }
 
 /// Emits one warning per duplicate name when two or more semantic layers
@@ -504,6 +509,7 @@ fn merge_encoded_recipes(
     let mut merged = base.clone();
     extend_recipe_groups(&mut merged.base, &static_recipes.base);
     extend_recipe_groups(&mut merged.variants, &static_recipes.variants);
+    extend_recipe_groups(&mut merged.compounds, &static_recipes.compounds);
     let mut atom_set = FxHashSet::default();
     for atom in &merged.atomic {
         atom_set.insert(atom.clone());
@@ -517,7 +523,10 @@ fn merge_encoded_recipes(
 }
 
 fn is_empty_encoded_recipes(recipes: &EncodedRecipesSnapshot) -> bool {
-    recipes.base.is_empty() && recipes.variants.is_empty() && recipes.atomic.is_empty()
+    recipes.base.is_empty()
+        && recipes.variants.is_empty()
+        && recipes.compounds.is_empty()
+        && recipes.atomic.is_empty()
 }
 
 /// Append `source` groups into `target`, merging entries into an existing

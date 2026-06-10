@@ -25,6 +25,7 @@ pub fn module() -> Module {
         .with_item(object::compact())
         .with_item(object::with_defaults())
         .with_item(object::to_variant_map())
+        .with_item(object::get_compound_variant_class_names())
         .with_item(object::get_compound_variant_css())
         .with_item(object::get_slot_compound_variant())
         .with_item(object::get_slot_recipes())

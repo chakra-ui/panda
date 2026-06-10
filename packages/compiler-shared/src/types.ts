@@ -530,6 +530,7 @@ export interface BuildRecipeGroup {
 export interface BuildRecipes {
   base?: BuildRecipeGroup[]
   variants?: BuildRecipeGroup[]
+  compounds?: BuildRecipeGroup[]
   atomic?: BuildAtom[]
 }
 

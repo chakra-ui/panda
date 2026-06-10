@@ -213,6 +213,8 @@ pub enum VariantSelection {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CompoundVariantConfig {
     pub css: StyleConfig,
+    #[serde(default, rename = "className")]
+    pub class_name: Option<String>,
     #[serde(flatten)]
     pub conditions: BTreeMap<String, VariantSelection>,
 }

@@ -1,6 +1,7 @@
 use insta::assert_snapshot;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, config};
+use crate::common::{compile_output, config};
 
 #[test]
 fn emits_config_recipe_css() {
@@ -30,28 +31,109 @@ fn emits_config_recipe_css() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { button } from '@panda/recipes'; button({ size: 'sm', variant: 'solid' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
       @layer base {
         .button {
           display: inline-flex;
         }
       }
-      .button--size_sm {
-        padding: 8px;
+      @layer variants {
+        .button--size_sm {
+          padding: 8px;
+        }
+        .button--variant_solid {
+          background-color: blue;
+        }
       }
-      .button--variant_solid {
-        background-color: blue;
+    }
+    ");
+}
+
+#[test]
+fn mixed_regular_and_slot_recipes_follow_explicit_layer_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "display": { "className": "d" },
+            "padding": { "className": "p" },
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": {
+                        "display": "inline-flex"
+                    },
+                    "variants": {
+                        "size": {
+                            "sm": { "padding": "8px" }
+                        }
+                    }
+                }
+            },
+            "slotRecipes": {
+                "tabs": {
+                    "className": "tabs",
+                    "slots": ["root", "trigger"],
+                    "base": {
+                        "root": { "display": "flex" },
+                        "trigger": { "display": "inline-flex" }
+                    },
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "root": { "padding": "4px" },
+                                "trigger": { "padding": "2px" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button, tabs } from '@panda/recipes'; button({ size: 'sm' }); tabs({ size: 'sm' })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .button {
+          display: inline-flex;
+        }
+      }
+      @layer variants {
+        .button--size_sm {
+          padding: 8px;
+        }
+      }
+    }
+    @layer recipes.slots {
+      @layer base {
+        .tabs__root {
+          display: flex;
+        }
+        .tabs__trigger {
+          display: inline-flex;
+        }
+      }
+      @layer variants {
+        .tabs__root--size_sm {
+          padding: 4px;
+        }
+        .tabs__trigger--size_sm {
+          padding: 2px;
+        }
       }
     }
     ");
@@ -102,23 +184,13 @@ fn emits_config_recipe_css_with_nested_conditions() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { btn } from '@panda/recipes'; btn({ size: 'lg' })",
-    );
-    assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
         .btn {
@@ -137,14 +209,16 @@ fn emits_config_recipe_css_with_nested_conditions() {
           }
         }
       }
-      .btn--size_lg {
-        font-size: 16px;
-      }
-      .btn--size_lg[data-disabled] {
-        color: gray;
-      }
-      .btn--size_lg:hover {
-        padding: 2px;
+      @layer variants {
+        .btn--size_lg {
+          font-size: 16px;
+        }
+        .btn--size_lg[data-disabled] {
+          color: gray;
+        }
+        .btn--size_lg:hover {
+          padding: 2px;
+        }
       }
     }
     ");
@@ -184,33 +258,25 @@ fn emits_config_recipe_css_with_nested_selector_and_responsive_condition() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { text } from '@panda/recipes'; text({ variant: 'sm' })",
-    );
-    assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
     @layer recipes {
-      .text--variant_sm:first-child {
-        margin-right: 4px;
-      }
-      .text--variant_sm:first-child:hover {
-        color: red;
-      }
-      @media (width >= 48rem) {
+      @layer variants {
+        .text--variant_sm:first-child {
+          margin-right: 4px;
+        }
         .text--variant_sm:first-child:hover {
-          color: gray;
+          color: red;
+        }
+        @media (width >= 48rem) {
+          .text--variant_sm:first-child:hover {
+            color: gray;
+          }
         }
       }
     }
@@ -245,27 +311,19 @@ fn emits_config_recipe_css_with_variant_and_nested_conditions() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { btn } from '@panda/recipes'; btn({ size: { md: 'lg' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes {
-      @media (width >= 48rem) {
-        .md\:btn--size_lg:hover {
-          padding: 2px;
+      @layer variants {
+        @media (width >= 48rem) {
+          .md\:btn--size_lg:hover {
+            padding: 2px;
+          }
         }
       }
     }
@@ -298,27 +356,19 @@ fn emits_config_recipe_css_with_condition_then_responsive_variant_order() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { btn } from '@panda/recipes'; btn({ size: { _hover: { md: 'lg' } } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes {
-      @media (width >= 48rem) {
-        .hover\:md\:btn--size_lg:hover {
-          padding: 2px;
+      @layer variants {
+        @media (width >= 48rem) {
+          .hover\:md\:btn--size_lg:hover {
+            padding: 2px;
+          }
         }
       }
     }
@@ -351,27 +401,19 @@ fn emits_config_recipe_css_with_responsive_then_condition_variant_order() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { btn } from '@panda/recipes'; btn({ size: { md: { _hover: 'lg' } } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes {
-      @media (width >= 48rem) {
-        .md\:hover\:btn--size_lg:hover {
-          padding: 2px;
+      @layer variants {
+        @media (width >= 48rem) {
+          .md\:hover\:btn--size_lg:hover {
+            padding: 2px;
+          }
         }
       }
     }
@@ -402,30 +444,22 @@ fn emits_config_recipe_css_with_responsive_array_variant() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { btn } from '@panda/recipes'; btn({ size: ['sm', 'md'] })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes {
-      .btn--size_sm {
-        font-size: 12px;
-      }
-      @media (width >= 48rem) {
-        .md\:btn--size_md {
-          font-size: 16px;
+      @layer variants {
+        .btn--size_sm {
+          font-size: 12px;
+        }
+        @media (width >= 48rem) {
+          .md\:btn--size_md {
+            font-size: 16px;
+          }
         }
       }
     }
@@ -457,23 +491,21 @@ fn emits_config_recipe_css_with_configured_separator() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { button } from '@panda/recipes'; button({ size: 'sm', variant: 'solid' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
-      .button--size__sm {
-        padding: 8px;
-      }
-      .button--variant__solid {
-        background-color: blue;
+      @layer variants {
+        .button--size__sm {
+          padding: 8px;
+        }
+        .button--variant__solid {
+          background-color: blue;
+        }
       }
     }
     ");
@@ -508,25 +540,23 @@ fn hashes_recipe_class_names_with_prefix() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { button } from '@panda/recipes'; button({ size: { _hover: 'sm' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
       @layer base {
         .pd-ervFBh {
           display: inline-flex;
         }
       }
-      .pd-iqkbpV:hover {
-        padding: 8px;
+      @layer variants {
+        .pd-iqkbpV:hover {
+          padding: 8px;
+        }
       }
     }
     ");
@@ -562,17 +592,13 @@ fn prefixes_unhashed_recipe_class_names() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { checkbox } from '@panda/recipes'; checkbox({ size: 'sm' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes.slots {
       @layer base {
         .pd-checkbox__control {
@@ -582,11 +608,13 @@ fn prefixes_unhashed_recipe_class_names() {
           display: flex;
         }
       }
-      .pd-checkbox__control--size_sm {
-        padding: 2px;
-      }
-      .pd-checkbox__root--size_sm {
-        padding: 4px;
+      @layer variants {
+        .pd-checkbox__control--size_sm {
+          padding: 2px;
+        }
+        .pd-checkbox__root--size_sm {
+          padding: 4px;
+        }
       }
     }
     ");
@@ -621,17 +649,13 @@ fn emits_config_slot_recipe_css_in_slots_layer() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { checkbox } from '@panda/recipes'; checkbox({ size: 'sm' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes.slots {
       @layer base {
         .checkbox__control {
@@ -641,11 +665,13 @@ fn emits_config_slot_recipe_css_in_slots_layer() {
           display: flex;
         }
       }
-      .checkbox__control--size_sm {
-        padding: 2px;
-      }
-      .checkbox__root--size_sm {
-        padding: 4px;
+      @layer variants {
+        .checkbox__control--size_sm {
+          padding: 2px;
+        }
+        .checkbox__root--size_sm {
+          padding: 4px;
+        }
       }
     }
     ");
@@ -686,17 +712,13 @@ fn emits_config_slot_recipe_css_with_nested_conditions() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { checkbox } from '@panda/recipes'; checkbox({ size: 'sm' })",
-    );
-    assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
     @layer recipes.slots {
       @layer base {
         .checkbox__root {
@@ -706,8 +728,10 @@ fn emits_config_slot_recipe_css_with_nested_conditions() {
           padding: 4px;
         }
       }
-      .checkbox__root--size_sm:hover {
-        padding: 2px;
+      @layer variants {
+        .checkbox__root--size_sm:hover {
+          padding: 2px;
+        }
       }
     }
     ");
@@ -742,27 +766,19 @@ fn emits_config_slot_recipe_css_with_responsive_then_condition_variant_order() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { checkbox } from '@panda/recipes'; checkbox({ size: { md: { _hover: 'sm' } } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes.slots {
-      @media (width >= 48rem) {
-        .md\:hover\:checkbox__root--size_sm:hover {
-          padding: 2px;
+      @layer variants {
+        @media (width >= 48rem) {
+          .md\:hover\:checkbox__root--size_sm:hover {
+            padding: 2px;
+          }
         }
       }
     }

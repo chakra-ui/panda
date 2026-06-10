@@ -24,7 +24,14 @@ fn config() -> UserConfig {
                             "true": { "opacity": 0.5 },
                             "false": {}
                         }
-                    }
+                    },
+                    "compoundVariants": [
+                        {
+                            "size": ["sm", "md"],
+                            "disabled": true,
+                            "css": { "boxShadow": "md" }
+                        }
+                    ]
                 }
             },
             "slotRecipes": {
@@ -41,7 +48,16 @@ fn config() -> UserConfig {
                                 "root": { "color": "red" }
                             }
                         }
-                    }
+                    },
+                    "compoundVariants": [
+                        {
+                            "tone": "info",
+                            "css": {
+                                "root": { "boxShadow": "md" },
+                                "label": { "fontWeight": "700" }
+                            }
+                        }
+                    ]
                 }
             }
         },
@@ -88,8 +104,9 @@ fn emits_ts_source_recipes() {
         ]
     );
     assert_snapshot!(file(recipes, "recipes/runtime.ts"), @r#"
-    import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
+    import { createCss, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
     import { finalizeConditions, sortConditions } from '../css/conditions';
+    import { cx } from '../css/cx';
 
     function normalize(config: Record<string, any>) {
       const variantMap = config.variantMap ?? {}
@@ -106,6 +123,7 @@ fn emits_ts_source_recipes() {
 
     export function createRecipe(config: Record<string, any>) {
       const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
+      const classPrefix = "p"
 
       const recipeCss = createCss({
         hash: false,
@@ -115,13 +133,17 @@ fn emits_ts_source_recipes() {
           breakpoints: { keys: ["base","sm"] },
         },
         utility: {
-          prefix: "p",
+          prefix: classPrefix,
           toHash,
           transform(prop: string, value: string) {
             return { className: value === "__ignore__" ? className : `${className}--${prop}_${withoutSpace(value)}` }
           },
         },
       })
+      const formatClassName = (name: string) => {
+        const next = false ? toHash(name) : name
+        return classPrefix ? `${classPrefix}-${next}` : next
+      }
 
       function resolve(props: Record<string, any> = {}) {
         const result = withDefaults(defaults, props)
@@ -129,13 +151,18 @@ fn emits_ts_source_recipes() {
         return result
       }
 
-      const recipe = attach(memo(function recipeFn(props: Record<string, any> = {}) {
-        return recipeCss(resolve(props))
+      function compoundClasses(props: Record<string, any>) {
+        return getCompoundVariantClassNames(compounds, resolve(props), formatClassName)
+      }
+
+      const recipe = attach(memo(function recipeFn(props: Record<string, any> = {}, withCompoundVariants = true) {
+        const recipeClass = recipeCss(resolve(props))
+        if (!withCompoundVariants) return recipeClass
+        const compoundsClass = compoundClasses(props)
+        return cx(recipeClass, compoundsClass)
       }), name, variantKeys, variantMap, resolve)
       recipe.__recipe__ = true
-      recipe.__getCompoundVariantCss__ = function compoundVariantCss(props: Record<string, any>) {
-        return getCompoundVariantCss(compounds, resolve(props))
-      }
+      recipe.__getCompoundVariantCss__ = compoundClasses
       recipe.merge = function merge(other: any) {
         return mergeRecipes(recipe, other)
       }
@@ -218,7 +245,7 @@ fn emits_ts_source_recipes() {
 
     export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap>
 
-    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
+    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
 
     export const button: ButtonRecipe = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
@@ -241,7 +268,7 @@ fn emits_ts_source_recipes() {
 
     export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap>
 
-    const cardConfig = {"name":"card","slots":["root","label"],"variantMap":{"tone":["danger","info"]}}
+    const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["danger","info"]}}
 
     export const card: CardRecipe = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);
@@ -298,8 +325,9 @@ fn emits_js_runtime_and_declarations() {
         ]
     );
     assert_snapshot!(file(recipes, "recipes/runtime.mjs"), @r#"
-    import { createCss, getCompoundVariantCss, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
+    import { createCss, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
     import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
+    import { cx } from '../css/cx.mjs';
 
     function normalize(config) {
       const variantMap = config.variantMap ?? {}
@@ -316,6 +344,7 @@ fn emits_js_runtime_and_declarations() {
 
     export function createRecipe(config) {
       const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
+      const classPrefix = "p"
 
       const recipeCss = createCss({
         hash: false,
@@ -325,13 +354,17 @@ fn emits_js_runtime_and_declarations() {
           breakpoints: { keys: ["base","sm"] },
         },
         utility: {
-          prefix: "p",
+          prefix: classPrefix,
           toHash,
           transform(prop, value) {
             return { className: value === "__ignore__" ? className : `${className}--${prop}_${withoutSpace(value)}` }
           },
         },
       })
+      const formatClassName = (name) => {
+        const next = false ? toHash(name) : name
+        return classPrefix ? `${classPrefix}-${next}` : next
+      }
 
       function resolve(props = {}) {
         const result = withDefaults(defaults, props)
@@ -339,13 +372,18 @@ fn emits_js_runtime_and_declarations() {
         return result
       }
 
-      const recipe = attach(memo(function recipeFn(props = {}) {
-        return recipeCss(resolve(props))
+      function compoundClasses(props) {
+        return getCompoundVariantClassNames(compounds, resolve(props), formatClassName)
+      }
+
+      const recipe = attach(memo(function recipeFn(props = {}, withCompoundVariants = true) {
+        const recipeClass = recipeCss(resolve(props))
+        if (!withCompoundVariants) return recipeClass
+        const compoundsClass = compoundClasses(props)
+        return cx(recipeClass, compoundsClass)
       }), name, variantKeys, variantMap, resolve)
       recipe.__recipe__ = true
-      recipe.__getCompoundVariantCss__ = function compoundVariantCss(props) {
-        return getCompoundVariantCss(compounds, resolve(props))
-      }
+      recipe.__getCompoundVariantCss__ = compoundClasses
       recipe.merge = function merge(other) {
         return mergeRecipes(recipe, other)
       }
@@ -413,7 +451,7 @@ fn emits_js_runtime_and_declarations() {
     assert_snapshot!(file(recipes, "recipes/button.mjs"), @r#"
     import { createRecipe } from './runtime.mjs';
 
-    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
+    const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"disabled":["false","true"],"size":["md","sm"]}}
 
     export const button = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
@@ -439,7 +477,7 @@ fn emits_js_runtime_and_declarations() {
     assert_snapshot!(file(recipes, "recipes/card.mjs"), @r#"
     import { createSlotRecipe } from './runtime.mjs';
 
-    const cardConfig = {"name":"card","slots":["root","label"],"variantMap":{"tone":["danger","info"]}}
+    const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["danger","info"]}}
 
     export const card = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);

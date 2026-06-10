@@ -74,6 +74,8 @@ pub struct VariantOption {
 pub struct CompoundVariant {
     pub conditions: Vec<(String, Vec<String>)>,
     pub css: Literal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
 }
 
 /// `sva({ slots, base, variants, compoundVariants })`.
@@ -109,6 +111,8 @@ pub struct SlotVariantOption {
 pub struct SlotCompoundVariant {
     pub conditions: Vec<(String, Vec<String>)>,
     pub css: Vec<(String, Literal)>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
 }
 
 impl Recipe {
@@ -309,9 +313,14 @@ fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
             let entries = object_entries_owned(item)?;
             let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
             let mut css: Option<Literal> = None;
+            let mut class_name: Option<String> = None;
             for (key, value) in entries {
                 if key == "css" {
                     css = Some(value);
+                } else if key == "className" {
+                    if let Literal::String(name) = value {
+                        class_name = Some(name);
+                    }
                 } else if let Some(value) = variant_condition_values(&value) {
                     conditions.push((key, value));
                 }
@@ -319,6 +328,7 @@ fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
             Some(CompoundVariant {
                 conditions,
                 css: css?,
+                class_name,
             })
         })
         .collect()
@@ -383,9 +393,14 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
             let entries = object_entries_owned(item)?;
             let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
             let mut css: Vec<(String, Literal)> = Vec::new();
+            let mut class_name: Option<String> = None;
             for (key, value) in entries {
                 if key == "css" {
                     css = parse_slot_styles_owned(value);
+                } else if key == "className" {
+                    if let Literal::String(name) = value {
+                        class_name = Some(name);
+                    }
                 } else if let Some(value) = variant_condition_values(&value) {
                     conditions.push((key, value));
                 }
@@ -393,7 +408,11 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
             if css.is_empty() {
                 None
             } else {
-                Some(SlotCompoundVariant { conditions, css })
+                Some(SlotCompoundVariant {
+                    conditions,
+                    css,
+                    class_name,
+                })
             }
         })
         .collect()

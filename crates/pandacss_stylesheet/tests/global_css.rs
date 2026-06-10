@@ -1,20 +1,20 @@
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetLayer;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, compile_layer_css, config};
+use crate::common::{compile_output, config};
 
 #[test]
 fn emits_made_with_panda_marker_in_base_layer() {
     let config = config(serde_json::json!({}));
-    let css = compile_css(&config, "");
-    assert_snapshot!(css, @r"
-@layer reset, base, tokens, recipes, utilities;
-@layer base {
-  :root {
-    --made-with-panda: '🐼';
-  }
-}
-");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+    }
+    ");
 }
 
 #[test]
@@ -30,7 +30,8 @@ fn emits_made_with_panda_marker_before_user_global_css() {
             }
         }
     }));
-    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
 @layer base {
   :root {
@@ -78,7 +79,8 @@ fn emits_global_css_from_serialized_config() {
             }
         }
     }));
-    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
 @layer base {
   :root {
@@ -147,7 +149,8 @@ fn emits_global_css_direct_nesting_and_conditions() {
             }
         }
     }));
-    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
     @layer base {
       :root {
@@ -224,7 +227,8 @@ fn emits_global_css_recursive_nesting_and_important() {
             }
         }
     }));
-    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
     @layer base {
       :root {
@@ -285,7 +289,8 @@ fn emits_global_css_at_rules() {
             }
         }
     }));
-    let css = compile_layer_css(&config, "", &[StylesheetLayer::Base]);
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
     @layer base {
       :root {

@@ -1,6 +1,6 @@
 import { css, cva, cx } from 'styled-system/css/index.mjs'
 import { createRecipeContext, panda } from 'styled-system/jsx/index.mjs'
-import { button } from 'styled-system/recipes/index.mjs'
+import { button, card } from 'styled-system/recipes/index.mjs'
 
 const Button = createRecipeContext(button).withContext('button')
 
@@ -48,6 +48,9 @@ const Notice = panda('div', {
 const Testing = panda.code
 
 export function App() {
+  const brandCard = card({ size: 'md', tone: 'brand' })
+  const dangerCard = card({ size: 'md', tone: 'danger' })
+
   return (
     <main
       className={css({
@@ -75,6 +78,18 @@ export function App() {
         <div className={css({ display: 'flex', gap: '12px' })}>
           <button className={button()}>Primary</button>
           <button className={cx(button({ tone: 'danger', size: 'sm' }), css({ borderWidth: '1px' }))}>Danger</button>
+          <button className={button({ tone: 'danger', size: 'lg' })}>Danger Large</button>
+        </div>
+
+        <div className={css({ display: 'grid', gap: '12px' })}>
+          <article className={brandCard.root}>
+            <h2 className={brandCard.title}>Brand card compound</h2>
+            <p className={brandCard.content}>Slot recipe compound from size md + tone brand.</p>
+          </article>
+          <article className={dangerCard.root}>
+            <h2 className={dangerCard.title}>Danger card compound</h2>
+            <p className={dangerCard.content}>Slot recipe compound from size md + tone danger.</p>
+          </article>
         </div>
 
         <panda.div display="grid" gap="16px">

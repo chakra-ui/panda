@@ -22,7 +22,7 @@ use crate::{FileEntry, ParseFileReport};
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 2;
+pub const SCHEMA_VERSION: u32 = 3;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -58,6 +58,8 @@ pub struct BuildRecipes {
     pub base: Vec<BuildRecipeGroup>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub variants: Vec<BuildRecipeGroup>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub compounds: Vec<BuildRecipeGroup>,
     /// Recipe-level atomic styles (hydrated wholesale — they're recipe-wide).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub atomic: Vec<BuildAtom>,
@@ -65,7 +67,10 @@ pub struct BuildRecipes {
 
 impl BuildRecipes {
     fn is_empty(&self) -> bool {
-        self.base.is_empty() && self.variants.is_empty() && self.atomic.is_empty()
+        self.base.is_empty()
+            && self.variants.is_empty()
+            && self.compounds.is_empty()
+            && self.atomic.is_empty()
     }
 }
 
@@ -204,6 +209,11 @@ impl Interner {
                 .iter()
                 .map(|g| self.build_recipe_group(g))
                 .collect(),
+            compounds: snapshot
+                .compounds
+                .iter()
+                .map(|g| self.build_recipe_group(g))
+                .collect(),
             atomic: snapshot.atomic.iter().map(|a| self.build_atom(a)).collect(),
         }
     }
@@ -280,11 +290,19 @@ fn recipes_from_build(
         .filter_map(|(_, group)| group_from_build(group, strings))
         .collect();
     let base_len = build.base.len();
+    let variant_len = build.variants.len();
     let variants: Vec<_> = build
         .variants
         .iter()
         .enumerate()
         .filter(|(index, _)| keep(base_len + *index))
+        .filter_map(|(_, group)| group_from_build(group, strings))
+        .collect();
+    let compounds: Vec<_> = build
+        .compounds
+        .iter()
+        .enumerate()
+        .filter(|(index, _)| keep(base_len + variant_len + *index))
         .filter_map(|(_, group)| group_from_build(group, strings))
         .collect();
     let atomic = build
@@ -295,6 +313,7 @@ fn recipes_from_build(
     EncodedRecipesSnapshot {
         base,
         variants,
+        compounds,
         atomic,
     }
 }
@@ -335,13 +354,15 @@ impl super::Project {
         let build_atoms = atoms.iter().map(|atom| interner.build_atom(atom)).collect();
 
         // Recipes: serialize the aggregated snapshot, and map each group's class
-        // name to its combined (base ++ variants) index for per-module provenance.
+        // name to its combined (base ++ variants ++ compounds) index for per-module
+        // provenance.
         let recipe_snapshot = self.encoded_recipes_cache.view().snapshot();
         let recipes = interner.build_recipes(&recipe_snapshot);
         let recipe_index: FxHashMap<&str, u32> = recipe_snapshot
             .base
             .iter()
             .chain(recipe_snapshot.variants.iter())
+            .chain(recipe_snapshot.compounds.iter())
             .enumerate()
             .map(|(index, group)| (group.class_name.as_ref(), index as u32))
             .collect();
@@ -361,6 +382,7 @@ impl super::Project {
                 .base
                 .iter()
                 .chain(file_recipes.variants.iter())
+                .chain(file_recipes.compounds.iter())
                 .filter_map(|group| recipe_index.get(group.class_name.as_ref()).copied())
                 .collect();
             recipe_indices.sort_unstable();

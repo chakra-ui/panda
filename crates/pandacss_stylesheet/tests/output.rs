@@ -1,8 +1,8 @@
 //! Thin E2E parse → CSS corpus (legacy output.test.ts subset, no pattern callbacks).
 
-use crate::common::{compile_css, compile_layer_css, config};
+use crate::common::{compile_layer_css, compile_output, config};
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetLayer;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
 #[test]
 fn output_css_with_base() {
@@ -111,17 +111,13 @@ fn output_config_recipe() {
             "zIndex": { "className": "z" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &cfg,
         "import { button } from '@panda/recipes'; button({ variant: 'danger', size: 'md' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       :where(:root, :host) {
         --colors-blue-500: #3b82f6;
@@ -135,17 +131,19 @@ fn output_config_recipe() {
           font-size: lg;
         }
       }
-      .button--size_md {
-        padding: 4px;
+      @layer variants {
+        .button--size_md {
+          padding: 4px;
+        }
+        .button--variant_danger {
+          background-color: red.500;
+          color: white;
+        }
       }
-      .button--variant_danger {
-        background-color: red.500;
-        color: white;
-      }
-    }
-    @layer utilities {
-      .z_100 {
-        z-index: 100;
+      @layer compound_variants {
+        .button--compound__size_md__variant_danger {
+          z-index: 100;
+        }
       }
     }
     ");

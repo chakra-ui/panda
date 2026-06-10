@@ -1,7 +1,7 @@
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetOptions;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, compile_css_with_options, config};
+use crate::common::{compile_output, config};
 
 #[test]
 fn emits_single_keyframe_block_in_tokens_layer() {
@@ -15,14 +15,9 @@ fn emits_single_keyframe_block_in_tokens_layer() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       @keyframes spin {
         from {
@@ -53,14 +48,9 @@ fn emits_multiple_keyframes_with_percentage_selectors() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       @keyframes pulse {
         0% {
@@ -101,20 +91,16 @@ fn optimize_keyframes_keeps_only_referenced_blocks() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ animationName: 'spin' });",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Utilities]);
 
     assert!(css.contains("@keyframes spin"));
     assert!(!css.contains("@keyframes fade"));
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       @keyframes spin {
         to {
@@ -158,17 +144,12 @@ fn optimize_keyframes_keeps_static_css_references() {
             "animationName": { "className": "animationName" }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Utilities]);
 
     assert!(css.contains("@keyframes spin"));
     assert!(!css.contains("@keyframes fade"));
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       @keyframes spin {
         to {
@@ -198,14 +179,9 @@ fn emits_keyframes_alongside_token_vars_in_same_layer() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       :where(:root, :host) {
         --colors-red: #f00;
@@ -226,15 +202,8 @@ fn skips_tokens_layer_when_keyframes_object_is_empty() {
             "keyframes": {}
         }
     }));
-    let css = compile_css(&config, "");
-    assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    ");
+    let output = compile_output(&config, "", StylesheetOptions::default());
+    assert!(output.layer_css(StylesheetLayer::Tokens).is_none());
 }
 
 #[test]
@@ -255,14 +224,9 @@ fn keyframe_with_multiple_declarations_per_selector() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer tokens {
       @keyframes slideIn {
         from {
@@ -289,13 +253,14 @@ fn minified_output_preserves_keyframe_blocks() {
             }
         }
     }));
-    let css = compile_css_with_options(
+    let css = compile_output(
         &config,
         "",
         StylesheetOptions {
             minify: true,
             ..StylesheetOptions::default()
         },
-    );
-    assert_snapshot!(css, @"@layer reset, base, tokens, recipes, utilities;@layer base{:root{--made-with-panda:'🐼';}}@layer tokens{@keyframes spin{to{transform:rotate(360deg);}}}");
+    )
+    .get_layer_css(&[StylesheetLayer::Tokens]);
+    assert_snapshot!(css, @"@layer tokens{@keyframes spin{to{transform:rotate(360deg);}}}");
 }

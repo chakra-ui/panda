@@ -718,7 +718,7 @@ fn emits_js_get_compound_variant_css() {
       let result = {}
       outer: for (const variant of compoundVariants) {
         for (const key in variant) {
-          if (key === "css") continue
+          if (key === "css" || key === "className" || key === "classNames") continue
           const expected = variant[key]
           const actual = variants[key]
           if (Array.isArray(expected)) {
@@ -730,6 +730,37 @@ fn emits_js_get_compound_variant_css() {
         result = mergeProps(result, variant.css)
       }
       return result
+    }
+    "#);
+}
+
+#[test]
+fn emits_js_get_compound_variant_class_names() {
+    let graph = ArtifactGraph;
+    let artifacts = graph.generate(GenerateOptions {
+        format: CodegenFormat::Js,
+        import_extensions: false,
+    });
+    let helpers = artifact(&artifacts, ArtifactId::Helpers);
+
+    let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "getCompoundVariantClassNames"), @r#"
+    export function getCompoundVariantClassNames(compoundVariants, variants, formatClassName) {
+      const classes = []
+      outer: for (const compound of compoundVariants) {
+        for (const key in compound) {
+          if (key === "css" || key === "className" || key === "classNames") continue
+          const expected = compound[key]
+          const actual = variants[key]
+          if (Array.isArray(expected)) {
+            if (!expected.includes(actual)) continue outer
+          } else if (actual !== expected) {
+            continue outer
+          }
+        }
+        if (compound.className) classes.push(formatClassName ? formatClassName(compound.className) : compound.className)
+      }
+      return classes.join(" ")
     }
     "#);
 }
@@ -749,9 +780,14 @@ fn emits_js_get_slot_compound_variant() {
       const result = []
       for (const variant of compoundVariants) {
         const css = variant.css?.[slot]
-        if (!css) continue
-        const next = { css }
-        for (const key in variant) if (key !== "css") next[key] = variant[key]
+        const className = variant.classNames?.[slot] ?? variant.className
+        if (!css && !className) continue
+        const next = css ? { css } : {}
+        for (const key in variant) {
+          if (key === "css" || key === "className" || key === "classNames") continue
+          next[key] = variant[key]
+        }
+        if (className) next.className = className
         result.push(next)
       }
       return result

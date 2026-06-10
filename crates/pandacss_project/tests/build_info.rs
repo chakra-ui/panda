@@ -30,8 +30,8 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
 
     // `color: red` is shared, so it appears once in `atoms` and is referenced by
     // both modules; `padding`/`margin` are module-local.
-    assert_yaml_snapshot!(info, @r"
-    schemaVersion: 2
+    assert_yaml_snapshot!(info, @"
+    schemaVersion: 3
     panda: ^2.0.0
     configFingerprint: cfg1-b849248732ef028b
     strings:

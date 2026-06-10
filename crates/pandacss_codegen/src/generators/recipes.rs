@@ -3,8 +3,8 @@
 
 use std::collections::BTreeMap;
 
-use pandacss_config::{RecipeConfig, VariantTypeData};
-use pandacss_shared::{file_stem, js_ident, pascal_case};
+use pandacss_config::{CompoundVariantConfig, RecipeConfig, VariantSelection, VariantTypeData};
+use pandacss_shared::{compound_class_name, file_stem, js_ident, number_to_js_string, pascal_case};
 use serde_json::{Map, Value};
 
 use crate::{
@@ -181,7 +181,7 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
         .with_import(ImportDecl::value(
             [
                 "createCss",
-                "getCompoundVariantCss",
+                "getCompoundVariantClassNames",
                 "getSlotCompoundVariant",
                 "memo",
                 "splitProps",
@@ -196,6 +196,7 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
             ["finalizeConditions", "sortConditions"],
             "../css/conditions",
         ))
+        .with_import(ImportDecl::value(["cx"], "../css/cx"))
         .with_item(Item::runtime(ItemNode::RawStmt(recipe_runtime_code(ctx))))
 }
 
@@ -254,8 +255,13 @@ fn recipe_config_code(
     if !recipe.compound_variants.is_empty() {
         config.insert(
             "compoundVariants".into(),
-            serde_json::to_value(&recipe.compound_variants)
-                .expect("compound variants should serialize"),
+            compound_variants_json(
+                recipe,
+                name,
+                slot,
+                ctx.config.separator(),
+                ctx.config.hash.class_name(),
+            ),
         );
     }
 
@@ -296,6 +302,116 @@ fn variant_map_json(variants: &BTreeMap<String, VariantTypeData>) -> BTreeMap<St
         .collect()
 }
 
+fn recipe_base_class(recipe: &RecipeConfig, name: &str) -> String {
+    recipe.class_name.clone().unwrap_or_else(|| name.to_owned())
+}
+
+fn slot_class_name(base_class: &str, slot: &str) -> String {
+    format!("{base_class}__{slot}")
+}
+
+fn variant_selection_string(value: &VariantSelection) -> String {
+    match value {
+        VariantSelection::String(value) => value.clone(),
+        VariantSelection::Number(value) => number_to_js_string(*value),
+        VariantSelection::Bool(true) => "true".to_owned(),
+        VariantSelection::Bool(false) => "false".to_owned(),
+        VariantSelection::Array(values) => values
+            .iter()
+            .map(variant_selection_string)
+            .collect::<Vec<_>>()
+            .join("|"),
+    }
+}
+
+fn compound_condition_pairs(
+    conditions: &BTreeMap<String, VariantSelection>,
+) -> Vec<(String, String)> {
+    let mut pairs = conditions
+        .iter()
+        .map(|(key, value)| (key.clone(), variant_selection_string(value)))
+        .collect::<Vec<_>>();
+    pairs.sort_by_key(|(key, _)| key.clone());
+    pairs
+}
+
+fn compound_variant_config_json(
+    compound: &CompoundVariantConfig,
+    base_class: &str,
+    slot_recipe: bool,
+    separator: &str,
+    hash_class_names: bool,
+) -> Value {
+    let pairs = compound_condition_pairs(&compound.conditions);
+    let pair_refs: Vec<(&str, &str)> = pairs
+        .iter()
+        .map(|(key, value)| (key.as_str(), value.as_str()))
+        .collect();
+
+    let mut obj = Map::new();
+    for (key, value) in &compound.conditions {
+        obj.insert(
+            key.clone(),
+            serde_json::to_value(value).expect("variant selection should serialize"),
+        );
+    }
+    if slot_recipe {
+        let mut class_names = Map::new();
+        if let Value::Object(slots_css) = &compound.css {
+            for slot in slots_css.keys() {
+                let slot_base = slot_class_name(base_class, slot);
+                let class_name = compound_class_name(
+                    &slot_base,
+                    &pair_refs,
+                    compound.class_name.as_deref(),
+                    separator,
+                    hash_class_names,
+                );
+                class_names.insert(slot.clone(), Value::String(class_name));
+            }
+        }
+        if !class_names.is_empty() {
+            obj.insert("classNames".into(), Value::Object(class_names));
+        }
+    } else {
+        let class_name = compound_class_name(
+            base_class,
+            &pair_refs,
+            compound.class_name.as_deref(),
+            separator,
+            hash_class_names,
+        );
+        obj.insert("className".into(), Value::String(class_name));
+    }
+
+    Value::Object(obj)
+}
+
+fn compound_variants_json(
+    recipe: &RecipeConfig,
+    name: &str,
+    slot_recipe: bool,
+    separator: &str,
+    hash_class_names: bool,
+) -> Value {
+    let base_class = recipe_base_class(recipe, name);
+    Value::Array(
+        recipe
+            .compound_variants
+            .iter()
+            .map(|compound| {
+                compound_variant_config_json(
+                    compound,
+                    &base_class,
+                    slot_recipe,
+                    separator,
+                    hash_class_names,
+                )
+            })
+            .collect(),
+    )
+}
+
 const RECIPE_RUNTIME_TEMPLATE: &str = r#"function normalize(config: Record<string, any>) {
   const variantMap = config.variantMap ?? {}
   return {
@@ -311,6 +427,7 @@ const RECIPE_RUNTIME_TEMPLATE: &str = r#"function normalize(config: Record<strin
 
 export function createRecipe(config: Record<string, any>) {
   const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
+  const classPrefix = __PREFIX__
 
   const recipeCss = createCss({
     hash: __HASH__,
@@ -320,13 +437,17 @@ export function createRecipe(config: Record<string, any>) {
       breakpoints: { keys: __BREAKPOINTS__ },
     },
     utility: {
-      prefix: __PREFIX__,
+      prefix: classPrefix,
       toHash,
       transform(prop: string, value: string) {
         return { className: value === "__ignore__" ? className : `${className}--${prop}__SEPARATOR__${withoutSpace(value)}` }
       },
     },
   })
+  const formatClassName = (name: string) => {
+    const next = __HASH__ ? toHash(name) : name
+    return classPrefix ? `${classPrefix}-${next}` : next
+  }
 
   function resolve(props: Record<string, any> = {}) {
     const result = withDefaults(defaults, props)
@@ -334,13 +455,18 @@ export function createRecipe(config: Record<string, any>) {
     return result
   }
 
-  const recipe = attach(memo(function recipeFn(props: Record<string, any> = {}) {
-    return recipeCss(resolve(props))
+  function compoundClasses(props: Record<string, any>) {
+    return getCompoundVariantClassNames(compounds, resolve(props), formatClassName)
+  }
+
+  const recipe = attach(memo(function recipeFn(props: Record<string, any> = {}, withCompoundVariants = true) {
+    const recipeClass = recipeCss(resolve(props))
+    if (!withCompoundVariants) return recipeClass
+    const compoundsClass = compoundClasses(props)
+    return cx(recipeClass, compoundsClass)
   }), name, variantKeys, variantMap, resolve)
   recipe.__recipe__ = true
-  recipe.__getCompoundVariantCss__ = function compoundVariantCss(props: Record<string, any>) {
-    return getCompoundVariantCss(compounds, resolve(props))
-  }
+  recipe.__getCompoundVariantCss__ = compoundClasses
   recipe.merge = function merge(other: any) {
     return mergeRecipes(recipe, other)
   }

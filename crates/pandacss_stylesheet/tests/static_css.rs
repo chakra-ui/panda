@@ -1,7 +1,7 @@
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, compile_layer_css, compile_output, config};
+use crate::common::{compile_layer_css, compile_output, config};
 
 #[test]
 fn expands_static_css_utilities() {
@@ -250,13 +250,8 @@ fn reports_empty_wildcards_without_rejecting_static_css_themes() {
         .map(|diagnostic| diagnostic.code.as_str())
         .collect::<Vec<_>>();
 
-    assert_snapshot!(output.css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
+    let css = output.get_layer_css(&[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @"
     @layer utilities {
       .m_1 {
         margin: 1px;
@@ -387,27 +382,29 @@ fn expands_static_css_recipe_wildcard() {
         }
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
-    assert_snapshot!(css, @r"
-@layer recipes {
-  @layer base {
-    .button {
-      display: inline-flex;
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .button {
+          display: inline-flex;
+        }
+      }
+      @layer variants {
+        .button--size_md {
+          padding: 12px;
+        }
+        .button--size_sm {
+          padding: 8px;
+        }
+        .button--variant_ghost {
+          background-color: transparent;
+        }
+        .button--variant_solid {
+          background-color: blue;
+        }
+      }
     }
-  }
-  .button--size_md {
-    padding: 12px;
-  }
-  .button--size_sm {
-    padding: 8px;
-  }
-  .button--variant_ghost {
-    background-color: transparent;
-  }
-  .button--variant_solid {
-    background-color: blue;
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -433,13 +430,15 @@ fn expands_recipe_level_static_css() {
         }
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
-    assert_snapshot!(css, @r"
-@layer recipes {
-  .button--size_sm {
-    padding: 8px;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--size_sm {
+          padding: 8px;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -468,16 +467,18 @@ fn global_recipe_wildcard_overrides_recipe_level_static_css() {
         }
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
-    assert_snapshot!(css, @r"
-@layer recipes {
-  .button--size_md {
-    padding: 12px;
-  }
-  .button--size_sm {
-    padding: 8px;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--size_md {
+          padding: 12px;
+        }
+        .button--size_sm {
+          padding: 8px;
+        }
+      }
+    }
+    ");
 }
 
 #[test]
@@ -513,20 +514,22 @@ fn expands_static_css_recipe_conditions_and_responsive() {
     }));
     let css = compile_layer_css(&config, "", &[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-@layer recipes {
-  .button--size_sm {
-    padding: 8px;
-  }
-  .hover\:button--size_sm:hover {
-    padding: 8px;
-  }
-  @media (width >= 48rem) {
-    .md\:button--size_sm {
-      padding: 8px;
+    @layer recipes {
+      @layer variants {
+        .button--size_sm {
+          padding: 8px;
+        }
+        .hover\:button--size_sm:hover {
+          padding: 8px;
+        }
+        @media (width >= 48rem) {
+          .md\:button--size_sm {
+            padding: 8px;
+          }
+        }
+      }
     }
-  }
-}
-");
+    ");
 }
 
 #[test]
@@ -561,14 +564,9 @@ fn expands_static_css_slot_recipe_wildcard() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes.slots {
       @layer base {
         .checkbox__control {
@@ -578,11 +576,13 @@ fn expands_static_css_slot_recipe_wildcard() {
           display: flex;
         }
       }
-      .checkbox__control--size_sm {
-        padding: 2px;
-      }
-      .checkbox__root--size_sm {
-        padding: 4px;
+      @layer variants {
+        .checkbox__control--size_sm {
+          padding: 2px;
+        }
+        .checkbox__root--size_sm {
+          padding: 4px;
+        }
       }
     }
     ");
@@ -622,25 +622,22 @@ fn expands_static_recipe_compound_variant_css() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
-      .button--size_sm {
-        padding: 8px;
+      @layer variants {
+        .button--size_sm {
+          padding: 8px;
+        }
+        .button--variant_outline {
+          border-width: 1px;
+        }
       }
-      .button--variant_outline {
-        border-width: 1px;
-      }
-    }
-    @layer utilities {
-      .bw_2px {
-        border-width: 2px;
+      @layer compound_variants {
+        .button--compound__size_sm__variant_outline {
+          border-width: 2px;
+        }
       }
     }
     ");

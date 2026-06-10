@@ -17,6 +17,7 @@ export default {
         danger: {
           500: { value: '#dc2626' },
         },
+        white: { value: '#ffffff' },
       },
     },
     recipes: {
@@ -44,6 +45,97 @@ export default {
           size: 'md',
           tone: 'brand',
         },
+        compoundVariants: [
+          {
+            size: ['sm', 'lg'],
+            tone: 'danger',
+            css: {
+              borderWidth: '2px',
+              boxShadow: '0 0 0 4px rgba(220, 38, 38, 0.2)',
+            },
+          },
+          {
+            size: 'md',
+            tone: 'brand',
+            css: {
+              boxShadow: '0 0 0 4px rgba(37, 99, 235, 0.2)',
+            },
+          },
+        ],
+      },
+    },
+    slotRecipes: {
+      card: {
+        className: 'card',
+        slots: ['root', 'title', 'content'],
+        base: {
+          root: {
+            display: 'grid',
+            gap: '8px',
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          title: {
+            fontWeight: '700',
+          },
+          content: {
+            fontSize: '14px',
+          },
+        },
+        variants: {
+          size: {
+            sm: {
+              root: { padding: '12px' },
+              content: { fontSize: '13px' },
+            },
+            md: {
+              root: { padding: '16px' },
+              content: { fontSize: '15px' },
+            },
+          },
+          tone: {
+            brand: {
+              root: { backgroundColor: 'brand.50' },
+              title: { color: 'brand.700' },
+            },
+            danger: {
+              root: { backgroundColor: 'danger.500' },
+              title: { color: 'white' },
+              content: { color: 'white' },
+            },
+          },
+        },
+        defaultVariants: {
+          size: 'sm',
+          tone: 'brand',
+        },
+        compoundVariants: [
+          {
+            size: ['sm', 'md'],
+            tone: 'brand',
+            css: {
+              root: {
+                borderWidth: '1px',
+                boxShadow: '0 0 0 4px rgba(37, 99, 235, 0.12)',
+              },
+              title: {
+                fontWeight: '800',
+              },
+            },
+          },
+          {
+            size: 'md',
+            tone: 'danger',
+            css: {
+              root: {
+                boxShadow: '0 0 0 4px rgba(220, 38, 38, 0.18)',
+              },
+              content: {
+                fontWeight: '600',
+              },
+            },
+          },
+        ],
       },
     },
   },

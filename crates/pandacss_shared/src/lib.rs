@@ -17,7 +17,7 @@ pub use diagnostic::{
     codes as diagnostic_codes,
 };
 pub use error::{PandaError, PandaResult};
-pub use hash::to_hash;
+pub use hash::{compound_class_name, compound_combo_string, to_hash};
 pub use important::{is_important, split_important, without_important};
 pub use regex::compile_js_regex;
 pub use strings::{

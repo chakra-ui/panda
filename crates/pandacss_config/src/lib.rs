@@ -305,10 +305,10 @@ pub struct OptimizeConfig {
     pub remove_unused_tokens: bool,
     #[serde(default)]
     pub remove_unused_keyframes: bool,
-    /// When false (default), emit all config-recipe compound variant atoms on
-    /// first recipe usage (Node parity, runtime-safe with `getCompoundVariantCss`).
-    /// When true, only emit compound atoms whose variant keys match
-    /// statically-selected props (smaller CSS; pair with `staticCss.recipes`).
+    /// When false (default), emit all config-recipe compound variant groups on
+    /// first recipe usage. When true, only emit compound groups whose variant
+    /// keys match statically-selected props (smaller CSS; pair with
+    /// `staticCss.recipes`).
     #[serde(default)]
     pub smart_compound_variants: bool,
 }
@@ -372,6 +372,42 @@ impl CascadeLayers {
             ("tokens", &self.tokens),
             ("recipes", &self.recipes),
             ("utilities", &self.utilities),
+        ]
+    }
+
+    /// Names for the public `@layer …;` preamble.
+    #[must_use]
+    pub fn declaration_names(&self) -> Vec<String> {
+        vec![
+            self.reset.clone(),
+            self.base.clone(),
+            self.tokens.clone(),
+            self.recipes.clone(),
+            self.utilities.clone(),
+        ]
+    }
+
+    /// Internal recipe sub-layer order. Slot recipes sit after regular base but
+    /// before regular variants and compounds.
+    #[must_use]
+    pub fn recipe_declaration_names(&self) -> Vec<String> {
+        let recipes = &self.recipes;
+        vec![
+            format!("{recipes}.base"),
+            format!("{recipes}.slots"),
+            format!("{recipes}.variants"),
+            format!("{recipes}.compound_variants"),
+        ]
+    }
+
+    /// Internal slot recipe sub-layer order.
+    #[must_use]
+    pub fn slot_recipe_declaration_names(&self) -> Vec<String> {
+        let recipes = &self.recipes;
+        vec![
+            format!("{recipes}.slots.base"),
+            format!("{recipes}.slots.variants"),
+            format!("{recipes}.slots.compound_variants"),
         ]
     }
 }

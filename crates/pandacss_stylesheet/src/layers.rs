@@ -4,6 +4,9 @@
 
 /// `true` when `css` contains an `@layer a, b, c;` *statement* (not a
 /// `@layer x { … }` block) whose comma list includes every name in `layers`.
+/// A declared sub-layer (`recipes.base`) satisfies a root-layer lookup
+/// (`recipes`) so host code can still find the stylesheet root after recipe
+/// sub-layers are expanded in the declaration.
 #[must_use]
 pub fn has_layer_declaration(css: &str, layers: &[&str]) -> bool {
     let mut rest = css;
@@ -22,11 +25,20 @@ pub fn has_layer_declaration(css: &str, layers: &[&str]) -> bool {
                 .split(',')
                 .map(str::trim)
                 .collect();
-            if layers.iter().all(|name| declared.contains(name)) {
+            if layers.iter().all(|name| declared_contains(&declared, name)) {
                 return true;
             }
         }
         rest = after;
     }
     false
+}
+
+fn declared_contains(declared: &[&str], name: &str) -> bool {
+    declared.iter().any(|declared| {
+        *declared == name
+            || declared
+                .strip_prefix(name)
+                .is_some_and(|rest| rest.starts_with('.'))
+    })
 }

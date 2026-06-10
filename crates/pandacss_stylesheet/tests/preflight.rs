@@ -6,9 +6,9 @@ use crate::common::{compile_css, compile_layer_css, compile_output, config};
 #[test]
 fn preflight_disabled_by_default() {
     let config = config(serde_json::json!({}));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -20,9 +20,9 @@ fn preflight_disabled_by_default() {
 #[test]
 fn preflight_false_emits_no_reset_layer() {
     let config = config(serde_json::json!({ "preflight": false }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -225,19 +225,21 @@ fn preflight_scope_emits_no_diagnostic() {
 #[test]
 fn preflight_minified_strips_whitespace() {
     let config = config(serde_json::json!({ "preflight": true }));
-    let css = compile_output(
+    let output = compile_output(
         &config,
         "",
         StylesheetOptions {
             minify: true,
             ..StylesheetOptions::default()
         },
-    )
-    .css;
+    );
+    let css = output
+        .layer_css(StylesheetLayer::Reset)
+        .expect("reset layer");
     // Snapshot a window around the html/body region rather than the whole
     // ~3KB minified blob; the rest is exercised by the pretty snapshot above.
     let window = &css[..200.min(css.len())];
-    assert_snapshot!(window, @"@layer reset, base, tokens, recipes, utilities;@layer reset{html, :host{line-height:1.5;--font-fallback:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue");
+    assert_snapshot!(window, @"@layer reset{html, :host{line-height:1.5;--font-fallback:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color");
     assert!(
         !css.contains('\n'),
         "minified output must not contain newlines"

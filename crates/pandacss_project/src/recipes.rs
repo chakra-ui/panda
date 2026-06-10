@@ -23,7 +23,7 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{diagnostic_codes, number_to_js_string};
+use pandacss_shared::{compound_class_name, diagnostic_codes, number_to_js_string};
 use pandacss_utility::{StyleNormalizer, Utility};
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
@@ -85,9 +85,15 @@ struct ResolvedSlotVariantGroup {
 }
 
 #[derive(Debug, Clone)]
+enum CompoundTarget {
+    Recipe(ResolvedRecipePart),
+    Slots(Vec<(Box<str>, ResolvedRecipePart)>),
+}
+
+#[derive(Debug, Clone)]
 struct ResolvedCompoundVariant {
     conditions: Vec<(Box<str>, Vec<Box<str>>)>,
-    atoms: FxHashSet<Atom>,
+    target: CompoundTarget,
 }
 
 pub(crate) struct StyleResolver<'a> {
@@ -95,16 +101,10 @@ pub(crate) struct StyleResolver<'a> {
     pub(crate) conditions: &'a ProjectConditionMatcher,
     pub(crate) breakpoints: &'a [String],
     pub(crate) separator: &'a str,
+    pub(crate) hash_class_names: bool,
 }
 
 impl StyleResolver<'_> {
-    fn atoms(&self, style: &Literal) -> FxHashSet<Atom> {
-        let normalizer = self.normalizer();
-        let mut encoder = Encoder::with_conditions(self.conditions.clone());
-        encoder.process_atomic_with(style, &normalizer);
-        encoder.into_atoms()
-    }
-
     fn recipe_entries(&self, style: &Literal) -> FxHashSet<RecipeStyleEntry> {
         self.recipe_entries_with_conditions(style, &SmallVec::new())
     }
@@ -171,7 +171,11 @@ impl RecipeRegistry {
                     default_variants: default_variant_map(&recipe.recipe.default_variants),
                     base: resolve_recipe_base(&recipe.class_name, &recipe.recipe, resolver),
                     variants: resolve_recipe_variants(&recipe.class_name, &recipe.recipe, resolver),
-                    compounds: resolve_recipe_compounds(&recipe.recipe, resolver),
+                    compounds: resolve_recipe_compounds(
+                        &recipe.class_name,
+                        &recipe.recipe,
+                        resolver,
+                    ),
                 },
             );
         }
@@ -202,7 +206,11 @@ impl RecipeRegistry {
                         &recipe.recipe,
                         resolver,
                     ),
-                    compounds: resolve_slot_recipe_compounds(&recipe.recipe, resolver),
+                    compounds: resolve_slot_recipe_compounds(
+                        &recipe.class_name,
+                        &recipe.recipe,
+                        resolver,
+                    ),
                 },
             );
         }
@@ -328,7 +336,6 @@ impl RecipeRegistry {
                 conditions,
                 breakpoints,
             );
-            self.extend_compound_atoms(&name, &mut encoded.atomic);
             let options = self.variant_options(&name);
             for rule in rules {
                 for selected in Self::static_rule_selections(config, &rule, &responsive, &options) {
@@ -340,23 +347,6 @@ impl RecipeRegistry {
 
     fn has_recipe(&self, name: &str) -> bool {
         self.recipes.contains_key(name) || self.slot_recipes.contains_key(name)
-    }
-
-    fn extend_compound_atoms(&self, name: &str, target: &mut FxHashSet<Atom>) {
-        if let Some(node) = self.recipes.get(name) {
-            target.extend(
-                node.compounds
-                    .iter()
-                    .flat_map(|compound| compound.atoms.iter().cloned()),
-            );
-        }
-        if let Some(node) = self.slot_recipes.get(name) {
-            target.extend(
-                node.compounds
-                    .iter()
-                    .flat_map(|compound| compound.atoms.iter().cloned()),
-            );
-        }
     }
 
     fn static_rule_selections(
@@ -623,15 +613,30 @@ fn resolve_recipe_variants(
 }
 
 fn resolve_recipe_compounds(
+    base_class: &str,
     recipe: &Recipe,
     resolver: &StyleResolver<'_>,
 ) -> Vec<ResolvedCompoundVariant> {
     recipe
         .compound_variants
         .iter()
-        .map(|compound| ResolvedCompoundVariant {
-            conditions: intern_variant_condition_values(&compound.conditions),
-            atoms: resolver.atoms(&compound.css),
+        .map(|compound| {
+            let conditions = intern_variant_condition_values(&compound.conditions);
+            let pairs = canonical_compound_pairs(&conditions);
+            let class_name = compound_class_name(
+                base_class,
+                &pairs,
+                compound.class_name.as_deref(),
+                resolver.separator,
+                resolver.hash_class_names,
+            );
+            ResolvedCompoundVariant {
+                conditions,
+                target: CompoundTarget::Recipe(ResolvedRecipePart {
+                    class_name: class_name.into_boxed_str(),
+                    entries: resolver.recipe_entries(&compound.css),
+                }),
+            }
         })
         .collect()
 }
@@ -699,6 +704,7 @@ fn resolve_slot_recipe_variants(
 }
 
 fn resolve_slot_recipe_compounds(
+    base_class: &str,
     recipe: &SlotRecipe,
     resolver: &StyleResolver<'_>,
 ) -> Vec<ResolvedCompoundVariant> {
@@ -706,16 +712,51 @@ fn resolve_slot_recipe_compounds(
         .compound_variants
         .iter()
         .map(|compound| {
-            let mut atoms = FxHashSet::default();
-            for (_, style) in &compound.css {
-                atoms.extend(resolver.atoms(style));
-            }
+            let conditions = intern_variant_condition_values(&compound.conditions);
+            let pairs = canonical_compound_pairs(&conditions);
+            let slots = compound
+                .css
+                .iter()
+                .map(|(slot, style)| {
+                    let slot_class = RecipeRegistry::slot_class_name(base_class, slot);
+                    let class_name = compound_class_name(
+                        &slot_class,
+                        &pairs,
+                        compound.class_name.as_deref(),
+                        resolver.separator,
+                        resolver.hash_class_names,
+                    );
+                    (
+                        slot.clone().into_boxed_str(),
+                        ResolvedRecipePart {
+                            class_name: class_name.into_boxed_str(),
+                            entries: resolver.recipe_entries(style),
+                        },
+                    )
+                })
+                .collect();
             ResolvedCompoundVariant {
-                conditions: intern_variant_condition_values(&compound.conditions),
-                atoms,
+                conditions,
+                target: CompoundTarget::Slots(slots),
             }
         })
         .collect()
+}
+
+fn canonical_compound_pairs(conditions: &[(Box<str>, Vec<Box<str>>)]) -> Vec<(String, String)> {
+    let mut pairs = conditions
+        .iter()
+        .map(|(name, values)| {
+            let value = values
+                .iter()
+                .map(|value| value.as_ref())
+                .collect::<Vec<_>>()
+                .join("|");
+            (name.to_string(), value)
+        })
+        .collect::<Vec<_>>();
+    pairs.sort_by_key(|(name, _)| name.clone());
+    pairs
 }
 
 fn intern_variant_condition_values(
@@ -739,6 +780,7 @@ fn intern_variant_condition_values(
 pub struct EncodedRecipes {
     base: FxHashMap<RecipePartKey, RecipeStyleGroup>,
     variants: FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
+    compounds: FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
     atomic: FxHashSet<Atom>,
     smart_compound_variants: bool,
     compounds_emitted: FxHashSet<Box<str>>,
@@ -755,6 +797,7 @@ pub(crate) struct EncodedRecipesCache {
     view: EncodedRecipes,
     base_counts: FxHashMap<RecipePartKey, CountedRecipeStyleGroup>,
     variant_counts: FxHashMap<RecipeVariantKey, CountedRecipeStyleGroup>,
+    compound_counts: FxHashMap<RecipeVariantKey, CountedRecipeStyleGroup>,
     atomic_counts: FxHashMap<Atom, u32>,
 }
 
@@ -784,6 +827,7 @@ impl EncodedRecipes {
         Self {
             base: FxHashMap::default(),
             variants: FxHashMap::default(),
+            compounds: FxHashMap::default(),
             atomic: FxHashSet::default(),
             smart_compound_variants,
             compounds_emitted: FxHashSet::default(),
@@ -793,18 +837,27 @@ impl EncodedRecipes {
     pub(crate) fn clear(&mut self) {
         self.base.clear();
         self.variants.clear();
+        self.compounds.clear();
         self.atomic.clear();
         self.compounds_emitted.clear();
     }
 
     pub(crate) fn is_empty(&self) -> bool {
-        self.base.is_empty() && self.variants.is_empty() && self.atomic.is_empty()
+        self.base.is_empty()
+            && self.variants.is_empty()
+            && self.compounds.is_empty()
+            && self.atomic.is_empty()
     }
 
     pub(crate) fn extend_missing_from(&mut self, source: &Self) -> Self {
         let mut missing = Self::default();
         extend_missing_recipe_groups(&mut self.base, &mut missing.base, &source.base);
         extend_missing_recipe_groups(&mut self.variants, &mut missing.variants, &source.variants);
+        extend_missing_recipe_groups(
+            &mut self.compounds,
+            &mut missing.compounds,
+            &source.compounds,
+        );
         for atom in &source.atomic {
             if self.atomic.insert(atom.clone()) {
                 missing.atomic.insert(atom.clone());
@@ -941,7 +994,7 @@ impl EncodedRecipes {
         selected: &FxHashMap<Box<str>, Vec<SelectedVariantValue>>,
     ) {
         if self.smart_compound_variants {
-            self.process_matching_compounds(compounds, selected);
+            self.process_matching_compounds(recipe_name, compounds, selected);
         } else {
             self.emit_eager_compounds(recipe_name, compounds);
         }
@@ -952,12 +1005,13 @@ impl EncodedRecipes {
             return;
         }
         for compound in compounds {
-            self.atomic.extend(compound.atoms.iter().cloned());
+            self.emit_compound_parts(recipe_name, compound, &SmallVec::new());
         }
     }
 
     fn process_matching_compounds(
         &mut self,
+        recipe_name: &str,
         compounds: &[ResolvedCompoundVariant],
         selected: &FxHashMap<Box<str>, Vec<SelectedVariantValue>>,
     ) {
@@ -965,13 +1019,55 @@ impl EncodedRecipes {
             let Some(conditions) = compound_conditions(compound, selected) else {
                 continue;
             };
-            if conditions.is_empty() {
-                self.atomic.extend(compound.atoms.iter().cloned());
-            } else {
-                self.atomic
-                    .extend(with_atom_conditions(&compound.atoms, &conditions));
+            self.emit_compound_parts(recipe_name, compound, &conditions);
+        }
+    }
+
+    fn emit_compound_parts(
+        &mut self,
+        recipe_name: &str,
+        compound: &ResolvedCompoundVariant,
+        extra_conditions: &SmallVec<[Box<str>; 2]>,
+    ) {
+        match &compound.target {
+            CompoundTarget::Recipe(part) => {
+                self.insert_compound_group(recipe_name, None, part, extra_conditions);
+            }
+            CompoundTarget::Slots(slots) => {
+                for (slot, part) in slots {
+                    self.insert_compound_group(
+                        recipe_name,
+                        Some(slot.as_ref()),
+                        part,
+                        extra_conditions,
+                    );
+                }
             }
         }
+    }
+
+    fn insert_compound_group(
+        &mut self,
+        recipe_name: &str,
+        slot: Option<&str>,
+        part: &ResolvedRecipePart,
+        extra_conditions: &SmallVec<[Box<str>; 2]>,
+    ) {
+        let key = recipe_variant_key(
+            recipe_name,
+            slot.map(|slot| slot.into()),
+            &part.class_name,
+            extra_conditions,
+        );
+        let group = self
+            .compounds
+            .entry(key)
+            .or_insert_with(|| RecipeStyleGroup {
+                class_name: part.class_name.clone(),
+                conditions: extra_conditions.clone(),
+                entries: FxHashSet::default(),
+            });
+        group.entries.extend(part.entries.iter().cloned());
     }
 
     #[must_use]
@@ -979,6 +1075,7 @@ impl EncodedRecipes {
         EncodedRecipesSnapshot {
             base: sorted_recipe_part_group_snapshots(&self.base),
             variants: sorted_recipe_variant_group_snapshots(&self.variants),
+            compounds: sorted_recipe_variant_group_snapshots(&self.compounds),
             atomic: sorted_atoms_vec(&self.atomic),
         }
     }
@@ -998,6 +1095,7 @@ impl EncodedRecipes {
         };
         transform_recipe_groups(&mut self.base, &ctx, transform, diagnostics);
         transform_recipe_groups(&mut self.variants, &ctx, transform, diagnostics);
+        transform_recipe_groups(&mut self.compounds, &ctx, transform, diagnostics);
         self.atomic = transform_atoms(
             std::mem::take(&mut self.atomic),
             &ctx,
@@ -1180,6 +1278,7 @@ impl EncodedRecipesCache {
         self.view.clear();
         self.base_counts.clear();
         self.variant_counts.clear();
+        self.compound_counts.clear();
         self.atomic_counts.clear();
     }
 
@@ -1198,6 +1297,11 @@ impl EncodedRecipesCache {
             &mut self.variant_counts,
             &recipes.variants,
         );
+        add_recipe_variant_groups(
+            &mut self.view.compounds,
+            &mut self.compound_counts,
+            &recipes.compounds,
+        );
         for atom in &recipes.atomic {
             let count = self.atomic_counts.entry(atom.clone()).or_insert(0);
             *count += 1;
@@ -1213,6 +1317,11 @@ impl EncodedRecipesCache {
             &mut self.view.variants,
             &mut self.variant_counts,
             &recipes.variants,
+        );
+        remove_recipe_variant_groups(
+            &mut self.view.compounds,
+            &mut self.compound_counts,
+            &recipes.compounds,
         );
         for atom in &recipes.atomic {
             if let Some(count) = self.atomic_counts.get_mut(atom) {
@@ -1366,19 +1475,6 @@ fn recipe_variant_class_name(
     value: &str,
 ) -> String {
     format!("{class_name}--{variant}{separator}{value}")
-}
-
-fn with_atom_conditions(
-    atoms: &FxHashSet<Atom>,
-    prefix_conditions: &SmallVec<[Box<str>; 2]>,
-) -> FxHashSet<Atom> {
-    if prefix_conditions.is_empty() {
-        return atoms.clone();
-    }
-    atoms
-        .iter()
-        .map(|atom| atom.with_prefixed_conditions(prefix_conditions))
-        .collect()
 }
 
 fn compound_conditions(
@@ -1610,18 +1706,23 @@ mod compound_tests {
     }
 
     fn compound(
+        class_name: &str,
         conditions: Vec<(&str, Vec<&str>)>,
         props: &[(&str, &str)],
     ) -> ResolvedCompoundVariant {
+        let entries = props
+            .iter()
+            .map(|(prop, value)| RecipeStyleEntry::from(test_atom(prop, value)))
+            .collect();
         ResolvedCompoundVariant {
             conditions: conditions
                 .into_iter()
                 .map(|(name, values)| (name.into(), values.into_iter().map(Into::into).collect()))
                 .collect(),
-            atoms: props
-                .iter()
-                .map(|(prop, value)| test_atom(prop, value))
-                .collect(),
+            target: CompoundTarget::Recipe(ResolvedRecipePart {
+                class_name: class_name.into(),
+                entries,
+            }),
         }
     }
 
@@ -1638,42 +1739,83 @@ mod compound_tests {
     }
 
     #[test]
-    fn eager_mode_emits_all_compound_atoms_on_first_recipe_touch() {
+    fn eager_mode_emits_all_compound_groups_on_first_recipe_touch() {
         let compounds = vec![
-            compound(vec![("size", vec!["sm"])], &[("color", "red")]),
-            compound(vec![("size", vec!["md"])], &[("color", "blue")]),
+            compound(
+                "badge--cmp-sm",
+                vec![("size", vec!["sm"])],
+                &[("color", "red")],
+            ),
+            compound(
+                "badge--cmp-md",
+                vec![("size", vec!["md"])],
+                &[("color", "blue")],
+            ),
         ];
         let mut encoded = EncodedRecipes::new(false);
         let empty = FxHashMap::default();
 
         encoded.process_compounds("badge", &compounds, &empty);
-        assert_eq!(encoded.atomic.len(), 2);
+        assert_eq!(encoded.compounds.len(), 2);
 
         encoded.process_compounds("badge", &compounds, &empty);
-        assert_eq!(encoded.atomic.len(), 2);
+        assert_eq!(encoded.compounds.len(), 2);
     }
 
     #[test]
-    fn smart_mode_emits_only_matching_compound_atoms() {
+    fn smart_mode_emits_only_matching_compound_groups() {
         let compounds = vec![
-            compound(vec![("size", vec!["sm"])], &[("color", "red")]),
-            compound(vec![("size", vec!["md"])], &[("color", "blue")]),
+            compound(
+                "badge--cmp-sm",
+                vec![("size", vec!["sm"])],
+                &[("color", "red")],
+            ),
+            compound(
+                "badge--cmp-md",
+                vec![("size", vec!["md"])],
+                &[("color", "blue")],
+            ),
         ];
         let mut encoded = EncodedRecipes::new(true);
 
         encoded.process_compounds("badge", &compounds, &selected("sm"));
-        assert_eq!(encoded.atomic.len(), 1);
-        let atom = encoded.atomic.iter().next().expect("one atom");
-        assert_eq!(atom.prop(), "color");
-        assert_eq!(atom.value(), &AtomValue::String("red".into()));
+        assert_eq!(encoded.compounds.len(), 1);
+        let group = encoded.compounds.values().next().expect("one group");
+        assert_eq!(group.class_name.as_ref(), "badge--cmp-sm");
+        let entry = group.entries.iter().next().expect("one entry");
+        assert_eq!(entry.prop.as_ref(), "color");
+        assert_eq!(entry.value, AtomValue::String("red".into()));
+    }
+
+    #[test]
+    fn smart_mode_compound_array_selection_matches_any_value() {
+        let compounds = vec![compound(
+            "badge--compound__size_sm|md",
+            vec![("size", vec!["sm", "md"])],
+            &[("color", "red")],
+        )];
+        let mut encoded = EncodedRecipes::new(true);
+
+        encoded.process_compounds("badge", &compounds, &selected("md"));
+        assert_eq!(encoded.compounds.len(), 1);
+        let group = encoded.compounds.values().next().expect("one group");
+        assert_eq!(group.class_name.as_ref(), "badge--compound__size_sm|md");
+
+        let mut encoded = EncodedRecipes::new(true);
+        encoded.process_compounds("badge", &compounds, &selected("lg"));
+        assert!(encoded.compounds.is_empty());
     }
 
     #[test]
     fn smart_mode_skips_non_matching_compounds() {
-        let compounds = vec![compound(vec![("size", vec!["sm"])], &[("color", "red")])];
+        let compounds = vec![compound(
+            "badge--cmp-sm",
+            vec![("size", vec!["sm"])],
+            &[("color", "red")],
+        )];
         let mut encoded = EncodedRecipes::new(true);
 
         encoded.process_compounds("badge", &compounds, &selected("md"));
-        assert!(encoded.atomic.is_empty());
+        assert!(encoded.compounds.is_empty());
     }
 }

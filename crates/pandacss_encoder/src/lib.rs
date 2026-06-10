@@ -126,6 +126,8 @@ impl From<Atom> for RecipeStyleEntry {
 pub struct EncodedRecipesSnapshot {
     pub base: Vec<RecipeStyleGroupSnapshot>,
     pub variants: Vec<RecipeStyleGroupSnapshot>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub compounds: Vec<RecipeStyleGroupSnapshot>,
     pub atomic: Vec<Atom>,
 }
 

@@ -1,7 +1,7 @@
 use insta::assert_snapshot;
-use pandacss_stylesheet::StylesheetLayer;
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_css, compile_layer_css, config};
+use crate::common::{compile_layer_css, compile_output, config};
 
 #[test]
 fn sorts_pseudo_selectors_by_cascade_priority() {
@@ -17,17 +17,13 @@ fn sorts_pseudo_selectors_by_cascade_priority() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _active: { color: 'red' }, _hover: { color: 'red' }, _focus: { color: 'red' }, _custom: { color: 'red' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .custom\:c_red[data-open], .hover\:c_red:hover, .focus\:c_red:focus, .active\:c_red:active {
         color: red;
@@ -52,17 +48,13 @@ fn applies_every_part_of_block_form_conditions() {
             "content": { "className": "content" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _before: { _hoverFine: { content: '\"x\"' } } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r#"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @media (hover: hover) {
         .before\:hoverFine\:content_\"x\":hover::before {
@@ -148,17 +140,13 @@ fn sorts_axis_shorthands_before_state_variants() {
             "paddingBlock": { "className": "py", "shorthand": "py" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ py: '12px', _focus: { _hover: { padding: '12px' } }, _hover: { padding: '4px' }, padding: '4px', px: '12px' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .p_4px {
         padding: 4px;
@@ -193,17 +181,13 @@ fn sorts_max_width_conditions_before_min_width_conditions() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _minLg: { color: 'red' }, _maxSm: { color: 'red' }, _minSm: { color: 'red' }, _maxLg: { color: 'red' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @media (width < 64rem) {
         .maxLg\:c_red {
@@ -244,17 +228,13 @@ fn sorts_same_root_attribute_variants_deterministically() {
             "display": { "className": "d" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _dataHover: { display: 'flex' }, _dataFoo: { display: 'flex' }, _dataActive: { display: 'flex' }, _dataBar: { display: 'flex' }, _dataFocus: { display: 'flex' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .dataActive\:d_flex[data-active], .dataBar\:d_flex[data-bar], .dataFocus\:d_flex[data-focus], .dataFoo\:d_flex[data-foo], .dataHover\:d_flex[data-hover] {
         display: flex;
@@ -275,17 +255,13 @@ fn sorts_base_rules_before_selector_and_at_rule_variants() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _wide: { color: 'red' }, _hover: { color: 'red' }, color: 'red' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .c_red, .hover\:c_red:hover {
         color: red;
@@ -314,17 +290,13 @@ fn sorts_at_rule_kinds_by_cascade_bucket() {
             "opacity": { "className": "opacity" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _print: { opacity: '1' }, _starting: { opacity: '1' }, _container: { opacity: '1' }, _support: { opacity: '1' }, _media: { opacity: '1' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @supports (display: grid) {
         .support\:opacity_1 {
@@ -373,17 +345,13 @@ fn sorts_structural_form_and_interactive_pseudos() {
             "display": { "className": "d" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _active: { display: 'flex' }, _focus: { display: 'flex' }, _hover: { display: 'flex' }, _focusWithin: { display: 'flex' }, _disabled: { display: 'flex' }, _checked: { display: 'flex' }, _empty: { display: 'flex' }, _first: { display: 'flex' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .first\:d_flex:first-child, .empty\:d_flex:empty, .disabled\:d_flex:disabled, .checked\:d_flex:checked, .focusWithin\:d_flex:focus-within, .hover\:d_flex:hover, .focus\:d_flex:focus, .active\:d_flex:active {
         display: flex;
@@ -405,17 +373,13 @@ fn applies_pseudo_elements_after_multiple_pseudo_classes() {
             "content": { "className": "content" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _before: { _focus: { _hover: { content: '\"x\"' } } } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r#"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .before\:focus\:hover\:content_\"x\":hover:focus::before {
         content: "x";
@@ -440,17 +404,13 @@ fn sorts_mixed_at_rule_and_selector_after_selector_only() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _hoverFine: { color: 'red' }, _hover: { color: 'red' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .hover\:c_red:hover {
         color: red;
@@ -478,17 +438,13 @@ fn sorts_stacked_max_and_min_conditions_by_outer_priority() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _minSm: { _maxLg: { color: 'red' } }, _minLg: { _maxSm: { color: 'red' } } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @media (width < 64rem) {
         @media (width >= 40rem) {
@@ -555,17 +511,13 @@ fn sorts_css_function_queries_deterministically() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _calcB: { color: 'red' }, _calcA: { color: 'red' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @media (width >= calc(100% - 1rem)) {
         .calcB\:c_red {
@@ -593,17 +545,13 @@ fn sorts_container_queries_by_resolved_width() {
             "display": { "className": "d" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _containerLg: { display: 'flex' }, _containerSm: { display: 'flex' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       @container card (width >= 40rem) {
         .containerSm\:d_flex {
@@ -642,14 +590,13 @@ fn sorts_recipe_entries_with_the_same_priority_model() {
             }
         }
     }));
-    let css = compile_css(&config, "import { button } from '@panda/recipes'; button()");
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
       @layer base {
         .button {
@@ -693,22 +640,19 @@ fn coalesces_recipe_entries_with_matching_pseudo_targets() {
             }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
-      .button--size_sm {
-        padding: 8px;
-        padding-top: 4px;
-      }
-      .hover\:button--size_sm:hover {
-        padding: 8px;
-        padding-top: 4px;
+      @layer variants {
+        .button--size_sm {
+          padding: 8px;
+          padding-top: 4px;
+        }
+        .hover\:button--size_sm:hover {
+          padding: 8px;
+          padding-top: 4px;
+        }
       }
     }
     ");
@@ -746,29 +690,20 @@ fn coalesces_recipe_entries_with_matching_at_rule_targets() {
             "paddingTop": { "className": "pt" }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes {
-      .button--size_sm {
-        padding: 8px;
-        padding-top: 4px;
-      }
-      @media (width >= 48rem) {
-        .md\:button--size_sm {
+      @layer variants {
+        .button--size_sm {
           padding: 8px;
           padding-top: 4px;
+        }
+        @media (width >= 48rem) {
+          .md\:button--size_sm {
+            padding: 8px;
+            padding-top: 4px;
+          }
         }
       }
     }
@@ -810,33 +745,24 @@ fn keeps_mixed_recipe_targets_separate_while_coalescing_each_target() {
             "paddingTop": { "className": "pt" }
         }
     }));
-    let css = compile_css(&config, "");
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
-    @layer tokens {
-      :where(:root, :host) {
-        --breakpoints-md: 48rem;
-        --sizes-breakpoint-md: 48rem;
-      }
-    }
     @layer recipes {
-      .button--size_sm {
-        padding: 8px;
-        padding-top: 4px;
-      }
-      .hover\:button--size_sm:hover {
-        padding: 8px;
-        padding-top: 4px;
-      }
-      @media (width >= 48rem) {
-        .md\:button--size_sm {
+      @layer variants {
+        .button--size_sm {
           padding: 8px;
           padding-top: 4px;
+        }
+        .hover\:button--size_sm:hover {
+          padding: 8px;
+          padding-top: 4px;
+        }
+        @media (width >= 48rem) {
+          .md\:button--size_sm {
+            padding: 8px;
+            padding-top: 4px;
+          }
         }
       }
     }
@@ -862,14 +788,13 @@ fn coalesces_duplicate_recipe_declarations_by_css_property() {
             }
         }
     }));
-    let css = compile_css(&config, "import { button } from '@panda/recipes'; button()");
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
       @layer base {
         .button {
@@ -910,26 +835,26 @@ fn sorts_recipe_atomic_atoms_with_dynamic_atoms() {
             }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ paddingTop: '2px' })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes, StylesheetLayer::Utilities]);
     assert_snapshot!(css, @"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer recipes {
-      .button--size_sm {
-        padding-top: 4px;
+      @layer variants {
+        .button--size_sm {
+          padding-top: 4px;
+        }
+      }
+      @layer compound_variants {
+        .button--compound__size_sm {
+          padding: 8px;
+        }
       }
     }
     @layer utilities {
-      .p_8px {
-        padding: 8px;
-      }
       .pt_2px {
         padding-top: 2px;
       }
@@ -949,17 +874,13 @@ fn sorts_unknown_selector_conditions_before_known_pseudos() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _hover: { color: 'red' }, _dataOpen: { color: 'red' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .dataOpen\:c_red[data-open], .hover\:c_red:hover {
         color: red;
@@ -980,17 +901,13 @@ fn sorts_compound_pseudo_conditions_by_total_pseudo_priority() {
             "color": { "className": "c" }
         }
     }));
-    let css = compile_css(
+    let css = compile_output(
         &config,
         "import { css } from '@panda/css'; css({ _hoverFocus: { color: 'red' }, _hover: { color: 'red' } })",
-    );
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
     assert_snapshot!(css, @r"
-    @layer reset, base, tokens, recipes, utilities;
-    @layer base {
-      :root {
-        --made-with-panda: '🐼';
-      }
-    }
     @layer utilities {
       .hover\:c_red:hover, .hoverFocus\:c_red:hover:focus {
         color: red;
