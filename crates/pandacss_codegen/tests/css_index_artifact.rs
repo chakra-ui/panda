@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use indoc::indoc;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::CodegenFormat;
+use pandacss_config::{CodegenFormat, CssSyntaxKind, UserConfig};
 
 #[test]
 fn reexports_css_modules() {
@@ -77,6 +77,39 @@ fn can_emit_import_extensions() {
         export * from './cva.d.mts';
         export * from './cx.d.mts';
         export * from './sva.d.mts';
+        "}
+        .trim()
+    );
+}
+
+#[test]
+fn template_literal_syntax_reexports_css_and_cx_only() {
+    let config = UserConfig {
+        syntax: CssSyntaxKind::TemplateLiteral,
+        ..Default::default()
+    };
+    let artifacts = ArtifactGraph.generate_with_config(
+        &config,
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
+    let index = artifact(&artifacts, ArtifactId::CssIndex);
+
+    assert_eq!(
+        file(index, "css/index.mjs"),
+        indoc! {r"
+        export * from './css.mjs';
+        export * from './cx.mjs';
+        "}
+        .trim()
+    );
+    assert_eq!(
+        file(index, "css/index.d.mts"),
+        indoc! {r"
+        export * from './css.d.mts';
+        export * from './cx.d.mts';
         "}
         .trim()
     );

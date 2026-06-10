@@ -1,4 +1,4 @@
-//! A minimal TypeScript AST — just the node kinds the generators emit, built
+//! A minimal TypeScript AST — just the node kinds the artifact builders emit, built
 //! fluently and printed by [`crate::emit`]. Each [`Item`] is tagged with an
 //! [`ItemRole`] (runtime vs type-only) so the split-output path can drop the
 //! type items from the `.js` and keep them in the `.d.ts`.
@@ -7,12 +7,21 @@
 pub struct Module {
     pub imports: Vec<ImportDecl>,
     pub items: Vec<Item>,
+    /// Emitted as the first line of runtime/source output (e.g. `"use client"`
+    /// for RSC client boundaries). Never emitted in `.d.ts` files.
+    pub directive: Option<String>,
 }
 
 impl Module {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+
+    #[must_use]
+    pub fn with_directive(mut self, directive: impl Into<String>) -> Self {
+        self.directive = Some(directive.into());
+        self
     }
 
     #[must_use]

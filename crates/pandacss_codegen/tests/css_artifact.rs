@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, GenerateOptions};
-use pandacss_config::{CodegenFormat, TypeData, UserConfig, UtilityTypeData};
+use pandacss_config::{CodegenFormat, CssSyntaxKind, TypeData, UserConfig, UtilityTypeData};
 
 fn config() -> UserConfig {
     serde_json::from_value(serde_json::json!({
@@ -60,8 +60,8 @@ fn emits_ts_source_css() {
 
     assert_eq!(paths(css), vec!["css/css.ts"]);
     assert_snapshot!(file(css, "css/css.ts"), @r#"
-    import { createCss, createMergeCss, hypenateProperty, withoutSpace } from '../helpers';
-    import { finalizeConditions, sortConditions } from './conditions';
+    import { createCssRuntime, hypenateProperty, isObject, withoutSpace } from '../helpers';
+    import { breakpointKeys, finalizeConditions, sortConditions } from './conditions';
     import type { SystemStyleObject } from '../types/system';
 
     type Styles = SystemStyleObject | undefined | null | false
@@ -98,12 +98,12 @@ fn emits_ts_source_css() {
 
     const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
 
-    const context = {
+    const { serializeCss, mergeCss, assignCss } = createCssRuntime({
       hash: false,
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
-        breakpoints: { keys: ["base","sm"] },
+        breakpoints: { keys: breakpointKeys },
       },
       utility: {
         prefix: null,
@@ -118,13 +118,12 @@ fn emits_ts_source_css() {
         },
         resolveShorthand,
       },
-    }
-
-    const cssFn = createCss(context)
+    })
 
     export const css: CssFunction = /* @__PURE__ */ Object.assign(
       function css(...styles: any[]) {
-        return cssFn(mergeCss(...styles))
+        if (styles.length === 1 && isObject(styles[0])) return serializeCss(styles[0])
+        return serializeCss(mergeCss(...styles))
       },
       {
         raw: function cssRaw(...styles: any[]) {
@@ -133,7 +132,7 @@ fn emits_ts_source_css() {
       },
     )
 
-    export const { mergeCss, assignCss } = createMergeCss(context)
+    export { mergeCss, assignCss }
     "#);
 }
 
@@ -166,8 +165,8 @@ fn emits_js_runtime_and_declarations() {
 
     assert_eq!(paths(css), vec!["css/css.mjs", "css/css.d.mts"]);
     assert_snapshot!(file(css, "css/css.mjs"), @r#"
-    import { createCss, createMergeCss, hypenateProperty, withoutSpace } from '../helpers.mjs';
-    import { finalizeConditions, sortConditions } from './conditions.mjs';
+    import { createCssRuntime, hypenateProperty, isObject, withoutSpace } from '../helpers.mjs';
+    import { breakpointKeys, finalizeConditions, sortConditions } from './conditions.mjs';
 
     const utilities = "WebkitLineClamp:webkit-line-clamp,color:text,flexDirection:flex/flexDir,marginInlineStart:/ms,marginLeft:ml/1"
 
@@ -187,12 +186,12 @@ fn emits_js_runtime_and_declarations() {
 
     const resolveShorthand = (prop) => shorthands.get(prop) || prop
 
-    const context = {
+    const { serializeCss, mergeCss, assignCss } = createCssRuntime({
       hash: false,
       conditions: {
         shift: sortConditions,
         finalize: finalizeConditions,
-        breakpoints: { keys: ["base","sm"] },
+        breakpoints: { keys: breakpointKeys },
       },
       utility: {
         prefix: null,
@@ -207,13 +206,12 @@ fn emits_js_runtime_and_declarations() {
         },
         resolveShorthand,
       },
-    }
-
-    const cssFn = createCss(context)
+    })
 
     export const css = /* @__PURE__ */ Object.assign(
       function css(...styles) {
-        return cssFn(mergeCss(...styles))
+        if (styles.length === 1 && isObject(styles[0])) return serializeCss(styles[0])
+        return serializeCss(mergeCss(...styles))
       },
       {
         raw: function cssRaw(...styles) {
@@ -222,7 +220,7 @@ fn emits_js_runtime_and_declarations() {
       },
     )
 
-    export const { mergeCss, assignCss } = createMergeCss(context)
+    export { mergeCss, assignCss }
     "#);
     assert_snapshot!(file(css, "css/css.d.mts"), @"
     import type { SystemStyleObject } from '../types/system.d.mts';
@@ -261,4 +259,118 @@ fn guards_empty_utility_metadata() {
 
     assert!(runtime.contains("const utilities = \"\""));
     assert!(runtime.contains("if (utilities) {\n  utilities.split(\",\").forEach((utility) => {"));
+}
+
+#[test]
+fn emits_template_literal_css_runtime_and_declarations() {
+    let mut input = input();
+    input.config.syntax = CssSyntaxKind::TemplateLiteral;
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
+    let css = artifact(&artifacts, ArtifactId::Css);
+
+    assert_eq!(paths(css), vec!["css/css.mjs", "css/css.d.mts"]);
+    assert_snapshot!(file(css, "css/css.mjs"), @r#"
+    import { createCssRuntime, isObject, mergeProps, withoutSpace } from '../helpers.mjs';
+    import { finalizeConditions, sortConditions } from './conditions.mjs';
+
+    const newRule = /(?:([\u0080-\uFFFF\w-%@]+) *:? *([^{;]+?);|([^;}{]*?) *{)|(}\s*)/g
+    const ruleClean = /\/\*[^]*?\*\/|  +/g
+    const ruleNewline = /\n+/g
+
+    const astish = (val, tree = [{}]) => {
+      if (!val) return tree[0]
+      val = val.replace(ruleClean, "")
+      newRule.lastIndex = 0
+      let block
+      let left
+      while ((block = newRule.exec(val))) {
+        if (block[4]) tree.shift()
+        else if (block[3]) {
+          left = block[3].replace(ruleNewline, " ").trim()
+          if (!left.includes("&") && !left.startsWith("@")) left = "& " + left
+          tree.unshift(tree[0][left] = tree[0][left] || {})
+        } else {
+          tree[0][block[1]] = block[2].replace(ruleNewline, " ").trim()
+        }
+      }
+      return tree[0]
+    }
+
+    const { serializeCss, mergeCss, assignCss } = createCssRuntime({
+      hash: false,
+      conditions: {
+        shift: sortConditions,
+        finalize: finalizeConditions,
+        breakpoints: { keys: [] },
+      },
+      utility: {
+        prefix: null,
+        hasShorthand: false,
+        toHash(path, hashFn) {
+          return hashFn(path.join(":"))
+        },
+        transform(prop, value) {
+          return { className: `${prop}_${withoutSpace(value)}` }
+        },
+        resolveShorthand(prop) {
+          return prop
+        },
+      },
+    })
+    const templateCache = new WeakMap()
+    const toStyleObject = (style) => {
+      if (isObject(style)) return style
+      let cached = templateCache.get(style)
+      if (!cached) {
+        cached = astish(style[0])
+        templateCache.set(style, cached)
+      }
+      return cached
+    }
+
+    function mergeTemplateStyles(styles) {
+      let out
+      for (let i = 0; i < styles.length; i++) {
+        const style = styles[i]
+        if (!style) continue
+        const next = toStyleObject(style)
+        out = out ? mergeProps(out, next) : next
+      }
+      return out || {}
+    }
+
+    export const css = /* @__PURE__ */ Object.assign(
+      function css(...styles) {
+        return serializeCss(mergeTemplateStyles(arguments))
+      },
+      {
+        raw: function cssRaw(...styles) {
+          return mergeTemplateStyles(arguments)
+        },
+      },
+    )
+
+    export { mergeCss, assignCss }
+    "#);
+    assert_snapshot!(file(css, "css/css.d.mts"), @"
+    type CssTemplate = { raw: readonly string[] | ArrayLike<string> }
+
+    interface CssRawFunction {
+      (template: CssTemplate): Record<string, any>
+    }
+
+    interface CssFunction {
+      (template: CssTemplate): string
+
+      raw: CssRawFunction
+    }
+
+    export declare const css: CssFunction;
+    ");
 }

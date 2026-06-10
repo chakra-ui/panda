@@ -22,6 +22,7 @@ fn filters_artifacts_by_config_dependencies() {
             ArtifactId::Helpers,
             ArtifactId::JsxIsValidProp,
             ArtifactId::JsxFactory,
+            ArtifactId::JsxHelper,
             ArtifactId::JsxPatterns,
             ArtifactId::JsxCreateRecipeContext,
             ArtifactId::JsxCreateSlotRecipeContext,

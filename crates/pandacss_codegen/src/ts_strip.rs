@@ -181,7 +181,9 @@ fn should_strip_variable_type(chars: &[char], colon: usize) -> bool {
 
 fn should_strip_generic_call(chars: &[char], angle: usize) -> bool {
     let before = chars[..angle].iter().collect::<String>();
-    before.ends_with("new Set") || before.ends_with("new Map")
+    ["new Set", "new Map", "new WeakSet", "new WeakMap"]
+        .iter()
+        .any(|callee| before.ends_with(callee))
 }
 
 fn skip_type_annotation(chars: &[char], mut index: usize) -> usize {

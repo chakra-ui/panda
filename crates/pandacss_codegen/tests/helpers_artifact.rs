@@ -638,16 +638,46 @@ fn emits_ts_source() {
 
     assert_eq!(paths(helpers), vec!["helpers.ts"]);
     let source = file(helpers, "helpers.ts");
+    assert_snapshot!(function_block(source, "memo"), @r#"
+    export function memo<T extends (...args: any[]) => any>(fn: T): T {
+      const cache = new Map<string, ReturnType<T>>()
+      return ((...args: Parameters<T>) => {
+        const key = JSON.stringify(args)
+        if (cache.has(key)) {
+          const out = cache.get(key) as ReturnType<T>
+          cache.delete(key)
+          cache.set(key, out)
+          return out
+        }
+        const out = fn(...args)
+        cache.set(key, out)
+        if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+        return out
+      }) as T
+    }
+    "#);
+    assert_snapshot!(function_block(source, "weakMemo"), @r#"
+    export function weakMemo<T extends (arg: any) => any>(fn: T): T {
+      const cache: WeakMap<object, ReturnType<T>> = new WeakMap()
+      return ((arg: Parameters<T>[0]) => {
+        if (!arg || typeof arg !== "object") return fn(arg)
+        if (cache.has(arg)) return cache.get(arg) as ReturnType<T>
+        const out = fn(arg)
+        cache.set(arg, out)
+        return out
+      }) as T
+    }
+    "#);
     assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCss(context: Record<string, any>): (...styles: any[]) => string {
-      const { utility: u, hash, conditions: c = { shift: (v: any) => v, finalize: (v: any[]) => v, breakpoints: { keys: [] } } } = context
+    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
+      const { utility: u, hash, conditions: c } = context
       const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
       const toClass = (paths: string[], name: string) => {
         const parts = c.finalize(paths)
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      return memo(({ base, ...styles }: Record<string, any> = {}) => {
+      const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
         const obj = mapObject(base ? Object.assign(styles, base) : styles, (v: any) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
         const set = new Set<string>()
         walkObject(obj, (value: any, paths: string[]) => {
@@ -661,6 +691,39 @@ fn emits_ts_source() {
         for (const name of set) out += out ? " " + name : name
         return out
       })
+      const resolve = (styles: Array<any> | IArguments) => {
+        const out: any[] = []
+        const visit = (items: Array<any> | IArguments) => {
+          for (let i = 0; i < items.length; i++) {
+            const style = items[i]
+            if (Array.isArray(style)) {
+              visit(style)
+              continue
+            }
+            if (!isObject(style)) continue
+            for (const key in style) {
+              if (style[key] !== void 0) {
+                out.push(style)
+                break
+              }
+            }
+          }
+        }
+        visit(styles)
+        if (out.length < 2) return out
+        for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
+        return out
+      }
+      const mergeCss: (...styles: any[]) => any = function() {
+        return mergeProps(...resolve(arguments))
+      }
+      const assignCss: (...styles: any[]) => any = function() {
+        const out: Record<string, any> = {}
+        const resolved = resolve(arguments)
+        for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
+        return out
+      }
+      return { serializeCss, mergeCss, assignCss }
     }
     "#);
 }
@@ -844,16 +907,46 @@ fn emits_js_runtime() {
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
     let source = file(helpers, "helpers.js");
+    assert_snapshot!(function_block(source, "memo"), @r#"
+    export function memo(fn) {
+      const cache = new Map()
+      return ((...args) => {
+        const key = JSON.stringify(args)
+        if (cache.has(key)) {
+          const out = cache.get(key)
+          cache.delete(key)
+          cache.set(key, out)
+          return out
+        }
+        const out = fn(...args)
+        cache.set(key, out)
+        if (cache.size > 500) cache.delete(cache.keys().next().value)
+        return out
+      })
+    }
+    "#);
+    assert_snapshot!(function_block(source, "weakMemo"), @r#"
+    export function weakMemo(fn) {
+      const cache = new WeakMap()
+      return ((arg) => {
+        if (!arg || typeof arg !== "object") return fn(arg)
+        if (cache.has(arg)) return cache.get(arg)
+        const out = fn(arg)
+        cache.set(arg, out)
+        return out
+      })
+    }
+    "#);
     assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCss(context) {
-      const { utility: u, hash, conditions: c = { shift: (v) => v, finalize: (v) => v, breakpoints: { keys: [] } } } = context
+    export function createCssRuntime(context) {
+      const { utility: u, hash, conditions: c } = context
       const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
       const toClass = (paths, name) => {
         const parts = c.finalize(paths)
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      return memo(({ base, ...styles } = {}) => {
+      const serializeCss = weakMemo(function serializeCss({ base, ...styles } = {}) {
         const obj = mapObject(base ? Object.assign(styles, base) : styles, (v) => Array.isArray(v) ? toResponsiveObject(v, c.breakpoints.keys) : v)
         const set = new Set()
         walkObject(obj, (value, paths) => {
@@ -867,6 +960,39 @@ fn emits_js_runtime() {
         for (const name of set) out += out ? " " + name : name
         return out
       })
+      const resolve = (styles) => {
+        const out = []
+        const visit = (items) => {
+          for (let i = 0; i < items.length; i++) {
+            const style = items[i]
+            if (Array.isArray(style)) {
+              visit(style)
+              continue
+            }
+            if (!isObject(style)) continue
+            for (const key in style) {
+              if (style[key] !== void 0) {
+                out.push(style)
+                break
+              }
+            }
+          }
+        }
+        visit(styles)
+        if (out.length < 2) return out
+        for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
+        return out
+      }
+      const mergeCss = function() {
+        return mergeProps(...resolve(arguments))
+      }
+      const assignCss = function() {
+        const out = {}
+        const resolved = resolve(arguments)
+        for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
+        return out
+      }
+      return { serializeCss, mergeCss, assignCss }
     }
     "#);
 }
@@ -881,8 +1007,5 @@ fn emits_declarations() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @r#"
-    export declare function createCss(context: Record<string, any>): (...styles: any[]) => string;
-    export declare function createMergeCss(context: Record<string, any>): { mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };
-    "#);
+    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
 }

@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use insta::assert_snapshot;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::CodegenFormat;
+use pandacss_config::{CodegenFormat, CssSyntaxKind, UserConfig};
 
 #[test]
 fn emits_ts_source_cva() {
@@ -131,4 +131,16 @@ fn emits_js_runtime_and_declarations() {
 
     export declare const cva: RecipeCreatorFn;
     ");
+}
+
+#[test]
+fn template_literal_syntax_skips_cva_artifact() {
+    let config = UserConfig {
+        syntax: CssSyntaxKind::TemplateLiteral,
+        ..Default::default()
+    };
+    let artifacts = ArtifactGraph.generate_with_config(&config, GenerateOptions::default());
+    let cva = artifact(&artifacts, ArtifactId::Cva);
+
+    assert!(paths(cva).is_empty());
 }

@@ -104,8 +104,8 @@ fn emits_ts_source_recipes() {
         ]
     );
     assert_snapshot!(file(recipes, "recipes/runtime.ts"), @r#"
-    import { createCss, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
-    import { finalizeConditions, sortConditions } from '../css/conditions';
+    import { createCssRuntime, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers';
+    import { breakpointKeys, finalizeConditions, sortConditions } from '../css/conditions';
     import { cx } from '../css/cx';
 
     function normalize(config: Record<string, any>) {
@@ -125,12 +125,12 @@ fn emits_ts_source_recipes() {
       const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
       const classPrefix = "p"
 
-      const recipeCss = createCss({
+      const { serializeCss: recipeCss } = createCssRuntime({
         hash: false,
         conditions: {
           shift: sortConditions,
           finalize: finalizeConditions,
-          breakpoints: { keys: ["base","sm"] },
+          breakpoints: { keys: breakpointKeys },
         },
         utility: {
           prefix: classPrefix,
@@ -325,8 +325,8 @@ fn emits_js_runtime_and_declarations() {
         ]
     );
     assert_snapshot!(file(recipes, "recipes/runtime.mjs"), @r#"
-    import { createCss, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
-    import { finalizeConditions, sortConditions } from '../css/conditions.mjs';
+    import { createCssRuntime, getCompoundVariantClassNames, getSlotCompoundVariant, memo, splitProps, toHash, uniq, withDefaults, withoutSpace } from '../helpers.mjs';
+    import { breakpointKeys, finalizeConditions, sortConditions } from '../css/conditions.mjs';
     import { cx } from '../css/cx.mjs';
 
     function normalize(config) {
@@ -346,12 +346,12 @@ fn emits_js_runtime_and_declarations() {
       const { name, className, variantMap, variantKeys, defaults, compounds } = normalize(config)
       const classPrefix = "p"
 
-      const recipeCss = createCss({
+      const { serializeCss: recipeCss } = createCssRuntime({
         hash: false,
         conditions: {
           shift: sortConditions,
           finalize: finalizeConditions,
-          breakpoints: { keys: ["base","sm"] },
+          breakpoints: { keys: breakpointKeys },
         },
         utility: {
           prefix: classPrefix,

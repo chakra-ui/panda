@@ -365,11 +365,15 @@ fn emits_ts_source_types() {
       [K in keyof T]?: StringToBoolean<keyof T[K]>
     }
 
+    export type RecipeCompoundSelection<T> = {
+      [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+    }
+
     export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
       base?: SystemStyleObject
       variants?: T
       defaultVariants?: RecipeSelection<T>
-      compoundVariants?: Array<RecipeSelection<T> & { css: SystemStyleObject }>
+      compoundVariants?: Array<RecipeCompoundSelection<T> & { css: SystemStyleObject }>
     }
 
     export interface RecipeCreatorFn {
@@ -384,7 +388,7 @@ fn emits_ts_source_types() {
       base?: SlotRecord<Slot, SystemStyleObject>
       variants?: T
       defaultVariants?: RecipeSelection<T>
-      compoundVariants?: Array<RecipeSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
+      compoundVariants?: Array<RecipeCompoundSelection<T> & { css: SlotRecord<Slot, SystemStyleObject> }>
     }
 
     export interface SlotRecipeCreatorFn {

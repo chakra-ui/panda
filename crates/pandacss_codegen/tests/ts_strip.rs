@@ -19,6 +19,18 @@ fn strips_generated_casts_and_constructor_generics() {
 }
 
 #[test]
+fn strips_weak_collection_constructor_generics() {
+    assert_eq!(
+        strip_typescript("const cache = new WeakMap<object, Record<string, any>>()"),
+        "const cache = new WeakMap()"
+    );
+    assert_eq!(
+        strip_typescript("const seen = new WeakSet<object>()"),
+        "const seen = new WeakSet()"
+    );
+}
+
+#[test]
 fn preserves_strings_that_look_like_types() {
     assert_eq!(
         strip_typescript(r#"const value = "x: string as T""#),

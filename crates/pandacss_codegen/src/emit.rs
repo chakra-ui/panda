@@ -74,10 +74,9 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
         EmitMode::SourceTs {
             import_extensions, ..
         } => PrintedFiles {
-            source_ts: Some(print_module(
+            source_ts: Some(with_directive(
                 module,
-                EmitTarget::SourceTs,
-                import_extensions,
+                print_module(module, EmitTarget::SourceTs, import_extensions),
             )),
             runtime: None,
             types: None,
@@ -87,11 +86,14 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
             import_extensions,
         } => PrintedFiles {
             source_ts: None,
-            runtime: Some(print_module_with_format(
+            runtime: Some(with_directive(
                 module,
-                EmitTarget::RuntimeJs,
-                import_extensions,
-                Some(format),
+                print_module_with_format(
+                    module,
+                    EmitTarget::RuntimeJs,
+                    import_extensions,
+                    Some(format),
+                ),
             )),
             types: Some(print_module_with_format(
                 module,
@@ -100,6 +102,15 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
                 Some(format),
             )),
         },
+    }
+}
+
+/// Prepend the module's directive prologue (e.g. `"use client"`) to emitted
+/// runtime/source code. Type declarations never carry directives.
+fn with_directive(module: &Module, code: String) -> String {
+    match module.directive.as_deref() {
+        Some(directive) if !code.is_empty() => format!("\"{directive}\";\n\n{code}"),
+        _ => code,
     }
 }
 

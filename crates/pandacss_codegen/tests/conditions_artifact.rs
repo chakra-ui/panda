@@ -1,7 +1,7 @@
 use crate::common::{artifact, file, paths};
 use indoc::indoc;
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::CodegenFormat;
+use pandacss_config::{CodegenFormat, CssSyntaxKind};
 use serde_json::json;
 
 #[test]
@@ -43,6 +43,8 @@ fn uses_config_conditions_and_breakpoints_for_ts_source() {
         const conditionRe = /^@|&/
         const underscoreRe = /^_/
         const selectorRe = /&|@/
+
+        export const breakpointKeys: string[] = ["base","sm","md"]
 
         export function isCondition(v: string): boolean {
           return conditions.has(v) || conditionRe.test(v)
@@ -111,6 +113,8 @@ fn emits_js_runtime_and_declarations() {
         const underscoreRe = /^_/
         const selectorRe = /&|@/
 
+        export const breakpointKeys = ["base","sm","md"]
+
         export function isCondition(v) {
           return conditions.has(v) || conditionRe.test(v)
         }
@@ -140,6 +144,8 @@ fn emits_js_runtime_and_declarations() {
     assert_eq!(
         file(conditions, "css/conditions.d.ts"),
         indoc! {r"
+        export declare const breakpointKeys: string[];
+
         export declare function isCondition(v: string): boolean;
 
         export declare function finalizeConditions(paths: string[]): string[];
@@ -177,4 +183,53 @@ fn can_emit_import_extensions() {
         "import { withoutSpace } from '../helpers.js';"
     );
     assert!(!file(conditions, "css/conditions.d.ts").contains("../types/system"));
+}
+
+#[test]
+fn template_literal_syntax_emits_selector_only_conditions() {
+    let graph = ArtifactGraph;
+    let mut config: pandacss_config::UserConfig = serde_json::from_value(json!({
+        "conditions": {
+            "hover": "&:hover"
+        }
+    }))
+    .expect("valid config");
+    config.syntax = CssSyntaxKind::TemplateLiteral;
+
+    let artifacts = graph.generate_with_config(
+        &config,
+        GenerateOptions {
+            format: CodegenFormat::Mjs,
+            import_extensions: true,
+        },
+    );
+    let conditions = artifact(&artifacts, ArtifactId::Conditions);
+
+    assert_eq!(paths(conditions), vec!["css/conditions.mjs"]);
+    assert_eq!(
+        file(conditions, "css/conditions.mjs"),
+        indoc! {r"
+        import { withoutSpace } from '../helpers.mjs';
+
+        export const isCondition = (val) => condRegex.test(val)
+
+        const condRegex = /^@|&|&$/
+        const selectorRegex = /&|@/
+
+        export const finalizeConditions = (paths) => {
+          return paths.map((path) => selectorRegex.test(path) ? `[${withoutSpace(path.trim())}]` : path)
+        }
+
+        export function sortConditions(paths) {
+          return paths.sort((a, b) => {
+            const aa = isCondition(a)
+            const bb = isCondition(b)
+            if (aa && !bb) return 1
+            if (!aa && bb) return -1
+            return 0
+          })
+        }
+        "}
+        .trim()
+    );
 }
