@@ -21,7 +21,7 @@ import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import pandaNode from '../../packages/node/src/index'
+import * as pandaNode from '@pandacss/node'
 
 const { codegen, loadConfigAndCreateContext } = pandaNode
 
@@ -102,10 +102,7 @@ function recipeUsage(config: FixtureConfig): string {
   const hasCard = Boolean(config.theme?.slotRecipes?.card)
   if (!hasButton && !hasCard) return ''
 
-  const imports = [
-    hasButton ? 'button' : undefined,
-    hasCard ? 'card' : undefined,
-  ].filter(Boolean)
+  const imports = [hasButton ? 'button' : undefined, hasCard ? 'card' : undefined].filter(Boolean)
 
   const button = hasButton
     ? `
@@ -215,15 +212,15 @@ function usage(config: FixtureConfig): { file: string; code: string } {
 const TSCONFIG = (react: boolean) =>
   JSON.stringify(
     {
-    compilerOptions: {
-      strict: true,
-      skipLibCheck: true,
-      noEmit: true,
-      moduleResolution: 'bundler',
-      module: 'esnext',
-      target: 'esnext',
-      ...(react ? reactCompilerOptions() : {}),
-    },
+      compilerOptions: {
+        strict: true,
+        skipLibCheck: true,
+        noEmit: true,
+        moduleResolution: 'bundler',
+        module: 'esnext',
+        target: 'esnext',
+        ...(react ? reactCompilerOptions() : {}),
+      },
       include: [react ? 'usage.tsx' : 'usage.ts'],
     },
     null,

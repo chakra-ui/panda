@@ -1,8 +1,5 @@
 import { performance } from 'node:perf_hooks'
-import tokenDictionaryDefault from '../../packages/token-dictionary/src/index.ts'
-import type * as tokenDictionaryTypes from '../../packages/token-dictionary/src/index.ts'
-
-const TokenDictionary = (tokenDictionaryDefault as unknown as typeof tokenDictionaryTypes).TokenDictionary
+import { TokenDictionary } from '@pandacss/token-dictionary'
 
 interface Args {
   tokens: number

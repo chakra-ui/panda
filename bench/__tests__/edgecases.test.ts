@@ -13,9 +13,9 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { format as formatCss } from '@projectwallace/format-css'
 import { test } from 'vitest'
-import { createContext } from '@pandacss/fixture'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
 import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createContext } from '../src/legacy-fixture'
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 const outDir = resolve(repoRoot, 'bench/.parity-out')
@@ -59,7 +59,11 @@ function fmt(css: string) {
 
 function lineSet(css: string) {
   const m = new Map<string, number>()
-  for (const l of css.split('\n').map((s) => s.trim()).filter(Boolean)) m.set(l, (m.get(l) ?? 0) + 1)
+  for (const l of css
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean))
+    m.set(l, (m.get(l) ?? 0) + 1)
   return m
 }
 
@@ -123,5 +127,7 @@ test('emitter parity battery', () => {
   }
 
   // eslint-disable-next-line no-console
-  console.log(`\n##### EMITTER BATTERY: ${mismatches}/${Object.keys(CASES).length} mismatched #####\n${report.join('')}`)
+  console.log(
+    `\n##### EMITTER BATTERY: ${mismatches}/${Object.keys(CASES).length} mismatched #####\n${report.join('')}`,
+  )
 }, 120_000)

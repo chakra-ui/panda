@@ -6,9 +6,9 @@
  */
 import { performance } from 'node:perf_hooks'
 import { test } from 'vitest'
-import { createContext } from '@pandacss/fixture'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
 import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createContext } from '../src/legacy-fixture'
 
 function synth(i: number): string {
   const c = ['red', 'blue', 'green', 'gray'][i % 4]

@@ -1,7 +1,19 @@
 {
-  "extends": "../tsconfig.build.json",
   "compilerOptions": {
-    "customConditions": ["source"]
+    "allowSyntheticDefaultImports": true,
+    "customConditions": [],
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "types": ["node", "vitest/globals"],
+    "verbatimModuleSyntax": true
   },
   "include": ["src/**/*.ts"]
 }

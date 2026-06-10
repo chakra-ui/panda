@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks'
 import { resolve } from 'node:path'
-import pandaNode from '../../packages/node/src/index'
+import * as pandaNode from '@pandacss/node'
 
 type Args = {
   cwd: string

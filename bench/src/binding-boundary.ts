@@ -1,15 +1,11 @@
 import { performance } from 'node:perf_hooks'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-// @ts-expect-error Bench scripts run through tsx with `--conditions source`.
-import bindingDefault from '../../packages/compiler/src/index.ts'
-import type * as bindingTypes from '../../packages/compiler/src/index.ts'
-// @ts-expect-error Bench scripts run through tsx with `--conditions source`.
-import wasmBindingDefault from '../../packages/compiler-wasm/src/index.ts'
-import type * as wasmBindingTypes from '../../packages/compiler-wasm/src/index.ts'
+import { createConfigSnapshot } from '@pandacss/config-loader'
+import * as binding from '@pandacss/compiler'
+import type { Compiler } from '@pandacss/compiler'
+import * as wasmBinding from '@pandacss/compiler-wasm'
 
-const binding = bindingDefault as unknown as typeof bindingTypes
-const wasmBinding = wasmBindingDefault as unknown as typeof wasmBindingTypes
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 
 interface Args {
@@ -46,6 +42,7 @@ function createConfig() {
   return {
     cwd: '/virtual',
     outdir: 'styled-system',
+    include: [],
     importMap,
     conditions: {
       _hover: '&:hover',
@@ -72,6 +69,7 @@ function createConfig() {
     theme: {
       recipes: {
         button: {
+          className: 'button',
           base: { size: '4px', color: 'red' },
           variants: {
             tone: {
@@ -134,16 +132,16 @@ async function measureAsync<T>(fn: () => Promise<T>): Promise<{ value: T; ms: nu
   return { value, ms: performance.now() - start }
 }
 
-function runProject(project: bindingTypes.Compiler, sources: Array<{ path: string; source: string }>, repeat: number) {
+function runProject(project: Compiler, sources: Array<{ path: string; source: string }>, repeat: number) {
   const cold = measure(() => {
-    for (const item of sources) project.parseFile(item.path, item.source)
+    for (const item of sources) project.parseFileSource(item.path, item.source)
   })
 
   const hotFile = sources[Math.floor(sources.length / 2)]
-  for (let i = 0; i < repeat; i++) project.parseFile(hotFile.path, hotFile.source)
+  for (let i = 0; i < repeat; i++) project.parseFileSource(hotFile.path, hotFile.source)
 
   const repeated = measure(() => {
-    for (let i = 0; i < repeat; i++) project.parseFile(hotFile.path, hotFile.source)
+    for (let i = 0; i < repeat; i++) project.parseFileSource(hotFile.path, hotFile.source)
   })
   const atoms = measure(() => project.atoms().length)
   const encodedRecipes = measure(() => project.encodedRecipes())
@@ -164,17 +162,16 @@ async function main() {
     path: `/virtual/File${index}.tsx`,
     source: sourceFor(index),
   }))
+  const snapshot = createConfigSnapshot(createConfig() as any)
+  const callbacks = createCallbacks()
 
   const napiLoad = measure(() =>
-    binding.createCompiler(
-      {
-        config: createConfig(),
-        callbacks: createCallbacks(),
-      },
-      { crossFile: false },
-    ),
+    binding.createCompilerFromSnapshot(snapshot, {
+      callbacks,
+      crossFile: false,
+    }),
   )
-  for (let i = 0; i < args.warm; i++) napiLoad.value.parseFile(sources[0].path, sources[0].source)
+  for (let i = 0; i < args.warm; i++) napiLoad.value.parseFileSource(sources[0].path, sources[0].source)
 
   const result: Record<string, unknown> = {
     scenario: 'binding-boundary',
@@ -189,19 +186,15 @@ async function main() {
   const wasmBundle = resolve(repoRoot, 'packages/compiler-wasm/pkg-node/compiler_wasm.js')
   if (args.wasm && existsSync(wasmBundle)) {
     const wasmLoad = await measureAsync(() =>
-      wasmBinding.createCompiler(
-        {
-          config: createConfig(),
-          callbacks: createCallbacks(),
-        },
-        {},
-      ),
+      wasmBinding.createCompilerFromSnapshot(snapshot, {
+        callbacks,
+      }),
     )
-    for (let i = 0; i < args.warm; i++) wasmLoad.value.compiler.parseFile(sources[0].path, sources[0].source)
+    for (let i = 0; i < args.warm; i++) wasmLoad.value.parseFileSource(sources[0].path, sources[0].source)
 
     result.wasm = {
       configLoadMs: ms(wasmLoad.ms),
-      ...runProject(wasmLoad.value.compiler as unknown as bindingTypes.Compiler, sources, args.repeat),
+      ...runProject(wasmLoad.value as unknown as Compiler, sources, args.repeat),
     }
   }
 

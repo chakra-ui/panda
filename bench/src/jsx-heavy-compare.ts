@@ -1,15 +1,8 @@
 import { performance } from 'node:perf_hooks'
-import bindingDefault from '../../packages/compiler/src/index.ts'
-import type * as bindingTypes from '../../packages/compiler/src/index.ts'
-import * as extractor from '../../packages/extractor/src/index.ts'
+import { createCompilerFromSnapshot } from '@pandacss/compiler'
+import { createConfigSnapshot } from '@pandacss/config-loader'
+import { extract as jsExtract } from '@pandacss/extractor'
 import { Project, ts } from 'ts-morph'
-
-const { createCompiler } = bindingDefault as unknown as typeof bindingTypes
-const jsExtract = (
-  extractor as unknown as {
-    default: { extract: typeof import('../../packages/extractor/src/index.ts').extract }
-  }
-).default.extract
 
 interface Args {
   elements: number
@@ -20,6 +13,7 @@ interface Args {
 const rustConfig = {
   cwd: '/virtual',
   outdir: 'styled-system',
+  include: [],
   importMap: {
     css: ['@panda/css'],
     recipe: ['@panda/recipes'],
@@ -29,6 +23,7 @@ const rustConfig = {
   },
   jsxFactory: 'styled',
 }
+const rustSnapshot = createConfigSnapshot(rustConfig)
 
 const componentNames = new Set(['Box', 'Stack', 'Grid', 'styled.div'])
 const functionNames = new Set(['css'])
@@ -52,13 +47,13 @@ function main() {
     skipFileDependencyResolution: true,
     skipLoadingLibFiles: true,
     useVirtualFileSystem: true,
-  })
+  } as any)
 
-  const rustExtractor = createCompiler(rustConfig)
+  const rustExtractor = createCompilerFromSnapshot(rustSnapshot)
 
   for (let i = 0; i < args.warm; i++) {
     runJs(project, source, path)
-    rustExtractor.extract(source, path)
+    rustExtractor.extractFileSource(path, source)
   }
 
   const jsStart = performance.now()
@@ -71,7 +66,7 @@ function main() {
   const rustStart = performance.now()
   let rustChecksum = 0
   for (let i = 0; i < args.iterations; i++) {
-    const result = rustExtractor.extract(source, path)
+    const result = rustExtractor.extractFileSource(path, source)
     rustChecksum += result.calls.length + result.jsx.length + result.diagnostics.length
   }
   const rustMs = performance.now() - rustStart

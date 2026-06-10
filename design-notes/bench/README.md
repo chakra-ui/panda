@@ -11,6 +11,9 @@ Dated reports comparing Panda implementations (JS / Rust NAPI / Rust WASM) again
 - **Reproduce section at the end** — exact commands a contributor can paste to re-run on their machine.
 - **Don't delete older reports.** They're history; if numbers stop applying, write a new dated report that references
   the old one.
+- **Legacy npm baseline** — comparison harnesses must run the legacy JS side against published npm `@pandacss/*`
+  packages, not local workspace sources. Keep v2-only packages local (`@pandacss/compiler`, `@pandacss/compiler-wasm`,
+  `@pandacss/config-loader`) and avoid `--conditions source` for bench scripts.
 
 ## How these connect to the design notes
 

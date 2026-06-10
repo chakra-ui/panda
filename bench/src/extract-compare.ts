@@ -28,13 +28,9 @@
 import { performance } from 'node:perf_hooks'
 import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
-import pandaNode from '../../packages/node/src/index.ts'
-import bindingDefault from '../../packages/compiler/src/index.ts'
-import type * as bindingTypes from '../../packages/compiler/src/index.ts'
-// The binding's source is CJS-style (uses `require()` for the native node
-// addon) and the bench package is `"type": "module"`. tsx wraps the CJS
-// module under `default`, so destructure from there.
-const { createCompiler } = bindingDefault as unknown as typeof bindingTypes
+import * as pandaNode from '@pandacss/node'
+import { createCompilerFromSnapshot } from '@pandacss/compiler'
+import { createConfigSnapshot } from '@pandacss/config-loader'
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 
@@ -78,6 +74,7 @@ function pct(numerator: number, denominator: number): string {
 const rustConfig = {
   cwd: repoRoot,
   outdir: 'styled-system',
+  include: [],
   importMap: {
     css: ['styled-system/css'],
     recipe: ['styled-system/recipes'],
@@ -87,6 +84,7 @@ const rustConfig = {
   },
   jsxFactory: 'styled',
 }
+const rustSnapshot = createConfigSnapshot(rustConfig)
 
 interface Source {
   path: string
@@ -228,8 +226,8 @@ async function main() {
   const jsSetupMs = performance.now() - jsSetupStart
 
   const rustSetupStart = performance.now()
-  const rustExtractor = createCompiler(rustConfig)
-  void rustExtractor.extract(largest.source, largest.path)
+  const rustExtractor = createCompilerFromSnapshot(rustSnapshot)
+  void rustExtractor.extractFileSource(largest.path, largest.source)
   const rustSetupMs = performance.now() - rustSetupStart
 
   // === cold pass: every file, once each ===
@@ -241,10 +239,10 @@ async function main() {
   }
   const jsColdMs = performance.now() - jsColdStart
 
-  const freshRustExtractor = createCompiler(rustConfig)
+  const freshRustExtractor = createCompilerFromSnapshot(rustSnapshot)
   const rustColdStart = performance.now()
   for (const { source, path } of sources) {
-    freshRustExtractor.extract(source, path)
+    freshRustExtractor.extractFileSource(path, source)
   }
   const rustColdMs = performance.now() - rustColdStart
 
@@ -258,7 +256,7 @@ async function main() {
 
   const rustWarmStart = performance.now()
   for (let i = 0; i < args.warm; i++) {
-    rustExtractor.extract(largest.source, largest.path)
+    rustExtractor.extractFileSource(largest.path, largest.source)
   }
   const rustWarmMs = performance.now() - rustWarmStart
 
