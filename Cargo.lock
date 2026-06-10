@@ -1116,6 +1116,7 @@ dependencies = [
  "oxc_resolver",
  "oxc_semantic",
  "oxc_span",
+ "pandacss_config",
  "pandacss_fs",
  "pandacss_shared",
  "pandacss_tokens",

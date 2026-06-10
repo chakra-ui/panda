@@ -751,10 +751,14 @@ impl PaletteAccumulator {
 
         for path in virtual_paths {
             let token_path = TokenPath::from_owned_path(path);
+            // A virtual token's value is its own var-ref (v1's `isVirtual ->
+            // varRef` rule), so `token('colors.colorPalette.500')` resolves to
+            // `var(--colors-color-palette-500)` instead of the path string.
+            let var = css_var(token_path.css_var_name.as_str(), context);
             let mut token = Token::new(
                 token_path.dotted.as_str(),
-                token_path.dotted.as_str(),
-                css_var(token_path.css_var_name.as_str(), context),
+                &var,
+                &var,
                 TokenCategory::Colors,
             );
             token.set_extension("isVirtual", "true");

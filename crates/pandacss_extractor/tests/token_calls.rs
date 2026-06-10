@@ -481,6 +481,60 @@ fn semantic_token_like_value_resolves_to_css_variable() {
 }
 
 #[test]
+fn color_palette_token_resolves_with_config_built_dictionary() {
+    // End-to-end parity: a dictionary built by `from_config` registers
+    // virtual colorPalette tokens whose value is their own var-ref, so both
+    // `token()` and `token.var()` fold to `var(--colors-color-palette-500)`.
+    let config: pandacss_config::UserConfig = serde_json::from_value(serde_json::json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "blue": { "500": { "value": "#3b82f6" } }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        css({
+          color: token('colors.colorPalette.500'),
+          outlineColor: token.var('colors.colorPalette.500'),
+        });
+    "};
+    let usage = extract(
+        src,
+        "fixture.tsx",
+        &panda_config_with_token_dictionary(dict),
+    );
+
+    assert_yaml_snapshot!(usage.calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: var(--colors-color-palette-500)
+          outlineColor: var(--colors-color-palette-500)
+      span:
+        start: 73
+        end: 178
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - colors.colorPalette.500
+      span:
+        start: 88
+        end: 120
+    ");
+}
+
+#[test]
 fn color_palette_token_like_value_resolves_to_css_variable() {
     let src = indoc! {r"
         import { token } from '@panda/tokens';

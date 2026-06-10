@@ -221,8 +221,8 @@ fn semantic_token_reference_expands_to_var_not_value() {
     );
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.brand.500: "#111827"
-    colors.colorPalette: colors.colorPalette
-    colors.colorPalette.500: colors.colorPalette.500
+    colors.colorPalette: var(--colors-color-palette)
+    colors.colorPalette.500: var(--colors-color-palette-500)
     colors.primary: var(--colors-brand-500)
     "##);
 }
@@ -794,14 +794,14 @@ fn from_config_collects_theme_tokens_semantic_tokens_and_breakpoints() {
       deprecated: false
       description: ~
     - path: colors.colorPalette
-      value: colors.colorPalette
+      value: var(--colors-color-palette)
       var: var(--colors-color-palette)
       category: colors
       condition: ~
       deprecated: false
       description: ~
     - path: colors.colorPalette.500
-      value: colors.colorPalette.500
+      value: var(--colors-color-palette-500)
       var: var(--colors-color-palette-500)
       category: colors
       condition: ~
@@ -873,7 +873,7 @@ fn from_config_collects_theme_variant_tokens_as_theme_conditions() {
       deprecated: false
       description: ~
     - path: colors.colorPalette
-      value: colors.colorPalette
+      value: var(--colors-color-palette)
       var: var(--colors-color-palette)
       category: colors
       condition: ~
@@ -956,7 +956,7 @@ fn from_config_transforms_composite_token_values() {
     assets.logo: "url(\"/logo.svg\")"
     assets.mark: "url(\"data:image/svg+xml,%3csvg viewBox='0 0 1 1'%3e%3cpath fill='black'/%3e%3c/svg%3e\")"
     borders.base: 1px solid var(--colors-red)
-    colors.colorPalette: colors.colorPalette
+    colors.colorPalette: var(--colors-color-palette)
     colors.red: "#f00"
     easings.smooth: "cubic-bezier(0.4, 0, 0.2, 1)"
     fonts.body: "Inter, sans-serif"
@@ -1001,7 +1001,7 @@ fn from_config_expands_color_mix_references() {
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.border: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
-    colors.colorPalette: colors.colorPalette
+    colors.colorPalette: var(--colors-color-palette)
     colors.fg: "color-mix(in srgb, var(--colors-pink) 87%, transparent)"
     colors.fg@_dark: var(--colors-border)
     colors.overlay: "color-mix(in srgb, var(--colors-border) 50%, transparent)"
@@ -1179,13 +1179,59 @@ fn from_config_uses_css_var_prefix_and_hash_options() {
       deprecated: false
       description: ~
     - path: colors.colorPalette.500
-      value: colors.colorPalette.500
+      value: var(--panda-iOGEjQ)
       var: var(--panda-iOGEjQ)
       category: colors
       condition: ~
       deprecated: false
       description: ~
     "##);
+}
+
+#[test]
+fn virtual_color_palette_tokens_resolve_to_their_css_var() {
+    // Parity with v1's `isVirtual -> varRef` rule: `token()` and `token.var()`
+    // both yield the virtual var, never the dotted path string.
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "blue": {
+                        "DEFAULT": { "value": "#00f" },
+                        "500": { "value": "#3b82f6" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    let resolutions = [
+        (
+            "get colors.colorPalette.500",
+            dict.get("colors.colorPalette.500", None),
+        ),
+        (
+            "get_var colors.colorPalette.500",
+            dict.get_var("colors.colorPalette.500", None),
+        ),
+        (
+            "get colors.colorPalette",
+            dict.get("colors.colorPalette", None),
+        ),
+    ];
+    assert_yaml_snapshot!(resolutions, @"
+    - - get colors.colorPalette.500
+      - var(--colors-color-palette-500)
+    - - get_var colors.colorPalette.500
+      - var(--colors-color-palette-500)
+    - - get colors.colorPalette
+      - var(--colors-color-palette)
+    ");
 }
 
 #[test]
@@ -1218,12 +1264,12 @@ fn from_config_builds_color_palette_view() {
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.button.light.accent.secondary: "#123456"
-    colors.colorPalette: colors.colorPalette
-    colors.colorPalette.300: colors.colorPalette.300
-    colors.colorPalette.500: colors.colorPalette.500
-    colors.colorPalette.accent.secondary: colors.colorPalette.accent.secondary
-    colors.colorPalette.light.accent.secondary: colors.colorPalette.light.accent.secondary
-    colors.colorPalette.secondary: colors.colorPalette.secondary
+    colors.colorPalette: var(--colors-color-palette)
+    colors.colorPalette.300: var(--colors-color-palette-300)
+    colors.colorPalette.500: var(--colors-color-palette-500)
+    colors.colorPalette.accent.secondary: var(--colors-color-palette-accent-secondary)
+    colors.colorPalette.light.accent.secondary: var(--colors-color-palette-light-accent-secondary)
+    colors.colorPalette.secondary: var(--colors-color-palette-secondary)
     colors.primary: "#111"
     colors.red.300: "#fca5a5"
     colors.red.500: "#ef4444"
@@ -1270,10 +1316,10 @@ fn from_config_color_palette_handles_default_keyword() {
     colors.brand: green
     colors.brand.hot: blue
     colors.brand.hot.er: "#FF0000"
-    colors.colorPalette: colors.colorPalette
-    colors.colorPalette.er: colors.colorPalette.er
-    colors.colorPalette.hot: colors.colorPalette.hot
-    colors.colorPalette.hot.er: colors.colorPalette.hot.er
+    colors.colorPalette: var(--colors-color-palette)
+    colors.colorPalette.er: var(--colors-color-palette-er)
+    colors.colorPalette.hot: var(--colors-color-palette-hot)
+    colors.colorPalette.hot.er: var(--colors-color-palette-hot-er)
     "##);
     assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
     brand:
@@ -1320,20 +1366,20 @@ fn from_config_color_palette_handles_nested_semantic_defaults() {
         .expect("token dictionary")
         .expect("non-empty dictionary");
 
-    assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
+    assert_yaml_snapshot!(snapshot_token_values(&dict), @"
     colors.button.dark: navy
     colors.button.light: skyblue
     colors.button.light.accent: cyan
     colors.button.light.accent.secondary: blue
-    colors.colorPalette: colors.colorPalette
-    colors.colorPalette.accent: colors.colorPalette.accent
-    colors.colorPalette.accent.secondary: colors.colorPalette.accent.secondary
-    colors.colorPalette.dark: colors.colorPalette.dark
-    colors.colorPalette.light: colors.colorPalette.light
-    colors.colorPalette.light.accent: colors.colorPalette.light.accent
-    colors.colorPalette.light.accent.secondary: colors.colorPalette.light.accent.secondary
-    colors.colorPalette.secondary: colors.colorPalette.secondary
-    "##);
+    colors.colorPalette: var(--colors-color-palette)
+    colors.colorPalette.accent: var(--colors-color-palette-accent)
+    colors.colorPalette.accent.secondary: var(--colors-color-palette-accent-secondary)
+    colors.colorPalette.dark: var(--colors-color-palette-dark)
+    colors.colorPalette.light: var(--colors-color-palette-light)
+    colors.colorPalette.light.accent: var(--colors-color-palette-light-accent)
+    colors.colorPalette.light.accent.secondary: var(--colors-color-palette-light-accent-secondary)
+    colors.colorPalette.secondary: var(--colors-color-palette-secondary)
+    ");
     assert_yaml_snapshot!(snapshot_color_palettes(&dict), @r##"
     button:
       "--colors-color-palette-dark": var(--colors-button-dark)
@@ -1378,8 +1424,8 @@ fn from_config_respects_color_palette_options() {
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.blue.500: "#3b82f6"
-    colors.colorPalette.500: colors.colorPalette.500
-    colors.colorPalette.muted: colors.colorPalette.muted
+    colors.colorPalette.500: var(--colors-color-palette-500)
+    colors.colorPalette.muted: var(--colors-color-palette-muted)
     colors.red.500: "#ef4444"
     colors.red.muted: "#fee2e2"
     "##);
@@ -1552,7 +1598,7 @@ fn from_config_resolves_alias_chains_like_js_dictionary() {
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
     colors.border: var(--colors-pink)
-    colors.colorPalette: colors.colorPalette
+    colors.colorPalette: var(--colors-color-palette)
     colors.disabled: var(--colors-border)
     colors.pink: "#ff00ff"
     "##);
@@ -1598,7 +1644,7 @@ fn from_config_flattens_deep_semantic_conditions_like_js() {
       deprecated: false
       description: ~
     - path: colors.colorPalette
-      value: colors.colorPalette
+      value: var(--colors-color-palette)
       var: var(--colors-color-palette)
       category: colors
       condition: ~
