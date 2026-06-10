@@ -11,6 +11,7 @@
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "require": "./index.cjs",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
@@ -26,13 +27,14 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm --platform=node --dts --no-splitting",
-    "build-fast": "tsup src/index.ts --format=esm --platform=node --no-dts --no-splitting",
+    "build": "tsup src/index.ts --format=esm,cjs --platform=node --dts --no-splitting",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --platform=node --no-dts --no-splitting",
     "dev": "pnpm build-fast --watch src",
     "test": "vitest run"
   },
   "files": [
-    "dist"
+    "dist",
+    "index.cjs"
   ],
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
