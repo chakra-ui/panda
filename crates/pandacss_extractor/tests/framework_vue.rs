@@ -2,6 +2,7 @@ use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 
 use crate::common::{extract_shape, import_shape, panda_config};
+use pandacss_extractor::{JsxExtractionConfig, JsxKind};
 use pandacss_extractor::{extract, extract_jsx, match_imports, scan_imports};
 
 #[test]
@@ -145,12 +146,14 @@ fn script_setup_aliases_and_template_calls_extract() {
     "#};
 
     let result = extract(source, "Alias.vue", &panda_config());
-    assert_yaml_snapshot!(extract_shape(&result), @r"
+    assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
         data:
           color: red
-    jsx: []
+    jsx:
+      - name: Box
+        data: {}
     ");
 }
 
@@ -441,6 +444,8 @@ fn larger_vue_sfc_mixes_scripts_templates_calls_and_style_props() {
             branches:
               - teal
               - orange
+      - name: Box
+        data: {}
     ");
 }
 
@@ -516,4 +521,197 @@ fn spans_point_into_the_original_vue_source() {
     assert_eq!(result.calls.len(), 1);
     let span = &result.calls[0].span;
     assert_snapshot!(&source[span.start as usize..span.end as usize], @"css({ color: 'red' })");
+}
+
+#[test]
+fn bare_recipe_component_in_template_emits_usage() {
+    // A slot-recipe context component used without props (the nuxt sandbox
+    // shape: `<Custom.Root>` where `custom.tsx` wraps the config recipe via
+    // `createSlotRecipeContext`) must still emit a recipe usage so base +
+    // default-variant CSS renders — same `emit_empty` rule as the TSX visitor.
+    let source = indoc! {r#"
+        <template>
+          <Custom.Root>
+            <Custom.Label>Hello</Custom.Label>
+          </Custom.Root>
+        </template>
+        <script setup lang="ts">
+        import * as Custom from '../components/custom'
+        </script>
+    "#};
+
+    let mut config = panda_config();
+    config.matchers.jsx_kinds = [
+        ("Custom.Root".to_owned(), JsxKind::Recipe),
+        ("Custom.Label".to_owned(), JsxKind::Recipe),
+    ]
+    .into_iter()
+    .collect();
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.component_names = ["Custom.Root".to_owned(), "Custom.Label".to_owned()]
+        .into_iter()
+        .collect();
+    let config = config.with_jsx(jsx);
+
+    let result = extract(source, "Card.vue", &config);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Custom.Root
+        data: {}
+      - name: Custom.Label
+        data: {}
+    ");
+}
+
+#[test]
+fn bare_unconfigured_component_in_template_is_not_emitted() {
+    // The uppercase heuristic alone (no configured jsx name) keeps the old
+    // behavior: no extractable attrs, no usage.
+    let source = indoc! {r#"
+        <template>
+          <Sidebar />
+        </template>
+        <script setup lang="ts">
+        import Sidebar from './Sidebar.vue'
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+}
+
+#[test]
+fn multi_statement_event_handler_does_not_break_the_parse() {
+    // v-on values may hold multiple statements (`@click="a(); b()"`), which
+    // can't survive the parenthesized-expression mask copy — they are dropped
+    // instead of producing a bogus parse diagnostic for valid Vue.
+    let source = indoc! {r#"
+        <template>
+          <Box color="red" @click="track(); close()" />
+        </template>
+        <script setup lang="ts">
+        import { Box } from '@panda/jsx';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: red
+    ");
+}
+
+#[test]
+fn single_expression_event_handler_still_parses() {
+    let source = indoc! {r#"
+        <template>
+          <Box color="red" @click="count++" />
+        </template>
+        <script setup lang="ts">
+        import { Box } from '@panda/jsx';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert!(result.diagnostics.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          color: red
+    ");
+}
+
+#[test]
+fn same_name_shorthand_resolves_through_script_scope() {
+    // Vue 3.4: `:padding` means `:padding="padding"`; kebab args camelize
+    // (`:font-size` -> `fontSize`). Both resolve via the script constants.
+    let source = indoc! {r#"
+        <template>
+          <Box :padding :font-size />
+        </template>
+        <script setup lang="ts">
+        import { Box } from '@panda/jsx';
+        const padding = '4px'
+        const fontSize = '12px'
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          padding: 4px
+          font-size: 12px
+    ");
+}
+
+#[test]
+fn same_name_shorthand_without_binding_is_dropped() {
+    // An unresolvable shorthand contributes nothing (it is NOT `true`), but a
+    // plain valueless attribute still folds to a boolean.
+    let source = indoc! {r#"
+        <template>
+          <Box :padding disabled color="red" />
+        </template>
+        <script setup lang="ts">
+        import { Box } from '@panda/jsx';
+        </script>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: Box
+        data:
+          disabled: true
+          color: red
+    ");
+}
+
+#[test]
+fn kebab_case_tag_resolves_to_configured_pascal_component() {
+    // Vue resolves `<custom-root>` against the PascalCase binding; configured
+    // component names match the same way.
+    let source = indoc! {r#"
+        <template>
+          <custom-root />
+        </template>
+    "#};
+    let mut config = panda_config();
+    config.matchers.jsx_kinds = [("CustomRoot".to_owned(), JsxKind::Recipe)]
+        .into_iter()
+        .collect();
+    let mut jsx = JsxExtractionConfig::default();
+    jsx.component_names = ["CustomRoot".to_owned()].into_iter().collect();
+    let config = config.with_jsx(jsx);
+
+    let result = extract(source, "Card.vue", &config);
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx:
+      - name: CustomRoot
+        data: {}
+    ");
+}
+
+#[test]
+fn kebab_case_tag_without_configured_component_is_ignored() {
+    let source = indoc! {r#"
+        <template>
+          <my-widget color="red" />
+        </template>
+    "#};
+    let result = extract(source, "Card.vue", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
 }

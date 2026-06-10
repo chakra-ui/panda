@@ -167,6 +167,16 @@ fn vue_expression_range(
     if name == "v-for" {
         return v_for_source_range(source, start, end);
     }
+    // v-on values may legally hold multiple statements (`@click="a(); b()"`),
+    // which can't survive the parenthesized-expression copy. Handlers are
+    // never style-relevant, so drop them instead of mis-parsing the file.
+    if (name.starts_with('@') || name.starts_with("v-on"))
+        && source
+            .get(start..end)
+            .is_some_and(|value| value.contains(';'))
+    {
+        return None;
+    }
     let is_expression = name.starts_with(':')
         || name.starts_with('@')
         || name.starts_with('.')

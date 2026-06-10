@@ -963,6 +963,181 @@ fn tagged_templates_are_ignored_in_object_syntax() {
 }
 
 #[test]
+fn bare_slot_recipe_component_in_vue_template_emits_recipe_css() {
+    // The nuxt sandbox shape: components wrapping the `custom` slot recipe via
+    // createSlotRecipeContext, consumed prop-less from a .vue template. The
+    // inferred jsx names (`Custom.Root`, `Custom.Label`) plus the template
+    // `emit_empty` rule must produce the recipe base CSS without any props.
+    let mut project = create_project(json!({
+        "theme": {
+            "slotRecipes": {
+                "custom": {
+                    "slots": ["root", "label"],
+                    "base": {
+                        "root": { "background": "red" },
+                        "label": { "fontWeight": "medium" }
+                    },
+                    "variants": {
+                        "size": {
+                            "sm": { "root": { "padding": "10px" } }
+                        }
+                    },
+                    "defaultVariants": { "size": "sm" }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "page.vue",
+        indoc! {r#"
+            <template>
+              <Custom.Root>
+                <Custom.Label>Hello</Custom.Label>
+              </Custom.Root>
+            </template>
+            <script setup lang="ts">
+            import * as Custom from '../components/custom'
+            </script>
+        "#},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
+    base:
+      - recipe: custom
+        slot: label
+        className: custom__label
+        entries:
+          - prop: fontWeight
+            value: medium
+            conditions: []
+      - recipe: custom
+        slot: root
+        className: custom__root
+        entries:
+          - prop: background
+            value: red
+            conditions: []
+    variants:
+      - recipe: custom
+        slot: root
+        className: custom__root--size_sm
+        entries:
+          - prop: padding
+            value: 10px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn kebab_case_recipe_component_in_vue_template_selects_variants() {
+    // Vue templates may reference the PascalCase binding as `<custom-root>`;
+    // the inferred `CustomRoot` jsx name must match and route variants.
+    let mut project = create_project(json!({
+        "theme": {
+            "slotRecipes": {
+                "custom": {
+                    "slots": ["root"],
+                    "base": { "root": { "background": "red" } },
+                    "variants": {
+                        "size": {
+                            "md": { "root": { "padding": "20px" } }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "page.vue",
+        indoc! {r#"
+            <template>
+              <custom-root size="md" />
+            </template>
+        "#},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
+    base:
+      - recipe: custom
+        slot: root
+        className: custom__root
+        entries:
+          - prop: background
+            value: red
+            conditions: []
+    variants:
+      - recipe: custom
+        slot: root
+        className: custom__root--size_md
+        entries:
+          - prop: padding
+            value: 20px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
+fn same_name_shorthand_variant_in_vue_template_selects_variants() {
+    // Vue 3.4 same-name shorthand: `:size` binds the script `size` constant,
+    // so the variant resolves through the script scope.
+    let mut project = create_project(json!({
+        "theme": {
+            "slotRecipes": {
+                "custom": {
+                    "slots": ["root"],
+                    "base": { "root": { "background": "red" } },
+                    "variants": {
+                        "size": {
+                            "md": { "root": { "padding": "20px" } }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "page.vue",
+        indoc! {r#"
+            <template>
+              <Custom.Root :size />
+            </template>
+            <script setup lang="ts">
+            import * as Custom from '../components/custom'
+            const size = 'md'
+            </script>
+        "#},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @"
+    base:
+      - recipe: custom
+        slot: root
+        className: custom__root
+        entries:
+          - prop: background
+            value: red
+            conditions: []
+    variants:
+      - recipe: custom
+        slot: root
+        className: custom__root--size_md
+        entries:
+          - prop: padding
+            value: 20px
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn named_slot_recipe_member_tag_routes_recipe_and_style_props() {
     let mut project = create_project(json!({
         "theme": {

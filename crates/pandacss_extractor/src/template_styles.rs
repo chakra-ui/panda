@@ -29,6 +29,11 @@ struct ResolvedTemplateTag<'a> {
     category: MatchCategory,
     name: Cow<'a, str>,
     alias: Cow<'a, str>,
+    /// Mirrors the TSX visitor's `ResolvedTag::emit_empty`: matched Panda
+    /// imports and configured component names (recipe/pattern jsx names)
+    /// emit a usage even without extractable attrs, so a bare
+    /// `<Custom.Root>` still renders its recipe's base + default variants.
+    emit_empty: bool,
 }
 
 #[must_use]
@@ -241,7 +246,8 @@ fn collect_tag(
         return Some(tag_end + 1);
     }
     let tag_name = source.get(name_start..name_end)?;
-    let Some(resolved) = resolve_template_tag(tag_name, scan.matched, scan.config) else {
+    let Some(resolved) = resolve_template_tag(tag_name, scan.matched, scan.config, scan.framework)
+    else {
         return Some(tag_end + 1);
     };
 
@@ -255,7 +261,7 @@ fn collect_tag(
         &mut entries,
     );
 
-    if !entries.is_empty() {
+    if !entries.is_empty() || resolved.emit_empty {
         let kind = crate::jsx::jsx_kind(&scan.config.matchers, &resolved.name, &resolved.alias);
         out.push(ExtractedJsx {
             category: resolved.category,
@@ -277,6 +283,7 @@ fn resolve_template_tag<'a>(
     tag_name: &'a str,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
+    framework: Framework,
 ) -> Option<ResolvedTemplateTag<'a>> {
     let (root, path) = tag_name.split_once('.').unwrap_or((tag_name, ""));
     for item in matched {
@@ -293,6 +300,7 @@ fn resolve_template_tag<'a>(
                         category: item.category,
                         name: Cow::Borrowed(&item.name),
                         alias: Cow::Borrowed(&item.alias),
+                        emit_empty: true,
                     });
                 }
             }
@@ -303,6 +311,7 @@ fn resolve_template_tag<'a>(
                         category: item.category,
                         name: Cow::Borrowed(path),
                         alias: Cow::Borrowed(&item.alias),
+                        emit_empty: true,
                     });
                 }
             }
@@ -314,7 +323,23 @@ fn resolve_template_tag<'a>(
             category: MatchCategory::Jsx,
             name: Cow::Borrowed(tag_name),
             alias: Cow::Borrowed(tag_name),
+            emit_empty: config.jsx.is_component_tag(tag_name),
         });
+    }
+    // Vue resolves kebab-case tags against PascalCase bindings
+    // (`<custom-root>` -> `CustomRoot`); match configured component names the
+    // same way. Svelte components are always capitalized, so kebab tags there
+    // are custom elements and stay unmatched.
+    if matches!(framework, Framework::Vue) && tag_name.contains('-') {
+        let pascal = pandacss_shared::pascal_case(tag_name);
+        if config.jsx.is_component_tag(&pascal) {
+            return Some(ResolvedTemplateTag {
+                category: MatchCategory::Jsx,
+                name: Cow::Owned(pascal),
+                alias: Cow::Borrowed(tag_name),
+                emit_empty: true,
+            });
+        }
     }
     None
 }
@@ -427,10 +452,27 @@ fn merge_vue_attr(
     if name.starts_with('[') || is_template_transport_attr(name) {
         return;
     }
-    let Some(value) = attr_literal(value, is_expr, context) else {
+    // Vue 3.4 same-name shorthand: a valueless bound attr (`:size`) means
+    // `:size="size"` with the arg camelized — resolve the identifier through
+    // the script context instead of treating it as a boolean.
+    let value = if is_expr && matches!(value, AttrValue::Bool) {
+        parse_expression_literal(&camelize(name), Some(context))
+    } else {
+        attr_literal(value, is_expr, context)
+    };
+    let Some(value) = value else {
         return;
     };
     merge_style_prop(entries, &config.jsx, tag_name, name, value);
+}
+
+/// Vue's `camelize`: `foo-bar` -> `fooBar`.
+fn camelize(name: &str) -> String {
+    let mut out = pandacss_shared::pascal_case(name);
+    if let Some(first) = out.get_mut(..1) {
+        first.make_ascii_lowercase();
+    }
+    out
 }
 
 fn merge_svelte_attr(
