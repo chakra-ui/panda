@@ -629,7 +629,12 @@ impl Utility {
 /// name of the value-alias type its values resolve to (a token category alias,
 /// or `<Prop>Value`).
 fn property_type_data(name: &str, property: &UtilityProperty) -> UtilityPropertyTypeData {
-    let mut literals = property.values.keys().cloned().collect::<Vec<_>>();
+    let primitive = primitive_type_hint(&property.values);
+    let mut literals = if primitive.is_some() {
+        Vec::new()
+    } else {
+        property.values.keys().cloned().collect::<Vec<_>>()
+    };
     literals.sort();
     let alias_property = property.css_property.as_deref().unwrap_or(name);
     let alias = property.values_category.as_deref().map_or_else(
@@ -642,8 +647,25 @@ fn property_type_data(name: &str, property: &UtilityProperty) -> UtilityProperty
         css_property: property.css_property.clone(),
         token_category: property.values_category.clone(),
         literals,
-        primitive: None,
+        primitive,
         alias,
+    }
+}
+
+/// `values: { type: 'boolean' }` is a type hint, not a values map — the
+/// property accepts the named primitive instead of literal keys.
+fn primitive_type_hint(values: &FxHashMap<String, Literal>) -> Option<PrimitiveType> {
+    if values.len() != 1 {
+        return None;
+    }
+    match values.get("type")? {
+        Literal::String(value) => match value.as_str() {
+            "boolean" => Some(PrimitiveType::Boolean),
+            "number" => Some(PrimitiveType::Number),
+            "string" => Some(PrimitiveType::String),
+            _ => None,
+        },
+        _ => None,
     }
 }
 
