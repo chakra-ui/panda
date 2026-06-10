@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@pandacss/cli": "workspace:*",
-    "@pandacss/postcss_v2": "workspace:*",
+    "@pandacss/postcss": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@remix-run/dev": "2.17.2",

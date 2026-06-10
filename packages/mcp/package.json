@@ -40,10 +40,7 @@
   "dependencies": {
     "@clack/prompts": "0.11.0",
     "@modelcontextprotocol/sdk": "^1.25.2",
-    "@pandacss/logger": "workspace:*",
-    "@pandacss/node": "workspace:*",
-    "@pandacss/token-dictionary": "workspace:*",
-    "@pandacss/types": "workspace:*",
+    "@pandacss/compiler": "workspace:*",
     "zod": "^4.0.0"
   }
 }

@@ -42,7 +42,7 @@ function withDiagnosticFile(diagnostic: Diagnostic, file: string | undefined): D
 }
 
 /**
- * Vite plugin for the Panda CSS v2 engine.
+ * Vite plugin for Panda CSS.
  * The CSS file declaring Panda layers is treated as the generated CSS root.
  */
 export function pandacss(options: PandaPluginOptions = {}): Plugin {

@@ -1,7 +1,0 @@
-{
-  "name": "sandbox-config-test-cts",
-  "private": true,
-  "devDependencies": {
-    "@pandacss/dev": "workspace:^"
-  }
-}

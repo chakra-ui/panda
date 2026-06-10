@@ -1,28 +1,20 @@
 {
   "name": "@pandacss/postcss",
-  "version": "1.10.0",
-  "description": "PostCSS integration for Panda CSS",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "version": "0.0.0",
+  "description": "PostCSS plugin for Panda CSS",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
+      "require": "./index.cjs",
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
-  },
-  "scripts": {
-    "build": "tsup src/index.ts --format=cjs,esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=cjs,esm --shims --no-dts",
-    "dev": "pnpm build-fast --watch"
   },
   "sideEffects": false,
   "homepage": "https://panda-css.com",
@@ -34,14 +26,24 @@
   "publishConfig": {
     "access": "public"
   },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm,cjs --platform=node --dts --no-splitting",
+    "build-fast": "tsup src/index.ts --format=esm,cjs --platform=node --no-dts --no-splitting",
+    "dev": "pnpm build-fast --watch src",
+    "test": "vitest run"
+  },
   "files": [
-    "dist"
+    "dist",
+    "index.cjs"
   ],
   "dependencies": {
-    "@pandacss/node": "workspace:*",
-    "postcss": "8.5.6"
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "postcss": ">=8"
   },
   "devDependencies": {
-    "@pandacss/logger": "workspace:*"
+    "postcss": "8.5.6"
   }
 }

@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@pandacss/cli": "workspace:*",
-    "@pandacss/postcss_v2": "workspace:*",
+    "@pandacss/postcss": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*"
   }

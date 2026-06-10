@@ -5,8 +5,6 @@
   "type": "module",
   "description": "The repository of css panda",
   "scripts": {
-    "playground": "pnpm --filter=./playground",
-    "build:playground": "pnpm --filter {./playground}... build",
     "prepare": "husky && pnpm build-fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
     "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
@@ -22,7 +20,6 @@
     "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test run",
     "clean": "pnpm -r --parallel exec rimraf dist .turbo *.log",
     "reset": "pnpm -r --parallel exec rimraf node_modules && rimraf node_modules",
-    "test:import-map": "cd packages/config/__tests__/samples/ts-import-map && pnpm test && cd ../ts-import-map-one-source && pnpm test",
     "test": "vitest",
     "codegen": "pnpm --filter=./sandbox/codegen",
     "test:codegen": "pnpm codegen test && pnpm codegen typecheck",
@@ -33,11 +30,6 @@
     "typecheck": "tsc --noEmit",
     "release": "changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
-    "prepare-studio": "pnpm --filter=./packages/studio codegen",
-    "build-studio": "pnpm --filter=./sandbox/vite-ts exec pnpm panda studio --build",
-    "deploy-studio": "pnpm prepare-studio && pnpm build-studio",
-    "serve-studio": "npx serve ./sandbox/vite-ts/styled-system-studio",
-    "website": "pnpm --filter=./website",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },
   "keywords": [],
@@ -77,9 +69,7 @@
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
-      "pnpm prepare-studio",
-      "pnpm prettier-fix",
-      "git add --all packages/studio/"
+      "pnpm prettier-fix"
     ]
   },
   "packageManager": "pnpm@10.29.3",

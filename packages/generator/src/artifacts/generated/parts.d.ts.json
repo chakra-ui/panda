@@ -1,3 +1,0 @@
-{
-  "content": "export interface Part {\n  selector: string\n}\n\nexport interface Parts {\n  [key: string]: Part\n}\n"
-}
