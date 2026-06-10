@@ -1,6 +1,6 @@
 import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
-import type { PandaHookRegistry } from './hooks'
+import type { PandaHookRegistry, PandaHooks } from './hooks'
 import type { PatternConfig } from './pattern'
 import type { Keys, LiteralUnion, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'

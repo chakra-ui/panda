@@ -89,7 +89,7 @@ class FallbackCompiler implements Compiler {
   }
   spec() {
     return {
-      conditions: { keys: [], breakpoints: [] },
+      conditions: { keys: [], breakpoints: [], containers: [] },
       tokens: { categories: {}, colorPalettes: [], values: {}, deprecated: [] },
       utilities: { properties: {}, shorthands: {}, deprecated: [] },
       patterns: { patterns: {} },
