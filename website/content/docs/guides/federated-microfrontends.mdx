@@ -1,0 +1,413 @@
+---
+title: Federated Micro-Frontends
+description: How to safely run multiple Panda-built applications (and multiple versions of the same design system) on a single host page using `prefix` and `cssVarRoot` — whether your design system ships static CSS or build info.
+---
+
+Panda supports federated micro-frontend architectures — multiple
+independently-built apps loaded onto a single host page — through the
+`prefix` and `cssVarRoot` config options.
+
+This guide shows how to set up a Panda lib so it can co-exist with other
+Panda libs (or with a different version of itself) without class-name or CSS
+variable collisions.
+
+## When you need this
+
+Any setup that loads two or more independently-built Panda stylesheets into
+one document is affected:
+
+- Webpack Module Federation
+- single-spa, qiankun, or other micro-frontend orchestrators
+- Dynamically-injected widgets (Intercom-style embeds)
+- A host page that pins one version of your design system while a remote
+  pins a different version
+
+If your bundles never share a document — for example with Next.js multi-zone
+routing or iframe embedding — you do not need this guide. Each app's CSS
+loads in its own document and the cascade cannot cross.
+
+## The two classes of clash
+
+There are two distinct ways federated bundles collide.
+
+### Override leakage (single version)
+
+Two remotes load the same DS version, and one of them defines a local
+override:
+
+```css
+/* Remote 1 */
+.ds-background { background-color: blue; }
+.remote1-background { background-color: red; }
+
+/* Remote 2 */
+.ds-background { background-color: blue; }
+```
+
+Load order decides whether `.remote1-background` wins. Wrap your DS rules
+in a [cascade layer](/docs/concepts/cascade-layers):
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  layers: {
+    recipes: 'ds.recipes',
+    utilities: 'ds.utilities'
+  }
+})
+```
+
+Unlayered styles always beat layered styles per the CSS cascade spec, so the
+remote's local overrides are now deterministic regardless of load order.
+
+### Cross-version collision
+
+Remote A pins `@acme/ds@1`, Remote B pins `@acme/ds@2`. Both bundles emit a
+`.button` rule from `defineRecipe`, and both emit `--colors-brand` on
+`:root` — with **different** values:
+
+```css
+/* v1's bundle */
+:root { --colors-brand: #ea580c; }
+.button { background: var(--colors-brand); padding: 8px 12px; }
+
+/* v2's bundle */
+:root { --colors-brand: #2563eb; }
+.button { background: var(--colors-brand); padding: 20px 40px; }
+```
+
+Same selector, different rule. Same custom property, different value. The
+cascade picks one globally, and the loser is silently overwritten. **Cascade
+layers do not help here** — both versions emit into the same `recipes`
+layer, and within a single layer load order still decides.
+
+This is the case `prefix` is designed for.
+
+## Two distribution models
+
+`prefix` is the fix in both cases — it's the only thing that survives a
+cross-version collision. What differs between setups is **who owns the
+prefix** and **what it's keyed to**, and that follows from how the design
+system ships its CSS:
+
+| Distribution                     | Who sets `prefix` | Keyed to                       | Tradeoff                                                                          |
+| -------------------------------- | ----------------- | ------------------------------ | --------------------------------------------------------------------------------- |
+| Lib ships **static CSS**         | Lib author        | DS version (e.g. `acme-v1`)    | One DS bundle per major, shared across every remote                               |
+| Lib ships **build info + preset**| Remote owner      | Remote identity (e.g. `remote1`) | Each remote tree-shakes its own DS slice; cross-version isolation falls out for free |
+
+In the **static-CSS** model the lib runs `panda cssgen` itself and publishes
+the finished stylesheet, so the prefix has to be baked in at the lib's build
+time — and the only thing it can safely key to is its own version. The
+sections from [Setting `prefix`](#setting-prefix) through [Recommended remote
+config](#recommended-remote-config) walk this model in detail.
+
+In the **build-info** model the lib ships extraction metadata and a preset
+instead of CSS, and each consuming remote generates the final stylesheet
+during its own app build. The prefix moves to the remote's config, keyed to
+the remote's identity. See [Model 2: Library ships build info +
+preset](#model-2-library-ships-build-info--preset) below.
+
+> If the lib and every consumer all use Panda, the build-info model is the
+> one the [Component Library guide](/docs/guides/component-library#ship-the-build-info-file)
+> already recommends — it tree-shakes the output down to the styles each app
+> actually uses. Federation doesn't change that recommendation; it just adds
+> the `prefix` requirement on the consumer side.
+
+## Setting `prefix`
+
+Set a distinct `prefix` per design-system version. Panda prepends it to
+every emitted class name and CSS variable.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  prefix: 'acme-v1',
+  preflight: false,
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          brand: { value: '#ea580c' }
+        }
+      },
+      recipes: {
+        button: {
+          className: 'button',
+          base: {
+            background: 'brand',
+            padding: '8px 12px'
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+After `panda cssgen`, the bundle emits:
+
+```css
+:where(:root, :host) {
+  --acme-v1-colors-brand: #ea580c;
+}
+
+.acme-v1-button {
+  background: var(--acme-v1-colors-brand);
+  padding: 8px 12px;
+}
+```
+
+A second version with `prefix: 'acme-v2'` emits `.acme-v2-button` and
+`--acme-v2-colors-brand`. Both bundles can sit in the same `<head>` without
+clashing — the cascade has nothing to fight over.
+
+> **Note:** Source code in the lib and consumer apps doesn't change. Panda's
+> runtime `css()`, `cva()`, and recipe helpers read `prefix` from config and
+> emit the namespaced class names automatically.
+
+## Deriving the prefix from your package
+
+Hardcoding the prefix is brittle. The robust pattern is to derive it from
+your package's major version:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import pkg from './package.json' assert { type: 'json' }
+
+const major = pkg.version.split('.')[0]
+const slug = pkg.name.replace(/[@/]/g, '-').replace(/^-/, '')
+
+export default defineConfig({
+  prefix: `${slug}-v${major}`,
+  // ...
+})
+```
+
+For `@acme/lib@1.4.2`, this produces `acme-lib-v1`. Bumping to a 2.x release
+automatically rotates the prefix to `acme-lib-v2`, so two majors loaded into
+the same host page are structurally isolated without any human intervention.
+
+> **Note:** Patch and minor releases share a prefix. If you need every
+> release to be structurally distinct, use the full version
+> (`acme-lib-v1-4-2`). Major-only is the recommended default — it matches
+> the granularity humans already reason about for breaking changes.
+
+## Scoping tokens with `cssVarRoot`
+
+`prefix` namespaces the CSS variable **names**. That alone is enough to
+prevent the `:root` collision. If you also want the variables to be
+**scoped to a subtree** — so tokens declared by one remote don't apply
+to elements outside its mount point — set `cssVarRoot`:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  prefix: 'acme-v1',
+  cssVarRoot: '.acme-v1-scope'
+})
+```
+
+Emitted CSS:
+
+```css
+.acme-v1-scope {
+  --acme-v1-colors-brand: #ea580c;
+}
+```
+
+The remote then wraps its mount point in an element that carries the class:
+
+```tsx
+<div className="acme-v1-scope">
+  <Button>Click</Button>
+</div>
+```
+
+Elements outside `.acme-v1-scope` won't resolve `--acme-v1-colors-brand`.
+Useful when multiple remotes share a host page but each remote's tokens
+should be contained to its own DOM subtree.
+
+`cssVarRoot` is optional. `prefix` alone is sufficient for most federated
+setups because the variable names already differ per version.
+
+## How `defineRecipe` and `cva` are affected
+
+Both recipe APIs benefit from `prefix`, in slightly different ways.
+
+`defineRecipe` emits a stable class name based on the recipe name (`.button`,
+`.button--size-lg`). Without `prefix`, two versions of the same recipe
+produce identical class names with different declarations. With `prefix`,
+each version emits its own namespaced class — `acme-v1-button`,
+`acme-v2-button` — and the collision is gone.
+
+`cva` with raw values is already collision-free:
+
+```tsx filename="src/Button.tsx"
+import { cva } from '../styled-system/css'
+
+const button = cva({
+  base: {
+    background: '#ea580c',
+    padding: '8px 12px'
+  }
+})
+// emits .bg_\#ea580c .p_8px_12px ...
+```
+
+The atomic class names encode the **value**, so two versions with different
+values naturally produce different class names. `prefix` adds a second layer
+of isolation but isn't strictly required here.
+
+`cva` with semantic tokens is the quiet case:
+
+```tsx
+const button = cva({
+  base: { background: 'brand' }
+})
+// emits .bg_brand { background: var(--colors-brand) }
+```
+
+The atomic class name is **stable** across versions (`bg_brand` in both,
+with identical rule body), so there's no class-name clash. But both versions
+declare `--colors-brand` on `:root` with different values — the cascade picks
+one globally, and the visual result is wrong even though the class names
+matched. `prefix` fixes this by namespacing both the class
+(`acme-v1-bg_brand`) and the variable (`--acme-v1-colors-brand`).
+
+## Recommended remote config
+
+For a Panda lib intended to ship into a federated host:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import pkg from './package.json' assert { type: 'json' }
+
+const major = pkg.version.split('.')[0]
+const slug = pkg.name.replace(/[@/]/g, '-').replace(/^-/, '')
+
+export default defineConfig({
+  prefix: `${slug}-v${major}`,
+  preflight: false,
+  jsxFramework: 'react',
+  outdir: 'styled-system',
+  theme: {
+    extend: {
+      // tokens, recipes, etc.
+    }
+  }
+})
+```
+
+> **Note:** `preflight: false` is recommended for libs and remotes. A reset
+> stylesheet shipped from a remote can stomp on the host's body styles.
+> Let the host own the reset.
+
+## Model 2: Library ships build info + preset
+
+Everything above assumes the lib publishes prebuilt CSS. The other shape is
+[shipping build info](/docs/guides/component-library#ship-the-build-info-file)
+and a preset: each consuming remote generates the final stylesheet during its
+own build. The collision is identical, and `prefix` is still the fix — it
+just moves to the **consumer's** config, keyed to the remote's identity
+rather than the DS version.
+
+`panda ship` only writes extraction results (which styles are used), not the
+token and recipe **definitions**. So a build-info consumer wires up two
+pieces: the build-info file (via `include`) and the lib's preset (via
+`presets`). The preset supplies the definitions, the build-info file supplies
+the usage.
+
+`prefix` lives on the consumer's top-level config and is applied at emission,
+so `.button` becomes `.remote1-button` and `--colors-brand` becomes
+`--remote1-colors-brand` — regardless of whether the definition came from the
+remote's own source or from the lib's preset.
+
+```ts filename="remote1/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { acmeDsPreset } from '@acme-org/design-system'
+
+export default defineConfig({
+  prefix: 'remote1',
+  presets: ['@pandacss/dev/presets', acmeDsPreset],
+  importMap: '@acme-org/styled-system',
+  include: [
+    './node_modules/@acme-org/design-system/dist/panda.buildinfo.json',
+    './src/**/*.{ts,tsx}'
+  ]
+})
+```
+
+### Cross-version isolation is automatic
+
+Because the prefix is keyed to the remote — not to the DS version — version
+isolation falls out without anyone tracking versions. If `remote1` pins
+`@acme-org/design-system@29` and `remote2` pins `@30`, each remote resolves
+its own copy in `node_modules`, gets its own preset plus build info, and
+emits CSS under its own remote prefix:
+
+```css
+/* remote1's bundle (DS v29) */
+.remote1-button { ... }
+:where(:root, :host) { --remote1-colors-brand: #ea580c; }
+
+/* remote2's bundle (DS v30) */
+.remote2-button { ... }
+:where(:root, :host) { --remote2-colors-brand: #2563eb; }
+```
+
+Two payloads can't collide on a selector or variable name, so the host page
+loads both without a fight.
+
+> **Note:** In the build-info model the lib never sets a `prefix` — each
+> consumer namespaces itself. A lib that baked in its own prefix would force
+> every consumer to share it, which puts back the collision you set out to
+> avoid.
+
+## Verifying the output
+
+After running `panda cssgen`, grep the emitted bundle for the names that
+previously collided:
+
+```bash
+grep -E "^\.button|--colors-brand:" styled-system/styles.css
+```
+
+You should see every match carrying your prefix:
+
+```css
+.acme-v1-button { ... }
+:where(:root, :host) { ... --acme-v1-colors-brand: ...; ... }
+```
+
+If you see unprefixed matches, double-check that `prefix` is set at the
+**top level** of `defineConfig` (not nested inside `theme`), and regenerate
+the bundle.
+
+## Limits of `prefix`
+
+`prefix` solves the structural class-name and CSS-variable collisions for
+multi-version federated setups. It does not solve:
+
+- **Same-prefix collisions.** Two libs that both choose `prefix: 'design'`
+  collide as if neither had a prefix. The prefix string is your isolation
+  key — choose it like you'd choose a package name.
+- **Reset collisions.** If multiple remotes ship `preflight: true`, the
+  resets fight regardless of `prefix` because they target raw element
+  selectors. Set `preflight: false` on remotes.
+- **Hand-written CSS.** `prefix` operates on what Panda emits. CSS
+  authored outside Panda still uses your hand-written selectors.
+
+For total style isolation against an untrusted host, consider wrapping the
+remote in an iframe or Shadow DOM. Heavier-weight, but bulletproof.
+
+## Related
+
+- [Cascade Layers](/docs/concepts/cascade-layers) — solves
+  single-version override leakage
+- [Hashing](/docs/concepts/writing-styles#hashing) — alternative to prefix
+  when you want short opaque class names instead of namespace strings
+- [Component Library](/docs/guides/component-library) — distribution
+  patterns for shipping a Panda lib
+- [Presets](/docs/customization/presets) — sharing tokens and recipes
+  across consumers

@@ -223,6 +223,7 @@ export const docsNavigation: NavItem = {
       items: [
         { title: 'Minimal Setup', url: 'minimal-setup' },
         { title: 'Component Library', url: 'component-library' },
+        { title: 'Federated Micro-Frontends', url: 'federated-microfrontends' },
         { title: 'Multiple Themes', url: 'multiple-themes' },
         { title: 'Custom Fonts', url: 'fonts' },
         { title: 'Dynamic Styles', url: 'dynamic-styling' },
