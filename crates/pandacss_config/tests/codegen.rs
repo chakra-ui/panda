@@ -12,12 +12,19 @@ fn codegen_format_defaults_and_overrides() {
         "codegenFormat": "js"
     }))
     .expect("js codegen config");
+    let mjs_config: UserConfig = serde_json::from_value(json!({
+        "codegenFormat": "mjs"
+    }))
+    .expect("mjs codegen config");
 
-    assert_eq!(default_config.codegen_format, CodegenFormat::Mjs);
-    assert_eq!(default_config.codegen_format.runtime_extension(), "mjs");
+    // `js` + `.d.ts` is the default: extensionless directory imports
+    // (`styled-system/css`) resolve under tsc and every bundler without
+    // per-bundler configuration; `mjs`/`ts` remain explicit opt-ins.
+    assert_eq!(default_config.codegen_format, CodegenFormat::Js);
+    assert_eq!(default_config.codegen_format.runtime_extension(), "js");
     assert_eq!(
         default_config.codegen_format.declaration_extension(),
-        Some("d.mts")
+        Some("d.ts")
     );
 
     assert_eq!(ts_config.codegen_format, CodegenFormat::Ts);
@@ -31,6 +38,14 @@ fn codegen_format_defaults_and_overrides() {
     assert_eq!(
         js_config.codegen_format.declaration_extension(),
         Some("d.ts")
+    );
+
+    assert_eq!(mjs_config.codegen_format, CodegenFormat::Mjs);
+    assert!(mjs_config.codegen_format.is_split());
+    assert_eq!(mjs_config.codegen_format.runtime_extension(), "mjs");
+    assert_eq!(
+        mjs_config.codegen_format.declaration_extension(),
+        Some("d.mts")
     );
 
     let serialized = serde_json::to_value(&ts_config).expect("serialized config");

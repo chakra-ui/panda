@@ -118,14 +118,14 @@ describe('Compiler', () => {
 
     expect(artifact?.files.map((file) => file.path)).toMatchInlineSnapshot(`
       [
-        "types/tokens.d.mts",
-        "types/system.d.mts",
-        "types/pattern.d.mts",
-        "types/recipe.d.mts",
-        "types/index.d.mts",
+        "types/tokens.d.ts",
+        "types/system.d.ts",
+        "types/pattern.d.ts",
+        "types/recipe.d.ts",
+        "types/index.d.ts",
       ]
     `)
-    expect(artifact?.files.find((file) => file.path === 'types/tokens.d.mts')?.code).toMatchInlineSnapshot(`
+    expect(artifact?.files.find((file) => file.path === 'types/tokens.d.ts')?.code).toMatchInlineSnapshot(`
       "export type ColorToken = "colorPalette.500" | "red.500"
 
       export interface Tokens {
@@ -164,11 +164,11 @@ describe('Compiler', () => {
     const compiler = createProject({ codegenImportExtensions: true })
 
     const artifact = compiler.generateArtifact('css-index')
-    const runtime = artifact?.files.find((file) => file.path === 'css/index.mjs')?.code
-    const types = artifact?.files.find((file) => file.path === 'css/index.d.mts')?.code
+    const runtime = artifact?.files.find((file) => file.path === 'css/index.js')?.code
+    const types = artifact?.files.find((file) => file.path === 'css/index.d.ts')?.code
 
-    expect(runtime).toContain('./css.mjs')
-    expect(types).toContain('./css.d.mts')
+    expect(runtime).toContain('./css.js')
+    expect(types).toContain('./css.d.ts')
   })
 
   it('expands staticCss.patterns through compile()', () => {

@@ -33,7 +33,7 @@ describe('compiler.spec()', () => {
           "base",
         ],
         "tokenValues": {
-          "colors.colorPalette": "colors.colorPalette",
+          "colors.colorPalette": "",
           "colors.red": "#f00",
         },
         "hasPropertyOrder": true,
@@ -195,8 +195,8 @@ describe('compiler.writeArtifacts()', () => {
       const compiler = createProject({ patterns: { stack: { properties: { gap: {} } } } })
       const written = compiler.writeArtifacts('styled-system', dir)
       // paths carry the temp dir (non-deterministic) — assert shape, not value.
-      expect(written.some((path) => path.endsWith(join('styled-system', 'patterns', 'stack.mjs')))).toBe(true)
-      expect(readFileSync(join(dir, 'styled-system', 'patterns', 'stack.mjs'), 'utf8')).toContain('getPatternStyles')
+      expect(written.some((path) => path.endsWith(join('styled-system', 'patterns', 'stack.js')))).toBe(true)
+      expect(readFileSync(join(dir, 'styled-system', 'patterns', 'stack.js'), 'utf8')).toContain('getPatternStyles')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

@@ -108,8 +108,8 @@ describe('@pandacss/vite', () => {
     server = await startServer(dir)
     await readCss(server) // force buildStart
 
-    expect(existsSync(join(dir, 'styled-system', 'css', 'index.mjs'))).toBe(true)
-    expect(existsSync(join(dir, 'styled-system', 'types', 'index.d.mts'))).toBe(true)
+    expect(existsSync(join(dir, 'styled-system', 'css', 'index.js'))).toBe(true)
+    expect(existsSync(join(dir, 'styled-system', 'types', 'index.d.ts'))).toBe(true)
   })
 
   it('regenerates the root CSS when a source file changes', async () => {
@@ -178,7 +178,7 @@ describe('@pandacss/vite', () => {
     server.watcher.emit('change', configFile)
 
     for (let attempt = 0; attempt < 50; attempt++) {
-      if (existsSync(join(dir, 'system', 'css', 'index.mjs'))) return
+      if (existsSync(join(dir, 'system', 'css', 'index.js'))) return
       await new Promise((done) => setTimeout(done, 100))
     }
     throw new Error('timed out waiting for codegen in updated config outdir')

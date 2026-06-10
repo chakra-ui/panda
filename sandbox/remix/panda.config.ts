@@ -4,7 +4,6 @@ export default {
   include: ['./app/routes/**/*.{tsx,jsx}', './app/components/**/*.{tsx,jsx}'],
   exclude: [],
   outdir: 'styled-system',
-  codegenFormat: 'js',
   codegenImportExtensions: true,
   globalFontface: {
     Dosis: {

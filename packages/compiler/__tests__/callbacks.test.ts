@@ -375,9 +375,9 @@ describe('Compiler callbacks', () => {
       ]
     `)
 
-    expect(
-      compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/system.d.mts')?.code,
-    ).toContain('export type SpaceValue = "-4" | "4" | "compact" | CssVars | AnyString')
+    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/system.d.ts')?.code).toContain(
+      'export type SpaceValue = "-4" | "4" | "compact" | CssVars | AnyString',
+    )
   })
 
   it('resolves utility values functions from a config snapshot', () => {
@@ -437,9 +437,9 @@ describe('Compiler callbacks', () => {
         },
       ]
     `)
-    expect(
-      compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/system.d.mts')?.code,
-    ).toContain('export type InsetValue = "-2" | "2" | "full" | CssVars | AnyString')
+    expect(compiler.generateArtifact('types')?.files.find((file) => file.path === 'types/system.d.ts')?.code).toContain(
+      'export type InsetValue = "-2" | "2" | "full" | CssVars | AnyString',
+    )
   })
 
   it('throws when serialized callback refs are missing callbacks', () => {

@@ -12,7 +12,6 @@ export default {
 
   // The output directory for your css system
   outdir: 'styled-system',
-  codegenFormat: 'js',
   codegenImportExtensions: true,
   jsxFramework: 'react',
   theme: {

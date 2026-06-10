@@ -65,11 +65,11 @@ describe('createNodeDriver', () => {
     driver.parseFiles()
 
     const written = driver.codegen()
-    expect(written.some((path) => path.endsWith(join('patterns', 'stack.mjs')))).toBe(true)
+    expect(written.some((path) => path.endsWith(join('patterns', 'stack.js')))).toBe(true)
 
-    const stack = readFileSync(join(dir, 'styled-system', 'patterns', 'stack.mjs'), 'utf8')
+    const stack = readFileSync(join(dir, 'styled-system', 'patterns', 'stack.js'), 'utf8')
     expect(stack).toContain('display: "flex"')
-    expect(stack).toContain('./runtime.mjs')
+    expect(stack).toContain('./runtime.js')
     expect(stack).not.toContain('(s) => s')
   })
 
@@ -151,7 +151,7 @@ describe('createNodeDriver', () => {
     expect(isSource(join(dir, 'App.tsx'))).toBe(true) // matches **/*.tsx
     expect(isSource(join(dir, 'nested', 'Deep.tsx'))).toBe(true)
     expect(isSource(join(dir, 'notes.md'))).toBe(false) // wrong extension
-    expect(isSource(join(dir, 'styled-system', 'css', 'index.mjs'))).toBe(false) // generated output
+    expect(isSource(join(dir, 'styled-system', 'css', 'index.js'))).toBe(false) // generated output
     expect(isSource('/elsewhere/Other.tsx')).toBe(false) // outside cwd
   })
 

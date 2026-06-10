@@ -3,6 +3,8 @@ export default {
   include: ['src/**/*.tsx'],
   exclude: [],
   outdir: 'styled-system',
+  // explicit: the app imports `styled-system/jsx/index.mjs`-style paths
+  codegenFormat: 'mjs',
   codegenImportExtensions: true,
   jsxFactory: 'panda',
   jsxFramework: 'react',

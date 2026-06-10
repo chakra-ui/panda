@@ -477,8 +477,8 @@ pub enum ValidationMode {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CodegenFormat {
-    Js,
     #[default]
+    Js,
     Mjs,
     Ts,
 }

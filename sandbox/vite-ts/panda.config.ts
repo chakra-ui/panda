@@ -2,7 +2,6 @@ import { someRecipe } from './some-recipe'
 
 export default {
   presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
-  codegenFormat: 'js',
   preflight: true,
   // v1 sandbox used a `cssgen:done` hook to strip unused vars/keyframes and a
   // `context:created` hook to inject the lime.300 rule — both native in v2.

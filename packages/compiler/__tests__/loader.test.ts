@@ -46,7 +46,7 @@ describe('loadCompiler', () => {
 
   it('embeds the user pattern transform in the generated pattern module', () => {
     const artifact = result.compiler.generateArtifact('patterns')
-    const stack = artifact?.files.find((file) => file.path === 'patterns/stack.mjs')
+    const stack = artifact?.files.find((file) => file.path === 'patterns/stack.js')
 
     expect(stack?.code).toMatchInlineSnapshot(`
       "import { getPatternStyles, patternFns } from './runtime';

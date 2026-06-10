@@ -42,6 +42,5 @@ export default {
     },
   },
   outdir: 'styled-system',
-  codegenFormat: 'js',
   codegenImportExtensions: true,
 }
