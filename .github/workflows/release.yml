@@ -143,14 +143,15 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      # Dispatch with dry_run=true: validate the staged platform binaries and
-      # the planned release set. `napi pre-publish` needs a changesets release
-      # commit, so it only runs on a real publish.
+      # Dispatch with dry_run=true: assert every platform binary staged into its
+      # npm package. `napi pre-publish` / `changeset publish` need a changesets
+      # release commit + the action's git setup, so they only run on a real
+      # publish.
       - name: Dry run
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           find packages/compiler/npm -name '*.node'
-          pnpm changeset status --verbose
+          test "$(find packages/compiler/npm -name '*.node' | wc -l)" -eq 8
 
       # `pnpm release` runs `napi pre-publish` (syncs platform package versions,
       # wires optionalDependencies, publishes platform packages) then
