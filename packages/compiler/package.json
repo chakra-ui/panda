@@ -33,22 +33,33 @@
   "scripts": {
     "build": "tsup src/index.ts src/loader.ts --format=esm --platform=node --dts",
     "build-fast": "tsup src/index.ts src/loader.ts --format=esm --platform=node --no-dts",
-    "build:native": "tsx build-binding.ts",
+    "build:native": "napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts",
     "dev": "pnpm build-fast --watch",
     "test": "vitest run"
   },
   "files": [
     "dist",
-    "*.node"
+    "binding.cjs"
   ],
   "napi": {
-    "binaryName": "compiler"
+    "binaryName": "compiler",
+    "packageName": "@pandacss/compiler",
+    "targets": [
+      "aarch64-apple-darwin",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-musl",
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc"
+    ]
   },
   "dependencies": {
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/config": "workspace:*"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.0"
+    "@napi-rs/cli": "^3.7.1"
   }
 }

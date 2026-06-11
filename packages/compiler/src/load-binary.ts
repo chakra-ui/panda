@@ -1,22 +1,17 @@
-import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { NativeBinding } from './index'
 
 const require = createRequire(import.meta.url)
-const currentDir = dirname(fileURLToPath(import.meta.url))
 
-// `dist/` and `src/` both sit next to `compiler.node` in the package root.
-const localBinding = join(currentDir, '..', 'compiler.node')
+// napi-generated loader at the package root. Require via a variable so bundlers
+// leave it external.
+const bindingPath = fileURLToPath(new URL('../binding.cjs', import.meta.url))
 
+/** Returns `undefined` on unsupported platforms so callers fall back to the no-op binding. */
 export function loadNativeBinding(): NativeBinding | undefined {
-  if (existsSync(localBinding)) {
-    return require(localBinding) as NativeBinding
-  }
-
   try {
-    return require('@pandacss/compiler-native') as NativeBinding
+    return require(bindingPath) as NativeBinding
   } catch {
     return undefined
   }
