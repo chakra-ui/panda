@@ -42,9 +42,9 @@
     "bin.js"
   ],
   "dependencies": {
-    "@clack/prompts": "0.11.0",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "@pandacss/compiler": "workspace:*",
+    "citty": "0.1.6",
     "zod": "^4.0.0"
   }
 }
