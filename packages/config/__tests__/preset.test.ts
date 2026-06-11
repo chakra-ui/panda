@@ -635,7 +635,7 @@ describe('resolveAuthoredPresets / runtime keys and unsafe keys', () => {
       defineConfig({
         name: 'user-config',
         extend: { outdir: 'ignored' },
-        hooks: { 'config:resolved': () => undefined },
+        hooks: { 'parser:before': ({ content }) => content },
         plugins: [{ name: 'ignored-plugin' }],
         presets: [
           definePreset({

@@ -4,7 +4,7 @@ use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
 use pandacss_config::CodegenFormat;
 
 #[test]
-fn uses_codegen_format_for_files() {
+fn uses_out_extension_for_files() {
     let graph = ArtifactGraph;
 
     let js = graph.generate(GenerateOptions {

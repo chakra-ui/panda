@@ -2,6 +2,7 @@ import type { Config, UserConfig } from '@pandacss/types'
 import { normalize, relative } from 'node:path'
 import { bundle } from './bundle'
 import { PandaError } from './error'
+import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { isPlainObject, type ExtendableConfig } from './shared'
@@ -14,6 +15,7 @@ interface CollectContext {
   configs: ExtendableConfig[]
   sourcedConfigs?: SourcedConfig[]
   dependencies: Set<string>
+  presetResolvedHooks: Array<PluginHookEntry<'preset:resolved'>>
 }
 
 export interface ResolveAuthoredPresetsResult {
@@ -39,6 +41,7 @@ export async function resolveAuthoredPresets(
     cwd,
     configs: [],
     dependencies: new Set<string>(),
+    presetResolvedHooks: [],
     ...(options.trackSources ? { sourcedConfigs: [] } : {}),
   }
 
@@ -103,16 +106,43 @@ async function collectConfigs(
   }
 
   active.add(config)
+  const hookCount = ctx.presetResolvedHooks.length
+  ctx.presetResolvedHooks.push(...collectPresetResolvedHooks(config))
 
   for (const preset of config.presets ?? []) {
     const resolved = await resolvePreset(preset, ctx.cwd)
     resolved.dependencies.forEach((dependency) => ctx.dependencies.add(dependency))
-    await collectConfigs(resolved.config, resolved.source, ctx, active)
+    const config = await runPresetResolvedHooks(resolved.config, resolved.source, ctx.presetResolvedHooks)
+    await collectConfigs(config, resolved.source, ctx, active)
   }
 
   ctx.configs.push(config)
   ctx.sourcedConfigs?.push({ config, source })
+  ctx.presetResolvedHooks.length = hookCount
   active.delete(config)
+}
+
+function collectPresetResolvedHooks(config: ExtendableConfig): Array<PluginHookEntry<'preset:resolved'>> {
+  return collectPluginHookHandlers(config as UserConfig, 'preset:resolved')
+}
+
+async function runPresetResolvedHooks(
+  preset: ExtendableConfig,
+  source: ConfigSource,
+  hooks: Array<PluginHookEntry<'preset:resolved'>>,
+): Promise<ExtendableConfig> {
+  let current = preset
+  const name = source.name ?? source.specifier ?? current.name ?? 'unknown-preset'
+
+  for (const entry of hooks) {
+    const hook = normalizeHook(entry.value, 'preset:resolved')
+    const next = await hook.handler({ preset: current as Config, name })
+    if (next !== undefined) {
+      current = ensureConfigObject(next, name)
+    }
+  }
+
+  return current
 }
 
 async function resolvePreset(preset: PresetEntry, cwd: string) {

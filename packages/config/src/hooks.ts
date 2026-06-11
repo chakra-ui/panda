@@ -1,5 +1,5 @@
 import type { ProjectCallbackKind, ProjectHooks, SerializedHookFilter } from '@pandacss/compiler-shared'
-import type { UserConfig } from '@pandacss/types'
+import type { HookRegistry, UserConfig } from '@pandacss/types'
 
 export type HookSerializationCallbacks = Partial<Record<ProjectCallbackKind, Record<string, Function>>>
 
@@ -9,14 +9,25 @@ type HashCallbackSource = (fn: Function) => string
 const compact = <T extends Record<string, any>>(value: T): T =>
   Object.fromEntries(Object.entries(value ?? {}).filter(([, item]) => item !== undefined)) as T
 
+export interface PluginHookEntry<Name extends keyof HookRegistry> {
+  pluginIndex: number
+  name: string | undefined
+  value: HookRegistry[Name]
+}
+
+export type HostHooks = {
+  'codegen:prepare'?: Array<PluginHookEntry<'codegen:prepare'>>
+  'codegen:done'?: Array<PluginHookEntry<'codegen:done'>>
+}
+
 export function serializeHooks(
   config: UserConfig,
   callbacks: HookSerializationCallbacks,
   sanitize: Sanitize,
   hashCallbackSource: HashCallbackSource,
 ): ProjectHooks | undefined {
-  const parserBefore = collectHookHandlers(config, 'parser:before').map((entry, index) => {
-    const hook = normalizeHook(entry.value)
+  const parserBefore = collectPluginHookHandlers(config, 'parser:before').map((entry, index) => {
+    const hook = normalizeHook(entry.value, 'parser:before')
     const id = `plugins.${entry.pluginIndex}.hooks.parser:before.${index}`
     callbacks['parser:before'] ??= {}
     callbacks['parser:before']![id] = hook.handler
@@ -38,8 +49,8 @@ export function serializeHooks(
   return parserBefore.length > 0 ? { 'parser:before': parserBefore } : undefined
 }
 
-function collectHookHandlers(config: UserConfig, name: 'parser:before') {
-  const entries: Array<{ pluginIndex: number; name: string | undefined; value: unknown }> = []
+export function collectPluginHookHandlers<Name extends keyof HookRegistry>(config: UserConfig, name: Name) {
+  const entries: Array<PluginHookEntry<Name>> = []
   const plugins = [...(config.plugins ?? [])]
 
   plugins.forEach((plugin, pluginIndex) => {
@@ -50,15 +61,15 @@ function collectHookHandlers(config: UserConfig, name: 'parser:before') {
   return entries
 }
 
-function normalizeHook(value: unknown): { filter?: unknown; handler: Function } {
+export function normalizeHook(value: unknown, name: keyof HookRegistry): { filter?: unknown; handler: Function } {
   if (typeof value === 'function') return { handler: value }
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error('Invalid parser:before hook. Expected a function or { filter, handler }.')
+    throw new Error(`Invalid ${name} hook. Expected a function or { filter, handler }.`)
   }
 
   const record = value as Record<string, unknown>
   if (typeof record.handler !== 'function') {
-    throw new Error('Invalid parser:before hook. Expected a function or { filter, handler }.')
+    throw new Error(`Invalid ${name} hook. Expected a function or { filter, handler }.`)
   }
 
   return { filter: record.filter, handler: record.handler }

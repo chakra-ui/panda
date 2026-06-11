@@ -134,30 +134,6 @@ fn validate_containers(theme: &serde_json::Map<String, Value>, diagnostics: &mut
     let mut generated = BTreeMap::new();
     let names = container_names(theme.get("containerNames"), diagnostics);
 
-    let container_sizes = validate_container_scale(
-        "theme.containerSizes",
-        theme.get("containerSizes"),
-        diagnostics,
-    );
-    if !container_sizes.is_empty() {
-        collect_container_conditions(
-            "",
-            "theme.containerSizes",
-            &container_sizes,
-            &mut generated,
-            diagnostics,
-        );
-        for name in &names {
-            collect_container_conditions(
-                name,
-                &format!("theme.containerNames.{name} + theme.containerSizes"),
-                &container_sizes,
-                &mut generated,
-                diagnostics,
-            );
-        }
-    }
-
     let containers =
         validate_container_scale("theme.containers", theme.get("containers"), diagnostics);
     if !containers.is_empty() {

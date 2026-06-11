@@ -38,7 +38,6 @@ const themeEntryKeys = new Set([
   'animationStyles',
   'breakpoints',
   'containers',
-  'containerSizes',
   'keyframes',
   'layerStyles',
   'recipes',

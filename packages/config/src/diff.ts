@@ -5,8 +5,8 @@ export type { ConfigDiff } from '@pandacss/compiler-shared'
 
 /** Every `CodegenDependency` — the full-regen set used on first load. */
 const ALL_DEPENDENCIES: CodegenDependency[] = [
-  'codegenFormat',
-  'codegenImportExtensions',
+  'outExtension',
+  'forceImportExtension',
   'conditions',
   'hash',
   'jsxFactory',
@@ -84,7 +84,7 @@ function classify(path: string[]): Classified {
     if (second === 'recipes' || second === 'slotRecipes') {
       return { deps: ['recipes'], recipe: third }
     }
-    if (second === 'containers' || second === 'containerNames' || second === 'containerSizes') {
+    if (second === 'containers' || second === 'containerNames') {
       return { deps: ['tokens', 'conditions'] }
     }
     // tokens, semanticTokens, breakpoints, keyframes, …
@@ -114,16 +114,15 @@ function classify(path: string[]): Classified {
       return { deps: ['jsxFactory'] }
     case 'jsxStyleProps':
       return { deps: ['jsxStyleProps'] }
-    case 'codegenFormat':
-      return { deps: ['codegenFormat'] }
-    case 'codegenImportExtensions':
-      return { deps: ['codegenImportExtensions'] }
     case 'outExtension':
-    case 'forceConsistentTypeExtension':
+      return { deps: ['outExtension'] }
+    case 'forceImportExtension':
+      return { deps: ['forceImportExtension'] }
     case 'shorthands':
+      return { deps: ['utilities'] }
     case 'strictTokens':
     case 'strictPropertyValues':
-      return { deps: ['codegenFormat'] }
+      return { deps: ['outExtension'] }
     default:
       return { deps: [] }
   }

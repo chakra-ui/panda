@@ -134,8 +134,8 @@ impl ConfigDependency {
     #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::CodegenFormat => "codegenFormat",
-            Self::CodegenImportExtensions => "codegenImportExtensions",
+            Self::CodegenFormat => "outExtension",
+            Self::CodegenImportExtensions => "forceImportExtension",
             Self::Conditions => "conditions",
             Self::Hash => "hash",
             Self::JsxFactory => "jsxFactory",
@@ -548,7 +548,7 @@ pub fn emit_module_files(
     import_extensions: bool,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    let mode = EmitMode::from_codegen_format(format, has_jsx, import_extensions);
+    let mode = EmitMode::from_out_extension(format, has_jsx, import_extensions);
     let printed = emit_module(module, mode);
 
     match mode {

@@ -2,8 +2,8 @@ export default {
   include: ['routes/**/*.{ts,tsx}', 'islands/**/*.{ts,tsx}', 'src/**/*.{ts,tsx}'],
   exclude: ['node_modules', '.deno', '_fresh', 'styled-system'],
   outdir: 'styled-system',
-  codegenFormat: 'ts',
-  codegenImportExtensions: true,
+  outExtension: 'ts',
+  forceImportExtension: true,
   theme: {
     tokens: {
       colors: {

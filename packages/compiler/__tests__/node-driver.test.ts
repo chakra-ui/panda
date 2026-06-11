@@ -4,10 +4,33 @@ import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createNodeDriver } from '../src'
 
-const CONFIG = `export default {
+const CONFIG = `import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+export default {
   outdir: 'styled-system',
-  codegenImportExtensions: true,
+  forceImportExtension: true,
   include: ['**/*.tsx'],
+  plugins: [
+    {
+      name: 'host',
+      hooks: {
+        'codegen:prepare': ({ artifacts, outdir, cwd }) => {
+          writeFileSync(join(cwd, 'codegen-prepare.json'), JSON.stringify({ count: artifacts.length, outdir }))
+          return [
+            ...artifacts,
+            {
+              id: 'custom',
+              files: [{ path: 'prepared.txt', code: 'prepared', dependencies: [] }],
+            },
+          ]
+        },
+        'codegen:done': ({ files, outdir, cwd }) => {
+          writeFileSync(join(cwd, 'codegen-done.json'), JSON.stringify({ files, outdir }))
+        },
+      },
+    },
+  ],
   importMap: {
     css: ['@panda/css'],
     recipe: ['@panda/recipes'],
@@ -71,6 +94,16 @@ describe('createNodeDriver', () => {
     expect(stack).toContain('display: "flex"')
     expect(stack).toContain('./runtime.js')
     expect(stack).not.toContain('(s) => s')
+    expect(readFileSync(join(dir, 'styled-system', 'prepared.txt'), 'utf8')).toBe('prepared')
+
+    const prepare = JSON.parse(readFileSync(join(dir, 'codegen-prepare.json'), 'utf8'))
+    expect(prepare.count).toBeGreaterThan(0)
+    expect(prepare.outdir).toBe(join(dir, 'styled-system'))
+
+    const done = JSON.parse(readFileSync(join(dir, 'codegen-done.json'), 'utf8'))
+    expect(done.outdir).toBe(join(dir, 'styled-system'))
+    expect(done.files).toContain(join(dir, 'styled-system', 'patterns', 'stack.js'))
+    expect(done.files).toContain(join(dir, 'styled-system', 'prepared.txt'))
   })
 
   it('writes stylesheet output through the driver host', async () => {

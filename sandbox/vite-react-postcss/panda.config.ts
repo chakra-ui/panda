@@ -3,7 +3,7 @@ export default {
   include: ['src/**/*.tsx'],
   exclude: [],
   outdir: 'styled-system',
-  codegenImportExtensions: true,
+  forceImportExtension: true,
   importMap: {
     css: ['../styled-system/css/index.mjs'],
     recipe: ['../styled-system/recipes/index.mjs'],

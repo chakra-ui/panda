@@ -2,72 +2,84 @@ use pandacss_config::{CodegenFormat, JsxFramework, UserConfig};
 use serde_json::json;
 
 #[test]
-fn codegen_format_defaults_and_overrides() {
+fn out_extension_defaults_and_overrides() {
     let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
     let ts_config: UserConfig = serde_json::from_value(json!({
-        "codegenFormat": "ts"
+        "outExtension": "ts"
     }))
-    .expect("ts codegen config");
+    .expect("ts out extension config");
     let js_config: UserConfig = serde_json::from_value(json!({
-        "codegenFormat": "js"
+        "outExtension": "js"
     }))
-    .expect("js codegen config");
+    .expect("js out extension config");
     let mjs_config: UserConfig = serde_json::from_value(json!({
-        "codegenFormat": "mjs"
+        "outExtension": "mjs"
     }))
-    .expect("mjs codegen config");
+    .expect("mjs out extension config");
 
     // `js` + `.d.ts` is the default: extensionless directory imports
     // (`styled-system/css`) resolve under tsc and every bundler without
     // per-bundler configuration; `mjs`/`ts` remain explicit opt-ins.
-    assert_eq!(default_config.codegen_format, CodegenFormat::Js);
-    assert_eq!(default_config.codegen_format.runtime_extension(), "js");
+    assert_eq!(default_config.out_extension, CodegenFormat::Js);
+    assert_eq!(default_config.out_extension.runtime_extension(), "js");
     assert_eq!(
-        default_config.codegen_format.declaration_extension(),
+        default_config.out_extension.declaration_extension(),
         Some("d.ts")
     );
 
-    assert_eq!(ts_config.codegen_format, CodegenFormat::Ts);
-    assert!(ts_config.codegen_format.is_source_ts());
-    assert_eq!(ts_config.codegen_format.runtime_extension(), "ts");
-    assert_eq!(ts_config.codegen_format.declaration_extension(), None);
+    assert_eq!(ts_config.out_extension, CodegenFormat::Ts);
+    assert!(ts_config.out_extension.is_source_ts());
+    assert_eq!(ts_config.out_extension.runtime_extension(), "ts");
+    assert_eq!(ts_config.out_extension.declaration_extension(), None);
 
-    assert_eq!(js_config.codegen_format, CodegenFormat::Js);
-    assert!(js_config.codegen_format.is_split());
-    assert_eq!(js_config.codegen_format.runtime_extension(), "js");
+    assert_eq!(js_config.out_extension, CodegenFormat::Js);
+    assert!(js_config.out_extension.is_split());
+    assert_eq!(js_config.out_extension.runtime_extension(), "js");
     assert_eq!(
-        js_config.codegen_format.declaration_extension(),
+        js_config.out_extension.declaration_extension(),
         Some("d.ts")
     );
 
-    assert_eq!(mjs_config.codegen_format, CodegenFormat::Mjs);
-    assert!(mjs_config.codegen_format.is_split());
-    assert_eq!(mjs_config.codegen_format.runtime_extension(), "mjs");
+    assert_eq!(mjs_config.out_extension, CodegenFormat::Mjs);
+    assert!(mjs_config.out_extension.is_split());
+    assert_eq!(mjs_config.out_extension.runtime_extension(), "mjs");
     assert_eq!(
-        mjs_config.codegen_format.declaration_extension(),
+        mjs_config.out_extension.declaration_extension(),
         Some("d.mts")
     );
 
     let serialized = serde_json::to_value(&ts_config).expect("serialized config");
-    assert_eq!(serialized.get("codegenFormat"), Some(&json!("ts")));
+    assert_eq!(serialized.get("outExtension"), Some(&json!("ts")));
 }
 
 #[test]
-fn codegen_import_extensions_defaults_and_overrides() {
+fn force_import_extension_defaults_and_overrides() {
     let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
     let configured: UserConfig = serde_json::from_value(json!({
-        "codegenImportExtensions": true
+        "forceImportExtension": true
     }))
-    .expect("codegen import extensions config");
+    .expect("force import extension config");
 
-    assert!(!default_config.codegen_import_extensions);
-    assert!(configured.codegen_import_extensions);
+    assert!(!default_config.force_import_extension);
+    assert!(configured.force_import_extension);
 
     let serialized = serde_json::to_value(&configured).expect("serialized config");
-    assert_eq!(
-        serialized.get("codegenImportExtensions"),
-        Some(&json!(true))
-    );
+    assert_eq!(serialized.get("forceImportExtension"), Some(&json!(true)));
+}
+
+#[test]
+fn shorthands_default_to_enabled_and_can_be_disabled() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let configured: UserConfig = serde_json::from_value(json!({
+        "shorthands": false
+    }))
+    .expect("shorthands config");
+
+    assert!(default_config.shorthands);
+    assert!(!configured.shorthands);
+
+    let serialized = serde_json::to_value(&configured).expect("serialized config");
+    assert_eq!(serialized.get("shorthands"), Some(&json!(false)));
 }
 
 #[test]

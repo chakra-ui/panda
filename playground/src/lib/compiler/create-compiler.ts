@@ -12,7 +12,7 @@ export function createPlaygroundCompiler(mod: WasmModule, config: UserConfig): C
   const snapshot = createConfigSnapshot(config)
   // `js` format → `.js` runtime + `.d.ts` types, which Monaco resolves natively
   // and the preview can eval as ESM.
-  const serializedConfig = { ...snapshot.config, codegenFormat: 'js' as const }
+  const serializedConfig = { ...snapshot.config, outExtension: 'js' as const }
   return createCompilerFromWasmModule(mod, serializedConfig, {
     callbacks: snapshot.callbacks,
     hooks: snapshot.hooks,

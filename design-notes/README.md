@@ -43,7 +43,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
   manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS modules.
 - [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
   container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
-  compatibility-only treatment of legacy `containerSizes`/`cq` concepts.
+  migration guidance for legacy `containerSizes`/`cq` concepts.
+- [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in
+  style values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
 
 ### Boundary
 

@@ -145,10 +145,6 @@ fn reports_invalid_container_configuration() {
     let diagnostics = diagnostics(json!({
         "theme": {
             "containerNames": ["bad/name", 4],
-            "containerSizes": {
-                "xs": "24rem",
-                "md": "768px"
-            },
             "containers": {
                 "bad/name": "20rem",
                 "sm": "20rem",
@@ -165,9 +161,6 @@ fn reports_invalid_container_configuration() {
     - code: config_container_name_invalid
       message: "`theme.containerNames` entries must be strings"
       severity: warning
-    - code: config_container_units_mixed
-      message: "All container sizes in `theme.containerSizes` must use the same unit: `24rem, 768px`"
-      severity: warning
     - code: config_container_invalid
       message: "`theme.containers.md` must be a string size"
       severity: warning
@@ -176,42 +169,6 @@ fn reports_invalid_container_configuration() {
       severity: warning
     - code: config_container_units_mixed
       message: "All container sizes in `theme.containers` must use the same unit: `20rem, 48em`"
-      severity: warning
-    "#);
-}
-
-#[test]
-fn reports_conflicting_container_conditions() {
-    let diagnostics = diagnostics(json!({
-        "theme": {
-            "containerNames": ["card"],
-            "containerSizes": {
-                "sm": "24rem"
-            },
-            "containers": {
-                "sm": "20rem"
-            }
-        }
-    }));
-
-    assert_yaml_snapshot!(diagnostics, @r#"
-    - code: config_container_condition_conflict
-      message: "Container condition `@/sm` is generated with conflicting queries by `theme.containerSizes` and `theme.containers`"
-      severity: warning
-    - code: config_container_condition_conflict
-      message: "Container condition `@/smDown` is generated with conflicting queries by `theme.containerSizes` and `theme.containers`"
-      severity: warning
-    - code: config_container_condition_conflict
-      message: "Container condition `@/smOnly` is generated with conflicting queries by `theme.containerSizes` and `theme.containers`"
-      severity: warning
-    - code: config_container_condition_conflict
-      message: "Container condition `@card/sm` is generated with conflicting queries by `theme.containerNames.card + theme.containerSizes` and `theme.containerNames.card + theme.containers`"
-      severity: warning
-    - code: config_container_condition_conflict
-      message: "Container condition `@card/smDown` is generated with conflicting queries by `theme.containerNames.card + theme.containerSizes` and `theme.containerNames.card + theme.containers`"
-      severity: warning
-    - code: config_container_condition_conflict
-      message: "Container condition `@card/smOnly` is generated with conflicting queries by `theme.containerNames.card + theme.containerSizes` and `theme.containerNames.card + theme.containers`"
       severity: warning
     "#);
 }

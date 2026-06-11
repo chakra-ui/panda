@@ -33,7 +33,7 @@ export interface ConfigDiff {
   recipes: string[]
   /** Names of the specific patterns that changed — for per-entry file scoping. */
   patterns: string[]
-  /** Raw `microdiff` `Difference[]`, for the `config:change` hook / telemetry. */
+  /** Raw `microdiff` `Difference[]`, for host telemetry and debugging. */
   changes: unknown[]
 }
 
@@ -174,9 +174,7 @@ export abstract class BaseDriver implements Driver {
   codegen(options?: CodegenOptions): string[] {
     const outdir = this.getConfiguredOutdir(options?.outdir)
     const artifactOptions =
-      options?.codegenImportExtensions === undefined
-        ? undefined
-        : { codegenImportExtensions: options.codegenImportExtensions }
+      options?.forceImportExtension === undefined ? undefined : { forceImportExtension: options.forceImportExtension }
     return this.#compiler.writeArtifacts(outdir, options?.cwd, artifactOptions)
   }
 

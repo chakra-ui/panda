@@ -2,8 +2,8 @@ import { defineCommand, runMain } from 'citty'
 import { buildinfoCommand } from './commands/buildinfo'
 import { codegenCommand } from './commands/codegen'
 import { cssgenCommand } from './commands/cssgen'
+import { initCommand } from './commands/init'
 import { inspectCommand } from './commands/inspect'
-import { initMcpCommand, mcpCommand } from './commands/mcp'
 import { validateCommand } from './commands/validate'
 import { ExitCode } from './result'
 
@@ -19,9 +19,8 @@ export async function main(argv = process.argv): Promise<void> {
       buildinfo: buildinfoCommand(ctx),
       codegen: codegenCommand(ctx),
       cssgen: cssgenCommand(ctx),
+      init: initCommand(ctx),
       inspect: inspectCommand(ctx),
-      mcp: mcpCommand(ctx),
-      'init-mcp': initMcpCommand(ctx),
       validate: validateCommand(ctx),
     },
   })

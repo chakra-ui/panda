@@ -1,0 +1,62 @@
+{
+  "name": "@pandacss/dev",
+  "version": "0.0.0",
+  "description": "User-facing Panda CSS development package",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "bin": {
+    "panda": "bin.js",
+    "pandacss": "bin.js"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./postcss": {
+      "source": "./src/postcss.ts",
+      "types": "./dist/postcss.d.ts",
+      "require": "./dist/postcss.cjs",
+      "import": "./dist/postcss.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/dev"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/postcss.ts --format=esm,cjs --platform=node --dts --splitting --cjsInterop",
+    "build-fast": "tsup src/index.ts src/postcss.ts --format=esm,cjs --platform=node --no-dts --splitting --cjsInterop",
+    "dev": "pnpm build-fast --watch src"
+  },
+  "files": [
+    "dist",
+    "bin.js"
+  ],
+  "dependencies": {
+    "@pandacss/cli": "workspace:*",
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/config": "workspace:*",
+    "@pandacss/postcss": "workspace:*",
+    "@pandacss/types": "workspace:*"
+  },
+  "peerDependencies": {
+    "postcss": ">=8"
+  },
+  "peerDependenciesMeta": {
+    "postcss": {
+      "optional": true
+    }
+  }
+}

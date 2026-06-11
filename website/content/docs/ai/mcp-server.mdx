@@ -24,7 +24,7 @@ AI assistants can use to:
 Run the interactive setup command in your project:
 
 ```bash
-pnpm panda init-mcp
+pnpm dlx @pandacss/mcp init
 ```
 
 This will prompt you to select which AI clients to configure:
@@ -51,19 +51,22 @@ Once configured, your AI assistant will automatically have access to Panda CSS t
 
 ## CLI Commands
 
-### init-mcp
+The MCP server is distributed as `@pandacss/mcp`. Run it directly with `npx`, `pnpm dlx`, or your package manager's
+equivalent one-off package runner.
+
+### init
 
 Initialize MCP configuration for one or more AI clients.
 
 ```bash
 # Interactive mode - select clients from a list
-pnpm panda init-mcp
+pnpm dlx @pandacss/mcp init
 
 # Configure specific clients directly
-pnpm panda init-mcp --client claude,cursor
+pnpm dlx @pandacss/mcp init --client claude,cursor
 
 # Specify working directory
-pnpm panda init-mcp --cwd ./my-project
+pnpm dlx @pandacss/mcp init --cwd ./my-project
 ```
 
 | Flag               | Description                               |
@@ -71,18 +74,18 @@ pnpm panda init-mcp --cwd ./my-project
 | `--client <names>` | AI clients to configure (comma-separated) |
 | `--cwd <path>`     | Current working directory                 |
 
-### mcp
+### start
 
 Start the MCP server manually (usually not needed - clients start it automatically).
 
 ```bash
-pnpm panda mcp
+pnpm dlx @pandacss/mcp
 
 # With custom config path
-pnpm panda mcp --config ./panda.config.ts
+pnpm dlx @pandacss/mcp --config ./panda.config.ts
 
 # Specify working directory
-pnpm panda mcp --cwd ./my-project
+pnpm dlx @pandacss/mcp --cwd ./my-project
 ```
 
 | Flag                  | Description               |
@@ -126,14 +129,14 @@ and finding missing definitions.
 
 ## Generated Configuration
 
-When you run `panda init-mcp`, the following configuration is generated for each selected client:
+When you run `@pandacss/mcp init`, the following configuration is generated for each selected client:
 
 ```json
 {
   "mcpServers": {
     "panda": {
       "command": "npx",
-      "args": ["panda", "mcp"]
+      "args": ["-y", "@pandacss/mcp"]
     }
   }
 }
@@ -154,7 +157,7 @@ Create `.mcp.json` in your project root:
   "mcpServers": {
     "panda": {
       "command": "npx",
-      "args": ["panda", "mcp"]
+      "args": ["-y", "@pandacss/mcp"]
     }
   }
 }
@@ -169,7 +172,7 @@ Create `.cursor/mcp.json`:
   "mcpServers": {
     "panda": {
       "command": "npx",
-      "args": ["panda", "mcp"]
+      "args": ["-y", "@pandacss/mcp"]
     }
   }
 }
@@ -184,7 +187,7 @@ Create `.vscode/mcp.json`:
   "servers": {
     "panda": {
       "command": "npx",
-      "args": ["panda", "mcp"]
+      "args": ["-y", "@pandacss/mcp"]
     }
   }
 }
@@ -199,7 +202,7 @@ If your Panda config is not in the default location, specify it explicitly:
   "mcpServers": {
     "panda": {
       "command": "npx",
-      "args": ["panda", "mcp", "--config", "./path/to/panda.config.ts"]
+      "args": ["-y", "@pandacss/mcp", "--config", "./path/to/panda.config.ts"]
     }
   }
 }
@@ -241,7 +244,7 @@ If the MCP server fails to start:
 
 1. Ensure Panda CSS is installed: `pnpm add -D @pandacss/dev`
 2. Verify you have a valid `panda.config.ts` in your project
-3. Check that `npx panda mcp` runs without errors
+3. Check that `npx -y @pandacss/mcp` runs without errors
 
 ### Tools Not Available
 

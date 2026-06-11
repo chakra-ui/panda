@@ -41,11 +41,23 @@ pub struct UtilityProperty {
     pub transform_callback_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct UtilityOptions {
     pub separator: Option<String>,
     pub prefix: Option<String>,
     pub tokens: Option<Arc<TokenDictionary>>,
+    pub shorthands: bool,
+}
+
+impl Default for UtilityOptions {
+    fn default() -> Self {
+        Self {
+            separator: None,
+            prefix: None,
+            tokens: None,
+            shorthands: true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -80,7 +92,9 @@ impl Utility {
                 utility.deprecated.insert(property.clone());
             }
 
-            utility.collect_shorthands(property, config.shorthand.as_ref());
+            if options.shorthands {
+                utility.collect_shorthands(property, config.shorthand.as_ref());
+            }
             utility.properties.insert(
                 property.clone(),
                 UtilityProperty {

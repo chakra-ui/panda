@@ -67,12 +67,10 @@ fn deserializes_typed_theme_shape() {
             },
             "containers": {
                 "sm": "24rem",
-                "md": "36rem"
-            },
-            "containerNames": ["card", "sidebar"],
-            "containerSizes": {
+                "md": "36rem",
                 "xs": "320px"
             },
+            "containerNames": ["card", "sidebar"],
             "colorPalette": {
                 "enabled": true,
                 "include": ["red"],

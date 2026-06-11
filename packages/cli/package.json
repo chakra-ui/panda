@@ -17,7 +17,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./postcss": "./postcss.js",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
@@ -38,14 +37,12 @@
   },
   "files": [
     "dist",
-    "bin.js",
-    "postcss.js"
+    "bin.js"
   ],
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
     "@pandacss/compiler-shared": "workspace:*",
-    "@pandacss/mcp": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
+    "@pandacss/config": "workspace:*",
     "@parcel/watcher": "2.5.1",
     "citty": "0.1.6"
   }

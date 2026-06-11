@@ -35,6 +35,23 @@ fn array_shorthands_map_to_same_property() {
 }
 
 #[test]
+fn shorthands_can_be_disabled() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "margin": { "shorthand": ["m", "mg"] }
+        })),
+        UtilityOptions {
+            shorthands: false,
+            ..UtilityOptions::default()
+        },
+    );
+
+    assert_eq!(utility.resolve_shorthand("m"), "m");
+    assert!(utility.is_known("margin"));
+    assert!(!utility.is_known("m"));
+}
+
+#[test]
 fn callback_transform_refs_are_exposed() {
     let utility = Utility::from_config(&utility_config(json!({
         "size": {
@@ -151,6 +168,7 @@ fn transform_uses_separator_prefix_and_class_name() {
             separator: Some("__".into()),
             prefix: Some("panda".into()),
             tokens: None,
+            shorthands: true,
         },
     );
 

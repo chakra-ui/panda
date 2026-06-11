@@ -49,6 +49,10 @@ fn default_separator() -> String {
     DEFAULT_SEPARATOR.to_owned()
 }
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CssSyntaxKind {
@@ -93,6 +97,8 @@ pub struct UserConfig {
     pub prefix: PrefixConfig,
     #[serde(default)]
     pub hash: HashConfig,
+    #[serde(default = "default_true")]
+    pub shorthands: bool,
     #[serde(default = "default_separator")]
     pub separator: String,
     #[serde(default)]
@@ -118,9 +124,9 @@ pub struct UserConfig {
     #[serde(default, deserialize_with = "deserialize_optimize_config")]
     pub optimize: OptimizeConfig,
     #[serde(default)]
-    pub codegen_format: CodegenFormat,
-    #[serde(default, rename = "codegenImportExtensions")]
-    pub codegen_import_extensions: bool,
+    pub out_extension: CodegenFormat,
+    #[serde(default)]
+    pub force_import_extension: bool,
     #[serde(default, rename = "strictTokens")]
     pub strict_tokens: bool,
     #[serde(default, rename = "strictPropertyValues")]
@@ -148,6 +154,7 @@ impl Default for UserConfig {
             patterns: PatternMap::default(),
             prefix: PrefixConfig::default(),
             hash: HashConfig::default(),
+            shorthands: true,
             separator: default_separator(),
             syntax: CssSyntaxKind::default(),
             static_css: Value::default(),
@@ -160,8 +167,8 @@ impl Default for UserConfig {
             layers: CascadeLayers::default(),
             preflight: PreflightConfig::default(),
             optimize: OptimizeConfig::default(),
-            codegen_format: CodegenFormat::default(),
-            codegen_import_extensions: false,
+            out_extension: CodegenFormat::default(),
+            force_import_extension: false,
             strict_tokens: false,
             strict_property_values: false,
             validation: ValidationMode::default(),

@@ -4,7 +4,7 @@ export default {
   include: ['./app/routes/**/*.{tsx,jsx}', './app/components/**/*.{tsx,jsx}'],
   exclude: [],
   outdir: 'styled-system',
-  codegenImportExtensions: true,
+  forceImportExtension: true,
   globalFontface: {
     Dosis: {
       src: "url(/Dosis-VariableFont_wght.ttf) format('truetype')",

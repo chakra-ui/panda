@@ -24,7 +24,7 @@ interface DriverState {
 const driverStates = new Map<string, DriverState>()
 let driverGuard: Promise<void> | undefined
 
-export const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => {
+const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => {
   const postcssProcess: TransformCallback = async (root: Root, result: Result) => {
     const fileName = result.opts.from
 

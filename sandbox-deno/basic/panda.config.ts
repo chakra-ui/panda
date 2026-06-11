@@ -2,8 +2,8 @@ export default {
   include: ['src/**/*.{ts,tsx}'],
   exclude: [],
   outdir: 'styled-system',
-  codegenFormat: 'ts',
-  codegenImportExtensions: true,
+  outExtension: 'ts',
+  forceImportExtension: true,
   jsxFramework: 'react',
   theme: {
     tokens: {

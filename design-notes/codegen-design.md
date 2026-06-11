@@ -22,20 +22,42 @@ generators. The current design has three core ideas:
 The public config API is intentionally flat for now:
 
 ```ts
-codegen_format: "js" | "mjs" | "ts"
+outExtension: "js" | "mjs" | "ts"
+forceImportExtension: boolean
 ```
 
-This replaces separate knobs like `outExtension`, `forceConsistentTypeExtension`, and `codegenOutput`. The runtime and
-declaration extensions are inferred from the selected format:
+`outExtension` controls the emitted runtime file extension. The declaration extension is inferred from it, so v2 does
+not need `forceConsistentTypeExtension`:
 
-| `codegen_format` | Runtime source | Type file |
+| `outExtension` | Runtime source | Type file |
 | ---------------- | -------------- | --------- |
 | `ts`             | `.ts` / `.tsx` | none      |
 | `js`             | `.js`          | `.d.ts`   |
 | `mjs`            | `.mjs`         | `.d.mts`  |
 
-`mjs` remains the default because it is the safest package-oriented ESM target. `ts` is the cleanest target for
-Deno-like runtimes, especially when paired with explicit module specifiers.
+`forceImportExtension` controls whether generated import specifiers include the runtime/type extension. It is separate
+from `outExtension` because some package/bundler setups still prefer extensionless internal specifiers, while Deno and
+strict Node ESM paths need explicit specifiers.
+
+`js` remains the default because extensionless directory imports (`styled-system/css`) resolve under TypeScript and
+common bundlers without extra package configuration. `mjs` and `ts` remain explicit opt-ins; `ts` is the cleanest target
+for Deno-like runtimes, especially when paired with `forceImportExtension: true`.
+
+Migration from earlier v2 drafts:
+
+```ts
+// Before
+codegenFormat: "mjs"
+codegenImportExtensions: true
+forceConsistentTypeExtension: true
+
+// After
+outExtension: "mjs"
+forceImportExtension: true
+```
+
+`forceConsistentTypeExtension` is no longer needed: `outExtension: "mjs"` always pairs runtime `.mjs` with declaration
+`.d.mts`.
 
 ## Current State
 
@@ -114,13 +136,13 @@ EmitMode::SourceTs { ext, specifiers }
 EmitMode::Split { format, specifiers }
 ```
 
-For `codegen_format: "ts"`:
+For `outExtension: "ts"`:
 
 - runtime and types are emitted together as `.ts`,
 - modules with JSX emit `.tsx`,
 - no separate declaration file is generated.
 
-For `codegen_format: "js"` or `"mjs"`:
+For `outExtension: "js"` or `"mjs"`:
 
 - runtime JS is emitted as `.js` or `.mjs`,
 - declaration output is emitted as `.d.ts` or `.d.mts`,

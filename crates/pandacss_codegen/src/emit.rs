@@ -31,7 +31,7 @@ pub enum EmitMode {
 
 impl EmitMode {
     #[must_use]
-    pub fn from_codegen_format(
+    pub fn from_out_extension(
         format: CodegenFormat,
         has_jsx: bool,
         import_extensions: bool,
