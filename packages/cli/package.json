@@ -42,7 +42,7 @@
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
     "@pandacss/compiler-shared": "workspace:*",
-    "@pandacss/mcp": "workspace:*",
+    "@pandacss/config": "workspace:*",
     "@parcel/watcher": "2.5.1",
     "citty": "0.1.6"
   }

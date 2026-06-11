@@ -17,10 +17,14 @@ export const CONFIG = `export default {
 
 export const EMPTY_CONFIG = CONFIG.replace("include: ['**/*.tsx']", "include: ['missing/**/*.tsx']")
 
-export function createFixture(config = CONFIG) {
+export function createFixture(config = CONFIG, options: { config?: boolean; source?: boolean } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'panda-cli-'))
-  writeFileSync(join(dir, 'panda.config.ts'), config)
-  writeFileSync(join(dir, 'App.tsx'), "import { css } from '@panda/css'; css({ color: 'red' })")
+  if (options.config !== false) {
+    writeFileSync(join(dir, 'panda.config.ts'), config)
+  }
+  if (options.source !== false) {
+    writeFileSync(join(dir, 'App.tsx'), "import { css } from '@panda/css'; css({ color: 'red' })")
+  }
   return dir
 }
 

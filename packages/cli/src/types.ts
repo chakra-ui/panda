@@ -32,6 +32,18 @@ export interface CssgenFlags extends CommonFlags {
   check?: boolean
 }
 
+export interface InitFlags extends Omit<CommonFlags, 'watch' | 'watchDebounce' | 'quiet' | 'maxWarnings' | 'verbose'> {
+  force?: boolean
+  postcss?: boolean
+  gitignore?: boolean
+  codegen?: boolean
+  outExtension?: 'ts' | 'js' | 'mjs'
+  outdir?: string
+  jsxFramework?: string
+  syntax?: 'template-literal' | 'object-literal'
+  strictTokens?: boolean
+}
+
 /** Flags for `panda buildinfo` — produce a portable `panda.buildinfo.json`. */
 export interface BuildinfoFlags extends Omit<CommonFlags, 'watch' | 'watchDebounce'> {
   outfile?: string
@@ -105,6 +117,15 @@ export interface CssgenResult extends CommandResult {
   diagnosticCount: number
   missing: string[]
   stale: string[]
+}
+
+export interface InitResult extends CommandResult {
+  configPath: string
+  outdir: string
+  configWritten: boolean
+  postcssWritten: boolean
+  gitignoreWritten: boolean
+  codegenFiles: string[]
 }
 
 export interface InspectResult extends CliResult {

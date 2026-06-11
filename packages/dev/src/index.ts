@@ -34,8 +34,10 @@ export {
   runBuildinfo,
   runCodegen,
   runCssgen,
+  runInit,
   runInspect,
   runValidate,
+  setupGitIgnore,
   writeCssgenOutput,
 } from '@pandacss/cli'
 
@@ -48,6 +50,8 @@ export type {
   CommonFlags,
   CssgenFlags,
   CssgenResult,
+  InitFlags,
+  InitResult,
   InspectFlags,
   InspectResult,
   ValidateFlags,

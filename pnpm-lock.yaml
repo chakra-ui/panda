@@ -145,9 +145,9 @@ importers:
       '@pandacss/compiler-shared':
         specifier: workspace:*
         version: link:../compiler-shared
-      '@pandacss/mcp':
+      '@pandacss/config':
         specifier: workspace:*
-        version: link:../mcp
+        version: link:../config
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1

@@ -12115,11 +12115,6 @@ export interface CodegenOptions {
 	 */
 	strictPropertyValues?: boolean;
 	/**
-	 * Whether to update the .gitignore file.
-	 * @default 'true'
-	 */
-	gitignore?: boolean;
-	/**
 	 * Whether to allow shorthand properties
 	 * @default 'true'
 	 */
