@@ -901,6 +901,65 @@ fn transform_expands_token_references_in_values() {
 }
 
 #[test]
+fn transform_escapes_unresolved_token_reference_values() {
+    let tokens = TokenDictionary::builder().build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "background": {
+                "shorthand": "bg",
+                "className": "bg"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let wrapped = utility
+        .transform("bg", &Literal::String("{colors.missing.500}".into()))
+        .expect("wrapped reference transform");
+    let plain_wrapped = utility
+        .transform("bg", &Literal::String("{plain}".into()))
+        .expect("plain wrapped reference transform");
+    let token_fn = utility
+        .transform("bg", &Literal::String("token(colors.missing.500)".into()))
+        .expect("token function transform");
+    let token_fn_with_fallback = utility
+        .transform(
+            "bg",
+            &Literal::String("token(colors.missing.500, var(--fallback))".into()),
+        )
+        .expect("token function fallback transform");
+
+    assert_eq!(
+        wrapped.styles,
+        Literal::Object(vec![(
+            "background".into(),
+            Literal::String("colors\\.missing\\.500".into())
+        )]),
+    );
+    assert_eq!(
+        plain_wrapped.styles,
+        Literal::Object(vec![("background".into(), Literal::String("plain".into()))]),
+    );
+    assert_eq!(
+        token_fn.styles,
+        Literal::Object(vec![(
+            "background".into(),
+            Literal::String("colors\\.missing\\.500".into())
+        )]),
+    );
+    assert_eq!(
+        token_fn_with_fallback.styles,
+        Literal::Object(vec![(
+            "background".into(),
+            Literal::String("var(--fallback)".into())
+        )]),
+    );
+}
+
+#[test]
 fn transform_preserves_layer() {
     let utility = Utility::from_config(&utility_config(json!({
         "textStyle": {

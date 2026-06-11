@@ -4,7 +4,7 @@
 //! the shared style-rule model, groups compatible at-rule wrappers, and writes
 //! the final layered CSS string.
 
-use std::{borrow::Cow, fmt::Write as _, ops::Range};
+use std::{borrow::Cow, ops::Range};
 
 use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
@@ -12,7 +12,7 @@ use pandacss_encoder::{
     RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{number_to_js_string, split_important, to_hash};
+use pandacss_shared::{css_escape, number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{StyleNormalizer, Utility, UtilityTransformResult, hyphenate_property};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
@@ -1717,7 +1717,7 @@ impl<'a> EmitContext<'a> {
                 if important {
                     finalized.push('!');
                 }
-                format!(".{}", escape_selector(&finalized))
+                format!(".{}", css_escape(&finalized))
             }
             Target::Selector { selector } => selector.into_owned(),
         }
@@ -2025,55 +2025,6 @@ fn push_finalized_condition(config: &UserConfig, out: &mut String, condition: &s
 
 fn without_space(value: &str) -> String {
     value.replace(' ', "_")
-}
-
-/// Backslash-escape class-name tokens the same way the JS `esc` helper does.
-/// Real selector suffixes (`:hover`, `>`, …) are appended elsewhere, not here.
-fn escape_selector(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut chars = value.char_indices().peekable();
-    while let Some((index, ch)) = chars.next() {
-        if ch == '\0' {
-            out.push('\u{FFFD}');
-            continue;
-        }
-        if is_css_escape_codepoint(ch) {
-            push_escaped_codepoint(&mut out, ch);
-            continue;
-        }
-        if index == 0 {
-            if ch.is_ascii_digit() {
-                push_escaped_codepoint(&mut out, ch);
-                continue;
-            }
-            if ch == '-' {
-                if chars.peek().is_some_and(|(_, ch)| ch.is_ascii_digit()) {
-                    out.push('-');
-                    let (_, digit) = chars.next().expect("peeked leading digit");
-                    push_escaped_codepoint(&mut out, digit);
-                } else {
-                    out.push('\\');
-                    out.push('-');
-                }
-                continue;
-            }
-        }
-        if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' || !ch.is_ascii() {
-            out.push(ch);
-        } else {
-            out.push('\\');
-            out.push(ch);
-        }
-    }
-    out
-}
-
-fn is_css_escape_codepoint(ch: char) -> bool {
-    ch <= '\u{1F}' || ch == '\u{7F}'
-}
-
-fn push_escaped_codepoint(out: &mut String, ch: char) {
-    write!(out, "\\{:x}", ch as u32).expect("writing to String cannot fail");
 }
 
 fn value_to_atom_value(value: &Value) -> Option<AtomValue> {

@@ -3,6 +3,7 @@
 //! This crate intentionally stays at the bottom of the dependency graph:
 //! no dependencies on other Panda crates.
 
+pub mod css_escape;
 pub mod css_properties;
 pub mod diagnostic;
 pub mod error;
@@ -12,6 +13,7 @@ pub mod regex;
 pub mod strings;
 pub mod unit_conversion;
 
+pub use css_escape::css_escape;
 pub use diagnostic::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
     codes as diagnostic_codes,

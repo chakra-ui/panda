@@ -15,7 +15,7 @@ use pandacss_config::{
     value_alias_name,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{number_to_js_string, pascal_case};
+use pandacss_shared::{css_escape, number_to_js_string, pascal_case};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
@@ -1044,7 +1044,7 @@ fn replace_wrapped_references(
         if let Some(value) = color_mix_or_var(path, tokens) {
             out.push_str(value.as_ref());
         } else {
-            out.push_str(path);
+            out.push_str(&unresolved_wrapped_reference(path));
         }
         rest = &after_open[end + close.len_utf8()..];
     }
@@ -1071,12 +1071,31 @@ fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
         if let Some(value) = color_mix_or_var(path, tokens) {
             out.push_str(value.as_ref());
         } else {
-            out.push_str(fallback.map_or_else(|| path, str::trim));
+            let value = fallback.map_or_else(|| css_escape(path), |value| value.trim().to_owned());
+            out.push_str(value.as_str());
         }
         rest = &after_open[end + 1..];
     }
     out.push_str(rest);
     out
+}
+
+fn unresolved_wrapped_reference(path: &str) -> String {
+    if is_token_path_like(path) {
+        css_escape(path)
+    } else {
+        path.to_owned()
+    }
+}
+
+fn is_token_path_like(path: &str) -> bool {
+    path.as_bytes()
+        .windows(3)
+        .any(|window| is_word_byte(window[0]) && window[1] == b'.' && is_word_byte(window[2]))
+}
+
+fn is_word_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_'
 }
 
 fn color_mix_or_var<'a>(path: &'a str, tokens: &'a TokenDictionary) -> Option<Cow<'a, str>> {

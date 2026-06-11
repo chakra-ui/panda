@@ -589,6 +589,52 @@ fn resolves_token_references_interpolated_in_longhand_values() {
 }
 
 #[test]
+fn escapes_unresolved_token_reference_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#f00" }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "background": { "shorthand": "bg", "className": "bg" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css'\n",
+            "css({ bg: '{colors.colorPalette.500}' })\n",
+            "css({ bg: 'token(colors.colorPalette.500)' })\n",
+            "css({ bg: '{plain}' })\n",
+            "css({ bg: 'token(colors.colorPalette.500, var(--fallback))' })",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_token\(colors\.colorPalette\.500\) {
+        background: colors\.colorPalette\.500;
+      }
+      .bg_token\(colors\.colorPalette\.500\,_var\(--fallback\)\) {
+        background: var(--fallback);
+      }
+      .bg_\{colors\.colorPalette\.500\} {
+        background: colors\.colorPalette\.500;
+      }
+      .bg_\{plain\} {
+        background: plain;
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_gradient_utilities_from_value_maps() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
