@@ -1,6 +1,5 @@
 ---
-'@pandacss/parser': patch
-'@pandacss/extractor': patch
+'@pandacss/compiler': patch
 ---
 
 Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including React,
