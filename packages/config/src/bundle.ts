@@ -28,7 +28,7 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
 
   let chunks: Awaited<ReturnType<typeof build.generate>>
   try {
-    chunks = await build.generate({ format: 'esm', exports: 'named' })
+    chunks = await build.generate({ format: 'esm', exports: 'named', codeSplitting: false })
   } finally {
     await build.close?.()
   }
@@ -40,7 +40,9 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
   const mod = await importBundledConfig(output.code)
-  const config = (Object.hasOwn(mod ?? {}, 'default') ? mod.default : mod) as T
+  const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
+  const exported = hasDefaultExport ? mod.default : mod
+  const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
 
   return { config, dependencies }
 }
@@ -48,6 +50,10 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
 async function importBundledConfig(code: string) {
   const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   return import(/* @vite-ignore */ dataUrl)
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return value != null && typeof value === 'object' && typeof (value as { then?: unknown }).then === 'function'
 }
 
 function collectDependencies(

@@ -1,6 +1,8 @@
+import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { loadPandaConfig } from '../src/load'
 import type { LoadedPandaConfig } from '../src/types'
@@ -455,6 +457,50 @@ describe('loadPandaConfig preset resolution', () => {
         expect.arrayContaining(['panda.config.ts', 'preset.ts', 'preset-token.ts', 'manual.txt']),
       )
       expect(new Set(result.dependencies).size).toBe(result.dependencies.length)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('loads configs that use local dynamic imports', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-config-'))
+    writeFileSync(
+      join(dir, 'preset.ts'),
+      `export default {
+        name: 'dynamic-preset',
+        theme: { tokens: { colors: { dynamic: { value: '#0f0' } } } },
+      }`,
+    )
+    writeFileSync(
+      join(dir, 'panda.config.ts'),
+      `export default (async () => {
+        const mod = await import('./preset')
+        return {
+          outdir: 'styled-system',
+          presets: [mod.default],
+        }
+      })()`,
+    )
+
+    try {
+      const loadPath = process.cwd().endsWith(join('packages', 'config'))
+        ? join(process.cwd(), 'src/load.ts')
+        : join(process.cwd(), 'packages/config/src/load.ts')
+      const loadUrl = pathToFileURL(loadPath).href
+      const script = `
+        import { loadPandaConfig } from ${JSON.stringify(loadUrl)}
+
+        const result = await loadPandaConfig({ cwd: ${JSON.stringify(dir)} })
+        const value = result.config.theme?.tokens?.colors?.dynamic?.value
+        if (value !== '#0f0') throw new Error('Expected dynamic preset token to load')
+        if (!result.dependencies.includes('preset.ts')) throw new Error('Expected preset.ts dependency')
+        console.log(value)
+      `
+      const output = execFileSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+      })
+      expect(output.trim()).toBe('#0f0')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
