@@ -22,7 +22,7 @@ import type {
   WriteFilesResult,
 } from './types'
 
-/** Result of diffing two serialized configs — produced by config-loader's
+/** Result of diffing two serialized configs — produced by config's
  *  `diffConfig`, consumed by `Driver.reload`. */
 export interface ConfigDiff {
   /** `true` when the configs differ (or there is no previous config). */

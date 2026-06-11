@@ -1,6 +1,6 @@
 import { createCompilerFromWasmModule } from '@pandacss/compiler-wasm/web'
 import type { Compiler, WasmModule } from '@pandacss/compiler-wasm/web'
-import { createConfigSnapshot } from '@pandacss/config-loader/serialize'
+import { createConfigSnapshot } from '@pandacss/config/serialize'
 import type { UserConfig } from '@pandacss/types'
 
 /**

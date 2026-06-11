@@ -1,5 +1,5 @@
 {
-  "name": "@pandacss/config-loader",
+  "name": "@pandacss/config",
   "version": "0.0.0",
   "description": "Self-contained loader that bundles and serializes a Panda config for the Rust compiler",
   "type": "module",
@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chakra-ui/panda.git",
-    "directory": "packages/config-loader"
+    "directory": "packages/config"
   },
   "publishConfig": {
     "access": "public"
@@ -27,6 +27,11 @@
       "source": "./src/serialize.ts",
       "types": "./dist/serialize.d.ts",
       "default": "./dist/serialize.js"
+    },
+    "./merge": {
+      "source": "./src/merge.ts",
+      "types": "./dist/merge.d.ts",
+      "default": "./dist/merge.js"
     },
     "./package.json": "./package.json"
   },

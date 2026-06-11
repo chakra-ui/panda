@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 import { extract as jsExtract } from '@pandacss/extractor'
 import { Project, ts } from 'ts-morph'
 

@@ -13,7 +13,7 @@ Dated reports comparing Panda implementations (JS / Rust NAPI / Rust WASM) again
   the old one.
 - **Legacy npm baseline** — comparison harnesses must run the legacy JS side against published npm `@pandacss/*`
   packages, not local workspace sources. Keep v2-only packages local (`@pandacss/compiler`, `@pandacss/compiler-wasm`,
-  `@pandacss/config-loader`) and avoid `--conditions source` for bench scripts.
+  `@pandacss/config`) and avoid `--conditions source` for bench scripts.
 
 ## How these connect to the design notes
 
@@ -45,6 +45,6 @@ design note explaining the trade-off.
 - [2026-06-08 — v2-vs-legacy-full-pipeline](./2026-06-08-v2-vs-legacy-full-pipeline.mdx) — first whole-pipeline
   (`parse → encode → emit`) comparison: perf **+** style-output parity **+** gaps. Emitter is **25–390× faster** and
   byte-identical on the core surface (atomic css, conditions, `!important`, recipes incl. compound/default variants,
-  patterns, `token()`, color tokens). Remaining work is front-end (config-loader `data:`-URL crash on dynamic imports,
+  patterns, `token()`, color tokens). Remaining work is front-end (config `data:`-URL crash on dynamic imports,
   `./`-glob → 0 files, no preset injection) plus emitter edge cases (gradients, color-mix fallback). Object-map utility
   class naming (B2) fixed 2026-06-08. Full write-up in `bench/V2_VS_LEGACY_REPORT.md`.

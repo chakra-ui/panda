@@ -10,7 +10,7 @@ caveat: >
   v2 emit skips the optimizer (lightningcss deferred), so emit timings and byte
   sizes are not apples-to-apples with legacy's PostCSS pass. The emitter diff is
   measured by cross-feeding the SAME resolved config into both engines, since
-  v2's own config-loader cannot yet load most real configs (see §Gaps A1–A3).
+  v2's own config cannot yet load most real configs (see §Gaps A1–A3).
 ---
 
 # Full pipeline: v2 (Rust/Oxc) vs legacy (ts-morph)
@@ -44,11 +44,11 @@ raw values. Across the 12-sandbox sweep, **selector counts match within ±a few*
 
 ## Gaps found
 
-### A. Front-end / config-loader (block drop-in replacement)
+### A. Front-end / config (block drop-in replacement)
 
 - **A1 — Dynamic-import configs crash.** `await import()` makes Rolldown code-split; `bundle.ts` evals
   only the entry chunk via a `data:` URL → `Failed to resolve "./dist-*.js"` (`vite-ts`).
-  `packages/config-loader/src/bundle.ts:48`.
+  `packages/config/src/bundle.ts:48`.
 
   ```ts
   // panda.config.ts — minimal crash
@@ -80,7 +80,7 @@ raw values. Across the 12-sandbox sweep, **selector counts match within ±a few*
   Real fixture: `sandbox/next-js-app/panda.config.ts`.
 
 - **A3 — No preset auto-injection.** Standard configs resolve incompletely → genuine `solid-ts` emits
-  `color: blue .500`, `bg-gradient: to-r`. `packages/config-loader/src/load.ts:18`.
+  `color: blue .500`, `bg-gradient: to-r`. `packages/config/src/load.ts:18`.
 
   ```tsx
   // no presets in config — typical sandbox
@@ -201,6 +201,6 @@ default-export `createCompiler` that no longer exists in `@pandacss/compiler`. W
 pnpm exec vitest run bench/__tests__/perf.test.ts       # timing (cold/warm/emit)
 pnpm exec vitest run bench/__tests__/edgecases.test.ts  # 20-case emitter battery
 pnpm exec vitest run bench/__tests__/parity.test.ts     # 12-sandbox e2e sweep
-pnpm exec vitest run bench/__tests__/genuine.test.ts    # real config-loader path
+pnpm exec vitest run bench/__tests__/genuine.test.ts    # real config path
 # per-case CSS + summary written to bench/.parity-out/
 ```

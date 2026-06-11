@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 import * as binding from '@pandacss/compiler'
 import type { Compiler } from '@pandacss/compiler'
 import * as wasmBinding from '@pandacss/compiler-wasm'

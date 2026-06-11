@@ -2,7 +2,7 @@
 title: Config Loading Design
 status: current
 scope:
-  - packages/config-loader
+  - packages/config
   - crates/pandacss_codegen
   - crates/pandacss_config
 ---
@@ -15,7 +15,7 @@ The new Rust codegen still needs a JavaScript-side config loader. User configs a
 they can contain functions for patterns, hooks, presets, plugins, and other dynamic extension points. Rust should consume
 a serialized input; it should not become responsible for executing arbitrary user config modules.
 
-This is implemented by a **new, self-contained package `@pandacss/config-loader`**. It owns the whole load → serialize
+This is implemented by a **new, self-contained package `@pandacss/config`**. It owns the whole load → serialize
 pipeline itself and keeps its dependency surface deliberately small: `@pandacss/types` (config types),
 `@pandacss/compiler-shared` (the `SerializedConfig`/`ProjectCallbacks` contract), `rolldown` (bundling), and
 `javascript-stringify` (pattern source capture). It does **not** depend on `@pandacss/shared` or wrap the v1
@@ -82,7 +82,7 @@ return import(dataUrl)
 ```
 
 This should remain the default. We should avoid Vite's temp-file ESM fallback unless we hit a runtime constraint that
-requires it. Vite writes temp files because it supports a broader set of config-loader modes and debuggability tradeoffs;
+requires it. Vite writes temp files because it supports a broader set of config modes and debuggability tradeoffs;
 Panda can stay narrower and cheaper if in-memory loading is reliable for our config surface.
 
 The compatibility target is the behavior, not the dependency: in-memory bundle, in-memory execution, and dependency
@@ -158,7 +158,7 @@ the identity fallback.
 
 ## Preset Resolution
 
-Preset resolution lives at the `@pandacss/config-loader` boundary, before defaults and before
+Preset resolution lives at the `@pandacss/config` boundary, before defaults and before
 `createConfigSnapshot()`. The Rust compiler receives a resolved serialized config; it does not resolve JavaScript preset
 modules or execute preset functions.
 
@@ -312,5 +312,5 @@ const { compiler, path, dependencies } = await loadCompiler({ cwd })
 
 `loadCompiler` calls `loadPandaConfig`, then feeds the snapshot to `createCompilerFromSnapshot({ config, callbacks })`
 (live `transform` callbacks included) and returns the built compiler alongside the config `path` and watch
-`dependencies`. The main `@pandacss/compiler` entry never imports `@pandacss/config-loader`, so consumers that only need
+`dependencies`. The main `@pandacss/compiler` entry never imports `@pandacss/config`, so consumers that only need
 `createCompiler`/`compile` don't pull in Rolldown.

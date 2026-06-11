@@ -1,10 +1,6 @@
-import type { Config } from '@pandacss/types'
 import { PandaError } from './error'
 import { recordNestedSources, recordSource, SourceTracker, type ConfigSourceEntry, type SourceContext } from './sources'
-
-export type Dict = Record<string, any>
-export type Extendable<T> = T & { extend?: T }
-export type ExtendableConfig = Extendable<Config>
+import { clone, isPlainObject, omitKeys, type Dict, type ExtendableConfig } from './shared'
 
 export interface SourcedConfig {
   config: ExtendableConfig
@@ -25,21 +21,27 @@ const sectionKeys = [
 ] as const
 
 const sectionKeySet = new Set<string>(sectionKeys)
-const omitKeys = new Set(['__proto__', 'constructor', 'prototype'])
 const runtimeOnlyKeys = new Set(['presets', 'plugins', 'hooks', 'name', 'extend'])
 const tokenKeys = new Set(['description', 'extensions', 'type', 'value', 'deprecated'])
 
-export function mergeConfigs(configs: ExtendableConfig[]) {
-  return mergeConfigsInternal(configs)
-}
-
+/**
+ * Same merge, but also records which config contributed each value
+ * so the result can be traced back to its preset/config of origin.
+ */
 export function mergeConfigsWithSources(configs: SourcedConfig[]) {
   const tracker = new SourceTracker(configs.map((item) => item.source))
-  const config = mergeConfigsInternal(configs, tracker)
+  const config = mergeConfigs(configs, tracker)
+
   return { config, sources: tracker.sources }
 }
 
-function mergeConfigsInternal(configs: ExtendableConfig[] | SourcedConfig[], tracker?: SourceTracker) {
+/**
+ * Merges an ordered list of configs (presets first, user config last) into one flat config.
+ * Top-level keys replace; section keys deep-merge, with `extend` appending instead of replacing.
+ */
+export function mergeConfigs(configs: ExtendableConfig[]): Dict
+export function mergeConfigs(configs: SourcedConfig[], tracker: SourceTracker): Dict
+export function mergeConfigs(configs: ExtendableConfig[] | SourcedConfig[], tracker?: SourceTracker) {
   const result: Dict = {}
   const sections = Object.fromEntries(sectionKeys.map((key) => [key, {}])) as Record<(typeof sectionKeys)[number], Dict>
 
@@ -60,7 +62,7 @@ function mergeConfigsInternal(configs: ExtendableConfig[] | SourcedConfig[], tra
   }
 
   for (const key of sectionKeys) {
-    if (!isEmptyObject(sections[key])) result[key] = sections[key]
+    if (Object.keys(sections[key]).length > 0) result[key] = sections[key]
   }
 
   if (result.theme?.tokens) normalizeNestedTokens(result.theme.tokens, tracker)
@@ -68,12 +70,10 @@ function mergeConfigsInternal(configs: ExtendableConfig[] | SourcedConfig[], tra
   return result
 }
 
-export function isPlainObject(value: unknown): value is Dict {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  const proto = Object.getPrototypeOf(value)
-  return proto === Object.prototype || proto === null
-}
-
+/**
+ * Merges one config's section into the accumulated section.
+ * Direct keys replace what previous configs set; `extend` keys deep-merge and concat arrays.
+ */
 function mergeSectionInto(sectionName: string, target: Dict, section: Dict, context?: SourceContext) {
   const childContext = context && { ...context, path: [sectionName] }
 
@@ -83,6 +83,7 @@ function mergeSectionInto(sectionName: string, target: Dict, section: Dict, cont
   }
 
   if (section.extend === undefined) return
+
   if (!isPlainObject(section.extend)) {
     throw new PandaError('CONFIG_ERROR', `💥 Config section \`${sectionName}.extend\` must be an object.`)
   }
@@ -93,6 +94,10 @@ function mergeSectionInto(sectionName: string, target: Dict, section: Dict, cont
   }
 }
 
+/**
+ * Recursively merges a value into the target: plain objects merge key by key,
+ * arrays concat or replace depending on `arrayMode`, everything else is cloned in.
+ */
 function mergeValue(
   target: Dict,
   key: string,
@@ -117,6 +122,7 @@ function mergeValue(
       if (childValue !== undefined && !omitKeys.has(childKey))
         mergeValue(current, childKey, childValue, arrayMode, childContext)
     }
+
     return
   }
 
@@ -125,20 +131,10 @@ function mergeValue(
   recordNestedSources(context, path, value)
 }
 
-function clone<T>(value: T): T {
-  if (Array.isArray(value)) return value.map((item) => clone(item)) as T
-
-  if (isPlainObject(value)) {
-    const result: Dict = {}
-    for (const [key, item] of Object.entries(value)) {
-      if (item !== undefined && !omitKeys.has(key)) result[key] = clone(item)
-    }
-    return result as T
-  }
-
-  return value
-}
-
+/**
+ * Hoists token properties (`value`, `description`, …) into `DEFAULT`
+ * when a token object also contains nested child tokens.
+ */
 function normalizeNestedTokens(tokens: Dict, tracker?: SourceTracker) {
   const stack = [{ value: tokens, path: ['theme', 'tokens'] }]
 
@@ -159,15 +155,18 @@ function normalizeNestedTokens(tokens: Dict, tracker?: SourceTracker) {
 
 function normalizeToken(token: Dict, tracker: SourceTracker | undefined, path: string[]) {
   let hasNestedKeys = false
+
   for (const key of Object.keys(token)) {
     if (!tokenKeys.has(key)) {
       hasNestedKeys = true
       break
     }
   }
+
   if (!hasNestedKeys) return
 
   token.DEFAULT ||= {}
+
   for (const key of tokenKeys) {
     if (token[key] == null) continue
     const moved = !token.DEFAULT[key]
@@ -180,8 +179,4 @@ function normalizeToken(token: Dict, tracker: SourceTracker | undefined, path: s
 
 function isValidToken(token: Dict) {
   return Object.hasOwnProperty.call(token, 'value')
-}
-
-function isEmptyObject(value: Dict) {
-  return Object.keys(value).length === 0
 }

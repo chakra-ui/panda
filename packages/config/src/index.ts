@@ -3,6 +3,7 @@ export { createConfigSnapshot } from './serialize'
 export { diffConfig } from './diff'
 export { findConfig } from './find'
 export { bundle } from './bundle'
+export { mergeConfigs } from './merge'
 
 export type { ConfigSnapshot } from './serialize'
 export type { ConfigDiff } from './diff'

@@ -7,7 +7,7 @@
 import { performance } from 'node:perf_hooks'
 import { test } from 'vitest'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 import { createContext } from '../src/legacy-fixture'
 
 function synth(i: number): string {

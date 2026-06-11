@@ -27,7 +27,7 @@ const CONFIG_SOURCE = `export default {
 `
 
 async function loadTempConfig(files: Record<string, string>) {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-config-loader-'))
+  const dir = mkdtempSync(join(tmpdir(), 'panda-config-'))
   for (const [file, source] of Object.entries(files)) {
     writeFileSync(join(dir, file), source)
   }
@@ -42,7 +42,7 @@ function hasOwnKey(value: unknown, key: string): boolean {
 }
 
 async function expectLoadError(files: Record<string, string>, expected: RegExp) {
-  const dir = mkdtempSync(join(tmpdir(), 'panda-config-loader-error-'))
+  const dir = mkdtempSync(join(tmpdir(), 'panda-config-error-'))
   try {
     for (const [file, source] of Object.entries(files)) {
       writeFileSync(join(dir, file), source)
@@ -58,7 +58,7 @@ describe('loadPandaConfig', () => {
   let result: LoadedPandaConfig
 
   beforeAll(async () => {
-    dir = mkdtempSync(join(tmpdir(), 'panda-config-loader-'))
+    dir = mkdtempSync(join(tmpdir(), 'panda-config-'))
     writeFileSync(join(dir, 'panda.config.ts'), CONFIG_SOURCE)
     result = await loadPandaConfig({ cwd: dir })
   })

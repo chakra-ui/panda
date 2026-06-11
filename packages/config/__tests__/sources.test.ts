@@ -159,7 +159,7 @@ describe('config sources', () => {
   })
 
   test('loadPandaConfig tracks string preset source entries when requested', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'panda-config-loader-sources-'))
+    const dir = mkdtempSync(join(tmpdir(), 'panda-config-sources-'))
     try {
       writeFileSync(
         join(dir, 'preset.ts'),

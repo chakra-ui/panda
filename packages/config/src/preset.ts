@@ -3,13 +3,8 @@ import { normalize, relative } from 'node:path'
 import { bundle } from './bundle'
 import { PandaError } from './error'
 import type { ConfigSources } from './sources'
-import {
-  isPlainObject,
-  mergeConfigs,
-  mergeConfigsWithSources,
-  type ExtendableConfig,
-  type SourcedConfig,
-} from './shared'
+import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
+import { isPlainObject, type ExtendableConfig } from './shared'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
 type ConfigSource = SourcedConfig['source']

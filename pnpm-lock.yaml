@@ -107,11 +107,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/compiler-wasm
       '@pandacss/config':
-        specifier: 1.11.3
-        version: 1.11.3
-      '@pandacss/config-loader':
         specifier: workspace:*
-        version: link:../packages/config-loader
+        version: link:../packages/config
       '@pandacss/core':
         specifier: 1.11.3
         version: 1.11.3
@@ -166,9 +163,9 @@ importers:
       '@pandacss/compiler-shared':
         specifier: workspace:*
         version: link:../compiler-shared
-      '@pandacss/config-loader':
+      '@pandacss/config':
         specifier: workspace:*
-        version: link:../config-loader
+        version: link:../config
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.0.0
@@ -182,11 +179,11 @@ importers:
         specifier: workspace:*
         version: link:../compiler-shared
     devDependencies:
-      '@pandacss/config-loader':
+      '@pandacss/config':
         specifier: workspace:*
-        version: link:../config-loader
+        version: link:../config
 
-  packages/config-loader:
+  packages/config:
     dependencies:
       '@pandacss/compiler-shared':
         specifier: workspace:*
@@ -568,7 +565,7 @@ importers:
         version: 19.2.3(@types/react@19.2.7)
       eslint-config-next:
         specifier: 16.0.6
-        version: 16.0.6(@typescript-eslint/parser@8.58.2(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2))(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2)
+        version: 16.0.6(@typescript-eslint/parser@8.48.1(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2))(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2)
       next:
         specifier: 15.5.7
         version: 15.5.7(@babel/core@7.12.9)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -605,7 +602,7 @@ importers:
         version: 19.2.3(@types/react@19.2.7)
       eslint-config-next:
         specifier: 16.0.6
-        version: 16.0.6(@typescript-eslint/parser@8.48.1(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2))(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2)
+        version: 16.0.6(@typescript-eslint/parser@8.58.2(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2))(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2)
       next:
         specifier: 15.5.7
         version: 15.5.7(@babel/core@7.12.9)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

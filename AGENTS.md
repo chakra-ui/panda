@@ -301,7 +301,7 @@ pnpm --filter @pandacss/compiler test           # binding round-trip Vitest test
 - Benchmarks that compare v2 against legacy Panda must run the **legacy JS side** against the published npm packages,
   not local workspace `packages/*` sources. Keep legacy deps in `bench/package.json` pinned to npm versions (for example
   `@pandacss/node`, `@pandacss/extractor`, `@pandacss/token-dictionary`), and keep v2-only packages such as
-  `@pandacss/compiler`, `@pandacss/compiler-wasm`, and `@pandacss/config-loader` on `workspace:*`.
+  `@pandacss/compiler`, `@pandacss/compiler-wasm`, and `@pandacss/config` on `workspace:*`.
 - Do not run bench comparison scripts with `--conditions source`; published npm packages do not ship `src/index.ts`. Use
   the `pnpm --filter=./bench <script>` commands so package resolution matches the installed npm versions.
 

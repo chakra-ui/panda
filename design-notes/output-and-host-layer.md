@@ -5,7 +5,7 @@ scope:
   - packages/compiler
   - packages/compiler-wasm
   - packages/compiler-shared
-  - packages/config-loader
+  - packages/config
 ---
 
 # Output & Host Layer (Driver)
@@ -27,10 +27,10 @@ orchestration** (`BaseDriver` + `selectArtifacts`) live in **`@pandacss/compiler
 differs by environment (config access, `reload`, single-change IO); everything identical (introspection caching, `scan`,
 batched changes, artifact selection, `compile`, watch-target derivation) lives in `BaseDriver`:
 
-- **`@pandacss/compiler`** (node) — the native binding **and** `createNodeDriver` / `writeArtifacts`. Adds `@pandacss/config-loader`.
+- **`@pandacss/compiler`** (node) — the native binding **and** `createNodeDriver` / `writeArtifacts`. Adds `@pandacss/config`.
 - **`@pandacss/compiler-wasm`** (browser) — the wasm binding **and** `createBrowserDriver`.
 
-Both are backed by the engine's `scan`/`glob` (see [filesystem](./filesystem.md)) and config-loader's `diffConfig`. The
+Both are backed by the engine's `scan`/`glob` (see [filesystem](./filesystem.md)) and config's `diffConfig`. The
 v1 analog is `packages/node/src/builder.ts` (`Builder`); v2's Driver is thinner because the Rust `Project` absorbed the
 incremental/affected tracking the v1 `Builder` did by hand (`fileModifiedMap`, `checkFilesChanged`, `affecteds`), and the
 fs engine absorbed globbing + reading.
@@ -50,7 +50,7 @@ Layer 3 — Consumers / sinks  (per-tool policy: WHERE output goes)
         │  thin adapters
         ▼
 Layer 2 — Driver  (host orchestrator — ships in @pandacss/compiler[-wasm])
-  • load config (config-loader) + build Compiler · reload + diff on config change
+  • load config (config) + build Compiler · reload + diff on config change
   • scan() → engine globs + reads + parses (no JS glob); applyChange routes single events
   • cadence: artifacts (config-change gated) vs CSS (every build) are DISTINCT operations
   • register deps for the watcher / postcss; writeArtifacts sink (node)
@@ -130,7 +130,7 @@ entangled with it. Each host is a `BaseDriver` subclass living in its platform b
 | --- | --- | --- |
 | Compiler | native NAPI binding (same package) | wasm binding (same package) |
 | Filesystem | `OsFileSystem` (real disk) | `MemoryFileSystem` (`Compiler.fs`) |
-| Config source | `@pandacss/config-loader` (Rolldown bundles `panda.config.ts` from disk) | a pre-built `ConfigSnapshot` handed in — Rolldown is Node-only, the browser can't bundle the config the same way |
+| Config source | `@pandacss/config` (Rolldown bundles `panda.config.ts` from disk) | a pre-built `ConfigSnapshot` handed in — Rolldown is Node-only, the browser can't bundle the config the same way |
 | Sources | `scan()` globs + reads real disk | host stages files into `Compiler.fs` (the driver's `sources` option / `applyChange`), then `scan()` globs the in-memory tree |
 | wasm init | n/a | real browsers pass an initialized `pkg-web` `module`; omitting it falls back to the `pkg-node` `loadWasm` path (Node/SSR/tests) |
 
@@ -176,8 +176,8 @@ the user didn't rename them. The engine exposes `compiler.layers()` → `{ reset
 ## Config diffing
 
 On `reload()` the Driver needs a config diff to know *which* artifacts to regenerate instead of rewriting everything. It
-is a pure function of two `SerializedConfig`s and belongs in **`@pandacss/config-loader`** (a config concern;
-config-loader already depends on `@pandacss/compiler-shared`, so it can emit `CodegenDependency`).
+is a pure function of two `SerializedConfig`s and belongs in **`@pandacss/config`** (a config concern;
+config already depends on `@pandacss/compiler-shared`, so it can emit `CodegenDependency`).
 
 ```ts
 import type { CodegenDependency, SerializedConfig } from '@pandacss/compiler-shared'

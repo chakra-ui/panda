@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm postcss:prepare && vite build",
-    "build:deps": "pnpm --filter @pandacss/compiler-shared build-fast && pnpm --filter @pandacss/config-loader build-fast && pnpm --filter @pandacss/compiler build-fast && pnpm --filter @pandacss/compiler build:native && pnpm --filter @pandacss/postcss build-fast",
+    "build:deps": "pnpm --filter @pandacss/compiler-shared build-fast && pnpm --filter @pandacss/config build-fast && pnpm --filter @pandacss/compiler build-fast && pnpm --filter @pandacss/compiler build:native && pnpm --filter @pandacss/postcss build-fast",
     "clean": "rm -rf dist styled-system",
     "postcss:prepare": "node ./process-postcss.mjs",
     "test": "pnpm clean && pnpm build:deps && pnpm build && node ./test-output.mjs"

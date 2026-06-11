@@ -5,7 +5,7 @@ scope:
   - packages/cli_v2
   - packages/compiler
   - packages/compiler-shared
-  - packages/config-loader
+  - packages/config
   - packages/vite
   - packages/postcss_v2
 ---

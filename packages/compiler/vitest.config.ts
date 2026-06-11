@@ -11,8 +11,8 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@pandacss/config-loader',
-        replacement: resolve('../config-loader/src'),
+        find: '@pandacss/config',
+        replacement: resolve('../config/src'),
       },
     ],
   },

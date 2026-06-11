@@ -2,7 +2,7 @@
 title: Container Query Theme API
 status: accepted
 scope:
-  - packages/config-loader
+  - packages/config
   - packages/compiler-shared
   - crates/pandacss_config
   - crates/pandacss_project

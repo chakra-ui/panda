@@ -6,7 +6,7 @@
  * recipes layers) so reset/token-layer/hook differences don't pollute the diff.
  *
  * The fixture config is a clean nested-`{value}` UserConfig, so this isolates
- * the v2 encoder/emitter from config-loader incompleteness and from the
+ * the v2 encoder/emitter from config incompleteness and from the
  * sandbox-config-shape artifacts seen in the e2e sweep.
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -14,7 +14,7 @@ import { resolve } from 'node:path'
 import { format as formatCss } from '@projectwallace/format-css'
 import { test } from 'vitest'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 import { createContext } from '../src/legacy-fixture'
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)

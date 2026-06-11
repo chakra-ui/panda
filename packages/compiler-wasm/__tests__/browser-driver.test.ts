@@ -1,4 +1,4 @@
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 import { describe, expect, it } from 'vitest'
 import { createBrowserDriver } from '../src'
 

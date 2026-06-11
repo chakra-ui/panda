@@ -1,5 +1,5 @@
 import { BaseDriver, type Compiler, type ConfigDiff, type Driver, type SourceChange } from '@pandacss/compiler-shared'
-import { type LoadedPandaConfig, diffConfig, loadPandaConfig } from '@pandacss/config-loader'
+import { type LoadedPandaConfig, diffConfig, loadPandaConfig } from '@pandacss/config'
 import { join } from 'node:path'
 import { createCompilerFromSnapshot } from './index'
 
@@ -78,7 +78,7 @@ class NodeDriver extends BaseDriver {
 
   override isConfigFile(file: string): boolean {
     // `realpath` (via the fs engine) follows symlinks so paths to the same file
-    // compare equal — `dependencies` are relative to `cwd` (config-loader's `collectDependencies`).
+    // compare equal — `dependencies` are relative to `cwd` (config's `collectDependencies`).
     const target = this.compiler.realpath(file)
     if (this.compiler.realpath(this.#loaded.path) === target) return true
     return this.#loaded.dependencies.some((dep) => this.compiler.realpath(join(this.#options.cwd, dep)) === target)

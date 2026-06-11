@@ -16,7 +16,7 @@ import { format as formatCss } from '@projectwallace/format-css'
 import { test } from 'vitest'
 import { loadConfigAndCreateContext } from '@pandacss/node'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 const outDir = resolve(repoRoot, 'bench/.parity-out')
@@ -82,7 +82,7 @@ test('parity sweep', async () => {
       const legacy = ctx.getCss(sheet) as string
       r.legacyMs = +(performance.now() - lStart).toFixed(1)
 
-      // --- v2: same resolved config (bypass config-loader bundle bug) ---
+      // --- v2: same resolved config (bypass config bundle bug) ---
       const snapshot = createConfigSnapshot(ctx.config)
       const vStart = performance.now()
       const compiler = createCompilerFromSnapshot(snapshot, { crossFile: true })

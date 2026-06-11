@@ -30,7 +30,7 @@ import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as pandaNode from '@pandacss/node'
 import { createCompilerFromSnapshot } from '@pandacss/compiler'
-import { createConfigSnapshot } from '@pandacss/config-loader'
+import { createConfigSnapshot } from '@pandacss/config'
 
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 

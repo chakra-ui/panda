@@ -19,10 +19,10 @@ Two comparison surfaces, because v2 has two halves with different maturity:
   (`genuine.test.ts`). Loads config from disk the way the real product does. Isolates config loading, glob, presets,
   hooks.
 - **Compiler/emitter** — legacy fixture `PandaContext` vs `createCompilerFromSnapshot` fed the **same resolved config**
-  (`edgecases.test.ts`, `parity.test.ts`). Isolates the encoder + stylesheet from the config-loader.
+  (`edgecases.test.ts`, `parity.test.ts`). Isolates the encoder + stylesheet from the config.
 
 Both are real v2 entry points. The snapshot cross-feed is the only apples-to-apples *emitter* diff (v2's own
-config-loader can't yet load most real configs — see §4-A), but it has a trap: it feeds v2 the legacy **post-resolution**
+config can't yet load most real configs — see §4-A), but it has a trap: it feeds v2 the legacy **post-resolution**
 config, whose `utilities.*.values` are lowered to `js-callback` refs. v2 must invoke those callbacks correctly — and two
 of this pass's three bugs were exactly there (§3). CSS is normalized with `@projectwallace/format-css` before diffing.
 
@@ -112,22 +112,22 @@ equivalent. The remaining battery diffs are concentrated below.
 
 ## 4. Remaining gaps
 
-### A. Front-end / config-loader gaps (still blocking real-world drop-in)
+### A. Front-end / config gaps (still blocking real-world drop-in)
 
 - **A1 — Config-loader crashes on dynamic-import configs** _(High)_. `await import()` in a config (e.g.
   `sandbox/vite-ts`) makes Rolldown code-split; `bundle.ts` evaluates only the entry chunk via a `data:` URL, so sibling
-  chunks fail: `Failed to resolve "./dist-*.js"`. Evidence: `packages/config-loader/src/bundle.ts`. Fix: write Rolldown
+  chunks fail: `Failed to resolve "./dist-*.js"`. Evidence: `packages/config/src/bundle.ts`. Fix: write Rolldown
   chunks to a temp dir (or `inlineDynamicImports`) instead of single-chunk `data:` URL.
 
 - **A3 — No automatic preset injection** _(High)_. v2's loader doesn't inject `preset-base`/`preset-panda`
-  (`packages/config-loader/src/load.ts:18`, "out of scope for now"). Standard configs resolve incompletely → broken
+  (`packages/config/src/load.ts:18`, "out of scope for now"). Standard configs resolve incompletely → broken
   output: genuine `sandbox/solid-ts` still emits `color: blue .500` (unresolved token) and `bg-gradient: to-r` (raw
   utility id). This is the single biggest reason the genuine v2 path can't replace legacy on most projects, and it's
   what the snapshot cross-feed masks. Reproduce: `pnpm exec vitest run bench/__tests__/genuine.test.ts`.
 
 - **A4 — Config hooks not executed** _(Med, by design)_. `hooks.cssgen:done` etc. don't run. `sandbox/vite-ts` uses
   `removeUnusedCssVars`; v2 ignores it → emits all token vars (24.5 KB v2 vs 10.1 KB legacy, +14 KB). Documented scope
-  boundary (`packages/config-loader/src/serialize.ts` `runtimeOnlyKeys`), but a real output delta for hook-using
+  boundary (`packages/config/src/serialize.ts` `runtimeOnlyKeys`), but a real output delta for hook-using
   projects.
 
 - ✅ **A2 — `./`-prefixed include globs** (fixed prior pass; `normalize_pattern` strips leading `./` in both fs walkers).

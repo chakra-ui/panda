@@ -2,7 +2,7 @@
 title: Virtual Styled-System (Design-System Consume)
 status: draft
 scope:
-  - packages/config-loader
+  - packages/config
   - packages/cli_v2
   - packages/compiler-shared
   - crates/pandacss_codegen
@@ -106,7 +106,7 @@ non-DS config (`@pandacss/preset-base`, internal shared presets) and explicit ov
 10. cssgen / watch
 ```
 
-Steps 1–8 are host/`config-loader` + compiler; step 9 is `panda codegen` (or driver codegen phase).
+Steps 1–8 are host/`config` + compiler; step 9 is `panda codegen` (or driver codegen phase).
 
 ## `importMap` input shapes (v1 parity)
 
@@ -183,7 +183,7 @@ alias for `recipes`). The extractor matches import sources by **substring** agai
 [extraction-pipeline.md](./extraction-pipeline.md)).
 
 Normalization lives in **`@pandacss/compiler-shared`** (`normalizeImportMap`, `prepareCompilerConfig`), applied in
-`config-loader` snapshots and native/wasm bindings before Rust. Rust only accepts the expanded `ImportMapOutput` shape.
+`config` snapshots and native/wasm bindings before Rust. Rust only accepts the expanded `ImportMapOutput` shape.
 
 ## `designSystems` + `importMap` merge
 
@@ -372,10 +372,10 @@ covered by ui’s artifact (see [build-info.md — Stacked design systems](./bui
 
 - ✅ **Build info** — produce, hydrate, tree-shake, token identity ([build-info.md](./build-info.md)).
 - ✅ **importMap** as substring arrays — extractor supports multiple paths per category today (normalized `ImportMapOutput` only).
-- ✅ **Preset merge** — `config-loader` resolves authored presets.
+- ✅ **Preset merge** — `config` resolves authored presets.
 - ✅ **importMap normalization** — `normalizeImportMap` / `prepareCompilerConfig` in
   [`packages/compiler-shared/src/import-map.ts`](../packages/compiler-shared/src/import-map.ts); applied in
-  `config-loader` snapshots and native/wasm compiler bindings before Rust.
+  `config` snapshots and native/wasm compiler bindings before Rust.
 - ⬜ **`designSystems` config field** — resolve manifest, merge preset, derive importMap, hydrate buildInfo.
 - ⬜ **importMap auto-wiring** — prepend DS manifest roots + append `outdir`; merge with user string/array/object.
 - ⬜ **Manifest wire format** — `styledSystem` paths, `extends`, optional `dependencies`.

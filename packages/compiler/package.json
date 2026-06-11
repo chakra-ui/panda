@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@pandacss/compiler-shared": "workspace:*",
-    "@pandacss/config-loader": "workspace:*"
+    "@pandacss/config": "workspace:*"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.0.0"

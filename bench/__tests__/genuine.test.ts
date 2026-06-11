@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Fully genuine comparison: legacy node pipeline vs v2 via its OWN config-loader
+ * Fully genuine comparison: legacy node pipeline vs v2 via its OWN config
  * (createNodeDriver). No cross-feeding — both load the config from disk the way
  * the real product does. Only runs on sandboxes whose config v2 can load.
  */
