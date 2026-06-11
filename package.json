@@ -28,7 +28,7 @@
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
-    "release": "changeset publish",
+    "release": "pnpm --filter @pandacss/compiler exec napi pre-publish --npm-dir npm && changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },

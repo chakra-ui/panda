@@ -1,17 +1,100 @@
+# Builds the native @pandacss/compiler binaries per platform, then versions and
+# publishes the v2 beta via changesets (pre mode -> `beta` dist-tag).
+#
+# NOTE: the publish path (changesets + napi platform packages) cannot be run
+# locally. Validate with a dry run before trusting a real release — see the
+# `release` job comments.
 name: Publish
 
 on:
   push:
+    branches:
+      - v2
     paths:
       - '.changeset/**'
       - 'packages/**'
-    branches:
-      - main
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build the matrix and run publish checks without publishing'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  build-native:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: aarch64-apple-darwin, runner: macos-latest }
+          - { target: x86_64-apple-darwin, runner: macos-latest }
+          - { target: x86_64-unknown-linux-gnu, runner: ubuntu-latest, args: --use-napi-cross }
+          - { target: aarch64-unknown-linux-gnu, runner: ubuntu-latest, args: --use-napi-cross }
+          - { target: x86_64-unknown-linux-musl, runner: ubuntu-latest, zig: true, args: -x }
+          - { target: aarch64-unknown-linux-musl, runner: ubuntu-latest, zig: true, args: -x }
+          - { target: x86_64-pc-windows-msvc, runner: windows-latest }
+          - { target: aarch64-pc-windows-msvc, runner: windows-latest }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+
+      - name: Setup Rust
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Setup Zig
+        if: matrix.zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.14.1
+
+      - name: Install cargo-zigbuild
+        if: matrix.zig
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-zigbuild
+
+      - name: Build native
+        working-directory: packages/compiler
+        run: pnpm build:native -- --target ${{ matrix.target }} ${{ matrix.args }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.target }}
+          path: packages/compiler/*.node
+          if-no-files-found: error
+
+      # The generated loader is platform-independent but version-coupled, so it
+      # must come from a build that ran against the bumped package.json. Upload
+      # it once.
+      - name: Upload loader
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiler-loader
+          path: packages/compiler/binding.cjs
+          if-no-files-found: error
+
   release:
     name: Release
+    needs: build-native
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write # npm provenance
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -21,17 +104,61 @@ jobs:
       - name: Install
         uses: ./.github/composite-actions/install
 
+      - name: Setup wasm toolchain
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Download native binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bindings-*
+          path: packages/compiler/artifacts
+          merge-multiple: true
+
+      - name: Download loader
+        uses: actions/download-artifact@v4
+        with:
+          name: compiler-loader
+          path: packages/compiler
+
+      # Distribute the downloaded .node files into npm/<triple>/.
+      - name: Stage platform binaries
+        working-directory: packages/compiler
+        run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
+
       - name: Build packages
         run: pnpm build
 
-      - name: Publish packages
+      - name: Build wasm
+        run: pnpm --filter @pandacss/compiler-wasm build:wasm
+
+      # Dispatch with dry_run=true: validate staging + versions without
+      # publishing. Runs the same pre-publish prep (dry) and prints the planned
+      # release set.
+      - name: Dry run
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          pnpm --filter @pandacss/compiler exec napi pre-publish --npm-dir npm --dry-run
+          pnpm changeset status --verbose
+
+      # `pnpm release` runs `napi pre-publish` (syncs platform package versions,
+      # wires optionalDependencies, publishes platform packages) then
+      # `changeset publish` (publishes the workspace under the `beta` tag while
+      # in pre mode). Skipped on a dry-run dispatch.
+      - name: Publish
         id: changesets
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         uses: changesets/action@v1
         with:
           publish: pnpm release
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Slack Notification
         if: steps.changesets.outputs.published == 'true'
@@ -40,8 +167,8 @@ jobs:
           webhook-type: webhook-trigger
           payload: |
             {
-              "package_name": "@pandacss/dev",
-              "changelog_url": "https://github.com/chakra-ui/panda/blob/main/CHANGELOG.md"
+              "package_name": "@pandacss/cli",
+              "changelog_url": "https://github.com/chakra-ui/panda/blob/v2/CHANGELOG.md"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
