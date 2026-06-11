@@ -148,9 +148,6 @@ importers:
       '@pandacss/mcp':
         specifier: workspace:*
         version: link:../mcp
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../postcss
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -200,6 +197,27 @@ importers:
       rolldown:
         specifier: 1.0.0-rc.17
         version: 1.0.0-rc.17
+
+  packages/dev:
+    dependencies:
+      '@pandacss/cli':
+        specifier: workspace:*
+        version: link:../cli
+      '@pandacss/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@pandacss/config':
+        specifier: workspace:*
+        version: link:../config
+      '@pandacss/postcss':
+        specifier: workspace:*
+        version: link:../postcss
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
+      postcss:
+        specifier: '>=8'
+        version: 8.5.6
 
   packages/mcp:
     dependencies:
