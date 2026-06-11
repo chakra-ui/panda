@@ -198,6 +198,35 @@ fn non_react_slot_recipe_contexts_preserve_style_prop_modes() {
 }
 
 #[test]
+fn solid_slot_recipe_context_supports_function_default_props() {
+    let artifacts =
+        ArtifactGraph.generate_with_config(&config("solid", false), GenerateOptions::default());
+    let code = file(
+        artifact(&artifacts, ArtifactId::JsxCreateSlotRecipeContext),
+        "jsx/create-slot-recipe-context.mjs",
+    );
+
+    assert!(code.contains("const createDefaultProps = (options) => {"));
+    assert!(code.contains("const defaults = options?.defaultProps"));
+    assert!(
+        code.contains("typeof defaults === 'function' ? createMemo(defaults) : () => defaults")
+    );
+    assert!(code.contains("const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren"));
+    assert!(code.contains("const slots = resolvedSlots()"));
+    assert!(code.contains("const resolved = resolveProps(propsWithClass, slots[slot])"));
+    assert!(code.contains("return local.children ?? defaultProps()?.children"));
+    assert!(code.contains("const forwardedProps = {}"));
+    assert!(code.contains("Object.defineProperty(forwardedProps, key, { get: () => variantProps[key], enumerable: true })"));
+    assert!(code.contains("mergeProps(resolvedProps, forwardedProps, {"));
+    assert!(code.contains("if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap"));
+    assert!(code.contains("resolved.class = cx(resolved.class, slots._classNameMap?.[slot])"));
+    assert!(
+        code.contains("resolved.class = cx(resolved.class, resolvedSlots._classNameMap?.[slot])")
+    );
+    assert!(!code.contains("options?.defaultProps?.class"));
+}
+
+#[test]
 fn emits_object_jsx_factory_for_non_react_frameworks() {
     for (framework, import_marker, runtime_marker, type_marker) in [
         (

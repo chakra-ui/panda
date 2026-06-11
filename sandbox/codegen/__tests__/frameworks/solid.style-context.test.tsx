@@ -1,5 +1,6 @@
 /** @jsxImportSource solid-js */
 import { render } from '@solidjs/testing-library'
+import { createSignal } from 'solid-js'
 import { describe, expect, test } from 'vitest'
 import { createSlotRecipeContext } from '../../styled-system-solid/jsx'
 import { slotButton } from '../../styled-system-solid/recipes'
@@ -116,5 +117,63 @@ describe('style context - solid', () => {
         </span>
       </div>
     `)
+  })
+
+  test('context default props as function can provide children', () => {
+    const LabelWithDefaults = withContext('span', 'root', {
+      defaultProps: () => ({
+        class: 'fallback-label',
+        children: <em>Default label</em>,
+      }),
+    })
+
+    const { container } = render(() => (
+      <Root visual="solid">
+        <LabelWithDefaults />
+      </Root>
+    ))
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_solid"
+        data-slot="root"
+      >
+        <span
+          class="slot-button__root slot-button__root--visual_solid fallback-label"
+          data-slot="root"
+        >
+          <em>
+            Default label
+          </em>
+        </span>
+      </div>
+    `)
+  })
+
+  test('forwardProps exposes the variant to the component', () => {
+    const RootWithForward = withProvider('div', 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(() => <RootWithForward visual="outline" />)
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <div
+        class="slot-button__root slot-button__root--visual_outline"
+        data-slot="root"
+        visual="outline"
+      />
+    `)
+  })
+
+  test('forwardProps stays reactive', () => {
+    const [visual, setVisual] = createSignal<'outline' | 'solid'>('outline')
+    const RootWithForward = withProvider('div', 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(() => <RootWithForward visual={visual()} />)
+    const div = () => container.firstChild as HTMLElement
+
+    expect(div().getAttribute('visual')).toBe('outline')
+
+    setVisual('solid')
+    expect(div().getAttribute('visual')).toBe('solid')
   })
 })

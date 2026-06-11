@@ -183,21 +183,30 @@ export function createSlotRecipeContext(recipeInput) {
     __RESOLVE_PROPS__
   }
 
+  const createDefaultProps = (options) => {
+    const defaults = options?.defaultProps
+    return typeof defaults === 'function' ? createMemo(defaults) : () => defaults
+  }
+
+  const resolveSlots = (variantProps) => {
+    const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
+    if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
+    return styles
+  }
+
   const withRootProvider = (Component, options) => {
     const WithRootProvider = (props) => {
       const [variantProps, otherProps] = slotRecipeFn.splitVariantProps(props)
       const [local, propsWithoutChildren] = splitProps(otherProps, ['children'])
 
       const resolvedSlots = createMemo(() => {
-        const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
-        return styles
+        return resolveSlots(variantProps)
       })
+      const defaultProps = createDefaultProps(options)
 
       const mergedProps = createMemo(() => {
-        if (!options?.defaultProps) return propsWithoutChildren
-        const defaults = typeof options.defaultProps === 'function'
-          ? options.defaultProps()
-          : options.defaultProps
+        const defaults = defaultProps()
+        if (!defaults) return propsWithoutChildren
         return { ...defaults, ...propsWithoutChildren }
       })
 
@@ -210,7 +219,7 @@ export function createSlotRecipeContext(recipeInput) {
             Component,
             mergeProps(mergedProps, {
               get children() {
-                return local.children
+                return local.children ?? defaultProps()?.children
               },
             }),
           )
@@ -228,17 +237,24 @@ export function createSlotRecipeContext(recipeInput) {
       const [variantProps, restProps] = slotRecipeFn.splitVariantProps(props)
       const [local, propsWithoutChildren] = splitProps(restProps, ['children'])
 
-      const resolvedSlots = createMemo(() => {
-        const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
-        return styles
+      const forwardedProps = {}
+      options?.forwardProps?.forEach((key) => {
+        if (key in variantProps) {
+          Object.defineProperty(forwardedProps, key, { get: () => variantProps[key], enumerable: true })
+        }
       })
 
+      const resolvedSlots = createMemo(() => {
+        return resolveSlots(variantProps)
+      })
+      const defaultProps = createDefaultProps(options)
+
       const resolvedProps = createMemo(() => {
-        const propsWithClass = {
-          ...propsWithoutChildren,
-          class: propsWithoutChildren.class ?? options?.defaultProps?.class,
-        }
-        const resolved = resolveProps(propsWithClass, resolvedSlots()[slot])
+        const defaults = defaultProps()
+        const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren
+        const slots = resolvedSlots()
+        const resolved = resolveProps(propsWithClass, slots[slot])
+        resolved.class = cx(resolved.class, slots._classNameMap?.[slot])
         resolved['data-slot'] = slot
         return resolved
       })
@@ -250,9 +266,9 @@ export function createSlotRecipeContext(recipeInput) {
         get children() {
           return createComponent(
             StyledComponent,
-            mergeProps(resolvedProps, {
+            mergeProps(resolvedProps, forwardedProps, {
               get children() {
-                return local.children
+                return local.children ?? defaultProps()?.children
               },
             }),
           )
@@ -270,13 +286,13 @@ export function createSlotRecipeContext(recipeInput) {
     const WithContext = (props) => {
       const resolvedSlots = useSlotStylesContext(componentName, slot)
       const [local, propsWithoutChildren] = splitProps(props, ['children'])
+      const defaultProps = createDefaultProps(options)
 
       const resolvedProps = createMemo(() => {
-        const propsWithClass = {
-          ...propsWithoutChildren,
-          class: propsWithoutChildren.class ?? options?.defaultProps?.class,
-        }
+        const defaults = defaultProps()
+        const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren
         const resolved = resolveProps(propsWithClass, resolvedSlots[slot])
+        resolved.class = cx(resolved.class, resolvedSlots._classNameMap?.[slot])
         resolved['data-slot'] = slot
         return resolved
       })
@@ -285,7 +301,7 @@ export function createSlotRecipeContext(recipeInput) {
         StyledComponent,
         mergeProps(resolvedProps, {
           get children() {
-            return local.children
+            return local.children ?? defaultProps()?.children
           },
         }),
       )
