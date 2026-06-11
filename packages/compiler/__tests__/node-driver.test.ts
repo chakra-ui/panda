@@ -9,7 +9,7 @@ import { join } from 'node:path'
 
 export default {
   outdir: 'styled-system',
-  codegenImportExtensions: true,
+  forceImportExtension: true,
   include: ['**/*.tsx'],
   plugins: [
     {

@@ -110,9 +110,7 @@ class NodeDriver extends BaseDriver {
     options: CodegenOptions | undefined,
   ): string[] {
     const artifactOptions =
-      options?.codegenImportExtensions === undefined
-        ? undefined
-        : { codegenImportExtensions: options.codegenImportExtensions }
+      options?.forceImportExtension === undefined ? undefined : { forceImportExtension: options.forceImportExtension }
     let artifacts = this.compiler.generateArtifacts(artifactOptions)
 
     for (const entry of hooks ?? []) {

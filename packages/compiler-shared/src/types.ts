@@ -129,8 +129,8 @@ export type CodegenArtifactId =
   | 'types'
 
 export type CodegenDependency =
-  | 'codegenFormat'
-  | 'codegenImportExtensions'
+  | 'outExtension'
+  | 'forceImportExtension'
   | 'conditions'
   | 'hash'
   | 'jsxFactory'
@@ -146,7 +146,7 @@ export type CodegenDependency =
   | 'utilities'
 
 export interface GenerateArtifactOptions {
-  codegenImportExtensions?: boolean
+  forceImportExtension?: boolean
 }
 
 export interface CodegenOptions extends GenerateArtifactOptions {

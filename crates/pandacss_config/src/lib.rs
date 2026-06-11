@@ -124,9 +124,9 @@ pub struct UserConfig {
     #[serde(default, deserialize_with = "deserialize_optimize_config")]
     pub optimize: OptimizeConfig,
     #[serde(default)]
-    pub codegen_format: CodegenFormat,
-    #[serde(default, rename = "codegenImportExtensions")]
-    pub codegen_import_extensions: bool,
+    pub out_extension: CodegenFormat,
+    #[serde(default)]
+    pub force_import_extension: bool,
     #[serde(default, rename = "strictTokens")]
     pub strict_tokens: bool,
     #[serde(default, rename = "strictPropertyValues")]
@@ -167,8 +167,8 @@ impl Default for UserConfig {
             layers: CascadeLayers::default(),
             preflight: PreflightConfig::default(),
             optimize: OptimizeConfig::default(),
-            codegen_format: CodegenFormat::default(),
-            codegen_import_extensions: false,
+            out_extension: CodegenFormat::default(),
+            force_import_extension: false,
             strict_tokens: false,
             strict_property_values: false,
             validation: ValidationMode::default(),

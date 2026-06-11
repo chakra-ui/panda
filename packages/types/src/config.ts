@@ -362,15 +362,15 @@ interface CodegenOptions {
    */
   strictPropertyValues?: boolean
   /**
-   * Generated runtime format.
+   * Generated runtime file extension.
    * @default 'js'
    */
-  codegenFormat?: 'ts' | 'js' | 'mjs'
+  outExtension?: 'ts' | 'js' | 'mjs'
   /**
    * Whether generated import specifiers include runtime file extensions.
    * @default false
    */
-  codegenImportExtensions?: boolean
+  forceImportExtension?: boolean
   /**
    * CSS emission optimizations. All optimizations are opt-in.
    */

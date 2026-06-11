@@ -174,9 +174,7 @@ export abstract class BaseDriver implements Driver {
   codegen(options?: CodegenOptions): string[] {
     const outdir = this.getConfiguredOutdir(options?.outdir)
     const artifactOptions =
-      options?.codegenImportExtensions === undefined
-        ? undefined
-        : { codegenImportExtensions: options.codegenImportExtensions }
+      options?.forceImportExtension === undefined ? undefined : { forceImportExtension: options.forceImportExtension }
     return this.#compiler.writeArtifacts(outdir, options?.cwd, artifactOptions)
   }
 

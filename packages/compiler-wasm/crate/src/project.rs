@@ -1247,11 +1247,11 @@ fn generate_options(
     user_config: &UserConfig,
     options: &JsValue,
 ) -> Result<GenerateOptions, JsValue> {
-    let import_extensions = option_bool(options, "codegenImportExtensions")?
-        .unwrap_or(user_config.codegen_import_extensions);
+    let import_extensions =
+        option_bool(options, "forceImportExtension")?.unwrap_or(user_config.force_import_extension);
 
     Ok(GenerateOptions {
-        format: user_config.codegen_format,
+        format: user_config.out_extension,
         import_extensions,
     })
 }

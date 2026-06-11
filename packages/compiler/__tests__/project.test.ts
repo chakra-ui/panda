@@ -160,8 +160,8 @@ describe('Compiler', () => {
     `)
   })
 
-  it('uses config codegenImportExtensions for generated import specifiers', () => {
-    const compiler = createProject({ codegenImportExtensions: true })
+  it('uses config forceImportExtension for generated import specifiers', () => {
+    const compiler = createProject({ forceImportExtension: true })
 
     const artifact = compiler.generateArtifact('css-index')
     const runtime = artifact?.files.find((file) => file.path === 'css/index.js')?.code

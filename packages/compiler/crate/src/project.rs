@@ -116,7 +116,7 @@ pub struct StaticPatternResult {
 
 #[napi(object)]
 pub struct GenerateArtifactOptions {
-    pub codegen_import_extensions: Option<bool>,
+    pub force_import_extension: Option<bool>,
 }
 
 #[napi(object)]
@@ -1371,11 +1371,11 @@ fn generate_options(
     options: Option<GenerateArtifactOptions>,
 ) -> GenerateOptions {
     let import_extensions = options
-        .and_then(|options| options.codegen_import_extensions)
-        .unwrap_or(user_config.codegen_import_extensions);
+        .and_then(|options| options.force_import_extension)
+        .unwrap_or(user_config.force_import_extension);
 
     GenerateOptions {
-        format: user_config.codegen_format,
+        format: user_config.out_extension,
         import_extensions,
     }
 }

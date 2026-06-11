@@ -12125,16 +12125,15 @@ export interface CodegenOptions {
 	 */
 	shorthands?: boolean;
 	/**
-	 * File extension for generated javascript files.
-	 * @default 'mjs'
+	 * Generated runtime file extension.
+	 * @default 'js'
 	 */
-	outExtension?: "mjs" | "js";
+	outExtension?: "ts" | "js" | "mjs";
 	/**
-	 * Whether to force consistent type extensions for generated typescript .d.ts files.
-	 * If set to `true` and `outExtension` is set to `mjs`, the generated typescript .d.ts files will have the extension `.d.mts`.
+	 * Whether generated import specifiers include runtime file extensions.
 	 * @default false
 	 */
-	forceConsistentTypeExtension?: boolean;
+	forceImportExtension?: boolean;
 }
 export interface PresetOptions {
 	/**
