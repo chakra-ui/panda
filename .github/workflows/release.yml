@@ -143,13 +143,13 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      # Dispatch with dry_run=true: validate staging + versions without
-      # publishing. Runs the same pre-publish prep (dry) and prints the planned
-      # release set.
+      # Dispatch with dry_run=true: validate the staged platform binaries and
+      # the planned release set. `napi pre-publish` needs a changesets release
+      # commit, so it only runs on a real publish.
       - name: Dry run
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
-          pnpm --filter @pandacss/compiler exec napi pre-publish --npm-dir npm --dry-run
+          find packages/compiler/npm -name '*.node'
           pnpm changeset status --verbose
 
       # `pnpm release` runs `napi pre-publish` (syncs platform package versions,
