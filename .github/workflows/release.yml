@@ -30,6 +30,8 @@ concurrency:
 jobs:
   build-native:
     name: Build (${{ matrix.target }})
+    # Upstream pushes publish; forks can still dispatch a dry run to validate.
+    if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -159,7 +161,7 @@ jobs:
       # in pre mode). Skipped on a dry-run dispatch.
       - name: Publish
         id: changesets
-        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        if: ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         uses: changesets/action@v1
         with:
           publish: pnpm release
