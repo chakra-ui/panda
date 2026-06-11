@@ -28,7 +28,8 @@
     "sandbox-svelte": "0.0.1",
     "sandbox-vite-react-postcss": "0.0.0",
     "sandbox-vite": "0.0.0",
-    "sandbox-waku-ts": "0.0.0"
+    "sandbox-waku-ts": "0.0.0",
+    "@pandacss/dev": "1.0.0"
   },
   "changesets": []
 }
