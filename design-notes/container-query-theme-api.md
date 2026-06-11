@@ -18,9 +18,8 @@ Panda v2 uses `theme.containers` for the shared size scale, keeps `theme.contain
 new `cq` pattern. Users declare containers with native CSS properties: `container`, `containerName`, and
 `containerType`.
 
-This decision is scoped to the v2 Rust/compiler path. Existing legacy TypeScript packages may remain as compatibility
-or reference code; this note should not be read as a requirement to retrofit `packages/core`, `packages/generator`,
-`packages/types`, or the existing legacy pattern package.
+This decision is scoped to the v2 Rust/compiler path. Existing legacy TypeScript packages may remain as reference code;
+the v2 config surface should expose `containers`, not the legacy `containerSizes` key.
 
 The API is intentionally close to legacy `containerNames` + `containerSizes`; the main v2 change is renaming
 `containerSizes` to `containers`, adding range expansion, and dropping the `cq` pattern as the preferred declaration
@@ -187,8 +186,7 @@ css({
 })
 ```
 
-Compatibility code may accept `containerSizes`, but users should not define both `containerSizes` and `containers` with
-conflicting values for the same key.
+The v2 compiler does not treat `containerSizes` as a supported config key. Rename it to `containers` when migrating.
 
 ## V2 Adoption
 

@@ -492,6 +492,7 @@ fn utility_options_from_config(
         separator: Some(config.separator().to_owned()),
         prefix: config.prefix.class_name().map(str::to_owned),
         tokens: token_dictionary,
+        shorthands: config.shorthands,
     }
 }
 

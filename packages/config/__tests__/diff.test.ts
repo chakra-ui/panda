@@ -110,10 +110,10 @@ describe('diffConfig', () => {
     const result = diffConfig(base, next)
     expect(result.dependencies.sort()).toMatchInlineSnapshot(`
       [
-        "codegenFormat",
         "codegenImportExtensions",
         "jsxFramework",
         "syntax",
+        "utilities",
       ]
     `)
   })

@@ -174,6 +174,91 @@ describe('loadPandaConfig', () => {
 })
 
 describe('loadPandaConfig preset resolution', () => {
+  test('runs config:resolved after presets are merged', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        plugins: [{
+          name: 'config-rewriter',
+          hooks: {
+            'config:resolved'({ config, path, dependencies, utils }) {
+              const next = utils.omit(config, ['patterns.stack'])
+              next.theme = {
+                tokens: {
+                  colors: {
+                    seenPath: { value: path.endsWith('panda.config.ts') ? '#0f0' : '#f00' },
+                    seenDeps: { value: dependencies.includes('panda.config.ts') ? '#0f0' : '#f00' },
+                    fromPreset: config.theme.tokens.colors.fromPreset,
+                  },
+                },
+              }
+              return next
+            },
+          },
+        }],
+        presets: [{
+          name: 'brand',
+          theme: { tokens: { colors: { fromPreset: { value: '#123' } } } },
+        }],
+        patterns: {
+          stack: {
+            properties: { gap: {} },
+            transform: (props) => ({ display: 'flex', gap: props.gap }),
+          },
+        },
+      }`,
+    })
+
+    try {
+      const patterns = result.config.patterns as Record<string, unknown> | undefined
+      const colors = ((result.config.theme as { tokens?: { colors?: unknown } } | undefined)?.tokens?.colors ??
+        {}) as Record<string, unknown>
+
+      expect(patterns?.stack).toBeUndefined()
+      expect(colors).toMatchObject({
+        seenPath: { value: '#0f0' },
+        seenDeps: { value: '#0f0' },
+        fromPreset: { value: '#123' },
+      })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('runs preset:resolved hooks before merging a preset', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        plugins: [{
+          name: 'preset-rewriter',
+          hooks: {
+            'preset:resolved'({ preset, name }) {
+              return {
+                ...preset,
+                theme: {
+                  extend: {
+                    tokens: {
+                      colors: {
+                        [name]: { value: '#0f0' },
+                      },
+                    },
+                  },
+                },
+              }
+            },
+          },
+        }],
+        presets: [{ name: 'brand' }],
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.brand).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   test('resolves object presets with theme.extend and keeps user config precedence', async () => {
     const { dir, result } = await loadTempConfig({
       'panda.config.ts': `export default {

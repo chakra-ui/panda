@@ -33,7 +33,7 @@ export interface ConfigDiff {
   recipes: string[]
   /** Names of the specific patterns that changed — for per-entry file scoping. */
   patterns: string[]
-  /** Raw `microdiff` `Difference[]`, for the `config:change` hook / telemetry. */
+  /** Raw `microdiff` `Difference[]`, for host telemetry and debugging. */
   changes: unknown[]
 }
 

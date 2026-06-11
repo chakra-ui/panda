@@ -493,6 +493,7 @@ fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictiona
             separator: Some(config.separator().to_owned()),
             prefix: config.prefix.class_name().map(str::to_owned),
             tokens: dictionary,
+            shorthands: config.shorthands,
         },
     );
     utility.register_compositions(&config.theme);

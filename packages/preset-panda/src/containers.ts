@@ -1,4 +1,4 @@
-export const containerSizes = {
+export const containers = {
   xs: '320px',
   sm: '384px',
   md: '448px',

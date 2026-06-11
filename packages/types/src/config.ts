@@ -1,6 +1,6 @@
 import type { TSConfig } from 'pkg-types'
 import type { Conditions, ExtendableConditions } from './conditions'
-import type { PandaHookRegistry, PandaHooks } from './hooks'
+import type { HookRegistry } from './hooks'
 import type { PatternConfig } from './pattern'
 import type { Keys, LiteralUnion, PathIn, RequiredBy } from './shared'
 import type { StaticCssOptions } from './static-css'
@@ -19,30 +19,6 @@ export type { TSConfig }
 export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export type CascadeLayers = Record<CascadeLayer, string>
-
-export interface StudioOptions {
-  /**
-   * Used to customize the design system studio
-   * @default { title: 'Panda', logo: '🐼' }
-   */
-  studio?: {
-    /**
-     * The output directory for the design system studio when the build command is run.
-     */
-    outdir?: string
-    /**
-     * The logo url for the design system studio.
-     */
-    logo?: string
-    /**
-     * Used to inject custom html into the head or body of the studio
-     */
-    inject?: {
-      head?: string
-      body?: string
-    }
-  }
-}
 
 export interface Patterns {
   [pattern: string]: PatternConfig
@@ -206,7 +182,9 @@ export interface ExtendableOptions {
 
 export interface ImportMapInput {
   css?: string | string[]
+  recipe?: string | string[]
   recipes?: string | string[]
+  pattern?: string | string[]
   patterns?: string | string[]
   jsx?: string | string[]
   tokens?: string | string[]
@@ -258,16 +236,6 @@ interface FileSystemOptions {
    * Use this option as a workaround.
    */
   dependencies?: string[]
-  /**
-   * Whether to watch for changes and regenerate the css.
-   * @default false
-   */
-  watch?: boolean
-  /**
-   * Whether to use polling instead of filesystem events when watching.
-   * @default false
-   */
-  poll?: boolean
   /**
    * The current working directory.
    * @default 'process.cwd()'
@@ -340,11 +308,6 @@ interface CssgenOptions {
    */
   separator?: '_' | '=' | '-'
   /**
-   * Whether to minify the generated css.
-   * @default false
-   */
-  minify?: boolean
-  /**
    * The root selector for the css variables.
    * @default ':where(:host, :root)'
    */
@@ -355,69 +318,63 @@ interface CssgenOptions {
    */
   syntax?: 'template-literal' | 'object-literal'
   /**
-   * Whether to use `lightningcss` instead of `postcss` for css optimization.
-   * @default false
-   */
-  lightningcss?: boolean
-  /**
-   * Browserslist query to target specific browsers.
-   * @see https://www.npmjs.com/package/browserslist
-   */
-  browserslist?: string[]
-  /**
    * Layer mappings used in the generated css.
    * @default 'true'
    */
   layers?: Partial<CascadeLayers>
+}
+
+export interface OptimizeOptions {
   /**
-   * Polyfill CSS @layers at-rules for older browsers.
-   * @default 'false'
-   * @see https://www.npmjs.com/package/@csstools/postcss-cascade-layers
+   * Remove unused token declarations based on extracted project usage.
    */
-  polyfill?: boolean
+  removeUnusedTokens?: boolean
+  /**
+   * Remove unused keyframes based on extracted project usage.
+   */
+  removeUnusedKeyframes?: boolean
+  /**
+   * Narrow compound variant CSS to statically selected variant combinations.
+   */
+  smartCompoundVariants?: boolean
 }
 
 interface CodegenOptions {
   /**
-   * Whether to only emit the `tokens` directory
-   * @default false
-   */
-  emitTokensOnly?: boolean
-  /**
    * Whether to hash the generated class names / css variables.
-   * This is useful if want to shorten the class names or css variables.
+   * This is useful if you want to shorten the class names or css variables.
    * @default false
    */
   hash?: boolean | { cssVar: boolean; className: boolean }
   /**
-   * Change generated typescript definitions to be more strict for property having a token or utility.
-   */
-  strictTokens?: boolean
-  /**
-   * Change generated typescript definitions to be more strict for built-in CSS properties to only allow valid CSS values.
-   */
-  strictPropertyValues?: boolean
-  /**
-   * Whether to update the .gitignore file.
-   * @default 'true'
-   */
-  gitignore?: boolean
-  /**
-   * Whether to allow shorthand properties
-   * @default 'true'
+   * Whether to resolve configured utility shorthands like `p` -> `padding`.
+   * @default true
    */
   shorthands?: boolean
   /**
-   * File extension for generated javascript files.
-   * @default 'mjs'
+   * Change generated TypeScript definitions to be more strict for properties
+   * having a token or utility.
    */
-  outExtension?: 'mjs' | 'js'
+  strictTokens?: boolean
   /**
-   * Whether to force consistent type extensions for generated typescript .d.ts files.
-   * If set to `true` and `outExtension` is set to `mjs`, the generated typescript .d.ts files will have the extension `.d.mts`.
+   * Change generated TypeScript definitions to be more strict for built-in CSS
+   * properties to only allow valid CSS values.
+   */
+  strictPropertyValues?: boolean
+  /**
+   * Generated runtime format.
+   * @default 'js'
+   */
+  codegenFormat?: 'ts' | 'js' | 'mjs'
+  /**
+   * Whether generated import specifiers include runtime file extensions.
    * @default false
    */
-  forceConsistentTypeExtension?: boolean
+  codegenImportExtensions?: boolean
+  /**
+   * CSS emission optimizations. All optimizations are opt-in.
+   */
+  optimize?: OptimizeOptions
 }
 
 interface PresetOptions {
@@ -429,7 +386,7 @@ interface PresetOptions {
 
 export interface PandaPlugin {
   name: string
-  hooks?: Partial<PandaHookRegistry>
+  hooks?: Partial<HookRegistry>
 }
 
 export interface PluginsOptions {
@@ -437,19 +394,13 @@ export interface PluginsOptions {
 }
 
 export interface Config
-  extends StudioOptions,
-    ExtendableOptions,
+  extends ExtendableOptions,
     CssgenOptions,
     CodegenOptions,
     FileSystemOptions,
     JsxOptions,
     PresetOptions,
     PluginsOptions {
-  /**
-   * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-   * @default 'false'
-   */
-  eject?: boolean
   /**
    * The validation strictness to use when validating the config.
    * - When set to 'none', no validation will be performed.
@@ -492,7 +443,7 @@ export interface LoadConfigResult extends LoadTsConfigResult {
   serialized: string
   deserialize: () => Config
   dependencies: string[]
-  hooks: Partial<PandaHooks>
+  hooks: Partial<HookRegistry>
 }
 
 export interface HashOptions {

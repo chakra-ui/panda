@@ -71,6 +71,21 @@ fn codegen_import_extensions_defaults_and_overrides() {
 }
 
 #[test]
+fn shorthands_default_to_enabled_and_can_be_disabled() {
+    let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
+    let configured: UserConfig = serde_json::from_value(json!({
+        "shorthands": false
+    }))
+    .expect("shorthands config");
+
+    assert!(default_config.shorthands);
+    assert!(!configured.shorthands);
+
+    let serialized = serde_json::to_value(&configured).expect("serialized config");
+    assert_eq!(serialized.get("shorthands"), Some(&json!(false)));
+}
+
+#[test]
 fn optimize_defaults_and_overrides() {
     let default_config: UserConfig = serde_json::from_value(json!({})).expect("default config");
     let configured: UserConfig = serde_json::from_value(json!({

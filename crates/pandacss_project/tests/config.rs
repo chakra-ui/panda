@@ -143,6 +143,34 @@ fn css_shorthands_are_normalized() {
 }
 
 #[test]
+fn css_shorthands_can_be_disabled() {
+    let mut project = create_project(json!({
+        "shorthands": false,
+        "utilities": {
+            "padding": { "shorthand": "p" }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ p: '4', padding: '8' });
+        "},
+    );
+
+    assert_eq!(report.css_calls, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: p
+      value: "4"
+      conditions: []
+    - prop: padding
+      value: "8"
+      conditions: []
+    "#);
+}
+
+#[test]
 fn utility_values_normalize_aliases() {
     let mut project = create_project(json!({
         "conditions": {

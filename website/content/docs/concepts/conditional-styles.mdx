@@ -449,7 +449,7 @@ export default defineConfig({
   theme: {
     extend: {
       containerNames: ['sidebar', 'content'],
-      containerSizes: {
+      containers: {
         xs: '40em',
         sm: '60em',
         md: '80em'
@@ -462,7 +462,7 @@ export default defineConfig({
 The default container sizes in the `@pandacss/preset-panda` preset are shown below:
 
 ```ts
-export const containerSizes = {
+export const containers = {
   xs: '320px',
   sm: '384px',
   md: '448px',

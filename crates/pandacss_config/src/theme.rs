@@ -35,8 +35,6 @@ pub struct Theme {
     #[serde(default)]
     pub container_names: Vec<String>,
     #[serde(default)]
-    pub container_sizes: BTreeMap<String, String>,
-    #[serde(default)]
     pub color_palette: ColorPaletteOptions,
 }
 
@@ -104,9 +102,7 @@ impl Theme {
     }
 
     fn container_scale(&self) -> BTreeMap<String, String> {
-        let mut scale = self.container_sizes.clone();
-        scale.extend(self.containers.clone());
-        scale
+        self.containers.clone()
     }
 
     fn breakpoint_conditions(&self) -> Vec<ranges::RangeRule> {

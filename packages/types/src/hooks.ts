@@ -1,63 +1,4 @@
-import type { Artifact, ArtifactId, DiffConfigResult } from './artifact'
-import type { LoadConfigResult, UserConfig } from './config'
-import type { HooksApiInterface } from './hooks-api'
-import type { LoggerInterface } from './logger'
-
-export interface PandaHooks {
-  /**
-   * Called when the config is resolved, after all the presets are loaded and merged.
-   * This is the first hook called, you can use it to tweak the config before the context is created.
-   */
-  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs['config']>
-  /**
-   * Called when each preset is resolved, allowing modification of individual presets.
-   * This hook is called for each preset during the resolution process, before they are merged together.
-   */
-  'preset:resolved': (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | PresetResolvedHookArgs['preset']>
-  /**
-   * Called when the token engine has been created
-   */
-  'tokens:created': (args: TokenCreatedHookArgs) => MaybeAsyncReturn
-  /**
-   * Called when the classname engine has been created
-   */
-  'utility:created': (args: UtilityCreatedHookArgs) => MaybeAsyncReturn
-  /**
-   * Called when the Panda context has been created and the API is ready to be used.
-   */
-  'context:created': (args: ContextCreatedHookArgs) => void
-  /**
-   * Called when the config file or one of its dependencies (imports) has changed.
-   */
-  'config:change': (args: ConfigChangeHookArgs) => MaybeAsyncReturn
-  /**
-   * Called after reading the file content but before parsing it.
-   * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
-   * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
-   */
-  'parser:before': (args: ParserResultBeforeHookArgs) => string | void
-  /**
-   * Called right before writing the codegen files to disk.
-   * You can use this hook to tweak the codegen files before they are written to disk.
-   */
-  'codegen:prepare': (args: CodegenPrepareHookArgs) => MaybeAsyncReturn<void | Artifact[]>
-  /**
-   * Called after the codegen is completed
-   */
-  'codegen:done': (args: CodegenDoneHookArgs) => MaybeAsyncReturn
-  /**
-   * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
-   * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
-   * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
-   */
-  'cssgen:done': (args: CssgenDoneHookArgs) => string | void
-  /**
-   * Called when CSS needs to be optimized. Use this hook to replace the default PostCSS-based optimizer
-   * with a custom one (e.g. LightningCSS).
-   * Return the optimized CSS string, or void to fall through to the default PostCSS optimizer.
-   */
-  'css:optimize': (args: CssOptimizeHookArgs) => string | void
-}
+import type { Config } from './config'
 
 type MaybeAsyncReturn<T = void> = Promise<T> | T
 
@@ -79,163 +20,94 @@ export interface HookFilter {
     | undefined
 }
 
-export type PandaHook<Handler extends (...args: any[]) => any> = Handler | { filter?: HookFilter; handler: Handler }
+type HookHandler = (...args: never[]) => unknown
 
-export type PandaHookRegistry = {
-  [Name in keyof PandaHooks]: PandaHook<PandaHooks[Name]>
-}
-
-/* -----------------------------------------------------------------------------
- * Token hooks
- * -----------------------------------------------------------------------------*/
-
-interface TokenCssVarOptions {
-  fallback?: string
-  prefix?: string
-  hash?: boolean
-}
-
-interface TokenCssVar {
-  var: `--${string}`
-  ref: string
-}
-
-export interface TokenConfigureOptions {
-  formatTokenName?: (path: string[]) => string
-  formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar
-}
-
-export interface TokenCreatedHookArgs {
-  configure(opts: TokenConfigureOptions): void
-}
-
-/* -----------------------------------------------------------------------------
- * Utility hooks
- * -----------------------------------------------------------------------------*/
-
-export interface UtilityConfigureOptions {
-  toHash?(path: string[], toHash: (str: string) => string): string
-}
-
-export interface UtilityCreatedHookArgs {
-  configure(opts: UtilityConfigureOptions): void
-}
-
-/* -----------------------------------------------------------------------------
- * Config hooks
- * -----------------------------------------------------------------------------*/
-
-interface CallbackItem {
-  value: any
-  path: string
-  depth: number
-  parent: any[] | Record<string, unknown>
-  key: string
-}
-
-type CallbackFn = (args: CallbackItem) => void
-
-interface TraverseOptions {
-  separator: string
-  maxDepth?: number | undefined
-}
-
-interface TraverseFn {
-  (obj: any, callback: CallbackFn, options?: TraverseOptions): void
-}
-
-interface ConfigResolvedHookUtils {
-  omit: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Omit<T, K>
-  pick: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Partial<T>
-  traverse: TraverseFn
-}
-
-export interface ConfigResolvedHookArgs {
-  config: LoadConfigResult['config']
-  path: string
-  dependencies: string[]
-  utils: ConfigResolvedHookUtils
-  original?: LoadConfigResult['config']
-}
-
-export interface ConfigChangeHookArgs {
-  config: UserConfig
-  changes: DiffConfigResult
-}
-
-export interface PresetResolvedHookArgs {
-  preset: LoadConfigResult['config']
-  name: string
-  utils: ConfigResolvedHookUtils
-  original?: LoadConfigResult['config']
-}
-
-/* -----------------------------------------------------------------------------
- * Parser hooks
- * -----------------------------------------------------------------------------*/
-
-export interface ParserResultConfigureOptions {
-  matchTag?: (tag: string, isPandaComponent: boolean) => boolean
-  matchTagProp?: (tag: string, prop: string) => boolean
-}
+export type PandaHook<Handler extends HookHandler> = Handler | { filter?: HookFilter; handler: Handler }
 
 export interface ParserResultBeforeHookArgs {
   filePath: string
   content: string
-  configure: (opts: ParserResultConfigureOptions) => void
   original?: string
 }
 
-/* -----------------------------------------------------------------------------
- * Codegen hooks
- * -----------------------------------------------------------------------------*/
+export interface PresetResolvedHookArgs {
+  preset: Config
+  name: string
+}
+
+interface TraverseItem {
+  value: unknown
+  path: string
+  depth: number
+  parent: unknown[] | Record<string, unknown>
+  key: string
+}
+
+interface TraverseOptions {
+  separator?: string | undefined
+  maxDepth?: number | undefined
+}
+
+export interface ConfigResolvedHookUtils {
+  omit<T extends object>(obj: T, paths: string[]): T
+  pick<T extends object>(obj: T, paths: string[]): Partial<T>
+  traverse(obj: unknown, callback: (item: TraverseItem) => void, options?: TraverseOptions): void
+}
+
+export interface ConfigResolvedHookArgs {
+  config: Config
+  path: string
+  dependencies: string[]
+  utils: ConfigResolvedHookUtils
+}
+
+export interface CodegenFile {
+  path: string
+  code: string
+  dependencies: string[]
+}
+
+export interface CodegenArtifact {
+  id: string
+  files: CodegenFile[]
+}
 
 export interface CodegenPrepareHookArgs {
-  artifacts: Artifact[]
-  /**
-   * The original state of the artifacts, as it was generated by Panda, without any modification from other preset hooks
-   */
-  original?: Artifact[]
-  changed: ArtifactId[] | undefined
+  artifacts: CodegenArtifact[]
+  outdir: string
+  cwd?: string | undefined
 }
+
 export interface CodegenDoneHookArgs {
-  changed: ArtifactId[] | undefined
+  files: string[]
+  outdir: string
+  cwd?: string | undefined
 }
 
-/* -----------------------------------------------------------------------------
- * Cssgen hooks
- * -----------------------------------------------------------------------------*/
-
-type CssgenArtifact = 'global' | 'static' | 'reset' | 'tokens' | 'keyframes' | 'styles.css'
-
-export interface CssgenDoneHookArgs {
-  artifact: CssgenArtifact
+export interface PandaHooks {
   /**
-   * The current state of the CSS, if any other preset hook has modified the CSS, this will be the modified state
+   * Called after authored presets are merged, before defaults and serialization.
    */
-  content: string
+  'config:resolved': (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | Config>
   /**
-   * The original state of the CSS, as it was generated by Panda, without any modification from other preset hooks
+   * Called when an authored preset is resolved, before all configs are merged.
    */
-  original?: string
+  'preset:resolved': (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | Config>
+  /**
+   * Called after reading file content but before parsing it.
+   * Use this to transform non-standard source into TSX-friendly syntax.
+   */
+  'parser:before': (args: ParserResultBeforeHookArgs) => MaybeAsyncReturn<string | void>
+  /**
+   * Called before generated files are written by a JS host.
+   */
+  'codegen:prepare': (args: CodegenPrepareHookArgs) => void | CodegenArtifact[]
+  /**
+   * Called after generated files are written by a JS host.
+   */
+  'codegen:done': (args: CodegenDoneHookArgs) => void
 }
 
-/* -----------------------------------------------------------------------------
- * CSS optimize hooks
- * -----------------------------------------------------------------------------*/
-
-export interface CssOptimizeHookArgs {
-  css: string
-  minify?: boolean
-  browserslist?: string[]
-  original?: string
-}
-
-/* -----------------------------------------------------------------------------
- * Context hooks
- * -----------------------------------------------------------------------------*/
-
-export interface ContextCreatedHookArgs {
-  ctx: HooksApiInterface
-  logger: LoggerInterface
+export type HookRegistry = {
+  [Name in keyof PandaHooks]: PandaHook<PandaHooks[Name]>
 }

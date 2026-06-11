@@ -1,6 +1,15 @@
-import { BaseDriver, type Compiler, type ConfigDiff, type Driver, type SourceChange } from '@pandacss/compiler-shared'
+import {
+  BaseDriver,
+  type CodegenArtifact,
+  type CodegenOptions,
+  type Compiler,
+  type ConfigDiff,
+  type Driver,
+  type SourceChange,
+} from '@pandacss/compiler-shared'
 import { type LoadedPandaConfig, diffConfig, loadPandaConfig } from '@pandacss/config'
-import { join } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { isAbsolute, join } from 'node:path'
 import { createCompilerFromSnapshot } from './index'
 
 export interface NodeDriverOptions {
@@ -76,6 +85,50 @@ class NodeDriver extends BaseDriver {
     return this.compiler.resolvePath(this.getConfiguredOutdir(outdir))
   }
 
+  override codegen(options?: CodegenOptions): string[] {
+    const outdir = this.getOutdir(options?.outdir)
+    const cwd = options?.cwd ?? this.#options.cwd
+    const prepareHooks = this.#loaded.hostHooks?.['codegen:prepare'] ?? []
+    const doneHooks = this.#loaded.hostHooks?.['codegen:done'] ?? []
+    const files =
+      prepareHooks.length > 0
+        ? this.codegenWithPrepareHooks(prepareHooks, outdir, cwd, options)
+        : super.codegen(options)
+
+    for (const entry of doneHooks) {
+      const handler = resolveHookHandler(entry.value, 'codegen:done')
+      handler({ files, outdir, cwd })
+    }
+
+    return files
+  }
+
+  private codegenWithPrepareHooks(
+    hooks: NonNullable<LoadedPandaConfig['hostHooks']>['codegen:prepare'],
+    outdir: string,
+    cwd: string,
+    options: CodegenOptions | undefined,
+  ): string[] {
+    const artifactOptions =
+      options?.codegenImportExtensions === undefined
+        ? undefined
+        : { codegenImportExtensions: options.codegenImportExtensions }
+    let artifacts = this.compiler.generateArtifacts(artifactOptions)
+
+    for (const entry of hooks ?? []) {
+      const handler = resolveHookHandler(entry.value, 'codegen:prepare')
+      const next = handler({ artifacts, outdir, cwd })
+      if (next !== undefined) {
+        if (!Array.isArray(next)) {
+          throw new Error('Invalid codegen:prepare hook result. Expected an artifact array or undefined.')
+        }
+        artifacts = next as CodegenArtifact[]
+      }
+    }
+
+    return writeArtifacts(this.compiler, outdir, artifacts)
+  }
+
   override isConfigFile(file: string): boolean {
     // `realpath` (via the fs engine) follows symlinks so paths to the same file
     // compare equal — `dependencies` are relative to `cwd` (config's `collectDependencies`).
@@ -83,6 +136,42 @@ class NodeDriver extends BaseDriver {
     if (this.compiler.realpath(this.#loaded.path) === target) return true
     return this.#loaded.dependencies.some((dep) => this.compiler.realpath(join(this.#options.cwd, dep)) === target)
   }
+}
+
+type HookHandler = (args: unknown) => unknown
+
+function resolveHookHandler(value: unknown, name: string): HookHandler {
+  if (typeof value === 'function') return value as HookHandler
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(`Invalid ${name} hook. Expected a function or { filter, handler }.`)
+  }
+
+  const handler = (value as Record<string, unknown>).handler
+  if (typeof handler !== 'function') {
+    throw new Error(`Invalid ${name} hook. Expected a function or { filter, handler }.`)
+  }
+
+  return handler as HookHandler
+}
+
+function writeArtifacts(compiler: Compiler, outdir: string, artifacts: CodegenArtifact[]): string[] {
+  const written: string[] = []
+
+  for (const artifact of artifacts) {
+    for (const file of artifact.files) {
+      if (isAbsolute(file.path)) {
+        throw new Error(`artifact output path must be relative: ${file.path}`)
+      }
+
+      const target = compiler.joinPath([outdir, file.path])
+      const parent = compiler.dirname(target)
+      if (parent) mkdirSync(parent, { recursive: true })
+      writeFileSync(target, file.code)
+      written.push(target)
+    }
+  }
+
+  return written
 }
 
 function buildFromConfig(loaded: LoadedPandaConfig): Compiler {

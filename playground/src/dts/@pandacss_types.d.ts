@@ -11663,9 +11663,9 @@ export interface Theme {
 	 */
 	containerNames?: string[];
 	/**
-	 * The predefined container sizes for your project.
+	 * Container query sizes for your project.
 	 */
-	containerSizes?: Record<string, string>;
+	containers?: Record<string, string>;
 	/**
 	 * The color palette configuration for your project.
 	 */

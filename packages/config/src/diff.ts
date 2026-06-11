@@ -84,7 +84,7 @@ function classify(path: string[]): Classified {
     if (second === 'recipes' || second === 'slotRecipes') {
       return { deps: ['recipes'], recipe: third }
     }
-    if (second === 'containers' || second === 'containerNames' || second === 'containerSizes') {
+    if (second === 'containers' || second === 'containerNames') {
       return { deps: ['tokens', 'conditions'] }
     }
     // tokens, semanticTokens, breakpoints, keyframes, …
@@ -118,9 +118,10 @@ function classify(path: string[]): Classified {
       return { deps: ['codegenFormat'] }
     case 'codegenImportExtensions':
       return { deps: ['codegenImportExtensions'] }
+    case 'shorthands':
+      return { deps: ['utilities'] }
     case 'outExtension':
     case 'forceConsistentTypeExtension':
-    case 'shorthands':
     case 'strictTokens':
     case 'strictPropertyValues':
       return { deps: ['codegenFormat'] }

@@ -49,6 +49,10 @@ fn default_separator() -> String {
     DEFAULT_SEPARATOR.to_owned()
 }
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CssSyntaxKind {
@@ -93,6 +97,8 @@ pub struct UserConfig {
     pub prefix: PrefixConfig,
     #[serde(default)]
     pub hash: HashConfig,
+    #[serde(default = "default_true")]
+    pub shorthands: bool,
     #[serde(default = "default_separator")]
     pub separator: String,
     #[serde(default)]
@@ -148,6 +154,7 @@ impl Default for UserConfig {
             patterns: PatternMap::default(),
             prefix: PrefixConfig::default(),
             hash: HashConfig::default(),
+            shorthands: true,
             separator: default_separator(),
             syntax: CssSyntaxKind::default(),
             static_css: Value::default(),
