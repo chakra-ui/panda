@@ -126,8 +126,8 @@ fn token_call_color_opacity_modifier_resolves_to_color_mix() {
       name: css
       alias: css
       data:
-        - backgroundColor: "color-mix(in srgb, var(--colors-red-500) 40%, transparent)"
-          borderColor: "color-mix(in srgb, var(--colors-red-500) 50%, transparent)"
+        - backgroundColor: "color-mix(in oklab, var(--colors-red-500) 40%, transparent)"
+          borderColor: "color-mix(in oklab, var(--colors-red-500) 50%, transparent)"
       span:
         start: 73
         end: 172

@@ -70,7 +70,7 @@ function colorMix(value: string, token: TransformArgs['token']): ColorMixResult 
   return {
     invalid: false,
     color,
-    value: `color-mix(in srgb, ${color} ${percent}, transparent)`,
+    value: `color-mix(in oklab, ${color} ${percent}, transparent)`,
   }
 }
 

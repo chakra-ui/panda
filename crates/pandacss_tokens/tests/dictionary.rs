@@ -283,9 +283,9 @@ fn color_mix_resolves_token_and_opacity_modifiers() {
         "raw_color": dict.color_mix_str("red/30"),
         "invalid": dict.color_mix_str("colors.red.300/nope"),
     }), @r##"
-    token_percent: "color-mix(in srgb, var(--colors-red-300) 40%, transparent)"
-    token_opacity: "color-mix(in srgb, var(--colors-red-300) 50%, transparent)"
-    raw_color: "color-mix(in srgb, red 30%, transparent)"
+    token_percent: "color-mix(in oklab, var(--colors-red-300) 40%, transparent)"
+    token_opacity: "color-mix(in oklab, var(--colors-red-300) 50%, transparent)"
+    raw_color: "color-mix(in oklab, red 30%, transparent)"
     invalid: ~
     "##);
 }
@@ -1000,13 +1000,13 @@ fn from_config_expands_color_mix_references() {
         .expect("non-empty dictionary");
 
     assert_yaml_snapshot!(snapshot_token_values(&dict), @r##"
-    colors.border: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
+    colors.border: "color-mix(in oklab, var(--colors-pink) 30%, transparent)"
     colors.colorPalette: var(--colors-color-palette)
-    colors.fg: "color-mix(in srgb, var(--colors-pink) 87%, transparent)"
+    colors.fg: "color-mix(in oklab, var(--colors-pink) 87%, transparent)"
     colors.fg@_dark: var(--colors-border)
-    colors.overlay: "color-mix(in srgb, var(--colors-border) 50%, transparent)"
+    colors.overlay: "color-mix(in oklab, var(--colors-border) 50%, transparent)"
     colors.pink: "#ff00ff"
-    colors.ref: "color-mix(in srgb, var(--colors-border) 40%, transparent)"
+    colors.ref: "color-mix(in oklab, var(--colors-border) 40%, transparent)"
     opacity.half: "0.5"
     "##);
 }
@@ -1132,14 +1132,14 @@ fn css_vars_view_uses_expanded_reference_and_color_mix_values() {
       - name: "--colors-pink"
         value: "#ff00ff"
       - name: "--colors-border"
-        value: "color-mix(in srgb, var(--colors-pink) 30%, transparent)"
+        value: "color-mix(in oklab, var(--colors-pink) 30%, transparent)"
       - name: "--colors-fg"
         value: var(--colors-pink)
     conditions:
       - condition: _dark
         vars:
           - name: "--colors-fg"
-            value: "color-mix(in srgb, var(--colors-border) 50%, transparent)"
+            value: "color-mix(in oklab, var(--colors-border) 50%, transparent)"
     "##);
 }
 

@@ -1,5 +1,6 @@
 export const aspectRatios = {
   square: { value: '1 / 1' },
+  video: { value: '16 / 9' },
   landscape: { value: '4 / 3' },
   portrait: { value: '3 / 4' },
   wide: { value: '16 / 9' },

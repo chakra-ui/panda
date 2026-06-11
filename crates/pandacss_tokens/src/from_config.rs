@@ -915,8 +915,8 @@ fn color_mix(
     };
 
     let mut out =
-        String::with_capacity("color-mix(in srgb, ".len() + color.len() + opacity.len() + 15);
-    out.push_str("color-mix(in srgb, ");
+        String::with_capacity("color-mix(in oklab, ".len() + color.len() + opacity.len() + 15);
+    out.push_str("color-mix(in oklab, ");
     out.push_str(color);
     out.push(' ');
     out.push_str(&opacity);

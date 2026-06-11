@@ -110,10 +110,10 @@ fn expands_static_css_color_opacity_modifiers() {
     assert_snapshot!(css, @r"
 @layer utilities {
   .bg_red\.300\/40 {
-    background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+    background: color-mix(in oklab, var(--colors-red-300) 40%, transparent);
   }
   .bg_red\/30 {
-    background: color-mix(in srgb, red 30%, transparent);
+    background: color-mix(in oklab, red 30%, transparent);
   }
 }
 ");
