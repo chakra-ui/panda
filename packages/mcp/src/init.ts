@@ -1,5 +1,4 @@
 import * as p from '@clack/prompts'
-import { logger } from '@pandacss/logger'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, resolve } from 'path'
 import { CLIENT_NAMES, generateMcpConfig, getClientConfig, isValidClient, MCP_CLIENTS, type McpClient } from './clients'
@@ -37,7 +36,7 @@ export async function initMcpConfig(options: InitMcpConfigOptions = {}) {
   // Validate clients
   const validClients = clients.filter((client) => {
     if (!isValidClient(client)) {
-      logger.warn('mcp:init', `Unknown client: ${client}`)
+      p.log.warn(`Unknown client: ${client}`)
       return false
     }
     return true

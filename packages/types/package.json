@@ -32,7 +32,6 @@
     "dist"
   ],
   "devDependencies": {
-    "@pandacss/extractor": "workspace:*",
     "csstype": "3.2.3",
     "microdiff": "1.5.0",
     "ncp": "2.0.0",

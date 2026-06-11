@@ -1,116 +1,140 @@
-import type { Config } from '@pandacss/types'
+import type { BuildInfo, Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
+import type { DiagnosticFormat } from './diagnostics'
+import type { OutputSink } from './output'
+import type { CliResult } from './result'
 
-export interface InitCommandFlags
-  extends Pick<Config, 'jsxFramework' | 'syntax' | 'cwd' | 'poll' | 'watch' | 'gitignore' | 'outExtension' | 'outdir'> {
-  force?: boolean
-  postcss?: boolean
-  silent?: boolean
-  interactive?: boolean
-  config?: string
-  logfile?: string
-  codegen?: boolean
-}
-
-export interface CssGenCommandFlags {
-  silent?: boolean
-  clean?: boolean
-  outfile?: string
-  minimal?: boolean
-  watch?: boolean
-  poll?: boolean
+export interface CommonFlags {
   cwd?: string
   config?: string
-  minify?: boolean
-  lightningcss?: boolean
-  polyfill?: boolean
-  cpuProf?: boolean
+  watch?: boolean
+  silent?: boolean
+  json?: boolean
+  format?: DiagnosticFormat
+  quiet?: boolean
+  maxWarnings?: number | string
+  verbose?: boolean
   logfile?: string
+  trace?: boolean
+  traceOutput?: TraceOptions['output']
+  traceFile?: string
+  watchDebounce?: number | string
+}
+
+export interface CodegenFlags extends CommonFlags {
+  outdir?: string
+  check?: boolean
+}
+
+export interface CssgenFlags extends CommonFlags {
+  outfile?: string
   splitting?: boolean
+  check?: boolean
 }
 
-export interface StudioCommandFlags extends Pick<Config, 'cwd'> {
-  build?: boolean
-  preview?: boolean
-  config?: string
-  outdir?: string
-  port?: string
-  host?: boolean
-  base?: string
-}
-
-export interface AnalyzeCommandFlags {
-  silent?: boolean
+/** Flags for `panda buildinfo` — produce a portable `panda.buildinfo.json`. */
+export interface BuildinfoFlags extends Omit<CommonFlags, 'watch' | 'watchDebounce'> {
   outfile?: string
-  cwd?: string
-  config?: string
-  scope?: 'token' | 'recipe'
-}
-
-export interface DebugCommandFlags {
-  silent?: boolean
-  dry?: boolean
-  outdir?: string
-  cwd?: string
-  config?: string
-  onlyConfig?: boolean
-  cpuProf?: boolean
-  logfile?: string
-}
-
-export interface ShipCommandFlags {
-  silent?: boolean
+  panda?: string
   minify?: boolean
+}
+
+export interface BuildinfoResult extends CommandResult {
   outfile?: string
-  cwd?: string
-  config?: string
-  watch?: boolean
-  poll?: boolean
+  buildInfo?: BuildInfo
+  moduleCount: number
+  atomCount: number
+  recipeCount: number
+  bytes: number
 }
 
-export interface CodegenCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'> {
-  clean?: boolean
-  silent?: boolean
-  config?: string
-  cpuProf?: boolean
-  logfile?: string
+export interface InspectFlags
+  extends Pick<
+    CommonFlags,
+    | 'cwd'
+    | 'config'
+    | 'format'
+    | 'quiet'
+    | 'maxWarnings'
+    | 'verbose'
+    | 'logfile'
+    | 'trace'
+    | 'traceOutput'
+    | 'traceFile'
+  > {
+  json?: boolean
 }
 
-export interface MainCommandFlags extends Pick<Config, 'cwd' | 'poll' | 'watch'> {
-  outdir?: string
-  minify?: boolean
-  config?: string
+export interface ValidateFlags
+  extends Pick<
+    CommonFlags,
+    | 'cwd'
+    | 'config'
+    | 'json'
+    | 'format'
+    | 'quiet'
+    | 'maxWarnings'
+    | 'silent'
+    | 'verbose'
+    | 'logfile'
+    | 'trace'
+    | 'traceOutput'
+    | 'traceFile'
+  > {}
+
+export interface CommandContext {
   cwd: string
-  preflight?: boolean
-  silent?: boolean
-  exclude?: string[]
-  hash?: boolean
-  emitTokensOnly?: boolean
-  lightningcss?: boolean
-  polyfill?: boolean
-  cpuProf?: boolean
-  logfile?: string
 }
 
-export interface EmitPackageCommandFlags {
+export interface CommandResult extends CliResult {
+  driver?: Driver
+  stop?: () => Promise<void>
+}
+
+export interface CodegenResult extends CommandResult {
+  outdir?: string
+  files: string[]
+  missing: string[]
+  stale: string[]
+}
+
+export interface CssgenResult extends CommandResult {
+  outfile?: string
+  parsed: ParseFileReport[]
+  cssBytes: number
+  diagnosticCount: number
+  missing: string[]
+  stale: string[]
+}
+
+export interface InspectResult extends CliResult {
+  configPath?: string
+  sourceCount: number
+  watchDirs: string[]
+  artifactIds: string[]
+  conditionCount: number
+  tokenCategoryCount: number
+  utilityCount: number
+}
+
+export interface ValidateResult extends CommandResult {
+  configPath?: string
+  diagnosticCount: number
+  errors: number
+}
+
+export interface RunContext {
+  driver: Driver
+  cwd: string
   outdir: string
-  silent?: boolean
-  cwd: string
-  base?: string
+  output: OutputSink
+  timings?: PhaseTimings
 }
 
-export interface McpCommandFlags {
-  cwd?: string
-  config?: string
+export interface CheckOutput {
+  files: string[]
+  missing: string[]
+  stale: string[]
 }
 
-export interface McpInitCommandFlags {
-  cwd?: string
-  client?: string[]
-}
-
-export interface SpecCommandFlags {
-  silent?: boolean
-  outdir?: string
-  cwd?: string
-  config?: string
-}
+export type InspectSummary = Omit<InspectResult, keyof CliResult>
+export type PhaseTimings = Record<string, number>

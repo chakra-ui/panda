@@ -1,9 +1,9 @@
 {
   "nodeModulesDir": "manual",
   "tasks": {
-    "v2:clean": "rm -rf styled-system",
-    "v2:codegen": "node ../../packages/cli_v2/bin.js codegen --cwd .",
-    "generate": "deno task v2:clean && deno task v2:codegen",
+    "clean": "rm -rf styled-system",
+    "codegen": "node ../../packages/cli/bin.js codegen --cwd .",
+    "generate": "deno task clean && deno task codegen",
     "check": "deno task generate && deno check --config deno.json main.tsx client.ts vite.config.ts",
     "test": "deno task check && deno task build",
     "dev": "vite --host 0.0.0.0 --port 4517",

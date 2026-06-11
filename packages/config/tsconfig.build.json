@@ -1,8 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "include": ["src", "index.ts"],
-  "compilerOptions": {
-    "customConditions": null,
-    "types": ["node", "vitest/globals"]
-  }
-}

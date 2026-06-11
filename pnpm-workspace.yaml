@@ -3,5 +3,5 @@ packages:
   - 'packages/**'
   - 'sandbox/*'
   - 'sandbox/component-lib/**'
-  - 'playground'
-  - 'website'
+  # playground and website are excluded until they are migrated to the
+  # Rust compiler stack (playground -> @pandacss/compiler-wasm).
