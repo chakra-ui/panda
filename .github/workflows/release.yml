@@ -49,6 +49,8 @@ jobs:
 
       - name: Install
         uses: ./.github/composite-actions/install
+        with:
+          ignore-scripts: 'true'
 
       - name: Setup Rust
         run: rustup target add ${{ matrix.target }}
@@ -103,6 +105,8 @@ jobs:
 
       - name: Install
         uses: ./.github/composite-actions/install
+        with:
+          ignore-scripts: 'true'
 
       - name: Setup wasm toolchain
         run: rustup target add wasm32-unknown-unknown
@@ -130,11 +134,12 @@ jobs:
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
 
-      - name: Build packages
-        run: pnpm build
-
+      # wasm first: compiler-wasm's tsup build imports the wasm-pack output.
       - name: Build wasm
         run: pnpm --filter @pandacss/compiler-wasm build:wasm
+
+      - name: Build packages
+        run: pnpm build
 
       # Dispatch with dry_run=true: validate staging + versions without
       # publishing. Runs the same pre-publish prep (dry) and prints the planned
