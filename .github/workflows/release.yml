@@ -67,9 +67,11 @@ jobs:
         with:
           tool: cargo-zigbuild
 
+      # napi directly (not the build:native script) so per-target flags aren't
+      # pushed past pnpm's `--` separator.
       - name: Build native
         working-directory: packages/compiler
-        run: pnpm build:native -- --target ${{ matrix.target }} ${{ matrix.args }}
+        run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target ${{ matrix.target }} ${{ matrix.args }}
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
