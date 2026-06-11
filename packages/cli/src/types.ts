@@ -22,6 +22,7 @@ export interface CommonFlags {
 
 export interface CodegenFlags extends CommonFlags {
   outdir?: string
+  clean?: boolean
   check?: boolean
 }
 

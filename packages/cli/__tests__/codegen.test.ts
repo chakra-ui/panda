@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCodegen } from '../src'
@@ -18,8 +18,8 @@ describe('codegen command', () => {
     const logs: string[] = []
     const result = await runCodegen({ cwd: dir }, { log: (message) => logs.push(message) })
 
-    expect(result.files.some((path) => path.endsWith('css/css.mjs'))).toBe(true)
-    expect(readFileSync(join(dir, 'styled-system', 'css', 'css.mjs'), 'utf8')).toContain('css')
+    expect(result.files.some((path) => path.endsWith('css/css.js'))).toBe(true)
+    expect(readFileSync(join(dir, 'styled-system', 'css', 'css.js'), 'utf8')).toContain('css')
 
     expect(logs[0]).toContain('codegen: wrote')
   })
@@ -29,7 +29,30 @@ describe('codegen command', () => {
 
     await runCodegen({ cwd: dir, outdir: 'system', silent: true })
 
-    expect(readFileSync(join(dir, 'system', 'css', 'css.mjs'), 'utf8')).toContain('css')
+    expect(readFileSync(join(dir, 'system', 'css', 'css.js'), 'utf8')).toContain('css')
+  })
+
+  it('keeps stale outdir files by default', async () => {
+    dir = createFixture()
+
+    await runCodegen({ cwd: dir, silent: true })
+    writeFileSync(join(dir, 'styled-system', 'stale.mjs'), 'stale')
+
+    await runCodegen({ cwd: dir, silent: true })
+
+    expect(existsSync(join(dir, 'styled-system', 'stale.mjs'))).toBe(true)
+  })
+
+  it('--clean removes the outdir before generating', async () => {
+    dir = createFixture()
+
+    await runCodegen({ cwd: dir, silent: true })
+    writeFileSync(join(dir, 'styled-system', 'stale.mjs'), 'stale')
+
+    await runCodegen({ cwd: dir, clean: true, silent: true })
+
+    expect(existsSync(join(dir, 'styled-system', 'stale.mjs'))).toBe(false)
+    expect(readFileSync(join(dir, 'styled-system', 'css', 'css.js'), 'utf8')).toContain('css')
   })
 
   it('--check passes after generated output exists', async () => {
@@ -47,14 +70,14 @@ describe('codegen command', () => {
 
     await runCodegen({ cwd: dir, silent: true })
 
-    writeFileSync(join(dir, 'styled-system', 'css', 'css.mjs'), 'stale')
+    writeFileSync(join(dir, 'styled-system', 'css', 'css.js'), 'stale')
 
     const result = await runCodegen({ cwd: dir, check: true, silent: true })
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
 
-    expect(result.stale).toContain(join(dir, 'styled-system', 'css', 'css.mjs'))
+    expect(result.stale).toContain(join(dir, 'styled-system', 'css', 'css.js'))
   })
 
   it('--check fails when generated files are missing', async () => {
@@ -65,7 +88,7 @@ describe('codegen command', () => {
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
 
-    expect(result.missing.some((path) => path.endsWith('css/css.mjs'))).toBe(true)
+    expect(result.missing.some((path) => path.endsWith('css/css.js'))).toBe(true)
   })
 
   it('emits a failed json envelope when config loading fails', async () => {

@@ -1,4 +1,5 @@
 import { defineCommand } from 'citty'
+import { rmSync } from 'node:fs'
 import { createNodeDriver, type ConfigDiff } from '@pandacss/compiler'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import {
@@ -28,6 +29,7 @@ export function codegenCommand(ctx: CommandContext) {
       config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
       watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
       outdir: { type: 'string', description: 'Output directory for generated files' },
+      clean: { type: 'boolean', description: 'Clean the output directory before generating' },
       silent: { type: 'boolean', description: 'Suppress all messages except errors' },
       json: { type: 'boolean', description: 'Print JSON' },
       format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
@@ -170,6 +172,10 @@ async function codegenOnce(ctx: RunContext, flags: CodegenFlags, _diff?: ConfigD
     }
 
     return result
+  }
+
+  if (flags.clean) {
+    rmSync(outdir, { recursive: true, force: true })
   }
 
   const files = ctx.driver.codegen({ outdir: flags.outdir })

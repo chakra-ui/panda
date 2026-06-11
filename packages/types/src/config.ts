@@ -224,11 +224,6 @@ type ImportMapOption = string | ImportMapInput
 
 interface FileSystemOptions {
   /**
-   * Whether to clean the output directory before generating the css.
-   * @default false
-   */
-  clean?: boolean
-  /**
    * The output directory.
    * @default 'styled-system'
    */
