@@ -1,6 +1,4 @@
-use pandacss_stylesheet::{
-    PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list,
-};
+use pandacss_stylesheet::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 
 #[test]
 fn split_respects_parentheses_and_brackets() {
@@ -106,7 +104,11 @@ fn element_scope_peels_chained_trailing_pseudos() {
 #[test]
 fn element_scope_peels_after_pseudo_class() {
     assert_eq!(
-        scope_selector("button:not(:focus)::before", ".pd-reset", ScopeMode::Element),
+        scope_selector(
+            "button:not(:focus)::before",
+            ".pd-reset",
+            ScopeMode::Element
+        ),
         ".pd-reset button:not(:focus)::before"
     );
 }

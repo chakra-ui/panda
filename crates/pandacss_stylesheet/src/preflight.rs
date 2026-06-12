@@ -46,12 +46,7 @@ pub(crate) fn write(writer: &mut CssWriter, scope: Option<&str>, level: Prefligh
     }
 }
 
-fn write_rule(
-    writer: &mut CssWriter,
-    rule: &PreflightRule,
-    scope: Option<&str>,
-    mode: ScopeMode,
-) {
+fn write_rule(writer: &mut CssWriter, rule: &PreflightRule, scope: Option<&str>, mode: ScopeMode) {
     let selector = match scope {
         None => Cow::Borrowed(rule.selector),
         Some(scope) => Cow::Owned(crate::selector::scope_selector(rule.selector, scope, mode)),

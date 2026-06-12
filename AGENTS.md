@@ -135,6 +135,24 @@ pnpm update <package> --ignore-scripts
 5. If tests fail, investigate and fix (don't just update snapshots)
 6. Create changeset for user-facing changes
 
+### Before committing
+
+**Always run the quality checks that match your diff before creating a git commit.** CI will run them anyway; catching
+failures locally avoids broken PR checks and fix-up commits.
+
+Run from the repo root:
+
+| If you changed… | Run before commit |
+| ----------------- | ----------------- |
+| `crates/**`, `packages/compiler/**`, `packages/compiler-wasm/**` | `pnpm rust:fmt` and `pnpm rust:clippy` (Rust Quality CI) |
+| TypeScript packages under `packages/**` | `pnpm test <affected-package-or-path>` |
+| CSS output paths (`packages/core`, PostCSS, stylesheet emit) | `pnpm test packages/core/__tests__/atomic-rule.test.ts` first |
+
+For broader pre-PR validation (not required on every commit): `pnpm rust:check`, `pnpm rust:test`, `pnpm typecheck`,
+`pnpm build:fast`.
+
+Do not commit with known failing fmt, clippy, or test output in the areas you touched.
+
 ### Updating Dependencies
 
 1. Check current versions in package.json
@@ -437,11 +455,13 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 ## Best Practices for AI Assistants
 
 1. **Always read before writing**: Understand existing patterns before making changes
-2. **Test incrementally**: Run tests after small changes, not just at the end
-3. **Preserve CSS output**: When in doubt, prioritize CSS output stability
-4. **Use workspace knowledge**: Remember this is a monorepo - changes may affect multiple packages
-5. **Document breaking changes**: If CSS output must change, explain why clearly
-6. **Check sandboxes**: Don't just test main packages - verify sandbox projects too
+2. **Run quality checks before committing**: Match `pnpm rust:fmt` / `pnpm rust:clippy` or package tests to the files
+   you changed (see [Before committing](#before-committing))
+3. **Test incrementally**: Run tests after small changes, not just at the end
+4. **Preserve CSS output**: When in doubt, prioritize CSS output stability
+5. **Use workspace knowledge**: Remember this is a monorepo - changes may affect multiple packages
+6. **Document breaking changes**: If CSS output must change, explain why clearly
+7. **Check sandboxes**: Don't just test main packages - verify sandbox projects too
 
 ## Emergency Rollback
 
