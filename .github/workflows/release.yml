@@ -60,9 +60,9 @@ jobs:
 
           if [ ! -x "$zig_dir/zig" ]; then
             mkdir -p "$zig_dir"
-            curl -fsSL "https://ziglang.org/download/${zig_version}/zig-linux-x86_64-${zig_version}.tar.xz" -o "$RUNNER_TEMP/zig.tar.xz"
+            curl -fsSL "https://ziglang.org/download/${zig_version}/zig-x86_64-linux-${zig_version}.tar.xz" -o "$RUNNER_TEMP/zig.tar.xz"
             tar -xJf "$RUNNER_TEMP/zig.tar.xz" -C "$RUNNER_TEMP"
-            cp -R "$RUNNER_TEMP/zig-linux-x86_64-${zig_version}/." "$zig_dir/"
+            cp -R "$RUNNER_TEMP/zig-x86_64-linux-${zig_version}/." "$zig_dir/"
           fi
 
           echo "$zig_dir" >> "$GITHUB_PATH"
