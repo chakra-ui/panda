@@ -5,5 +5,6 @@ packages:
   - 'sandbox/component-lib/**'
   # napi platform packages are published by `napi pre-publish`, not the workspace.
   - '!packages/compiler/npm/**'
-  # playground and website are excluded until they are migrated to the
-  # Rust compiler stack (playground -> @pandacss/compiler-wasm).
+  # wasm-pack output dirs get a minimal package.json for CJS/ESM typing; not workspace packages.
+  - '!packages/compiler-wasm/pkg-node/**'
+  - '!packages/compiler-wasm/pkg-web/**'
