@@ -1,27 +1,13 @@
-import { createNodeDriver, type BuildInfo, type Diagnostic, type Driver } from '@pandacss/compiler'
+import { type BuildInfo, type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, relative } from 'node:path'
-import {
-  collectParseDiagnostics,
-  configLoadDiagnostic,
-  diagnosticsPass,
-  missingConfigDiagnostic,
-  normalizeDiagnostics,
-} from '../diagnostics'
-import {
-  consoleOutput,
-  createCommandOutput,
-  renderCommandDiagnostics,
-  resolveCwd,
-  shouldPrintHumanSummary,
-  shouldPrintJson,
-  type OutputSink,
-} from '../output'
-import { createResult, setExitCode, toJsonPayload } from '../result'
-import { renderTimings, time, timeAsync } from '../timing'
-import { startCommandTracing } from '../tracing'
-import type { BuildinfoFlags, BuildinfoResult, CommandContext, PhaseTimings } from '../types'
+import { runCommand } from '../run-command'
+import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
+import { setExitCode } from '../result'
+import { time } from '../timing'
+import type { BuildinfoFlags, BuildinfoResult, CommandContext } from '../types'
 
 export function buildinfoCommand(ctx: CommandContext) {
   return defineCommand({
@@ -54,103 +40,74 @@ export async function runBuildinfo(
   flags: BuildinfoFlags = {},
   output: OutputSink = consoleOutput,
 ): Promise<BuildinfoResult> {
-  const startedAt = performance.now()
-  const cwd = resolveCwd(flags.cwd)
-  const commandOutput = createCommandOutput(output, flags, cwd)
-  const timings: PhaseTimings = {}
-  const stopTracing = startCommandTracing(flags, cwd, commandOutput)
+  let parsedFileCount = 0
 
-  const fail = (diagnostics: Diagnostic[]): BuildinfoResult => {
-    const result = createResult({
-      command: 'buildinfo',
-      startedAt,
-      data: { timings, outfile: undefined, moduleCount: 0, atomCount: 0, recipeCount: 0, bytes: 0 },
-      diagnostics,
-      ok: false,
-    }) as BuildinfoResult
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(result.diagnostics, commandOutput, flags, cwd)
-      renderTimings('buildinfo', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-    return result
-  }
-
-  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
-  if (missingConfig) return fail([missingConfig])
-
-  // --- Load config + parse library sources ---
-  let driver: Driver
-  try {
-    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
-  } catch (error) {
-    return fail([configLoadDiagnostic(error, { cwd, file: flags.config })])
-  }
-
-  const parsed = time(timings, 'parse', () => driver.parseFiles())
-  const parseDiagnostics = collectParseDiagnostics(parsed, cwd)
-
-  // --- Serialize encoder state (engine-owned fingerprint + portable module keys) ---
-  const buildInfo = time(timings, 'buildinfo', () => {
-    // `configFingerprint` is the engine's own config fingerprint — the producer only
-    // supplies the published peer range.
-    const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? '*' })
-
-    // Keys default to the engine's scan paths (absolute on disk). Rewrite them to
-    // be relative to `cwd` so the published artifact is portable.
-    return portableModules(info, cwd)
-  })
-
-  const outfile = flags.outfile ? driver.resolvePath(flags.outfile) : defaultOutfile(driver)
-  const serialized = JSON.stringify(buildInfo, null, flags.minify ? 0 : 2)
-
-  time(timings, 'write', () => {
-    mkdirSync(dirname(outfile), { recursive: true })
-    writeFileSync(outfile, serialized)
-  })
-
-  const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...driver.compiler.diagnostics()], { cwd })
-  const ok = diagnosticsPass(diagnostics, flags.maxWarnings)
-  const moduleCount = Object.keys(buildInfo.modules).length
-  const recipeGroups = buildInfo.recipes
-  const recipeCount = (recipeGroups?.base?.length ?? 0) + (recipeGroups?.variants?.length ?? 0)
-
-  const result = createResult({
+  return runCommand({
     command: 'buildinfo',
-    startedAt,
-    data: {
-      driver,
-      timings,
-      outfile,
-      buildInfo,
-      moduleCount,
-      atomCount: buildInfo.atoms.length,
-      recipeCount,
-      bytes: Buffer.byteLength(serialized),
+    flags,
+    output,
+    failData: () => ({
+      outfile: undefined,
+      moduleCount: 0,
+      atomCount: 0,
+      recipeCount: 0,
+      bytes: 0,
+    }),
+    async execute({ driver, cwd, timings }) {
+      const parsed = time({ timings, phase: 'parse', run: () => driver.parseFiles() })
+      parsedFileCount = parsed.length
+      const parseDiagnostics = collectParseDiagnostics(parsed, cwd)
+
+      const buildInfo = time({
+        timings,
+        phase: 'buildinfo',
+        run: () => {
+          const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? '*' })
+          return normalizeBuildInfo(info, cwd)
+        },
+      })
+
+      const outfile = flags.outfile ? driver.resolvePath(flags.outfile) : defaultOutfile(driver)
+      const serialized = JSON.stringify(buildInfo, null, flags.minify ? 0 : 2)
+
+      time({
+        timings,
+        phase: 'write',
+        run: () => {
+          mkdirSync(dirname(outfile), { recursive: true })
+          writeFileSync(outfile, serialized)
+        },
+      })
+
+      const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...driver.compiler.diagnostics()], { cwd })
+      const moduleCount = Object.keys(buildInfo.modules).length
+      const recipeGroups = buildInfo.recipes
+      const recipeCount = (recipeGroups?.base?.length ?? 0) + (recipeGroups?.variants?.length ?? 0)
+
+      return {
+        data: {
+          outfile,
+          buildInfo,
+          moduleCount,
+          atomCount: buildInfo.atoms.length,
+          recipeCount,
+          bytes: Buffer.byteLength(serialized),
+        },
+        diagnostics,
+        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+      }
     },
-    diagnostics,
-    ok,
-  }) as BuildinfoResult
+    renderHuman(ctx, result) {
+      renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
 
-  if (shouldPrintJson(flags)) {
-    output.log(JSON.stringify(toJsonPayload(result), null, 2))
-  } else {
-    renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-    if (shouldPrintHumanSummary(flags)) {
-      commandOutput.log(
-        `buildinfo: ${parsed.length} files → ${moduleCount} modules, ${buildInfo.atoms.length} atoms, ` +
-          `${recipeCount} recipe groups (${result.bytes} bytes) → ${outfile}`,
-      )
-    }
-    renderTimings('buildinfo', timings, commandOutput, flags)
-  }
-
-  stopTracing()
-  return result
+      if (result.ok && shouldPrintHumanSummary(flags)) {
+        ctx.output.log(
+          `buildinfo: ${parsedFileCount} files → ${result.moduleCount} modules, ${result.atomCount} atoms, ` +
+            `${result.recipeCount} recipe groups (${result.bytes} bytes) → ${result.outfile}`,
+        )
+      }
+    },
+  }) as Promise<BuildinfoResult>
 }
 
 function defaultOutfile(driver: Driver): string {
@@ -160,7 +117,7 @@ function defaultOutfile(driver: Driver): string {
 /** Rewrite module keys (engine scan paths) to `cwd`-relative POSIX paths so the
  *  artifact is portable across machines — both the `modules` keys and the
  *  `exports` values, which reference the same module ids. */
-function portableModules(info: BuildInfo, cwd: string): BuildInfo {
+function normalizeBuildInfo(info: BuildInfo, cwd: string): BuildInfo {
   const modules: BuildInfo['modules'] = {}
 
   for (const [key, entry] of Object.entries(info.modules)) {

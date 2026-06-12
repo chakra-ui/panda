@@ -1,25 +1,9 @@
 import { defineCommand } from 'citty'
-import { createNodeDriver } from '@pandacss/compiler'
-import {
-  consoleOutput,
-  createCommandOutput,
-  renderCommandDiagnostics,
-  resolveCwd,
-  shouldPrintHumanSummary,
-  shouldPrintJson,
-  type OutputSink,
-} from '../output'
-import { renderTimings, timeAsync } from '../timing'
-import { startCommandTracing } from '../tracing'
-import {
-  configLoadDiagnostic,
-  countErrors,
-  diagnosticsPass,
-  missingConfigDiagnostic,
-  normalizeDiagnostics,
-} from '../diagnostics'
-import { createResult, setExitCode, toJsonPayload } from '../result'
-import type { CommandContext, PhaseTimings, ValidateFlags, ValidateResult } from '../types'
+import { runCommand } from '../run-command'
+import { countErrors, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
+import { setExitCode } from '../result'
+import type { CommandContext, ValidateFlags, ValidateResult } from '../types'
 
 export function validateCommand(ctx: CommandContext) {
   return defineCommand({
@@ -49,90 +33,41 @@ export async function runValidate(
   flags: ValidateFlags = {},
   output: OutputSink = consoleOutput,
 ): Promise<ValidateResult> {
-  const startedAt = performance.now()
-  const cwd = resolveCwd(flags.cwd)
-  const commandOutput = createCommandOutput(output, flags, cwd)
-  const timings: PhaseTimings = {}
-  const stopTracing = startCommandTracing(flags, cwd, commandOutput)
-  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
-
-  let driver
-
-  if (missingConfig) {
-    const diagnostics = [missingConfig]
-    const result: ValidateResult = createResult({
-      command: 'validate',
-      startedAt,
-      data: { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else if (!flags.silent) {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('validate', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  try {
-    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
-  } catch (error) {
-    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: ValidateResult = createResult({
-      command: 'validate',
-      startedAt,
-      data: { timings, diagnosticCount: diagnostics.length, errors: diagnostics.length },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else if (!flags.silent) {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('validate', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
-  const errors = countErrors(diagnostics)
-
-  const result: ValidateResult = createResult({
+  return runCommand({
     command: 'validate',
-    startedAt,
-    data: {
-      driver,
-      timings,
-      configPath: driver.configPath,
+    flags,
+    output,
+    respectSilent: true,
+    failData: (diagnostics) => ({
       diagnosticCount: diagnostics.length,
-      errors,
+      errors: diagnostics.length,
+    }),
+    async execute({ driver, cwd }) {
+      const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
+      const errors = countErrors(diagnostics)
+
+      return {
+        data: {
+          configPath: driver.configPath,
+          diagnosticCount: diagnostics.length,
+          errors,
+        },
+        diagnostics,
+        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+      }
     },
-    diagnostics,
-    ok: diagnosticsPass(diagnostics, flags.maxWarnings),
-  })
+    renderHuman(ctx, result) {
+      if (result.diagnostics.length > 0) {
+        renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
+      }
 
-  if (shouldPrintJson(flags)) {
-    output.log(JSON.stringify(toJsonPayload(result), null, 2))
-  } else if (!flags.silent) {
-    if (diagnostics.length > 0) {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-    }
-    if (shouldPrintHumanSummary(flags)) {
-      commandOutput.log(errors > 0 ? `validate: ${errors} errors` : `validate: ok (${diagnostics.length} diagnostics)`)
-    }
-    renderTimings('validate', timings, commandOutput, flags)
-  }
-
-  stopTracing()
-  return result
+      if (result.ok && shouldPrintHumanSummary(flags)) {
+        ctx.output.log(
+          result.errors > 0
+            ? `validate: ${result.errors} errors`
+            : `validate: ok (${result.diagnosticCount} diagnostics)`,
+        )
+      }
+    },
+  }) as Promise<ValidateResult>
 }

@@ -1,26 +1,12 @@
 import { defineCommand } from 'citty'
-import { createNodeDriver, type ParseFileReport } from '@pandacss/compiler'
+import { type ParseFileReport } from '@pandacss/compiler'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
-import {
-  consoleOutput,
-  createCommandOutput,
-  renderCommandDiagnostics,
-  resolveCwd,
-  shouldPrintHumanSummary,
-  shouldPrintJson,
-  type OutputSink,
-} from '../output'
-import { parseMilliseconds, renderTimings, time, timeAsync } from '../timing'
-import { startCommandTracing } from '../tracing'
-import {
-  collectParseDiagnostics,
-  configLoadDiagnostic,
-  diagnosticsPass,
-  missingConfigDiagnostic,
-  normalizeDiagnostics,
-} from '../diagnostics'
-import { createResult, setExitCode, toJsonPayload } from '../result'
-import type { CommandContext, CssgenFlags, CssgenResult, PhaseTimings, RunContext } from '../types'
+import { runCommand } from '../run-command'
+import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
+import { parseMilliseconds, time } from '../timing'
+import { setExitCode } from '../result'
+import type { CommandContext, CssgenFlags, CssgenResult, RunContext } from '../types'
 import { formatWatchError, startProjectWatch } from '../watch'
 
 export function cssgenCommand(ctx: CommandContext) {
@@ -53,128 +39,86 @@ export function cssgenCommand(ctx: CommandContext) {
 }
 
 export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = consoleOutput): Promise<CssgenResult> {
-  const startedAt = performance.now()
-  const cwd = resolveCwd(flags.cwd)
-  const commandOutput = createCommandOutput(output, flags, cwd)
-  const timings: PhaseTimings = {}
-  const stopTracing = startCommandTracing(flags, cwd, commandOutput)
-  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
+  let runCtx: RunContext | undefined
+  let resolveOutfile: () => string
+  let resolveOutdir: () => string
 
-  let driver
-
-  if (missingConfig) {
-    const diagnostics = [missingConfig]
-    const result: CssgenResult = createResult({
-      command: 'cssgen',
-      startedAt,
-      data: { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('cssgen', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  try {
-    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
-  } catch (error) {
-    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: CssgenResult = createResult({
-      command: 'cssgen',
-      startedAt,
-      data: { timings, parsed: [], cssBytes: 0, diagnosticCount: diagnostics.length, missing: [], stale: [] },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('cssgen', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  const resolveOutfile = () =>
-    flags.splitting || !flags.outfile ? driver.paths().styleFile : driver.resolvePath(flags.outfile)
-  const resolveOutdir = () => driver.paths().root
-
-  let outdir = resolveOutdir()
-  let outfile = resolveOutfile()
-
-  let current = await cssgenOnce({ driver, cwd, outdir, output: commandOutput, timings }, outfile, flags)
-  const ok = diagnosticsPass(current.diagnostics, flags.maxWarnings) && isCheckClean(current)
-
-  const result: CssgenResult = createResult({
+  const result = (await runCommand({
     command: 'cssgen',
-    startedAt,
-    data: { driver, outfile, timings, ...current },
-    diagnostics: current.diagnostics,
-    ok,
-  })
+    flags,
+    output,
+    keepTracing: !!(flags.watch && !flags.check),
+    failData: (diagnostics) => ({
+      parsed: [],
+      cssBytes: 0,
+      diagnosticCount: diagnostics.length,
+      missing: [],
+      stale: [],
+    }),
+    async execute(ctx) {
+      resolveOutfile = () =>
+        flags.splitting || !flags.outfile ? ctx.driver.paths().styleFile : ctx.driver.resolvePath(flags.outfile!)
+      resolveOutdir = () => ctx.driver.paths().root
 
-  if (shouldPrintJson(flags)) {
-    output.log(JSON.stringify(toJsonPayload(result), null, 2))
-  } else {
-    renderCommandDiagnostics(current.diagnostics, commandOutput, flags, cwd)
-    renderTimings('cssgen', timings, commandOutput, flags)
-  }
+      const outdir = resolveOutdir()
+      const outfile = resolveOutfile()
+      runCtx = { driver: ctx.driver, cwd: ctx.cwd, outdir, output: ctx.output, timings: ctx.timings }
 
-  if (flags.watch && !flags.check) {
-    // Keep tracing alive until watch mode is explicitly stopped.
+      const current = await cssgenOnce(runCtx, outfile, flags)
+
+      return {
+        data: { outfile, ...current },
+        diagnostics: current.diagnostics,
+        ok: diagnosticsPass(current.diagnostics, flags.maxWarnings) && isCheckClean(current),
+      }
+    },
+    renderHuman(ctx, commandResult) {
+      renderCommandDiagnostics(commandResult.diagnostics, ctx.output, flags, ctx.cwd)
+    },
+  })) as CssgenResult
+
+  if (flags.watch && !flags.check && runCtx) {
+    let current = {
+      parsed: result.parsed,
+      cssBytes: result.cssBytes,
+      diagnosticCount: result.diagnosticCount,
+      diagnostics: result.diagnostics,
+      missing: result.missing,
+      stale: result.stale,
+    }
+
     const stopWatch = await startProjectWatch({
-      driver,
-      cwd,
-      outdir: resolveOutdir,
+      driver: result.driver!,
+      cwd: runCtx.cwd,
+      outdir: resolveOutdir!,
       debounceMs: parseMilliseconds(flags.watchDebounce),
-      onStatus: (message) => commandOutput.log(message),
-      onError: (error) => commandOutput.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
+      onStatus: (message) => runCtx!.output.log(message),
+      onError: (error) => runCtx!.output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
-        driver.applyChanges(events)
+        result.driver!.applyChanges(events)
 
-        current = await writeCssgenOutput(
-          { driver, cwd, outdir, output: commandOutput, timings },
-          outfile,
-          flags,
-          current.parsed,
-        )
-
+        current = await writeCssgenOutput(runCtx!, resolveOutfile!(), flags, current.parsed)
         Object.assign(result, current)
       },
       onConfigChange: async () => {
-        const diff = await driver.reload()
+        const diff = await result.driver!.reload()
 
         if (diff.hasChanged) {
-          outdir = resolveOutdir()
-          outfile = resolveOutfile()
-
-          current = await cssgenOnce({ driver, cwd, outdir, output: commandOutput, timings }, outfile, flags)
+          runCtx!.outdir = resolveOutdir!()
+          const outfile = resolveOutfile!()
           result.outfile = outfile
 
+          current = await cssgenOnce(runCtx!, outfile, flags)
           Object.assign(result, current)
         }
       },
     })
 
+    const stopTracing = result.stop
     result.stop = async () => {
       await stopWatch()
-      stopTracing()
+      await stopTracing?.()
     }
-  } else {
-    stopTracing()
   }
 
   return result
@@ -185,10 +129,10 @@ async function cssgenOnce(
   outfile: string,
   flags: CssgenFlags,
 ): Promise<Pick<CssgenResult, 'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'>> {
-  const parsed = time(ctx.timings, 'parse', () => ctx.driver.parseFiles())
+  const parsed = time({ timings: ctx.timings, phase: 'parse', run: () => ctx.driver.parseFiles() })
 
   if (flags.check) {
-    return time(ctx.timings, 'check', () => checkCssgenOutput(ctx, outfile, flags, parsed))
+    return time({ timings: ctx.timings, phase: 'check', run: () => checkCssgenOutput(ctx, outfile, flags, parsed) })
   }
 
   return writeCssgenOutput(ctx, outfile, flags, parsed)
@@ -203,7 +147,7 @@ export async function writeCssgenOutput(
   const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
-    const output = time(ctx.timings, 'write', () => ctx.driver.writeSplitCss())
+    const output = time({ timings: ctx.timings, phase: 'write', run: () => ctx.driver.writeSplitCss() })
     const cssBytes = output.files.reduce((total, file) => total + Buffer.byteLength(file.code), 0)
 
     if (shouldPrintHumanSummary(flags)) {
@@ -220,7 +164,7 @@ export async function writeCssgenOutput(
     }
   }
 
-  const output = time(ctx.timings, 'write', () => ctx.driver.writeCss(outfile))
+  const output = time({ timings: ctx.timings, phase: 'write', run: () => ctx.driver.writeCss(outfile) })
   const cssBytes = Buffer.byteLength(output.css)
   const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
 
@@ -249,7 +193,7 @@ function checkCssgenOutput(
   const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
-    const files = time(ctx.timings, 'emit', () => ctx.driver.splitCss())
+    const files = time({ timings: ctx.timings, phase: 'emit', run: () => ctx.driver.splitCss() })
     const check = checkExpectedFiles(
       files.map((file) => ({
         path: ctx.driver.compiler.joinPath([ctx.outdir, file.path]),
@@ -271,7 +215,7 @@ function checkCssgenOutput(
     }
   }
 
-  const output = time(ctx.timings, 'emit', () => ctx.driver.cssgen())
+  const output = time({ timings: ctx.timings, phase: 'emit', run: () => ctx.driver.cssgen() })
   const cssBytes = Buffer.byteLength(output.css)
   const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
   const check = checkExpectedFiles([{ path: outfile, code: output.css }])

@@ -58,17 +58,20 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   let codegenFiles: string[] = []
 
   try {
-    configWritten = await timeAsync(timings, 'config', () =>
-      setupConfig(cwd, {
-        configPath,
-        force: flags.force,
-        outdir,
-        outExtension: flags.outExtension,
-        jsxFramework: flags.jsxFramework,
-        syntax: flags.syntax,
-        strictTokens: flags.strictTokens,
-      }),
-    )
+    configWritten = await timeAsync({
+      timings,
+      phase: 'config',
+      run: () =>
+        setupConfig(cwd, {
+          configPath,
+          force: flags.force,
+          outdir,
+          outExtension: flags.outExtension,
+          jsxFramework: flags.jsxFramework,
+          syntax: flags.syntax,
+          strictTokens: flags.strictTokens,
+        }),
+    })
     configPath = resolveConfigTarget(cwd, flags.config)
 
     if (flags.postcss) {
@@ -80,7 +83,11 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
     }
 
     if (flags.codegen !== false) {
-      const driver = await timeAsync(timings, 'codegen', () => createNodeDriver({ cwd, configPath: flags.config }))
+      const driver = await timeAsync({
+        timings,
+        phase: 'codegen',
+        run: () => createNodeDriver({ cwd, configPath: flags.config }),
+      })
       codegenFiles = driver.codegen({ outdir: flags.outdir })
     }
   } catch (error) {
@@ -97,7 +104,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
       output.log(JSON.stringify(toJsonPayload(result), null, 2))
     } else {
       renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('init', timings, commandOutput, flags)
+      renderTimings({ command: 'init', timings, output: commandOutput, flags })
     }
 
     return result
@@ -120,7 +127,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           `${codegenFiles.length > 0 ? `, wrote ${codegenFiles.length} codegen files` : ''}`,
       )
     }
-    renderTimings('init', timings, commandOutput, flags)
+    renderTimings({ command: 'init', timings, output: commandOutput, flags })
   }
 
   return result

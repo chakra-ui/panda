@@ -9,29 +9,48 @@ export function parseMilliseconds(value: CommonFlags['watchDebounce']): number |
   return Number.isFinite(number) && number >= 0 ? number : undefined
 }
 
-export function time<T>(timings: PhaseTimings | undefined, name: string, task: () => T): T {
+export interface TimeOptions<T> {
+  timings?: PhaseTimings
+  phase: string
+  run: () => T
+}
+
+export interface TimeAsyncOptions<T> {
+  timings: PhaseTimings
+  phase: string
+  run: () => Promise<T>
+}
+
+export function time<T>({ timings, phase, run }: TimeOptions<T>): T {
   const startedAt = performance.now()
 
   try {
-    return task()
+    return run()
   } finally {
     // Watch mode can run the same phase repeatedly, so phase times accumulate.
-    if (timings) timings[name] = Math.round((timings[name] ?? 0) + performance.now() - startedAt)
+    if (timings) timings[phase] = Math.round((timings[phase] ?? 0) + performance.now() - startedAt)
   }
 }
 
-export async function timeAsync<T>(timings: PhaseTimings, name: string, task: () => Promise<T>): Promise<T> {
+export async function timeAsync<T>({ timings, phase, run }: TimeAsyncOptions<T>): Promise<T> {
   const startedAt = performance.now()
 
   try {
-    return await task()
+    return await run()
   } finally {
     // Watch mode can run the same phase repeatedly, so phase times accumulate.
-    timings[name] = Math.round((timings[name] ?? 0) + performance.now() - startedAt)
+    timings[phase] = Math.round((timings[phase] ?? 0) + performance.now() - startedAt)
   }
 }
 
-export function renderTimings(command: string, timings: PhaseTimings, output: OutputSink, flags: CommonFlags): void {
+export interface RenderTimingsOptions {
+  command: string
+  timings: PhaseTimings
+  output: OutputSink
+  flags: CommonFlags
+}
+
+export function renderTimings({ command, timings, output, flags }: RenderTimingsOptions): void {
   if (!flags.verbose || !shouldPrintHumanSummary(flags)) return
 
   const entries = Object.entries(timings)

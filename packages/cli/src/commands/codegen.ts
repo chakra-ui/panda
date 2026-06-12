@@ -1,21 +1,13 @@
 import { defineCommand } from 'citty'
 import { rmSync } from 'node:fs'
-import { createNodeDriver, type ConfigDiff } from '@pandacss/compiler'
+import { type ConfigDiff } from '@pandacss/compiler'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
-import {
-  consoleOutput,
-  createCommandOutput,
-  renderCommandDiagnostics,
-  resolveCwd,
-  shouldPrintHumanSummary,
-  shouldPrintJson,
-  type OutputSink,
-} from '../output'
-import { parseMilliseconds, renderTimings, timeAsync } from '../timing'
-import { startCommandTracing } from '../tracing'
-import { configLoadDiagnostic, diagnosticsPass, missingConfigDiagnostic, normalizeDiagnostics } from '../diagnostics'
-import { createResult, setExitCode, toJsonPayload } from '../result'
-import type { CheckOutput, CodegenFlags, CodegenResult, CommandContext, PhaseTimings, RunContext } from '../types'
+import { runCommand } from '../run-command'
+import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
+import { parseMilliseconds, timeAsync } from '../timing'
+import { setExitCode } from '../result'
+import type { CheckOutput, CodegenFlags, CodegenResult, CommandContext, RunContext } from '../types'
 import { formatWatchError, startProjectWatch } from '../watch'
 
 export function codegenCommand(ctx: CommandContext) {
@@ -48,115 +40,64 @@ export function codegenCommand(ctx: CommandContext) {
 }
 
 export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = consoleOutput): Promise<CodegenResult> {
-  const startedAt = performance.now()
-  const cwd = resolveCwd(flags.cwd)
-  const commandOutput = createCommandOutput(output, flags, cwd)
-  const timings: PhaseTimings = {}
-  const stopTracing = startCommandTracing(flags, cwd, commandOutput)
-  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
+  let runCtx: RunContext | undefined
 
-  let driver
-
-  if (missingConfig) {
-    const diagnostics = [missingConfig]
-    const result: CodegenResult = createResult({
-      command: 'codegen',
-      startedAt,
-      data: { timings, files: [], missing: [], stale: [] },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('codegen', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  try {
-    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
-  } catch (error) {
-    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: CodegenResult = createResult({
-      command: 'codegen',
-      startedAt,
-      data: { timings, files: [], missing: [], stale: [] },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('codegen', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  const outdir = driver.getOutdir(flags.outdir)
-
-  const ctx: RunContext = { driver, cwd, outdir, output: commandOutput, timings }
-
-  const current = await timeAsync(timings, flags.check ? 'check' : 'codegen', () => codegenOnce(ctx, flags))
-  const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
-  const ok = diagnosticsPass(diagnostics, flags.maxWarnings) && isCheckClean(current)
-
-  const result: CodegenResult = createResult({
+  const result = (await runCommand({
     command: 'codegen',
-    startedAt,
-    data: { driver, outdir, timings, ...current },
-    diagnostics,
-    ok,
-  })
+    flags,
+    output,
+    keepTracing: !!(flags.watch && !flags.check),
+    failData: () => ({ files: [], missing: [], stale: [] }),
+    async execute(ctx) {
+      const outdir = ctx.driver.getOutdir(flags.outdir)
+      runCtx = { driver: ctx.driver, cwd: ctx.cwd, outdir, output: ctx.output, timings: ctx.timings }
 
-  if (shouldPrintJson(flags)) {
-    output.log(JSON.stringify(toJsonPayload(result), null, 2))
-  } else {
-    renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-    renderTimings('codegen', timings, commandOutput, flags)
-  }
+      const current = await timeAsync({
+        timings: ctx.timings,
+        phase: flags.check ? 'check' : 'codegen',
+        run: () => codegenOnce(runCtx!, flags),
+      })
+      const diagnostics = normalizeDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd })
 
-  if (flags.watch && !flags.check) {
-    // Keep tracing alive until watch mode is explicitly stopped.
+      return {
+        data: { outdir, ...current },
+        diagnostics,
+        ok: diagnosticsPass(diagnostics, flags.maxWarnings) && isCheckClean(current),
+      }
+    },
+    renderHuman(ctx, commandResult) {
+      renderCommandDiagnostics(commandResult.diagnostics, ctx.output, flags, ctx.cwd)
+    },
+  })) as CodegenResult
+
+  if (flags.watch && !flags.check && runCtx) {
     const stopWatch = await startProjectWatch({
-      driver,
-      cwd,
-      outdir: () => driver.getOutdir(flags.outdir),
+      driver: result.driver!,
+      cwd: runCtx.cwd,
+      outdir: () => result.driver!.getOutdir(flags.outdir),
       debounceMs: parseMilliseconds(flags.watchDebounce),
-      onStatus: (message) => commandOutput.log(message),
-      onError: (error) => commandOutput.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
+      onStatus: (message) => runCtx!.output.log(message),
+      onError: (error) => runCtx!.output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
-        driver.applyChanges(events)
-
-        await codegenOnce(ctx, flags)
+        result.driver!.applyChanges(events)
+        await codegenOnce(runCtx!, flags)
       },
       onConfigChange: async () => {
-        const diff = await driver.reload()
+        const diff = await result.driver!.reload()
 
         if (diff.hasChanged) {
-          result.outdir = driver.getOutdir(flags.outdir)
-
-          await codegenOnce(ctx, flags, diff)
+          result.outdir = result.driver!.getOutdir(flags.outdir)
+          runCtx!.outdir = result.outdir
+          await codegenOnce(runCtx!, flags, diff)
         }
       },
     })
 
+    const stopTracing = result.stop
     result.stop = async () => {
       await stopWatch()
-      stopTracing()
+      await stopTracing?.()
     }
-  } else {
-    stopTracing()
   }
 
   return result

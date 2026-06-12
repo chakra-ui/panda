@@ -51,7 +51,7 @@ describe('buildinfo command', () => {
             "v": 3,
           },
         ],
-        "configFingerprint": "cfg1-b849248732ef028b",
+        "configFingerprint": "cfg1-317514db4289aa4e",
         "modules": {
           "button.tsx": {
             "atoms": [

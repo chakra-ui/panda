@@ -1,18 +1,10 @@
+import { type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
-import { createNodeDriver, type Driver } from '@pandacss/compiler'
-import {
-  consoleOutput,
-  createCommandOutput,
-  renderCommandDiagnostics,
-  resolveCwd,
-  shouldPrintJson,
-  type OutputSink,
-} from '../output'
-import { renderTimings, timeAsync } from '../timing'
-import { startCommandTracing } from '../tracing'
-import { configLoadDiagnostic, diagnosticsPass, missingConfigDiagnostic, normalizeDiagnostics } from '../diagnostics'
-import { createResult, setExitCode, toJsonPayload } from '../result'
-import type { CommandContext, InspectFlags, InspectResult, InspectSummary, PhaseTimings } from '../types'
+import { runCommand } from '../run-command'
+import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { consoleOutput, renderCommandDiagnostics, type OutputSink } from '../output'
+import { setExitCode } from '../result'
+import type { CommandContext, InspectFlags, InspectResult, InspectSummary } from '../types'
 
 export function inspectCommand(ctx: CommandContext) {
   return defineCommand({
@@ -38,107 +30,45 @@ export function inspectCommand(ctx: CommandContext) {
 }
 
 export async function runInspect(flags: InspectFlags = {}, output: OutputSink = consoleOutput): Promise<InspectResult> {
-  const startedAt = performance.now()
-  const cwd = resolveCwd(flags.cwd)
-  const commandOutput = createCommandOutput(output, flags, cwd)
-  const timings: PhaseTimings = {}
-  const stopTracing = startCommandTracing(flags, cwd, commandOutput)
-  const missingConfig = missingConfigDiagnostic(flags.config, cwd)
-
-  let driver
-
-  if (missingConfig) {
-    const diagnostics = [missingConfig]
-    const result: InspectResult = createResult({
-      command: 'inspect',
-      startedAt,
-      data: {
-        timings,
-        sourceCount: 0,
-        watchDirs: [],
-        artifactIds: [],
-        conditionCount: 0,
-        tokenCategoryCount: 0,
-        utilityCount: 0,
-      },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('inspect', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  try {
-    driver = await timeAsync(timings, 'config', () => createNodeDriver({ cwd, configPath: flags.config }))
-  } catch (error) {
-    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
-    const result: InspectResult = createResult({
-      command: 'inspect',
-      startedAt,
-      data: {
-        timings,
-        sourceCount: 0,
-        watchDirs: [],
-        artifactIds: [],
-        conditionCount: 0,
-        tokenCategoryCount: 0,
-        utilityCount: 0,
-      },
-      diagnostics,
-      ok: false,
-    })
-
-    if (shouldPrintJson(flags)) {
-      output.log(JSON.stringify(toJsonPayload(result), null, 2))
-    } else {
-      renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-      renderTimings('inspect', timings, commandOutput, flags)
-    }
-
-    stopTracing()
-
-    return result
-  }
-
-  const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
-
-  const result: InspectResult = createResult({
+  return runCommand({
     command: 'inspect',
-    startedAt,
-    data: { timings, ...inspectDriver(driver) },
-    diagnostics,
-    ok: diagnosticsPass(diagnostics, flags.maxWarnings),
-  })
+    flags,
+    output,
+    failData: () => ({
+      sourceCount: 0,
+      watchDirs: [],
+      artifactIds: [],
+      conditionCount: 0,
+      tokenCategoryCount: 0,
+      utilityCount: 0,
+    }),
+    async execute({ driver, cwd }) {
+      const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
 
-  if (shouldPrintJson(flags)) {
-    output.log(JSON.stringify(toJsonPayload(result), null, 2))
-  } else {
-    commandOutput.log(
-      [
-        `config: ${result.configPath ?? '<none>'}`,
-        `sources: ${result.sourceCount}`,
-        `watch dirs: ${result.watchDirs.length}`,
-        `artifacts: ${result.artifactIds.join(', ')}`,
-        `conditions: ${result.conditionCount}`,
-        `token categories: ${result.tokenCategoryCount}`,
-        `utilities: ${result.utilityCount}`,
-      ].join('\n'),
-    )
-    renderCommandDiagnostics(diagnostics, commandOutput, flags, cwd)
-    renderTimings('inspect', timings, commandOutput, flags)
-  }
+      return {
+        data: inspectDriver(driver),
+        diagnostics,
+        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+      }
+    },
+    renderHuman(ctx, result) {
+      if (result.ok) {
+        ctx.output.log(
+          [
+            `config: ${result.configPath ?? '<none>'}`,
+            `sources: ${result.sourceCount}`,
+            `watch dirs: ${result.watchDirs.length}`,
+            `artifacts: ${result.artifactIds.join(', ')}`,
+            `conditions: ${result.conditionCount}`,
+            `token categories: ${result.tokenCategoryCount}`,
+            `utilities: ${result.utilityCount}`,
+          ].join('\n'),
+        )
+      }
 
-  stopTracing()
-  return result
+      renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
+    },
+  }) as Promise<InspectResult>
 }
 
 export function inspectDriver(driver: Driver): InspectSummary {
