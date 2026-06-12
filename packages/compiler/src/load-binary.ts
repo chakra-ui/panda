@@ -1,6 +1,7 @@
+import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
-import type { NativeBinding } from './index'
+import type { NativeBinding } from './types'
 
 const require = createRequire(import.meta.url)
 
@@ -8,11 +9,8 @@ const require = createRequire(import.meta.url)
 // leave it external.
 const bindingPath = fileURLToPath(new URL('../binding.cjs', import.meta.url))
 
-/** Returns `undefined` on unsupported platforms so callers fall back to the no-op binding. */
+/** Returns `undefined` when the generated loader is absent so callers can fall back in source-only installs. */
 export function loadNativeBinding(): NativeBinding | undefined {
-  try {
-    return require(bindingPath) as NativeBinding
-  } catch {
-    return undefined
-  }
+  if (!existsSync(bindingPath)) return undefined
+  return require(bindingPath) as NativeBinding
 }
