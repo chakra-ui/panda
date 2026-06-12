@@ -10,7 +10,8 @@ caveat: >
   v2 emit skips the optimizer (lightningcss deferred), so emit timings and byte
   sizes are not apples-to-apples with legacy's PostCSS pass. The emitter diff is
   measured by cross-feeding the SAME resolved config into both engines, since
-  v2's own config cannot yet load most real configs (see §Gaps A1–A3).
+  v2's own config cannot yet load most real configs without explicit presets
+  (see §Gaps A3; A1/A2/A5 fixed after this report).
 ---
 
 # Full pipeline: v2 (Rust/Oxc) vs legacy (ts-morph)
@@ -22,8 +23,9 @@ caveat: >
 ## TL;DR
 
 The v2 **emitter** is close to byte-parity on the core surface and **25–390× faster** on the hot path.
-The remaining work is concentrated in the **front-end** (config loading, glob normalization, preset
-injection), plus a short list of emitter edge cases.
+The remaining work is concentrated in the **front-end** (preset injection, hook-driven CSS transforms). Config
+bundling (dynamic imports) and `./`-glob discovery were fixed after this report (A1, A2). Emitter divergences
+outside intentional v2 CSS choices (modern breakpoints, inline `color-mix`) are largely closed (B2, B4/F3).
 
 Setup excluded, same config, 100-file corpus:
 
@@ -46,23 +48,19 @@ raw values. Across the 12-sandbox sweep, **selector counts match within ±a few*
 
 ### A. Front-end / config (block drop-in replacement)
 
-- **A1 — Dynamic-import configs crash.** `await import()` makes Rolldown code-split; `bundle.ts` evals
-  only the entry chunk via a `data:` URL → `Failed to resolve "./dist-*.js"` (`vite-ts`).
-  `packages/config/src/bundle.ts:48`.
+- **A1 — Dynamic-import configs crash** — ✅ **FIXED** (2026-06-11). `await import()` used to make Rolldown
+  code-split; `bundle.ts` evaluated only the entry chunk via a `data:` URL → `Failed to resolve "./dist-*.js"`.
+  Fix: `codeSplitting: false` on Rolldown `generate()` inlines dynamic imports into one ESM chunk before the
+  `data:` URL eval (`packages/config/src/bundle.ts`, commit `99c24dd46`). Regression test:
+  `packages/config/__tests__/load.test.ts` → `loads configs that use local dynamic imports`.
 
   ```ts
-  // panda.config.ts — minimal crash
-  export default defineConfig({
-    hooks: {
-      'config:resolved': async ({ config }) => {
-        const { someRecipe } = await import('./some-recipe')
-        config.theme!.recipes!.someRecipe = someRecipe
-      },
-    },
-  })
+  // panda.config.ts — now loads correctly
+  export default (async () => {
+    const { someRecipe } = await import('./some-recipe')
+    return { presets: ['@pandacss/preset-base'], theme: { recipes: { someRecipe } } }
+  })()
   ```
-
-  Real fixture: `sandbox/vite-ts/panda.config.ts`.
 
 - **A2 — `./`-prefixed include globs find 0 files** → silent empty stylesheet — ✅ **FIXED**. Isolated to
   the leading `./` (`./src/**/*.tsx` → false; `src/**/*.{ts,tsx}` braces → true). Hit `next-js-app`,
@@ -120,21 +118,6 @@ raw values. Across the 12-sandbox sweep, **selector counts match within ±a few*
 
 ### B. Emitter divergences (given a correct config)
 
-- **B1 — `color-mix` opacity drops the `--mix-*` fallback.** `red.500/40`: legacy emits
-  `--mix-color` + `var(--mix-color, …)` fallback; v2 inlines bare `color-mix(...)`. Confirmed genuine
-  via `crates/pandacss_stylesheet/tests/static_css.rs:113`. Behavioral (no fallback for old browsers).
-
-  ```tsx
-  css({ color: 'red.500/40', bg: 'blue.300/50' })
-  ```
-
-  ```css
-  /* legacy */ .c_red\.500\/40 { --mix-color: color-mix(...); color: var(--mix-color, var(--colors-red-500)); }
-  /* v2     */ .c_red\.500\/40 { color: color-mix(in srgb, var(--colors-red-500) 40%, transparent); }
-  ```
-
-  Harness: `edgecases.test.ts` → `color_opacity` → `bench/.parity-out/case_color_opacity.*.css`.
-
 - **B2 — Object-form utility `values` class naming** _(Fixed 2026-06-08)_. Object-map aliases must hash by key (`mb_2`),
   not resolved CSS (`mb_0\.5rem`). v2 now uses `Utility::class_name_value` + token `path` for class input. String-category
   `values: 'spacing'` was already correct.
@@ -159,22 +142,29 @@ raw values. Across the 12-sandbox sweep, **selector counts match within ±a few*
   // css({ customMb: '2' }) — runtime expects `.mb_2`, v2 emits `.mb_0\.5rem`
   ```
 
-- **B4 — Gradient utility group** emits invalid CSS (`background-image: to right`); likely unimplemented.
-
-  ```tsx
-  css({ bgGradient: 'to-r', gradientFrom: 'red.200', gradientTo: 'blue.500' })
-  ```
-
-  ```css
-  /* legacy */ .bg-grad_to-r { background-image: linear-gradient(var(--gradient-stops)); … }
-  /* v2     */ .bg-grad_to_right { background-image: to right; }
-  ```
-
-  Harness: `edgecases.test.ts` → `gradient` → `bench/.parity-out/case_gradient.*.css`.
+- **B4 — Gradient utility group** — ✅ **FIXED** (2026-06-08, F3 in `V2_VS_LEGACY_REPORT.md`). Transform props now
+  preserve the alias through to the gradient machinery.
 
 - **B3/B5** — empty `@layer compositions {}` (`css({ textStyle: 'lg' })` with no definition); `0.5` vs `.5` formatting. Cosmetic.
 
-### C. Intentional (confirm desired)
+### C. Intentional (ratified for v2)
+
+- **Inline `color-mix` for opacity modifiers (was B1)** — ✅ **RATIFIED** (2026-06-12). Legacy used
+  `createColorMixTransform` in `@pandacss/preset-base`: a `--mix-{prop}` custom property plus
+  `var(--mix-{prop}, solidColor)` so browsers without `color-mix` fall back to the **opaque** token color.
+  v2 emits one declaration on the hot path: `color-mix(in oklab, …)` (see
+  `crates/pandacss_stylesheet/tests/atomic.rs`, `static_css.rs`). Rationale: `color-mix` is baseline in modern
+  engines (2023+); matches v2's other modern CSS choices (range `@media`); the legacy fallback degrades to full
+  opacity, not true semi-transparent rendering; inlining avoids extra custom properties per utility.
+
+  ```tsx
+  css({ color: 'red.500/40' })
+  ```
+
+  ```css
+  /* legacy */ .c_red\.500\/40 { --mix-color: color-mix(...); color: var(--mix-color, var(--colors-red-500)); }
+  /* v2     */ .c_red\.500\/40 { color: color-mix(in oklab, var(--colors-red-500) 40%, transparent); }
+  ```
 
 - **Modern breakpoint syntax** `@media (width >= 48rem)` vs legacy `@media screen and (min-width: 48rem)`
   (documented `to_rem` normalization; also drops `screen and`). Intra-rule declaration order differs in

@@ -3,6 +3,10 @@
 **Date:** 2026-06-08 (deep re-review) · **Branch:** v2 · **Native artifact:** `packages/compiler/compiler.node` (rebuilt
 2026-06-08)
 
+**Post-report fixes:** A1 dynamic-import config bundling (`codeSplitting: false`, commit `99c24dd46`, 2026-06-11).
+**Post-report ratifications:** B1 inline `color-mix` for opacity modifiers (2026-06-12) — v2 will not restore legacy
+`--mix-*` fallbacks. See §4-A and §4-C.
+
 Second deep pass comparing the v2 Rust/Oxc compiler against the legacy TypeScript (ts-morph) pipeline across
 **performance**, **style output**, and **feature parity**, driven through the **v2 public API**
 (`@pandacss/compiler`). Every divergence was traced to its cause and checked against the legacy/node source; three real
@@ -114,10 +118,11 @@ equivalent. The remaining battery diffs are concentrated below.
 
 ### A. Front-end / config gaps (still blocking real-world drop-in)
 
-- **A1 — Config-loader crashes on dynamic-import configs** _(High)_. `await import()` in a config (e.g.
-  `sandbox/vite-ts`) makes Rolldown code-split; `bundle.ts` evaluates only the entry chunk via a `data:` URL, so sibling
-  chunks fail: `Failed to resolve "./dist-*.js"`. Evidence: `packages/config/src/bundle.ts`. Fix: write Rolldown
-  chunks to a temp dir (or `inlineDynamicImports`) instead of single-chunk `data:` URL.
+- ✅ **A1 — Dynamic-import configs** (fixed 2026-06-11, commit `99c24dd46`). `await import()` in a config
+  used to make Rolldown code-split; `bundle.ts` evaluated only the entry chunk via a `data:` URL, so sibling chunks
+  failed with `Failed to resolve "./dist-*.js"`. Fix: `codeSplitting: false` on Rolldown `generate()` inlines dynamic
+  imports into one ESM chunk before eval. Regression: `packages/config/__tests__/load.test.ts` →
+  `loads configs that use local dynamic imports`.
 
 - **A3 — No automatic preset injection** _(High)_. v2's loader doesn't inject `preset-base`/`preset-panda`
   (`packages/config/src/load.ts:18`, "out of scope for now"). Standard configs resolve incompletely → broken
@@ -137,22 +142,31 @@ equivalent. The remaining battery diffs are concentrated below.
 
 ### B. Emitter divergences (given a correct config)
 
-- **B1 — `color-mix` opacity loses the solid-color fallback** _(behavioral, needs a decision)_. `red.500/40`: legacy
-  emits `--mix-color: color-mix(...); color: var(--mix-color, var(--colors-red-500))` (progressive enhancement for
-  browsers without `color-mix`); v2 emits `color: color-mix(in srgb, var(--colors-red-500) 40%, transparent)` directly.
-  Confirmed genuine in v2's `static_css.rs`. **Decision:** keep legacy's `--mix-*` fallback, or accept the
-  simplification (drops support for non-`color-mix` browsers). Not a bug — a deliberate v2 choice that should be ratified.
+_(None open — B1 moved to §4-C; B4/F3 fixed this pass.)_
 
 ### C. Intentional / cosmetic differences (not bugs)
 
+- **Inline `color-mix` for opacity modifiers (was B1)** — ✅ **RATIFIED** (2026-06-12). Legacy
+  `createColorMixTransform` (`packages/preset-base/src/color-mix-transform.ts`) emitted
+  `--mix-{prop}: color-mix(...)` plus `{prop}: var(--mix-{prop}, solidColor)` for progressive enhancement in browsers
+  without `color-mix`. v2's native path emits a single `color-mix(in oklab, …)` declaration
+  (`crates/pandacss_tokens`, `pandacss_stylesheet/tests/atomic.rs`). **Decision:** accept the simplification — v2
+  targets modern browsers; the legacy fallback only degrades to opaque color, not correct transparency; restoring the
+  two-declaration pattern is not planned.
+
+  ```css
+  /* legacy */ .c_red\.500\/40 { --mix-color: color-mix(...); color: var(--mix-color, var(--colors-red-500)); }
+  /* v2     */ .c_red\.500\/40 { color: color-mix(in oklab, var(--colors-red-500) 40%, transparent); }
+  ```
+
 - **Modern breakpoint syntax** — `md:` → legacy `@media screen and (min-width: 48rem)` vs v2 `@media (width >= 48rem)`
-  (drops `screen and`, range syntax). Documented in CLAUDE.md (`to_rem`). Accounts for **3 of the 5** remaining battery
+  (drops `screen and`, range syntax). Documented in CLAUDE.md (`to_rem`). Accounts for **3 of the 4** remaining battery
   mismatches (`responsive_obj`, `responsive_arr`, `multiline_responsive`) — each diffs *only* on `@media` lines. Range
   syntax needs newer browsers; verify target support is acceptable.
 
 - **Nested-condition selector-part order** — `_hover._dark` → legacy `…:is(:hover, [data-hover]).dark` vs v2
   `….dark:is(:hover, [data-hover])`. Same specificity, same matched elements — functionally identical, byte-different
-  only. The 5th remaining battery mismatch (`nested_cond`); not worth the selector-ordering churn to chase.
+  only. The 4th remaining battery mismatch (`nested_cond`); not worth the selector-ordering churn to chase.
 
 - **Intra-rule declaration order** in reset/base (e.g. `line-height` vs `--font-fallback` first). Visually identical;
   only matters for byte-diff snapshots.
@@ -169,7 +183,7 @@ equivalent. The remaining battery diffs are concentrated below.
 
 **Blocking for default-flip (front-end):**
 
-1. **A1 dynamic-import bundle** — write Rolldown chunks to a temp dir (or `inlineDynamicImports`).
+1. ~~**A1 dynamic-import bundle**~~ ✅ — Rolldown `codeSplitting: false` inlines dynamic imports (2026-06-11).
 2. **A3 preset injection** — the loader must inject default presets to produce correct output for standard configs.
 
 **Emitter — fixed this pass (verified vs legacy + runtime):**
@@ -180,17 +194,17 @@ equivalent. The remaining battery diffs are concentrated below.
 
 **Verify intent (likely fine):**
 
-6. **B1 color-mix fallback** — keep legacy's `--mix-*` progressive-enhancement pattern, or accept the simplification.
-7. **C breakpoint range syntax** — browser-target call (accounts for 3/5 remaining battery diffs).
+6. ~~**B1 color-mix fallback**~~ ✅ **Ratified** — v2 keeps inline `color-mix`; no `--mix-*` restoration (2026-06-12).
+7. **C breakpoint range syntax** — browser-target call (accounts for 3/4 remaining battery diffs).
 8. **A4 hook execution** — token pruning / custom cssgen hooks won't run; expected per scope, document the delta.
 
 **Bottom line:** Driven through the **v2 API**, the **emitter is now at 15/20 byte-identical** on the core surface
 (atomic css, conditions, `!important`, recipes incl. compound/default variants, patterns, `token()`, color **and
 spacing/size tokens**, **gradients**), and **~23–360× faster** on extraction. The three bugs found this pass were all in
 the **js-callback value/transform bridge** — the seam between the serialized config and the Rust engine — and are fixed.
-The remaining 5 battery diffs are 3× intentional breakpoint syntax, 1× cosmetic selector ordering, and 1× the color-mix
-fallback decision. The work that still blocks a drop-in replacement is concentrated in the **front-end** (A1 bundle, A3
-preset injection).
+The remaining 4 battery diffs are 3× intentional breakpoint syntax and 1× cosmetic selector ordering. The work that
+still blocks a drop-in replacement is concentrated in the **front-end** (A3 preset injection; A1 dynamic-import
+bundling fixed 2026-06-11).
 
 ---
 

@@ -15,7 +15,7 @@ import { createNodeDriver } from '@pandacss/compiler'
 const repoRoot = resolve(new URL('../..', import.meta.url).pathname)
 const outDir = resolve(repoRoot, 'bench/.parity-out')
 
-// sandboxes whose config v2's loader can ingest (no dynamic import, no `./` glob)
+// sandboxes where v2's genuine path still diverges from legacy (mainly missing preset auto-injection)
 const TARGETS = ['sandbox/solid-ts']
 
 function fmt(css: string) {

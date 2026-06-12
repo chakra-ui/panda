@@ -45,6 +45,7 @@ design note explaining the trade-off.
 - [2026-06-08 — v2-vs-legacy-full-pipeline](./2026-06-08-v2-vs-legacy-full-pipeline.mdx) — first whole-pipeline
   (`parse → encode → emit`) comparison: perf **+** style-output parity **+** gaps. Emitter is **25–390× faster** and
   byte-identical on the core surface (atomic css, conditions, `!important`, recipes incl. compound/default variants,
-  patterns, `token()`, color tokens). Remaining work is front-end (config `data:`-URL crash on dynamic imports,
-  `./`-glob → 0 files, no preset injection) plus emitter edge cases (gradients, color-mix fallback). Object-map utility
-  class naming (B2) fixed 2026-06-08. Full write-up in `bench/V2_VS_LEGACY_REPORT.md`.
+  patterns, `token()`, color tokens). Remaining work is front-end (no preset injection; hook-driven CSS transforms).
+  Fixed after the report: dynamic-import config bundling (A1, 2026-06-11), `./`-glob → 0 files (A2), object-map utility
+  class naming (B2, 2026-06-08), gradient transform alias (F3/B4). Ratified intentional diffs: inline `color-mix`
+  (was B1, 2026-06-12), modern breakpoint syntax. Full write-up in `bench/V2_VS_LEGACY_REPORT.md`.
