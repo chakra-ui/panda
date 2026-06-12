@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Rust
-        run: rustup toolchain install 1.93.0 --profile minimal --component clippy rustfmt
+        run: rustup toolchain install 1.93.0 --profile minimal --component clippy --component rustfmt
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Rust
-        run: rustup toolchain install 1.93.0 --profile minimal --component clippy rustfmt
+        run: rustup toolchain install 1.93.0 --profile minimal --component clippy --component rustfmt
 
       - name: Install cargo-nextest
         uses: taiki-e/install-action@nextest
