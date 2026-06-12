@@ -3,5 +3,7 @@ packages:
   - 'packages/**'
   - 'sandbox/*'
   - 'sandbox/component-lib/**'
+  # napi platform packages are published by `napi pre-publish`, not the workspace.
+  - '!packages/compiler/npm/**'
   # playground and website are excluded until they are migrated to the
   # Rust compiler stack (playground -> @pandacss/compiler-wasm).

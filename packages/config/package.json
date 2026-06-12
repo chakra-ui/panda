@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/config",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Self-contained loader that bundles and serializes a Panda config for the Rust compiler",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,8 +37,8 @@
   },
   "scripts": {
     "build": "tsup --dts",
-    "build-fast": "tsup --no-dts",
-    "dev": "pnpm build-fast --watch",
+    "build:fast": "tsup --no-dts",
+    "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },
   "files": [

@@ -5,7 +5,8 @@
   "fixed": [["@pandacss/**"]],
   "linked": [],
   "access": "restricted",
-  "baseBranch": "main",
+  "baseBranch": "v2",
   "updateInternalDependencies": "patch",
-  "ignore": ["sandbox-*", "playground", "website", "@pandacss/fixture"]
+  "bumpVersionsWithWorkspaceProtocolOnly": true,
+  "ignore": ["sandbox-*", "@pandacss/bench"]
 }

@@ -20,6 +20,7 @@ __generated__
 target
 *.node
 packages/compiler/native.d.ts
+packages/compiler/binding.cjs
 .idea
 *.vsix
 .vercel

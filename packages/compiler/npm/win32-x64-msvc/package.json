@@ -1,0 +1,26 @@
+{
+  "name": "@pandacss/compiler-win32-x64-msvc",
+  "version": "1.0.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "compiler.win32-x64-msvc.node",
+  "files": [
+    "compiler.win32-x64-msvc.node"
+  ],
+  "description": "Native Rust binding for the Panda compiler engine",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "homepage": "https://panda-css.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/compiler"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "win32"
+  ]
+}

@@ -18,9 +18,8 @@ pub fn css_escape(value: &str) -> String {
                 continue;
             }
             if ch == '-' {
-                if chars.peek().is_some_and(|(_, ch)| ch.is_ascii_digit()) {
+                if let Some((_, digit)) = chars.next_if(|(_, ch)| ch.is_ascii_digit()) {
                     out.push('-');
-                    let (_, digit) = chars.next().expect("peeked leading digit");
                     push_escaped_codepoint(&mut out, digit);
                 } else {
                     out.push_str("\\-");

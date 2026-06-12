@@ -54,7 +54,7 @@ describe('createBrowserDriver', () => {
   it('embeds the user pattern transform in generated artifacts', async () => {
     const driver = await createBrowserDriver({ snapshot })
     const patterns = driver.artifacts().find((artifact) => artifact.id === 'patterns')
-    const stack = patterns?.files.find((file) => file.path === 'patterns/stack.mjs')
+    const stack = patterns?.files.find((file) => file.path === 'patterns/stack.js')
 
     expect(stack?.code).toContain('display: "flex"')
     expect(stack?.code).not.toContain('(s) => s')

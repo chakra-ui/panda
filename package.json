@@ -5,10 +5,10 @@
   "type": "module",
   "description": "The repository of css panda",
   "scripts": {
-    "prepare": "husky && pnpm build-fast",
+    "prepare": "husky && pnpm build:fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
-    "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
-    "build": "pnpm -r --filter=./packages/** build",
+    "build:fast": "pnpm -r --parallel --filter=./packages/** build:fast",
+    "build": "pnpm --filter @pandacss/compiler-wasm build && pnpm -r --filter=./packages/** --filter=!@pandacss/compiler-wasm build",
     "bench:rust-spike": "pnpm --filter=./bench baseline",
     "bench:types": "pnpm --filter=./bench generated-types-perf",
     "rust:check": "cargo check --workspace --locked",
@@ -28,7 +28,7 @@
     "prettier": "prettier --check packages",
     "prettier-fix": "prettier --write packages",
     "typecheck": "tsc --noEmit",
-    "release": "changeset publish",
+    "release": "pnpm --filter @pandacss/compiler exec napi pre-publish --npm-dir npm && changeset publish",
     "release-dev": "changeset version --snapshot dev && changeset publish --tag dev",
     "mdx-check": "mdx-local-link-checker docs && mdx-local-link-checker website/pages/docs"
   },

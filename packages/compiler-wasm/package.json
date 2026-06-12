@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler-wasm",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "WebAssembly binding for the Panda compiler engine (browser/playground target)",
   "type": "module",
   "main": "./dist/index.js",
@@ -33,10 +33,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
-    "build-fast": "tsup --no-dts",
+    "build": "pnpm build:wasm && pnpm build:js",
+    "build:js": "tsup",
+    "build:fast": "tsup --no-dts",
     "build:wasm": "tsx build-wasm.ts",
-    "dev": "pnpm build-fast --watch",
+    "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },
   "files": [

@@ -943,8 +943,6 @@ fn emits_js_runtime() {
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
       const serializeCss = weakMemo(function serializeCss({ base, ...styles } = {}) {
-        // Normalizes shorthand keys (last write wins) and expands
-        // responsive arrays at any depth before class emission.
         const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set()
         walkObject(obj, (value, paths) => {

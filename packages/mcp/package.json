@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/mcp",
-  "version": "1.10.0",
+  "version": "1.0.0",
   "description": "MCP server for Panda CSS AI assistants",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -24,8 +24,8 @@
   },
   "scripts": {
     "build": "tsup src/index.ts src/cli.ts --format=esm,cjs",
-    "build-fast": "tsup src/index.ts src/cli.ts --format=esm,cjs",
-    "dev": "pnpm build-fast --watch"
+    "build:fast": "tsup src/index.ts src/cli.ts --format=esm,cjs",
+    "dev": "pnpm build:fast --watch"
   },
   "sideEffects": false,
   "homepage": "https://panda-css.com",

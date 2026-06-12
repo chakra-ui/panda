@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/postcss",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "PostCSS plugin for Panda CSS",
   "type": "module",
   "main": "./dist/index.js",
@@ -28,8 +28,8 @@
   },
   "scripts": {
     "build": "tsup",
-    "build-fast": "tsup --no-dts",
-    "dev": "pnpm build-fast --watch src",
+    "build:fast": "tsup --no-dts",
+    "dev": "pnpm build:fast --watch src",
     "test": "vitest run"
   },
   "files": [

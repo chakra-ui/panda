@@ -547,10 +547,12 @@ fn bare_recipe_component_in_template_emits_usage() {
     ]
     .into_iter()
     .collect();
-    let mut jsx = JsxExtractionConfig::default();
-    jsx.component_names = ["Custom.Root".to_owned(), "Custom.Label".to_owned()]
-        .into_iter()
-        .collect();
+    let jsx = JsxExtractionConfig {
+        component_names: ["Custom.Root".to_owned(), "Custom.Label".to_owned()]
+            .into_iter()
+            .collect(),
+        ..Default::default()
+    };
     let config = config.with_jsx(jsx);
 
     let result = extract(source, "Card.vue", &config);
@@ -680,17 +682,19 @@ fn same_name_shorthand_without_binding_is_dropped() {
 fn kebab_case_tag_resolves_to_configured_pascal_component() {
     // Vue resolves `<custom-root>` against the PascalCase binding; configured
     // component names match the same way.
-    let source = indoc! {r#"
+    let source = indoc! {r"
         <template>
           <custom-root />
         </template>
-    "#};
+    "};
     let mut config = panda_config();
     config.matchers.jsx_kinds = [("CustomRoot".to_owned(), JsxKind::Recipe)]
         .into_iter()
         .collect();
-    let mut jsx = JsxExtractionConfig::default();
-    jsx.component_names = ["CustomRoot".to_owned()].into_iter().collect();
+    let jsx = JsxExtractionConfig {
+        component_names: ["CustomRoot".to_owned()].into_iter().collect(),
+        ..Default::default()
+    };
     let config = config.with_jsx(jsx);
 
     let result = extract(source, "Card.vue", &config);

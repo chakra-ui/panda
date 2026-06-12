@@ -74,11 +74,11 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
 
     expect(artifact?.files.map((file) => file.path)).toMatchInlineSnapshot(`
       [
-        "types/tokens.d.mts",
-        "types/system.d.mts",
-        "types/pattern.d.mts",
-        "types/recipe.d.mts",
-        "types/index.d.mts",
+        "types/tokens.d.ts",
+        "types/system.d.ts",
+        "types/pattern.d.ts",
+        "types/recipe.d.ts",
+        "types/index.d.ts",
       ]
     `)
   })

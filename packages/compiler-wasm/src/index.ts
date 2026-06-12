@@ -14,6 +14,7 @@
  * facade with no `pkg-node` / `loadWasm` in its module graph.
  */
 
+import { createRequire } from 'node:module'
 import { mergeCallbacks, mergeHooks } from '@pandacss/compiler-shared'
 import type { Compiler, CompilerOptions, ConfigSnapshot, SerializedConfig } from '@pandacss/compiler-shared'
 import { build } from './web'
@@ -28,6 +29,7 @@ export { createBrowserDriver } from './driver'
 export type { BrowserDriverOptions } from './driver'
 
 let cached: WasmModule | null = null
+const require = createRequire(import.meta.url)
 
 /**
  * Load the Node-targeted wasm module. Idempotent — a single shared binding
@@ -37,7 +39,7 @@ let cached: WasmModule | null = null
 export async function loadWasm(): Promise<WasmModule> {
   if (cached) return cached
   // pkg-node ships CommonJS that auto-initializes the wasm module on require.
-  const mod = (await import('../pkg-node/compiler_wasm.js')) as any
+  const mod = require('../pkg-node/compiler_wasm.js') as WasmModule
   cached = mod
   if (typeof mod.installPanicHook === 'function') {
     mod.installPanicHook()

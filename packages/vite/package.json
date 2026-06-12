@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/vite",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Vite plugin for Panda CSS",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,8 +27,8 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format=esm --platform=node --dts --no-splitting",
-    "build-fast": "tsup src/index.ts --format=esm --platform=node --no-dts --no-splitting",
-    "dev": "pnpm build-fast --watch src",
+    "build:fast": "tsup src/index.ts --format=esm --platform=node --no-dts --no-splitting",
+    "dev": "pnpm build:fast --watch src",
     "test": "vitest run"
   },
   "files": [

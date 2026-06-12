@@ -1,10 +1,16 @@
 name: 'Install'
 description: 'Sets up Node.js and runs install'
 
+inputs:
+  ignore-scripts:
+    description: 'Skip lifecycle scripts (e.g. the prepare build) during install'
+    required: false
+    default: 'false'
+
 runs:
   using: composite
   steps:
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
 
     - name: Setup Node.js
       uses: actions/setup-node@v6
@@ -21,4 +27,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install
+      run: pnpm install ${{ inputs.ignore-scripts == 'true' && '--ignore-scripts' || '' }}

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/preset-panda",
-  "version": "1.10.0",
+  "version": "1.0.0",
   "description": "The preset for PandaCSS that contains the default theme",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -31,8 +31,8 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format=esm,cjs --dts",
-    "build-fast": "tsup src/index.ts --format=esm,cjs --no-dts",
-    "dev": "pnpm build-fast --watch"
+    "build:fast": "tsup src/index.ts --format=esm,cjs --no-dts",
+    "dev": "pnpm build:fast --watch"
   },
   "files": [
     "dist"
