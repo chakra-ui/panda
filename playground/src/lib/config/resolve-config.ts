@@ -3,7 +3,6 @@ import { mergeConfigs } from '@pandacss/config/merge'
 import presetBase from '@pandacss/preset-base'
 import presetPanda from '@pandacss/preset-panda'
 import { validateConfig } from '../../../../packages/config/src/validate-config'
-import { logger } from '@pandacss/logger'
 
 type Extendable<T> = T & { extend?: T }
 type ExtendableConfig = Extendable<Config>
@@ -33,10 +32,6 @@ export function resolveConfig(config?: Config) {
   const mergedConfig = getResolvedConfig(config)
 
   if (!mergedConfig) return
-
-  if (mergedConfig.logLevel) {
-    logger.level = mergedConfig.logLevel
-  }
 
   validateConfig(mergedConfig as any)
 
