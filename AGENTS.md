@@ -97,7 +97,7 @@ cd packages/core && pnpm test
 pnpm test <path>              # Run tests for specific package/file
 pnpm test packages/core       # Test all core package tests
 pnpm build                    # Build all packages
-pnpm build-fast               # Fast build without type definitions
+pnpm build:fast               # Fast build without type definitions
 ```
 
 ### Package Management
@@ -209,7 +209,7 @@ Brief description of the change and its impact.
 **Build failures:**
 
 - Check TypeScript errors in `packages/*/src/`
-- Run `pnpm build-fast` for faster iteration without type checking
+- Run `pnpm build:fast` for faster iteration without type checking
 - Use `pnpm typecheck` for type-only validation
 
 ### Finding Code

@@ -33,11 +33,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm build:wasm && pnpm build:ts",
-    "build:ts": "tsup",
-    "build-fast": "tsup --no-dts",
+    "build": "pnpm build:wasm && tsup",
+    "build:fast": "tsup --no-dts",
     "build:wasm": "tsx build-wasm.ts",
-    "dev": "pnpm build-fast --watch",
+    "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },
   "files": [

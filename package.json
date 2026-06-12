@@ -5,9 +5,9 @@
   "type": "module",
   "description": "The repository of css panda",
   "scripts": {
-    "prepare": "husky && pnpm build-fast",
+    "prepare": "husky && pnpm build:fast",
     "dev": "pnpm --parallel --filter=./packages/** dev",
-    "build-fast": "pnpm -r --parallel --filter=./packages/** build-fast",
+    "build:fast": "pnpm -r --parallel --filter=./packages/** build:fast",
     "build": "pnpm -r --filter=./packages/** build",
     "bench:rust-spike": "pnpm --filter=./bench baseline",
     "bench:types": "pnpm --filter=./bench generated-types-perf",

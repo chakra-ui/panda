@@ -37,8 +37,8 @@
   },
   "scripts": {
     "build": "tsup --dts",
-    "build-fast": "tsup --no-dts",
-    "dev": "pnpm build-fast --watch",
+    "build:fast": "tsup --no-dts",
+    "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },
   "files": [

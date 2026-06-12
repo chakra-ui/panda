@@ -96,7 +96,7 @@ only what's configured. No used style was missing or different.
 | Samples     | 9 cold iterations per command, fresh process each                            |
 | Metric      | wall-clock `real`, reported as mean and best-of                              |
 | Toolchain   | node 22.20, Rust 1.93.0, darwin arm64                                        |
-| Pre-built   | all workspace dists (`pnpm build-fast`) + native `.node` (`build:native`)    |
+| Pre-built   | all workspace dists (`pnpm build:fast`) + native `.node` (`build:native`)    |
 
 ## How to reproduce
 
@@ -108,7 +108,7 @@ Build the toolchain once, then time it with whichever tool you have. Works on ma
 # TS dists + the native NAPI binary.
 # Standard rustup puts cargo on ~/.cargo/bin; Homebrew keg-only rustup uses
 # $(brew --prefix rustup)/bin instead — adjust the PATH for your setup.
-pnpm build-fast
+pnpm build:fast
 PATH="$HOME/.cargo/bin:$PATH" pnpm --filter @pandacss/compiler build:native
 ```
 

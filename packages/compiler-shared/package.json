@@ -27,8 +27,8 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format=esm --shims --dts",
-    "build-fast": "tsup src/index.ts --format=esm --shims --no-dts",
-    "dev": "pnpm build-fast --watch",
+    "build:fast": "tsup src/index.ts --format=esm --shims --no-dts",
+    "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },
   "files": [
