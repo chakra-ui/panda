@@ -7,5 +7,6 @@
   "access": "restricted",
   "baseBranch": "v2",
   "updateInternalDependencies": "patch",
+  "bumpVersionsWithWorkspaceProtocolOnly": true,
   "ignore": ["sandbox-*", "@pandacss/bench"]
 }
