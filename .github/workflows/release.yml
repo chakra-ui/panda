@@ -42,32 +42,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Install
+      - name: Install dependencies
         uses: ./.github/composite-actions/install
         with:
           ignore-scripts: 'true'
 
-      - name: Setup Rust
+      - name: Add Rust target
         run: rustup target add ${{ matrix.target }}
 
-      - name: Setup Zig
+      - name: Setup Zig for musl
         if: matrix.zig
         uses: mlugg/setup-zig@v2
         with:
           version: 0.14.1
 
-      - name: Install cargo-zigbuild
+      - name: Install cargo-zigbuild for musl
         if: matrix.zig
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-zigbuild
 
       # Use napi directly so per-target flags are not lost behind pnpm's separator.
-      - name: Build native
+      - name: Build native binding
         working-directory: packages/compiler
         run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target ${{ matrix.target }} ${{ matrix.args }}
 
-      - name: Upload binary
+      - name: Upload native binary
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.target }}
@@ -75,7 +75,7 @@ jobs:
           if-no-files-found: error
 
       # binding.cjs is platform-independent, but version-coupled. Upload it once.
-      - name: Upload loader
+      - name: Upload NAPI loader
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         uses: actions/upload-artifact@v4
         with:
@@ -97,12 +97,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install
+      - name: Install dependencies
         uses: ./.github/composite-actions/install
         with:
           ignore-scripts: 'true'
 
-      - name: Setup wasm toolchain
+      - name: Add wasm Rust target
         run: rustup target add wasm32-unknown-unknown
 
       - name: Install wasm-pack
@@ -110,27 +110,27 @@ jobs:
         with:
           tool: wasm-pack
 
-      - name: Download native binaries
+      - name: Download native binary artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: bindings-*
           path: packages/compiler/artifacts
           merge-multiple: true
 
-      - name: Download loader
+      - name: Download NAPI loader
         uses: actions/download-artifact@v4
         with:
           name: compiler-loader
           path: packages/compiler
 
-      - name: Stage platform binaries
+      - name: Stage platform npm packages
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
 
       - name: Build packages
         run: pnpm build
 
-      - name: Dry run
+      - name: Verify dry-run artifacts
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           find packages/compiler/npm -name '*.node'
@@ -147,7 +147,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
-      - name: Slack Notification
+      - name: Send Slack notification
         if: steps.changesets.outputs.published == 'true'
         uses: slackapi/slack-github-action@v2
         with:
