@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - v2
     paths:
       - ".github/workflows/rust.yml"
       - ".cargo/**"
@@ -18,6 +19,7 @@ on:
   pull_request:
     branches:
       - main
+      - v2
     paths:
       - ".github/workflows/rust.yml"
       - ".cargo/**"
@@ -32,7 +34,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CARGO_TERM_COLOR: always

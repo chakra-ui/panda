@@ -1,9 +1,3 @@
-# Builds the native @pandacss/compiler binaries per platform, then versions and
-# publishes the v2 beta via changesets (pre mode -> `beta` dist-tag).
-#
-# NOTE: the publish path (changesets + napi platform packages) cannot be run
-# locally. Validate with a dry run before trusting a real release — see the
-# `release` job comments.
 name: Publish
 
 on:
@@ -30,7 +24,6 @@ concurrency:
 jobs:
   build-native:
     name: Build (${{ matrix.target }})
-    # Upstream pushes publish; forks can still dispatch a dry run to validate.
     if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -69,8 +62,7 @@ jobs:
         with:
           tool: cargo-zigbuild
 
-      # napi directly (not the build:native script) so per-target flags aren't
-      # pushed past pnpm's `--` separator.
+      # Use napi directly so per-target flags are not lost behind pnpm's separator.
       - name: Build native
         working-directory: packages/compiler
         run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target ${{ matrix.target }} ${{ matrix.args }}
@@ -82,9 +74,7 @@ jobs:
           path: packages/compiler/*.node
           if-no-files-found: error
 
-      # The generated loader is platform-independent but version-coupled, so it
-      # must come from a build that ran against the bumped package.json. Upload
-      # it once.
+      # binding.cjs is platform-independent, but version-coupled. Upload it once.
       - name: Upload loader
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         uses: actions/upload-artifact@v4
@@ -100,7 +90,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      id-token: write # npm provenance
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -133,7 +123,6 @@ jobs:
           name: compiler-loader
           path: packages/compiler
 
-      # Distribute the downloaded .node files into npm/<triple>/.
       - name: Stage platform binaries
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
@@ -141,20 +130,12 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      # Dispatch with dry_run=true: assert every platform binary staged into its
-      # npm package. `napi pre-publish` / `changeset publish` need a changesets
-      # release commit + the action's git setup, so they only run on a real
-      # publish.
       - name: Dry run
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           find packages/compiler/npm -name '*.node'
           test "$(find packages/compiler/npm -name '*.node' | wc -l)" -eq 8
 
-      # `pnpm release` runs `napi pre-publish` (syncs platform package versions,
-      # wires optionalDependencies, publishes platform packages) then
-      # `changeset publish` (publishes the workspace under the `beta` tag while
-      # in pre mode). Skipped on a dry-run dispatch.
       - name: Publish
         id: changesets
         if: ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}

@@ -30,7 +30,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/cli-main.ts --format=esm --dts --no-splitting --shims",
+    "build": "tsup src/index.ts --format=esm --dts --no-splitting --shims && tsup src/cli-main.ts --format=esm --dts --no-splitting --shims --clean=false",
     "build:fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
     "dev": "pnpm build:fast --watch src",
     "test": "vitest run"
