@@ -27,7 +27,6 @@ Not owned:
 
 - Theme artifact/codegen files.
 - `staticCss.patterns` beyond diagnostics for unsupported native paths.
-- `preflight.scope`/`level` rewriting.
 - CSS parsing, prefixing, shorthand folding, AST/value minification, or incremental watch-mode patching.
 
 `globalVars` emits regular CSS variables. Object values become `@property` registrations only when the resulting CSS

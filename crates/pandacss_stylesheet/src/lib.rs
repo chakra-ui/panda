@@ -4,6 +4,7 @@ mod grouped;
 mod layers;
 mod numeric_value;
 mod preflight;
+mod selector;
 mod sort;
 mod static_css;
 mod static_css_diagnostics;
@@ -12,6 +13,7 @@ mod writer;
 
 pub use emitter::UtilityStyleOverrides;
 pub use layers::has_layer_declaration;
+pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
 
 use std::{ops::Range, sync::Arc};
@@ -151,8 +153,8 @@ pub fn has_static_css(config: &UserConfig) -> bool {
 
 /// Compile the project's atoms + recipes (plus the static-CSS subset when
 /// `include_static` is set) into a single stylesheet. Diagnostics for
-/// unsupported config (`preflight.scope`, layer-name collisions, …) are
-/// collected alongside the CSS rather than failing the compile.
+/// unsupported config (layer-name collisions, …) are collected alongside the
+/// CSS rather than failing the compile.
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
     let mut diagnostics = Vec::new();

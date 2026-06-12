@@ -223,7 +223,7 @@ fn apply_token_raw_condition(
 /// Extract the parent part of a ` &` condition (`.dark &` -> `.dark`). Multiple
 /// such selectors collapse into a single `:where(a, b)` group.
 fn token_parent_selector(raw: &str) -> Option<String> {
-    let selectors = split_selector_list(raw)
+    let selectors = crate::selector::split_selector_list(raw)
         .into_iter()
         .filter_map(|selector| {
             let selector = selector.trim();
@@ -247,7 +247,7 @@ fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
     if selector == css_var_root {
         return;
     }
-    let cleaned = split_selector_list(selector)
+    let cleaned = crate::selector::split_selector_list(selector)
         .into_iter()
         .filter_map(|selector| {
             let selector = selector.trim();
@@ -265,8 +265,8 @@ fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
 }
 
 fn replace_selector_parent(raw: &str, parent: &str) -> String {
-    let parent_selectors = split_selector_list(parent);
-    let raw_selectors = split_selector_list(raw);
+    let parent_selectors = crate::selector::split_selector_list(parent);
+    let raw_selectors = crate::selector::split_selector_list(raw);
     let mut out = Vec::new();
     for parent in &parent_selectors {
         for raw in &raw_selectors {
@@ -274,41 +274,4 @@ fn replace_selector_parent(raw: &str, parent: &str) -> String {
         }
     }
     out.join(", ")
-}
-
-fn split_selector_list(selector: &str) -> Vec<&str> {
-    let mut out = Vec::new();
-    let mut depth = 0u32;
-    let mut start = 0usize;
-    let mut escaped = false;
-
-    for (index, ch) in selector.char_indices() {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-
-        match ch {
-            '(' => depth += 1,
-            ')' => depth = depth.saturating_sub(1),
-            ',' if depth == 0 => {
-                let item = selector[start..index].trim();
-                if !item.is_empty() {
-                    out.push(item);
-                }
-                start = index + ch.len_utf8();
-            }
-            _ => {}
-        }
-    }
-
-    let item = selector[start..].trim();
-    if !item.is_empty() {
-        out.push(item);
-    }
-    out
 }

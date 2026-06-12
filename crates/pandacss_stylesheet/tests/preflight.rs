@@ -281,13 +281,11 @@ fn preflight_element_scope_compounds_except_standalone_pseudo_elements() {
     let reset = compile_layer_css(&config, "", &[StylesheetLayer::Reset]);
 
     assert!(reset.contains(".pd-reset {"), "root rule scoped:\n{reset}");
-    // Compound-append for the universal rule (a multi-part list).
+    // Element selectors compound; standalone pseudo-elements use descendant scope.
     assert!(
-        reset.contains("*.pd-reset, ::before.pd-reset, ::after.pd-reset"),
-        "compound append:\n{reset}",
+        reset.contains("*.pd-reset, .pd-reset ::before, .pd-reset ::after"),
+        "element + pseudo scoping:\n{reset}",
     );
-    // Standalone pseudo-element rules fall back to descendant (a pseudo-element
-    // can't carry a trailing compound).
     assert!(
         reset.contains(".pd-reset ::placeholder"),
         "placeholder descendant:\n{reset}"
@@ -296,11 +294,10 @@ fn preflight_element_scope_compounds_except_standalone_pseudo_elements() {
         reset.contains(".pd-reset ::selection"),
         "selection descendant:\n{reset}"
     );
-    // …but a multi-part pseudo-element list stays compound.
     assert!(
         reset.contains(
-            "::-webkit-search-decoration.pd-reset, ::-webkit-search-cancel-button.pd-reset"
+            ".pd-reset ::-webkit-search-decoration, .pd-reset ::-webkit-search-cancel-button"
         ),
-        "multi pseudo compound:\n{reset}",
+        "multi pseudo descendant:\n{reset}",
     );
 }

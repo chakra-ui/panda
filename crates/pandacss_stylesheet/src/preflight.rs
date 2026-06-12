@@ -12,7 +12,7 @@ use std::borrow::Cow;
 
 use pandacss_config::PreflightLevel;
 
-use crate::writer::CssWriter;
+use crate::{selector::ScopeMode, writer::CssWriter};
 
 /// One CSS rule: `selector { declarations }`.
 pub(crate) struct PreflightRule {
@@ -31,12 +31,17 @@ pub(crate) struct PreflightAtRule {
 /// `level` controls whether the reset targets descendants (`parent`) or the
 /// scoped element itself (`element`). Mirrors `reset-css.ts`'s scope handling.
 pub(crate) fn write(writer: &mut CssWriter, scope: Option<&str>, level: PreflightLevel) {
+    let mode = match level {
+        PreflightLevel::Parent => ScopeMode::Parent,
+        PreflightLevel::Element => ScopeMode::Element,
+    };
+
     for rule in RULES {
-        write_rule(writer, rule, scope, level);
+        write_rule(writer, rule, scope, mode);
     }
     for at_rule in AT_RULES {
         writer.at_rule(at_rule.prelude, |writer| {
-            write_rule(writer, &at_rule.rule, scope, level);
+            write_rule(writer, &at_rule.rule, scope, mode);
         });
     }
 }
@@ -45,69 +50,17 @@ fn write_rule(
     writer: &mut CssWriter,
     rule: &PreflightRule,
     scope: Option<&str>,
-    level: PreflightLevel,
+    mode: ScopeMode,
 ) {
     let selector = match scope {
-        // No scope → the static selector is emitted verbatim (zero-alloc).
         None => Cow::Borrowed(rule.selector),
-        Some(scope) => Cow::Owned(scoped_selector(rule.selector, scope, level)),
+        Some(scope) => Cow::Owned(crate::selector::scope_selector(rule.selector, scope, mode)),
     };
     writer.rule(selector.as_ref(), |writer| {
         for (property, value) in rule.declarations {
             writer.declaration(property, value, false);
         }
     });
-}
-
-/// Rewrite a static reset selector under `scope`.
-///
-/// - The root `html, :host` rule collapses to just `scope`.
-/// - `parent`: each comma part is prefixed `"{scope} {part}"` (descendant).
-/// - `element`: a standalone pseudo-element rule (`::placeholder`) becomes
-///   `"{scope} {part}"` (a pseudo-element can't take a trailing compound), while
-///   every other part is compound-appended `"{part}{scope}"`.
-fn scoped_selector(selector: &str, scope: &str, level: PreflightLevel) -> String {
-    if selector == "html, :host" {
-        return scope.to_owned();
-    }
-    let parts = split_top_level_commas(selector);
-    match level {
-        PreflightLevel::Parent => join(parts.iter().map(|part| format!("{scope} {part}"))),
-        PreflightLevel::Element => {
-            if let [part] = parts.as_slice()
-                && part.starts_with("::")
-            {
-                format!("{scope} {part}")
-            } else {
-                join(parts.iter().map(|part| format!("{part}{scope}")))
-            }
-        }
-    }
-}
-
-/// Split a selector list on top-level commas, ignoring commas nested inside
-/// `(...)` / `[...]` (e.g. `:where([type='a'], [type='b'])`).
-fn split_top_level_commas(selector: &str) -> Vec<&str> {
-    let mut parts = Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0;
-    for (index, ch) in selector.char_indices() {
-        match ch {
-            '(' | '[' => depth += 1,
-            ')' | ']' => depth -= 1,
-            ',' if depth == 0 => {
-                parts.push(selector[start..index].trim());
-                start = index + 1;
-            }
-            _ => {}
-        }
-    }
-    parts.push(selector[start..].trim());
-    parts
-}
-
-fn join(parts: impl Iterator<Item = String>) -> String {
-    parts.collect::<Vec<_>>().join(", ")
 }
 
 /// Top-level rules in v1's emit order (the `reset` definition then the
