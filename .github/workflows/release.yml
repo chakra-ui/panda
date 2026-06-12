@@ -138,10 +138,6 @@ jobs:
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
 
-      # wasm first: compiler-wasm's tsup build imports the wasm-pack output.
-      - name: Build wasm
-        run: pnpm --filter @pandacss/compiler-wasm build:wasm
-
       - name: Build packages
         run: pnpm build
 
