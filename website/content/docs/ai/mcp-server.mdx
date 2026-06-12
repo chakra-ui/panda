@@ -19,26 +19,22 @@ AI assistants can use to:
 
 ## Quick Start
 
-### 1. Initialize MCP Configuration
+### 1. Add the MCP Server
 
-Run the interactive setup command in your project:
+Add the Panda MCP server to your AI client's MCP configuration:
 
-```bash
-pnpm dlx @pandacss/mcp init
+```json
+{
+  "mcpServers": {
+    "panda": {
+      "command": "npx",
+      "args": ["-y", "@pandacss/mcp"]
+    }
+  }
+}
 ```
 
-This will prompt you to select which AI clients to configure:
-
-```
-◆  Panda MCP Setup
-│
-◆  Select AI clients to configure:
-│  ◻ Claude (.mcp.json)
-│  ◻ Cursor (.cursor/mcp.json)
-│  ◻ VS Code (.vscode/mcp.json)
-│  ◻ Windsurf (.windsurf/mcp.json)
-│  ◻ Codex (.codex/mcp.json)
-```
+For VS Code, use the `servers` key instead of `mcpServers`.
 
 ### 2. Use with Your AI Assistant
 
@@ -51,30 +47,8 @@ Once configured, your AI assistant will automatically have access to Panda CSS t
 
 ## CLI Commands
 
-The MCP server is distributed as `@pandacss/mcp`. Run it directly with `npx`, `pnpm dlx`, or your package manager's
-equivalent one-off package runner.
-
-### init
-
-Initialize MCP configuration for one or more AI clients.
-
-```bash
-# Interactive mode - select clients from a list
-pnpm dlx @pandacss/mcp init
-
-# Configure specific clients directly
-pnpm dlx @pandacss/mcp init --client claude,cursor
-
-# Specify working directory
-pnpm dlx @pandacss/mcp init --cwd ./my-project
-```
-
-| Flag               | Description                               |
-| ------------------ | ----------------------------------------- |
-| `--client <names>` | AI clients to configure (comma-separated) |
-| `--cwd <path>`     | Current working directory                 |
-
-### start
+The MCP server is distributed as `@pandacss/mcp`. It is usually started by your AI client, but you can also run it
+directly with `npx`, `pnpm dlx`, or your package manager's equivalent one-off package runner.
 
 Start the MCP server manually (usually not needed - clients start it automatically).
 
@@ -92,18 +66,19 @@ pnpm dlx @pandacss/mcp --cwd ./my-project
 | --------------------- | ------------------------- |
 | `--config, -c <path>` | Path to Panda config file |
 | `--cwd <path>`        | Current working directory |
+| `--silent`            | Suppress startup logs     |
 
 ## Supported AI Clients
 
-The MCP server supports the following AI assistants:
+The MCP server can be used with AI assistants that support local stdio MCP servers:
 
-| Client   | Config Path          | Description                    |
-| -------- | -------------------- | ------------------------------ |
-| Claude   | `.mcp.json`          | Claude Code and Claude Desktop |
-| Cursor   | `.cursor/mcp.json`   | Cursor IDE                     |
-| VS Code  | `.vscode/mcp.json`   | VS Code with Copilot           |
-| Windsurf | `.windsurf/mcp.json` | Windsurf IDE                   |
-| Codex    | `.codex/mcp.json`    | OpenAI Codex CLI               |
+| Client   | Typical Config Path  | Config Key   |
+| -------- | -------------------- | ------------ |
+| Claude   | `.mcp.json`          | `mcpServers` |
+| Cursor   | `.cursor/mcp.json`   | `mcpServers` |
+| VS Code  | `.vscode/mcp.json`   | `servers`    |
+| Windsurf | `.windsurf/mcp.json` | `mcpServers` |
+| Codex    | `.codex/mcp.json`    | `mcpServers` |
 
 ## Available Tools
 
@@ -127,9 +102,9 @@ The MCP server exposes these tools to AI assistants:
 The `get_usage_report` tool is particularly useful for auditing your design system, identifying unused tokens/recipes,
 and finding missing definitions.
 
-## Generated Configuration
+## Configuration
 
-When you run `@pandacss/mcp init`, the following configuration is generated for each selected client:
+For most MCP clients, use this configuration:
 
 ```json
 {
@@ -143,10 +118,6 @@ When you run `@pandacss/mcp init`, the following configuration is generated for 
 ```
 
 The server automatically loads your `panda.config.ts` from the current working directory when started.
-
-## Manual Configuration
-
-If you prefer to configure MCP manually, create the appropriate config file for your AI client:
 
 ### Claude
 

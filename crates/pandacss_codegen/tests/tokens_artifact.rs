@@ -81,7 +81,7 @@ fn emits_ts_source_tokens() {
       const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
       if (Number.isNaN(percent)) return
 
-      return "color-mix(in srgb, " + toVar(colorPath) + " " + percent + "%, transparent)"
+      return "color-mix(in oklab, " + toVar(colorPath) + " " + percent + "%, transparent)"
     }
 
     export const token: TokenFn = /* @__PURE__ */ Object.assign(
@@ -141,7 +141,7 @@ fn emits_js_runtime_and_declarations() {
       const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
       if (Number.isNaN(percent)) return
 
-      return "color-mix(in srgb, " + toVar(colorPath) + " " + percent + "%, transparent)"
+      return "color-mix(in oklab, " + toVar(colorPath) + " " + percent + "%, transparent)"
     }
 
     export const token = /* @__PURE__ */ Object.assign(

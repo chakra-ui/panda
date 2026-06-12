@@ -383,7 +383,7 @@ fn transform_supports_color_opacity_modifiers() {
                         (
                             "background",
                             String(
-                                "color-mix(in srgb, var(--colors-red-300) 40%, transparent)",
+                                "color-mix(in oklab, var(--colors-red-300) 40%, transparent)",
                             ),
                         ),
                     ],
@@ -399,7 +399,7 @@ fn transform_supports_color_opacity_modifiers() {
                         (
                             "background",
                             String(
-                                "color-mix(in srgb, red 30%, transparent)",
+                                "color-mix(in oklab, red 30%, transparent)",
                             ),
                         ),
                     ],
@@ -415,7 +415,7 @@ fn transform_supports_color_opacity_modifiers() {
                         (
                             "color",
                             String(
-                                "color-mix(in srgb, var(--colors-red-300) 40%, transparent)",
+                                "color-mix(in oklab, var(--colors-red-300) 40%, transparent)",
                             ),
                         ),
                     ],
@@ -431,7 +431,7 @@ fn transform_supports_color_opacity_modifiers() {
                         (
                             "background",
                             String(
-                                "color-mix(in srgb, var(--colors-red-300) 50%, transparent)",
+                                "color-mix(in oklab, var(--colors-red-300) 50%, transparent)",
                             ),
                         ),
                     ],

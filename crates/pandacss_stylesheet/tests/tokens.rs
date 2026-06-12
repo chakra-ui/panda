@@ -563,7 +563,7 @@ fn emits_semantic_token_conditions() {
                         "value": {
                             "base": "{colors.gray.900}",
                             "_dark": "{colors.gray.100}",
-                            "_motion": "color-mix(in srgb, {colors.gray.900} 80%, transparent)"
+                            "_motion": "color-mix(in oklab, {colors.gray.900} 80%, transparent)"
                         }
                     }
                 }
@@ -584,7 +584,7 @@ fn emits_semantic_token_conditions() {
       }
       @media (prefers-reduced-motion: no-preference) {
         :where(:root, :host) {
-          --colors-fg: color-mix(in srgb, var(--colors-gray-900) 80%, transparent);
+          --colors-fg: color-mix(in oklab, var(--colors-gray-900) 80%, transparent);
         }
       }
     }

@@ -412,16 +412,16 @@ fn resolves_color_opacity_modifiers_to_color_mix() {
     assert_snapshot!(css, @r"
 @layer utilities {
   .bg_red\.300\/40 {
-    background: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+    background: color-mix(in oklab, var(--colors-red-300) 40%, transparent);
   }
   .bg_red\/30 {
-    background: color-mix(in srgb, red 30%, transparent);
+    background: color-mix(in oklab, red 30%, transparent);
   }
   .bg_token\(colors\.red\.300\/half\) {
-    background: color-mix(in srgb, var(--colors-red-300) 50%, transparent);
+    background: color-mix(in oklab, var(--colors-red-300) 50%, transparent);
   }
   .c_\{colors\.red\.300\/40\} {
-    color: color-mix(in srgb, var(--colors-red-300) 40%, transparent);
+    color: color-mix(in oklab, var(--colors-red-300) 40%, transparent);
   }
 }
 ");
