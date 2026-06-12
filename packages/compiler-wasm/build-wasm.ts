@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -45,6 +45,10 @@ function build(target: 'web' | 'nodejs', outDir: string) {
   ])
 }
 
+function writePackageType(outDir: string, type: 'commonjs' | 'module') {
+  writeFileSync(resolve(packageRoot, outDir, 'package.json'), `${JSON.stringify({ type }, null, 2)}\n`)
+}
+
 function main() {
   ensureWasmPack()
 
@@ -56,7 +60,9 @@ function main() {
   // Two targets: nodejs (CommonJS, for vitest + SSR) and web (ESM + fetch, for browser).
   // wasm-pack runs `cargo build` then `wasm-bindgen` + `wasm-opt` per target.
   build('nodejs', 'pkg-node')
+  writePackageType('pkg-node', 'commonjs')
   build('web', 'pkg-web')
+  writePackageType('pkg-web', 'module')
 
   console.log('\nwasm artifacts:')
   console.log(`  ${resolve(packageRoot, 'pkg-node')}`)

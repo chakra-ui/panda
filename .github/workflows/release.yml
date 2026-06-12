@@ -50,11 +50,22 @@ jobs:
       - name: Add Rust target
         run: rustup target add ${{ matrix.target }}
 
-      - name: Setup Zig for musl
+      - name: Install Zig for musl
         if: matrix.zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: 0.14.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          zig_version=0.14.1
+          zig_dir="$RUNNER_TOOL_CACHE/zig/${zig_version}/x64"
+
+          if [ ! -x "$zig_dir/zig" ]; then
+            mkdir -p "$zig_dir"
+            curl -fsSL "https://ziglang.org/download/${zig_version}/zig-linux-x86_64-${zig_version}.tar.xz" -o "$RUNNER_TEMP/zig.tar.xz"
+            tar -xJf "$RUNNER_TEMP/zig.tar.xz" -C "$RUNNER_TEMP"
+            cp -R "$RUNNER_TEMP/zig-linux-x86_64-${zig_version}/." "$zig_dir/"
+          fi
+
+          echo "$zig_dir" >> "$GITHUB_PATH"
 
       - name: Install cargo-zigbuild for musl
         if: matrix.zig
@@ -68,7 +79,7 @@ jobs:
         run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target ${{ matrix.target }} ${{ matrix.args }}
 
       - name: Upload native binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bindings-${{ matrix.target }}
           path: packages/compiler/*.node
@@ -77,15 +88,50 @@ jobs:
       # binding.cjs is platform-independent, but version-coupled. Upload it once.
       - name: Upload NAPI loader
         if: matrix.target == 'x86_64-unknown-linux-gnu'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: compiler-loader
           path: packages/compiler/binding.cjs
           if-no-files-found: error
 
+  build-wasm:
+    name: Build wasm artifacts
+    if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        uses: ./.github/composite-actions/install
+        with:
+          ignore-scripts: 'true'
+
+      - name: Add wasm Rust target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Build wasm artifacts
+        run: pnpm --filter @pandacss/compiler-wasm build:wasm
+
+      - name: Upload wasm artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: compiler-wasm
+          path: |
+            packages/compiler-wasm/pkg-node
+            packages/compiler-wasm/pkg-web
+          if-no-files-found: error
+
   release:
     name: Release
-    needs: build-native
+    needs:
+      - build-native
+      - build-wasm
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -102,39 +148,45 @@ jobs:
         with:
           ignore-scripts: 'true'
 
-      - name: Add wasm Rust target
-        run: rustup target add wasm32-unknown-unknown
-
-      - name: Install wasm-pack
-        uses: taiki-e/install-action@v2
-        with:
-          tool: wasm-pack
-
       - name: Download native binary artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: bindings-*
           path: packages/compiler/artifacts
           merge-multiple: true
 
       - name: Download NAPI loader
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: compiler-loader
           path: packages/compiler
+
+      - name: Download wasm artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: compiler-wasm
+          path: packages/compiler-wasm
 
       - name: Stage platform npm packages
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
 
-      - name: Build packages
-        run: pnpm build
+      - name: Build package JS
+        run: |
+          pnpm --filter @pandacss/types build
+          pnpm --filter @pandacss/compiler-shared build
+          pnpm --filter @pandacss/config build
+          pnpm --filter @pandacss/compiler build:js
+          pnpm --filter @pandacss/compiler-wasm build:js
+          pnpm -r "--filter=./packages/**" "--filter=!@pandacss/types" "--filter=!@pandacss/compiler-shared" "--filter=!@pandacss/config" "--filter=!@pandacss/compiler" "--filter=!@pandacss/compiler-wasm" build
 
       - name: Verify dry-run artifacts
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           find packages/compiler/npm -name '*.node'
           test "$(find packages/compiler/npm -name '*.node' | wc -l)" -eq 8
+          test -f packages/compiler-wasm/pkg-node/compiler_wasm_bg.wasm
+          test -f packages/compiler-wasm/pkg-web/compiler_wasm_bg.wasm
 
       - name: Publish
         id: changesets
@@ -149,7 +201,7 @@ jobs:
 
       - name: Send Slack notification
         if: steps.changesets.outputs.published == 'true'
-        uses: slackapi/slack-github-action@v2
+        uses: slackapi/slack-github-action@v3
         with:
           webhook-type: webhook-trigger
           payload: |

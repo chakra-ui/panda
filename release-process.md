@@ -47,8 +47,9 @@ gh run list --repo <owner>/panda --workflow Publish --limit 5
 gh run watch --repo <owner>/panda
 ```
 
-The dry run builds the native binding matrix, stages the platform npm packages, runs `pnpm build`, and verifies that all
-eight native `.node` artifacts are present. It does not run `changeset publish`.
+The dry run builds the native binding matrix, builds the wasm artifacts once, stages the platform npm packages, builds
+package JS/types without rebuilding native or wasm artifacts, and verifies that all eight native `.node` artifacts are
+present. It does not run `changeset publish`.
 
 ## Process
 
