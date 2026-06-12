@@ -395,6 +395,6 @@ covered by ui’s artifact (see [build-info.md — Stacked design systems](./bui
 
 - [Build info](./build-info.md) — portable extraction, manifest sketch, stacked DS hydrate.
 - [Config loading](./config-loading-design.md) — snapshot, callbacks, preset resolution.
-- [Compiler lifecycle](./compiler-lifecycle.md) — JS owns codegen; Rust owns extract/emit.
+- [Compiler lifecycle](./compiler-lifecycle.md) — Rust owns extract/emit + artifact generation; JS host orchestrates writes.
 - [Output & host layer](./output-and-host-layer.md) — driver orchestration, config diff → codegen deps.
 - [Panda #3522](https://github.com/chakra-ui/panda/discussions/3522) — virtual / shared styled-system (#7), buildinfo tree-shaking (#8).

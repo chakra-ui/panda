@@ -88,14 +88,15 @@ registering nothing.
 
 ## JS ↔ Rust boundary
 
-- **JS host owns:** config loading/resolution, `styled-system/*` **codegen** (the API user code imports — the compiler
-  _consumes references_ to it, never generates it), file watching + glob orchestration, the PostCSS plugin shell, and
-  the transform **callbacks** (arbitrary user functions can't live in Rust).
-- **Rust owns:** parse → extract → encode → emit, plus the project atom/recipe registry. Optimization and persistent
-  caches are not built yet.
-- **Contract across it:** a resolved config snapshot + callback refs in; `{ css, sourceMap, manifest, diagnostics }`
-  out. Diagnostics flow back at every phase (parse errors already do — see the parse-error contract in
-  [extraction-pipeline](./extraction-pipeline.md)).
+- **JS host owns:** config loading/resolution (`@pandacss/compiler/loader`), file watching + glob orchestration,
+  `Driver.codegen()` / `writeArtifacts` (orchestration + disk I/O), config **hooks** (`codegen:prepare`, `codegen:done`),
+  the PostCSS plugin shell, and transform **callbacks** (arbitrary user functions can't live in Rust).
+- **Rust owns:** parse → extract → encode → emit, **`pandacss_codegen` artifact generation** for `styled-system/*`
+  (the runtime + types user code imports), plus the project atom/recipe registry. Optimization and persistent caches are
+  not built yet.
+- **Contract across it:** a resolved config snapshot + callback refs in; `generateArtifacts()` yields `{ path, code }[]`,
+  `compile()` yields `{ css, sourceMap, manifest, diagnostics }` out. Diagnostics flow back at every phase (parse errors
+  already do — see the parse-error contract in [extraction-pipeline](./extraction-pipeline.md)).
 
 ## The manifest
 
@@ -126,6 +127,7 @@ re-extraction of unchanged files. It's the seam where phase 6 meets the (future)
 - [extraction-pipeline](./extraction-pipeline.md) — the per-file parse → `ExtractUsage` flow (phase 2).
 - [atomic-encoding](./atomic-encoding.md) — usage → atoms + recipe decomposition (phase 3).
 - [stylesheet](./stylesheet.md) — native CSS emission and current non-optimizer boundary (phase 4/5).
+- [codegen-design](./codegen-design.md) — `pandacss_codegen` artifact graph and theme JSON/index output.
 - [crate-layering](./crate-layering.md) — where each phase's crate sits in the tier model.
 - [bindings](./bindings.md) — how `createCompiler` is exposed across NAPI + wasm.
 - [scope-and-boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.

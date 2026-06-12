@@ -25,7 +25,8 @@ Owned:
 
 Not owned:
 
-- Theme artifact/codegen files.
+- Theme artifact files under `styled-system/themes/*` — owned by `pandacss_codegen`; this crate supplies
+  `theme_css_entries*` helpers only.
 - `staticCss.patterns` beyond diagnostics for unsupported native paths.
 - CSS parsing, prefixing, shorthand folding, AST/value minification, or incremental watch-mode patching.
 

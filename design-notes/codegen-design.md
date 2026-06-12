@@ -78,7 +78,8 @@ pub enum CodegenFormat {
 - `Module` / `Item` / `Expr` / `TsType`: a narrow AST tailored to Panda output,
 - `emit_module`: printer for source TS, runtime JS, and declaration output,
 - `strip_typescript`: generated-code-only TS erasure for JS output,
-- artifact generators for `helpers`, `selectors`, `cx`, `css/index`, and `conditions`.
+- artifact generators for `helpers`, `selectors`, `cx`, `css/index`, `conditions`, `themes`, and the rest of the
+  `ArtifactId` graph.
 
 The current artifact graph is:
 
@@ -89,6 +90,7 @@ The current artifact graph is:
 | `Cx`         | `cx`           | `CodegenFormat`                              |
 | `CssIndex`   | `css/index`    | `CodegenFormat`                              |
 | `Conditions` | `conditions/*` | `CodegenFormat`, `Conditions`, `Tokens`      |
+| `Themes`     | `themes/*`     | `CodegenFormat`, `Themes`, `Conditions`, `Tokens` |
 
 Each `ArtifactFile` carries its own dependency set:
 
@@ -102,6 +104,20 @@ pub struct ArtifactFile {
 
 This matters for watch mode. When a config section changes, the caller can compute a `DependencySet`, ask the graph for
 affected artifacts, and write only the files whose dependencies intersect the changed bits.
+
+## Theme artifacts
+
+Theme runtime files are a split between stylesheet helpers and codegen output:
+
+- **`pandacss_stylesheet`** builds per-theme CSS via `theme_css_entries` / `theme_css_entries_from_dictionary` (and
+  split variants for `styles/themes/{name}.css`). That CSS is also used when `staticCss.themes` pregenerates theme token
+  vars into the main tokens layer.
+- **`pandacss_codegen`** (`artifacts/themes.rs`) writes `styled-system/themes/theme-{name}.json` (name, id, css blob)
+  and `styled-system/themes/index.*` with `getTheme` / `injectTheme` runtime helpers plus theme name types.
+
+When `theme.*` is configured, the JSON + index artifacts are always codegen'd for runtime theme switching. That is
+independent of `staticCss.themes`, which only gates whether theme token variables are also emitted into the compiled CSS
+tokens layer at build time.
 
 ## Why A Panda-Specific AST
 
