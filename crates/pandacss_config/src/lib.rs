@@ -68,6 +68,10 @@ pub enum CssSyntaxKind {
 /// serializable shape after runtime-only hooks/plugins have been removed.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "Serialized user config mirrors JavaScript options where booleans are independent flags"
+)]
 pub struct UserConfig {
     #[serde(default)]
     pub cwd: String,
