@@ -12,19 +12,21 @@ with workspace support.
 ### Monorepo Structure
 
 ```
-/packages/          # Core packages published to npm
-  /core/           # CSS processing, rule generation, optimization (PostCSS/LightningCSS)
-  /node/           # Node.js APIs, config resolution, file watching
-  /cli/            # CLI tool (@pandacss/dev package)
-  /parser/         # Static analysis and extraction
-  /generator/      # Code generation for styled-system
-  /fixture/        # Shared test fixtures and utilities
-  /postcss/        # PostCSS plugin
-  /preset-*/       # Design system presets
-  /compiler/       # @pandacss/compiler — NAPI wrapper around Rust engine
+/packages/          # Published packages
+  /cli/            # @pandacss/cli — the `panda` CLI (v2; replaces the old @pandacss/dev CLI)
+  /config/         # @pandacss/config — config load / bundle / snapshot
+  /dev/            # @pandacss/dev — thin config-helper re-export (defineConfig, etc.)
+  /types/          # @pandacss/types — public types
+  /vite/           # @pandacss/vite — bundler integration
+  /postcss/        # @pandacss/postcss — PostCSS plugin
+  /preset-base/    # @pandacss/preset-base
+  /preset-panda/   # @pandacss/preset-panda
+  /mcp/            # @pandacss/mcp — MCP server on the compiler driver
+  /compiler/       # @pandacss/compiler — NAPI wrapper around the Rust engine
     /crate/        # compiler_napi cdylib (NAPI boundary only)
   /compiler-wasm/  # @pandacss/compiler-wasm — browser wasm-bindgen wrapper
     /crate/        # compiler_wasm cdylib (wasm32-unknown-unknown)
+  /compiler-shared/ # @pandacss/compiler-shared — shared compiler glue
 
 /crates/           # Rust workspace — the v2 Oxc-based compiler engine
   /extractor/      # Oxc-based AST scanning + extraction
@@ -64,7 +66,7 @@ with workspace support.
 
 - Run tests BEFORE and AFTER any dependency updates
 - If snapshots change, investigate why and get user confirmation
-- The test `packages/core/__tests__/atomic-rule.test.ts` is the primary CSS output validator
+- CSS output is validated by the rust `pandacss_stylesheet` insta snapshots plus the `sandbox/codegen` suite
 - CSS output consistency is more important than using latest package versions
 
 Recent Rust parity work (P1-6 / P2-7) tightened TS alignment — treat these as CSS contracts when reviewing diffs:
@@ -121,8 +123,8 @@ pnpm update <package> --ignore-scripts
 
 - **PostCSS ecosystem**: Coordinate updates across all PostCSS plugins to avoid CSS output changes
 - **browserslist**: Updates affect `postcss-merge-rules` behavior - test thoroughly
-- **lightningcss**: Used optionally via `config.lightningcss` flag, depends on browserslist for targets
-- **Node.js packages**: Core packages (`@pandacss/core`, `@pandacss/node`, etc.) must stay in sync
+- **lightningcss**: not in the v2 workspace — the `pandacss_stylesheet` crate does native emission (minify parity is an open follow-up)
+- **Workspace packages**: the `@pandacss/*` packages (cli, compiler, config, types, …) must stay in sync
 
 ## Common Workflows
 
@@ -146,7 +148,7 @@ Run from the repo root:
 | ----------------- | ----------------- |
 | `crates/**`, `packages/compiler/**`, `packages/compiler-wasm/**` | `pnpm rust:fmt` and `pnpm rust:clippy` (Rust Quality CI) |
 | TypeScript packages under `packages/**` | `pnpm test <affected-package-or-path>` |
-| CSS output paths (`packages/core`, PostCSS, stylesheet emit) | `pnpm test packages/core/__tests__/atomic-rule.test.ts` first |
+| CSS output (rust stylesheet emit) | `cargo nextest run -p pandacss_stylesheet` + `sandbox/codegen` first |
 
 For broader pre-PR validation (not required on every commit): `pnpm rust:check`, `pnpm rust:test`, `pnpm typecheck`,
 `pnpm build:fast`.
@@ -159,9 +161,9 @@ Do not commit with known failing fmt, clippy, or test output in the areas you to
 2. Research latest compatible versions
 3. Update package.json files
 4. Run `pnpm install --ignore-scripts`
-5. **Run CSS output tests first**: `pnpm test packages/core/__tests__/atomic-rule.test.ts`
+5. **Run CSS output checks first**: `cargo nextest run -p pandacss_stylesheet` + `sandbox/codegen`
 6. If snapshots change, investigate the root cause
-7. Run broader test suite: `pnpm test packages/core`
+7. Run broader suite: `pnpm rust:test` (and `pnpm test <affected-package>` for TS)
 8. Create changeset documenting the update
 
 ### Creating Changesets
@@ -194,24 +196,22 @@ Brief description of the change and its impact.
 
 ### Configuration Flow
 
-1. User config → `packages/config/` → Config resolution
-2. Config hooks → `packages/types/src/config.ts`
-3. Context creation → `packages/node/src/` → `PandaContext`
-4. Code generation → `packages/generator/`
+1. User config → `packages/config/` (`loadPandaConfig`, bundle, snapshot)
+2. Config types/hooks → `packages/types/src/config.ts`
+3. Resolved config → `@pandacss/compiler` (NAPI) → rust `pandacss_config` / `pandacss_project`
+4. Codegen + CSS emission happen inside the rust engine (`crates/*`)
 
-### CSS Processing Flow
+### CSS Processing Flow (v2, rust)
 
-1. Style objects → `packages/core/src/rule-processor.ts`
-2. CSS generation → `packages/core/src/stylesheet.ts`
-3. Optimization → `packages/core/src/optimize.ts`
-   - PostCSS path: `optimize-postcss.ts`
-   - LightningCSS path: `optimize-lightningcss.ts`
+1. Source scan + extraction → `crates/extractor` (Oxc)
+2. Style usage → atomic rules → `crates/encoder`
+3. Native CSS emission → `crates/stylesheet` (replaces the old PostCSS/lightningcss optimize path)
+4. Orchestration + caching → `crates/engine`, `crates/cache`
 
 ### Test Fixtures
 
-- `packages/fixture/` contains shared test utilities
-- `createContext()` and `createRuleProcessor()` are used throughout tests
-- Fixtures provide a base config with design tokens and recipes
+- Rust: integration tests live in `crates/<name>/tests/`; see `design-notes/rust-testing.md` (insta snapshots are the primary CSS regression guard)
+- TS: `sandbox/codegen` validates generated styled-system output across frameworks
 
 ## Debugging Tips
 
@@ -247,26 +247,18 @@ Brief description of the change and its impact.
 4. **Workspace protocol**: Internal packages use `workspace:*` in dependencies
 5. **Multiple package.json**: Each package has its own, plus root package.json
 6. **Sandbox warnings**: Even if main packages are fine, check sandbox projects for warnings
-7. **TypeScript version sync**: The TypeScript version in the root `package.json` must match the version used by
-   `ts-morph`'s dependency. Mismatches can cause parsing errors and type issues. Always verify `ts-morph` compatibility
-   when updating TypeScript.
+7. **Extraction is rust/Oxc now**: `ts-morph`/`ts-evaluator` were removed with the v1 node pipeline (#3578). Extraction
+   runs through `@pandacss/compiler` (Oxc) — don't reintroduce ts-morph assumptions.
 
 ## Package Relationships
 
 ```
-@pandacss/dev (CLI)
-  ├─ @pandacss/node (core runtime)
-  │   ├─ @pandacss/core (CSS processing)
-  │   ├─ @pandacss/parser (static analysis)
-  │   ├─ @pandacss/generator (codegen)
-  │   └─ @pandacss/config (config resolution)
+@pandacss/cli (panda CLI)
+  ├─ @pandacss/compiler (NAPI → rust engine; extraction, codegen, CSS emission)
+  ├─ @pandacss/config (config load / bundle / snapshot)
+  ├─ @pandacss/types
+  ├─ @pandacss/vite (bundler integration)
   └─ @pandacss/postcss (PostCSS plugin)
-
-@pandacss/core
-  ├─ postcss (CSS processing)
-  ├─ lightningcss (optional, faster CSS processing)
-  ├─ browserslist (browser targets)
-  └─ postcss-* plugins (optimization)
 
 @pandacss/compiler (v2, NAPI)
   └─ crates/* (Rust workspace, all `pandacss_*`-prefixed)
@@ -448,7 +440,7 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 - **Main documentation**: `/website/` (documentation source)
 - **Type definitions**: `packages/types/src/` (comprehensive types)
 - **Integration examples**: `/sandbox/` (real-world usage)
-- **Test patterns**: `packages/fixture/` and `packages/core/__tests__/`
+- **Test patterns**: `crates/<name>/tests/` (rust) and `sandbox/codegen` (generated-output validation)
 - **Rust migration**: `RUST_OXC_MIGRATION.md` and `RUST_ENGINE_SPIKE.mdx`
 - **Rust testing**: `design-notes/rust-testing.md`
 
