@@ -3,7 +3,9 @@
   "compilerOptions": {
     "paths": {
       "@pandacss/types": ["./packages/types/src/index.ts"],
-      "@pandacss/compiler-shared": ["./packages/compiler-shared/src/index.ts"]
+      "@pandacss/compiler-shared": ["./packages/compiler-shared/src/index.ts"],
+      "@pandacss/preset-base": ["./packages/preset-base/src/index.ts"],
+      "@pandacss/preset-panda": ["./packages/preset-panda/src/index.ts"]
     }
   },
   "include": ["packages/**/*.ts"],

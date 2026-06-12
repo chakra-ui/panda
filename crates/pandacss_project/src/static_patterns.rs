@@ -223,11 +223,20 @@ impl ExpansionCtx<'_> {
                 })
                 .unwrap_or_default(),
             "boolean" => vec!["true".to_owned(), "false".to_owned()],
-            "property" => cfg
-                .property
-                .as_deref()
-                .and_then(|prop| self.utility.map(|u| u.property_keys(prop)))
-                .unwrap_or_default(),
+            "property" => {
+                let prop = cfg
+                    .property
+                    .as_deref()
+                    .or_else(|| cfg.value.as_ref().and_then(Value::as_str))
+                    .unwrap_or("");
+                if prop.is_empty() {
+                    Vec::new()
+                } else {
+                    self.utility
+                        .map(|u| u.property_keys(prop))
+                        .unwrap_or_default()
+                }
+            }
             "token" => cfg
                 .value
                 .as_ref()

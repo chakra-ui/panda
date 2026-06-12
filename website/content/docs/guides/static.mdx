@@ -22,10 +22,11 @@ export default {
 }
 ```
 
-The `static` property supports two properties:
+The `static` property supports three properties:
 
 - `css` - an array of CSS properties you want to generate with their `conditions`
 - `recipes` - the component recipes you want to generate
+- `patterns` - configured layout patterns to pre-generate through their transforms
 
 ## Generating CSS Properties
 
@@ -134,6 +135,36 @@ export default defineConfig({
 ```
 
 This is mostly useful for testing purposes with [`Storybook`](/docs/installation/storybook).
+
+## Generating Patterns
+
+The `patterns` property pre-generates CSS for configured patterns (for example `stack`, `circle`, or `bleed` from
+`@pandacss/preset-base`). Each entry names a pattern and the prop combinations to expand. Patterns with a `transform`
+run through the same callback as runtime usage, so helpers like `map()` and token resolution behave the same as in JSX.
+
+```js
+export default {
+  staticCss: {
+    patterns: {
+      // explicit prop values
+      circle: [{ properties: { size: ['40px', '3rem'] } }],
+      // wildcard expands every value for that pattern property
+      stack: [{ properties: { gap: ['*'] } }],
+      // whole-pattern wildcard expands every configured property
+      bleed: ['*']
+    }
+  }
+}
+```
+
+Rule objects support the same modifiers as `css` entries:
+
+- `properties` — pattern prop names and the values (or `*`) to generate
+- `conditions` — state/selector conditions to attach to every emitted declaration
+- `responsive` — also emit at each configured breakpoint
+
+Presets can contribute pattern rules via `staticCss.patterns` or `staticCss.extend.patterns`; later presets and your
+config append with `extend`.
 
 ## Performance Considerations
 

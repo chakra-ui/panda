@@ -209,6 +209,41 @@ fn per_property_wildcard_expands_token_category_values() {
 }
 
 #[test]
+fn per_property_wildcard_expands_property_type_values_from_value_field() {
+    let (project, config) = build(json!({
+        "utilities": {
+            "gap": { "className": "gap", "values": "spacing" }
+        },
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" },
+                    "8": { "value": "2rem" }
+                }
+            }
+        },
+        "patterns": {
+            "stack": {
+                "properties": { "gap": { "type": "property", "value": "gap" } }
+            }
+        },
+        "staticCss": {
+            "patterns": { "stack": [{ "properties": { "gap": ["*"] } }] }
+        }
+    }));
+    let mut transform = shorthand_to_css;
+    let (atoms, diagnostics) = project.static_pattern_atoms(&config, Some(&mut transform));
+    assert_snapshot!(summary(&atoms, &diagnostics), @r"
+    atoms:
+      gap: -4
+      gap: -8
+      gap: 4
+      gap: 8
+    diagnostics:
+    ");
+}
+
+#[test]
 fn whole_rule_wildcard_expands_every_property() {
     let (project, config) = build(json!({
         "patterns": {

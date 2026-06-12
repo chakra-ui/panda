@@ -132,7 +132,7 @@ async function runPresetResolvedHooks(
   hooks: Array<PluginHookEntry<'preset:resolved'>>,
 ): Promise<ExtendableConfig> {
   let current = preset
-  const name = source.name ?? source.specifier ?? current.name ?? 'unknown-preset'
+  const name = source.name ?? source.specifier ?? presetName(current) ?? 'unknown-preset'
 
   for (const entry of hooks) {
     const hook = normalizeHook(entry.value, 'preset:resolved')

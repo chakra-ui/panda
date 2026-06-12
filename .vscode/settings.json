@@ -1,5 +1,6 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.workingDirectories": ["./packages/**", "./sandbox/**", "./sandbox/next-js"],
   "biome.enabled": false,
   "[rust]": {

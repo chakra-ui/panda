@@ -61,6 +61,8 @@
     "@pandacss/config": "workspace:*"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.7.1"
+    "@napi-rs/cli": "^3.7.1",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*"
   }
 }

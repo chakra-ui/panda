@@ -17,7 +17,7 @@ Owned:
 - Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`.
 - Recipes layer: config recipes, slot recipes, compound variants, and split recipe files.
 - Utilities layer: dynamic atoms, recipe atomic atoms, static atoms, and utility sub-layers.
-- Supported native `staticCss`: `css`, `recipes`, global recipe wildcard, recipe-level `staticCss`, recipe wildcards,
+- Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe wildcards,
   base recipe styles, slot recipes, compound variants, responsive values, and configured conditions.
 - Layer preamble/ranges, custom layer names, modern breakpoint media syntax, and writer-level minification.
 - Adjacent rule merging: consecutive rules with an identical declaration block collapse into one comma-joined selector
@@ -27,7 +27,6 @@ Not owned:
 
 - Theme artifact files under `styled-system/themes/*` — owned by `pandacss_codegen`; this crate supplies
   `theme_css_entries*` helpers only.
-- `staticCss.patterns` beyond diagnostics for unsupported native paths.
 - CSS parsing, prefixing, shorthand folding, AST/value minification, or incremental watch-mode patching.
 
 `globalVars` emits regular CSS variables. Object values become `@property` registrations only when the resulting CSS

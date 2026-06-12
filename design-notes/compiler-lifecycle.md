@@ -53,7 +53,8 @@ Covered today: `globalCss` + `globalVars` + `globalFontface` + `globalPositionTr
 (tokens layer), reset CSS when `preflight` is enabled, configured cascade-layer names + custom per-utility sub-layers
 (nested in utilities), and the supported `staticCss` subset (`staticCss.css`, `staticCss.recipes`, global
 `recipes: "*"`, recipe-level `recipe.staticCss`, slot recipes, compound variant CSS, responsive/configured condition
-expansion). Still outside the native path: `staticCss.patterns`. Theme token vars
+expansion). `staticCss.patterns` expands configured patterns through their
+transform callbacks (same JS callback path as runtime pattern usage). Theme token vars
 in the tokens layer are gated by `staticCss.themes`; per-theme CSS artifact files
 (`styled-system/themes/*`) are always codegen'd for runtime `getTheme` / `injectTheme`
 regardless of that setting. Preflight reset CSS supports `preflight.scope` and

@@ -528,6 +528,64 @@ describe('resolveAuthoredPresets / section coverage', () => {
       }
     `)
   })
+
+  test('concatenates staticCss.extend.patterns across presets and user config', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'preset-a',
+            staticCss: {
+              patterns: { stack: [{ properties: { gap: ['4'] } }] },
+            },
+          }),
+          definePreset({
+            name: 'preset-b',
+            staticCss: {
+              extend: {
+                patterns: { stack: [{ properties: { gap: ['8'] } }] },
+              },
+            },
+          }),
+        ],
+        staticCss: {
+          extend: {
+            patterns: { circle: [{ properties: { size: ['40px'] } }] },
+          },
+        },
+      }),
+    )
+
+    expect(result.staticCss.patterns).toMatchInlineSnapshot(`
+      {
+        "circle": [
+          {
+            "properties": {
+              "size": [
+                "40px",
+              ],
+            },
+          },
+        ],
+        "stack": [
+          {
+            "properties": {
+              "gap": [
+                "4",
+              ],
+            },
+          },
+          {
+            "properties": {
+              "gap": [
+                "8",
+              ],
+            },
+          },
+        ],
+      }
+    `)
+  })
 })
 
 describe('resolveAuthoredPresets / token normalization', () => {
@@ -635,8 +693,14 @@ describe('resolveAuthoredPresets / runtime keys and unsafe keys', () => {
       defineConfig({
         name: 'user-config',
         extend: { outdir: 'ignored' },
-        hooks: { 'parser:before': ({ content }) => content },
-        plugins: [{ name: 'ignored-plugin' }],
+        plugins: [
+          {
+            name: 'ignored-plugin',
+            hooks: {
+              'parser:before': ({ content }) => content,
+            },
+          },
+        ],
         presets: [
           definePreset({
             name: 'preset',
@@ -650,7 +714,7 @@ describe('resolveAuthoredPresets / runtime keys and unsafe keys', () => {
             },
           }),
         ],
-      } as any),
+      }),
     )
 
     expect(result).toMatchInlineSnapshot(`

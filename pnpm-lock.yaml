@@ -167,6 +167,12 @@ importers:
       '@napi-rs/cli':
         specifier: ^3.7.1
         version: 3.7.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@24.10.1)(node-addon-api@7.1.1)
+      '@pandacss/preset-base':
+        specifier: workspace:*
+        version: link:../preset-base
+      '@pandacss/preset-panda':
+        specifier: workspace:*
+        version: link:../preset-panda
 
   packages/compiler-shared: {}
 
