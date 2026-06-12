@@ -227,13 +227,31 @@ fn prepare_emittable_token_vars<'a>(
     });
 
     if config.optimize.remove_unused_tokens {
-        let used = usage
+        let mut used = usage
             .map(|usage| collect_used_token_vars(&vars, &usage.token_vars))
             .unwrap_or_default();
+        // `staticCss.themes` pre-generates theme token vars regardless of extraction usage.
+        if theme_filter.is_some() {
+            used = collect_used_token_vars(&vars, &seed_static_theme_token_vars(&vars, used));
+        }
         filter_token_vars(&vars, &used)
     } else {
         vars
     }
+}
+
+fn seed_static_theme_token_vars(
+    vars: &TokenCssVars<'_>,
+    mut used: FxHashSet<String>,
+) -> FxHashSet<String> {
+    for group in &vars.conditions {
+        if theme_condition_segment(group.condition).is_some() {
+            for var in &group.vars {
+                used.insert(var.name.to_owned());
+            }
+        }
+    }
+    used
 }
 
 /// Per-recipe CSS for split output: groups the recipe layer's base + variant

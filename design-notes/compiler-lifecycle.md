@@ -53,8 +53,10 @@ Covered today: `globalCss` + `globalVars` + `globalFontface` + `globalPositionTr
 (tokens layer), reset CSS when `preflight` is enabled, configured cascade-layer names + custom per-utility sub-layers
 (nested in utilities), and the supported `staticCss` subset (`staticCss.css`, `staticCss.recipes`, global
 `recipes: "*"`, recipe-level `recipe.staticCss`, slot recipes, compound variant CSS, responsive/configured condition
-expansion). Still outside the native path: `staticCss.patterns`, `staticCss.themes`, `preflight.scope`/`level`
-rewriting, and theme token artifact files (codegen output owned by the JS host).
+expansion). Still outside the native path: `staticCss.patterns`, `preflight.scope`/`level`
+rewriting. Theme token vars in the tokens layer are gated by `staticCss.themes`; per-theme
+CSS artifact files (`styled-system/themes/*`) are always codegen'd for runtime `getTheme` /
+`injectTheme` regardless of that setting.
 
 ### 5 · Optimization — ❌ unbuilt
 
@@ -109,8 +111,8 @@ re-extraction of unchanged files. It's the seam where phase 6 meets the (future)
   place for per-file parallelism without disturbing the single-file API (noted in
   [project-lifecycle](./project-lifecycle.md)).
 - **Static CSS ownership.** `pandacss_stylesheet` owns utility and recipe static CSS, reset/preflight, base/global
-  CSS + vars, token vars, and keyframes. Theme token artifact files (the `styled-system/tokens/*` codegen) remain on
-  the JS host side.
+  CSS + vars, token vars (including `staticCss.themes` pregeneration), and keyframes. Per-theme JSON artifacts
+  (`styled-system/themes/*`) are codegen'd in Rust for runtime `getTheme` / `injectTheme`.
 - **Incremental CSS emission.** `Project` updates its atom registry incrementally, but `compile()` still sorts and emits
   from the whole project-wide atom set. A cached per-file/per-bucket emitter is a separate design, not a hidden behavior
   of the current crate.

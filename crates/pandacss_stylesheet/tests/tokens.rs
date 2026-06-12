@@ -956,6 +956,57 @@ fn static_css_themes_star_emits_all_theme_token_vars() {
 }
 
 #[test]
+fn static_css_themes_survives_remove_unused_tokens() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "staticCss": {
+            "themes": ["primary"]
+        },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "text": { "value": "blue" },
+                    "red": {
+                        "600": { "value": "#dc2626" }
+                    }
+                }
+            }
+        },
+        "themes": {
+            "primary": {
+                "tokens": {
+                    "colors": {
+                        "text": { "value": "red" }
+                    }
+                },
+                "semanticTokens": {
+                    "colors": {
+                        "body": { "value": "{colors.red.600}" }
+                    }
+                }
+            }
+        }
+    }));
+    let output = compile_output(&config, "", StylesheetOptions::default());
+    let css = output.get_layer_css(&[StylesheetLayer::Tokens]);
+
+    assert!(css.contains("[data-panda-theme=primary]"));
+    assert!(css.contains("--colors-body: var(--colors-red-600);"));
+    assert_snapshot!(css, @"
+    @layer tokens {
+      :where(:root, :host) {
+        --colors-text: blue;
+        --colors-red-600: #dc2626;
+      }
+      :where([data-panda-theme=primary], [data-panda-theme=primary] *) {
+        --colors-text: red;
+        --colors-body: var(--colors-red-600);
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_tokens_between_base_and_runtime_layers() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

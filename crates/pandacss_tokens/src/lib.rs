@@ -752,8 +752,8 @@ pub struct TokenCssConditionVars<'a> {
 
 fn is_theme_condition(condition: &str) -> bool {
     // Theme variant tokens are collected under `_theme{CapitalizedName}` in
-    // `from_config::create_token_dictionary`; native token CSS intentionally
-    // leaves `config.themes` / `staticCss.themes` emission to a later pass.
+    // `from_config::create_token_dictionary`. Native token CSS emits them only
+    // when `staticCss.themes` is configured (see `static_theme_condition_filter`).
     let first_segment = condition.split(':').next().unwrap_or(condition);
     first_segment
         .strip_prefix("_theme")
