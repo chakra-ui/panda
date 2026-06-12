@@ -2,10 +2,10 @@
 
 ## Summary
 
-The Rust pipeline currently owns parse → extract → encode → emit for the native compiler path. Optimization, persistent
-cache, file discovery beyond globbing, and framework preprocessing remain deliberately outside the current
-project/extractor contract. A list of things it explicitly **doesn't** own — and why — is more useful to future
-contributors than describing what it does. This doc is that list.
+The Rust pipeline currently owns parse → extract → encode → emit for the native compiler path. Built-in Vue/Svelte/Astro
+masking runs in `pandacss_extractor` before Oxc. Optimization, persistent cache, file discovery beyond globbing, and MDX
+preprocessing remain deliberately outside the current project/extractor contract. A list of things it explicitly **doesn't**
+own — and why — is more useful to future contributors than describing what it does. This doc is that list.
 
 ## Not in scope
 
@@ -50,20 +50,24 @@ CSS whitespace in descendant selectors and quoted values. If optimization lands,
 
 ### Framework-specific source preprocessing
 
-`.vue`, `.svelte`, `.astro`, `.mdx` — single-file components are **preprocessed in JS**, then their `<script>` blocks
-flow into the Rust extractor as plain TS/JS. The Rust crate stays framework-agnostic.
+Built-in `.vue`, `.svelte`, and `.astro` adapters run in Rust via `pandacss_extractor::adapt_source` before Oxc parse.
+They mask template/frontmatter into position-preserving TS/JS so spans stay aligned with the original file. See
+[hooks](./hooks.md#native-plugins) and `crates/pandacss_extractor/src/{vue,svelte,astro}_adapter.rs`.
 
-This mirrors the Tailwind v4 pattern. Maintaining framework-specific parsers in Rust would mean keeping `oxc_vue`-style
-sister parsers in sync with upstream framework grammar changes — not worth the maintenance overhead for the (small)
-wins.
+**Still out of scope:** `.mdx` and other formats without a native adapter. Third-party transforms can use filtered
+`parser:before` on the JS host before the masked source reaches Oxc.
+
+Maintaining framework-specific parsers in Rust is limited to the built-in SFC set; keeping sister parsers in sync with
+every upstream framework grammar is not worth the maintenance overhead for the long tail.
 
 ### Per-file hooks
 
-JS-side hooks fire at **phase boundaries** (batched), not per-file. Per-file hooks are a breaking removal from v1.
-Plugin authors who needed per-file extension points get phase-batched alternatives.
+Most v1 per-file hooks are removed. v2 keeps one filtered per-file hook: `parser:before` (Class C in
+[hooks](./hooks.md)). Config and output hooks remain phase-batched on the JS host.
 
-**Why:** per-file hooks cross the NAPI boundary once per file, which dominates the per-file cost for trivial hook
-bodies. Phase-batched hooks call into JS once per phase with the full batch, amortizing the boundary cost.
+**Why:** unfiltered per-file hooks cross the NAPI boundary once per file, which dominates the per-file cost for trivial
+hook bodies. Rust-side filters plus phase-batched hooks amortize boundary cost; `parser:before` stays because some
+framework transforms still need arbitrary JS.
 
 ### Native file watching
 
@@ -93,7 +97,7 @@ silently ignored or panicking. `pandacss_config::Theme` is typed for the structu
 
 ### Hooks executing arbitrary JS
 
-Even when the engine lands, `compile()` won't _call_ JS plugins from Rust. Plugin execution stays on the JS side, with
+`compile()` does not _call_ JS plugins from Rust. Plugin execution stays on the JS side, with
 the Rust engine surfacing extraction results that JS-side hooks transform between phases.
 
 ## What this leaves the Rust pipeline owning

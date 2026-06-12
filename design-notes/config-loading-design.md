@@ -35,15 +35,16 @@ object/async/string-module presets, recursively resolves nested presets, and fol
 before Rust sees it.
 
 Automatic default preset behavior is deferred. The loader does **not** auto-add `@pandacss/preset-base` or
-`@pandacss/preset-panda`, and it does not special-case bundled names like `@pandacss/dev/presets`. Plugin and config
-hook resolution (`preset:resolved`, `config:resolved`) are also deferred. Validation remains deferred — the Rust
-compiler surfaces config diagnostics.
+`@pandacss/preset-panda`, and it does not special-case bundled names like `@pandacss/dev/presets`. Validation remains
+deferred — the Rust compiler surfaces config diagnostics. Plugin hooks `preset:resolved` and `config:resolved` run
+during resolution when declared on `plugins`.
 
 Current flow:
 
 ```txt
 bundle user config
-  -> resolve authored presets + fold extend
+  -> resolve authored presets + run preset:resolved hooks + fold extend
+  -> run config:resolved hooks
   -> apply config defaults
   -> serialize callbacks + pattern codegen source
   -> Rust compiler snapshot
@@ -90,7 +91,7 @@ reporting. The new package should not re-add `bundle-n-require`.
 
 ## Result Shape
 
-The proposed package shape is:
+`@pandacss/config` exposes:
 
 ```ts
 export async function loadPandaConfig(options: LoadConfigOptions): Promise<LoadedPandaConfig>
@@ -170,8 +171,8 @@ The loader resolves only presets explicitly authored in `config.presets`:
 - recursively nested `presets`.
 
 Automatic default preset behavior is still deferred. The loader does not inject `@pandacss/preset-base` or
-`@pandacss/preset-panda`, does not special-case bundled names like `@pandacss/dev/presets`, and does not run preset or
-config hooks.
+`@pandacss/preset-panda`, and does not special-case bundled names like `@pandacss/dev/presets`. Plugin hooks
+`preset:resolved` and `config:resolved` do run during resolution when declared on `plugins`.
 
 Resolution is depth-first. Nested presets are merged before the preset that contains them, sibling presets preserve
 author order, and the user config is merged last. That gives this precedence:

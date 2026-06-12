@@ -90,7 +90,7 @@ registering nothing.
 ## JS ↔ Rust boundary
 
 - **JS host owns:** config loading/resolution (`@pandacss/compiler/loader`), file watching + glob orchestration,
-  `Driver.codegen()` / `writeArtifacts` (orchestration + disk I/O), config **hooks** (`codegen:prepare`, `codegen:done`),
+  `Driver.codegen()` / `writeArtifacts` (orchestration + disk I/O), plugin **hooks** (`codegen:prepare`, `codegen:done`),
   the PostCSS plugin shell, and transform **callbacks** (arbitrary user functions can't live in Rust).
 - **Rust owns:** parse → extract → encode → emit, **`pandacss_codegen` artifact generation** for `styled-system/*`
   (the runtime + types user code imports), plus the project atom/recipe registry. Optimization and persistent caches are

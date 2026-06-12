@@ -525,10 +525,15 @@ drives instantiation. Memory dropped further once the vendored csstype's `Proper
 Measurement only holds for `.d.ts` under `skipLibCheck` (how Panda ships). An early cut emitted the Rust side as `.ts`
 *source*, which defeated skipLibCheck on that side and made the (then-vendored) csstype look like a 2–3× `Types`
 regression — a measurement artifact that vanished once the own `CssValue`-based csstype replaced the vendored keyword
-unions. Caveat: the `jsx-*` fixtures read identically because the codegen does not yet emit distinct JSX component
-artifacts, so `jsxStyleProps` cost is not captured (needs a JSX usage once those land).
+unions. Caveat: the 2026-06-01 `jsx-{all,minimal,none}` fixtures read identically because `usage.ts` imports only
+`./styled-system/types`, not the generated JSX runtime — so per-mode `jsxStyleProps` editor cost is not captured in that
+harness (re-run with a JSX usage fixture for mode-specific numbers).
 
 ## Implementation Order
+
+Steps 1–6 below are implemented in `pandacss_codegen` (`types/*`, pattern/recipe type modules, snapshots, strict
+fixtures). Steps 7–8 remain ongoing (editor-cost regression harnesses and full `jsxStyleProps` mode coverage in type
+benchmarks).
 
 1. Add type artifact IDs and dependency metadata.
 2. Generate `types/tokens` from resolved token categories.

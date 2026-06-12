@@ -174,7 +174,7 @@ export default {
 }
 ```
 
-The v2 loader should reject root `config.hooks` with this migration hint instead of silently ignoring it.
+The v2 loader rejects root `config.hooks` with a migration hint instead of silently ignoring it.
 
 ### `config:resolved`
 
@@ -208,13 +208,20 @@ side effects after write, such as logging or copying small files. Prefer `codege
 patch generated artifacts after codegen.
 
 ```ts
-hooks: {
-  'codegen:prepare': ({ artifacts }) => {
-    const factory = artifacts.find((item) => item.id === 'jsx-factory')
-    const file = factory?.files.find((item) => item.path.endsWith('.js'))
-    if (file) file.code = file.code.replace('function styledFn', 'function styledFn')
-    return artifacts
-  },
+export default {
+  plugins: [
+    {
+      name: 'local',
+      hooks: {
+        'codegen:prepare': ({ artifacts }) => {
+          const factory = artifacts.find((item) => item.id === 'jsx-factory')
+          const file = factory?.files.find((item) => item.path.endsWith('.js'))
+          if (file) file.code = file.code.replace('function styledFn', 'function styledFn')
+          return artifacts
+        },
+      },
+    },
+  ],
 }
 ```
 

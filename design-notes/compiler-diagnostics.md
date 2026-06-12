@@ -30,7 +30,6 @@ Current codes:
 - `js_parse_error`
 - `layer_name_collision`
 - `panda_call_unextractable`
-- `preflight_options_unsupported`
 - `static_css_pattern_missing_transform`
 - `static_css_pattern_unknown`
 - `static_css_property_unknown`

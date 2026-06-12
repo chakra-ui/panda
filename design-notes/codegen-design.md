@@ -1,7 +1,7 @@
 ---
 title: Rust Codegen Design
 date: 2026-05-29
-status: draft
+status: accepted
 scope:
   - crates/pandacss_codegen
   - crates/pandacss_config
@@ -11,8 +11,8 @@ scope:
 
 ## TL;DR
 
-Rust codegen is moving toward a Panda-specific source generator instead of a direct port of the old JS package
-generators. The current design has three core ideas:
+Rust codegen is a Panda-specific source generator (not a line-for-line port of the legacy JS package generators). The
+design has three core ideas:
 
 - generate from a small, dedicated AST instead of concatenating whole files as strings,
 - treat TypeScript as the canonical source and derive JS output by stripping generated TS-only syntax,
@@ -81,7 +81,7 @@ pub enum CodegenFormat {
 - artifact generators for `helpers`, `selectors`, `cx`, `css/index`, `conditions`, `themes`, and the rest of the
   `ArtifactId` graph.
 
-The current artifact graph is:
+The artifact graph includes every `ArtifactId` module in `crates/pandacss_codegen`. Sample nodes:
 
 | Artifact     | Output stem    | Current dependencies                         |
 | ------------ | -------------- | -------------------------------------------- |
@@ -298,18 +298,13 @@ The important test rule is that artifact tests should show both:
 
 ## Current Limitations
 
-The codegen crate is still an early scaffold. Known gaps:
+Remaining gaps (not regressions — the core artifact families below are implemented):
 
-- `Patterns` has an initial artifact family, but transform-function parity still needs JS-prepared codegen metadata.
-- `Recipes` is a dependency category but not a full artifact family yet.
-- Framework component artifacts are not generated yet; only the JSX AST/emitter path is proven.
-- Import maps are not wired into generated artifact paths.
+- Generated import specifiers do not yet read the user's `importMap` for cross-package styled-system paths.
 - The TS stripper is intentionally narrow and should only be used on generated code.
-- The artifact graph still has coarse artifact nodes; it does not yet expose one node per user pattern, recipe, or
-  framework component.
-- The helper artifact is generated as one output module even though internal Rust generator code is split.
-
-These are acceptable constraints for this stage. They keep the crate small while validating the core model.
+- Watch invalidation is coarse at the artifact-graph level: one `Patterns` node covers all pattern modules, and one
+  `Recipes` node covers the whole recipes family even though emission writes per-recipe files.
+- The helper artifact is still one output module even though internal Rust generator code is split.
 
 ## Config Loading
 
@@ -324,137 +319,28 @@ preserve autocomplete and recursive CSS nesting while replacing repeated inline 
 
 ## Pattern Transforms
 
-The existing JavaScript generator does not use callback registry files for pattern transforms. It embeds trusted config
-functions directly into each generated pattern module.
+Pattern transforms are embedded in generated `patterns/*` modules from JS-prepared metadata, not from callback refs.
+See [Config Loading Design](./config-loading-design.md#pattern-codegen-metadata) for the `codegenSource` capture flow.
 
-The current JS flow is:
+At codegen time Rust reads `PatternCodegenMeta.config_source` (populated from `config.patterns[name].codegenSource` in
+the serialized config). When present, the generated module embeds that source verbatim and calls
+`getPatternStyles(stackConfig, styles)` + `stackConfig.transform(s, patternFns)`. Patterns without transform source fall
+back to property-mapping mode.
 
-1. User config is loaded and resolved as live JavaScript.
-2. `packages/core` stores pattern configs with real `transform` functions.
-3. `packages/generator/src/artifacts/js/pattern.ts` builds a source string with `javascript-stringify`:
+Live `pattern.transform` callbacks remain necessary for extraction and `staticCss.patterns`, but generated runtime
+pattern files do not depend on the callback registry.
 
-```ts
-const patternConfigFn = stringify(compact({ transform, defaultValues })) ?? ''
-```
+## Artifact Families
 
-4. The generated pattern module embeds that source:
+The graph emits the full `ArtifactId` set today, including:
 
-```ts
-const stackConfig = {
-  transform(props, helpers) {
-    return { display: "flex", gap: props.gap }
-  },
-  defaultValues: { gap: "4" }
-}
+- core helpers (`helpers`, `selectors`, `cx`, `css/index`, `conditions`, `tokens`, `types`),
+- config-expanded modules (`patterns/*`, `recipes/*`, `cva`, `sva`, `themes/*`),
+- JSX surfaces when configured (`jsx-factory`, `jsx-patterns`, framework-specific component wrappers, recipe context
+  helpers).
 
-export const getStackStyle = (styles = {}) => {
-  const _styles = getPatternStyles(stackConfig, styles)
-  return stackConfig.transform(_styles, patternFns)
-}
-```
-
-Rust receives JSON-safe config after functions have been replaced with callback references, so Rust cannot recreate this
-source from `PatternConfig::transform` alone. The fix is to add a JS-prepared codegen payload that is created before
-functions are stripped.
-
-Proposed Rust-facing input:
-
-```rust
-pub struct CodegenInput {
-    pub config: UserConfig,
-    pub patterns: BTreeMap<String, PatternCodegenMeta>,
-}
-
-pub struct PatternCodegenMeta {
-    pub config_source: String,
-}
-```
-
-`config_source` is the already-stringified result of the trusted JS config object:
-
-```ts
-stringify(compact({
-  transform: pattern.transform,
-  defaultValues: pattern.defaultValues,
-}))
-```
-
-This should be produced in the existing JS config/generator boundary, while `pattern.transform` is still a live
-function. Rust codegen should not call `javascript-stringify`, and it should not invent a new user-facing callback-ref
-API for this path.
-
-Rust pattern emission then has two modes:
-
-```ts
-// Transform-source mode
-import { getPatternStyles, patternFns } from '../helpers'
-
-const stackConfig = /* PatternCodegenMeta.config_source */
-
-export function stackRaw(styles?: StackProperties): Record<string, any> {
-  const s = getPatternStyles(stackConfig, styles || {})
-  return stackConfig.transform(s, patternFns)
-}
-```
-
-```ts
-// Fallback property-mapping mode
-import { getPatternStyles } from '../helpers'
-
-export function stackRaw(styles?: StackProperties): Record<string, any> {
-  const s = getPatternStyles(stackConfig, styles || {})
-  return {
-    gap: s.gap
-  }
-}
-```
-
-No separate `callbacks.ts` artifact is needed for pattern transforms if we preserve this current generator behavior.
-The existing compiler and compiler-wasm callback registration remains necessary, but it serves extraction/static CSS,
-not generated runtime pattern files.
-
-For the Rust target we can also avoid the old generator's dynamic helper-shim scan (`__spreadValues`, `__objRest`) for
-now. Pattern files always import `getPatternStyles`; they import `patternFns` only when a transform source exists. The
-Rust output is focused on modern `ts` and `mjs` generation rather than legacy helper shim compatibility.
-
-Security model: this preserves Panda's existing trusted-config behavior. User config already executes during config
-loading, and the old generator already embeds stringified transform functions into generated files. The Rust path should
-carry that behavior through explicit JS-prepared metadata instead of trying to serialize arbitrary functions in Rust.
-
-## Patterns Artifact
-
-The first config-expanded artifact family is `patterns`.
-
-Reasons:
-
-- helper support already includes `patternFns` and `getPatternStyles`,
-- the JSX AST test already points at `../patterns/stack`,
-- pattern output is simpler than full framework component output,
-- it forces the artifact graph to support config-expanded artifact families.
-
-Expected no-transform fallback shape:
-
-```ts
-import { getPatternStyles } from '../helpers'
-
-export function stackRaw(styles?: StackProperties): Record<string, any> {
-  const s = getPatternStyles(stackConfig, styles || {})
-  return {
-    gap: s.gap
-  }
-}
-
-export const stack = Object.assign(function stack(styles = {}) {
-  return stackRaw(styles)
-}, { raw: stackRaw })
-```
-
-After `patterns`, the natural order is:
-
-1. recipes,
-2. slot recipes,
-3. JSX/framework component wrappers,
-4. import-map-aware package entrypoints.
+Remaining work is mostly polish: import-map-aware package entrypoints and finer-grained watch invalidation per pattern or
+recipe name.
 
 ## Design Principles
 
