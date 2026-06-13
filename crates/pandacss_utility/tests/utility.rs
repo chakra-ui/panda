@@ -1070,3 +1070,94 @@ fn class_name_value_uses_object_map_alias_not_resolved_css() {
         @"mb_2"
     );
 }
+
+#[test]
+fn transform_str_emits_custom_property_target_from_serialized_property() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.border.muted",
+            "#ccc",
+            "var(--colors-border-muted)",
+            TokenCategory::Colors,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "boxShadowColor": {
+                "className": "bx-sh-c",
+                "shorthand": "shadowColor",
+                "values": "colors",
+                "property": "--shadow-color",
+                "transform": {
+                    "kind": "js-callback",
+                    "id": "utilities.boxShadowColor.transform"
+                }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    assert_debug_snapshot!(
+        utility.transform_str("shadowColor", "border.muted").styles,
+        @r#"
+    Object(
+        [
+            (
+                "--shadow-color",
+                String(
+                    "var(--colors-border-muted)",
+                ),
+            ),
+        ],
+    )
+    "#);
+}
+
+#[test]
+fn transform_str_does_not_reconstruct_color_mix_transform_callbacks() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.300",
+            "#fca5a5",
+            "var(--colors-red-300)",
+            TokenCategory::Colors,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "boxShadowColor": {
+                "className": "bx-sh-c",
+                "values": "colors",
+                "property": "--shadow-color",
+                "transform": {
+                    "kind": "js-callback",
+                    "id": "utilities.boxShadowColor.transform"
+                }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    // The JS callback path and pure Rust config emission both write color
+    // opacity modifiers directly to the serialized target property.
+    assert_debug_snapshot!(
+        utility.transform_str("boxShadowColor", "red.300/40").styles,
+        @r#"
+    Object(
+        [
+            (
+                "--shadow-color",
+                String(
+                    "color-mix(in oklab, var(--colors-red-300) 40%, transparent)",
+                ),
+            ),
+        ],
+    )
+    "#);
+}
