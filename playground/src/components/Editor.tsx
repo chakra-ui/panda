@@ -58,7 +58,7 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
           {tabs.map((option, id) => (
             <SegmentGroup.Item key={id} value={option.id} aria-label={option.label}>
               <SegmentGroup.ItemControl />
-              <SegmentGroup.ItemText className={css({ px: 2 })}>{option.label}</SegmentGroup.ItemText>
+              <SegmentGroup.ItemText className={css({ px: '2' })}>{option.label}</SegmentGroup.ItemText>
               <SegmentGroup.ItemHiddenInput />
             </SegmentGroup.Item>
           ))}

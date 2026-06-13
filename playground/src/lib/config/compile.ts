@@ -1,3 +1,4 @@
+import { bundledPresets } from '@/src/lib/config/bundled-presets'
 import { evalConfig } from '@/src/lib/config/eval-config'
 import { getImports } from '@/src/lib/config/get-imports'
 
@@ -32,9 +33,11 @@ export const compile = async (configStr: string) => {
   const presets = await Promise.all(
     _presets.map(async (_preset) => {
       if (typeof _preset !== 'string') return _preset
+      // Built-in presets resolve to the in-repo bundled objects; everything else via CDN.
+      if (bundledPresets[_preset]) return bundledPresets[_preset]
       const preset = await require(_preset)
       if (preset.default) return preset.default
-      throw new Error("Could not find a default export in preset: '" + module + "'")
+      throw new Error("Could not find a default export in preset: '" + _preset + "'")
     }),
   )
 

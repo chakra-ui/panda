@@ -7,6 +7,7 @@ export const getConfig = (
 
 export const config = defineConfig({
   ${config ?? ''}${config?.endsWith(',') ? '' : ','}
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   globalCss: {
     html: {
       h: 'full',

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "css:codegen": "pnpm panda codegen --silent",
+    "css:codegen": "tsx scripts/codegen.mts",
     "types:codegen": "tsx scripts/bundle-types.mts",
     "prepare": "pnpm db:generate && pnpm css:codegen",
     "build": "pnpm types:codegen && next build",
@@ -26,6 +26,7 @@
     "@pandacss/config": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "@prisma/client": "5.9.1",
     "@textea/json-viewer": "4.0.1",
     "lightningcss-wasm": "1.30.2",

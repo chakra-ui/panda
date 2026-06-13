@@ -1,43 +1,25 @@
 import type { Config, Preset } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config/merge'
-import presetBase from '@pandacss/preset-base'
-import presetPanda from '@pandacss/preset-panda'
-import { validateConfig } from '../../../../packages/config/src/validate-config'
+import { bundledPresets } from '@/src/lib/config/bundled-presets'
 
 type Extendable<T> = T & { extend?: T }
 type ExtendableConfig = Extendable<Config>
 
+// v2 does not auto-inject preset-base/preset-panda — presets are explicit
+// (design-notes/config-loading-design.md), which is why `eject` was dropped (30b2f411d).
+// The playground matches that: it resolves the *declared* presets (built-ins by name →
+// bundled objects, others already resolved upstream by compile.ts) and never injects.
 export function resolveConfig(config?: Config) {
   if (!config) return
 
-  const presets = new Set<any>()
+  const declared = (config.presets ?? [])
+    .map((preset) => (typeof preset === 'string' ? bundledPresets[preset] : preset))
+    .filter(Boolean) as Preset[]
 
-  if (!config.eject) {
-    presets.add(presetBase)
-  }
+  // Always include the playground's internal error-recipe preset.
+  config.presets = [...declared, playgroundPreset]
 
-  if (config.presets) {
-    //
-    config.presets.forEach((preset: any) => {
-      presets.add(preset)
-    })
-  } else if (!config.eject) {
-    presets.add(presetPanda)
-  }
-
-  presets.add(playgroundPreset)
-
-  config.presets = Array.from(presets)
-
-  const mergedConfig = getResolvedConfig(config)
-
-  if (!mergedConfig) return
-
-  validateConfig(mergedConfig as any)
-
-  // No config:resolved hook, cause we can't resolve async here
-
-  return mergedConfig
+  return getResolvedConfig(config)
 }
 
 /**

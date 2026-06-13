@@ -1,6 +1,7 @@
 packages:
   - 'bench'
   - 'packages/**'
+  - 'playground'
   - 'sandbox/*'
   - 'sandbox/component-lib/**'
   # napi platform packages are published by `napi pre-publish`, not the workspace.
