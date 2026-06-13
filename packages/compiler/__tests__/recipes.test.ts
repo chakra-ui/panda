@@ -211,6 +211,48 @@ describe('Compiler recipes', () => {
     `)
   })
 
+  it('does not emit style utilities for dotted recipe variant values', () => {
+    const compiler = createCompiler(
+      {
+        cwd: '/virtual',
+        outdir: 'styled-system',
+        importMap,
+        theme: {
+          recipes: {
+            button: {
+              jsx: ['ButtonLink'],
+              variants: {
+                color: {
+                  'ghost.white': {
+                    color: 'white',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/Button.tsx',
+      `import { ButtonLink } from './button'
+       export const button = <ButtonLink color="ghost.white" />`,
+    )
+
+    expect(compiler.layerCss(['recipes', 'utilities'])).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer variants {
+          .button--color_ghost\\.white {
+            color: white;
+          }
+        }
+      }
+      "
+    `)
+  })
+
   it('tracks config recipe function calls', () => {
     const compiler = createCompiler(
       {

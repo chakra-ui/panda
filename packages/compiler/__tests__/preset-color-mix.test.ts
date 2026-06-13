@@ -81,4 +81,56 @@ describe('preset color mix utility output', () => {
       "
     `)
   })
+
+  it('preserves color mix transform declarations in recipe output', () => {
+    const compiler = createPresetCompiler({
+      theme: {
+        tokens: {
+          colors: {
+            border: {
+              muted: { value: '#d4d4d8' },
+            },
+          },
+        },
+        recipes: {
+          card: {
+            className: 'card',
+            variants: {
+              variant: {
+                elevated: {
+                  boxShadowColor: 'border.muted',
+                },
+                tinted: {
+                  boxShadowColor: 'red.300/40',
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    compiler.parseFileSource(
+      '/virtual/Card.tsx',
+      `import { card } from '@panda/recipes'
+       card({ variant: 'elevated' })
+       card({ variant: 'tinted' })`,
+    )
+
+    const css = compiler.layerCss(['recipes'])
+
+    expect(css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer variants {
+          .card--variant_elevated {
+            --shadow-color: var(--colors-border-muted);
+          }
+          .card--variant_tinted {
+            --shadow-color: color-mix(in oklab, var(--colors-red-300) 40%, transparent);
+          }
+        }
+      }
+      "
+    `)
+  })
 })

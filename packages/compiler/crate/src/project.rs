@@ -964,9 +964,25 @@ impl Compiler {
         let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms(env);
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {
-            inner, user_config, ..
+            inner,
+            user_config,
+            callbacks,
+            ..
         } = self;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                resolved,
+                original,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                &env,
+            )
+        };
         let output = crate::compile::build_compile_output(
             inner,
             user_config,
@@ -975,6 +991,8 @@ impl Compiler {
             options
                 .as_ref()
                 .is_none_or(CompileOptions::should_emit_layer_declaration),
+            has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
         );
         crate::flush_tracing();
         Ok(output)
@@ -1051,9 +1069,25 @@ impl Compiler {
         crate::init_tracing();
         let _span = tracing::trace_span!("layer_css").entered();
         let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {
-            inner, user_config, ..
+            inner,
+            user_config,
+            callbacks,
+            ..
         } = self;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                resolved,
+                original,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                &env,
+            )
+        };
         let token_dictionary = inner.config().token_dictionary();
         let output = crate::compile::build_stylesheet_output(
             inner,
@@ -1061,6 +1095,8 @@ impl Compiler {
             token_dictionary,
             &static_pattern_atoms,
             true,
+            has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
         );
         let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
             .iter()
@@ -1077,10 +1113,32 @@ impl Compiler {
         crate::init_tracing();
         let _span = tracing::trace_span!("split_css").entered();
         let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {
-            inner, user_config, ..
+            inner,
+            user_config,
+            callbacks,
+            ..
         } = self;
-        let files = crate::compile::build_split_css(inner, user_config, &static_pattern_atoms);
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                resolved,
+                original,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                &env,
+            )
+        };
+        let files = crate::compile::build_split_css(
+            inner,
+            user_config,
+            &static_pattern_atoms,
+            has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+        );
         crate::flush_tracing();
         Ok(files)
     }

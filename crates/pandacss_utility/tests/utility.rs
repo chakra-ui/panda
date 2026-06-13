@@ -328,6 +328,72 @@ fn transform_supports_token_category_values() {
 }
 
 #[test]
+fn transform_escapes_unresolved_token_category_values() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.300",
+            "#fca5a5",
+            "var(--colors-red-300)",
+            TokenCategory::Colors,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "color": {
+                "className": "c",
+                "values": "colors"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let resolved = utility
+        .transform("color", &Literal::String("red.300".into()))
+        .expect("resolved category token");
+    let unresolved = utility
+        .transform("color", &Literal::String("ghost.white".into()))
+        .expect("unresolved category token");
+    let unresolved_opacity = utility
+        .transform("color", &Literal::String("ghost.white/40".into()))
+        .expect("unresolved category token with opacity");
+    let raw_decimal = utility
+        .transform("color", &Literal::String("oklch(0.5 0.1 200)".into()))
+        .expect("valid raw color function");
+
+    assert_eq!(
+        resolved.styles,
+        Literal::Object(vec![(
+            "color".into(),
+            Literal::String("var(--colors-red-300)".into())
+        )]),
+    );
+    assert_eq!(
+        unresolved.styles,
+        Literal::Object(vec![(
+            "color".into(),
+            Literal::String("ghost\\.white".into())
+        )]),
+    );
+    assert_eq!(
+        unresolved_opacity.styles,
+        Literal::Object(vec![(
+            "color".into(),
+            Literal::String("ghost\\.white\\/40".into())
+        )]),
+    );
+    assert_eq!(
+        raw_decimal.styles,
+        Literal::Object(vec![(
+            "color".into(),
+            Literal::String("oklch(0.5 0.1 200)".into())
+        )]),
+    );
+}
+
+#[test]
 #[allow(
     clippy::too_many_lines,
     reason = "snapshot-heavy fixture keeps related color opacity assertions together"

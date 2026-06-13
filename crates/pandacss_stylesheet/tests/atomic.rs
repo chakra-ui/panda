@@ -265,6 +265,52 @@ fn resolves_semantic_token_category_values_to_css_vars() {
 }
 
 #[test]
+fn escapes_unresolved_token_category_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": {
+                        "300": { "value": "#fca5a5" }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css';\n",
+            "css({ color: 'red.300' });\n",
+            "css({ color: 'ghost.white' });\n",
+            "css({ color: 'ghost.white/40' });\n",
+            "css({ color: 'oklch(0.5 0.1 200)' });",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .c_ghost\.white {
+    color: ghost\.white;
+  }
+  .c_ghost\.white\/40 {
+    color: ghost\.white\/40;
+  }
+  .c_oklch\(0\.5_0\.1_200\) {
+    color: oklch(0.5 0.1 200);
+  }
+  .c_red\.300 {
+    color: var(--colors-red-300);
+  }
+}
+");
+}
+
+#[test]
 fn emits_generated_color_palette_utility() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

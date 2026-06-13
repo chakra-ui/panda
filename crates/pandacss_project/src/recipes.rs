@@ -23,7 +23,9 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{compound_class_name, diagnostic_codes, number_to_js_string};
+use pandacss_shared::{
+    compound_class_name, diagnostic_codes, number_to_js_string, split_important,
+};
 use pandacss_utility::{StyleNormalizer, Utility};
 
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
@@ -1220,17 +1222,24 @@ fn transform_recipe_entries(
         match transform(entry.prop.as_ref(), &resolved, &entry.value) {
             Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
             Ok(Some(styles)) => {
-                // Re-encode into entries, prefixing the originating entry's
-                // conditions / important.
-                for atom in ctx.encode(&styles) {
-                    let mut conditions = entry.conditions.clone();
-                    conditions.extend(atom.conditions().iter().cloned());
-                    out.insert(RecipeStyleEntry {
-                        prop: atom.prop().into(),
-                        value: atom.value().clone(),
-                        conditions,
-                        important: entry.important || atom.important(),
-                    });
+                if let Some(entries) =
+                    flat_transform_recipe_entries(&styles, &entry.conditions, entry.important)
+                {
+                    out.extend(entries);
+                } else {
+                    // Re-encode nested transform output into entries,
+                    // prefixing the originating entry's conditions /
+                    // important.
+                    for atom in ctx.encode(&styles) {
+                        let mut conditions = entry.conditions.clone();
+                        conditions.extend(atom.conditions().iter().cloned());
+                        out.insert(RecipeStyleEntry {
+                            prop: atom.prop().into(),
+                            value: atom.value().clone(),
+                            conditions,
+                            important: entry.important || atom.important(),
+                        });
+                    }
                 }
             }
             Ok(None) => {
@@ -1244,6 +1253,57 @@ fn transform_recipe_entries(
         }
     }
     out
+}
+
+fn flat_transform_recipe_entries(
+    styles: &Literal,
+    base_conditions: &SmallVec<[Box<str>; 2]>,
+    inherited_important: bool,
+) -> Option<FxHashSet<RecipeStyleEntry>> {
+    let Literal::Object(entries) = styles else {
+        return None;
+    };
+
+    let mut out = FxHashSet::default();
+    for (prop, value) in entries {
+        let (value, important) = flat_transform_recipe_value(value)?;
+        out.insert(RecipeStyleEntry {
+            prop: prop.clone().into_boxed_str(),
+            value,
+            conditions: base_conditions.clone(),
+            important: inherited_important || important,
+        });
+    }
+    Some(out)
+}
+
+fn flat_transform_recipe_value(value: &Literal) -> Option<(AtomValue, bool)> {
+    match value {
+        Literal::String(value) => {
+            let (value, important) = split_important(value);
+            Some((
+                AtomValue::String(value.into_owned().into_boxed_str()),
+                important,
+            ))
+        }
+        Literal::Token { path, value } => {
+            let (value, important) = split_important(value);
+            Some((
+                AtomValue::Token {
+                    path: path.clone().into_boxed_str(),
+                    value: value.into_owned().into_boxed_str(),
+                },
+                important,
+            ))
+        }
+        Literal::Number(value) => Some((
+            AtomValue::Number(number_to_js_string(*value).into_boxed_str()),
+            false,
+        )),
+        Literal::Bool(value) => Some((AtomValue::Bool(*value), false)),
+        Literal::Null => Some((AtomValue::Null, false)),
+        Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
+    }
 }
 
 fn with_callback_target(mut diagnostic: Diagnostic, prop: &str, value: Option<&str>) -> Diagnostic {

@@ -492,6 +492,13 @@ impl Utility {
             return Literal::String(value.to_owned());
         }
 
+        if self.tokens.is_some()
+            && config.values_category.is_some()
+            && is_plain_token_path_like(value)
+        {
+            return Literal::String(css_escape(value));
+        }
+
         Literal::String(value.to_owned())
     }
 
@@ -502,12 +509,15 @@ impl Utility {
     fn color_mix_category_value(&self, value: &str) -> Option<String> {
         let tokens = self.tokens.as_ref()?;
         let (color, opacity) = split_top_level_slash(value)?;
+        let color = color.trim();
         let color_path = format!("colors.{color}");
         if tokens.token(&color_path).is_some() {
             let path = format!("{color_path}/{opacity}");
             tokens.color_mix_str(&path)
-        } else {
+        } else if tokens.token(color).is_some() || !is_plain_token_path_like(color) {
             tokens.color_mix_str(value)
+        } else {
+            None
         }
     }
 
@@ -1143,6 +1153,20 @@ fn is_token_path_like(path: &str) -> bool {
     path.as_bytes()
         .windows(3)
         .any(|window| is_word_byte(window[0]) && window[1] == b'.' && is_word_byte(window[2]))
+}
+
+fn is_plain_token_path_like(value: &str) -> bool {
+    let value = value.trim();
+    let value = split_top_level_slash(value).map_or(value, |(path, _)| path.trim());
+    let Some(first) = value.bytes().next() else {
+        return false;
+    };
+
+    (first.is_ascii_alphabetic() || first == b'_')
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+        && is_token_path_like(value)
 }
 
 fn is_word_byte(byte: u8) -> bool {

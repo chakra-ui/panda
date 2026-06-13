@@ -142,6 +142,7 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         &static_pattern_atoms,
         static_pattern_diagnostics,
         emit_layer_declaration,
+        None,
     )
 }
 
@@ -151,6 +152,7 @@ pub(crate) fn build_compile_output(
     static_pattern_atoms: &[CoreAtom],
     static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
     emit_layer_declaration: bool,
+    utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
 ) -> CompileOutput {
     let token_dictionary = project.config().token_dictionary();
     let manifest_files = project
@@ -174,6 +176,7 @@ pub(crate) fn build_compile_output(
         token_dictionary,
         static_pattern_atoms,
         emit_layer_declaration,
+        utility_transform,
     );
     CompileOutput {
         css: output.css,
@@ -207,9 +210,14 @@ pub(crate) fn build_split_css(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,
     static_pattern_atoms: &[CoreAtom],
+    utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
 ) -> Vec<SplitCssFile> {
     let token_dictionary = project.config().token_dictionary();
-    let snapshots = project.stylesheet_snapshots(user_config);
+    let snapshots = if let Some(transform) = utility_transform {
+        project.stylesheet_snapshots_with_utility_transform(user_config, transform)
+    } else {
+        project.stylesheet_snapshots(user_config)
+    };
     let options = pandacss_stylesheet::StylesheetOptions {
         minify: user_config
             .extra
@@ -249,8 +257,13 @@ pub(crate) fn build_stylesheet_output(
     token_dictionary: Option<std::sync::Arc<pandacss_tokens::TokenDictionary>>,
     static_pattern_atoms: &[CoreAtom],
     emit_layer_declaration: bool,
+    utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
 ) -> pandacss_stylesheet::StylesheetOutput {
-    let snapshots = project.stylesheet_snapshots(user_config);
+    let snapshots = if let Some(transform) = utility_transform {
+        project.stylesheet_snapshots_with_utility_transform(user_config, transform)
+    } else {
+        project.stylesheet_snapshots(user_config)
+    };
     let options = pandacss_stylesheet::StylesheetOptions {
         minify: user_config
             .extra

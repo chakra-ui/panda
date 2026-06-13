@@ -97,7 +97,8 @@ pub struct Project {
     encoded_recipes_cache: EncodedRecipesCache,
     atoms_snapshot_cache: Option<Vec<Atom>>,
     encoded_recipes_snapshot_cache: Option<EncodedRecipesSnapshot>,
-    static_encoded_recipes_snapshot_cache: Option<(serde_json::Value, EncodedRecipesSnapshot)>,
+    static_encoded_recipes_snapshot_cache:
+        Option<(serde_json::Value, bool, EncodedRecipesSnapshot)>,
     token_refs_snapshot_cache: Option<Vec<String>>,
     parse_epoch: u64,
     /// Recipes keyed by `(file, span)` so re-parsing a path drops every
@@ -960,21 +961,6 @@ impl Project {
     }
 
     #[must_use]
-    pub(crate) fn static_encoded_recipes(
-        &self,
-        user_config: &UserConfig,
-    ) -> EncodedRecipesSnapshot {
-        let mut encoded = EncodedRecipes::default();
-        self.config.recipes.process_static_css(
-            &mut encoded,
-            user_config,
-            &self.config.conditions,
-            &self.config.breakpoints,
-        );
-        encoded.snapshot()
-    }
-
-    #[must_use]
     #[allow(
         clippy::missing_panics_doc,
         reason = "snapshot caches are populated immediately above the expects"
@@ -982,6 +968,22 @@ impl Project {
     pub fn stylesheet_snapshots(
         &mut self,
         user_config: &UserConfig,
+    ) -> ProjectStylesheetSnapshots<'_> {
+        self.stylesheet_snapshots_inner(user_config, None)
+    }
+
+    pub fn stylesheet_snapshots_with_utility_transform(
+        &mut self,
+        user_config: &UserConfig,
+        utility_transform: &mut UtilityTransformFn<'_>,
+    ) -> ProjectStylesheetSnapshots<'_> {
+        self.stylesheet_snapshots_inner(user_config, Some(utility_transform))
+    }
+
+    fn stylesheet_snapshots_inner(
+        &mut self,
+        user_config: &UserConfig,
+        mut utility_transform: Option<&mut UtilityTransformFn<'_>>,
     ) -> ProjectStylesheetSnapshots<'_> {
         if self.atoms_snapshot_cache.is_none() {
             let mut atoms = self.atoms_cache.iter().cloned().collect::<Vec<_>>();
@@ -1015,11 +1017,31 @@ impl Project {
         let static_cache_matches = self
             .static_encoded_recipes_snapshot_cache
             .as_ref()
-            .is_some_and(|(static_css, _)| static_css == &user_config.static_css);
+            .is_some_and(|(static_css, transformed, _)| {
+                static_css == &user_config.static_css && *transformed == utility_transform.is_some()
+            });
         if !static_cache_matches {
+            let mut encoded = EncodedRecipes::default();
+            self.config.recipes.process_static_css(
+                &mut encoded,
+                user_config,
+                &self.config.conditions,
+                &self.config.breakpoints,
+            );
+            if let Some(transform) = utility_transform.as_deref_mut() {
+                let mut diagnostics = Vec::new();
+                encoded.transform_utilities(
+                    self.config.utility.as_ref(),
+                    &self.config.conditions,
+                    &self.config.breakpoints,
+                    transform,
+                    &mut diagnostics,
+                );
+            }
             self.static_encoded_recipes_snapshot_cache = Some((
                 user_config.static_css.clone(),
-                self.static_encoded_recipes(user_config),
+                utility_transform.is_some(),
+                encoded.snapshot(),
             ));
         }
 
@@ -1035,7 +1057,7 @@ impl Project {
             static_encoded_recipes: self
                 .static_encoded_recipes_snapshot_cache
                 .as_ref()
-                .map(|(_, snapshot)| snapshot)
+                .map(|(_, _, snapshot)| snapshot)
                 .expect("static recipe snapshot was initialized"),
             token_refs: self
                 .token_refs_snapshot_cache

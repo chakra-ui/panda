@@ -171,6 +171,49 @@ fn splits_recipe_component_variant_and_style_props() {
 }
 
 #[test]
+fn dotted_recipe_variant_values_do_not_emit_style_props() {
+    let mut project = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "jsx": ["ButtonLink"],
+                    "variants": {
+                        "color": {
+                            "ghost.white": {
+                                "color": "white"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            import { ButtonLink } from './button';
+            const el = <ButtonLink color='ghost.white' />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 1);
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+    assert_yaml_snapshot!(project.encoded_recipes().snapshot(), @r"
+    base: []
+    variants:
+      - recipe: button
+        slot: ~
+        className: button--color_ghost.white
+        entries:
+          - prop: color
+            value: white
+            conditions: []
+    atomic: []
+    ");
+}
+
+#[test]
 fn recipe_function_calls_encode_config_recipes() {
     let mut project = create_project(json!({
         "theme": {
