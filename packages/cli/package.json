@@ -77,5 +77,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "bugs": {
+    "url": "https://github.com/chakra-ui/panda/issues"
   }
 }
