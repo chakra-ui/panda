@@ -1,13 +1,13 @@
 import { applyConfigDefaults } from '@pandacss/compiler-shared'
 import type { Config, UserConfig } from '@pandacss/types'
-import { bundle } from './bundle'
+import { bundleConfig } from './bundle'
 import { PandaError } from './error'
 import { findConfig } from './find'
 import { collectPluginHookHandlers, normalizeHook } from './hooks'
 import { resolveAuthoredPresets } from './preset'
 import { createConfigSnapshot } from './serialize'
 import { isPlainObject } from './shared'
-import type { LoadConfigOptions, LoadedPandaConfig } from './types'
+import type { LoadConfigOptions, LoadConfigResult } from './types'
 
 /**
  * Load and serialize a user's Panda config into a compiler-ready snapshot.
@@ -18,12 +18,12 @@ import type { LoadConfigOptions, LoadedPandaConfig } from './types'
  * Authored presets are resolved before defaults are applied; live hooks remain
  * in the JS host and only parser:before metadata crosses into Rust.
  */
-export async function loadPandaConfig(options: LoadConfigOptions): Promise<LoadedPandaConfig> {
+export async function loadConfig(options: LoadConfigOptions): Promise<LoadConfigResult> {
   const { cwd, file } = options
 
   const path = findConfig({ cwd, file })
 
-  const { config, dependencies } = await bundle<Config>(path, cwd)
+  const { config, dependencies } = await bundleConfig<Config>(path, cwd)
 
   if (!isPlainObject(config)) {
     throw new PandaError('CONFIG_ERROR', '💥 Config must export or return an object.')

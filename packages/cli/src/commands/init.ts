@@ -210,7 +210,9 @@ function hasGitignoreEntry(content: string, outdir: string): boolean {
 
 function configSource(options: SetupConfigOptions): string {
   const lines = [
-    'export default {',
+    "import { defineConfig } from '@pandacss/dev'",
+    '',
+    'export default defineConfig({',
     '  preflight: true,',
     `  include: ['./src/**/*.{js,jsx,ts,tsx}', './pages/**/*.{js,jsx,ts,tsx}'],`,
     '  exclude: [],',
@@ -225,7 +227,7 @@ function configSource(options: SetupConfigOptions): string {
   if (options.syntax) lines.push(`  syntax: ${JSON.stringify(options.syntax)},`)
   if (options.strictTokens) lines.push('  strictTokens: true,')
 
-  lines.push('}', '')
+  lines.push('})', '')
 
   return lines.join('\n')
 }

@@ -34,7 +34,7 @@ export const compile = async (configStr: string) => {
       if (typeof _preset !== 'string') return _preset
       const preset = await require(_preset)
       if (preset.default) return preset.default
-      throw new Error("Could not find a default export in preset: '" + module + "'")
+      throw new Error("Could not find a default export in preset: '" + _preset + "'")
     }),
   )
 

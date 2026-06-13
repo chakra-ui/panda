@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { LiveProvider, useLiveContext } from 'react-live-runner'
 import { useIsClient } from 'usehooks-ts'
 import { createPortal } from 'react-dom'
@@ -25,6 +25,15 @@ export const Preview = memo(function Preview(props: PreviewProps) {
   const isClient = useIsClient()
 
   const { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc } = usePreview()
+
+  const previewCode = useMemo(() => {
+    if (!previewJs) return ''
+
+    const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
+    return `${previewJs}\n${source
+      .replaceAll(/(?<!!)import.*/g, '')
+      .concat(`\nrender(<${defaultExportName} />)`)}`
+  }, [previewJs, source])
 
   const {
     setContainerRef,
@@ -56,32 +65,8 @@ export const Preview = memo(function Preview(props: PreviewProps) {
     topRight: startTopRight,
   } as const
 
-  function renderContent() {
-    // Wait for the iframe and the styled-system runtime (previewJs) — rendering
-    // user code before the wasm compiler is ready throws `x is not defined`.
-    if (!isReady || !previewJs) {
-      return null
-    }
-
-    const defaultExportName = extractDefaultExportedFunctionName(source) ?? 'App'
-    const transformed = `${previewJs.replaceAll(/export /g, '')}\n${source
-      .replaceAll(/(?<!!)import.*/g, '')
-      .concat(`\nrender(<${defaultExportName} />)`)}`
-
-    const contents = (
-      <LiveProvider code={transformed} scope={React}>
-        <LiveError error={error} />
-        <LivePreview />
-      </LiveProvider>
-    )
-
-    const doc = contentRef?.contentDocument
-
-    return [
-      doc?.head && createPortal(<style>{previewCss}</style>, doc.head),
-      doc?.body && createPortal(contents, doc.body),
-    ]
-  }
+  const doc = contentRef?.contentDocument
+  const canRenderPreview = iframeLoaded && isReady && !!previewCode
 
   return (
     <div
@@ -171,6 +156,7 @@ export const Preview = memo(function Preview(props: PreviewProps) {
             overflow: 'auto',
             w: 'full',
             h: 'full',
+            pos: 'relative',
           })}
           style={
             isResponsive
@@ -181,6 +167,20 @@ export const Preview = memo(function Preview(props: PreviewProps) {
               : {}
           }
         >
+          {canRenderPreview && (
+            <>
+              {doc?.head && createPortal(<style>{previewCss}</style>, doc.head, 'preview-css')}
+              {doc?.body &&
+                createPortal(
+                  <LiveProvider code={previewCode}>
+                    <LiveError error={error} />
+                    <LivePreview />
+                  </LiveProvider>,
+                  doc.body,
+                  'preview-content',
+                )}
+            </>
+          )}
           <iframe
             srcDoc={srcDoc}
             ref={setContentRef}
@@ -193,9 +193,7 @@ export const Preview = memo(function Preview(props: PreviewProps) {
               h: 'full',
               visibility: { _loading: 'hidden' },
             })}
-          >
-            {iframeLoaded && renderContent()}
-          </iframe>
+          />
         </div>
       </div>
     </div>
@@ -203,20 +201,19 @@ export const Preview = memo(function Preview(props: PreviewProps) {
 })
 
 function LiveError(props: { error: Error | null }) {
-  const { error } = useLiveContext()
+  const { error: liveError } = useLiveContext()
+  const message = liveError ? String(liveError) : props.error ? `${props.error.name}: ${props.error.message}` : null
 
-  function renderError() {
-    return (
-      <div className="playgroundError">
-        <span>
-          <ErrorIcon />
-        </span>
-        <pre>{error ?? props.error?.name + ': ' + props.error?.message}</pre>
-      </div>
-    )
-  }
+  if (!message) return null
 
-  return error || props.error ? renderError() : <></>
+  return (
+    <div className="playgroundError">
+      <span>
+        <ErrorIcon />
+      </span>
+      <pre>{message}</pre>
+    </div>
+  )
 }
 
 function LivePreview() {

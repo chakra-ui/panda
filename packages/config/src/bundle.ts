@@ -7,7 +7,7 @@ import { PandaError } from './error'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
-export interface BundleResult<T = Config> {
+export interface BundleConfigResult<T = Config> {
   config: T
   dependencies: string[]
 }
@@ -17,7 +17,10 @@ export interface BundleResult<T = Config> {
  * a `data:` URL — no temp file is written. Mirrors the legacy in-memory loader
  * without re-adding `bundle-n-require`.
  */
-export async function bundle<T extends Config = Config>(filepath: string, cwd: string): Promise<BundleResult<T>> {
+export async function bundleConfig<T extends Config = Config>(
+  filepath: string,
+  cwd: string,
+): Promise<BundleConfigResult<T>> {
   const build = await rolldown({
     input: filepath,
     cwd,

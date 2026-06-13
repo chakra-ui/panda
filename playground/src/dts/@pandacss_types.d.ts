@@ -2,7 +2,6 @@
 
 import { Difference } from 'microdiff';
 import { TSConfig } from 'pkg-types';
-import { Node as Node$1 } from 'ts-morph';
 
 export interface ArtifactContent {
 	file: string;
@@ -10623,7 +10622,11 @@ export interface MixedCondition {
 /* -----------------------------------------------------------------------------
  * Shadowed export (in CLI): DO NOT REMOVE
  * -----------------------------------------------------------------------------*/
-export type ConditionQuery = string | string[];
+export type ConditionSlot = "@slot";
+export interface ConditionBlock {
+	[selector: string]: ConditionSlot | ConditionBlock;
+}
+export type ConditionQuery = string | ConditionBlock;
 export interface Conditions {
 	[condition: string]: ConditionQuery;
 }
@@ -10798,6 +10801,273 @@ export interface CompositionStyles {
 	textStyles: TextStyles;
 	layerStyles: LayerStyles;
 	animationStyles: AnimationStyles;
+}
+export type MaybeAsyncReturn<T = void> = Promise<T> | T;
+export type HookFilterPattern = string | RegExp | {
+	include?: Array<string | RegExp> | undefined;
+	exclude?: Array<string | RegExp> | undefined;
+};
+export interface HookFilter {
+	id?: HookFilterPattern | undefined;
+	code?: {
+		include?: string | RegExp | undefined;
+		exclude?: string | RegExp | undefined;
+	} | undefined;
+}
+export type HookHandler = (...args: never[]) => unknown;
+export type PandaHook<Handler extends HookHandler> = Handler | {
+	filter?: HookFilter;
+	handler: Handler;
+};
+export interface ParserResultBeforeHookArgs {
+	filePath: string;
+	content: string;
+	original?: string;
+}
+export interface PresetResolvedHookArgs {
+	preset: Config;
+	name: string;
+}
+export interface TraverseItem {
+	value: unknown;
+	path: string;
+	depth: number;
+	parent: unknown[] | Record<string, unknown>;
+	key: string;
+}
+export interface TraverseOptions {
+	separator?: string | undefined;
+	maxDepth?: number | undefined;
+}
+export interface ConfigResolvedHookUtils {
+	omit<T extends object>(obj: T, paths: string[]): T;
+	pick<T extends object>(obj: T, paths: string[]): Partial<T>;
+	traverse(obj: unknown, callback: (item: TraverseItem) => void, options?: TraverseOptions): void;
+}
+export interface ConfigResolvedHookArgs {
+	config: Config;
+	path: string;
+	dependencies: string[];
+	utils: ConfigResolvedHookUtils;
+}
+export interface CodegenFile {
+	path: string;
+	code: string;
+	dependencies: string[];
+}
+export interface CodegenArtifact {
+	id: string;
+	files: CodegenFile[];
+}
+export interface CodegenPrepareHookArgs {
+	artifacts: CodegenArtifact[];
+	outdir: string;
+	cwd?: string | undefined;
+}
+export interface CodegenDoneHookArgs {
+	files: string[];
+	outdir: string;
+	cwd?: string | undefined;
+}
+export interface PandaHooks {
+	/**
+	 * Called after authored presets are merged, before defaults and serialization.
+	 */
+	"config:resolved": (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | Config>;
+	/**
+	 * Called when an authored preset is resolved, before all configs are merged.
+	 */
+	"preset:resolved": (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | Config>;
+	/**
+	 * Called after reading file content but before parsing it.
+	 * Use this to transform non-standard source into TSX-friendly syntax.
+	 */
+	"parser:before": (args: ParserResultBeforeHookArgs) => MaybeAsyncReturn<string | void>;
+	/**
+	 * Called before generated files are written by a JS host.
+	 */
+	"codegen:prepare": (args: CodegenPrepareHookArgs) => void | CodegenArtifact[];
+	/**
+	 * Called after generated files are written by a JS host.
+	 */
+	"codegen:done": (args: CodegenDoneHookArgs) => void;
+}
+export type HookRegistry = {
+	[Name in keyof PandaHooks]: PandaHook<PandaHooks[Name]>;
+};
+export type Primitive = string | number | boolean | null | undefined;
+export type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>);
+interface Recursive$1<T> {
+	[key: string]: T | Recursive$1<T>;
+}
+export type Dict<T = any> = Record<string, T>;
+export type RequiredBy<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>;
+export type AnyFunction<T = any> = (...args: T[]) => any;
+export type Nullable<T> = T | null | undefined;
+export type Keys<T> = keyof NonNullable<T>;
+export type Subtract<T extends number, D extends number> = T extends D ? 0 : T extends D | any ? Exclude<T, D> : never;
+/**
+ * Get all the (nested) paths of an object until a certain depth
+ * e.g. Paths<{a: {b: {c: 1}}}, '', 2> => 'a' | 'a.b' | 'a.b.c'
+ */
+export type Paths<T, Prefix extends string = "", Depth extends number = 0> = {
+	[K in keyof T]: Depth extends 0 ? never : T[K] extends object ? K extends string ? `${Prefix}${K}` | Paths<T[K], `${Prefix}${K}.`, Depth extends 1 ? 0 : Subtract<Depth, 1>> : never : K extends string | number ? `${Prefix}${K}` : never;
+}[keyof T];
+export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never;
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+interface Token$1<Value = any> {
+	value: Value;
+	description?: string;
+	type?: string;
+	deprecated?: boolean | string;
+	extensions?: {
+		[key: string]: any;
+	};
+}
+export type RecursiveToken<C extends string, V> = V | {
+	[K in C]: RecursiveToken<C, V>;
+};
+export interface SemanticToken<Value = string, Condition extends string = string> extends Token$1<RecursiveToken<Condition, Value>> {
+}
+/* -----------------------------------------------------------------------------
+ * Token data types
+ * -----------------------------------------------------------------------------*/
+export type BorderStyle = "dashed" | "dotted" | "double" | "groove" | "hidden" | "inset" | "none" | "outset" | "ridge" | "solid";
+export interface Border {
+	color: string;
+	width: string | number;
+	style: BorderStyle;
+}
+export interface Shadow {
+	offsetX: number | string;
+	offsetY: number | string;
+	blur: number | string;
+	spread: number | string;
+	color: string;
+	inset?: boolean;
+}
+export interface Gradient {
+	type: "linear" | "radial";
+	placement: string | number;
+	stops: Array<{
+		color: string;
+		position: number;
+	}> | Array<string>;
+}
+export interface Asset {
+	type: "url" | "svg";
+	value: string;
+}
+export interface TokenDataTypes {
+	cursor: string;
+	zIndex: string | number;
+	opacity: string | number;
+	colors: string;
+	fonts: string | string[];
+	fontSizes: string;
+	fontWeights: string | number;
+	lineHeights: string | number;
+	letterSpacings: string;
+	sizes: string;
+	shadows: Shadow | Shadow[] | string | string[];
+	spacing: string | number;
+	radii: string;
+	borders: string | Border;
+	durations: string;
+	easings: string | number[];
+	animations: string;
+	blurs: string;
+	gradients: string | Gradient;
+	assets: string | Asset;
+	borderWidths: string;
+	aspectRatios: string;
+	containerNames: string;
+}
+export type Tokens = {
+	[key in keyof TokenDataTypes]?: Recursive$1<Token$1<TokenDataTypes[key]>>;
+};
+export type SemanticTokens<ConditionKey extends string = string> = {
+	[key in keyof TokenDataTypes]?: Recursive$1<SemanticToken<TokenDataTypes[key], ConditionKey>>;
+};
+export type TokenCategory = keyof TokenDataTypes;
+type Primitive$1 = string | number | boolean | null | undefined;
+type LiteralUnion$1<T, K extends Primitive$1 = string> = T | (K & Record<never, never>);
+export type PatternProperty = {
+	type: "property";
+	value: CssProperty;
+	description?: string;
+} | {
+	type: "enum";
+	value: string[];
+	description?: string;
+} | {
+	type: "token";
+	value: TokenCategory;
+	property?: CssProperty;
+	description?: string;
+} | {
+	type: "string" | "boolean" | "number";
+	description?: string;
+};
+export interface PatternHelpers {
+	map: (value: any, fn: (value: string) => string | undefined) => any;
+	isCssUnit: (value: any) => boolean;
+	isCssVar: (value: any) => boolean;
+	isCssFunction: (value: any) => boolean;
+}
+export interface PatternProperties {
+	[key: string]: PatternProperty;
+}
+export type InferProps<T> = Record<LiteralUnion$1<keyof T>, any>;
+export type PatternDefaultValue<T> = Partial<InferProps<T>>;
+export type PatternDefaultValueFn<T> = (props: InferProps<T>) => PatternDefaultValue<T>;
+export interface PatternConfig<T extends PatternProperties = PatternProperties> {
+	/**
+	 * The description of the pattern. This will be used in the JSDoc comment.
+	 */
+	description?: string;
+	/**
+	 * The JSX element rendered by the pattern
+	 * @default 'div'
+	 */
+	jsxElement?: string;
+	/**
+	 * The properties of the pattern.
+	 */
+	properties?: T;
+	/**
+	 * The default values of the pattern.
+	 */
+	defaultValues?: PatternDefaultValue<T> | PatternDefaultValueFn<T>;
+	/**
+	 * The css object this pattern will generate.
+	 */
+	transform?: (props: InferProps<T>, helpers: PatternHelpers) => SystemStyleObject;
+	/**
+	 * Whether the pattern is deprecated.
+	 */
+	deprecated?: boolean | string;
+	/**
+	 * The jsx element name this pattern will generate.
+	 */
+	jsxName?: string;
+	/**
+	 * The jsx elements to track for this pattern. Can be string or Regexp.
+	 *
+	 * @default capitalize(pattern.name)
+	 * @example ['Button', 'Link', /Button$/]
+	 */
+	jsx?: Array<string | RegExp>;
+	/**
+	 * Whether to only generate types for the specified properties.
+	 * This will disallow css properties
+	 */
+	strict?: boolean;
+	/**
+	 * @experimental
+	 * Disallow certain css properties for this pattern
+	 */
+	blocklist?: LiteralUnion$1<CssProperty>[];
 }
 export interface ConditionOptions {
 	/**
@@ -10984,625 +11254,6 @@ export interface SlotRecipeDefinition<S extends string = string, T extends SlotR
 }
 export type SlotRecipeCreatorFn = <S extends string, T extends SlotRecipeVariantRecord<S>>(config: SlotRecipeDefinition<S, T>) => SlotRecipeRuntimeFn<S, T>;
 export type SlotRecipeConfig<S extends string = string, T extends SlotRecipeVariantRecord<S> = SlotRecipeVariantRecord<S>> = SlotRecipeDefinition<S, T> & RecipeConfigMeta;
-export interface StyleResultObject {
-	[key: string]: any;
-}
-export interface StyleProps extends StyleResultObject {
-	css?: StyleResultObject;
-}
-export interface StyleEntry {
-	prop: string;
-	value: string | number | boolean;
-	cond: string;
-	recipe?: string;
-	slot?: string;
-	layer?: string;
-	variants?: boolean;
-}
-export interface AtomicStyleResult {
-	result: StyleResultObject;
-	entry: StyleEntry;
-	hash: string;
-	className: string;
-	conditions?: ConditionDetails[];
-	layer?: string;
-}
-export interface GroupedResult extends Pick<AtomicStyleResult, "result" | "className"> {
-	hashSet: Set<string>;
-	details: GroupedStyleResultDetails[];
-}
-export interface RecipeBaseResult extends GroupedResult {
-	recipe: string;
-	slot?: string;
-}
-export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, "hash" | "entry" | "conditions"> {
-	result: StyleResultObject;
-}
-export interface BaseRule {
-	getClassNames: () => string[];
-	toCss: () => string;
-}
-export interface AtomicRule extends BaseRule {
-	styles: SystemStyleObject;
-}
-export interface AtomicRecipeRule extends BaseRule {
-	config: RecipeDefinition<any> | SlotRecipeDefinition<string, any>;
-}
-export interface RecipeVariantsRule extends BaseRule {
-	variants: RecipeVariantRecord;
-}
-export interface ProcessorInterface {
-	css(styles: SystemStyleObject): AtomicRule;
-	cva(recipeConfig: RecipeDefinition<RecipeVariantRecord>): AtomicRecipeRule;
-	sva(recipeConfig: SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>): AtomicRecipeRule;
-	recipe(name: string, variants?: RecipeVariantRecord): RecipeVariantsRule | undefined;
-}
-export interface HooksApiInterface {
-	/**
-	 * The resolved config (after all the presets are loaded and merged)
-	 */
-	config: UserConfig;
-	/**
-	 * The path to the config file
-	 */
-	configPath: string;
-	/**
-	 * The list of all the config dependencies (direct/transitive imports) filepaths
-	 */
-	configDependencies: string[];
-	//
-	/**
-	 * The processor can be used to generate atomic or recipe classes
-	 */
-	processor: ProcessorInterface;
-	/**
-	 * Map that contains all the utility classNames
-	 */
-	classNames: Map<string, string>;
-	/**
-	 * Map that contains all the classNames found (and therefore generated) in the app code
-	 */
-	generatedClassNames: Map<string, AtomicStyleResult | RecipeBaseResult>;
-}
-export type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
-export interface LogEntry {
-	level: LogLevel | null;
-	msg: string;
-	[key: string]: any;
-}
-export interface LoggerInterface {
-	level: "debug" | "info" | "warn" | "error" | "silent";
-	print(data: any): void;
-	onLog?: (entry: LogEntry) => void;
-	warn: (type: string, data: any) => void;
-	info: (type: string, data: any) => void;
-	debug: (type: string, data: any) => void;
-	error: (type: string, data: any) => void;
-	log: (data: string) => void;
-	time: {
-		info: (msg: string) => (_msg?: string) => void;
-		debug: (msg: string) => (_msg?: string) => void;
-	};
-	isDebug: boolean;
-}
-export interface WithNode {
-	node: Node$1;
-	stack: Node$1[];
-}
-export interface ObjectType extends WithNode {
-	type: "object";
-	value: EvaluatedObjectResult;
-	isEmpty?: boolean;
-}
-export type LiteralKind = "array" | "string" | "number" | "boolean" | "null" | "undefined";
-export interface LiteralType extends WithNode {
-	type: "literal";
-	value: PrimitiveType;
-	kind: LiteralKind;
-}
-export interface MapType extends WithNode {
-	type: "map";
-	value: MapTypeValue;
-}
-export interface ArrayType extends WithNode {
-	type: "array";
-	value: BoxNode[];
-}
-export interface UnresolvableType extends WithNode {
-	type: "unresolvable";
-}
-export interface ConditionalType extends WithNode {
-	type: "conditional";
-	whenTrue: BoxNode;
-	whenFalse: BoxNode;
-}
-/** -> Jsx boolean attribute <Box flex /> */
-export interface EmptyInitializerType extends WithNode {
-	type: "empty-initializer";
-}
-export type BoxNodeDefinition = ObjectType | LiteralType | MapType | ArrayType | UnresolvableType | ConditionalType | EmptyInitializerType;
-export type BoxNode = BoxNodeObject | BoxNodeLiteral | BoxNodeMap | BoxNodeArray | BoxNodeUnresolvable | BoxNodeConditional | BoxNodeEmptyInitializer;
-export type MapTypeValue = Map<string, BoxNode>;
-declare abstract class BoxNodeType$1<Definition extends BoxNodeDefinition = BoxNodeDefinition> {
-	readonly type: Definition["type"];
-	private readonly stack;
-	private readonly node;
-	constructor(definition: Definition);
-	getNode(): Node$1;
-	getStack(): Node$1[];
-	getRange: () => {
-		startPosition: number;
-		startLineNumber: number;
-		startColumn: number;
-		endPosition: number;
-		endLineNumber: number;
-		endColumn: number;
-	};
-	toJSON(): {
-		type: Definition["type"];
-		value: any;
-		node: string;
-		line: number;
-		column: number;
-		endLineNumber: number;
-		endColumn: number;
-	};
-	toString(): string;
-}
-declare class BoxNodeObject extends BoxNodeType$1<ObjectType> {
-	value: ObjectType["value"];
-	isEmpty: ObjectType["isEmpty"];
-	constructor(definition: ObjectType);
-}
-declare class BoxNodeLiteral extends BoxNodeType$1<LiteralType> {
-	value: LiteralType["value"];
-	kind: LiteralType["kind"];
-	constructor(definition: LiteralType);
-}
-declare class BoxNodeMap extends BoxNodeType$1<MapType> {
-	value: MapType["value"];
-	spreadConditions?: BoxNodeConditional[];
-	constructor(definition: MapType);
-	isRecipe: () => boolean;
-}
-declare class BoxNodeArray extends BoxNodeType$1<ArrayType> {
-	value: ArrayType["value"];
-	constructor(definition: ArrayType);
-}
-declare class BoxNodeUnresolvable extends BoxNodeType$1<UnresolvableType> {
-}
-declare class BoxNodeConditional extends BoxNodeType$1<ConditionalType> {
-	whenTrue: ConditionalType["whenTrue"];
-	whenFalse: ConditionalType["whenFalse"];
-	constructor(definition: ConditionalType);
-}
-declare class BoxNodeEmptyInitializer extends BoxNodeType$1<EmptyInitializerType> {
-}
-export type PrimitiveType = string | number | boolean | null | undefined;
-export interface LiteralObject {
-	[key: string]: any;
-}
-export type SingleLiteralValue = PrimitiveType | LiteralObject;
-export type LiteralValue = SingleLiteralValue | SingleLiteralValue[];
-export interface EvaluatedObjectResult {
-	[key: string]: LiteralValue;
-}
-export interface Unboxed {
-	raw: LiteralObject;
-	conditions: LiteralObject[];
-	spreadConditions: LiteralObject[];
-}
-export interface ResultItem {
-	name?: string;
-	data: Array<Unboxed["raw"]>;
-	type?: "css" | "cva" | "sva" | "token" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
-	box?: BoxNodeMap | BoxNodeLiteral | BoxNodeArray;
-}
-export interface ParserResultInterface {
-	all: Array<ResultItem>;
-	jsx: Set<ResultItem>;
-	css: Set<ResultItem>;
-	cva: Set<ResultItem>;
-	sva: Set<ResultItem>;
-	token: Set<ResultItem>;
-	recipe: Map<string, Set<ResultItem>>;
-	pattern: Map<string, Set<ResultItem>>;
-	filePath: string | undefined;
-	isEmpty: () => boolean;
-	toArray: () => Array<ResultItem>;
-	set: (name: "cva" | "css" | "sva" | "token", result: ResultItem) => void;
-	setCss: (result: ResultItem) => void;
-	setCva: (result: ResultItem) => void;
-	setSva: (result: ResultItem) => void;
-	setToken: (result: ResultItem) => void;
-	setJsx: (result: ResultItem) => void;
-	setPattern: (name: string, result: ResultItem) => void;
-	setRecipe: (name: string, result: ResultItem) => void;
-}
-export interface EncoderJson {
-	schemaVersion: string;
-	styles: {
-		atomic?: string[];
-		recipes?: {
-			[name: string]: string[];
-		};
-	};
-}
-export interface PandaHooks {
-	/**
-	 * Called when the config is resolved, after all the presets are loaded and merged.
-	 * This is the first hook called, you can use it to tweak the config before the context is created.
-	 */
-	"config:resolved": (args: ConfigResolvedHookArgs) => MaybeAsyncReturn<void | ConfigResolvedHookArgs["config"]>;
-	/**
-	 * Called when each preset is resolved, allowing modification of individual presets.
-	 * This hook is called for each preset during the resolution process, before they are merged together.
-	 */
-	"preset:resolved": (args: PresetResolvedHookArgs) => MaybeAsyncReturn<void | PresetResolvedHookArgs["preset"]>;
-	/**
-	 * Called when the token engine has been created
-	 */
-	"tokens:created": (args: TokenCreatedHookArgs) => MaybeAsyncReturn;
-	/**
-	 * Called when the classname engine has been created
-	 */
-	"utility:created": (args: UtilityCreatedHookArgs) => MaybeAsyncReturn;
-	/**
-	 * Called when the Panda context has been created and the API is ready to be used.
-	 */
-	"context:created": (args: ContextCreatedHookArgs) => void;
-	/**
-	 * Called when the config file or one of its dependencies (imports) has changed.
-	 */
-	"config:change": (args: ConfigChangeHookArgs) => MaybeAsyncReturn;
-	/**
-	 * Called after reading the file content but before parsing it.
-	 * You can use this hook to transform the file content to a tsx-friendly syntax so that Panda's parser can parse it.
-	 * You can also use this hook to parse the file's content on your side using a custom parser, in this case you don't have to return anything.
-	 */
-	"parser:before": (args: ParserResultBeforeHookArgs) => string | void;
-	/**
-	 * @private USE IT ONLY IF YOU KNOW WHAT YOU ARE DOING
-	 */
-	"parser:preprocess": JsxFactoryResultTransform["transform"];
-	/**
-	 * Called after the file styles are extracted and processed into the resulting ParserResult object.
-	 * You can also use this hook to add your own extraction results from your custom parser to the ParserResult object.
-	 */
-	"parser:after": (args: ParserResultAfterHookArgs) => void;
-	/**
-	 * Called right before writing the codegen files to disk.
-	 * You can use this hook to tweak the codegen files before they are written to disk.
-	 */
-	"codegen:prepare": (args: CodegenPrepareHookArgs) => MaybeAsyncReturn<void | Artifact[]>;
-	/**
-	 * Called after the codegen is completed
-	 */
-	"codegen:done": (args: CodegenDoneHookArgs) => MaybeAsyncReturn;
-	/**
-	 * Called right before adding the design-system CSS (global, static, preflight, tokens, keyframes) to the final CSS
-	 * Called right before writing/injecting the final CSS (styles.css) that contains the design-system CSS and the parser CSS
-	 * You can use it to tweak the CSS content before it's written to disk or injected through the postcss plugin.
-	 */
-	"cssgen:done": (args: CssgenDoneHookArgs) => string | void;
-	/**
-	 * Called when CSS needs to be optimized. Use this hook to replace the default PostCSS-based optimizer
-	 * with a custom one (e.g. LightningCSS).
-	 * Return the optimized CSS string, or void to fall through to the default PostCSS optimizer.
-	 */
-	"css:optimize": (args: CssOptimizeHookArgs) => string | void;
-}
-export type MaybeAsyncReturn<T = void> = Promise<T> | T;
-/* -----------------------------------------------------------------------------
- * Token hooks
- * -----------------------------------------------------------------------------*/
-export interface TokenCssVarOptions {
-	fallback?: string;
-	prefix?: string;
-	hash?: boolean;
-}
-export interface TokenCssVar {
-	var: `--${string}`;
-	ref: string;
-}
-export interface TokenConfigureOptions {
-	formatTokenName?: (path: string[]) => string;
-	formatCssVar?: (path: string[], options: TokenCssVarOptions) => TokenCssVar;
-}
-export interface TokenCreatedHookArgs {
-	configure(opts: TokenConfigureOptions): void;
-}
-/* -----------------------------------------------------------------------------
- * Utility hooks
- * -----------------------------------------------------------------------------*/
-export interface UtilityConfigureOptions {
-	toHash?(path: string[], toHash: (str: string) => string): string;
-}
-export interface UtilityCreatedHookArgs {
-	configure(opts: UtilityConfigureOptions): void;
-}
-/* -----------------------------------------------------------------------------
- * Config hooks
- * -----------------------------------------------------------------------------*/
-export interface CallbackItem {
-	value: any;
-	path: string;
-	depth: number;
-	parent: any[] | Record<string, unknown>;
-	key: string;
-}
-export type CallbackFn = (args: CallbackItem) => void;
-export interface TraverseOptions {
-	separator: string;
-	maxDepth?: number | undefined;
-}
-export interface TraverseFn {
-	(obj: any, callback: CallbackFn, options?: TraverseOptions): void;
-}
-export interface ConfigResolvedHookUtils {
-	omit: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Omit<T, K>;
-	pick: <T, K extends keyof T | (string & {})>(obj: T, paths: K[]) => Partial<T>;
-	traverse: TraverseFn;
-}
-export interface ConfigResolvedHookArgs {
-	config: LoadConfigResult["config"];
-	path: string;
-	dependencies: string[];
-	utils: ConfigResolvedHookUtils;
-	original?: LoadConfigResult["config"];
-}
-export interface ConfigChangeHookArgs {
-	config: UserConfig;
-	changes: DiffConfigResult;
-}
-export interface PresetResolvedHookArgs {
-	preset: LoadConfigResult["config"];
-	name: string;
-	utils: ConfigResolvedHookUtils;
-	original?: LoadConfigResult["config"];
-}
-/* -----------------------------------------------------------------------------
- * Parser hooks
- * -----------------------------------------------------------------------------*/
-export interface ParserResultConfigureOptions {
-	matchTag?: (tag: string, isPandaComponent: boolean) => boolean;
-	matchTagProp?: (tag: string, prop: string) => boolean;
-}
-export interface ParserResultBeforeHookArgs {
-	filePath: string;
-	content: string;
-	configure: (opts: ParserResultConfigureOptions) => void;
-	original?: string;
-}
-export interface JsxFactoryResultTransform {
-	transform: (result: {
-		type: "jsx-factory";
-		data: ResultItem["data"];
-	}) => ResultItem["data"];
-}
-export interface ParserResultAfterHookArgs {
-	filePath: string;
-	result: ParserResultInterface | undefined;
-}
-/* -----------------------------------------------------------------------------
- * Codegen hooks
- * -----------------------------------------------------------------------------*/
-export interface CodegenPrepareHookArgs {
-	artifacts: Artifact[];
-	/**
-	 * The original state of the artifacts, as it was generated by Panda, without any modification from other preset hooks
-	 */
-	original?: Artifact[];
-	changed: ArtifactId[] | undefined;
-}
-export interface CodegenDoneHookArgs {
-	changed: ArtifactId[] | undefined;
-}
-/* -----------------------------------------------------------------------------
- * Cssgen hooks
- * -----------------------------------------------------------------------------*/
-export type CssgenArtifact = "global" | "static" | "reset" | "tokens" | "keyframes" | "styles.css";
-export interface CssgenDoneHookArgs {
-	artifact: CssgenArtifact;
-	/**
-	 * The current state of the CSS, if any other preset hook has modified the CSS, this will be the modified state
-	 */
-	content: string;
-	/**
-	 * The original state of the CSS, as it was generated by Panda, without any modification from other preset hooks
-	 */
-	original?: string;
-}
-/* -----------------------------------------------------------------------------
- * CSS optimize hooks
- * -----------------------------------------------------------------------------*/
-export interface CssOptimizeHookArgs {
-	css: string;
-	minify?: boolean;
-	browserslist?: string[];
-	original?: string;
-}
-/* -----------------------------------------------------------------------------
- * Context hooks
- * -----------------------------------------------------------------------------*/
-export interface ContextCreatedHookArgs {
-	ctx: HooksApiInterface;
-	logger: LoggerInterface;
-}
-export type Primitive = string | number | boolean | null | undefined;
-export type LiteralUnion<T, K extends Primitive = string> = T | (K & Record<never, never>);
-interface Recursive$1<T> {
-	[key: string]: T | Recursive$1<T>;
-}
-export type Dict<T = any> = Record<string, T>;
-export type RequiredBy<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>;
-export type AnyFunction<T = any> = (...args: T[]) => any;
-export type Nullable<T> = T | null | undefined;
-export type Keys<T> = keyof NonNullable<T>;
-export type Subtract<T extends number, D extends number> = T extends D ? 0 : T extends D | any ? Exclude<T, D> : never;
-/**
- * Get all the (nested) paths of an object until a certain depth
- * e.g. Paths<{a: {b: {c: 1}}}, '', 2> => 'a' | 'a.b' | 'a.b.c'
- */
-export type Paths<T, Prefix extends string = "", Depth extends number = 0> = {
-	[K in keyof T]: Depth extends 0 ? never : T[K] extends object ? K extends string ? `${Prefix}${K}` | Paths<T[K], `${Prefix}${K}.`, Depth extends 1 ? 0 : Subtract<Depth, 1>> : never : K extends string | number ? `${Prefix}${K}` : never;
-}[keyof T];
-export type PathIn<T, Key extends keyof T> = Key extends string ? Paths<T[Key], `${Key}.`, 1> : never;
-export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-interface Token$1<Value = any> {
-	value: Value;
-	description?: string;
-	type?: string;
-	deprecated?: boolean | string;
-	extensions?: {
-		[key: string]: any;
-	};
-}
-export type RecursiveToken<C extends string, V> = V | {
-	[K in C]: RecursiveToken<C, V>;
-};
-export interface SemanticToken<Value = string, Condition extends string = string> extends Token$1<RecursiveToken<Condition, Value>> {
-}
-/* -----------------------------------------------------------------------------
- * Token data types
- * -----------------------------------------------------------------------------*/
-export type BorderStyle = "dashed" | "dotted" | "double" | "groove" | "hidden" | "inset" | "none" | "outset" | "ridge" | "solid";
-export interface Border {
-	color: string;
-	width: string | number;
-	style: BorderStyle;
-}
-export interface Shadow {
-	offsetX: number | string;
-	offsetY: number | string;
-	blur: number | string;
-	spread: number | string;
-	color: string;
-	inset?: boolean;
-}
-export interface Gradient {
-	type: "linear" | "radial";
-	placement: string | number;
-	stops: Array<{
-		color: string;
-		position: number;
-	}> | Array<string>;
-}
-export interface Asset {
-	type: "url" | "svg";
-	value: string;
-}
-export interface TokenDataTypes {
-	cursor: string;
-	zIndex: string | number;
-	opacity: string | number;
-	colors: string;
-	fonts: string | string[];
-	fontSizes: string;
-	fontWeights: string | number;
-	lineHeights: string | number;
-	letterSpacings: string;
-	sizes: string;
-	shadows: Shadow | Shadow[] | string | string[];
-	spacing: string | number;
-	radii: string;
-	borders: string | Border;
-	durations: string;
-	easings: string | number[];
-	animations: string;
-	blurs: string;
-	gradients: string | Gradient;
-	assets: string | Asset;
-	borderWidths: string;
-	aspectRatios: string;
-	containerNames: string;
-}
-export type Tokens = {
-	[key in keyof TokenDataTypes]?: Recursive$1<Token$1<TokenDataTypes[key]>>;
-};
-export type SemanticTokens<ConditionKey extends string = string> = {
-	[key in keyof TokenDataTypes]?: Recursive$1<SemanticToken<TokenDataTypes[key], ConditionKey>>;
-};
-export type TokenCategory = keyof TokenDataTypes;
-type Primitive$1 = string | number | boolean | null | undefined;
-type LiteralUnion$1<T, K extends Primitive$1 = string> = T | (K & Record<never, never>);
-export type PatternProperty = {
-	type: "property";
-	value: CssProperty;
-	description?: string;
-} | {
-	type: "enum";
-	value: string[];
-	description?: string;
-} | {
-	type: "token";
-	value: TokenCategory;
-	property?: CssProperty;
-	description?: string;
-} | {
-	type: "string" | "boolean" | "number";
-	description?: string;
-};
-export interface PatternHelpers {
-	map: (value: any, fn: (value: string) => string | undefined) => any;
-	isCssUnit: (value: any) => boolean;
-	isCssVar: (value: any) => boolean;
-	isCssFunction: (value: any) => boolean;
-}
-export interface PatternProperties {
-	[key: string]: PatternProperty;
-}
-export type InferProps<T> = Record<LiteralUnion$1<keyof T>, any>;
-export type PatternDefaultValue<T> = Partial<InferProps<T>>;
-export type PatternDefaultValueFn<T> = (props: InferProps<T>) => PatternDefaultValue<T>;
-export interface PatternConfig<T extends PatternProperties = PatternProperties> {
-	/**
-	 * The description of the pattern. This will be used in the JSDoc comment.
-	 */
-	description?: string;
-	/**
-	 * The JSX element rendered by the pattern
-	 * @default 'div'
-	 */
-	jsxElement?: string;
-	/**
-	 * The properties of the pattern.
-	 */
-	properties?: T;
-	/**
-	 * The default values of the pattern.
-	 */
-	defaultValues?: PatternDefaultValue<T> | PatternDefaultValueFn<T>;
-	/**
-	 * The css object this pattern will generate.
-	 */
-	transform?: (props: InferProps<T>, helpers: PatternHelpers) => SystemStyleObject;
-	/**
-	 * Whether the pattern is deprecated.
-	 */
-	deprecated?: boolean | string;
-	/**
-	 * The jsx element name this pattern will generate.
-	 */
-	jsxName?: string;
-	/**
-	 * The jsx elements to track for this pattern. Can be string or Regexp.
-	 *
-	 * @default capitalize(pattern.name)
-	 * @example ['Button', 'Link', /Button$/]
-	 */
-	jsx?: Array<string | RegExp>;
-	/**
-	 * Whether to only generate types for the specified properties.
-	 * This will disallow css properties
-	 */
-	strict?: boolean;
-	/**
-	 * @experimental
-	 * Disallow certain css properties for this pattern
-	 */
-	blocklist?: LiteralUnion$1<CssProperty>[];
-}
 export interface ColorPaletteOptions {
 	/**
 	 * Whether to enable color palette generation.
@@ -11758,29 +11409,6 @@ export type ExtendableUtilityConfig = UtilityConfigWithExtend & {
 };
 export type CascadeLayer = "reset" | "base" | "tokens" | "recipes" | "utilities";
 export type CascadeLayers = Record<CascadeLayer, string>;
-export interface StudioOptions {
-	/**
-	 * Used to customize the design system studio
-	 * @default { title: 'Panda', logo: '🐼' }
-	 */
-	studio?: {
-		/**
-		 * The output directory for the design system studio when the build command is run.
-		 */
-		outdir?: string;
-		/**
-		 * The logo url for the design system studio.
-		 */
-		logo?: string;
-		/**
-		 * Used to inject custom html into the head or body of the studio
-		 */
-		inject?: {
-			head?: string;
-			body?: string;
-		};
-	};
-}
 export interface Patterns {
 	[pattern: string]: PatternConfig;
 }
@@ -11916,7 +11544,9 @@ export interface ExtendableOptions {
 }
 export interface ImportMapInput {
 	css?: string | string[];
+	recipe?: string | string[];
 	recipes?: string | string[];
+	pattern?: string | string[];
 	patterns?: string | string[];
 	jsx?: string | string[];
 	tokens?: string | string[];
@@ -11930,11 +11560,6 @@ export interface ImportMapOutput<T = string> {
 }
 export type ImportMapOption = string | ImportMapInput;
 export interface FileSystemOptions {
-	/**
-	 * Whether to clean the output directory before generating the css.
-	 * @default false
-	 */
-	clean?: boolean;
 	/**
 	 * The output directory.
 	 * @default 'styled-system'
@@ -11970,16 +11595,6 @@ export interface FileSystemOptions {
 	 * Use this option as a workaround.
 	 */
 	dependencies?: string[];
-	/**
-	 * Whether to watch for changes and regenerate the css.
-	 * @default false
-	 */
-	watch?: boolean;
-	/**
-	 * Whether to use polling instead of filesystem events when watching.
-	 * @default false
-	 */
-	poll?: boolean;
 	/**
 	 * The current working directory.
 	 * @default 'process.cwd()'
@@ -12055,11 +11670,6 @@ export interface CssgenOptions {
 	 */
 	separator?: "_" | "=" | "-";
 	/**
-	 * Whether to minify the generated css.
-	 * @default false
-	 */
-	minify?: boolean;
-	/**
 	 * The root selector for the css variables.
 	 * @default ':where(:host, :root)'
 	 */
@@ -12070,36 +11680,29 @@ export interface CssgenOptions {
 	 */
 	syntax?: "template-literal" | "object-literal";
 	/**
-	 * Whether to use `lightningcss` instead of `postcss` for css optimization.
-	 * @default false
-	 */
-	lightningcss?: boolean;
-	/**
-	 * Browserslist query to target specific browsers.
-	 * @see https://www.npmjs.com/package/browserslist
-	 */
-	browserslist?: string[];
-	/**
 	 * Layer mappings used in the generated css.
 	 * @default 'true'
 	 */
 	layers?: Partial<CascadeLayers>;
+}
+export interface OptimizeOptions {
 	/**
-	 * Polyfill CSS @layers at-rules for older browsers.
-	 * @default 'false'
-	 * @see https://www.npmjs.com/package/@csstools/postcss-cascade-layers
+	 * Remove unused token declarations based on extracted project usage.
 	 */
-	polyfill?: boolean;
+	removeUnusedTokens?: boolean;
+	/**
+	 * Remove unused keyframes based on extracted project usage.
+	 */
+	removeUnusedKeyframes?: boolean;
+	/**
+	 * Narrow compound variant CSS to statically selected variant combinations.
+	 */
+	smartCompoundVariants?: boolean;
 }
 export interface CodegenOptions {
 	/**
-	 * Whether to only emit the `tokens` directory
-	 * @default false
-	 */
-	emitTokensOnly?: boolean;
-	/**
 	 * Whether to hash the generated class names / css variables.
-	 * This is useful if want to shorten the class names or css variables.
+	 * This is useful if you want to shorten the class names or css variables.
 	 * @default false
 	 */
 	hash?: boolean | {
@@ -12107,18 +11710,20 @@ export interface CodegenOptions {
 		className: boolean;
 	};
 	/**
-	 * Change generated typescript definitions to be more strict for property having a token or utility.
+	 * Whether to resolve configured utility shorthands like `p` -> `padding`.
+	 * @default true
+	 */
+	shorthands?: boolean;
+	/**
+	 * Change generated TypeScript definitions to be more strict for properties
+	 * having a token or utility.
 	 */
 	strictTokens?: boolean;
 	/**
-	 * Change generated typescript definitions to be more strict for built-in CSS properties to only allow valid CSS values.
+	 * Change generated TypeScript definitions to be more strict for built-in CSS
+	 * properties to only allow valid CSS values.
 	 */
 	strictPropertyValues?: boolean;
-	/**
-	 * Whether to allow shorthand properties
-	 * @default 'true'
-	 */
-	shorthands?: boolean;
 	/**
 	 * Generated runtime file extension.
 	 * @default 'js'
@@ -12129,6 +11734,10 @@ export interface CodegenOptions {
 	 * @default false
 	 */
 	forceImportExtension?: boolean;
+	/**
+	 * CSS emission optimizations. All optimizations are opt-in.
+	 */
+	optimize?: OptimizeOptions;
 }
 export interface PresetOptions {
 	/**
@@ -12136,21 +11745,14 @@ export interface PresetOptions {
 	 */
 	presets?: (string | Preset | Promise<Preset>)[];
 }
-export interface HooksOptions {
-	hooks?: Partial<PandaHooks>;
-}
-export interface PandaPlugin extends HooksOptions {
+export interface PandaPlugin {
 	name: string;
+	hooks?: Partial<HookRegistry>;
 }
 export interface PluginsOptions {
 	plugins?: PandaPlugin[];
 }
-export interface Config extends StudioOptions, ExtendableOptions, CssgenOptions, CodegenOptions, FileSystemOptions, JsxOptions, PresetOptions, HooksOptions, PluginsOptions {
-	/**
-	 * Whether to opt-out of the defaults config presets: [`@pandacss/preset-base`, `@pandacss/preset-panda`]
-	 * @default 'false'
-	 */
-	eject?: boolean;
+export interface Config extends ExtendableOptions, CssgenOptions, CodegenOptions, FileSystemOptions, JsxOptions, PresetOptions, PluginsOptions {
 	/**
 	 * The validation strictness to use when validating the config.
 	 * - When set to 'none', no validation will be performed.
@@ -12161,7 +11763,7 @@ export interface Config extends StudioOptions, ExtendableOptions, CssgenOptions,
 	 */
 	validation?: "none" | "warn" | "error";
 }
-export interface Preset extends ExtendableOptions, PresetOptions {
+export interface Preset extends ExtendableOptions, PresetOptions, PluginsOptions {
 	name: string;
 }
 export interface UserConfig extends Partial<PresetCore>, RequiredBy<Omit<Config, keyof PresetCore>, "outdir" | "cwd" | "include"> {
@@ -12186,7 +11788,7 @@ export interface LoadConfigResult extends LoadTsConfigResult {
 	serialized: string;
 	deserialize: () => Config;
 	dependencies: string[];
-	hooks: Partial<PandaHooks>;
+	hooks: Partial<HookRegistry>;
 }
 export interface HashOptions {
 	tokens: boolean | undefined;
@@ -12198,145 +11800,117 @@ export interface PrefixOptions {
 }
 export type ReqConf = Required<UserConfig>;
 export type ConfigPath = Exclude<Exclude<NonNullable<Keys<ReqConf>>, "theme"> | PathIn<ReqConf, "theme"> | PathIn<ReqConf, "patterns"> | PathIn<ReqConf, "staticCss"> | (string & {}), undefined>;
+export interface StyleResultObject {
+	[key: string]: any;
+}
+export interface StyleProps extends StyleResultObject {
+	css?: StyleResultObject;
+}
+export interface StyleEntry {
+	prop: string;
+	value: string | number | boolean;
+	cond: string;
+	recipe?: string;
+	slot?: string;
+	layer?: string;
+	variants?: boolean;
+}
+export interface AtomicStyleResult {
+	result: StyleResultObject;
+	entry: StyleEntry;
+	hash: string;
+	className: string;
+	conditions?: ConditionDetails[];
+	layer?: string;
+}
+export interface GroupedResult extends Pick<AtomicStyleResult, "result" | "className"> {
+	hashSet: Set<string>;
+	details: GroupedStyleResultDetails[];
+}
+export interface RecipeBaseResult extends GroupedResult {
+	recipe: string;
+	slot?: string;
+}
+export interface GroupedStyleResultDetails extends Pick<AtomicStyleResult, "hash" | "entry" | "conditions"> {
+	result: StyleResultObject;
+}
+export interface BaseRule {
+	getClassNames: () => string[];
+	toCss: () => string;
+}
+export interface AtomicRule extends BaseRule {
+	styles: SystemStyleObject;
+}
+export interface AtomicRecipeRule extends BaseRule {
+	config: RecipeDefinition<any> | SlotRecipeDefinition<string, any>;
+}
+export interface RecipeVariantsRule extends BaseRule {
+	variants: RecipeVariantRecord;
+}
+export interface ProcessorInterface {
+	css(styles: SystemStyleObject): AtomicRule;
+	cva(recipeConfig: RecipeDefinition<RecipeVariantRecord>): AtomicRecipeRule;
+	sva(recipeConfig: SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>): AtomicRecipeRule;
+	recipe(name: string, variants?: RecipeVariantRecord): RecipeVariantsRule | undefined;
+}
+export interface HooksApiInterface {
+	/**
+	 * The resolved config (after all the presets are loaded and merged)
+	 */
+	config: UserConfig;
+	/**
+	 * The path to the config file
+	 */
+	configPath: string;
+	/**
+	 * The list of all the config dependencies (direct/transitive imports) filepaths
+	 */
+	configDependencies: string[];
+	//
+	/**
+	 * The processor can be used to generate atomic or recipe classes
+	 */
+	processor: ProcessorInterface;
+	/**
+	 * Map that contains all the utility classNames
+	 */
+	classNames: Map<string, string>;
+	/**
+	 * Map that contains all the classNames found (and therefore generated) in the app code
+	 */
+	generatedClassNames: Map<string, AtomicStyleResult | RecipeBaseResult>;
+}
+export type LogLevel = "debug" | "info" | "warn" | "error" | "silent";
+export interface LogEntry {
+	level: LogLevel | null;
+	msg: string;
+	[key: string]: any;
+}
+export interface LoggerInterface {
+	level: "debug" | "info" | "warn" | "error" | "silent";
+	print(data: any): void;
+	onLog?: (entry: LogEntry) => void;
+	warn: (type: string, data: any) => void;
+	info: (type: string, data: any) => void;
+	debug: (type: string, data: any) => void;
+	error: (type: string, data: any) => void;
+	/**
+	 * Log a caught error with context. Extracts the message for the error level,
+	 * and logs the full stack at debug level.
+	 */
+	caughtError: (type: string, context: string, error: unknown) => void;
+	log: (data: string) => void;
+	time: {
+		info: (msg: string) => (_msg?: string) => void;
+		debug: (msg: string) => (_msg?: string) => void;
+	};
+	isDebug: boolean;
+}
 export interface Part {
 	selector: string;
 }
 export interface Parts {
 	[key: string]: Part;
-}
-export type ReportItemType = "css" | "cva" | "sva" | "token" | "pattern" | "recipe" | "jsx-factory" | "jsx-pattern" | "jsx-recipe" | "jsx";
-export type ComponentKind = "component" | "function";
-export interface PropertyLocationRange {
-	startPosition: number;
-	startLineNumber: number;
-	startColumn: number;
-	endPosition: number;
-	endLineNumber: number;
-	endColumn: number;
-}
-export interface PropertyReportItem {
-	index: string;
-	componentIndex: ComponentReportItem["componentIndex"];
-	componentName: ComponentReportItem["componentName"];
-	reportItemKind: "token" | "utility";
-	reportItemType: ReportItemType;
-	path: string[];
-	conditionName?: string | undefined;
-	propName: string;
-	value: string | number | boolean;
-	tokenType?: string;
-	isKnownValue: boolean;
-	range: PropertyLocationRange | null;
-	filepath: string;
-}
-/**
- * An component is either a component usage or a function usage
- * @example an component name could be 'Button', 'css', 'panda.div', 'vstack', ...
- */
-export interface ComponentReportItem extends Pick<PropertyReportItem, "filepath"> {
-	componentIndex: string;
-	componentName: string;
-	reportItemType: ReportItemType;
-	kind: ComponentKind;
-	contains: Array<PropertyReportItem["index"]>;
-	value: Record<string, any>;
-	range: PropertyLocationRange | null;
-	debug?: boolean;
-}
-export interface ReportDerivedMaps {
-	byComponentOfKind: Map<ComponentKind, Set<ComponentReportItem["componentIndex"]>>;
-	byPropertyName: Map<string, Set<PropertyReportItem["index"]>>;
-	byTokenType: Map<string, Set<PropertyReportItem["index"]>>;
-	byConditionName: Map<string, Set<PropertyReportItem["index"]>>;
-	byShorthand: Map<string, Set<PropertyReportItem["index"]>>;
-	byTokenName: Map<string, Set<PropertyReportItem["index"]>>;
-	byPropertyPath: Map<string, Set<PropertyReportItem["index"]>>;
-	fromKind: Map<ComponentKind, Set<PropertyReportItem["index"]>>;
-	byType: Map<string, Set<PropertyReportItem["index"]>>;
-	byComponentName: Map<string, Set<PropertyReportItem["index"]>>;
-	colorsUsed: Map<string, Set<PropertyReportItem["index"]>>;
-}
-export interface ReportDerivedMapsJSON {
-	byComponentOfKind: Record<ComponentKind, Array<ComponentReportItem["componentIndex"]>>;
-	byPropertyName: Record<string, Array<PropertyReportItem["index"]>>;
-	byTokenType: Record<string, Array<PropertyReportItem["index"]>>;
-	byConditionName: Record<string, Array<PropertyReportItem["index"]>>;
-	byShorthand: Record<string, Array<PropertyReportItem["index"]>>;
-	byTokenName: Record<string, Array<PropertyReportItem["index"]>>;
-	byPropertyPath: Record<string, Array<PropertyReportItem["index"]>>;
-	fromKind: Record<ComponentKind, Array<PropertyReportItem["index"]>>;
-	byType: Record<string, Array<PropertyReportItem["index"]>>;
-	byComponentName: Record<string, Array<PropertyReportItem["index"]>>;
-	colorsUsed: Record<string, Array<PropertyReportItem["index"]>>;
-}
-export interface ReportCounts {
-	filesWithTokens: number;
-	propNameUsed: number;
-	tokenUsed: number;
-	shorthandUsed: number;
-	propertyPathUsed: number;
-	typeUsed: number;
-	componentNameUsed: number;
-	kindUsed: number;
-	componentOfKindUsed: number;
-	colorsUsed: number;
-}
-export interface MostUsedItem {
-	key: string;
-	count: number;
-}
-export interface ReportStats {
-	filesWithMostComponent: Record<string, number>;
-	mostUseds: {
-		propNames: Array<MostUsedItem>;
-		tokens: Array<MostUsedItem>;
-		shorthands: Array<MostUsedItem>;
-		categories: Array<MostUsedItem>;
-		conditions: Array<MostUsedItem>;
-		propertyPaths: Array<MostUsedItem>;
-		types: Array<MostUsedItem>;
-		componentNames: Array<MostUsedItem>;
-		fromKinds: Array<MostUsedItem>;
-		componentOfKinds: Array<MostUsedItem>;
-		colors: Array<MostUsedItem>;
-	};
-}
-export interface ReportDetails {
-	counts: ReportCounts;
-	stats: ReportStats;
-}
-export interface AnalysisOptions {
-	onResult?: (file: string, result: ParserResultInterface) => void;
-}
-export interface ReportDerivedMap {
-	byFilepath: Map<string, Set<PropertyReportItem["index"]>>;
-	byComponentInFilepath: Map<string, Set<ComponentReportItem["componentIndex"]>>;
-	globalMaps: ReportDerivedMaps;
-	byFilePathMaps: Map<string, ReportDerivedMaps>;
-}
-export interface ReportDerivedMapJSON {
-	byFilepath: Record<string, Array<PropertyReportItem["index"]>>;
-	byComponentInFilepath: Record<string, Array<ComponentReportItem["componentIndex"]>>;
-	globalMaps: ReportDerivedMapsJSON;
-	byFilePathMaps: Record<string, ReportDerivedMapsJSON>;
-}
-export interface AnalysisReport {
-	schemaVersion: string;
-	details: ReportDetails;
-	propByIndex: Map<PropertyReportItem["index"], PropertyReportItem>;
-	componentByIndex: Map<ComponentReportItem["componentIndex"], ComponentReportItem>;
-	derived: ReportDerivedMap;
-}
-export interface ReportSnapshotJSON extends Omit<AnalysisReport, "propByIndex" | "componentByIndex" | "derived"> {
-	propByIndex: Record<PropertyReportItem["index"], PropertyReportItem>;
-	componentByIndex: Record<ComponentReportItem["componentIndex"], ComponentReportItem>;
-	derived: ReportDerivedMapJSON;
-}
-export interface ClassifyReport {
-	propById: Map<string, PropertyReportItem>;
-	componentById: Map<ComponentReportItem["componentIndex"], ComponentReportItem>;
-	details: Pick<ReportDetails, "counts" | "stats">;
-	derived: ReportDerivedMap;
 }
 export interface Watcher {
 	on(event: "add" | "addDir" | "change", listener: (path: string) => void): this;

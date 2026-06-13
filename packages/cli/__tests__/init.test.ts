@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runInit, setupGitIgnore } from '../src'
-import { cleanupFixture, createFixture } from './helpers'
+import { cleanupFixture, createFixture, linkWorkspaceDevPackage } from './helpers'
 
 describe('init command', () => {
   let dir: string | undefined
@@ -24,6 +24,7 @@ describe('init command', () => {
       gitignoreWritten: true,
       codegenFiles: [],
     })
+    expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain("import { defineConfig } from '@pandacss/dev'")
     expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('outdir: "styled-system"')
     expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('styled-system')
   })
@@ -58,6 +59,7 @@ describe('init command', () => {
 
   it('runs codegen by default', async () => {
     dir = createFixture(undefined, { config: false, source: true })
+    linkWorkspaceDevPackage(dir)
 
     const result = await runInit({ cwd: dir, silent: true })
 

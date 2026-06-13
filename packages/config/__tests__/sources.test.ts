@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { loadPandaConfig } from '../src/load'
+import { loadConfig } from '../src/load'
 import { resolveAuthoredPresets } from '../src/preset'
 
 const defineConfig = <T extends Config>(config: T) => config
@@ -158,7 +158,7 @@ describe('config sources', () => {
     `)
   })
 
-  test('loadPandaConfig tracks string preset source entries when requested', async () => {
+  test('loadConfig tracks string preset source entries when requested', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-config-sources-'))
     try {
       writeFileSync(
@@ -190,7 +190,7 @@ describe('config sources', () => {
         }`,
       )
 
-      const result = await loadPandaConfig({ cwd: dir, trackSources: true })
+      const result = await loadConfig({ cwd: dir, trackSources: true })
 
       expect(result.metadata?.sources).toMatchInlineSnapshot(`
         {

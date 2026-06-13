@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { loadPandaConfig } from '../src/load'
-import type { LoadedPandaConfig } from '../src/types'
+import { loadConfig } from '../src/load'
+import type { LoadConfigResult } from '../src/types'
 
 const CONFIG_SOURCE = `export default {
   outdir: 'styled-system',
@@ -33,7 +33,7 @@ async function loadTempConfig(files: Record<string, string>) {
   for (const [file, source] of Object.entries(files)) {
     writeFileSync(join(dir, file), source)
   }
-  const result = await loadPandaConfig({ cwd: dir })
+  const result = await loadConfig({ cwd: dir })
   return { dir, result }
 }
 
@@ -49,20 +49,20 @@ async function expectLoadError(files: Record<string, string>, expected: RegExp) 
     for (const [file, source] of Object.entries(files)) {
       writeFileSync(join(dir, file), source)
     }
-    await expect(loadPandaConfig({ cwd: dir })).rejects.toThrow(expected)
+    await expect(loadConfig({ cwd: dir })).rejects.toThrow(expected)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
 }
 
-describe('loadPandaConfig', () => {
+describe('loadConfig', () => {
   let dir: string
-  let result: LoadedPandaConfig
+  let result: LoadConfigResult
 
   beforeAll(async () => {
     dir = mkdtempSync(join(tmpdir(), 'panda-config-'))
     writeFileSync(join(dir, 'panda.config.ts'), CONFIG_SOURCE)
-    result = await loadPandaConfig({ cwd: dir })
+    result = await loadConfig({ cwd: dir })
   })
 
   afterAll(() => {
@@ -175,7 +175,7 @@ describe('loadPandaConfig', () => {
   })
 })
 
-describe('loadPandaConfig preset resolution', () => {
+describe('loadConfig preset resolution', () => {
   test('runs config:resolved after presets are merged', async () => {
     const { dir, result } = await loadTempConfig({
       'panda.config.ts': `export default {
@@ -488,9 +488,9 @@ describe('loadPandaConfig preset resolution', () => {
         : join(process.cwd(), 'packages/config/src/load.ts')
       const loadUrl = pathToFileURL(loadPath).href
       const script = `
-        import { loadPandaConfig } from ${JSON.stringify(loadUrl)}
+        import { loadConfig } from ${JSON.stringify(loadUrl)}
 
-        const result = await loadPandaConfig({ cwd: ${JSON.stringify(dir)} })
+        const result = await loadConfig({ cwd: ${JSON.stringify(dir)} })
         const value = result.config.theme?.tokens?.colors?.dynamic?.value
         if (value !== '#0f0') throw new Error('Expected dynamic preset token to load')
         if (!result.dependencies.includes('preset.ts')) throw new Error('Expected preset.ts dependency')
@@ -684,7 +684,7 @@ describe('loadPandaConfig preset resolution', () => {
   })
 })
 
-describe('loadPandaConfig errors', () => {
+describe('loadConfig errors', () => {
   test('rejects removed root hooks with a migration hint', async () => {
     await expectLoadError(
       {
@@ -796,7 +796,7 @@ describe('loadPandaConfig errors', () => {
   })
 })
 
-describe('loadPandaConfig cwd isolation', () => {
+describe('loadConfig cwd isolation', () => {
   // Two projects with byte-identical config content bundle to identical code,
   // so the in-memory `data:`-URL import resolves to the same cached ESM module.
   // The loader must still resolve each call's own `cwd` (no mutation leak).
@@ -814,8 +814,8 @@ describe('loadPandaConfig cwd isolation', () => {
     writeFileSync(join(a, 'panda.config.ts'), SHARED_SOURCE)
     writeFileSync(join(b, 'panda.config.ts'), SHARED_SOURCE)
 
-    const first = await loadPandaConfig({ cwd: a })
-    const second = await loadPandaConfig({ cwd: b })
+    const first = await loadConfig({ cwd: a })
+    const second = await loadConfig({ cwd: b })
 
     expect(first.config.cwd).toBe(a)
     expect(second.config.cwd).toBe(b)

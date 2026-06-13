@@ -10,7 +10,7 @@ export interface LoadConfigOptions {
   trackSources?: boolean
 }
 
-export interface LoadedPandaConfig {
+export interface LoadConfigResult {
   /** Absolute path to the resolved config file. */
   path: string
   /** JSON-safe, callback-lowered config; patterns carry `codegenSource`. */

@@ -3,11 +3,11 @@ import {
   type CodegenArtifact,
   type CodegenOptions,
   type Compiler,
-  type ConfigDiff,
+  type DiffConfigResult,
   type Driver,
   type SourceChange,
 } from '@pandacss/compiler-shared'
-import { type LoadedPandaConfig, diffConfig, loadPandaConfig } from '@pandacss/config'
+import { type LoadConfigResult, diffConfig, loadConfig } from '@pandacss/config'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
 import { createCompilerFromSnapshot } from './index'
@@ -23,15 +23,15 @@ export interface NodeDriverOptions {
  * config from disk; `scan` / `codegen` run through the Rust fs engine.
  */
 export async function createNodeDriver(options: NodeDriverOptions): Promise<Driver> {
-  const loaded = await loadPandaConfig({ cwd: options.cwd, file: options.configPath })
+  const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath })
   return new NodeDriver(options, loaded)
 }
 
 class NodeDriver extends BaseDriver {
   #options: NodeDriverOptions
-  #loaded: LoadedPandaConfig
+  #loaded: LoadConfigResult
 
-  constructor(options: NodeDriverOptions, loaded: LoadedPandaConfig) {
+  constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     super(buildFromConfig(loaded))
     this.#options = options
     this.#loaded = loaded
@@ -49,8 +49,8 @@ class NodeDriver extends BaseDriver {
     return this.#loaded.dependencies
   }
 
-  async reload(): Promise<ConfigDiff> {
-    const next = await loadPandaConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
+  async reload(): Promise<DiffConfigResult> {
+    const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
     const diff = diffConfig(this.#loaded, next)
     if (diff.hasChanged) {
       this.#loaded = next
@@ -104,7 +104,7 @@ class NodeDriver extends BaseDriver {
   }
 
   private codegenWithPrepareHooks(
-    hooks: NonNullable<LoadedPandaConfig['hostHooks']>['codegen:prepare'],
+    hooks: NonNullable<LoadConfigResult['hostHooks']>['codegen:prepare'],
     outdir: string,
     cwd: string,
     options: CodegenOptions | undefined,
@@ -172,6 +172,6 @@ function writeArtifacts(compiler: Compiler, outdir: string, artifacts: CodegenAr
   return written
 }
 
-function buildFromConfig(loaded: LoadedPandaConfig): Compiler {
+function buildFromConfig(loaded: LoadConfigResult): Compiler {
   return createCompilerFromSnapshot({ config: loaded.config, callbacks: loaded.callbacks, hooks: loaded.hooks })
 }

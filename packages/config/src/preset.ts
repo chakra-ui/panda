@@ -1,6 +1,6 @@
 import type { Config, UserConfig } from '@pandacss/types'
 import { normalize, relative } from 'node:path'
-import { bundle } from './bundle'
+import { bundleConfig } from './bundle'
 import { PandaError } from './error'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
@@ -148,7 +148,7 @@ async function runPresetResolvedHooks(
 async function resolvePreset(preset: PresetEntry, cwd: string) {
   if (typeof preset === 'string') {
     try {
-      const result = await bundle<ExtendableConfig>(preset, cwd)
+      const result = await bundleConfig<ExtendableConfig>(preset, cwd)
       return {
         config: ensureConfigObject(result.config, preset),
         dependencies: result.dependencies,

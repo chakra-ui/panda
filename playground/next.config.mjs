@@ -11,6 +11,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@pandacss/compiler-wasm', '@pandacss/compiler-shared', '@pandacss/config'],
   webpack: (config, { isServer, webpack }) => {
     // aliases for resolving packages in the project
     config.resolve.alias = {

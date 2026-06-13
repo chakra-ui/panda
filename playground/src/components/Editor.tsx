@@ -33,8 +33,8 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
   } = useEditor(props)
 
   return (
-    <Flex flex="1" direction="column" align="flex-start" minW="0">
-      <div className={css({ flex: '1', width: 'full', display: 'flex', flexDirection: 'column' })}>
+    <Flex flex="1" direction="column" align="stretch" minW="0" minH="0">
+      <div className={css({ flex: '1', width: 'full', minH: '0', display: 'flex', flexDirection: 'column' })}>
         <SegmentGroup.Root
           className={cx(
             segmentGroup(),
@@ -58,7 +58,7 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
           {tabs.map((option, id) => (
             <SegmentGroup.Item key={id} value={option.id} aria-label={option.label}>
               <SegmentGroup.ItemControl />
-              <SegmentGroup.ItemText className={css({ px: 2 })}>{option.label}</SegmentGroup.ItemText>
+              <SegmentGroup.ItemText className={css({ px: '2' })}>{option.label}</SegmentGroup.ItemText>
               <SegmentGroup.ItemHiddenInput />
             </SegmentGroup.Item>
           ))}
@@ -92,7 +92,7 @@ export const Editor = memo(function Editor(props: PandaEditorProps) {
             </button>
           </div>
         </SegmentGroup.Root>
-        <div className={cx(css({ flex: '1', pt: '2' }), editorTokenizer())}>
+        <div className={cx(css({ flex: '1', minH: '0', pt: '2' }), editorTokenizer())}>
           {props.diffState ? (
             <DiffEditor
               original={props.value[activeTab]}

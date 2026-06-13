@@ -1,6 +1,7 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 export const CONFIG = `export default {
   outdir: 'styled-system',
@@ -30,6 +31,14 @@ export function createFixture(config = CONFIG, options: { config?: boolean; sour
 
 export function cleanupFixture(dir: string | undefined) {
   if (dir) rmSync(dir, { recursive: true, force: true })
+}
+
+/** Symlink the workspace `@pandacss/dev` package into a temp fixture for init/codegen tests. */
+export function linkWorkspaceDevPackage(dir: string) {
+  const devRoot = join(dirname(fileURLToPath(import.meta.url)), '../../dev')
+  const scopeDir = join(dir, 'node_modules', '@pandacss')
+  mkdirSync(scopeDir, { recursive: true })
+  symlinkSync(devRoot, join(scopeDir, 'dev'), 'dir')
 }
 
 export function writeSyntaxError(dir: string) {

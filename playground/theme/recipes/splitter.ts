@@ -13,6 +13,7 @@ export const splitter = defineRecipe({
     panel: {
       display: 'flex',
       alignItems: 'stretch',
+      minH: '0',
     },
     resizeTrigger: {
       '&:not([data-disabled])': {

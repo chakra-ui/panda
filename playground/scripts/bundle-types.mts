@@ -21,11 +21,11 @@ const outdir = path.join(__dirname, '../src/dts/')
 console.log('Writing dts bundles in', outdir)
 
 await getOrCreateDir(outdir)
-await fs.writeFile(outdir + '@pandacss/types'.replace('/', '_') + '.d.ts', bundledDts[0])
+await fs.writeFile(outdir + '@pandacss/types'.replaceAll('/', '_') + '.d.ts', bundledDts[0])
 await Promise.all(
   Object.keys(dtsFiles).map((name) => {
     console.log('Copying', name)
-    return fs.copyFile((dtsFiles as any)[name], outdir + name.replace('/', '_') + '.d.ts')
+    return fs.copyFile((dtsFiles as any)[name], outdir + name.replaceAll('/', '_') + '.d.ts')
   }),
 )
 

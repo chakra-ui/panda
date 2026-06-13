@@ -2,8 +2,6 @@ import type { Config, Preset } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config/merge'
 import presetBase from '@pandacss/preset-base'
 import presetPanda from '@pandacss/preset-panda'
-import { validateConfig } from '../../../../packages/config/src/validate-config'
-import { logger } from '@pandacss/logger'
 
 type Extendable<T> = T & { extend?: T }
 type ExtendableConfig = Extendable<Config>
@@ -11,43 +9,31 @@ type ExtendableConfig = Extendable<Config>
 export function resolveConfig(config?: Config) {
   if (!config) return
 
-  const presets = new Set<any>()
+  const presets = new Set<Preset>()
+  presets.add(presetBase)
 
-  if (!config.eject) {
-    presets.add(presetBase)
-  }
-
-  if (config.presets) {
-    //
-    config.presets.forEach((preset: any) => {
-      presets.add(preset)
-    })
-  } else if (!config.eject) {
+  if (config.presets?.length) {
+    for (const preset of config.presets) {
+      if (typeof preset === 'object' && !(preset instanceof Promise)) {
+        presets.add(preset)
+      }
+    }
+  } else {
     presets.add(presetPanda)
   }
 
   presets.add(playgroundPreset)
 
-  config.presets = Array.from(presets)
-
-  const mergedConfig = getResolvedConfig(config)
+  const mergedConfig = getResolvedConfig({ ...config, presets: Array.from(presets) })
 
   if (!mergedConfig) return
-
-  if (mergedConfig.logLevel) {
-    logger.level = mergedConfig.logLevel
-  }
-
-  validateConfig(mergedConfig as any)
-
-  // No config:resolved hook, cause we can't resolve async here
 
   return mergedConfig
 }
 
 /**
- * Recursively merge all presets into a single config
- * PLayground won't be able to handle bundling presets
+ * Recursively merge all presets into a single config.
+ * Playground won't be able to handle bundling presets.
  */
 function getResolvedConfig(config: ExtendableConfig) {
   const stack: ExtendableConfig[] = [config]
@@ -63,7 +49,6 @@ function getResolvedConfig(config: ExtendableConfig) {
 
     const subPresets = current.presets ?? []
     for (const subPreset of subPresets) {
-      // Only handle object presets
       if (typeof subPreset === 'object' && !(subPreset instanceof Promise)) {
         stack.push(subPreset)
       }
@@ -73,8 +58,6 @@ function getResolvedConfig(config: ExtendableConfig) {
   }
 
   const merged = mergeConfigs(configs) as Config
-
-  // Keep the resolved presets so we can find the origin of a token
   merged.presets = configs.slice(0, -1) as Preset[]
 
   return merged

@@ -1,7 +1,7 @@
 import {
   BaseDriver,
   type Compiler,
-  type ConfigDiff,
+  type DiffConfigResult,
   type ConfigSnapshot,
   type Driver,
   type SerializedConfig,
@@ -23,7 +23,7 @@ export interface BrowserDriverOptions {
   module?: WasmModule
 }
 
-const NO_CHANGE: ConfigDiff = { hasChanged: false, dependencies: [], recipes: [], patterns: [], changes: [] }
+const NO_CHANGE: DiffConfigResult = { hasChanged: false, dependencies: [], recipes: [], patterns: [], changes: [] }
 
 /**
  * Build a {@link Driver} backed by the wasm compiler (`MemoryFileSystem`). The
@@ -71,7 +71,7 @@ class BrowserDriver extends BaseDriver {
 
   // Browser drivers are snapshot-fed; reloading happens by constructing a fresh
   // driver with a new snapshot, so there's nothing to diff here.
-  async reload(): Promise<ConfigDiff> {
+  async reload(): Promise<DiffConfigResult> {
     return NO_CHANGE
   }
 

@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 import { rmSync } from 'node:fs'
-import { type ConfigDiff } from '@pandacss/compiler'
+import { type DiffConfigResult } from '@pandacss/compiler'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { runCommand } from '../run-command'
 import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
@@ -103,7 +103,7 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
   return result
 }
 
-async function codegenOnce(ctx: RunContext, flags: CodegenFlags, _diff?: ConfigDiff): Promise<CheckOutput> {
+async function codegenOnce(ctx: RunContext, flags: CodegenFlags, _diff?: DiffConfigResult): Promise<CheckOutput> {
   const outdir = ctx.driver.getOutdir(flags.outdir)
   if (flags.check) {
     const result = checkCodegenOutput(ctx, outdir)

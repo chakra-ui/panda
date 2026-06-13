@@ -1,7 +1,7 @@
-import type { CodegenDependency, ConfigDiff, ConfigSnapshot, SerializedConfig } from '@pandacss/compiler-shared'
+import type { CodegenDependency, ConfigSnapshot, DiffConfigResult, SerializedConfig } from '@pandacss/compiler-shared'
 import diff from 'microdiff'
 
-export type { ConfigDiff } from '@pandacss/compiler-shared'
+export type { DiffConfigResult } from '@pandacss/compiler-shared'
 
 /** Every `CodegenDependency` — the full-regen set used on first load. */
 const ALL_DEPENDENCIES: CodegenDependency[] = [
@@ -36,7 +36,7 @@ const ALL_DEPENDENCIES: CodegenDependency[] = [
 export function diffConfig(
   prev: SerializedConfig | ConfigSnapshot | undefined,
   next: SerializedConfig | ConfigSnapshot,
-): ConfigDiff {
+): DiffConfigResult {
   if (!prev) {
     return { hasChanged: true, dependencies: [...ALL_DEPENDENCIES], recipes: [], patterns: [], changes: [] }
   }

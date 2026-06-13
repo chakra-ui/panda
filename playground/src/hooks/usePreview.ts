@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
 
+/** Stable srcDoc — a new string each render would reload the iframe and drop portals. */
+const PREVIEW_SRC_DOC = `<!DOCTYPE html>
+<html>
+<head>
+<script type="module">
+window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){e.data.colorMode&&function(e){switch(e){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}(e.data.colorMode)}));
+</script>
+</head>
+<body></body>
+</html>`
+
 export function usePreview() {
   const [contentRef, setContentRef] = useState<HTMLIFrameElement | null>(null)
 
@@ -60,23 +71,7 @@ export function usePreview() {
     }
   }, [resolvedTheme, contentRef])
 
-  const isReady = isMounted && !!contentRef?.contentDocument
+  const isReady = isMounted && iframeLoaded && !!contentRef?.contentDocument
 
-  const srcDoc = `<!DOCTYPE html>
-  <html>
-  <head>
-  <script type="module">
-
-  //* This is just listening for the color mode change event and applying the class to the html element
-  window.parent.postMessage({action:"getColorMode"},"*"),window.addEventListener("message",(function(e){e.data.colorMode&&function(e){switch(e){case"light":document.querySelector("html").classList.add("light"),document.querySelector("html").classList.remove("dark");break;case"dark":document.querySelector("html").classList.add("dark"),document.querySelector("html").classList.remove("light")}}(e.data.colorMode)}));
-
-</script>
-
-  </head>
-  <body>
-  
-  </body>
-  </html>`
-
-  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc }
+  return { handleLoad, contentRef, setContentRef, iframeLoaded, isReady, srcDoc: PREVIEW_SRC_DOC }
 }

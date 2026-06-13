@@ -1,7 +1,8 @@
-import { recipes } from '@/theme/recipes'
 import { defineConfig } from '@pandacss/dev'
+import { recipes } from './theme/recipes'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   jsxFramework: 'react',
   conditions: {

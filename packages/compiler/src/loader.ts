@@ -1,8 +1,8 @@
 import type { Compiler, CompilerOptions } from '@pandacss/compiler-shared'
-import { type LoadConfigOptions, type LoadedPandaConfig, loadPandaConfig } from '@pandacss/config'
+import { type LoadConfigOptions, type LoadConfigResult, loadConfig } from '@pandacss/config'
 import { createCompilerFromSnapshot } from './index'
 
-export type { LoadConfigOptions, LoadedPandaConfig } from '@pandacss/config'
+export type { LoadConfigOptions, LoadConfigResult } from '@pandacss/config'
 
 export interface LoadCompilerResult {
   /** The compiler built from the loaded config snapshot. */
@@ -26,7 +26,7 @@ export async function loadCompiler(
   options: LoadConfigOptions,
   compilerOptions?: CompilerOptions,
 ): Promise<LoadCompilerResult> {
-  const loaded: LoadedPandaConfig = await loadPandaConfig(options)
+  const loaded: LoadConfigResult = await loadConfig(options)
   const compiler = createCompilerFromSnapshot({ config: loaded.config, callbacks: loaded.callbacks }, compilerOptions)
   return { compiler, path: loaded.path, dependencies: loaded.dependencies }
 }

@@ -24,7 +24,7 @@ import type {
 
 /** Result of diffing two serialized configs — produced by config's
  *  `diffConfig`, consumed by `Driver.reload`. */
-export interface ConfigDiff {
+export interface DiffConfigResult {
   /** `true` when the configs differ (or there is no previous config). */
   hasChanged: boolean
   /** Coarse dependencies to feed `generateAffectedArtifacts(...)`. */
@@ -76,7 +76,7 @@ export interface Driver {
 
   /** Re-load the config, diff it against the current one, and rebuild the
    *  compiler when it changed. Browser drivers are snapshot-fed → no-change. */
-  reload(): Promise<ConfigDiff>
+  reload(): Promise<DiffConfigResult>
   /** Source paths matching the config includes/excludes. Does not parse. */
   scan(): string[]
   /** Scan, then parse every discovered source file via the engine fs. */
@@ -151,7 +151,7 @@ export abstract class BaseDriver implements Driver {
   abstract get config(): SerializedConfig
   abstract get configPath(): string | undefined
   abstract get configDependencies(): string[]
-  abstract reload(): Promise<ConfigDiff>
+  abstract reload(): Promise<DiffConfigResult>
   abstract applyChange(change: SourceChange): boolean
   abstract getOutdir(outdir?: string): string
 
