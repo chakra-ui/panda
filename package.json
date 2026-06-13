@@ -1,6 +1,9 @@
 {
   "name": "panda",
   "version": "0.0.1",
+  "bugs": {
+    "url": "https://github.com/chakra-ui/panda/issues"
+  },
   "private": true,
   "type": "module",
   "description": "The repository of css panda",
