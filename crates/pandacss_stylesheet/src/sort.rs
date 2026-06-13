@@ -262,6 +262,10 @@ impl PartialOrd for AtRuleKey {
     }
 }
 
+pub(crate) fn compare_at_rule_wrappers(a: &str, b: &str) -> Ordering {
+    AtRuleKey::new(a).cmp(&AtRuleKey::new(b))
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 enum AtRuleKind {
     Supports,

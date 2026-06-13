@@ -802,6 +802,73 @@ fn emits_breakpoint_range_conditions() {
 }
 
 #[test]
+fn expands_raw_breakpoint_at_rules_from_style_objects() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "lg": "64rem"
+            }
+        },
+        "utilities": {
+            "display": { "className": "d" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '@breakpoint lgDown': { display: 'none' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (width < 64rem) {
+    .\[\@breakpoint_lgDown\]\:d_none {
+      display: none;
+    }
+  }
+}
+");
+}
+
+#[test]
+fn expands_raw_breakpoint_at_rules_from_utility_value_maps() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "lg": "64rem"
+            }
+        },
+        "utilities": {
+            "hideBelow": {
+                "className": "show",
+                "values": {
+                    "lg": {
+                        "@breakpoint lgDown": {
+                            "display": "none"
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ hideBelow: 'lg' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (width < 64rem) {
+    .show_lg {
+      display: none;
+    }
+  }
+}
+");
+}
+
+#[test]
 fn emits_theme_container_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

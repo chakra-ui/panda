@@ -1,4 +1,5 @@
 import type { PropertyConfig, UtilityConfig } from '@pandacss/types'
+import { createColorMixTransform } from '../color-mix-transform'
 
 function createFocusRing(selector: any, className: string): PropertyConfig {
   return {
@@ -65,16 +66,7 @@ export const focusRing: UtilityConfig = {
     className: 'focus-ring-c',
     values: 'colors',
     group: 'Focus Ring',
-    transform(value, { utils }) {
-      const prop = '--focus-ring-color-prop'
-      const mix = utils.colorMix(value)
-      if (mix.invalid) return { [prop]: value }
-      const cssVar = '--mix-' + prop
-      return {
-        [cssVar]: mix.value,
-        [prop]: `var(${cssVar}, ${mix.color})`,
-      }
-    },
+    transform: createColorMixTransform('--focus-ring-color-prop'),
   },
   focusRingOffset: {
     className: 'focus-ring-o',

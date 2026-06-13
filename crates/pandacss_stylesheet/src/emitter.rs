@@ -1695,7 +1695,9 @@ impl<'a> EmitContext<'a> {
         if self.utility_styles.is_empty() {
             return None;
         }
-        self.utility_styles.get(&(Box::from(prop), value.clone()))
+        let canonical = self.utility.resolve_shorthand(prop);
+        self.utility_styles
+            .get(&(Box::from(canonical), value.clone()))
     }
 
     fn lower_target(&self, target: Target<'_>, conditions: &[&str]) -> Vec<LoweredTarget> {

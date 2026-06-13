@@ -188,6 +188,48 @@ fn composition_styles_resolve_token_categories_and_nested_conditions() {
 }
 
 #[test]
+fn composition_media_queries_sort_inside_compositions_layer() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": {
+                "lg": "64rem",
+                "md": "48rem"
+            },
+            "textStyles": {
+                "display": {
+                    "value": {
+                        "lg": { "fontSize": "3rem" },
+                        "md": { "fontSize": "2rem" }
+                    }
+                }
+            }
+        }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css'; css({ textStyle: 'display' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @r"
+    @layer utilities {
+      @layer compositions {
+        @media (width >= 48rem) {
+          .textStyle_display {
+            font-size: 2rem;
+          }
+        }
+        @media (width >= 64rem) {
+          .textStyle_display {
+            font-size: 3rem;
+          }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn unknown_composition_value_does_not_emit_fallback_declaration() {
     let cfg = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

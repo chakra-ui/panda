@@ -29,7 +29,7 @@ pub(crate) fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<C
         .or_else(|| config.conditions.get(key));
 
     if let Some(query) = query {
-        return query_raw_paths(query);
+        return normalize_condition_paths(config, query_raw_paths(query));
     }
 
     if let Some(raw) = config.theme_condition(condition) {
@@ -37,7 +37,7 @@ pub(crate) fn condition_raw_paths(config: &UserConfig, condition: &str) -> Vec<C
     }
 
     if condition.starts_with('@') || condition.contains('&') {
-        return vec![vec![condition.to_owned()]];
+        return normalize_condition_paths(config, vec![vec![condition.to_owned()]]);
     }
 
     Vec::new()
@@ -170,6 +170,25 @@ fn block_raw_paths(
         }
     }
     paths
+}
+
+fn normalize_condition_paths(config: &UserConfig, paths: Vec<ConditionPath>) -> Vec<ConditionPath> {
+    paths
+        .into_iter()
+        .map(|path| {
+            path.into_iter()
+                .map(|raw| expand_breakpoint_at_rule(config, &raw).unwrap_or(raw))
+                .collect()
+        })
+        .collect()
+}
+
+fn expand_breakpoint_at_rule(config: &UserConfig, raw: &str) -> Option<String> {
+    let params = raw.strip_prefix("@breakpoint")?.trim();
+    if params.is_empty() {
+        return None;
+    }
+    config.breakpoint_condition(params)
 }
 
 /// Apply one raw condition part to a lowered target: at-rules wrap, `&`

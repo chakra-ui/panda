@@ -45,6 +45,51 @@ fn emits_made_with_panda_marker_before_user_global_css() {
 }
 
 #[test]
+fn emits_global_css_color_mix_transform_utilities_to_custom_properties() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "border": {
+                        "muted": { "value": "#ccc" }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "boxShadowColor": {
+                "className": "bx-sh-c",
+                "shorthand": "shadowColor",
+                "values": "colors",
+                "property": "--shadow-color",
+                "transform": {
+                    "kind": "js-callback",
+                    "id": "utilities.boxShadowColor.transform"
+                }
+            }
+        },
+        "globalCss": {
+            "body": {
+                "shadowColor": "border.muted"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  body {
+    --shadow-color: var(--colors-border-muted);
+  }
+}
+");
+}
+
+#[test]
 fn emits_global_css_from_serialized_config() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -171,14 +216,14 @@ fn emits_global_css_direct_nesting_and_conditions() {
       .btn .aaa .bbb {
         color: var(--colors-blue-300);
       }
-      @media (width >= 64rem) {
-        .btn {
-          width: 90px;
-        }
-      }
       @media (width >= 40rem) {
         .btn {
           font-size: 12px;
+        }
+      }
+      @media (width >= 64rem) {
+        .btn {
+          width: 90px;
         }
       }
     }

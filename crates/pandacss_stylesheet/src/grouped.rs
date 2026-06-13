@@ -2,6 +2,7 @@
 
 use indexmap::IndexMap;
 
+use crate::sort::compare_at_rule_wrappers;
 use crate::writer::CssWriter;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,8 +39,17 @@ impl GroupNode {
 }
 
 pub(crate) fn write_grouped_rules(writer: &mut CssWriter, root: &mut GroupNode) {
+    sort_children(root);
     merge_adjacent_rules(root);
     write_group_node(writer, root);
+}
+
+fn sort_children(node: &mut GroupNode) {
+    node.children
+        .sort_by(|wrapper_a, _, wrapper_b, _| compare_at_rule_wrappers(wrapper_a, wrapper_b));
+    for child in node.children.values_mut() {
+        sort_children(child);
+    }
 }
 
 /// Collapse consecutive rules with identical declaration blocks into one
@@ -170,12 +180,12 @@ mod tests {
     }
 
     #[test]
-    fn preserves_first_seen_bucket_order() {
+    fn sorts_at_rule_buckets_by_cascade_order() {
         let sm = "@media (width >= 40rem)".to_owned();
         let lg = "@media (width >= 64rem)".to_owned();
         let mut root = GroupNode::default();
-        root.push_rule(std::slice::from_ref(&sm), rule(".sm", "color", "red"));
         root.push_rule(std::slice::from_ref(&lg), rule(".lg", "color", "blue"));
+        root.push_rule(std::slice::from_ref(&sm), rule(".sm", "color", "red"));
         root.push_rule(&[sm], rule(".sm_again", "color", "green"));
 
         let css = write_css(&mut root);
