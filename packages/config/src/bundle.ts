@@ -1,7 +1,8 @@
 import type { Config } from '@pandacss/types'
 import { realpathSync } from 'node:fs'
 import { builtinModules } from 'node:module'
-import { isAbsolute, normalize, relative } from 'node:path'
+import { isAbsolute, join, normalize, relative } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { rolldown } from 'rolldown'
 import { PandaError } from './error'
 
@@ -39,7 +40,7 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
   }
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
-  const mod = await importBundledConfig(output.code)
+  const mod = await importBundledConfig(output.code, cwd)
   const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
   const exported = hasDefaultExport ? mod.default : mod
   const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
@@ -47,8 +48,14 @@ export async function bundle<T extends Config = Config>(filepath: string, cwd: s
   return { config, dependencies }
 }
 
-async function importBundledConfig(code: string) {
-  const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+async function importBundledConfig(code: string, cwd: string) {
+  // The bundle is evaluated from a `data:` URL, which makes `import.meta.url` a
+  // `data:` string. Bundled deps that call `createRequire(import.meta.url)` (or
+  // resolve paths from it — e.g. `@ark-ui`) then throw. Point `import.meta.url` at
+  // the project root so those resolve against the config's `node_modules`.
+  const baseUrl = JSON.stringify(pathToFileURL(join(cwd, '__panda_config_bundle__.mjs')).href)
+  const patched = code.replaceAll('import.meta.url', baseUrl)
+  const dataUrl = `data:text/javascript;base64,${Buffer.from(patched).toString('base64')}`
   return import(/* @vite-ignore */ dataUrl)
 }
 
