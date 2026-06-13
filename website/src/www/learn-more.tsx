@@ -3,7 +3,7 @@ import { css } from '@/styled-system/css'
 import { hstack } from '@/styled-system/patterns'
 import { ButtonIcon } from '@/theme/icons'
 
-export function LearnMore({ href = '/learn' }: { href?: string }) {
+export function LearnMore({ href = 'https://www.pandamastery.com/' }: { href?: string }) {
   return (
     <Link
       href={href}

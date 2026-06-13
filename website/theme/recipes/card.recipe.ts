@@ -41,8 +41,8 @@ export const cardRecipe = defineRecipe({
         display: 'flex',
         fontWeight: 'semibold',
         alignItems: 'flex-start',
-        gap: 2,
-        p: 4,
+        gap: '2',
+        p: '4',
         color: 'fg.muted',
         _hover: { color: 'fg' }
       }
@@ -132,7 +132,7 @@ export const cardRecipe = defineRecipe({
         },
         title: {
           display: 'flex',
-          gap: 1
+          gap: '1'
         }
       })
     }

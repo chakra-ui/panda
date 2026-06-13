@@ -19,7 +19,7 @@ export const codeTabsRecipe = defineRecipe({
     list: {
       display: 'flex',
       w: '100%',
-      gap: 5,
+      gap: '5',
       px: '4',
       py: '4',
       rounded: 'xl'

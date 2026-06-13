@@ -501,7 +501,7 @@ impl Utility {
 
     fn color_mix_category_value(&self, value: &str) -> Option<String> {
         let tokens = self.tokens.as_ref()?;
-        let (color, opacity) = value.split_once('/')?;
+        let (color, opacity) = split_top_level_slash(value)?;
         let color_path = format!("colors.{color}");
         if tokens.token(&color_path).is_some() {
             let path = format!("{color_path}/{opacity}");
@@ -515,7 +515,7 @@ impl Utility {
     /// resolved to `color-mix`.
     #[must_use]
     pub fn is_invalid_color_opacity_modifier(&self, value: &str) -> bool {
-        value.contains('/')
+        split_top_level_slash(value).is_some()
             && self.tokens.is_some()
             && self.color_mix_category_value(value).is_none()
     }
@@ -637,6 +637,43 @@ impl Utility {
             },
         );
     }
+}
+
+fn split_top_level_slash(value: &str) -> Option<(&str, &str)> {
+    let mut nesting_depth = 0usize;
+    let mut active_quote = None;
+    let mut escaped = false;
+
+    for (index, ch) in value.char_indices() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+
+        if let Some(quote) = active_quote {
+            if ch == quote {
+                active_quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' => active_quote = Some(ch),
+            '(' | '[' => nesting_depth += 1,
+            ')' | ']' => nesting_depth = nesting_depth.saturating_sub(1),
+            '/' if nesting_depth == 0 => {
+                return Some((&value[..index], &value[index + 1..]));
+            }
+            _ => {}
+        }
+    }
+
+    None
 }
 
 /// Type info for one utility property: its literal value keys (sorted) and the
@@ -1161,5 +1198,40 @@ fn json_to_literal(value: &Value) -> Option<Literal> {
             .map(|(key, value)| json_to_literal(value).map(|value| (key.clone(), value)))
             .collect::<Option<Vec<_>>>()
             .map(Literal::Object),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::split_top_level_slash;
+
+    #[test]
+    fn splits_token_opacity_modifier() {
+        assert_eq!(split_top_level_slash("red/40"), Some(("red", "40")));
+    }
+
+    #[test]
+    fn ignores_slash_inside_css_color_function() {
+        assert_eq!(split_top_level_slash("rgb(251 146 60 / 0.3)"), None);
+    }
+
+    #[test]
+    fn splits_after_css_function() {
+        assert_eq!(
+            split_top_level_slash("color(display-p3 1 0 0 / 0.5)/40"),
+            Some(("color(display-p3 1 0 0 / 0.5)", "40"))
+        );
+    }
+
+    #[test]
+    fn ignores_escaped_or_quoted_slashes() {
+        assert_eq!(
+            split_top_level_slash(r"foo\/bar/40"),
+            Some((r"foo\/bar", "40"))
+        );
+        assert_eq!(
+            split_top_level_slash(r#"url("/x/y")/40"#),
+            Some((r#"url("/x/y")"#, "40"))
+        );
     }
 }

@@ -374,12 +374,13 @@ fn system_module(
         "export type Pretty<T> = { [K in keyof T]: T[K] } & {}".into(),
         "export type DistributiveOmit<T, K extends keyof any> = T extends unknown ? Omit<T, K> : never".into(),
         "export type DistributiveUnion<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] | T[K] : T[K]\n} & DistributiveOmit<U, keyof T>".into(),
-        "export type Assign<T, U> = Omit<T, keyof U> & U".into(),
+        "export type Assign<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] : T[K]\n} & U".into(),
     ];
     parts.extend(condition_type_parts(conditions, options));
     parts.extend(value_alias_parts(data, options));
     parts.extend(vec![
-        "export type Selector = `&${string}` | `@${string}`".into(),
+        r#"export type AtRuleType = "media" | "layer" | "container" | "supports" | "page" | "scope" | "starting-style""#.into(),
+        "export type Selector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`".into(),
         "export type AnySelector = Selector | string".into(),
         "export type Nested<P> = P & {\n  [K in Selector]?: Nested<P>\n} & {\n  [K in AnySelector]?: Nested<P>\n} & {\n  [K in Condition]?: Nested<P>\n}".into(),
         r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
@@ -474,7 +475,7 @@ fn jsx_style_type_parts(mode: JsxStylePropsConfig) -> Vec<String> {
     };
     let html_props = match mode {
         JsxStylePropsConfig::All => {
-            "export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Omit<T, keyof P | OmittedHTMLProps> & PatchedHTMLProps & P"
+            "export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Assign<WithHTMLProps<T>, P>"
         }
         JsxStylePropsConfig::Minimal | JsxStylePropsConfig::None => {
             "export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Omit<T, keyof P> & P"
@@ -496,6 +497,8 @@ export interface PatchedHTMLProps {{
 }}
 
 export type OmittedHTMLProps = "color" | "translate" | "transition" | "width" | "height" | "content"
+
+type WithHTMLProps<T> = DistributiveOmit<T, OmittedHTMLProps> & PatchedHTMLProps
 
 {html_props}"#
     )]
@@ -634,7 +637,7 @@ fn value_parts_union(parts: &[ValueTypePart]) -> String {
     // CssProperty parts pointed at the vendored csstype's per-property keyword
     // unions; with our own lean csstype those are gone — `AnyString` carries the
     // freeform CSS value, so drop them.
-    let rendered = parts
+    let mut rendered = parts
         .iter()
         .filter(|part| !matches!(part, ValueTypePart::CssProperty(_)))
         .map(value_part)
@@ -642,6 +645,13 @@ fn value_parts_union(parts: &[ValueTypePart]) -> String {
 
     if rendered.is_empty() {
         return "unknown".into();
+    }
+
+    if !rendered
+        .iter()
+        .any(|part| part == "AnyNumber" || part == "number")
+    {
+        rendered.push("AnyNumber".into());
     }
 
     rendered.join(" | ")

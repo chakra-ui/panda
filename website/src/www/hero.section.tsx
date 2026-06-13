@@ -60,7 +60,7 @@ export const HeroSection = () => {
                   Get Started
                 </ButtonLink>
                 <ButtonLink
-                  href="/learn"
+                  href="https://www.pandamastery.com/"
                   size="lg"
                   color="black"
                   variant="funky"

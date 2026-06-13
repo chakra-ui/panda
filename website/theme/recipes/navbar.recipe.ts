@@ -24,8 +24,8 @@ export const navbarRecipe = defineRecipe({
   base: parts({
     root: {
       position: 'fixed',
-      top: 0,
-      zIndex: 20,
+      top: '0',
+      zIndex: '20',
       w: 'calc(100% - var(--scrollbar-width, 0px))',
       bg: 'transparent',
       _print: { display: 'none' }
@@ -33,7 +33,7 @@ export const navbarRecipe = defineRecipe({
     blur: {
       pointerEvents: 'none',
       position: 'absolute',
-      zIndex: -1,
+      zIndex: '-1',
       h: 'full',
       w: 'full',
       bg: 'bg.surface',

@@ -1,7 +1,7 @@
 import { useClipboard } from '@ark-ui/react/clipboard'
 import { css, cva } from '@/styled-system/css'
 import { grid, hstack, square } from '@/styled-system/patterns'
-import type { Token } from '@pandacss/token-dictionary'
+import type { Token } from './query'
 
 interface ColorGridProps {
   tokens: Token[]

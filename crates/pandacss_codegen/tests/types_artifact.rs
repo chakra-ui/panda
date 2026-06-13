@@ -287,9 +287,12 @@ fn emits_ts_source_types() {
     assert!(system.contains("export type AnyString = string & {}"));
     assert!(system.contains("export type AnyNumber = number & {}"));
     assert!(system.contains("export type CssVars = `var(--${string})`"));
-    assert!(
-        system.contains("export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString")
-    );
+    assert!(system.contains(
+        "export type Assign<T, U> = {\n  [K in keyof T]: K extends keyof U ? U[K] : T[K]\n} & U"
+    ));
+    assert!(system.contains(
+        "export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+    ));
     assert!(system.contains(
         "export type SpacingValue = TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
     ));
@@ -309,10 +312,18 @@ fn emits_ts_source_types() {
     assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
     assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
     // selectors + the recursive style object live here too
-    assert!(system.contains("export type Selector = `&${string}` | `@${string}`"));
+    assert!(system.contains(
+        r#"export type AtRuleType = "media" | "layer" | "container" | "supports" | "page" | "scope" | "starting-style""#
+    ));
+    assert!(system.contains(
+        "export type Selector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`"
+    ));
     assert!(system.contains("export type Nested<P> = P & {"));
     assert!(system.contains(
         "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
+    ));
+    assert!(system.contains(
+        "export type JsxHTMLProps<T extends Record<string, any>, P extends Record<string, any> = {}> = Assign<WithHTMLProps<T>, P>"
     ));
     // dead vendor prefixes are not emitted
     assert!(!system.contains("OAnimation"));
@@ -464,9 +475,9 @@ fn emits_js_declaration_types() {
 
     let system = file(types, "types/system.d.ts");
     assert!(system.contains("import type { TokenValue } from './tokens';"));
-    assert!(
-        system.contains("export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString")
-    );
+    assert!(system.contains(
+        "export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+    ));
     assert!(system.contains(
         "export type SpacingValue = TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
     ));
@@ -631,9 +642,9 @@ fn can_emit_type_import_extensions() {
 
     let system = file(types, "types/system.d.mts");
     assert!(system.contains("import type { TokenValue } from './tokens.d.mts';"));
-    assert!(
-        system.contains("export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString")
-    );
+    assert!(system.contains(
+        "export type ColorValue = TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+    ));
     assert!(system.contains(
         "export type SpacingValue = TokenValue<\"spacing\"> | CssVars | AnyString | AnyNumber"
     ));

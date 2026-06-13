@@ -4,6 +4,7 @@ packages:
   - 'sandbox/*'
   - 'sandbox/component-lib/**'
   - 'playground'
+  - 'website'
   # napi platform packages are published by `napi pre-publish`, not the workspace.
   - '!packages/compiler/npm/**'
   # wasm-pack output dirs get a minimal package.json for CJS/ESM typing; not workspace packages.

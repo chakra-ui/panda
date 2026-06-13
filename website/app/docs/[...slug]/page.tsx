@@ -95,8 +95,8 @@ export default async function DocsPage(props: DocsPageProps) {
           <Header doc={doc} />
           <div
             className={css({
-              '& > *:first-child': { mt: 0 },
-              '& > *:last-child': { mb: 0 }
+              '& > *:first-child': { mt: '0' },
+              '& > *:last-child': { mb: '0' }
             })}
           >
             <MDXContent code={doc.code} />

@@ -46,10 +46,10 @@ export const globalCss = defineGlobalStyles({
       }
   },
   '.contains-task-list': {
-    ml: 0,
+    ml: '0',
     listStyle: 'none',
     "& input[type='checkbox']": {
-      mr: 1
+      mr: '1'
     }
   },
   '.scroll-area': {
@@ -73,20 +73,20 @@ export const globalCss = defineGlobalStyles({
     px: '0.3em',
     '&[data-line-numbers] > .line': {
       display: 'inline-flex',
-      ps: 2,
+      ps: '2',
       '&::before': {
         counterIncrement: 'line',
         content: 'counter(line)',
         h: 'full',
         float: 'left',
-        pe: 4,
+        pe: '4',
         textAlign: 'right',
         minW: '2.6rem',
         color: 'fg.subtle'
       }
     },
     '& .line': {
-      px: 4,
+      px: '4',
       '&.highlighted': {
         bg: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.15)',
         color: 'hsl(var(--nextra-primary-hue), 100%, 45%, 0.5)',
@@ -142,7 +142,7 @@ export const globalCss = defineGlobalStyles({
     },
     '&:after': {
       content: "'#'",
-      px: 1,
+      px: '1',
       color: 'fg.subtle',
       'span:target + &': {
         color: 'fg.muted'

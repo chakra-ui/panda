@@ -9,6 +9,7 @@ import { globalCss } from './theme/global-css'
 import { keyframes } from './theme/keyframes'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],
   preflight: true,
   // define the content to scan 👇🏻
   include: [

@@ -34,7 +34,7 @@ export function ThemeSwitch({ className }: ThemeSwitchProps) {
             className={css({
               display: 'flex',
               alignItems: 'center',
-              gap: 2,
+              gap: '2',
               textTransform: 'capitalize'
             })}
           >

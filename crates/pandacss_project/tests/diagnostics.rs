@@ -125,6 +125,35 @@ fn invalid_color_opacity_modifier_emits_warning_with_span() {
 }
 
 #[test]
+fn css_color_function_slash_alpha_does_not_warn() {
+    let mut project = create_project(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ bg: 'rgb(251 146 60 / 0.3)' });
+        "},
+    );
+
+    assert_snapshot!(summary(&report.diagnostics), @"");
+}
+
+#[test]
 fn unknown_underscore_condition_warns_with_suggestion() {
     let mut project = create_project(json!({
         "conditions": { "hover": "&:hover" },

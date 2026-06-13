@@ -39,7 +39,7 @@ export const calloutRecipe = defineRecipe({
           bg: 'orange.50',
           color: 'orange.800',
           _dark: {
-            borderColor: 'rgb(251 146 60 / 0.3)', // opacity modifier
+            borderColor: 'rgb(251 146 60 / 0.3)',
             bg: 'rgb(251 146 60 / 0.2)',
             color: 'orange.300'
           }

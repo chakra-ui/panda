@@ -1,7 +1,8 @@
 import { defaultKeyframes } from '@/components/token-docs/query'
 import { css } from '@/styled-system/css'
 import { grid, square, stack } from '@/styled-system/patterns'
-import { Token, token } from '@/styled-system/tokens'
+import { token } from '@/styled-system/tokens'
+import type { Token } from '@/styled-system/types/tokens'
 
 export const Keyframes = () => {
   return (
