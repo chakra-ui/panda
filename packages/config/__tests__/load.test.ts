@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -501,6 +501,191 @@ describe('loadConfig preset resolution', () => {
         encoding: 'utf8',
       })
       expect(output.trim()).toBe('#0f0')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('loads bundled deps that create a require from import.meta.url', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-config-require-'))
+    const packageDir = join(dir, 'node_modules', 'import-meta-require')
+
+    try {
+      mkdirSync(packageDir, { recursive: true })
+      writeFileSync(
+        join(packageDir, 'package.json'),
+        JSON.stringify({ name: 'import-meta-require', type: 'module', exports: './index.js' }),
+      )
+      writeFileSync(
+        join(packageDir, 'index.js'),
+        `import { createRequire } from 'node:module'
+        const require = createRequire(import.meta.url)
+        export const token = require('./token.cjs')`,
+      )
+      writeFileSync(join(packageDir, 'token.cjs'), `module.exports = '#0f0'`)
+      writeFileSync(
+        join(dir, 'panda.config.ts'),
+        `import { token } from 'import-meta-require'
+        export default {
+          outdir: 'styled-system',
+          theme: { tokens: { colors: { importMeta: { value: token } } } },
+        }`,
+      )
+
+      const result = await loadConfig({ cwd: dir })
+      expect((result.config.theme as any).tokens.colors.importMeta).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('resolves import.meta.url relative to bundled dependency modules', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-config-dep-url-'))
+    const packageDir = join(dir, 'node_modules', 'import-meta-url-dep')
+
+    try {
+      mkdirSync(packageDir, { recursive: true })
+      writeFileSync(
+        join(packageDir, 'package.json'),
+        JSON.stringify({ name: 'import-meta-url-dep', type: 'module', exports: './index.js' }),
+      )
+      writeFileSync(join(packageDir, 'token.json'), JSON.stringify({ value: '#0f0' }))
+      writeFileSync(
+        join(packageDir, 'index.js'),
+        `import { readFileSync } from 'node:fs'
+        export const token = JSON.parse(readFileSync(new URL('./token.json', import.meta.url), 'utf8')).value`,
+      )
+      writeFileSync(
+        join(dir, 'panda.config.ts'),
+        `import { token } from 'import-meta-url-dep'
+        export default {
+          outdir: 'styled-system',
+          theme: { tokens: { colors: { dependencyUrl: { value: token } } } },
+        }`,
+      )
+
+      const result = await loadConfig({ cwd: dir })
+      expect((result.config.theme as any).tokens.colors.dependencyUrl).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('does not rewrite import.meta.url inside string literals', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { literal: { value: 'import.meta.url' } } } },
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.literal).toEqual({ value: 'import.meta.url' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('rewrites import.meta.url inside template expressions', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `const url = \`\${import.meta.url}\`
+      export default {
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { template: { value: url.includes('panda.config.ts') ? '#0f0' : '#f00' } } } },
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.template).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('rewrites multiple import.meta.url occurrences in one module', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `const first = import.meta.url.includes('panda.config.ts')
+      const second = new URL('./panda.config.ts', import.meta.url).href.includes('panda.config.ts')
+      export default {
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { multiple: { value: first && second ? '#0f0' : '#f00' } } } },
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.multiple).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('does not rewrite import.meta.url inside regex literals', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `const literal = /import\\.meta\\.url/.test('import.meta.url')
+      export default {
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { regex: { value: literal ? '#0f0' : '#f00' } } } },
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.regex).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('does not rewrite import.meta.url inside comments', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `// import.meta.url
+      /* import.meta.url */
+      export default {
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { comments: { value: '#0f0' } } } },
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.comments).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('leaves computed import.meta access untouched', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `const value = import.meta['url'].startsWith('data:') ? '#0f0' : '#f00'
+      export default {
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { computed: { value } } } },
+      }`,
+    })
+
+    try {
+      expect((result.config.theme as any).tokens.colors.computed).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('resolves import.meta.url relative to the config file location', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-config-meta-url-'))
+
+    try {
+      mkdirSync(join(dir, 'config'), { recursive: true })
+      writeFileSync(join(dir, 'config', 'token.json'), JSON.stringify({ value: '#123' }))
+      writeFileSync(
+        join(dir, 'config', 'panda.config.ts'),
+        `import { readFileSync } from 'node:fs'
+        const token = JSON.parse(readFileSync(new URL('./token.json', import.meta.url), 'utf8')).value
+        export default {
+          outdir: 'styled-system',
+          theme: { tokens: { colors: { nested: { value: token } } } },
+        }`,
+      )
+
+      const result = await loadConfig({ cwd: dir, file: 'config/panda.config.ts' })
+      expect((result.config.theme as any).tokens.colors.nested).toEqual({ value: '#123' })
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

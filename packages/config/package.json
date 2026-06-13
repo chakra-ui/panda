@@ -47,9 +47,11 @@
   "dependencies": {
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/types": "workspace:*",
+    "acorn": "^8.17.0",
+    "acorn-walk": "^8.3.5",
     "javascript-stringify": "2.1.0",
+    "magic-string": "^0.30.21",
     "microdiff": "1.5.0",
     "rolldown": "1.0.0-rc.17"
-  },
-  "devDependencies": {}
+  }
 }

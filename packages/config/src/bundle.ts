@@ -1,7 +1,11 @@
 import type { Config } from '@pandacss/types'
+import { parse } from 'acorn'
+import { simple } from 'acorn-walk'
+import MagicString from 'magic-string'
 import { realpathSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import { isAbsolute, normalize, relative } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { rolldown } from 'rolldown'
 import { PandaError } from './error'
 
@@ -27,6 +31,7 @@ export async function bundleConfig<T extends Config = Config>(
     platform: 'node',
     external: (id) => nodeBuiltins.has(id),
     treeshake: false,
+    plugins: [importMetaUrlPlugin()],
   })
 
   let chunks: Awaited<ReturnType<typeof build.generate>>
@@ -53,6 +58,65 @@ export async function bundleConfig<T extends Config = Config>(
 async function importBundledConfig(code: string) {
   const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
   return import(/* @vite-ignore */ dataUrl)
+}
+
+function importMetaUrlPlugin() {
+  return {
+    name: 'panda-import-meta-url',
+    transform(code: string, id: string) {
+      if (!isAbsolute(id) || !code.includes('import.meta.url')) return
+
+      const replacement = JSON.stringify(pathToFileURL(id).href)
+      const patched = replaceImportMetaUrl(code, replacement)
+      if (patched === code) return
+
+      return { code: patched, map: null }
+    },
+  }
+}
+
+function replaceImportMetaUrl(code: string, replacement: string): string {
+  const ast = parse(code, {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  })
+  const output = new MagicString(code)
+  let changed = false
+
+  simple(ast, {
+    MemberExpression(node) {
+      if (!isImportMetaUrl(node)) return
+
+      output.overwrite(node.start, node.end, replacement)
+      changed = true
+    },
+  })
+
+  return changed ? output.toString() : code
+}
+
+type MemberExpressionNode = {
+  type: 'MemberExpression'
+  object: unknown
+  property: unknown
+  computed: boolean
+  start: number
+  end: number
+}
+
+function isImportMetaUrl(node: MemberExpressionNode): boolean {
+  if (node.computed || !isIdentifier(node.property, 'url')) return false
+
+  const object = node.object
+  return isNode(object, 'MetaProperty') && isIdentifier(object.meta, 'import') && isIdentifier(object.property, 'meta')
+}
+
+function isIdentifier(value: unknown, name: string): value is { type: 'Identifier'; name: string } {
+  return isNode(value, 'Identifier') && value.name === name
+}
+
+function isNode<T extends string>(value: unknown, type: T): value is { type: T } & Record<string, any> {
+  return !!value && typeof value === 'object' && (value as { type?: unknown }).type === type
 }
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {

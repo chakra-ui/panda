@@ -1,7 +1,6 @@
 import type { Config, Preset } from '@pandacss/types'
 import { mergeConfigs } from '@pandacss/config/merge'
-import presetBase from '@pandacss/preset-base'
-import presetPanda from '@pandacss/preset-panda'
+import { bundledPresets } from '@/src/lib/config/bundled-presets'
 
 type Extendable<T> = T & { extend?: T }
 type ExtendableConfig = Extendable<Config>
@@ -9,22 +8,11 @@ type ExtendableConfig = Extendable<Config>
 export function resolveConfig(config?: Config) {
   if (!config) return
 
-  const presets = new Set<Preset>()
-  presets.add(presetBase)
+  const declared = (config.presets ?? [])
+    .map((preset) => (typeof preset === 'string' ? bundledPresets[preset] : preset))
+    .filter((preset): preset is Preset => typeof preset === 'object' && !(preset instanceof Promise))
 
-  if (config.presets?.length) {
-    for (const preset of config.presets) {
-      if (typeof preset === 'object' && !(preset instanceof Promise)) {
-        presets.add(preset)
-      }
-    }
-  } else {
-    presets.add(presetPanda)
-  }
-
-  presets.add(playgroundPreset)
-
-  const mergedConfig = getResolvedConfig({ ...config, presets: Array.from(presets) })
+  const mergedConfig = getResolvedConfig({ ...config, presets: [...declared, playgroundPreset] })
 
   if (!mergedConfig) return
 
@@ -33,7 +21,8 @@ export function resolveConfig(config?: Config) {
 
 /**
  * Recursively merge all presets into a single config.
- * Playground won't be able to handle bundling presets.
+ * The playground resolves declared built-in string presets to bundled objects,
+ * then merges only those declared presets plus its internal preview preset.
  */
 function getResolvedConfig(config: ExtendableConfig) {
   const stack: ExtendableConfig[] = [config]

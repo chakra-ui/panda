@@ -255,7 +255,7 @@ describe('cssgen command', () => {
       driver,
       cwd: dir,
       outdir: join(dir, 'styled-system'),
-      output: { log: () => {} },
+      output: { log: vi.fn() },
     }
 
     // Re-emit CSS from the existing driver — no full re-parse.

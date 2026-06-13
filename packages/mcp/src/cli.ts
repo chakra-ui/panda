@@ -13,7 +13,9 @@ const mainCommand = defineCommand({
   },
   run: async ({ args }) => {
     await startMcpServer({ cwd: args.cwd, config: args.config, silent: args.silent })
-    await new Promise(() => {})
+    await new Promise<never>(() => {
+      // Keep stdio transport alive until the parent process exits.
+    })
   },
 })
 

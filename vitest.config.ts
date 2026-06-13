@@ -32,9 +32,10 @@ export default defineConfig({
       'playground/**',
       'website/**',
       // Binding tests need `snapshotFormat.compareKeys: null` to preserve the
-      // JSON key order coming from the Rust binding. Run them via
-      // `pnpm --filter @pandacss/compiler test` which picks up the local config.
+      // JSON key order coming from the Rust/wasm binding. Run them via package
+      // test scripts, which pick up their local configs.
       'packages/compiler/__tests__/**',
+      'packages/compiler-wasm/__tests__/**',
     ],
   },
   resolve: {
