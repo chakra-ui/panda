@@ -7,9 +7,9 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "panda codegen",
-    "dev": "storybook dev -p 6006",
-    "build": "storybook build"
+    "codegen": "panda codegen",
+    "dev": "pnpm codegen && storybook dev -p 6006",
+    "build": "pnpm codegen && storybook build"
   },
   "keywords": [],
   "author": "",

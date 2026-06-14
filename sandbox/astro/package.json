@@ -4,10 +4,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
+    "dev": "pnpm codegen && astro dev",
+    "start": "pnpm codegen && astro dev",
+    "build": "pnpm codegen && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "codegen": "panda codegen",

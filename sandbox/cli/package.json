@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm codegen && vite",
     "dev:cli": "pnpm codegen && pnpm cssgen && concurrently \"pnpm cssgen:watch\" \"vite\"",
-    "build": "tsc && vite build",
+    "build": "pnpm codegen && tsc && vite build",
     "preview": "vite preview",
     "inspect": "node ../../packages/cli/bin.js inspect --cwd . --json",
     "codegen": "pnpm clean && node ../../packages/cli/bin.js codegen --cwd .",

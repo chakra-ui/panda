@@ -2,11 +2,10 @@
   "name": "@sandbox-nuxt-lib-source/nuxt-app",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "build": "pnpm codegen && nuxt build",
+    "dev": "pnpm codegen && nuxt dev",
+    "generate": "pnpm codegen && nuxt generate",
     "preview": "nuxt preview",
-    "prepare": "panda codegen",
     "codegen": "panda codegen",
     "cssgen": "panda cssgen",
     "postinstall": "nuxt prepare"

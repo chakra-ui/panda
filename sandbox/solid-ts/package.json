@@ -4,9 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "pnpm codegen && vite",
+    "build": "pnpm codegen && vite build",
     "serve": "vite preview",
     "codegen": "panda codegen",
     "cssgen": "panda cssgen"

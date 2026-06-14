@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "rimraf .next && next dev",
-    "build": "next build",
+    "codegen": "panda codegen",
+    "dev": "pnpm codegen && rimraf .next && next dev",
+    "build": "pnpm codegen && next build",
     "start": "next start",
     "lint": "next lint"
   },

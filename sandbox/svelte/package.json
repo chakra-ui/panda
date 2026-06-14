@@ -3,9 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "pnpm codegen && vite dev",
+    "build": "pnpm codegen && vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

@@ -5,11 +5,10 @@
   "scripts": {
     "css:codegen": "pnpm panda codegen --silent",
     "types:codegen": "tsx scripts/bundle-types.mts",
-    "prepare": "pnpm db:generate && pnpm css:codegen",
-    "build": "pnpm types:codegen && next build",
+    "build": "pnpm db:generate && pnpm css:codegen && pnpm types:codegen && next build",
     "start": "next start",
     "lint": "eslint .",
-    "dev": "next dev",
+    "dev": "pnpm db:generate && pnpm css:codegen && next dev",
     "db:format": "prisma format",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

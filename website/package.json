@@ -4,13 +4,15 @@
   "description": "",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
+    "codegen": "panda codegen",
     "dev:content": "velite --watch",
     "dev:next": "next dev",
-    "dev": "run-p dev:*",
+    "dev": "run-s codegen dev:watch",
+    "dev:watch": "run-p dev:content dev:next",
+    "build:codegen": "panda codegen",
     "build:content": "velite --clean",
     "build:next": "next build",
-    "build": "run-s build:*",
+    "build": "run-s build:codegen build:content build:next",
     "prebuild": "pnpm --filter=../packages/** build",
     "lint": "eslint . --max-warnings 0",
     "start": "next start"

@@ -2,8 +2,8 @@
   "name": "@sandbox-nuxt-lib-source/css-lib",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
     "codegen": "panda codegen",
+    "build": "pnpm codegen",
     "cssgen": "panda cssgen",
     "buildinfo": "panda buildinfo"
   },

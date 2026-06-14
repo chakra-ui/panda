@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "codegen": "panda codegen",
+    "dev": "pnpm codegen && vite",
+    "build": "pnpm codegen && tsc && vite build",
     "preview": "vite preview",
     "visualize": "pnpm panda codegen && vite-bundle-visualizer"
   },

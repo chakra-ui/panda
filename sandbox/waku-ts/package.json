@@ -4,9 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "waku dev",
-    "build": "waku build",
+    "dev": "pnpm codegen && waku dev",
+    "build": "pnpm codegen && waku build",
     "start": "waku start",
     "codegen": "panda codegen",
     "cssgen": "panda cssgen"

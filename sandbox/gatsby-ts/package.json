@@ -7,10 +7,10 @@
     "gatsby"
   ],
   "scripts": {
-    "prepare": "panda codegen",
-    "dev": "gatsby develop",
-    "start": "gatsby develop",
-    "build": "gatsby build",
+    "codegen": "panda codegen",
+    "dev": "pnpm codegen && gatsby develop",
+    "start": "pnpm codegen && gatsby develop",
+    "build": "pnpm codegen && gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "typecheck": "tsc --noEmit"
