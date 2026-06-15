@@ -4,8 +4,8 @@
 use pandacss_config::CssSyntaxKind;
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl,
-    Item, ItemNode, Module, TsType,
+    Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, ExportDecl, Expr,
+    ImportDecl, Item, ItemNode, Module, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -65,6 +65,10 @@ fn module() -> Module {
             type_annotation: Some(TsType::Ref("RecipeCreatorFn".into())),
             init: Some(Expr::Raw(CVA_IMPL.into())),
             js_doc: None,
+        })))
+        .with_item(Item::ty(ItemNode::Export(ExportDecl::TypeNamed {
+            names: vec!["RecipeVariant".into(), "RecipeVariantProps".into()],
+            source: "../types/recipe".into(),
         })))
 }
 

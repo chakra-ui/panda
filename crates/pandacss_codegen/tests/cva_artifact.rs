@@ -63,6 +63,8 @@ fn emits_ts_source_cva() {
         getVariantProps,
       })
     }
+
+    export type { RecipeVariant, RecipeVariantProps } from '../types/recipe';
     ");
 }
 
@@ -130,6 +132,8 @@ fn emits_js_runtime_and_declarations() {
     import type { RecipeCreatorFn } from '../types/recipe.d.mts';
 
     export declare const cva: RecipeCreatorFn;
+
+    export { RecipeVariant, RecipeVariantProps } from '../types/recipe.d.mts';
     ");
 }
 
