@@ -8,7 +8,10 @@
     "build": "pnpm codegen && tsc && vite build",
     "preview": "vite preview",
     "codegen": "panda codegen",
-    "cssgen": "panda cssgen"
+    "cssgen": "panda cssgen",
+    "inspect": "panda inspect --cwd . --json",
+    "buildinfo": "panda buildinfo --cwd .",
+    "test": "pnpm inspect && pnpm buildinfo && pnpm build"
   },
   "dependencies": {
     "react": "19.2.0",

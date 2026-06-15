@@ -30,7 +30,6 @@ const TARGETS = [
   'sandbox/qwik-ts',
   'sandbox/remix',
   'sandbox/storybook',
-  'sandbox/vite-react-postcss',
   'sandbox/nuxt',
   'sandbox/svelte',
   'sandbox/astro',

@@ -3,34 +3,50 @@ import {
   Profiler as ReactProfiler,
   useState,
   useCallback,
+  type ReactNode,
+  type ProfilerOnRenderCallback,
 } from "react";
 
-function ProfilerResult(
+type ProfilerResult = {
+  id: string;
+  phase: string;
+  actualDuration: number;
+  baseDuration: number;
+  startTime: number;
+  commitTime: number;
+};
+
+const entries: ProfilerResult[] = [];
+
+const profilerResults: ProfilerOnRenderCallback = (
   id,
   phase,
   actualDuration,
   baseDuration,
   startTime,
   commitTime
-) {
-  this.id = id;
-  this.phase = phase;
-  this.actualDuration = actualDuration;
-  this.baseDuration = baseDuration;
-  this.startTime = startTime;
-  this.commitTime = commitTime;
-}
-
-const entries = [];
-
-const profilerResults = function (...args) {
-  entries.push(new ProfilerResult(...args));
+) => {
+  entries.push({
+    id,
+    phase,
+    actualDuration,
+    baseDuration,
+    startTime,
+    commitTime,
+  });
   console.group("Profiler");
   console.table(entries);
   console.groupEnd();
 };
 
-export const Profiler = ({ children, id, name, onRerender }) => {
+type ProfilerProps = {
+  children: ReactNode;
+  id: string;
+  name?: string;
+  onRerender: (value: number) => void;
+};
+
+export const Profiler = ({ children, id, onRerender }: ProfilerProps) => {
   const [value, setValue] = useState(0);
 
   const onClick = useCallback(() => {
