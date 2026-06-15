@@ -40,7 +40,7 @@ jobs:
         with:
           name: compiler-native
           path: |
-            packages/compiler/compiler.node
+            packages/compiler/*.node
             packages/compiler/binding.cjs
             packages/compiler/native.d.ts
           if-no-files-found: error
