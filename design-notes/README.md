@@ -41,6 +41,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
   the engine/JS/CLI layering.
 - [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems` resolves
   manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS modules.
+- [Chakra UI design-system migration](./chakra-ui-design-system-migration.md) — Chakra-specific plan for replacing
+  Emotion with a Panda v2 design-system package using a real Chakra-owned styled-system package, one app-composed
+  `styled-system`, build info, component extraction metadata, framework aliases, and TypeScript path resolution.
 - [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
   container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
   migration guidance for legacy `containerSizes`/`cq` concepts.
