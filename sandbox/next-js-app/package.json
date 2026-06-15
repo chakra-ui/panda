@@ -19,8 +19,7 @@
     "typescript": "6.0.2"
   },
   "devDependencies": {
-    "@pandacss/cli": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*"
   }

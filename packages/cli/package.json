@@ -17,6 +17,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./run": {
+      "source": "./src/cli-main.ts",
+      "default": "./dist/cli-main.js"
+    },
     "./package.json": "./package.json"
   },
   "sideEffects": false,

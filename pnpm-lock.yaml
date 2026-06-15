@@ -123,10 +123,10 @@ importers:
         version: 1.11.3(jsdom@27.2.0)(typescript@6.0.2)
       '@pandacss/preset-base':
         specifier: 1.11.3
-        version: 1.11.3
+        version: link:../packages/preset-base
       '@pandacss/preset-panda':
         specifier: 1.11.3
-        version: 1.11.3
+        version: link:../packages/preset-panda
       '@pandacss/shared':
         specifier: 1.11.3
         version: 1.11.3
@@ -135,7 +135,7 @@ importers:
         version: 1.11.3
       '@pandacss/types':
         specifier: 1.11.3
-        version: 1.11.3
+        version: link:../packages/types
 
   packages/cli:
     dependencies:
@@ -456,12 +456,9 @@ importers:
         specifier: 1.9.10
         version: 1.9.10
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -637,12 +634,9 @@ importers:
       '@docusaurus/types':
         specifier: 3.9.2
         version: 3.9.2(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -671,12 +665,9 @@ importers:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -717,12 +708,9 @@ importers:
         specifier: 6.0.2
         version: 6.0.2
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -754,12 +742,9 @@ importers:
         specifier: 6.0.2
         version: 6.0.2
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -879,12 +864,9 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -1005,12 +987,9 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -1102,9 +1081,9 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
@@ -1145,12 +1124,9 @@ importers:
         specifier: 0.27.2
         version: 0.27.2(@swc/helpers@0.5.17)(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(react-dom@19.2.0(react@19.2.0))(react-server-dom-webpack@19.2.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(webpack@5.102.1(@swc/core@1.15.3(@swc/helpers@0.5.17))(esbuild@0.27.0)))(react@19.2.0)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
     devDependencies:
-      '@pandacss/cli':
+      '@pandacss/dev':
         specifier: workspace:*
-        version: link:../../packages/cli
-      '@pandacss/postcss':
-        specifier: workspace:*
-        version: link:../../packages/postcss
+        version: link:../../packages/dev
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../packages/preset-base
