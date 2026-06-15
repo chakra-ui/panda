@@ -3,6 +3,7 @@ import { buildCommand } from './commands/build'
 import { buildinfoCommand } from './commands/buildinfo'
 import { codegenCommand } from './commands/codegen'
 import { cssgenCommand } from './commands/cssgen'
+import { debugCommand } from './commands/debug'
 import { initCommand } from './commands/init'
 import { inspectCommand } from './commands/inspect'
 import { validateCommand } from './commands/validate'
@@ -27,6 +28,7 @@ export async function main(argv = process.argv): Promise<void> {
       buildinfo: buildinfoCommand(ctx),
       codegen: codegenCommand(ctx),
       cssgen: cssgenCommand(ctx),
+      debug: debugCommand(ctx),
       init: initCommand(ctx),
       inspect: inspectCommand(ctx),
       validate: validateCommand(ctx),

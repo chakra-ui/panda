@@ -45,32 +45,29 @@ the build uses the config `include`. Add when the driver supports an include ove
 **Cross-platform:** routing is pure string logic (unit-tested, OS-independent); paths delegate to the compiler/driver.
 TS CI runs on Linux (`ubuntu-latest`); Windows relies on this OS-agnostic design (no Windows TS CI job).
 
-## 2. `panda debug`
+## 2. `panda debug` — done
 
-v1 `debug [glob]` dumped, per the `--outdir` (default `styled-system/debug`):
+v1 `debug [glob]` dumped config + per-file AST + per-file CSS under `--outdir` (default `styled-system/debug`), with
+`--dry` / `--only-config`.
 
-- `config.json` — the resolved config.
-- `<file>.ast.json` — extraction result per source file.
-- `<file>.css` — generated CSS per source file.
+**What shipped** (`commands/debug.ts`, `runDebug`) — same flags (`--outdir`, `--dry`, `--only-config`), writing under
+`<outdir>/debug`:
 
-Flags: `--dry` (stdout instead of disk), `--outdir`, `--only-config`.
+- `info.json` — platform, arch, node version, config path, source count. The "next info"-style header so one dump is
+  enough for a bug report.
+- `config.json` — the resolved config (`driver.config`, the `SerializedConfig`).
+- `<file>.extract.json` — per-file extraction via `driver.compiler.extractFileSource(path, source)` (`calls`, `jsx`,
+  `diagnostics`). Source list comes from `driver.scan()`, read with node `fs`.
+- `styles.css` — the **whole-project** stylesheet (`driver.parseFiles()` then `driver.cssgen()`).
 
-**v2 mapping** — all available on the driver/compiler:
+**v2 adaptations vs v1:**
 
-- config dump → `compiler.spec()`.
-- per-file extraction → `compiler.extractDebug(path, source)` (`ExtractDebugResult`).
-- per-file css → `cssgen()` scoped per file (or `extractDebug` + a per-file css emit).
-
-**Open decision — scope of `debug`.** Two readings of "add back the debug command":
-
-- **(a) v1 extraction dump** — config + per-file AST + per-file CSS. Matches "add back". Primary intent here.
-- **(b) `next info`-style environment dump** — config path, native binding version, platform, resolved options; suitable
-  for pasting into bug reports. This is what [cli.md](./cli.md) Phase 4 currently calls `debug`.
-
-**Decision:** build (a) — the v1 extraction dump — as the primary behavior, since Sage said "add back". Fold (b) in as a
-lightweight header (binding version + platform + config path) printed at the top of the dump, so a single `panda debug`
-output is enough for a bug report. Revisit if Sage meant (b) specifically. This supersedes the Phase 4 `debug`
-definition in cli.md.
+- `extractFileSource` (the facade method) replaces v1's `extractDebug` — the latter is on the raw binding, not the
+  `Compiler` facade.
+- **Project-level CSS, not per-file.** v2 emits atomic CSS at the project level (atoms dedupe across files), so a
+  per-file CSS slice isn't a meaningful unit. The dump carries one `styles.css`.
+- Combined the v1 extraction dump (the "add back" reading) with a `next info`-style header, so both bug-report needs are
+  covered by one command. This supersedes the Phase 4 `debug` definition in [cli.md](./cli.md).
 
 ## 3. Tracing usability
 

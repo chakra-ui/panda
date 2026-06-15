@@ -103,6 +103,30 @@ export interface ValidateFlags
     | 'traceFile'
   > {}
 
+/** Flags for `panda debug` — dump resolved config + per-file extraction for bug reports. */
+export interface DebugFlags
+  extends Pick<
+    CommonFlags,
+    | 'cwd'
+    | 'config'
+    | 'silent'
+    | 'json'
+    | 'format'
+    | 'quiet'
+    | 'maxWarnings'
+    | 'verbose'
+    | 'logfile'
+    | 'trace'
+    | 'traceOutput'
+    | 'traceFile'
+  > {
+  outdir?: string
+  /** Print the dump to stdout instead of writing files. */
+  dry?: boolean
+  /** Only dump the resolved config, skip per-file extraction. */
+  onlyConfig?: boolean
+}
+
 export interface CommandContext {
   cwd: string
 }
@@ -137,6 +161,13 @@ export interface BuildResult extends CommandResult {
   diagnosticCount: number
   missing: string[]
   stale: string[]
+}
+
+export interface DebugResult extends CommandResult {
+  outdir?: string
+  /** Debug files written (or, in `--dry`, the files that would be written). */
+  files: string[]
+  sourceCount: number
 }
 
 export interface InitResult extends CommandResult {

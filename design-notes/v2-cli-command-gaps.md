@@ -9,13 +9,13 @@ a commitment to port every command.
 
 ## Gaps vs v1
 
-| v1 command          | Status on v2     | Notes                                                                                                                      |
-| ------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| bare `panda`        | done             | Default command (no subcommand) = full build (codegen + cssgen). See [beta-cli-commands](./beta-cli-commands.md).          |
-| `debug`             | planned for beta | Diagnostic dump (config + per-file extraction + css) via the Rust driver. See [beta-cli-commands](./beta-cli-commands.md). |
-| `studio`            | dropped          | Astro studio package was removed. Replacement is expected to be a shadcn-style token visualizer.                           |
-| `analyze`           | dropped          | No Rust analyze equivalent yet. This also gates MCP usage-report functionality.                                            |
-| `ship` / `emit-pkg` | not ported       | Pre-bundled package emit. Confirm whether this is still needed under the v2 codegen model.                                 |
+| v1 command          | Status on v2 | Notes                                                                                                                                     |
+| ------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| bare `panda`        | done         | Default command (no subcommand) = full build (codegen + cssgen). See [beta-cli-commands](./beta-cli-commands.md).                         |
+| `debug`             | done         | Diagnostic dump (info + config + per-file extraction + project css) via the Rust driver. See [beta-cli-commands](./beta-cli-commands.md). |
+| `studio`            | dropped      | Astro studio package was removed. Replacement is expected to be a shadcn-style token visualizer.                                          |
+| `analyze`           | dropped      | No Rust analyze equivalent yet. This also gates MCP usage-report functionality.                                                           |
+| `ship` / `emit-pkg` | not ported   | Pre-bundled package emit. Confirm whether this is still needed under the v2 codegen model.                                                |
 
 ## Other parity gaps
 
