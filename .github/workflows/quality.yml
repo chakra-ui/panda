@@ -90,6 +90,9 @@ jobs:
           name: compiler-native
           path: packages/compiler
 
+      - name: Generate codegen fixtures
+        run: pnpm codegen codegen
+
       - name: Run tests
         run: pnpm test && pnpm test:codegen
 
