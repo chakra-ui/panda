@@ -124,7 +124,7 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
   return result
 }
 
-async function cssgenOnce(
+export async function cssgenOnce(
   ctx: RunContext,
   outfile: string,
   flags: CssgenFlags,

@@ -103,7 +103,11 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
   return result
 }
 
-async function codegenOnce(ctx: RunContext, flags: CodegenFlags, _diff?: DiffConfigResult): Promise<CheckOutput> {
+export async function codegenOnce(
+  ctx: RunContext,
+  flags: CodegenFlags,
+  _diff?: DiffConfigResult,
+): Promise<CheckOutput> {
   const outdir = ctx.driver.getOutdir(flags.outdir)
   if (flags.check) {
     const result = checkCodegenOutput(ctx, outdir)

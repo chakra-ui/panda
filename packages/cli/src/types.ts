@@ -32,6 +32,15 @@ export interface CssgenFlags extends CommonFlags {
   check?: boolean
 }
 
+/** Flags for the default `panda` command — full build (codegen + cssgen). */
+export interface BuildFlags extends CommonFlags {
+  outdir?: string
+  outfile?: string
+  splitting?: boolean
+  clean?: boolean
+  check?: boolean
+}
+
 export interface InitFlags extends Omit<CommonFlags, 'watch' | 'watchDebounce' | 'quiet' | 'maxWarnings' | 'verbose'> {
   force?: boolean
   postcss?: boolean
@@ -112,6 +121,17 @@ export interface CodegenResult extends CommandResult {
 
 export interface CssgenResult extends CommandResult {
   outfile?: string
+  parsed: ParseFileReport[]
+  cssBytes: number
+  diagnosticCount: number
+  missing: string[]
+  stale: string[]
+}
+
+export interface BuildResult extends CommandResult {
+  outdir?: string
+  outfile?: string
+  files: string[]
   parsed: ParseFileReport[]
   cssBytes: number
   diagnosticCount: number
