@@ -200,6 +200,9 @@ export function createSlotRecipeContext(recipeInput) {
       const resolvedSlots = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
       if (restProps.className == null && options?.defaultProps?.className) restProps.className = options.defaultProps.className
       const resolvedProps = resolveProps(restProps, resolvedSlots[slot])
+      options?.forwardProps?.forEach((key) => {
+        if (key in variantProps) resolvedProps[key] = variantProps[key]
+      })
       return createElement(SlotStylesContext.Provider, {
         value: resolvedSlots,
         children: createElement(StyledComponent, {

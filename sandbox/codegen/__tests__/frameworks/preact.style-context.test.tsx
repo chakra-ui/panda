@@ -51,4 +51,12 @@ describe('style context - preact', () => {
       `"<div data-testid="button-root"><span data-slot="root" class="slot-button__root slot-button__root--visual_solid">Click me</span></div>"`,
     )
   })
+
+  test('forwardProps exposes the variant to the component', () => {
+    const RootWithForward = withProvider('div', 'root', { forwardProps: ['visual'] })
+
+    const { container } = render(<RootWithForward visual="outline" />)
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(`"<div visual="outline" data-slot="root" class="slot-button__root slot-button__root--visual_outline"></div>"`)
+  })
 })

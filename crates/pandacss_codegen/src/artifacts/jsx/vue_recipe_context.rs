@@ -232,6 +232,9 @@ export function createSlotRecipeContext(recipeInput) {
         return () => {
           const resolvedProps = resolveProps(split.value.restProps, resolvedSlots.value[slot])
           resolvedProps['data-slot'] = slot
+          options?.forwardProps?.forEach((key) => {
+            if (key in split.value.variantProps) resolvedProps[key] = split.value.variantProps[key]
+          })
           return h(StyledComponent, resolvedProps, slots)
         }
       },
