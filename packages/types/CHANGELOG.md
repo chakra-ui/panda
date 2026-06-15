@@ -1,5 +1,7 @@
 # @pandacss/types
 
+## 2.0.0-beta.0
+
 ## 1.10.0
 
 ### Minor Changes
