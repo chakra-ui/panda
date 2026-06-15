@@ -12,10 +12,8 @@ const mainCommand = defineCommand({
     silent: { type: 'boolean', description: 'Suppress startup logs' },
   },
   run: async ({ args }) => {
+    // stdin keeps the process alive; exitOnDisconnect (in startMcpServer) ends it.
     await startMcpServer({ cwd: args.cwd, config: args.config, silent: args.silent })
-    await new Promise<never>(() => {
-      // Keep stdio transport alive until the parent process exits.
-    })
   },
 })
 

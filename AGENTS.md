@@ -249,6 +249,10 @@ Brief description of the change and its impact.
 6. **Sandbox warnings**: Even if main packages are fine, check sandbox projects for warnings
 7. **Extraction is Rust/Oxc now**: `ts-morph`/`ts-evaluator` were removed with the v1 node pipeline. Extraction runs
    through `@pandacss/compiler` (Oxc) — don't reintroduce ts-morph assumptions.
+8. **MCP stdio lifecycle**: keep it minimal. The SDK transport keeps the process alive via `stdin`; on disconnect just
+   exit (see `exitOnDisconnect` in `packages/mcp/src/server.ts` — stdin `end`/`close` + `SIGINT`/`SIGTERM`/`SIGHUP`,
+   matching popular servers like context7). Do **not** add `await new Promise(() => {})` keep-alive, or heavy
+   `uncaughtException`/EPIPE guards — no reference/shadcn/context7 server does that.
 
 ## Package Relationships
 

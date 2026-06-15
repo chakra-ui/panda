@@ -170,6 +170,12 @@ export async function startMcpServer(options: StartMcpServerOptions = {}) {
 
   // Connect to transport
   const serverTransport = transport ?? new StdioServerTransport()
+
+  // Own process exit only for the default stdio transport, not injected test ones.
+  if (!transport) {
+    exitOnDisconnect()
+  }
+
   await server.connect(serverTransport)
 
   // Use stderr for logging (stdout is reserved for MCP protocol)
@@ -182,4 +188,24 @@ export async function startMcpServer(options: StartMcpServerOptions = {}) {
   }
 
   return server
+}
+
+export interface ExitOnDisconnectOptions {
+  stdin?: { on(event: string, listener: () => void): unknown }
+  on?: (event: string, listener: () => void) => unknown
+  exit?: (code: number) => void
+}
+
+// Exit on host disconnect (stdin EOF) or termination signal instead of orphaning;
+// the SDK transport keeps the process alive but never exits on its own.
+export function exitOnDisconnect(options: ExitOnDisconnectOptions = {}) {
+  const stdin = options.stdin ?? process.stdin
+  const on = options.on ?? process.on.bind(process)
+  const exit = options.exit ?? ((code: number) => process.exit(code))
+
+  stdin.on('end', () => exit(0))
+  stdin.on('close', () => exit(0))
+  on('SIGINT', () => exit(0))
+  on('SIGTERM', () => exit(0))
+  on('SIGHUP', () => exit(0))
 }
