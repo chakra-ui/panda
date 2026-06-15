@@ -42,7 +42,7 @@
     "bin.js"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@pandacss/compiler": "workspace:*",
     "citty": "0.1.6",
     "zod": "^4.0.0"
