@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/config",
-  "version": "1.0.0",
+  "version": "1.11.3",
   "description": "Self-contained loader that bundles and serializes a Panda config for the Rust compiler",
   "type": "module",
   "main": "./dist/index.js",
