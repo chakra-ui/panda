@@ -427,7 +427,14 @@ build. Per-function `#[allow(...)]` is fine when justified — include a `reason
   literal-spread merge.
 - ✅ `extract()` (combined hot path) + `extract_debug()` (kitchen-sink) — single parse per file; lean result strips
   `imports`/`matched` for production callers.
-- ⬜ Next: Phase 5 — same-file static evaluator (identifier resolution, `token()` resolution, conditionals).
+- ✅ Phase 5 — same-file static evaluator (`scope.rs` + `literal.rs`): `oxc_semantic` scope table for `const`/`let`/`var`
+  identifier resolution (with mutation checks + cycle guard), destructuring, TS enums, param `TSTypeLiteral`s; literal
+  folding for unary/binary/logical/ternary/member/optional-chain/template exprs with JS coercion parity;
+  `token()`/`token.var()` resolution (opacity modifiers, fallbacks). See `design-notes/literal-evaluator.md`.
+- ✅ Cross-file resolution (`cross_file.rs`) — `CrossFileResolver` follows `import { x } from './…'` and folds imported
+  values with same-file semantics. See `design-notes/cross-file-resolution.md`.
+- ✅ Framework adapters — Astro / Svelte / Vue SFC extraction.
+- ⬜ Open follow-up: CSS minification parity in `pandacss_stylesheet` (native emission is done; minify is the gap).
 
 ### Parse-error contract
 
