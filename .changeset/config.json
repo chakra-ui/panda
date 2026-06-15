@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [["@pandacss/**"]],
   "linked": [],
-  "access": "restricted",
+  "access": "public",
   "baseBranch": "v2",
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,

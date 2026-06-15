@@ -1,4 +1,4 @@
-import pandacss from '@pandacss/postcss'
+import pandacss from '@pandacss/dev/postcss'
 
 export default {
   plugins: [pandacss()],

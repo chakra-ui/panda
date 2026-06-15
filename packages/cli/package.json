@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/cli",
-  "version": "1.0.0",
+  "version": "1.11.3",
   "description": "CLI for Panda CSS, powered by the Rust compiler",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,6 +16,10 @@
       "source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./run": {
+      "source": "./src/cli-main.ts",
+      "default": "./dist/cli-main.js"
     },
     "./package.json": "./package.json"
   },

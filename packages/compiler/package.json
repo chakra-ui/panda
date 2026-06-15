@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler",
-  "version": "1.0.0",
+  "version": "1.11.3",
   "description": "Native Rust binding for the Panda compiler engine",
   "type": "module",
   "main": "./dist/index.js",

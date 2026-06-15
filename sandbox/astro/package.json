@@ -18,8 +18,7 @@
     "solid-js": "1.9.10"
   },
   "devDependencies": {
-    "@pandacss/cli": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*"
   }

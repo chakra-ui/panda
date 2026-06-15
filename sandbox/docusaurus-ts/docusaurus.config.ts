@@ -1,7 +1,7 @@
 import { themes as prismThemes } from 'prism-react-renderer'
 import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
-import pandaCss from '@pandacss/postcss'
+import pandaCss from '@pandacss/dev/postcss'
 
 const config: Config = {
   plugins: [

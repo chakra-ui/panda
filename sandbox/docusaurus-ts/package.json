@@ -28,8 +28,7 @@
     "@docusaurus/module-type-aliases": "3.9.2",
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
-    "@pandacss/cli": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "typescript": "6.0.2"

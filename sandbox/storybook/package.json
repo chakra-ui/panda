@@ -15,8 +15,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@pandacss/cli": "workspace:*",
-    "@pandacss/postcss": "workspace:*",
+    "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@storybook/addon-docs": "10.1.2",
