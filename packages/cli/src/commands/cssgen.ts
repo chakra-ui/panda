@@ -124,11 +124,14 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
   return result
 }
 
-export async function cssgenOnce(
-  ctx: RunContext,
-  outfile: string,
-  flags: CssgenFlags,
-): Promise<Pick<CssgenResult, 'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'>> {
+// `cssFiles` is the count of CSS files written or checked — 1 by default, N under `--splitting` —
+// so callers (e.g. the build summary) can report it without assuming a single styles.css.
+type CssgenOnceResult = Pick<
+  CssgenResult,
+  'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'
+> & { cssFiles: number }
+
+export async function cssgenOnce(ctx: RunContext, outfile: string, flags: CssgenFlags): Promise<CssgenOnceResult> {
   const parsed = time({ timings: ctx.timings, phase: 'parse', run: () => ctx.driver.parseFiles() })
 
   if (flags.check) {
@@ -143,7 +146,7 @@ export async function writeCssgenOutput(
   outfile: string,
   flags: CssgenFlags,
   parsed: ParseFileReport[],
-): Promise<Pick<CssgenResult, 'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'>> {
+): Promise<CssgenOnceResult> {
   const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
@@ -159,6 +162,7 @@ export async function writeCssgenOutput(
       cssBytes,
       diagnosticCount: parseDiagnostics.length,
       diagnostics: parseDiagnostics,
+      cssFiles: output.files.length,
       missing: [],
       stale: [],
     }
@@ -179,6 +183,7 @@ export async function writeCssgenOutput(
     cssBytes,
     diagnosticCount: diagnostics.length,
     diagnostics,
+    cssFiles: 1,
     missing: [],
     stale: [],
   }
@@ -189,7 +194,7 @@ function checkCssgenOutput(
   outfile: string,
   flags: CssgenFlags,
   parsed: ParseFileReport[],
-): Pick<CssgenResult, 'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'> {
+): CssgenOnceResult {
   const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
@@ -211,6 +216,7 @@ function checkCssgenOutput(
       cssBytes,
       diagnosticCount: parseDiagnostics.length,
       diagnostics: parseDiagnostics,
+      cssFiles: check.files.length,
       ...check,
     }
   }
@@ -229,6 +235,7 @@ function checkCssgenOutput(
     cssBytes,
     diagnosticCount: diagnostics.length,
     diagnostics,
+    cssFiles: check.files.length,
     ...check,
   }
 }

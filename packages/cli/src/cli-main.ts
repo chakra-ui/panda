@@ -1,5 +1,5 @@
 import { defineCommand, runMain } from 'citty'
-import { buildCommand } from './commands/build'
+import { buildArgs, buildCommand } from './commands/build'
 import { buildinfoCommand } from './commands/buildinfo'
 import { codegenCommand } from './commands/codegen'
 import { cssgenCommand } from './commands/cssgen'
@@ -18,12 +18,14 @@ export async function main(argv = process.argv): Promise<void> {
   const build = buildCommand(ctx)
 
   // Runless on purpose: citty runs a root's `run` even after a subcommand matches, which would re-run
-  // the build on top of every subcommand.
+  // the build on top of every subcommand. `args` is here only so `panda --help` documents the default
+  // build's flags — the build command object itself lives outside this subcommand tree.
   const dispatcher = defineCommand({
     meta: {
       name: 'panda',
-      description: 'CLI for the Panda CSS Rust compiler',
+      description: 'Generate the panda system and CSS. Run with no subcommand for the full build.',
     },
+    args: buildArgs(ctx),
     subCommands: {
       buildinfo: buildinfoCommand(ctx),
       codegen: codegenCommand(ctx),

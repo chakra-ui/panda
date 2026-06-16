@@ -16,7 +16,7 @@ export function debugCommand(ctx: CommandContext) {
     args: {
       cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
       config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      outdir: { type: 'string', description: 'Output directory for debug files (default <outdir>/debug)' },
+      outdir: { type: 'string', description: 'Debug output directory (used as-is; default <styled-system>/debug)' },
       dry: { type: 'boolean', description: 'Print the dump to stdout instead of writing files' },
       onlyConfig: { type: 'boolean', description: 'Only dump the resolved config, skip per-file extraction' },
       silent: { type: 'boolean', description: 'Suppress all messages except errors' },
@@ -64,10 +64,23 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
 
       if (!flags.onlyConfig) {
         for (const source of sources) {
-          const code = readFileSync(source, 'utf8')
-          const result = driver.compiler.extractFileSource(source, code)
-          fileDiagnostics.push(...normalizeDiagnostics(result.diagnostics, { cwd, file: source }))
-          dump[`${safeName(cwd, source)}.extract.json`] = JSON.stringify(result, null, 2)
+          // A debug dump should survive a broken project: capture a read/extract failure as a diagnostic
+          // and write the error into the per-file slot instead of aborting the whole command.
+          try {
+            const code = readFileSync(source, 'utf8')
+            const result = driver.compiler.extractFileSource(source, code)
+            fileDiagnostics.push(...normalizeDiagnostics(result.diagnostics, { cwd, file: source }))
+            dump[`${safeName(cwd, source)}.extract.json`] = JSON.stringify(result, null, 2)
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            fileDiagnostics.push(
+              ...normalizeDiagnostics(
+                [{ code: 'debug_extract_error', severity: 'error', message, category: 'debug' }],
+                { cwd, file: source },
+              ),
+            )
+            dump[`${safeName(cwd, source)}.extract.json`] = JSON.stringify({ error: message }, null, 2)
+          }
         }
 
         // v2 emits atomic CSS at the project level (atoms dedupe across files), so the dump carries the

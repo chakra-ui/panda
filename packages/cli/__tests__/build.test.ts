@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runBuild } from '../src'
@@ -119,6 +119,26 @@ describe('build command (default panda)', () => {
     const result = await runBuild({ cwd: dir, check: true, silent: true })
 
     expect(result).toMatchObject({ ok: true, exitCode: 0, missing: [], stale: [] })
+  })
+
+  it('--check counts every split CSS file in the summary, not just one', async () => {
+    dir = createFixture()
+
+    await runBuild({ cwd: dir, splitting: true, silent: true })
+
+    const cssCount = readdirSync(join(dir, 'styled-system'), { recursive: true }).filter((path) =>
+      String(path).endsWith('.css'),
+    ).length
+    expect(cssCount).toBeGreaterThan(1) // splitting emits multiple CSS files
+
+    const logs: string[] = []
+    const result = await runBuild({ cwd: dir, splitting: true, check: true }, { log: (m) => logs.push(m) })
+
+    expect(result.ok).toBe(true)
+    const summary = logs.find((line) => line.startsWith('panda: checked'))
+    const checked = Number(summary?.match(/checked (\d+) files/)?.[1])
+    // codegen files + every split CSS file — guards against the old hardcoded "+1"
+    expect(checked).toBe(result.files.length + cssCount)
   })
 
   it('--check fails when output is missing', async () => {

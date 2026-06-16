@@ -1,7 +1,7 @@
-import { defineCommand } from 'citty'
+import { defineCommand, type ArgsDef } from 'citty'
 import { isCheckClean } from '../check'
 import { runCommand } from '../run-command'
-import { type CliDiagnostic, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { type CliDiagnostic, dedupeDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
@@ -10,33 +10,39 @@ import { codegenOnce } from './codegen'
 import { cssgenOnce } from './cssgen'
 import { formatWatchError, startProjectWatch } from '../watch'
 
+// Shared so the dispatcher in cli-main.ts can render these flags under `panda --help`,
+// where the default build is reachable but its command object lives outside the subcommand tree.
+export function buildArgs(ctx: CommandContext): ArgsDef {
+  return {
+    cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
+    config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
+    watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
+    outdir: { type: 'string', description: 'Output directory for generated files' },
+    outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
+    splitting: { type: 'boolean', description: 'Emit split CSS files' },
+    clean: { type: 'boolean', description: 'Clean the output directory before generating' },
+    silent: { type: 'boolean', description: 'Suppress all messages except errors' },
+    json: { type: 'boolean', description: 'Print JSON' },
+    format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
+    quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
+    maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
+    verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
+    logfile: { type: 'string', description: 'Write human output to a log file' },
+    trace: { type: 'boolean', description: 'Enable compiler tracing' },
+    traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
+    traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
+    watchDebounce: { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
+    check: { type: 'boolean', description: 'Check generated files without writing' },
+  }
+}
+
 export function buildCommand(ctx: CommandContext) {
   return defineCommand({
     meta: {
       name: 'panda',
       description: 'Generate the panda system and CSS (codegen + cssgen)',
     },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
-      outdir: { type: 'string', description: 'Output directory for generated files' },
-      outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
-      splitting: { type: 'boolean', description: 'Emit split CSS files' },
-      clean: { type: 'boolean', description: 'Clean the output directory before generating' },
-      silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-      maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-      verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
-      trace: { type: 'boolean', description: 'Enable compiler tracing' },
-      traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-      traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-      watchDebounce: { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
-      check: { type: 'boolean', description: 'Check generated files without writing' },
-    },
+    args: buildArgs(ctx),
     run: async ({ args }) => setExitCode(await runBuild(args as BuildFlags)),
   })
 }
@@ -134,10 +140,11 @@ async function buildOnce(ctx: RunContext, outfile: string, flags: BuildFlags): P
   })
   const css = await cssgenOnce(ctx, outfile, subFlags)
 
-  const diagnostics = normalizeDiagnostics(
-    [...normalizeDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd }), ...css.diagnostics],
-    { cwd: ctx.cwd },
-  )
+  // compiler diagnostics need normalizing; css.diagnostics are already normalized — just dedupe the union.
+  const diagnostics = dedupeDiagnostics([
+    ...normalizeDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd }),
+    ...css.diagnostics,
+  ])
 
   const missing = [...codegen.missing, ...css.missing]
   const stale = [...codegen.stale, ...css.stale]
@@ -145,7 +152,7 @@ async function buildOnce(ctx: RunContext, outfile: string, flags: BuildFlags): P
   if (shouldPrintHumanSummary(flags)) {
     ctx.output.log(
       flags.check
-        ? `panda: checked ${codegen.files.length + 1} files (missing ${missing.length}, stale ${stale.length})`
+        ? `panda: checked ${codegen.files.length + css.cssFiles} files (missing ${missing.length}, stale ${stale.length})`
         : `panda: generated ${codegen.files.length} files, wrote ${css.cssBytes} bytes of CSS`,
     )
   }

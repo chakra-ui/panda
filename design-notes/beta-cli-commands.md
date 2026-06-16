@@ -50,8 +50,8 @@ TS CI runs on Linux (`ubuntu-latest`); Windows relies on this OS-agnostic design
 v1 `debug [glob]` dumped config + per-file AST + per-file CSS under `--outdir` (default `styled-system/debug`), with
 `--dry` / `--only-config`.
 
-**What shipped** (`commands/debug.ts`, `runDebug`) — same flags (`--outdir`, `--dry`, `--only-config`), writing under
-`<outdir>/debug`:
+**What shipped** (`commands/debug.ts`, `runDebug`) — same flags (`--outdir`, `--dry`, `--only-config`). Output defaults
+to `<styled-system>/debug`; `--outdir` overrides it and is used as-is (the literal target, not `<outdir>/debug`):
 
 - `info.json` — platform, arch, node version, config path, source count. The "next info"-style header so one dump is
   enough for a bug report.
