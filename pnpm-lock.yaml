@@ -227,6 +227,12 @@ importers:
       '@pandacss/postcss':
         specifier: workspace:*
         version: link:../postcss
+      '@pandacss/preset-base':
+        specifier: workspace:*
+        version: link:../preset-base
+      '@pandacss/preset-panda':
+        specifier: workspace:*
+        version: link:../preset-panda
       '@pandacss/types':
         specifier: workspace:*
         version: link:../types

@@ -25,6 +25,9 @@ describe('init command', () => {
       codegenFiles: [],
     })
     expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain("import { defineConfig } from '@pandacss/dev'")
+    expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain(
+      "presets: ['@pandacss/preset-base', '@pandacss/preset-panda']",
+    )
     expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('outdir: "styled-system"')
     expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('styled-system')
   })

@@ -135,12 +135,19 @@ Point `include` at the files where you write styles:
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
+  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'], // default utilities, tokens & conditions
   preflight: true, // CSS reset
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
   exclude: [],
+  theme: {
+    extend: {},
+  },
   outdir: 'styled-system',
 })
 ```
+
+> `presets` is required in v2 — without it you get a bare system (no `bg`/`color` utilities, no
+> `fontSizes`/spacing scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line for you.
 
 ### 4. Add Panda to your CSS
 
