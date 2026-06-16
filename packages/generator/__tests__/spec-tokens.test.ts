@@ -279,6 +279,14 @@ describe('generateSemanticTokensSpec', () => {
               value: '{colors.gray.900}',
               description: 'Text color that adapts to theme',
             },
+            typography: {
+              value: '{colors.gray.900}',
+              deprecated: true,
+            },
+            secondary: {
+              value: { base: '{colors.red}' },
+              description: 'Secondary color to contrast primary',
+            },
           },
           spacing: {
             container: { value: '1rem' },
@@ -330,6 +338,30 @@ describe('generateSemanticTokensSpec', () => {
               {
                 "condition": "base",
                 "value": "{colors.gray.900}",
+              },
+            ],
+          },
+          {
+            "cssVar": "var(--colors-typography)",
+            "deprecated": true,
+            "description": undefined,
+            "name": "typography",
+            "values": [
+              {
+                "condition": "base",
+                "value": "{colors.gray.900}",
+              },
+            ],
+          },
+          {
+            "cssVar": "var(--colors-secondary)",
+            "deprecated": undefined,
+            "description": "Secondary color to contrast primary",
+            "name": "secondary",
+            "values": [
+              {
+                "condition": "base",
+                "value": "{colors.red}",
               },
             ],
           },
