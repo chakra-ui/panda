@@ -5,6 +5,7 @@ coverage
 build
 *.hbs
 *.d.ts
+LICENSE.md
 packages/studio/styled-system
 packages/generator/src/artifacts/generated
 packages/config/__tests__/samples/ts-import-map/ts-import-map-outdir/**

@@ -29,7 +29,18 @@
     "sandbox-vite-react-postcss": "0.0.0",
     "sandbox-vite": "0.0.0",
     "sandbox-waku-ts": "0.0.0",
-    "@pandacss/dev": "1.11.3"
+    "@pandacss/dev": "1.11.3",
+    "playground": "0.1.0",
+    "website": "1.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "compiled-jsx-runtime-extraction",
+    "direct-mcp-package",
+    "merge-adjacent-selectors",
+    "native-token-css",
+    "panda-v2-beta",
+    "postcss-v2-plugin",
+    "sort-container-inline-size",
+    "utility-transform-grouped-emit"
+  ]
 }

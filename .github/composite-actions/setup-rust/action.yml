@@ -1,0 +1,26 @@
+name: 'Setup Rust'
+description: 'Installs the pinned Rust toolchain and restores the Cargo build cache'
+
+inputs:
+  cache-key:
+    description: 'Suffix for the Cargo cache key so different jobs keep separate caches'
+    required: false
+    default: 'shared'
+
+runs:
+  using: composite
+  steps:
+    - name: Install Rust toolchain
+      shell: bash
+      run: rustup toolchain install 1.93.0 --profile minimal
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: rust-${{ inputs.cache-key }}-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+        restore-keys: |
+          rust-${{ inputs.cache-key }}-${{ runner.os }}-

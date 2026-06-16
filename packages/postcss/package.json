@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/postcss",
-  "version": "1.11.3",
+  "version": "2.0.0-beta.0",
   "description": "PostCSS plugin for Panda CSS",
   "type": "module",
   "main": "./dist/index.js",
