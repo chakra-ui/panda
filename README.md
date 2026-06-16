@@ -35,6 +35,10 @@
 
 <br/>
 
+## 🐼 Panda v2 (beta)
+
+Panda v2 is in **beta** — the compiler is rewritten in Rust (Oxc engine). v1 stays on the `latest` tag; try v2 with `@pandacss/dev@beta`. See the **[v2 beta guide & migration](./V2_MIGRATION.md)**.
+
 ## Documentation
 
 Visit our [official documentation](https://panda-css.com/).
