@@ -1,12 +1,12 @@
 import type { Config } from '@pandacss/types'
-import { parse } from 'acorn'
-import { simple } from 'acorn-walk'
-import MagicString from 'magic-string'
-import { realpathSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
+import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
-import { isAbsolute, normalize, relative } from 'node:path'
+import { tmpdir } from 'node:os'
+import { dirname, isAbsolute, join, normalize, relative } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { rolldown } from 'rolldown'
+import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
@@ -47,7 +47,7 @@ export async function bundleConfig<T extends Config = Config>(
   }
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
-  const mod = await importBundledConfig(output.code)
+  const mod = await loadBundledModule(filepath, output.code)
   const hasDefaultExport = Object.prototype.hasOwnProperty.call(mod ?? {}, 'default')
   const exported = hasDefaultExport ? mod.default : mod
   const config = (hasDefaultExport && isPromiseLike(exported) ? await exported : exported) as T
@@ -55,68 +55,45 @@ export async function bundleConfig<T extends Config = Config>(
   return { config, dependencies }
 }
 
-async function importBundledConfig(code: string) {
-  const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  return import(/* @vite-ignore */ dataUrl)
-}
+/** Evaluate bundled ESM by writing a temp file (preferred) or a `data:` URL fallback. */
+async function loadBundledModule(filepath: string, code: string): Promise<Record<string, unknown>> {
+  const target = tempTargetFor(filepath)
 
-function importMetaUrlPlugin() {
-  return {
-    name: 'panda-import-meta-url',
-    transform(code: string, id: string) {
-      if (!isAbsolute(id) || !code.includes('import.meta.url')) return
-
-      const replacement = JSON.stringify(pathToFileURL(id).href)
-      const patched = replaceImportMetaUrl(code, replacement)
-      if (patched === code) return
-
-      return { code: patched, map: null }
-    },
+  if (target) {
+    try {
+      await mkdir(dirname(target), { recursive: true })
+      await writeFile(target, code)
+      try {
+        return (await import(/* @vite-ignore */ pathToFileURL(target).href)) as Record<string, unknown>
+      } finally {
+        void unlink(target).catch(() => undefined)
+      }
+    } catch {
+      // fall through to the data: URL loader
+    }
   }
+
+  const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+  return (await import(/* @vite-ignore */ dataUrl)) as Record<string, unknown>
 }
 
-function replaceImportMetaUrl(code: string, replacement: string): string {
-  const ast = parse(code, {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-  })
-  const output = new MagicString(code)
-  let changed = false
-
-  simple(ast, {
-    MemberExpression(node) {
-      if (!isImportMetaUrl(node)) return
-
-      output.overwrite(node.start, node.end, replacement)
-      changed = true
-    },
-  })
-
-  return changed ? output.toString() : code
+function tempTargetFor(filepath: string): string | undefined {
+  const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+  const name = `panda.config.bundled.${unique}.mjs`
+  const nodeModules = nearestNodeModules(dirname(filepath))
+  const base = nodeModules ? join(nodeModules, '.panda') : join(tmpdir(), 'panda-config')
+  return join(base, name)
 }
 
-type MemberExpressionNode = {
-  type: 'MemberExpression'
-  object: unknown
-  property: unknown
-  computed: boolean
-  start: number
-  end: number
-}
-
-function isImportMetaUrl(node: MemberExpressionNode): boolean {
-  if (node.computed || !isIdentifier(node.property, 'url')) return false
-
-  const object = node.object
-  return isNode(object, 'MetaProperty') && isIdentifier(object.meta, 'import') && isIdentifier(object.property, 'meta')
-}
-
-function isIdentifier(value: unknown, name: string): value is { type: 'Identifier'; name: string } {
-  return isNode(value, 'Identifier') && value.name === name
-}
-
-function isNode<T extends string>(value: unknown, type: T): value is { type: T } & Record<string, any> {
-  return !!value && typeof value === 'object' && (value as { type?: unknown }).type === type
+function nearestNodeModules(start: string): string | undefined {
+  let current = start
+  while (true) {
+    const candidate = join(current, 'node_modules')
+    if (existsSync(candidate)) return candidate
+    const parent = dirname(current)
+    if (parent === current) return undefined
+    current = parent
+  }
 }
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {

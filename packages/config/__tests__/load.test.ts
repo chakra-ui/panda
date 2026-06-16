@@ -291,6 +291,42 @@ describe('loadConfig preset resolution', () => {
     }
   })
 
+  test('bundles a config that imports a CommonJS node_modules preset', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-config-cjs-'))
+    try {
+      // A CJS preset package that calls require(), which makes rolldown inject its
+      // createRequire(import.meta.url) interop runtime. Externalizing node_modules
+      // keeps it out of the bundle so it loads at runtime instead.
+      const pkgDir = join(dir, 'node_modules', 'cjs-preset')
+      mkdirSync(pkgDir, { recursive: true })
+      writeFileSync(
+        join(pkgDir, 'package.json'),
+        JSON.stringify({ name: 'cjs-preset', version: '1.0.0', main: 'index.cjs' }),
+      )
+      writeFileSync(
+        join(pkgDir, 'index.cjs'),
+        // require() forces rolldown's createRequire interop runtime; __esModule +
+        // exports.default exercises the default-import unwrap that bundling must preserve.
+        `const path = require('node:path')
+        Object.defineProperty(exports, '__esModule', { value: true })
+        exports.default = function preset(opts = {}) {
+          path.join('a', 'b')
+          return { name: 'cjs-preset', theme: { tokens: { colors: { prose: { value: opts.color || '#111' } } } } }
+        }`,
+      )
+      writeFileSync(
+        join(dir, 'panda.config.ts'),
+        `import preset from 'cjs-preset'
+        export default { outdir: 'styled-system', presets: [preset({ color: '#0f0' })] }`,
+      )
+
+      const result = await loadConfig({ cwd: dir })
+      expect((result.config.theme as any).tokens.colors.prose).toEqual({ value: '#0f0' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   test('resolves object presets with theme.extend and keeps user config precedence', async () => {
     const { dir, result } = await loadTempConfig({
       'panda.config.ts': `export default {
