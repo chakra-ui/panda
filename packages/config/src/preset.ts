@@ -2,6 +2,7 @@ import type { Config, UserConfig } from '@pandacss/types'
 import { normalize, relative } from 'node:path'
 import { bundleConfig } from './bundle'
 import { PandaError } from './error'
+import { configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
@@ -136,7 +137,7 @@ async function runPresetResolvedHooks(
 
   for (const entry of hooks) {
     const hook = normalizeHook(entry.value, 'preset:resolved')
-    const next = await hook.handler({ preset: current as Config, name })
+    const next = await hook.handler({ preset: current as Config, name, utils: configResolvedUtils })
     if (next !== undefined) {
       current = ensureConfigObject(next, name)
     }

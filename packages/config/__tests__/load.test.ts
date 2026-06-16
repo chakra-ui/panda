@@ -261,6 +261,36 @@ describe('loadConfig preset resolution', () => {
     }
   })
 
+  test('preset:resolved hooks can strip a deprecated token from a preset with utils.omit', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        plugins: [{
+          name: 'drop-deprecated-tokens',
+          hooks: {
+            'preset:resolved'({ preset, utils }) {
+              // A team strips a deprecated color shipped by a third-party preset
+              // before it merges into their design system.
+              return utils.omit(preset, ['theme.tokens.colors.legacyRed'])
+            },
+          },
+        }],
+        presets: [{
+          name: 'acme',
+          theme: { tokens: { colors: { brand: { value: '#0070f3' }, legacyRed: { value: '#ff0000' } } } },
+        }],
+      }`,
+    })
+
+    try {
+      const colors = (result.config.theme as any).tokens.colors
+      expect(colors.brand).toEqual({ value: '#0070f3' })
+      expect(colors.legacyRed).toBeUndefined()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   test('resolves object presets with theme.extend and keeps user config precedence', async () => {
     const { dir, result } = await loadTempConfig({
       'panda.config.ts': `export default {

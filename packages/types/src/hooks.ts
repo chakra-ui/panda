@@ -33,6 +33,7 @@ export interface ParserResultBeforeHookArgs {
 export interface PresetResolvedHookArgs {
   preset: Config
   name: string
+  utils: ConfigResolvedHookUtils
 }
 
 interface TraverseItem {
