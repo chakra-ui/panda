@@ -6,7 +6,7 @@ this before you write prose, and run the checklist before you ship it.
 ## The short version
 
 Write like you're explaining it to one sharp person, out loud, with no time to waste. Plain words. Short sentences. Say
-the thing.
+the thing. 🐼
 
 ## Principles
 
@@ -29,7 +29,8 @@ the thing.
 - **Filler openers:** "In today's...", "When it comes to...", "It's important to note that...", "Let's dive in".
 - **Padding transitions:** "Additionally", "Moreover", "Furthermore", "That said," used to connect nothing.
 - **Over-hedging:** "arguably", "in many cases", "generally speaking" when you can just state it.
-- **Emoji bullet lists** used as decoration.
+- **Emoji as decoration.** A purposeful one is fine (a ✅/❌, the odd 🐼). What to cut is rows of them dressing up every
+  bullet or heading.
 - **Over-bolding.** Bold stops meaning anything when half the line is bold. Bold the one word that matters, or none.
 - **Em-dash pile-ups.** One thought per sentence; a period usually beats a dash.
 - **Marketing title case.** Sentence case in headings reads human.
