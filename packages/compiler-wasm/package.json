@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler-wasm",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0-beta.1",
   "description": "WebAssembly binding for the Panda compiler engine (browser/playground target)",
   "type": "module",
   "main": "./dist/index.js",
