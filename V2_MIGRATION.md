@@ -146,8 +146,9 @@ export default defineConfig({
 })
 ```
 
-> `presets` is required in v2 — without it you get a bare system (no `bg`/`color` utilities, no
-> `fontSizes`/spacing scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line for you.
+> v2 doesn't auto-inject presets — without them you get a bare system (no `bg`/`color` utilities, no
+> `fontSizes`/spacing scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs
+> both presets for you.
 
 ### 4. Add Panda to your CSS
 

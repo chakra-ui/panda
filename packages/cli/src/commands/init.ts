@@ -1,4 +1,5 @@
 import { defineCommand } from 'citty'
+import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { createNodeDriver } from '@pandacss/compiler'
@@ -16,6 +17,9 @@ import { createResult, setExitCode, toJsonPayload } from '../result'
 import { renderTimings, timeAsync } from '../timing'
 import { configLoadDiagnostic } from '../diagnostics'
 import type { CommandContext, InitFlags, InitResult, PhaseTimings } from '../types'
+
+/** Presets scaffolded into the generated config and installed by `panda init`. */
+const DEFAULT_PRESETS = ['@pandacss/preset-base', '@pandacss/preset-panda'] as const
 
 export function initCommand(ctx: CommandContext) {
   return defineCommand({
@@ -35,6 +39,11 @@ export function initCommand(ctx: CommandContext) {
       jsxFramework: { type: 'string', description: 'The JSX framework to use' },
       syntax: { type: 'string', description: 'The CSS syntax preference' },
       strictTokens: { type: 'boolean', description: 'Set strictTokens to true' },
+      install: {
+        type: 'boolean',
+        description: 'Install the default presets (use --no-install to skip)',
+        default: true,
+      },
       silent: { type: 'boolean', description: 'Suppress all messages except errors' },
       json: { type: 'boolean', description: 'Print JSON' },
       format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
@@ -56,6 +65,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   let postcssWritten = false
   let gitignoreWritten = false
   let codegenFiles: string[] = []
+  let presetsInstalled: string[] = []
 
   try {
     configWritten = await timeAsync({
@@ -82,6 +92,19 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
       gitignoreWritten = setupGitIgnore(cwd, outdir)
     }
 
+    // Presets must resolve before codegen loads the config — install them first.
+    presetsInstalled = await timeAsync({
+      timings,
+      phase: 'install',
+      run: async () =>
+        setupDependencies(cwd, {
+          install: flags.install,
+          silent: flags.silent,
+          notify: shouldPrintHumanSummary(flags),
+          output: commandOutput,
+        }),
+    })
+
     if (flags.codegen !== false) {
       const driver = await timeAsync({
         timings,
@@ -95,7 +118,16 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
     const result: InitResult = createResult({
       command: 'init',
       startedAt,
-      data: { timings, configPath, outdir, configWritten, postcssWritten, gitignoreWritten, codegenFiles },
+      data: {
+        timings,
+        configPath,
+        outdir,
+        configWritten,
+        postcssWritten,
+        gitignoreWritten,
+        codegenFiles,
+        presetsInstalled,
+      },
       diagnostics,
       ok: false,
     })
@@ -113,7 +145,16 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   const result: InitResult = createResult({
     command: 'init',
     startedAt,
-    data: { timings, configPath, outdir, configWritten, postcssWritten, gitignoreWritten, codegenFiles },
+    data: {
+      timings,
+      configPath,
+      outdir,
+      configWritten,
+      postcssWritten,
+      gitignoreWritten,
+      codegenFiles,
+      presetsInstalled,
+    },
     diagnostics: [],
   })
 
@@ -123,6 +164,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
     if (shouldPrintHumanSummary(flags)) {
       commandOutput.log(
         `init: ${configWritten ? 'wrote' : 'kept'} ${configPath}` +
+          `${presetsInstalled.length > 0 ? `, installed ${presetsInstalled.join(', ')}` : ''}` +
           `${gitignoreWritten ? ', updated .gitignore' : ''}` +
           `${codegenFiles.length > 0 ? `, wrote ${codegenFiles.length} codegen files` : ''}`,
       )
@@ -213,7 +255,7 @@ function configSource(options: SetupConfigOptions): string {
     "import { defineConfig } from '@pandacss/dev'",
     '',
     'export default defineConfig({',
-    `  presets: ['@pandacss/preset-base', '@pandacss/preset-panda'],`,
+    `  presets: [${DEFAULT_PRESETS.map((name) => `'${name}'`).join(', ')}],`,
     '  preflight: true,',
     `  include: ['./src/**/*.{js,jsx,ts,tsx}', './pages/**/*.{js,jsx,ts,tsx}'],`,
     '  exclude: [],',
@@ -231,4 +273,83 @@ function configSource(options: SetupConfigOptions): string {
   lines.push('})', '')
 
   return lines.join('\n')
+}
+
+interface SetupDependenciesOptions {
+  install?: boolean
+  silent?: boolean
+  notify: boolean
+  output: OutputSink
+}
+
+// Install presets as direct devDeps so the config's string specifiers resolve from the
+// project root — a transitive dep of `@pandacss/dev` isn't reachable from cwd under pnpm.
+function setupDependencies(cwd: string, options: SetupDependenciesOptions): string[] {
+  if (options.install === false) return []
+
+  const installed = readInstalledDeps(cwd)
+  if (!installed) {
+    // No package.json to install into — scaffold only, but tell the user what's still needed.
+    if (options.notify)
+      options.output.log(`init: no package.json found — install ${DEFAULT_PRESETS.join(', ')} yourself.`)
+    return []
+  }
+
+  const missing = DEFAULT_PRESETS.filter((name) => !installed.has(name))
+  if (missing.length === 0) return []
+
+  const pm = detectPackageManager(cwd)
+  try {
+    execSync(installCommand(pm, missing), { cwd, stdio: options.silent ? 'ignore' : 'inherit' })
+    return missing
+  } catch {
+    if (options.notify)
+      options.output.log(`init: could not install ${missing.join(', ')} with ${pm}. Add them manually.`)
+    return []
+  }
+}
+
+function readInstalledDeps(cwd: string): Set<string> | undefined {
+  const pkgPath = join(cwd, 'package.json')
+  if (!existsSync(pkgPath)) return undefined
+
+  try {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+    return new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})])
+  } catch {
+    return undefined
+  }
+}
+
+type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun'
+
+function detectPackageManager(cwd: string): PackageManager {
+  let dir = resolve(cwd)
+  while (true) {
+    if (existsSync(join(dir, 'pnpm-lock.yaml'))) return 'pnpm'
+    if (existsSync(join(dir, 'yarn.lock'))) return 'yarn'
+    if (existsSync(join(dir, 'bun.lockb')) || existsSync(join(dir, 'bun.lock'))) return 'bun'
+    if (existsSync(join(dir, 'package-lock.json'))) return 'npm'
+
+    const parent = dirname(dir)
+    if (parent === dir) return 'npm'
+    dir = parent
+  }
+}
+
+function installCommand(pm: PackageManager, packages: string[]): string {
+  const list = packages.join(' ')
+  switch (pm) {
+    case 'pnpm':
+      return `pnpm add -D ${list}`
+    case 'yarn':
+      return `yarn add -D ${list}`
+    case 'bun':
+      return `bun add -d ${list}`
+    default:
+      return `npm install -D ${list}`
+  }
 }

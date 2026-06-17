@@ -1,8 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runInit, setupGitIgnore } from '../src'
 import { cleanupFixture, createFixture, linkWorkspaceDevPackage } from './helpers'
+
+const execSync = vi.hoisted(() => vi.fn())
+vi.mock('node:child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:child_process')>()
+  return { ...actual, default: { ...actual, execSync }, execSync }
+})
 
 describe('init command', () => {
   let dir: string | undefined
@@ -10,6 +16,7 @@ describe('init command', () => {
   afterEach(() => {
     cleanupFixture(dir)
     dir = undefined
+    execSync.mockReset()
   })
 
   it('writes a config and updates gitignore by default', async () => {
@@ -68,5 +75,65 @@ describe('init command', () => {
 
     expect(result.codegenFiles.some((path) => path.endsWith('css/css.js'))).toBe(true)
     expect(existsSync(join(dir, 'styled-system', 'css', 'css.js'))).toBe(true)
+  })
+
+  it('installs the default presets using the detected package manager', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app' }))
+    writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
+
+    const result = await runInit({ cwd: dir, codegen: false, silent: true })
+
+    expect(execSync).toHaveBeenCalledOnce()
+    expect(execSync).toHaveBeenCalledWith(
+      'pnpm add -D @pandacss/preset-base @pandacss/preset-panda',
+      expect.objectContaining({ cwd: dir }),
+    )
+    expect(result.presetsInstalled).toEqual(['@pandacss/preset-base', '@pandacss/preset-panda'])
+  })
+
+  it('--no-install scaffolds the config without installing', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app' }))
+
+    const result = await runInit({ cwd: dir, install: false, codegen: false, silent: true })
+
+    expect(execSync).not.toHaveBeenCalled()
+    expect(result.presetsInstalled).toEqual([])
+    expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain(
+      "presets: ['@pandacss/preset-base', '@pandacss/preset-panda']",
+    )
+  })
+
+  it('skips install when there is no package.json', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+
+    const result = await runInit({ cwd: dir, codegen: false, silent: true })
+
+    expect(execSync).not.toHaveBeenCalled()
+    expect(result.presetsInstalled).toEqual([])
+  })
+
+  it('hints to install presets manually when there is no package.json', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    const logs: string[] = []
+
+    await runInit({ cwd: dir, codegen: false }, { log: (message) => logs.push(message) })
+
+    expect(execSync).not.toHaveBeenCalled()
+    expect(logs.some((line) => line.includes('no package.json found'))).toBe(true)
+  })
+
+  it('skips presets already present in the manifest', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify({ name: 'app', devDependencies: { '@pandacss/preset-base': '*', '@pandacss/preset-panda': '*' } }),
+    )
+
+    const result = await runInit({ cwd: dir, codegen: false, silent: true })
+
+    expect(execSync).not.toHaveBeenCalled()
+    expect(result.presetsInstalled).toEqual([])
   })
 })

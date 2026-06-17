@@ -59,8 +59,6 @@
     "@pandacss/compiler": "workspace:*",
     "@pandacss/config": "workspace:*",
     "@pandacss/postcss": "workspace:*",
-    "@pandacss/preset-base": "workspace:*",
-    "@pandacss/preset-panda": "workspace:*",
     "@pandacss/types": "workspace:*"
   },
   "peerDependencies": {

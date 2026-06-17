@@ -51,6 +51,7 @@ export interface InitFlags extends Omit<CommonFlags, 'watch' | 'watchDebounce' |
   jsxFramework?: string
   syntax?: 'template-literal' | 'object-literal'
   strictTokens?: boolean
+  install?: boolean
 }
 
 /** Flags for `panda buildinfo` — produce a portable `panda.buildinfo.json`. */
@@ -177,6 +178,7 @@ export interface InitResult extends CommandResult {
   postcssWritten: boolean
   gitignoreWritten: boolean
   codegenFiles: string[]
+  presetsInstalled: string[]
 }
 
 export interface InspectResult extends CliResult {
