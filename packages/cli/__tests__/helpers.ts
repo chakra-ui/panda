@@ -33,12 +33,14 @@ export function cleanupFixture(dir: string | undefined) {
   if (dir) rmSync(dir, { recursive: true, force: true })
 }
 
-/** Symlink the workspace `@pandacss/dev` package into a temp fixture for init/codegen tests. */
+/** Symlink the workspace `@pandacss/dev` package (plus the bundled presets it depends on) into a temp fixture for init/codegen tests. */
 export function linkWorkspaceDevPackage(dir: string) {
-  const devRoot = join(dirname(fileURLToPath(import.meta.url)), '../../dev')
+  const packagesRoot = join(dirname(fileURLToPath(import.meta.url)), '../..')
   const scopeDir = join(dir, 'node_modules', '@pandacss')
   mkdirSync(scopeDir, { recursive: true })
-  symlinkSync(devRoot, join(scopeDir, 'dev'), 'dir')
+  for (const name of ['dev', 'preset-base', 'preset-panda']) {
+    symlinkSync(join(packagesRoot, name), join(scopeDir, name), 'dir')
+  }
 }
 
 export function writeSyntaxError(dir: string) {
