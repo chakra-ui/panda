@@ -67,6 +67,12 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   let codegenFiles: string[] = []
   let presetsInstalled: string[] = []
 
+  // Decide once: presets are only referenced in the scaffold if we can actually install
+  // them (a usable package.json exists and the user didn't opt out). Otherwise scaffold a
+  // bare system so codegen still succeeds.
+  const installedDeps = flags.install === false ? undefined : readInstalledDeps(cwd)
+  const willInstall = flags.install !== false && installedDeps !== undefined
+
   try {
     configWritten = await timeAsync({
       timings,
@@ -80,9 +86,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           jsxFramework: flags.jsxFramework,
           syntax: flags.syntax,
           strictTokens: flags.strictTokens,
-          // Opting out of the install scaffolds a bare system, so the config doesn't
-          // reference presets that aren't there.
-          presets: flags.install === false ? [] : DEFAULT_PRESETS,
+          presets: willInstall ? DEFAULT_PRESETS : [],
         }),
     })
     configPath = resolveConfigTarget(cwd, flags.config)
@@ -95,18 +99,22 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
       gitignoreWritten = setupGitIgnore(cwd, outdir)
     }
 
-    // Presets must resolve before codegen loads the config — install them first.
-    presetsInstalled = await timeAsync({
-      timings,
-      phase: 'install',
-      run: async () =>
-        setupDependencies(cwd, {
-          install: flags.install,
-          silent: flags.silent,
-          notify: shouldPrintHumanSummary(flags),
-          output: commandOutput,
-        }),
-    })
+    // Only install when we just scaffolded the config — re-running init on an existing
+    // project must not impose deps. Presets must resolve before codegen loads the config.
+    if (configWritten) {
+      presetsInstalled = await timeAsync({
+        timings,
+        phase: 'install',
+        run: async () =>
+          setupDependencies(cwd, {
+            optedOut: flags.install === false,
+            deps: installedDeps,
+            silent: flags.silent,
+            notify: shouldPrintHumanSummary(flags),
+            output: commandOutput,
+          }),
+      })
+    }
 
     if (flags.codegen !== false) {
       const driver = await timeAsync({
@@ -280,7 +288,10 @@ function configSource(options: SetupConfigOptions): string {
 }
 
 interface SetupDependenciesOptions {
-  install?: boolean
+  /** User passed `--no-install`. */
+  optedOut: boolean
+  /** Installed dep names, or `undefined` when there's no usable package.json. */
+  deps: Set<string> | undefined
   silent?: boolean
   notify: boolean
   output: OutputSink
@@ -289,19 +300,21 @@ interface SetupDependenciesOptions {
 // Install presets as direct devDeps so the config's string specifiers resolve from the
 // project root — a transitive dep of `@pandacss/dev` isn't reachable from cwd under pnpm.
 function setupDependencies(cwd: string, options: SetupDependenciesOptions): string[] {
-  if (options.install === false) return []
+  if (options.optedOut) return []
 
-  if (!existsSync(join(cwd, 'package.json'))) {
-    // No package.json to install into — scaffold only, but tell the user what's still needed.
-    if (options.notify)
-      options.output.log(`init: no package.json found — install ${DEFAULT_PRESETS.join(', ')} yourself.`)
+  if (!options.deps) {
+    // No usable package.json — the config was scaffolded bare, so tell the user what to add.
+    if (options.notify) {
+      options.output.log(
+        `init: no usable package.json — scaffolded a bare config. install ${DEFAULT_PRESETS.join(
+          ', ',
+        )} and add them to \`presets\` for the default system.`,
+      )
+    }
     return []
   }
 
-  const installed = readInstalledDeps(cwd)
-  if (!installed) return [] // package.json exists but couldn't be parsed — leave it alone
-
-  const missing = DEFAULT_PRESETS.filter((name) => !installed.has(name))
+  const missing = DEFAULT_PRESETS.filter((name) => !options.deps?.has(name))
   if (missing.length === 0) return []
 
   const pm = detectPackageManager(cwd)
@@ -329,7 +342,13 @@ function readInstalledDeps(cwd: string): Set<string> | undefined {
 
 type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun'
 
+const PACKAGE_MANAGERS: readonly PackageManager[] = ['npm', 'pnpm', 'yarn', 'bun']
+
 function detectPackageManager(cwd: string): PackageManager {
+  // corepack's `packageManager` field is authoritative when present.
+  const declared = declaredPackageManager(cwd)
+  if (declared) return declared
+
   let dir = resolve(cwd)
   while (true) {
     if (existsSync(join(dir, 'pnpm-lock.yaml'))) return 'pnpm'
@@ -340,6 +359,16 @@ function detectPackageManager(cwd: string): PackageManager {
     const parent = dirname(dir)
     if (parent === dir) return 'npm'
     dir = parent
+  }
+}
+
+function declaredPackageManager(cwd: string): PackageManager | undefined {
+  try {
+    const pkg = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')) as { packageManager?: string }
+    const name = pkg.packageManager?.split('@')[0]
+    return PACKAGE_MANAGERS.find((pm) => pm === name)
+  } catch {
+    return undefined
   }
 }
 

@@ -21,6 +21,7 @@ describe('init command', () => {
 
   it('writes a config and updates gitignore by default', async () => {
     dir = createFixture(undefined, { config: false, source: false })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app' }))
 
     const result = await runInit({ cwd: dir, codegen: false, silent: true })
 
@@ -70,6 +71,13 @@ describe('init command', () => {
   it('runs codegen by default', async () => {
     dir = createFixture(undefined, { config: false, source: true })
     linkWorkspaceDevPackage(dir)
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify({
+        name: 'app',
+        devDependencies: { '@pandacss/preset-base': '*', '@pandacss/preset-panda': '*' },
+      }),
+    )
 
     const result = await runInit({ cwd: dir, silent: true })
 
@@ -128,6 +136,16 @@ describe('init command', () => {
       writePkg(dir)
       writeFileSync(join(dir, 'package-lock.json'), '')
       writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
+
+      await runInit({ cwd: dir, codegen: false, silent: true })
+
+      expect(execSync).toHaveBeenCalledWith(expect.stringMatching(/^pnpm add -D /), expect.anything())
+    })
+
+    it('honors the corepack packageManager field over lockfiles', async () => {
+      dir = createFixture(undefined, { config: false, source: false })
+      writePkg(dir, { name: 'app', packageManager: 'pnpm@9.1.0' })
+      writeFileSync(join(dir, 'package-lock.json'), '')
 
       await runInit({ cwd: dir, codegen: false, silent: true })
 
@@ -207,35 +225,59 @@ describe('init command', () => {
       expect(logs.some((line) => line.includes('could not install'))).toBe(true)
     })
 
-    it('skips install when there is no package.json', async () => {
+    it('scaffolds a bare config and skips install when there is no package.json', async () => {
       dir = createFixture(undefined, { config: false, source: false })
 
       const result = await runInit({ cwd: dir, codegen: false, silent: true })
 
       expect(execSync).not.toHaveBeenCalled()
       expect(result.presetsInstalled).toEqual([])
+      expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('presets: [],')
     })
 
-    it('hints to install presets manually when there is no package.json', async () => {
+    it('hints to install presets manually when there is no usable package.json', async () => {
       dir = createFixture(undefined, { config: false, source: false })
       const logs: string[] = []
 
       await runInit({ cwd: dir, codegen: false }, { log: (message) => logs.push(message) })
 
       expect(execSync).not.toHaveBeenCalled()
-      expect(logs.some((line) => line.includes('no package.json found'))).toBe(true)
+      expect(logs.some((line) => line.includes('no usable package.json'))).toBe(true)
     })
 
-    it('leaves an unparseable package.json alone without the missing-manifest hint', async () => {
+    it('scaffolds a bare config when package.json is unparseable', async () => {
       dir = createFixture(undefined, { config: false, source: false })
       writeFileSync(join(dir, 'package.json'), '{ not valid json')
-      const logs: string[] = []
 
-      const result = await runInit({ cwd: dir, codegen: false }, { log: (message) => logs.push(message) })
+      const result = await runInit({ cwd: dir, codegen: false, silent: true })
 
       expect(execSync).not.toHaveBeenCalled()
       expect(result.presetsInstalled).toEqual([])
-      expect(logs.some((line) => line.includes('no package.json found'))).toBe(false)
+      expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('presets: [],')
+    })
+
+    it('does not install when re-running init on an existing config', async () => {
+      dir = createFixture() // writes panda.config.ts
+      writePkg(dir)
+      writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
+
+      const result = await runInit({ cwd: dir, codegen: false, silent: true })
+
+      expect(execSync).not.toHaveBeenCalled()
+      expect(result.configWritten).toBe(false)
+      expect(result.presetsInstalled).toEqual([])
+    })
+
+    it('re-scaffolds and installs when --force overwrites an existing config', async () => {
+      dir = createFixture() // existing panda.config.ts
+      writePkg(dir)
+      writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
+
+      const result = await runInit({ cwd: dir, force: true, codegen: false, silent: true })
+
+      expect(result.configWritten).toBe(true)
+      expect(execSync).toHaveBeenCalledWith(expect.stringMatching(/^pnpm add -D /), expect.anything())
+      expect(result.presetsInstalled).toEqual(['@pandacss/preset-base', '@pandacss/preset-panda'])
     })
   })
 })
