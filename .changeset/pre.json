@@ -35,11 +35,17 @@
   },
   "changesets": [
     "compiled-jsx-runtime-extraction",
+    "config-bundle-temp-file",
+    "default-panda-build-command",
     "direct-mcp-package",
+    "init-scaffold-default-presets",
     "merge-adjacent-selectors",
     "native-token-css",
+    "panda-debug-command",
     "panda-v2-beta",
     "postcss-v2-plugin",
+    "preset-resolved-hook-utils",
+    "sharp-tigers-tell",
     "sort-container-inline-size",
     "utility-transform-grouped-emit"
   ]

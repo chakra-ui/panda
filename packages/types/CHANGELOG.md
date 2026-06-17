@@ -1,5 +1,12 @@
 # @pandacss/types
 
+## 2.0.0-beta.1
+
+### Patch Changes
+
+- 07eafef: Fix the `preset:resolved` hook missing its `utils` argument. Plugin authors can now use `omit` / `pick` /
+  `traverse` inside `preset:resolved` (matching `config:resolved` and v1).
+
 ## 2.0.0-beta.0
 
 ## 1.10.0
