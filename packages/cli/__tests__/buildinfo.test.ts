@@ -32,7 +32,7 @@ describe('buildinfo command', () => {
   it('writes panda.buildinfo.json with interned atoms + cwd-relative module keys', async () => {
     dir = createLibFixture()
 
-    const result = await runBuildinfo({ cwd: dir, silent: true, panda: '^2.0.0' })
+    const result = await runBuildinfo({ cwd: dir, logLevel: 'silent', panda: '^2.0.0' })
 
     expect(result.ok).toBe(true)
     expect(existsSync(join(dir, 'styled-system', 'panda.buildinfo.json'))).toBe(true)
@@ -92,7 +92,7 @@ describe('buildinfo command', () => {
       "import { Button } from './ui'\nexport function ActionButton() { return <Button /> }",
     )
 
-    await runBuildinfo({ cwd: dir, silent: true })
+    await runBuildinfo({ cwd: dir, logLevel: 'silent' })
 
     const info = readBuildInfo(dir)
     // The export maps to a portable (cwd-relative) module key, not an abs path.
@@ -104,7 +104,7 @@ describe('buildinfo command', () => {
 
   it('hydrating the produced artifact reproduces the CSS (full round-trip)', async () => {
     dir = createLibFixture()
-    await runBuildinfo({ cwd: dir, silent: true })
+    await runBuildinfo({ cwd: dir, logLevel: 'silent' })
     const info = readBuildInfo(dir)
 
     // A fresh, empty consumer compiler hydrates the whole library.
@@ -135,7 +135,7 @@ describe('buildinfo command', () => {
 
   it('tree-shakes to the imported module', async () => {
     dir = createLibFixture()
-    await runBuildinfo({ cwd: dir, silent: true })
+    await runBuildinfo({ cwd: dir, logLevel: 'silent' })
     const info = readBuildInfo(dir)
 
     const consumer = await createNodeDriver({ cwd: dir })
@@ -156,7 +156,7 @@ describe('buildinfo command', () => {
   it('reports a portable summary of what it wrote', async () => {
     dir = createLibFixture()
 
-    const result = await runBuildinfo({ cwd: dir, silent: true })
+    const result = await runBuildinfo({ cwd: dir, logLevel: 'silent' })
 
     expect({
       ok: result.ok,
@@ -178,7 +178,7 @@ describe('buildinfo command', () => {
   it('honors --outfile and --minify', async () => {
     dir = createLibFixture()
 
-    const result = await runBuildinfo({ cwd: dir, silent: true, outfile: 'dist/bi.json', minify: true })
+    const result = await runBuildinfo({ cwd: dir, logLevel: 'silent', outfile: 'dist/bi.json', minify: true })
 
     expect(existsSync(join(dir, 'dist', 'bi.json'))).toBe(true)
     const raw = readFileSync(join(dir, 'dist', 'bi.json'), 'utf8')
@@ -189,7 +189,7 @@ describe('buildinfo command', () => {
   it('reports a missing-config diagnostic without writing', async () => {
     dir = mkdtempSync(join(tmpdir(), 'panda-cli-lib-'))
 
-    const result = await runBuildinfo({ cwd: dir, silent: true })
+    const result = await runBuildinfo({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(false)
     expect(result.diagnostics.map(({ code, severity }) => ({ code, severity }))).toMatchInlineSnapshot(`

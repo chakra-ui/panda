@@ -95,8 +95,8 @@ pre-release.
 On an existing v1 project, your `panda.config.ts` carries over. Regenerate:
 
 ```bash
-panda          # codegen + cssgen in one pass
-panda --watch  # rebuild on change
+panda build    # codegen + cssgen in one pass
+panda dev      # rebuild on change
 ```
 
 The `panda` and `pandacss` binaries are the same as v1. Starting fresh? See
@@ -182,11 +182,11 @@ export const Button = () => (
 ### 6. Build
 
 ```bash
-panda          # codegen + cssgen
-panda --watch  # rebuild on change
+panda build    # codegen + cssgen
+panda dev      # rebuild on change
 ```
 
-The CLI writes types and helpers under `styled-system/`. Re-run `panda codegen` (or keep `--watch` running) whenever you
+The CLI writes types and helpers under `styled-system/`. Re-run `panda build` (or keep `panda dev` running) whenever you
 change tokens, recipes, or patterns. For the full tutorial — recipes, patterns, conditions, theming — see the
 [docs](https://panda-css.com).
 
@@ -316,24 +316,22 @@ const Button = withContext('button')
 
 | Command           | What it does                                                                                                                                                                                                                                                               |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `panda`           | Default build. Runs codegen then cssgen in one pass. Flags: `--outdir`, `--outfile`, `--splitting`, `--clean`, `--check`, `--watch`. `--outdir` moves both the generated system and the CSS file; codegen runs first, so `--clean` wipes the outdir before CSS is written. |
-| `panda init`      | Scaffold `panda.config.ts` and run the first codegen.                                                                                                                                                                                                                      |
-| `panda codegen`   | Generate the `styled-system` output only.                                                                                                                                                                                                                                  |
-| `panda cssgen`    | Generate the CSS only.                                                                                                                                                                                                                                                     |
-| `panda debug`     | Dump resolved config and per-file extraction for bug reports. Writes `info.json`, `config.json`, `<file>.extract.json`, and `styles.css` under `<outdir>/debug`. Flags: `--outdir`, `--dry` (print to stdout), `--only-config`.                                            |
-| `panda inspect`   | Inspect the resolved Panda artifacts.                                                                                                                                                                                                                                      |
-| `panda validate`  | Validate config and tokens.                                                                                                                                                                                                                                                |
-| `panda buildinfo` | Emit build metadata.                                                                                                                                                                                                                                                       |
+| `panda init`      | Scaffold `panda.config.ts` and run the first codegen. |
+| `panda dev`       | Watch files and rebuild the generated system and CSS. |
+| `panda build`     | Generate the system and CSS once. Bare `panda` still runs this default build. |
+| `panda check`     | Check generated files without writing. Use this in CI. |
+| `panda info`      | Print project/compiler info: config path, sources, artifacts, conditions, tokens, utilities. |
+| `panda doctor`    | Check config loading and compiler diagnostics. |
+| `panda debug`     | Write bug-report artifacts under `<outdir>/debug`. |
+| `panda codegen`   | Advanced: generate the `styled-system` output only. |
+| `panda cssgen`    | Advanced: generate CSS only. |
+| `panda buildinfo` | Advanced: emit design-system build metadata. |
 
-One routing rule: subcommands come first.
+`panda inspect` and `panda validate` are removed in v2. Use `panda info` and `panda doctor`.
 
-```bash
-panda codegen --cwd ./app   # ✅ subcommand, then flags
-panda --watch               # ✅ leading flag runs the default build
-panda --cwd ./app codegen   # ❌ first token reads as a flag, so it runs the default build
-```
-
-A leading flag runs the default build. A leading word (or `--help`) goes to the subcommand dispatcher.
+Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` instead of `--silent`, `--quiet`, or
+`--verbose`. Shared CLI flags use kebab-case, including `--max-warnings`, `--watch-debounce`, `--trace-output`, and
+`--trace-file`.
 
 ---
 

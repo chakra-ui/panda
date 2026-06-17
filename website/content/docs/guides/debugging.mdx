@@ -16,37 +16,33 @@ from your config file.
   <Tab>
     ```bash
     pnpm panda debug
-    # You can also debug a specific file or folder
-    # using the optional glob argument
-    pnpm panda debug src/components/Button.tsx
-    pnpm panda debug "./src/components/**"
+    pnpm panda debug --outdir panda-debug
+    pnpm panda debug --dry
+    pnpm panda debug --only-config
     ```
   </Tab>
   <Tab>
     ```bash
     npx panda debug
-    # # You can also debug a specific file or folder
-    # using the optional glob argument
-    npx panda debug src/components/Button.tsx
-    npx panda debug "./src/components/**"
+    npx panda debug --outdir panda-debug
+    npx panda debug --dry
+    npx panda debug --only-config
     ```
   </Tab>
   <Tab>
     ```bash
     yarn panda debug
-    # # You can also debug a specific file or folder
-    # using the optional glob argument
-    yarn panda debug src/components/Button.tsx
-    yarn panda debug "./src/components/**"
+    yarn panda debug --outdir panda-debug
+    yarn panda debug --dry
+    yarn panda debug --only-config
     ```
   </Tab>
   <Tab>
     ```bash
     bun panda debug
-    # # You can also debug a specific file or folder
-    # using the optional glob argument
-    bun panda debug src/components/Button.tsx
-    bun panda debug "./src/components/**"
+    bun panda debug --outdir panda-debug
+    bun panda debug --dry
+    bun panda debug --only-config
     ```
   </Tab>
   {/* <!-- prettier-ignore-end --> */}
@@ -57,100 +53,34 @@ This would generate a `debug` folder in your `config.outdir` folder with the fol
 <FileTree>
   <FileTree.Folder name="styled-system" defaultOpen>
     <FileTree.Folder name="debug" defaultOpen>
+      <FileTree.File name="system-info.json" />
       <FileTree.File name="config.json" />
-      <FileTree.File name="src__components__Button.ast.json" />
-      <FileTree.File name="src__components__Button.css" />
+      <FileTree.File name="src__components__Button.tsx.extract.json" />
+      <FileTree.File name="styles.css" />
     </FileTree.Folder>
   </FileTree.Folder>
 </FileTree>
 
-The `config.json` file will contain the resolved config result, meaning the output after merging config presets in your
-own specific options.
+The dump contains:
 
-It can be useful to check if your config contains everything you expect for your app to be working, such as tokens or
-recipes.
+- `system-info.json` — platform, Node version, config path, and source count
+- `config.json` — resolved Panda config
+- `<file>.extract.json` — compiler extraction result for each scanned source file
+- `styles.css` — whole-project generated CSS
 
-`*.ast.json` files will look like:
+This is useful when sharing a bug report because maintainers can inspect the exact resolved config, extraction output,
+diagnostics, and generated stylesheet.
 
-```json
-[
-  {
-    "name": "css",
-    "type": "object",
-    "data": [
-      {
-        "transitionProperty": "all",
-        "opacity": "0.5",
-        "border": "1px solid",
-        "borderColor": "black",
-        "color": "gray.600",
-        "_hover": {
-          "color": "gray.900"
-        },
-        "rounded": "md",
-        "p": "1.5",
-        "_dark": {
-          "borderColor": "rgba(255, 255, 255, 0.1)",
-          "color": "gray.400",
-          "_hover": {
-            "color": "gray.50"
-          }
-        }
-      }
-    ],
-    "kind": "CallExpression",
-    "line": 13,
-    "column": 9
-  }
-]
-```
-
-And the `.css` file associated would just contain the styles generated from the extraction process on that file only.
-
-## PANDA_DEBUG env variable
-
-You can prefix any of the Panda CLI command with the `PANDA_DEBUG` environment variable to show debug logs.
+## Debug logging and traces
 
 ```bash
-PANDA_DEBUG=* pnpm panda
+pnpm panda build --log-level debug
+pnpm panda build --trace
+pnpm panda build --trace --trace-output chrome-json --trace-file .panda/traces/build.json
 ```
 
-This can be useful to check if a specific file is being processed or not, or if a specific function/component has been
-extracted.
-
-```
-❯ PANDA_DEBUG=* pnpm panda cssgen
-🐼 debug [config:path] /Users/astahmer/dev/open-source/panda-clone/website/panda.config.ts
-🐼 debug [ast:import] Found import { css } in /Users/astahmer/dev/open-source/panda-clone/website/theme.config.tsx
-🐼 debug [ast:Icon] { kind: 'component' }
-🐼 debug [ast:css] { kind: 'function' }
-🐼 debug [hrtime] Parsed /Users/astahmer/dev/open-source/panda-clone/website/theme.config.tsx (9.66ms)
-🐼 debug [ast:import] Found import { css } in /Users/astahmer/dev/open-source/panda-clone/website/src/DEFAULT_THEME.tsx
-🐼 debug [ast:DiscordIcon] { kind: 'component' }
-🐼 debug [ast:css] { kind: 'function' }
-🐼 debug [ast:Anchor] { kind: 'component' }
-🐼 debug [ast:GitHubIcon] { kind: 'component' }
-🐼 debug [ast:Flexsearch] { kind: 'component' }
-🐼 debug [ast:MatchSorterSearch] { kind: 'component' }
-🐼 debug [hrtime] Parsed /Users/astahmer/dev/open-source/panda-clone/website/src/DEFAULT_THEME.tsx (4.51ms)
-🐼 debug [ast:import] No import found in /Users/astahmer/dev/open-source/panda-clone/website/src/constants.tsx
-🐼 debug [hrtime] Parsed /Users/astahmer/dev/open-source/panda-clone/website/src/constants.tsx (4.23ms)
-🐼 debug [ast:import] Found import { css } in /Users/astahmer/dev/open-source/panda-clone/website/src/index.tsx
-🐼 debug [ast:css] { kind: 'function' }
-```
-
-## Performance profiling
-
-If Panda is taking too long to process your files, you can use the `--cpu-prof` with the `panda`, `panda cssgen`,
-`panda codegen` and `panda debug` commands to generate a flamegraph of the whole process, which will allow you (or us as
-maintainers) to see which part of the process is taking the most time.
-
-This will generate a `panda-{command}-{timestamp}.cpuprofile` file in the current working directory, which can be opened
-in tools like [Speedscope](https://www.speedscope.app/)
-
-```bash
-pnpm panda --cpu-prof
-```
+Use `--log-level debug` for phase timings and trace lifecycle messages. Use `--trace` when you need compiler-level
+timing data; `chrome-json` traces can be opened in browser performance tooling.
 
 ## FAQ
 
@@ -158,7 +88,7 @@ pnpm panda --cpu-prof
 
 Check that the [`@layer` rules](/docs/concepts/cascade-layers#layer-css) are set and the corresponding `.css` file is
 included. [If you're not using `postcss`](/docs/installation/cli), ensure that `styled-system/styles.css` is imported
-and that the `panda` command has been run (or is running with `--watch`).
+and that `panda build` has been run (or that `panda dev` is running).
 
 ### Some CSS is missing when using absolute imports
 
@@ -267,7 +197,7 @@ that:
 ```json file="package.json"
 {
   "scripts": {
-    "dev": "concurrently \"next dev\" \"panda --watch\""
+    "dev": "concurrently \"next dev\" \"panda dev\""
   }
 }
 ```

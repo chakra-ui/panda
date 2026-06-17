@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import type { CheckOutput } from './types'
+import type { CheckOutput } from './schema'
 
 export function checkExpectedFiles(expected: Array<{ path: string; code: string }>): CheckOutput {
   const missing: string[] = []

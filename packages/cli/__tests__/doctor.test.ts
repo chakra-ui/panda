@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { runValidate } from '../src'
+import { runDoctor } from '../src'
 import { cleanupFixture, createFixture } from './helpers'
 
-describe('validate command', () => {
+describe('doctor command', () => {
   let dir: string | undefined
 
   afterEach(() => {
@@ -16,11 +16,11 @@ describe('validate command', () => {
     dir = createFixture()
 
     const logs: string[] = []
-    const result = await runValidate({ cwd: dir }, { log: (message) => logs.push(message) })
+    const result = await runDoctor({ cwd: dir }, { log: (message) => logs.push(message) })
 
-    expect(result).toMatchObject({ ok: true, command: 'validate', exitCode: 0, diagnosticCount: 0, errors: 0 })
+    expect(result).toMatchObject({ ok: true, command: 'doctor', exitCode: 0, diagnosticCount: 0, errors: 0 })
 
-    expect(logs[0]).toBe('validate: ok (0 diagnostics)')
+    expect(logs[0]).toBe('doctor: ok (0 diagnostics)')
   })
 
   it('--json emits the command result envelope', async () => {
@@ -28,24 +28,24 @@ describe('validate command', () => {
 
     const logs: string[] = []
 
-    await runValidate({ cwd: dir, json: true }, { log: (message) => logs.push(message) })
+    await runDoctor({ cwd: dir, json: true }, { log: (message) => logs.push(message) })
 
     expect(JSON.parse(logs[0])).toMatchObject({
       ok: true,
-      command: 'validate',
+      command: 'doctor',
       exitCode: 0,
       diagnostics: [],
     })
   })
 
-  it('prints verbose phase timings for human output', async () => {
+  it('prints debug phase timings for human output', async () => {
     dir = createFixture()
 
     const logs: string[] = []
 
-    await runValidate({ cwd: dir, verbose: true }, { log: (message) => logs.push(message) })
+    await runDoctor({ cwd: dir, logLevel: 'debug' }, { log: (message) => logs.push(message) })
 
-    expect(logs.join('\n')).toContain('validate: timings')
+    expect(logs.join('\n')).toContain('doctor: timings')
 
     expect(logs.join('\n')).toContain('config:')
   })
@@ -55,19 +55,19 @@ describe('validate command', () => {
 
     const logs: string[] = []
 
-    await runValidate({ cwd: dir, logfile: 'panda.log' }, { log: (message) => logs.push(message) })
+    await runDoctor({ cwd: dir, logfile: 'panda.log' }, { log: (message) => logs.push(message) })
 
-    expect(logs.join('\n')).toContain('validate: ok')
+    expect(logs.join('\n')).toContain('doctor: ok')
 
-    expect(readFileSync(join(dir, 'panda.log'), 'utf8')).toContain('validate: ok')
+    expect(readFileSync(join(dir, 'panda.log'), 'utf8')).toContain('doctor: ok')
   })
 
-  it('reports trace lifecycle messages in verbose mode', async () => {
+  it('reports trace lifecycle messages in debug mode', async () => {
     dir = createFixture()
 
     const logs: string[] = []
 
-    await runValidate({ cwd: dir, trace: true, verbose: true }, { log: (message) => logs.push(message) })
+    await runDoctor({ cwd: dir, trace: true, logLevel: 'debug' }, { log: (message) => logs.push(message) })
 
     expect(logs.some((message) => message.startsWith('trace: '))).toBe(true)
   })
@@ -76,14 +76,14 @@ describe('validate command', () => {
     dir = createFixture()
 
     const logs: string[] = []
-    const result = await runValidate(
+    const result = await runDoctor(
       { cwd: dir, config: 'missing.config.ts', format: 'github' },
       { log: (message) => logs.push(message), error: (message) => logs.push(message) },
     )
 
     expect(result).toMatchObject({
       ok: false,
-      command: 'validate',
+      command: 'doctor',
       exitCode: 1,
       diagnosticCount: 1,
       errors: 1,

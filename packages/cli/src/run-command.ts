@@ -11,7 +11,7 @@ import {
 import { createResult, toJsonPayload, type CliResult } from './result'
 import { renderTimings, timeAsync } from './timing'
 import { startCommandTracing } from './tracing'
-import type { CommonFlags, PhaseTimings } from './types'
+import type { CommonFlags, PhaseTimings } from './schema'
 
 export interface CommandRunContext<TFlags extends CommonFlags = CommonFlags> {
   command: string
@@ -40,8 +40,6 @@ export interface RunCommandOptions<TFlags extends CommonFlags, TData extends obj
   execute(ctx: CommandRunContext<TFlags>): Promise<CommandExecuteResult<TData>>
   /** Human-mode output after bootstrap failures and successful runs (not JSON). */
   renderHuman?(ctx: Omit<CommandRunContext<TFlags>, 'driver'> & { driver?: Driver }, result: CliResult & TData): void
-  /** Skip all human output when `--silent` is set. Default: false. */
-  respectSilent?: boolean
   /** Keep tracing open until `result.stop()` (watch mode). */
   keepTracing?: boolean
 }
@@ -56,7 +54,6 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     failData,
     execute,
     renderHuman,
-    respectSilent = false,
     keepTracing = false,
   } = options
 
@@ -73,8 +70,6 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
       rawOutput.log(JSON.stringify(toJsonPayload(result), null, 2))
       return
     }
-
-    if (respectSilent && flags.silent) return
 
     const ctx: Omit<CommandRunContext<TFlags>, 'driver'> & { driver?: Driver } = {
       command,

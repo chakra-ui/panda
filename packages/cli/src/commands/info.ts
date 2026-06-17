@@ -1,37 +1,25 @@
 import { type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
+import { parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
+import { infoFlagsSchema } from '../schema'
 import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, type OutputSink } from '../output'
 import { setExitCode } from '../result'
-import type { CommandContext, InspectFlags, InspectResult, InspectSummary } from '../types'
+import type { InfoFlags, InfoResult, InfoSummary } from '../schema'
 
-export function inspectCommand(ctx: CommandContext) {
-  return defineCommand({
-    meta: {
-      name: 'inspect',
-      description: 'Inspect compiler state',
-    },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-      maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-      verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
-      trace: { type: 'boolean', description: 'Enable compiler tracing' },
-      traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-      traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-    },
-    run: async ({ args }) => setExitCode(await runInspect(args as InspectFlags)),
-  })
-}
+export const infoCommand = defineCommand({
+  meta: {
+    name: 'info',
+    description: 'Show project and compiler info',
+  },
+  args: runtimeArgs,
+  run: async ({ args }) => setExitCode(await runInfo(parseCliFlags(infoFlagsSchema, args))),
+})
 
-export async function runInspect(flags: InspectFlags = {}, output: OutputSink = consoleOutput): Promise<InspectResult> {
+export async function runInfo(flags: InfoFlags = {}, output: OutputSink = consoleOutput): Promise<InfoResult> {
   return runCommand({
-    command: 'inspect',
+    command: 'info',
     flags,
     output,
     failData: () => ({
@@ -46,7 +34,7 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
       const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
 
       return {
-        data: inspectDriver(driver),
+        data: infoDriver(driver),
         diagnostics,
         ok: diagnosticsPass(diagnostics, flags.maxWarnings),
       }
@@ -68,10 +56,10 @@ export async function runInspect(flags: InspectFlags = {}, output: OutputSink = 
 
       renderCommandDiagnostics(result.diagnostics, ctx.output, flags, ctx.cwd)
     },
-  }) as Promise<InspectResult>
+  }) as Promise<InfoResult>
 }
 
-export function inspectDriver(driver: Driver): InspectSummary {
+export function infoDriver(driver: Driver): InfoSummary {
   const spec = driver.introspect.spec
   const targets = driver.watchTargets()
   return {

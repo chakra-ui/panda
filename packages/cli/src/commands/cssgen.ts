@@ -1,42 +1,33 @@
 import { defineCommand } from 'citty'
 import { type ParseFileReport } from '@pandacss/compiler'
+import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
+import { cssgenFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
 import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, time } from '../timing'
 import { setExitCode } from '../result'
-import type { CommandContext, CssgenFlags, CssgenResult, RunContext } from '../types'
+import type { CssgenFlags, CssgenResult, RunContext } from '../schema'
 import { formatWatchError, startProjectWatch } from '../watch'
 
-export function cssgenCommand(ctx: CommandContext) {
-  return defineCommand({
-    meta: {
-      name: 'cssgen',
-      description: 'Generate CSS from project files',
-    },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
-      outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
-      splitting: { type: 'boolean', description: 'Emit split CSS files' },
-      silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-      maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-      verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
-      trace: { type: 'boolean', description: 'Enable compiler tracing' },
-      traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-      traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-      watchDebounce: { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
-      check: { type: 'boolean', description: 'Check generated CSS without writing' },
-    },
-    run: async ({ args }) => setExitCode(await runCssgen(args as CssgenFlags)),
-  })
-}
+export const cssgenCommand = defineCommand({
+  meta: {
+    name: 'cssgen',
+    description: 'Generate CSS from project files',
+  },
+  args: () => ({
+    ...baseArgs(),
+    watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
+    outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
+    splitting: { type: 'boolean', description: 'Emit split CSS files' },
+    ...outputArgs(),
+    ...traceArgs(),
+    'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
+    check: { type: 'boolean', description: 'Check generated CSS without writing' },
+  }),
+  run: async ({ args }) => setExitCode(await runCssgen(parseCliFlags(cssgenFlagsSchema, args))),
+})
 
 export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = consoleOutput): Promise<CssgenResult> {
   let runCtx: RunContext | undefined

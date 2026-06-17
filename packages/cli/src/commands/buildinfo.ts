@@ -2,39 +2,30 @@ import { type BuildInfo, type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, relative } from 'node:path'
+import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { runCommand } from '../run-command'
+import { buildinfoFlagsSchema } from '../schema'
 import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import { time } from '../timing'
-import type { BuildinfoFlags, BuildinfoResult, CommandContext } from '../types'
+import type { BuildinfoFlags, BuildinfoResult } from '../schema'
 
-export function buildinfoCommand(ctx: CommandContext) {
-  return defineCommand({
-    meta: {
-      name: 'buildinfo',
-      description: 'Build a portable panda.buildinfo.json for a design-system library',
-    },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      outfile: { type: 'string', description: "Output path, default './<outdir>/panda.buildinfo.json'", alias: 'o' },
-      panda: { type: 'string', description: "Peer Panda version range to stamp into the artifact (default '*')" },
-      minify: { type: 'boolean', description: 'Minify the generated JSON', alias: 'm' },
-      silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-      maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-      verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
-      trace: { type: 'boolean', description: 'Enable compiler tracing' },
-      traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-      traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-    },
-    run: async ({ args }) => setExitCode(await runBuildinfo(args as BuildinfoFlags)),
-  })
-}
+export const buildinfoCommand = defineCommand({
+  meta: {
+    name: 'buildinfo',
+    description: 'Build a portable panda.buildinfo.json for a design-system library',
+  },
+  args: () => ({
+    ...baseArgs(),
+    outfile: { type: 'string', description: "Output path, default './<outdir>/panda.buildinfo.json'", alias: 'o' },
+    panda: { type: 'string', description: "Peer Panda version range to stamp into the artifact (default '*')" },
+    minify: { type: 'boolean', description: 'Minify the generated JSON', alias: 'm' },
+    ...outputArgs(),
+    ...traceArgs(),
+  }),
+  run: async ({ args }) => setExitCode(await runBuildinfo(parseCliFlags(buildinfoFlagsSchema, args))),
+})
 
 export async function runBuildinfo(
   flags: BuildinfoFlags = {},

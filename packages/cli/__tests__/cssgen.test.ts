@@ -23,7 +23,7 @@ describe('cssgen command', () => {
   it('writes styles.css after parsing a css call', async () => {
     dir = createFixture()
 
-    const result = await runCssgen({ cwd: dir, silent: true })
+    const result = await runCssgen({ cwd: dir, logLevel: 'silent' })
 
     expect(result.parsed).toHaveLength(1)
 
@@ -33,7 +33,7 @@ describe('cssgen command', () => {
   it('reports zero parsed files when no sources match', async () => {
     dir = createFixture(EMPTY_CONFIG)
 
-    const result = await runCssgen({ cwd: dir, silent: true })
+    const result = await runCssgen({ cwd: dir, logLevel: 'silent' })
 
     expect(result.parsed).toEqual([])
 
@@ -127,16 +127,16 @@ describe('cssgen command', () => {
     )
   })
 
-  it('supports quiet output and max warning policy', async () => {
+  it('supports error-level output and max warning policy', async () => {
     dir = createFixture()
     writeWarningSource(dir)
 
     const logs: string[] = []
 
-    const quiet = await runCssgen({ cwd: dir, quiet: true }, { log: (message) => logs.push(message) })
-    const strict = await runCssgen({ cwd: dir, silent: true, maxWarnings: 0 })
+    const errorLevel = await runCssgen({ cwd: dir, logLevel: 'error' }, { log: (message) => logs.push(message) })
+    const strict = await runCssgen({ cwd: dir, logLevel: 'silent', maxWarnings: 0 })
 
-    expect(quiet.diagnostics.map(({ code, file, severity }) => ({ code, file, severity }))).toMatchInlineSnapshot(`
+    expect(errorLevel.diagnostics.map(({ code, file, severity }) => ({ code, file, severity }))).toMatchInlineSnapshot(`
       [
         {
           "code": "panda_call_unextractable",
@@ -146,9 +146,7 @@ describe('cssgen command', () => {
       ]
     `)
 
-    expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(
-      `"cssgen: parsed 1 files, wrote 274 bytes to <cwd>/styled-system/styles.css, diagnostics: 1"`,
-    )
+    expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(`""`)
 
     expect({ exitCode: strict.exitCode, ok: strict.ok }).toMatchInlineSnapshot(`
       {
@@ -161,7 +159,7 @@ describe('cssgen command', () => {
   it('supports outfile overrides', async () => {
     dir = createFixture()
 
-    await runCssgen({ cwd: dir, outfile: 'panda.css', silent: true })
+    await runCssgen({ cwd: dir, outfile: 'panda.css', logLevel: 'silent' })
 
     expect(readFileSync(join(dir, 'panda.css'), 'utf8')).toContain('red')
   })
@@ -172,7 +170,7 @@ describe('cssgen command', () => {
     const stylesFile = join(dir, 'styled-system', 'styles.css')
     const utilitiesFile = join(dir, 'styled-system', 'styles', 'utilities.css')
 
-    const result = await runCssgen({ cwd: dir, splitting: true, silent: true })
+    const result = await runCssgen({ cwd: dir, splitting: true, logLevel: 'silent' })
 
     expect(result.outfile).toBe(stylesFile)
     expect(readFileSync(stylesFile, 'utf8')).toContain("@import './styles/utilities.css';")
@@ -182,9 +180,9 @@ describe('cssgen command', () => {
   it('--check passes after generated CSS exists', async () => {
     dir = createFixture()
 
-    await runCssgen({ cwd: dir, silent: true })
+    await runCssgen({ cwd: dir, logLevel: 'silent' })
 
-    const result = await runCssgen({ cwd: dir, check: true, silent: true })
+    const result = await runCssgen({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result).toMatchObject({ ok: true, exitCode: 0, missing: [], stale: [] })
   })
@@ -194,11 +192,11 @@ describe('cssgen command', () => {
 
     const stylesFile = join(dir, 'styled-system', 'styles.css')
 
-    await runCssgen({ cwd: dir, silent: true })
+    await runCssgen({ cwd: dir, logLevel: 'silent' })
 
     writeFileSync(stylesFile, 'stale')
 
-    const result = await runCssgen({ cwd: dir, check: true, silent: true })
+    const result = await runCssgen({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
@@ -211,7 +209,7 @@ describe('cssgen command', () => {
 
     const stylesFile = join(dir, 'styled-system', 'styles.css')
 
-    const result = await runCssgen({ cwd: dir, check: true, silent: true })
+    const result = await runCssgen({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
@@ -227,7 +225,7 @@ describe('cssgen command', () => {
 
     writeFileSync(appFile, "import { css } from '@panda/css'; css({ padding: '4px' })")
 
-    const result = await runCssgen({ cwd: dir, silent: true })
+    const result = await runCssgen({ cwd: dir, logLevel: 'silent' })
     const { driver } = result
 
     if (!driver) throw new Error('expected cssgen result to include a driver')
@@ -259,7 +257,7 @@ describe('cssgen command', () => {
     }
 
     // Re-emit CSS from the existing driver — no full re-parse.
-    await writeCssgenOutput(ctx, stylesFile, { cwd: dir, silent: true }, result.parsed)
+    await writeCssgenOutput(ctx, stylesFile, { cwd: dir, logLevel: 'silent' }, result.parsed)
 
     const css = readFileSync(stylesFile, 'utf8')
 

@@ -1,51 +1,86 @@
 import { defineCommand, type ArgsDef } from 'citty'
+import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { isCheckClean } from '../check'
+import { buildFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
 import { type CliDiagnostic, dedupeDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
-import type { BuildFlags, BuildResult, CommandContext, RunContext } from '../types'
+import type { BuildFlags, BuildResult, RunContext } from '../schema'
 import { codegenOnce } from './codegen'
 import { cssgenOnce } from './cssgen'
 import { formatWatchError, startProjectWatch } from '../watch'
 
 // Shared so the dispatcher in cli-main.ts can render these flags under `panda --help`,
 // where the default build is reachable but its command object lives outside the subcommand tree.
-export function buildArgs(ctx: CommandContext): ArgsDef {
+export function buildArgs(): ArgsDef {
   return {
-    cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-    config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
+    ...baseArgs(),
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
     outdir: { type: 'string', description: 'Output directory for generated files' },
     outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
     clean: { type: 'boolean', description: 'Clean the output directory before generating' },
-    silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-    json: { type: 'boolean', description: 'Print JSON' },
-    format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-    quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-    maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-    verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-    logfile: { type: 'string', description: 'Write human output to a log file' },
-    trace: { type: 'boolean', description: 'Enable compiler tracing' },
-    traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-    traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-    watchDebounce: { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
+    ...outputArgs(),
+    ...traceArgs(),
+    'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
     check: { type: 'boolean', description: 'Check generated files without writing' },
   }
 }
 
-export function buildCommand(ctx: CommandContext) {
+function filteredBuildArgs(omit: string[]): ArgsDef {
+  const args = buildArgs()
+  for (const key of omit) {
+    delete args[key]
+  }
+  return args
+}
+
+interface BuildCommandOptions {
+  name: string
+  description: string
+  version?: string
+  args?: ArgsDef | (() => ArgsDef)
+  flags?: Partial<BuildFlags>
+}
+
+function createBuildCommand(options: BuildCommandOptions) {
   return defineCommand({
     meta: {
-      name: 'panda',
-      description: 'Generate the panda system and CSS (codegen + cssgen)',
+      name: options.name,
+      version: options.version,
+      description: options.description,
     },
-    args: buildArgs(ctx),
-    run: async ({ args }) => setExitCode(await runBuild(args as BuildFlags)),
+    args: options.args ?? buildArgs,
+    run: async ({ args }) =>
+      setExitCode(await runBuild({ ...parseCliFlags(buildFlagsSchema, args), ...options.flags })),
   })
 }
+
+export const buildCommand = createBuildCommand({
+  name: 'panda',
+  description: 'Generate the panda system and CSS (codegen + cssgen)',
+})
+
+export const buildSubcommand = createBuildCommand({
+  name: 'build',
+  description: 'Generate the panda system and CSS',
+})
+
+export const devCommand = createBuildCommand({
+  name: 'dev',
+  description: 'Start Panda in watch mode',
+  args: () => filteredBuildArgs(['watch', 'check']),
+  flags: { watch: true, check: false },
+})
+
+export const checkCommand = createBuildCommand({
+  name: 'check',
+  description: 'Check generated files without writing',
+  args: () => filteredBuildArgs(['watch', 'watch-debounce', 'check', 'clean']),
+  flags: { check: true, watch: false },
+})
 
 export async function runBuild(flags: BuildFlags = {}, output: OutputSink = consoleOutput): Promise<BuildResult> {
   let runCtx: RunContext | undefined
@@ -130,7 +165,7 @@ type BuildOnceResult = Pick<BuildResult, 'files' | 'parsed' | 'cssBytes' | 'diag
 
 async function buildOnce(ctx: RunContext, outfile: string, flags: BuildFlags): Promise<BuildOnceResult> {
   // The sub-passes print their own per-command summaries; suppress them so build emits one combined line.
-  const subFlags = { ...flags, silent: true }
+  const subFlags = { ...flags, logLevel: 'silent' as const }
 
   // codegen runs first so `--clean` wipes the outdir before cssgen writes CSS into it.
   const codegen = await timeAsync({

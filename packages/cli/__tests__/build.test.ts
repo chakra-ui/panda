@@ -2,33 +2,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runBuild } from '../src'
-import { useDispatcher } from '../src/routing'
 import { cleanupFixture, createFixture, normalizeOutput, writeSyntaxError } from './helpers'
-
-describe('command routing (useDispatcher)', () => {
-  it('routes the default build (no args or leading flags) to the build command', () => {
-    expect(useDispatcher([])).toBe(false)
-    expect(useDispatcher(['--watch'])).toBe(false)
-    expect(useDispatcher(['--outdir', 'system'])).toBe(false)
-    expect(useDispatcher(['--cwd', '/some/dir', '--silent'])).toBe(false)
-    expect(useDispatcher(['-o', 'styles.css'])).toBe(false)
-  })
-
-  it('routes a leading subcommand token to the dispatcher', () => {
-    expect(useDispatcher(['codegen'])).toBe(true)
-    expect(useDispatcher(['cssgen', '--cwd', '/x'])).toBe(true)
-    expect(useDispatcher(['init'])).toBe(true)
-    // A typo also goes to the dispatcher so citty rejects it instead of silently building.
-    expect(useDispatcher(['frobnicate'])).toBe(true)
-  })
-
-  it('routes --help/-h to the dispatcher so subcommands are listed', () => {
-    expect(useDispatcher(['--help'])).toBe(true)
-    expect(useDispatcher(['-h'])).toBe(true)
-    expect(useDispatcher(['codegen', '--help'])).toBe(true)
-    expect(useDispatcher(['--watch', '--help'])).toBe(true)
-  })
-})
 
 describe('build command (default panda)', () => {
   let dir: string | undefined
@@ -41,7 +15,7 @@ describe('build command (default panda)', () => {
   it('runs codegen and cssgen in one pass', async () => {
     dir = createFixture()
 
-    const result = await runBuild({ cwd: dir, silent: true })
+    const result = await runBuild({ cwd: dir, logLevel: 'silent' })
 
     // codegen wrote the styled-system (separator-agnostic so it holds on Windows too)
     expect(result.files.some((path) => path.replace(/\\/g, '/').endsWith('css/css.js'))).toBe(true)
@@ -71,7 +45,7 @@ describe('build command (default panda)', () => {
   it('records both codegen and css phases in timings', async () => {
     dir = createFixture()
 
-    const result = await runBuild({ cwd: dir, silent: true })
+    const result = await runBuild({ cwd: dir, logLevel: 'silent' })
 
     expect(result.timings).toMatchObject({
       config: expect.any(Number),
@@ -84,7 +58,7 @@ describe('build command (default panda)', () => {
   it('supports outdir and outfile overrides', async () => {
     dir = createFixture()
 
-    await runBuild({ cwd: dir, outdir: 'system', outfile: 'panda.css', silent: true })
+    await runBuild({ cwd: dir, outdir: 'system', outfile: 'panda.css', logLevel: 'silent' })
 
     expect(readFileSync(join(dir, 'system', 'css', 'css.js'), 'utf8')).toContain('css')
     expect(readFileSync(join(dir, 'panda.css'), 'utf8')).toContain('red')
@@ -114,9 +88,9 @@ describe('build command (default panda)', () => {
   it('--check passes after a clean build', async () => {
     dir = createFixture()
 
-    await runBuild({ cwd: dir, silent: true })
+    await runBuild({ cwd: dir, logLevel: 'silent' })
 
-    const result = await runBuild({ cwd: dir, check: true, silent: true })
+    const result = await runBuild({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result).toMatchObject({ ok: true, exitCode: 0, missing: [], stale: [] })
   })
@@ -124,7 +98,7 @@ describe('build command (default panda)', () => {
   it('--check counts every split CSS file in the summary, not just one', async () => {
     dir = createFixture()
 
-    await runBuild({ cwd: dir, splitting: true, silent: true })
+    await runBuild({ cwd: dir, splitting: true, logLevel: 'silent' })
 
     const cssCount = readdirSync(join(dir, 'styled-system'), { recursive: true }).filter((path) =>
       String(path).endsWith('.css'),
@@ -144,7 +118,7 @@ describe('build command (default panda)', () => {
   it('--check fails when output is missing', async () => {
     dir = createFixture()
 
-    const result = await runBuild({ cwd: dir, check: true, silent: true })
+    const result = await runBuild({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
@@ -154,10 +128,10 @@ describe('build command (default panda)', () => {
   it('--clean wipes the outdir before generating', async () => {
     dir = createFixture()
 
-    await runBuild({ cwd: dir, silent: true })
+    await runBuild({ cwd: dir, logLevel: 'silent' })
     writeFileSync(join(dir, 'styled-system', 'stale.mjs'), 'stale')
 
-    await runBuild({ cwd: dir, clean: true, silent: true })
+    await runBuild({ cwd: dir, clean: true, logLevel: 'silent' })
 
     expect(existsSync(join(dir, 'styled-system', 'stale.mjs'))).toBe(false)
     // CSS is still regenerated after the clean.

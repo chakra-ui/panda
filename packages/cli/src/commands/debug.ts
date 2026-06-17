@@ -1,38 +1,27 @@
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
+import { parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
+import { debugFlagsSchema } from '../schema'
 import { diagnosticsPass, normalizeDiagnostics, type CliDiagnostic } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
-import type { CommandContext, DebugFlags, DebugResult } from '../types'
+import type { DebugFlags, DebugResult } from '../schema'
 
-export function debugCommand(ctx: CommandContext) {
-  return defineCommand({
-    meta: {
-      name: 'debug',
-      description: 'Dump resolved config and per-file extraction for bug reports',
-    },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      outdir: { type: 'string', description: 'Debug output directory (used as-is; default <styled-system>/debug)' },
-      dry: { type: 'boolean', description: 'Print the dump to stdout instead of writing files' },
-      onlyConfig: { type: 'boolean', description: 'Only dump the resolved config, skip per-file extraction' },
-      silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-      maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-      verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
-      trace: { type: 'boolean', description: 'Enable compiler tracing' },
-      traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-      traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-    },
-    run: async ({ args }) => setExitCode(await runDebug(args as DebugFlags)),
-  })
-}
+export const debugCommand = defineCommand({
+  meta: {
+    name: 'debug',
+    description: 'Dump resolved config and per-file extraction for bug reports',
+  },
+  args: () => ({
+    ...runtimeArgs(),
+    outdir: { type: 'string', description: 'Debug output directory (used as-is; default <styled-system>/debug)' },
+    dry: { type: 'boolean', description: 'Print the dump to stdout instead of writing files' },
+    onlyConfig: { type: 'boolean', description: 'Only dump the resolved config, skip per-file extraction' },
+  }),
+  run: async ({ args }) => setExitCode(await runDebug(parseCliFlags(debugFlagsSchema, args))),
+})
 
 export async function runDebug(flags: DebugFlags = {}, output: OutputSink = consoleOutput): Promise<DebugResult> {
   return runCommand({
@@ -46,7 +35,7 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
       const sources = driver.scan()
 
       const dump: Record<string, string> = {
-        'info.json': JSON.stringify(
+        'system-info.json': JSON.stringify(
           {
             platform: process.platform,
             arch: process.arch,

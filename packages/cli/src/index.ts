@@ -2,10 +2,10 @@ export { runBuild } from './commands/build'
 export { runCodegen } from './commands/codegen'
 export { runCssgen, writeCssgenOutput } from './commands/cssgen'
 export { runDebug } from './commands/debug'
+export { runDoctor } from './commands/doctor'
 export { runBuildinfo } from './commands/buildinfo'
+export { infoDriver, runInfo } from './commands/info'
 export { runInit, setupGitIgnore } from './commands/init'
-export { inspectDriver, runInspect } from './commands/inspect'
-export { runValidate } from './commands/validate'
 export type {
   BuildFlags,
   BuildResult,
@@ -19,10 +19,11 @@ export type {
   CssgenResult,
   DebugFlags,
   DebugResult,
+  DoctorFlags,
+  DoctorResult,
+  InfoFlags,
+  InfoResult,
   InitFlags,
   InitResult,
-  InspectFlags,
-  InspectResult,
-  ValidateFlags,
-  ValidateResult,
-} from './types'
+  LogLevel,
+} from './schema'

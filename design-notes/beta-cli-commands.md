@@ -1,6 +1,6 @@
 ---
 title: Beta CLI commands + tracing usability
-status: draft
+status: implemented
 scope:
   - packages/cli
   - packages/compiler
@@ -10,84 +10,115 @@ scope:
 
 ## Goal
 
-Close the v2 CLI command gap for the beta release and make the tracing system usable end-to-end. Three deliverables:
+Close the v2 CLI command gap for the beta release and make tracing usable end-to-end.
 
-1. **Default `panda` command** (no subcommand) — the full build.
-2. **`panda debug`** — diagnostic dump for bug reports.
-3. **Tracing usability** — verify `--trace` works end-to-end and document it.
+The beta CLI now exposes a small devtool-style surface:
 
-This is a beta-parity pass, not a full v1 CLI port. See [v2 CLI command gaps](./v2-cli-command-gaps.md) for the commands
-that stay out of scope (`studio`, `analyze`, `ship`/`emit-pkg`).
+```sh
+panda init
+panda dev
+panda build
+panda check
+panda info
+panda doctor
+panda debug
+```
 
-## 1. Default command (`panda`) — done
+Advanced commands remain available for focused workflows:
 
-v1 ran a bare `panda [files]` that called `generate()` — codegen + css in one pass — and was the command most users
-typed. v2 split this into `panda codegen` and `panda cssgen`. The bare command is back so the common case is one word.
+```sh
+panda codegen
+panda cssgen
+panda buildinfo
+```
 
-**Behavior:** `panda` runs codegen then cssgen on one driver pass (`runBuild` → `buildOnce`, composing the exported
-`codegenOnce` + `cssgenOnce`). codegen runs first so `--clean` wipes the outdir before css is written. Diagnostics from
-both passes are merged; one combined `panda: …` summary line replaces the per-command summaries.
+`panda inspect` and `panda validate` were intentionally removed. Use `panda info` for project/compiler summaries and
+`panda doctor` for setup and diagnostic health checks.
 
-**Flags:** `CommonFlags` plus `--outdir`, `--outfile`, `--splitting`, `--clean`, `--check`. `--outdir` relocates both
-codegen output and the default CSS file (via `paths(outdir).styleFile`) so everything stays under one root. Watch reruns
-the combined build per batch.
+## Build lifecycle commands
 
-**citty routing (the tricky part).** citty resolves a subcommand from the first non-dash token, so a runnable root with
-`subCommands` breaks two ways: `panda --outdir foo` reads `foo` as a command, and a matched subcommand still triggers
-the root's `run` (double build). Fix: two separate command objects routed by `useDispatcher(rawArgs)` in `routing.ts` —
-a runless dispatcher (subcommands + `--help`) and a standalone `build`. A leading non-dash token or `--help`/`-h` →
-dispatcher; otherwise (no args, or leading flags) → standalone build. Consequence: **subcommands must come first**
-(`panda codegen --cwd x`, not `panda --cwd x codegen`) — the standard convention, and citty can't do otherwise anyway.
+The default `panda` command and `panda build` both run codegen then cssgen on one driver pass (`runBuild` →
+`buildOnce`, composing `codegenOnce` + `cssgenOnce`). codegen runs first so `--clean` wipes the outdir before CSS is
+written. Diagnostics from both passes are merged; one combined `panda: ...` summary line replaces the per-command
+summaries.
 
-**Deferred:** the v1 positional `[files]` include override — `createNodeDriver` has no per-invocation include option, so
-the build uses the config `include`. Add when the driver supports an include override.
+`panda dev` is the watch-mode lifecycle command. It sets `watch: true` internally and hides `--watch` from help.
 
-**Cross-platform:** routing is pure string logic (unit-tested, OS-independent); paths delegate to the compiler/driver.
-TS CI runs on Linux (`ubuntu-latest`); Windows relies on this OS-agnostic design (no Windows TS CI job).
+`panda check` is the read-only CI command. It sets `check: true` internally and hides write/watch-only flags from help.
 
-## 2. `panda debug` — done
+`codegen` and `cssgen` remain advanced commands for generating only artifacts or only CSS.
 
-v1 `debug [glob]` dumped config + per-file AST + per-file CSS under `--outdir` (default `styled-system/debug`), with
-`--dry` / `--only-config`.
+## Command implementation
 
-**What shipped** (`commands/debug.ts`, `runDebug`) — same flags (`--outdir`, `--dry`, `--only-config`). Output defaults
-to `<styled-system>/debug`; `--outdir` overrides it and is used as-is (the literal target, not `<outdir>/debug`):
+Commands are exported as `citty` command objects, not command factories. `CommandContext` was removed. Shared arg
+builders in `packages/cli/src/args.ts` compute the `cwd` default lazily with `process.cwd()`.
 
-- `info.json` — platform, arch, node version, config path, source count. The "next info"-style header so one dump is
-  enough for a bug report.
-- `config.json` — the resolved config (`driver.config`, the `SerializedConfig`).
-- `<file>.extract.json` — per-file extraction via `driver.compiler.extractFileSource(path, source)` (`calls`, `jsx`,
-  `diagnostics`). Source list comes from `driver.scan()`, read with node `fs`.
-- `styles.css` — the **whole-project** stylesheet (`driver.parseFiles()` then `driver.cssgen()`).
+The root dispatcher is intentionally runless. `cli-main.ts` routes leading subcommands to the dispatcher and leading
+flags/no args to the standalone default build command. This avoids citty's runnable-root double-run behavior while
+keeping bare `panda` as a build shortcut.
 
-**v2 adaptations vs v1:**
+Flag parsing is a two-step boundary:
 
-- `extractFileSource` (the facade method) replaces v1's `extractDebug` — the latter is on the raw binding, not the
-  `Compiler` facade.
-- **Project-level CSS, not per-file.** v2 emits atomic CSS at the project level (atoms dedupe across files), so a
-  per-file CSS slice isn't a meaningful unit. The dump carries one `styles.css`.
-- Combined the v1 extraction dump (the "add back" reading) with a `next info`-style header, so both bug-report needs are
-  covered by one command. This supersedes the Phase 4 `debug` definition in [cli.md](./cli.md).
+1. citty owns CLI parsing and help rendering.
+2. `parseCliFlags(schema, args)` normalizes kebab-case flags and validates them with Zod schemas from
+   `packages/cli/src/schema.ts`.
 
-## 3. Tracing usability
+This keeps command runners typed without `args as BuildFlags` casts and gives invalid CLI values concise errors.
 
-Plumbing already exists (see [instrumentation.md](./instrumentation.md)): Rust `tracing` spans, `pandacss_tracing`
-subscriber, `PANDA_TRACE*` env, and CLI flags `--trace` / `--trace-output` / `--trace-file` wired through
+## Shared flags
+
+Output verbosity is consolidated behind one flag:
+
+```sh
+--log-level silent|error|warn|info|debug
+```
+
+`--silent`, `--quiet`, and `--verbose` are not part of the v2 command surface. The mapping is:
+
+- `silent`: no human output
+- `error`: error diagnostics only
+- `warn`: error and warning diagnostics
+- `info`: default summaries
+- `debug`: timings and trace lifecycle messages
+
+Shared operational flags use kebab-case:
+
+```sh
+--max-warnings
+--watch-debounce
+--trace-output
+--trace-file
+```
+
+## Tracing
+
+Tracing is separate from log level. CLI flags `--trace`, `--trace-output`, and `--trace-file` are wired through
 `startCommandTracing` (`packages/cli/src/tracing.ts`) to native `startTracing/flushTracing/shutdownTracing`.
 
-"Usable" is a validation + ergonomics + docs pass, not new infrastructure:
+Example:
 
-- **Verify end-to-end through the CLI** (not just the bench):
-  `panda codegen --trace --trace-output chrome-json --trace-file .panda/traces/panda.json` produces a file that opens in
-  Perfetto / `chrome://tracing`.
-- **Confirm flag → native wiring** for every traceable command, and that watch keeps tracing alive until `stop()`.
-- **Ergonomics:** sensible default trace file path when `--trace` is passed without `--trace-file`; `--verbose` prints
-  trace start/stop status (already partly done).
-- **Document** the flags + env in user-facing docs, not only in `instrumentation.md`.
+```sh
+panda build --trace --trace-output chrome-json --trace-file .panda/traces/panda.json
+```
+
+`--log-level debug` prints trace start/stop lifecycle messages. Watch mode keeps tracing active until the returned
+`stop()` function runs.
+
+## Debug command
+
+`panda debug` writes a bug-report dump under `<styled-system>/debug` by default, or under the literal `--outdir` when
+provided:
+
+- `system-info.json` — platform, arch, node version, config path, source count
+- `config.json` — resolved config
+- `<file>.extract.json` — per-file extraction via `driver.compiler.extractFileSource(path, source)`
+- `styles.css` — whole-project stylesheet after `driver.parseFiles()` + `driver.cssgen()`
+
+v2 emits atomic CSS at the project level, so the dump carries one project stylesheet instead of per-file CSS slices.
 
 ## Out of scope
 
-`studio`, `analyze`, `ship`/`emit-pkg`, lightningcss minify parity. Tracked in
+`studio`, `analyze`, `ship`/`emit-pkg`, and lightningcss minify parity remain outside the beta CLI surface. See
 [v2 CLI command gaps](./v2-cli-command-gaps.md).
 
 ## Related

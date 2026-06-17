@@ -1,5 +1,5 @@
-import type { CommonFlags, PhaseTimings } from './types'
-import { shouldPrintHumanSummary, type OutputSink } from './output'
+import type { CommonFlags, PhaseTimings } from './schema'
+import { allowsLogLevel, shouldPrintHumanSummary, type OutputSink } from './output'
 
 export function parseMilliseconds(value: CommonFlags['watchDebounce']): number | undefined {
   if (value === undefined) return undefined
@@ -51,7 +51,7 @@ export interface RenderTimingsOptions {
 }
 
 export function renderTimings({ command, timings, output, flags }: RenderTimingsOptions): void {
-  if (!flags.verbose || !shouldPrintHumanSummary(flags)) return
+  if (!allowsLogLevel(flags, 'debug') || !shouldPrintHumanSummary(flags)) return
 
   const entries = Object.entries(timings)
 

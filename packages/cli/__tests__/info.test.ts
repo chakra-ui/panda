@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { runInspect } from '../src'
+import { runInfo } from '../src'
 import { cleanupFixture, createFixture } from './helpers'
 
-describe('inspect command', () => {
+describe('info command', () => {
   let dir: string | undefined
 
   afterEach(() => {
@@ -14,17 +14,17 @@ describe('inspect command', () => {
     dir = createFixture()
 
     const logs: string[] = []
-    const result = await runInspect({ cwd: dir, json: true }, { log: (message) => logs.push(message) })
+    const result = await runInfo({ cwd: dir, json: true }, { log: (message) => logs.push(message) })
 
     expect(result).toMatchObject({
       ok: true,
-      command: 'inspect',
+      command: 'info',
       exitCode: 0,
       diagnostics: [],
       sourceCount: 1,
     })
 
-    expect(JSON.parse(logs[0])).toMatchObject({ ok: true, command: 'inspect', sourceCount: 1, diagnostics: [] })
+    expect(JSON.parse(logs[0])).toMatchObject({ ok: true, command: 'info', sourceCount: 1, diagnostics: [] })
   })
 
   it('includes timings in json output', async () => {
@@ -32,7 +32,7 @@ describe('inspect command', () => {
 
     const logs: string[] = []
 
-    await runInspect({ cwd: dir, json: true }, { log: (message) => logs.push(message) })
+    await runInfo({ cwd: dir, json: true }, { log: (message) => logs.push(message) })
 
     expect(JSON.parse(logs[0]).timings).toMatchObject({ config: expect.any(Number) })
   })

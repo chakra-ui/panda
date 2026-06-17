@@ -154,8 +154,7 @@ Let's make a dedicated workspace package for your `outdir`:
    needed
 4. [optional] you might want to install and import your [preset](/docs/customization/presets) in this `panda.config.ts`
    file as well
-5. Run the [`panda emit-pkg`](/docs/references/cli#emit-pkg) command to set the entrypoints in
-   [`exports`](https://nodejs.org/api/packages.html#exports)
+5. Add [`exports`](https://nodejs.org/api/packages.html#exports) entries for the generated styled-system entrypoints
 
 This should look similar to this:
 
@@ -280,7 +279,7 @@ parsing the source code.
 Generate the build info file:
 
 ```bash
-panda ship --outfile dist/panda.buildinfo.json
+panda buildinfo --outfile dist/panda.buildinfo.json
 ```
 
 **App code**

@@ -2,7 +2,17 @@ import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Diagnostic } from '@pandacss/compiler'
 import { countErrors, renderDiagnostics, type DiagnosticFormat } from './diagnostics'
-import type { CommonFlags } from './types'
+import type { CommonFlags, LogLevel } from './schema'
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  silent: 0,
+  error: 1,
+  warn: 2,
+  info: 3,
+  debug: 4,
+}
+
+const DEFAULT_LOG_LEVEL: LogLevel = 'info'
 
 export interface OutputSink {
   log(message: string): void
@@ -46,12 +56,12 @@ export function renderCommandDiagnostics(
   flags: CommonFlags,
   cwd: string,
 ): void {
-  if (flags.silent || diagnostics.length === 0) return
+  if (!allowsLogLevel(flags, 'error') || diagnostics.length === 0) return
 
   const message = renderDiagnostics(diagnostics, {
     cwd,
     format: commandFormat(flags),
-    quiet: flags.quiet,
+    quiet: !allowsLogLevel(flags, 'warn'),
   })
 
   if (!message) return
@@ -70,7 +80,7 @@ export function shouldPrintJson(flags: Pick<CommonFlags, 'json' | 'format'>): bo
 export function shouldPrintHumanSummary(flags: CommonFlags): boolean {
   const format = commandFormat(flags)
 
-  return !flags.silent && (format === 'human' || format === 'pretty')
+  return allowsLogLevel(flags, 'info') && (format === 'human' || format === 'pretty')
 }
 
 export function commandFormat(flags: Pick<CommonFlags, 'json' | 'format'>): DiagnosticFormat {
@@ -83,4 +93,16 @@ export function commandFormat(flags: Pick<CommonFlags, 'json' | 'format'>): Diag
 export function createCommandOutput(output: OutputSink, flags: CommonFlags, cwd: string): OutputSink {
   // JSON output must remain machine-clean; logfile teeing is for human output only.
   return createOutputSink(output, { cwd, logfile: shouldPrintJson(flags) ? undefined : flags.logfile })
+}
+
+export function resolveLogLevel(flags: Pick<CommonFlags, 'logLevel'>): LogLevel {
+  return isLogLevel(flags.logLevel) ? flags.logLevel : DEFAULT_LOG_LEVEL
+}
+
+export function allowsLogLevel(flags: Pick<CommonFlags, 'logLevel'>, level: Exclude<LogLevel, 'silent'>): boolean {
+  return LOG_LEVELS[resolveLogLevel(flags)] >= LOG_LEVELS[level]
+}
+
+function isLogLevel(value: unknown): value is LogLevel {
+  return typeof value === 'string' && value in LOG_LEVELS
 }

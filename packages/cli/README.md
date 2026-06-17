@@ -14,13 +14,22 @@ npm install -D @pandacss/cli
 ## Usage
 
 ```bash
-panda init        # scaffold a config
-panda codegen     # generate the styled-system
-panda cssgen      # generate CSS
-panda inspect     # inspect compiler state
-panda validate    # validate config + diagnostics
-panda buildinfo   # emit a portable build manifest
+panda init      # scaffold a config
+panda dev       # watch files and rebuild
+panda build     # generate the styled-system and CSS
+panda check     # check generated files without writing
+panda info      # show project and compiler info
+panda doctor    # check config + diagnostics
+panda debug     # write debug artifacts for bug reports
+
+# Advanced
+panda codegen    # generate the styled-system only
+panda cssgen     # generate CSS only
+panda buildinfo  # emit a portable build manifest
 ```
+
+Use `--log-level silent|error|warn|info|debug` to control CLI output. Compiler tracing is separate: `--trace`,
+`--trace-output`, and `--trace-file`.
 
 ## Documentation
 

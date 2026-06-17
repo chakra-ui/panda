@@ -7,13 +7,15 @@ hardware: darwin arm64 (local dev machine; not a clean-room CI box)
 caveats:
   - end-to-end CLI wall time on a tiny 2-file project — startup-bound, not a steady-state codegen number
   - not equal-work — v2 emits 26 files vs 142 (jsx pass deferred), so `codegen` is partly "less output"; `cssgen` is the apples-to-apples row
+  - archived benchmark — the v2 CLI prototype measured here has since been merged into packages/cli
 ---
 
 # CLI: old JS engine vs v2 Rust engine (`codegen` + `cssgen`)
 
-> End-to-end wall-clock comparison of the experimental v2 CLI (`packages/cli_v2`, native NAPI Rust engine) against the
-> legacy JS CLI (`packages/cli`) running `codegen` and `cssgen` on the same project. This is the user-facing "how long
-> does the command take" number — the thing someone feels on every save — not a per-workload microbenchmark. For the
+> End-to-end wall-clock comparison of the pre-merge v2 CLI prototype (native NAPI Rust engine) against the legacy JS CLI
+> running `codegen` and `cssgen` on the same project. The v2 implementation now lives in `packages/cli`. This is the
+> user-facing "how long does the command take" number — the thing someone feels on every save — not a per-workload
+> microbenchmark. For the
 > isolated extraction speedup, see [2026-05-16 extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx); for the
 > generated-type cost, [2026-06-01 generated-types-js-vs-rust](./2026-06-01-generated-types-js-vs-rust.mdx).
 
@@ -120,50 +122,16 @@ All options run from the fixture dir and do 9 cold runs per command:
 cd sandbox/cli-v2
 ```
 
-**Option A — `/usr/bin/time` (native on macOS & Linux, no extra tools):**
+This note is archived from the pre-merge prototype layout. To re-run this style of benchmark today, use the current v2
+CLI path (`node ../../packages/cli/bin.js <command> --cwd . --log-level silent`) and compare it against a published v1
+CLI installed outside this workspace.
 
-```sh
-bench () { sum=0; n=9; for i in $(seq 1 $n); do
-  t=$( { /usr/bin/time -p "$@" >/dev/null; } 2>&1 | awk '/^real/{print $2}' )
-  sum=$(awk -v s="$sum" -v t="$t" 'BEGIN{print s+t}')
-done; awk -v s="$sum" -v n="$n" -v l="$*" 'BEGIN{printf "%-52s mean %.3fs (n=%d)\n", l, s/n, n}'; }
-
-bench node ../../packages/cli_v2/bin.js codegen --cwd .
-bench node ../../packages/cli/bin.js     codegen --cwd . --silent
-bench node ../../packages/cli_v2/bin.js  cssgen  --cwd .
-bench node ../../packages/cli/bin.js     cssgen  --cwd . --silent
-```
-
-**Option B — Node harness (any OS incl. Windows, no extra tools):**
-
-```sh
-node -e '
-  const { execFileSync } = require("node:child_process");
-  const { performance } = require("node:perf_hooks");
-  const N = 9;
-  const time = (cli, cmd) => {
-    const args = [`../../packages/${cli}/bin.js`, cmd, "--cwd", "."];
-    if (cli === "cli") args.push("--silent");
-    const ts = [];
-    for (let i = 0; i < N; i++) {
-      const s = performance.now();
-      execFileSync(process.execPath, args, { stdio: "ignore" });
-      ts.push(performance.now() - s);
-    }
-    ts.sort((a, b) => a - b);
-    const mean = ts.reduce((a, b) => a + b, 0) / N;
-    console.log(`${cli.padEnd(7)} ${cmd.padEnd(8)} mean ${mean.toFixed(0)}ms  best ${ts[0].toFixed(0)}ms  (n=${N})`);
-  };
-  for (const cmd of ["codegen", "cssgen"]) for (const cli of ["cli_v2", "cli"]) time(cli, cmd);
-'
-```
-
-**Option C — [`hyperfine`](https://github.com/sharkdp/hyperfine) (any OS, nicest stats), if installed:**
+**[`hyperfine`](https://github.com/sharkdp/hyperfine) example for the current CLI:**
 
 ```sh
 hyperfine -w 2 -N \
-  'node ../../packages/cli_v2/bin.js codegen --cwd .' \
-  'node ../../packages/cli/bin.js codegen --cwd . --silent'
+  'node ../../packages/cli/bin.js codegen --cwd . --log-level silent' \
+  'node ../../packages/cli/bin.js cssgen --cwd . --log-level silent'
 ```
 
 ## Open questions worth resolving

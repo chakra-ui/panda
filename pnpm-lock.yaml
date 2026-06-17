@@ -123,10 +123,10 @@ importers:
         version: 1.11.3(jsdom@27.2.0)(typescript@6.0.2)
       '@pandacss/preset-base':
         specifier: 1.11.3
-        version: link:../packages/preset-base
+        version: 1.11.3
       '@pandacss/preset-panda':
         specifier: 1.11.3
-        version: link:../packages/preset-panda
+        version: 1.11.3
       '@pandacss/shared':
         specifier: 1.11.3
         version: 1.11.3
@@ -135,7 +135,7 @@ importers:
         version: 1.11.3
       '@pandacss/types':
         specifier: 1.11.3
-        version: link:../packages/types
+        version: 1.11.3
 
   packages/cli:
     dependencies:
@@ -154,6 +154,9 @@ importers:
       citty:
         specifier: 0.1.6
         version: 0.1.6
+      zod:
+        specifier: ^4.0.0
+        version: 4.3.6
 
   packages/compiler:
     dependencies:

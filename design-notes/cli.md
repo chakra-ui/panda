@@ -1,266 +1,136 @@
 ---
 title: CLI v2 Direction
-status: draft
+status: implemented
 scope:
-  - packages/cli_v2
+  - packages/cli
   - packages/compiler
   - packages/compiler-shared
   - packages/config
   - packages/vite
-  - packages/postcss_v2
+  - packages/postcss
 ---
 
 # CLI v2 Direction
 
 ## Summary
 
-`packages/cli_v2` should be the production host for the Rust compiler, not just a thin benchmark shell. The current
-commands (`codegen`, `cssgen`, `inspect`) prove the driver API works, but enterprise adoption needs stronger
-diagnostics, CI contracts, validation, watch behavior, and observability.
+`packages/cli` is the production host for the Rust compiler. The CLI surface is intentionally small and follows common
+devtool conventions from Vite, Bun, ESLint, Prisma, and Next.js: clear lifecycle commands, predictable flags,
+machine-readable output, diagnostics suitable for CI, and explicit debugging tools.
 
-The direction is to keep the command set small at first and make the core commands excellent before porting every legacy
-CLI feature. Popular devtool CLIs such as Vite, Next.js, ESLint, Prisma, Tailwind, Cargo, and Rolldown converge on the
-same pattern: predictable flags, clear diagnostics, machine-readable output, and debuggability for CI and large teams.
+The primary command surface is:
 
-## Current State
+```sh
+panda init
+panda dev
+panda build
+panda check
+panda info
+panda doctor
+panda debug
+```
 
-`cli_v2` currently exposes:
+Advanced commands remain available for lower-level workflows:
 
 ```sh
 panda codegen
 panda cssgen
-panda inspect
+panda buildinfo
 ```
 
-The implementation is built around `createNodeDriver()` and the compiler driver methods:
+Bare `panda` is a shortcut for the default build (`panda build`).
 
-- `driver.codegen()`
-- `driver.parseFiles()`
-- `driver.writeCss()`
-- `driver.writeSplitCss()`
-- `driver.reload()`
-- `driver.applyChanges()`
+## Current command model
 
-This is the right foundation. The gap is the CLI host layer around it.
+Commands are exported as `citty` command objects. They are not factories, and there is no `CommandContext`. Shared arg
+builders compute the `cwd` default lazily with `process.cwd()` so help output stays accurate without threading context
+through every command module.
 
-## Reference Patterns
+The root dispatcher is runless. `cli-main.ts` routes:
 
-Vite favors a compact command surface with global debug/config/log flags and clear watch/dev output. Tailwind keeps its
-CSS build command simple but supports production essentials like input/output, watch, minify, source maps, stdin/stdout,
-and silent mode.
+- leading subcommands and help requests to the dispatcher,
+- no args or leading flags to the standalone default build command.
 
-ESLint is the strongest model for CI and diagnostics: `--format json`, warning thresholds, cache/check modes, clear exit
-codes, and dedicated config/debug commands. Prisma is the strongest model for lifecycle tooling: `init`, `generate`,
-`validate`, `format`, `debug`, and `studio` map to concrete project tasks. Next.js is the strongest model for
-operational debugging: `info`, `--debug`, CPU profiling, build summaries, and targeted debug modes.
+This avoids citty's runnable-root double-run behavior while keeping bare `panda` useful.
 
-Rolldown's `rolldown_error` crate is the closest architectural reference for a Rust-backed JS tool. It separates typed
-build events from rendered diagnostics, gives every event a stable `EventKind`, carries severity separately, batches
-diagnostics, stabilizes paths relative to `cwd`, and renders rich labels/help with `ariadne`. Its generated
-`EventKindSwitcher` also shows how warning filters can stay cheap and explicit.
+## Flag schema boundary
 
-Panda v2 should borrow the shape, not the full breadth. The CLI should feel small like Tailwind for CSS generation,
-scriptable like ESLint, diagnosable like Prisma/Next, and structured like Rolldown at the compiler boundary.
+citty owns parsing and help rendering. Parsed args then pass through `parseCliFlags(schema, args)`, which:
 
-## Production Gaps
+- normalizes kebab-case public flags to camelCase internal fields,
+- validates values with Zod schemas from `packages/cli/src/schema.ts`,
+- returns typed command flags without `args as BuildFlags` casts,
+- prints concise invalid-option errors.
 
-### Diagnostics
+Example invalid flag output:
 
-The compiler already returns structured diagnostics, but the CLI mostly reports counts. Production output should render:
+```txt
+[error] Invalid command options
+- --log-level: expected silent, error, warn, info, or debug (received "banana")
+```
+
+`schema.ts` is the single source for CLI flag schemas, inferred flag types, and command result/context types.
+
+## Shared flags
+
+Output verbosity is controlled by one flag:
+
+```sh
+--log-level silent|error|warn|info|debug
+```
+
+`--silent`, `--quiet`, and `--verbose` are intentionally removed from the public v2 surface. The log levels mean:
+
+- `silent`: no human output
+- `error`: error diagnostics only
+- `warn`: error and warning diagnostics
+- `info`: default summaries
+- `debug`: timings and trace lifecycle messages
+
+Shared operational flags are kebab-case:
+
+```sh
+--max-warnings
+--watch-debounce
+--trace-output
+--trace-file
+```
+
+`--json` remains the machine-readable output switch and is equivalent to `--format json`.
+
+## Diagnostics and CI contracts
+
+The CLI renders structured compiler diagnostics late, at the host boundary. It preserves:
 
 - severity,
 - stable code,
 - file path,
 - line and column when available,
 - message,
-- optional labels/help,
-- optional JSON/GitHub Actions formats.
+- optional help.
 
-Rolldown's model suggests keeping the compiler diagnostic as structured data first, then rendering it late for the
-target surface. Panda should avoid reducing diagnostics to strings inside the compiler or driver. The CLI should own
-final formatting, while the compiler should preserve enough data for rich terminal output and JSON.
-
-Useful follow-up shape:
-
-```ts
-interface CliDiagnostic {
-  code: string
-  severity: 'info' | 'warning' | 'error'
-  message: string
-  file?: string
-  location?: SourceRange
-  labels?: Array<{ range: SourceRange; message?: string }>
-  help?: string[]
-}
-```
-
-This enables local debugging, CI annotations, and stable machine output.
-
-### CI Contracts
-
-Enterprise users need commands that can verify without writing:
+The supported render modes are:
 
 ```sh
-panda codegen --check
-panda cssgen --check
-panda validate
-panda inspect --json
+--format human
+--format pretty
+--format json
+--format github
 ```
 
-These commands should have documented exit codes. A good starting contract:
+`panda check`, `panda codegen --check`, and `panda cssgen --check` verify generated files without writing. Missing and
+stale paths are reported in human output and JSON.
 
-- `0`: success,
-- `1`: compilation or validation failed,
-- `2`: config or usage error,
-- `3`: internal/compiler host error.
+Exit codes:
 
-Like ESLint, warning policy should be explicit rather than implicit. Consider:
+- `0`: command succeeded,
+- `1`: compiler diagnostics with error severity, doctor failure, or stale/missing `--check` output,
+- `2`: reserved for config or usage errors at the CLI host boundary,
+- `3`: reserved for internal compiler-host errors.
 
-```sh
---quiet
---max-warnings 0
---format human|json|github
-```
+## Command result envelope
 
-Like Rolldown's event-kind filtering, Panda should eventually support enabling/disabling diagnostic classes by stable
-code, not by matching text.
-
-### Config Validation
-
-`panda validate` should load the config, run config diagnostics, and optionally print JSON. It should be cheap enough to
-run in CI before build steps, and it should explain unsupported v2 config features rather than failing later inside
-codegen/cssgen.
-
-### Watch Mode
-
-Watch mode exists, but it should be hardened for real projects:
-
-- clear startup summary,
-- stable rebuild success/failure messages,
-- configurable debounce/polling when needed,
-- graceful shutdown,
-- config reload messages that say what changed,
-- no output loops from generated files.
-
-Interactive restart keys are optional. The non-interactive watch contract matters more for enterprise users and build
-systems.
-
-### Observability
-
-Large projects need a way to debug slow builds. The CLI should separate three levels of observability:
-
-- command phase timings for quick terminal feedback,
-- Rust compiler tracing for engine internals,
-- full profiling artifacts for performance investigations.
-
-Phase timings should stay lightweight and human-readable:
-
-```sh
---logfile panda.log
---verbose
---trace
-```
-
-The output should include phase timings: config load, scan, parse, codegen, css emit, and write time. `--trace` should
-remain the Rust tracing escape hatch and support standard tracing outputs such as Chrome trace JSON.
-
-Profiling needs a separate design pass. Mature native-backed tools do not usually collapse all profiling data into one
-custom artifact:
-
-- Vite uses `--profile` for a Node/V8 `.cpuprofile`.
-- Bun exposes `--cpu-prof`, `--cpu-prof-dir`, and related CPU-profile controls.
-- Rolldown uses opt-in devtools/tracing logs for native bundler internals.
-- Next/Turbopack groups CPU profiles and Turbopack traces under a profile directory.
-
-Panda should follow the profile-directory pattern if it adds `--profile`: one command creates one profile bundle
-directory containing standard files, for example:
-
-```txt
-.panda/profiles/cssgen-<timestamp>/
-  cpu.cpuprofile
-  rust.trace.json
-  summary.json
-```
-
-This keeps artifacts compatible with existing tooling while still feeling like one Panda profile. Do not introduce a
-single custom combined profile file unless there is a concrete viewer/consumer that justifies it.
-
-### Lifecycle and Migration
-
-Do not port every legacy command first. The priority lifecycle commands are:
-
-```sh
-panda init
-panda validate
-panda debug
-```
-
-`init` should create a v2-ready config and optional PostCSS wiring. `debug` should print system/config/native binding
-information suitable for bug reports. Migration support should focus on v2 config differences and unsupported legacy
-features.
-
-## Command Direction
-
-### Core Commands
-
-```sh
-panda codegen [--watch] [--check] [--outdir <dir>] [--json]
-panda cssgen [--watch] [--check] [--outfile <file>] [--splitting] [--minify] [--json]
-panda inspect [--json]
-panda validate [--json]
-```
-
-### Lifecycle Commands
-
-```sh
-panda init
-panda debug [--json]
-```
-
-### Later Commands
-
-Legacy parity commands such as `analyze`, `spec`, `studio`, `emit-pkg`, and MCP support can come after the core build
-and CI flows are reliable. They should be ported only when the v2 compiler APIs can support them cleanly.
-
-## Output Modes
-
-Human output should be concise by default:
-
-```txt
-panda codegen
-[ok] config loaded panda.config.ts
-[ok] generated 24 files in styled-system (182ms)
-```
-
-Verbose output should show phases:
-
-```txt
-config  18ms
-scan    24ms  156 files
-parse   46ms  156 files, 3 diagnostics
-emit    31ms  24 files
-write   11ms
-```
-
-JSON output should be stable and versioned enough for CI:
-
-```json
-{
-  "command": "codegen",
-  "ok": true,
-  "durationMs": 182,
-  "exitCode": 0,
-  "files": ["styled-system/css/css.mjs"],
-  "missing": [],
-  "stale": [],
-  "diagnostics": []
-}
-```
-
-## Phase 1 Contract
-
-Phase 1 is implemented as a TypeScript host-layer upgrade in `packages/cli_v2`; it does not require Rust diagnostic
-model changes. The common command result envelope is:
+JSON output uses a common envelope:
 
 ```ts
 interface CliResult {
@@ -272,128 +142,25 @@ interface CliResult {
 }
 ```
 
-Command-specific data is added to that envelope. `codegen` reports `outdir`, `files`, `missing`, and `stale`. `cssgen`
-reports `outfile`, `parsed`, `cssBytes`, `diagnosticCount`, `missing`, and `stale`. `inspect` reports its project
-summary. `validate` reports `configPath`, `diagnosticCount`, and `errors`.
+Command-specific data is added to that envelope:
 
-The Phase 1 exit-code contract is:
+- `build`: `outdir`, `outfile`, `files`, `parsed`, `cssBytes`, `diagnosticCount`, `missing`, `stale`
+- `codegen`: `outdir`, `files`, `missing`, `stale`
+- `cssgen`: `outfile`, `parsed`, `cssBytes`, `diagnosticCount`, `missing`, `stale`
+- `info`: project summary (`configPath`, source count, artifacts, conditions, token categories, utilities)
+- `doctor`: `configPath`, `diagnosticCount`, `errors`
+- `debug`: `outdir`, written files, source count
+- `buildinfo`: artifact metadata counts and output path
 
-- `0`: command succeeded,
-- `1`: compiler diagnostics with error severity, validation failure, or stale/missing `--check` output,
-- `2`: config or usage error at the CLI host boundary,
-- `3`: reserved for internal compiler-host errors.
+## Observability
 
-`codegen --check` generates artifacts in memory with `driver.artifacts()` and compares the expected files under
-`outdir` to disk. `cssgen --check` parses project files, then compares `driver.cssgen()` output or `driver.splitCss()`
-files to disk. Neither mode writes files. Missing and stale paths are reported in human output and JSON.
+The CLI separates three levels of observability:
 
-## Implementation Phases
+- `--log-level debug` for phase timings and trace lifecycle messages,
+- `--trace` / `--trace-output` / `--trace-file` for Rust compiler tracing,
+- future profile bundles for CPU/profiling artifacts.
 
-### Phase 1: Scriptable Core
-
-- Added `validate`.
-- Added `--check` to `codegen` and `cssgen`.
-- Added diagnostic rendering for the existing compiler `Diagnostic` shape.
-- Added `--json` output for `codegen`, `cssgen`, `inspect`, and `validate`.
-- Documented exit codes and JSON result shape.
-
-### Phase 2A: Shared Diagnostic Contract and Adapters
-
-The diagnostic model should be shared by every host, not invented separately in `cli_v2`. Phase 2A should extend the
-compiler-facing diagnostic contract and make sure each adapter preserves the same structured data.
-
-The contract remains backward-compatible by adding optional fields only:
-
-```ts
-interface Diagnostic {
-  code: string
-  message: string
-  severity: 'info' | 'warning' | 'error'
-  span?: Span
-  location?: SourceRange
-  file?: string
-  labels?: Array<{ message?: string; span?: Span; location?: SourceRange }>
-  help?: string[]
-  category?: string
-}
-```
-
-Responsibilities:
-
-- `pandacss_shared` owns the stable Rust shape and builder helpers. Phase 2A adds optional `file`, `category`,
-  `labels`, and `help` fields.
-- `@pandacss/compiler-shared` owns the TypeScript wire shape and mirrors the same optional fields.
-- `@pandacss/compiler` and `@pandacss/compiler-wasm` mirror the optional fields across NAPI/wasm boundaries.
-- `packages/vite` maps diagnostics to dev-server logging with file-aware messages without adopting CLI-specific flags.
-- `packages/postcss_v2` maps warnings to PostCSS warnings and error-severity diagnostics to PostCSS errors.
-
-Phase 2A should also normalize diagnostics at host boundaries:
-
-- Preserve stable diagnostic codes and severity.
-- Attach `file` when the host knows the source file.
-- Stabilize file paths relative to `cwd` for user-facing output.
-- Avoid duplicate parse diagnostics when the same issue appears in both parse and compile results.
-
-### Phase 2B: CLI Diagnostic UX
-
-After the shared contract is in place, `cli_v2` can add renderer and policy behavior on top of it.
-
-Renderer modes:
-
-```sh
-panda cssgen --format human
-panda cssgen --format pretty
-panda cssgen --format json
-panda cssgen --format github
-```
-
-`--json` remains an alias for `--format json`.
-
-Behavior:
-
-- `human`: compact `severity code file:line:column message`.
-- `pretty`: Rolldown-style source snippet boxes when `file` + `location` are available, falling back to `human`.
-- `json`: stable command result envelope with structured diagnostics.
-- `github`: GitHub Actions annotations.
-- `--quiet`: suppress warnings in human-like output.
-- `--max-warnings <n>`: exit `1` when warnings exceed the threshold.
-
-The CLI normalizes diagnostics before rendering:
-
-- file paths are stabilized relative to `cwd`,
-- parse diagnostics are attached to their source file,
-- compile diagnostics duplicated from parse diagnostics are deduped in favor of the file-backed diagnostic,
-- `--json` remains an alias for `--format json`.
-
-Pretty rendering is a CLI concern. Vite and PostCSS should benefit from the richer diagnostic contract, but they should
-adapt diagnostics to their own surfaces rather than sharing CLI formatting.
-
-### Phase 3: Operational Hardening
-
-- Add phase timings and `--verbose`.
-- Add `--logfile`, `--trace`, `--trace-output`, and `--trace-file`.
-- Improve watch startup/rebuild/shutdown output.
-- Add focused tests for failed parse, no files matched, stale generated output, timing output, logfile teeing, tracing,
-  and watch status messages.
-- Harden config load failures so missing or invalid config paths render as `config_load_error` diagnostics instead of
-  raw bundler stack traces.
-- Defer `--profile`/`--cpu-prof` until there is a concrete profile-bundle design and consumer.
-
-Phase 3 command results include a `timings` object when phases run:
-
-```json
-{
-  "command": "cssgen",
-  "durationMs": 42,
-  "timings": {
-    "config": 8,
-    "parse": 12,
-    "write": 18
-  }
-}
-```
-
-Verbose human output prints the same phases as text:
+Phase timings are included in JSON payloads when phases run and are printed in human output only at debug log level:
 
 ```txt
 cssgen: timings
@@ -402,11 +169,14 @@ parse: 12ms
 write: 18ms
 ```
 
-`--logfile <file>` tees human output to a file resolved from `cwd`; it does not change stdout/stderr behavior and does
-not capture JSON output. `--trace` initializes compiler tracing before config load and flushes/shuts down tracing after
-the command completes. Watch mode keeps tracing active until the returned `stop()` function runs.
+`--logfile <file>` tees human output to a file resolved from `cwd`. It does not capture JSON output.
 
-Watch mode status messages are intentionally compact:
+## Watch mode
+
+`panda dev` is the public watch command. It runs the full build in watch mode. Lower-level `codegen --watch` and
+`cssgen --watch` remain available for advanced workflows.
+
+Watch status messages are compact:
 
 ```txt
 watch: ready (1 source dirs, 1 config files, debounce 50ms, outdir styled-system)
@@ -416,28 +186,36 @@ watch: config reloaded
 watch: stopped
 ```
 
-### Phase 4: Lifecycle and Parity
+Watch mode keeps tracing active until the returned `stop()` function runs.
 
-- Add `init` for v2 config/PostCSS setup.
-- Add `debug` for bug reports.
-- Evaluate `analyze`, `spec`, `studio`, `emit-pkg`, and MCP after the core compiler APIs stabilize.
+## Lifecycle commands
 
-## Non-Goals
+- `panda init` scaffolds a v2-ready config and optional PostCSS wiring.
+- `panda build` generates artifacts and CSS once.
+- `panda dev` watches and rebuilds.
+- `panda check` verifies generated output without writing.
+- `panda info` prints project/compiler summary data.
+- `panda doctor` checks config loading and compiler diagnostics.
+- `panda debug` writes bug-report artifacts.
 
-Do not make `cli_v2` a full clone of the legacy CLI immediately. A broad command surface with weak diagnostics would be
+`panda inspect` and `panda validate` are removed. Use `panda info` and `panda doctor`.
+
+## Non-goals
+
+Do not make the v2 CLI a full clone of the legacy CLI immediately. A broad command surface with weak diagnostics is
 worse than a smaller command set with reliable CI behavior.
 
 Do not hide Rust compiler limitations behind silent fallbacks. If v2 does not support a config feature, the CLI should
 make that visible with an actionable diagnostic.
 
 Do not require interactive behavior for enterprise workflows. Interactive prompts are useful for `init`, but build,
-validate, and inspect commands must be fully scriptable.
+doctor, info, and check commands must be scriptable.
 
 ## Related
 
+- [Beta CLI commands + tracing usability](./beta-cli-commands.md)
 - [Compiler diagnostics](./compiler-diagnostics.md)
 - [Compiler lifecycle](./compiler-lifecycle.md)
 - [Output and host layer](./output-and-host-layer.md)
 - [Instrumentation](./instrumentation.md)
 - [Config loading](./config-loading-design.md)
-- [Rolldown `rolldown_error`](https://github.com/rolldown/rolldown/tree/main/crates/rolldown_error)

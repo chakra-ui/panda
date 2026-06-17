@@ -1,21 +1,21 @@
-import { defineCommand, runMain } from 'citty'
-import { buildArgs, buildCommand } from './commands/build'
+import { defineCommand, renderUsage, runMain, type ArgsDef, type CommandDef } from 'citty'
+import { buildArgs, buildCommand, buildSubcommand, checkCommand, devCommand } from './commands/build'
 import { buildinfoCommand } from './commands/buildinfo'
 import { codegenCommand } from './commands/codegen'
 import { cssgenCommand } from './commands/cssgen'
 import { debugCommand } from './commands/debug'
+import { doctorCommand } from './commands/doctor'
+import { infoCommand } from './commands/info'
 import { initCommand } from './commands/init'
-import { inspectCommand } from './commands/inspect'
-import { validateCommand } from './commands/validate'
 import { ExitCode } from './result'
-import { useDispatcher } from './routing'
+import { readCliVersion } from './version'
 
 export async function main(argv = process.argv): Promise<void> {
-  const ctx = { cwd: process.cwd() }
-  const rawArgs = argv.slice(2)
+  const rawArgs = normalizeRawArgs(argv.slice(2))
+  const version = readCliVersion()
 
   // The default `panda` (no subcommand) runs the full build.
-  const build = buildCommand(ctx)
+  const build = buildCommand
 
   // Runless on purpose: citty runs a root's `run` even after a subcommand matches, which would re-run
   // the build on top of every subcommand. `args` is here only so `panda --help` documents the default
@@ -23,25 +23,53 @@ export async function main(argv = process.argv): Promise<void> {
   const dispatcher = defineCommand({
     meta: {
       name: 'panda',
+      version,
       description: 'Generate the panda system and CSS. Run with no subcommand for the full build.',
     },
-    args: buildArgs(ctx),
+    args: buildArgs,
     subCommands: {
-      buildinfo: buildinfoCommand(ctx),
-      codegen: codegenCommand(ctx),
-      cssgen: cssgenCommand(ctx),
-      debug: debugCommand(ctx),
-      init: initCommand(ctx),
-      inspect: inspectCommand(ctx),
-      validate: validateCommand(ctx),
+      init: initCommand,
+      dev: devCommand,
+      build: buildSubcommand,
+      check: checkCommand,
+      info: infoCommand,
+      doctor: doctorCommand,
+      debug: debugCommand,
+      buildinfo: buildinfoCommand,
+      codegen: codegenCommand,
+      cssgen: cssgenCommand,
     },
   })
 
-  if (useDispatcher(rawArgs)) {
-    await runMain(dispatcher, { rawArgs })
-  } else {
-    await runMain(build, { rawArgs })
+  if (isVersionRequest(rawArgs)) {
+    console.log(version)
+    return
   }
+
+  if (shouldUseDispatcher(rawArgs)) {
+    await runMain(dispatcher, { rawArgs, showUsage: showPlainUsage })
+  } else {
+    await runMain(build, { rawArgs, showUsage: showPlainUsage })
+  }
+}
+
+function normalizeRawArgs(rawArgs: string[]): string[] {
+  return rawArgs.length === 1 && rawArgs[0] === '-v' ? ['--version'] : rawArgs
+}
+
+function shouldUseDispatcher(rawArgs: string[]): boolean {
+  if (rawArgs.includes('--help') || rawArgs.includes('-h')) return true
+
+  const first = rawArgs[0]
+  return first !== undefined && !first.startsWith('-')
+}
+
+function isVersionRequest(rawArgs: string[]): boolean {
+  return rawArgs.length === 1 && rawArgs[0] === '--version'
+}
+
+async function showPlainUsage<T extends ArgsDef = ArgsDef>(cmd: CommandDef<T>, parent?: CommandDef<T>): Promise<void> {
+  console.log(`${await renderUsage(cmd, parent)}\n`)
 }
 
 main().catch((error) => {

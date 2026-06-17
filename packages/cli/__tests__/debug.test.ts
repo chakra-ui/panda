@@ -15,19 +15,19 @@ describe('debug command', () => {
     dir = undefined
   })
 
-  it('writes info, config, per-file extraction, and project css', async () => {
+  it('writes system info, config, per-file extraction, and project css', async () => {
     dir = createFixture()
 
-    const result = await runDebug({ cwd: dir, silent: true })
+    const result = await runDebug({ cwd: dir, logLevel: 'silent' })
     const debugDir = join(dir, 'styled-system', 'debug')
 
     expect(result.sourceCount).toBe(1)
-    expect(existsSync(join(debugDir, 'info.json'))).toBe(true)
+    expect(existsSync(join(debugDir, 'system-info.json'))).toBe(true)
     expect(existsSync(join(debugDir, 'config.json'))).toBe(true)
     expect(existsSync(join(debugDir, 'App.tsx.extract.json'))).toBe(true)
     expect(readFileSync(join(debugDir, 'styles.css'), 'utf8')).toContain('red')
 
-    const info = JSON.parse(readFileSync(join(debugDir, 'info.json'), 'utf8'))
+    const info = JSON.parse(readFileSync(join(debugDir, 'system-info.json'), 'utf8'))
     expect(info).toMatchObject({ platform: process.platform, sourceCount: 1 })
 
     // the per-file extraction captures the css() call site
@@ -38,7 +38,7 @@ describe('debug command', () => {
   it('--only-config skips per-file extraction and css', async () => {
     dir = createFixture()
 
-    const result = await runDebug({ cwd: dir, onlyConfig: true, silent: true })
+    const result = await runDebug({ cwd: dir, onlyConfig: true, logLevel: 'silent' })
     const debugDir = join(dir, 'styled-system', 'debug')
 
     expect(existsSync(join(debugDir, 'config.json'))).toBe(true)
@@ -63,7 +63,7 @@ describe('debug command', () => {
   it('supports a custom --outdir', async () => {
     dir = createFixture()
 
-    await runDebug({ cwd: dir, outdir: 'debug-out', silent: true })
+    await runDebug({ cwd: dir, outdir: 'debug-out', logLevel: 'silent' })
 
     expect(existsSync(join(dir, 'debug-out', 'config.json'))).toBe(true)
   })
@@ -75,7 +75,7 @@ describe('debug command', () => {
     chmodSync(locked, 0o000)
 
     try {
-      const result = await runDebug({ cwd: dir, silent: true })
+      const result = await runDebug({ cwd: dir, logLevel: 'silent' })
       const debugDir = join(dir, 'styled-system', 'debug')
 
       // the read failure is surfaced as a diagnostic instead of crashing the command
@@ -95,7 +95,7 @@ describe('debug command', () => {
     dir = createFixture()
     writeSyntaxError(dir)
 
-    const result = await runDebug({ cwd: dir, silent: true })
+    const result = await runDebug({ cwd: dir, logLevel: 'silent' })
 
     expect(result.diagnostics.map(({ code, file, severity }) => ({ code, file, severity }))).toMatchInlineSnapshot(`
       [

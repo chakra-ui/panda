@@ -1,43 +1,34 @@
 import { defineCommand } from 'citty'
 import { rmSync } from 'node:fs'
 import { type DiffConfigResult } from '@pandacss/compiler'
+import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
+import { codegenFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
 import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
-import type { CheckOutput, CodegenFlags, CodegenResult, CommandContext, RunContext } from '../types'
+import type { CheckOutput, CodegenFlags, CodegenResult, RunContext } from '../schema'
 import { formatWatchError, startProjectWatch } from '../watch'
 
-export function codegenCommand(ctx: CommandContext) {
-  return defineCommand({
-    meta: {
-      name: 'codegen',
-      description: 'Generate the panda system',
-    },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
-      outdir: { type: 'string', description: 'Output directory for generated files' },
-      clean: { type: 'boolean', description: 'Clean the output directory before generating' },
-      silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      quiet: { type: 'boolean', description: 'Suppress warning diagnostics in terminal output' },
-      maxWarnings: { type: 'string', description: 'Fail when warning diagnostics exceed this count' },
-      verbose: { type: 'boolean', description: 'Print phase timings and operational messages' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
-      trace: { type: 'boolean', description: 'Enable compiler tracing' },
-      traceOutput: { type: 'string', description: 'Trace output: fmt or chrome-json' },
-      traceFile: { type: 'string', description: 'Trace output file for chrome-json tracing' },
-      watchDebounce: { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
-      check: { type: 'boolean', description: 'Check generated files without writing' },
-    },
-    run: async ({ args }) => setExitCode(await runCodegen(args as CodegenFlags)),
-  })
-}
+export const codegenCommand = defineCommand({
+  meta: {
+    name: 'codegen',
+    description: 'Generate the panda system',
+  },
+  args: () => ({
+    ...baseArgs(),
+    watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
+    outdir: { type: 'string', description: 'Output directory for generated files' },
+    clean: { type: 'boolean', description: 'Clean the output directory before generating' },
+    ...outputArgs(),
+    ...traceArgs(),
+    'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
+    check: { type: 'boolean', description: 'Check generated files without writing' },
+  }),
+  run: async ({ args }) => setExitCode(await runCodegen(parseCliFlags(codegenFlagsSchema, args))),
+})
 
 export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = consoleOutput): Promise<CodegenResult> {
   let runCtx: RunContext | undefined

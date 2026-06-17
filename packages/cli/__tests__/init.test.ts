@@ -23,7 +23,7 @@ describe('init command', () => {
     dir = createFixture(undefined, { config: false, source: false })
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app' }))
 
-    const result = await runInit({ cwd: dir, codegen: false, silent: true })
+    const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
     expect(result).toMatchObject({
       ok: true,
@@ -43,7 +43,7 @@ describe('init command', () => {
   it('supports outdir overrides for config and gitignore', async () => {
     dir = createFixture(undefined, { config: false, source: false })
 
-    const result = await runInit({ cwd: dir, outdir: 'system', codegen: false, silent: true })
+    const result = await runInit({ cwd: dir, outdir: 'system', codegen: false, logLevel: 'silent' })
 
     expect(result.outdir).toBe('system')
     expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('outdir: "system"')
@@ -54,7 +54,7 @@ describe('init command', () => {
     dir = createFixture(undefined, { config: false, source: false })
     writeFileSync(join(dir, '.gitignore'), 'node_modules\n')
 
-    const result = await runInit({ cwd: dir, gitignore: false, codegen: false, silent: true })
+    const result = await runInit({ cwd: dir, gitignore: false, codegen: false, logLevel: 'silent' })
 
     expect(result.gitignoreWritten).toBe(false)
     expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toBe('node_modules\n')
@@ -79,7 +79,7 @@ describe('init command', () => {
       }),
     )
 
-    const result = await runInit({ cwd: dir, silent: true })
+    const result = await runInit({ cwd: dir, logLevel: 'silent' })
 
     expect(result.codegenFiles.some((path) => path.endsWith('css/css.js'))).toBe(true)
     expect(existsSync(join(dir, 'styled-system', 'css', 'css.js'))).toBe(true)
@@ -92,7 +92,7 @@ describe('init command', () => {
     const initWithPkg = (manifest?: Record<string, unknown>, flags: Record<string, unknown> = {}) => {
       dir = createFixture(undefined, { config: false, source: false })
       writePkg(dir, manifest)
-      return runInit({ cwd: dir, codegen: false, silent: true, ...flags })
+      return runInit({ cwd: dir, codegen: false, logLevel: 'silent', ...flags })
     }
 
     it('installs both presets as devDependencies', async () => {
@@ -117,7 +117,7 @@ describe('init command', () => {
       writePkg(dir)
       writeFileSync(join(dir, lockfile), '')
 
-      await runInit({ cwd: dir, codegen: false, silent: true })
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
       expect(execSync).toHaveBeenCalledWith(
         `${prefix} @pandacss/preset-base @pandacss/preset-panda`,
@@ -137,7 +137,7 @@ describe('init command', () => {
       writeFileSync(join(dir, 'package-lock.json'), '')
       writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
 
-      await runInit({ cwd: dir, codegen: false, silent: true })
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
       expect(execSync).toHaveBeenCalledWith(expect.stringMatching(/^pnpm add -D /), expect.anything())
     })
@@ -147,7 +147,7 @@ describe('init command', () => {
       writePkg(dir, { name: 'app', packageManager: 'pnpm@9.1.0' })
       writeFileSync(join(dir, 'package-lock.json'), '')
 
-      await runInit({ cwd: dir, codegen: false, silent: true })
+      await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
       expect(execSync).toHaveBeenCalledWith(expect.stringMatching(/^pnpm add -D /), expect.anything())
     })
@@ -159,7 +159,7 @@ describe('init command', () => {
       writePkg(child)
       writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
 
-      await runInit({ cwd: child, codegen: false, silent: true })
+      await runInit({ cwd: child, codegen: false, logLevel: 'silent' })
 
       expect(execSync).toHaveBeenCalledWith(
         expect.stringMatching(/^pnpm add -D /),
@@ -228,7 +228,7 @@ describe('init command', () => {
     it('scaffolds a bare config and skips install when there is no package.json', async () => {
       dir = createFixture(undefined, { config: false, source: false })
 
-      const result = await runInit({ cwd: dir, codegen: false, silent: true })
+      const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
       expect(execSync).not.toHaveBeenCalled()
       expect(result.presetsInstalled).toEqual([])
@@ -249,7 +249,7 @@ describe('init command', () => {
       dir = createFixture(undefined, { config: false, source: false })
       writeFileSync(join(dir, 'package.json'), '{ not valid json')
 
-      const result = await runInit({ cwd: dir, codegen: false, silent: true })
+      const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
       expect(execSync).not.toHaveBeenCalled()
       expect(result.presetsInstalled).toEqual([])
@@ -261,7 +261,7 @@ describe('init command', () => {
       writePkg(dir)
       writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
 
-      const result = await runInit({ cwd: dir, codegen: false, silent: true })
+      const result = await runInit({ cwd: dir, codegen: false, logLevel: 'silent' })
 
       expect(execSync).not.toHaveBeenCalled()
       expect(result.configWritten).toBe(false)
@@ -273,7 +273,7 @@ describe('init command', () => {
       writePkg(dir)
       writeFileSync(join(dir, 'pnpm-lock.yaml'), '')
 
-      const result = await runInit({ cwd: dir, force: true, codegen: false, silent: true })
+      const result = await runInit({ cwd: dir, force: true, codegen: false, logLevel: 'silent' })
 
       expect(result.configWritten).toBe(true)
       expect(execSync).toHaveBeenCalledWith(expect.stringMatching(/^pnpm add -D /), expect.anything())

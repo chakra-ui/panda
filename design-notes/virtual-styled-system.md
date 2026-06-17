@@ -3,7 +3,7 @@ title: Virtual Styled-System (Design-System Consume)
 status: draft
 scope:
   - packages/config
-  - packages/cli_v2
+  - packages/cli
   - packages/compiler-shared
   - crates/pandacss_codegen
 related:

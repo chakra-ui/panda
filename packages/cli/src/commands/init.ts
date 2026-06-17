@@ -4,6 +4,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { createNodeDriver } from '@pandacss/compiler'
 import { findConfig } from '@pandacss/config'
+import { baseArgs, parseCliFlags } from '../args'
+import { initFlagsSchema } from '../schema'
 import {
   consoleOutput,
   createCommandOutput,
@@ -16,42 +18,43 @@ import {
 import { createResult, setExitCode, toJsonPayload } from '../result'
 import { renderTimings, timeAsync } from '../timing'
 import { configLoadDiagnostic } from '../diagnostics'
-import type { CommandContext, InitFlags, InitResult, PhaseTimings } from '../types'
+import type { InitFlags, InitResult, PhaseTimings } from '../schema'
 
 /** Presets scaffolded into the generated config and installed by `panda init`. */
 const DEFAULT_PRESETS = ['@pandacss/preset-base', '@pandacss/preset-panda'] as const
 
-export function initCommand(ctx: CommandContext) {
-  return defineCommand({
-    meta: {
-      name: 'init',
-      description: "Initialize Panda's config file",
+export const initCommand = defineCommand({
+  meta: {
+    name: 'init',
+    description: "Initialize Panda's config file",
+  },
+  args: () => ({
+    ...baseArgs(),
+    force: { type: 'boolean', description: 'Overwrite an existing config file', alias: 'f' },
+    postcss: { type: 'boolean', description: 'Emit a PostCSS config file', alias: 'p' },
+    gitignore: { type: 'boolean', description: 'Update .gitignore with the output directory' },
+    codegen: { type: 'boolean', description: 'Run codegen after setup' },
+    outExtension: { type: 'string', description: 'Generated runtime file extension' },
+    outdir: { type: 'string', description: 'Output directory for generated files' },
+    jsxFramework: { type: 'string', description: 'The JSX framework to use' },
+    syntax: { type: 'string', description: 'The CSS syntax preference' },
+    strictTokens: { type: 'boolean', description: 'Set strictTokens to true' },
+    install: {
+      type: 'boolean',
+      description: 'Install the default presets (use --no-install to skip)',
+      default: true,
     },
-    args: {
-      cwd: { type: 'string', description: 'Current working directory', default: ctx.cwd },
-      config: { type: 'string', description: 'Path to panda config file', alias: 'c' },
-      force: { type: 'boolean', description: 'Overwrite an existing config file', alias: 'f' },
-      postcss: { type: 'boolean', description: 'Emit a PostCSS config file', alias: 'p' },
-      gitignore: { type: 'boolean', description: 'Update .gitignore with the output directory' },
-      codegen: { type: 'boolean', description: 'Run codegen after setup' },
-      outExtension: { type: 'string', description: 'Generated runtime file extension' },
-      outdir: { type: 'string', description: 'Output directory for generated files' },
-      jsxFramework: { type: 'string', description: 'The JSX framework to use' },
-      syntax: { type: 'string', description: 'The CSS syntax preference' },
-      strictTokens: { type: 'boolean', description: 'Set strictTokens to true' },
-      install: {
-        type: 'boolean',
-        description: 'Install the default presets (use --no-install to skip)',
-        default: true,
-      },
-      silent: { type: 'boolean', description: 'Suppress all messages except errors' },
-      json: { type: 'boolean', description: 'Print JSON' },
-      format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
-      logfile: { type: 'string', description: 'Write human output to a log file' },
+    json: { type: 'boolean', description: 'Print JSON' },
+    format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
+    'log-level': {
+      type: 'string',
+      valueHint: 'level',
+      description: 'Set output level: silent, error, warn, info, or debug',
     },
-    run: async ({ args }) => setExitCode(await runInit(args as InitFlags)),
-  })
-}
+    logfile: { type: 'string', description: 'Write human output to a log file' },
+  }),
+  run: async ({ args }) => setExitCode(await runInit(parseCliFlags(initFlagsSchema, args))),
+})
 
 export async function runInit(flags: InitFlags = {}, output: OutputSink = consoleOutput): Promise<InitResult> {
   const startedAt = performance.now()
@@ -109,7 +112,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           setupDependencies(cwd, {
             optedOut: flags.install === false,
             deps: installedDeps,
-            silent: flags.silent,
+            silent: flags.logLevel === 'silent',
             notify: shouldPrintHumanSummary(flags),
             output: commandOutput,
           }),

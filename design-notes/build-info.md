@@ -123,7 +123,7 @@ only in those compare as compatible and the same library fingerprints identicall
 - **JS namespace** (`compiler-shared/src/build-info.ts`) builds `compiler.buildInfo.*` and owns validation + import
   resolution; attached identically by the native (`@pandacss/compiler`) and browser (`@pandacss/compiler-wasm`) hosts.
   The engine emits `exports` itself, so both bindings carry it.
-- **`panda buildinfo`** (CLI, `cli_v2/src/commands/buildinfo.ts`) is the only package-aware layer: loads config →
+- **`panda buildinfo`** (CLI, `packages/cli/src/commands/buildinfo.ts`) is the only package-aware layer: loads config →
   `parseFiles` → `buildInfo.create({ panda })` → writes `panda.buildinfo.json`. It remaps the engine's absolute scan keys
   to `cwd`-relative POSIX module ids — both `modules` keys and `exports` values; the `configFingerprint` is the engine's
   fingerprint (no JS hashing).
@@ -338,7 +338,7 @@ from `panda ship`: the `styles.css` / package scaffolding fallback for non-Panda
 - ✅ **Engine `exports`** — export name → module for style-contributing modules, so a barrel import of a recipe-consuming
   component resolves to (and hydrates) the right module. Covers local exports, named re-exports, star re-exports, and
   default re-export aliases across already-parsed relative files.
-- ✅ **`panda buildinfo`** producer wired into `cli_v2`: portable artifact (relative `modules`/`exports`, stable
+- ✅ **`panda buildinfo`** producer wired into `packages/cli`: portable artifact (relative `modules`/`exports`, stable
   `configFingerprint`), `--outfile` / `--minify` / `--panda`. Tested end-to-end (produce → read → hydrate → CSS).
 - ✅ **Cross-config token cascade test** — lib build info can be hydrated into a consumer with a different token value for
   the same path: hydrated utilities keep `var(--token)` and the consumer token layer provides the final value.

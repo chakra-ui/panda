@@ -27,7 +27,7 @@ describe('codegen command', () => {
   it('supports outdir overrides', async () => {
     dir = createFixture()
 
-    await runCodegen({ cwd: dir, outdir: 'system', silent: true })
+    await runCodegen({ cwd: dir, outdir: 'system', logLevel: 'silent' })
 
     expect(readFileSync(join(dir, 'system', 'css', 'css.js'), 'utf8')).toContain('css')
   })
@@ -35,10 +35,10 @@ describe('codegen command', () => {
   it('keeps stale outdir files by default', async () => {
     dir = createFixture()
 
-    await runCodegen({ cwd: dir, silent: true })
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
     writeFileSync(join(dir, 'styled-system', 'stale.mjs'), 'stale')
 
-    await runCodegen({ cwd: dir, silent: true })
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
 
     expect(existsSync(join(dir, 'styled-system', 'stale.mjs'))).toBe(true)
   })
@@ -46,10 +46,10 @@ describe('codegen command', () => {
   it('--clean removes the outdir before generating', async () => {
     dir = createFixture()
 
-    await runCodegen({ cwd: dir, silent: true })
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
     writeFileSync(join(dir, 'styled-system', 'stale.mjs'), 'stale')
 
-    await runCodegen({ cwd: dir, clean: true, silent: true })
+    await runCodegen({ cwd: dir, clean: true, logLevel: 'silent' })
 
     expect(existsSync(join(dir, 'styled-system', 'stale.mjs'))).toBe(false)
     expect(readFileSync(join(dir, 'styled-system', 'css', 'css.js'), 'utf8')).toContain('css')
@@ -58,9 +58,9 @@ describe('codegen command', () => {
   it('--check passes after generated output exists', async () => {
     dir = createFixture()
 
-    await runCodegen({ cwd: dir, silent: true })
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
 
-    const result = await runCodegen({ cwd: dir, check: true, silent: true })
+    const result = await runCodegen({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result).toMatchObject({ ok: true, exitCode: 0, missing: [], stale: [] })
   })
@@ -68,11 +68,11 @@ describe('codegen command', () => {
   it('--check fails when generated files are stale', async () => {
     dir = createFixture()
 
-    await runCodegen({ cwd: dir, silent: true })
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
 
     writeFileSync(join(dir, 'styled-system', 'css', 'css.js'), 'stale')
 
-    const result = await runCodegen({ cwd: dir, check: true, silent: true })
+    const result = await runCodegen({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
@@ -83,7 +83,7 @@ describe('codegen command', () => {
   it('--check fails when generated files are missing', async () => {
     dir = createFixture()
 
-    const result = await runCodegen({ cwd: dir, check: true, silent: true })
+    const result = await runCodegen({ cwd: dir, check: true, logLevel: 'silent' })
 
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
