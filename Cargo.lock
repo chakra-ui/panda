@@ -1230,6 +1230,7 @@ dependencies = [
 name = "pandacss_tracing"
 version = "0.0.0"
 dependencies = [
+ "insta",
  "serde_json",
  "tracing",
  "tracing-chrome",

@@ -1,4 +1,4 @@
-use pandacss_tracing::SpanTimings;
+use pandacss_tracing::{SpanStat, SpanTimings, render_fmt_summary};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -39,4 +39,31 @@ fn clear_resets_totals() {
     assert!(!timings.snapshot().is_empty());
     timings.clear();
     assert!(timings.snapshot().is_empty());
+}
+
+#[test]
+fn renders_human_trace_summary() {
+    let summary = render_fmt_summary(&[
+        SpanStat {
+            name: "codegen_generate",
+            total_nanos: 1_500_000,
+            count: 1,
+        },
+        SpanStat {
+            name: "token_dictionary_build",
+            total_nanos: 12_000,
+            count: 3,
+        },
+    ]);
+
+    insta::assert_snapshot!(summary, @r"
+    trace summary
+    total spans: 4
+    total span time: 1.51ms
+
+    span                                 count         total
+    --------------------------------------------------------
+    codegen_generate                         1        1.50ms
+    token_dictionary_build                   3       12.00us
+    ");
 }

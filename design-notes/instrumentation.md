@@ -21,8 +21,9 @@ PANDA_TRACE_OUTPUT=chrome-json
 PANDA_TRACE_FILE=.panda/traces/panda.json
 ```
 
-Unknown output modes are ignored. `chrome-json` creates parent directories and writes a trace file that can be opened in
-Perfetto or Chrome tracing.
+Unknown output modes are ignored. `fmt` aggregates spans in-process and prints a compact summary table to stderr on
+shutdown. `chrome-json` creates parent directories and writes a trace file that can be opened in Perfetto or Chrome
+tracing.
 
 ## Lifecycle
 
@@ -38,9 +39,10 @@ flushTracing()
 shutdownTracing()
 ```
 
-`flushTracing()` is best-effort and keeps the writer alive. `shutdownTracing()` finalizes Chrome JSON by dropping the
-writer guard; benchmark harnesses should call it once at the end of the process. This mirrors the practical lesson from
-`fastrace`: flushing must drain/finalize the collector, not just signal a background writer.
+`flushTracing()` is best-effort and keeps the writer alive. `shutdownTracing()` prints the `fmt` summary or finalizes
+Chrome JSON by dropping the writer guard; benchmark harnesses should call it once at the end of the process. This
+mirrors the practical lesson from `fastrace`: flushing must drain/finalize the collector, not just signal a background
+writer.
 
 ## Span Map
 
@@ -58,11 +60,11 @@ writer guard; benchmark harnesses should call it once at the end of the process.
 
 `pandacss_tracing::SpanTimings` is a `tracing-subscriber` layer that aggregates `(span_name → total_nanos, count)`
 in-process — a lossy complement to the chrome-json export, cheap enough to use inside benchmark harnesses without
-parsing JSON. The bench (`bench/src/bin/sandbox_vite_ts.rs`) installs it and reports per-span totals alongside its
-phase timings.
+parsing JSON. The `fmt` trace output installs this layer and prints the top spans by total time. The bench
+(`bench/src/bin/sandbox_vite_ts.rs`) also installs it and reports per-span totals alongside its phase timings.
 
-Use chrome-json for timeline / per-call drill-down (flame graphs, slowest 1%). Use `SpanTimings` for budget checks
-("how much time goes into encoding total?").
+Use chrome-json for timeline / per-call drill-down (flame graphs, slowest 1%). Use `fmt` / `SpanTimings` for quick
+terminal summaries and budget checks ("how much time goes into encoding total?").
 
 ## WASM
 

@@ -53,6 +53,10 @@ The root dispatcher is runless. `cli-main.ts` routes:
 
 This avoids citty's runnable-root double-run behavior while keeping bare `panda` useful.
 
+The default `panda` command and `panda build` both run codegen then cssgen on one driver pass (`runBuild` →
+`buildOnce`, composing `codegenOnce` + `cssgenOnce`). codegen runs first so `--clean` wipes the outdir before CSS is
+written. Diagnostics from both passes are merged; one combined `panda: ...` summary line replaces per-command summaries.
+
 ## Flag schema boundary
 
 citty owns parsing and help rendering. Parsed args then pass through `parseCliFlags(schema, args)`, which:
@@ -157,7 +161,8 @@ Command-specific data is added to that envelope:
 The CLI separates three levels of observability:
 
 - `--log-level debug` for phase timings and trace lifecycle messages,
-- `--trace` / `--trace-output` / `--trace-file` for Rust compiler tracing,
+- `--trace` / `--trace-output` / `--trace-file` for Rust compiler tracing. `fmt` prints a compact summary table;
+  `chrome-json` writes a tooling artifact for Chrome/Perfetto,
 - future profile bundles for CPU/profiling artifacts.
 
 Phase timings are included in JSON payloads when phases run and are printed in human output only at debug log level:
@@ -175,6 +180,9 @@ write: 18ms
 
 `panda dev` is the public watch command. It runs the full build in watch mode. Lower-level `codegen --watch` and
 `cssgen --watch` remain available for advanced workflows.
+
+`panda dev` sets `watch: true` internally and hides `--watch` from help. `panda check` sets `check: true` internally and
+hides write/watch-only flags from help.
 
 Watch status messages are compact:
 
@@ -200,6 +208,29 @@ Watch mode keeps tracing active until the returned `stop()` function runs.
 
 `panda inspect` and `panda validate` are removed. Use `panda info` and `panda doctor`.
 
+## Debug command
+
+`panda debug` writes a bug-report dump under `<styled-system>/debug` by default, or under the literal `--outdir` when
+provided:
+
+- `system-info.json` — platform, arch, node version, config path, source count
+- `config.json` — resolved config
+- `<file>.extract.json` — per-file extraction via `driver.compiler.extractFileSource(path, source)`
+- `styles.css` — whole-project stylesheet after `driver.parseFiles()` + `driver.cssgen()`
+
+v2 emits atomic CSS at the project level, so the dump carries one project stylesheet instead of per-file CSS slices.
+
+## Out of scope
+
+Open gaps that stay outside the current CLI surface:
+
+- `studio` and `analyze` are not ported.
+- `ship` / `emit-pkg` is not ported.
+- the v1 positional `[files]` override is not wired.
+- lightningcss minify parity is still an open follow-up.
+
+Those gaps are intentional for now; the CLI prefers a smaller, reliable surface over a partial legacy clone.
+
 ## Non-goals
 
 Do not make the v2 CLI a full clone of the legacy CLI immediately. A broad command surface with weak diagnostics is
@@ -213,7 +244,6 @@ doctor, info, and check commands must be scriptable.
 
 ## Related
 
-- [Beta CLI commands + tracing usability](./beta-cli-commands.md)
 - [Compiler diagnostics](./compiler-diagnostics.md)
 - [Compiler lifecycle](./compiler-lifecycle.md)
 - [Output and host layer](./output-and-host-layer.md)

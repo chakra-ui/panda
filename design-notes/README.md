@@ -56,9 +56,7 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 - [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
 - [CLI v2 direction](./cli.md) — production CLI host goals for the Rust compiler: lifecycle commands, schema-backed
-  flags, diagnostics, CI contracts, watch behavior, and observability.
-- [Beta CLI commands + tracing usability](./beta-cli-commands.md) — current beta command surface: `build`, `dev`,
-  `check`, `info`, `doctor`, `debug`, advanced emitters, and trace/log-level behavior.
+  flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 

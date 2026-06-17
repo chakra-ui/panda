@@ -29,7 +29,7 @@ panda buildinfo  # emit a portable build manifest
 ```
 
 Use `--log-level silent|error|warn|info|debug` to control CLI output. Compiler tracing is separate: `--trace`,
-`--trace-output`, and `--trace-file`.
+`--trace-output` (`fmt` summary or `chrome-json` file), and `--trace-file`.
 
 ## Documentation
 
