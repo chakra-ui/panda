@@ -75,10 +75,6 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 ## Migration plan vs design notes
 
-These notes describe the _current_ architecture. The Rust/Oxc migration plan and phase-by-phase porting rules live
-separately:
-
-- `RUST_OXC_MIGRATION.md` — master plan, phase breakdown, hook semantics.
-- `RUST_ENGINE_SPIKE.mdx` — OSS-2400 spike spec, comment markers, unsafe policy.
-
-When a decision in those plans gets implemented, capture the durable form here and link back.
+These notes describe the _current_ architecture. The earlier Rust/Oxc migration and spike planning docs were folded
+into the relevant design notes or left in git history. When a decision is implemented, capture the durable form here
+and link back to the specific note.

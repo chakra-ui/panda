@@ -290,9 +290,6 @@ JS-facing APIs stay stable; Rust ships behind `@pandacss/compiler`.
   index on the first Rust task in any session and consult the specific note before any change in that area.** When you
   change the underlying design, update the matching note in the same PR.
 - `design-notes/rust-testing.md` — full Rust testing strategy (consolidated harness, insta workflow, fast iteration).
-- `RUST_OXC_MIGRATION.md` — the master plan, phase breakdown, data contract, hook semantics.
-- `RUST_ENGINE_SPIKE.mdx` — OSS-2400 spike spec + porting rules (crate boundaries, comment markers, unsafe policy,
-  output rules).
 
 ### Toolchain
 
@@ -457,7 +454,7 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 - **Type definitions**: `packages/types/src/` (comprehensive types)
 - **Integration examples**: `/sandbox/` (real-world usage)
 - **Test patterns**: `crates/<name>/tests/` (Rust) and `sandbox/codegen` (generated-output validation)
-- **Rust migration**: `RUST_OXC_MIGRATION.md` and `RUST_ENGINE_SPIKE.mdx`
+- **Rust migration**: `design-notes/README.md` and the linked Rust design notes
 - **Rust testing**: `design-notes/rust-testing.md`
 
 ## Best Practices for AI Assistants
