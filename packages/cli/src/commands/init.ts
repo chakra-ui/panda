@@ -80,6 +80,9 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           jsxFramework: flags.jsxFramework,
           syntax: flags.syntax,
           strictTokens: flags.strictTokens,
+          // Opting out of the install scaffolds a bare system, so the config doesn't
+          // reference presets that aren't there.
+          presets: flags.install === false ? [] : DEFAULT_PRESETS,
         }),
     })
     configPath = resolveConfigTarget(cwd, flags.config)
@@ -183,6 +186,7 @@ interface SetupConfigOptions {
   jsxFramework?: string
   syntax?: 'template-literal' | 'object-literal'
   strictTokens?: boolean
+  presets: readonly string[]
 }
 
 async function setupConfig(_cwd: string, options: SetupConfigOptions): Promise<boolean> {
@@ -255,7 +259,7 @@ function configSource(options: SetupConfigOptions): string {
     "import { defineConfig } from '@pandacss/dev'",
     '',
     'export default defineConfig({',
-    `  presets: [${DEFAULT_PRESETS.map((name) => `'${name}'`).join(', ')}],`,
+    `  presets: [${options.presets.map((name) => `'${name}'`).join(', ')}],`,
     '  preflight: true,',
     `  include: ['./src/**/*.{js,jsx,ts,tsx}', './pages/**/*.{js,jsx,ts,tsx}'],`,
     '  exclude: [],',
@@ -287,13 +291,15 @@ interface SetupDependenciesOptions {
 function setupDependencies(cwd: string, options: SetupDependenciesOptions): string[] {
   if (options.install === false) return []
 
-  const installed = readInstalledDeps(cwd)
-  if (!installed) {
+  if (!existsSync(join(cwd, 'package.json'))) {
     // No package.json to install into — scaffold only, but tell the user what's still needed.
     if (options.notify)
       options.output.log(`init: no package.json found — install ${DEFAULT_PRESETS.join(', ')} yourself.`)
     return []
   }
+
+  const installed = readInstalledDeps(cwd)
+  if (!installed) return [] // package.json exists but couldn't be parsed — leave it alone
 
   const missing = DEFAULT_PRESETS.filter((name) => !installed.has(name))
   if (missing.length === 0) return []
@@ -310,11 +316,8 @@ function setupDependencies(cwd: string, options: SetupDependenciesOptions): stri
 }
 
 function readInstalledDeps(cwd: string): Set<string> | undefined {
-  const pkgPath = join(cwd, 'package.json')
-  if (!existsSync(pkgPath)) return undefined
-
   try {
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+    const pkg = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')) as {
       dependencies?: Record<string, string>
       devDependencies?: Record<string, string>
     }
