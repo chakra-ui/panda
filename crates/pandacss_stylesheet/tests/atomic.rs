@@ -30,6 +30,44 @@ fn emits_dynamic_atomic_css() {
 }
 
 #[test]
+fn vendor_prefixed_property_keeps_leading_dash_in_class_name() {
+    // A vendor-prefixed property (PascalCase, capital first letter) hyphenates
+    // to a leading-dash CSS property — `WebkitBackgroundClip` ->
+    // `-webkit-background-clip`. The runtime `css()` (and legacy Panda) name the
+    // class from that leading-dash form (`-webkit-background-clip_text`), so
+    // cssgen must keep the dash too. Dropping it named `.webkit-background-clip_text`,
+    // a class the runtime never emits, so the declaration silently never applied
+    // (e.g. the gradient-text `WebkitBackgroundClip:'text'` +
+    // `WebkitTextFillColor:'transparent'` recipe).
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "WebkitBackgroundClip": {},
+            "WebkitTextFillColor": {},
+            "MozAppearance": {}
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', MozAppearance: 'none' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .\-moz-appearance_none {
+    -moz-appearance: none;
+  }
+  .\-webkit-background-clip_text {
+    -webkit-background-clip: text;
+  }
+  .\-webkit-text-fill-color_transparent {
+    -webkit-text-fill-color: transparent;
+  }
+}
+");
+}
+
+#[test]
 fn emits_dynamic_atomic_css_with_configured_separator() {
     let config = config(serde_json::json!({
         "separator": "__",
