@@ -542,6 +542,9 @@ function App() {
   </Tab>
 </Tabs>
 
+For responsive column counts, pass breakpoints on `columns`: `columns={{ base: 1, md: 2 }}`. See
+[responsive pattern props](#responsive-pattern-props).
+
 #### Grid Item
 
 The Grid Item pattern is used to style the children of a grid container.
@@ -892,4 +895,33 @@ const PageScrollable = (props: ButtonProps) => {
     </Scrollable>
   )
 }
+```
+
+## Responsive pattern props
+
+Pattern components take two kinds of props:
+
+- **Pattern props** — compiled by the pattern (`columns`, `colSpan`, `direction`, `ratio`, …)
+- **CSS utilities** — passed straight to the style system (`padding`, `display`, `color`, …)
+
+Put breakpoints on the pattern prop — not on a separate `md` prop:
+
+```tsx
+// ✅
+<Grid columns={{ base: 1, md: 2 }} />
+<Stack direction={{ base: 'column', md: 'row' }} />
+<GridItem colSpan={{ base: 1, md: 2 }} />
+
+// ❌ pattern props inside `md` skip the pattern transform
+<Grid columns={1} md={{ columns: 2 }} />
+<Stack direction="column" md={{ direction: 'row' }} />
+```
+
+Pattern props are transformed at the top level (`columns` → `gridTemplateColumns`, `colSpan` → `gridColumn`, etc.).
+Nesting them in `md={{ … }}` skips that step, so nothing changes at the breakpoint.
+
+CSS utilities on the same component still work with breakpoint keys — same as on `Box` or `styled.div`:
+
+```tsx
+<Grid columns={{ base: 1, md: 2 }} padding={{ base: '4', md: '6' }} />
 ```
