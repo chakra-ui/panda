@@ -14,10 +14,7 @@ function normalizeCliOutput(output: string) {
       .replaceAll(repoRoot, '<cwd>')
       .replaceAll(version, '<version>')
       .split('\n')
-      // citty right-pads the OPTIONS/COMMANDS columns to the longest entry, and the
-      // `--cwd` default embeds the absolute cwd — so the padding width drifts per
-      // machine. Collapse runs of spaces so the snapshot asserts content, not
-      // machine-dependent alignment.
+      // collapse citty's column padding (machine-dependent: keys on cwd length)
       .map((line) => line.replace(/ {2,}/g, ' ').trim())
       .join('\n')
   )
