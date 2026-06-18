@@ -38,6 +38,9 @@
     "config-bundle-temp-file",
     "default-panda-build-command",
     "direct-mcp-package",
+    "fix-classname-vendor-prefix",
+    "fix-object-map-literal-classnames",
+    "fix-runtime-important-classname",
     "init-scaffold-default-presets",
     "merge-adjacent-selectors",
     "native-token-css",
@@ -47,6 +50,7 @@
     "preset-resolved-hook-utils",
     "sharp-tigers-tell",
     "sort-container-inline-size",
-    "utility-transform-grouped-emit"
+    "utility-transform-grouped-emit",
+    "write-if-changed-outputs"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/vite",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "Vite plugin for Panda CSS",
   "type": "module",
   "main": "./dist/index.js",
