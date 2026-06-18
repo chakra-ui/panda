@@ -1074,14 +1074,6 @@ pub fn hyphenate_property(property: &str) -> String {
         return property.to_owned();
     }
 
-    // Mirror the runtime/legacy `property.replace(/[A-Z]/g, "-$&").toLowerCase()`:
-    // a dash precedes EVERY uppercase letter, including the first. A leading
-    // uppercase only occurs for vendor-prefixed PascalCase props
-    // (`WebkitBackgroundClip` -> `-webkit-background-clip`, `MozAppearance` ->
-    // `-moz-appearance`); camelCase props start lowercase so they get no leading
-    // dash (`backgroundColor` -> `background-color`). The runtime `css()` names
-    // the class from this leading-dash form, so cssgen must produce the same or
-    // it emits a class — and a CSS property — the runtime never matches.
     let mut out = String::with_capacity(property.len() + 4);
     for ch in property.chars() {
         if ch.is_ascii_uppercase() {
@@ -1092,9 +1084,6 @@ pub fn hyphenate_property(property: &str) -> String {
         }
     }
 
-    // `msTransform` starts lowercase, so the loop yields `ms-transform`; the
-    // vendor prefix needs a leading dash: `-ms-transform` (matches the legacy
-    // `.replace(/^ms-/, "-ms-")`).
     if let Some(rest) = out.strip_prefix("ms-") {
         let mut prefixed = String::with_capacity(out.len() + 1);
         prefixed.push_str("-ms-");

@@ -148,10 +148,7 @@ fn encode_utilities(ctx: CodegenContext<'_>) -> (String, bool) {
     (entries, !utilities.shorthands.is_empty())
 }
 
-/// Mirrors the runtime `hypenateProperty` exactly — including the leading dash
-/// the `/[A-Z]/` replacement inserts before a leading uppercase (`WebkitX` →
-/// `-webkit-x`), which the Rust `hyphenate_property` deliberately omits. Used
-/// only to decide whether the runtime fallback reproduces a stored className.
+/// Mirrors the runtime `hypenateProperty` for redundant className detection.
 fn js_hyphenate_property(property: &str) -> String {
     if property.starts_with("--") {
         return property.to_owned();

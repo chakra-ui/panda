@@ -59,4 +59,57 @@ describe('generated runtime/cssgen parity', () => {
     expect(generatedCss).toContain(String.raw`.min-h_100vh`)
     expect(generatedCss).toContain(String.raw`.w_100vw`)
   })
+
+  it('uses the same vendor-prefixed property class names as cssgen', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+
+    const styles = {
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      MozAppearance: 'none',
+    }
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', MozAppearance: 'none' })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css(styles)
+    const generatedCss = compiler.compile({ emitLayerDeclaration: false }).css
+
+    expect(className).toBe('-webkit-background-clip_text -webkit-text-fill-color_transparent -moz-appearance_none')
+    expect(generatedCss).toContain(String.raw`.\-webkit-background-clip_text`)
+    expect(generatedCss).toContain(String.raw`.\-webkit-text-fill-color_transparent`)
+    expect(generatedCss).toContain(String.raw`.\-moz-appearance_none`)
+    expect(generatedCss).toContain('-webkit-background-clip: text;')
+    expect(generatedCss).toContain('-webkit-text-fill-color: transparent;')
+    expect(generatedCss).toContain('-moz-appearance: none;')
+  })
+
+  it('uses the same custom property class names as cssgen', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+
+    const styles = {
+      '--ring': '2px',
+      '--welcome-x': 20,
+    }
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ '--ring': '2px', '--welcome-x': 20 })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css(styles)
+    const generatedCss = compiler.compile({ emitLayerDeclaration: false }).css
+
+    expect(className).toBe('--ring_2px --welcome-x_20')
+    expect(generatedCss).toContain(String.raw`.\--ring_2px`)
+    expect(generatedCss).toContain(String.raw`.\--welcome-x_20`)
+    expect(generatedCss).toContain('--ring: 2px;')
+    expect(generatedCss).toContain('--welcome-x: 20;')
+  })
 })

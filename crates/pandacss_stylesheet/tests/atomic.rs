@@ -31,14 +31,6 @@ fn emits_dynamic_atomic_css() {
 
 #[test]
 fn vendor_prefixed_property_keeps_leading_dash_in_class_name() {
-    // A vendor-prefixed property (PascalCase, capital first letter) hyphenates
-    // to a leading-dash CSS property — `WebkitBackgroundClip` ->
-    // `-webkit-background-clip`. The runtime `css()` (and legacy Panda) name the
-    // class from that leading-dash form (`-webkit-background-clip_text`), so
-    // cssgen must keep the dash too. Dropping it named `.webkit-background-clip_text`,
-    // a class the runtime never emits, so the declaration silently never applied
-    // (e.g. the gradient-text `WebkitBackgroundClip:'text'` +
-    // `WebkitTextFillColor:'transparent'` recipe).
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
         "utilities": {
