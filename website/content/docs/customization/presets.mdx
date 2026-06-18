@@ -4,7 +4,20 @@ description: Creating your own reusable preset for utilities and theme
 ---
 
 By default, any configuration you add in your own `panda.config.js` file is smartly merged with the
-[default configuration](#), allowing you to override or extend specific parts of the configuration.
+[default presets](#which-panda-presets-will-be-included), allowing you to override or extend specific parts of the
+configuration.
+
+## When to use a preset
+
+Use a preset when you want to share tokens, theme, utilities, patterns, or recipes across projects:
+
+- **Design system package** — one npm package for your tokens and theme
+- **Multiple apps** — the same colors, spacing, and breakpoints everywhere
+- **Component libraries** — consumers add your preset in `panda.config.ts`
+  ([component library guide](/docs/guides/component-library#ship-a-panda-preset))
+
+If the app does not use Panda, ship static CSS instead. See the
+[component library guide](/docs/guides/component-library) for other options.
 
 You can specify a preset in your `panda.config.js` file by using the `presets` option:
 
@@ -54,6 +67,98 @@ export default defineConfig({
   presets: [myPreset]
 })
 ```
+
+## End-to-end example
+
+This walks through publishing a preset and using it in an app. For library build details, see
+[Ship a Panda preset](/docs/guides/component-library#ship-a-panda-preset).
+
+<Steps>
+
+### Create the preset package
+
+```ts filename="@acme/preset/src/index.ts"
+import { definePreset } from '@pandacss/dev'
+
+export const acmePreset = definePreset({
+  name: '@acme/preset',
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          brand: { value: '#2563eb' }
+        }
+      }
+    }
+  }
+})
+```
+
+### Build and publish
+
+```json filename="@acme/preset/package.json"
+{
+  "name": "@acme/preset",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
+```
+
+```bash
+pnpm tsup src/index.ts --format esm,cjs --dts
+pnpm publish
+```
+
+### Install in your app
+
+```bash
+pnpm add -D @acme/preset
+```
+
+### Add it to panda.config
+
+Setting `presets` replaces the default `@pandacss/preset-panda`. Include it explicitly if you still want the default
+theme:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import pandaPreset from '@pandacss/preset-panda'
+import { acmePreset } from '@acme/preset'
+
+export default defineConfig({
+  presets: [pandaPreset, acmePreset],
+  include: ['./src/**/*.{js,jsx,ts,tsx}']
+})
+```
+
+`@pandacss/preset-base` is still included automatically unless you set `eject: true`. See
+[which presets are included](#which-panda-presets-will-be-included).
+
+### Extend the preset in the app
+
+Use `theme.extend` to add or override tokens on top of the preset. Presets merge in order — later entries win on
+conflicts. See [extend](/docs/concepts/extend).
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  presets: [pandaPreset, acmePreset],
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          brand: { value: '#1d4ed8' }
+        }
+      }
+    }
+  }
+})
+```
+
+</Steps>
 
 The available keys for a preset are:
 
