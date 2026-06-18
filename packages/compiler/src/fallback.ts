@@ -2,6 +2,7 @@ import type {
   Atom,
   CompileOutput,
   Compiler,
+  DesignSystemManifestInput,
   Diagnostic,
   LayerCssOptions,
   SplitCssOptions,
@@ -12,8 +13,15 @@ import type {
   WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
-import { makeBuildInfoApi } from '@pandacss/compiler-shared'
+import { makeBuildInfoApi, makeDesignSystemApi } from '@pandacss/compiler-shared'
 import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
+
+/** No-op design-system primitives; `validate` always reports incompatible
+ *  (`schemaVersion` is `-1`). */
+const fallbackDesignSystem = makeDesignSystemApi({
+  createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
+  designSystemManifestSchemaVersion: () => -1,
+})
 
 class FallbackExtractor implements ExtractorSession {
   extract() {
@@ -156,6 +164,7 @@ class FallbackCompiler implements Compiler {
     return []
   }
   readonly buildInfo = fallbackBuildInfo
+  readonly designSystem = fallbackDesignSystem
   generateArtifacts() {
     return []
   }

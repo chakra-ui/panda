@@ -4,6 +4,7 @@ import type {
   CompileOutput,
   CompilerOptions,
   ConfigSnapshot,
+  DesignSystemNative,
   ProjectCallbacks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
@@ -12,6 +13,7 @@ import {
   assertProjectCallbacks,
   getTokenCategoryValues,
   makeBuildInfoApi,
+  makeDesignSystemApi,
   mergeCallbacks,
   mergeHooks,
   prepareCompilerConfig,
@@ -83,6 +85,7 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
   registerCallbacks(compiler, callbacks, options?.hooks, compiler.token_dictionary?.())
   attachBuildInfo(compiler)
+  attachDesignSystem(compiler)
 
   return compiler
 }
@@ -102,6 +105,15 @@ function attachBuildInfo(compiler: Compiler): void {
       })
       return api
     },
+  })
+}
+
+/** Wire `compiler.designSystem` over the native primitives; non-enumerable,
+ *  mirroring `buildInfo`. */
+function attachDesignSystem(compiler: Compiler): void {
+  Object.defineProperty(compiler, 'designSystem', {
+    value: makeDesignSystemApi(compiler as unknown as DesignSystemNative),
+    enumerable: false,
   })
 }
 

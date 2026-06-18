@@ -6,6 +6,7 @@
  * This module is a barrel; the surface is split by concern:
  * - `./types`      — data-shape contract (the serialized `Compiler` surface)
  * - `./build-info` — the `buildInfo` namespace factory over binding primitives
+ * - `./design-system` — the `designSystem` namespace factory (`panda.lib.json`)
  * - `./callbacks`  — the JS-callback runtime (`utility.transform`, …)
  * - `./introspect` — the `introspect(spec)` query/sort helper
  * - `./driver`     — the host orchestration layer (`Driver`, `BaseDriver`)
@@ -13,6 +14,7 @@
 
 export * from './types'
 export * from './build-info'
+export * from './design-system'
 export * from './callbacks'
 export * from './defaults'
 export * from './import-map'

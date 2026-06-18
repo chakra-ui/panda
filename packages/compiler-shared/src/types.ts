@@ -809,6 +809,74 @@ export interface BuildInfoApi {
   hydrate(buildInfo: BuildInfo, options: BuildInfoHydrateOptions): BuildInfoHydrateResult
 }
 
+// ---------------------------------------------------------------------------
+// Design-system manifest — `panda.lib.json` (the `designSystem` field)
+// ---------------------------------------------------------------------------
+
+/** Published import specifiers per category, so a library's compiled JSX keeps
+ *  importing from the DS (`@acme/ds/css`), not the consumer's `styled-system`. */
+export interface DesignSystemManifestImportMap {
+  css?: string
+  recipes?: string
+  patterns?: string
+  jsx?: string
+  tokens?: string
+}
+
+/** `panda.lib.json` — the manifest a library publishes for the `designSystem`
+ *  field. Paths are relative to the manifest's own directory. */
+export interface DesignSystemManifest {
+  schemaVersion: number
+  name: string
+  /** Informational; powers the drift receipt, never enforced. */
+  version?: string
+  /** Peer Panda range the consumer's Panda must satisfy. */
+  panda: string
+  preset: string
+  buildInfo: string
+  importMap?: DesignSystemManifestImportMap
+  /** This library's own parent design system — the chain link. Absent at a root. */
+  designSystem?: string
+  /** Re-extract fallback globs when build info can't be hydrated (version skew). */
+  files?: string[]
+}
+
+/** Host-supplied manifest fields — everything but the engine-stamped
+ *  `schemaVersion`. */
+export interface DesignSystemManifestInput {
+  name: string
+  version?: string
+  panda: string
+  preset: string
+  buildInfo: string
+  importMap?: DesignSystemManifestImportMap
+  designSystem?: string
+  files?: string[]
+}
+
+/** Why a manifest is incompatible. `schemaVersion` is the engine's verdict;
+ *  `pandaRange` is layered on by the host (it knows the running version). */
+export type DesignSystemManifestIncompatibility = 'schemaVersion' | 'pandaRange'
+
+/** Discriminated result so `ok: true` narrows away `reason`. */
+export type DesignSystemManifestCompatibility =
+  | { ok: true }
+  | { ok: false; reason: DesignSystemManifestIncompatibility }
+
+/** Produce + validate `panda.lib.json`. Accessed as `compiler.designSystem`. */
+export interface DesignSystemApi {
+  /** The manifest wire-format version this compiler reads/writes. */
+  readonly schemaVersion: number
+
+  /** Build a manifest from host-supplied fields, stamping the schema version —
+   *  the producer side (`panda lib`). */
+  create(input: DesignSystemManifestInput): DesignSystemManifest
+
+  /** Check a manifest's `schemaVersion` against this compiler; the peer-range
+   *  verdict is layered on by the host. */
+  validate(manifest: DesignSystemManifest): DesignSystemManifestCompatibility
+}
+
 /** A configured, long-lived compiler: built once from a serialized config, fed
  *  source files, drained to CSS via `compile()`. Identical on native and wasm —
  *  only construction differs (native sync; wasm async + populates `fs`). */
@@ -880,6 +948,10 @@ export interface Compiler {
   /** Build-info distribution — produce, validate, and hydrate a design system's
    *  serialized encoder state. See {@link BuildInfoApi}. */
   readonly buildInfo: BuildInfoApi
+
+  /** Design-system manifest — produce + validate `panda.lib.json`. See
+   *  {@link DesignSystemApi}. */
+  readonly designSystem: DesignSystemApi
 
   // Codegen artifacts
   /** Generate + write artifacts under `outdir` via the platform fs (disk on
