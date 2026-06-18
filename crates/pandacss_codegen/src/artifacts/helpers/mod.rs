@@ -42,6 +42,8 @@ pub fn module() -> Module {
         .with_item(misc::normalize_html_props_types())
         .with_item(misc::uniq())
         .with_item(misc::without_space())
+        .with_item(misc::is_important())
+        .with_item(misc::without_important())
 }
 
 #[must_use]

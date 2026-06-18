@@ -122,6 +122,22 @@ describe('css', () => {
 
     expect(className).toMatchInlineSnapshot(`"fs_12px bg-c_red.600"`)
   })
+
+  test('important value', () => {
+    // The runtime must strip `!important` before naming, then mark the class
+    // with a trailing `!` — matching the cssgen rule (`.p_0\!`). Hashing the raw
+    // string (`p_0_!important`) names a class cssgen never writes, so the
+    // `!important` declaration silently never applies.
+    const className = css({ padding: '0 !important' })
+
+    expect(className).toMatchInlineSnapshot('"p_0!"')
+  })
+
+  test('important value with token and condition', () => {
+    const className = css({ zIndex: '1002 !important', _hover: { color: 'red.500 !important' } })
+
+    expect(className).toMatchInlineSnapshot('"z_1002! hover:c_red.500!"')
+  })
 })
 
 describe('css.raw', () => {

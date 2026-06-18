@@ -133,6 +133,29 @@ pub(super) fn without_space() -> Item {
     )
 }
 
+pub(super) fn is_important() -> Item {
+    helper_function(
+        "isImportant",
+        vec![Param::typed("value", TsType::Ref("unknown".into()))],
+        TsType::Bool,
+        r#"return typeof value === "string" ? /\s*!(important)?/i.test(value) : false"#,
+        [],
+    )
+}
+
+pub(super) fn without_important() -> Item {
+    helper_function(
+        "withoutImportant",
+        vec![Param::typed("value", TsType::Ref("T".into()))],
+        TsType::Ref("T".into()),
+        indoc! {r#"
+            return (typeof value === "string" ? value.replace(/\s*!(important)?/i, "").trim() : value) as T
+        "#}
+        .trim(),
+        ["T extends string | number | boolean"],
+    )
+}
+
 pub(super) fn normalize_html_props() -> Item {
     Item::runtime(ItemNode::RawStmt(
         indoc! {r"
