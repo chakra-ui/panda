@@ -433,6 +433,29 @@ name that matches the recipe-variant name pattern `<recipe-className>--<variant-
 }
 ```
 
+### Dynamic variant props
+
+Config recipes only emit CSS for variant values Panda can see at build time. `button({ size })` still returns class
+names at runtime — but if that CSS was never generated, the styles won't apply.
+
+- `button({ size: 'lg' })` → emits `lg`
+- `button({ size: wide ? 'sm' : 'lg' })` → emits both branches
+- `button({ size })` or `<Button size={size} />` → emits `defaultVariants` only
+
+When a variant comes from a prop or state, pre-generate it:
+
+```ts filename="button.recipe.ts"
+export const buttonRecipe = defineRecipe({
+  className: 'button',
+  staticCss: ['*'] // or [{ size: ['sm', 'md', 'lg'] }]
+})
+```
+
+Or add literal calls in stories/tests, or use string literals in the call itself.
+
+Slot recipes follow the same rules — see [slot recipes](/docs/concepts/slot-recipes#dynamic-variant-props). More in
+[static CSS](/docs/guides/static#generating-recipes).
+
 ### Responsive and Conditional variants
 
 Recipes created in the config have a **special** feature; they can be applied based on a specific breakpoints or
@@ -722,10 +745,7 @@ const button = defineRecipe({
 
 ## Static CSS
 
-Panda provides a way to generate `static CSS` for your recipes. This is useful when you want to generate CSS for a
-recipe without using the recipe in your code or if you use dynamic styling that Panda can't keep track of.
-
-More information about static CSS can be found [here](/docs/guides/static.md#generating-recipes).
+Use `staticCss` to pre-generate recipe CSS Panda can't extract — including [dynamic variant props](/docs/concepts/recipes#dynamic-variant-props). See [Generating recipes](/docs/guides/static#generating-recipes).
 
 ## Should I use atomic or config recipes ?
 

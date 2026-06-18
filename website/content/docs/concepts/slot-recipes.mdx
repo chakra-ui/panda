@@ -441,6 +441,57 @@ name that matches the recipe-slot-variant name pattern `<recipe-className>__<slo
 }
 ```
 
+### Dynamic variant props
+
+Same rules as [config recipes](/docs/concepts/recipes#dynamic-variant-props). The runtime function returns slot class
+names; build time only sees static variant values.
+
+```tsx filename="Media.tsx"
+import { cx } from '../styled-system/css'
+import { mediaGrid, type MediaGridVariant } from '../styled-system/recipes'
+
+function Media({
+  items,
+  layout = 'one'
+}: {
+  items: { id: string; src: string }[]
+  layout?: MediaGridVariant['template']
+}) {
+  const classes = mediaGrid({ template: layout })
+
+  return (
+    <ul className={cx(classes.container)}>
+      {items.map((item) => (
+        <li key={item.id} className={classes.item}>
+          <img src={item.src} alt="" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+`layout` is dynamic — Panda only emits CSS for `defaultVariants` unless you pre-generate the rest.
+
+When variants come from props, add `staticCss`:
+
+```ts filename="media-grid.recipe.ts"
+export const mediaGridRecipe = defineSlotRecipe({
+  className: 'media-grid',
+  slots: ['container', 'item'],
+  variants: {
+    template: {
+      one: { container: { gridTemplateColumns: '1fr' }, item: {} },
+      two: { container: { gridTemplateColumns: '1fr 1fr' }, item: {} }
+    }
+  },
+  defaultVariants: { template: 'one' },
+  staticCss: ['*']
+})
+```
+
+Register as `theme.slotRecipes.mediaGrid` — import `mediaGrid` and `MediaGridVariant` from `<outdir>/recipes`.
+
 ### TypeScript Guide
 
 Every slot recipe ships a type interface for its accepted variants. You can import them from the `styled-system/recipes`
