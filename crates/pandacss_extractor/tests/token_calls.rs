@@ -53,6 +53,12 @@ fn sample_tokens() -> TokenDictionary {
             TokenCategory::Spacing,
         ))
         .insert(Token::new(
+            "spacing.5",
+            "1.25rem",
+            "var(--spacing-5)",
+            TokenCategory::Spacing,
+        ))
+        .insert(Token::new(
             "opacity.half",
             "0.5",
             "var(--opacity-half)",
@@ -414,6 +420,35 @@ fn multiple_token_calls_in_one_template_fold() {
         css_string_prop(&run_with_tokens(src), "font"),
         @r#""4px / #ef4444""#
     );
+}
+
+#[test]
+fn token_folds_inside_calc_template_in_jsx_classname_css() {
+    let src = indoc! {r"
+        import { token } from '@panda/tokens';
+        import { css } from '@panda/css';
+        const el = <div className={css({
+            maxH: `calc(100dvh - ${token('spacing.5')})`,
+          })} />;
+    "};
+    assert_yaml_snapshot!(run_with_tokens(src).calls, @r##"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - maxH: calc(100dvh - 1.25rem)
+      span:
+        start: 100
+        end: 160
+    - category: tokens
+      name: token
+      alias: token
+      data:
+        - spacing.5
+      span:
+        start: 133
+        end: 151
+    "##);
 }
 
 #[test]
