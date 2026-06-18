@@ -29,6 +29,7 @@ pub fn validate_config_value(config: &Value) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
     validate_breakpoints(config.pointer("/theme/breakpoints"), &mut diagnostics);
     validate_conditions(config.get("conditions"), &mut diagnostics);
+    validate_utilities("utilities", config.get("utilities"), &mut diagnostics);
 
     let mut artifacts = ArtifactNames::default();
     let mut tokens = TokenData::default();
@@ -354,6 +355,80 @@ fn validate_condition_selector(condition: &str, diagnostics: &mut Vec<Diagnostic
             format!("Selectors should contain the `&` character: `{condition}`"),
         ));
     }
+}
+
+fn validate_utilities(path: &str, value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(entries) = value.and_then(Value::as_object) else {
+        return;
+    };
+
+    for (name, utility) in entries {
+        let next_path = format!("{path}.{name}");
+        let Some(config) = utility.as_object() else {
+            continue;
+        };
+
+        validate_utility_values(&next_path, config.get("values"), diagnostics);
+    }
+}
+
+fn validate_utility_values(path: &str, value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(value) = value else {
+        return;
+    };
+
+    if value.is_string()
+        || value.is_array()
+        || is_utility_values_callback(value)
+        || is_utility_type_hint(value)
+    {
+        return;
+    }
+
+    let Some(entries) = value.as_object() else {
+        return;
+    };
+
+    let mut invalid_keys = entries
+        .iter()
+        .filter(|(_, item)| !matches!(item, Value::String(_) | Value::Number(_) | Value::Bool(_)))
+        .map(|(key, _)| key.as_str())
+        .collect::<Vec<_>>();
+
+    if invalid_keys.is_empty() {
+        return;
+    }
+
+    invalid_keys.sort_unstable();
+    let keys_list = invalid_keys
+        .iter()
+        .map(|key| format!("`{key}`"))
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    diagnostics.push(warn(
+        diagnostic_codes::CONFIG_UTILITY_VALUES_INVALID,
+        format!(
+            "`{path}.values` contains invalid entries: {keys_list}. Each value must be a string, number, or boolean. Return style objects from `{path}.transform` instead."
+        ),
+    ));
+}
+
+fn is_utility_values_callback(value: &Value) -> bool {
+    let Some(map) = value.as_object() else {
+        return false;
+    };
+
+    map.get("kind").and_then(Value::as_str) == Some("js-callback")
+        && map.get("id").and_then(Value::as_str).is_some()
+}
+
+fn is_utility_type_hint(value: &Value) -> bool {
+    let Some(map) = value.as_object() else {
+        return false;
+    };
+
+    map.len() == 1 && map.get("type").is_some_and(Value::is_string)
 }
 
 fn validate_tokens(

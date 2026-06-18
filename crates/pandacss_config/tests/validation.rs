@@ -141,6 +141,70 @@ fn reports_array_conditions_and_accepts_block_form() {
 }
 
 #[test]
+fn reports_invalid_utility_value_maps() {
+    let diagnostics = diagnostics(json!({
+        "validation": "warn",
+        "utilities": {
+            "hideFrom": {
+                "className": "hide",
+                "values": {
+                    "sm": { "@breakpoint sm": { "display": "none" } },
+                    "lg": ["display", "none"],
+                    "none": null,
+                    "ok": "1rem",
+                    "num": 1,
+                    "bool": true
+                }
+            },
+            "truncate": {
+                "className": "trunc",
+                "values": { "type": "boolean" }
+            },
+            "dynamic": {
+                "className": "dyn",
+                "values": { "kind": "js-callback", "id": "utilities.dynamic.values" }
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(diagnostics, @r#"
+    - code: config_utility_values_invalid
+      message: "`utilities.hideFrom.values` contains invalid entries: `lg`, `none`, `sm`. Each value must be a string, number, or boolean. Return style objects from `utilities.hideFrom.transform` instead."
+      severity: warning
+    "#);
+}
+
+#[test]
+fn reports_invalid_utility_value_maps_per_utility() {
+    let diagnostics = diagnostics(json!({
+        "validation": "warn",
+        "utilities": {
+            "hideFrom": {
+                "className": "hide",
+                "values": {
+                    "sm": { "@breakpoint sm": { "display": "none" } }
+                }
+            },
+            "showFrom": {
+                "className": "show",
+                "values": {
+                    "lg": ["display", "block"]
+                }
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(diagnostics, @r#"
+    - code: config_utility_values_invalid
+      message: "`utilities.hideFrom.values` contains invalid entries: `sm`. Each value must be a string, number, or boolean. Return style objects from `utilities.hideFrom.transform` instead."
+      severity: warning
+    - code: config_utility_values_invalid
+      message: "`utilities.showFrom.values` contains invalid entries: `lg`. Each value must be a string, number, or boolean. Return style objects from `utilities.showFrom.transform` instead."
+      severity: warning
+    "#);
+}
+
+#[test]
 fn reports_invalid_container_configuration() {
     let diagnostics = diagnostics(json!({
         "theme": {

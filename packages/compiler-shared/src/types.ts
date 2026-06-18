@@ -52,6 +52,29 @@ export interface Atom {
   conditions: string[]
 }
 
+export type UtilityValueInput = string | number | boolean | null
+
+export type UtilityResolvedScalar = string | number | boolean
+
+export type UtilityValueSource =
+  | { type: 'value-map'; key: string; aliases: string[] }
+  | { type: 'literal'; aliases: string[] }
+  | { type: 'token-reference' }
+  | { type: 'arbitrary' }
+
+export interface ResolveUtilityValueInput {
+  prop: string
+  value: UtilityValueInput
+}
+
+export interface ResolvedUtilityValue {
+  utility: string
+  className: string
+  cssValue: UtilityResolvedScalar
+  important: boolean
+  source: UtilityValueSource
+}
+
 /** `recipe` is the serialized shape of `pandacss_recipes::Recipe`/`SlotRecipe`. */
 export interface RecipeEntry {
   file: string
@@ -744,6 +767,8 @@ export interface Compiler {
   /** Stateless source inspection for classified Panda usage sites and
    *  file-local extraction diagnostics. */
   inspectFileSource(path: string, source: string): FileInspectionResult
+  /** Resolve selector and CSS metadata for one utility prop/value pair. */
+  resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
 
   // Project state views
   /** Deduplicated atoms across all currently parsed files. */

@@ -115,6 +115,21 @@ pub struct StaticPatternResult {
 }
 
 #[napi(object)]
+pub struct ResolveUtilityValueInput {
+    pub prop: String,
+    pub value: serde_json::Value,
+}
+
+#[napi(object)]
+pub struct ResolvedUtilityValue {
+    pub utility: String,
+    pub class_name: String,
+    pub css_value: serde_json::Value,
+    pub important: bool,
+    pub source: serde_json::Value,
+}
+
+#[napi(object)]
 pub struct GenerateArtifactOptions {
     pub force_import_extension: Option<bool>,
 }
@@ -423,6 +438,39 @@ impl Compiler {
     ) -> napi::Result<serde_json::Value> {
         let result = self.inner.inspect_file_source(&path, &source);
         serde_json::to_value(&result).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
+    /// Resolve selector and CSS metadata for one utility value.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented by the extractor
+    /// literal model.
+    #[napi(js_name = resolveUtilityValue)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn resolve_utility_value(
+        &self,
+        input: ResolveUtilityValueInput,
+    ) -> napi::Result<Option<ResolvedUtilityValue>> {
+        let Some(value) = json_value_to_literal(&input.value) else {
+            return Err(napi::Error::from_reason(
+                "resolveUtilityValue() requires a JSON-serializable value",
+            ));
+        };
+
+        let Some(resolved) = self.inner.resolve_utility_value(&input.prop, &value) else {
+            return Ok(None);
+        };
+
+        Ok(Some(ResolvedUtilityValue {
+            utility: resolved.utility,
+            class_name: resolved.class_name,
+            css_value: resolved.css_value.to_json(),
+            important: resolved.important,
+            source: utility_value_source_to_json(resolved.source),
+        }))
     }
 
     /// Source globs + their static base dirs (for the host watcher).
@@ -1379,6 +1427,23 @@ fn atom_value_to_json(value: &AtomValue) -> serde_json::Value {
         AtomValue::Number(value) => parse_number_string(value),
         AtomValue::Bool(value) => serde_json::Value::Bool(*value),
         AtomValue::Null => serde_json::Value::Null,
+    }
+}
+
+fn utility_value_source_to_json(source: pandacss_project::UtilityValueSource) -> serde_json::Value {
+    match source {
+        pandacss_project::UtilityValueSource::ValueMap { key, aliases } => {
+            serde_json::json!({ "type": "value-map", "key": key, "aliases": aliases })
+        }
+        pandacss_project::UtilityValueSource::Literal { aliases } => {
+            serde_json::json!({ "type": "literal", "aliases": aliases })
+        }
+        pandacss_project::UtilityValueSource::TokenReference => {
+            serde_json::json!({ "type": "token-reference" })
+        }
+        pandacss_project::UtilityValueSource::Arbitrary => {
+            serde_json::json!({ "type": "arbitrary" })
+        }
     }
 }
 

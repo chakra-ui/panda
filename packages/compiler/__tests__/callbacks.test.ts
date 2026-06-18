@@ -362,12 +362,12 @@ describe('Compiler callbacks', () => {
       [
         {
           "prop": "space",
-          "value": "var(--spacing-4)",
+          "value": 4,
           "conditions": [],
         },
         {
           "prop": "space",
-          "value": "2px",
+          "value": "compact",
           "conditions": [
             "_hover",
           ],
@@ -427,12 +427,12 @@ describe('Compiler callbacks', () => {
       [
         {
           "prop": "inset",
-          "value": "100%",
+          "value": 2,
           "conditions": [],
         },
         {
           "prop": "inset",
-          "value": "var(--spacing-2)",
+          "value": "full",
           "conditions": [],
         },
       ]

@@ -198,10 +198,10 @@ fn utility_values_normalize_aliases() {
     assert_eq!(report.css_calls, 1);
     assert_yaml_snapshot!(sorted_atoms(&project), @r#"
     - prop: spacing
-      value: 4px
+      value: sm
       conditions: []
     - prop: spacing
-      value: 8px
+      value: md
       conditions:
         - _hover
     "#);

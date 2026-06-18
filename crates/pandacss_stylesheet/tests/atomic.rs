@@ -82,6 +82,38 @@ fn object_map_values_name_classes_by_alias_key() {
 }
 
 #[test]
+fn object_map_values_name_classes_by_literal_value() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "marginBottom": {
+                "className": "mb",
+                "values": { "2": "0.5rem", "4": "1rem" }
+            },
+            "minHeight": {
+                "className": "min-h",
+                "values": { "screen": "100vh" }
+            }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ marginBottom: '0.5rem', minHeight: '100vh' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .mb_0\.5rem {
+    margin-bottom: 0.5rem;
+  }
+  .min-h_100vh {
+    min-height: 100vh;
+  }
+}
+");
+}
+
+#[test]
 fn hashes_atomic_class_names_with_prefix_conditions_and_important() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

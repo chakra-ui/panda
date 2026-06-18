@@ -4,6 +4,7 @@ use std::sync::Arc;
 use insta::{assert_debug_snapshot, assert_snapshot};
 use pandacss_config::{UserConfig, UtilityConfig};
 use pandacss_extractor::Literal;
+use pandacss_shared::to_hash;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};
 use serde_json::{Value, json};
@@ -74,7 +75,7 @@ fn callback_transform_refs_are_exposed() {
 }
 
 #[test]
-fn utility_values_normalize_aliases_to_raw_values() {
+fn utility_values_keep_value_map_keys() {
     let utility = Utility::from_config(&utility_config(json!({
         "spacing": {
             "shorthand": "s",
@@ -91,12 +92,12 @@ fn utility_values_normalize_aliases_to_raw_values() {
 
     assert_eq!(
         utility.normalize_style_object(&style),
-        Literal::Object(vec![("spacing".into(), Literal::String("8px".into()))]),
+        Literal::Object(vec![("spacing".into(), Literal::String("md".into()))]),
     );
 }
 
 #[test]
-fn utility_values_normalize_nested_conditions() {
+fn utility_values_normalize_nested_conditions_keep_value_map_keys() {
     let utility = Utility::from_config(&utility_config(json!({
         "spacing": {
             "values": {
@@ -113,7 +114,7 @@ fn utility_values_normalize_nested_conditions() {
         utility.normalize_style_object(&style),
         Literal::Object(vec![(
             "_hover".into(),
-            Literal::Object(vec![("spacing".into(), Literal::String("4px".into()))]),
+            Literal::Object(vec![("spacing".into(), Literal::String("sm".into()))]),
         )]),
     );
 }
@@ -169,6 +170,7 @@ fn transform_uses_separator_prefix_and_class_name() {
             prefix: Some("panda".into()),
             tokens: None,
             shorthands: true,
+            hash_class_names: false,
         },
     );
 
@@ -1121,7 +1123,7 @@ fn resolve_values_value_passes_through_when_no_category_matches() {
 }
 
 #[test]
-fn class_name_value_uses_object_map_alias_not_resolved_css() {
+fn class_name_value_uses_authored_literal() {
     let utility = Utility::from_config(&utility_config(json!({
         "marginBottom": {
             "className": "mb",
@@ -1129,11 +1131,244 @@ fn class_name_value_uses_object_map_alias_not_resolved_css() {
         }
     })));
 
-    assert_eq!(utility.class_name_value("marginBottom", "2"), "2");
-    assert_eq!(utility.class_name_value("marginBottom", "0.5rem"), "2");
+    assert_eq!(utility.class_name_value("2"), "2");
+    assert_eq!(utility.class_name_value("0.5rem"), "0.5rem");
+    assert_eq!(
+        utility
+            .value_alias_for_literal("marginBottom", "0.5rem")
+            .as_deref(),
+        Some("2"),
+    );
     assert_snapshot!(
         utility.transform_str("marginBottom", "0.5rem").class_name,
-        @"mb_2"
+        @"mb_0.5rem"
+    );
+}
+
+#[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "one fixture keeps related resolver cases together"
+)]
+fn resolve_utility_value_describes_class_and_css_value() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.500",
+            "#f00",
+            "var(--colors-red-500)",
+            TokenCategory::Colors,
+        ))
+        .build();
+
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "color": {
+                "className": "c",
+                "values": "colors"
+            },
+            "marginBottom": {
+                "className": "mb",
+                "shorthand": "mb",
+                "values": {
+                    "2": "0.5rem",
+                    "space": "0.5rem",
+                    "4": "1rem"
+                }
+            },
+            "width": {
+                "className": "w"
+            },
+            "zIndex": {
+                "className": "z"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let value_map_key = utility
+        .resolve_utility_value("mb", &Literal::String("2".into()))
+        .expect("value map key");
+    let literal_with_aliases = utility
+        .resolve_utility_value("marginBottom", &Literal::String("0.5rem".into()))
+        .expect("literal with aliases");
+    let arbitrary = utility
+        .resolve_utility_value("width", &Literal::String("[calc(100% - 1rem)]".into()))
+        .expect("arbitrary value");
+    let arbitrary_important = utility
+        .resolve_utility_value("width", &Literal::String("[4px] !important".into()))
+        .expect("important arbitrary value");
+    let token_reference = utility
+        .resolve_utility_value("color", &Literal::String("{colors.red.500}".into()))
+        .expect("token reference");
+    let important = utility
+        .resolve_utility_value("zIndex", &Literal::String("1002 !important".into()))
+        .expect("important value");
+
+    assert_debug_snapshot!(
+        (
+            value_map_key,
+            literal_with_aliases,
+            arbitrary,
+            arbitrary_important,
+            token_reference,
+            important,
+        ),
+        @r#"
+    (
+        ResolvedUtilityValue {
+            utility: "marginBottom",
+            class_name: "mb_2",
+            css_value: String(
+                "0.5rem",
+            ),
+            important: false,
+            source: ValueMap {
+                key: "2",
+                aliases: [
+                    "space",
+                ],
+            },
+        },
+        ResolvedUtilityValue {
+            utility: "marginBottom",
+            class_name: "mb_0.5rem",
+            css_value: String(
+                "0.5rem",
+            ),
+            important: false,
+            source: Literal {
+                aliases: [
+                    "2",
+                    "space",
+                ],
+            },
+        },
+        ResolvedUtilityValue {
+            utility: "width",
+            class_name: "w_[calc(100%_-_1rem)]",
+            css_value: String(
+                "calc(100% - 1rem)",
+            ),
+            important: false,
+            source: Arbitrary,
+        },
+        ResolvedUtilityValue {
+            utility: "width",
+            class_name: "w_[4px]!",
+            css_value: String(
+                "4px",
+            ),
+            important: true,
+            source: Arbitrary,
+        },
+        ResolvedUtilityValue {
+            utility: "color",
+            class_name: "c_{colors.red.500}",
+            css_value: String(
+                "var(--colors-red-500)",
+            ),
+            important: false,
+            source: TokenReference,
+        },
+        ResolvedUtilityValue {
+            utility: "zIndex",
+            class_name: "z_1002!",
+            css_value: String(
+                "1002",
+            ),
+            important: true,
+            source: Literal {
+                aliases: [],
+            },
+        },
+    )
+    "#,
+    );
+}
+
+#[test]
+fn resolve_utility_value_formats_class_prefix_and_separator() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "opacity": {
+                "className": "op"
+            }
+        })),
+        UtilityOptions {
+            separator: Some("__".into()),
+            prefix: Some("pd".into()),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let resolved = utility
+        .resolve_utility_value("opacity", &Literal::Number(0.5))
+        .expect("resolved utility value");
+
+    assert_eq!(resolved.class_name, "pd-op__0.5");
+    assert_eq!(resolved.css_value, Literal::String("0.5".into()));
+}
+
+#[test]
+fn resolve_utility_value_hashes_class_names_when_enabled() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "opacity": {
+                "className": "op"
+            }
+        })),
+        UtilityOptions {
+            prefix: Some("pd".into()),
+            hash_class_names: true,
+            ..UtilityOptions::default()
+        },
+    );
+
+    let resolved = utility
+        .resolve_utility_value("opacity", &Literal::Number(0.5))
+        .expect("resolved utility value");
+
+    assert_eq!(resolved.class_name, format!("pd-{}", to_hash("op_0.5")));
+}
+
+#[test]
+fn resolve_utility_value_rejects_non_scalar_values() {
+    let utility = Utility::from_config(&utility_config(json!({
+        "hideFrom": {
+            "className": "hide",
+            "values": {
+                "sm": {
+                    "@breakpoint sm": {
+                        "display": "none"
+                    }
+                }
+            }
+        },
+        "width": {
+            "className": "w"
+        }
+    })));
+
+    assert!(
+        utility
+            .resolve_utility_value("width", &Literal::Null)
+            .is_none()
+    );
+    assert!(
+        utility
+            .resolve_utility_value(
+                "width",
+                &Literal::Array(vec![Literal::String("4px".into())])
+            )
+            .is_none()
+    );
+    assert!(
+        utility
+            .resolve_utility_value("hideFrom", &Literal::String("sm".into()))
+            .is_none()
     );
 }
 

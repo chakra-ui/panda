@@ -10,6 +10,7 @@ pub mod codes {
     pub const CONFIG_CONTAINER_UNITS_MIXED: &str = "config_container_units_mixed";
     pub const CONFIG_CONDITION_ARRAY_UNSUPPORTED: &str = "config_condition_array_unsupported";
     pub const CONFIG_CONDITION_SELECTOR_INVALID: &str = "config_condition_selector_invalid";
+    pub const CONFIG_UTILITY_VALUES_INVALID: &str = "config_utility_values_invalid";
     pub const CONFIG_TOKEN_CIRCULAR_REFERENCE: &str = "config_token_circular_reference";
     pub const CONFIG_TOKEN_KEY_CONTAINS_SPACE: &str = "config_token_key_contains_space";
     pub const CONFIG_TOKEN_MISSING_REFERENCE: &str = "config_token_missing_reference";

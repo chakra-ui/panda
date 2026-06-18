@@ -103,6 +103,9 @@ class FallbackCompiler implements Compiler {
   inspectFileSource() {
     return { usages: [], diagnostics: [] }
   }
+  resolveUtilityValue() {
+    return null
+  }
   writeArtifacts(_options: { outdir: string }) {
     return []
   }

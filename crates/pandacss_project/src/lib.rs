@@ -67,6 +67,7 @@ pub use hook_filter::HookFilter;
 pub use pandacss_encoder::{
     EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
 };
+pub use pandacss_utility::{ResolvedUtilityValue, UtilityValueSource};
 pub use parsed_file::ParsedFile;
 pub use recipes::EncodedRecipes;
 use recipes::EncodedRecipesCache;
@@ -935,6 +936,17 @@ impl Project {
     #[must_use]
     pub fn atoms(&self) -> &FxHashSet<Atom> {
         &self.atoms_cache
+    }
+
+    #[must_use]
+    pub fn resolve_utility_value(
+        &self,
+        prop: &str,
+        value: &Literal,
+    ) -> Option<ResolvedUtilityValue> {
+        self.config
+            .utility()
+            .and_then(|utility| utility.resolve_utility_value(prop, value))
     }
 
     #[must_use]

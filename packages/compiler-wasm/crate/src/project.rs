@@ -549,6 +549,38 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Resolve selector and CSS metadata for one utility value.
+    ///
+    /// # Errors
+    /// Returns a JS error if the input or result cannot be serialized.
+    #[wasm_bindgen(js_name = resolveUtilityValue)]
+    pub fn resolve_utility_value(&self, input: JsValue) -> Result<JsValue, JsValue> {
+        let input: ResolveUtilityValueInputSerde = serde_wasm_bindgen::from_value(input)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let Some(value) = json_value_to_literal(&input.value) else {
+            return Err(JsValue::from_str(
+                "resolveUtilityValue() requires a JSON-serializable value",
+            ));
+        };
+
+        let Some(resolved) = self.inner.resolve_utility_value(&input.prop, &value) else {
+            return Ok(JsValue::NULL);
+        };
+
+        let result = serde_json::json!({
+            "utility": resolved.utility,
+            "className": resolved.class_name,
+            "cssValue": resolved.css_value.to_json(),
+            "important": resolved.important,
+            "source": utility_value_source_to_json(resolved.source),
+        });
+
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Source globs + their static base dirs (for the host watcher).
     ///
     /// # Errors
@@ -1147,6 +1179,13 @@ struct CompileOptionsSerde {
 #[serde(rename_all = "camelCase")]
 struct GenerateArtifactOptionsSerde {
     force_import_extension: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ResolveUtilityValueInputSerde {
+    prop: String,
+    value: serde_json::Value,
 }
 
 #[derive(Deserialize)]
@@ -2083,6 +2122,23 @@ fn atom_value_to_json(v: &pandacss_encoder::AtomValue) -> serde_json::Value {
         pandacss_encoder::AtomValue::Number(s) => parse_number_string(s),
         pandacss_encoder::AtomValue::Bool(b) => serde_json::Value::Bool(*b),
         pandacss_encoder::AtomValue::Null => serde_json::Value::Null,
+    }
+}
+
+fn utility_value_source_to_json(source: pandacss_project::UtilityValueSource) -> serde_json::Value {
+    match source {
+        pandacss_project::UtilityValueSource::ValueMap { key, aliases } => {
+            serde_json::json!({ "type": "value-map", "key": key, "aliases": aliases })
+        }
+        pandacss_project::UtilityValueSource::Literal { aliases } => {
+            serde_json::json!({ "type": "literal", "aliases": aliases })
+        }
+        pandacss_project::UtilityValueSource::TokenReference => {
+            serde_json::json!({ "type": "token-reference" })
+        }
+        pandacss_project::UtilityValueSource::Arbitrary => {
+            serde_json::json!({ "type": "arbitrary" })
+        }
     }
 }
 

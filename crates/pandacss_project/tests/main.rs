@@ -15,4 +15,5 @@ mod static_patterns;
 mod svelte;
 mod transform_cache;
 mod usages;
+mod utility_value;
 mod vue_sfc;

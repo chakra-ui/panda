@@ -30,6 +30,8 @@ import type {
   ParsedFileView,
   ProjectSummary,
   RecipeEntry,
+  ResolveUtilityValueInput,
+  ResolvedUtilityValue,
   SerializedHookFilter,
   SourceEntry,
   Spec,
@@ -121,6 +123,7 @@ export declare class WasmCompiler {
   spec(): Spec
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): FileInspectionResult
+  resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   writeArtifacts(options: WriteArtifactsOptions): string[]
   writeCss(options: WriteCssOptions): WriteCssResult
   writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult

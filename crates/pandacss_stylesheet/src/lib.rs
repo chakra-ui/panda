@@ -496,6 +496,7 @@ fn utility_from_config(config: &UserConfig, dictionary: Option<Arc<TokenDictiona
             prefix: config.prefix.class_name().map(str::to_owned),
             tokens: dictionary,
             shorthands: config.shorthands,
+            hash_class_names: config.hash.class_name(),
         },
     );
     utility.register_compositions(&config.theme);

@@ -15,7 +15,7 @@ use pandacss_config::{
     value_alias_name,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{css_escape, number_to_js_string, pascal_case};
+use pandacss_shared::{css_escape, number_to_js_string, pascal_case, split_important, to_hash};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
@@ -29,6 +29,7 @@ pub struct Utility {
     prefix: String,
     tokens: Option<Arc<TokenDictionary>>,
     fallback_transform: bool,
+    hash_class_names: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -47,6 +48,7 @@ pub struct UtilityOptions {
     pub prefix: Option<String>,
     pub tokens: Option<Arc<TokenDictionary>>,
     pub shorthands: bool,
+    pub hash_class_names: bool,
 }
 
 impl Default for UtilityOptions {
@@ -56,6 +58,7 @@ impl Default for UtilityOptions {
             prefix: None,
             tokens: None,
             shorthands: true,
+            hash_class_names: false,
         }
     }
 }
@@ -65,6 +68,23 @@ pub struct UtilityTransformResult {
     pub layer: Option<String>,
     pub class_name: String,
     pub styles: Literal,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ResolvedUtilityValue {
+    pub utility: String,
+    pub class_name: String,
+    pub css_value: Literal,
+    pub important: bool,
+    pub source: UtilityValueSource,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum UtilityValueSource {
+    ValueMap { key: String, aliases: Vec<String> },
+    Literal { aliases: Vec<String> },
+    TokenReference,
+    Arbitrary,
 }
 
 impl Utility {
@@ -85,6 +105,7 @@ impl Utility {
             prefix: options.prefix.unwrap_or_default(),
             tokens: options.tokens,
             fallback_transform: !entries.is_empty(),
+            hash_class_names: options.hash_class_names,
             ..Self::default()
         };
         for (property, config) in entries {
@@ -339,28 +360,98 @@ impl Utility {
         Some(self.transform_str(prop, &value))
     }
 
-    /// Value alias for class naming (author key, not resolved CSS).
     #[must_use]
-    pub fn class_name_value(&self, prop: &str, value: &str) -> String {
+    pub fn class_name_value(&self, value: &str) -> String {
+        without_space(value)
+    }
+
+    #[must_use]
+    pub fn value_alias_for_literal(&self, prop: &str, value: &str) -> Option<String> {
+        self.value_aliases_for_literal(prop, value)
+            .into_iter()
+            .next()
+    }
+
+    #[must_use]
+    pub fn value_aliases_for_literal(&self, prop: &str, value: &str) -> Vec<String> {
         let key = self.resolve_shorthand(prop);
         let normalized = without_space(value);
         let Some(config) = self.properties.get(key) else {
-            return normalized;
+            return Vec::new();
         };
 
-        if config.values.contains_key(normalized.as_str()) {
-            return normalized;
+        let mut aliases = config
+            .values
+            .iter()
+            .filter(|(_, literal)| literal_matches_class_input(literal, &normalized))
+            .map(|(alias, _)| without_space(alias))
+            .collect::<Vec<_>>();
+        aliases.sort();
+        aliases.dedup();
+        aliases
+    }
+
+    #[must_use]
+    pub fn resolve_utility_value(
+        &self,
+        prop: &str,
+        value: &Literal,
+    ) -> Option<ResolvedUtilityValue> {
+        let authored = literal_to_class_value(value)?;
+
+        let (raw, important) = split_important(&authored);
+        let raw = raw.as_ref();
+
+        let utility = self.resolve_shorthand(prop).to_owned();
+
+        let style_value = self.expand_reference_in_value(&arbitrary_value(raw));
+        let css_value = self.raw_property_value(&utility, &style_value);
+        let css_value_text = literal_to_class_value(&css_value)?;
+
+        let class_value = self.class_name_value(raw);
+        let class_name = self.get_class_name(&utility, &class_value);
+        let class_name = if self.hash_class_names {
+            self.format_class_name_owned(to_hash(&class_name))
+        } else {
+            self.format_class_name(&class_name)
+        };
+
+        let value_map_key = self.properties.get(&utility).and_then(|config| {
+            config
+                .values
+                .contains_key(style_value.as_str())
+                .then_some(style_value.clone())
+        });
+
+        let mut aliases = self.value_aliases_for_literal(&utility, &css_value_text);
+
+        if let Some(value_map_key) = &value_map_key {
+            aliases.retain(|alias| alias != value_map_key);
         }
 
-        if !config.values.is_empty() {
-            for (alias, literal) in &config.values {
-                if literal_matches_class_input(literal, &normalized) {
-                    return without_space(alias);
-                }
+        let class_name = append_important(class_name, important);
+
+        let source = if let Some(key) = value_map_key {
+            UtilityValueSource::ValueMap { key, aliases }
+        } else if is_arbitrary_value(raw) {
+            UtilityValueSource::Arbitrary
+        } else if has_token_reference(raw) {
+            UtilityValueSource::TokenReference
+        } else if !aliases.is_empty() {
+            UtilityValueSource::Literal { aliases }
+        } else {
+            UtilityValueSource::Literal {
+                aliases: Vec::new(),
             }
-        }
+        };
 
-        normalized
+        Some(ResolvedUtilityValue {
+            utility,
+            class_name,
+            css_value,
+            important,
+            source,
+        })
     }
 
     #[must_use]
@@ -376,8 +467,7 @@ impl Utility {
         class_input: Option<&str>,
     ) -> UtilityTransformResult {
         let key = self.resolve_shorthand(prop);
-        let class_value =
-            class_input.map_or_else(|| self.class_name_value(key, value), without_space);
+        let class_value = class_input.map_or_else(|| self.class_name_value(value), without_space);
         let style_value = self.expand_reference_in_value(&arbitrary_value(value));
         let style_prop = self
             .properties
@@ -417,58 +507,6 @@ impl Utility {
         }
         .normalize(style)
         .into_owned()
-    }
-
-    #[must_use]
-    pub fn normalize_property_value(&self, prop: &str, value: &Literal) -> Literal {
-        self.normalize_property_value_cow(prop, value).into_owned()
-    }
-
-    /// Borrow-preserving variant — returns `Cow::Borrowed(value)` when no
-    /// alias maps, avoiding the unconditional clone of the input Literal.
-    /// Hot path: the fused encoder walker calls this per leaf.
-    #[must_use]
-    pub fn normalize_property_value_cow<'a>(
-        &self,
-        prop: &str,
-        value: &'a Literal,
-    ) -> Cow<'a, Literal> {
-        let Some(config) = self.properties.get(prop) else {
-            return Cow::Borrowed(value);
-        };
-        // Props with a JS transform need the original alias as `args.raw`
-        // (legacy passes the alias, resolving the value separately). Keep the
-        // alias on the atom; the transform/emit path resolves it.
-        if config.transform_callback_id.is_some() {
-            return Cow::Borrowed(value);
-        }
-        let mapped = match value {
-            Literal::String(value) | Literal::Token { value, .. } => {
-                config.values.get(value.as_str())
-            }
-            Literal::Bool(true) => config.values.get("true"),
-            Literal::Bool(false) => config.values.get("false"),
-            Literal::Number(value) => {
-                let key = number_to_js_string(*value);
-                config.values.get(key.as_str())
-            }
-            Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
-                None
-            }
-        };
-        // Only substitute scalar → scalar mappings here. Object/Array/Conditional
-        // mappings (e.g. composition utilities) keep the original lookup key on
-        // the atom; the substitution happens at emit time in `default_style`.
-        match mapped {
-            Some(
-                scalar @ (Literal::String(_)
-                | Literal::Token { .. }
-                | Literal::Number(_)
-                | Literal::Bool(_)
-                | Literal::Null),
-            ) => Cow::Owned(scalar.clone()),
-            _ => Cow::Borrowed(value),
-        }
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
@@ -803,7 +841,7 @@ impl StyleNormalizer<'_> {
                         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
                             self.normalize_owned(value)
                         }
-                        _ => self.normalize_property_value(&key, value),
+                        _ => value.clone(),
                     };
                     Literal::upsert_object_entry(&mut out, key, value);
                 }
@@ -825,13 +863,6 @@ impl StyleNormalizer<'_> {
             Literal::Bool(value) => Literal::Bool(*value),
             Literal::Null => Literal::Null,
         }
-    }
-
-    fn normalize_property_value(&self, prop: &str, value: &Literal) -> Literal {
-        self.utility.map_or_else(
-            || value.clone(),
-            |utility| utility.normalize_property_value(prop, value),
-        )
     }
 
     fn normalize_responsive_array(&self, items: &[Literal]) -> Literal {
@@ -874,10 +905,8 @@ impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
         }
     }
 
-    fn normalize_leaf<'a>(&self, prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
-        self.utility.map_or(Cow::Borrowed(value), |utility| {
-            utility.normalize_property_value_cow(prop, value)
-        })
+    fn normalize_leaf<'a>(&self, _: &str, value: &'a Literal) -> Cow<'a, Literal> {
+        Cow::Borrowed(value)
     }
 
     fn array_condition(&self, index: usize) -> Option<&str> {
@@ -1014,6 +1043,13 @@ fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
+fn append_important(mut value: String, important: bool) -> String {
+    if important {
+        value.push('!');
+    }
+    value
+}
+
 fn literal_matches_class_input(literal: &Literal, value: &str) -> bool {
     match literal {
         Literal::String(s) | Literal::Token { value: s, .. } => without_space(s) == value,
@@ -1021,6 +1057,15 @@ fn literal_matches_class_input(literal: &Literal, value: &str) -> bool {
         Literal::Bool(b) => b.to_string() == value,
         Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => false,
     }
+}
+
+fn is_arbitrary_value(value: &str) -> bool {
+    let value = value.trim();
+    value.starts_with('[') && value.ends_with(']')
+}
+
+fn has_token_reference(value: &str) -> bool {
+    value.contains("token(") || (value.contains('{') && value.contains('}'))
 }
 
 #[must_use]
