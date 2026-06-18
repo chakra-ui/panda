@@ -146,7 +146,7 @@ export class TokenDictionary {
       const name = this.formatTokenName(path)
 
       const normalizedToken =
-        isString(token.value) || isCompositeTokenValue(token.value) ? { value: { base: token.value } } : token
+        isString(token.value) || isCompositeTokenValue(token.value) ? { ...token, value: { base: token.value } } : token
 
       const { value, ...restData } = normalizedToken
 
