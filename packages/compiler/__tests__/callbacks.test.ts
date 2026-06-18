@@ -1605,4 +1605,256 @@ describe('Compiler callbacks', () => {
       "
     `)
   })
+
+  it('emits grouped CSS for a radii token utility with transform', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          theme: {
+            tokens: {
+              radii: {
+                sm: { value: '4px' },
+                md: { value: '8px' },
+              },
+            },
+          },
+          utilities: {
+            br: {
+              className: 'rounded',
+              values: 'radii',
+              transform: { kind: 'js-callback', id: 'utilities.br.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.br.transform': (value) => ({ borderRadius: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Card.tsx',
+      `import { css } from '@panda/css'
+       css({ br: 'sm' })
+       css({ br: 'md' })`,
+    )
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .rounded_md {
+          border-radius: var(--radii-md);
+        }
+        .rounded_sm {
+          border-radius: var(--radii-sm);
+        }
+      }
+      "
+    `)
+  })
+
+  it('emits grouped CSS for a string-value gradientBorder utility with nested pseudo styles', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            gradientBorder: {
+              className: 'gradient-border',
+              transform: { kind: 'js-callback', id: 'utilities.gradientBorder.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.gradientBorder.transform': (value) => ({
+              '--after-inset': 'calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px)',
+              '--gradient-border-start': 'calc(var(--parent-h, 48px) / 2 + var(--gradient-border-offset, 0px))',
+              '--gradient-border-end': 'calc(var(--gradient-border-start) + var(--gradient-border-width, 2px))',
+              '&::after': {
+                content: '""',
+                display: 'inline-block',
+                position: 'absolute',
+                inset: 'calc(var(--after-inset) * -1)',
+                pointerEvents: 'none',
+                backgroundImage: value,
+                maskImage:
+                  'radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px))',
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+              },
+            }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Frame.tsx',
+      `import { css } from '@panda/css'
+       css({ gradientBorder: 'linear-gradient(to right, red, blue)' })`,
+    )
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\) {
+          --after-inset: calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px);
+          --gradient-border-end: calc(var(--gradient-border-start) + var(--gradient-border-width, 2px));
+          --gradient-border-start: calc(var(--parent-h, 48px) / 2 + var(--gradient-border-offset, 0px));
+        }
+        .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\)::after {
+          inset: calc(var(--after-inset) * -1);
+          background-position: center;
+          background-image: linear-gradient(to right, red, blue);
+          background-repeat: no-repeat;
+          background-size: cover;
+          content: "";
+          display: inline-block;
+          mask-image: radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px));
+          pointer-events: none;
+          position: absolute;
+        }
+      }
+      "
+    `)
+  })
+
+  it('emits grouped CSS for an enum value utility with transform', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            stackDir: {
+              className: 'stack-dir',
+              values: ['row', 'column'],
+              transform: { kind: 'js-callback', id: 'utilities.stackDir.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.stackDir.transform': (value) => ({ flexDirection: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Stack.tsx',
+      `import { css } from '@panda/css'
+       css({ stackDir: 'column' })`,
+    )
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .stack-dir_column {
+          flex-direction: column;
+        }
+      }
+      "
+    `)
+  })
+
+  it('emits grouped CSS for a raw number utility value with transform', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          utilities: {
+            layer: {
+              className: 'layer',
+              transform: { kind: 'js-callback', id: 'utilities.layer.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'utility.transform': {
+            'utilities.layer.transform': (value) => ({ zIndex: value }),
+          },
+        },
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Overlay.tsx',
+      `import { css } from '@panda/css'
+       css({ layer: 10 })`,
+    )
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .layer_10 {
+          z-index: 10;
+        }
+      }
+      "
+    `)
+  })
+
+  it('emits grouped CSS for a value-map utility without transform', () => {
+    const compiler = createCompilerFromSnapshot(
+      {
+        config: {
+          cwd: '/virtual',
+          outdir: 'styled-system',
+          importMap,
+          theme: {
+            tokens: {
+              radii: {
+                sm: { value: '4px' },
+              },
+            },
+          },
+          utilities: {
+            pill: {
+              className: 'pill',
+              values: {
+                sm: { borderRadius: '9999px', paddingInline: '0.75rem' },
+                md: { borderRadius: '{radii.sm}', paddingInline: '1rem' },
+              },
+            },
+          },
+        },
+        callbacks: {},
+      },
+      { crossFile: false },
+    )
+
+    compiler.parseFileSource(
+      '/virtual/Badge.tsx',
+      `import { css } from '@panda/css'
+       css({ pill: 'sm' })
+       css({ pill: 'md' })`,
+    )
+
+    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .pill_md {
+          border-radius: var(--radii-sm);
+          padding-inline: 1rem;
+        }
+        .pill_sm {
+          border-radius: 9999px;
+          padding-inline: 0.75rem;
+        }
+      }
+      "
+    `)
+  })
 })
