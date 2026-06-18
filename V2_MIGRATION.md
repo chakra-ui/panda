@@ -146,9 +146,8 @@ export default defineConfig({
 })
 ```
 
-> v2 doesn't auto-inject presets — without them you get a bare system (no `bg`/`color` utilities, no
-> `fontSizes`/spacing scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs
-> both presets for you.
+> v2 doesn't auto-inject presets — without them you get a bare system (no `bg`/`color` utilities, no `fontSizes`/spacing
+> scales, no `_hover`/`_active` conditions). `panda init` scaffolds this line and installs both presets for you.
 
 ### 4. Add Panda to your CSS
 
@@ -209,14 +208,34 @@ The engine aims for the same CSS as v1. These are the differences you'll notice,
 - **Container queries sort by size.** Container conditions sort by resolved length across every axis (`width`,
   `inline-size`, `height`, `block-size`), in both modern (`>=`/`<`) and legacy (`min-*`/`max-*`) forms. This fixes
   mobile-first ordering for theme container breakpoints.
-- **Eager compound variants.** Compound variants are emitted at build time by default; runtime combo classes still apply
-  for dynamic usage. Set `optimize.smartCompoundVariants: true` to emit only the combinations you use instead of every
-  permutation.
+- **Eager compound variants.** Compound variants emit at build time by default; runtime combo classes still apply for
+  dynamic usage. In v2 they become **named classes** in `@layer recipes.compound_variants` (v1 atomized compound `css`
+  into `@layer utilities` and merged at runtime). Set `optimize.smartCompoundVariants: true` to emit only extracted
+  combinations instead of every permutation.
+
+### Config: `optimize`
+
+v2 adds a top-level `optimize` object. It replaces common v1 `cssgen:done` hook cleanup:
+
+```ts
+export default defineConfig({
+  optimize: {
+    removeUnusedTokens: true, // drop unused `--*` from theme CSS
+    removeUnusedKeyframes: true,
+    smartCompoundVariants: true, // JIT compound variant CSS (default: all combos)
+  },
+})
+```
+
+`hash` and `minify` are separate top-level keys. Branch on `process.env` in `panda.config.ts` if you only want those in
+production.
 
 ### Extraction
 
 - **Compiled-JSX extraction.** `css` props are picked up from compiled runtime helpers (`jsx(...)` / `_jsx(...)`), so
   React, Preact, Vue, Solid, and Qwik builds work — not just raw JSX source.
+- **Recipe variant diagnostics.** Dynamic config-recipe variant props warn with `recipe_variant_dynamic` (JIT still
+  emits base + `defaultVariants` only).
 - **Custom utility `transform` grouping.** A custom utility whose `transform` returns a multi-declaration object emits
   one class keyed on the utility's `className` (like v1), instead of splitting into per-property atoms. Token
   resolution, `!important`, and conditions from the transform are kept, in atomic styles and recipes alike.
@@ -277,6 +296,12 @@ Kept and published on the beta: `@pandacss/dev`, `@pandacss/cli`, `@pandacss/com
 `@pandacss/postcss` v2 runs on the new compiler driver and is experimental during the beta. If it gives you trouble, the
 Vite plugin or the CLI build is the steadier path right now.
 
+### Engine hooks removed
+
+v1 hooks (`cssgen:done`, `context:created`, `parser:after`, `config:change`, and others) don't run in v2. Use
+`optimize.removeUnusedTokens` / `removeUnusedKeyframes` for unused theme CSS cleanup, or a PostCSS step after Panda for
+custom transforms.
+
 ### `createStyleContext` is now two helpers
 
 `createStyleContext` is removed from the generated `styled-system/jsx`. Two helpers replace it, one per recipe kind:
@@ -314,18 +339,18 @@ const Button = withContext('button')
 
 ## CLI commands
 
-| Command           | What it does                                                                                                                                                                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `panda init`      | Scaffold `panda.config.ts` and run the first codegen. |
-| `panda dev`       | Watch files and rebuild the generated system and CSS. |
-| `panda build`     | Generate the system and CSS once. Bare `panda` still runs this default build. |
-| `panda check`     | Check generated files without writing. Use this in CI. |
+| Command           | What it does                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| `panda init`      | Scaffold `panda.config.ts` and run the first codegen.                                        |
+| `panda dev`       | Watch files and rebuild the generated system and CSS.                                        |
+| `panda build`     | Generate the system and CSS once. Bare `panda` still runs this default build.                |
+| `panda check`     | Check generated files without writing. Use this in CI.                                       |
 | `panda info`      | Print project/compiler info: config path, sources, artifacts, conditions, tokens, utilities. |
-| `panda doctor`    | Check config loading and compiler diagnostics. |
-| `panda debug`     | Write bug-report artifacts under `<outdir>/debug`. |
-| `panda codegen`   | Advanced: generate the `styled-system` output only. |
-| `panda cssgen`    | Advanced: generate CSS only. |
-| `panda buildinfo` | Advanced: emit design-system build metadata. |
+| `panda doctor`    | Check config loading and compiler diagnostics.                                               |
+| `panda debug`     | Write bug-report artifacts under `<outdir>/debug`.                                           |
+| `panda codegen`   | Advanced: generate the `styled-system` output only.                                          |
+| `panda cssgen`    | Advanced: generate CSS only.                                                                 |
+| `panda buildinfo` | Advanced: emit design-system build metadata.                                                 |
 
 `panda inspect` and `panda validate` are removed in v2. Use `panda info` and `panda doctor`.
 
@@ -345,7 +370,8 @@ Known gaps in the beta. Expect them to change before stable:
   a separate Storybook) is planned.
 - **Some presets and plugins.** A few v1 community presets (`preset-atlaskit`, `preset-open-props`) and standalone
   plugins aren't in the beta. Check Rust-engine coverage before you rely on them.
-- **CSS minification.** Native emission is done; full minify parity with the v1 LightningCSS path is still open.
+- **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still
+  open.
 - **PostCSS plugin.** Experimental (above).
 - **CLI `[files]` override.** The v1 positional include override for `panda build` isn't wired yet. The build uses the
   config `include`.
