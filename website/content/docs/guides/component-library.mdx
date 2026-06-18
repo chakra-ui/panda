@@ -28,7 +28,8 @@ options:
 ## Ship a Panda Preset
 
 This is the simplest approach. You can include the token, semantic tokens, text styles, etc. within a preset and consume
-them in your projects.
+them in your projects. See the [end-to-end preset example](/docs/customization/presets#end-to-end-example) for the full
+create-and-consume flow.
 
 **Library code**
 
@@ -36,6 +37,7 @@ them in your projects.
 import { definePreset } from '@pandacss/dev'
 
 export const acmePreset = definePreset({
+  name: '@acme-org/panda-preset',
   theme: {
     extend: {
       tokens: {
@@ -56,16 +58,17 @@ pnpm tsup src/index.ts
 
 ```tsx filename="panda.config.ts"
 import { acmePreset } from '@acme-org/panda-preset'
+import pandaPreset from '@pandacss/preset-panda'
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  presets: ['@pandacss/dev/presets', acmePreset]
+  presets: [pandaPreset, acmePreset]
 })
 ```
 
-> Adding a preset will remove the default theme from Panda. To add it back, you need to include the
-> `@pandacss/dev/presets` preset.
+> Setting `presets` removes the default `@pandacss/preset-panda` theme. Include `@pandacss/preset-panda` explicitly to
+> keep it.
 
 ## Ship a Static CSS File
 
@@ -400,7 +403,7 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   //...
-  presets: ['@acme-org/preset']
+  presets: ['@acme-org/preset'],
   theme: {
     extend: {
       tokens: {
