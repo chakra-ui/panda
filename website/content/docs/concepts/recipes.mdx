@@ -217,6 +217,8 @@ based on multiple conditions.
 By combining simple variants together in this way, you can create a wide range of visual styles without cluttering up
 your code with lots of conditional logic.
 
+For config recipes (`defineRecipe`), see [Using compound variants](#using-compound-variants) under Config Recipe.
+
 ### TypeScript Guide
 
 Panda provides two type utilities for inferring the variant types of a recipe: `RecipeVariant` and `RecipeVariantProps`.
@@ -243,7 +245,7 @@ const buttonStyle = cva({
   }
 })
 
-export type ButtonVariants = RecipeVariant<typeof buttonStyle> 
+export type ButtonVariants = RecipeVariant<typeof buttonStyle>
 // { size: 'small' | 'large' }
 ```
 
@@ -456,12 +458,128 @@ Or add literal calls in stories/tests, or use string literals in the call itself
 Slot recipes follow the same rules — see [slot recipes](/docs/concepts/slot-recipes#dynamic-variant-props). More in
 [static CSS](/docs/guides/static#generating-recipes).
 
+### Using compound variants
+
+Apply styles when **multiple** variant props match. Same shape as [`cva`](/docs/concepts/recipes#compound-variants) — a
+flat `css` object on each entry:
+
+```ts filename="input.recipe.ts"
+import { defineRecipe } from '@pandacss/dev'
+
+export const inputRecipe = defineRecipe({
+  className: 'input',
+  base: {
+    borderWidth: '1px',
+    borderColor: 'gray.200',
+    borderRadius: 'md'
+  },
+  variants: {
+    size: {
+      sm: { fontSize: 'sm' },
+      md: { fontSize: 'md' }
+    },
+    variant: {
+      outline: { bg: 'transparent' },
+      filled: { bg: 'gray.100' }
+    }
+  },
+  defaultVariants: {
+    size: 'md',
+    variant: 'outline'
+  },
+  compoundVariants: [
+    {
+      size: 'sm',
+      variant: 'outline',
+      css: { px: '2', py: '1' }
+    },
+    {
+      size: 'md',
+      variant: 'outline',
+      css: { px: '3', py: '2' }
+    }
+  ]
+})
+```
+
+```ts filename="panda.config.ts"
+theme: {
+  extend: {
+    recipes: {
+      input: inputRecipe
+    }
+  }
+}
+```
+
+```tsx
+import { input } from '../styled-system/recipes'
+
+;<input className={input({ size: 'sm', variant: 'outline' })} />
+```
+
+First extracted use emits every compound class in `@layer recipes.compound_variants`:
+
+```css
+@layer recipes.compound_variants {
+  .input--compound__size_sm__variant_outline {
+    padding-inline: var(--spacing-2);
+    padding-block: var(--spacing-1);
+  }
+  .input--compound__size_md__variant_outline {
+    padding-inline: var(--spacing-3);
+    padding-block: var(--spacing-2);
+  }
+}
+```
+
+Adding `compoundVariants` also drops responsive variant props. A recipe like **`datepicker`** without compounds keeps
+`ConditionalValue`:
+
+```ts
+// styled-system/recipes/date-picker.ts
+export type DatePickerVariantProps = {
+  size?: ConditionalValue<'sm' | 'md'>
+}
+```
+
+```tsx
+datePicker({ size: { base: 'sm', md: 'lg' } }) // ✅
+```
+
+**`input`** above accepts plain literals only:
+
+```ts
+// styled-system/recipes/input.ts
+export type InputVariantProps = {
+  size?: 'sm' | 'md'
+}
+```
+
+```tsx
+input({ size: { base: 'sm', md: 'lg' } })
+// ❌ [recipe:input:size] Conditions are not supported when using compound variants.
+```
+
+By default, first use emits CSS for every compound entry. Narrow that with:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  optimize: { smartCompoundVariants: true }
+})
+```
+
+Runtime-only combos need [`staticCss`](/docs/guides/static#generating-recipes). Run `pnpm panda codegen` after editing
+the recipe.
+
 ### Responsive and Conditional variants
 
-Recipes created in the config have a **special** feature; they can be applied based on a specific breakpoints or
-conditions.
+Pass breakpoint objects to variant props instead of a single value. Generated types use `ConditionalValue`.
 
-Here's how to tweak the size variant of the button recipe based on breakpoints.
+This only works when:
+
+- The recipe is defined in config with `defineRecipe`, not [`cva`](/docs/concepts/recipes#atomic-recipe-or-cva)
+- The recipe has no `compoundVariants` — see [Using compound variants](#using-compound-variants)
 
 ```jsx
 import { button } from '../styled-system/recipes'
@@ -670,8 +788,8 @@ export const Demo = {
 
 ## Limitations
 
-- Recipes created from `cva` cannot have responsive or conditional values. Only layer recipes can have responsive or
-  conditional values.
+- [`cva`](/docs/concepts/recipes#atomic-recipe-or-cva): no responsive variant props. Config recipes: yes, unless
+  `compoundVariants` is set — see [above](/docs/concepts/recipes#using-compound-variants).
 
 - Due to static nature of Panda, it's not possible to track the usage of the recipes in all cases. Here are some of use
   cases that Panda won't be able to track the usage of the recipe variants:
@@ -705,70 +823,26 @@ export const Demo = {
   }
   ```
 
-- When using `compoundVariants` in the recipe, you're not able to use responsive values in the variants.
-
-```tsx
-const button = defineRecipe({
-  base: {
-    color: 'red',
-    fontSize: '1.5rem'
-  },
-  variants: {
-    size: {
-      sm: {
-        fontSize: '1rem'
-      },
-      md: {
-        fontSize: '2rem'
-      }
-    }
-  },
-  // this  will disable responsive values for the variants
-  compoundVariants: [
-    {
-      size: 'sm',
-      visual: 'funky',
-      css: {
-        color: 'blue'
-      }
-    },
-    {
-      size: 'md',
-      visual: 'funky',
-      css: {
-        color: 'green'
-      }
-    }
-  ]
-})
-```
-
 ## Static CSS
 
-Use `staticCss` to pre-generate recipe CSS Panda can't extract — including [dynamic variant props](/docs/concepts/recipes#dynamic-variant-props). See [Generating recipes](/docs/guides/static#generating-recipes).
+Use `staticCss` to pre-generate recipe CSS Panda can't extract — including
+[dynamic variant props](/docs/concepts/recipes#dynamic-variant-props). See
+[Generating recipes](/docs/guides/static#generating-recipes).
 
 ## Should I use atomic or config recipes ?
 
-[Config recipes](/docs/concepts/recipes#config-recipe) are generated just in time, meaning that only the recipes and
-variants you use will exist in the generated CSS, regardless of the number of recipes in the config.
+[Config recipes](/docs/concepts/recipes#config-recipe) are JIT — Panda only emits variants it finds in your code.
+[`cva`](/docs/concepts/recipes#atomic-recipe-or-cva) recipes live anywhere in the app, so every variant is generated up
+front.
 
-This contrasts with [Atomic recipes](/docs/concepts/recipes#atomic-recipe-or-cva) (cva), which generates all of the
-variants regardless of what was used in your code. The reason for this difference is that all `config.recipes` are known
-at the start of the panda process when we evaluate your config.
+Use config recipes for design-system components and leaner CSS. Use `cva` for colocation and runtime merging.
 
-In contrast, the CVA recipes are scattered throughout your code. To get all of them and find their usage across your
-code, we would need to scan your app code multiple times, which would not be ideal performance-wise.
-
-When dealing with simple use cases, or if you need code colocation, or even avoiding dynamic styling, atomic recipes
-shine by providing all style variants. Config recipes are preferred for design system components, delivering leaner CSS
-with only the styles used. Choose according to your component needs.
-
-|                                                        | Config recipe                                                                                                                                                                                                             | Atomic recipe (cva)                                                                                                                                                                                                  |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Can both use any theme tokens, utilities or conditions | ✅ yes                                                                                                                                                                                                                    | ✅ yes                                                                                                                                                                                                               |
-| Are generated just in time (JIT) based on usage        | ✅ yes, only the recipe variants found in your code will be generated                                                                                                                                                     | ❌ no, all variants found in your `cva` recipes will always be generated                                                                                                                                             |
-| Can be shared in a preset                              | ✅ yes, you can include it in your `preset.theme.recipes`                                                                                                                                                                 | ❌ no                                                                                                                                                                                                                |
-| Can be applied responsively                            | ✅ yes, `button({ size: { base: 'sm', md: 'lg' } })`                                                                                                                                                                      | ❌ no, only the styles in the recipe can be responsive                                                                                                                                                               |
-| Can be colocated in your markup code                   | ❌ no, they must be defined or imported in your `panda.config`                                                                                                                                                            | ✅ yes, you can place it anywhere in your app                                                                                                                                                                        |
-| Generate atomic classes                                | ❌ no, a specific className will be generated using your `recipe.className`                                                                                                                                               | ✅ yes                                                                                                                                                                                                               |
-| Can be composed/merged at runtime                      | ❌ no, a specific className will be generated using your `recipe.className`, [you need to use `cx` to add each recipe classes](https://panda-css.com/docs/concepts/merging-styles#merging-config-recipe-and-style-object) | ✅ [yes, you can use the `.raw` function (ex: `button.raw({ size: "md" })`) to get the atomic style object and merge them all in a `css(xxx, yyy, zzz)` call](/docs/concepts/merging-styles#merging-cva--css-styles) |
+|                                     | Config recipe                                                                                   | Atomic recipe (cva)                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Theme tokens, utilities, conditions | ✅                                                                                              | ✅                                                                             |
+| JIT — CSS for variants used in code | ✅                                                                                              | ❌ all variants always                                                         |
+| Shareable in a preset               | ✅                                                                                              | ❌                                                                             |
+| Responsive variant props            | ✅ without `compoundVariants`                                                                   | ❌                                                                             |
+| Colocate with components            | ❌ define in config                                                                             | ✅                                                                             |
+| Atomic utility classes              | ❌ named recipe classes                                                                         | ✅                                                                             |
+| Runtime merge with `css()`          | ❌ use [`cx`](/docs/concepts/merging-styles#merging-config-recipe-and-style-object) for classes | ✅ [`.raw()` + `css()`](/docs/concepts/merging-styles#merging-cva--css-styles) |

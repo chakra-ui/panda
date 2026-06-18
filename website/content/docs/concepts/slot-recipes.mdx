@@ -123,23 +123,32 @@ variants as atomic classes.
 
 ### Compound Variants
 
-Compound variants are a way to apply style overrides to a slot based on the combination of variants.
+Apply styles when **multiple** variant props match. `css` is keyed by slot:
 
-Let's say you want to apply a different border color to the checkbox control based on its `size` and the `isChecked`
-variant, here's how to do it:
-
-```jsx filename="checkbox.recipe.ts" {14-22}
+```jsx filename="checkbox.recipe.ts"
 import { sva } from '../styled-system/css'
+
 const checkbox = sva({
   slots: ['root', 'control', 'label'],
-  base: {...},
+  base: {
+    root: { display: 'flex', alignItems: 'center', gap: '2' },
+    control: { borderWidth: '1px', borderRadius: 'sm' },
+    label: { marginStart: '2' }
+  },
   variants: {
     size: {
-      sm: {...},
-      md: {...}
+      sm: {
+        control: { width: '8', height: '8' },
+        label: { fontSize: 'sm' }
+      },
+      md: {
+        control: { width: '10', height: '10' },
+        label: { fontSize: 'md' }
+      }
     },
     isChecked: {
-      true: { control: {}, label: {} }
+      true: { control: { borderColor: 'gray.300' } },
+      false: { control: { borderColor: 'gray.200' } }
     }
   },
   compoundVariants: [
@@ -151,9 +160,19 @@ const checkbox = sva({
       }
     }
   ],
-  defaultVariants: {...}
+  defaultVariants: {
+    size: 'sm',
+    isChecked: false
+  }
 })
 ```
+
+```tsx
+const classes = checkbox({ size: 'sm', isChecked: true })
+// classes.control includes compound styles as atomic utilities
+```
+
+For `defineSlotRecipe`, see [using compound variants](#using-compound-variants) under Config Slot Recipe.
 
 ### Targeting slots
 
@@ -491,6 +510,120 @@ export const mediaGridRecipe = defineSlotRecipe({
 ```
 
 Register as `theme.slotRecipes.mediaGrid` — import `mediaGrid` and `MediaGridVariant` from `<outdir>/recipes`.
+
+### Using compound variants
+
+Apply styles when **multiple** variant props match. Each entry's `css` is keyed by **slot** (not a flat style object):
+
+```ts filename="tabs.recipe.ts"
+import { defineSlotRecipe } from '@pandacss/dev'
+
+export const tabsRecipe = defineSlotRecipe({
+  className: 'tabs',
+  slots: ['root', 'trigger'],
+  base: {
+    root: { display: 'flex', gap: '2' },
+    trigger: { px: '3', py: '2', borderRadius: 'md' }
+  },
+  variants: {
+    size: {
+      sm: { root: { gap: '1' } },
+      md: { root: { gap: '2' } }
+    },
+    active: {
+      true: { trigger: { fontWeight: 'semibold' } },
+      false: { trigger: { fontWeight: 'normal' } }
+    }
+  },
+  defaultVariants: {
+    size: 'md',
+    active: false
+  },
+  compoundVariants: [
+    {
+      size: 'sm',
+      active: true,
+      css: { trigger: { color: 'blue.500' } }
+    },
+    {
+      size: 'md',
+      active: true,
+      css: { trigger: { color: 'red.500' } }
+    }
+  ]
+})
+```
+
+```ts filename="panda.config.ts"
+theme: {
+  extend: {
+    slotRecipes: {
+      tabs: tabsRecipe
+    }
+  }
+}
+```
+
+```tsx
+import { tabs } from '../styled-system/recipes'
+
+const { root, trigger } = tabs({ size: 'sm', active: true })
+// root   → "tabs__root tabs__root--size_sm"
+// trigger → "tabs__trigger tabs__trigger--active_true tabs__trigger--compound__active_true__size_sm"
+```
+
+First extracted use emits compound classes on affected slots:
+
+```css
+@layer recipes.compound_variants {
+  .tabs__trigger--compound__active_true__size_sm {
+    color: var(--colors-blue-500);
+  }
+  .tabs__trigger--compound__active_true__size_md {
+    color: var(--colors-red-500);
+  }
+}
+```
+
+Only slots listed in `css` get compound classes. Adding `compoundVariants` drops responsive variant props — compare
+**`accordion`** without compounds:
+
+```ts
+export type AccordionVariantProps = {
+  size?: ConditionalValue<'sm' | 'md'>
+}
+```
+
+```tsx
+const { root } = accordion({ size: { base: 'sm', md: 'lg' } }) // ✅
+```
+
+**`tabs`** above accepts plain literals only:
+
+```ts
+export type TabsVariantProps = {
+  size?: 'sm' | 'md'
+}
+```
+
+```tsx
+tabs({ size: { base: 'sm', md: 'lg' }, active: true })
+// ❌ [recipe:tabs__trigger:size] Conditions are not supported when using compound variants.
+```
+
+By default, first use emits CSS for every compound entry. Narrow that with:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  optimize: { smartCompoundVariants: true }
+})
+```
+
+Runtime-only combos need [`staticCss`](/docs/guides/static#generating-recipes). Run `pnpm panda codegen` after editing
+the recipe.
+
+[`sva`](/docs/concepts/slot-recipes#compound-variants) is different — all compound combos ship as atomic classes when
+the recipe is defined, not at config extraction time.
 
 ### TypeScript Guide
 
