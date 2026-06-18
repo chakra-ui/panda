@@ -1,5 +1,23 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.2
+
+### Minor Changes
+
+- 0b77f58: Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
+  triggers extra reloads/rebuilds for no-op codegen and CSS writes.
+
+  The compiler write APIs now use object params consistently:
+
+  - `writeArtifacts({ outdir, cwd, forceImportExtension, artifacts })`
+  - `writeCss({ outfile, cwd, emitLayerDeclaration })`
+  - `writeSplitCss({ outdir, cwd })`
+
+### Patch Changes
+
+- Updated dependencies [0b77f58]
+  - @pandacss/compiler-shared@2.0.0-beta.2
+
 ## 2.0.0-beta.1
 
 ### Patch Changes

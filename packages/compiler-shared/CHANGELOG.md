@@ -1,5 +1,18 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.2
+
+### Minor Changes
+
+- 0b77f58: Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
+  triggers extra reloads/rebuilds for no-op codegen and CSS writes.
+
+  The compiler write APIs now use object params consistently:
+
+  - `writeArtifacts({ outdir, cwd, forceImportExtension, artifacts })`
+  - `writeCss({ outfile, cwd, emitLayerDeclaration })`
+  - `writeSplitCss({ outdir, cwd })`
+
 ## 2.0.0-beta.1
 
 ## 2.0.0-beta.0
