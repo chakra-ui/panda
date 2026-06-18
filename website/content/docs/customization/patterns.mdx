@@ -129,6 +129,35 @@ export default defineConfig({
 })
 ```
 
+### Changing pattern defaults
+
+Use `defaultValues` in `patterns.extend` to change what a built-in pattern applies when you omit a prop. The shape is
+the same for every pattern — only the pattern name and keys change.
+
+For example, `@pandacss/preset-base` sets `gap: '8px'` on [`stack`](/docs/concepts/patterns#stack). To default to a
+spacing token instead:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  patterns: {
+    extend: {
+      stack: {
+        defaultValues: {
+          gap: '2' // same as <Stack gap="2" />
+        }
+      }
+    }
+  }
+})
+```
+
+`<Stack />` and `stack({})` now use spacing token `2`. Pass `gap` on the component or in the function call to override.
+
+Values can be token keys (`'2'`) or literals (`'12px'`). `stack`, `hstack`, and `vstack` are separate patterns —
+override each if you want the same default gap everywhere.
+
 Then you can run the following command to update the pattern JS code:
 
 <Tabs items={['pnpm', 'npm', 'yarn', 'bun']}>

@@ -87,9 +87,12 @@ The Stack pattern is a layout primitive that can be used to create a vertical or
 The `stack` function accepts the following properties:
 
 - `direction`: An alias for the css `flex-direction` property. Default is `column`.
-- `gap`: The gap between the elements in the stack.
+- `gap`: The gap between the elements in the stack. Default is `8px`.
 - `align`: An alias for the css `align-items` property.
 - `justify`: An alias for the css `justify-content` property.
+
+Change defaults in [config](/docs/customization/patterns#changing-pattern-defaults). `HStack` and `VStack` are separate
+patterns with their own defaults.
 
 <Tabs items={['Function', 'JSX']}>
 <Tab>
@@ -500,10 +503,12 @@ The Grid pattern is used to create a grid layout.
 The `grid` function accepts the following properties:
 
 - `columns`: The number of columns in the grid.
-- `gap`: The gap between the elements in the stack.
+- `gap`: The gap between grid items. Default is `8px` (omitted when `columnGap` or `rowGap` is set).
 - `columnGap`: The gap between the elements in the stack horizontally.
 - `rowGap`: The gap between the elements in the stack vertically.
 - `minChildWidth`: The minimum width of the child elements before wrapping (must not be used with `columns`).
+
+Change defaults in [config](/docs/customization/patterns#changing-pattern-defaults).
 
 <Tabs items={['Function', 'JSX']}>
 <Tab>
@@ -601,9 +606,11 @@ The Divider pattern is used to create a horizontal or vertical divider.
 
 The `divider` function accepts the following properties:
 
-- `orientation`: The orientation of the divider. Can be `horizontal` or `vertical`.
-- `thickness`: The thickness of the divider. Can be a sizing token, or arbitrary value.
+- `orientation`: The orientation of the divider. Can be `horizontal` or `vertical`. Default is `horizontal`.
+- `thickness`: The thickness of the divider. Can be a sizing token, or arbitrary value. Default is `1px`.
 - `color`: The color of the divider. Can be a color token, or arbitrary value.
+
+Change defaults in [config](/docs/customization/patterns#changing-pattern-defaults).
 
 <Tabs items={['Function', 'JSX']}>
 <Tab>
