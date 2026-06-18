@@ -145,6 +145,26 @@ The same principles apply to all style props, recipe variants, and pattern props
   the CSS anyway for the properties you need.
 </Callout>
 
+### Custom component props
+
+Panda can't map custom prop names to CSS properties — there's no config that turns `elementWidth` into `width`. Styles
+are extracted at the call site, on props the compiler recognizes: CSS utilities (`width`, `padding`, …) when
+`jsxStyleProps` is `'all'`, the `css` prop, props ending in `Css` (`trackCss`, `wrapperCss`), and pattern or recipe
+props on tracked components.
+
+```tsx
+// ❌
+<Carousel elementWidth="300px" />
+
+// ✅
+<Carousel width="300px" />
+<Carousel css={{ width: '300px' }} />
+<Carousel trackCss={{ width: '300px' }} />
+```
+
+One override → `css`. Named parts → `trackCss`, `slideCss`, etc. Other prop names → `css.raw()`. See
+[passing styles to custom components](/docs/concepts/merging-styles#passing-styles-to-custom-components).
+
 ### Recipe
 
 You can use recipe variants as JSX props to quickly change the styles of your components, as long as
@@ -314,7 +334,7 @@ You can reduce the allowed JSX properties on the factory using
 [`config.jsxStyleProps`](/docs/references/config#jsxstyleprops):
 
 - When set to 'all', all style props are allowed.
-- When set to 'minimal', only the `css` prop is allowed.
+- When set to 'minimal', only the `css` prop and props ending in `Css` are allowed as style objects.
 - When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
   - `<styled.div />` and `styled("div")` aren't valid
   - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`

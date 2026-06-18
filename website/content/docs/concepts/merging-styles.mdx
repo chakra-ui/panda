@@ -179,11 +179,11 @@ const className = cx(
 // => 'button button--size-small bg_red'
 ```
 
-## Merging within JSX component
+## Passing styles to custom components
 
-Using these techniques, you can apply them to a component by exposing a `css` prop and merge with local styles.
+Expose `css`, a `*Css` prop, or `css.raw()` on a custom prop name. Panda extracts styles at the call site.
 
-> **Note:** For this to work, Panda requires that you set `jsxFramework` config option to `react`
+> **Note:** Set `jsxFramework` in your config for JSX extraction.
 
 ```jsx
 const cardStyles = css.raw({
@@ -193,7 +193,6 @@ const cardStyles = css.raw({
 
 function Card({ title, description, css: cssProp }) {
   return (
-    // merge the `cardStyles` with the `cssProp` passed in
     <div className={css(cardStyles, cssProp)}>
       <h1>{title}</h1>
       <p>{description}</p>
@@ -202,23 +201,29 @@ function Card({ title, description, css: cssProp }) {
 }
 
 // usage
-function Demo() {
-  return <Card title="Hello World" description="This is a card component" css={{ bg: 'blue' }} />
-}
+<Card title="Hello World" description="This is a card component" css={{ bg: 'blue' }} />
 ```
 
-If you use any other prop name other than `css`, then you must use the `css.raw(...)` function to ensure Panda extracts
-the style object.
+Props ending in `Css` work the same way — useful for named slots:
 
 ```jsx
-const cardStyles = css.raw({
-  bg: 'red',
-  color: 'white'
-})
+function Card({ title, description, rootCss, bodyCss }) {
+  return (
+    <div className={css(cardStyles, rootCss)}>
+      <h1>{title}</h1>
+      <p className={css(bodyCss)}>{description}</p>
+    </div>
+  )
+}
 
+<Card rootCss={{ bg: 'blue' }} bodyCss={{ color: 'white' }} />
+```
+
+For any other prop name, wrap the value in `css.raw()`:
+
+```jsx
 function Card({ title, description, style }) {
   return (
-    // merge the `cardStyles` with the `style` passed in
     <div className={css(cardStyles, style)}>
       <h1>{title}</h1>
       <p>{description}</p>
@@ -226,15 +231,7 @@ function Card({ title, description, style }) {
   )
 }
 
-// usage
-function Demo() {
-  return (
-    <Card
-      title="Hello World"
-      description="This is a card component"
-      // use `css.raw(...)` to ensure Panda extracts the style object
-      style={css.raw({ bg: 'blue' })}
-    />
-  )
-}
+<Card title="Hello World" description="This is a card component" style={css.raw({ bg: 'blue' })} />
 ```
+
+See [custom component props](/docs/concepts/style-props#custom-component-props).
