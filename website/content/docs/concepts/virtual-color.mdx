@@ -21,6 +21,22 @@ This will translate to the `blue.100` background color and `blue.200` background
 
 Virtual colors are useful when creating easily customizable components.
 
+## Using opacity modifier
+
+See [using a custom property](/docs/concepts/color-opacity-modifier#using-a-custom-property) for the
+`{colors.colorPalette…/opacity}` syntax on `--*` variables:
+
+```js
+import { css } from '../styled-system/css'
+
+const className = css({
+  colorPalette: 'blue',
+  '--tint': '{colors.colorPalette.500/50}',
+  bg: 'var(--tint)',
+  color: 'colorPalette.700'
+})
+```
+
 ## Using with recipes
 
 You can also use virtual colors with recipes.

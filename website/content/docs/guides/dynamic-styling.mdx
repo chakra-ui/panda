@@ -106,6 +106,19 @@ const App = () => {
 }
 ```
 
+#### Opacity modifiers
+
+`token()` accepts the same `/opacity` suffix and returns a `color-mix` value:
+
+```tsx
+style={{
+  '--overlay': token('colors.red.500/50')
+}}
+```
+
+In `css()`, use curly braces instead — `'--overlay': '{colors.red.500/50}'`. See
+[usage at runtime](/docs/concepts/color-opacity-modifier#usage-at-runtime).
+
 ### Using `token.var()`
 
 You could also directly use the `token.var()` function to get a reference to the underlying CSS custom property for a

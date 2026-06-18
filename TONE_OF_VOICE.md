@@ -35,6 +35,57 @@ the thing. 🐼
 - **Em-dash pile-ups.** One thought per sentence; a period usually beats a dash.
 - **Marketing title case.** Sentence case in headings reads human.
 
+## Headings (docs)
+
+Headings are signposts. The reader should know what they'll learn before they scroll. Write **complete phrases** — a
+heading alone should answer "what is this section about?"
+
+**Page title (`#`):** the feature or task. One line of description under it.
+
+- Reference pages: name the feature — `Color opacity modifier`, `Button`, `Presets`
+- Guides: name the outcome — `Accept a payment`, `Ship a Panda preset`, `Install Panda`
+
+**Major sections (`##`):** group the page by job or surface.
+
+- `Examples` — walkthroughs and code samples for a reference page
+- `API Reference` — props, options, config keys
+- `Usage in utilities` — where the feature applies in day-to-day styling
+- `Customizing your theme` — config and extension
+
+**Subsections (`###`):** one scenario, prop, or variant per heading. Prefer a verb or "Using …" over a bare noun.
+
+| Pattern | When to use it | Example |
+| -------- | --------------- | ------- |
+| Basic example | First, simplest case | `Basic example` |
+| Gerund phrase | A specific technique | `Changing the opacity`, `Applying on hover` |
+| Using … | Custom or advanced input | `Using a custom value`, `Using createColorMixTransform` |
+| Usage in … | Where something applies | `Usage in CSS custom properties`, `Usage in custom utilities` |
+| Usage with … | Pairs with another concept | `Usage with virtual colors`, `Usage with recipes` |
+| Usage at … | Timing or environment | `Usage at runtime` |
+| Prop or option name | API docs, one knob per section | `Size`, `Variant`, `presets` |
+| With … | Composition | `With icons`, `With virtual colors` |
+
+**Patterns to avoid:**
+
+- **Preposition-only headings** — `In CSS custom properties`, `With virtual colors` (incomplete alone)
+- **Bare feature names** — `CSS custom properties`, `Runtime`, `Custom utilities` (no context)
+- **Vague labels** — `Overview`, `Advanced`, `More`, `Notes` (say what's inside)
+- **Title Case Every Word** — reads like marketing, not docs
+
+Match depth to content: one `##` per major topic, `###` for variants. If a section runs longer than a few paragraphs,
+split it with a heading.
+
+**Before / after:**
+
+- ❌ `## CSS custom properties`
+- ✅ `## Usage in CSS custom properties`
+
+- ❌ `### Runtime`
+- ✅ `### Usage at runtime`
+
+- ❌ `## Advanced`
+- ✅ `## Usage in custom utilities`
+
 ## Before / after
 
 - ❌ "Panda v2 introduces a powerful, blazing-fast Rust engine that seamlessly unlocks next-level performance."
