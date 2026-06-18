@@ -34,6 +34,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape, cycle guard.
 - [JSX tag matching](./jsx-tag-matching.md) — `jsxMatchTag`: declarative successor to v1 `matchTag`/`matchTagProp`;
   match/ignore JSX tags by name, pattern, or import source, plus per-rule prop control. Why it's data, not a callback.
+- [Recipe variant dynamic diagnostics](./recipe-variant-diagnostics.md) — `recipe_variant_dynamic`: warn when config
+  recipe variant props are dynamic at call/JSX sites (JIT emits defaults only); JSX tag → recipe key and prop →
+  `variant_props` matching rules.
 - [Atomic encoding](./atomic-encoding.md) — encoder walker, condition matcher, recipe entry serialization.
 - [Compound variant cascade](./compound-variant-cascade.md) — give compounds their own `recipes.compound_variants`
   sub-layer (below `utilities`) so `css()` can override them; how the named compound class carries into the codegen
