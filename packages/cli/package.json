@@ -51,5 +51,8 @@
     "@parcel/watcher": "2.5.1",
     "citty": "0.1.6",
     "zod": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

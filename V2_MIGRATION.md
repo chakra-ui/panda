@@ -26,8 +26,8 @@ What you get:
 - A smaller install. The `ts-morph` / `ts-evaluator` dependency tree is gone.
 - The same CSS. Output stays in parity with v1 (see [What changed](#what-changed-in-v2)).
 
-The authoring API is stable. The internal package layout, the exact Node floor, and a few CLI surfaces are not finished
-yet — see [Still being finalized](#still-being-finalized).
+The authoring API is stable. The internal package layout and a few CLI surfaces are not finished yet — see
+[Still being finalized](#still-being-finalized).
 
 ---
 
@@ -53,8 +53,7 @@ mix a v1 package with a v2 one.
 
 - **ESM only.** There is no CommonJS build. Your project has to `import` Panda — set `"type": "module"`, use `.mjs`, or
   run it through a bundler that handles ESM. `require('@pandacss/dev')` won't work.
-- **Node 20 or newer** (22+ recommended). The exact `engines.node` floor is still being pinned — see
-  [Still being finalized](#still-being-finalized).
+- **Node 22 or newer.** Published packages declare `"engines": { "node": ">=22" }`.
 
 ### 2. Install
 
@@ -364,8 +363,6 @@ Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` i
 
 Known gaps in the beta. Expect them to change before stable:
 
-- **Node floor.** v2 is ESM-only and targets modern Node, but the exact `engines.node` minimum isn't pinned. Use Node
-  20+ (22+ recommended) for now.
 - **Studio.** The Astro-based `@pandacss/studio` is gone. A lighter, CLI-generated studio (token and color views without
   a separate Storybook) is planned.
 - **Some presets and plugins.** A few v1 community presets (`preset-atlaskit`, `preset-open-props`) and standalone

@@ -35,5 +35,8 @@
     "dist"
   ],
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22"
+  }
 }

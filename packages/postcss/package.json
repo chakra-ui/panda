@@ -44,5 +44,8 @@
   },
   "devDependencies": {
     "postcss": "8.5.14"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
