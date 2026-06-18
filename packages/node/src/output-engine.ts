@@ -44,6 +44,12 @@ export class OutputEngine {
         const { file, code } = artifact
         const absPath = this.path.join(...dir, file)
 
+        try {
+          if (this.fs.readFileSync(absPath) === code) return
+        } catch {
+          // file does not exist yet — fall through and write
+        }
+
         logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
         return this.fs.writeFile(absPath, code)
       }),
