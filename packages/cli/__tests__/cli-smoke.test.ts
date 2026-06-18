@@ -9,12 +9,18 @@ import { cleanupFixture, createFixture } from './helpers'
 const version = readCliVersion()
 
 function normalizeCliOutput(output: string) {
-  return output
-    .replaceAll(repoRoot, '<cwd>')
-    .replaceAll(version, '<version>')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .join('\n')
+  return (
+    output
+      .replaceAll(repoRoot, '<cwd>')
+      .replaceAll(version, '<version>')
+      .split('\n')
+      // citty right-pads the OPTIONS/COMMANDS columns to the longest entry, and the
+      // `--cwd` default embeds the absolute cwd — so the padding width drifts per
+      // machine. Collapse runs of spaces so the snapshot asserts content, not
+      // machine-dependent alignment.
+      .map((line) => line.replace(/ {2,}/g, ' ').trim())
+      .join('\n')
+  )
 }
 
 describe('cli smoke', () => {
@@ -41,36 +47,36 @@ describe('cli smoke', () => {
 
       OPTIONS
 
-        \`--cwd="<cwd>"\`    Current working directory
-                                               \`-c, --config\`    Path to panda config file
-                                                \`-w, --watch\`    Watch files and rebuild
-                                                   \`--outdir\`    Output directory for generated files
-                                              \`-o, --outfile\`    Output file for extracted CSS
-                                                \`--splitting\`    Emit split CSS files
-                                                    \`--clean\`    Clean the output directory before generating
-                                                     \`--json\`    Print JSON
-                                                   \`--format\`    Diagnostic output format: human, pretty, json, or github
-                                        \`--log-level=<level>\`    Set output level: silent, error, warn, info, or debug
-                                             \`--max-warnings\`    Fail when warning diagnostics exceed this count
-                                                  \`--logfile\`    Write human output to a log file
-                                                    \`--trace\`    Enable compiler tracing
-                                             \`--trace-output\`    Trace output: fmt or chrome-json
-                                               \`--trace-file\`    Trace output file for chrome-json tracing
-                                           \`--watch-debounce\`    Watch rebuild debounce in milliseconds
-                                                    \`--check\`    Check generated files without writing
+      \`--cwd="<cwd>"\` Current working directory
+      \`-c, --config\` Path to panda config file
+      \`-w, --watch\` Watch files and rebuild
+      \`--outdir\` Output directory for generated files
+      \`-o, --outfile\` Output file for extracted CSS
+      \`--splitting\` Emit split CSS files
+      \`--clean\` Clean the output directory before generating
+      \`--json\` Print JSON
+      \`--format\` Diagnostic output format: human, pretty, json, or github
+      \`--log-level=<level>\` Set output level: silent, error, warn, info, or debug
+      \`--max-warnings\` Fail when warning diagnostics exceed this count
+      \`--logfile\` Write human output to a log file
+      \`--trace\` Enable compiler tracing
+      \`--trace-output\` Trace output: fmt or chrome-json
+      \`--trace-file\` Trace output file for chrome-json tracing
+      \`--watch-debounce\` Watch rebuild debounce in milliseconds
+      \`--check\` Check generated files without writing
 
       COMMANDS
 
-             \`init\`    Initialize Panda's config file
-              \`dev\`    Start Panda in watch mode
-            \`build\`    Generate the panda system and CSS
-            \`check\`    Check generated files without writing
-             \`info\`    Show project and compiler info
-           \`doctor\`    Validate Panda setup and diagnostics
-            \`debug\`    Dump resolved config and per-file extraction for bug reports
-        \`buildinfo\`    Build a portable panda.buildinfo.json for a design-system library
-          \`codegen\`    Generate the panda system
-           \`cssgen\`    Generate CSS from project files
+      \`init\` Initialize Panda's config file
+      \`dev\` Start Panda in watch mode
+      \`build\` Generate the panda system and CSS
+      \`check\` Check generated files without writing
+      \`info\` Show project and compiler info
+      \`doctor\` Validate Panda setup and diagnostics
+      \`debug\` Dump resolved config and per-file extraction for bug reports
+      \`buildinfo\` Build a portable panda.buildinfo.json for a design-system library
+      \`codegen\` Generate the panda system
+      \`cssgen\` Generate CSS from project files
 
       Use \`panda <command> --help\` for more information about a command.
 
