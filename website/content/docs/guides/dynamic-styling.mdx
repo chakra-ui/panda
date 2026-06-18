@@ -491,6 +491,14 @@ All of this with complete type-safety and without having to make drastic changes
 > Note that you can also [integrate this recipe directly into your theme](/docs/concepts/recipes) if you want to only
 > generate the CSS that you use, among other things
 
+## Config recipes
+
+Config recipes only emit CSS for variants Panda can statically analyze. `button({ size })` works at runtime, but you'll
+only get `defaultVariants` in the stylesheet unless you add [`staticCss`](/docs/guides/static#generating-recipes) or
+use string literals in the call.
+
+See [Dynamic variant props](/docs/concepts/recipes#dynamic-variant-props).
+
 ## Summary
 
 ### What you can do
