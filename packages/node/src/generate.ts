@@ -45,7 +45,6 @@ export async function generate(config: Config, configPath?: string) {
     )
 
     const bundleStyles = async (ctx: PandaContext, changedFilePath: string) => {
-      const outfile = ctx.runtime.path.join(...ctx.paths.root, 'styles.css')
       const parserResult = ctx.project.parseSourceFile(changedFilePath)
 
       if (parserResult) {
@@ -54,8 +53,7 @@ export async function generate(config: Config, configPath?: string) {
         ctx.appendLayerParams(sheet)
         ctx.appendBaselineCss(sheet)
         ctx.appendParserCss(sheet)
-        const css = ctx.getCss(sheet)
-        await ctx.runtime.fs.writeFile(outfile, css)
+        await ctx.writeCss(sheet)
         done()
       }
     }

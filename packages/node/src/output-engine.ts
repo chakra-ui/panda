@@ -31,6 +31,17 @@ export class OutputEngine {
     return outPath
   }
 
+  writeFile = (filePath: string, code: string) => {
+    this.fs.ensureDirSync(this.path.dirname(filePath))
+
+    if (this.fs.existsSync(filePath) && this.fs.readFileSync(filePath) === code) {
+      return
+    }
+
+    logger.debug('write:file', filePath)
+    return this.fs.writeFile(filePath, code)
+  }
+
   write = (output: Artifact | undefined) => {
     if (!output) return
 
@@ -43,9 +54,7 @@ export class OutputEngine {
 
         const { file, code } = artifact
         const absPath = this.path.join(...dir, file)
-
-        logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
-        return this.fs.writeFile(absPath, code)
+        return this.writeFile(absPath, code)
       }),
     )
   }

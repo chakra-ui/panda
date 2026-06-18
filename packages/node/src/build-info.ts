@@ -15,8 +15,6 @@ export async function buildInfo(ctx: PandaContext, outfile: string) {
 
   const output = JSON.stringify(ctx.encoder.toJSON(), null, minify ? 0 : 2)
 
-  ctx.output.ensure(outfile, process.cwd())
-
-  await ctx.runtime.fs.writeFile(outfile, output)
+  await ctx.output.writeFile(outfile, output)
   logger.info('cli', 'Done!')
 }
