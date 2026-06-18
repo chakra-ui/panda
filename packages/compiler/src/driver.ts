@@ -1,15 +1,14 @@
 import {
   BaseDriver,
   type CodegenArtifact,
+  type GenerateArtifactOptions,
   type CodegenOptions,
   type Compiler,
   type DiffConfigResult,
   type Driver,
   type SourceChange,
 } from '@pandacss/compiler-shared'
-import { type LoadConfigResult, diffConfig, loadConfig } from '@pandacss/config'
-import { mkdirSync, writeFileSync } from 'node:fs'
-import { isAbsolute, join } from 'node:path'
+import { type HostHooks, type LoadConfigResult, diffConfig, loadConfig } from '@pandacss/config'
 import { createCompilerFromSnapshot } from './index'
 
 export interface NodeDriverOptions {
@@ -17,6 +16,8 @@ export interface NodeDriverOptions {
   /** Explicit config file (relative to `cwd`); otherwise discovered upward. */
   configPath?: string
 }
+
+type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
 
 /**
  * {@link Driver} backed by the native compiler (`OsFileSystem`). Loads the
@@ -63,20 +64,26 @@ class NodeDriver extends BaseDriver {
     if (change.kind === 'unlink') {
       return this.compiler.removeFile(change.path)
     }
+
     if (change.kind === 'change') {
       if (change.content == null) {
         if (this.compiler.refreshFile(change.path)) return true
+
         this.compiler.parseFile(change.path)
         return true
       }
+
       if (this.compiler.refreshFileSource(change.path, change.content)) return true
+
       this.compiler.parseFileSource(change.path, change.content)
       return true
     }
+
     if (change.content == null) {
       this.compiler.parseFile(change.path)
       return true
     }
+
     this.compiler.parseFileSource(change.path, change.content)
     return true
   }
@@ -90,6 +97,7 @@ class NodeDriver extends BaseDriver {
     const cwd = options?.cwd ?? this.#options.cwd
     const prepareHooks = this.#loaded.hostHooks?.['codegen:prepare'] ?? []
     const doneHooks = this.#loaded.hostHooks?.['codegen:done'] ?? []
+
     const files =
       prepareHooks.length > 0
         ? this.codegenWithPrepareHooks(prepareHooks, outdir, cwd, options)
@@ -104,35 +112,46 @@ class NodeDriver extends BaseDriver {
   }
 
   private codegenWithPrepareHooks(
-    hooks: NonNullable<LoadConfigResult['hostHooks']>['codegen:prepare'],
+    hooks: CodegenPrepareHooks,
     outdir: string,
     cwd: string,
     options: CodegenOptions | undefined,
   ): string[] {
-    const artifactOptions =
-      options?.forceImportExtension === undefined ? undefined : { forceImportExtension: options.forceImportExtension }
-    let artifacts = this.compiler.generateArtifacts(artifactOptions)
+    let artifacts = this.compiler.generateArtifacts(toGenerateArtifactOptions(options))
 
-    for (const entry of hooks ?? []) {
+    for (const entry of hooks) {
       const handler = resolveHookHandler(entry.value, 'codegen:prepare')
       const next = handler({ artifacts, outdir, cwd })
+
       if (next !== undefined) {
         if (!Array.isArray(next)) {
           throw new Error('Invalid codegen:prepare hook result. Expected an artifact array or undefined.')
         }
+
         artifacts = next as CodegenArtifact[]
       }
     }
 
-    return writeArtifacts(this.compiler, outdir, artifacts)
+    return this.compiler.writeArtifacts({
+      outdir,
+      cwd,
+      forceImportExtension: options?.forceImportExtension,
+      artifacts,
+    })
   }
 
   override isConfigFile(file: string): boolean {
     // `realpath` (via the fs engine) follows symlinks so paths to the same file
     // compare equal — `dependencies` are relative to `cwd` (config's `collectDependencies`).
     const target = this.compiler.realpath(file)
-    if (this.compiler.realpath(this.#loaded.path) === target) return true
-    return this.#loaded.dependencies.some((dep) => this.compiler.realpath(join(this.#options.cwd, dep)) === target)
+    const configPath = this.compiler.realpath(this.#loaded.path)
+
+    if (configPath === target) return true
+
+    return this.#loaded.dependencies.some((dependency) => {
+      const dependencyPath = this.compiler.resolvePath(dependency, this.#options.cwd)
+      return this.compiler.realpath(dependencyPath) === target
+    })
   }
 }
 
@@ -152,26 +171,12 @@ function resolveHookHandler(value: unknown, name: string): HookHandler {
   return handler as HookHandler
 }
 
-function writeArtifacts(compiler: Compiler, outdir: string, artifacts: CodegenArtifact[]): string[] {
-  const written: string[] = []
-
-  for (const artifact of artifacts) {
-    for (const file of artifact.files) {
-      if (isAbsolute(file.path)) {
-        throw new Error(`artifact output path must be relative: ${file.path}`)
-      }
-
-      const target = compiler.joinPath([outdir, file.path])
-      const parent = compiler.dirname(target)
-      if (parent) mkdirSync(parent, { recursive: true })
-      writeFileSync(target, file.code)
-      written.push(target)
-    }
-  }
-
-  return written
-}
-
 function buildFromConfig(loaded: LoadConfigResult): Compiler {
   return createCompilerFromSnapshot({ config: loaded.config, callbacks: loaded.callbacks, hooks: loaded.hooks })
+}
+
+function toGenerateArtifactOptions(options: CodegenOptions | undefined): GenerateArtifactOptions | undefined {
+  return options?.forceImportExtension === undefined
+    ? undefined
+    : { forceImportExtension: options.forceImportExtension }
 }

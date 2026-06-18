@@ -18,6 +18,7 @@ import type {
   CssFile,
   ParseFileReport,
   SerializedConfig,
+  WriteCssOptions,
   WriteCssResult,
   WriteFilesResult,
 } from './types'
@@ -100,9 +101,9 @@ export interface Driver {
   /** Generate split stylesheet files in memory without writing. */
   splitCss(): CssFile[]
   /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
-  writeCss(outfile: string, options?: CompileOptions): WriteCssResult
+  writeCss(options: WriteCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under the configured `outdir`. */
-  writeSplitCss(outdir?: string): WriteFilesResult
+  writeSplitCss(options?: { outdir?: string }): WriteFilesResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
   /** Whether a changed path is the config file or one of its bundled dependencies.
@@ -172,10 +173,11 @@ export abstract class BaseDriver implements Driver {
   }
 
   codegen(options?: CodegenOptions): string[] {
-    const outdir = this.getConfiguredOutdir(options?.outdir)
-    const artifactOptions =
-      options?.forceImportExtension === undefined ? undefined : { forceImportExtension: options.forceImportExtension }
-    return this.#compiler.writeArtifacts(outdir, options?.cwd, artifactOptions)
+    return this.#compiler.writeArtifacts({
+      outdir: this.getConfiguredOutdir(options?.outdir),
+      cwd: options?.cwd,
+      forceImportExtension: options?.forceImportExtension,
+    })
   }
 
   cssgen(options?: CompileOptions): CompileOutput {
@@ -199,12 +201,12 @@ export abstract class BaseDriver implements Driver {
     }
   }
 
-  writeCss(outfile: string, options?: CompileOptions): WriteCssResult {
-    return this.#compiler.writeCss(outfile, undefined, options)
+  writeCss(options: WriteCssOptions): WriteCssResult {
+    return this.#compiler.writeCss(options)
   }
 
-  writeSplitCss(outdir?: string): WriteFilesResult {
-    return this.#compiler.writeSplitCss(this.getConfiguredOutdir(outdir))
+  writeSplitCss(options?: { outdir?: string }): WriteFilesResult {
+    return this.#compiler.writeSplitCss({ outdir: this.getConfiguredOutdir(options?.outdir) })
   }
 
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {

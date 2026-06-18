@@ -7,6 +7,7 @@ export { mergeConfigs } from './merge'
 
 export type { ConfigSnapshot } from './serialize'
 export type { DiffConfigResult } from './diff'
+export type { HostHooks } from './hooks'
 export type { LoadConfigOptions, LoadConfigResult } from './types'
 export type { BundleConfigResult } from './bundle'
 export type { ConfigSourceEntry, ConfigSources } from './sources'

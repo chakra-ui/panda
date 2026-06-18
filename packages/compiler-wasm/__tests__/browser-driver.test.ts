@@ -80,7 +80,7 @@ describe('createBrowserDriver', () => {
     })
     driver.parseFiles()
 
-    const result = driver.writeCss('/proj/styled-system/styles.css')
+    const result = driver.writeCss({ outfile: '/proj/styled-system/styles.css' })
 
     expect(result.css).toContain('blue')
     expect(driver.compiler.fs?.readFile(result.path)).toBe(result.css)

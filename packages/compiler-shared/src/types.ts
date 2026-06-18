@@ -154,6 +154,22 @@ export interface CodegenOptions extends GenerateArtifactOptions {
   cwd?: string
 }
 
+export interface WriteArtifactsOptions extends GenerateArtifactOptions {
+  outdir: string
+  cwd?: string
+  artifacts?: CodegenArtifact[]
+}
+
+export interface WriteCssOptions extends CompileOptions {
+  outfile: string
+  cwd?: string
+}
+
+export interface WriteSplitCssOptions {
+  outdir: string
+  cwd?: string
+}
+
 /** Scan overrides for `Compiler.scan`/`parseFiles`. Omitted fields fall back to the
  *  config's `include`/`exclude`/`cwd`. */
 export interface ScanOptions {
@@ -710,11 +726,11 @@ export interface Compiler {
   // Codegen artifacts
   /** Generate + write artifacts under `outdir` via the platform fs (disk on
    *  native, in-memory on wasm). Returns the written paths. */
-  writeArtifacts(outdir: string, cwd?: string, options?: GenerateArtifactOptions): string[]
+  writeArtifacts(options: WriteArtifactsOptions): string[]
   /** Generate + write stylesheet CSS via the platform fs. */
-  writeCss(outfile: string, cwd?: string, options?: CompileOptions): WriteCssResult
+  writeCss(options: WriteCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under `outdir` via the platform fs. */
-  writeSplitCss(outdir: string, cwd?: string): WriteFilesResult
+  writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult
   /** Generate all codegen artifacts in memory without writing them. */
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   /** Generate a single codegen artifact by id. */

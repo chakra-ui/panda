@@ -19,6 +19,28 @@ pub trait FileSystem: Send + Sync + OxcResolverFileSystem {
     /// See [`std::fs::write`].
     fn write(&self, path: &Path, content: &[u8]) -> io::Result<()>;
 
+    /// Write `content` only when the on-disk bytes differ.
+    ///
+    /// Returns `true` when the file was written and `false` when the existing
+    /// bytes already matched `content`.
+    ///
+    /// # Errors
+    /// Propagates any read error except `NotFound`, plus any write error.
+    fn write_if_changed(&self, path: &Path, content: &[u8]) -> io::Result<bool> {
+        match self.read(path) {
+            Ok(existing) if existing == content => Ok(false),
+            Ok(_) => {
+                self.write(path, content)?;
+                Ok(true)
+            }
+            Err(err) if err.kind() == io::ErrorKind::NotFound => {
+                self.write(path, content)?;
+                Ok(true)
+            }
+            Err(err) => Err(err),
+        }
+    }
+
     /// Recursively create directories. No-op on existing paths.
     ///
     /// # Errors

@@ -38,6 +38,7 @@ pub use matcher::{
 pub use project::{
     CodegenArtifact, CodegenFile, Compiler, GenerateArtifactOptions, ParseFileReport,
     ParsedFileView, ProjectOptions, ProjectSummary, RecipeEntry, StaticPatternResult,
+    WriteArtifactsOptions, WriteCssOptions, WriteSplitCssOptions,
 };
 pub use session::Extractor;
 

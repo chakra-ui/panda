@@ -2,12 +2,16 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { runCli } from './cli-runner'
+import { readCliVersion } from '../src/version'
+import { repoRoot, runCli } from './cli-runner'
 import { cleanupFixture, createFixture } from './helpers'
+
+const version = readCliVersion()
 
 function normalizeCliOutput(output: string) {
   return output
-    .replaceAll(process.cwd(), '<cwd>')
+    .replaceAll(repoRoot, '<cwd>')
+    .replaceAll(version, '<version>')
     .split('\n')
     .map((line) => line.trimEnd())
     .join('\n')
@@ -22,8 +26,8 @@ describe('cli smoke', () => {
   })
 
   it('prints the CLI version', () => {
-    expect(runCli(['--version'])).toMatchObject({ exitCode: 0, stdout: '2.0.0-beta.0\n', stderr: '' })
-    expect(runCli(['-v'])).toMatchObject({ exitCode: 0, stdout: '2.0.0-beta.0\n', stderr: '' })
+    expect(runCli(['--version'])).toMatchObject({ exitCode: 0, stdout: `${version}\n`, stderr: '' })
+    expect(runCli(['-v'])).toMatchObject({ exitCode: 0, stdout: `${version}\n`, stderr: '' })
   })
 
   it('prints root help with the public command surface', () => {
@@ -31,7 +35,7 @@ describe('cli smoke', () => {
 
     expect(result.exitCode).toBe(0)
     expect(normalizeCliOutput(result.stdout)).toMatchInlineSnapshot(`
-      "Generate the panda system and CSS. Run with no subcommand for the full build. (panda v2.0.0-beta.0)
+      "Generate the panda system and CSS. Run with no subcommand for the full build. (panda v<version>)
 
       USAGE \`panda [OPTIONS] init|dev|build|check|info|doctor|debug|buildinfo|codegen|cssgen\`
 
@@ -73,7 +77,7 @@ describe('cli smoke', () => {
       "
     `)
     expect(result.stdout).toContain('init|dev|build|check|info|doctor|debug|buildinfo|codegen|cssgen')
-    expect(result.stdout).toContain('panda v2.0.0-beta.0')
+    expect(result.stdout).toContain(`panda v${version}`)
     expect(result.stdout).not.toContain('inspect')
     expect(result.stdout).not.toContain('validate')
   })
@@ -82,7 +86,7 @@ describe('cli smoke', () => {
     const result = runCli([command, '--help'])
 
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain(`panda ${command} v2.0.0-beta.0`)
+    expect(result.stdout).toContain(`panda ${command} v${version}`)
   })
 
   it.each(['inspect', 'validate', 'frobnicate'])('rejects unknown command %s', (command) => {

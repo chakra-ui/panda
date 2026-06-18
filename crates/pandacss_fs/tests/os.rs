@@ -20,6 +20,27 @@ fn read_write_roundtrip() {
 }
 
 #[test]
+fn write_if_changed_preserves_mtime_for_identical_bytes() {
+    let tmp = tempfile::tempdir().unwrap();
+    let path = tmp.path().join("x.ts");
+    fs::write(&path, "hello").unwrap();
+
+    let osfs = OsFileSystem::default();
+    let before = fs::metadata(&path).unwrap().modified().unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(20));
+
+    assert!(!osfs.write_if_changed(&path, b"hello").unwrap());
+
+    let after = fs::metadata(&path).unwrap().modified().unwrap();
+    assert_eq!(before, after);
+
+    std::thread::sleep(std::time::Duration::from_millis(20));
+    assert!(osfs.write_if_changed(&path, b"updated").unwrap());
+    assert_eq!(fs::read_to_string(&path).unwrap(), "updated");
+    assert!(fs::metadata(&path).unwrap().modified().unwrap() > after);
+}
+
+#[test]
 fn exists_and_read_dir() {
     let tmp = tempfile::tempdir().unwrap();
     fs::write(tmp.path().join("a.ts"), "").unwrap();

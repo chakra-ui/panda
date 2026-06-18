@@ -12,7 +12,7 @@ use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use pandacss_fs::{
     FileSystem, GlobOptions, MemoryFileSystem, OxcResolverFileSystem, PathSystem, PosixPathSystem,
 };
-use serde::{Deserialize, Serialize as _};
+use serde::{Deserialize, Serialize as _, de::DeserializeOwned};
 use std::collections::{BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -314,18 +314,44 @@ impl WasmCompiler {
                 )));
             }
             let target = self.paths.join(&[root, path]);
-            let parent = self.paths.dirname(&target);
-            if !parent.is_empty() {
-                self.fs
-                    .create_dir_all(Path::new(&parent))
-                    .map_err(|err| JsValue::from_str(&err.to_string()))?;
-            }
-            self.fs
-                .write(Path::new(&target), code.as_bytes())
-                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+            self.write_target_file(&target, code)?;
             written.push(target);
         }
         Ok(written)
+    }
+
+    fn write_artifacts_to_root(
+        &self,
+        root: &str,
+        artifacts: &[CodegenArtifactSerde],
+    ) -> Result<Vec<String>, JsValue> {
+        let mut written = Vec::new();
+        for artifact in artifacts {
+            written.extend(
+                self.write_relative_files(
+                    root,
+                    artifact
+                        .files
+                        .iter()
+                        .map(|file| (file.path.as_str(), file.code.as_str())),
+                    "artifact",
+                )?,
+            );
+        }
+        Ok(written)
+    }
+
+    fn write_target_file(&self, target: &str, code: &str) -> Result<(), JsValue> {
+        let parent = self.paths.dirname(target);
+        if !parent.is_empty() {
+            self.fs
+                .create_dir_all(Path::new(&parent))
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        }
+        self.fs
+            .write_if_changed(Path::new(target), code.as_bytes())
+            .map(|_| ())
+            .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
     /// Shared parse path used by `parse_file` and `parseFiles` — wires the
@@ -549,29 +575,28 @@ impl WasmCompiler {
     /// # Errors
     /// Returns a JS error if a file fails to write or results fail to serialize.
     #[wasm_bindgen(js_name = writeArtifacts)]
-    pub fn write_artifacts(
-        &self,
-        outdir: &str,
-        cwd: Option<String>,
-        options: &JsValue,
-    ) -> Result<JsValue, JsValue> {
-        let generate = generate_options(&self.user_config, options)?;
-        let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
-        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
-        let base = self.paths.resolve(&cwd, outdir);
-        let mut written = Vec::new();
-        for artifact in artifacts {
-            written.extend(
-                self.write_relative_files(
-                    &base,
-                    artifact
-                        .files
-                        .iter()
-                        .map(|file| (file.path.as_str(), file.code.as_str())),
-                    "artifact",
-                )?,
-            );
-        }
+    pub fn write_artifacts(&self, options: JsValue) -> Result<JsValue, JsValue> {
+        let options = write_artifacts_options_from_js(options)?;
+        let artifacts = if let Some(artifacts) = options.artifacts {
+            artifacts
+        } else {
+            self.inner
+                .generate_artifacts(
+                    &self.user_config,
+                    generate_options(
+                        &self.user_config,
+                        &GenerateArtifactOptionsSerde {
+                            force_import_extension: options.force_import_extension,
+                        },
+                    ),
+                )
+                .into_iter()
+                .map(to_codegen_artifact)
+                .collect()
+        };
+        let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let base = self.paths.resolve(&cwd, &options.outdir);
+        let written = self.write_artifacts_to_root(&base, &artifacts)?;
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         written
             .serialize(&serializer)
@@ -894,16 +919,11 @@ impl WasmCompiler {
     }
 
     #[wasm_bindgen(js_name = writeCss)]
-    pub fn write_css(
-        &mut self,
-        outfile: &str,
-        cwd: Option<String>,
-        options: Option<JsValue>,
-    ) -> Result<JsValue, JsValue> {
+    pub fn write_css(&mut self, options: JsValue) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("css_compile", method = "wasm_write_css").entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms();
-        let options = compile_options_from_js(options)?;
+        let options = write_css_options_from_js(options)?;
         let output = build_compile_output(
             &mut self.inner,
             &self.user_config,
@@ -912,18 +932,10 @@ impl WasmCompiler {
             options.emit_layer_declaration.unwrap_or(true),
         );
         let target = self.paths.resolve(
-            &cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
-            outfile,
+            &options.cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            &options.outfile,
         );
-        let parent = self.paths.dirname(&target);
-        if !parent.is_empty() {
-            self.fs
-                .create_dir_all(Path::new(&parent))
-                .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        }
-        self.fs
-            .write(Path::new(&target), output.css.as_bytes())
-            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        self.write_target_file(&target, &output.css)?;
 
         let result = WriteCssResultSerde {
             path: target,
@@ -982,16 +994,13 @@ impl WasmCompiler {
     }
 
     #[wasm_bindgen(js_name = writeSplitCss)]
-    pub fn write_split_css(
-        &mut self,
-        outdir: &str,
-        cwd: Option<String>,
-    ) -> Result<JsValue, JsValue> {
+    pub fn write_split_css(&mut self, options: JsValue) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("split_css", method = "wasm_write_split_css").entered();
         let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms();
         let files = build_split_css(&mut self.inner, &self.user_config, &static_pattern_atoms);
-        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
-        let root = self.paths.resolve(&cwd, outdir);
+        let options = write_split_css_options_from_js(options)?;
+        let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, &options.outdir);
         let paths = self.write_relative_files(
             &root,
             files
@@ -1013,7 +1022,10 @@ impl WasmCompiler {
     #[wasm_bindgen(js_name = generateArtifacts)]
     pub fn generate_artifacts(&self, options: &JsValue) -> Result<JsValue, JsValue> {
         let _span = tracing::trace_span!("codegen", method = "wasm_generate_artifacts").entered();
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(
+            &self.user_config,
+            &generate_artifact_options_from_js(options)?,
+        );
         serialize_codegen_artifacts(self.inner.generate_artifacts(&self.user_config, options))
     }
 
@@ -1028,7 +1040,10 @@ impl WasmCompiler {
         let id = id
             .parse::<ArtifactId>()
             .map_err(|()| JsValue::from_str(&format!("unknown codegen artifact `{id}`")))?;
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(
+            &self.user_config,
+            &generate_artifact_options_from_js(options)?,
+        );
         let artifact = self.inner.generate_artifact(&self.user_config, id, options);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         artifact
@@ -1052,7 +1067,10 @@ impl WasmCompiler {
         let dependencies: Vec<String> = serde_wasm_bindgen::from_value(dependencies)
             .map_err(|err| JsValue::from_str(&format!("invalid dependencies: {err}")))?;
         let changed = dependency_set_from_strings(dependencies)?;
-        let options = generate_options(&self.user_config, options)?;
+        let options = generate_options(
+            &self.user_config,
+            &generate_artifact_options_from_js(options)?,
+        );
         serialize_codegen_artifacts(self.inner.generate_affected_artifacts(
             &self.user_config,
             changed,
@@ -1125,13 +1143,77 @@ struct CompileOptionsSerde {
     emit_layer_declaration: Option<bool>,
 }
 
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GenerateArtifactOptionsSerde {
+    force_import_extension: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteArtifactsOptionsSerde {
+    outdir: String,
+    cwd: Option<String>,
+    force_import_extension: Option<bool>,
+    artifacts: Option<Vec<CodegenArtifactSerde>>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteCssOptionsSerde {
+    outfile: String,
+    cwd: Option<String>,
+    emit_layer_declaration: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WriteSplitCssOptionsSerde {
+    outdir: String,
+    cwd: Option<String>,
+}
+
+fn parse_required_options<T>(value: JsValue, label: &str) -> Result<T, JsValue>
+where
+    T: DeserializeOwned,
+{
+    if value.is_undefined() || value.is_null() {
+        return Err(JsValue::from_str(&format!("{label} options are required")));
+    }
+    serde_wasm_bindgen::from_value(value).map_err(|err| JsValue::from_str(&err.to_string()))
+}
+
 fn compile_options_from_js(options: Option<JsValue>) -> Result<CompileOptionsSerde, JsValue> {
     match options {
         Some(value) if !value.is_undefined() && !value.is_null() => {
-            serde_wasm_bindgen::from_value(value).map_err(|err| JsValue::from_str(&err.to_string()))
+            parse_required_options(value, "compile")
         }
         _ => Ok(CompileOptionsSerde::default()),
     }
+}
+
+fn write_artifacts_options_from_js(
+    options: JsValue,
+) -> Result<WriteArtifactsOptionsSerde, JsValue> {
+    parse_required_options(options, "writeArtifacts")
+}
+
+fn write_css_options_from_js(options: JsValue) -> Result<WriteCssOptionsSerde, JsValue> {
+    parse_required_options(options, "writeCss")
+}
+
+fn write_split_css_options_from_js(options: JsValue) -> Result<WriteSplitCssOptionsSerde, JsValue> {
+    parse_required_options(options, "writeSplitCss")
+}
+
+fn generate_artifact_options_from_js(
+    options: &JsValue,
+) -> Result<GenerateArtifactOptionsSerde, JsValue> {
+    if options.is_undefined() || options.is_null() {
+        return Ok(GenerateArtifactOptionsSerde::default());
+    }
+    serde_wasm_bindgen::from_value(options.clone())
+        .map_err(|err| JsValue::from_str(&err.to_string()))
 }
 
 #[derive(serde::Serialize)]
@@ -1182,14 +1264,14 @@ struct StaticPatternResultSerde {
     diagnostics: Vec<pandacss_extractor::Diagnostic>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CodegenArtifactSerde {
     id: String,
     files: Vec<CodegenFileSerde>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CodegenFileSerde {
     path: String,
@@ -1245,29 +1327,16 @@ fn dependency_set_from_strings(dependencies: Vec<String>) -> Result<DependencySe
 
 fn generate_options(
     user_config: &UserConfig,
-    options: &JsValue,
-) -> Result<GenerateOptions, JsValue> {
-    let import_extensions =
-        option_bool(options, "forceImportExtension")?.unwrap_or(user_config.force_import_extension);
+    options: &GenerateArtifactOptionsSerde,
+) -> GenerateOptions {
+    let import_extensions = options
+        .force_import_extension
+        .unwrap_or(user_config.force_import_extension);
 
-    Ok(GenerateOptions {
+    GenerateOptions {
         format: user_config.out_extension,
         import_extensions,
-    })
-}
-
-fn option_bool(options: &JsValue, key: &str) -> Result<Option<bool>, JsValue> {
-    if options.is_undefined() || options.is_null() {
-        return Ok(None);
     }
-    let value = js_sys::Reflect::get(options, &JsValue::from_str(key))?;
-    if value.is_undefined() || value.is_null() {
-        return Ok(None);
-    }
-    value
-        .as_bool()
-        .map(Some)
-        .ok_or_else(|| JsValue::from_str(&format!("option `{key}` must be a boolean")))
 }
 
 fn build_compile_output(

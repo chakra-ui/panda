@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -106,15 +106,51 @@ describe('createNodeDriver', () => {
     expect(done.files).toContain(join(dir, 'styled-system', 'prepared.txt'))
   })
 
+  it('skips rewriting unchanged codegen outputs in both native and prepare-hook paths', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    driver.codegen()
+    const nativeTarget = join(dir, 'styled-system', 'patterns', 'stack.js')
+    const preparedTarget = join(dir, 'styled-system', 'prepared.txt')
+    const before = {
+      native: statSync(nativeTarget).mtimeMs,
+      prepared: statSync(preparedTarget).mtimeMs,
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    driver.codegen()
+    const after = {
+      native: statSync(nativeTarget).mtimeMs,
+      prepared: statSync(preparedTarget).mtimeMs,
+    }
+
+    expect(after).toEqual(before)
+  })
+
   it('writes stylesheet output through the driver host', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()
 
-    const result = driver.writeCss('styled-system/styles.css')
+    const result = driver.writeCss({ outfile: 'styled-system/styles.css' })
 
     expect(result.path).toBe(join(dir, 'styled-system', 'styles.css'))
     expect(result.css).toContain('red')
     expect(readFileSync(result.path, 'utf8')).toBe(result.css)
+  })
+
+  it('skips rewriting unchanged stylesheet output through the driver host', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    const result = driver.writeCss({ outfile: 'styled-system/styles.css' })
+    const before = statSync(result.path).mtimeMs
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    driver.writeCss({ outfile: 'styled-system/styles.css' })
+    const after = statSync(result.path).mtimeMs
+
+    expect(after).toBe(before)
   })
 
   it('writes split stylesheet output under outdir through the driver host', async () => {
@@ -130,6 +166,28 @@ describe('createNodeDriver', () => {
       "@import './styles/utilities.css';",
     )
     expect(readFileSync(join(dir, 'styled-system', 'styles', 'utilities.css'), 'utf8')).toContain('red')
+  })
+
+  it('skips rewriting unchanged split stylesheet outputs', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+
+    driver.writeSplitCss()
+    const rootFile = join(dir, 'styled-system', 'styles.css')
+    const utilitiesFile = join(dir, 'styled-system', 'styles', 'utilities.css')
+    const before = {
+      root: statSync(rootFile).mtimeMs,
+      utilities: statSync(utilitiesFile).mtimeMs,
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    driver.writeSplitCss()
+    const after = {
+      root: statSync(rootFile).mtimeMs,
+      utilities: statSync(utilitiesFile).mtimeMs,
+    }
+
+    expect(after).toEqual(before)
   })
 
   it('resolves the configured outdir through the driver host', async () => {

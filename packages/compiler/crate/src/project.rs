@@ -120,6 +120,14 @@ pub struct GenerateArtifactOptions {
 }
 
 #[napi(object)]
+pub struct WriteArtifactsOptions {
+    pub outdir: String,
+    pub cwd: Option<String>,
+    pub force_import_extension: Option<bool>,
+    pub artifacts: Option<Vec<CodegenArtifact>>,
+}
+
+#[napi(object)]
 pub struct CodegenFile {
     pub path: String,
     pub code: String,
@@ -147,6 +155,19 @@ pub struct WriteFilesResult {
     pub root: String,
     pub paths: Vec<String>,
     pub files: Vec<crate::compile::SplitCssFile>,
+}
+
+#[napi(object)]
+pub struct WriteCssOptions {
+    pub outfile: String,
+    pub cwd: Option<String>,
+    pub emit_layer_declaration: Option<bool>,
+}
+
+#[napi(object)]
+pub struct WriteSplitCssOptions {
+    pub outdir: String,
+    pub cwd: Option<String>,
 }
 
 #[napi]
@@ -428,30 +449,25 @@ impl Compiler {
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn write_artifacts(
-        &self,
-        outdir: String,
-        cwd: Option<String>,
-        options: Option<GenerateArtifactOptions>,
-    ) -> napi::Result<Vec<String>> {
-        let generate = generate_options(&self.user_config, options);
-        let artifacts = self.inner.generate_artifacts(&self.user_config, generate);
-        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
-        let base = self.paths.resolve(&cwd, &outdir);
-        let mut written = Vec::new();
-        for artifact in artifacts {
-            written.extend(
-                self.write_relative_files(
-                    &base,
-                    artifact
-                        .files
-                        .iter()
-                        .map(|file| (file.path.as_str(), file.code.as_str())),
-                    "artifact",
-                )?,
+    pub fn write_artifacts(&self, options: WriteArtifactsOptions) -> napi::Result<Vec<String>> {
+        let artifacts = if let Some(artifacts) = options.artifacts {
+            artifacts
+        } else {
+            let generate = generate_options(
+                &self.user_config,
+                Some(GenerateArtifactOptions {
+                    force_import_extension: options.force_import_extension,
+                }),
             );
-        }
-        Ok(written)
+            self.inner
+                .generate_artifacts(&self.user_config, generate)
+                .into_iter()
+                .map(to_codegen_artifact)
+                .collect()
+        };
+        let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, &options.outdir);
+        self.write_artifacts_to_root(&root, &artifacts)
     }
 
     #[napi(js_name = resolvePath)]
@@ -751,18 +767,44 @@ impl Compiler {
                 )));
             }
             let target = self.paths.join(&[root, path]);
-            let parent = self.paths.dirname(&target);
-            if !parent.is_empty() {
-                self.fs
-                    .create_dir_all(std::path::Path::new(&parent))
-                    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-            }
-            self.fs
-                .write(std::path::Path::new(&target), code.as_bytes())
-                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+            self.write_target_file(&target, code)?;
             written.push(target);
         }
         Ok(written)
+    }
+
+    fn write_artifacts_to_root(
+        &self,
+        root: &str,
+        artifacts: &[CodegenArtifact],
+    ) -> napi::Result<Vec<String>> {
+        let mut written = Vec::new();
+        for artifact in artifacts {
+            written.extend(
+                self.write_relative_files(
+                    root,
+                    artifact
+                        .files
+                        .iter()
+                        .map(|file| (file.path.as_str(), file.code.as_str())),
+                    "artifact",
+                )?,
+            );
+        }
+        Ok(written)
+    }
+
+    fn write_target_file(&self, target: &str, code: &str) -> napi::Result<()> {
+        let parent = self.paths.dirname(target);
+        if !parent.is_empty() {
+            self.fs
+                .create_dir_all(std::path::Path::new(&parent))
+                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        }
+        self.fs
+            .write_if_changed(std::path::Path::new(target), code.as_bytes())
+            .map(|_| ())
+            .map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
     /// Stateless single-file extraction — raw `calls` + `jsx` + diagnostics,
@@ -1006,24 +1048,14 @@ impl Compiler {
     pub fn write_css(
         &mut self,
         env: Env,
-        outfile: String,
-        cwd: Option<String>,
-        options: Option<CompileOptions>,
+        options: WriteCssOptions,
     ) -> napi::Result<WriteCssResult> {
-        let output = self.compile(env, options)?;
+        let output = self.compile(env, to_compile_options(options.emit_layer_declaration))?;
         let target = self.paths.resolve(
-            &cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
-            &outfile,
+            &options.cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            &options.outfile,
         );
-        let parent = self.paths.dirname(&target);
-        if !parent.is_empty() {
-            self.fs
-                .create_dir_all(std::path::Path::new(&parent))
-                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-        }
-        self.fs
-            .write(std::path::Path::new(&target), output.css.as_bytes())
-            .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        self.write_target_file(&target, &output.css)?;
         Ok(WriteCssResult {
             path: target,
             css: output.css,
@@ -1042,12 +1074,11 @@ impl Compiler {
     pub fn write_split_css(
         &mut self,
         env: Env,
-        outdir: String,
-        cwd: Option<String>,
+        options: WriteSplitCssOptions,
     ) -> napi::Result<WriteFilesResult> {
         let files = self.split_css(env)?;
-        let cwd = cwd.unwrap_or_else(|| self.user_config.cwd.clone());
-        let root = self.paths.resolve(&cwd, &outdir);
+        let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
+        let root = self.paths.resolve(&cwd, &options.outdir);
         let paths = self.write_relative_files(
             &root,
             files
@@ -1436,6 +1467,12 @@ fn generate_options(
         format: user_config.out_extension,
         import_extensions,
     }
+}
+
+fn to_compile_options(emit_layer_declaration: Option<bool>) -> Option<CompileOptions> {
+    emit_layer_declaration.map(|emit_layer_declaration| CompileOptions {
+        emit_layer_declaration: Some(emit_layer_declaration),
+    })
 }
 
 fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {

@@ -1,8 +1,10 @@
 import { spawnSync } from 'node:child_process'
-import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 
-const root = process.cwd()
-const cliMain = join(root, 'packages/cli/src/cli-main.ts')
+const here = dirname(fileURLToPath(import.meta.url))
+export const repoRoot = join(here, '..', '..', '..')
+const cliMain = join(repoRoot, 'packages/cli/src/cli-main.ts')
 
 interface RunCliOptions {
   cwd?: string
@@ -16,7 +18,7 @@ export interface RunCliResult {
 
 export function runCli(args: string[], options: RunCliOptions = {}): RunCliResult {
   const result = spawnSync(process.execPath, ['--import', 'tsx', cliMain, ...args], {
-    cwd: options.cwd ?? root,
+    cwd: options.cwd ?? repoRoot,
     encoding: 'utf8',
     env: {
       ...process.env,

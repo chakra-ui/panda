@@ -103,21 +103,21 @@ class FallbackCompiler implements Compiler {
   inspectFileSource() {
     return { usages: [], diagnostics: [] }
   }
-  writeArtifacts() {
+  writeArtifacts(_options: { outdir: string }) {
     return []
   }
-  writeCss(outfile: string) {
+  writeCss(options: { outfile: string }) {
     return {
-      path: outfile,
+      path: options.outfile,
       css: '',
       manifest: { files: [], tokens: [] },
       layerRanges: {},
       diagnostics: [] as Diagnostic[],
     }
   }
-  writeSplitCss(outdir: string) {
+  writeSplitCss(options: { outdir: string }) {
     return {
-      root: outdir,
+      root: options.outdir,
       paths: [] as string[],
       files: [],
     }

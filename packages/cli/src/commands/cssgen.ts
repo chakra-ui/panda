@@ -159,7 +159,7 @@ export async function writeCssgenOutput(
     }
   }
 
-  const output = time({ timings: ctx.timings, phase: 'write', run: () => ctx.driver.writeCss(outfile) })
+  const output = time({ timings: ctx.timings, phase: 'write', run: () => ctx.driver.writeCss({ outfile }) })
   const cssBytes = Buffer.byteLength(output.css)
   const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
 

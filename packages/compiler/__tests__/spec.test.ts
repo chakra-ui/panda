@@ -1,8 +1,8 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { createCompiler } from '../src'
+import { createCompiler, type CodegenArtifact } from '../src'
 import { createProject, createUserConfig } from './test-utils'
 
 describe('compiler.spec()', () => {
@@ -193,10 +193,62 @@ describe('compiler.writeArtifacts()', () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-write-'))
     try {
       const compiler = createProject({ patterns: { stack: { properties: { gap: {} } } } })
-      const written = compiler.writeArtifacts('styled-system', dir)
+      const written = compiler.writeArtifacts({ outdir: 'styled-system', cwd: dir })
       // paths carry the temp dir (non-deterministic) — assert shape, not value.
       expect(written.some((path) => path.endsWith(join('styled-system', 'patterns', 'stack.js')))).toBe(true)
       expect(readFileSync(join(dir, 'styled-system', 'patterns', 'stack.js'), 'utf8')).toContain('getPatternStyles')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('skips rewriting unchanged artifacts', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-write-'))
+    try {
+      const compiler = createProject({ patterns: { stack: { properties: { gap: {} } } } })
+      const target = join(dir, 'styled-system', 'patterns', 'stack.js')
+
+      compiler.writeArtifacts({ outdir: 'styled-system', cwd: dir })
+      const before = statSync(target).mtimeMs
+
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      compiler.writeArtifacts({ outdir: 'styled-system', cwd: dir })
+      const after = statSync(target).mtimeMs
+
+      expect(after).toBe(before)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('compiler.writeArtifacts() with provided artifacts', () => {
+  it('writes provided artifacts through the platform fs and skips unchanged rewrites', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-write-'))
+    try {
+      const compiler = createProject()
+      const targets = [join(dir, 'styled-system', 'a.txt'), join(dir, 'styled-system', 'nested', 'b.txt')]
+
+      const artifacts: CodegenArtifact[] = [
+        {
+          id: 'patterns',
+          files: [
+            { path: 'a.txt', code: 'a', dependencies: [] },
+            { path: 'nested/b.txt', code: 'b', dependencies: [] },
+          ],
+        },
+      ]
+      const written = compiler.writeArtifacts({ outdir: 'styled-system', cwd: dir, artifacts })
+      expect(written).toEqual(targets)
+      expect(readFileSync(targets[0], 'utf8')).toBe('a')
+      expect(readFileSync(targets[1], 'utf8')).toBe('b')
+
+      const before = targets.map((target) => statSync(target).mtimeMs)
+
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      compiler.writeArtifacts({ outdir: 'styled-system', cwd: dir, artifacts })
+
+      expect(targets.map((target) => statSync(target).mtimeMs)).toEqual(before)
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
