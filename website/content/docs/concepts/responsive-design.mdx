@@ -143,6 +143,15 @@ export default defineConfig({
 })
 ```
 
+### Patterns and recipes
+
+In `css()`, breakpoint keys like `md` and `lg` work on CSS utilities.
+
+Pattern props are different. Props like `columns`, `colSpan`, and `direction` are compiled by the pattern — not passed
+to CSS as-is. Put the breakpoint on the prop: `columns={{ base: 1, md: 2 }}`.
+
+See [responsive pattern props](/docs/concepts/patterns#responsive-pattern-props).
+
 ### Hiding elements by breakpoint
 
 If you need to limit the visibility of an element to any breakpoint, Panda provides
