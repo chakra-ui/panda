@@ -1,0 +1,58 @@
+---
+title: Environment-specific config
+description: Branch Panda config on process.env for production hash, minify, and CSS optimizations.
+---
+
+`panda.config.ts` runs in Node when Panda codegen, cssgen, or your bundler plugin starts. Branch on `process.env` to
+keep dev output readable and turn on production optimizations in CI and release builds.
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+const isProd = process.env.NODE_ENV === 'production'
+
+export default defineConfig({
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
+  outdir: 'styled-system',
+
+  minify: isProd,
+  hash: isProd,
+  optimize: isProd ? { removeUnusedTokens: true, removeUnusedKeyframes: true } : undefined
+})
+```
+
+Hash class names and CSS variables separately if you only want one:
+
+```ts
+hash: isProd ? { className: true, cssVar: true } : false
+```
+
+## What to toggle
+
+| Option                                     | Development                                | Production                           |
+| ------------------------------------------ | ------------------------------------------ | ------------------------------------ |
+| [`hash`](/docs/references/config#hash)     | `false` — readable class names in DevTools | `true` — shorter output              |
+| [`minify`](/docs/references/config#minify) | `false`                                    | `true`                               |
+| `optimize.removeUnusedTokens`              | off                                        | on when you want leaner theme CSS    |
+| `optimize.removeUnusedKeyframes`           | off                                        | on when you want leaner keyframe CSS |
+
+## Keep dev and prod in sync
+
+[`hash`](/docs/concepts/writing-styles#hashing) changes class names in **both** generated CSS and `styled-system`
+output. Run `panda codegen` and cssgen with the same config you ship — if production enables `hash`, your production
+build step should run Panda with `NODE_ENV=production`.
+
+If `NODE_ENV` is unreliable in your toolchain, use your own flag:
+
+```ts
+const isProd = (process.env.PANDA_ENV ?? process.env.NODE_ENV) === 'production'
+```
+
+## Verify the resolved config
+
+```bash
+pnpm panda debug --only-config
+```
+
+Open `styled-system/debug/config.json` and confirm `hash`, `minify`, and `optimize` match what you expect for that run.
+See [Debugging](/docs/guides/debugging#panda-debug).
