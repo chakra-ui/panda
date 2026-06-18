@@ -44,6 +44,17 @@ export class OutputEngine {
         const { file, code } = artifact
         const absPath = this.path.join(...dir, file)
 
+        // Skip the write when the generated artifact is byte-identical to what's
+        // already on disk. `panda --watch` re-emits the full output on its initial
+        // build (and codegen re-runs on config changes); rewriting unchanged files
+        // bumps their mtime and triggers needless dev-server reloads (e.g. a Vite
+        // full page reload / webpack recompile) for tools watching the output dir.
+        try {
+          if (this.fs.readFileSync(absPath) === code) return
+        } catch {
+          // file does not exist yet — fall through and write
+        }
+
         logger.debug('write:file', dir.slice(-1).concat(file).join('/'))
         return this.fs.writeFile(absPath, code)
       }),
