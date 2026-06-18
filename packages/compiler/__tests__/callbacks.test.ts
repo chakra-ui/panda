@@ -358,16 +358,19 @@ describe('Compiler callbacks', () => {
        css({ space: '4', _hover: { space: 'compact' } })`,
     )
 
+    // Atoms carry the author's value-map key (`4`, `compact`), not the resolved
+    // CSS — the class name is hashed from this key to match the runtime, and the
+    // declaration value is resolved at emit time.
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "space",
-          "value": "var(--spacing-4)",
+          "value": 4,
           "conditions": [],
         },
         {
           "prop": "space",
-          "value": "2px",
+          "value": "compact",
           "conditions": [
             "_hover",
           ],
@@ -423,16 +426,19 @@ describe('Compiler callbacks', () => {
        css({ inset: 'full' })`,
     )
 
+    // Atoms carry the author's value-map key (`2`, `full`), not the resolved CSS
+    // (`var(--spacing-2)`, `100%`) — class names hash from the key to match the
+    // runtime; declaration values are resolved at emit time.
     expect(compiler.atoms()).toMatchInlineSnapshot(`
       [
         {
           "prop": "inset",
-          "value": "100%",
+          "value": 2,
           "conditions": [],
         },
         {
           "prop": "inset",
-          "value": "var(--spacing-2)",
+          "value": "full",
           "conditions": [],
         },
       ]

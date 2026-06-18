@@ -196,12 +196,16 @@ fn utility_values_normalize_aliases() {
     );
 
     assert_eq!(report.css_calls, 1);
+    // Atoms keep the author's value-map *key* (`sm`/`md`), not the resolved CSS.
+    // The runtime hashes the class name from this key (`s_sm`); resolution to
+    // `4px`/`8px` happens at emit time when declarations are written. Carrying
+    // the resolved value here would name a class the runtime never emits.
     assert_yaml_snapshot!(sorted_atoms(&project), @r#"
     - prop: spacing
-      value: 4px
+      value: sm
       conditions: []
     - prop: spacing
-      value: 8px
+      value: md
       conditions:
         - _hover
     "#);

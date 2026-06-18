@@ -339,28 +339,19 @@ impl Utility {
         Some(self.transform_str(prop, &value))
     }
 
-    /// Value alias for class naming (author key, not resolved CSS).
+    /// Class-name segment for a value (the author key, never the resolved CSS).
+    ///
+    /// The runtime `css()` hashes `propKey + withoutSpace(value)` verbatim — it
+    /// has no token dictionary and never reverse-maps a value to a token alias.
+    /// The class name placed on the element is whatever the author wrote, so
+    /// cssgen must mirror that exactly or it emits a rule the runtime's class
+    /// never matches (e.g. `css({ minHeight: '100vh' })` → element `min-h_100vh`
+    /// but cssgen reverse-mapped `100vh` to the `screen` alias and wrote only
+    /// `.min-h_screen`, leaving the style dead). Legacy Panda named these by the
+    /// literal too (`.mb_0\.5rem`, `.w_100vw`), so this matches v1 as well.
     #[must_use]
-    pub fn class_name_value(&self, prop: &str, value: &str) -> String {
-        let key = self.resolve_shorthand(prop);
-        let normalized = without_space(value);
-        let Some(config) = self.properties.get(key) else {
-            return normalized;
-        };
-
-        if config.values.contains_key(normalized.as_str()) {
-            return normalized;
-        }
-
-        if !config.values.is_empty() {
-            for (alias, literal) in &config.values {
-                if literal_matches_class_input(literal, &normalized) {
-                    return without_space(alias);
-                }
-            }
-        }
-
-        normalized
+    pub fn class_name_value(&self, _prop: &str, value: &str) -> String {
+        without_space(value)
     }
 
     #[must_use]
@@ -424,51 +415,29 @@ impl Utility {
         self.normalize_property_value_cow(prop, value).into_owned()
     }
 
-    /// Borrow-preserving variant — returns `Cow::Borrowed(value)` when no
-    /// alias maps, avoiding the unconditional clone of the input Literal.
-    /// Hot path: the fused encoder walker calls this per leaf.
+    /// Leaf normalization for the encoder walker.
+    ///
+    /// This intentionally leaves the author's value-map *key* on the atom and
+    /// never substitutes its resolved CSS here. The runtime `css()` hashes the
+    /// class name from the literal the author wrote (`s_sm`, `mb_2`) with no
+    /// value-map lookup, so cssgen must keep that same key to name a matching
+    /// rule — substituting `sm`→`4px` / `2`→`0.5rem` onto the atom produced a
+    /// class (`.s_4px`, `.mb_0\.5rem`) the runtime never emits, leaving the
+    /// style dead. The resolved CSS is recovered downstream by
+    /// [`Self::raw_property_value`] / [`Self::default_style`] at emit time, which
+    /// look the key up in `values` when writing declarations. (`token()` calls
+    /// are already resolved to their CSS string at extraction, so they reach the
+    /// emitter pre-resolved and keep their value-named class — see the emitter's
+    /// `class_input`.)
+    ///
+    /// Always borrows; kept as `_cow` for call-site/source compatibility.
     #[must_use]
     pub fn normalize_property_value_cow<'a>(
         &self,
-        prop: &str,
+        _prop: &str,
         value: &'a Literal,
     ) -> Cow<'a, Literal> {
-        let Some(config) = self.properties.get(prop) else {
-            return Cow::Borrowed(value);
-        };
-        // Props with a JS transform need the original alias as `args.raw`
-        // (legacy passes the alias, resolving the value separately). Keep the
-        // alias on the atom; the transform/emit path resolves it.
-        if config.transform_callback_id.is_some() {
-            return Cow::Borrowed(value);
-        }
-        let mapped = match value {
-            Literal::String(value) | Literal::Token { value, .. } => {
-                config.values.get(value.as_str())
-            }
-            Literal::Bool(true) => config.values.get("true"),
-            Literal::Bool(false) => config.values.get("false"),
-            Literal::Number(value) => {
-                let key = number_to_js_string(*value);
-                config.values.get(key.as_str())
-            }
-            Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
-                None
-            }
-        };
-        // Only substitute scalar → scalar mappings here. Object/Array/Conditional
-        // mappings (e.g. composition utilities) keep the original lookup key on
-        // the atom; the substitution happens at emit time in `default_style`.
-        match mapped {
-            Some(
-                scalar @ (Literal::String(_)
-                | Literal::Token { .. }
-                | Literal::Number(_)
-                | Literal::Bool(_)
-                | Literal::Null),
-            ) => Cow::Owned(scalar.clone()),
-            _ => Cow::Borrowed(value),
-        }
+        Cow::Borrowed(value)
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
@@ -1012,15 +981,6 @@ fn join_class_name(prop: &str, separator: &str, value: &str) -> String {
 
 fn without_space(value: &str) -> String {
     value.replace(' ', "_")
-}
-
-fn literal_matches_class_input(literal: &Literal, value: &str) -> bool {
-    match literal {
-        Literal::String(s) | Literal::Token { value: s, .. } => without_space(s) == value,
-        Literal::Number(n) => number_to_js_string(*n) == value,
-        Literal::Bool(b) => b.to_string() == value,
-        Literal::Null | Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => false,
-    }
 }
 
 #[must_use]

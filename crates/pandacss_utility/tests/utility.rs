@@ -74,7 +74,7 @@ fn callback_transform_refs_are_exposed() {
 }
 
 #[test]
-fn utility_values_normalize_aliases_to_raw_values() {
+fn utility_values_resolve_shorthands_but_keep_the_value_map_key() {
     let utility = Utility::from_config(&utility_config(json!({
         "spacing": {
             "shorthand": "s",
@@ -89,14 +89,18 @@ fn utility_values_normalize_aliases_to_raw_values() {
         ("s".into(), Literal::String("md".into())),
     ]);
 
+    // The shorthand `s` resolves to `spacing` (so both entries collapse onto one
+    // key, last wins). The value-map key is NOT resolved to its CSS here: the
+    // runtime names the class from the author key (`s_md`), and the emit path
+    // resolves `md` -> `8px` when writing the declaration.
     assert_eq!(
         utility.normalize_style_object(&style),
-        Literal::Object(vec![("spacing".into(), Literal::String("8px".into()))]),
+        Literal::Object(vec![("spacing".into(), Literal::String("md".into()))]),
     );
 }
 
 #[test]
-fn utility_values_normalize_nested_conditions() {
+fn utility_values_normalize_nested_conditions_keep_the_value_map_key() {
     let utility = Utility::from_config(&utility_config(json!({
         "spacing": {
             "values": {
@@ -109,11 +113,14 @@ fn utility_values_normalize_nested_conditions() {
         Literal::Object(vec![("spacing".into(), Literal::String("sm".into()))]),
     )]);
 
+    // Nested conditions normalize structurally, but the value-map key `sm` is
+    // preserved (not resolved to `4px`) so cssgen's class name matches the
+    // runtime's. Resolution happens at emit time.
     assert_eq!(
         utility.normalize_style_object(&style),
         Literal::Object(vec![(
             "_hover".into(),
-            Literal::Object(vec![("spacing".into(), Literal::String("4px".into()))]),
+            Literal::Object(vec![("spacing".into(), Literal::String("sm".into()))]),
         )]),
     );
 }
@@ -1121,7 +1128,7 @@ fn resolve_values_value_passes_through_when_no_category_matches() {
 }
 
 #[test]
-fn class_name_value_uses_object_map_alias_not_resolved_css() {
+fn class_name_value_uses_the_authored_literal_not_a_token_alias() {
     let utility = Utility::from_config(&utility_config(json!({
         "marginBottom": {
             "className": "mb",
@@ -1129,11 +1136,16 @@ fn class_name_value_uses_object_map_alias_not_resolved_css() {
         }
     })));
 
+    // Authoring the token key keeps the key.
     assert_eq!(utility.class_name_value("marginBottom", "2"), "2");
-    assert_eq!(utility.class_name_value("marginBottom", "0.5rem"), "2");
+    // Authoring the resolved value keeps that value — it is NOT reverse-mapped
+    // back to the `2` alias. The runtime `css()` hashes the literal the author
+    // wrote, so cssgen must agree or it emits `.mb_2` for an element the runtime
+    // labelled `mb_0.5rem`. Legacy Panda named this `.mb_0\.5rem` too.
+    assert_eq!(utility.class_name_value("marginBottom", "0.5rem"), "0.5rem");
     assert_snapshot!(
         utility.transform_str("marginBottom", "0.5rem").class_name,
-        @"mb_2"
+        @"mb_0.5rem"
     );
 }
 
