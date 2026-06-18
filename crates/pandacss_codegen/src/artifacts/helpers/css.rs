@@ -71,10 +71,13 @@ pub(super) fn create_css_runtime() -> Item {
               const set = new Set<string>()
               walkObject(obj, (value: any, paths: string[]) => {
                 if (value == null) return
+                const important = isImportant(value)
                 const [prop, ...all] = c.shift(paths)
                 const cond = filterBaseConditions(all)
-                const res = u.transform(prop, withoutSpace(value))
-                set.add(toClass(cond, res.className))
+                const res = u.transform(prop, withoutSpace(withoutImportant(value)))
+                let name = toClass(cond, res.className)
+                if (important) name += "!"
+                set.add(name)
               })
               let out = ""
               for (const name of set) out += out ? " " + name : name
