@@ -1,16 +1,16 @@
 ---
 title: Color opacity modifier
-description: How to dynamically set the opacity of a raw color or color token
+description: Append /{opacity} to color tokens so Panda emits color-mix; omit it for plain token references.
 ---
 
-Every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) can use the
-[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function. This means for
-example: `background`, `backgroundColor`, `color`, `border`, `borderColor`, etc.
+Append `/{opacity}` to a color token — `red.300/40`, `{colors.black/50}`, or `red/half`. Panda emits
+[`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) only when the suffix is present;
+plain values like `white` stay as token references. Works on color-connected utilities from `@pandacss/preset-base`:
+`background`, `color`, `borderColor`, and others. Browsers without `color-mix` use the solid token.
 
-This function allows you to mix two colors together, and we use it to change the opacity of a color using the
-`{color}/{opacity}` syntax.
+## Examples
 
-You can use it like this:
+### Basic example
 
 ```ts
 css({
@@ -18,8 +18,6 @@ css({
   color: 'white'
 })
 ```
-
-This will generate:
 
 ```css
 @layer utilities {
@@ -34,15 +32,40 @@ This will generate:
 }
 ```
 
-- If you're not using any opacity, the utility will **not** use `color-mix`
-- The utility will automatically fallback to the original color if the `color-mix` function is not supported by the
-  browser.
-- You can use any of the color tokens, and any of the opacity tokens.
+### Using a custom property
 
----
+For `--*` variables in `css()`, wrap the token path in curly braces and reference it with `var()`:
 
-The `utilities` transform function also receives a `utils` object that contains the `colorMix` function, so you can also
-use it on your own utilities:
+```ts
+css({
+  '--overlay': '{colors.black/50}',
+  bg: 'var(--overlay)'
+})
+```
+
+```ts
+// ❌ Not resolved
+'--overlay': 'colors.black/50'
+
+// ✅ Resolved to color-mix
+'--overlay': '{colors.black/50}'
+```
+
+### Usage with virtual colors
+
+See [virtual colors](/docs/concepts/virtual-color) for the full `colorPalette` API:
+
+```ts
+css({
+  colorPalette: 'blue',
+  '--tint': '{colors.colorPalette.500/50}',
+  bg: 'var(--tint)'
+})
+```
+
+## Usage in custom utilities
+
+Support `{color}/{opacity}` on your own utilities through the `colorMix` helper on `utils`:
 
 ```ts
 export default defineConfig({
@@ -53,7 +76,6 @@ export default defineConfig({
       values: 'colors',
       transform(value, args) {
         const mix = args.utils.colorMix(value)
-        // This can happen if the value format is invalid (e.g. `bg: red.300/invalid` or `bg: red.300//10`)
         if (mix.invalid) return { background: value }
 
         return {
@@ -65,13 +87,11 @@ export default defineConfig({
 })
 ```
 
----
-
-Here's a cool snippet (that we use internally !) that makes it easier to create a utility transform for a given
-property:
+### Using createColorMixTransform
 
 ```ts
 import type { PropertyTransform } from '@pandacss/types'
+
 export const createColorMixTransform =
   (prop: string): PropertyTransform =>
   (value, args) => {
@@ -85,16 +105,15 @@ export const createColorMixTransform =
   }
 ```
 
-then the same utility transform as above can be written like this:
-
 ```ts
 export default defineConfig({
   utilities: {
     background: {
-      shorthand: "bg",
-      className: "bg",
-      values: "colors",
-      transform: createColorMixTransform("background"),
-  },
-});
+      shorthand: 'bg',
+      className: 'bg',
+      values: 'colors',
+      transform: createColorMixTransform('background')
+    }
+  }
+})
 ```
