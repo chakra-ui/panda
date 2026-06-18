@@ -201,7 +201,7 @@ const CustomCircle = (props: Props) => {
 }
 ```
 
-In this case, you need to use the `size` prop.
+In this case, use `size` at the call site.
 
 ### Alternative
 
@@ -225,6 +225,19 @@ export const Funky: Story = {
   })
 }
 ```
+
+### Custom prop names
+
+`elementWidth="300px"` won't compile to `width`. Use a utility name, `css`, a `*Css` prop, or `css.raw()`:
+
+```tsx
+<Carousel width="300px" />
+<Carousel css={{ width: '300px' }} />
+<Carousel trackCss={{ width: '300px' }} />
+<Carousel trackProps={css.raw({ width: '300px' })} />
+```
+
+See [custom component props](/docs/concepts/style-props#custom-component-props).
 
 ### Enhanced `css.raw` spreading
 

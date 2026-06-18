@@ -925,3 +925,6 @@ CSS utilities on the same component still work with breakpoint keys — same as 
 ```tsx
 <Grid columns={{ base: 1, md: 2 }} padding={{ base: '4', md: '6' }} />
 ```
+
+The same call-site rules apply to custom components — use `css`, `*Css`, or CSS utility names, not semantic aliases.
+See [custom component props](/docs/concepts/style-props#custom-component-props).
