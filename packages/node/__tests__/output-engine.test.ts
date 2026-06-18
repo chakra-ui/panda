@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { OutputEngine } from '../src/output-engine'
 
 function createEngine(fs: {
+  existsSync: ReturnType<typeof vi.fn>
   readFileSync: ReturnType<typeof vi.fn>
   writeFile: ReturnType<typeof vi.fn>
   ensureDirSync: ReturnType<typeof vi.fn>
@@ -10,6 +11,7 @@ function createEngine(fs: {
     paths: { root: ['styled-system'] },
     runtime: {
       fs: {
+        existsSync: fs.existsSync,
         readFileSync: fs.readFileSync,
         writeFile: fs.writeFile,
         ensureDirSync: fs.ensureDirSync,
@@ -33,28 +35,29 @@ function createEngine(fs: {
 
 describe('OutputEngine.write', () => {
   test('writes when the file does not exist', async () => {
+    const existsSync = vi.fn().mockReturnValue(false)
     const writeFile = vi.fn().mockResolvedValue(undefined)
-    const readFileSync = vi.fn().mockImplementation(() => {
-      throw new Error('ENOENT')
-    })
+    const readFileSync = vi.fn()
     const ensureDirSync = vi.fn()
 
-    const engine = createEngine({ readFileSync, writeFile, ensureDirSync })
+    const engine = createEngine({ existsSync, readFileSync, writeFile, ensureDirSync })
 
     await engine.write({
       id: 'styles.css',
       files: [{ file: 'styles.css', code: '.foo { color: red; }' }],
     })
 
+    expect(readFileSync).not.toHaveBeenCalled()
     expect(writeFile).toHaveBeenCalledWith('styled-system/styles.css', '.foo { color: red; }')
   })
 
   test('skips the write when content is unchanged', async () => {
+    const existsSync = vi.fn().mockReturnValue(true)
     const writeFile = vi.fn().mockResolvedValue(undefined)
     const readFileSync = vi.fn().mockReturnValue('.foo { color: red; }')
     const ensureDirSync = vi.fn()
 
-    const engine = createEngine({ readFileSync, writeFile, ensureDirSync })
+    const engine = createEngine({ existsSync, readFileSync, writeFile, ensureDirSync })
 
     await engine.write({
       id: 'styles.css',
@@ -66,11 +69,12 @@ describe('OutputEngine.write', () => {
   })
 
   test('writes when content changed', async () => {
+    const existsSync = vi.fn().mockReturnValue(true)
     const writeFile = vi.fn().mockResolvedValue(undefined)
     const readFileSync = vi.fn().mockReturnValue('.foo { color: red; }')
     const ensureDirSync = vi.fn()
 
-    const engine = createEngine({ readFileSync, writeFile, ensureDirSync })
+    const engine = createEngine({ existsSync, readFileSync, writeFile, ensureDirSync })
 
     await engine.write({
       id: 'styles.css',
@@ -78,5 +82,34 @@ describe('OutputEngine.write', () => {
     })
 
     expect(writeFile).toHaveBeenCalledWith('styled-system/styles.css', '.foo { color: blue; }')
+  })
+
+  test('skips direct writes when content is unchanged', async () => {
+    const existsSync = vi.fn().mockReturnValue(true)
+    const writeFile = vi.fn().mockResolvedValue(undefined)
+    const readFileSync = vi.fn().mockReturnValue('.foo { color: red; }')
+    const ensureDirSync = vi.fn()
+
+    const engine = createEngine({ existsSync, readFileSync, writeFile, ensureDirSync })
+
+    await engine.writeFile('/tmp/report.json', '.foo { color: red; }')
+
+    expect(ensureDirSync).toHaveBeenCalledWith('/tmp')
+    expect(readFileSync).toHaveBeenCalledWith('/tmp/report.json')
+    expect(writeFile).not.toHaveBeenCalled()
+  })
+
+  test('writes direct files when content changed', async () => {
+    const existsSync = vi.fn().mockReturnValue(true)
+    const writeFile = vi.fn().mockResolvedValue(undefined)
+    const readFileSync = vi.fn().mockReturnValue('.foo { color: red; }')
+    const ensureDirSync = vi.fn()
+
+    const engine = createEngine({ existsSync, readFileSync, writeFile, ensureDirSync })
+
+    await engine.writeFile('/tmp/report.json', '.foo { color: blue; }')
+
+    expect(ensureDirSync).toHaveBeenCalledWith('/tmp')
+    expect(writeFile).toHaveBeenCalledWith('/tmp/report.json', '.foo { color: blue; }')
   })
 })

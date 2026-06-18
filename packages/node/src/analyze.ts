@@ -22,10 +22,8 @@ export function analyze(ctx: PandaContext, options: AnalysisOptions = {}) {
       return { report, formatted: formatTokenReport(report.getSummary(), format) }
     },
     writeReport(filePath: string) {
-      const dirname = ctx.runtime.path.dirname(filePath)
-      ctx.runtime.fs.ensureDirSync(dirname)
       const str = JSON.stringify(reporter.report, replacer, 2)
-      return ctx.runtime.fs.writeFile(filePath, str)
+      return ctx.output.writeFile(filePath, str)
     },
   }
 }

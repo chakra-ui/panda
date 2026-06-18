@@ -23,7 +23,7 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
     if (outfile) {
       const css = ctx.getCss(sheet)
       logger.info('css', ctx.runtime.path.resolve(outfile))
-      await ctx.runtime.fs.writeFile(outfile, css)
+      await ctx.output.writeFile(outfile, css)
     } else {
       await ctx.writeCss(sheet)
     }
@@ -45,7 +45,7 @@ export const cssgen = async (ctx: PandaContext, options: CssGenOptions) => {
     } else if (outfile) {
       const css = ctx.getCss(sheet)
       logger.info('css', ctx.runtime.path.resolve(outfile))
-      await ctx.runtime.fs.writeFile(outfile, css)
+      await ctx.output.writeFile(outfile, css)
     } else {
       await ctx.writeCss(sheet)
     }
