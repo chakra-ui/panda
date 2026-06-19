@@ -186,6 +186,8 @@ Brief description of the change and its impact.
 - Detail 2
 ```
 
+Keep changesets **concise**: one or two sentences on user-visible impact. Skip root-cause essays, long before/after examples, and implementation detail — that belongs in the PR or commit message.
+
 **Changeset types:**
 
 - `patch`: Bug fixes, dependency updates, non-breaking changes
@@ -467,6 +469,9 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 5. **Use workspace knowledge**: Remember this is a monorepo - changes may affect multiple packages
 6. **Document breaking changes**: If CSS output must change, explain why clearly
 7. **Check sandboxes**: Don't just test main packages - verify sandbox projects too
+8. **Write concise changesets and comments**: Changesets should state user impact in plain language (see
+   [Creating Changesets](#creating-changesets)). In code, keep comments minimal — prefer clearer names and structure
+   over narration; only comment non-obvious invariants or business rules
 
 ## Emergency Rollback
 
