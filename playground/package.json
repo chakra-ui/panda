@@ -1,6 +1,6 @@
 {
   "name": "playground",
-  "version": "0.1.1-beta.2",
+  "version": "0.1.1-beta.3",
   "private": true,
   "scripts": {
     "css:codegen": "pnpm panda codegen --silent",

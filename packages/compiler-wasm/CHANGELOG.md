@@ -1,5 +1,11 @@
 # @pandacss/compiler-wasm
 
+## 2.0.0-beta.3
+
+### Patch Changes
+
+- @pandacss/compiler-shared@2.0.0-beta.3
+
 ## 2.0.0-beta.2
 
 ### Minor Changes

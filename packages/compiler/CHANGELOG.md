@@ -1,5 +1,37 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.3
+
+### Patch Changes
+
+- 2117c7a: Improve generated style prop types for native CSS values and Panda utilities.
+
+  Utility shorthands like `bg`, `bgColor`, and `color` now accept the matching native CSS values when `strictTokens` is
+  off. Keyframe steps also use the same style object types as global CSS.
+
+- 1d1ec6c: Trim surrounding whitespace before generating class names, so cssgen and runtime `css()` produce the same
+  class for values like `'0 auto '`.
+- 21dc46a: Fix several nested arbitrary selector edge cases.
+
+  - Keep `&` intact inside quoted attribute selector values, like `[data-category="sound & vision"]`.
+  - Keep parent selectors like `&:last-child` attached to the parent when followed by a nested descendant such as
+    `& .divider`.
+  - Scope comma selector members without `&` as descendants.
+  - Wrap combinator parents in `:is()` when a nested selector contains multiple `&` tokens.
+
+- 6a61a2d: Fix generated types for recipes with no variants.
+
+  Variant-less recipes no longer add a broad string index signature, so `defaultProps` and `createSlotRecipeContext`
+  providers accept valid non-variant props again.
+
+- 376d6f2: Improve parse handling during extraction.
+
+  - `.astro` frontmatter with a top-level `return` now extracts correctly.
+  - Files Panda can't fully parse now warn instead of aborting the build. The warning explains that some styles may be
+    missing. Use `--max-warnings 0` if you want parse warnings to fail CI.
+  - @pandacss/compiler-shared@2.0.0-beta.3
+  - @pandacss/config@2.0.0-beta.3
+
 ## 2.0.0-beta.2
 
 ### Minor Changes
