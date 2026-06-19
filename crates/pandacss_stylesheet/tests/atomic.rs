@@ -500,6 +500,33 @@ fn escapes_nested_selector_keys_into_valid_class_names() {
 }
 
 #[test]
+fn nested_pseudo_then_descendant_keeps_the_pseudo_on_the_parent() {
+    // Two nested arbitrary `&` selectors form a parent->descendant chain:
+    // `&:last-child` (outer) then `& .divider` (inner) must compose as
+    // `.cls:last-child .divider` — the pseudo stays on the class-bearing parent.
+    // The condition sort floated the relational `& .divider` (pseudo-rank 0)
+    // ahead of the pseudo `&:last-child` (rank > 0), relocating the pseudo onto
+    // the descendant (`.cls .divider:last-child`) — a different, wrong selector.
+    // Author order of raw nested-selector keys must be preserved. Matches v1.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "display": { "className": "d" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '&:last-child': { '& .divider': { display: 'none' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .\[\&\:last-child\]\:\[\&_\.divider\]\:d_none:last-child .divider {
+    display: none;
+  }
+}
+");
+}
+
+#[test]
 fn escapes_leading_double_dash_class_names() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

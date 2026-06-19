@@ -401,6 +401,17 @@ impl PartialOrd for SelectorKey {
 }
 
 fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
+    // Two nested-selector conditions that establish a descendant/child/sibling
+    // relationship are ORDER-SIGNIFICANT: `&:last-child` then `& .divider` must
+    // compose as `.cls:last-child .divider`, never `.cls .divider:last-child`.
+    // The pseudo-rank sort below would float the relational `& .divider`
+    // (rank 0) ahead of the pseudo `&:last-child` (rank > 0), relocating the
+    // pseudo onto the descendant. Keep author order (stable sort) whenever
+    // either side carries a relational combinator so the nesting can't invert.
+    if condition_is_relational(config, a) || condition_is_relational(config, b) {
+        return Ordering::Equal;
+    }
+
     let mut a_at_rules = Vec::new();
     let mut a_selectors = Vec::new();
     collect_condition_parts(config, a, &mut a_at_rules, &mut a_selectors);
@@ -415,6 +426,76 @@ fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
 
     compare_condition_apply_parts(&a_at_rules, &a_selectors, &b_at_rules, &b_selectors)
         .then_with(|| a.cmp(b))
+}
+
+/// True when `condition` is a RAW nested arbitrary selector authored as an
+/// object key (not a registered breakpoint / container / named / theme
+/// condition) that nests its subject under a combinator (descendant ` `, child
+/// `>`, adjacent `+`, general sibling `~`) relative to `&`. Such keys form an
+/// authored parent→descendant chain, so reordering one past another would
+/// change the ancestor chain. A bare compound like `&:last-child` is NOT
+/// relational (the pseudo sits on the subject) and still sorts normally; named
+/// conditions (`_dark`, `_ltr`, …) keep their existing cascade sort.
+fn condition_is_relational(config: &UserConfig, condition: &str) -> bool {
+    if !condition_is_raw_selector(config, condition) {
+        return false;
+    }
+    let mut at_rules = Vec::new();
+    let mut selectors = Vec::new();
+    collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
+    selectors
+        .iter()
+        .any(|selector| selector_has_top_level_combinator(&selector.raw))
+}
+
+/// A condition that resolves to its own literal text — i.e. it is NOT a
+/// breakpoint, container, registered, or theme condition. These are the raw
+/// arbitrary selectors authored directly as nested object keys (`&:last-child`,
+/// `& .divider`), whose author order is structurally significant.
+fn condition_is_raw_selector(config: &UserConfig, condition: &str) -> bool {
+    if config.breakpoint_condition(condition).is_some()
+        || config.container_condition(condition).is_some()
+        || config.theme_condition(condition).is_some()
+    {
+        return false;
+    }
+    let key = condition.trim_start_matches('_');
+    if config.conditions.contains_key(condition) || config.conditions.contains_key(key) {
+        return false;
+    }
+    condition.contains('&')
+}
+
+/// Scan for a combinator at bracket/paren depth zero. ` `/`>`/`+`/`~` separating
+/// two compound selectors makes the selector relational; combinators inside
+/// `:is(...)`, `[...]`, etc. don't count.
+fn selector_has_top_level_combinator(selector: &str) -> bool {
+    let mut depth = 0i32;
+    let mut escaped = false;
+    let mut seen_subject = false;
+
+    for ch in selector.chars() {
+        if escaped {
+            escaped = false;
+            seen_subject = true;
+            continue;
+        }
+        match ch {
+            '\\' => escaped = true,
+            '(' | '[' => depth += 1,
+            ')' | ']' => depth = depth.saturating_sub(1),
+            ' ' | '>' | '+' | '~' if depth == 0 => {
+                // A combinator only relates two compounds once a subject precedes
+                // it; leading whitespace / a leading combinator is not relational.
+                if seen_subject {
+                    return true;
+                }
+            }
+            _ if depth == 0 => seen_subject = true,
+            _ => {}
+        }
+    }
+    false
 }
 
 fn compare_condition_apply_parts(
