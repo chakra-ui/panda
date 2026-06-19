@@ -204,9 +204,275 @@ fn join_scoped(parts: impl Iterator<Item = String>) -> String {
     parts.collect::<Vec<_>>().join(", ")
 }
 
+/// Replace nesting `&` tokens with `parent` in one complex selector.
+///
+/// Ampersands inside quoted attribute strings are left untouched.
+#[must_use]
+pub(crate) fn replace_nesting_parent(selector: &str, parent: &str) -> String {
+    let mut out = String::with_capacity(selector.len() + parent.len());
+    let mut in_double = false;
+    let mut in_single = false;
+    let mut escaped = false;
+
+    for ch in selector.chars() {
+        if escaped {
+            out.push(ch);
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            out.push(ch);
+            escaped = true;
+            continue;
+        }
+        if ch == '"' && !in_single {
+            in_double = !in_double;
+            out.push(ch);
+            continue;
+        }
+        if ch == '\'' && !in_double {
+            in_single = !in_single;
+            out.push(ch);
+            continue;
+        }
+        if ch == '&' && !in_double && !in_single {
+            out.push_str(parent);
+            continue;
+        }
+        out.push(ch);
+    }
+
+    out
+}
+
+/// Cartesian-product `&` substitution for comma-separated selector lists.
+#[must_use]
+pub(crate) fn replace_selector_parent(raw: &str, parent: &str) -> String {
+    let parent_selectors = split_selector_list(parent);
+    let raw_selectors = split_selector_list(raw);
+    let mut out = Vec::new();
+    for parent in &parent_selectors {
+        for raw in &raw_selectors {
+            out.push(replace_nesting_parent(raw, parent));
+        }
+    }
+    out.join(", ")
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{ScopeMode, peel_trailing_pseudo_elements, scope_selector, split_selector_list};
+    use super::{
+        ScopeMode, peel_trailing_pseudo_elements, replace_nesting_parent, replace_selector_parent,
+        scope_selector, split_selector_list,
+    };
+
+    #[test]
+    fn replace_ignores_ampersand_inside_double_quoted_attribute() {
+        assert_eq!(
+            replace_nesting_parent(r#"&[data-category="sound & vision"]"#, ".a"),
+            r#".a[data-category="sound & vision"]"#
+        );
+    }
+
+    #[test]
+    fn replace_ignores_ampersand_inside_single_quoted_attribute() {
+        assert_eq!(
+            replace_nesting_parent(r"&[data-category='Sound & Vision']", ".room"),
+            r".room[data-category='Sound & Vision']"
+        );
+    }
+
+    #[test]
+    fn replace_all_nesting_ampersands_in_not() {
+        assert_eq!(replace_nesting_parent("&:not(&.no)", ".a"), ".a:not(.a.no)");
+    }
+
+    #[test]
+    fn replace_selector_list_cartesian_product() {
+        assert_eq!(
+            replace_selector_parent("&:hover, &:active", ".a, .b"),
+            ".a:hover, .a:active, .b:hover, .b:active"
+        );
+    }
+
+    #[test]
+    fn replace_has_and_not_lists() {
+        assert_eq!(
+            replace_nesting_parent("&:has(&, :not(&))", ".foo"),
+            ".foo:has(.foo, :not(.foo))"
+        );
+    }
+
+    #[test]
+    fn replace_chained_adjacent_sibling_ampersands() {
+        assert_eq!(replace_nesting_parent("&&+&", ".x"), ".x.x+.x");
+    }
+
+    #[test]
+    fn replace_general_sibling_between_ampersands() {
+        assert_eq!(replace_nesting_parent("& ~ &", ".x"), ".x ~ .x");
+    }
+
+    #[test]
+    fn replace_double_ampersand_compound() {
+        assert_eq!(replace_nesting_parent("&&", ".x"), ".x.x");
+    }
+
+    #[test]
+    fn replace_triple_ampersand_compound() {
+        assert_eq!(replace_nesting_parent("&&&", ".x"), ".x.x.x");
+    }
+
+    #[test]
+    fn replace_compound_tag_suffix() {
+        assert_eq!(replace_nesting_parent("&html", ".x"), ".xhtml");
+    }
+
+    #[test]
+    fn replace_compound_tag_prefix() {
+        assert_eq!(replace_nesting_parent("html&", ".x"), "html.x");
+    }
+
+    #[test]
+    fn replace_compound_then_descendant_ampersand() {
+        assert_eq!(replace_nesting_parent("&.b &", ".a"), ".a.b .a");
+    }
+
+    #[test]
+    fn replace_is_pseudo_with_ampersand() {
+        assert_eq!(replace_nesting_parent("&.b :is(&)", ".a"), ".a.b :is(.a)");
+    }
+
+    #[test]
+    fn replace_double_compound_ampersand() {
+        assert_eq!(replace_nesting_parent("&.b&", ".a"), ".a.b.a");
+    }
+
+    #[test]
+    fn replace_compound_is_pseudo_with_ampersand() {
+        assert_eq!(replace_nesting_parent("&.b:is(&)", ".a"), ".a.b:is(.a)");
+    }
+
+    #[test]
+    fn replace_adjacent_sibling_no_spaces() {
+        assert_eq!(replace_nesting_parent("&+&", ".x"), ".x+.x");
+    }
+
+    #[test]
+    fn replace_compound_tag_list() {
+        assert_eq!(replace_selector_parent("&h1, &h2", ".x"), ".xh1, .xh2");
+    }
+
+    #[test]
+    fn replace_where() {
+        assert_eq!(replace_nesting_parent("&:where(h1)", ".x"), ".x:where(h1)");
+    }
+
+    #[test]
+    fn replace_multi_ampersand_in_one_selector() {
+        assert_eq!(
+            replace_nesting_parent("& .bar & .baz & .qux", ".x"),
+            ".x .bar .x .baz .x .qux"
+        );
+    }
+
+    #[test]
+    fn replace_is_with_inner_compound_ampersand() {
+        assert_eq!(
+            replace_nesting_parent("&:is(.bar, &.baz)", ".x"),
+            ".x:is(.bar, .x.baz)"
+        );
+    }
+
+    #[test]
+    fn replace_not_root_ampersand() {
+        assert_eq!(replace_nesting_parent("&:not(&)", ".x"), ".x:not(.x)");
+    }
+
+    #[test]
+    fn replace_pseudo_element_compound_after() {
+        assert_eq!(replace_nesting_parent("&::after", ".x"), ".x::after");
+    }
+
+    #[test]
+    fn replace_pseudo_element_descendant_after() {
+        assert_eq!(replace_nesting_parent("& ::after", ".x"), ".x ::after");
+    }
+
+    #[test]
+    fn replace_pseudo_element_then_pseudo_class() {
+        assert_eq!(
+            replace_nesting_parent("&:focus", ".x::before"),
+            ".x::before:focus"
+        );
+    }
+
+    #[test]
+    fn replace_pseudo_element_before_after_list() {
+        assert_eq!(
+            replace_selector_parent("&::before, &::after", ".x"),
+            ".x::before, .x::after"
+        );
+    }
+
+    #[test]
+    fn replace_pseudo_element_compound_suffix_before() {
+        assert_eq!(replace_nesting_parent("::before&", ".x"), "::before.x");
+    }
+
+    #[test]
+    fn replace_pseudo_element_single_colon_compound_suffix_before() {
+        assert_eq!(replace_nesting_parent(":before&", ".x"), ":before.x");
+    }
+
+    #[test]
+    fn replace_pseudo_element_descendant_before() {
+        assert_eq!(replace_nesting_parent("::before &", ".x"), "::before .x");
+    }
+
+    #[test]
+    fn replace_tail_ampersand_with_child_combinator() {
+        assert_eq!(
+            replace_nesting_parent(".something > &", ".x"),
+            ".something > .x"
+        );
+    }
+
+    #[test]
+    fn replace_descendant_attr_ampersand_in_string() {
+        assert_eq!(
+            replace_nesting_parent(r#"& b[a="a&b"]"#, ".x"),
+            r#".x b[a="a&b"]"#
+        );
+    }
+
+    #[test]
+    fn replace_compound_combinator_list() {
+        assert_eq!(
+            replace_selector_parent("&+.baz, &.qux", ".a"),
+            ".a+.baz, .a.qux"
+        );
+    }
+
+    #[test]
+    fn replace_child_combinator_no_space() {
+        assert_eq!(replace_nesting_parent("&>.bar", ".x"), ".x>.bar");
+    }
+
+    #[test]
+    fn replace_compound_body_suffix() {
+        assert_eq!(replace_nesting_parent("body&", ".x"), "body.x");
+    }
+
+    #[test]
+    fn replace_compound_class_suffix_no_space() {
+        assert_eq!(replace_nesting_parent(".foo&", ".x"), ".foo.x");
+    }
+
+    #[test]
+    fn replace_standalone_ampersand() {
+        assert_eq!(replace_nesting_parent("&", ".x"), ".x");
+    }
 
     #[test]
     fn peel_does_not_strip_pseudo_element_inside_functional_pseudo() {

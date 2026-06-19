@@ -7,6 +7,7 @@ mod global_vars;
 mod integration;
 mod keyframes;
 mod layers;
+mod nested_selector_parity;
 mod output;
 mod preflight;
 mod recipes;

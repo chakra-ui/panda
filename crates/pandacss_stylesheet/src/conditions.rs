@@ -136,7 +136,7 @@ pub(crate) fn is_nested_selector_key(key: &str) -> bool {
 
 pub(crate) fn nested_selector(parent: &str, nested: &str) -> String {
     if nested.contains('&') {
-        replace_selector_parent(nested, parent)
+        crate::selector::replace_selector_parent(nested, parent)
     } else {
         format!("{parent} {nested}")
     }
@@ -197,7 +197,7 @@ fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &
     if raw.starts_with('@') {
         wrappers.push(raw.to_owned());
     } else if raw.contains('&') {
-        *selector = replace_selector_parent(raw, selector);
+        *selector = crate::selector::replace_selector_parent(raw, selector);
     } else {
         *selector = format!("{raw} {selector}");
     }
@@ -222,7 +222,7 @@ fn apply_token_raw_condition(
         *selector = if selector == css_var_root {
             parent
         } else if parent.contains('&') {
-            replace_selector_parent(&parent, selector)
+            crate::selector::replace_selector_parent(&parent, selector)
         } else {
             format!("{selector}{parent}")
         };
@@ -230,7 +230,7 @@ fn apply_token_raw_condition(
     }
 
     if raw.contains('&') {
-        *selector = replace_selector_parent(raw, selector);
+        *selector = crate::selector::replace_selector_parent(raw, selector);
         cleanup_token_selector(css_var_root, selector);
     } else if selector == css_var_root {
         raw.clone_into(selector);
@@ -281,16 +281,4 @@ fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
     if !cleaned.is_empty() {
         *selector = cleaned.join(", ");
     }
-}
-
-fn replace_selector_parent(raw: &str, parent: &str) -> String {
-    let parent_selectors = crate::selector::split_selector_list(parent);
-    let raw_selectors = crate::selector::split_selector_list(raw);
-    let mut out = Vec::new();
-    for parent in &parent_selectors {
-        for raw in &raw_selectors {
-            out.push(raw.replace('&', parent));
-        }
-    }
-    out.join(", ")
 }
