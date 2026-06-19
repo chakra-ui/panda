@@ -45,7 +45,7 @@ fn parsed_file_surfaces_diagnostics_per_file() {
         !report.diagnostics.is_empty(),
         "ParseFileReport carries the list"
     );
-    assert_eq!(report.diagnostics[0].severity, DiagnosticSeverity::Error);
+    assert_eq!(report.diagnostics[0].severity, DiagnosticSeverity::Warning);
 
     let view = project.get_file("broken.tsx").expect("file recorded");
     assert_eq!(
@@ -53,7 +53,7 @@ fn parsed_file_surfaces_diagnostics_per_file() {
         report.diagnostics.len(),
         "ParsedFile mirrors the ParseFileReport list"
     );
-    assert_eq!(view.diagnostics()[0].severity, DiagnosticSeverity::Error);
+    assert_eq!(view.diagnostics()[0].severity, DiagnosticSeverity::Warning);
 }
 
 #[test]

@@ -132,12 +132,30 @@ describe('@pandacss/postcss', () => {
       css: '',
       manifest: { files: [], tokens: [] },
       layerRanges: {},
-      diagnostics: [{ severity: 'error', code: 'js_parse_error', message: 'Unexpected token' }],
+      diagnostics: [{ severity: 'error', code: 'config_load_error', message: 'bad config' }],
     })
 
     await expect(run(INPUT)).rejects.toThrowErrorMatchingInlineSnapshot(
-      `[CssSyntaxError: pandacss: /project/styles.css:1:1: error js_parse_error Unexpected token]`,
+      `[CssSyntaxError: pandacss: /project/styles.css:1:1: error config_load_error bad config]`,
     )
+  })
+
+  it('warns on a parse error instead of failing the build', async () => {
+    const { driver, run } = await setup()
+    driver.cssgen.mockReturnValueOnce({
+      css: '.text_red { color: red }',
+      manifest: { files: [], tokens: [] },
+      layerRanges: {},
+      diagnostics: [{ severity: 'warning', code: 'js_parse_error', message: 'Unexpected token' }],
+    })
+
+    const result = await run(INPUT)
+
+    expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
+      [
+        "warning js_parse_error Unexpected token",
+      ]
+    `)
   })
 
   it('uses dependency messages for source directories in Rollup watch mode', async () => {

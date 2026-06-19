@@ -518,7 +518,7 @@ fn parse_error_is_reported() {
     let result = scan("import from 'broken';\n");
     assert!(result.imports.is_empty());
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].severity, DiagnosticSeverity::Error);
+    assert_eq!(result.diagnostics[0].severity, DiagnosticSeverity::Warning);
 }
 
 #[test]
