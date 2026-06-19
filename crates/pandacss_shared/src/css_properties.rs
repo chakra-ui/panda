@@ -3,7 +3,7 @@
 
 //! The single source of truth for valid CSS property names: standard, `-webkit-`,
 //! and SVG (the `-moz-`/`-ms-` prefixes are dropped). Shared by the extractor's
-//! `is_css_property` membership check and the codegen's `CssProperties` interface,
+//! `is_css_property` membership check and the codegen's `SystemProperties` interface,
 //! sorted so the extractor can `binary_search` and the codegen emits in order.
 pub static CSS_PROPERTY_NAMES: &[&str] = &[
     "WebkitAppearance",

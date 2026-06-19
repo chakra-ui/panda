@@ -15,6 +15,8 @@ build
 **/buil
 tsconfig.tsbuildinfo
 .DS_Store
+__pycache__/
+*.py[cod]
 __generated__
 *.env
 target

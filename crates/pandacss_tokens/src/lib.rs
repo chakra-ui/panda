@@ -631,6 +631,11 @@ impl TokenDictionary {
         self.category_values_cache.get(category)
     }
 
+    /// Iterate token categories that have at least one value in this dictionary.
+    pub fn categories(&self) -> impl Iterator<Item = &TokenCategory> {
+        self.category_values_cache.keys()
+    }
+
     #[must_use]
     pub fn category_value_str(&self, category: &str, key: &str) -> Option<&str> {
         let category = TokenCategory::from_path_segment(category);

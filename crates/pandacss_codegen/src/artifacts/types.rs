@@ -2,14 +2,17 @@
 //! paths, condition keys, property values, and the system style-object types,
 //! derived from the config's [`TypeData`](pandacss_config::TypeData).
 
+mod data_type;
 mod jsx_types;
 mod pattern_types;
 mod recipe_types;
 mod strict_props;
 
+use std::collections::{BTreeMap, BTreeSet, HashSet};
+
 use pandacss_config::{
     ConditionTypeData, JsxFramework, JsxStylePropsConfig, PatternPropertyTypeKind, PrimitiveType,
-    TokenTypeData, UtilityTypeData, ValueTypePart,
+    TokenTypeData, UtilityPropertyTypeData, UtilityTypeData, ValueTypePart,
 };
 
 use crate::{
@@ -292,8 +295,12 @@ fn value_alias_parts(
     ];
 
     let strict_entries = strict_alias_entries(data);
+    let needed_aliases = needed_utility_aliases(data, options);
 
     for alias in data.aliases.values() {
+        if !needed_aliases.contains(alias.name.as_str()) {
+            continue;
+        }
         parts.push(format!(
             "export type {} = {}",
             alias.name,
@@ -308,67 +315,324 @@ fn value_alias_parts(
     parts
 }
 
-/// Map each utility value alias to its strict-property-list entry, for aliases
-/// whose underlying css property is in the v1 `strictPropertyList`.
+/// Map each utility value alias to its native CSS property entry when the alias
+/// should inherit `strict_props` shapes in default mode.
 fn strict_alias_entries(
     data: &UtilityTypeData,
-) -> std::collections::BTreeMap<&str, &'static strict_props::StrictPropertyEntry> {
+) -> std::collections::BTreeMap<&str, &'static strict_props::PropertyValueEntry> {
     let mut entries = std::collections::BTreeMap::new();
     for property in data.properties.values() {
         if property.token_category.is_some() {
             continue;
         }
         let css_property = property.css_property.as_deref().unwrap_or(&property.name);
-        if let Some(entry) = strict_props::strict_property_entry(css_property) {
+        if let Some(entry) = strict_props::property_value_entry(css_property) {
             entries.insert(property.alias.as_str(), entry);
         }
     }
     entries
 }
 
-/// The single combined type surface: our own csstype (`CssValue` + `CssProperties`),
-/// `SystemProperties`, selectors, the recursive `SystemStyleObject`, globals, and
-/// keyframe/fontface shapes — all in one file so there are no cross-module
-/// boundaries on the hot path. Every native CSS property shares the single
-/// `CssValue`, so all ~850 collapse to one cached `ConditionalValue<CssValue>`;
-/// `SystemProperties extends CssProperties` and overrides only the configured
-/// utilities with their precise alias (assignable to `CssValue`).
+/// Resolved conditional value type for one native CSS property key.
+fn native_css_property_value_type(name: &str, options: pandacss_config::TypegenOptions) -> String {
+    let Some(entry) = strict_props::property_value_entry(name) else {
+        return "CssValue".into();
+    };
+
+    if should_strict_narrow_native_property(name, entry, options) {
+        return strict_property_value_type(entry, &[], None);
+    }
+
+    css_property_member_value(entry)
+}
+
+fn should_strict_narrow_native_property(
+    name: &str,
+    entry: &strict_props::PropertyValueEntry,
+    options: pandacss_config::TypegenOptions,
+) -> bool {
+    if options.strict_property_values && strict_props::is_strict_property_list(name) {
+        return true;
+    }
+
+    options.strict_tokens
+        && strict_props::is_strict_property_list(name)
+        && matches!(entry.keywords_open(), Some(false))
+}
+
+/// Resolved conditional value type for one configured utility key.
+fn utility_system_property_type(
+    property: &UtilityPropertyTypeData,
+    options: pandacss_config::TypegenOptions,
+) -> String {
+    let alias = property.alias.as_str();
+    if options.strict_tokens {
+        return alias.to_owned();
+    }
+
+    if property.token_category.is_some() {
+        return match utility_css_fallback_type(property) {
+            Some(fallback) => render_ts_union([alias.to_owned(), fallback]),
+            None => alias.to_owned(),
+        };
+    }
+
+    if !options.strict_property_values && is_native_strict_mirror(property) {
+        let css_property = property
+            .css_property
+            .as_deref()
+            .unwrap_or(property.name.as_str());
+        if let Some(entry) = strict_props::property_value_entry(css_property) {
+            return css_property_member_value(entry);
+        }
+    }
+
+    let css_property = property
+        .css_property
+        .as_deref()
+        .unwrap_or(property.name.as_str());
+
+    // Default-mode aliases already union native CSS shapes for strict_props keys.
+    if strict_props::property_value_entry(css_property).is_some() {
+        return alias.to_owned();
+    }
+
+    render_ts_union([alias.to_owned(), "CssValue".into()])
+}
+
+/// v1 `cssFallback`: when a utility's resolved CSS property is a known native
+/// prop, union its `PropertyValueMap` entry (or `CssValue`) in default mode.
+fn utility_css_fallback_type(property: &UtilityPropertyTypeData) -> Option<String> {
+    let css_property = property
+        .css_property
+        .as_deref()
+        .unwrap_or(property.name.as_str());
+
+    if !pandacss_shared::css_properties::is_css_property(css_property) {
+        return None;
+    }
+
+    Some(css_property_value_ref(css_property))
+}
+
+/// Utility that only mirrors a native strict-prop entry — no tokens, literals, or
+/// custom value map. These use the native `PropertyValueMap` entry on `SystemProperties`.
+fn is_native_strict_mirror(property: &UtilityPropertyTypeData) -> bool {
+    if property.token_category.is_some()
+        || !property.literals.is_empty()
+        || property.primitive.is_some()
+    {
+        return false;
+    }
+
+    let css_property = property
+        .css_property
+        .as_deref()
+        .unwrap_or(property.name.as_str());
+    strict_props::property_value_entry(css_property).is_some()
+}
+
+fn needed_utility_aliases(
+    data: &UtilityTypeData,
+    options: pandacss_config::TypegenOptions,
+) -> HashSet<String> {
+    let mut needed = HashSet::new();
+    for property in data.properties.values() {
+        if options.strict_tokens
+            || options.strict_property_values
+            || property.token_category.is_some()
+            || !is_native_strict_mirror(property)
+        {
+            needed.insert(property.alias.clone());
+        }
+    }
+    needed
+}
+
+fn format_property_member(name: &str, value_type: &str) -> String {
+    format!(
+        "  {}?: ConditionalValue<{}>",
+        quote_member(name),
+        value_type
+    )
+}
+
+/// Emit a single `SystemProperties` surface: native CSS props plus utility overrides.
+fn build_system_properties_members(
+    data: &UtilityTypeData,
+    options: pandacss_config::TypegenOptions,
+) -> String {
+    let mut overrides: BTreeMap<&str, String> = BTreeMap::new();
+
+    for property in data.properties.values() {
+        if matches!(property.name.as_str(), "container" | "containerName") {
+            continue;
+        }
+        if options.strict_tokens
+            || options.strict_property_values
+            || !is_native_strict_mirror(property)
+        {
+            overrides.insert(
+                property.name.as_str(),
+                utility_system_property_type(property, options),
+            );
+        }
+    }
+
+    overrides.insert("container", "ContainerValue".into());
+    overrides.insert("containerName", "ContainerName".into());
+
+    if options.strict_property_values || options.strict_tokens {
+        let covered = data
+            .properties
+            .values()
+            .map(|property| property.css_property.as_deref().unwrap_or(&property.name))
+            .collect::<BTreeSet<_>>();
+
+        for entry in strict_props::PROPERTY_VALUES
+            .iter()
+            .filter(|entry| !covered.contains(entry.name))
+            .filter(|entry| should_strict_narrow_native_property(entry.name, entry, options))
+        {
+            overrides.insert(entry.name, strict_property_value_type(entry, &[], None));
+        }
+    }
+
+    let mut members = pandacss_shared::css_properties::CSS_PROPERTY_NAMES
+        .iter()
+        .map(|&name| {
+            let value_type = overrides
+                .remove(name)
+                .unwrap_or_else(|| native_css_property_value_type(name, options));
+            format_property_member(name, &value_type)
+        })
+        .collect::<Vec<_>>();
+
+    for (name, value_type) in overrides {
+        members.push(format_property_member(name, &value_type));
+    }
+
+    members.join("\n")
+}
+
+fn render_ts_union(parts: impl IntoIterator<Item = String>) -> String {
+    let mut rendered = Vec::new();
+    for part in parts {
+        for atom in part.split(" | ") {
+            if atom.is_empty() {
+                continue;
+            }
+            let atom = atom.to_owned();
+            if !rendered.contains(&atom) {
+                rendered.push(atom);
+            }
+        }
+    }
+
+    if rendered.iter().any(|part| {
+        matches!(
+            part.as_str(),
+            "ColorGlobals" | "DimensionGlobals" | "AutoGlobals"
+        )
+    }) {
+        rendered.retain(|part| part != "Globals");
+    }
+
+    if rendered.iter().any(|part| part == "number") {
+        rendered.retain(|part| part != "AnyNumber");
+    }
+
+    rendered.join(" | ")
+}
+
+/// Shared CSS value aliases and `PropertyValueMap` sourced from csstype `DataType.*`.
+fn css_datatype_type_parts() -> Vec<String> {
+    vec![
+        r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
+        r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#.into(),
+        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#.into(),
+        r#"export type AutoGlobals = Globals | "auto""#.into(),
+        "export type LengthValue = DimensionGlobals | (string & {}) | number".into(),
+        format!(
+            "export type NamedColor = {}",
+            data_type::literals_union(data_type::NAMED_COLORS)
+        ),
+        format!(
+            "export type SystemColor = {}",
+            data_type::literals_union(data_type::SYSTEM_COLORS)
+        ),
+        "export type ColorCssValue = ColorGlobals | NamedColor | SystemColor | (string & {})".into(),
+        format!(
+            "export type AbsoluteSize = {}",
+            data_type::literals_union(data_type::ABSOLUTE_SIZES)
+        ),
+        format!(
+            "export type BgSizeValue = LengthValue | {}",
+            data_type::literals_union(data_type::BG_SIZE_KEYWORDS)
+        ),
+        "export type FontSizeValue = LengthValue | AbsoluteSize | \"larger\" | \"smaller\" | \"math\"".into(),
+        format!(
+            "export type FontWeightValue = Globals | {} | (string & {{}}) | number",
+            data_type::literals_union(data_type::FONT_WEIGHT_KEYWORDS)
+        ),
+        format!(
+            "export type LineWidthValue = LengthValue | {}",
+            data_type::literals_union(data_type::LINE_WIDTH_KEYWORDS)
+        ),
+        format!(
+            "export type LineStyleValue = Globals | {}",
+            data_type::literals_union(data_type::LINE_STYLE_KEYWORDS)
+        ),
+        "export type OpenLineStyleValue = LineStyleValue | (string & {})".into(),
+        format!(
+            "export type RepeatStyleValue = Globals | {} | (string & {{}})",
+            data_type::literals_union(data_type::REPEAT_STYLE_KEYWORDS)
+        ),
+        format!(
+            "export type FontStretchValue = Globals | {} | (string & {{}})",
+            data_type::literals_union(data_type::FONT_STRETCH_KEYWORDS)
+        ),
+        format!(
+            "export type OverflowCssValue = Globals | {}",
+            data_type::literals_union(data_type::OVERFLOW_KEYWORDS)
+        ),
+        "export type OpenOverflowCssValue = OverflowCssValue | (string & {})".into(),
+        format!(
+            "export type OverflowShortCssValue = Globals | {}",
+            data_type::literals_union(data_type::OVERFLOW_SHORT_KEYWORDS)
+        ),
+        format!(
+            "export type OverscrollBehaviorCssValue = Globals | {}",
+            data_type::literals_union(data_type::OVERSCROLL_BEHAVIOR_KEYWORDS)
+        ),
+        "export type OpenOverscrollBehaviorCssValue = OverscrollBehaviorCssValue | (string & {})"
+            .into(),
+        format!(
+            "export type PositionValue = LengthValue | {}",
+            data_type::literals_union(data_type::POSITION_KEYWORDS)
+        ),
+        format!(
+            "export type GenericFamily = {}",
+            data_type::literals_union(data_type::GENERIC_FAMILIES)
+        ),
+        "export type FontFamilyValue = Globals | GenericFamily | (string & {})".into(),
+        "export type NumericCssValue = Globals | (string & {}) | number".into(),
+        "export type ZIndexValue = AutoGlobals | (string & {}) | number".into(),
+        "export type CssValue = Globals | (string & {}) | number".into(),
+        property_value_map_declaration(),
+    ]
+}
+
+/// The single combined type surface: `SystemProperties`, selectors, the recursive
+/// `SystemStyleObject`, globals, and keyframe/fontface shapes — all in one file so
+/// there are no cross-module boundaries on the hot path.
 fn system_module(
     conditions: &ConditionTypeData,
     data: &UtilityTypeData,
     options: pandacss_config::TypegenOptions,
 ) -> Module {
     let jsx_style_props = options.jsx_style_props;
-    // One member per native CSS property (shared registry, already sorted, vendor
-    // variants included). All share the single `CssValue`.
-    let css_members = pandacss_shared::css_properties::CSS_PROPERTY_NAMES
-        .iter()
-        .map(|&name| format!("  {}?: ConditionalValue<CssValue>", quote_member(name)))
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    let system_members = data
-        .properties
-        .values()
-        .filter(|property| !matches!(property.name.as_str(), "container" | "containerName"))
-        .map(|property| {
-            format!(
-                "  {}?: ConditionalValue<{}>",
-                quote_member(&property.name),
-                property.alias
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    let system_members = [
-        system_members,
-        container_property_members(),
-        strict_property_members(data, options),
-    ]
-    .into_iter()
-    .filter(|part| !part.is_empty())
-    .collect::<Vec<_>>()
-    .join("\n");
+    let system_members = build_system_properties_members(data, options);
 
     let mut parts: Vec<String> = vec![
         "export type Pretty<T> = { [K in keyof T]: T[K] } & {}".into(),
@@ -383,19 +647,16 @@ fn system_module(
         "export type Selector = `${string}&` | `&${string}` | `@${AtRuleType}${string}`".into(),
         "export type AnySelector = Selector | string".into(),
         "export type Nested<P> = P & {\n  [K in Selector]?: Nested<P>\n} & {\n  [K in AnySelector]?: Nested<P>\n} & {\n  [K in Condition]?: Nested<P>\n}".into(),
-        r#"export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset""#.into(),
-        r#"export type ColorGlobals = Globals | "currentColor" | "transparent""#.into(),
-        r#"export type DimensionGlobals = Globals | "auto" | "fit-content" | "max-content" | "min-content""#.into(),
-        r#"export type AutoGlobals = Globals | "auto""#.into(),
-        "export type CssValue = Globals | (string & {}) | number".into(),
-        format!("export interface CssProperties {{\n{css_members}\n}}"),
-        format!("export interface SystemProperties extends CssProperties {{\n{system_members}\n}}"),
+    ]);
+    parts.extend(css_datatype_type_parts());
+    parts.extend(vec![
+        format!("export interface SystemProperties {{\n{system_members}\n}}"),
         "export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>".into(),
         "export type CssVarProperties = {\n  [K in `--${string}`]?: CssVarValue\n}".into(),
         "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}".into(),
         "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}".into(),
         "export interface GlobalStyleObject {\n  [selector: string]: SystemStyleObject\n}".into(),
-        "export interface CssKeyframes {\n  [name: string]: {\n    [time: string]: CssProperties\n  }\n}".into(),
+        "export interface CssKeyframes {\n  [name: string]: {\n    [time: string]: SystemStyleObject\n  }\n}".into(),
         r#"export interface GlobalFontfaceRule {
   fontFamily: string
   src: string
@@ -426,45 +687,116 @@ export interface GlobalFontface {
         .with_item(type_raw(parts.join("\n\n")))
 }
 
-fn container_property_members() -> String {
-    [
-        "  container?: ConditionalValue<ContainerValue>",
-        "  containerName?: ConditionalValue<ContainerName>",
-    ]
-    .join("\n")
-}
-
-/// `SystemProperties` overrides that narrow strict-property-list css properties
-/// with no configured utility (utility-backed ones narrow via their value
-/// alias). Emitted only under the strict options, so the default output keeps
-/// the single shared `CssValue` member from `CssProperties`.
-fn strict_property_members(
-    data: &UtilityTypeData,
-    options: pandacss_config::TypegenOptions,
-) -> String {
-    if !options.strict_property_values && !options.strict_tokens {
-        return String::new();
-    }
-
-    let covered = data
-        .properties
-        .values()
-        .map(|property| property.css_property.as_deref().unwrap_or(&property.name))
-        .collect::<std::collections::BTreeSet<_>>();
-
-    strict_props::STRICT_PROPERTIES
+fn property_value_map_declaration() -> String {
+    let mut canonical_keywords: BTreeMap<(String, bool), &str> = BTreeMap::new();
+    let members = strict_props::PROPERTY_VALUES
         .iter()
-        .filter(|entry| !covered.contains(entry.name))
-        .filter(|entry| options.strict_property_values || (options.strict_tokens && !entry.open))
         .map(|entry| {
             format!(
-                "  {}?: ConditionalValue<{}>",
+                "  {}: {}",
                 quote_member(entry.name),
-                strict_keyword_type(entry, &[])
+                property_value_map_member_type(entry, &mut canonical_keywords)
             )
         })
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n");
+    format!("export type PropertyValueMap = {{\n{members}\n}}")
+}
+
+fn keywords_signature(keywords: &[&str], open: bool) -> (String, bool) {
+    (keywords.join("\0"), open)
+}
+
+fn property_value_map_member_type(
+    entry: &strict_props::PropertyValueEntry,
+    canonical_keywords: &mut BTreeMap<(String, bool), &str>,
+) -> String {
+    if let strict_props::PropertyValueKind::Keywords { keywords, open } = entry.kind {
+        let signature = keywords_signature(keywords, open);
+        if let Some(canonical) = canonical_keywords.get(&signature) {
+            return format!("PropertyValueMap[{}]", string_literal(canonical));
+        }
+        canonical_keywords.insert(signature, entry.name);
+    }
+
+    property_value_raw_type(entry)
+}
+
+fn property_value_raw_type(entry: &strict_props::PropertyValueEntry) -> String {
+    match entry.kind {
+        strict_props::PropertyValueKind::Keywords { keywords, open } => {
+            keywords_value_type(keywords, open)
+        }
+        strict_props::PropertyValueKind::Length => "LengthValue".into(),
+        strict_props::PropertyValueKind::Color => "ColorCssValue".into(),
+        strict_props::PropertyValueKind::Numeric => "NumericCssValue".into(),
+        strict_props::PropertyValueKind::ZIndex => "ZIndexValue".into(),
+        strict_props::PropertyValueKind::BgSize => "BgSizeValue".into(),
+        strict_props::PropertyValueKind::FontSize => "FontSizeValue".into(),
+        strict_props::PropertyValueKind::FontWeight => "FontWeightValue".into(),
+        strict_props::PropertyValueKind::LineWidth => "LineWidthValue".into(),
+        strict_props::PropertyValueKind::Position => "PositionValue".into(),
+        strict_props::PropertyValueKind::FontFamily => "FontFamilyValue".into(),
+        strict_props::PropertyValueKind::LineStyle { open } => {
+            if open {
+                "OpenLineStyleValue".into()
+            } else {
+                "LineStyleValue".into()
+            }
+        }
+        strict_props::PropertyValueKind::RepeatStyle => "RepeatStyleValue".into(),
+        strict_props::PropertyValueKind::FontStretch => "FontStretchValue".into(),
+        strict_props::PropertyValueKind::Overflow { open } => {
+            if open {
+                "OpenOverflowCssValue".into()
+            } else {
+                "OverflowCssValue".into()
+            }
+        }
+        strict_props::PropertyValueKind::OverflowShort => "OverflowShortCssValue".into(),
+        strict_props::PropertyValueKind::OverscrollBehavior { open } => {
+            if open {
+                "OpenOverscrollBehaviorCssValue".into()
+            } else {
+                "OverscrollBehaviorCssValue".into()
+            }
+        }
+    }
+}
+
+fn keywords_value_type(keywords: &[&str], open: bool) -> String {
+    if keywords.is_empty() {
+        return "Globals".into();
+    }
+
+    let rendered = keywords
+        .iter()
+        .map(|keyword| string_literal(keyword))
+        .collect::<Vec<_>>()
+        .join(" | ");
+
+    if open {
+        format!("Globals | {rendered} | (string & {{}})")
+    } else {
+        format!("Globals | {rendered}")
+    }
+}
+
+fn css_property_member_value(entry: &strict_props::PropertyValueEntry) -> String {
+    let inner = css_property_value_ref(entry.name);
+    if native_css_property_needs_any_string(entry) {
+        format!("{inner} | AnyString")
+    } else {
+        inner
+    }
+}
+
+fn css_property_value_ref(property: &str) -> String {
+    if strict_props::property_value_entry(property).is_some() {
+        format!("PropertyValueMap[{}]", string_literal(property))
+    } else {
+        "CssValue".into()
+    }
 }
 
 fn jsx_style_type_parts(mode: JsxStylePropsConfig) -> Vec<String> {
@@ -505,8 +837,7 @@ type WithHTMLProps<T> = DistributiveOmit<T, OmittedHTMLProps> & PatchedHTMLProps
 }
 
 fn index_module(ctx: CodegenContext<'_>) -> Module {
-    // `./system` carries our own CssProperties + SystemProperties + selectors +
-    // SystemStyleObject (merged); re-exported via the star below.
+    // `./system` carries SystemProperties, selectors, and SystemStyleObject.
     let mut sources = vec!["./tokens", "./system", "./pattern", "./recipe"];
     if matches!(ctx.config.jsx_framework.as_ref(), Some(JsxFramework::React)) {
         sources.push("./jsx");
@@ -530,8 +861,9 @@ fn type_raw(code: impl Into<String>) -> Item {
 fn value_alias_type(
     parts: &[ValueTypePart],
     options: pandacss_config::TypegenOptions,
-    strict_entry: Option<&'static strict_props::StrictPropertyEntry>,
+    strict_entry: Option<&'static strict_props::PropertyValueEntry>,
 ) -> String {
+    let mapped_css_property = mapped_css_property_from_parts(parts);
     let token_backed = has_token_part(parts);
 
     // Strictness is baked into the alias (computed once per category) rather than
@@ -569,14 +901,16 @@ fn value_alias_type(
     // table). v1's strictTokens also narrowed these when the csstype union was
     // closed (no `(string & {})` member), e.g. `position` — mirror that.
     if let Some(entry) = strict_entry
-        && (options.strict_property_values || (options.strict_tokens && !entry.open))
+        && entry.is_keywords()
+        && should_strict_narrow_native_property(entry.name, entry, options)
     {
         let literals = parts
             .iter()
             .filter(|part| matches!(part, ValueTypePart::Literal(_)))
             .map(value_part)
             .collect::<Vec<_>>();
-        return strict_keyword_type(entry, &literals);
+        let css_property = mapped_css_property.filter(|_| !options.strict_tokens);
+        return strict_property_value_type(entry, &literals, css_property);
     }
 
     // strictTokens: utilities with configured values are strict even without a
@@ -606,15 +940,145 @@ fn value_alias_type(
         }
     }
 
-    value_parts_union(parts)
+    if let Some(entry) = strict_entry
+        && !options.strict_tokens
+        && !options.strict_property_values
+    {
+        return default_utility_alias_with_native(parts, entry);
+    }
+
+    value_parts_union(parts, options.strict_tokens)
 }
 
-/// The narrowed type for a strict-property-list entry: CSS-wide keywords, css
-/// vars, the keyword union, and the `[arbitrary]`/`!important` escape hatches.
-fn strict_keyword_type(entry: &strict_props::StrictPropertyEntry, literals: &[String]) -> String {
-    let keywords = if literals.is_empty() {
-        entry
-            .keywords
+fn default_utility_alias_with_native(
+    parts: &[ValueTypePart],
+    entry: &strict_props::PropertyValueEntry,
+) -> String {
+    let native = css_property_value_ref(entry.name);
+    let mut rendered: Vec<String> = parts
+        .iter()
+        .filter(|part| {
+            !matches!(
+                part,
+                ValueTypePart::Primitive(_)
+                    | ValueTypePart::CssProperty(_)
+                    | ValueTypePart::AnyString
+            )
+        })
+        .map(value_part)
+        .collect();
+    rendered.push(native);
+    if native_css_property_needs_any_string(entry) {
+        rendered.push("AnyString".into());
+    }
+    if !rendered.iter().any(|part| part == "CssVars") {
+        rendered.push("CssVars".into());
+    }
+    if !rendered
+        .iter()
+        .any(|part| part == "AnyNumber" || part == "number")
+    {
+        rendered.push("AnyNumber".into());
+    }
+    render_ts_union(rendered)
+}
+
+fn native_css_property_needs_any_string(entry: &strict_props::PropertyValueEntry) -> bool {
+    matches!(
+        entry.kind,
+        strict_props::PropertyValueKind::Keywords { open: false, .. }
+            | strict_props::PropertyValueKind::LineStyle { open: false }
+            | strict_props::PropertyValueKind::Overflow { open: false }
+            | strict_props::PropertyValueKind::OverflowShort
+            | strict_props::PropertyValueKind::OverscrollBehavior { open: false }
+    )
+}
+
+fn mapped_css_property_from_parts(parts: &[ValueTypePart]) -> Option<&str> {
+    parts.iter().find_map(|part| {
+        if let ValueTypePart::CssProperty(property) = part {
+            Some(property.as_str())
+        } else {
+            None
+        }
+    })
+}
+
+/// Strict native / utility value types with escape hatches where applicable.
+fn strict_property_value_type(
+    entry: &strict_props::PropertyValueEntry,
+    literals: &[String],
+    mapped_css_property: Option<&str>,
+) -> String {
+    // Open keyword props keep `(string & {})` on `PropertyValueMap` for default mode.
+    // Under strict narrowing, emit closed keyword unions instead of indexing the map.
+    if literals.is_empty()
+        && mapped_css_property.is_none()
+        && let strict_props::PropertyValueKind::Keywords {
+            keywords,
+            open: true,
+            ..
+        } = entry.kind
+    {
+        return strict_keywords_type(keywords, &[], None);
+    }
+
+    if literals.is_empty() && mapped_css_property.is_none() && entry.is_keywords() {
+        return format!("WithEscapeHatch<{}>", css_property_value_ref(entry.name));
+    }
+
+    match entry.kind {
+        strict_props::PropertyValueKind::Keywords { keywords, .. } => {
+            strict_keywords_type(keywords, literals, mapped_css_property)
+        }
+        strict_props::PropertyValueKind::Length => "WithEscapeHatch<LengthValue>".into(),
+        strict_props::PropertyValueKind::Color => "WithEscapeHatch<ColorCssValue>".into(),
+        strict_props::PropertyValueKind::Numeric => "WithEscapeHatch<NumericCssValue>".into(),
+        strict_props::PropertyValueKind::ZIndex => "WithEscapeHatch<ZIndexValue>".into(),
+        strict_props::PropertyValueKind::BgSize => "WithEscapeHatch<BgSizeValue>".into(),
+        strict_props::PropertyValueKind::FontSize => "WithEscapeHatch<FontSizeValue>".into(),
+        strict_props::PropertyValueKind::FontWeight => "WithEscapeHatch<FontWeightValue>".into(),
+        strict_props::PropertyValueKind::LineWidth => "WithEscapeHatch<LineWidthValue>".into(),
+        strict_props::PropertyValueKind::Position => "WithEscapeHatch<PositionValue>".into(),
+        strict_props::PropertyValueKind::FontFamily => "WithEscapeHatch<FontFamilyValue>".into(),
+        strict_props::PropertyValueKind::LineStyle { .. } => strict_keywords_type(
+            data_type::LINE_STYLE_KEYWORDS,
+            literals,
+            mapped_css_property,
+        ),
+        strict_props::PropertyValueKind::RepeatStyle => strict_keywords_type(
+            data_type::REPEAT_STYLE_KEYWORDS,
+            literals,
+            mapped_css_property,
+        ),
+        strict_props::PropertyValueKind::FontStretch => strict_keywords_type(
+            data_type::FONT_STRETCH_KEYWORDS,
+            literals,
+            mapped_css_property,
+        ),
+        strict_props::PropertyValueKind::Overflow { .. } => {
+            strict_keywords_type(data_type::OVERFLOW_KEYWORDS, literals, mapped_css_property)
+        }
+        strict_props::PropertyValueKind::OverflowShort => strict_keywords_type(
+            data_type::OVERFLOW_SHORT_KEYWORDS,
+            literals,
+            mapped_css_property,
+        ),
+        strict_props::PropertyValueKind::OverscrollBehavior { .. } => strict_keywords_type(
+            data_type::OVERSCROLL_BEHAVIOR_KEYWORDS,
+            literals,
+            mapped_css_property,
+        ),
+    }
+}
+
+fn strict_keywords_type(
+    keywords: &[&str],
+    literals: &[String],
+    mapped_css_property: Option<&str>,
+) -> String {
+    let mut rendered = if literals.is_empty() {
+        keywords
             .iter()
             .map(|keyword| string_literal(keyword))
             .collect::<Vec<_>>()
@@ -622,29 +1086,38 @@ fn strict_keyword_type(entry: &strict_props::StrictPropertyEntry, literals: &[St
         literals.to_vec()
     };
 
-    if keywords.is_empty() {
-        // `all` accepts only the CSS-wide keywords.
-        "WithEscapeHatch<Globals | CssVars>".to_owned()
-    } else {
-        format!(
-            "WithEscapeHatch<Globals | CssVars | OnlyKnown<{}>>",
-            keywords.join(" | ")
-        )
+    if let Some(property) = mapped_css_property {
+        rendered.push(css_property_value_ref(property));
     }
+
+    if rendered.is_empty() {
+        return "WithEscapeHatch<Globals | CssVars>".into();
+    }
+
+    format!(
+        "WithEscapeHatch<Globals | CssVars | OnlyKnown<{}>>",
+        rendered.join(" | ")
+    )
 }
 
-fn value_parts_union(parts: &[ValueTypePart]) -> String {
-    // CssProperty parts pointed at the vendored csstype's per-property keyword
-    // unions; with our own lean csstype those are gone — `AnyString` carries the
-    // freeform CSS value, so drop them.
+fn value_parts_union(parts: &[ValueTypePart], strict_tokens: bool) -> String {
+    // Union the mapped css property's raw value type into value aliases only when
+    // the utility config declares an explicit `property` field and `strictTokens`
+    // is off.
     let mut rendered = parts
         .iter()
-        .filter(|part| !matches!(part, ValueTypePart::CssProperty(_)))
+        .filter(|part| !(strict_tokens && matches!(part, ValueTypePart::CssProperty(_))))
         .map(value_part)
         .collect::<Vec<_>>();
 
     if rendered.is_empty() {
         return "unknown".into();
+    }
+
+    // Mirror strictTokens: token utilities accept category globals (currentColor,
+    // auto, …) in default mode too — including shorthands sharing the alias.
+    if !strict_tokens && has_token_part(parts) {
+        rendered.insert(0, strict_token_globals(parts));
     }
 
     if !rendered
@@ -654,7 +1127,7 @@ fn value_parts_union(parts: &[ValueTypePart]) -> String {
         rendered.push("AnyNumber".into());
     }
 
-    rendered.join(" | ")
+    render_ts_union(rendered)
 }
 
 fn has_token_part(parts: &[ValueTypePart]) -> bool {
@@ -703,9 +1176,7 @@ fn value_part(part: &ValueTypePart) -> String {
         ValueTypePart::TokenCategory(category) => {
             format!("TokenValue<{}>", string_literal(category))
         }
-        ValueTypePart::CssProperty(property) => {
-            format!("CssProperties[{}]", string_literal(property))
-        }
+        ValueTypePart::CssProperty(property) => css_property_value_ref(property),
         ValueTypePart::Literal(value) => string_literal(value),
         ValueTypePart::Primitive(primitive) => match primitive {
             pandacss_config::PrimitiveType::String => "string".into(),

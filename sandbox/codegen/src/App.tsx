@@ -3,7 +3,7 @@ import { css } from '../styled-system/css'
 
 export default function App() {
   return (
-    <div className={center({ w: 'full', h: 'full' })}>
+    <div className={center({ w: 'full', h: 'full', float: 'left', color: 'red' })}>
       <div
         className={css({
           display: 'flex',

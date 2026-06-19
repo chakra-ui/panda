@@ -62,10 +62,11 @@ fn generates_artifacts_from_resolved_project_state() {
     // system-types) — ~540 members, so assert its shape rather than full content.
     let code = &system.code;
     assert!(code.contains("export type CssValue = Globals | (string & {}) | number"));
-    assert!(code.contains("export interface CssProperties {"));
-    assert!(code.contains("  cursor?: ConditionalValue<CssValue>"));
-    assert!(code.contains("export interface SystemProperties extends CssProperties {"));
-    assert!(code.contains("  color?: ConditionalValue<ColorsValue>"));
+    assert!(code.contains("export interface SystemProperties {"));
+    assert!(!code.contains("export interface CssProperties {"));
+    assert!(
+        code.contains(r#"  color?: ConditionalValue<ColorsValue | PropertyValueMap["color"]>"#)
+    );
     assert!(code.contains(
         "export interface SystemStyleObject extends SystemProperties, CssVarProperties, NestedStyles {}"
     ));

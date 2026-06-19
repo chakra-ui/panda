@@ -1,8 +1,10 @@
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use insta::assert_yaml_snapshot;
-use pandacss_config::UtilityConfig;
-use pandacss_utility::Utility;
+use pandacss_config::{UtilityConfig, ValueTypePart};
+use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
+use pandacss_utility::{Utility, UtilityOptions};
 use serde_json::{Value, json};
 
 fn utility_config(value: Value) -> BTreeMap<String, UtilityConfig> {
@@ -27,6 +29,7 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
       display:
         name: display
         cssProperty: display
+        mappedCssProperty: ~
         tokenCategory: ~
         literals:
           - flex
@@ -36,6 +39,7 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
       g:
         name: g
         cssProperty: gap
+        mappedCssProperty: ~
         tokenCategory: spacing
         literals: []
         primitive: ~
@@ -43,6 +47,7 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
       gap:
         name: gap
         cssProperty: gap
+        mappedCssProperty: ~
         tokenCategory: spacing
         literals: []
         primitive: ~
@@ -55,8 +60,6 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
       DisplayValue:
         name: DisplayValue
         parts:
-          - kind: cssProperty
-            value: display
           - kind: literal
             value: flex
           - kind: literal
@@ -68,14 +71,53 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
         parts:
           - kind: tokenCategory
             value: spacing
-          - kind: cssProperty
-            value: gap
           - kind: cssVars
           - kind: anyString
     classNames:
       display: display
       gap: g
     ");
+}
+
+#[test]
+fn float_with_explicit_property_includes_css_property_type_part() {
+    let utility = Utility::from_config(&utility_config(json!({
+        "float": {
+            "values": ["start", "end"],
+            "property": "float"
+        }
+    })));
+
+    assert_yaml_snapshot!(json!(utility.type_data().aliases.get("FloatValue")), @"
+    name: FloatValue
+    parts:
+      - kind: cssProperty
+        value: float
+      - kind: literal
+        value: end
+      - kind: literal
+        value: start
+      - kind: cssVars
+      - kind: anyString
+    ");
+}
+
+#[test]
+fn gap_without_explicit_property_omits_css_property_type_part() {
+    let utility = Utility::from_config(&utility_config(json!({
+        "gap": {
+            "values": "spacing"
+        }
+    })));
+
+    let type_data = utility.type_data();
+    let alias = type_data.aliases.get("SpacingValue").expect("alias");
+    assert!(
+        !alias
+            .parts
+            .iter()
+            .any(|part| matches!(part, ValueTypePart::CssProperty(_)))
+    );
 }
 
 #[test]
@@ -94,6 +136,7 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
       backgroundColor:
         name: backgroundColor
         cssProperty: backgroundColor
+        mappedCssProperty: ~
         tokenCategory: colors
         literals: []
         primitive: ~
@@ -101,6 +144,7 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
       bg:
         name: bg
         cssProperty: backgroundColor
+        mappedCssProperty: ~
         tokenCategory: colors
         literals: []
         primitive: ~
@@ -108,6 +152,7 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
       bgColor:
         name: bgColor
         cssProperty: backgroundColor
+        mappedCssProperty: ~
         tokenCategory: colors
         literals: []
         primitive: ~
@@ -115,6 +160,7 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
       borderRadius:
         name: borderRadius
         cssProperty: borderRadius
+        mappedCssProperty: ~
         tokenCategory: ~
         literals: []
         primitive: ~
@@ -130,8 +176,6 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
       BorderRadiusValue:
         name: BorderRadiusValue
         parts:
-          - kind: cssProperty
-            value: borderRadius
           - kind: primitive
             value: string
           - kind: primitive
@@ -143,12 +187,134 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
         parts:
           - kind: tokenCategory
             value: colors
-          - kind: cssProperty
-            value: backgroundColor
           - kind: cssVars
           - kind: anyString
     classNames:
       backgroundColor: bg
       borderRadius: border-radius
     ");
+}
+
+#[test]
+fn collapses_resolved_theme_category_keys_for_typegen() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "marginBottom": {
+                "values": {
+                    "sm": "var(--spacing-sm)",
+                    "md": "var(--spacing-md)",
+                    "auto": "auto"
+                }
+            },
+            "width": {
+                "values": {
+                    "2": "var(--sizes-2)",
+                    "4": "var(--sizes-4)",
+                    "1/2": "50%",
+                    "full": "100%"
+                }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(
+                TokenDictionary::builder()
+                    .insert(Token::new(
+                        "sizes.2",
+                        "0.5rem",
+                        "var(--sizes-2)",
+                        TokenCategory::Sizes,
+                    ))
+                    .insert(Token::new(
+                        "sizes.4",
+                        "1rem",
+                        "var(--sizes-4)",
+                        TokenCategory::Sizes,
+                    ))
+                    .insert(Token::new(
+                        "spacing.sm",
+                        "0.5rem",
+                        "var(--spacing-sm)",
+                        TokenCategory::Spacing,
+                    ))
+                    .insert(Token::new(
+                        "spacing.md",
+                        "1rem",
+                        "var(--spacing-md)",
+                        TokenCategory::Spacing,
+                    ))
+                    .build(),
+            )),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let type_data = utility.type_data();
+    let margin = type_data.properties.get("marginBottom").expect("margin");
+    assert_eq!(margin.token_category.as_deref(), Some("spacing"));
+    assert_eq!(margin.literals, ["auto"]);
+    assert_eq!(margin.alias, "SpacingValue");
+
+    let width = type_data.properties.get("width").expect("width");
+    assert_eq!(width.token_category.as_deref(), Some("sizes"));
+    assert_eq!(width.literals, ["1/2", "full"]);
+    assert_eq!(width.alias, "WidthValue");
+
+    let spacing_alias = type_data
+        .aliases
+        .get("SpacingValue")
+        .expect("spacing alias");
+    assert!(
+        spacing_alias.parts.iter().any(|part| {
+            matches!(part, ValueTypePart::TokenCategory(value) if value == "spacing")
+        })
+    );
+
+    let width_alias = type_data.aliases.get("WidthValue").expect("width alias");
+    assert!(
+        width_alias.parts.iter().any(|part| {
+            matches!(part, ValueTypePart::TokenCategory(value) if value == "sizes")
+        })
+    );
+    assert!(
+        width_alias
+            .parts
+            .iter()
+            .any(|part| { matches!(part, ValueTypePart::Literal(value) if value == "1/2") })
+    );
+}
+
+#[test]
+fn collapses_resolved_gradient_category_keys_for_typegen() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "backgroundGradient": {
+                "values": {
+                    "primary": "var(--gradients-primary)",
+                    "to-r": "linear-gradient(var(--gradient-stops))"
+                }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(
+                TokenDictionary::builder()
+                    .insert(Token::new(
+                        "gradients.primary",
+                        "linear-gradient(to right, red, blue)",
+                        "var(--gradients-primary)",
+                        TokenCategory::Gradients,
+                    ))
+                    .build(),
+            )),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let type_data = utility.type_data();
+    let gradient = type_data
+        .properties
+        .get("backgroundGradient")
+        .expect("gradient");
+    assert_eq!(gradient.token_category.as_deref(), Some("gradients"));
+    assert_eq!(gradient.literals, ["to-r"]);
+    assert_eq!(gradient.alias, "BackgroundGradientValue");
 }

@@ -264,3 +264,60 @@ fn minified_output_preserves_keyframe_blocks() {
     .get_layer_css(&[StylesheetLayer::Tokens]);
     assert_snapshot!(css, @"@layer tokens{@keyframes spin{to{transform:rotate(360deg);}}}");
 }
+
+#[test]
+fn keyframe_steps_expand_configured_utilities() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" }
+                }
+            },
+            "keyframes": {
+                "slide": {
+                    "from": {
+                        "opacity": "0",
+                        "paddingLeft": "4"
+                    },
+                    "to": {
+                        "opacity": "1",
+                        "paddingLeft": "0"
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "opacity": {
+                "className": "opacity",
+                "values": {
+                    "0": "0",
+                    "1": "1"
+                }
+            },
+            "paddingLeft": {
+                "className": "pl",
+                "values": "spacing"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
+    assert_snapshot!(css, @"
+    @layer tokens {
+      :where(:root, :host) {
+        --spacing-4: 1rem;
+      }
+      @keyframes slide {
+        from {
+          opacity: 0;
+          padding-left: var(--spacing-4);
+        }
+        to {
+          opacity: 1;
+          padding-left: 0;
+        }
+      }
+    }
+    ");
+}

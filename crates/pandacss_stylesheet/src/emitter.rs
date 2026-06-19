@@ -117,7 +117,7 @@ pub fn emit<'a>(
                     .remove_unused_keyframes
                     .then(|| usage.as_ref().map(|usage| &usage.keyframes))
                     .flatten();
-                serialize_keyframes(writer, keyframes, used);
+                cx.serialize_keyframes(writer, keyframes, used);
             }
         }));
     }
@@ -377,30 +377,6 @@ fn as_non_empty_object(value: &Value) -> Option<&serde_json::Map<String, Value>>
     (!entries.is_empty()).then_some(entries)
 }
 
-/// Emits `@keyframes name { selector { declarations } ... }` for each entry.
-/// Purpose-built walker — the body is flat `(selector -> declarations)`, no
-/// condition resolution, nested rules, or shorthand expansion, so we skip the
-/// `serialize_styles` machinery and write a primitive-only declaration loop.
-fn serialize_keyframes(
-    writer: &mut CssWriter,
-    keyframes: &serde_json::Map<String, Value>,
-    used: Option<&FxHashSet<String>>,
-) {
-    for (name, body) in keyframes {
-        if used.is_some_and(|used| !used.contains(name)) {
-            continue;
-        }
-        let Some(selectors) = as_non_empty_object(body) else {
-            continue;
-        };
-        writer.at_rule_named("@keyframes ", name, |writer| {
-            for (selector, declarations) in selectors {
-                write_keyframe_selector(writer, selector, declarations);
-            }
-        });
-    }
-}
-
 fn has_used_keyframes(
     keyframes: &serde_json::Map<String, Value>,
     used: &FxHashSet<String>,
@@ -500,23 +476,6 @@ fn token_var_iter<'a>(vars: &'a TokenCssVars<'a>) -> impl Iterator<Item = TokenC
             .iter()
             .flat_map(|group| group.vars.iter().copied()),
     )
-}
-
-/// Write one keyframe selector block (`0%` / `from` / `to` etc.). Skips
-/// non-primitive leaves silently — matches v1's lenient stringify.
-fn write_keyframe_selector(writer: &mut CssWriter, selector: &str, declarations: &Value) {
-    let Some(declarations) = as_non_empty_object(declarations) else {
-        return;
-    };
-    writer.rule(selector, |writer| {
-        for (prop, value) in declarations {
-            let Some(rendered) = render_declaration_value(prop, value) else {
-                continue;
-            };
-            let (value, important) = split_important(&rendered);
-            writer.declaration(&hyphenate_property(prop), value.as_ref(), important);
-        }
-    });
 }
 
 /// Emit `@font-face` blocks from `globalFontface`
@@ -880,6 +839,9 @@ impl<'a> EmitContext<'a> {
             keyframes,
             &mut marks,
         );
+        if let Some(keyframes) = keyframes {
+            self.collect_keyframes_usage(keyframes, token_dictionary, &mut marks);
+        }
         self.collect_global_vars_usage(token_dictionary, &mut marks);
 
         for atom in atoms {
@@ -1237,6 +1199,54 @@ impl<'a> EmitContext<'a> {
         self.collect_styles(&mut grouped, value);
         if !grouped.is_empty() {
             write_grouped_rules(writer, &mut grouped);
+        }
+    }
+
+    /// Emits `@keyframes` blocks by lowering each step through the same style
+    /// object pipeline as global CSS (utility transforms, tokens, shorthands).
+    fn serialize_keyframes(
+        &self,
+        writer: &mut CssWriter,
+        keyframes: &serde_json::Map<String, Value>,
+        used: Option<&FxHashSet<String>>,
+    ) {
+        for (name, body) in keyframes {
+            if used.is_some_and(|used| !used.contains(name)) {
+                continue;
+            }
+            let Some(selectors) = as_non_empty_object(body) else {
+                continue;
+            };
+            writer.at_rule_named("@keyframes ", name, |writer| {
+                for (selector, step) in selectors {
+                    self.write_keyframe_step(writer, selector, step);
+                }
+            });
+        }
+    }
+
+    fn write_keyframe_step(&self, writer: &mut CssWriter, selector: &str, step: &Value) {
+        let mut grouped = GroupNode::default();
+        let mut conditions = Vec::new();
+        self.collect_style_object(&mut grouped, selector, step, &mut conditions);
+        if !grouped.is_empty() {
+            write_grouped_rules(writer, &mut grouped);
+        }
+    }
+
+    fn collect_keyframes_usage(
+        &self,
+        keyframes: &serde_json::Map<String, Value>,
+        token_dictionary: Option<&TokenDictionary>,
+        marks: &mut UsageMarks,
+    ) {
+        for body in keyframes.values() {
+            let Some(steps) = as_non_empty_object(body) else {
+                continue;
+            };
+            for step in steps.values() {
+                self.collect_styles_usage(step, token_dictionary, Some(keyframes), marks);
+            }
         }
     }
 

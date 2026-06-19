@@ -108,6 +108,8 @@ pub struct UtilityTypeData {
 pub struct UtilityPropertyTypeData {
     pub name: String,
     pub css_property: Option<String>,
+    /// Set only when the utility config declares an explicit `property` field.
+    pub mapped_css_property: Option<String>,
     pub token_category: Option<String>,
     pub literals: Vec<String>,
     pub primitive: Option<PrimitiveType>,
