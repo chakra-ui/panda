@@ -146,7 +146,7 @@ describe('@pandacss/vite', () => {
     const warning = await waitForWarning(warnings, 'while parsing')
     expect(warning.replaceAll(dir, '<root>')).toMatchInlineSnapshot(`
       "panda: 1 diagnostic(s) while parsing <root>/App.tsx
-      warning js_parse_error <root>/App.tsx:3:55 Unexpected token"
+      warning js_parse_error <root>/App.tsx:3:55 Unexpected token. Panda could not fully parse this file; some styles may be missing."
     `)
 
     writeFileSync(appFile, APP(`{ color: 'blue' }`))

@@ -133,8 +133,11 @@ pub(crate) fn collect_parser_diagnostics(
             let location = span.map(|s| line_index.locate_range(s.start, s.end));
             // A parse error warns rather than aborts the build; the bundler reports real
             // syntax errors. `--max-warnings 0` restores strict failure.
-            let mut diagnostic =
-                Diagnostic::warning(diagnostic_codes::JS_PARSE_ERROR, error.message.to_string());
+            let message = format!(
+                "{}. Panda could not fully parse this file; some styles may be missing.",
+                error.message.to_string().trim_end_matches('.')
+            );
+            let mut diagnostic = Diagnostic::warning(diagnostic_codes::JS_PARSE_ERROR, message);
             diagnostic.span = span;
             diagnostic.location = location;
             diagnostic

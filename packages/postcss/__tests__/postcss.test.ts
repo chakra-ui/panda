@@ -146,14 +146,20 @@ describe('@pandacss/postcss', () => {
       css: '.text_red { color: red }',
       manifest: { files: [], tokens: [] },
       layerRanges: {},
-      diagnostics: [{ severity: 'warning', code: 'js_parse_error', message: 'Unexpected token' }],
+      diagnostics: [
+        {
+          severity: 'warning',
+          code: 'js_parse_error',
+          message: 'Unexpected token. Panda could not fully parse this file; some styles may be missing.',
+        },
+      ],
     })
 
     const result = await run(INPUT)
 
     expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
       [
-        "warning js_parse_error Unexpected token",
+        "warning js_parse_error Unexpected token. Panda could not fully parse this file; some styles may be missing.",
       ]
     `)
   })
