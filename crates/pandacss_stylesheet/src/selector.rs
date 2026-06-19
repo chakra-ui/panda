@@ -204,12 +204,92 @@ fn join_scoped(parts: impl Iterator<Item = String>) -> String {
     parts.collect::<Vec<_>>().join(", ")
 }
 
+fn parent_has_top_level_combinator(parent: &str) -> bool {
+    let mut depth = 0u32;
+    let mut in_double = false;
+    let mut in_single = false;
+    let mut escaped = false;
+
+    for ch in parent.chars() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        if ch == '"' && !in_single {
+            in_double = !in_double;
+            continue;
+        }
+        if ch == '\'' && !in_double {
+            in_single = !in_single;
+            continue;
+        }
+        if in_double || in_single {
+            continue;
+        }
+        match ch {
+            '(' | '[' => depth += 1,
+            ')' | ']' => depth = depth.saturating_sub(1),
+            '>' | '+' | '~' | ' ' if depth == 0 => return true,
+            _ => {}
+        }
+    }
+
+    false
+}
+
+fn selector_has_multiple_ampersands(selector: &str) -> bool {
+    let mut count = 0u32;
+    let mut in_double = false;
+    let mut in_single = false;
+    let mut escaped = false;
+
+    for ch in selector.chars() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        if ch == '"' && !in_single {
+            in_double = !in_double;
+            continue;
+        }
+        if ch == '\'' && !in_double {
+            in_single = !in_single;
+            continue;
+        }
+        if ch == '&' && !in_double && !in_single {
+            count += 1;
+            if count >= 2 {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+fn nesting_parent_substitution(parent: &str, selector: &str) -> String {
+    if parent_has_top_level_combinator(parent) && selector_has_multiple_ampersands(selector) {
+        format!(":is({parent})")
+    } else {
+        parent.to_owned()
+    }
+}
+
 /// Replace nesting `&` tokens with `parent` in one complex selector.
 ///
 /// Ampersands inside quoted attribute strings are left untouched.
 #[must_use]
 pub(crate) fn replace_nesting_parent(selector: &str, parent: &str) -> String {
-    let mut out = String::with_capacity(selector.len() + parent.len());
+    let substitution = nesting_parent_substitution(parent, selector);
+    let mut out = String::with_capacity(selector.len() + substitution.len());
     let mut in_double = false;
     let mut in_single = false;
     let mut escaped = false;
@@ -236,7 +316,7 @@ pub(crate) fn replace_nesting_parent(selector: &str, parent: &str) -> String {
             continue;
         }
         if ch == '&' && !in_double && !in_single {
-            out.push_str(parent);
+            out.push_str(&substitution);
             continue;
         }
         out.push(ch);
@@ -253,7 +333,11 @@ pub(crate) fn replace_selector_parent(raw: &str, parent: &str) -> String {
     let mut out = Vec::new();
     for parent in &parent_selectors {
         for raw in &raw_selectors {
-            out.push(replace_nesting_parent(raw, parent));
+            out.push(if raw.contains('&') {
+                replace_nesting_parent(raw, parent)
+            } else {
+                format!("{parent} {raw}")
+            });
         }
     }
     out.join(", ")
@@ -292,6 +376,22 @@ mod tests {
         assert_eq!(
             replace_selector_parent("&:hover, &:active", ".a, .b"),
             ".a:hover, .a:active, .b:hover, .b:active"
+        );
+    }
+
+    #[test]
+    fn replace_scopes_comma_members_without_ampersand() {
+        assert_eq!(
+            replace_selector_parent("&:not(:first-child), :only-child", ".cls"),
+            ".cls:not(:first-child), .cls :only-child"
+        );
+    }
+
+    #[test]
+    fn replace_scopes_bare_class_in_comma_list() {
+        assert_eq!(
+            replace_selector_parent("& .one, .two", ".cls"),
+            ".cls .one, .cls .two"
         );
     }
 
@@ -472,6 +572,43 @@ mod tests {
     #[test]
     fn replace_standalone_ampersand() {
         assert_eq!(replace_nesting_parent("&", ".x"), ".x");
+    }
+
+    #[test]
+    fn replace_is_wraps_combinator_parent_multi_ampersand() {
+        assert_eq!(
+            replace_nesting_parent("& .x & .y", ".a .b"),
+            ":is(.a .b) .x :is(.a .b) .y"
+        );
+    }
+
+    #[test]
+    fn replace_is_wraps_combinator_parent_sibling_ampersands() {
+        assert_eq!(
+            replace_nesting_parent("& ~ &", ".a .b"),
+            ":is(.a .b) ~ :is(.a .b)"
+        );
+    }
+
+    #[test]
+    fn replace_is_does_not_wrap_single_ampersand_under_combinator_parent() {
+        assert_eq!(replace_nesting_parent("&:hover", ".a .b"), ".a .b:hover");
+    }
+
+    #[test]
+    fn replace_is_wraps_not_compound_under_combinator_parent() {
+        assert_eq!(
+            replace_nesting_parent("&:not(&.no)", ".a .b"),
+            ":is(.a .b):not(:is(.a .b).no)"
+        );
+    }
+
+    #[test]
+    fn replace_is_does_not_wrap_when_combinator_is_inside_class_name() {
+        assert_eq!(
+            replace_nesting_parent("& + &", r".\[\&_\+_\&\]\:c_red"),
+            r".\[\&_\+_\&\]\:c_red + .\[\&_\+_\&\]\:c_red"
+        );
     }
 
     #[test]

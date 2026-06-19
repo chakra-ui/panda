@@ -562,6 +562,26 @@ fn escapes_nested_selector_keys_into_valid_class_names() {
 }
 
 #[test]
+fn comma_group_nested_selector_scopes_every_member() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "display": { "className": "d" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '&:not(:first-child), :only-child': { display: 'none' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .\[\&\:not\(\:first-child\)\,_\:only-child\]\:d_none:not(:first-child), .\[\&\:not\(\:first-child\)\,_\:only-child\]\:d_none :only-child {
+    display: none;
+  }
+}
+");
+}
+
+#[test]
 fn nested_pseudo_then_descendant_keeps_the_pseudo_on_the_parent() {
     // Two nested arbitrary `&` selectors form a parent->descendant chain:
     // `&:last-child` (outer) then `& .divider` (inner) must compose as

@@ -637,3 +637,58 @@ fn nested_standalone_ampersand() {
 }
 "#);
 }
+
+#[test]
+fn nested_comma_group_scopes_member_without_ampersand() {
+    assert_snapshot!(compile_nested("{ '&:not(:first-child), :only-child': { display: 'none' } }"), @r#"
+@layer utilities {
+  .\[\&\:not\(\:first-child\)\,_\:only-child\]\:d_none:not(:first-child), .\[\&\:not\(\:first-child\)\,_\:only-child\]\:d_none :only-child {
+    display: none;
+  }
+}
+"#);
+}
+
+#[test]
+fn nested_comma_group_with_descendant_nesting() {
+    assert_snapshot!(compile_nested("{ '&:not(:first-child), :only-child': { '& .left-border': { display: 'none' } } }"), @r#"
+@layer utilities {
+  .\[\&\:not\(\:first-child\)\,_\:only-child\]\:\[\&_\.left-border\]\:d_none:not(:first-child) .left-border, .\[\&\:not\(\:first-child\)\,_\:only-child\]\:\[\&_\.left-border\]\:d_none :only-child .left-border {
+    display: none;
+  }
+}
+"#);
+}
+
+#[test]
+fn nested_comma_group_mixed_ampersand_and_class() {
+    assert_snapshot!(compile_nested("{ '& .one, .two': { color: 'red' } }"), @r#"
+@layer utilities {
+  .\[\&_\.one\,_\.two\]\:c_red .one, .\[\&_\.one\,_\.two\]\:c_red .two {
+    color: red;
+  }
+}
+"#);
+}
+
+#[test]
+fn nested_multi_ampersand_under_descendant_parent_uses_is() {
+    assert_snapshot!(compile_nested("{ '& .divider': { '& .bar & .baz': { color: 'red' } } }"), @r#"
+@layer utilities {
+  :is(.\[\&_\.divider\]\:\[\&_\.bar_\&_\.baz\]\:c_red .divider) .bar :is(.\[\&_\.divider\]\:\[\&_\.bar_\&_\.baz\]\:c_red .divider) .baz {
+    color: red;
+  }
+}
+"#);
+}
+
+#[test]
+fn nested_sibling_ampersands_under_child_parent_uses_is() {
+    assert_snapshot!(compile_nested("{ '& > .row': { '& + &': { color: 'red' } } }"), @r#"
+@layer utilities {
+  :is(.\[\&_\>_\.row\]\:\[\&_\+_\&\]\:c_red > .row) + :is(.\[\&_\>_\.row\]\:\[\&_\+_\&\]\:c_red > .row) {
+    color: red;
+  }
+}
+"#);
+}
