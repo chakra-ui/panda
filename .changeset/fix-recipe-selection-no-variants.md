@@ -2,7 +2,6 @@
 '@pandacss/compiler': patch
 ---
 
-Fix generated types when a recipe has no variants. `RecipeSelection` now resolves to `{}` instead of a `{ [x: string]: string }` index signature for variant-less recipes, which previously poisoned surrounding props.
+Fix generated types for recipes with no variants.
 
-- `styled('div', { base }, { defaultProps: { 'aria-hidden': false } })` no longer errors on non-string `defaultProps`.
-- `createSlotRecipeContext` providers built from a no-variant `sva`/`cva` recipe no longer reject valid children.
+Variant-less recipes no longer add a broad string index signature, so `defaultProps` and `createSlotRecipeContext` providers accept valid non-variant props again.
