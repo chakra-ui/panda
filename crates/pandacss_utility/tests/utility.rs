@@ -1133,6 +1133,10 @@ fn class_name_value_uses_authored_literal() {
 
     assert_eq!(utility.class_name_value("2"), "2");
     assert_eq!(utility.class_name_value("0.5rem"), "0.5rem");
+    // Surrounding whitespace is trimmed to match the runtime
+    // `withoutSpace(withoutImportant(value))`, which always `.trim()`s.
+    assert_eq!(utility.class_name_value("0 auto "), "0_auto");
+    assert_eq!(utility.class_name_value(" 0.5rem"), "0.5rem");
     assert_eq!(
         utility
             .value_alias_for_literal("marginBottom", "0.5rem")
