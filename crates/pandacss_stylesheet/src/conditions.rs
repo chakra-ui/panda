@@ -289,7 +289,18 @@ fn replace_selector_parent(raw: &str, parent: &str) -> String {
     let mut out = Vec::new();
     for parent in &parent_selectors {
         for raw in &raw_selectors {
-            out.push(raw.replace('&', parent));
+            // Each comma member is scoped independently: a member containing `&`
+            // substitutes the parent in place; a member WITHOUT `&` (e.g. the
+            // `:only-child` in `&:not(:first-child), :only-child`) is a
+            // descendant of the parent, exactly as `nested_selector` treats a
+            // whole `&`-free selector. Skipping the descendant prefix left such
+            // members unscoped — a bare `:only-child` matches <html> and the rule
+            // leaks to the whole document.
+            if raw.contains('&') {
+                out.push(raw.replace('&', parent));
+            } else {
+                out.push(format!("{parent} {raw}"));
+            }
         }
     }
     out.join(", ")

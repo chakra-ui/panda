@@ -500,6 +500,37 @@ fn escapes_nested_selector_keys_into_valid_class_names() {
 }
 
 #[test]
+fn comma_group_nested_selector_scopes_every_member() {
+    // A comma-separated nested-selector key where only SOME members contain `&`
+    // (`&:not(:first-child), :only-child`) must scope EVERY member to the atomic
+    // class: the `&` member substitutes the class, and the bare `:only-child`
+    // member becomes a descendant of the class. The bug left `:only-child`
+    // (no `&`) UNSCOPED, emitting a bare `:only-child { display: none }` — which
+    // matches <html> (the document's only element child) and blanks the page.
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "display": { "className": "d" } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '&:not(:first-child), :only-child': { display: 'none' } })",
+        &[StylesheetLayer::Utilities],
+    );
+    // Both comma members are scoped to the atomic class — the `&` member
+    // substitutes it (`.<class>:not(:first-child)`), the bare member becomes a
+    // descendant (`.<class> :only-child`). Crucially, the comma-joined list has
+    // NO bare leading-pseudo member; the previous output dropped the class scope
+    // on the second member, leaving a bare `:only-child` that matched <html>.
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .\[\&\:not\(\:first-child\)\,_\:only-child\]\:d_none:not(:first-child), .\[\&\:not\(\:first-child\)\,_\:only-child\]\:d_none :only-child {
+    display: none;
+  }
+}
+");
+}
+
+#[test]
 fn escapes_leading_double_dash_class_names() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
