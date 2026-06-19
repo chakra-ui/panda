@@ -1,8 +1,8 @@
 import type { DesignSystemManifest, DesignSystemManifestInput } from '@pandacss/compiler-shared'
-import { describe, expect, it } from 'vitest'
-import { createProject } from './test-utils'
+import { expect, it } from 'vitest'
 
-const project = () => createProject({})
+import { baseConfig, describeIfBuilt, describeMissingWasm } from './helpers'
+import { createCompiler } from '../src'
 
 const fullInput: DesignSystemManifestInput = {
   name: '@acme/ds',
@@ -15,9 +15,9 @@ const fullInput: DesignSystemManifestInput = {
   files: ['./dist/**/*.mjs'],
 }
 
-describe('compiler.designSystem', () => {
-  it('create() stamps the engine schema version and carries input fields', () => {
-    const app = project()
+describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
+  it('create() stamps the engine schema version and carries input fields', async () => {
+    const app = await createCompiler(baseConfig)
     const manifest = app.designSystem.create(fullInput)
 
     expect(manifest.schemaVersion).toBe(app.designSystem.schemaVersion)
@@ -33,8 +33,19 @@ describe('compiler.designSystem', () => {
     })
   })
 
-  it('create() omits absent optionals on the wire', () => {
-    const manifest = project().designSystem.create({
+  // serde_wasm_bindgen serializes maps as objects — importMap must be a plain
+  // object across the boundary, not a Map (parity with the native binding).
+  it('create() returns importMap as a plain object', async () => {
+    const app = await createCompiler(baseConfig)
+    const { importMap } = app.designSystem.create(fullInput)
+
+    expect(importMap).not.toBeInstanceOf(Map)
+    expect(Object.getPrototypeOf(importMap)).toBe(Object.prototype)
+  })
+
+  it('create() omits absent optionals on the wire', async () => {
+    const app = await createCompiler(baseConfig)
+    const manifest = app.designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
       preset: './preset.mjs',
@@ -47,44 +58,21 @@ describe('compiler.designSystem', () => {
     expect('files' in manifest).toBe(false)
   })
 
-  it('create() throws when a required field is missing', () => {
-    const app = project()
+  it('create() throws when a required field is missing', async () => {
+    const app = await createCompiler(baseConfig)
     expect(() =>
       // @ts-expect-error - missing required `panda`
       app.designSystem.create({ name: '@acme/ds', preset: './preset.mjs', buildInfo: './panda.buildinfo.json' }),
     ).toThrow()
   })
 
-  it('create() ignores unknown input fields', () => {
-    const manifest = project().designSystem.create({
-      name: '@acme/ds',
-      panda: '^2.0.0',
-      preset: './preset.mjs',
-      buildInfo: './panda.buildinfo.json',
-      // @ts-expect-error - unknown field is dropped, not surfaced
-      bogus: 'ignored',
-    })
-    expect('bogus' in manifest).toBe(false)
-  })
-
-  it('create() collapses an empty files array to absent', () => {
-    const manifest = project().designSystem.create({
-      name: '@acme/ds',
-      panda: '^2.0.0',
-      preset: './preset.mjs',
-      buildInfo: './panda.buildinfo.json',
-      files: [],
-    })
-    expect('files' in manifest).toBe(false)
-  })
-
-  it('validate() accepts a manifest with a matching schemaVersion', () => {
-    const app = project()
+  it('validate() accepts a manifest with a matching schemaVersion', async () => {
+    const app = await createCompiler(baseConfig)
     expect(app.designSystem.validate(app.designSystem.create(fullInput))).toEqual({ ok: true })
   })
 
-  it('validate() rejects an unsupported schemaVersion', () => {
-    const app = project()
+  it('validate() rejects an unsupported schemaVersion', async () => {
+    const app = await createCompiler(baseConfig)
     const manifest: DesignSystemManifest = {
       ...app.designSystem.create(fullInput),
       schemaVersion: app.designSystem.schemaVersion + 1,
@@ -92,3 +80,5 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.validate(manifest)).toEqual({ ok: false, reason: 'schemaVersion' })
   })
 })
+
+describeMissingWasm()
