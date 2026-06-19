@@ -200,6 +200,33 @@ fn astro_directives_and_control_flow_extract() {
 }
 
 #[test]
+fn top_level_return_in_frontmatter_is_valid_astro() {
+    // Frontmatter is a render-function body, so a top-level `return` is valid Astro.
+    // Without it allowed, Oxc errors on the masked module and aborts the build.
+    let source = indoc! {r"
+        ---
+        import { css } from '@panda/css';
+        const open = true;
+        if (open) {
+          return null;
+        }
+        ---
+
+        <div class={css({ color: 'red' })} />
+    "};
+
+    let result = extract(source, "Foo.astro", &panda_config());
+    assert!(result.diagnostics.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx: []
+    ");
+}
+
+#[test]
 fn spans_point_into_the_original_astro_source() {
     // The mask is a same-length blank-and-copy, so a surviving token keeps its
     // original byte offset: the reported span slices the ORIGINAL source verbatim.

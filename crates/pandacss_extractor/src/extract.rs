@@ -151,7 +151,9 @@ fn run_extract<'cb>(
     let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
     let parser_return = {
         let _span = tracing::trace_span!("oxc_parse", path = path).entered();
-        Parser::new(&allocator, source, source_type).parse()
+        Parser::new(&allocator, source, source_type)
+            .with_options(crate::adapter::parse_options_for(path))
+            .parse()
     };
     let mut diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let imports = {
