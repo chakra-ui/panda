@@ -372,9 +372,11 @@ fn emits_ts_source_types() {
 
     export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObject>>
 
-    export type RecipeSelection<T extends RecipeVariantRecord> = {
-      [K in keyof T]?: StringToBoolean<keyof T[K]>
-    }
+    export type RecipeSelection<T extends RecipeVariantRecord> = string extends keyof T
+      ? {}
+      : {
+          [K in keyof T]?: StringToBoolean<keyof T[K]>
+        }
 
     export type RecipeCompoundSelection<T> = {
       [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
