@@ -3,6 +3,18 @@
 use std::borrow::Cow;
 use std::path::Path;
 
+use oxc_parser::ParseOptions;
+
+/// Astro frontmatter is a render-function body, so a top-level `return` is valid
+/// there but a hard error in the bare module we mask it into. Allow it for `.astro`.
+#[must_use]
+pub(crate) fn parse_options_for(path: &str) -> ParseOptions {
+    ParseOptions {
+        allow_return_outside_function: has_extension(path, "astro"),
+        ..ParseOptions::default()
+    }
+}
+
 #[must_use]
 pub(crate) fn adapt_source<'a>(source: &'a str, path: &str) -> Cow<'a, str> {
     if has_extension(path, "vue") {
