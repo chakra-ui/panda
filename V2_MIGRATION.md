@@ -233,6 +233,43 @@ production.
 
 - **Compiled-JSX extraction.** `css` props are picked up from compiled runtime helpers (`jsx(...)` / `_jsx(...)`), so
   React, Preact, Vue, Solid, and Qwik builds work — not just raw JSX source.
+- **Cross-file static composition.** You can keep shared styles in another file and compose them with `css(...)`. v2
+  folds named local imports when the value is static. Aliases, re-exports, object spreads, and Panda `.raw()` helpers
+  work. Default imports, namespace imports, and runtime values are skipped.
+
+  ```tsx
+  // styles.ts
+  import { css } from '../styled-system/css'
+
+  export const button = css.raw({
+    display: 'inline-flex',
+    alignItems: 'center',
+    px: '4',
+    py: '2',
+    rounded: 'md',
+  })
+
+  export const icon = css.raw({
+    width: '4',
+    height: '4',
+    flexShrink: '0',
+  })
+
+  // button.tsx
+  import { css } from '../styled-system/css'
+  import { button, icon } from './styles'
+
+  css(button, { bg: 'blue.500', color: 'white' })
+
+  // ✅ Works inside nested selectors too
+  css({
+    '& svg': {
+      ...icon,
+      color: 'currentColor',
+    },
+  })
+  ```
+
 - **Recipe variant diagnostics.** Dynamic config-recipe variant props warn with `recipe_variant_dynamic` (JIT still
   emits base + `defaultVariants` only).
 - **Custom utility `transform` grouping.** A custom utility whose `transform` returns a multi-declaration object emits
