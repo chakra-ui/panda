@@ -61,7 +61,7 @@ describe('cssgen command', () => {
         {
           "code": "js_parse_error",
           "file": "App.tsx",
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)
@@ -84,7 +84,7 @@ describe('cssgen command', () => {
         {
           "code": "js_parse_error",
           "file": "App.tsx",
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)
@@ -103,7 +103,7 @@ describe('cssgen command', () => {
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(`
       "cssgen: parsed 1 files, wrote 274 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
-      error js_parse_error: Unexpected token
+      warning js_parse_error: Unexpected token
         ┌─ App.tsx:1:48
         │
       1 │ import { css } from '@panda/css'; css({ color: 
@@ -123,7 +123,7 @@ describe('cssgen command', () => {
     )
 
     expect(logs.join('\n')).toMatchInlineSnapshot(
-      `"::error file=App.tsx,line=1,col=48,title=js_parse_error::Unexpected token"`,
+      `"::warning file=App.tsx,line=1,col=48,title=js_parse_error::Unexpected token"`,
     )
   })
 

@@ -64,7 +64,7 @@ describe('build command (default panda)', () => {
     expect(readFileSync(join(dir, 'panda.css'), 'utf8')).toContain('red')
   })
 
-  it('surfaces parse diagnostics from the css pass', async () => {
+  it('surfaces a parse error as a warning without failing the build', async () => {
     dir = createFixture()
     writeSyntaxError(dir)
 
@@ -76,13 +76,23 @@ describe('build command (default panda)', () => {
         {
           "code": "js_parse_error",
           "file": "App.tsx",
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)
+    expect(result.ok).toBe(true)
+    expect(result.exitCode).toBe(0)
+    expect(normalizeOutput(logs.join('\n'), dir)).toContain('warning js_parse_error')
+  })
+
+  it('still fails the build on a parse error under --max-warnings 0', async () => {
+    dir = createFixture()
+    writeSyntaxError(dir)
+
+    const result = await runBuild({ cwd: dir, logLevel: 'silent', maxWarnings: 0 })
+
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
-    expect(normalizeOutput(logs.join('\n'), dir)).toContain('error js_parse_error')
   })
 
   it('--check passes after a clean build', async () => {

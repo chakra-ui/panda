@@ -102,11 +102,11 @@ describe('debug command', () => {
         {
           "code": "js_parse_error",
           "file": "App.tsx",
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)
-    expect(result.ok).toBe(false)
-    expect(result.exitCode).toBe(1)
+    expect(result.ok).toBe(true)
+    expect(result.exitCode).toBe(0)
   })
 })

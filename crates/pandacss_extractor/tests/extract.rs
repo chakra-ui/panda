@@ -278,7 +278,7 @@ fn parse_error_contract_diagnostics_and_partial_extractions() {
         !result.diagnostics.is_empty(),
         "parse error must surface as a diagnostic"
     );
-    assert_yaml_snapshot!(result.diagnostics[0].severity, @"error");
+    assert_yaml_snapshot!(result.diagnostics[0].severity, @"warning");
     // No assertion on `result.calls` — Oxc's recovery may or may not
     // expose the pre-error css() call depending on parser behaviour.
     // The point is that the API doesn't crash and surfaces the error.
