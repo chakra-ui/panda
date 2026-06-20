@@ -91,4 +91,89 @@ describe('compiler.designSystem', () => {
     }
     expect(app.designSystem.validate(manifest)).toEqual({ ok: false, reason: 'schemaVersion' })
   })
+
+  // --- load(): consumer side — validate + hydrate the library's build info ---
+
+  // A library publishing two styled modules, plus the manifest pointing at it.
+  const lib = () => {
+    const ds = createProject({ utilities: { padding: { className: 'p' }, margin: { className: 'm' } } })
+    ds.parseFileSource(
+      'button.tsx',
+      "import { css } from '@panda/css'\nexport const Button = css({ color: 'red', padding: '4px' })",
+    )
+    ds.parseFileSource(
+      'card.tsx',
+      "import { css } from '@panda/css'\nexport const Card = css({ color: 'red', margin: '8px' })",
+    )
+    const buildInfo = {
+      ...ds.buildInfo.create({ panda: '^2.0.0' }),
+      exports: { Button: 'button.tsx', Card: 'card.tsx' },
+    }
+    const manifest = ds.designSystem.create({ ...fullInput, importMap: undefined })
+    return { manifest, buildInfo }
+  }
+
+  it('load() hydrates every module when imports are omitted', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+
+    expect(app.designSystem.load(manifest, { buildInfo })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: ['button.tsx', 'card.tsx'],
+    })
+  })
+
+  it('load() tree-shakes to the modules the consumer imports', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+
+    expect(app.designSystem.load(manifest, { buildInfo, imports: ['Button'] })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: ['button.tsx'],
+    })
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .padding_4px {
+          padding: 4px;
+        }
+        .color_red {
+          color: red;
+        }
+      }
+      "
+    `)
+  })
+
+  it('load() with empty imports hydrates nothing', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+
+    expect(app.designSystem.load(manifest, { buildInfo, imports: [] })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: [],
+    })
+  })
+
+  it('load() bails on a manifest schemaVersion mismatch — host re-extracts files', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+    const stale: DesignSystemManifest = { ...manifest, schemaVersion: manifest.schemaVersion + 1 }
+
+    expect(app.designSystem.load(stale, { buildInfo })).toEqual({ ok: false, reason: 'schemaVersion', modules: [] })
+  })
+
+  it('load() bails on an incompatible build info', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+    const stale = { ...buildInfo, schemaVersion: buildInfo.schemaVersion + 1 }
+
+    expect(app.designSystem.load(manifest, { buildInfo: stale })).toEqual({
+      ok: false,
+      reason: 'schemaVersion',
+      modules: [],
+    })
+  })
 })

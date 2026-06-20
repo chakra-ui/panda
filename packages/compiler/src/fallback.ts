@@ -18,10 +18,13 @@ import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor
 
 /** No-op design-system primitives; `validate` always reports incompatible
  *  (`schemaVersion` is `-1`). */
-const fallbackDesignSystem = makeDesignSystemApi({
-  createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
-  designSystemManifestSchemaVersion: () => -1,
-})
+const fallbackDesignSystem = makeDesignSystemApi(
+  {
+    createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
+    designSystemManifestSchemaVersion: () => -1,
+  },
+  fallbackBuildInfo,
+)
 
 class FallbackExtractor implements ExtractorSession {
   extract() {

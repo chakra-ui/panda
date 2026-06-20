@@ -105,12 +105,11 @@ export function build(
   // Wire the ergonomic `compiler.buildInfo` / `compiler.designSystem` namespaces
   // over the wasm primitives, mirroring the native binding. Non-enumerable so
   // they stay off snapshots.
-  Object.defineProperty(compiler, 'buildInfo', {
-    value: makeBuildInfoApi(compiler as unknown as BuildInfoNative),
-    enumerable: false,
-  })
+  const buildInfo = makeBuildInfoApi(compiler as unknown as BuildInfoNative)
+  Object.defineProperty(compiler, 'buildInfo', { value: buildInfo, enumerable: false })
   Object.defineProperty(compiler, 'designSystem', {
-    value: makeDesignSystemApi(compiler as unknown as DesignSystemNative),
+    // `load` reuses the `buildInfo` namespace just wired above.
+    value: makeDesignSystemApi(compiler as unknown as DesignSystemNative, buildInfo),
     enumerable: false,
   })
 

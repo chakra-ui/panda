@@ -863,7 +863,28 @@ export type DesignSystemManifestCompatibility =
   | { ok: true }
   | { ok: false; reason: DesignSystemManifestIncompatibility }
 
-/** Produce + validate `panda.lib.json`. Accessed as `compiler.designSystem`. */
+/** Inputs to `load` — the library's already-read build info plus the consumer's
+ *  imports from the design system, for tree-shaking. */
+export interface DesignSystemLoadOptions {
+  /** The library's portable encoder state (its `panda.buildinfo.json`), already
+   *  read off disk by the host. */
+  buildInfo: BuildInfo
+  /** Export names the consumer imports from the design system; resolved to
+   *  modules via the build info's `exports` so only their CSS emits. Omit to
+   *  hydrate every module (e.g. a namespace import). */
+  imports?: string[]
+}
+
+/** Outcome of `load`. On success, `modules` is the hydrated set keyed under the
+ *  manifest name. On failure, `reason` is why — a manifest wire mismatch or an
+ *  incompatible build info — and the host falls back to re-extracting the
+ *  manifest's `files`. */
+export type DesignSystemLoadResult =
+  | { ok: true; name: string; modules: string[] }
+  | { ok: false; reason: DesignSystemManifestIncompatibility | BuildInfoIncompatibility; modules: [] }
+
+/** Produce, validate, and load `panda.lib.json`. Accessed as
+ *  `compiler.designSystem`. */
 export interface DesignSystemApi {
   /** The manifest wire-format version this compiler reads/writes. */
   readonly schemaVersion: number
@@ -875,6 +896,13 @@ export interface DesignSystemApi {
   /** Check a manifest's `schemaVersion` against this compiler; the peer-range
    *  verdict is layered on by the host. */
   validate(manifest: DesignSystemManifest): DesignSystemManifestCompatibility
+
+  /** Consumer side (`designSystem: '@acme/ds'`): validate the manifest, resolve
+   *  which library modules the consumer's imports touch, and hydrate them under
+   *  the manifest name as a layer. Covers the build-info half — preset and
+   *  `importMap` merge into the consumer config at build time, in the host,
+   *  since the engine value layer can't execute the preset module. */
+  load(manifest: DesignSystemManifest, options: DesignSystemLoadOptions): DesignSystemLoadResult
 }
 
 /** A configured, long-lived compiler: built once from a serialized config, fed

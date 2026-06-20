@@ -79,6 +79,51 @@ describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
     }
     expect(app.designSystem.validate(manifest)).toEqual({ ok: false, reason: 'schemaVersion' })
   })
+
+  // load(): produce a manifest + build info on a lib, then load into a fresh
+  // consumer across the wasm boundary — the full consumer round-trip.
+  it('load() validates + tree-shakes the library build info to imported modules', async () => {
+    const lib = await createCompiler(baseConfig)
+    lib.parseFileSource('button.tsx', "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })")
+    lib.parseFileSource('card.tsx', "import { css } from '@panda/css'\nexport const Card = css({ background: 'blue' })")
+
+    const buildInfo = {
+      ...lib.buildInfo.create({ panda: '^2.0.0' }),
+      exports: { Button: 'button.tsx', Card: 'card.tsx' },
+    }
+    const manifest = lib.designSystem.create(fullInput)
+
+    const app = await createCompiler(baseConfig)
+    expect(app.designSystem.load(manifest, { buildInfo, imports: ['Button'] })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: ['button.tsx'],
+    })
+
+    // card's `background: blue` should not hydrate.
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .color_red {
+          color: red;
+        }
+      }
+      "
+    `)
+  })
+
+  it('load() bails on an incompatible build info', async () => {
+    const lib = await createCompiler(baseConfig)
+    lib.parseFileSource('button.tsx', "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })")
+    const buildInfo = lib.buildInfo.create({ panda: '^2.0.0' })
+    const stale = { ...buildInfo, schemaVersion: buildInfo.schemaVersion + 1 }
+
+    const app = await createCompiler(baseConfig)
+    expect(app.designSystem.load(app.designSystem.create(fullInput), { buildInfo: stale })).toEqual({
+      ok: false,
+      reason: 'schemaVersion',
+      modules: [],
+    })
+  })
 })
 
 describeMissingWasm()
