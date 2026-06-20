@@ -181,8 +181,11 @@ export const popover = sva({
       boxShadow: 'lg',
       border: '1px solid',
       borderColor: 'gray.200',
-      // a CSS variable Base UI sets on the popup at runtime
-      maxHeight: 'var(--available-height)'
+      // CSS variables Base UI exposes at runtime
+      maxHeight: 'var(--available-height)',
+      transformOrigin: 'var(--transform-origin)',
+      _open: { animation: 'popIn 150ms ease-out' },
+      _closed: { animation: 'popOut 150ms ease-in' }
     },
     arrow: {
       color: 'white'
@@ -203,6 +206,36 @@ export const popover = sva({
   }
 })
 ```
+
+The popup also gets a subtle open and close animation, and it leans on the same idea as everything else here. Base UI
+sets `data-open` while the popup is showing and `data-closed` as it leaves (it keeps the element mounted long enough for
+the exit to play). Those are the exact attributes `_open` and `_closed` already match, so all you add is a pair of
+keyframes:
+
+```ts
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    extend: {
+      keyframes: {
+        popIn: {
+          from: { opacity: 0, transform: 'scale(0.95)' },
+          to: { opacity: 1, transform: 'scale(1)' }
+        },
+        popOut: {
+          from: { opacity: 1, transform: 'scale(1)' },
+          to: { opacity: 0, transform: 'scale(0.95)' }
+        }
+      }
+    }
+  }
+})
+```
+
+The `transformOrigin: 'var(--transform-origin)'` on the popup is another runtime variable Base UI provides, so the
+popover scales out from the trigger rather than its own center.
 
 Now apply each slot in the markup. Calling `popover()` returns an object of class names keyed by slot:
 
@@ -315,6 +348,4 @@ recipe holds every part's styles together, and `createStyleContext` turns that r
 you can drop in anywhere without wiring up class names by hand.
 
 To go deeper, see the Panda docs on [recipes](/docs/concepts/recipes), [slot recipes](/docs/concepts/slot-recipes),
-[conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context). On
-the Base UI side, the [styling handbook](https://base-ui.com/react/handbook/styling) and
-[animation handbook](https://base-ui.com/react/handbook/animation) are the references to keep open while you build.
+[conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context).
