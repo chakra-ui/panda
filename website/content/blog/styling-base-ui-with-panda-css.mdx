@@ -1,0 +1,325 @@
+---
+title: 'Styling Base UI Headless Components with Panda CSS'
+description:
+  'A guide to styling Base UI’s headless React components with Panda CSS. Covers data-attribute state conditions and
+  slot recipes for multi-part components.'
+date: 2026-06-19
+author: Esther Adebayo
+tags: [base-ui, css, guides, recipes]
+---
+
+Headless component libraries solve a hard problem and then hand you another one. Base UI gives you accessible,
+fully-featured components with zero opinions about how they look. That freedom is the whole point, but it also means the
+first thing you do after installing it is figure out how to style everything.
+
+![Styling Base UI With Panda CSS](/base-ui-panda.png)
+
+This guide shows how to pair Base UI with Panda CSS. It turns out the two fit together unusually well. Base UI exposes
+component state through `data-*` attributes and lets every part take a `className`. Panda's conditions and recipes are
+built to consume exactly that shape. We will style a Switch and a Popover from scratch and wire up their interactive
+states along the way.
+
+## Why pair Base UI with Panda CSS
+
+Base UI components ship no CSS, follow WAI-ARIA patterns, and leave styling entirely to you. Panda is the other half of
+that deal: a build-time, type-safe styling engine with design tokens, recipes, and no runtime CSS-in-JS cost.
+
+The reason they pair so cleanly comes down to two things:
+
+- Base UI surfaces every state (`open`, `checked`, `disabled`, `highlighted`) as a `data-*` attribute. Panda's built-in
+  conditions already target those exact attributes.
+- Base UI components are multi-part. Panda's slot recipes are designed to style multi-part components from a single
+  definition.
+
+So instead of fighting the library, you describe styles the way Panda already wants you to, and they land on the right
+parts in the right states.
+
+## Setup
+
+This guide assumes you already have Panda set up in a React project. If not, follow the
+[Panda installation guide](/docs/installation/cli) first. Then add Base UI:
+
+```bash
+pnpm add @base-ui/react
+```
+
+Imports are scoped per component, so you only pull in what you use:
+
+```tsx
+import { Switch } from '@base-ui/react/switch'
+import { Popover } from '@base-ui/react/popover'
+```
+
+All the styling examples below import from your generated `styled-system` directory. One detail worth checking: set
+`jsxFramework: 'react'` in your `panda.config.ts`. The `styled-system/jsx` helpers we lean on later, like
+`createStyleContext`, are only generated when it is set.
+
+## How Base UI exposes styling
+
+Before writing any styles, it helps to know the two hooks Base UI gives you.
+
+**Every part takes a `className`.** You hand it the class names Panda generates, the same as any other element.
+
+**Every part exposes state as `data-*` attributes.** A Switch renders `data-checked` or `data-unchecked`, a disabled
+control renders `data-disabled`, an open popup renders `data-open`, and so on. This is what you target in CSS, and as
+we'll see, it's where Panda's conditions come in. Let's see it.
+
+## Styling your first component: the Switch
+
+A Base UI Switch has two parts. `Switch.Root` is the track, and `Switch.Thumb` is the circle that slides across it. Here
+is the whole thing styled with Panda's `css` function:
+
+```tsx
+import { Switch } from '@base-ui/react/switch'
+import { css } from 'styled-system/css'
+
+export function ThemeSwitch() {
+  return (
+    <Switch.Root
+      className={css({
+        display: 'inline-flex',
+        alignItems: 'center',
+        width: '44px',
+        height: '26px',
+        padding: '3px',
+        rounded: 'full',
+        bg: 'gray.300',
+        cursor: 'pointer',
+        transition: 'background-color 150ms',
+        _checked: { bg: 'blue.500' },
+        _disabled: { opacity: 0.5, cursor: 'not-allowed' }
+      })}
+    >
+      <Switch.Thumb
+        className={css({
+          width: '20px',
+          height: '20px',
+          rounded: 'full',
+          bg: 'white',
+          boxShadow: 'sm',
+          transition: 'transform 150ms',
+          _checked: { transform: 'translateX(18px)' }
+        })}
+      />
+    </Switch.Root>
+  )
+}
+```
+
+Toggle it and the track turns blue while the thumb slides right. But here is the surprising part. You used `_checked` on
+plain `<span>` elements, and only form inputs can be `:checked`. So why did it work?
+
+Because Panda's built-in conditions were written with headless libraries in mind. `_checked` does not only mean
+`:checked`. Its actual definition covers Base UI's `data-checked` attribute too:
+
+```ts
+// from Panda's base preset
+checked: '&:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"])'
+```
+
+The same is true for the conditions you reach for most when styling Base UI. They all already include the matching
+`data-*` selector:
+
+- `_checked` matches `[data-checked]`
+- `_disabled` matches `[data-disabled]`
+- `_open` matches `[data-open]`
+- `_closed` matches `[data-closed]`
+- `_highlighted` matches `[data-highlighted]`
+- `_pressed` matches `[data-pressed]`
+
+So a large chunk of Base UI's state model just works with no configuration.
+
+### Custom conditions for the rest
+
+A few Base UI attributes are specific enough that Panda does not ship a condition for them, for example
+`data-popup-open` on a popover trigger. When you need one, add it to your config once and use it everywhere as a pseudo
+prop:
+
+```ts
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  conditions: {
+    extend: {
+      popupOpen: '&[data-popup-open]'
+    }
+  }
+})
+```
+
+After running `panda codegen`, that becomes `_popupOpen` in your style objects, which is exactly what the popover
+trigger below uses.
+
+## Styling a complex component: the Popover
+
+The Switch had two parts. A Popover, like many other Base UI components, has many more, and it spreads them across a
+portal, so it is where a styling approach really gets tested:
+
+```tsx
+<Popover.Root>
+  <Popover.Trigger />
+  <Popover.Portal>
+    <Popover.Positioner>
+      <Popover.Popup>
+        <Popover.Arrow />
+        <Popover.Title />
+        <Popover.Description />
+        <Popover.Close />
+      </Popover.Popup>
+    </Popover.Positioner>
+  </Popover.Portal>
+</Popover.Root>
+```
+
+You could call `css` on each part, but that scatters the popover's styling across the markup and makes a size or color
+variant painful. This is exactly what slot recipes in Panda CSS are for. You define the styles for every part in one
+place, and the recipe hands back a ready-made class for each, variants and all.
+
+Here is a popover styled with `sva` (the slot variant function):
+
+```tsx
+// components/ui/popover-styles.ts
+import { sva } from 'styled-system/css'
+
+export const popover = sva({
+  slots: ['trigger', 'positioner', 'popup', 'arrow', 'title'],
+  base: {
+    positioner: {
+      zIndex: 50
+    },
+    trigger: {
+      px: '4',
+      py: '2',
+      rounded: 'md',
+      bg: 'gray.900',
+      color: 'white',
+      cursor: 'pointer',
+      _popupOpen: { bg: 'gray.700' }
+    },
+    popup: {
+      bg: 'white',
+      rounded: 'lg',
+      boxShadow: 'lg',
+      border: '1px solid',
+      borderColor: 'gray.200',
+      // a CSS variable Base UI sets on the popup at runtime
+      maxHeight: 'var(--available-height)'
+    },
+    arrow: {
+      color: 'white'
+    },
+    title: {
+      fontWeight: 'semibold',
+      fontSize: 'sm'
+    }
+  },
+  variants: {
+    size: {
+      sm: { popup: { width: '220px', p: '3' } },
+      md: { popup: { width: '320px', p: '4' } }
+    }
+  },
+  defaultVariants: {
+    size: 'md'
+  }
+})
+```
+
+> Notice the `_popupOpen` condition on the trigger and `sideOffset` on the positioner. The trigger restyles itself while
+> the popover is open, and Base UI handles the positioning math. Panda just provides the styles.
+
+Now apply each slot in the markup. Calling `popover()` returns an object of class names keyed by slot:
+
+```tsx
+import { Popover } from '@base-ui/react/popover'
+import { popover } from './popover-styles'
+
+export function NotificationsPopover() {
+  const styles = popover({ size: 'md' })
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger className={styles.trigger}>Notifications</Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner className={styles.positioner} sideOffset={8}>
+          <Popover.Popup className={styles.popup}>
+            <Popover.Arrow className={styles.arrow} />
+            <Popover.Title className={styles.title}>Notifications</Popover.Title>
+            <Popover.Description>You are all caught up.</Popover.Description>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  )
+}
+```
+
+## A cleaner API with createStyleContext
+
+Passing `styles.trigger`, `styles.popup`, and so on works, but it gets tiring to repeat every time you use a component.
+Panda has a cleaner way: a helper called `createStyleContext`. You give it your slot recipe once, and it hands back
+components with the styles already baked in, so you never wire up class names manually again.
+
+```tsx
+// components/ui/popover.tsx
+import { Popover as BasePopover } from '@base-ui/react/popover'
+import { createStyleContext } from 'styled-system/jsx'
+import { popover } from './popover-styles'
+
+const { withRootProvider, withContext } = createStyleContext(popover)
+
+export const Popover = {
+  // Root renders no DOM element, so it only provides context
+  Root: withRootProvider(BasePopover.Root),
+  Trigger: withContext(BasePopover.Trigger, 'trigger'),
+  Portal: BasePopover.Portal,
+  Positioner: withContext(BasePopover.Positioner, 'positioner'),
+  Popup: withContext(BasePopover.Popup, 'popup'),
+  Arrow: withContext(BasePopover.Arrow, 'arrow'),
+  Title: withContext(BasePopover.Title, 'title'),
+  Description: BasePopover.Description,
+  Close: BasePopover.Close
+}
+```
+
+The usage drops all the manual class wiring, and the `size` variant flows down through context:
+
+```tsx
+import { Popover } from './components/ui/popover'
+
+export function NotificationsPopover() {
+  return (
+    <Popover.Root size="md">
+      <Popover.Trigger>Notifications</Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={8}>
+          <Popover.Popup>
+            <Popover.Arrow />
+            <Popover.Title>Notifications</Popover.Title>
+            <Popover.Description>You are all caught up.</Popover.Description>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  )
+}
+```
+
+One thing to note: `Popover.Root` doesn't render any HTML of its own, it just provides context, so that's why we use
+`withRootProvider`. If a root does render an element you want to style, use `withProvider` and pass its slot name
+instead. And every part you wrap takes an `unstyled` prop, handy for when you want to skip the recipe styles on just one
+of them.
+
+## Get started
+
+Base UI gives you accessible components with no styling opinions, and Panda gives you a clean way to add the styles. You
+style every part through its `className`, and the states you care about (open, checked, disabled, and the rest) just
+work, because Panda's conditions already match the `data-*` attributes Base UI sets. For multi-part components, a slot
+recipe holds every part's styles together, and `createStyleContext` turns that recipe into a reusable set of components
+you can drop in anywhere without wiring up class names by hand.
+
+To go deeper, see the Panda docs on [recipes](/docs/concepts/recipes), [slot recipes](/docs/concepts/slot-recipes),
+[conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context). On
+the Base UI side, the [styling handbook](https://base-ui.com/react/handbook/styling) and
+[animation handbook](https://base-ui.com/react/handbook/animation) are the references to keep open while you build.
