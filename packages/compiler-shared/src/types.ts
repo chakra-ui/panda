@@ -251,6 +251,34 @@ export interface SpecTokenCategory {
 
 /** Tooling introspection snapshot — read once, index on the host (never query
  *  the engine per-item in a hot loop). Powers reporting / formatting / linting. */
+/** `true` = deprecated with no message; a string = the author's deprecation message. */
+export type Deprecation = true | string
+
+export interface SpecVariant {
+  values: string[]
+  allowsBoolean: boolean
+}
+
+export interface SpecRecipe {
+  name: string
+  typeName: string
+  variants: Record<string, SpecVariant>
+  deprecated?: Deprecation
+}
+
+export interface SpecSlotRecipe extends SpecRecipe {
+  slots: string[]
+}
+
+export interface SpecPattern {
+  name: string
+  typeName: string
+  strict: boolean
+  blocklist: string[]
+  properties: Record<string, unknown>
+  deprecated?: Deprecation
+}
+
 export interface Spec {
   conditions: { keys: string[]; breakpoints: string[]; containers: string[] }
   tokens: {
@@ -258,18 +286,22 @@ export interface Spec {
     colorPalettes: string[]
     /** `path -> value` (empty value means it equals the token's CSS var). */
     values: Record<string, string>
-    deprecated: string[]
+    /** `token path -> deprecation` (`true` or an author message). */
+    deprecated: Record<string, Deprecation>
   }
   utilities: {
     properties: Record<string, SpecUtilityProperty>
     /** `shorthand -> canonical property`. */
     shorthands: Record<string, string>
-    deprecated: string[]
+    /** `property -> deprecation` (always `true`; utility config has no message). */
+    deprecated: Record<string, Deprecation>
   }
   /** Keyed by pattern name. */
-  patterns: { patterns: Record<string, unknown> }
+  patterns: Record<string, SpecPattern>
   /** Keyed by recipe name. */
-  recipes: { recipes: Record<string, unknown>; slotRecipes: Record<string, unknown> }
+  recipes: Record<string, SpecRecipe>
+  /** Keyed by slot-recipe name. */
+  slotRecipes: Record<string, SpecSlotRecipe>
   /** Canonical emit order for property names (for a stable property sort). */
   propertyOrder: string[]
   jsxFactory?: string
@@ -375,9 +407,63 @@ export interface ExtractResult {
   diagnostics: Diagnostic[]
 }
 
+export interface TokenRefSite {
+  path: string
+  span: Span
+  range: SourceRange
+  needsCssVar: boolean
+  resolved: boolean
+  category?: string
+}
+
+export type ComponentEntryKind = 'jsx-component' | 'jsx-pattern' | 'jsx-recipe' | 'jsx-slot-recipe'
+
+export interface ComponentEntryRef {
+  kind: ComponentEntryKind
+  name: string
+  span: Span
+  range: SourceRange
+  recipe?: string
+  slot?: string
+  pattern?: string
+}
+
+export type StyleEntryKind = 'utility' | 'condition' | 'selector' | 'recipe-variant' | 'pattern-prop' | 'unknown'
+export type StyleEntrySyntax =
+  | 'css-call'
+  | 'jsx-prop'
+  | 'jsx-style-prop'
+  | 'recipe-call'
+  | 'pattern-call'
+  | 'template-style'
+export type StyleEntryOrigin = 'local' | 'cross-file' | 'generated' | 'unknown'
+export type StyleEntryFixability = 'report-only' | 'safe'
+
+export interface StyleEntryRef {
+  kind: StyleEntryKind
+  syntax: StyleEntrySyntax
+  origin: StyleEntryOrigin
+  span: Span
+  range: SourceRange
+  keySpan?: Span
+  valueSpan?: Span
+  path: string[]
+  name: string
+  canonicalName?: string
+  shorthandOf?: string
+  sourceValue: unknown
+  resolvedValue: unknown
+  fixable: StyleEntryFixability
+}
+
 export interface FileInspectionResult {
   usages: UsageSite[]
   diagnostics: Diagnostic[]
+  calls: ExtractedCall[]
+  jsx: ExtractedJsx[]
+  tokenRefs: TokenRefSite[]
+  componentEntries: ComponentEntryRef[]
+  styleEntries: StyleEntryRef[]
 }
 
 /** Author import map (`ImportMapInput`). */

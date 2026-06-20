@@ -77,6 +77,11 @@ impl PatternRegistry {
         }
     }
 
+    /// Resolve a pattern name or JSX tag to the canonical pattern name.
+    pub(crate) fn resolve_name(&self, name: &str) -> Option<&str> {
+        self.find(name).map(|entry| entry.base_name.as_str())
+    }
+
     fn find(&self, name: &str) -> Option<&PatternEntry> {
         self.exact.get(name).or_else(|| {
             self.regexes

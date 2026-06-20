@@ -90,10 +90,11 @@ class FallbackCompiler implements Compiler {
   spec() {
     return {
       conditions: { keys: [], breakpoints: [], containers: [] },
-      tokens: { categories: {}, colorPalettes: [], values: {}, deprecated: [] },
-      utilities: { properties: {}, shorthands: {}, deprecated: [] },
-      patterns: { patterns: {} },
-      recipes: { recipes: {}, slotRecipes: {} },
+      tokens: { categories: {}, colorPalettes: [], values: {}, deprecated: {} },
+      utilities: { properties: {}, shorthands: {}, deprecated: {} },
+      patterns: {},
+      recipes: {},
+      slotRecipes: {},
       propertyOrder: [],
     }
   }
@@ -101,7 +102,7 @@ class FallbackCompiler implements Compiler {
     return []
   }
   inspectFileSource() {
-    return { usages: [], diagnostics: [] }
+    return { usages: [], diagnostics: [], calls: [], jsx: [], tokenRefs: [], componentEntries: [], styleEntries: [] }
   }
   resolveUtilityValue() {
     return null

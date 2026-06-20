@@ -1,0 +1,181 @@
+---
+title: Isolated declarations
+description: Export components and recipes with variants without bloating your .d.ts files.
+---
+
+When you export a component or recipe that has variants, TypeScript can dump the entire recipe — every CSS declaration —
+into the generated `.d.ts`. That bloats your declaration files and breaks
+[`isolatedDeclarations`](https://www.typescriptlang.org/tsconfig/#isolatedDeclarations).
+
+This guide shows why it happens and how to keep your types small. The fix is one explicit annotation that lists only the
+variant keys, never the CSS.
+
+## Why the CSS leaks into your types
+
+The problem comes from **inline recipes** — a `cva`, `sva`, or `styled(tag, {...})` call where you pass the config object
+right there in your source:
+
+```tsx
+import { styled } from 'styled-system/jsx'
+
+export const Button = styled('button', {
+  base: { px: '4', rounded: 'md' },
+  variants: {
+    visual: {
+      solid: { bg: 'blue.500', color: 'white' },
+      outline: { borderWidth: '1px', borderColor: 'blue.500' },
+    },
+  },
+})
+```
+
+TypeScript infers the type of `Button` from that literal. The variant props type ends up anonymous — it has no name to
+reference — so when TypeScript emits the `.d.ts`, it inlines the whole config, CSS and all.
+
+`isolatedDeclarations` makes this worse, and clearer. It rejects any exported `const` initialized by a function call
+unless you annotate it. `styled(...)`, `cva(...)`, and `sva(...)` are all calls. So you *must* add a type — the only
+question is whether that type is writable. With an inline recipe it isn't, because the props type is anonymous.
+
+## The rule of thumb
+
+Keep the inline object. Add one explicit annotation that restates only the variant keys.
+
+The annotation goes in your source. The CSS stays in your source. The `.d.ts` only gets the annotation — clean, small,
+and `isolatedDeclarations`-safe.
+
+## With `styled`
+
+Annotate the export with `StyledComponent<Tag, Props>`. The `Props` type lists the variant keys and their options — no
+CSS:
+
+```tsx
+import { styled, type StyledComponent } from 'styled-system/jsx'
+
+export const Button: StyledComponent<'button', { visual?: 'solid' | 'outline' }> =
+  styled('button', {
+    base: { px: '4', rounded: 'md' },
+    variants: {
+      visual: {
+        solid: { bg: 'blue.500', color: 'white' },
+        outline: { borderWidth: '1px', borderColor: 'blue.500' },
+      },
+    },
+  })
+```
+
+The emitted `.d.ts` is one line:
+
+```ts
+export declare const Button: StyledComponent<'button', { visual?: 'solid' | 'outline' }>;
+```
+
+Your inline object is untouched. The `as` prop, style props, and `splitVariantProps` all still work.
+
+## With `cva`
+
+Annotate with `RecipeRuntimeFn<Props>`:
+
+```tsx
+import { cva } from 'styled-system/css'
+import type { RecipeRuntimeFn } from 'styled-system/types'
+
+export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> =
+  cva({
+    base: { px: '4' },
+    variants: {
+      visual: {
+        solid: { bg: 'blue.500', color: 'white' },
+        outline: { borderWidth: '1px' },
+      },
+    },
+  })
+```
+
+`RecipeRuntimeFn` takes a second type parameter for the variant map, but it defaults to `object`, so you can leave it
+off. Only add it if downstream code reads `button.variantMap` and needs the exact key arrays.
+
+## With `sva`
+
+Same idea. Annotate with `SlotRecipeRuntimeFn<Slots, Props>` — the slot union comes first:
+
+```tsx
+import { sva } from 'styled-system/css'
+import type { SlotRecipeRuntimeFn } from 'styled-system/types'
+
+export const button: SlotRecipeRuntimeFn<'root' | 'icon', { visual?: 'solid' | 'outline' }> =
+  sva({
+    slots: ['root', 'icon'],
+    base: { root: { px: '4' }, icon: { w: '4' } },
+    variants: {
+      visual: {
+        solid: { root: { bg: 'blue.500' } },
+        outline: { root: { borderWidth: '1px' } },
+      },
+    },
+  })
+```
+
+## Boolean variants
+
+A variant written as `{ true: {...}, false: {...} }` becomes a `boolean` in the props type, not `'true' | 'false'`:
+
+```tsx
+export const button: RecipeRuntimeFn<{ disabled?: boolean }> =
+  cva({
+    variants: {
+      disabled: {
+        true: { opacity: '0.5' },
+        false: { opacity: '1' },
+      },
+    },
+  })
+```
+
+## Skip the annotation with config recipes
+
+If you don't want to hand-write the annotation at all, define the recipe in your Panda config instead of inline. Panda
+generates a named, CSS-free type for it, and the CSS never reaches any `.d.ts`.
+
+```ts
+// panda.config.ts
+export default defineConfig({
+  theme: {
+    recipes: {
+      button: {
+        className: 'button',
+        base: { px: '4', rounded: 'md' },
+        variants: {
+          visual: {
+            solid: { bg: 'blue.500', color: 'white' },
+            outline: { borderWidth: '1px' },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+Now import the generated props type and annotate against it:
+
+```tsx
+import { button, type ButtonVariantProps } from 'styled-system/recipes'
+
+export interface ButtonProps extends ButtonVariantProps {}
+
+export const Button = (props: ButtonProps) => {
+  const [variants, rest] = button.splitVariantProps(props)
+  return <button className={button(variants)} {...rest} />
+}
+```
+
+`ButtonVariantProps` is a named import with no CSS, so the emitted type stays small and updates automatically when you
+change the recipe. This is the lowest-maintenance path if you're starting fresh.
+
+## Watch out
+
+The annotation lists the keys by hand, so keep it in sync when you add or rename a variant. If you forget, the type drift
+is silent — config recipes avoid this because the type is generated.
+
+Some inline recipes can't get a precise annotation: variant values built from spreads, computed keys, or conditionals
+don't fold to a clean key union. For those, move the recipe into your config, or accept a wider props type.

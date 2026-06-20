@@ -345,11 +345,30 @@ pub enum SemanticValue<T> {
     Value(T),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Deprecated {
     Bool(bool),
     Message(String),
+}
+
+impl Deprecated {
+    /// Whether this represents an active deprecation (`true` or a non-empty
+    /// message). `deprecated: false` and an empty message are inactive.
+    #[must_use]
+    pub fn is_active(&self) -> bool {
+        match self {
+            Deprecated::Bool(value) => *value,
+            Deprecated::Message(message) => !message.is_empty(),
+        }
+    }
+
+    /// Normalize an optional config value to an active deprecation, collapsing
+    /// `Some(Bool(false))` / empty messages to `None`.
+    #[must_use]
+    pub fn normalize(value: Option<&Deprecated>) -> Option<Deprecated> {
+        value.filter(|value| value.is_active()).cloned()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

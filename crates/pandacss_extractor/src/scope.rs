@@ -184,7 +184,15 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         let dict = self.tokens?;
         let (path, is_var, fallback) = self.token_call_parts(call)?;
 
-        let resolution = token_call_resolution(dict, &path, is_var, fallback.as_deref())?;
+        let Some(resolution) = token_call_resolution(dict, &path, is_var, fallback.as_deref())
+        else {
+            self.token_refs.borrow_mut().push(TokenRef {
+                path,
+                span: crate::span_from_oxc(call.span),
+                needs_css_var: is_var,
+            });
+            return None;
+        };
 
         if dict.is_deprecated(&resolution.ref_path) {
             self.record_deprecated_token(&resolution.ref_path, call.span);
@@ -213,6 +221,11 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         let (path, is_var, fallback) = self.token_call_parts(call)?;
         token_call_resolution(dict, &path, is_var, fallback.as_deref())
             .map(|result| result.ref_path)
+    }
+
+    pub(crate) fn token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
+        let (path, _, _) = self.token_call_parts(call)?;
+        Some(path)
     }
 
     pub(crate) fn token_call_needs_css_var(&self, call: &CallExpression<'_>) -> bool {

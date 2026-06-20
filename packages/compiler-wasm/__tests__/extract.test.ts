@@ -96,7 +96,7 @@ describeIfBuilt('@pandacss/compiler-wasm extract', () => {
     expect(result.diagnostics.map((d) => ({ severity: d.severity }))).toMatchInlineSnapshot(`
       [
         {
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)

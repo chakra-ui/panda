@@ -36,6 +36,9 @@ export default defineConfig({
       // test scripts, which pick up their local configs.
       'packages/compiler/__tests__/**',
       'packages/compiler-wasm/__tests__/**',
+      // Lint integration suite drives a real Panda compiler (needs the native
+      // binding); runs via the package's own vitest config in the node env.
+      'packages/eslint-plugin/__tests__/**',
     ],
   },
   resolve: {

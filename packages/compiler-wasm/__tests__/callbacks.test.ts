@@ -273,12 +273,12 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
       [
         {
           "prop": "space",
-          "value": "var(--spacing-4)",
+          "value": 4,
           "conditions": [],
         },
         {
           "prop": "space",
-          "value": "2px",
+          "value": "compact",
           "conditions": [
             "_hover",
           ],

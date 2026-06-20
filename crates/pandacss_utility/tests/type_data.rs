@@ -55,7 +55,7 @@ fn exposes_properties_shorthands_aliases_and_deprecations() {
     shorthands:
       g: gap
     deprecated:
-      - display
+      display: true
     aliases:
       DisplayValue:
         name: DisplayValue
@@ -169,9 +169,9 @@ fn marks_deprecated_shorthands_and_fallback_class_names() {
       bg: backgroundColor
       bgColor: backgroundColor
     deprecated:
-      - backgroundColor
-      - bg
-      - bgColor
+      backgroundColor: true
+      bg: true
+      bgColor: true
     aliases:
       BorderRadiusValue:
         name: BorderRadiusValue

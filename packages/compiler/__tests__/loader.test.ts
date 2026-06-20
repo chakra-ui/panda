@@ -114,6 +114,7 @@ describe('loadCompiler', () => {
           "utility": {
             "name": "brandColor",
             "cssProperty": "color",
+            "mappedCssProperty": "color",
             "tokenCategory": "colors",
             "literals": [],
             "primitive": null,

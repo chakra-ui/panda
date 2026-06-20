@@ -30,6 +30,7 @@ mod codegen;
 mod config;
 mod error;
 mod hook_filter;
+mod inspection;
 mod parsed_file;
 mod patterns;
 mod recipes;
@@ -64,6 +65,11 @@ pub type UtilityStyleKey = (Box<str>, AtomValue);
 pub use build_info::{BuildAtom, BuildInfo, BuildValue, ModuleEntry, SCHEMA_VERSION};
 pub use error::{ConfigError, Result};
 pub use hook_filter::HookFilter;
+pub use inspection::{
+    ComponentEntryKind, ComponentEntryRef, FileInspectionResult, StyleEntryFixability,
+    StyleEntryKind, StyleEntryOrigin, StyleEntryRef, StyleEntrySyntax, TokenRefSite, UsageKind,
+    UsageSite,
+};
 pub use pandacss_encoder::{
     EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroup, RecipeStyleGroupSnapshot,
 };
@@ -76,7 +82,6 @@ pub use system::{System, SystemInput};
 pub use transform_cache::{
     AtomValueCacheKey, LiteralCacheKey, atom_value_cache_key, literal_cache_key,
 };
-pub use usages::{FileInspectionResult, UsageKind, UsageSite};
 
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 

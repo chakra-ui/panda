@@ -42,7 +42,7 @@ export function introspect(spec: Spec): Introspection {
   }
 
   const tokens = new Set(Object.keys(spec.tokens.values))
-  const deprecatedTokens = new Set(spec.tokens.deprecated)
+  const deprecatedTokens = new Set(Object.keys(spec.tokens.deprecated))
   const conditionKeys = spec.conditions.keys
   const conditionRank = new Map(conditionKeys.map((key, index) => [key, index]))
   const propRank = new Map(spec.propertyOrder.map((prop, index) => [prop, index]))
@@ -72,8 +72,8 @@ export function introspect(spec: Spec): Introspection {
     filterDeprecatedTokens: (paths) => paths.filter((path) => deprecatedTokens.has(path)),
     conditions: () => conditionKeys,
     isCondition: (key) => conditionRank.has(key),
-    patterns: () => Object.keys(spec.patterns.patterns),
-    recipes: () => [...Object.keys(spec.recipes.recipes), ...Object.keys(spec.recipes.slotRecipes)],
+    patterns: () => Object.keys(spec.patterns),
+    recipes: () => [...Object.keys(spec.recipes), ...Object.keys(spec.slotRecipes)],
     jsxFactory: () => spec.jsxFactory,
     compareProps: (a, b) => rankOf(a) - rankOf(b) || (a < b ? -1 : a > b ? 1 : 0),
     sortProps: (keys) => [...keys].sort((a, b) => rankOf(a) - rankOf(b) || (a < b ? -1 : a > b ? 1 : 0)),

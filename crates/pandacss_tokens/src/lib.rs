@@ -12,7 +12,7 @@ use rustc_hash::FxHashMap;
 use std::collections::{BTreeMap, HashMap, hash_map::Entry};
 use std::sync::Arc;
 
-use pandacss_config::{TokenCategoryTypeData, TokenTypeData, token_category_type_name};
+use pandacss_config::{Deprecated, TokenCategoryTypeData, TokenTypeData, token_category_type_name};
 use pandacss_shared::number_to_js_string;
 
 #[cfg(feature = "serde")]
@@ -153,6 +153,13 @@ pub struct Token {
     pub description: Option<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: bool,
+    /// Author-provided deprecation message (`deprecated: 'use X instead'`).
+    /// `None` when deprecated via plain `true`.
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Option::is_none")
+    )]
+    pub deprecated_reason: Option<Arc<str>>,
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Option::is_none")
@@ -177,6 +184,8 @@ struct TokenWire {
     #[serde(default)]
     deprecated: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    deprecated_reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     extensions: Option<Box<TokenExtensions>>,
 }
 
@@ -192,6 +201,7 @@ impl From<TokenWire> for Token {
             original_value: value.original_value.map(Arc::from),
             description: value.description.map(Arc::from),
             deprecated: value.deprecated,
+            deprecated_reason: value.deprecated_reason.map(Arc::from),
             extensions: value.extensions,
         }
     }
@@ -209,6 +219,7 @@ impl From<Token> for TokenWire {
             original_value: value.original_value.map(|value| value.to_string()),
             description: value.description.map(|value| value.to_string()),
             deprecated: value.deprecated,
+            deprecated_reason: value.deprecated_reason.map(|value| value.to_string()),
             extensions: value.extensions,
         }
     }
@@ -231,6 +242,7 @@ impl Token {
             original_value: None,
             description: None,
             deprecated: false,
+            deprecated_reason: None,
             extensions: None,
         }
     }
@@ -250,6 +262,13 @@ impl Token {
     #[must_use]
     pub fn deprecated(mut self) -> Self {
         self.deprecated = true;
+        self
+    }
+
+    #[must_use]
+    pub fn deprecated_with_reason(mut self, reason: impl AsRef<str>) -> Self {
+        self.deprecated = true;
+        self.deprecated_reason = Some(Arc::from(reason.as_ref()));
         self
     }
 
@@ -724,7 +743,15 @@ impl TokenDictionary {
             deprecated: self
                 .deprecated_paths()
                 .iter()
-                .map(ToString::to_string)
+                .map(|path| {
+                    let reason = self
+                        .token(path)
+                        .and_then(|token| token.deprecated_reason.clone());
+                    let deprecation = reason.map_or(Deprecated::Bool(true), |reason| {
+                        Deprecated::Message(reason.to_string())
+                    });
+                    (path.to_string(), deprecation)
+                })
                 .collect(),
         }
     }

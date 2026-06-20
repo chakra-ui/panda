@@ -708,6 +708,8 @@ pub struct PatternConfig {
     pub strict: bool,
     #[serde(default)]
     pub blocklist: Vec<String>,
+    #[serde(default)]
+    pub deprecated: Option<Deprecated>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, Value>,
 }

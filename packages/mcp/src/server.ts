@@ -59,7 +59,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
       const values = category
         ? Object.fromEntries(Object.entries(spec.tokens.values).filter(([path]) => path.startsWith(`${category}.`)))
         : spec.tokens.values
-      return json({ categories, values, deprecated: spec.tokens.deprecated })
+      return json({ categories, values, deprecated: Object.keys(spec.tokens.deprecated) })
     },
   )
 
@@ -82,7 +82,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
       inputSchema: { name: recipeNameSchema },
     },
     async ({ name }) => {
-      const { recipes, slotRecipes } = spec.recipes
+      const { recipes, slotRecipes } = spec
       if (name) {
         return json({
           recipes: pickCategory(recipes, name in recipes ? name : undefined),
@@ -99,7 +99,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
       description: 'Get layout patterns with their properties and usage examples',
       inputSchema: { name: patternNameSchema },
     },
-    async ({ name }) => json(pickCategory(spec.patterns.patterns, name)),
+    async ({ name }) => json(pickCategory(spec.patterns, name)),
   )
 
   server.registerTool(

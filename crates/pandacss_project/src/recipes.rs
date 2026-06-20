@@ -306,6 +306,17 @@ impl RecipeRegistry {
         self.slot_recipes.get(name)
     }
 
+    pub(crate) fn slot_for_jsx<'a>(&'a self, recipe_name: &str, tag: &str) -> Option<&'a str> {
+        let recipe = self.slot_recipe(recipe_name)?;
+        let tag_slot = tag.rsplit('.').next().unwrap_or(tag).to_ascii_lowercase();
+        let tag_compact = tag.replace('.', "").to_ascii_lowercase();
+
+        recipe.slots.iter().map(String::as_str).find(|slot| {
+            let slot_lower = slot.to_ascii_lowercase();
+            tag_slot == slot_lower || tag_compact.ends_with(&slot_lower)
+        })
+    }
+
     fn slot_class_name(class_name: &str, slot: &str) -> String {
         format!("{class_name}__{slot}")
     }

@@ -35,6 +35,35 @@ fn token_dictionary_exposes_type_data() {
     values:
       colors.red.500: "#ef4444"
       spacing.4: 1rem
-    deprecated: []
+    deprecated: {}
     "##);
+}
+
+#[test]
+fn type_data_exposes_deprecation_flag_and_message() {
+    let dict = TokenDictionary::builder()
+        .insert(
+            Token::new(
+                "colors.old",
+                "#000",
+                "var(--colors-old)",
+                TokenCategory::Colors,
+            )
+            .deprecated(),
+        )
+        .insert(
+            Token::new(
+                "colors.legacy",
+                "#111",
+                "var(--colors-legacy)",
+                TokenCategory::Colors,
+            )
+            .deprecated_with_reason("use colors.fg instead"),
+        )
+        .build();
+
+    assert_yaml_snapshot!(json!(dict.type_data())["deprecated"], @r###"
+    colors.legacy: use colors.fg instead
+    colors.old: true
+    "###);
 }

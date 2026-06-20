@@ -3,11 +3,12 @@
 //! [`Resolver`]. [`extract`] returns the lean production result; `extract_debug`
 //! additionally surfaces raw + matched imports for tooling/parity tests.
 
-use crate::calls::collect_calls_with_token_refs;
-use crate::jsx::collect_jsx;
+use crate::calls::{collect_calls_verbose, collect_calls_with_token_refs};
+use crate::jsx::{collect_jsx, collect_jsx_verbose};
 use std::cell::RefCell;
 
 use crate::scope::{PatternRawTransformCell, PatternRawTransformFn, Resolver};
+use crate::source_refs::StyleSourceRef;
 use crate::{
     Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal,
     MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
@@ -49,6 +50,21 @@ pub struct ExtractUsage {
     pub exports: ExportInfo,
 }
 
+/// Verbose extraction result for on-demand tooling. Includes the same core
+/// usage data as [`ExtractUsage`] plus source refs that are intentionally kept
+/// off the production hot path.
+#[derive(Debug, Clone, Default, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtractVerboseResult {
+    pub calls: Vec<ExtractedCall>,
+    pub jsx: Vec<ExtractedJsx>,
+    pub diagnostics: Vec<Diagnostic>,
+    pub token_refs: Vec<TokenRef>,
+    pub style_source_refs: Vec<StyleSourceRef>,
+    #[serde(skip)]
+    pub exports: ExportInfo,
+}
+
 /// Kitchen-sink extraction result — includes raw imports and matched
 /// imports for tooling / parity-compare flows.
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -74,7 +90,7 @@ pub struct ExtractDebugResult {
 pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
     let _span =
         tracing::trace_span!("extraction", path = path, source_len = source.len()).entered();
-    let outcome = run_extract(source, path, config, None);
+    let outcome = run_extract(source, path, config, None, false);
     ExtractUsage {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -102,7 +118,7 @@ where
     .entered();
     let erased: &mut PatternRawTransformFn<'_> = pattern_transform;
     let transform_cell: PatternRawTransformCell<'_> = RefCell::new(erased);
-    let outcome = run_extract(source, path, config, Some(&transform_cell));
+    let outcome = run_extract(source, path, config, Some(&transform_cell), false);
     ExtractUsage {
         calls: outcome.calls,
         jsx: outcome.jsx,
@@ -116,13 +132,28 @@ where
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
     let _span =
         tracing::trace_span!("extraction_debug", path = path, source_len = source.len()).entered();
-    let outcome = run_extract(source, path, config, None);
+    let outcome = run_extract(source, path, config, None, false);
     ExtractDebugResult {
         imports: outcome.imports,
         matched: outcome.matched,
         calls: outcome.calls,
         jsx: outcome.jsx,
         diagnostics: outcome.diagnostics,
+    }
+}
+
+#[must_use]
+pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> ExtractVerboseResult {
+    let _span = tracing::trace_span!("extraction_verbose", path = path, source_len = source.len())
+        .entered();
+    let outcome = run_extract(source, path, config, None, true);
+    ExtractVerboseResult {
+        calls: outcome.calls,
+        jsx: outcome.jsx,
+        diagnostics: outcome.diagnostics,
+        token_refs: outcome.token_refs,
+        style_source_refs: outcome.style_source_refs,
+        exports: outcome.exports,
     }
 }
 
@@ -135,6 +166,7 @@ struct ExtractResult {
     jsx: Vec<ExtractedJsx>,
     diagnostics: Vec<Diagnostic>,
     token_refs: Vec<TokenRef>,
+    style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
 }
 
@@ -143,6 +175,7 @@ fn run_extract<'cb>(
     path: &str,
     config: &ExtractorConfig,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+    verbose: bool,
 ) -> ExtractResult {
     let allocator = Allocator::default();
     let raw_source = source;
@@ -179,6 +212,7 @@ fn run_extract<'cb>(
             jsx: Vec::new(),
             diagnostics,
             token_refs: Vec::new(),
+            style_source_refs: Vec::new(),
             exports,
         };
     }
@@ -199,15 +233,28 @@ fn run_extract<'cb>(
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let (calls, call_diagnostics, mut token_refs) = if should_collect_calls(&matched) {
-        let _span = tracing::trace_span!("visit_calls").entered();
-        collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index)
-    } else {
-        (Vec::new(), Vec::new(), Vec::new())
-    };
+    let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
+        if should_collect_calls(&matched) {
+            let _span = tracing::trace_span!("visit_calls").entered();
+            if verbose {
+                collect_calls_verbose(&parser_return.program, &ctx, &line_index)
+            } else {
+                let (calls, diagnostics, token_refs) =
+                    collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index);
+                (calls, diagnostics, token_refs, Vec::new())
+            }
+        } else {
+            (Vec::new(), Vec::new(), Vec::new(), Vec::new())
+        };
     let mut jsx = if should_collect_jsx(&matched, config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
-        collect_jsx(&parser_return.program, &ctx)
+        if verbose {
+            let (jsx, refs) = collect_jsx_verbose(&parser_return.program, &ctx);
+            style_source_refs.extend(refs);
+            jsx
+        } else {
+            collect_jsx(&parser_return.program, &ctx)
+        }
     } else {
         Vec::new()
     };
@@ -230,6 +277,7 @@ fn run_extract<'cb>(
         jsx,
         diagnostics,
         token_refs,
+        style_source_refs,
         exports,
     }
 }

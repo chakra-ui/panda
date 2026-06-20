@@ -240,6 +240,25 @@ importers:
         specifier: '>=8'
         version: 8.5.6
 
+  packages/eslint-plugin:
+    dependencies:
+      '@pandacss/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
+      '@pandacss/config':
+        specifier: workspace:*
+        version: link:../config
+    devDependencies:
+      '@typescript-eslint/parser':
+        specifier: 8.58.2
+        version: 8.58.2(eslint@9.39.1(jiti@2.6.1))(typescript@6.0.2)
+      eslint:
+        specifier: 9.39.1
+        version: 9.39.1(jiti@2.6.1)
+
   packages/mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -21064,14 +21083,14 @@ snapshots:
   '@esbuild/win32-x64@0.27.7':
     optional: true
 
-  '@eslint-community/eslint-utils@4.9.0(eslint@7.32.0)':
-    dependencies:
-      eslint: 7.32.0
-      eslint-visitor-keys: 3.4.3
-
   '@eslint-community/eslint-utils@4.9.0(eslint@9.39.1(jiti@2.6.1))':
     dependencies:
       eslint: 9.39.1(jiti@2.6.1)
+      eslint-visitor-keys: 3.4.3
+
+  '@eslint-community/eslint-utils@4.9.1(eslint@7.32.0)':
+    dependencies:
+      eslint: 7.32.0
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/eslint-utils@4.9.1(eslint@9.39.1(jiti@2.6.1))':
@@ -25277,7 +25296,7 @@ snapshots:
 
   '@typescript-eslint/utils@5.62.0(eslint@7.32.0)(typescript@6.0.2)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@7.32.0)
+      '@eslint-community/eslint-utils': 4.9.1(eslint@7.32.0)
       '@types/json-schema': 7.0.15
       '@types/semver': 7.7.1
       '@typescript-eslint/scope-manager': 5.62.0
@@ -29439,7 +29458,7 @@ snapshots:
 
   eslint@9.39.1(jiti@2.6.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.39.1(jiti@2.6.1))
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.1(jiti@2.6.1))
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.21.1
       '@eslint/config-helpers': 0.4.2

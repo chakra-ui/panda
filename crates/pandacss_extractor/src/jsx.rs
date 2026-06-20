@@ -8,6 +8,9 @@ use crate::{
     css_template::css_template_to_object,
     jsx_react_runtime,
     literal::{collapse_whitespace, expression_to_literal},
+    source_refs::{
+        StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
+    },
     span_from_oxc,
 };
 use oxc_allocator::Allocator;
@@ -129,15 +132,34 @@ pub(crate) fn collect_jsx(
         ctx,
         out: &mut out,
         react_runtime,
+        style_source_refs: None,
     };
     extractor.visit_program(program);
     out
+}
+
+pub(crate) fn collect_jsx_verbose(
+    program: &Program<'_>,
+    ctx: &VisitorContext<'_, '_>,
+) -> (Vec<ExtractedJsx>, Vec<StyleSourceRef>) {
+    let mut out = Vec::new();
+    let mut style_source_refs = Vec::new();
+    let react_runtime = jsx_react_runtime::ReactRuntimeImports::from_program(program);
+    let mut extractor = Extractor {
+        ctx,
+        out: &mut out,
+        react_runtime,
+        style_source_refs: Some(&mut style_source_refs),
+    };
+    extractor.visit_program(program);
+    (out, style_source_refs)
 }
 
 pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
     ctx: &'walk VisitorContext<'ctx, 'cb>,
     out: &'walk mut Vec<ExtractedJsx>,
     react_runtime: jsx_react_runtime::ReactRuntimeImports,
+    style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
 }
 
 pub(crate) struct ResolvedTag<'a> {
@@ -360,7 +382,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
 
     fn visit_jsx_opening_element(&mut self, element: &JSXOpeningElement<'a>) {
         if let Some(resolved) = self.resolve_tag(&element.name) {
-            let tag_name = resolved.name.as_ref();
+            let category = resolved.category;
+            let tag_name = resolved.name.as_ref().to_owned();
+            let alias = resolved.alias.into_owned();
+            let emit_empty = resolved.emit_empty;
             let mut entries: Vec<(String, Literal)> = Vec::with_capacity(element.attributes.len());
             // Conditional-spread branches accumulate separately and fold in after
             // all attributes (node's `spreadConditions`), so their union survives
@@ -373,22 +398,37 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     &mut spread_conditions,
                     self.ctx.resolver,
                     &self.ctx.config.jsx,
-                    tag_name,
+                    &tag_name,
                 );
             }
             for (key, value) in spread_conditions {
                 Literal::combine_object_entry(&mut entries, key, value);
             }
-            if entries.is_empty() && !resolved.emit_empty {
+            if entries.is_empty() && !emit_empty {
                 walk::walk_jsx_opening_element(self, element);
                 return;
             }
-            let kind = jsx_kind(&self.ctx.config.matchers, &resolved.name, &resolved.alias);
+            let kind = jsx_kind(&self.ctx.config.matchers, &tag_name, &alias);
+            if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
+                let owner = StyleSourceOwner {
+                    kind: StyleSourceOwnerKind::Jsx,
+                    index: u32::try_from(self.out.len()).unwrap_or(u32::MAX),
+                    span: span_from_oxc(element.span),
+                };
+                collect_jsx_attribute_source_refs(
+                    &element.attributes,
+                    self.ctx.resolver,
+                    &self.ctx.config.jsx,
+                    &tag_name,
+                    owner,
+                    style_source_refs,
+                );
+            }
             self.out.push(ExtractedJsx {
-                category: resolved.category,
+                category,
                 kind,
-                name: resolved.name.into_owned(),
-                alias: resolved.alias.into_owned(),
+                name: tag_name,
+                alias,
                 data: Literal::Object(entries),
                 span: span_from_oxc(element.span),
             });

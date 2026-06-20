@@ -378,16 +378,23 @@ fn walk_token_node<'a, T>(
 struct TokenMetadata<'a> {
     description: Option<&'a str>,
     deprecated: bool,
+    deprecated_reason: Option<&'a str>,
     is_default: bool,
 }
 
 fn token_metadata<T>(token: &TokenEntry<T>, is_default: bool) -> TokenMetadata<'_> {
+    let deprecated = token.deprecated.as_ref().is_some_and(|value| match value {
+        Deprecated::Bool(value) => *value,
+        Deprecated::Message(value) => !value.is_empty(),
+    });
+    let deprecated_reason = token.deprecated.as_ref().and_then(|value| match value {
+        Deprecated::Message(value) if !value.is_empty() => Some(value.as_str()),
+        _ => None,
+    });
     TokenMetadata {
         description: token.description.as_deref(),
-        deprecated: token.deprecated.as_ref().is_some_and(|value| match value {
-            Deprecated::Bool(value) => *value,
-            Deprecated::Message(value) => !value.is_empty(),
-        }),
+        deprecated,
+        deprecated_reason,
         is_default,
     }
 }
@@ -479,7 +486,10 @@ fn push_token(
             token = token.with_description(description);
         }
         if metadata.deprecated {
-            token = token.deprecated();
+            token = match metadata.deprecated_reason {
+                Some(reason) => token.deprecated_with_reason(reason),
+                None => token.deprecated(),
+            };
         }
         if metadata.is_default {
             token.set_extension("isDefault", "true");

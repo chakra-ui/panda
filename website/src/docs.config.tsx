@@ -221,6 +221,7 @@ export const docsNavigation: NavItem = {
         { title: 'Multiple Themes', url: 'multiple-themes' },
         { title: 'Custom Fonts', url: 'fonts' },
         { title: 'Dynamic Styles', url: 'dynamic-styling' },
+        { title: 'Isolated Declarations', url: 'isolated-declarations' },
         { title: 'Static Generator', url: 'static' },
         { title: 'Environment-specific config', url: 'environment-specific-config' },
         { title: 'Debugging', url: 'debugging' }

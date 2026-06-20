@@ -3,8 +3,13 @@
 
 use crate::{
     CssSyntaxKind, Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory,
-    MatchedImport, Span, TokenRef, css_template::css_template_to_object,
-    literal::expression_to_literal, span_from_oxc,
+    MatchedImport, Span, TokenRef,
+    css_template::css_template_to_object,
+    literal::expression_to_literal,
+    source_refs::{
+        StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_object_source_refs,
+    },
+    span_from_oxc,
 };
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
@@ -109,6 +114,7 @@ fn collect_calls_inner(
         diagnostics: &mut diagnostics,
         line_index,
         token_refs: None,
+        style_source_refs: None,
     };
     extractor.visit_program(program);
     (out, diagnostics)
@@ -128,9 +134,36 @@ pub(crate) fn collect_calls_with_token_refs(
         diagnostics: &mut diagnostics,
         line_index: Some(line_index),
         token_refs: Some(&mut token_refs),
+        style_source_refs: None,
     };
     extractor.visit_program(program);
     (calls, diagnostics, token_refs)
+}
+
+pub(crate) fn collect_calls_verbose(
+    program: &oxc_ast::ast::Program<'_>,
+    ctx: &crate::VisitorContext<'_, '_>,
+    line_index: &crate::LineIndex<'_>,
+) -> (
+    Vec<ExtractedCall>,
+    Vec<Diagnostic>,
+    Vec<TokenRef>,
+    Vec<StyleSourceRef>,
+) {
+    let mut calls = Vec::new();
+    let mut diagnostics = Vec::new();
+    let mut token_refs = Vec::new();
+    let mut style_source_refs = Vec::new();
+    let mut extractor = Extractor {
+        ctx,
+        out: &mut calls,
+        diagnostics: &mut diagnostics,
+        line_index: Some(line_index),
+        token_refs: Some(&mut token_refs),
+        style_source_refs: Some(&mut style_source_refs),
+    };
+    extractor.visit_program(program);
+    (calls, diagnostics, token_refs, style_source_refs)
 }
 
 struct Extractor<'walk, 'ctx, 'cb> {
@@ -139,6 +172,7 @@ struct Extractor<'walk, 'ctx, 'cb> {
     diagnostics: &'walk mut Vec<Diagnostic>,
     line_index: Option<&'walk crate::LineIndex<'walk>>,
     token_refs: Option<&'walk mut Vec<TokenRef>>,
+    style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
 }
 
 /// `name` borrows from either the matched import or the AST so we don't
@@ -322,18 +356,28 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let (Some(resolver), Some(token_refs)) =
             (self.ctx.resolver, self.token_refs.as_deref_mut())
-            && let Some(path) = resolver.resolved_token_call_path(call)
         {
-            token_refs.push(TokenRef {
-                path,
-                span: span_from_oxc(call.span),
-                needs_css_var: resolver.token_call_needs_css_var(call),
-            });
+            if let Some(path) = resolver.resolved_token_call_path(call) {
+                token_refs.push(TokenRef {
+                    path,
+                    span: span_from_oxc(call.span),
+                    needs_css_var: resolver.token_call_needs_css_var(call),
+                });
+            } else if let Some(path) = resolver.token_call_path(call) {
+                token_refs.push(TokenRef {
+                    path,
+                    span: span_from_oxc(call.span),
+                    needs_css_var: resolver.token_call_needs_css_var(call),
+                });
+            }
         }
 
         if let Some(resolved) = self.resolve_callee(call) {
             let resolver = self.ctx.resolver;
-            let jsx_recipe_ident = (resolved.category == MatchCategory::Jsx)
+            let category = resolved.category;
+            let name = resolved.name.into_owned();
+            let alias = resolved.alias.to_owned();
+            let jsx_recipe_ident = (category == MatchCategory::Jsx)
                 .then(|| self.jsx_recipe_identifier(call))
                 .flatten();
             let data: Vec<Option<Literal>> = call
@@ -344,22 +388,35 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             // Drop only when nothing was extractable. Otherwise keep
             // positional `None` slots so consumers know which arg was
             // non-literal.
-            if should_emit_call(resolved.category, &data, jsx_recipe_ident.as_deref()) {
+            if should_emit_call(category, &data, jsx_recipe_ident.as_deref()) {
+                if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
+                    let owner = StyleSourceOwner {
+                        kind: StyleSourceOwnerKind::Call,
+                        index: u32::try_from(self.out.len()).unwrap_or(u32::MAX),
+                        span: span_from_oxc(call.span),
+                    };
+                    collect_call_style_source_refs(
+                        call,
+                        self.ctx.resolver,
+                        owner,
+                        style_source_refs,
+                    );
+                }
                 self.out.push(ExtractedCall {
-                    category: resolved.category,
-                    name: resolved.name.into_owned(),
-                    alias: resolved.alias.to_owned(),
+                    category,
+                    name,
+                    alias,
                     data,
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
                 });
-            } else if resolved.category != MatchCategory::Jsx
+            } else if category != MatchCategory::Jsx
                 && !data.is_empty()
                 && !self.ctx.config.has_jsx_framework
             {
                 self.diagnostics.push(dynamic_style_value_diagnostic(
-                    resolved.category,
-                    resolved.name.as_ref(),
+                    category,
+                    &name,
                     span_from_oxc(call.span),
                     self.line_index,
                 ));
@@ -405,6 +462,20 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
+    }
+}
+
+fn collect_call_style_source_refs(
+    call: &CallExpression<'_>,
+    resolver: Option<&crate::Resolver<'_, '_>>,
+    owner: StyleSourceOwner,
+    out: &mut Vec<StyleSourceRef>,
+) {
+    for arg in &call.arguments {
+        let Some(Expression::ObjectExpression(obj)) = arg.as_expression() else {
+            continue;
+        };
+        collect_object_source_refs(obj, resolver, owner, &mut Vec::new(), out);
     }
 }
 

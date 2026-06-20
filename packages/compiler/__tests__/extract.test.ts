@@ -55,7 +55,7 @@ describe('compiler.extract', () => {
     expect(result.calls).toEqual([])
     expect(result.jsx).toEqual([])
     expect(result.diagnostics).toHaveLength(1)
-    expect(result.diagnostics[0].severity).toBe('error')
+    expect(result.diagnostics[0].severity).toBe('warning')
   })
 
   test('diagnostics carry byte spans and line/column location', () => {
@@ -63,7 +63,7 @@ describe('compiler.extract', () => {
     // the byte span and the human-readable line/column.
     const src = ["import { css } from '@panda/css';", 'const x = ;'].join('\n')
     const [diag] = compiler.extractFileSource('fixture.tsx', src).diagnostics
-    expect(diag.severity).toBe('error')
+    expect(diag.severity).toBe('warning')
     expect(diag.span).toBeDefined()
     expect(diag.location?.start.line).toBe(2)
   })

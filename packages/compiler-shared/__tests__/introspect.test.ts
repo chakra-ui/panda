@@ -7,7 +7,7 @@ const spec: Spec = {
     categories: { colors: { name: 'colors', typeName: 'ColorToken', values: ['red.500'] } },
     colorPalettes: ['red'],
     values: { 'colors.red.500': '#f00', 'spacing.4': '1rem' },
-    deprecated: ['spacing.4'],
+    deprecated: { 'spacing.4': true },
   },
   utilities: {
     properties: {
@@ -15,10 +15,14 @@ const spec: Spec = {
       padding: { name: 'padding', cssProperty: 'padding', tokenCategory: 'spacing', literals: [], alias: 'padding' },
     },
     shorthands: { p: 'padding' },
-    deprecated: [],
+    deprecated: {},
   },
-  patterns: { patterns: { stack: {}, grid: {} } },
-  recipes: { recipes: { button: {} }, slotRecipes: { menu: {} } },
+  patterns: {
+    stack: { name: 'stack', typeName: 'Stack', strict: false, blocklist: [], properties: {} },
+    grid: { name: 'grid', typeName: 'Grid', strict: false, blocklist: [], properties: {} },
+  },
+  recipes: { button: { name: 'button', typeName: 'Button', variants: {} } },
+  slotRecipes: { menu: { name: 'menu', typeName: 'Menu', slots: [], variants: {} } },
   propertyOrder: ['padding', 'color'],
   jsxFactory: 'styled',
 }

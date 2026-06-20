@@ -366,7 +366,7 @@ fn array_to_literal(
     Some(Literal::Array(items))
 }
 
-fn property_key_to_string(
+pub(crate) fn property_key_to_string(
     key: &PropertyKey<'_>,
     computed: bool,
     resolver: Option<&Resolver<'_, '_>>,

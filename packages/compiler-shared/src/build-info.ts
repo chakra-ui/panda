@@ -14,7 +14,7 @@ import type {
 export interface BuildInfoNative {
   serializeBuildInfo(panda: string): BuildInfo
   applyBuildInfo(name: string, buildInfo: BuildInfo, only?: string[]): boolean
-  buildInfoSchemaVersion(): number
+  buildInfoSchemaVersion?(): number
   configFingerprint(): string
 }
 
@@ -25,7 +25,7 @@ export interface BuildInfoNative {
  *  layered on by the host (it knows the running version) and surface through the
  *  same `reason` union. */
 export function makeBuildInfoApi(native: BuildInfoNative): BuildInfoApi {
-  const schemaVersion = native.buildInfoSchemaVersion()
+  const schemaVersion = resolveSchemaVersion(native)
 
   const validate = (info: BuildInfo): BuildInfoCompatibility =>
     info.schemaVersion === schemaVersion ? { ok: true } : { ok: false, reason: 'schemaVersion' }
@@ -62,4 +62,14 @@ export function makeBuildInfoApi(native: BuildInfoNative): BuildInfoApi {
       return { ok: true, modules }
     },
   }
+}
+
+function resolveSchemaVersion(native: BuildInfoNative): number {
+  const schemaVersion = native.buildInfoSchemaVersion?.()
+  if (typeof schemaVersion === 'number') return schemaVersion
+
+  // Some native bindings expose the serialized build-info shape but omit the
+  // direct schema-version accessor. The serializer still stamps the version, so
+  // derive it once and keep the public JS contract stable.
+  return native.serializeBuildInfo('0.0.0').schemaVersion
 }

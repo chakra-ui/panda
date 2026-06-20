@@ -23,6 +23,7 @@ describe('compiler.spec()', () => {
         "color": {
           "name": "color",
           "cssProperty": "color",
+          "mappedCssProperty": null,
           "tokenCategory": "colors",
           "literals": [],
           "primitive": null,
@@ -41,15 +42,43 @@ describe('compiler.spec()', () => {
     `)
   })
 
-  it('flags deprecated tokens under tokens.deprecated', () => {
+  it('maps deprecated tokens to true or the author message under tokens.deprecated', () => {
     const spec = createProject({
-      theme: { tokens: { colors: { old: { value: '#000', deprecated: true } } } },
+      theme: {
+        tokens: {
+          colors: {
+            old: { value: '#000', deprecated: true },
+            legacy: { value: '#111', deprecated: 'use colors.red.500 instead' },
+          },
+        },
+      },
     }).spec()
     expect(spec.tokens.deprecated).toMatchInlineSnapshot(`
-      [
-        "colors.old",
-      ]
+      {
+        "colors.legacy": "use colors.red.500 instead",
+        "colors.old": true,
+      }
     `)
+  })
+
+  it('exposes recipe deprecation on the flattened recipes spec', () => {
+    const spec = createProject({
+      theme: {
+        recipes: {
+          button: { className: 'button', base: {}, deprecated: 'use Action instead' },
+        },
+      },
+    }).spec()
+    expect(spec.recipes.button.deprecated).toMatchInlineSnapshot(`"use Action instead"`)
+  })
+
+  it('exposes pattern deprecation on the flattened patterns spec', () => {
+    const spec = createProject({
+      patterns: {
+        stack: { properties: {}, deprecated: 'use Flex instead' },
+      },
+    }).spec()
+    expect(spec.patterns.stack.deprecated).toMatchInlineSnapshot(`"use Flex instead"`)
   })
 })
 
@@ -63,67 +92,105 @@ describe('compiler.inspectFileSource()', () => {
       utilities: { color: { className: 'c', values: 'colors' } },
     })
     const source = "import { css } from '@panda/css'\ncss({ color: 'red.500', animationName: 'spin' })"
-    expect(compiler.inspectFileSource('app.tsx', source)).toMatchInlineSnapshot(`
+    const result = compiler.inspectFileSource('app.tsx', source)
+
+    expect(result.usages).toMatchInlineSnapshot(`
+      [
+        {
+          "kind": "property",
+          "name": "color",
+          "range": {
+            "start": {
+              "line": 2,
+              "column": 1,
+            },
+            "end": {
+              "line": 2,
+              "column": 49,
+            },
+          },
+        },
+        {
+          "kind": "token",
+          "name": "colors.red.500",
+          "range": {
+            "start": {
+              "line": 2,
+              "column": 1,
+            },
+            "end": {
+              "line": 2,
+              "column": 49,
+            },
+          },
+        },
+        {
+          "kind": "property",
+          "name": "animationName",
+          "range": {
+            "start": {
+              "line": 2,
+              "column": 1,
+            },
+            "end": {
+              "line": 2,
+              "column": 49,
+            },
+          },
+        },
+        {
+          "kind": "keyframe",
+          "name": "spin",
+          "range": {
+            "start": {
+              "line": 2,
+              "column": 1,
+            },
+            "end": {
+              "line": 2,
+              "column": 49,
+            },
+          },
+        },
+      ]
+    `)
+    expect(result.diagnostics).toEqual([])
+    expect({
+      calls: result.calls.map(({ category, name, data }) => ({ category, name, args: data.map(({ kind }) => kind) })),
+      styleEntries: result.styleEntries.map(({ kind, syntax, name, canonicalName, fixable }) => ({
+        kind,
+        syntax,
+        name,
+        canonicalName,
+        fixable,
+      })),
+    }).toMatchInlineSnapshot(`
       {
-        "usages": [
+        "calls": [
           {
-            "kind": "property",
-            "name": "color",
-            "range": {
-              "start": {
-                "line": 2,
-                "column": 1,
-              },
-              "end": {
-                "line": 2,
-                "column": 49,
-              },
-            },
-          },
-          {
-            "kind": "token",
-            "name": "colors.red.500",
-            "range": {
-              "start": {
-                "line": 2,
-                "column": 1,
-              },
-              "end": {
-                "line": 2,
-                "column": 49,
-              },
-            },
-          },
-          {
-            "kind": "property",
-            "name": "animationName",
-            "range": {
-              "start": {
-                "line": 2,
-                "column": 1,
-              },
-              "end": {
-                "line": 2,
-                "column": 49,
-              },
-            },
-          },
-          {
-            "kind": "keyframe",
-            "name": "spin",
-            "range": {
-              "start": {
-                "line": 2,
-                "column": 1,
-              },
-              "end": {
-                "line": 2,
-                "column": 49,
-              },
-            },
+            "category": "css",
+            "name": "css",
+            "args": [
+              "value",
+            ],
           },
         ],
-        "diagnostics": [],
+        "styleEntries": [
+          {
+            "kind": "utility",
+            "syntax": "css-call",
+            "name": "color",
+            "canonicalName": undefined,
+            "fixable": "safe",
+          },
+          {
+            "kind": "unknown",
+            "syntax": "css-call",
+            "name": "animationName",
+            "canonicalName": undefined,
+            "fixable": "safe",
+          },
+        ],
       }
     `)
   })
@@ -136,7 +203,7 @@ describe('compiler.inspectFileSource()', () => {
     expect(result.diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
       [
         {
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)
@@ -156,7 +223,8 @@ describe('compiler.inspectFileSource() — token reference forms', () => {
       "css({ color: 'red.300/40' })",
       "css({ '--ring': '{colors.red.500}' })",
     ].join('\n')
-    const kinds = compiler.inspectFileSource('app.tsx', source).usages.map(({ kind, name }) => `${kind} ${name}`)
+    const result = compiler.inspectFileSource('app.tsx', source)
+    const kinds = result.usages.map(({ kind, name }) => `${kind} ${name}`)
     expect(kinds).toMatchInlineSnapshot(`
       [
         "property color",
@@ -165,6 +233,16 @@ describe('compiler.inspectFileSource() — token reference forms', () => {
         "property --ring",
         "token colors.red.500",
         "token colors.red.500",
+      ]
+    `)
+    expect(result.tokenRefs.map(({ path, category, resolved }) => ({ path, category, resolved })))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "path": "colors.red.500",
+          "category": "colors",
+          "resolved": true,
+        },
       ]
     `)
   })

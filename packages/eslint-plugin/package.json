@@ -1,0 +1,52 @@
+{
+  "name": "@pandacss/eslint-plugin",
+  "version": "2.0.0-beta.3",
+  "description": "ESLint rules for Panda CSS",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm --platform=node --dts",
+    "build:fast": "tsup src/index.ts --format=esm --platform=node --no-dts",
+    "dev": "pnpm build:fast --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "8.58.2",
+    "eslint": "9.39.1"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

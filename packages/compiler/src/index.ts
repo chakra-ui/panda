@@ -91,8 +91,17 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
  *  Non-enumerable so it doesn't surface in snapshots of the native instance. */
 function attachBuildInfo(compiler: Compiler): void {
   Object.defineProperty(compiler, 'buildInfo', {
-    value: makeBuildInfoApi(compiler as unknown as BuildInfoNative),
     enumerable: false,
+    configurable: true,
+    get() {
+      const api = makeBuildInfoApi(compiler as unknown as BuildInfoNative)
+      Object.defineProperty(compiler, 'buildInfo', {
+        value: api,
+        enumerable: false,
+        configurable: true,
+      })
+      return api
+    },
   })
 }
 

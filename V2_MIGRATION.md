@@ -276,6 +276,23 @@ production.
   one class keyed on the utility's `className` (like v1), instead of splitting into per-property atoms. Token
   resolution, `!important`, and conditions from the transform are kept, in atomic styles and recipes alike.
 
+### Types: smaller `.d.ts` and `isolatedDeclarations`
+
+v2 reshapes the `cva` and `sva` return types so they're keyed by a clean props type, not the full variant record. That
+means you can annotate an exported inline recipe with only its variant keys and keep the CSS out of your `.d.ts`:
+
+```tsx
+import { cva } from 'styled-system/css'
+import type { RecipeRuntimeFn } from 'styled-system/types'
+
+export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> =
+  cva({ base: { px: '4' }, variants: { visual: { solid: { /* css */ }, outline: { /* css */ } } } })
+```
+
+The same works for `styled(tag, {...})` via `StyledComponent<Tag, Props>` and for `sva` via `SlotRecipeRuntimeFn`. This
+unblocks `isolatedDeclarations` and shrinks declaration files when you export components with variants. See the
+[Isolated declarations guide](https://panda-css.com/docs/guides/isolated-declarations) for the full set of patterns.
+
 ---
 
 ## Breaking changes & migration

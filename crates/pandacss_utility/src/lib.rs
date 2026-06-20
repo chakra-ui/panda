@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
 use pandacss_config::{
-    CallbackRef, DEFAULT_SEPARATOR, PrimitiveType, StringOrStringArray, UtilityConfig,
+    CallbackRef, DEFAULT_SEPARATOR, Deprecated, PrimitiveType, StringOrStringArray, UtilityConfig,
     UtilityPropertyTypeData, UtilityTypeData, UtilityValues, ValueAliasTypeData, ValueTypePart,
     value_alias_name,
 };
@@ -323,7 +323,11 @@ impl Utility {
         UtilityTypeData {
             properties,
             shorthands,
-            deprecated: self.deprecated.iter().cloned().collect::<BTreeSet<_>>(),
+            deprecated: self
+                .deprecated
+                .iter()
+                .map(|prop| (prop.clone(), Deprecated::Bool(true)))
+                .collect(),
             aliases,
             class_names,
         }

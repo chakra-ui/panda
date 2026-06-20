@@ -346,7 +346,7 @@ describe('Compiler', () => {
     expect(output.diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
       [
         {
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)
@@ -682,7 +682,7 @@ describe('Compiler', () => {
     expect(compiler.compile().diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
       [
         {
-          "severity": "error",
+          "severity": "warning",
         },
       ]
     `)

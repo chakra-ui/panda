@@ -22,14 +22,15 @@ mod literal;
 mod matcher;
 mod scope;
 mod source;
+mod source_refs;
 mod svelte_adapter;
 mod template_styles;
 mod vue_adapter;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
 pub use extract::{
-    ExtractDebugResult, ExtractUsage, TokenRef, extract, extract_debug,
-    extract_with_pattern_raw_transform,
+    ExtractDebugResult, ExtractUsage, ExtractVerboseResult, TokenRef, extract, extract_debug,
+    extract_verbose, extract_with_pattern_raw_transform,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
@@ -58,6 +59,7 @@ pub(crate) use adapter::adapt_source;
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
 pub use source::LineIndex;
+pub use source_refs::{StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef};
 
 pub(crate) fn span_from_oxc(span: oxc_span::Span) -> Span {
     Span {

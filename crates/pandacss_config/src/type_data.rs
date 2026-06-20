@@ -6,7 +6,7 @@
 //! [`UserConfig`]. [`Spec`] wraps it with the extra bits an external introspector
 //! wants (property order, jsx factory, import map).
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -14,7 +14,8 @@ use serde_json::Value;
 use pandacss_shared::pascal_case;
 
 use crate::{
-    ImportMap, JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, RecipeConfig, UserConfig,
+    Deprecated, ImportMap, JsxStylePropsConfig, PatternConfig, PatternPropertyConfig, RecipeConfig,
+    UserConfig,
 };
 
 /// Tooling introspection snapshot: `TypeData` plus the bits it lacks
@@ -39,7 +40,13 @@ pub struct TypeData {
     pub selectors: SelectorTypeData,
     pub tokens: TokenTypeData,
     pub utilities: UtilityTypeData,
+    /// Flattened so `patterns` sits at the top level of the serialized spec
+    /// rather than nested under `patterns.patterns`.
+    #[serde(flatten)]
     pub patterns: PatternTypeData,
+    /// Flattened so `recipes` and `slotRecipes` sit at the top level of the
+    /// serialized spec rather than nested under `recipes.recipes`.
+    #[serde(flatten)]
     pub recipes: RecipeTypeData,
 }
 
@@ -77,9 +84,9 @@ pub struct TokenTypeData {
     /// via `toVar(path)` — so var-refs are derived, not stored.
     #[serde(default)]
     pub values: BTreeMap<String, String>,
-    /// Deprecated token paths.
+    /// Deprecated token paths → deprecation (`true` or an author message).
     #[serde(default)]
-    pub deprecated: Vec<String>,
+    pub deprecated: BTreeMap<String, Deprecated>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -95,7 +102,9 @@ pub struct TokenCategoryTypeData {
 pub struct UtilityTypeData {
     pub properties: BTreeMap<String, UtilityPropertyTypeData>,
     pub shorthands: BTreeMap<String, String>,
-    pub deprecated: BTreeSet<String>,
+    /// Deprecated property names → deprecation. Utility config is boolean-only,
+    /// so values are always `true`.
+    pub deprecated: BTreeMap<String, Deprecated>,
     pub aliases: BTreeMap<String, ValueAliasTypeData>,
     /// Unprefixed class name for each real property (`prop -> className`),
     /// used by the runtime `css` transform. Excludes shorthand aliases.
@@ -157,6 +166,8 @@ pub struct PatternTypeDefinition {
     pub strict: bool,
     pub blocklist: Vec<String>,
     pub properties: BTreeMap<String, PatternPropertyTypeData>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deprecated: Option<Deprecated>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -199,6 +210,8 @@ pub struct RecipeTypeDefinition {
     pub name: String,
     pub type_name: String,
     pub variants: BTreeMap<String, VariantTypeData>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deprecated: Option<Deprecated>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -208,6 +221,8 @@ pub struct SlotRecipeTypeDefinition {
     pub type_name: String,
     pub slots: Vec<String>,
     pub variants: BTreeMap<String, VariantTypeData>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deprecated: Option<Deprecated>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -275,6 +290,7 @@ impl RecipeConfig {
             name: name.to_owned(),
             type_name: pascal_case(name),
             variants: self.variant_type_data(),
+            deprecated: Deprecated::normalize(self.deprecated.as_ref()),
         }
     }
 
@@ -285,6 +301,7 @@ impl RecipeConfig {
             type_name: pascal_case(name),
             slots: self.slots.clone(),
             variants: self.variant_type_data(),
+            deprecated: Deprecated::normalize(self.deprecated.as_ref()),
         }
     }
 
@@ -322,6 +339,7 @@ impl PatternConfig {
                 .iter()
                 .map(|(name, property)| (name.clone(), property.type_data(name)))
                 .collect(),
+            deprecated: Deprecated::normalize(self.deprecated.as_ref()),
         }
     }
 }
