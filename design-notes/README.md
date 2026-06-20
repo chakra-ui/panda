@@ -62,6 +62,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
   flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
+- [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
+  compiler-backed source inspection, and `inspectFileSource`.
 
 ### Testing
 
