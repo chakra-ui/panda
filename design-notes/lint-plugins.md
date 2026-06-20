@@ -618,16 +618,23 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 
 ### Design-system enforcement (opt-in, configurable)
 
-- `restrict-styles` 🟢 (O) — consolidated restriction: glob property pattern → `{ limit, reason }`, where `limit` bans
-  the property (`null`) or whitelists allowed values. Subsumes `no-margin-properties`, `no-physical-properties`, and a
-  general `no-restricted-utilities`; those ship as presets.
+- `no-important` ✅ (O) — flag `!important` (trailing `!` or `!important`) in style values.
+- `no-margin-properties` ✅ (O) — flag margin utilities (`margin`, `mt`, `mx`, logical `marginInline*`, …); nudge toward
+  `gap`/layout patterns.
+- `no-physical-properties` ✅ (O) — flag physical properties/values that have logical equivalents (`left` → `insetInlineStart`,
+  `marginLeft` → `marginInlineStart`, `textAlign: 'left'` → `'start'`, …) via a curated physical→logical map.
+- `prefer-text-style` ✅ (O) — flag a style object that sets ≥2 typography properties (fontSize/fontWeight/lineHeight/…)
+  that should be a single `textStyle` token; grouped per object via `calls`/`jsx` data.
 - `prefer-token` 🟢 (O) — raw value where a token category exists (colors, spacing, fontSizes, radii, …), per category,
   backed by `resolveUtilityValue`. `no-hardcoded-color` ✅ is the first instance and becomes a preset of this.
+- `restrict-styles` 🟢 (O) — general configurable restriction: glob property pattern → `{ limit, reason }`, where `limit`
+  bans the property (`null`) or whitelists allowed values. For custom team policies beyond the named rules above.
 - `no-restricted-tokens` 🟢 (O) — deny specific tokens / palettes (legacy palette during a migration, internal-only
   tokens).
 - `prefer-semantic-tokens` 🟡 (O) — primitive token (`red.500`) where a semantic token exists; needs a semantic-token
   projection.
-- `no-arbitrary-values` 🟢 (O) — ban the `[...]` escape hatch (`resolveUtilityValue` source `Arbitrary`).
+- `no-arbitrary-values` 🟢 (O) — ban the `[...]` escape hatch (`resolveUtilityValue` source `Arbitrary`); v1 calls this
+  `no-escape-hatch`.
 
 ### Source hygiene
 
@@ -637,11 +644,25 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 
 ### Style / ergonomics (opt-in, fixable)
 
-- `no-important` 🟢 · `prefer-longhand-properties` 🟢 · `prefer-shorthand-properties` 🟢 · `prefer-atomic-properties` 🟢
+- `prefer-longhand-properties` 🟢 · `prefer-shorthand-properties` 🟢 · `prefer-atomic-properties` 🟢
   · `prefer-composite-properties` 🟢 · `prefer-unified-property-style` 🟢
 - `props-order` 🟡 — canonical `spec.propertyOrder`; needs span-accurate `styleEntries` (see Property Ordering).
 - `require-recipe-type-annotation` 🟡 — see its section; needs real `styleEntries` provenance.
 - `prefer-pattern-component` 🟡 — nudge raw layout styles toward pattern components.
+
+### v1 (`eslint-plugin-panda`) parity
+
+Port status of the v1 rules (recommended ones default-on, the rest opt-in):
+
+- Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color`,
+  `no-invalid-token-paths`, `no-important`, `no-margin-properties`, `no-physical-properties`.
+- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`), `no-invalid-nesting`
+  🟢, `no-dynamic-styling` 🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡
+  (needs `imports` on the inspection result).
+- Consolidated / renamed: `no-escape-hatch` → `no-arbitrary-values`; ad-hoc restrictions → `restrict-styles`.
+- Stylistic (Tier 3, fixable): `prefer-longhand-properties`, `prefer-shorthand-properties`, `prefer-atomic-properties`,
+  `prefer-composite-properties`, `prefer-unified-property-style`.
+- v2-only additions: `extraction-diagnostics`, `prefer-text-style`.
 
 ## Implementation Guidance
 

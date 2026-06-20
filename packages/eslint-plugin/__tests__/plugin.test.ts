@@ -34,6 +34,10 @@ describe('createPandaPlugin', () => {
       'no-deprecated',
       'no-debug',
       'no-hardcoded-color',
+      'no-important',
+      'no-margin-properties',
+      'no-physical-properties',
+      'prefer-text-style',
     ])
   })
 })

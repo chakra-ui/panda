@@ -7,13 +7,21 @@ import {
   createNoDebugRule,
   createNoDeprecatedRule,
   createNoHardcodedColorRule,
+  createNoImportantRule,
   createNoInvalidTokenPathsRule,
+  createNoMarginPropertiesRule,
+  createNoPhysicalPropertiesRule,
+  createPreferTextStyleRule,
   extractionDiagnosticsRuleName,
   fileNotIncludedRuleName,
   noDebugRuleName,
   noDeprecatedRuleName,
   noHardcodedColorRuleName,
+  noImportantRuleName,
   noInvalidTokenPathsRuleName,
+  noMarginPropertiesRuleName,
+  noPhysicalPropertiesRuleName,
+  preferTextStyleRuleName,
 } from './rules'
 import type { RuleModuleLike } from './rules/shared'
 
@@ -139,6 +147,11 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
       isColorProperty: (prop: string) => colorProps.has(prop),
       isHardcodedColor,
     }),
+    // Opt-in style/enforcement rules (not in `recommended`).
+    [noImportantRuleName]: createNoImportantRule({ inspect }),
+    [noMarginPropertiesRuleName]: createNoMarginPropertiesRule({ inspect }),
+    [noPhysicalPropertiesRuleName]: createNoPhysicalPropertiesRule({ inspect }),
+    [preferTextStyleRuleName]: createPreferTextStyleRule({ inspect }),
   }
 }
 

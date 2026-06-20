@@ -456,11 +456,19 @@ export interface StyleEntryRef {
   fixable: StyleEntryFixability
 }
 
+/** An extracted call/JSX with a resolved source range, for inspection consumers. */
+export interface InspectionCall extends ExtractedCall {
+  range: SourceRange
+}
+export interface InspectionJsx extends ExtractedJsx {
+  range: SourceRange
+}
+
 export interface FileInspectionResult {
   usages: UsageSite[]
   diagnostics: Diagnostic[]
-  calls: ExtractedCall[]
-  jsx: ExtractedJsx[]
+  calls: InspectionCall[]
+  jsx: InspectionJsx[]
   tokenRefs: TokenRefSite[]
   componentEntries: ComponentEntryRef[]
   styleEntries: StyleEntryRef[]

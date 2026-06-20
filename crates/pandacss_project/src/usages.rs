@@ -115,8 +115,21 @@ impl Project {
         FileInspectionResult {
             usages: sites,
             diagnostics: result.diagnostics,
-            calls: result.calls.iter().map(call_view).collect(),
-            jsx: result.jsx.iter().map(jsx_view).collect(),
+            calls: result
+                .calls
+                .iter()
+                .map(|call| {
+                    call_view(
+                        call,
+                        line_index.locate_range(call.span.start, call.span.end),
+                    )
+                })
+                .collect(),
+            jsx: result
+                .jsx
+                .iter()
+                .map(|jsx| jsx_view(jsx, line_index.locate_range(jsx.span.start, jsx.span.end)))
+                .collect(),
             token_refs,
             component_entries,
             style_entries,

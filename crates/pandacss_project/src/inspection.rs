@@ -49,6 +49,7 @@ pub struct InspectionCall {
     pub alias: String,
     pub data: Vec<InspectionArg>,
     pub span: Span,
+    pub range: SourceRange,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -75,6 +76,7 @@ pub struct InspectionJsx {
     pub alias: String,
     pub data: Value,
     pub span: Span,
+    pub range: SourceRange,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -174,7 +176,7 @@ pub enum StyleEntryFixability {
     Safe,
 }
 
-pub(crate) fn call_view(call: &ExtractedCall) -> InspectionCall {
+pub(crate) fn call_view(call: &ExtractedCall, range: SourceRange) -> InspectionCall {
     InspectionCall {
         category: call.category,
         name: call.name.clone(),
@@ -194,10 +196,11 @@ pub(crate) fn call_view(call: &ExtractedCall) -> InspectionCall {
             })
             .collect(),
         span: call.span,
+        range,
     }
 }
 
-pub(crate) fn jsx_view(jsx: &ExtractedJsx) -> InspectionJsx {
+pub(crate) fn jsx_view(jsx: &ExtractedJsx, range: SourceRange) -> InspectionJsx {
     InspectionJsx {
         category: jsx.category,
         kind: jsx.kind,
@@ -205,6 +208,7 @@ pub(crate) fn jsx_view(jsx: &ExtractedJsx) -> InspectionJsx {
         alias: jsx.alias.clone(),
         data: literal_value(&jsx.data),
         span: jsx.span,
+        range,
     }
 }
 

@@ -16,7 +16,7 @@ export interface RuleContextWithReport extends LintRuleContextLike {
 
 export interface RuleModuleLike {
   meta: {
-    type: 'problem'
+    type: 'problem' | 'suggestion' | 'layout'
     docs: {
       description: string
     }
