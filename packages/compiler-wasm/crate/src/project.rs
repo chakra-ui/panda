@@ -769,6 +769,23 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Order already-read manifests by their `designSystem` parent links into a
+    /// root-first hydrate/merge plan (or report a cycle). Backs the
+    /// `designSystem.resolveChain` JS namespace. Pure — the host did the reads.
+    ///
+    /// # Errors
+    /// Returns a JS error if `manifests` is invalid or the plan fails to serialize.
+    #[wasm_bindgen(js_name = resolveDesignSystemChain)]
+    pub fn resolve_design_system_chain(&self, manifests: JsValue) -> Result<JsValue, JsValue> {
+        let manifests: Vec<pandacss_project::DesignSystemManifest> =
+            serde_wasm_bindgen::from_value(manifests)
+                .map_err(|err| JsValue::from_str(&err.to_string()))?;
+        let plan = pandacss_project::resolve_chain(&manifests);
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        plan.serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// The manifest wire-format version this binding reads/writes.
     #[wasm_bindgen(js_name = designSystemManifestSchemaVersion)]
     #[must_use]

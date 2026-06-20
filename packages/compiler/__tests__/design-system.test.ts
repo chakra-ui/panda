@@ -176,4 +176,39 @@ describe('compiler.designSystem', () => {
       modules: [],
     })
   })
+
+  // --- resolveChain(): composition — order a chain of parent design systems ---
+
+  // A bare manifest with just identity + parent; resolveChain reads only those.
+  const node = (name: string, parent?: string): DesignSystemManifest =>
+    project().designSystem.create({
+      name,
+      panda: '^2.0.0',
+      preset: './preset.mjs',
+      buildInfo: './panda.buildinfo.json',
+      designSystem: parent,
+    })
+
+  it('resolveChain() orders a chain root-first', () => {
+    const app = project()
+    expect(
+      app.designSystem.resolveChain([node('@acme/marketing', '@acme/foundations'), node('@acme/foundations')]),
+    ).toEqual({ ok: true, order: ['@acme/foundations', '@acme/marketing'] })
+  })
+
+  it('resolveChain() dedupes a shared parent', () => {
+    const app = project()
+    expect(
+      app.designSystem.resolveChain([node('@acme/a', '@acme/base'), node('@acme/b', '@acme/base'), node('@acme/base')]),
+    ).toEqual({ ok: true, order: ['@acme/base', '@acme/a', '@acme/b'] })
+  })
+
+  it('resolveChain() reports a cycle path', () => {
+    const app = project()
+    expect(app.designSystem.resolveChain([node('@acme/a', '@acme/b'), node('@acme/b', '@acme/a')])).toEqual({
+      ok: false,
+      reason: 'cycle',
+      cycle: ['@acme/a', '@acme/b', '@acme/a'],
+    })
+  })
 })

@@ -863,6 +863,15 @@ export type DesignSystemManifestCompatibility =
   | { ok: true }
   | { ok: false; reason: DesignSystemManifestIncompatibility }
 
+/** Raw chain plan the binding returns — a status-tagged value the namespace
+ *  reshapes into {@link DesignSystemChainResult}. */
+export type DesignSystemChainPlan = { status: 'ordered'; order: string[] } | { status: 'cycle'; cycle: string[] }
+
+/** Outcome of `resolveChain`. On success, `order` is the deduped root-first
+ *  sequence to merge presets + hydrate build info. On a cycle, `cycle` is the
+ *  loop path for the diagnostic. */
+export type DesignSystemChainResult = { ok: true; order: string[] } | { ok: false; reason: 'cycle'; cycle: string[] }
+
 /** Inputs to `load` — the library's already-read build info plus the consumer's
  *  imports from the design system, for tree-shaking. */
 export interface DesignSystemLoadOptions {
@@ -903,6 +912,12 @@ export interface DesignSystemApi {
    *  `importMap` merge into the consumer config at build time, in the host,
    *  since the engine value layer can't execute the preset module. */
   load(manifest: DesignSystemManifest, options: DesignSystemLoadOptions): DesignSystemLoadResult
+
+  /** Order a set of already-read manifests by their parent (`designSystem`)
+   *  links into a deduped, root-first plan — the composition case (a design
+   *  system built on another). The host reads each level off disk and hands the
+   *  values here; this catches cycles and returns the merge/hydrate order. */
+  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainResult
 }
 
 /** A configured, long-lived compiler: built once from a serialized config, fed

@@ -456,6 +456,29 @@ impl Compiler {
         pandacss_project::MANIFEST_SCHEMA_VERSION
     }
 
+    /// Order already-read manifests by their `designSystem` parent links into a
+    /// root-first hydrate/merge plan (or report a cycle). Backs the
+    /// `designSystem.resolveChain` JS namespace. Pure — the host did the reads.
+    ///
+    /// # Errors
+    /// Returns an error if `manifests` isn't a valid manifest array or the plan
+    /// fails to serialize.
+    #[napi(js_name = resolveDesignSystemChain)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn resolve_design_system_chain(
+        &self,
+        manifests: serde_json::Value,
+    ) -> napi::Result<serde_json::Value> {
+        let manifests: Vec<pandacss_project::DesignSystemManifest> =
+            serde_json::from_value(manifests)
+                .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        let plan = pandacss_project::resolve_chain(&manifests);
+        serde_json::to_value(&plan).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
     /// Stateless source inspection for tooling (reporting, lint, IDE). Returns
     /// classified Panda usage sites plus file-local extraction diagnostics.
     ///

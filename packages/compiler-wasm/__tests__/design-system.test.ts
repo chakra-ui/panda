@@ -124,6 +124,29 @@ describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
       modules: [],
     })
   })
+
+  // resolveChain across the boundary: ordered plan and cycle detection.
+  it('resolveChain() orders a chain root-first and reports cycles', async () => {
+    const app = await createCompiler(baseConfig)
+    const node = (name: string, parent?: string) =>
+      app.designSystem.create({
+        name,
+        panda: '^2.0.0',
+        preset: './preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        designSystem: parent,
+      })
+
+    expect(
+      app.designSystem.resolveChain([node('@acme/marketing', '@acme/foundations'), node('@acme/foundations')]),
+    ).toEqual({ ok: true, order: ['@acme/foundations', '@acme/marketing'] })
+
+    expect(app.designSystem.resolveChain([node('@acme/a', '@acme/b'), node('@acme/b', '@acme/a')])).toEqual({
+      ok: false,
+      reason: 'cycle',
+      cycle: ['@acme/a', '@acme/b', '@acme/a'],
+    })
+  })
 })
 
 describeMissingWasm()

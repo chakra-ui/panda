@@ -22,6 +22,7 @@ const fallbackDesignSystem = makeDesignSystemApi(
   {
     createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
     designSystemManifestSchemaVersion: () => -1,
+    resolveDesignSystemChain: () => ({ status: 'ordered', order: [] }),
   },
   fallbackBuildInfo,
 )

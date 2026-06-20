@@ -4,6 +4,7 @@
 //! truth; the host owns fs + module resolution, this module only deals in
 //! values. See `design-notes/design-system-manifest.md`.
 
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 
 /// Bumped when the wire shape changes; a version mismatch surfaces a diagnostic
@@ -94,4 +95,91 @@ impl super::Project {
             files: input.files,
         }
     }
+}
+
+/// Outcome of [`resolve_chain`]: the order to merge presets + hydrate build
+/// info, or the cycle that makes the chain unresolvable.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "status", rename_all = "camelCase")]
+pub enum ChainPlan {
+    /// Deduped, root-first order (ancestors before descendants), so a leaf and
+    /// the consumer override their parents — preset inheritance precedence.
+    Ordered { order: Vec<String> },
+    /// The chain revisits a package; `cycle` is the loop path for the diagnostic
+    /// (`@a → @b → @a`). A design system can't depend on itself.
+    Cycle { cycle: Vec<String> },
+}
+
+/// Order a set of already-read manifests by their `designSystem` parent links
+/// into a root-first hydrate/merge plan, deduping shared ancestors and catching
+/// cycles. Pure value logic (no fs, no module resolution) — the host reads each
+/// level's manifest and hands the collected values here, so the recursion is
+/// exercised in-memory. A parent absent from the set is a chain boundary (the
+/// host owns parent-not-found via module resolution).
+#[must_use]
+pub fn resolve_chain(manifests: &[DesignSystemManifest]) -> ChainPlan {
+    // name → parent link, deduped by name (first wins); `present` preserves input
+    // order so roots emit deterministically.
+    let mut parent_of: FxHashMap<&str, Option<&str>> = FxHashMap::default();
+    let mut present: Vec<&str> = Vec::new();
+    for manifest in manifests {
+        if parent_of
+            .insert(&manifest.name, manifest.design_system.as_deref())
+            .is_none()
+        {
+            present.push(&manifest.name);
+        }
+    }
+
+    let mut state: FxHashMap<&str, Mark> = FxHashMap::default();
+    let mut order: Vec<String> = Vec::new();
+    for name in present {
+        let mut path: Vec<&str> = Vec::new();
+        if let Err(cycle) = visit(name, &parent_of, &mut state, &mut order, &mut path) {
+            return ChainPlan::Cycle { cycle };
+        }
+    }
+    ChainPlan::Ordered { order }
+}
+
+/// DFS colour: `Gray` is on the current path (a back-edge to it is a cycle),
+/// `Black` is fully placed.
+#[derive(PartialEq, Eq)]
+enum Mark {
+    Gray,
+    Black,
+}
+
+/// Emit `name`'s present ancestors before `name` (post-order ⇒ root-first),
+/// erroring with the loop path on a back-edge to a node on the current path.
+fn visit<'a>(
+    name: &'a str,
+    parent_of: &FxHashMap<&'a str, Option<&'a str>>,
+    state: &mut FxHashMap<&'a str, Mark>,
+    order: &mut Vec<String>,
+    path: &mut Vec<&'a str>,
+) -> Result<(), Vec<String>> {
+    match state.get(name) {
+        Some(Mark::Black) => return Ok(()),
+        Some(Mark::Gray) => {
+            let start = path.iter().position(|&n| n == name).unwrap_or(0);
+            let mut cycle: Vec<String> = path[start..].iter().map(|&n| n.to_owned()).collect();
+            cycle.push(name.to_owned());
+            return Err(cycle);
+        }
+        None => {}
+    }
+
+    state.insert(name, Mark::Gray);
+    path.push(name);
+    // Only order against a parent that's present in the set.
+    if let Some(parent) = parent_of.get(name).copied().flatten()
+        && parent_of.contains_key(parent)
+    {
+        visit(parent, parent_of, state, order, path)?;
+    }
+    path.pop();
+    state.insert(name, Mark::Black);
+    order.push(name.to_owned());
+    Ok(())
 }

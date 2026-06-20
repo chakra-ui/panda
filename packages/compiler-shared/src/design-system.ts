@@ -1,6 +1,8 @@
 import type {
   BuildInfoApi,
   DesignSystemApi,
+  DesignSystemChainPlan,
+  DesignSystemChainResult,
   DesignSystemLoadOptions,
   DesignSystemLoadResult,
   DesignSystemManifest,
@@ -13,6 +15,7 @@ import type {
 export interface DesignSystemNative {
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
+  resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
 /** Build the `compiler.designSystem` namespace over a binding's primitives.
@@ -43,6 +46,13 @@ export function makeDesignSystemApi(native: DesignSystemNative, buildInfo: Build
       if (!result.ok) return { ok: false, reason: result.reason, modules: [] }
 
       return { ok: true, name: manifest.name, modules: result.modules }
+    },
+
+    resolveChain: (manifests: DesignSystemManifest[]): DesignSystemChainResult => {
+      const plan = native.resolveDesignSystemChain(manifests)
+      return plan.status === 'ordered'
+        ? { ok: true, order: plan.order }
+        : { ok: false, reason: 'cycle', cycle: plan.cycle }
     },
   }
 }
