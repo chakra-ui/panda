@@ -3,6 +3,7 @@ import {
   fileNotIncludedRuleName,
   noDebugRuleName,
   noDeprecatedRuleName,
+  noInvalidNestingRuleName,
   noInvalidTokenPathsRuleName,
   preferTokenRuleName,
 } from './rules'
@@ -28,6 +29,7 @@ const RECOMMENDED_RULES: Record<string, RuleEntry> = {
   [extractionDiagnosticsRuleName]: 'warn',
   [fileNotIncludedRuleName]: 'error',
   [noInvalidTokenPathsRuleName]: 'error',
+  [noInvalidNestingRuleName]: 'error',
   [noDeprecatedRuleName]: 'warn',
   [noDebugRuleName]: 'warn',
   // Default to flagging hardcoded colors only (the old `no-hardcoded-color`);

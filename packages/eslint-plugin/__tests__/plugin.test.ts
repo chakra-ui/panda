@@ -31,6 +31,7 @@ describe('createPandaPlugin', () => {
       'extraction-diagnostics',
       'file-not-included',
       'no-invalid-token-paths',
+      'no-invalid-nesting',
       'no-deprecated',
       'no-debug',
       'prefer-token',

@@ -29,9 +29,9 @@ export default [await panda.configs.recommended({ configPath: './panda.config.ts
 That's it. The rules now run against your project's tokens, recipes, and utilities.
 
 The recommended config scopes itself to JS/TS/JSX files and **does not set a parser** — use your project's existing
-parser. Most TS setups already have one via [`typescript-eslint`](https://typescript-eslint.io/), and framework
-projects via their ESLint preset (`eslint-plugin-vue`, `astro-eslint-parser`, etc.). Panda's rules read source text
-directly, so any parser that produces a `Program` works.
+parser. Most TS setups already have one via [`typescript-eslint`](https://typescript-eslint.io/), and framework projects
+via their ESLint preset (`eslint-plugin-vue`, `astro-eslint-parser`, etc.). Panda's rules read source text directly, so
+any parser that produces a `Program` works.
 
 To lint framework files (`.vue`, `.svelte`, `.astro`), opt them in via `files` once their parser is configured:
 
@@ -57,8 +57,14 @@ Call `recommended` once per Panda config and scope each to its package via `file
 
 ```js
 export default [
-  { ...(await panda.configs.recommended({ configPath: './packages/web/panda.config.ts' })), files: ['packages/web/**'] },
-  { ...(await panda.configs.recommended({ configPath: './packages/app/panda.config.ts' })), files: ['packages/app/**'] },
+  {
+    ...(await panda.configs.recommended({ configPath: './packages/web/panda.config.ts' })),
+    files: ['packages/web/**'],
+  },
+  {
+    ...(await panda.configs.recommended({ configPath: './packages/app/panda.config.ts' })),
+    files: ['packages/app/**'],
+  },
 ]
 ```
 
@@ -70,6 +76,8 @@ export default [
 These rules are on in `recommended`:
 
 - `no-invalid-token-paths` (error) — a token reference that doesn't exist, e.g. `token('colors.ghost')`.
+- `no-invalid-nesting` (error) — a nested selector missing `&` (`':hover'` instead of `'&:hover'`), which Panda silently
+  ignores. Suggests prefixing `&`.
 - `file-not-included` (error) — a file uses Panda but sits outside your config `include`, so its styles never get
   generated.
 - `no-deprecated` (warn) — use of a deprecated token, utility, recipe, or pattern. If you set

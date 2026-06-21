@@ -11,7 +11,9 @@ arrays, per-prop conditions, and `cva`/`sva`/`styled` recipe styles — with a p
 to colors, replacing v1's `no-hardcoded-color`; plus `no-shorthand-longhand-mix`, which flags a shorthand mixed with one
 of its own longhands in the same block (`margin` + `marginLeft`) since the longhand wins regardless of source order;
 and `consistent-property-style`, an autofixable rule enforcing either Panda shorthand aliases (`ml`) or longhand
-canonical names (`marginLeft`) via `style: 'shorthand' | 'longhand'`), and a `configs.recommended({ configPath })`
+canonical names (`marginLeft`) via `style: 'shorthand' | 'longhand'`; and `no-invalid-nesting` (recommended), which
+flags a nested selector missing `&` — e.g. `':hover'` instead of `'&:hover'` — that Panda silently ignores, and
+suggests the `&` prefix), and a `configs.recommended({ configPath })`
 flat-config entry with
 `@pandacss/*` rule ids. Config
 and compiler loading is preloaded once per project so rule visitors stay synchronous.

@@ -586,7 +586,8 @@ they rely on the resolved compiler model rather than string matching.
 - `no-invalid-utility-value` 🟡 (O) — value a utility can't resolve; needs a clean `null`-vs-arbitrary signal from
   `resolveUtilityValue`.
 - `no-unknown-property` 🔴 (O) — typo'd style key; needs a CSS-property dictionary to avoid flagging valid arbitrary CSS.
-- `no-invalid-nesting` 🟢 (D, v1) — invalid nested selector.
+- `no-invalid-nesting` ✅ (D, v1) — selector-shaped key with a nested object that Panda left `unknown` (missing `&`).
+  Recommended (error); suggests prefixing `&`.
 - `no-dynamic-styling` 🟢 (D, v1) — values the compiler can't statically extract.
 - `no-property-renaming` 🟢 (D, v1) · `no-unsafe-token-fn-usage` 🟢 (D, v1).
 
@@ -668,9 +669,9 @@ Port status of the v1 rules (recommended ones default-on, the rest opt-in):
 - Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color` (→ `prefer-token` colors preset),
   `no-invalid-token-paths`, `no-important`, `no-margin-properties`, `no-physical-properties`,
   `prefer-unified-property-style` (→ `no-shorthand-longhand-mix`),
-  `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`).
-- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`), `no-invalid-nesting`
-  🟢, `no-dynamic-styling` 🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡
+  `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`), `no-invalid-nesting`.
+- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`),
+  `no-dynamic-styling` 🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡
   (needs `imports` on the inspection result).
 - Consolidated / renamed: `no-escape-hatch` → `no-arbitrary-values`; ad-hoc restrictions → `restrict-styles`.
 - Stylistic (Tier 3, fixable): `prefer-atomic-properties`, `prefer-composite-properties`.

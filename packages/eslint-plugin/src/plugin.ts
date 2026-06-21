@@ -11,6 +11,7 @@ import {
   createNoInvalidTokenPathsRule,
   createNoMarginPropertiesRule,
   createConsistentPropertyStyleRule,
+  createNoInvalidNestingRule,
   createNoPhysicalPropertiesRule,
   createNoShorthandLonghandMixRule,
   createPreferTextStyleRule,
@@ -21,6 +22,7 @@ import {
   noDebugRuleName,
   noDeprecatedRuleName,
   noImportantRuleName,
+  noInvalidNestingRuleName,
   noInvalidTokenPathsRuleName,
   noMarginPropertiesRuleName,
   noPhysicalPropertiesRuleName,
@@ -145,6 +147,7 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
       isSourceFile: (path: string) => project.compiler.isSourceFile(path),
     }),
     [noInvalidTokenPathsRuleName]: createNoInvalidTokenPathsRule({ inspect }),
+    [noInvalidNestingRuleName]: createNoInvalidNestingRule({ inspect }),
     [noDeprecatedRuleName]: createNoDeprecatedRule({
       inspect,
       tokens: spec.tokens.deprecated,
