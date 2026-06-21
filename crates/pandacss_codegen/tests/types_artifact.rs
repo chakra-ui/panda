@@ -191,6 +191,7 @@ fn recipe_type_data() -> RecipeTypeData {
                         },
                     ),
                 ]),
+                deprecated: None,
             },
         )]),
         slot_recipes: BTreeMap::from([(
@@ -206,6 +207,7 @@ fn recipe_type_data() -> RecipeTypeData {
                         allows_boolean: false,
                     },
                 )]),
+                deprecated: None,
             },
         )]),
     }
