@@ -630,7 +630,9 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
   message names the token to use, via `compiler.suggestToken` — semantic tokens preferred over the primitives they
   reference, with value normalization (`#FFF`==`#ffffff`, `16px`==`1rem`). **In `recommended` it's scoped to
   `categories: ['colors']`** — this replaces the standalone `no-hardcoded-color` (folded; see migration in the README).
-  The single configurable rule is the orthogonal API; v1's `no-hardcoded-color` name is dropped.
+  The single configurable rule is the orthogonal API; v1's `no-hardcoded-color` name is dropped. Detection and per-leaf
+  quick-fixes span every style-writing form: `css()`, style props, responsive arrays, per-prop conditions, and recipe
+  styles in `cva()` / `sva()` / `styled('div', { ... })` (`base`, `variants.*`, `compoundVariants[].css`).
 - `restrict-styles` 🟢 (O) — general configurable restriction: glob property pattern → `{ limit, reason }`, where `limit`
   bans the property (`null`) or whitelists allowed values. For custom team policies beyond the named rules above.
 - `no-restricted-tokens` 🟢 (O) — deny specific tokens / palettes (legacy palette during a migration, internal-only

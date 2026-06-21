@@ -1,6 +1,6 @@
 use oxc_ast::ast::{
-    Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXExpression,
-    ObjectExpression, ObjectPropertyKind, PropertyKind,
+    ArrayExpression, Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue,
+    JSXExpression, ObjectExpression, ObjectPropertyKind, PropertyKind,
 };
 use oxc_span::GetSpan;
 use serde::Serialize;
@@ -81,13 +81,57 @@ pub(crate) fn collect_object_source_refs(
             safety: object_property_safety(prop.computed, prop.shorthand, prop.method),
         });
 
-        if prop.kind == PropertyKind::Init
-            && !prop.method
-            && let Some(child) = object_expression(&prop.value)
-        {
-            collect_object_source_refs(child, resolver, owner, path, out);
+        if prop.kind == PropertyKind::Init && !prop.method {
+            descend_value(&prop.value, resolver, owner, path, out);
         }
         path.pop();
+    }
+}
+
+/// Recurse into object/array values so nested and responsive-array leaves get
+/// their own source refs (path segment = the array index).
+fn descend_value(
+    value: &Expression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+    owner: StyleSourceOwner,
+    path: &mut Vec<String>,
+    out: &mut Vec<StyleSourceRef>,
+) {
+    if let Some(obj) = object_expression(value) {
+        collect_object_source_refs(obj, resolver, owner, path, out);
+    } else if let Some(arr) = array_expression(value) {
+        for (index, element) in arr.elements.iter().enumerate() {
+            let Some(expr) = element.as_expression() else {
+                continue;
+            };
+            if expression_to_literal(expr, resolver).is_none() {
+                continue;
+            }
+            let span = span_from_oxc(expr.span());
+            path.push(index.to_string());
+            out.push(StyleSourceRef {
+                owner,
+                path: path.clone(),
+                name: index.to_string(),
+                span,
+                key_span: span,
+                value_span: Some(span),
+                safety: StyleSourceRefSafety::Safe,
+            });
+            descend_value(expr, resolver, owner, path, out);
+            path.pop();
+        }
+    }
+}
+
+fn array_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a ArrayExpression<'a>> {
+    match expr {
+        Expression::ArrayExpression(arr) => Some(arr),
+        Expression::ParenthesizedExpression(p) => array_expression(&p.expression),
+        Expression::TSAsExpression(ts) => array_expression(&ts.expression),
+        Expression::TSSatisfiesExpression(ts) => array_expression(&ts.expression),
+        Expression::TSNonNullExpression(ts) => array_expression(&ts.expression),
+        _ => None,
     }
 }
 

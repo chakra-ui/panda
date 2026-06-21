@@ -87,8 +87,9 @@ Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.
   💡 Use the token "red.500"
 ```
 
-Quick-fixes apply to flat literals (`color: '#f00'`); values nested in conditions or arrays get the message without a
-fix for now.
+Quick-fixes apply to each offending leaf — flat literals (`color: '#f00'`), values nested in conditions
+(`color: { base: '#f00' }`), and responsive-array elements (`color: ['#f00', ...]`). Coverage spans `css()`, style
+props, and recipe styles in `cva()` / `sva()` / `styled('div', { ... })` (`base`, `variants`, `compoundVariants`).
 
 ### Migrating from `no-hardcoded-color`
 

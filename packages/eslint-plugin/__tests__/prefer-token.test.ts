@@ -26,7 +26,7 @@ function createTempProject() {
     join(dir, 'panda.config.ts'),
     `export default {
       outdir: 'styled-system',
-      importMap: { css: ['@panda/css'] },
+      importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'] },
       theme: {
         tokens: {
           colors: { red: { 500: { value: '#f00' } } },
@@ -99,6 +99,20 @@ ruleTester.run('prefer-token', asRule(plugin.rules['prefer-token']), {
       code: withCss("css({ color: '#abc' })"),
       errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
     },
+    // A value nested in a per-prop condition is still fixable (leaf span).
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: { base: '#f00' } })"),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            { desc: 'Use the token "fg.error"', output: withCss("css({ color: { base: 'fg.error' } })") },
+            { desc: 'Use the token "red.500"', output: withCss("css({ color: { base: 'red.500' } })") },
+          ],
+        },
+      ],
+    },
     // `categories` scopes which categories are checked.
     {
       filename: 'app.tsx',
@@ -108,6 +122,64 @@ ruleTester.run('prefer-token', asRule(plugin.rules['prefer-token']), {
         {
           message: 'Hardcoded spacing value "16px". Matching tokens: 4.',
           suggestions: [{ desc: 'Use the token "4"', output: withCss("css({ color: '#f00', padding: '4' })") }],
+        },
+      ],
+    },
+    // A value nested in a responsive array is fixable (per-element leaf span).
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: ['#f00', 'red.500'] })"),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            { desc: 'Use the token "fg.error"', output: withCss("css({ color: ['fg.error', 'red.500'] })") },
+            { desc: 'Use the token "red.500"', output: withCss("css({ color: ['red.500', 'red.500'] })") },
+          ],
+        },
+      ],
+    },
+    // `cva` recipe styles (base / variants / compoundVariants) are covered.
+    {
+      filename: 'app.tsx',
+      code: ["import { cva } from '@panda/css'", "cva({ base: { color: '#f00' } })"].join('\n'),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            {
+              desc: 'Use the token "fg.error"',
+              output: ["import { cva } from '@panda/css'", "cva({ base: { color: 'fg.error' } })"].join('\n'),
+            },
+            {
+              desc: 'Use the token "red.500"',
+              output: ["import { cva } from '@panda/css'", "cva({ base: { color: 'red.500' } })"].join('\n'),
+            },
+          ],
+        },
+      ],
+    },
+    // `styled('div', { ... })` factory recipe config is covered.
+    {
+      filename: 'app.tsx',
+      code: ["import { styled } from '@panda/jsx'", "styled('div', { base: { color: '#f00' } })"].join('\n'),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            {
+              desc: 'Use the token "fg.error"',
+              output: ["import { styled } from '@panda/jsx'", "styled('div', { base: { color: 'fg.error' } })"].join(
+                '\n',
+              ),
+            },
+            {
+              desc: 'Use the token "red.500"',
+              output: ["import { styled } from '@panda/jsx'", "styled('div', { base: { color: 'red.500' } })"].join(
+                '\n',
+              ),
+            },
+          ],
         },
       ],
     },

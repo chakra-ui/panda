@@ -5,7 +5,8 @@
 
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
-    LineIndex, Literal, MatchCategory, StyleSourceOwnerKind, StyleSourceRef, extract_verbose,
+    ExtractedCall, LineIndex, Literal, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
+    extract_verbose,
 };
 use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
 use pandacss_utility::Utility;
@@ -13,7 +14,8 @@ use rustc_hash::FxHashMap;
 
 use crate::inspection::{
     FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryRef, StyleEntrySyntax,
-    UsageKind, UsageSite, call_view, component_entry, jsx_view, style_entry, token_ref_site,
+    UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view, style_entry,
+    token_ref_site,
 };
 use crate::{Project, ProjectConditionMatcher, SourceRange, Span};
 
@@ -45,32 +47,15 @@ impl Project {
         let mut component_entries = Vec::new();
         let source_refs = source_ref_map(&result.style_source_refs);
         for (index, call) in result.calls.iter().enumerate() {
-            let range = line_index.locate_range(call.span.start, call.span.end);
-            match call.category {
-                MatchCategory::Css if call.name == "css" => {
-                    if let Some(Some(Literal::Object(entries))) = call.data.first() {
-                        walk_object(entries, &cx, &range, &mut sites);
-                        StyleEntryCollector {
-                            cx: &cx,
-                            span: call.span,
-                            range,
-                            line_index: &line_index,
-                            source_refs: &source_refs,
-                            owner_kind: StyleSourceOwnerKind::Call,
-                            owner_index: u32::try_from(index).unwrap_or(u32::MAX),
-                        }
-                        .collect(
-                            entries,
-                            StyleEntrySyntax::CssCall,
-                            &mut Vec::new(),
-                            &mut style_entries,
-                        );
-                    }
-                }
-                MatchCategory::Recipe => sites.push(site(UsageKind::Recipe, &call.name, &range)),
-                MatchCategory::Pattern => sites.push(site(UsageKind::Pattern, &call.name, &range)),
-                _ => {}
-            }
+            collect_call_styles(
+                call,
+                index,
+                &cx,
+                &line_index,
+                &source_refs,
+                &mut sites,
+                &mut style_entries,
+            );
         }
         for (index, jsx) in result.jsx.iter().enumerate() {
             let range = line_index.locate_range(jsx.span.start, jsx.span.end);
@@ -171,6 +156,234 @@ fn source_ref_map(refs: &[StyleSourceRef]) -> FxHashMap<SourceRefKey, &StyleSour
     map
 }
 
+/// Classify one extracted call and collect its usages + style entries. Handles
+/// `css({...})`, the recipe factories (`cva`/`sva`/`styled`), and recipe/pattern
+/// call sites.
+#[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
+fn collect_call_styles(
+    call: &ExtractedCall,
+    index: usize,
+    cx: &Cx,
+    line_index: &LineIndex,
+    source_refs: &FxHashMap<SourceRefKey, &StyleSourceRef>,
+    sites: &mut Vec<UsageSite>,
+    style_entries: &mut Vec<StyleEntryRef>,
+) {
+    let range = line_index.locate_range(call.span.start, call.span.end);
+    let collector = StyleEntryCollector {
+        cx,
+        span: call.span,
+        range,
+        line_index,
+        source_refs,
+        owner_kind: StyleSourceOwnerKind::Call,
+        owner_index: u32::try_from(index).unwrap_or(u32::MAX),
+    };
+    match (call.category, call.name.as_str()) {
+        (MatchCategory::Css, "css") => {
+            if let Some(entries) = call_object(call, 0) {
+                walk_object(entries, cx, &range, sites);
+                collector.collect(
+                    entries,
+                    StyleEntrySyntax::CssCall,
+                    &mut Vec::new(),
+                    style_entries,
+                );
+            }
+        }
+        // `cva({...})` (atomic recipe) / `sva({...})` (slot recipe) — the recipe
+        // config is the first argument.
+        (MatchCategory::Css, "cva") => {
+            collect_recipe(
+                call_object(call, 0),
+                false,
+                cx,
+                &range,
+                &collector,
+                sites,
+                style_entries,
+            );
+        }
+        (MatchCategory::Css, "sva") => {
+            collect_recipe(
+                call_object(call, 0),
+                true,
+                cx,
+                &range,
+                &collector,
+                sites,
+                style_entries,
+            );
+        }
+        // Factory calls: `styled('div', config)` (config at arg 1) and
+        // `styled.div(config)` (config at arg 0). A config carrying recipe keys is
+        // walked as a recipe; otherwise it is a flat style object.
+        (MatchCategory::Jsx, _) => {
+            if let Some(config) = call_object(call, 1).or_else(|| call_object(call, 0)) {
+                if has_recipe_keys(config) {
+                    collect_recipe(
+                        Some(config),
+                        false,
+                        cx,
+                        &range,
+                        &collector,
+                        sites,
+                        style_entries,
+                    );
+                } else {
+                    walk_object(config, cx, &range, sites);
+                    collector.collect(
+                        config,
+                        StyleEntrySyntax::CssCall,
+                        &mut Vec::new(),
+                        style_entries,
+                    );
+                }
+            }
+        }
+        (MatchCategory::Recipe, _) => sites.push(site(UsageKind::Recipe, &call.name, &range)),
+        (MatchCategory::Pattern, _) => sites.push(site(UsageKind::Pattern, &call.name, &range)),
+        _ => {}
+    }
+}
+
+/// The object literal at argument `index` of an extracted call, if present.
+fn call_object(call: &ExtractedCall, index: usize) -> Option<&[(String, Literal)]> {
+    match call.data.get(index) {
+        Some(Some(Literal::Object(entries))) => Some(entries),
+        _ => None,
+    }
+}
+
+/// Whether a factory config object is a recipe (carries `base`/`variants`/…)
+/// rather than a flat style object.
+fn has_recipe_keys(config: &[(String, Literal)]) -> bool {
+    config.iter().any(|(key, _)| {
+        matches!(
+            key.as_str(),
+            "base" | "variants" | "defaultVariants" | "compoundVariants"
+        )
+    })
+}
+
+/// Walk a recipe config (`cva`/`sva`/`styled`) and collect the style objects it
+/// holds: `base`, every `variants.<key>.<value>`, and each `compoundVariants[].css`.
+/// `slotted` recipes (`sva`) nest a slot level inside each style object. Paths
+/// match the source refs collected over the same config so leaves stay fixable.
+#[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
+fn collect_recipe(
+    config: Option<&[(String, Literal)]>,
+    slotted: bool,
+    cx: &Cx,
+    range: &SourceRange,
+    collector: &StyleEntryCollector,
+    sites: &mut Vec<UsageSite>,
+    style_entries: &mut Vec<StyleEntryRef>,
+) {
+    let Some(config) = config else { return };
+    for (key, value) in config {
+        match key.as_str() {
+            "base" => recipe_style(
+                value,
+                slotted,
+                &["base".to_owned()],
+                cx,
+                range,
+                collector,
+                sites,
+                style_entries,
+            ),
+            "variants" => {
+                if let Literal::Object(variants) = value {
+                    for (variant, options) in variants {
+                        if let Literal::Object(options) = options {
+                            for (option, style) in options {
+                                recipe_style(
+                                    style,
+                                    slotted,
+                                    &["variants".to_owned(), variant.clone(), option.clone()],
+                                    cx,
+                                    range,
+                                    collector,
+                                    sites,
+                                    style_entries,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            "compoundVariants" => {
+                if let Literal::Array(items) = value {
+                    for (index, item) in items.iter().enumerate() {
+                        if let Literal::Object(entries) = item
+                            && let Some((_, css)) = entries.iter().find(|(key, _)| key == "css")
+                        {
+                            recipe_style(
+                                css,
+                                slotted,
+                                &[
+                                    "compoundVariants".to_owned(),
+                                    index.to_string(),
+                                    "css".to_owned(),
+                                ],
+                                cx,
+                                range,
+                                collector,
+                                sites,
+                                style_entries,
+                            );
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// Collect one recipe style object at `base_path`. For a slotted recipe the value
+/// is `{ slot: styleObject }`; otherwise it is the style object directly.
+#[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
+fn recipe_style(
+    value: &Literal,
+    slotted: bool,
+    base_path: &[String],
+    cx: &Cx,
+    range: &SourceRange,
+    collector: &StyleEntryCollector,
+    sites: &mut Vec<UsageSite>,
+    style_entries: &mut Vec<StyleEntryRef>,
+) {
+    let Literal::Object(entries) = value else {
+        return;
+    };
+    if slotted {
+        for (slot, slot_value) in entries {
+            if let Literal::Object(style) = slot_value {
+                let mut path = base_path.to_vec();
+                path.push(slot.clone());
+                walk_object(style, cx, range, sites);
+                collector.collect(
+                    style,
+                    StyleEntrySyntax::RecipeCall,
+                    &mut path,
+                    style_entries,
+                );
+            }
+        }
+    } else {
+        let mut path = base_path.to_vec();
+        walk_object(entries, cx, range, sites);
+        collector.collect(
+            entries,
+            StyleEntrySyntax::RecipeCall,
+            &mut path,
+            style_entries,
+        );
+    }
+}
+
 struct StyleEntryCollector<'a, 'source> {
     cx: &'a Cx<'a>,
     span: Span,
@@ -222,6 +435,7 @@ impl StyleEntryCollector<'_, '_> {
                     path,
                     source_ref,
                     source_range,
+                    value_spans: Vec::new(),
                 }));
                 if let Literal::Object(nested) = value {
                     self.collect(nested, syntax, path, out);
@@ -253,6 +467,7 @@ impl StyleEntryCollector<'_, '_> {
                     path,
                     source_ref,
                     source_range,
+                    value_spans: self.value_spans(path, value),
                 }));
             }
             path.pop();
@@ -263,6 +478,48 @@ impl StyleEntryCollector<'_, '_> {
         self.source_refs
             .get(&(self.owner_kind, self.owner_index, path.to_vec()))
             .copied()
+    }
+
+    fn value_spans(&self, path: &[String], value: &Literal) -> Vec<ValueSpanRef> {
+        let mut out = Vec::new();
+        let mut path = path.to_vec();
+        self.collect_value_spans(&mut path, value, &mut out);
+        out
+    }
+
+    fn collect_value_spans(
+        &self,
+        path: &mut Vec<String>,
+        value: &Literal,
+        out: &mut Vec<ValueSpanRef>,
+    ) {
+        match value {
+            Literal::String(text) | Literal::Token { value: text, .. } => {
+                if let Some(source_ref) = self.source_ref(path)
+                    && let Some(span) = source_ref.value_span
+                {
+                    out.push(ValueSpanRef {
+                        value: text.clone(),
+                        span,
+                    });
+                }
+            }
+            Literal::Object(entries) => {
+                for (key, nested) in entries {
+                    path.push(key.clone());
+                    self.collect_value_spans(path, nested, out);
+                    path.pop();
+                }
+            }
+            Literal::Array(items) => {
+                for (index, nested) in items.iter().enumerate() {
+                    path.push(index.to_string());
+                    self.collect_value_spans(path, nested, out);
+                    path.pop();
+                }
+            }
+            _ => {}
+        }
     }
 }
 

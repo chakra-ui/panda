@@ -74,13 +74,11 @@ export function reportTokenViolations(
       loc: toEslintLoc(entry.range),
     }
 
-    // Quick-fixes need the literal's exact range — available for a flat string
-    // value via `valueSpan`. Nested values get the message without a fix.
-    if (suggestions.length > 0 && typeof entry.resolvedValue === 'string' && entry.valueSpan && source) {
-      const range: [number, number] = [
-        byteToIndex(source, entry.valueSpan.start),
-        byteToIndex(source, entry.valueSpan.end),
-      ]
+    // Offer quick-fixes when we know the offending leaf's exact span (flat
+    // literals and values nested in conditions). Array elements have no span yet.
+    const leaf = entry.valueSpans?.find((v) => v.value === hit)
+    if (suggestions.length > 0 && leaf && source) {
+      const range: [number, number] = [byteToIndex(source, leaf.span.start), byteToIndex(source, leaf.span.end)]
       descriptor.suggest = suggestions.map((s) => ({
         desc: `Use the token "${s.token}"`,
         fix: (fixer) => fixer.replaceTextRange(range, `'${s.token}'`),

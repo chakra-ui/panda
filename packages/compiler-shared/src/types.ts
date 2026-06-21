@@ -466,6 +466,8 @@ export interface StyleEntryRef {
   sourceValue: unknown
   resolvedValue: unknown
   fixable: StyleEntryFixability
+  /** Source span of each string leaf, so fixers can target the exact literal. */
+  valueSpans?: { value: string; span: Span }[]
 }
 
 /** An extracted call/JSX with a resolved source range, for inspection consumers. */

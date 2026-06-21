@@ -138,6 +138,16 @@ pub struct StyleEntryRef {
     pub source_value: Value,
     pub resolved_value: Value,
     pub fixable: StyleEntryFixability,
+    /// Source span of each string leaf, so fixers can target the exact literal.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub value_spans: Vec<ValueSpanRef>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValueSpanRef {
+    pub value: String,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -278,6 +288,7 @@ pub(crate) struct StyleEntryInput<'a> {
     pub(crate) path: &'a [String],
     pub(crate) source_ref: Option<&'a StyleSourceRef>,
     pub(crate) source_range: Option<SourceRange>,
+    pub(crate) value_spans: Vec<ValueSpanRef>,
 }
 
 pub(crate) fn style_entry(input: &StyleEntryInput<'_>) -> StyleEntryRef {
@@ -303,6 +314,7 @@ pub(crate) fn style_entry(input: &StyleEntryInput<'_>) -> StyleEntryRef {
                 StyleEntryFixability::ReportOnly
             }
         }),
+        value_spans: input.value_spans.clone(),
     }
 }
 

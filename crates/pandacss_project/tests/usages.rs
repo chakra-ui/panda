@@ -454,3 +454,102 @@ fn animation_shorthand_captures_multiple_keyframes() {
     Keyframe fade
     ");
 }
+
+#[test]
+fn inspection_collects_style_entries_for_cva_recipes() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        cva({
+          base: { color: 'red.500' },
+          variants: {
+            tone: {
+              danger: { color: 'red.300' },
+            },
+          },
+          compoundVariants: [
+            { tone: 'danger', css: { p: '4' } },
+          ],
+        })
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(style_summary(&result), @r###"
+    Utility RecipeCall Safe color -> None path=base.color
+    Utility RecipeCall Safe color -> None path=variants.tone.danger.color
+    Utility RecipeCall Safe p -> Some("padding") path=compoundVariants.0.css.p
+    "###);
+
+    let spans = result
+        .style_entries
+        .iter()
+        .filter(|entry| matches!(entry.kind, pandacss_project::StyleEntryKind::Utility))
+        .map(|entry| {
+            json!({
+                "path": entry.path,
+                "value": span_text(source, entry.value_span),
+            })
+        })
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(spans, @r#"
+    - path:
+        - base
+        - color
+      value: "'red.500'"
+    - path:
+        - variants
+        - tone
+        - danger
+        - color
+      value: "'red.300'"
+    - path:
+        - compoundVariants
+        - "0"
+        - css
+        - p
+      value: "'4'"
+    "#);
+}
+
+#[test]
+fn inspection_collects_style_entries_for_sva_slot_recipes() {
+    let source = indoc! {r"
+        import { sva } from '@panda/css'
+        sva({
+          base: {
+            root: { color: 'red.500' },
+          },
+          variants: {
+            tone: {
+              danger: { label: { color: 'red.300' } },
+            },
+          },
+        })
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(style_summary(&result), @r"
+    Utility RecipeCall Safe color -> None path=base.root.color
+    Utility RecipeCall Safe color -> None path=variants.tone.danger.label.color
+    ");
+}
+
+#[test]
+fn inspection_collects_style_entries_for_styled_factory() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx'
+        styled('div', {
+          base: { color: 'red.500' },
+          variants: {
+            tone: {
+              danger: { color: 'red.300' },
+            },
+          },
+        })
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    assert_snapshot!(style_summary(&result), @r"
+    Utility RecipeCall Safe color -> None path=base.color
+    Utility RecipeCall Safe color -> None path=variants.tone.danger.color
+    ");
+}
