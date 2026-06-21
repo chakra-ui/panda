@@ -7,7 +7,7 @@ use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
     LineIndex, Literal, MatchCategory, StyleSourceOwnerKind, StyleSourceRef, extract_verbose,
 };
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
 use pandacss_utility::Utility;
 use rustc_hash::FxHashMap;
 
@@ -134,6 +134,23 @@ impl Project {
             component_entries,
             style_entries,
         }
+    }
+
+    /// Tokens that carry a hardcoded `value` on `prop`, ranked (safe equivalents
+    /// first). The lint rule lists these and lets the developer choose.
+    #[must_use]
+    pub fn suggest_tokens(&self, prop: &str, value: &str) -> Vec<TokenSuggestion> {
+        let Some(utility) = self.config.utility() else {
+            return Vec::new();
+        };
+        let canonical = utility.resolve_shorthand(prop);
+        let Some(category) = utility.token_category(canonical) else {
+            return Vec::new();
+        };
+        let Some(dict) = self.config.token_dictionary() else {
+            return Vec::new();
+        };
+        dict.suggest_tokens(&TokenCategory::from_path_segment(category), value)
     }
 }
 

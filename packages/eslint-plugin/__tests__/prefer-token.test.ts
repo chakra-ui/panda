@@ -32,6 +32,9 @@ function createTempProject() {
           colors: { red: { 500: { value: '#f00' } } },
           spacing: { 4: { value: '1rem' } },
         },
+        semanticTokens: {
+          colors: { fg: { error: { value: '{colors.red.500}' } } },
+        },
       },
       utilities: {
         color: { className: 'c', values: 'colors' },
@@ -58,40 +61,55 @@ const withCss = (...lines: string[]) => ["import { css } from '@panda/css'", ...
 
 ruleTester.run('prefer-token', asRule(plugin.rules['prefer-token']), {
   valid: [
-    // Token values and a CSS keyword resolve fine.
     { filename: 'app.tsx', code: withCss("css({ color: 'red.500', padding: '4' })") },
     { filename: 'app.tsx', code: withCss("css({ margin: 'auto' })") },
-    // `allow` permits a specific raw value.
-    {
-      filename: 'app.tsx',
-      code: withCss("css({ color: '#fff' })"),
-      options: [{ allow: ['#fff'] }],
-    },
+    { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ allow: ['#fff'] }] },
     // `categories` narrows scope: a hardcoded color is ignored when only spacing is enforced.
-    {
-      filename: 'app.tsx',
-      code: withCss("css({ color: '#fff' })"),
-      options: [{ categories: ['spacing'] }],
-    },
+    { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ categories: ['spacing'] }] },
   ],
   invalid: [
-    // Default scope enforces every token-backed category.
+    // Lists matching tokens (semantic first) and offers each as a quick-fix.
     {
       filename: 'app.tsx',
-      code: withCss("css({ color: '#fff' })"),
-      errors: [{ message: 'Use a colors token instead of the hardcoded value "#fff".' }],
+      code: withCss("css({ color: '#f00' })"),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            { desc: 'Use the token "fg.error"', output: withCss("css({ color: 'fg.error' })") },
+            { desc: 'Use the token "red.500"', output: withCss("css({ color: 'red.500' })") },
+          ],
+        },
+      ],
     },
+    // Dimension normalization (16px → 1rem → spacing.4) + a single quick-fix.
     {
       filename: 'app.tsx',
       code: withCss("css({ padding: '16px' })"),
-      errors: [{ message: 'Use a spacing token instead of the hardcoded value "16px".' }],
+      errors: [
+        {
+          message: 'Hardcoded spacing value "16px". Matching tokens: 4.',
+          suggestions: [{ desc: 'Use the token "4"', output: withCss("css({ padding: '4' })") }],
+        },
+      ],
     },
-    // `categories: ['spacing']` flags the spacing value only.
+    // No matching token: generic message, no quick-fix.
     {
       filename: 'app.tsx',
-      code: withCss("css({ color: '#fff', padding: '16px' })"),
+      code: withCss("css({ color: '#abc' })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
+    // `categories` scopes which categories are checked.
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ color: '#f00', padding: '16px' })"),
       options: [{ categories: ['spacing'] }],
-      errors: [{ message: 'Use a spacing token instead of the hardcoded value "16px".' }],
+      errors: [
+        {
+          message: 'Hardcoded spacing value "16px". Matching tokens: 4.',
+          suggestions: [{ desc: 'Use the token "4"', output: withCss("css({ color: '#f00', padding: '4' })") }],
+        },
+      ],
     },
   ],
 })

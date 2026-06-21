@@ -32,7 +32,7 @@ describe('configs.recommended', () => {
       '@pandacss/no-invalid-token-paths': 'error',
       '@pandacss/no-deprecated': 'warn',
       '@pandacss/no-debug': 'warn',
-      '@pandacss/no-hardcoded-color': 'warn',
+      '@pandacss/prefer-token': ['warn', { categories: ['colors'] }],
     })
     expect(config.settings).toEqual({ panda: { configPath } })
   })
@@ -46,11 +46,10 @@ describe('configs.recommended', () => {
       'no-invalid-token-paths',
       'no-deprecated',
       'no-debug',
-      'no-hardcoded-color',
+      'prefer-token',
       'no-important',
       'no-margin-properties',
       'no-physical-properties',
-      'prefer-token',
       'prefer-text-style',
     ])
   })

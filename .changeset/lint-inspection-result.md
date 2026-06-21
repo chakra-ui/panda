@@ -11,3 +11,7 @@ component entries, and style entries with safe local key/value spans.
 name → deprecation (`true`, or the author's `deprecated: 'use X instead'` message), recipe definitions carry a
 `deprecated` flag, and recipes/slotRecipes are exposed as top-level `spec.recipes` / `spec.slotRecipes` (previously
 nested under `spec.recipes.recipes`).
+
+Add `compiler.suggestToken(prop, value)` — given a hardcoded value, returns the token to use (semantic tokens preferred
+over the primitives they reference, with hex and px/rem normalization), or `null`. Token references in inspection
+results also carry `isVar` (whether the call was `token.var(...)`).

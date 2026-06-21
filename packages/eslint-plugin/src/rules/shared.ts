@@ -1,12 +1,22 @@
 import type { FileInspectionResult, SourceRange } from '@pandacss/compiler'
 import type { LintRuleContextLike } from '../core'
 
+export interface RuleFixer {
+  replaceTextRange(range: [number, number], text: string): unknown
+}
+
+export interface SuggestionDescriptor {
+  desc: string
+  fix: (fixer: RuleFixer) => unknown
+}
+
 export interface ReportDescriptor {
   message: string
   loc?: {
     start: { line: number; column: number }
     end: { line: number; column: number }
   }
+  suggest?: SuggestionDescriptor[]
 }
 
 export interface RuleContextWithReport extends LintRuleContextLike {
@@ -22,6 +32,7 @@ export interface RuleModuleLike {
     }
     schema: unknown[]
     messages: Record<string, string>
+    hasSuggestions?: boolean
   }
   create: (context: RuleContextWithReport) => Record<string, () => void>
 }

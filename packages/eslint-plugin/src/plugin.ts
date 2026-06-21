@@ -6,7 +6,6 @@ import {
   createFileNotIncludedRule,
   createNoDebugRule,
   createNoDeprecatedRule,
-  createNoHardcodedColorRule,
   createNoImportantRule,
   createNoInvalidTokenPathsRule,
   createNoMarginPropertiesRule,
@@ -17,7 +16,6 @@ import {
   fileNotIncludedRuleName,
   noDebugRuleName,
   noDeprecatedRuleName,
-  noHardcodedColorRuleName,
   noImportantRuleName,
   noInvalidTokenPathsRuleName,
   noMarginPropertiesRuleName,
@@ -128,6 +126,7 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
   const categoryByProperty = tokenCategoryByProperty(spec)
   const categoryOf = (prop: string) => categoryByProperty.get(prop)
   const isHardcodedValue = hardcodedValueClassifier(project.compiler)
+  const suggest = (prop: string, value: string) => project.compiler.suggestTokens(prop, value)
   const inspect = (context: LintRuleContextLike) =>
     linter.inspectProject(project, getContextFilename(context), getContextSource(context))
 
@@ -146,12 +145,12 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
       patterns: patternDeprecations(spec),
     }),
     [noDebugRuleName]: createNoDebugRule({ inspect }),
-    [noHardcodedColorRuleName]: createNoHardcodedColorRule({ inspect, categoryOf, isHardcodedValue }),
+    // `recommended` scopes prefer-token to colors (the old `no-hardcoded-color`).
+    [preferTokenRuleName]: createPreferTokenRule({ inspect, categoryOf, isHardcodedValue, suggest }),
     // Opt-in style/enforcement rules (not in `recommended`).
     [noImportantRuleName]: createNoImportantRule({ inspect }),
     [noMarginPropertiesRuleName]: createNoMarginPropertiesRule({ inspect }),
     [noPhysicalPropertiesRuleName]: createNoPhysicalPropertiesRule({ inspect }),
-    [preferTokenRuleName]: createPreferTokenRule({ inspect, categoryOf, isHardcodedValue }),
     [preferTextStyleRuleName]: createPreferTextStyleRule({ inspect }),
   }
 }

@@ -300,6 +300,96 @@ describe('compiler.writeArtifacts()', () => {
   })
 })
 
+describe('compiler.suggestTokens()', () => {
+  it('lists the semantic token first, then the primitive', () => {
+    const compiler = createProject({
+      theme: {
+        tokens: { colors: { red: { 500: { value: '#f00' } } } },
+        semanticTokens: { colors: { fg: { error: { value: '{colors.red.500}' } } } },
+      },
+      utilities: { color: { className: 'c', values: 'colors' } },
+    })
+    expect(compiler.suggestTokens('color', '#f00')).toMatchInlineSnapshot(`
+      [
+        {
+          "token": "fg.error",
+          "semantic": true,
+          "conditional": false,
+        },
+        {
+          "token": "red.500",
+          "semantic": false,
+          "conditional": false,
+        },
+      ]
+    `)
+  })
+
+  it('normalizes hex and px/rem forms before matching', () => {
+    const compiler = createProject({
+      theme: { tokens: { colors: { red: { 500: { value: '#f00' } } }, spacing: { 4: { value: '1rem' } } } },
+      utilities: { color: { className: 'c', values: 'colors' }, padding: { className: 'p', values: 'spacing' } },
+    })
+    expect(compiler.suggestTokens('color', '#ff0000').map((s) => s.token)).toEqual(['red.500'])
+    expect(compiler.suggestTokens('padding', '16px').map((s) => s.token)).toEqual(['4'])
+    expect(compiler.suggestTokens('color', '#0f0')).toEqual([])
+  })
+
+  it('includes a semantic token defined only with conditions (_light/_dark, no base)', () => {
+    const compiler = createProject({
+      conditions: { light: '[data-theme=light] &', dark: '[data-theme=dark] &' },
+      theme: {
+        tokens: { colors: { red: { 500: { value: '#f00' } }, blue: { 500: { value: '#00f' } } } },
+        semanticTokens: {
+          colors: { fg: { error: { value: { _light: '{colors.red.500}', _dark: '{colors.blue.500}' } } } },
+        },
+      },
+      utilities: { color: { className: 'c', values: 'colors' } },
+    })
+    // Listed (after the primitive) and flagged conditional, even with no base value.
+    expect(compiler.suggestTokens('color', '#f00')).toMatchInlineSnapshot(`
+      [
+        {
+          "token": "red.500",
+          "semantic": false,
+          "conditional": false,
+        },
+        {
+          "token": "fg.error",
+          "semantic": true,
+          "conditional": true,
+        },
+      ]
+    `)
+  })
+
+  it('ranks the safe primitive ahead of a themed (conditional) token', () => {
+    const compiler = createProject({
+      theme: {
+        tokens: { colors: { red: { 500: { value: '#f00' } }, blue: { 500: { value: '#00f' } } } },
+        semanticTokens: {
+          colors: { fg: { error: { value: { base: '{colors.red.500}', _dark: '{colors.blue.500}' } } } },
+        },
+      },
+      utilities: { color: { className: 'c', values: 'colors' } },
+    })
+    expect(compiler.suggestTokens('color', '#f00')).toMatchInlineSnapshot(`
+      [
+        {
+          "token": "red.500",
+          "semantic": false,
+          "conditional": false,
+        },
+        {
+          "token": "fg.error",
+          "semantic": true,
+          "conditional": true,
+        },
+      ]
+    `)
+  })
+})
+
 describe('compiler.writeArtifacts() with provided artifacts', () => {
   it('writes provided artifacts through the platform fs and skips unchanged rewrites', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-write-'))

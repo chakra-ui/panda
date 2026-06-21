@@ -398,7 +398,7 @@ The plugin entry should be an async factory, e.g. `createPandaPlugin({ cwd, conf
 `linter.inspectProject(project, path, source)` synchronously inside `Program()` without spawning async work per file.
 
 The first shipped rules are `extraction-diagnostics`, `file-not-included`, `no-invalid-token-paths`,
-`no-deprecated-tokens`, `no-debug`, and `no-hardcoded-color`. See the [Rule Set](#rule-set) for the full catalog.
+`no-deprecated-tokens`, `no-debug`, and `prefer-token` (colors). See the [Rule Set](#rule-set) for the full catalog.
 
 ```ts
 interface PandaLintContext {
@@ -625,9 +625,12 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
   `marginLeft` → `marginInlineStart`, `textAlign: 'left'` → `'start'`, …) via a curated physical→logical map.
 - `prefer-text-style` ✅ (O) — flag a style object that sets ≥2 typography properties (fontSize/fontWeight/lineHeight/…)
   that should be a single `textStyle` token; grouped per object via `calls`/`jsx` data.
-- `prefer-token` ✅ (O) — raw value where a token category exists (colors, spacing, fontSizes, radii, …), backed by
-  `resolveUtilityValue` (resolved `cssValue` isn't a `var(...)`). Options: `categories` (default all) and `allow`.
-  `no-hardcoded-color` ✅ is `prefer-token` fixed to the `colors` category, sharing the engine.
+- `prefer-token` ✅ — raw value where a token category exists (colors, spacing, fontSizes, radii, …), backed by
+  `resolveUtilityValue` (resolved `cssValue` isn't a `var(...)`). Options: `categories` (default all) and `allow`. The
+  message names the token to use, via `compiler.suggestToken` — semantic tokens preferred over the primitives they
+  reference, with value normalization (`#FFF`==`#ffffff`, `16px`==`1rem`). **In `recommended` it's scoped to
+  `categories: ['colors']`** — this replaces the standalone `no-hardcoded-color` (folded; see migration in the README).
+  The single configurable rule is the orthogonal API; v1's `no-hardcoded-color` name is dropped.
 - `restrict-styles` 🟢 (O) — general configurable restriction: glob property pattern → `{ limit, reason }`, where `limit`
   bans the property (`null`) or whitelists allowed values. For custom team policies beyond the named rules above.
 - `no-restricted-tokens` 🟢 (O) — deny specific tokens / palettes (legacy palette during a migration, internal-only
@@ -655,7 +658,7 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 
 Port status of the v1 rules (recommended ones default-on, the rest opt-in):
 
-- Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color`,
+- Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color` (→ `prefer-token` colors preset),
   `no-invalid-token-paths`, `no-important`, `no-margin-properties`, `no-physical-properties`.
 - High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`), `no-invalid-nesting`
   🟢, `no-dynamic-styling` 🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡

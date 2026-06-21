@@ -3,8 +3,8 @@ import {
   fileNotIncludedRuleName,
   noDebugRuleName,
   noDeprecatedRuleName,
-  noHardcodedColorRuleName,
   noInvalidTokenPathsRuleName,
+  preferTokenRuleName,
 } from './rules'
 import type { RuleModuleLike } from './rules/shared'
 import { type PandaPluginOptions, bindRules, loadPandaProject } from './plugin'
@@ -13,19 +13,22 @@ import { type PandaPluginOptions, bindRules, loadPandaProject } from './plugin'
 export const PLUGIN_NAMESPACE = '@pandacss'
 
 type RuleSeverity = 'off' | 'warn' | 'error'
+type RuleEntry = RuleSeverity | [RuleSeverity, Record<string, unknown>]
 
-const RECOMMENDED_RULES: Record<string, RuleSeverity> = {
+const RECOMMENDED_RULES: Record<string, RuleEntry> = {
   [extractionDiagnosticsRuleName]: 'warn',
   [fileNotIncludedRuleName]: 'error',
   [noInvalidTokenPathsRuleName]: 'error',
   [noDeprecatedRuleName]: 'warn',
   [noDebugRuleName]: 'warn',
-  [noHardcodedColorRuleName]: 'warn',
+  // Default to flagging hardcoded colors only (the old `no-hardcoded-color`);
+  // widen with `categories` to enforce other token categories.
+  [preferTokenRuleName]: ['warn', { categories: ['colors'] }],
 }
 
 export interface PandaFlatConfig {
   plugins: Record<string, { meta: { name: string }; rules: Record<string, RuleModuleLike> }>
-  rules: Record<string, RuleSeverity>
+  rules: Record<string, RuleEntry>
   settings?: { panda: { configPath: string } }
 }
 

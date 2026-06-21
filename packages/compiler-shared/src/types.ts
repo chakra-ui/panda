@@ -75,6 +75,16 @@ export interface ResolvedUtilityValue {
   source: UtilityValueSource
 }
 
+/** A token that carries a given value — a candidate the developer can pick. */
+export interface TokenSuggestion {
+  /** Category-relative path (`red.500`, `fg.error`). */
+  token: string
+  /** `true` when the token is from the semantic layer. */
+  semantic: boolean
+  /** `true` when the token has condition variants (themes) — not a static equal. */
+  conditional: boolean
+}
+
 /** `recipe` is the serialized shape of `pandacss_recipes::Recipe`/`SlotRecipe`. */
 export interface RecipeEntry {
   file: string
@@ -865,6 +875,8 @@ export interface Compiler {
   inspectFileSource(path: string, source: string): FileInspectionResult
   /** Resolve selector and CSS metadata for one utility prop/value pair. */
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
+  /** Tokens that carry a hardcoded value, ranked (safe equivalents first). */
+  suggestTokens(prop: string, value: string): TokenSuggestion[]
 
   // Project state views
   /** Deduplicated atoms across all currently parsed files. */

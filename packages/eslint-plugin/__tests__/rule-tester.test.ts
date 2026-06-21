@@ -104,18 +104,4 @@ ruleTester.run('no-debug', asRule(plugin.rules['no-debug']), {
   ],
 })
 
-ruleTester.run('no-hardcoded-color', asRule(plugin.rules['no-hardcoded-color']), {
-  valid: [
-    {
-      filename: 'app.tsx',
-      code: ["import { css } from '@panda/css'", "css({ color: 'red.500' })"].join('\n'),
-    },
-  ],
-  invalid: [
-    {
-      filename: 'app.tsx',
-      code: ["import { css } from '@panda/css'", "css({ color: '#fff' })"].join('\n'),
-      errors: [{ message: 'Use a color token instead of the hardcoded value "#fff".' }],
-    },
-  ],
-})
+// Colors are covered by prefer-token (see prefer-token.test.ts).

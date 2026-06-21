@@ -33,11 +33,10 @@ describe('createPandaPlugin', () => {
       'no-invalid-token-paths',
       'no-deprecated',
       'no-debug',
-      'no-hardcoded-color',
+      'prefer-token',
       'no-important',
       'no-margin-properties',
       'no-physical-properties',
-      'prefer-token',
       'prefer-text-style',
     ])
   })

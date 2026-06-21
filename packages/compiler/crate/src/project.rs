@@ -473,6 +473,30 @@ impl Compiler {
         }))
     }
 
+    /// Tokens that carry a hardcoded value, ranked (safe equivalents first).
+    /// Empty when nothing matches. The rule lists these for the developer.
+    #[napi(js_name = suggestTokens)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn suggest_tokens(&self, prop: String, value: String) -> serde_json::Value {
+        let suggestions: Vec<serde_json::Value> = self
+            .inner
+            .suggest_tokens(&prop, &value)
+            .into_iter()
+            .map(|suggestion| {
+                serde_json::json!({
+                    "token": suggestion.token,
+                    "semantic": suggestion.semantic,
+                    "conditional": suggestion.conditional,
+                })
+            })
+            .collect();
+        serde_json::Value::Array(suggestions)
+    }
+
     /// Source globs + their static base dirs (for the host watcher).
     #[napi]
     #[must_use]

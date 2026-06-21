@@ -107,6 +107,9 @@ class FallbackCompiler implements Compiler {
   resolveUtilityValue() {
     return null
   }
+  suggestTokens() {
+    return []
+  }
   writeArtifacts(_options: { outdir: string }) {
     return []
   }

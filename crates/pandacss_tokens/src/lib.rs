@@ -367,8 +367,25 @@ pub struct TokenDictionary {
     conditions_order: Vec<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     deprecated_paths_cache: Vec<Arc<str>>,
+    /// `category → normalized final literal → ranked tokens carrying that value`.
+    /// Powers value→token suggestions (the rule lists them; the developer picks).
+    #[cfg_attr(feature = "serde", serde(skip))]
+    suggestion_index: FxHashMap<TokenCategory, FxHashMap<String, Vec<TokenSuggestion>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     color_palettes: ColorPaletteView,
+}
+
+/// A token that carries a given value — a candidate the developer can pick.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
+pub struct TokenSuggestion {
+    /// Category-relative path (`red.500`, `fg.error`).
+    pub token: String,
+    /// `true` when the token references another token (the semantic layer).
+    pub semantic: bool,
+    /// `true` when the token has condition variants (themes) — not a static equal.
+    pub conditional: bool,
 }
 
 #[cfg(feature = "serde")]
@@ -664,6 +681,18 @@ impl TokenDictionary {
             .map(|&i| category_value(&self.tokens[i]))
     }
 
+    /// Tokens that carry a hardcoded `value` in `category`, ranked (safe
+    /// equivalents first). Empty when nothing matches.
+    #[must_use]
+    pub fn suggest_tokens(&self, category: &TokenCategory, value: &str) -> Vec<TokenSuggestion> {
+        let key = normalize_value(category, value);
+        self.suggestion_index
+            .get(category)
+            .and_then(|bucket| bucket.get(&key))
+            .cloned()
+            .unwrap_or_default()
+    }
+
     #[must_use]
     pub fn is_deprecated(&self, path: &str) -> bool {
         self.token(path).is_some_and(|t| t.deprecated)
@@ -933,6 +962,8 @@ impl TokenDictionaryBuilder {
             }
         }
 
+        let suggestion_index = build_suggestion_index(&self.tokens, &by_path, &by_path_condition);
+
         TokenDictionary {
             tokens: self.tokens,
             by_path,
@@ -944,9 +975,124 @@ impl TokenDictionaryBuilder {
             by_path_condition,
             conditions_order,
             deprecated_paths_cache,
+            suggestion_index,
             color_palettes,
         }
     }
+}
+
+/// Build `category → normalized final literal → ranked tokens carrying that
+/// value`. Both primitives and semantic tokens (resolved through their `{...}`
+/// reference) are listed; the rule shows them and the developer chooses.
+fn build_suggestion_index(
+    tokens: &[Token],
+    by_path: &FxHashMap<Arc<str>, usize>,
+    by_path_condition: &FxHashMap<Arc<str>, FxHashMap<Arc<str>, usize>>,
+) -> FxHashMap<TokenCategory, FxHashMap<String, Vec<TokenSuggestion>>> {
+    let mut index: FxHashMap<TokenCategory, FxHashMap<String, Vec<TokenSuggestion>>> =
+        FxHashMap::default();
+
+    let mut base_indexes: Vec<usize> = by_path.values().copied().collect();
+    base_indexes.sort_unstable();
+    base_indexes.dedup();
+
+    for i in base_indexes {
+        let token = &tokens[i];
+        let Some(rel) = token
+            .path
+            .strip_prefix(token.category.as_str())
+            .and_then(|rest| rest.strip_prefix('.'))
+        else {
+            continue;
+        };
+        let literal = resolve_final_literal(tokens, by_path, i, 0);
+        // A `var(...)` or empty literal can't match an author's raw value.
+        if literal.is_empty() || literal.starts_with("var(") {
+            continue;
+        }
+        let key = normalize_value(&token.category, &literal);
+        if key.is_empty() {
+            continue;
+        }
+        index
+            .entry(token.category.clone())
+            .or_default()
+            .entry(key)
+            .or_default()
+            .push(TokenSuggestion {
+                token: rel.to_owned(),
+                semantic: parse_token_ref(token.original_value.as_deref()).is_some(),
+                conditional: by_path_condition.contains_key(&token.path),
+            });
+    }
+
+    // Rank each bucket: safe equivalents (unconditional) first, then semantic,
+    // then shorter/lexical path. The lint rule decides how many to show.
+    for buckets in index.values_mut() {
+        for candidates in buckets.values_mut() {
+            candidates.sort_by(|a, b| {
+                a.conditional
+                    .cmp(&b.conditional)
+                    .then(b.semantic.cmp(&a.semantic))
+                    .then(a.token.len().cmp(&b.token.len()))
+                    .then_with(|| a.token.cmp(&b.token))
+            });
+        }
+    }
+
+    index
+}
+
+/// A pure `{token.path}` reference (semantic/alias value), else `None`.
+fn parse_token_ref(original_value: Option<&str>) -> Option<&str> {
+    let value = original_value?.trim();
+    value
+        .strip_prefix('{')
+        .and_then(|rest| rest.strip_suffix('}'))
+        .filter(|inner| !inner.is_empty() && !inner.contains('{'))
+}
+
+/// Follow `{...}` references to the underlying primitive literal.
+fn resolve_final_literal(
+    tokens: &[Token],
+    by_path: &FxHashMap<Arc<str>, usize>,
+    index: usize,
+    depth: u8,
+) -> String {
+    let token = &tokens[index];
+    if depth < 8
+        && let Some(ref_path) = parse_token_ref(token.original_value.as_deref())
+        && let Some(&ref_index) = by_path.get(ref_path)
+    {
+        return resolve_final_literal(tokens, by_path, ref_index, depth + 1);
+    }
+    token.value.to_string()
+}
+
+/// Canonicalize a value for matching: colors via hex normalization, dimensions
+/// via `to_rem` (`16px` ↔ `1rem`); everything else trimmed.
+fn normalize_value(category: &TokenCategory, value: &str) -> String {
+    if matches!(category, TokenCategory::Colors) {
+        return normalize_color(value);
+    }
+    pandacss_shared::to_rem(value.trim()).trim().to_string()
+}
+
+fn normalize_color(value: &str) -> String {
+    let lower = value.trim().to_ascii_lowercase();
+    if let Some(hex) = lower.strip_prefix('#')
+        && (hex.len() == 3 || hex.len() == 4)
+        && hex.bytes().all(|b| b.is_ascii_hexdigit())
+    {
+        let mut out = String::with_capacity(1 + hex.len() * 2);
+        out.push('#');
+        for ch in hex.chars() {
+            out.push(ch);
+            out.push(ch);
+        }
+        return out;
+    }
+    lower
 }
 
 fn category_value(token: &Token) -> &str {

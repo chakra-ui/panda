@@ -30,21 +30,20 @@ That's it. The rules now run against your project's tokens, recipes, and utiliti
 
 ## Rules
 
-Six rules are on in `recommended`:
+These rules are on in `recommended`:
 
 - `no-invalid-token-paths` (error) — a token reference that doesn't exist, e.g. `token('colors.ghost')`.
 - `file-not-included` (error) — a file uses Panda but sits outside your config `include`, so its styles never get
   generated.
 - `no-deprecated` (warn) — use of a deprecated token, utility, recipe, or pattern. If you set
   `deprecated: 'use X instead'` in config, that message shows up in the lint error.
-- `no-hardcoded-color` (warn) — a raw color (`#fff`, `rgb(...)`, `red`) on a color property where a token belongs.
+- `prefer-token` (warn) — a raw value where a token exists, with the token to use. In `recommended` it's scoped to
+  colors (the old `no-hardcoded-color`); widen it with `categories` (see below).
 - `no-debug` (warn) — a leftover `debug: true`.
 - `extraction-diagnostics` (warn) — parse or extraction problems Panda hit in the file.
 
 The rest are off by default. Turn them on per project:
 
-- `prefer-token` — a raw value on any token-backed property where a token exists (the general form of
-  `no-hardcoded-color`; covers spacing, fontSizes, radii, …).
 - `no-important` — `!important` in styles.
 - `no-margin-properties` — margin props; nudges you toward `gap` and layout patterns.
 - `no-physical-properties` — physical props that have logical equivalents (`left` → `insetInlineStart`).
@@ -78,7 +77,28 @@ permit):
 { rules: { '@pandacss/prefer-token': ['warn', { categories: ['colors', 'spacing'], allow: ['transparent'] }] } }
 ```
 
-`no-hardcoded-color` is `prefer-token` fixed to the `colors` category.
+It lists the tokens that carry the value and offers each as an editor quick-fix, so you pick — semantic and primitive
+both shown (semantic first), themed tokens marked `(themed)`. It matches equivalent forms (`#FFF` == `#ffffff`, `16px`
+== `1rem`):
+
+```
+Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.
+  💡 Use the token "fg.error"
+  💡 Use the token "red.500"
+```
+
+Quick-fixes apply to flat literals (`color: '#f00'`); values nested in conditions or arrays get the message without a
+fix for now.
+
+### Migrating from `no-hardcoded-color`
+
+`no-hardcoded-color` is now `prefer-token` scoped to colors. Replace it with:
+
+```js
+{ rules: { '@pandacss/prefer-token': ['warn', { categories: ['colors'] }] } }
+```
+
+`recommended` already does this, so if you use `configs.recommended` there's nothing to change.
 
 ## Settings
 
