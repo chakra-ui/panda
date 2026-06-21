@@ -26,6 +26,8 @@ describe('configs.recommended', () => {
 
     expect(Object.keys(config.plugins)).toEqual(['@pandacss'])
     expect(config.plugins['@pandacss'].meta.name).toBe('@pandacss/eslint-plugin')
+    expect(typeof config.plugins['@pandacss'].meta.version).toBe('string')
+    expect(config.files).toEqual(['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'])
     expect(config.rules).toEqual({
       '@pandacss/extraction-diagnostics': 'warn',
       '@pandacss/file-not-included': 'error',
@@ -59,5 +61,10 @@ describe('configs.recommended', () => {
   test('omits settings when no configPath is given', async () => {
     const config = await recommended({ cwd: dir })
     expect(config.settings).toBeUndefined()
+  })
+
+  test('honours a custom `files` override', async () => {
+    const config = await recommended({ cwd: dir, files: ['src/**/*.tsx'] })
+    expect(config.files).toEqual(['src/**/*.tsx'])
   })
 })

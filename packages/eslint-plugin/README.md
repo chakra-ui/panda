@@ -5,7 +5,7 @@ they catch a typo'd token, a deprecated recipe, or a hardcoded color that should
 
 There's no JSON to generate first. The plugin loads your `panda.config.ts` once and lints against it.
 
-> Beta. ESLint v9 flat config only. Rules are report-only for now — no autofixers yet.
+> Beta. ESLint v9 flat config only. Most rules are report-only; a few add fixes/suggestions (noted below).
 
 ## Install
 
@@ -27,6 +27,43 @@ export default [await panda.configs.recommended({ configPath: './panda.config.ts
 ```
 
 That's it. The rules now run against your project's tokens, recipes, and utilities.
+
+The recommended config scopes itself to JS/TS/JSX files and **does not set a parser** — use your project's existing
+parser. Most TS setups already have one via [`typescript-eslint`](https://typescript-eslint.io/), and framework
+projects via their ESLint preset (`eslint-plugin-vue`, `astro-eslint-parser`, etc.). Panda's rules read source text
+directly, so any parser that produces a `Program` works.
+
+To lint framework files (`.vue`, `.svelte`, `.astro`), opt them in via `files` once their parser is configured:
+
+```js
+await panda.configs.recommended({ configPath: './panda.config.ts', files: ['**/*.{ts,tsx,vue}'] })
+```
+
+### Enabling opt-in rules / changing severities
+
+`recommended` binds every rule under the `@pandacss` plugin, so add opt-in rules (or tweak severities) in your own
+`rules` block after it:
+
+```js
+export default [
+  await panda.configs.recommended({ configPath: './panda.config.ts' }),
+  { rules: { '@pandacss/consistent-property-style': ['error', { style: 'shorthand' }] } },
+]
+```
+
+### Monorepos
+
+Call `recommended` once per Panda config and scope each to its package via `files`:
+
+```js
+export default [
+  { ...(await panda.configs.recommended({ configPath: './packages/web/panda.config.ts' })), files: ['packages/web/**'] },
+  { ...(await panda.configs.recommended({ configPath: './packages/app/panda.config.ts' })), files: ['packages/app/**'] },
+]
+```
+
+> The Panda config is loaded once and cached; a long-running editor session won't pick up `panda.config` edits until
+> ESLint restarts.
 
 ## Rules
 

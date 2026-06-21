@@ -1,6 +1,7 @@
 import { Linter, getContextFilename, getContextSource, type LintRuleContextLike } from './core'
 import type { ProjectContext } from './core/project-cache'
 import type { Deprecation } from '@pandacss/compiler'
+import pkg from '../package.json'
 import {
   createExtractionDiagnosticsRule,
   createFileNotIncludedRule,
@@ -28,6 +29,9 @@ import {
   preferTokenRuleName,
 } from './rules'
 import type { RuleModuleLike } from './rules/shared'
+
+/** Flat-config plugin meta, shared by every entry point. */
+export const pluginMeta = { name: '@pandacss/eslint-plugin', version: pkg.version }
 
 export interface PandaPluginOptions {
   cwd?: string
