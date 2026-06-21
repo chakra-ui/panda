@@ -47,6 +47,10 @@ The rest are off by default. Turn them on per project:
 - `no-important` — `!important` in styles.
 - `no-margin-properties` — margin props; nudges you toward `gap` and layout patterns.
 - `no-physical-properties` — physical props that have logical equivalents (`left` → `insetInlineStart`).
+- `no-shorthand-longhand-mix` — a shorthand and one of its longhands in the same block (`margin` + `marginLeft`); the
+  longhand wins regardless of source order. Takes `ignore` (groups to allow).
+- `consistent-property-style` — enforce one property style: Panda shorthand aliases (`ml`) or longhand canonical names
+  (`marginLeft`). Autofixable. Takes `style: 'shorthand' | 'longhand'` (default `longhand`) and `ignore`.
 - `prefer-text-style` — a style object setting two or more typography properties that should be one `textStyle` token.
 
 Enable an opt-in rule like any other:

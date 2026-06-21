@@ -454,6 +454,8 @@ export type StyleEntryFixability = 'report-only' | 'safe'
 export interface StyleEntryRef {
   kind: StyleEntryKind
   syntax: StyleEntrySyntax
+  /** Enclosing `css()`/recipe call or JSX element; `(owner, parent path)` is one style block. */
+  owner: { kind: 'call' | 'jsx'; index: number }
   origin: StyleEntryOrigin
   span: Span
   range: SourceRange

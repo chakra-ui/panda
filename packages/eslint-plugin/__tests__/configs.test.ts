@@ -50,6 +50,8 @@ describe('configs.recommended', () => {
       'no-important',
       'no-margin-properties',
       'no-physical-properties',
+      'no-shorthand-longhand-mix',
+      'consistent-property-style',
       'prefer-text-style',
     ])
   })

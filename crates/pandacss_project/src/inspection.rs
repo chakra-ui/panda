@@ -1,5 +1,6 @@
 //! Serializable source-inspection data used by editor and lint tooling.
 
+use pandacss_extractor::StyleSourceOwnerKind;
 use pandacss_extractor::StyleSourceRef;
 use pandacss_extractor::{
     ExtractedCall, ExtractedJsx, JsxKind, LineIndex, Literal, MatchCategory, TokenRef,
@@ -123,6 +124,7 @@ pub struct StyleEntryRef {
     pub kind: StyleEntryKind,
     pub syntax: StyleEntrySyntax,
     pub origin: StyleEntryOrigin,
+    pub owner: StyleEntryOwner,
     pub span: Span,
     pub range: SourceRange,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -148,6 +150,15 @@ pub struct StyleEntryRef {
 pub struct ValueSpanRef {
     pub value: String,
     pub span: Span,
+}
+
+/// Enclosing style owner (call or JSX element). `(owner, parent path)` groups
+/// sibling entries from one style block; `span`/`range` are per-property.
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StyleEntryOwner {
+    pub kind: StyleSourceOwnerKind,
+    pub index: u32,
 }
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -280,6 +291,7 @@ pub(crate) fn component_entry(
 pub(crate) struct StyleEntryInput<'a> {
     pub(crate) kind: StyleEntryKind,
     pub(crate) syntax: StyleEntrySyntax,
+    pub(crate) owner: StyleEntryOwner,
     pub(crate) name: &'a str,
     pub(crate) canonical: Option<&'a str>,
     pub(crate) value: &'a Literal,
@@ -296,6 +308,7 @@ pub(crate) fn style_entry(input: &StyleEntryInput<'_>) -> StyleEntryRef {
     StyleEntryRef {
         kind: input.kind,
         syntax: input.syntax,
+        owner: input.owner,
         origin: source_ref.map_or(StyleEntryOrigin::Generated, |_| StyleEntryOrigin::Local),
         span: source_ref.map_or(input.span, |source_ref| source_ref.span),
         range: input.source_range.unwrap_or(*input.range),

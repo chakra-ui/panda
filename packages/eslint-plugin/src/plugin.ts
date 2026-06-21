@@ -9,9 +9,12 @@ import {
   createNoImportantRule,
   createNoInvalidTokenPathsRule,
   createNoMarginPropertiesRule,
+  createConsistentPropertyStyleRule,
   createNoPhysicalPropertiesRule,
+  createNoShorthandLonghandMixRule,
   createPreferTextStyleRule,
   createPreferTokenRule,
+  consistentPropertyStyleRuleName,
   extractionDiagnosticsRuleName,
   fileNotIncludedRuleName,
   noDebugRuleName,
@@ -20,6 +23,7 @@ import {
   noInvalidTokenPathsRuleName,
   noMarginPropertiesRuleName,
   noPhysicalPropertiesRuleName,
+  noShorthandLonghandMixRuleName,
   preferTextStyleRuleName,
   preferTokenRuleName,
 } from './rules'
@@ -151,6 +155,11 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
     [noImportantRuleName]: createNoImportantRule({ inspect }),
     [noMarginPropertiesRuleName]: createNoMarginPropertiesRule({ inspect }),
     [noPhysicalPropertiesRuleName]: createNoPhysicalPropertiesRule({ inspect }),
+    [noShorthandLonghandMixRuleName]: createNoShorthandLonghandMixRule({ inspect }),
+    [consistentPropertyStyleRuleName]: createConsistentPropertyStyleRule({
+      inspect,
+      shorthands: spec.utilities.shorthands,
+    }),
     [preferTextStyleRuleName]: createPreferTextStyleRule({ inspect }),
   }
 }

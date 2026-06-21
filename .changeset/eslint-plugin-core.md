@@ -8,6 +8,10 @@ rules (`extraction-diagnostics`, `file-not-included`, `no-invalid-token-paths`, 
 a `kinds` option, and `prefer-token`, which flags raw values where a token exists and tells you the token to use
 (semantic tokens preferred, value forms normalized) across every style-writing form — `css()`, style props, responsive
 arrays, per-prop conditions, and `cva`/`sva`/`styled` recipe styles — with a per-leaf quick-fix; `recommended` scopes it
-to colors, replacing v1's `no-hardcoded-color`), and a `configs.recommended({ configPath })` flat-config entry with
+to colors, replacing v1's `no-hardcoded-color`; plus `no-shorthand-longhand-mix`, which flags a shorthand mixed with one
+of its own longhands in the same block (`margin` + `marginLeft`) since the longhand wins regardless of source order;
+and `consistent-property-style`, an autofixable rule enforcing either Panda shorthand aliases (`ml`) or longhand
+canonical names (`marginLeft`) via `style: 'shorthand' | 'longhand'`), and a `configs.recommended({ configPath })`
+flat-config entry with
 `@pandacss/*` rule ids. Config
 and compiler loading is preloaded once per project so rule visitors stay synchronous.

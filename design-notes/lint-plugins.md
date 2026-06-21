@@ -650,8 +650,13 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 
 ### Style / ergonomics (opt-in, fixable)
 
-- `prefer-longhand-properties` 🟢 · `prefer-shorthand-properties` 🟢 · `prefer-atomic-properties` 🟢
-  · `prefer-composite-properties` 🟢 · `prefer-unified-property-style` 🟢
+- `no-shorthand-longhand-mix` ✅ — shorthand + one of its own longhands in the same block (`margin` + `marginLeft`); the
+  longhand wins regardless of source order due to cascade sorting (`sort.rs` `property_priority`). Groups siblings by
+  `styleEntries[].owner` + parent path. Opt-in, `ignore` option. (v1's `prefer-unified-property-style`.)
+- `consistent-property-style` ✅ — one configurable, autofixable rule for shorthand-alias vs longhand-canonical naming
+  (`ml` ↔ `marginLeft`), via `spec.utilities.shorthands`. Replaces v1's `prefer-shorthand-properties` +
+  `prefer-longhand-properties` (folded into `style: 'shorthand' | 'longhand'`).
+- `prefer-atomic-properties` 🟢 · `prefer-composite-properties` 🟢
 - `props-order` 🟡 — canonical `spec.propertyOrder`; needs span-accurate `styleEntries` (see Property Ordering).
 - `require-recipe-type-annotation` 🟡 — see its section; needs real `styleEntries` provenance.
 - `prefer-pattern-component` 🟡 — nudge raw layout styles toward pattern components.
@@ -661,13 +666,16 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 Port status of the v1 rules (recommended ones default-on, the rest opt-in):
 
 - Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color` (→ `prefer-token` colors preset),
-  `no-invalid-token-paths`, `no-important`, `no-margin-properties`, `no-physical-properties`.
+  `no-invalid-token-paths`, `no-important`, `no-margin-properties`, `no-physical-properties`,
+  `prefer-unified-property-style` (→ `no-shorthand-longhand-mix`),
+  `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`).
 - High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`), `no-invalid-nesting`
   🟢, `no-dynamic-styling` 🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡
   (needs `imports` on the inspection result).
 - Consolidated / renamed: `no-escape-hatch` → `no-arbitrary-values`; ad-hoc restrictions → `restrict-styles`.
-- Stylistic (Tier 3, fixable): `prefer-longhand-properties`, `prefer-shorthand-properties`, `prefer-atomic-properties`,
-  `prefer-composite-properties`, `prefer-unified-property-style`.
+- Stylistic (Tier 3, fixable): `prefer-atomic-properties`, `prefer-composite-properties`.
+  `prefer-unified-property-style` shipped as `no-shorthand-longhand-mix`; `prefer-{shorthand,longhand}-properties`
+  shipped as `consistent-property-style`.
 - v2-only additions: `extraction-diagnostics`, `prefer-text-style`.
 
 ## Implementation Guidance

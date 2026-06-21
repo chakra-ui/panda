@@ -13,9 +13,9 @@ use pandacss_utility::Utility;
 use rustc_hash::FxHashMap;
 
 use crate::inspection::{
-    FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryRef, StyleEntrySyntax,
-    UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view, style_entry,
-    token_ref_site,
+    FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryOwner, StyleEntryRef,
+    StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
+    style_entry, token_ref_site,
 };
 use crate::{Project, ProjectConditionMatcher, SourceRange, Span};
 
@@ -395,6 +395,13 @@ struct StyleEntryCollector<'a, 'source> {
 }
 
 impl StyleEntryCollector<'_, '_> {
+    fn owner(&self) -> StyleEntryOwner {
+        StyleEntryOwner {
+            kind: self.owner_kind,
+            index: self.owner_index,
+        }
+    }
+
     fn collect(
         &self,
         entries: &[(String, Literal)],
@@ -427,6 +434,7 @@ impl StyleEntryCollector<'_, '_> {
                 out.push(style_entry(&StyleEntryInput {
                     kind,
                     syntax,
+                    owner: self.owner(),
                     name: key,
                     canonical: None,
                     value,
@@ -459,6 +467,7 @@ impl StyleEntryCollector<'_, '_> {
                 out.push(style_entry(&StyleEntryInput {
                     kind,
                     syntax,
+                    owner: self.owner(),
                     name: key,
                     canonical,
                     value,
