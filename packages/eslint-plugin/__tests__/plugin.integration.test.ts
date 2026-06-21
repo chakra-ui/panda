@@ -60,7 +60,8 @@ describe('createPandaPlugin integration', () => {
 
       expect(report).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Unexpected token'),
+          messageId: 'diagnostic',
+          data: expect.objectContaining({ message: expect.stringContaining('Unexpected token') }),
         }),
       )
     } finally {
@@ -91,7 +92,8 @@ describe('createPandaPlugin integration', () => {
         .Program()
 
       expect(report).toHaveBeenCalledWith({
-        message: 'Panda token "colors.ghost" was not found.',
+        messageId: 'token',
+        data: { token: 'colors.ghost' },
         loc: {
           start: { line: 3, column: 13 },
           end: { line: 3, column: 34 },
@@ -125,7 +127,8 @@ describe('createPandaPlugin integration', () => {
         .Program()
 
       expect(report).toHaveBeenCalledWith({
-        message: 'Panda token "colors.old" is deprecated.',
+        messageId: 'deprecated',
+        data: { kind: 'token', name: 'colors.old', note: '' },
         loc: {
           start: { line: 3, column: 13 },
           end: { line: 3, column: 32 },

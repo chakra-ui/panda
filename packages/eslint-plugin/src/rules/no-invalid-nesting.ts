@@ -18,7 +18,10 @@ export function createNoInvalidNestingRule(options: { inspect: Inspect }): RuleM
       type: 'problem',
       docs: { description: 'Disallow nested selectors that omit "&", which Panda silently ignores.' },
       schema: [],
-      messages: { nesting: '{{message}}' },
+      messages: {
+        nesting:
+          'Nested selector "{{selector}}" has no "&", so Panda ignores it. Use "{{fixed}}" or a condition like "_hover".',
+      },
       hasSuggestions: true,
     },
     create(context) {
@@ -35,7 +38,8 @@ export function createNoInvalidNestingRule(options: { inspect: Inspect }): RuleM
 
             const fixed = `&${entry.name}`
             const descriptor: Parameters<typeof context.report>[0] = {
-              message: `Nested selector "${entry.name}" has no "&", so Panda ignores it. Use "${fixed}" or a condition like "_hover".`,
+              messageId: 'nesting',
+              data: { selector: entry.name, fixed },
               loc: toEslintLoc(entry.range),
             }
 

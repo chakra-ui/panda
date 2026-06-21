@@ -36,7 +36,7 @@ export function createNoPhysicalPropertiesRule(options: { inspect: Inspect }): R
       type: 'suggestion',
       docs: { description: 'Disallow physical properties that have logical equivalents.' },
       schema: [],
-      messages: { physical: '{{message}}' },
+      messages: { physical: 'Use the logical property "{{logical}}" instead of the physical "{{physical}}".' },
     },
     create(context) {
       return {
@@ -49,7 +49,8 @@ export function createNoPhysicalPropertiesRule(options: { inspect: Inspect }): R
             const logical = PHYSICAL[prop]
             if (logical === undefined) continue
             context.report({
-              message: `Use the logical property "${logical}" instead of the physical "${prop}".`,
+              messageId: 'physical',
+              data: { logical, physical: prop },
               loc: toEslintLoc(entry.range),
             })
           }

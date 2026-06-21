@@ -34,7 +34,8 @@ export function createExtractionDiagnosticsRule(options: ExtractionDiagnosticsRu
 export function reportDiagnostics(context: RuleContextWithReport, diagnostics: readonly Diagnostic[]): void {
   for (const diagnostic of diagnostics) {
     context.report({
-      message: diagnostic.message,
+      messageId: 'diagnostic',
+      data: { message: diagnostic.message },
       ...(diagnostic.location ? { loc: toEslintLoc(diagnostic.location) } : {}),
     })
   }

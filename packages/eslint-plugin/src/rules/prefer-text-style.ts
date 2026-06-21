@@ -41,7 +41,7 @@ export function createPreferTextStyleRule(options: { inspect: Inspect }): RuleMo
         Program() {
           const inspection = options.inspect(context)
           if (!inspection) return
-          const report = (range: SourceRange) => context.report({ message: MESSAGE, loc: toEslintLoc(range) })
+          const report = (range: SourceRange) => context.report({ messageId: 'textStyle', loc: toEslintLoc(range) })
 
           for (const call of inspection.calls) {
             if (call.data.some((arg) => clustersTextStyle(arg.value))) report(call.range)

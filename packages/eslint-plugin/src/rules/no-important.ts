@@ -31,7 +31,7 @@ export function createNoImportantRule(options: { inspect: Inspect }): RuleModule
             // Condition/selector entries nest leaf props that report on their own.
             if (entry.kind === 'condition' || entry.kind === 'selector') continue
             if (hasImportant(entry.resolvedValue)) {
-              context.report({ message: MESSAGE, loc: toEslintLoc(entry.range) })
+              context.report({ messageId: 'important', loc: toEslintLoc(entry.range) })
             }
           }
         },

@@ -11,7 +11,8 @@ export interface SuggestionDescriptor {
 }
 
 export interface ReportDescriptor {
-  message: string
+  messageId: string
+  data?: Record<string, string>
   loc?: {
     start: { line: number; column: number }
     end: { line: number; column: number }

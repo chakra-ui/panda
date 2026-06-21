@@ -41,7 +41,7 @@ export function createNoDeprecatedRule(options: NoDeprecatedRuleOptions): RuleMo
         },
       ],
       messages: {
-        deprecated: '{{message}}',
+        deprecated: 'Panda {{kind}} "{{name}}" is deprecated.{{note}}',
       },
     },
     create(context) {
@@ -154,7 +154,8 @@ function report(
 ): void {
   const note = typeof deprecation === 'string' ? ` ${deprecation}` : ''
   context.report({
-    message: `Panda ${kind} "${name}" is deprecated.${note}`,
+    messageId: 'deprecated',
+    data: { kind, name, note },
     loc: toEslintLoc(range),
   })
 }

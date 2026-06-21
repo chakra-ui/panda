@@ -40,7 +40,7 @@ export function createFileNotIncludedRule(options: FileNotIncludedRuleOptions): 
           if (!usesPanda) return
 
           context.report({
-            message: MESSAGE,
+            messageId: 'notIncluded',
             loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
           })
         },

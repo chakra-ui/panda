@@ -46,7 +46,6 @@ interface ReportConfig {
   /** Categories to enforce; `undefined` means every token-backed category. */
   categories?: ReadonlySet<string>
   allow: ReadonlySet<string>
-  message: (category: string, value: string, suggestions: TokenSuggestion[]) => string
 }
 
 /** Shared engine: flag utility entries whose value is raw where a token exists. */
@@ -69,10 +68,13 @@ export function reportTokenViolations(
     if (hit === undefined) continue
 
     const suggestions = config.suggest(entry.name, hit).slice(0, MAX_LISTED)
-    const descriptor: Parameters<typeof context.report>[0] = {
-      message: config.message(category, hit, suggestions),
-      loc: toEslintLoc(entry.range),
-    }
+    const descriptor: Parameters<typeof context.report>[0] = suggestions.length
+      ? {
+          messageId: 'listed',
+          data: { category, value: hit, tokens: suggestions.map(label).join(', ') },
+          loc: toEslintLoc(entry.range),
+        }
+      : { messageId: 'generic', data: { category, value: hit }, loc: toEslintLoc(entry.range) }
 
     // Offer quick-fixes when we know the offending leaf's exact span (flat
     // literals and values nested in conditions). Array elements have no span yet.
@@ -104,7 +106,10 @@ export function createPreferTokenRule(options: PreferTokenRuleOptions): RuleModu
           additionalProperties: false,
         },
       ],
-      messages: { token: '{{message}}' },
+      messages: {
+        listed: 'Hardcoded {{category}} value "{{value}}". Matching tokens: {{tokens}}.',
+        generic: 'Use a {{category}} token instead of the hardcoded value "{{value}}".',
+      },
       hasSuggestions: true,
     },
     create(context) {
@@ -122,10 +127,6 @@ export function createPreferTokenRule(options: PreferTokenRuleOptions): RuleModu
             suggest: options.suggest,
             categories,
             allow,
-            message: (category, value, suggestions) =>
-              suggestions.length
-                ? `Hardcoded ${category} value "${value}". Matching tokens: ${suggestions.map(label).join(', ')}.`
-                : `Use a ${category} token instead of the hardcoded value "${value}".`,
           })
         },
       }

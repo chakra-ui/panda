@@ -39,7 +39,10 @@ export function createConsistentPropertyStyleRule(options: ConsistentPropertySty
           additionalProperties: false,
         },
       ],
-      messages: { style: '{{message}}' },
+      messages: {
+        useShorthand: 'Use the shorthand "{{target}}" instead of "{{current}}".',
+        useLonghand: 'Use the longhand "{{target}}" instead of "{{current}}".',
+      },
     },
     create(context) {
       const configured = context.options?.[0] as { style?: 'shorthand' | 'longhand'; ignore?: string[] } | undefined
@@ -68,10 +71,8 @@ export function createConsistentPropertyStyleRule(options: ConsistentPropertySty
             if (target === undefined || target === name) continue
 
             const descriptor: Parameters<typeof context.report>[0] = {
-              message:
-                style === 'shorthand'
-                  ? `Use the shorthand "${target}" instead of "${name}".`
-                  : `Use the longhand "${target}" instead of "${name}".`,
+              messageId: style === 'shorthand' ? 'useShorthand' : 'useLonghand',
+              data: { target, current: name },
               loc: toEslintLoc(entry.range),
             }
 

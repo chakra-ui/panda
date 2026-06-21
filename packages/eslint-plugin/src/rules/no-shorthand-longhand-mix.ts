@@ -135,7 +135,9 @@ export function createNoShorthandLonghandMixRule(options: { inspect: Inspect }):
           additionalProperties: false,
         },
       ],
-      messages: { mix: '{{message}}' },
+      messages: {
+        mix: '"{{shorthand}}" is mixed with {{longhands}}. Panda emits longhands after shorthands, so {{longhands}} will win regardless of source order; use the longhand properties for a predictable result.',
+      },
     },
     create(context) {
       const configured = context.options?.[0] as { ignore?: string[] } | undefined
@@ -167,7 +169,8 @@ export function createNoShorthandLonghandMixRule(options: { inspect: Inspect }):
               if (mixed.length === 0) continue
               const list = mixed.map((piece) => `"${piece}"`).join(', ')
               context.report({
-                message: `"${prop}" is mixed with ${list}. Panda emits longhands after shorthands, so ${list} will win regardless of source order; use the longhand properties for a predictable result.`,
+                messageId: 'mix',
+                data: { shorthand: prop, longhands: list },
                 loc: toEslintLoc(entry.range),
               })
             }

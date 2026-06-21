@@ -15,7 +15,7 @@ export function createNoInvalidTokenPathsRule(options: TokenRuleOptions): RuleMo
     report(inspection, context) {
       for (const tokenRef of inspection.tokenRefs) {
         if (tokenRef.resolved) continue
-        reportToken(context, tokenRef.path, tokenRef.range, 'Panda token "{{token}}" was not found.')
+        reportToken(context, tokenRef.path, tokenRef.range)
       }
     },
   })
@@ -52,9 +52,10 @@ function createTokenRule(config: TokenRuleConfig): RuleModuleLike {
   }
 }
 
-function reportToken(context: RuleContextWithReport, token: string, range: SourceRange, message: string): void {
+function reportToken(context: RuleContextWithReport, token: string, range: SourceRange): void {
   context.report({
-    message: message.replace('{{token}}', token),
+    messageId: 'token',
+    data: { token },
     loc: toEslintLoc(range),
   })
 }

@@ -21,7 +21,7 @@ export function createNoMarginPropertiesRule(options: { inspect: Inspect }): Rul
             if (entry.kind !== 'utility') continue
             const prop = entry.canonicalName ?? entry.name
             if (prop.startsWith('margin')) {
-              context.report({ message: MESSAGE, loc: toEslintLoc(entry.range) })
+              context.report({ messageId: 'margin', loc: toEslintLoc(entry.range) })
             }
           }
         },

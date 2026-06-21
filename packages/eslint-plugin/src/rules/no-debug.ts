@@ -28,7 +28,7 @@ export function createNoDebugRule(options: NoDebugRuleOptions): RuleModuleLike {
 
           for (const entry of inspection.styleEntries) {
             if (entry.name !== 'debug') continue
-            context.report({ message: MESSAGE, loc: toEslintLoc(entry.range) })
+            context.report({ messageId: 'debug', loc: toEslintLoc(entry.range) })
           }
         },
       }
