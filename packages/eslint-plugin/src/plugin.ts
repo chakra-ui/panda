@@ -12,6 +12,7 @@ import {
   createNoMarginPropertiesRule,
   createNoPhysicalPropertiesRule,
   createPreferTextStyleRule,
+  createPreferTokenRule,
   extractionDiagnosticsRuleName,
   fileNotIncludedRuleName,
   noDebugRuleName,
@@ -22,6 +23,7 @@ import {
   noMarginPropertiesRuleName,
   noPhysicalPropertiesRuleName,
   preferTextStyleRuleName,
+  preferTokenRuleName,
 } from './rules'
 import type { RuleModuleLike } from './rules/shared'
 
@@ -50,21 +52,22 @@ export async function loadPandaProject(options: PandaPluginOptions = {}): Promis
   return { linter, project }
 }
 
-/** Properties (and their shorthands) whose values resolve against the `colors` token category. */
-function colorProperties(spec: ReturnType<ProjectContext['compiler']['spec']>): Set<string> {
-  const props = new Set<string>()
+/** Property (and shorthand) → its token category, for every token-backed property. */
+function tokenCategoryByProperty(spec: ReturnType<ProjectContext['compiler']['spec']>): Map<string, string> {
+  const map = new Map<string, string>()
   for (const [name, property] of Object.entries(spec.utilities.properties)) {
-    if (property.tokenCategory === 'colors') props.add(name)
+    if (property.tokenCategory) map.set(name, property.tokenCategory)
   }
   for (const [shorthand, canonical] of Object.entries(spec.utilities.shorthands)) {
-    if (props.has(canonical)) props.add(shorthand)
+    const category = map.get(canonical)
+    if (category) map.set(shorthand, category)
   }
-  return props
+  return map
 }
 
 // CSS-wide keywords (and `currentColor`/`transparent` when not defined as
-// tokens) pass through resolution raw but are not hardcoded colors.
-const COLOR_KEYWORDS = new Set([
+// tokens) pass through resolution raw but aren't hardcoded values.
+const RAW_VALUE_KEYWORDS = new Set([
   'inherit',
   'initial',
   'unset',
@@ -77,11 +80,11 @@ const COLOR_KEYWORDS = new Set([
 ])
 
 /**
- * A color-property value is hardcoded when the compiler resolves it but the
- * resulting CSS value is not a `var(...)` token reference (and not a CSS-wide
- * keyword). Checking for `var(` is token-prefix agnostic.
+ * A value is hardcoded when the compiler resolves it but the resulting CSS value
+ * is not a `var(...)` token reference (and not a CSS-wide keyword). Checking for
+ * `var(` is token-prefix agnostic.
  */
-function hardcodedColorClassifier(compiler: ProjectContext['compiler']): (prop: string, value: string) => boolean {
+function hardcodedValueClassifier(compiler: ProjectContext['compiler']): (prop: string, value: string) => boolean {
   const cache = new Map<string, boolean>()
   return (prop: string, value: string) => {
     const key = `${prop}\0${value}`
@@ -89,7 +92,7 @@ function hardcodedColorClassifier(compiler: ProjectContext['compiler']): (prop: 
     if (cached !== undefined) return cached
 
     let result = false
-    if (!COLOR_KEYWORDS.has(value.trim().toLowerCase())) {
+    if (!RAW_VALUE_KEYWORDS.has(value.trim().toLowerCase())) {
       const resolved = compiler.resolveUtilityValue({ prop, value })
       result = resolved !== null && !String(resolved.cssValue).trimStart().startsWith('var(')
     }
@@ -122,8 +125,9 @@ function patternDeprecations(spec: ReturnType<ProjectContext['compiler']['spec']
 /** Bind every rule to an already-loaded project so rule visitors stay synchronous. */
 export function bindRules(linter: Linter, project: ProjectContext): Record<string, RuleModuleLike> {
   const spec = project.compiler.spec()
-  const colorProps = colorProperties(spec)
-  const isHardcodedColor = hardcodedColorClassifier(project.compiler)
+  const categoryByProperty = tokenCategoryByProperty(spec)
+  const categoryOf = (prop: string) => categoryByProperty.get(prop)
+  const isHardcodedValue = hardcodedValueClassifier(project.compiler)
   const inspect = (context: LintRuleContextLike) =>
     linter.inspectProject(project, getContextFilename(context), getContextSource(context))
 
@@ -142,15 +146,12 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
       patterns: patternDeprecations(spec),
     }),
     [noDebugRuleName]: createNoDebugRule({ inspect }),
-    [noHardcodedColorRuleName]: createNoHardcodedColorRule({
-      inspect,
-      isColorProperty: (prop: string) => colorProps.has(prop),
-      isHardcodedColor,
-    }),
+    [noHardcodedColorRuleName]: createNoHardcodedColorRule({ inspect, categoryOf, isHardcodedValue }),
     // Opt-in style/enforcement rules (not in `recommended`).
     [noImportantRuleName]: createNoImportantRule({ inspect }),
     [noMarginPropertiesRuleName]: createNoMarginPropertiesRule({ inspect }),
     [noPhysicalPropertiesRuleName]: createNoPhysicalPropertiesRule({ inspect }),
+    [preferTokenRuleName]: createPreferTokenRule({ inspect, categoryOf, isHardcodedValue }),
     [preferTextStyleRuleName]: createPreferTextStyleRule({ inspect }),
   }
 }

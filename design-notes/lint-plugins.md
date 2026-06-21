@@ -625,8 +625,9 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
   `marginLeft` → `marginInlineStart`, `textAlign: 'left'` → `'start'`, …) via a curated physical→logical map.
 - `prefer-text-style` ✅ (O) — flag a style object that sets ≥2 typography properties (fontSize/fontWeight/lineHeight/…)
   that should be a single `textStyle` token; grouped per object via `calls`/`jsx` data.
-- `prefer-token` 🟢 (O) — raw value where a token category exists (colors, spacing, fontSizes, radii, …), per category,
-  backed by `resolveUtilityValue`. `no-hardcoded-color` ✅ is the first instance and becomes a preset of this.
+- `prefer-token` ✅ (O) — raw value where a token category exists (colors, spacing, fontSizes, radii, …), backed by
+  `resolveUtilityValue` (resolved `cssValue` isn't a `var(...)`). Options: `categories` (default all) and `allow`.
+  `no-hardcoded-color` ✅ is `prefer-token` fixed to the `colors` category, sharing the engine.
 - `restrict-styles` 🟢 (O) — general configurable restriction: glob property pattern → `{ limit, reason }`, where `limit`
   bans the property (`null`) or whitelists allowed values. For custom team policies beyond the named rules above.
 - `no-restricted-tokens` 🟢 (O) — deny specific tokens / palettes (legacy palette during a migration, internal-only

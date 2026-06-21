@@ -37,12 +37,14 @@ Six rules are on in `recommended`:
   generated.
 - `no-deprecated` (warn) — use of a deprecated token, utility, recipe, or pattern. If you set
   `deprecated: 'use X instead'` in config, that message shows up in the lint error.
-- `no-hardcoded-color` (warn) — a raw color (`#fff`, `rgb(...)`) on a color property where a token belongs.
+- `no-hardcoded-color` (warn) — a raw color (`#fff`, `rgb(...)`, `red`) on a color property where a token belongs.
 - `no-debug` (warn) — a leftover `debug: true`.
 - `extraction-diagnostics` (warn) — parse or extraction problems Panda hit in the file.
 
-Four more are off by default. Turn them on per project:
+The rest are off by default. Turn them on per project:
 
+- `prefer-token` — a raw value on any token-backed property where a token exists (the general form of
+  `no-hardcoded-color`; covers spacing, fontSizes, radii, …).
 - `no-important` — `!important` in styles.
 - `no-margin-properties` — margin props; nudges you toward `gap` and layout patterns.
 - `no-physical-properties` — physical props that have logical equivalents (`left` → `insetInlineStart`).
@@ -68,6 +70,15 @@ export default [
 ```
 
 Valid kinds: `tokens`, `utilities`, `recipes`, `patterns`. All are checked by default.
+
+`prefer-token` takes `categories` (which token categories to enforce; defaults to all) and `allow` (raw values to
+permit):
+
+```js
+{ rules: { '@pandacss/prefer-token': ['warn', { categories: ['colors', 'spacing'], allow: ['transparent'] }] } }
+```
+
+`no-hardcoded-color` is `prefer-token` fixed to the `colors` category.
 
 ## Settings
 
