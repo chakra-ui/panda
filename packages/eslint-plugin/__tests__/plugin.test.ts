@@ -43,4 +43,12 @@ describe('createPandaPlugin', () => {
       'prefer-text-style',
     ])
   })
+
+  test('every rule exposes a docs url', async () => {
+    const dir = createTempProject()
+    const plugin = await createPandaPlugin({ cwd: dir })
+    for (const rule of Object.values(plugin.rules)) {
+      expect(rule.meta.docs.url).toMatch(/^https:\/\//)
+    }
+  })
 })

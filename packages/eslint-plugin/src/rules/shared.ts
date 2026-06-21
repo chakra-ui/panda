@@ -31,6 +31,7 @@ export interface RuleModuleLike {
     type: 'problem' | 'suggestion' | 'layout'
     docs: {
       description: string
+      url?: string
     }
     schema: unknown[]
     messages: Record<string, string>

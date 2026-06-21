@@ -28,6 +28,10 @@ export default [await panda.configs.recommended({ configPath: './panda.config.ts
 
 That's it. The rules now run against your project's tokens, recipes, and utilities.
 
+Because the config loads asynchronously, your config file must support top-level `await`: use `eslint.config.mjs` (or
+`.js` with `"type": "module"`), or `eslint.config.ts` with jiti ≥2 / Node ≥22.13 / Deno / Bun. A plain CommonJS config
+(`eslint.config.cjs`) can't `await`, so rename it to `.mjs`.
+
 The recommended config scopes itself to JS/TS/JSX files and **does not set a parser** — use your project's existing
 parser. Most TS setups already have one via [`typescript-eslint`](https://typescript-eslint.io/), and framework projects
 via their ESLint preset (`eslint-plugin-vue`, `astro-eslint-parser`, etc.). Panda's rules read source text directly, so

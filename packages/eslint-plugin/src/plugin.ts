@@ -35,6 +35,8 @@ import type { RuleModuleLike } from './rules/shared'
 /** Flat-config plugin meta, shared by every entry point. */
 export const pluginMeta = { name: '@pandacss/eslint-plugin', version: pkg.version }
 
+const DOCS_URL = 'https://github.com/chakra-ui/panda/blob/main/packages/eslint-plugin/README.md#rules'
+
 export interface PandaPluginOptions {
   cwd?: string
   configPath?: string
@@ -140,7 +142,7 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
   const inspect = (context: LintRuleContextLike) =>
     linter.inspectProject(project, getContextFilename(context), getContextSource(context))
 
-  return {
+  const rules: Record<string, RuleModuleLike> = {
     [extractionDiagnosticsRuleName]: createExtractionDiagnosticsRule({ inspect }),
     [fileNotIncludedRuleName]: createFileNotIncludedRule({
       inspect,
@@ -169,6 +171,12 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
     }),
     [preferTextStyleRuleName]: createPreferTextStyleRule({ inspect }),
   }
+
+  // Editor "see docs" links point at the package README rules section.
+  for (const rule of Object.values(rules)) {
+    rule.meta.docs.url = DOCS_URL
+  }
+  return rules
 }
 
 export async function createPandaPlugin(options: PandaPluginOptions = {}): Promise<PandaPlugin> {
