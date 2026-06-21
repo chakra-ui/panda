@@ -86,6 +86,8 @@ pub struct TokenRefSite {
     pub span: Span,
     pub range: SourceRange,
     pub needs_css_var: bool,
+    /// `true` when the call was `token.var(...)` rather than `token(...)`.
+    pub is_var: bool,
     pub resolved: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
@@ -223,6 +225,7 @@ pub(crate) fn token_ref_site(
         span: token_ref.span,
         range,
         needs_css_var: token_ref.needs_css_var,
+        is_var: token_ref.is_var,
         resolved: tokens.is_some_and(|dict| dict.token(&token_ref.path).is_some()),
         category: token_ref
             .path

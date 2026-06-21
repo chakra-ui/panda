@@ -125,7 +125,7 @@ fn unresolved_token_in_style_object_is_preserved_for_tooling() {
         "a.tsx",
         "import { css } from '@panda/css'\nimport { token } from '@panda/tokens'\ncss({ color: token('colors.ghost') })",
     );
-    assert_yaml_snapshot!(result.token_refs, @r#"
+    assert_yaml_snapshot!(result.token_refs, @"
     - path: colors.ghost
       span:
         start: 84
@@ -138,9 +138,10 @@ fn unresolved_token_in_style_object_is_preserved_for_tooling() {
           line: 3
           column: 35
       needsCssVar: false
+      isVar: false
       resolved: false
       category: colors
-    "#);
+    ");
 }
 
 #[test]

@@ -29,6 +29,9 @@ pub struct TokenRef {
     pub span: Span,
     #[serde(default)]
     pub needs_css_var: bool,
+    /// `true` when the call was `token.var(...)` rather than `token(...)`.
+    #[serde(default)]
+    pub is_var: bool,
 }
 
 /// Lean extraction result for the production hot path — strips `imports`

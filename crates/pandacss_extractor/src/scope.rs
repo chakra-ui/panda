@@ -190,6 +190,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 path,
                 span: crate::span_from_oxc(call.span),
                 needs_css_var: is_var,
+                is_var,
             });
             return None;
         };
@@ -202,6 +203,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             path: resolution.ref_path,
             span: crate::span_from_oxc(call.span),
             needs_css_var: resolution.needs_css_var,
+            is_var,
         });
 
         // Preserve token path + resolved value when the dictionary knows the path;
@@ -226,6 +228,11 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     pub(crate) fn token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
         let (path, _, _) = self.token_call_parts(call)?;
         Some(path)
+    }
+
+    pub(crate) fn token_call_is_var(&self, call: &CallExpression<'_>) -> bool {
+        self.token_call_parts(call)
+            .is_some_and(|(_, is_var, _)| is_var)
     }
 
     pub(crate) fn token_call_needs_css_var(&self, call: &CallExpression<'_>) -> bool {

@@ -154,18 +154,20 @@ fn token_call_color_opacity_modifier_resolves_to_color_mix() {
         start: 141
         end: 169
     "##);
-    assert_yaml_snapshot!(result.token_refs, @r#"
+    assert_yaml_snapshot!(result.token_refs, @"
     - path: colors.red.500
       span:
         start: 98
         end: 124
       needsCssVar: true
+      isVar: false
     - path: colors.red.500
       span:
         start: 141
         end: 169
       needsCssVar: true
-    "#);
+      isVar: false
+    ");
 }
 
 #[test]
@@ -223,23 +225,26 @@ fn bare_runtime_token_calls_are_captured_for_stylesheet_optimization() {
         export const primary = token('colors.primary');
         export const redVar = token.var('colors.red.500');
     "};
-    assert_yaml_snapshot!(run_with_tokens(src).token_refs, @r#"
+    assert_yaml_snapshot!(run_with_tokens(src).token_refs, @"
     - path: colors.red.500
       span:
         start: 58
         end: 81
       needsCssVar: false
+      isVar: false
     - path: colors.primary
       span:
         start: 106
         end: 129
       needsCssVar: true
+      isVar: false
     - path: colors.red.500
       span:
         start: 153
         end: 180
       needsCssVar: true
-    "#);
+      isVar: true
+    ");
 }
 
 #[test]
@@ -249,13 +254,14 @@ fn token_refs_are_deduped_when_a_call_is_also_folded_inside_css() {
         import { css } from '@panda/css';
         css({ color: token.var('colors.red.500') });
     "};
-    assert_yaml_snapshot!(run_with_tokens(src).token_refs, @r#"
+    assert_yaml_snapshot!(run_with_tokens(src).token_refs, @"
     - path: colors.red.500
       span:
         start: 86
         end: 113
       needsCssVar: true
-    "#);
+      isVar: true
+    ");
 }
 
 #[test]

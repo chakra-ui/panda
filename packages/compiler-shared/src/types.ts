@@ -412,6 +412,8 @@ export interface TokenRefSite {
   span: Span
   range: SourceRange
   needsCssVar: boolean
+  /** `true` when the call was `token.var(...)` rather than `token(...)`. */
+  isVar: boolean
   resolved: boolean
   category?: string
 }
