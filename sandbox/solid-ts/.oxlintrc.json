@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "jsPlugins": ["@pandacss/eslint-plugin/oxlint"],
+  "rules": {
+    "@pandacss/no-debug": "warn",
+    "@pandacss/no-invalid-nesting": "error",
+    "@pandacss/prefer-token": ["warn", { "categories": ["colors"] }],
+    "@pandacss/no-shorthand-longhand-mix": "error",
+    "@pandacss/consistent-property-style": ["error", { "style": "longhand" }]
+  }
+}

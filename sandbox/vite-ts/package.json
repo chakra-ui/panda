@@ -11,6 +11,8 @@
     "cssgen": "panda cssgen",
     "inspect": "panda inspect --cwd . --json",
     "buildinfo": "panda buildinfo --cwd .",
+    "lint": "eslint src",
+    "lint:oxlint": "oxlint src",
     "test": "pnpm inspect && pnpm buildinfo && pnpm build"
   },
   "dependencies": {
@@ -19,6 +21,11 @@
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
+    "@pandacss/eslint-plugin": "workspace:*",
+    "@oxlint/plugins": "1.70.0",
+    "@typescript-eslint/parser": "8.58.2",
+    "eslint": "9.39.1",
+    "oxlint": "1.70.0",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",

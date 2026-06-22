@@ -10,8 +10,8 @@ const Div = ({ css: cssProp = {}, children }: DivProps) => {
 
 export const CssProp = () => {
   return (
-    <div>
-      <Div css={[{ color: 'red.300' }, { backgroundColor: 'blue.100' }]}>Div</Div>
+    <div class={css({ color: '#fff' })}>
+      <Div css={[{ color: 'red' }, { backgroundColor: 'blue.100' }]}>Div</Div>
       <Div css={{ color: 'blue.500' }}>Div</Div>
     </div>
   )

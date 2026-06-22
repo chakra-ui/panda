@@ -8,11 +8,18 @@
     "build": "pnpm codegen && vite build",
     "serve": "vite preview",
     "codegen": "panda codegen",
-    "cssgen": "panda cssgen"
+    "cssgen": "panda cssgen",
+    "lint": "eslint src",
+    "lint:oxlint": "oxlint src"
   },
   "license": "MIT",
   "devDependencies": {
     "@pandacss/cli": "workspace:*",
+    "@pandacss/eslint-plugin": "workspace:*",
+    "@oxlint/plugins": "1.70.0",
+    "@typescript-eslint/parser": "8.58.2",
+    "eslint": "9.39.1",
+    "oxlint": "1.70.0",
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
