@@ -123,7 +123,8 @@ pnpm update <package> --ignore-scripts
 
 - **PostCSS ecosystem**: Coordinate updates across all PostCSS plugins to avoid CSS output changes
 - **browserslist**: Updates affect `postcss-merge-rules` behavior - test thoroughly
-- **lightningcss**: not in the v2 workspace — the `pandacss_stylesheet` crate does native emission (minify parity is an open follow-up)
+- **lightningcss**: not in the v2 workspace — the `pandacss_stylesheet` crate does native emission (minify parity is an
+  open follow-up)
 - **Workspace packages**: the `@pandacss/*` packages (cli, compiler, config, types, etc.) must stay in sync
 
 ## Common Workflows
@@ -144,11 +145,11 @@ failures locally avoids broken PR checks and fix-up commits.
 
 Run from the repo root:
 
-| If you changed… | Run before commit |
-| ----------------- | ----------------- |
-| `crates/**`, `packages/compiler/**`, `packages/compiler-wasm/**` | `pnpm rust:fmt` and `pnpm rust:clippy` (Rust Quality CI) |
-| TypeScript packages under `packages/**` | `pnpm test <affected-package-or-path>` |
-| CSS output (Rust stylesheet emit) | `cargo nextest run -p pandacss_stylesheet` + `sandbox/codegen` first |
+| If you changed…                                                  | Run before commit                                                    |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `crates/**`, `packages/compiler/**`, `packages/compiler-wasm/**` | `pnpm rust:fmt` and `pnpm rust:clippy` (Rust Quality CI)             |
+| TypeScript packages under `packages/**`                          | `pnpm test <affected-package-or-path>`                               |
+| CSS output (Rust stylesheet emit)                                | `cargo nextest run -p pandacss_stylesheet` + `sandbox/codegen` first |
 
 For broader pre-PR validation (not required on every commit): `pnpm rust:check`, `pnpm rust:test`, `pnpm typecheck`,
 `pnpm build:fast`.
@@ -186,7 +187,8 @@ Brief description of the change and its impact.
 - Detail 2
 ```
 
-Keep changesets **concise**: one or two sentences on user-visible impact. Skip root-cause essays, long before/after examples, and implementation detail — that belongs in the PR or commit message.
+Keep changesets **concise**: one or two sentences on user-visible impact. Skip root-cause essays, long before/after
+examples, and implementation detail — that belongs in the PR or commit message.
 
 **Changeset types:**
 
@@ -287,11 +289,17 @@ JS-facing APIs stay stable; Rust ships behind `@pandacss/compiler`.
 
 **Read first** before touching Rust:
 
+- [`crates/RUST_GUIDE.md`](crates/RUST_GUIDE.md) — coding standards, review checklist, PR review output format, and Rust
+  subagent index. Consult this when writing or reviewing Rust code; use `AGENTS.md` (this file) for commands and
+  workflows.
 - `design-notes/README.md` — index of durable Rust architectural decisions (crate layering, extraction pipeline, literal
   evaluator, project lifecycle, NAPI boundary, performance budget, scope and boundaries, publish namespace). **Skim the
   index on the first Rust task in any session and consult the specific note before any change in that area.** When you
   change the underlying design, update the matching note in the same PR.
 - `design-notes/rust-testing.md` — full Rust testing strategy (consolidated harness, insta workflow, fast iteration).
+
+**Subagents** (`.claude/agents/`): `rust-engineer` (implement), `rust-reviewer` (read-only review),
+`oxc-extractor-architect` (extraction/Oxc), `rust-perf-analyst` (benchmarks / `PERF(port):` flips).
 
 ### Toolchain
 
@@ -350,13 +358,15 @@ cargo nextest run -p pandacss_codegen --locked
 cargo nextest run -p pandacss_config codegen --locked
 ```
 
-Install [cargo-nextest](https://nexte.st/) once if it is not already on PATH (CI installs it via `taiki-e/install-action@nextest`; `pnpm rust:test` already uses nextest):
+Install [cargo-nextest](https://nexte.st/) once if it is not already on PATH (CI installs it via
+`taiki-e/install-action@nextest`; `pnpm rust:test` already uses nextest):
 
 ```sh
 cargo install cargo-nextest --locked
 ```
 
-Use `cargo test` instead of `cargo nextest run` when you need unstable test flags or nextest is unavailable. For pre-PR / CI, use `pnpm rust:test` (workspace nextest + doc tests) — not during everyday iteration.
+Use `cargo test` instead of `cargo nextest run` when you need unstable test flags or nextest is unavailable. For pre-PR
+/ CI, use `pnpm rust:test` (workspace nextest + doc tests) — not during everyday iteration.
 
 Run workspace tests when touching shared types (`pandacss_config`, `pandacss_shared`), workspace `Cargo.toml` /
 `rust-toolchain.toml`, or anything that could change a downstream crate's contract.
@@ -371,12 +381,12 @@ See `design-notes/rust-testing.md` for the full testing strategy.
 - **Public-API tests live in `crates/<name>/tests/`** — not in `src/`. Inline `#[cfg(test)] mod tests` is reserved for
   private helpers (rare), e.g. `pandacss_shared::unit_conversion::to_rem`, `pandacss_stylesheet::grouped`,
   `pandacss_stylesheet::sort`, `pandacss_project::recipes::compound_tests`.
-- **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen`
-  use one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files are submodules
+- **Consolidated harness** — `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen` use
+  one integration binary (`tests/main.rs` + `autotests = false` in `Cargo.toml`). Suite files are submodules
   (`mod atomic;`, …), not separate binaries. Shared helpers live under `tests/common/` and are imported via
   `use crate::common::…`.
-- **Autodiscovered layout** — lighter crates (`pandacss_config`, `pandacss_encoder`, `pandacss_fs`, etc.) keep
-  Cargo's default one-binary-per-`tests/*.rs` layout for targeted filtering without `main.rs` bookkeeping.
+- **Autodiscovered layout** — lighter crates (`pandacss_config`, `pandacss_encoder`, `pandacss_fs`, etc.) keep Cargo's
+  default one-binary-per-`tests/*.rs` layout for targeted filtering without `main.rs` bookkeeping.
 - Use **inline snapshots**: `assert_yaml_snapshot!(value, @"…")` for structured results; `assert_snapshot!(text, @"…")`
   for CSS output (primary regression guard).
 - Update snapshots with `cargo insta review -p <crate>` after reading every diff. Never bulk-accept CSS snapshot changes
@@ -426,10 +436,11 @@ build. Per-function `#[allow(...)]` is fine when justified — include a `reason
   literal-spread merge.
 - ✅ `extract()` (combined hot path) + `extract_debug()` (kitchen-sink) — single parse per file; lean result strips
   `imports`/`matched` for production callers.
-- ✅ Phase 5 — same-file static evaluator (`scope.rs` + `literal.rs`): `oxc_semantic` scope table for `const`/`let`/`var`
-  identifier resolution (with mutation checks + cycle guard), destructuring, TS enums, param `TSTypeLiteral`s; literal
-  folding for unary/binary/logical/ternary/member/optional-chain/template exprs with JS coercion parity;
-  `token()`/`token.var()` resolution (opacity modifiers, fallbacks). See `design-notes/literal-evaluator.md`.
+- ✅ Phase 5 — same-file static evaluator (`scope.rs` + `literal.rs`): `oxc_semantic` scope table for
+  `const`/`let`/`var` identifier resolution (with mutation checks + cycle guard), destructuring, TS enums, param
+  `TSTypeLiteral`s; literal folding for unary/binary/logical/ternary/member/optional-chain/template exprs with JS
+  coercion parity; `token()`/`token.var()` resolution (opacity modifiers, fallbacks). See
+  `design-notes/literal-evaluator.md`.
 - ✅ Cross-file resolution (`cross_file.rs`) — `CrossFileResolver` follows `import { x } from './…'` and folds imported
   values with same-file semantics. See `design-notes/cross-file-resolution.md`.
 - ✅ Framework adapters — Astro / Svelte / Vue SFC extraction.
@@ -456,6 +467,7 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 - **Type definitions**: `packages/types/src/` (comprehensive types)
 - **Integration examples**: `/sandbox/` (real-world usage)
 - **Test patterns**: `crates/<name>/tests/` (Rust) and `sandbox/codegen` (generated-output validation)
+- **Rust coding standards**: `crates/RUST_GUIDE.md`
 - **Rust migration**: `design-notes/README.md` and the linked Rust design notes
 - **Rust testing**: `design-notes/rust-testing.md`
 
