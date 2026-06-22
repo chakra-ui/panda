@@ -17,8 +17,9 @@ You need ESLint 9 or later.
 
 ## Setup
 
-Add the recommended config to `eslint.config.mjs`. Loading your Panda config is async, so `await` it (top-level `await`
-works in flat config):
+Add the recommended config to `eslint.config.mjs`. Loading your Panda config is async, and ESLint
+[supports a flat config that resolves to a Promise](https://eslint.org/docs/latest/use/configure/configuration-files),
+so `await` it (top-level `await` works in flat config):
 
 ```js
 import panda from '@pandacss/eslint-plugin'
@@ -28,9 +29,15 @@ export default [await panda.configs.recommended({ configPath: './panda.config.ts
 
 That's it. The rules now run against your project's tokens, recipes, and utilities.
 
-Because the config loads asynchronously, your config file must support top-level `await`: use `eslint.config.mjs` (or
-`.js` with `"type": "module"`), or `eslint.config.ts` with jiti ≥2 / Node ≥22.13 / Deno / Bun. A plain CommonJS config
-(`eslint.config.cjs`) can't `await`, so rename it to `.mjs`.
+Top-level `await` works in `eslint.config.mjs` (or `.js` with `"type": "module"`) and in `eslint.config.ts` (jiti ≥2 /
+Node ≥22.13 / Deno / Bun). In a CommonJS `eslint.config.cjs`, export a Promise instead — ESLint resolves it:
+
+```js
+module.exports = (async () => {
+  const panda = (await import('@pandacss/eslint-plugin')).default
+  return [await panda.configs.recommended({ configPath: './panda.config.ts' })]
+})()
+```
 
 The recommended config scopes itself to JS/TS/JSX files and **does not set a parser** — use your project's existing
 parser. Most TS setups already have one via [`typescript-eslint`](https://typescript-eslint.io/), and framework projects
