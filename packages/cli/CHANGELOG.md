@@ -1,5 +1,26 @@
 # @pandacss/cli
 
+## 2.0.0-beta.4
+
+### Minor Changes
+
+- 9521059: Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`,
+  `buildinfo`) to override the config's `include` globs for a single run. The flag is repeatable and accepts
+  comma-separated values, and replaces (does not merge with) the configured globs — useful for scanning a subset of
+  files in CI or one-off builds.
+
+### Patch Changes
+
+- Updated dependencies [9521059]
+- Updated dependencies [74dab7b]
+- Updated dependencies [0202dba]
+- Updated dependencies [23580df]
+- Updated dependencies [5316642]
+- Updated dependencies [1378d4a]
+  - @pandacss/compiler@2.0.0-beta.4
+  - @pandacss/compiler-shared@2.0.0-beta.4
+  - @pandacss/config@2.0.0-beta.4
+
 ## 2.0.0-beta.3
 
 ### Patch Changes

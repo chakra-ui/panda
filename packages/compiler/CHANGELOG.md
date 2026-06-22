@@ -1,5 +1,51 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.4
+
+### Minor Changes
+
+- 9521059: Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`,
+  `buildinfo`) to override the config's `include` globs for a single run. The flag is repeatable and accepts
+  comma-separated values, and replaces (does not merge with) the configured globs — useful for scanning a subset of
+  files in CI or one-off builds.
+
+### Patch Changes
+
+- 74dab7b: `styled-system/types/index` now re-exports `./jsx` for all JSX frameworks, not just React. Solid, Vue,
+  Preact, and Qwik generated `types/jsx` but never re-exported it, which could cause "inferred type cannot be named"
+  TypeScript errors.
+- 0202dba: Fix `globalCss` and token-reference parity with extracted styles.
+
+  - Expand composition props and nested utility transforms in `globalCss`.
+  - Resolve token references in raw at-rule conditions.
+  - Preserve `token(path, fallback)` fallbacks in emitted CSS variables.
+
+- 23580df: Expose lint-friendly inspection data from `inspectFileSource`, including extracted calls, JSX entries, token
+  references, component entries, and style entries with safe local key/value spans. Style entries cover every
+  style-writing form — `css()` (including the `css(a, b)` multi-argument merge), style props, responsive arrays,
+  per-prop conditions, JSX `css` props (object **and** `css={[...]}` array forms), and recipe styles in `cva` / `sva` /
+  `styled('div', { ... })` (`base`, `variants`, `compoundVariants`) — and carry per-leaf value spans so tooling can
+  offer precise fixes everywhere. Each style entry also carries an `owner` (the enclosing call/JSX element) so tooling
+  can group sibling properties from the same style block.
+
+  `compiler.spec()` now reports deprecation richer: `tokens.deprecated` and `utilities.deprecated` are maps of name →
+  deprecation (`true`, or the author's `deprecated: 'use X instead'` message), recipe definitions carry a `deprecated`
+  flag, and recipes/slotRecipes are exposed as top-level `spec.recipes` / `spec.slotRecipes` (previously nested under
+  `spec.recipes.recipes`).
+
+  Add `compiler.suggestToken(prop, value)` — given a hardcoded value, returns the token to use (semantic tokens
+  preferred over the primitives they reference, with hex and px/rem normalization), or `null`. Token references in
+  inspection results also carry `isVar` (whether the call was `token.var(...)`).
+
+- 5316642: Fix slot recipe inference to include slots that appear only in `compoundVariants`. Previously, when `slots`
+  was omitted from an `sva` call, a slot used solely inside a compound variant's `css` was dropped and its styles never
+  emitted.
+- 1378d4a: Complete the SVG asset color-name shortening table (full parity with v1's 55 named colors) and fix a hex
+  substring-match bug where values like `#fff000` were incorrectly shortened to `white000`.
+- Updated dependencies [23580df]
+  - @pandacss/compiler-shared@2.0.0-beta.4
+  - @pandacss/config@2.0.0-beta.4
+
 ## 2.0.0-beta.3
 
 ### Patch Changes
