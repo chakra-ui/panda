@@ -781,7 +781,8 @@ impl PaletteAccumulator {
     }
 }
 
-use super::{color_palette_path_segments, join_segments, virtual_color_palette_path};
+use crate::color_palette::{color_palette_path_segments, virtual_color_palette_path};
+use crate::join_segments;
 
 fn matches_color_palette_options(path: &str, options: &ColorPaletteOptions) -> bool {
     if options

@@ -8,6 +8,8 @@ use pandacss_config::{
 };
 use pandacss_shared::{number_to_js_string, push_number_to_js_string};
 
+use crate::svg::svg_to_data_uri;
+
 pub(crate) trait TokenValueString {
     fn to_token_string(&self) -> String;
 }
@@ -261,74 +263,4 @@ fn is_css_unit(value: &str) -> bool {
     value[last_digit_index + 1..]
         .chars()
         .any(|ch| ch.is_ascii_alphabetic() || ch == '%')
-}
-
-fn svg_to_data_uri(svg: &str) -> String {
-    let svg = svg.strip_prefix('\u{feff}').unwrap_or(svg);
-    let collapsed = collapse_whitespace(svg);
-    let body = color_code_to_shorter_names(&collapsed).replace('"', "'");
-    let mut out = String::from("data:image/svg+xml,");
-    percent_encode_svg(&body, &mut out);
-    out
-}
-
-fn collapse_whitespace(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut in_whitespace = false;
-    for ch in value.trim().chars() {
-        if ch.is_whitespace() {
-            if !in_whitespace {
-                out.push(' ');
-                in_whitespace = true;
-            }
-        } else {
-            out.push(ch);
-            in_whitespace = false;
-        }
-    }
-    out
-}
-
-fn color_code_to_shorter_names(value: &str) -> String {
-    // The JS helper has a larger color table. These are the common SVG
-    // payload wins and cover Panda's existing asset transform tests.
-    value
-        .replace("#000000", "black")
-        .replace("#000", "black")
-        .replace("#ffffff", "white")
-        .replace("#fff", "white")
-        .replace("#ff0000", "red")
-        .replace("#f00", "red")
-        .replace("#00ff00", "lime")
-        .replace("#0f0", "lime")
-        .replace("#0000ff", "blue")
-        .replace("#00f", "blue")
-}
-
-fn percent_encode_svg(value: &str, out: &mut String) {
-    const HEX: &[u8; 16] = b"0123456789ABCDEF";
-    for byte in value.bytes() {
-        match byte {
-            b' ' | b'=' | b':' | b'/' => out.push(byte as char),
-            b'A'..=b'Z'
-            | b'a'..=b'z'
-            | b'0'..=b'9'
-            | b'-'
-            | b'_'
-            | b'.'
-            | b'!'
-            | b'~'
-            | b'*'
-            | b'\''
-            | b'('
-            | b')' => {
-                out.push(byte as char);
-            }
-            byte => {
-                out.push('%');
-                out.push(HEX[(byte >> 4) as usize] as char);
-                out.push(HEX[(byte & 0x0f) as usize].to_ascii_lowercase() as char);
-            }
-        }
-    }
 }
