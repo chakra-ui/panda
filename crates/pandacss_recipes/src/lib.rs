@@ -192,7 +192,7 @@ impl SlotRecipe {
         }
 
         if slots.is_empty() {
-            slots = Self::infer_slots(&base, &variants);
+            slots = Self::infer_slots(&base, &variants, &compound_variants);
         }
 
         Some(SlotRecipe {
@@ -204,10 +204,15 @@ impl SlotRecipe {
         })
     }
 
-    /// Slot names in first-appearance order from `base.<slot>` and every
-    /// variant option's per-slot map. Matches JS-side `Recipes.inferSlots`.
+    /// Slot names in first-appearance order from `base.<slot>`, every variant
+    /// option's per-slot map, and every compound variant's `css` slot map.
+    /// Matches JS-side `Recipes.inferSlots`.
     #[must_use]
-    pub fn infer_slots(base: &[(String, Literal)], variants: &[SlotVariantGroup]) -> Vec<String> {
+    pub fn infer_slots(
+        base: &[(String, Literal)],
+        variants: &[SlotVariantGroup],
+        compound_variants: &[SlotCompoundVariant],
+    ) -> Vec<String> {
         let mut seen: FxHashSet<String> = FxHashSet::default();
         let mut order: Vec<String> = Vec::new();
 
@@ -227,6 +232,12 @@ impl SlotRecipe {
                 for (slot, _) in &option.styles {
                     push(slot, &mut seen, &mut order);
                 }
+            }
+        }
+
+        for compound in compound_variants {
+            for (slot, _) in &compound.css {
+                push(slot, &mut seen, &mut order);
             }
         }
 

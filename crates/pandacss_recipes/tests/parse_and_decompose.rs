@@ -280,6 +280,29 @@ fn sva_with_missing_slots_infers_from_base_and_variants() {
 }
 
 #[test]
+fn sva_with_missing_slots_infers_compound_variant_only_slots() {
+    // No `slots` key, and `footer` appears *only* inside a compoundVariant's
+    // `css`. `infer_slots` must still collect it (matches JS `inferSlots`),
+    // appended after base/variant slots in first-seen order.
+    let src = indoc! {r"
+        import { sva } from '@panda/css';
+        const card = sva({
+          base: {
+            root: { padding: '8px' },
+          },
+          variants: {
+            size: { sm: { header: { fontSize: 12 } } },
+          },
+          compoundVariants: [
+            { size: 'sm', css: { footer: { fontSize: 10 } } },
+          ],
+        });
+    "};
+    let recipe = parse_slot_recipe(src);
+    assert_eq!(recipe.slots, vec!["root", "header", "footer"]);
+}
+
+#[test]
 fn sva_compound_variant_targets_slot_specific_css() {
     let src = indoc! {r"
         import { sva } from '@panda/css';
