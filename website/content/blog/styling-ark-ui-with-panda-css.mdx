@@ -1,9 +1,9 @@
 ---
-title: 'Styling Ark UI Headless Components with Panda CSS'
+title: 'How to Style Ark UI Components with Panda CSS'
 description:
-  'A guide to styling Ark UI’s headless React components with Panda CSS. Covers data-state conditions and slot recipes
-  for multi-part components.'
-date: 2026-06-21
+  'Ark UI ships accessible React components with no styles. Learn how to style them with Panda CSS, using data-state
+  conditions and slot recipes for the multi-part ones.'
+date: 2026-06-19
 author: Esther Adebayo
 tags: [ark-ui, css, guides, recipes]
 ---
@@ -11,21 +11,19 @@ tags: [ark-ui, css, guides, recipes]
 [Ark UI](https://ark-ui.com/) is a library of headless React components. It ships the behavior, accessibility, and state
 handling for things like checkboxes, dialogs, and menus, but no styles at all. How they look is left entirely to you.
 
-This post covers one way to handle that part: styling Ark UI with Panda CSS. We will style Ark UI's Checkbox and a
-Dialog, using Panda's tokens for the visuals, its conditions for state-based styling, and a slot recipe to manage the
-Dialog's many parts.
+![Styling Ark UI with Panda CSS](/ark-ui-panda.png)
+
+This post is about styling Ark UI with Panda CSS. We'll build a Checkbox and a Dialog, using Panda's tokens for the
+look, its conditions for the interactive states, and a slot recipe to keep the Dialog's many parts in one place.
 
 ## Why they work well together
 
-Ark UI exposes the state of every part through `data-*` attributes, mostly under a single `data-state` attribute that
-takes values like `checked`, `open`, and `indeterminate`. It also lets every part accept a `className`.
+Ark UI exposes the state of every component part through `data-*` attributes, mostly under a single `data-state`
+attribute that takes values like `checked`, `open`, and `indeterminate`. It also lets every part accept a `className`.
 
 Panda is built to consume exactly that. Its conditions are selectors, and the built-in ones already match Ark UI's
 attributes, so `_checked`, `_open`, and `_disabled` work with no extra setup. For components with several parts, slot
 recipes keep all of those styles in one definition.
-
-It also helps that both come from the same team, along with Park UI, which combines them. The attributes Ark UI emits
-and the selectors Panda generates were designed with each other in mind.
 
 ## Setup
 
@@ -36,7 +34,7 @@ This guide assumes you already have Panda set up in a React project. If not, fol
 pnpm add @ark-ui/react
 ```
 
-Ark UI ships for several frameworks; we use the React package here, and the `data-state` attributes (along with the
+Ark UI ships for several frameworks; we'll use the React package here, and the `data-state` attributes (along with the
 Panda conditions that match them) are framework-agnostic. Imports are scoped per component, so you only pull in what you
 use:
 
@@ -55,9 +53,10 @@ All the styling examples below import from your generated `styled-system` direct
 
 ## Styling your first component: the Checkbox
 
-An Ark UI Checkbox has a few parts. `Checkbox.Control` is the box, `Checkbox.Indicator` holds the check mark,
-`Checkbox.Label` is the text, and `Checkbox.HiddenInput` keeps it accessible and form-friendly. Here is the whole thing
-styled with Panda's `css` function:
+An Ark UI Checkbox comes in a few parts. `Checkbox.Control` is the box, `Checkbox.Indicator` holds the check mark,
+`Checkbox.Label` is the text, and `Checkbox.HiddenInput` keeps it accessible and form-friendly.
+
+Here's the whole thing, styled with Panda's `css` function:
 
 ```tsx
 import { Checkbox } from '@ark-ui/react/checkbox'
@@ -70,7 +69,7 @@ export function TermsCheckbox() {
       className={css({
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '2',
+        gap: '2.5',
         cursor: 'pointer',
         _disabled: { opacity: 0.5, cursor: 'not-allowed' }
       })}
@@ -80,42 +79,39 @@ export function TermsCheckbox() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '20px',
-          height: '20px',
-          rounded: 'sm',
+          width: '24px',
+          height: '24px',
+          rounded: 'md',
           border: '2px solid',
           borderColor: 'gray.300',
           color: 'white',
           transition: 'background-color 150ms, border-color 150ms',
           _checked: { bg: 'blue.500', borderColor: 'blue.500' },
-          _indeterminate: { bg: 'blue.500', borderColor: 'blue.500' },
           _focusVisible: { outline: '2px solid', outlineColor: 'blue.500', outlineOffset: '2px' }
         })}
       >
-        <Checkbox.Indicator className={css({ width: '14px', height: '14px' })}>
-          <CheckIcon />
+        <Checkbox.Indicator className={css({ display: 'flex', alignItems: 'center', justifyContent: 'center' })}>
+          <CheckIcon size={16} />
         </Checkbox.Indicator>
       </Checkbox.Control>
-      <Checkbox.Label className={css({ fontSize: 'sm', userSelect: 'none' })}>I agree to the terms</Checkbox.Label>
+      <Checkbox.Label className={css({ fontSize: 'md', fontWeight: 'bold' })}>I agree to the terms</Checkbox.Label>
       <Checkbox.HiddenInput />
     </Checkbox.Root>
   )
 }
 ```
 
-Toggle it and the box fills blue while the check appears. But here is the surprising part. You used `_checked` on a
-plain `<div>`, and only form inputs can be `:checked`. So why did it work?
+[Check the box on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-adefjdhw?file=app%2Ftheme-checkbox.tsx)
+and the control fills in and the check mark appears. The interesting part is the `_checked` block on the control. In
+plain CSS, `:checked` only applies to real form inputs, like an `<input type="checkbox">`. But `Checkbox.Control` is a
+`<div>`, so it can never be `:checked`, however, the checked styles still show up. How?
 
-Because Panda's built-in conditions were written with headless libraries in mind. `_checked` does not only mean
-`:checked`. Its actual definition covers Ark UI's `data-state="checked"` too:
+Panda's `_checked` is broader than the CSS `:checked` pseudo-class. When Panda compiles it, the generated rule also
+targets `[data-state="checked"]`, and that attribute is exactly what Ark UI puts on the control when the box is checked.
+So, the moment Ark UI sets `data-state="checked"`, your `_checked` styles match and apply.
 
-```ts
-// from Panda's base preset
-checked: '&:is(:checked, [data-checked], [aria-checked=true], [data-state="checked"])'
-```
-
-The same is true for the conditions you reach for most when styling Ark UI. They all already include the matching
-`data-*` selector:
+The conditions you'll reach for most with Ark UI follow the same pattern. Each one already bakes in the `data-*`
+selector to match:
 
 - `_checked` matches `[data-state="checked"]`
 - `_indeterminate` matches `[data-state="indeterminate"]`
@@ -125,12 +121,12 @@ The same is true for the conditions you reach for most when styling Ark UI. They
 - `_focus` matches `[data-focus]`
 - `_hover` matches `[data-hover]`
 
-So a large chunk of Ark UI's state model just works with no configuration.
+So most of Ark UI's state model just works, with no config at all.
 
 ## Styling a complex component: the Dialog
 
-A Dialog, like many other Ark UI components, has many more parts, and it renders them through a portal, so it is where a
-styling approach really gets tested:
+A Dialog has a lot more moving parts, and it renders them through a portal, so it's a better test of whether a styling
+approach holds up:
 
 ```tsx
 <Dialog.Root>
@@ -148,11 +144,11 @@ styling approach really gets tested:
 </Dialog.Root>
 ```
 
-You could call `css` on each part, but that scatters the dialog's styling across the markup and makes a size variant
-painful. This is exactly what slot recipes in Panda CSS are for. You define the styles for every part in one place, and
-the recipe hands back a ready-made class for each, variants and all.
+You could drop a `css` call on each part, but then the dialog's styles are scattered across the markup, and adding
+something like a size variant gets messy fast. Slot recipes are made for this. You define every part's styles in one
+place, and the recipe hands you a ready-made class for each one, variants included.
 
-Here is a dialog styled with `sva` (the slot variant function):
+Here's the Panda slot recipe for the dialog, written with `sva` (the slot variant function):
 
 ```tsx
 // components/ui/dialog-styles.ts
@@ -225,10 +221,14 @@ export const dialog = sva({
 })
 ```
 
-The backdrop and content each get a subtle open and close animation, and it leans on the same idea as everything else
-here. Ark UI sets `data-state="open"` while the dialog is showing and `data-state="closed"` as it leaves, and it holds
-the elements in the DOM long enough for the exit to play. Those are the exact values `_open` and `_closed` already
-match, so all you add is a few keyframes:
+A dialog sits in the middle of the screen instead of anchoring to a trigger, so there are no positioning variables to
+deal with. The positioner just centers the content, and Ark UI takes care of the focus trap and scroll lock.
+
+The backdrop and content each animate as they open and close, running on the same idea as everything else here. Ark UI
+marks the dialog `data-state="open"` while it's showing and `data-state="closed"` on the way out, and it keeps the
+elements around long enough for the exit to finish.
+
+Those are the values `_open` and `_closed` already match, so the only new piece is a handful of keyframes:
 
 ```ts
 // panda.config.ts
@@ -260,11 +260,8 @@ export default defineConfig({
 })
 ```
 
-Unlike an anchored popover, a dialog is centered, so there are no positioning variables to read. The positioner just
-centers the content, and Ark UI handles the focus trap and scroll lock for you.
-
-Now apply each slot in the markup. Calling `dialog()` returns an object of class names keyed by slot, and the `Portal`
-comes from Ark UI:
+Now wire each slot into the markup. Calling `dialog()` gives you an object of class names keyed by slot, and the
+`Portal` comes from Ark UI:
 
 ```tsx
 import { Dialog } from '@ark-ui/react/dialog'
@@ -295,14 +292,16 @@ export function SignInDialog() {
 }
 ```
 
+[See the dialog styled with `sva` on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-adefjdhw?file=app%2Ftheme-dialog.tsx).
+
 ## A cleaner API with createStyleContext
 
-Passing `styles.trigger`, `styles.content`, and so on works, but it gets tiring to repeat every time you use a
-component. Panda has a cleaner way: a helper called `createStyleContext`. You give it your slot recipe once, and it
-hands back components with the styles already baked in, so you never wire up class names manually again.
+Threading `styles.trigger`, `styles.content`, and the rest through the markup works, but repeating it every time you
+reach for the dialog gets old. Panda has a nicer option: a helper called `createStyleContext`. Give it your slot recipe
+once and it hands back components with the styles already attached, so you stop wiring up class names by hand.
 
-`createStyleContext` is imported from `styled-system/jsx`, which Panda only generates when `jsxFramework` is set. If you
-haven't already, add it to your `panda.config.ts`:
+`createStyleContext` comes from `styled-system/jsx`, which Panda only generates once `jsxFramework` is set. If you
+haven't set it yet, add it to your `panda.config.ts`:
 
 ```ts
 // panda.config.ts
@@ -313,9 +312,9 @@ export default defineConfig({
 })
 ```
 
-Pass your slot recipe to `createStyleContext` and it returns two wrappers: `withRootProvider` for the part that owns the
-context (the root), and `withContext` for every other part. You wrap each Ark UI part once, naming the slot it maps to,
-and re-export them as a single `Dialog` object. `Portal` carries no styles, so it passes through untouched:
+`createStyleContext` gives you a few wrappers. The two you need here are `withRootProvider`, for the part that owns the
+context (the root), and `withContext` for every other part. You wrap each Ark UI part once, tell it which slot it maps
+to, and re-export the whole set as a single `Dialog` object. `Portal` carries no styles, so it passes straight through:
 
 ```tsx
 // components/ui/dialog.tsx
@@ -340,7 +339,7 @@ export const Dialog = {
 }
 ```
 
-The usage drops all the manual class wiring, and the `size` variant flows down through context:
+Now the markup is clean, with no class names in sight, and the `size` variant flows down through context:
 
 ```tsx
 import { Dialog } from './components/ui/dialog'
@@ -367,17 +366,19 @@ export function SignInDialog() {
 }
 ```
 
-Two things worth knowing: if a root does render an element you want to style, use `withProvider` instead of
-`withRootProvider` and pass its slot name. And every part you wrap takes an `unstyled` prop, handy for when you want to
-skip the recipe styles on just one of them.
+[See the createStyleContext version on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-adefjdhw?file=app%2Fdialog-with-context.tsx).
+
+A couple of things to keep in mind. If your root does render an element you want to style, reach for `withProvider`
+instead of `withRootProvider` and give it the slot name. And every wrapped part takes an `unstyled` prop, handy when you
+want a single part to skip the recipe styles.
 
 ## Get started
 
-Ark UI gives you accessible components with no styling opinions, and Panda gives you a clean way to add the styles. You
-style every part through its `className`, and the states you care about (checked, open, disabled, and the rest) just
-work, because Panda's conditions already match the `data-state` attributes Ark UI sets. For multi-part components, a
-slot recipe holds every part's styles together, and `createStyleContext` turns that recipe into a reusable set of
-components you can drop in anywhere without wiring up class names by hand.
+Ark UI gives you accessible, unstyled components, and Panda gives you a tidy way to style them. You style each part
+through its `className`, and the states you care about (checked, open, disabled, and the rest) work out of the box,
+because Panda's conditions already match the `data-state` attributes Ark UI sets. For the multi-part ones, a slot recipe
+keeps every part's styles together, and `createStyleContext` turns that recipe into a set of components you can reuse
+anywhere without touching class names.
 
 To go deeper, see the Panda docs on [recipes](/docs/concepts/recipes), [slot recipes](/docs/concepts/slot-recipes),
 [conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context). On
