@@ -1,5 +1,4 @@
-use pandacss_shared::number_to_js_string;
-use pandacss_utility::hyphenate_property;
+use pandacss_shared::{hyphenate_property, number_to_js_string};
 
 pub(crate) fn format_number(prop: &str, value: f64) -> String {
     format_number_str(prop, &number_to_js_string(value))

@@ -7,11 +7,11 @@ use pandacss_config::{
     ValueTypePart, value_alias_name,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::pascal_case;
+use pandacss_shared::{hyphenate_property, pascal_case};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::FxHashMap;
 
-use crate::{Utility, UtilityProperty, hyphenate_property};
+use crate::{Utility, UtilityProperty};
 
 impl Utility {
     /// Project the utility metadata into the codegen [`UtilityTypeData`]

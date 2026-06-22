@@ -12,11 +12,13 @@ use pandacss_encoder::{
     RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{css_escape, number_to_js_string, split_important, to_hash};
+use pandacss_shared::{
+    css_escape, find_matching_paren, hyphenate_property, number_to_js_string, split_important,
+    to_hash, without_space,
+};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
 use pandacss_utility::{
     StyleNormalizer, Utility, UtilityTransformResult, expand_token_references_to_values,
-    hyphenate_property,
 };
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde_json::Value;
@@ -782,19 +784,6 @@ fn raw_css_var_name(value: &str) -> Option<&str> {
     let inner = value.trim().strip_prefix("var(")?.strip_suffix(')')?.trim();
     let name = inner.split_once(',').map_or(inner, |(name, _)| name).trim();
     name.starts_with("--").then_some(name)
-}
-
-fn find_matching_paren(value: &str) -> Option<usize> {
-    let mut depth = 0u32;
-    for (index, ch) in value.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' if depth == 0 => return Some(index),
-            ')' => depth -= 1,
-            _ => {}
-        }
-    }
-    None
 }
 
 fn expand_condition_paths(
@@ -2229,10 +2218,6 @@ fn push_finalized_condition(config: &UserConfig, out: &mut String, condition: &s
     } else {
         out.push_str(condition.trim_start_matches('_'));
     }
-}
-
-fn without_space(value: &str) -> String {
-    value.replace(' ', "_")
 }
 
 fn value_to_atom_value(value: &Value) -> Option<AtomValue> {

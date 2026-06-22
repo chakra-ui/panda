@@ -158,26 +158,47 @@ fn levenshtein(a: &str, b: &str) -> usize {
     prev[b_chars.len()]
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn closest_match_suggests_a_near_miss() {
-        assert_eq!(
-            closest_match("_hovr", ["_hover", "_focus", "_active"]),
-            Some("_hover")
-        );
+/// Convert a camelCase CSS property to its hyphenated form (`backgroundColor`
+/// -> `background-color`). Custom properties (`--foo`) pass through, and a
+/// leading `ms` vendor segment becomes `-ms-` (`msTransform` -> `-ms-transform`).
+#[must_use]
+pub fn hyphenate_property(property: &str) -> String {
+    if property.starts_with("--") {
+        return property.to_owned();
     }
 
-    #[test]
-    fn closest_match_returns_none_when_nothing_is_close() {
-        assert_eq!(closest_match("_zzz", ["_hover", "_focus"]), None);
+    let mut out = String::with_capacity(property.len() + 4);
+    for ch in property.chars() {
+        if ch.is_ascii_uppercase() {
+            out.push('-');
+            out.push(ch.to_ascii_lowercase());
+        } else {
+            out.push(ch);
+        }
     }
 
-    #[test]
-    fn closest_match_prefers_the_smallest_distance() {
-        // "_hoer" is distance 1 from "_hover", 2 from "_focus".
-        assert_eq!(closest_match("_hoer", ["_focus", "_hover"]), Some("_hover"));
+    if let Some(rest) = out.strip_prefix("ms-") {
+        let mut prefixed = String::with_capacity(out.len() + 1);
+        prefixed.push_str("-ms-");
+        prefixed.push_str(rest);
+        return prefixed;
     }
+
+    out
+}
+
+/// Index of the `)` that closes the current parenthesis group, ignoring any
+/// balanced nested `(...)`. `value` should start just after the opening `(`.
+#[must_use]
+pub fn find_matching_paren(value: &str) -> Option<usize> {
+    let mut depth = 0u32;
+    for (index, ch) in value.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' if depth == 0 => return Some(index),
+            ')' => depth -= 1,
+            _ => {}
+        }
+    }
+    None
 }

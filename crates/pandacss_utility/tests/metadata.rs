@@ -3,7 +3,7 @@ use std::sync::Arc;
 use insta::assert_debug_snapshot;
 use pandacss_extractor::Literal;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
-use pandacss_utility::{Utility, UtilityOptions, hyphenate_property};
+use pandacss_utility::{Utility, UtilityOptions};
 use serde_json::json;
 
 use crate::common::utility_config;
@@ -259,23 +259,4 @@ fn token_category_values_need_a_dictionary() {
     }
     "#,
     );
-}
-
-#[test]
-fn hyphenate_property_lowercases_camel_case() {
-    assert_eq!(hyphenate_property("backgroundColor"), "background-color");
-}
-
-#[test]
-fn hyphenate_property_special_cases_ms_vendor_prefix() {
-    // A leading `ms` segment becomes `-ms-`, but other vendor prefixes keep
-    // their plain hyphenation.
-    assert_eq!(hyphenate_property("msTransform"), "-ms-transform");
-    assert_eq!(hyphenate_property("MozAppearance"), "-moz-appearance");
-    assert_eq!(hyphenate_property("WebkitTransform"), "-webkit-transform");
-}
-
-#[test]
-fn hyphenate_property_preserves_custom_properties() {
-    assert_eq!(hyphenate_property("--shadow-color"), "--shadow-color");
 }

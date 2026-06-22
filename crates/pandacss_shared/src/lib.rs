@@ -19,11 +19,12 @@ pub use diagnostic::{
     codes as diagnostic_codes,
 };
 pub use error::{PandaError, PandaResult};
-pub use hash::{compound_class_name, compound_combo_string, to_hash};
+pub use hash::{compound_class_name, compound_combo_string, to_hash, without_space};
 pub use important::{is_important, split_important, without_important};
 pub use regex::compile_js_regex;
 pub use strings::{
-    MAX_SAFE_INTEGER, capitalize, closest_match, file_stem, is_js_safe_integer, js_ident,
-    number_to_js_string, pascal_case, push_number_to_js_string,
+    MAX_SAFE_INTEGER, capitalize, closest_match, file_stem, find_matching_paren,
+    hyphenate_property, is_js_safe_integer, js_ident, number_to_js_string, pascal_case,
+    push_number_to_js_string,
 };
 pub use unit_conversion::to_rem;

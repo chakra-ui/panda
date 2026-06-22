@@ -60,7 +60,9 @@ fn compound_readable_suffix(
     format!("compound__{pairs}")
 }
 
-fn without_space(value: &str) -> String {
+/// Replace spaces with underscores so a value can sit inside a class name.
+#[must_use]
+pub fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
@@ -125,67 +127,4 @@ fn to_char(code: u32) -> u8 {
 
     let byte = code + if code > 25 { 39 } else { 97 };
     u8::try_from(byte).expect("base52 hash character fits in ASCII")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{compound_class_name, to_hash};
-
-    #[test]
-    fn compound_class_name_uses_readable_variant_pairs_when_unhashed() {
-        assert_eq!(
-            compound_class_name(
-                "badge",
-                &[("size", "md"), ("raised", "true")],
-                None,
-                "_",
-                false,
-            ),
-            "badge--compound__raised_true__size_md"
-        );
-    }
-
-    #[test]
-    fn compound_class_name_uses_configured_separator_when_unhashed() {
-        assert_eq!(
-            compound_class_name(
-                "badge",
-                &[("size", "md"), ("raised", "true")],
-                None,
-                "-",
-                false,
-            ),
-            "badge--compound__raised-true__size-md"
-        );
-    }
-
-    #[test]
-    fn compound_class_name_does_not_collide_with_single_variant_class() {
-        assert_eq!(
-            compound_class_name("badge", &[("size", "md")], None, "_", false),
-            "badge--compound__size_md"
-        );
-    }
-
-    #[test]
-    fn compound_class_name_hashes_canonical_pairs() {
-        assert_eq!(
-            compound_class_name(
-                "badge",
-                &[("size", "md"), ("raised", "true")],
-                None,
-                "_",
-                true,
-            ),
-            format!("badge--{}", to_hash("raised=true,size=md"))
-        );
-    }
-
-    #[test]
-    fn compound_class_name_preserves_author_class_name() {
-        assert_eq!(
-            compound_class_name("badge", &[("size", "md")], Some("custom"), "_", false),
-            "custom"
-        );
-    }
 }

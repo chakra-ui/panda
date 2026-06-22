@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 
-use pandacss_shared::css_escape;
+use pandacss_shared::{css_escape, find_matching_paren};
 use pandacss_tokens::TokenDictionary;
 
 use crate::split_top_level_slash;
@@ -192,19 +192,6 @@ fn css_var_with_fallback(value: &str, fallback: &str) -> Option<String> {
     }
 
     Some(format!("var({inner}, {fallback})"))
-}
-
-fn find_matching_paren(value: &str) -> Option<usize> {
-    let mut depth = 0u32;
-    for (index, ch) in value.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' if depth == 0 => return Some(index),
-            ')' => depth -= 1,
-            _ => {}
-        }
-    }
-    None
 }
 
 fn split_token_args(value: &str) -> (&str, Option<&str>) {

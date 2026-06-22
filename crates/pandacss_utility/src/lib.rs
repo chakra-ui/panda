@@ -12,7 +12,9 @@ use pandacss_config::{
     CallbackRef, DEFAULT_SEPARATOR, StringOrStringArray, UtilityConfig, UtilityValues,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{css_escape, number_to_js_string, split_important, to_hash};
+use pandacss_shared::{
+    css_escape, hyphenate_property, number_to_js_string, split_important, to_hash, without_space,
+};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
@@ -799,10 +801,6 @@ fn join_class_name(prop: &str, separator: &str, value: &str) -> String {
     out
 }
 
-fn without_space(value: &str) -> String {
-    value.replace(' ', "_")
-}
-
 fn append_important(mut value: String, important: bool) -> String {
     if important {
         value.push('!');
@@ -826,32 +824,6 @@ fn is_arbitrary_value(value: &str) -> bool {
 
 fn has_token_reference(value: &str) -> bool {
     value.contains("token(") || (value.contains('{') && value.contains('}'))
-}
-
-#[must_use]
-pub fn hyphenate_property(property: &str) -> String {
-    if property.starts_with("--") {
-        return property.to_owned();
-    }
-
-    let mut out = String::with_capacity(property.len() + 4);
-    for ch in property.chars() {
-        if ch.is_ascii_uppercase() {
-            out.push('-');
-            out.push(ch.to_ascii_lowercase());
-        } else {
-            out.push(ch);
-        }
-    }
-
-    if let Some(rest) = out.strip_prefix("ms-") {
-        let mut prefixed = String::with_capacity(out.len() + 1);
-        prefixed.push_str("-ms-");
-        prefixed.push_str(rest);
-        return prefixed;
-    }
-
-    out
 }
 
 /// Unwrap the `[arbitrary]` escape hatch (`[2px]` -> `2px`), but only when the
