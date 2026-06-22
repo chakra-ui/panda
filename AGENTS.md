@@ -282,6 +282,29 @@ examples, and implementation detail — that belongs in the PR or commit message
       └─ packages/compiler-wasm/crate (compiler_wasm cdylib — browser wasm-bindgen)
 ```
 
+## CLI (`@pandacss/cli`)
+
+The `panda` command lives in `packages/cli/`. It uses **citty** for routing and **zod** for flag validation.
+
+**Subagent** (`.claude/agents/cli-design-expert.md`): embeds the full CLI design contract (human-first help, output,
+errors, flags, interactivity, scripting). Invoke **`cli-design-expert`** for new subcommands, flag changes,
+error-message work, or help/usage reviews — no need to consult external CLI guides separately.
+
+**Key files:**
+
+- `packages/cli/src/cli-main.ts` — dispatcher; bare `panda` runs the full build
+- `packages/cli/src/args.ts`, `schema.ts` — shared flags
+- `packages/cli/src/commands/` — subcommands
+- `packages/cli/src/output.ts`, `diagnostics.ts`, `result.ts` — streams and exit codes
+
+**Panda CLI conventions:**
+
+- Default `panda` (no subcommand) runs the full build
+- Shared flags: `--cwd`, `--config` / `-c`, `--json`, `--format`, `--log-level`, trace flags
+- Exit codes: `0` success, `1` failed, `2` usage, `3` internal (`ExitCode` in `result.ts`)
+
+**Before committing CLI changes:** `pnpm test packages/cli`
+
 ## Rust / Oxc Engine (v2 migration)
 
 The repo is in the middle of porting the compiler hot path from `ts-morph` + `ts-evaluator` to a Rust/Oxc engine.
@@ -298,8 +321,9 @@ JS-facing APIs stay stable; Rust ships behind `@pandacss/compiler`.
   change the underlying design, update the matching note in the same PR.
 - `design-notes/rust-testing.md` — full Rust testing strategy (consolidated harness, insta workflow, fast iteration).
 
-**Subagents** (`.claude/agents/`): `rust-engineer` (implement), `rust-reviewer` (read-only review),
-`oxc-extractor-architect` (extraction/Oxc), `rust-perf-analyst` (benchmarks / `PERF(port):` flips).
+**Subagents** (`.claude/agents/`): `cli-design-expert` (CLI UX — see [CLI section](#cli-pandacsscli)), `rust-engineer`
+(implement), `rust-reviewer` (read-only review), `oxc-extractor-architect` (extraction/Oxc), `rust-perf-analyst`
+(benchmarks / `PERF(port):` flips).
 
 ### Toolchain
 
