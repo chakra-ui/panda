@@ -5,20 +5,26 @@
 //! canonicalize extracted style props. Executable transforms remain host
 //! callbacks on the binding side.
 
-use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use pandacss_config::{
-    CallbackRef, DEFAULT_SEPARATOR, Deprecated, PrimitiveType, StringOrStringArray, UtilityConfig,
-    UtilityPropertyTypeData, UtilityTypeData, UtilityValues, ValueAliasTypeData, ValueTypePart,
-    value_alias_name,
+    CallbackRef, DEFAULT_SEPARATOR, StringOrStringArray, UtilityConfig, UtilityValues,
 };
 use pandacss_extractor::Literal;
-use pandacss_shared::{css_escape, number_to_js_string, pascal_case, split_important, to_hash};
+use pandacss_shared::{css_escape, number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
+
+mod normalize;
+mod token_ref;
+mod type_data;
+
+pub use normalize::StyleNormalizer;
+pub use token_ref::{expand_token_references_to_values, expand_token_references_to_vars};
+
+use token_ref::is_plain_token_path_like;
 
 #[derive(Debug, Clone, Default)]
 pub struct Utility {
@@ -264,73 +270,6 @@ impl Utility {
     #[must_use]
     pub fn prefix(&self) -> &str {
         &self.prefix
-    }
-
-    /// Project the utility metadata into the codegen [`UtilityTypeData`]
-    /// (property value types, shorthands, value aliases, class names).
-    #[must_use]
-    pub fn type_data(&self) -> UtilityTypeData {
-        let mut properties = BTreeMap::new();
-        let mut aliases = BTreeMap::new();
-        let mut class_names = BTreeMap::new();
-
-        // This is a codegen snapshot, not an extraction hot path. Sort once so
-        // generated types are stable across runs.
-        let mut property_entries = self.properties.iter().collect::<Vec<_>>();
-        property_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
-
-        let tokens = self.tokens.as_deref();
-        for (name, property) in property_entries {
-            let data = property_type_data(name, property, tokens);
-
-            aliases
-                .entry(data.alias.clone())
-                .or_insert_with(|| value_alias_type_data(&data));
-
-            class_names.insert(
-                name.clone(),
-                property
-                    .class_name
-                    .clone()
-                    .unwrap_or_else(|| hyphenate_property(name)),
-            );
-
-            properties.insert(name.clone(), data);
-        }
-
-        let mut shorthands = BTreeMap::new();
-        let mut shorthand_entries = self.shorthands.iter().collect::<Vec<_>>();
-        shorthand_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
-
-        for (name, target) in shorthand_entries {
-            shorthands.insert(name.clone(), target.clone());
-
-            let Some(property) = self.properties.get(target) else {
-                continue;
-            };
-
-            let data = property_type_data(name, property, tokens);
-
-            // Many shorthands share the same value alias as their longhand.
-            // Keep one alias body and let properties reference it by name.
-            aliases
-                .entry(data.alias.clone())
-                .or_insert_with(|| value_alias_type_data(&data));
-
-            properties.insert(name.clone(), data);
-        }
-
-        UtilityTypeData {
-            properties,
-            shorthands,
-            deprecated: self
-                .deprecated
-                .iter()
-                .map(|prop| (prop.clone(), Deprecated::Bool(true)))
-                .collect(),
-            aliases,
-            class_names,
-        }
     }
 
     #[must_use]
@@ -697,7 +636,7 @@ impl Utility {
     }
 }
 
-fn split_top_level_slash(value: &str) -> Option<(&str, &str)> {
+pub(crate) fn split_top_level_slash(value: &str) -> Option<(&str, &str)> {
     let mut nesting_depth = 0usize;
     let mut active_quote = None;
     let mut escaped = false;
@@ -732,304 +671,6 @@ fn split_top_level_slash(value: &str) -> Option<(&str, &str)> {
     }
 
     None
-}
-
-/// Type info for one utility property: its literal value keys (sorted) and the
-/// name of the value-alias type its values resolve to (a token category alias,
-/// or `<Prop>Value`).
-fn property_type_data(
-    name: &str,
-    property: &UtilityProperty,
-    tokens: Option<&TokenDictionary>,
-) -> UtilityPropertyTypeData {
-    let primitive = primitive_type_hint(&property.values);
-    let mut literals = if primitive.is_some() {
-        Vec::new()
-    } else {
-        property.values.keys().cloned().collect::<Vec<_>>()
-    };
-    literals.sort();
-
-    let explicit_category = property.values_category.as_deref();
-    let (token_category, literals) =
-        collapse_inferred_token_category(literals, explicit_category, tokens);
-    let alias = utility_value_alias_name(name, property, token_category.as_deref(), &literals);
-
-    UtilityPropertyTypeData {
-        name: name.to_owned(),
-        css_property: property.css_property.clone(),
-        mapped_css_property: property.mapped_css_property.clone(),
-        token_category,
-        literals,
-        primitive,
-        alias,
-    }
-}
-
-/// When a utility's resolved value map contains every key from a token category
-/// (typical of `values(theme) { ...theme('spacing') }`), collapse those keys to
-/// `TokenValue<"category">` for typegen — matching v1's `type:Tokens["…"]` stub.
-fn collapse_inferred_token_category(
-    literals: Vec<String>,
-    explicit_category: Option<&str>,
-    tokens: Option<&TokenDictionary>,
-) -> (Option<String>, Vec<String>) {
-    if explicit_category.is_some() {
-        return (explicit_category.map(str::to_owned), literals);
-    }
-
-    let Some(tokens) = tokens else {
-        return (None, literals);
-    };
-
-    if literals.is_empty() {
-        return (None, literals);
-    }
-
-    let remaining_set: BTreeSet<&str> = literals.iter().map(String::as_str).collect();
-
-    let mut matches: Vec<(TokenCategory, usize)> = tokens
-        .categories()
-        .filter_map(|category| {
-            let keys = tokens.category_values_str(category)?;
-            if keys.is_empty() {
-                return None;
-            }
-            let all_present = keys.keys().all(|key| remaining_set.contains(key.as_ref()));
-            all_present.then_some((category.clone(), keys.len()))
-        })
-        .collect();
-
-    matches.sort_by(|(left, left_count), (right, right_count)| {
-        right_count
-            .cmp(left_count)
-            .then_with(|| left.as_str().cmp(right.as_str()))
-    });
-
-    let Some(best_count) = matches.first().map(|(_, count)| *count) else {
-        return (None, literals);
-    };
-
-    let best_matches: Vec<_> = matches
-        .iter()
-        .filter(|(_, count)| *count == best_count)
-        .collect();
-
-    if best_matches.len() != 1 {
-        return (None, literals);
-    }
-
-    let (category, _) = best_matches[0];
-
-    let mut remaining: BTreeSet<String> = literals.into_iter().collect();
-    if let Some(keys) = tokens.category_values_str(category) {
-        for key in keys.keys() {
-            remaining.remove(key.as_ref());
-        }
-    }
-
-    let mut remaining_literals: Vec<String> = remaining.into_iter().collect();
-    remaining_literals.sort();
-
-    (Some(category.as_str().to_owned()), remaining_literals)
-}
-
-fn is_category_global_literal(category: &str, literal: &str) -> bool {
-    matches!(
-        (category, literal),
-        ("spacing" | "zIndex" | "aspectRatios", "auto")
-            | (
-                "sizes",
-                "auto" | "fit-content" | "max-content" | "min-content"
-            )
-    )
-}
-
-fn utility_value_alias_name(
-    name: &str,
-    property: &UtilityProperty,
-    inferred_category: Option<&str>,
-    literals: &[String],
-) -> String {
-    if let Some(category) = property.values_category.as_deref() {
-        return value_alias_name(category);
-    }
-
-    if let Some(category) = inferred_category {
-        let only_globals = literals.is_empty()
-            || literals
-                .iter()
-                .all(|literal| is_category_global_literal(category, literal));
-        if only_globals {
-            return value_alias_name(category);
-        }
-    }
-
-    let alias_property = property.css_property.as_deref().unwrap_or(name);
-    format!("{}Value", pascal_case(alias_property))
-}
-
-/// `values: { type: 'boolean' }` is a type hint, not a values map — the
-/// property accepts the named primitive instead of literal keys.
-fn primitive_type_hint(values: &FxHashMap<String, Literal>) -> Option<PrimitiveType> {
-    if values.len() != 1 {
-        return None;
-    }
-    match values.get("type")? {
-        Literal::String(value) => match value.as_str() {
-            "boolean" => Some(PrimitiveType::Boolean),
-            "number" => Some(PrimitiveType::Number),
-            "string" => Some(PrimitiveType::String),
-            _ => None,
-        },
-        _ => None,
-    }
-}
-
-/// Build the union of value-type parts a property's alias accepts — token
-/// category, raw CSS property values, configured literals, and an optional
-/// primitive fallback — in the order they should appear in the generated type.
-fn value_alias_type_data(property: &UtilityPropertyTypeData) -> ValueAliasTypeData {
-    let capacity = property.literals.len()
-        + usize::from(property.token_category.is_some())
-        + usize::from(property.mapped_css_property.is_some())
-        + 4;
-    let mut parts = Vec::with_capacity(capacity);
-
-    if let Some(category) = &property.token_category {
-        parts.push(ValueTypePart::TokenCategory(category.clone()));
-    }
-
-    if let Some(css_property) = &property.mapped_css_property {
-        parts.push(ValueTypePart::CssProperty(css_property.clone()));
-    }
-
-    parts.extend(
-        property
-            .literals
-            .iter()
-            .cloned()
-            .map(ValueTypePart::Literal),
-    );
-
-    if let Some(primitive) = property.primitive {
-        parts.push(ValueTypePart::Primitive(primitive));
-    } else if property.token_category.is_none() && property.literals.is_empty() {
-        parts.push(ValueTypePart::Primitive(PrimitiveType::String));
-        parts.push(ValueTypePart::Primitive(PrimitiveType::Number));
-    }
-
-    parts.push(ValueTypePart::CssVars);
-    parts.push(ValueTypePart::AnyString);
-
-    ValueAliasTypeData {
-        name: property.alias.clone(),
-        parts,
-    }
-}
-
-pub struct StyleNormalizer<'a> {
-    pub utility: Option<&'a Utility>,
-    pub breakpoints: &'a [String],
-    pub shorthand: bool,
-}
-
-impl StyleNormalizer<'_> {
-    #[must_use]
-    pub fn normalize<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
-        if self.utility.is_none() && self.breakpoints.is_empty() {
-            return Cow::Borrowed(style);
-        }
-        Cow::Owned(self.normalize_owned(style))
-    }
-
-    fn normalize_owned(&self, style: &Literal) -> Literal {
-        match style {
-            Literal::Object(entries) => {
-                let mut out = Vec::with_capacity(entries.len());
-                for (key, value) in entries {
-                    let key = if self.shorthand {
-                        self.utility
-                            .map_or(key.as_str(), |utility| utility.resolve_shorthand(key))
-                            .to_owned()
-                    } else {
-                        key.clone()
-                    };
-                    let value = match value {
-                        Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
-                            self.normalize_owned(value)
-                        }
-                        _ => value.clone(),
-                    };
-                    Literal::upsert_object_entry(&mut out, key, value);
-                }
-                Literal::Object(out)
-            }
-            Literal::Array(items) => self.normalize_responsive_array(items),
-            Literal::Conditional(branches) => Literal::Conditional(
-                branches
-                    .iter()
-                    .map(|branch| self.normalize_owned(branch))
-                    .collect(),
-            ),
-            Literal::String(value) => Literal::String(value.clone()),
-            Literal::Token { path, value } => Literal::Token {
-                path: path.clone(),
-                value: value.clone(),
-            },
-            Literal::Number(value) => Literal::Number(*value),
-            Literal::Bool(value) => Literal::Bool(*value),
-            Literal::Null => Literal::Null,
-        }
-    }
-
-    fn normalize_responsive_array(&self, items: &[Literal]) -> Literal {
-        if self.breakpoints.is_empty() {
-            return Literal::Array(
-                items
-                    .iter()
-                    .map(|item| self.normalize_owned(item))
-                    .collect(),
-            );
-        }
-
-        // With breakpoints, a positional array becomes a keyed object
-        // (`["a", "b"]` -> `{ sm: "a", md: "b" }`); `null` slots are skipped.
-        let mut out = Vec::with_capacity(items.len().min(self.breakpoints.len()));
-        for (index, item) in items.iter().enumerate() {
-            let Some(key) = self.breakpoints.get(index) else {
-                continue;
-            };
-            if matches!(item, Literal::Null) {
-                continue;
-            }
-
-            Literal::upsert_object_entry(&mut out, key.clone(), self.normalize_owned(item));
-        }
-
-        Literal::Object(out)
-    }
-}
-
-/// Drives the encoder's fused walker — no upfront normalization pass, no
-/// `Cow<Literal>` allocation when nothing actually changes.
-impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
-    fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
-        if self.shorthand {
-            self.utility
-                .map_or(key, |utility| utility.resolve_shorthand(key))
-        } else {
-            key
-        }
-    }
-
-    fn normalize_leaf<'a>(&self, _: &str, value: &'a Literal) -> Cow<'a, Literal> {
-        Cow::Borrowed(value)
-    }
-
-    fn array_condition(&self, index: usize) -> Option<&str> {
-        self.breakpoints.get(index).map(String::as_str)
-    }
 }
 
 const COMPOSITIONS_LAYER: &str = "compositions";
@@ -1239,203 +880,6 @@ fn arbitrary_value(value: &str) -> String {
     }
 }
 
-#[must_use]
-pub fn expand_token_references_to_vars(value: &str, tokens: &TokenDictionary) -> String {
-    expand_token_references(value, tokens, TokenReferenceResolution::CssVar)
-}
-
-#[must_use]
-pub fn expand_token_references_to_values(value: &str, tokens: &TokenDictionary) -> String {
-    expand_token_references(value, tokens, TokenReferenceResolution::Value)
-}
-
-#[derive(Clone, Copy)]
-enum TokenReferenceResolution {
-    CssVar,
-    Value,
-}
-
-fn expand_token_references(
-    value: &str,
-    tokens: &TokenDictionary,
-    resolution: TokenReferenceResolution,
-) -> String {
-    let with_braces = replace_wrapped_references(value, '{', '}', tokens, resolution);
-    replace_token_functions(&with_braces, tokens, resolution)
-}
-
-/// Replace each `{token.path}` occurrence with its CSS-var form, leaving an
-/// unterminated `{` (no closing brace) and the rest of the string verbatim.
-fn replace_wrapped_references(
-    value: &str,
-    open: char,
-    close: char,
-    tokens: &TokenDictionary,
-    resolution: TokenReferenceResolution,
-) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut rest = value;
-    while let Some(start) = rest.find(open) {
-        out.push_str(&rest[..start]);
-        let after_open = &rest[start + open.len_utf8()..];
-        let Some(end) = after_open.find(close) else {
-            out.push_str(&rest[start..]);
-            return out;
-        };
-        let path = after_open[..end].trim();
-        if let Some(value) = resolved_token_reference(path, tokens, resolution) {
-            out.push_str(value.as_ref());
-        } else {
-            out.push_str(&unresolved_wrapped_reference(path));
-        }
-        rest = &after_open[end + close.len_utf8()..];
-    }
-    out.push_str(rest);
-    out
-}
-
-/// Replace each `token(path, fallback?)` call with the resolved var, using the
-/// fallback (or the raw path) when the token is unknown. Paren-matched so
-/// nested `token(...)` args don't truncate early.
-fn replace_token_functions(
-    value: &str,
-    tokens: &TokenDictionary,
-    resolution: TokenReferenceResolution,
-) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut rest = value;
-    while let Some(start) = rest.find("token(") {
-        out.push_str(&rest[..start]);
-        let after_open = &rest[start + "token(".len()..];
-        let Some(end) = find_matching_paren(after_open) else {
-            out.push_str(&rest[start..]);
-            return out;
-        };
-        let args = &after_open[..end];
-        let (path, fallback) = split_token_args(args);
-        let path = path.trim();
-        let fallback =
-            fallback.map(|value| expand_token_fallback(value.trim(), tokens, resolution));
-        if let Some(value) = resolved_token_reference(path, tokens, resolution) {
-            let value = match (resolution, fallback) {
-                (TokenReferenceResolution::CssVar, Some(fallback)) => {
-                    css_var_with_fallback(value.as_ref(), &fallback)
-                        .map(Cow::Owned)
-                        .unwrap_or(value)
-                }
-                _ => value,
-            };
-            out.push_str(value.as_ref());
-        } else {
-            let value = fallback.unwrap_or_else(|| css_escape(path));
-            out.push_str(value.as_str());
-        }
-        rest = &after_open[end + 1..];
-    }
-    out.push_str(rest);
-    out
-}
-
-fn unresolved_wrapped_reference(path: &str) -> String {
-    if is_token_path_like(path) {
-        css_escape(path)
-    } else {
-        path.to_owned()
-    }
-}
-
-fn is_token_path_like(path: &str) -> bool {
-    path.as_bytes()
-        .windows(3)
-        .any(|window| is_word_byte(window[0]) && window[1] == b'.' && is_word_byte(window[2]))
-}
-
-fn is_plain_token_path_like(value: &str) -> bool {
-    let value = value.trim();
-    let value = split_top_level_slash(value).map_or(value, |(path, _)| path.trim());
-    let Some(first) = value.bytes().next() else {
-        return false;
-    };
-
-    (first.is_ascii_alphabetic() || first == b'_')
-        && value
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
-        && is_token_path_like(value)
-}
-
-fn is_word_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_'
-}
-
-fn color_mix_or_var<'a>(path: &'a str, tokens: &'a TokenDictionary) -> Option<Cow<'a, str>> {
-    if path.contains('/') {
-        return tokens.color_mix_str(path).map(Cow::Owned);
-    }
-    tokens.get_var_str(path, None).map(Cow::Borrowed)
-}
-
-fn token_value<'a>(path: &'a str, tokens: &'a TokenDictionary) -> Option<Cow<'a, str>> {
-    let path = split_top_level_slash(path).map_or(path, |(path, _)| path.trim_end());
-    tokens.get_str(path, None).map(Cow::Borrowed)
-}
-
-fn resolved_token_reference<'a>(
-    path: &'a str,
-    tokens: &'a TokenDictionary,
-    resolution: TokenReferenceResolution,
-) -> Option<Cow<'a, str>> {
-    match resolution {
-        TokenReferenceResolution::CssVar => color_mix_or_var(path, tokens),
-        TokenReferenceResolution::Value => token_value(path, tokens),
-    }
-}
-
-fn expand_token_fallback(
-    value: &str,
-    tokens: &TokenDictionary,
-    resolution: TokenReferenceResolution,
-) -> String {
-    resolved_token_reference(value, tokens, resolution)
-        .unwrap_or_else(|| Cow::Owned(expand_token_references(value, tokens, resolution)))
-        .into_owned()
-}
-
-fn css_var_with_fallback(value: &str, fallback: &str) -> Option<String> {
-    let inner = value.trim().strip_prefix("var(")?.strip_suffix(')')?.trim();
-    if inner.contains(',') {
-        return Some(value.to_owned());
-    }
-
-    Some(format!("var({inner}, {fallback})"))
-}
-
-fn find_matching_paren(value: &str) -> Option<usize> {
-    let mut depth = 0u32;
-    for (index, ch) in value.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' if depth == 0 => return Some(index),
-            ')' => depth -= 1,
-            _ => {}
-        }
-    }
-    None
-}
-
-fn split_token_args(value: &str) -> (&str, Option<&str>) {
-    let mut depth = 0u32;
-    for (index, ch) in value.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' if depth > 0 => depth -= 1,
-            ',' if depth == 0 => return (&value[..index], Some(&value[index + 1..])),
-            _ => {}
-        }
-    }
-    (value, None)
-}
-
 fn json_to_literal(value: &Value) -> Option<Literal> {
     match value {
         Value::String(value) => Some(Literal::String(value.clone())),
@@ -1459,33 +903,36 @@ fn json_to_literal(value: &Value) -> Option<Literal> {
 mod tests {
     use super::split_top_level_slash;
 
-    #[test]
-    fn splits_token_opacity_modifier() {
-        assert_eq!(split_top_level_slash("red/40"), Some(("red", "40")));
-    }
+    // These cases are not observable through the public `transform` API because
+    // the color-mix resolver rejects them before the split is visible, so they
+    // are covered here against the private helper directly.
 
     #[test]
-    fn ignores_slash_inside_css_color_function() {
-        assert_eq!(split_top_level_slash("rgb(251 146 60 / 0.3)"), None);
-    }
-
-    #[test]
-    fn splits_after_css_function() {
+    fn splits_after_a_color_function_with_inner_slash() {
         assert_eq!(
             split_top_level_slash("color(display-p3 1 0 0 / 0.5)/40"),
-            Some(("color(display-p3 1 0 0 / 0.5)", "40"))
+            Some(("color(display-p3 1 0 0 / 0.5)", "40")),
         );
     }
 
     #[test]
-    fn ignores_escaped_or_quoted_slashes() {
+    fn skips_escaped_slashes() {
         assert_eq!(
             split_top_level_slash(r"foo\/bar/40"),
-            Some((r"foo\/bar", "40"))
+            Some((r"foo\/bar", "40")),
         );
+    }
+
+    #[test]
+    fn skips_quoted_slashes() {
         assert_eq!(
             split_top_level_slash(r#"url("/x/y")/40"#),
-            Some((r#"url("/x/y")"#, "40"))
+            Some((r#"url("/x/y")"#, "40")),
         );
+    }
+
+    #[test]
+    fn ignores_slashes_inside_color_function_parentheses() {
+        assert_eq!(split_top_level_slash("rgb(251 146 60 / 0.3)"), None);
     }
 }

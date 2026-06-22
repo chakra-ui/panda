@@ -1,15 +1,12 @@
-use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use insta::assert_yaml_snapshot;
-use pandacss_config::{UtilityConfig, ValueTypePart};
+use pandacss_config::ValueTypePart;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};
-use serde_json::{Value, json};
+use serde_json::json;
 
-fn utility_config(value: Value) -> BTreeMap<String, UtilityConfig> {
-    serde_json::from_value(value).expect("utility config")
-}
+use crate::common::utility_config;
 
 #[test]
 fn exposes_properties_shorthands_aliases_and_deprecations() {
