@@ -90,6 +90,106 @@ fn emits_global_css_color_mix_transform_utilities_to_custom_properties() {
 }
 
 #[test]
+fn expands_global_css_composition_props_through_utilities() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "fontSizes": {
+                    "sm": { "value": "0.875rem" }
+                },
+                "lineHeights": {
+                    "tight": { "value": "1.25" }
+                },
+                "colors": {
+                    "red": { "500": { "value": "#f00" } }
+                }
+            },
+            "textStyles": {
+                "sm": {
+                    "value": {
+                        "fontSize": "sm",
+                        "lineHeight": "tight"
+                    }
+                }
+            },
+            "layerStyles": {
+                "card": {
+                    "value": {
+                        "bg": "red.500"
+                    }
+                }
+            },
+            "animationStyles": {
+                "fade": {
+                    "value": {
+                        "animation": "fade-in 120ms ease"
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "fontSize": { "className": "fs", "values": "fontSizes" },
+            "lineHeight": { "className": "lh", "values": "lineHeights" },
+            "backgroundColor": { "className": "bg-c", "shorthand": "bg", "values": "colors" },
+            "animation": { "className": "anim" }
+        },
+        "globalCss": {
+            "pre, code": {
+                "textStyle": "sm",
+                "layerStyle": "card",
+                "animationStyle": "fade"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  pre, code {
+    animation: fade-in 120ms ease;
+    background-color: var(--colors-red-500);
+    font-size: var(--font-sizes-sm);
+    line-height: var(--line-heights-tight);
+  }
+}
+");
+}
+
+#[test]
+fn skips_unknown_global_css_composition_values() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "sm": {
+                    "value": {
+                        "fontSize": "0.875rem"
+                    }
+                }
+            }
+        },
+        "globalCss": {
+            "code": {
+                "textStyle": "missing"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+}
+");
+}
+
+#[test]
 fn emits_global_css_from_serialized_config() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -231,6 +331,46 @@ fn emits_global_css_direct_nesting_and_conditions() {
 }
 
 #[test]
+fn emits_global_css_nested_utility_transforms() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "divideX": {
+                "className": "divide-x",
+                "values": {
+                    "40px": {
+                        "& > :not([hidden]) ~ :not([hidden])": {
+                            "borderInlineStartWidth": "40px",
+                            "borderInlineEndWidth": "0px"
+                        }
+                    }
+                }
+            }
+        },
+        "globalCss": {
+            ".btn": {
+                "&:hover": {
+                    "divideX": "40px"
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  .btn:hover > :not([hidden]) ~ :not([hidden]) {
+    border-inline-end-width: 0px;
+    border-inline-start-width: 40px;
+  }
+}
+");
+}
+
+#[test]
 fn emits_global_css_recursive_nesting_and_important() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -356,4 +496,52 @@ fn emits_global_css_at_rules() {
       }
     }
     ");
+}
+
+#[test]
+fn resolves_global_css_token_references_in_raw_at_rules() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "sizes": {
+                    "4xl": { "value": "56rem" }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        },
+        "globalCss": {
+            "@container (min-width: {sizes.4xl})": {
+                "html": {
+                    "color": "green"
+                }
+            },
+            "@media (min-width: token(sizes.4xl))": {
+                "body": {
+                    "color": "blue"
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  @media (min-width: 56rem) {
+    body {
+      color: blue;
+    }
+  }
+  @container (min-width: 56rem) {
+    html {
+      color: green;
+    }
+  }
+}
+");
 }

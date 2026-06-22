@@ -14,14 +14,18 @@ use pandacss_encoder::{
 use pandacss_extractor::Literal;
 use pandacss_shared::{css_escape, number_to_js_string, split_important, to_hash};
 use pandacss_tokens::{TokenCssConditionVars, TokenCssVar, TokenCssVars, TokenDictionary};
-use pandacss_utility::{StyleNormalizer, Utility, UtilityTransformResult, hyphenate_property};
+use pandacss_utility::{
+    StyleNormalizer, Utility, UtilityTransformResult, expand_token_references_to_values,
+    hyphenate_property,
+};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use crate::StylesheetLayerRanges;
 use crate::conditions::{
-    ConditionPaths, is_nested_selector_key, lower_selector_conditions, lower_target_conditions,
-    lower_token_conditions, nested_selector, resolved_condition_paths,
+    ConditionPaths, is_nested_selector_key, lower_selector_conditions,
+    lower_target_resolved_conditions, lower_token_conditions, nested_selector,
+    resolved_condition_paths,
 };
 use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
@@ -57,7 +61,7 @@ pub fn emit<'a>(
     minify: bool,
     emit_layer_declaration: bool,
 ) -> EmitOutput {
-    let cx = EmitContext::new(config, utility, utility_styles);
+    let cx = EmitContext::new(config, utility, utility_styles, tokens.dictionary);
     let layers = &config.layers;
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
@@ -180,7 +184,8 @@ pub fn emit_theme_css(
             if segment.is_empty() || segment == "base" {
                 continue;
             }
-            condition_paths.push(resolved_condition_paths(config, segment)?);
+            let paths = resolved_condition_paths(config, segment)?;
+            condition_paths.push(expand_condition_paths(paths, Some(dictionary)));
         }
         if !has_theme {
             continue;
@@ -265,7 +270,7 @@ pub fn emit_recipe_split<'a>(
     minify: bool,
 ) -> Vec<(String, String)> {
     let empty_utility_styles = UtilityStyleOverrides::default();
-    let cx = EmitContext::new(config, utility, &empty_utility_styles);
+    let cx = EmitContext::new(config, utility, &empty_utility_styles, None);
     let recipes_layer = &config.layers.recipes;
     let mut grouped: indexmap::IndexMap<&str, SplitRecipeGroups<'_>> = indexmap::IndexMap::new();
     for group in &recipes.base {
@@ -792,6 +797,24 @@ fn find_matching_paren(value: &str) -> Option<usize> {
     None
 }
 
+fn expand_condition_paths(
+    paths: ConditionPaths,
+    token_dictionary: Option<&TokenDictionary>,
+) -> ConditionPaths {
+    let Some(token_dictionary) = token_dictionary else {
+        return paths;
+    };
+
+    paths
+        .into_iter()
+        .map(|path| {
+            path.into_iter()
+                .map(|raw| expand_token_references_to_values(&raw, token_dictionary))
+                .collect()
+        })
+        .collect()
+}
+
 /// Custom-utility transform styles by `(prop, original_value)` — the structural
 /// match of `pandacss_project::UtilityStyleKey`'s map.
 pub type UtilityStyleOverrides = FxHashMap<(Box<str>, AtomValue), Literal>;
@@ -802,6 +825,7 @@ struct EmitContext<'a> {
     breakpoints: Vec<String>,
     sort: SortContext<'a>,
     utility: &'a Utility,
+    token_dictionary: Option<&'a TokenDictionary>,
     /// Transform styles to swap in (empty for paths with no utility atoms).
     utility_styles: &'a UtilityStyleOverrides,
 }
@@ -811,6 +835,7 @@ impl<'a> EmitContext<'a> {
         config: &'a UserConfig,
         utility: &'a Utility,
         utility_styles: &'a UtilityStyleOverrides,
+        token_dictionary: Option<&'a TokenDictionary>,
     ) -> Self {
         let condition_names = config.condition_names();
         Self {
@@ -819,6 +844,7 @@ impl<'a> EmitContext<'a> {
             breakpoints: config.theme.breakpoint_names(),
             sort: SortContext::new(config),
             utility,
+            token_dictionary,
             utility_styles,
         }
     }
@@ -940,10 +966,30 @@ impl<'a> EmitContext<'a> {
             return;
         };
         for (key, value) in entries {
+            if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
+                self.collect_style_entries_usage(
+                    &style_entries,
+                    false,
+                    token_dictionary,
+                    keyframes,
+                    marks,
+                );
+                continue;
+            }
+
+            if let Some(style_entries) = self.nested_utility_style_entries_for_value(key, value) {
+                self.collect_style_entries_usage(
+                    &style_entries,
+                    false,
+                    token_dictionary,
+                    keyframes,
+                    marks,
+                );
+                continue;
+            }
+
             if let Value::Object(_) = value {
-                if resolved_condition_paths(self.config, key).is_some()
-                    || is_nested_selector_key(key)
-                {
+                if self.resolved_condition_paths(key).is_some() || is_nested_selector_key(key) {
                     self.collect_styles_usage(value, token_dictionary, keyframes, marks);
                     continue;
                 }
@@ -1038,11 +1084,35 @@ impl<'a> EmitContext<'a> {
         marks: &mut UsageMarks,
     ) {
         for entry in self.style_object_entries(styles) {
-            let Some(declarations) = self.style_entry_declarations(&entry, important) else {
-                continue;
-            };
-            Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+            self.collect_style_entry_usage(&entry, important, token_dictionary, keyframes, marks);
         }
+    }
+
+    fn collect_style_entries_usage(
+        &self,
+        entries: &[RecipeStyleEntry],
+        important: bool,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        for entry in entries {
+            self.collect_style_entry_usage(entry, important, token_dictionary, keyframes, marks);
+        }
+    }
+
+    fn collect_style_entry_usage(
+        &self,
+        entry: &RecipeStyleEntry,
+        important: bool,
+        token_dictionary: Option<&TokenDictionary>,
+        keyframes: Option<&serde_json::Map<String, Value>>,
+        marks: &mut UsageMarks,
+    ) {
+        let Some(declarations) = self.style_entry_declarations(entry, important) else {
+            return;
+        };
+        Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
     }
 
     fn group_atoms(&self, atoms: &[SortedAtom<'_>]) -> GroupNode {
@@ -1156,7 +1226,7 @@ impl<'a> EmitContext<'a> {
             }
 
             for base_rule in base_rules {
-                for rule in lower_target_conditions(self.config, base_rule, &entry.conditions) {
+                for rule in self.lower_rule_conditions(base_rule, &entry.conditions) {
                     push_pending_rule(&mut pending, rule, declarations.clone(), |previous| {
                         push_grouped_rule(grouped, &previous.target, previous.declarations);
                     });
@@ -1256,7 +1326,7 @@ impl<'a> EmitContext<'a> {
         };
         let mut conditions = Vec::new();
         for (selector, styles) in entries {
-            if let Some(condition) = resolved_condition_paths(self.config, selector) {
+            if let Some(condition) = self.resolved_condition_paths(selector) {
                 self.collect_scope(grouped, styles, &mut conditions, condition);
             } else {
                 self.collect_style_object(grouped, selector, styles, &mut conditions);
@@ -1277,7 +1347,7 @@ impl<'a> EmitContext<'a> {
 
         conditions.push(condition);
         for (selector, styles) in entries {
-            if let Some(condition) = resolved_condition_paths(self.config, selector) {
+            if let Some(condition) = self.resolved_condition_paths(selector) {
                 self.collect_scope(grouped, styles, conditions, condition);
             } else {
                 self.collect_style_object(grouped, selector, styles, conditions);
@@ -1302,9 +1372,20 @@ impl<'a> EmitContext<'a> {
         let mut declarations = Vec::with_capacity(entries.len());
         let mut nested_rules = Vec::new();
         let mut conditional_declarations = Vec::new();
+        let mut composition_entries = Vec::new();
         for (key, value) in entries {
+            if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
+                composition_entries.extend(style_entries);
+                continue;
+            }
+
+            if let Some(style_entries) = self.nested_utility_style_entries_for_value(key, value) {
+                composition_entries.extend(style_entries);
+                continue;
+            }
+
             if let Value::Object(_) = value {
-                if let Some(condition) = resolved_condition_paths(self.config, key) {
+                if let Some(condition) = self.resolved_condition_paths(key) {
                     nested_rules.push(NestedStyleRule {
                         selector: selector.to_owned(),
                         value,
@@ -1335,10 +1416,16 @@ impl<'a> EmitContext<'a> {
             }
         }
 
+        let base_rules = self.lower_resolved_selector(selector, conditions);
+
         if !declarations.is_empty() {
-            for rule in self.lower_resolved_selector(selector, conditions) {
-                push_grouped_rule(grouped, &rule, declarations.clone());
+            for rule in &base_rules {
+                push_grouped_rule(grouped, rule, declarations.clone());
             }
+        }
+
+        if !composition_entries.is_empty() {
+            self.collect_style_entries_for_rules(grouped, &composition_entries, &base_rules, false);
         }
 
         for conditional in conditional_declarations {
@@ -1377,7 +1464,7 @@ impl<'a> EmitContext<'a> {
             let condition = if condition == "base" {
                 None
             } else {
-                let Some(condition) = resolved_condition_paths(self.config, condition) else {
+                let Some(condition) = self.resolved_condition_paths(condition) else {
                     return false;
                 };
                 Some(condition)
@@ -1411,6 +1498,20 @@ impl<'a> EmitContext<'a> {
         value: &Value,
     ) -> Option<Vec<Declaration>> {
         let value = value_to_atom_value(value)?;
+        if let Some(entries) = self.composition_style_entries(prop, &value) {
+            let mut declarations = Vec::new();
+            for entry in self.sort.sorted_recipe_entries(&entries) {
+                let Some(entry_declarations) = self.style_entry_declarations(entry.entry, false)
+                else {
+                    continue;
+                };
+                append_declarations(&mut declarations, entry_declarations);
+            }
+            return Some(declarations);
+        }
+        if self.nested_utility_style_entries(prop, &value).is_some() {
+            return Some(Vec::new());
+        }
         self.property_declarations(prop, &value, false)
     }
 
@@ -1505,7 +1606,7 @@ impl<'a> EmitContext<'a> {
             if segment.is_empty() || segment == "base" {
                 return None;
             }
-            conditions.push(resolved_condition_paths(self.config, segment)?);
+            conditions.push(self.resolved_condition_paths(segment)?);
         }
         (!conditions.is_empty()).then_some(conditions)
     }
@@ -1607,7 +1708,7 @@ impl<'a> EmitContext<'a> {
             }
 
             for base_rule in &base_rules {
-                for rule in lower_target_conditions(self.config, base_rule, &entry.conditions) {
+                for rule in self.lower_rule_conditions(base_rule, &entry.conditions) {
                     push_pending_rule(&mut pending, rule, declarations.clone(), |previous| {
                         write_rule(writer, &previous.target, &previous.declarations);
                     });
@@ -1714,7 +1815,7 @@ impl<'a> EmitContext<'a> {
         // Build the base selector once, then apply condition wrappers/selectors
         // through the shared lowering path for atom and recipe rules.
         let selector = self.selector_for_target(target);
-        lower_target_conditions(self.config, &LoweredTarget::new(selector), conditions)
+        self.lower_rule_conditions(&LoweredTarget::new(selector), conditions)
     }
 
     fn lower_resolved_selector(
@@ -1726,6 +1827,27 @@ impl<'a> EmitContext<'a> {
             selector: Cow::Borrowed(selector),
         });
         lower_selector_conditions(&selector, conditions)
+    }
+
+    fn lower_rule_conditions(
+        &self,
+        base_rule: &LoweredTarget,
+        conditions: &[impl AsRef<str>],
+    ) -> Vec<LoweredTarget> {
+        let Some(conditions) = conditions
+            .iter()
+            .map(|condition| self.resolved_condition_paths(condition.as_ref()))
+            .collect::<Option<Vec<_>>>()
+        else {
+            return Vec::new();
+        };
+
+        lower_target_resolved_conditions(base_rule, &conditions)
+    }
+
+    fn resolved_condition_paths(&self, key: &str) -> Option<ConditionPaths> {
+        let paths = resolved_condition_paths(self.config, key)?;
+        Some(expand_condition_paths(paths, self.token_dictionary))
     }
 
     fn selector_for_target(&self, target: Target<'_>) -> String {
@@ -1769,6 +1891,62 @@ impl<'a> EmitContext<'a> {
             .into_iter()
             .map(RecipeStyleEntry::from)
             .collect()
+    }
+
+    fn composition_style_entries_for_value(
+        &self,
+        prop: &str,
+        value: &Value,
+    ) -> Option<Vec<RecipeStyleEntry>> {
+        let value = value_to_atom_value(value)?;
+        self.composition_style_entries(prop, &value)
+    }
+
+    fn composition_style_entries(
+        &self,
+        prop: &str,
+        value: &AtomValue,
+    ) -> Option<Vec<RecipeStyleEntry>> {
+        if !is_composition_prop(prop) {
+            return None;
+        }
+
+        let raw = atom_value_to_string(value);
+        let raw = raw.as_deref()?;
+        let result = self.transform_atom_styles(prop, raw, value);
+        let Some(styles) = composition_style_object(prop, &result.styles) else {
+            return Some(Vec::new());
+        };
+
+        Some(self.style_object_entries(styles))
+    }
+
+    fn nested_utility_style_entries_for_value(
+        &self,
+        prop: &str,
+        value: &Value,
+    ) -> Option<Vec<RecipeStyleEntry>> {
+        let value = value_to_atom_value(value)?;
+        self.nested_utility_style_entries(prop, &value)
+    }
+
+    fn nested_utility_style_entries(
+        &self,
+        prop: &str,
+        value: &AtomValue,
+    ) -> Option<Vec<RecipeStyleEntry>> {
+        if is_composition_prop(prop) {
+            return None;
+        }
+
+        let raw = atom_value_to_string(value);
+        let raw = raw.as_deref()?;
+        let result = self.transform_atom_styles(prop, raw, value);
+        if !is_nested_style_object(&result.styles) {
+            return None;
+        }
+
+        Some(self.style_object_entries(&result.styles))
     }
 }
 

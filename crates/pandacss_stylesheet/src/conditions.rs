@@ -48,37 +48,20 @@ pub(crate) fn resolved_condition_paths(config: &UserConfig, key: &str) -> Option
     (!paths.is_empty()).then_some(paths)
 }
 
-pub(crate) fn lower_target_conditions(
-    config: &UserConfig,
-    target: &LoweredTarget,
-    conditions: &[&str],
-) -> Vec<LoweredTarget> {
-    // Each condition can expand to multiple paths, so lowering builds the
-    // cartesian product while preserving the caller's condition order.
-    let mut targets = vec![target.clone()];
-    for condition in conditions {
-        let mut next = Vec::new();
-        for target in &targets {
-            for path in condition_raw_paths(config, condition) {
-                let mut target = target.clone();
-                for raw in path {
-                    apply_raw_condition(&mut target.selector, &mut target.wrappers, &raw);
-                }
-                next.push(target);
-            }
-        }
-        targets = next;
-    }
-    targets
-}
-
 pub(crate) fn lower_selector_conditions(
     base: &str,
     conditions: &[ConditionPaths],
 ) -> Vec<LoweredTarget> {
     // Global CSS and token CSS resolve condition keys before they reach this
     // point, but still need the same path-product lowering as atom rules.
-    let mut targets = vec![LoweredTarget::new(base)];
+    lower_target_resolved_conditions(&LoweredTarget::new(base), conditions)
+}
+
+pub(crate) fn lower_target_resolved_conditions(
+    base: &LoweredTarget,
+    conditions: &[ConditionPaths],
+) -> Vec<LoweredTarget> {
+    let mut targets = vec![base.clone()];
     for paths in conditions {
         let mut next = Vec::new();
         for target in &targets {

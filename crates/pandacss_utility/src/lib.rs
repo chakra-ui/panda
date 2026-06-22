@@ -633,7 +633,7 @@ impl Utility {
         let Some(tokens) = &self.tokens else {
             return value.to_owned();
         };
-        expand_token_references(value, tokens)
+        expand_token_references_to_vars(value, tokens)
     }
 
     fn collect_shorthands(&mut self, property: &str, value: Option<&StringOrStringArray>) {
@@ -1239,9 +1239,29 @@ fn arbitrary_value(value: &str) -> String {
     }
 }
 
-fn expand_token_references(value: &str, tokens: &TokenDictionary) -> String {
-    let with_braces = replace_wrapped_references(value, '{', '}', tokens);
-    replace_token_functions(&with_braces, tokens)
+#[must_use]
+pub fn expand_token_references_to_vars(value: &str, tokens: &TokenDictionary) -> String {
+    expand_token_references(value, tokens, TokenReferenceResolution::CssVar)
+}
+
+#[must_use]
+pub fn expand_token_references_to_values(value: &str, tokens: &TokenDictionary) -> String {
+    expand_token_references(value, tokens, TokenReferenceResolution::Value)
+}
+
+#[derive(Clone, Copy)]
+enum TokenReferenceResolution {
+    CssVar,
+    Value,
+}
+
+fn expand_token_references(
+    value: &str,
+    tokens: &TokenDictionary,
+    resolution: TokenReferenceResolution,
+) -> String {
+    let with_braces = replace_wrapped_references(value, '{', '}', tokens, resolution);
+    replace_token_functions(&with_braces, tokens, resolution)
 }
 
 /// Replace each `{token.path}` occurrence with its CSS-var form, leaving an
@@ -1251,6 +1271,7 @@ fn replace_wrapped_references(
     open: char,
     close: char,
     tokens: &TokenDictionary,
+    resolution: TokenReferenceResolution,
 ) -> String {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
@@ -1262,7 +1283,7 @@ fn replace_wrapped_references(
             return out;
         };
         let path = after_open[..end].trim();
-        if let Some(value) = color_mix_or_var(path, tokens) {
+        if let Some(value) = resolved_token_reference(path, tokens, resolution) {
             out.push_str(value.as_ref());
         } else {
             out.push_str(&unresolved_wrapped_reference(path));
@@ -1276,7 +1297,11 @@ fn replace_wrapped_references(
 /// Replace each `token(path, fallback?)` call with the resolved var, using the
 /// fallback (or the raw path) when the token is unknown. Paren-matched so
 /// nested `token(...)` args don't truncate early.
-fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
+fn replace_token_functions(
+    value: &str,
+    tokens: &TokenDictionary,
+    resolution: TokenReferenceResolution,
+) -> String {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
     while let Some(start) = rest.find("token(") {
@@ -1289,10 +1314,20 @@ fn replace_token_functions(value: &str, tokens: &TokenDictionary) -> String {
         let args = &after_open[..end];
         let (path, fallback) = split_token_args(args);
         let path = path.trim();
-        if let Some(value) = color_mix_or_var(path, tokens) {
+        let fallback =
+            fallback.map(|value| expand_token_fallback(value.trim(), tokens, resolution));
+        if let Some(value) = resolved_token_reference(path, tokens, resolution) {
+            let value = match (resolution, fallback) {
+                (TokenReferenceResolution::CssVar, Some(fallback)) => {
+                    css_var_with_fallback(value.as_ref(), &fallback)
+                        .map(Cow::Owned)
+                        .unwrap_or(value)
+                }
+                _ => value,
+            };
             out.push_str(value.as_ref());
         } else {
-            let value = fallback.map_or_else(|| css_escape(path), |value| value.trim().to_owned());
+            let value = fallback.unwrap_or_else(|| css_escape(path));
             out.push_str(value.as_str());
         }
         rest = &after_open[end + 1..];
@@ -1338,6 +1373,41 @@ fn color_mix_or_var<'a>(path: &'a str, tokens: &'a TokenDictionary) -> Option<Co
         return tokens.color_mix_str(path).map(Cow::Owned);
     }
     tokens.get_var_str(path, None).map(Cow::Borrowed)
+}
+
+fn token_value<'a>(path: &'a str, tokens: &'a TokenDictionary) -> Option<Cow<'a, str>> {
+    let path = split_top_level_slash(path).map_or(path, |(path, _)| path.trim_end());
+    tokens.get_str(path, None).map(Cow::Borrowed)
+}
+
+fn resolved_token_reference<'a>(
+    path: &'a str,
+    tokens: &'a TokenDictionary,
+    resolution: TokenReferenceResolution,
+) -> Option<Cow<'a, str>> {
+    match resolution {
+        TokenReferenceResolution::CssVar => color_mix_or_var(path, tokens),
+        TokenReferenceResolution::Value => token_value(path, tokens),
+    }
+}
+
+fn expand_token_fallback(
+    value: &str,
+    tokens: &TokenDictionary,
+    resolution: TokenReferenceResolution,
+) -> String {
+    resolved_token_reference(value, tokens, resolution)
+        .unwrap_or_else(|| Cow::Owned(expand_token_references(value, tokens, resolution)))
+        .into_owned()
+}
+
+fn css_var_with_fallback(value: &str, fallback: &str) -> Option<String> {
+    let inner = value.trim().strip_prefix("var(")?.strip_suffix(')')?.trim();
+    if inner.contains(',') {
+        return Some(value.to_owned());
+    }
+
+    Some(format!("var({inner}, {fallback})"))
 }
 
 fn find_matching_paren(value: &str) -> Option<usize> {

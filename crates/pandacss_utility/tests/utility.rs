@@ -1046,6 +1046,87 @@ fn transform_escapes_unresolved_token_reference_values() {
 }
 
 #[test]
+fn transform_resolves_token_function_fallbacks() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.300",
+            "#f00",
+            "var(--colors-red-300)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "colors.blue.300",
+            "#00f",
+            "var(--colors-blue-300)",
+            TokenCategory::Colors,
+        ))
+        .insert(Token::new(
+            "colors.green.300",
+            "#0f0",
+            "var(--colors-green-300)",
+            TokenCategory::Colors,
+        ))
+        .build();
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "border": {
+                "className": "border"
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let literal = utility
+        .transform(
+            "border",
+            &Literal::String("1px solid token(colors.red.300, blue)".into()),
+        )
+        .expect("literal fallback transform");
+    let token_ref = utility
+        .transform(
+            "border",
+            &Literal::String("1px solid token(colors.red.300, colors.blue.300)".into()),
+        )
+        .expect("token fallback transform");
+    let nested = utility
+        .transform(
+            "border",
+            &Literal::String(
+                "1px solid token(colors.red.300, token(colors.blue.300, colors.green.300))".into(),
+            ),
+        )
+        .expect("nested fallback transform");
+
+    assert_eq!(
+        literal.styles,
+        Literal::Object(vec![(
+            "border".into(),
+            Literal::String("1px solid var(--colors-red-300, blue)".into())
+        )]),
+    );
+    assert_eq!(
+        token_ref.styles,
+        Literal::Object(vec![(
+            "border".into(),
+            Literal::String("1px solid var(--colors-red-300, var(--colors-blue-300))".into())
+        )]),
+    );
+    assert_eq!(
+        nested.styles,
+        Literal::Object(vec![(
+            "border".into(),
+            Literal::String(
+                "1px solid var(--colors-red-300, var(--colors-blue-300, var(--colors-green-300)))"
+                    .into()
+            )
+        )]),
+    );
+}
+
+#[test]
 fn transform_preserves_layer() {
     let utility = Utility::from_config(&utility_config(json!({
         "textStyle": {

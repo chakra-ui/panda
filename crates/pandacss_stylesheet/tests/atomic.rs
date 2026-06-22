@@ -486,6 +486,42 @@ fn theme_conditions_emit_self_or_descendant_where_selector() {
 }
 
 #[test]
+fn resolves_token_references_in_raw_at_rule_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "sizes": {
+                    "4xl": { "value": "56rem" }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ '@container (min-width: token(sizes.4xl))': { color: 'green' } }); css({ '@media (min-width: {sizes.4xl})': { color: 'blue' } });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  @media (min-width: 56rem) {
+    .\[\@media_\(min-width\:_\{sizes\.4xl\}\)\]\:c_blue {
+      color: blue;
+    }
+  }
+  @container (min-width: 56rem) {
+    .\[\@container_\(min-width\:_token\(sizes\.4xl\)\)\]\:c_green {
+      color: green;
+    }
+  }
+}
+");
+}
+
+#[test]
 fn resolves_color_opacity_modifiers_to_color_mix() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -727,7 +763,8 @@ fn resolves_token_references_interpolated_in_longhand_values() {
         concat!(
             "import { css } from '@panda/css'\n",
             "css({ border: '1px solid {colors.red.300}' })\n",
-            "css({ border: '2px solid token(colors.red.300)' })",
+            "css({ border: '2px solid token(colors.red.300)' })\n",
+            "css({ border: '3px solid token(colors.red.300, blue)' })",
         ),
         &[StylesheetLayer::Utilities],
     );
@@ -738,6 +775,9 @@ fn resolves_token_references_interpolated_in_longhand_values() {
       }
       .border_2px_solid_token\(colors\.red\.300\) {
         border: 2px solid var(--colors-red-300);
+      }
+      .border_3px_solid_token\(colors\.red\.300\,_blue\) {
+        border: 3px solid var(--colors-red-300, blue);
       }
     }
     ");
