@@ -84,6 +84,18 @@ fn shorthand_value_resolves_to_canonical_property_and_token() {
 }
 
 #[test]
+fn css_call_collects_every_style_object_argument() {
+    let result = project().inspect_file_source(
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ color: 'red.500' }, { p: '4' })",
+    );
+    assert_snapshot!(style_summary(&result), @r#"
+    Utility CssCall Safe color -> None path=color
+    Utility CssCall Safe p -> Some("padding") path=p
+    "#);
+}
+
+#[test]
 fn opacity_modifier_still_captures_the_base_token() {
     let result = project().inspect_file_source(
         "a.tsx",
@@ -335,6 +347,44 @@ fn inspection_treats_jsx_css_props_as_nested_style_objects() {
         - color
       key: color
     ");
+}
+
+#[test]
+fn inspection_descends_array_css_prop() {
+    let source = indoc! {r"
+        import { Box } from '@panda/jsx'
+        const el = <Box css={[{ color: 'red.500' }, { p: '4' }]} />
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    let entries = result
+        .style_entries
+        .iter()
+        .map(|entry| {
+            json!({
+                "kind": entry.kind,
+                "fixable": entry.fixable,
+                "path": entry.path,
+                "value": span_text(source, entry.value_span),
+            })
+        })
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(entries, @r#"
+    - kind: utility
+      fixable: safe
+      path:
+        - css
+        - "0"
+        - color
+      value: "'red.500'"
+    - kind: utility
+      fixable: safe
+      path:
+        - css
+        - "1"
+        - p
+      value: "'4'"
+    "#);
 }
 
 #[test]

@@ -102,5 +102,23 @@ ruleTester.run('no-invalid-nesting', asRule(plugin.rules['no-invalid-nesting']),
         },
       ],
     },
+    // Inside a recipe (cva) base — surfaces as a recipe-variant entry.
+    {
+      filename: 'app.tsx',
+      code: ["import { cva } from '@panda/css'", "cva({ base: { ':hover': { color: 'red.500' } } })"].join('\n'),
+      errors: [
+        {
+          message: message(':hover'),
+          suggestions: [
+            {
+              desc: 'Prefix with "&" → "&:hover"',
+              output: ["import { cva } from '@panda/css'", "cva({ base: { '&:hover': { color: 'red.500' } } })"].join(
+                '\n',
+              ),
+            },
+          ],
+        },
+      ],
+    },
   ],
 })

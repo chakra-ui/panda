@@ -181,14 +181,17 @@ fn collect_call_styles(
     };
     match (call.category, call.name.as_str()) {
         (MatchCategory::Css, "css") => {
-            if let Some(entries) = call_object(call, 0) {
-                walk_object(entries, cx, &range, sites);
-                collector.collect(
-                    entries,
-                    StyleEntrySyntax::CssCall,
-                    &mut Vec::new(),
-                    style_entries,
-                );
+            // `css(a, b, …)` merges every style-object argument, so inspect them all.
+            for index in 0..call.data.len() {
+                if let Some(entries) = call_object(call, index) {
+                    walk_object(entries, cx, &range, sites);
+                    collector.collect(
+                        entries,
+                        StyleEntrySyntax::CssCall,
+                        &mut Vec::new(),
+                        style_entries,
+                    );
+                }
             }
         }
         // `cva({...})` (atomic recipe) / `sva({...})` (slot recipe) — the recipe
@@ -412,13 +415,28 @@ impl StyleEntryCollector<'_, '_> {
         for (key, value) in entries {
             let is_nesting_key = is_nesting(key, self.cx);
             path.push(key.clone());
-            if syntax == StyleEntrySyntax::JsxProp
-                && is_jsx_css_prop(key)
-                && let Literal::Object(nested) = value
-            {
-                self.collect(nested, StyleEntrySyntax::JsxStyleProp, path, out);
-                path.pop();
-                continue;
+            if syntax == StyleEntrySyntax::JsxProp && is_jsx_css_prop(key) {
+                match value {
+                    // `css={{ ... }}`
+                    Literal::Object(nested) => {
+                        self.collect(nested, StyleEntrySyntax::JsxStyleProp, path, out);
+                        path.pop();
+                        continue;
+                    }
+                    // `css={[{ ... }, { ... }]}` — each element is a merged style object.
+                    Literal::Array(items) => {
+                        for (index, item) in items.iter().enumerate() {
+                            if let Literal::Object(nested) = item {
+                                path.push(index.to_string());
+                                self.collect(nested, StyleEntrySyntax::JsxStyleProp, path, out);
+                                path.pop();
+                            }
+                        }
+                        path.pop();
+                        continue;
+                    }
+                    _ => {}
+                }
             }
             let source_ref = self.source_ref(path);
             let source_range = source_ref.map(|source_ref| {

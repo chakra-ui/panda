@@ -139,6 +139,49 @@ ruleTester.run('prefer-token', asRule(plugin.rules['prefer-token']), {
         },
       ],
     },
+    // JSX `css` prop with an array of style objects (`css={[{...}, {...}]}`).
+    {
+      filename: 'app.tsx',
+      code: [
+        "import { styled } from '@panda/jsx'",
+        "const A = () => <styled.div css={[{ color: '#f00' }, { padding: '4' }]} />",
+      ].join('\n'),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            {
+              desc: 'Use the token "fg.error"',
+              output: [
+                "import { styled } from '@panda/jsx'",
+                "const A = () => <styled.div css={[{ color: 'fg.error' }, { padding: '4' }]} />",
+              ].join('\n'),
+            },
+            {
+              desc: 'Use the token "red.500"',
+              output: [
+                "import { styled } from '@panda/jsx'",
+                "const A = () => <styled.div css={[{ color: 'red.500' }, { padding: '4' }]} />",
+              ].join('\n'),
+            },
+          ],
+        },
+      ],
+    },
+    // `css(a, b)` multi-argument merge — every object argument is inspected.
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ padding: '4' }, { color: '#f00' })"),
+      errors: [
+        {
+          message: 'Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.',
+          suggestions: [
+            { desc: 'Use the token "fg.error"', output: withCss("css({ padding: '4' }, { color: 'fg.error' })") },
+            { desc: 'Use the token "red.500"', output: withCss("css({ padding: '4' }, { color: 'red.500' })") },
+          ],
+        },
+      ],
+    },
     // `cva` recipe styles (base / variants / compoundVariants) are covered.
     {
       filename: 'app.tsx',

@@ -4,7 +4,8 @@ import { ProjectCache, type ProjectContext } from './project-cache'
 import { type PandaLintSettings, type RuleContextLike, resolvePandaSettings } from './settings'
 
 export interface SourceCodeLike {
-  text: string
+  text?: string
+  getText?: () => string
 }
 
 export interface LintRuleContextLike extends RuleContextLike {
@@ -72,7 +73,8 @@ export function getContextFilename(context: LintRuleContextLike): string {
 }
 
 export function getContextSource(context: LintRuleContextLike): string {
-  return context.sourceCode?.text ?? context.getSourceCode?.().text ?? ''
+  const sourceCode = context.sourceCode ?? context.getSourceCode?.()
+  return sourceCode?.text ?? sourceCode?.getText?.() ?? ''
 }
 
 function cleanFilename(value: string | undefined): string | undefined {

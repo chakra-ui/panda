@@ -43,6 +43,11 @@ export interface RuleModuleLike {
 
 export type Inspect = (context: LintRuleContextLike) => FileInspectionResult | undefined
 
+/** Full source text from a rule context (ESLint exposes `.text`, oxlint `getText()`). */
+export function getSourceText(context: RuleContextWithReport): string {
+  return context.sourceCode?.text ?? context.sourceCode?.getText?.() ?? ''
+}
+
 /** UTF-8 byte offset (Panda spans) → string index (ESLint fix ranges). */
 export function byteToIndex(text: string, byteOffset: number): number {
   let bytes = 0

@@ -1,4 +1,4 @@
-import { type Inspect, type RuleModuleLike, byteToIndex, toEslintLoc } from './shared'
+import { type Inspect, type RuleModuleLike, byteToIndex, getSourceText, toEslintLoc } from './shared'
 
 export const noInvalidNestingRuleName = 'no-invalid-nesting'
 
@@ -25,7 +25,7 @@ export function createNoInvalidNestingRule(options: { inspect: Inspect }): RuleM
       hasSuggestions: true,
     },
     create(context) {
-      const source = context.sourceCode?.text ?? ''
+      const source = getSourceText(context)
       return {
         Program() {
           const inspection = options.inspect(context)
@@ -33,8 +33,10 @@ export function createNoInvalidNestingRule(options: { inspect: Inspect }): RuleM
 
           for (const entry of inspection.styleEntries) {
             // A selector-shaped key with a nested object that Panda didn't
-            // recognize as a condition/selector — i.e. it's missing `&`.
-            if (entry.kind !== 'unknown' || !isSelectorKey(entry.name) || !isObject(entry.resolvedValue)) continue
+            // recognize as a condition/selector — i.e. it's missing `&`. Inside a
+            // recipe object the same key surfaces as `recipe-variant`.
+            const nestable = entry.kind === 'unknown' || entry.kind === 'recipe-variant'
+            if (!nestable || !isSelectorKey(entry.name) || !isObject(entry.resolvedValue)) continue
 
             const fixed = `&${entry.name}`
             const descriptor: Parameters<typeof context.report>[0] = {

@@ -1,5 +1,12 @@
 import type { FileInspectionResult, TokenSuggestion } from '@pandacss/compiler'
-import { type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
+import {
+  type Inspect,
+  type RuleContextWithReport,
+  type RuleModuleLike,
+  byteToIndex,
+  getSourceText,
+  toEslintLoc,
+} from './shared'
 
 export const preferTokenRuleName = 'prefer-token'
 
@@ -27,18 +34,6 @@ export function collectStrings(value: unknown, out: string[]): void {
 
 const label = (s: TokenSuggestion) => (s.conditional ? `${s.token} (themed)` : s.token)
 
-/** UTF-8 byte offset (Panda spans) → string index (ESLint fix ranges). */
-function byteToIndex(text: string, byteOffset: number): number {
-  let bytes = 0
-  for (let i = 0; i < text.length; ) {
-    if (bytes >= byteOffset) return i
-    const cp = text.codePointAt(i) as number
-    bytes += cp <= 0x7f ? 1 : cp <= 0x7ff ? 2 : cp <= 0xffff ? 3 : 4
-    i += cp > 0xffff ? 2 : 1
-  }
-  return text.length
-}
-
 interface ReportConfig {
   categoryOf: (prop: string) => string | undefined
   isHardcodedValue: (prop: string, value: string) => boolean
@@ -54,7 +49,7 @@ export function reportTokenViolations(
   inspection: FileInspectionResult,
   config: ReportConfig,
 ): void {
-  const source = context.sourceCode?.text ?? ''
+  const source = getSourceText(context)
 
   for (const entry of inspection.styleEntries) {
     if (entry.kind !== 'utility') continue

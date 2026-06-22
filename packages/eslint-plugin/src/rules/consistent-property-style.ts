@@ -1,4 +1,4 @@
-import { type Inspect, type RuleModuleLike, byteToIndex, toEslintLoc } from './shared'
+import { type Inspect, type RuleModuleLike, byteToIndex, getSourceText, toEslintLoc } from './shared'
 
 export const consistentPropertyStyleRuleName = 'consistent-property-style'
 
@@ -48,7 +48,7 @@ export function createConsistentPropertyStyleRule(options: ConsistentPropertySty
       const configured = context.options?.[0] as { style?: 'shorthand' | 'longhand'; ignore?: string[] } | undefined
       const style = configured?.style ?? 'longhand'
       const ignore = new Set(configured?.ignore ?? [])
-      const source = context.sourceCode?.text ?? ''
+      const source = getSourceText(context)
 
       return {
         Program() {

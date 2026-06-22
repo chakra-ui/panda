@@ -173,10 +173,10 @@ pub(crate) fn collect_jsx_attribute_source_refs(
         });
 
         if let Some(value) = attr.value.as_ref()
-            && let Some(obj) = jsx_attribute_object(value)
+            && let Some(expr) = jsx_attribute_expression(value)
         {
             let mut nested_path = path;
-            collect_object_source_refs(obj, resolver, owner, &mut nested_path, out);
+            descend_value(expr, resolver, owner, &mut nested_path, out);
         }
     }
 }
@@ -209,12 +209,11 @@ fn object_property_safety(computed: bool, shorthand: bool, method: bool) -> Styl
     }
 }
 
-fn jsx_attribute_object<'a>(value: &'a JSXAttributeValue<'a>) -> Option<&'a ObjectExpression<'a>> {
+fn jsx_attribute_expression<'a>(value: &'a JSXAttributeValue<'a>) -> Option<&'a Expression<'a>> {
     let JSXAttributeValue::ExpressionContainer(container) = value else {
         return None;
     };
-    let expr = container.expression.as_expression()?;
-    object_expression(expr)
+    container.expression.as_expression()
 }
 
 fn object_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
