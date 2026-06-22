@@ -82,6 +82,45 @@ export default [
 > The Panda config is loaded once and cached; a long-running editor session won't pick up `panda.config` edits until
 > ESLint restarts.
 
+### oxlint
+
+The same rules run under [oxlint](https://oxc.rs) via its ESLint-compatible JS plugins (alpha — needs `oxlint` +
+`@oxlint/plugins`). Point `jsPlugins` at the `@pandacss/eslint-plugin/oxlint` entry and enable the rules in
+`.oxlintrc.json`:
+
+```json
+{
+  "jsPlugins": ["@pandacss/eslint-plugin/oxlint"],
+  "rules": {
+    "@pandacss/no-invalid-nesting": "error",
+    "@pandacss/no-debug": "warn",
+    "@pandacss/prefer-token": ["warn", { "categories": ["colors"] }]
+  }
+}
+```
+
+The entry auto-discovers `panda.config.*` from the working directory; set `PANDA_CONFIG_PATH` to point at a config in a
+non-standard location.
+
+**Single config per run.** Unlike the ESLint flat config (where you compose several `recommended({ configPath })`
+entries), oxlint loads a JS plugin once and binds one Panda project. For a custom path or a monorepo with several
+configs, write a tiny local plugin instead of using the entry, hardcoding the `configPath`:
+
+```js
+// oxlint-panda.mjs
+import { createPandaPlugin } from '@pandacss/eslint-plugin'
+
+const { rules } = await createPandaPlugin({ configPath: './panda.config.ts' })
+export default { meta: { name: '@pandacss' }, rules }
+```
+
+```json
+{ "jsPlugins": ["./oxlint-panda.mjs"], "rules": { "@pandacss/no-invalid-nesting": "error" } }
+```
+
+`oxlint.config.ts` (via `defineConfig` from `oxlint`, Node ≥22.18) works the same way — plugins are still referenced by
+path, so the setup is identical.
+
 ## Rules
 
 These rules are on in `recommended`:

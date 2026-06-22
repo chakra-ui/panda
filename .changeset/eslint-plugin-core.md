@@ -17,3 +17,6 @@ suggests the `&` prefix), and a `configs.recommended({ configPath })`
 flat-config entry with
 `@pandacss/*` rule ids. Config
 and compiler loading is preloaded once per project so rule visitors stay synchronous.
+
+The same rules also run under oxlint via the `@pandacss/eslint-plugin/oxlint` entry (oxlint's ESLint-compatible JS
+plugins).

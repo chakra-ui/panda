@@ -19,6 +19,11 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./oxlint": {
+      "source": "./src/oxlint.ts",
+      "types": "./dist/oxlint.d.ts",
+      "default": "./dist/oxlint.js"
+    },
     "./package.json": "./package.json"
   },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
@@ -34,8 +39,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm --platform=node --dts",
-    "build:fast": "tsup src/index.ts --format=esm --platform=node --no-dts",
+    "build": "tsup src/index.ts src/oxlint.ts --format=esm --platform=node --dts",
+    "build:fast": "tsup src/index.ts src/oxlint.ts --format=esm --platform=node --no-dts",
     "dev": "pnpm build:fast --watch",
     "test": "vitest run"
   },

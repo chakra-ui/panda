@@ -63,25 +63,22 @@ the rule shape, not Chakra's TypeScript type-checker dependency.
 
 ## Packages
 
-Use two public packages:
+One public package with two entry points (oxlint reuses the ESLint rules — see [Adapter Design](#adapter-design)):
 
 ```txt
-@pandacss/eslint-plugin
-@pandacss/oxlint-plugin
+@pandacss/eslint-plugin           # ESLint flat config (default export)
+@pandacss/eslint-plugin/oxlint    # oxlint JS-plugin entry (subpath)
 ```
-
-Keep the shared implementation as internal modules, not a public package:
 
 ```txt
-packages/eslint-plugin/src/core/*
-packages/eslint-plugin/src/rules/*
-packages/oxlint-plugin/src/*
+packages/eslint-plugin/src/core/*     # config load, compiler, spec indexing, per-file inspection, range helpers
+packages/eslint-plugin/src/rules/*    # rule modules (host-agnostic; used by both entries)
+packages/eslint-plugin/src/oxlint.ts  # self-loading oxlint entry
 ```
 
-`packages/eslint-plugin/src/core/*` owns config loading, compiler construction, spec indexing, build-info hydration,
-per-file inspection, and shared range helpers. `@pandacss/oxlint-plugin` can reuse those modules inside the workspace,
-or copy a small adapter layer if package boundaries make direct sharing awkward. Do not expose a separate public package
-until there is clear external demand.
+A single package avoids drift (one rule set, one version) and matches how oxlint consumes ESLint plugins. A separate
+`@pandacss/oxlint-plugin` would only be warranted if oxlint ever needed a fundamentally different runtime (e.g. a native
+Rust rule), which it doesn't today.
 
 ## Shared Project Metadata
 
@@ -536,26 +533,34 @@ export default [
 Rules use normal `create(context)` visitors. The shared core handles metadata and `PandaLintContext` caching. Do not
 require `@typescript-eslint/parser`; users can keep their parser.
 
-### Oxlint
+### Oxlint ✅
 
-`@pandacss/oxlint-plugin` should be loaded through `jsPlugins` and document `panda/*` rule ids.
+Shipped as a subpath of the **same** package — `@pandacss/eslint-plugin/oxlint` — not a separate package. oxlint's
+JS-plugin API is ESLint-v9 compatible, so the rule modules are reused verbatim; only the entry wrapper differs.
 
-```ts
-import { defineConfig } from 'oxlint'
-import { configs as panda } from '@pandacss/oxlint-plugin'
+Constraint that shapes the design: oxlint references plugins **only by module path** in `jsPlugins` (string or
+`{name, specifier}` alias), in both `.oxlintrc.json` and `oxlint.config.ts`. There is **no inline plugin/config object**
+like ESLint flat config, and no way to pass `configPath` through oxlint config. So the entry must self-initialize:
 
-export default defineConfig({
-  extends: [panda.recommended()],
-  settings: {
-    panda: {
-      configPath: './panda.config.ts',
-    },
-  },
-})
+```jsonc
+// .oxlintrc.json
+{ "jsPlugins": ["@pandacss/eslint-plugin/oxlint"], "rules": { "@pandacss/no-invalid-nesting": "error" } }
 ```
 
-Rules should use `createOnce`. If Oxlint needs sync entrypoints while config loading stays async, use a worker or
-precomputed JSON. The worker returns one metadata object; rules must not query it per property.
+`src/oxlint.ts` does a top-level `await createPandaPlugin(...)` (oxlint imports it via dynamic import, so TLA resolves
+before the default export is read) and exports `{ meta: { name: '@pandacss' }, rules }`. `meta.name` is the oxlint rule
+prefix, kept as `@pandacss` to match the ESLint namespace. Config is auto-discovered from cwd, or `PANDA_CONFIG_PATH`.
+
+Limitations (inherent to oxlint's model, not ours):
+
+- **Single Panda project per run.** The entry binds one project. ESLint flat config composes several
+  `recommended({ configPath })` entries with `files` scoping; oxlint can't. For a custom path or a monorepo with several
+  configs, users write a tiny local plugin (`jsPlugins: ["./oxlint-panda.mjs"]`) that hardcodes `configPath` via
+  `createPandaPlugin`.
+- JS plugins are alpha; framework SFC parsers (Vue/Svelte/Astro) aren't supported.
+
+`createPandaPlugin` is the shared public API both the entry and any hand-written adapter call. Treat ESLint as the
+fuller-featured integration and oxlint as the single-config companion.
 
 ## Rule Set
 
