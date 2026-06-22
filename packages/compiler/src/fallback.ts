@@ -1,22 +1,19 @@
-import type { Atom, Compiler, Diagnostic } from '@pandacss/compiler-shared'
+import type {
+  Atom,
+  CompileOutput,
+  Compiler,
+  Diagnostic,
+  LayerCssOptions,
+  SplitCssOptions,
+  WriteArtifactsOptions,
+  WriteCssOptions,
+  WriteCssResult,
+  WriteFilesResult,
+  WriteLayerCssOptions,
+  WriteSplitCssOptions,
+} from '@pandacss/compiler-shared'
 import { makeBuildInfoApi } from '@pandacss/compiler-shared'
 import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
-
-/** No-op build-info primitives so the fallback compiler still satisfies the
- *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
-const fallbackBuildInfo = makeBuildInfoApi({
-  serializeBuildInfo: () => ({
-    schemaVersion: -1,
-    panda: '',
-    configFingerprint: '',
-    strings: [],
-    atoms: [],
-    modules: {},
-  }),
-  applyBuildInfo: () => false,
-  buildInfoSchemaVersion: () => -1,
-  configFingerprint: () => '',
-})
 
 class FallbackExtractor implements ExtractorSession {
   extract() {
@@ -110,24 +107,17 @@ class FallbackCompiler implements Compiler {
   suggestTokens() {
     return []
   }
-  writeArtifacts(_options: { outdir: string }) {
+  writeArtifacts(_options: WriteArtifactsOptions) {
     return []
   }
-  writeCss(options: { outfile: string }) {
-    return {
-      path: options.outfile,
-      css: '',
-      manifest: { files: [], tokens: [] },
-      layerRanges: {},
-      diagnostics: [] as Diagnostic[],
-    }
+  writeCss(options: WriteCssOptions) {
+    return emptyWriteCssResult(options.outfile)
   }
-  writeSplitCss(options: { outdir: string }) {
-    return {
-      root: options.outdir,
-      paths: [] as string[],
-      files: [],
-    }
+  writeLayerCss(options: WriteLayerCssOptions) {
+    return emptyWriteCssResult(options.outfile)
+  }
+  writeSplitCss(options: WriteSplitCssOptions) {
+    return emptyWriteFilesResult(options.outdir ?? '')
   }
   isEmpty() {
     return true
@@ -157,17 +147,12 @@ class FallbackCompiler implements Compiler {
     return { filesProcessed: 0, atomCount: 0, recipeCount: 0, slotRecipeCount: 0 }
   }
   compile() {
-    return {
-      css: '',
-      manifest: { files: [], tokens: [] },
-      layerRanges: {},
-      diagnostics: [],
-    }
+    return emptyCompileOutput()
   }
-  layerCss() {
-    return ''
+  getLayerCss(_options: LayerCssOptions) {
+    return emptyCompileOutput()
   }
-  splitCss() {
+  getSplitCss(_options?: SplitCssOptions) {
     return []
   }
   readonly buildInfo = fallbackBuildInfo
@@ -199,12 +184,7 @@ export const fallback: NativeBinding = {
     return false
   },
   compile() {
-    return {
-      css: '',
-      manifest: { files: [], tokens: [] },
-      layerRanges: {},
-      diagnostics: [],
-    }
+    return emptyCompileOutput()
   },
   scanImports() {
     return { imports: [], diagnostics: [] }
@@ -226,4 +206,44 @@ export const fallback: NativeBinding = {
   },
   Extractor: FallbackExtractor as unknown as ExtractorSessionConstructor,
   Compiler: FallbackCompiler as unknown as CompilerConstructor,
+}
+
+/** No-op build-info primitives so the fallback compiler still satisfies the
+ *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
+const fallbackBuildInfo = makeBuildInfoApi({
+  serializeBuildInfo: () => ({
+    schemaVersion: -1,
+    panda: '',
+    configFingerprint: '',
+    strings: [],
+    atoms: [],
+    modules: {},
+  }),
+  applyBuildInfo: () => false,
+  buildInfoSchemaVersion: () => -1,
+  configFingerprint: () => '',
+})
+
+function emptyCompileOutput(): CompileOutput {
+  return {
+    css: '',
+    manifest: { files: [], tokens: [] },
+    layerRanges: {},
+    diagnostics: [],
+  }
+}
+
+function emptyWriteCssResult(path: string): WriteCssResult {
+  return {
+    path,
+    ...emptyCompileOutput(),
+  }
+}
+
+function emptyWriteFilesResult(root: string): WriteFilesResult {
+  return {
+    root,
+    paths: [],
+    files: [],
+  }
 }

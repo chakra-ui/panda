@@ -24,7 +24,7 @@ function createPresetCompiler(overrides: Partial<UserConfig> = {}) {
 }
 
 function utilitiesCss(compiler: ReturnType<typeof createPresetCompiler>) {
-  return compiler.layerCss(['utilities']) ?? ''
+  return compiler.getLayerCss({ layers: ['utilities'] }).css ?? ''
 }
 
 describe('staticCss.patterns (preset-base parity)', () => {

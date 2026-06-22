@@ -16,11 +16,16 @@ import type {
   CompileOutput,
   CompileOptions,
   CssFile,
+  LayerCssOptions,
   ParseFileReport,
+  ScanOptions,
   SerializedConfig,
   WriteCssOptions,
   WriteCssResult,
   WriteFilesResult,
+  WriteLayerCssOptions,
+  WriteSplitCssOptions,
+  SplitCssOptions,
 } from './types'
 
 /** Result of diffing two serialized configs — produced by config's
@@ -79,9 +84,9 @@ export interface Driver {
    *  compiler when it changed. Browser drivers are snapshot-fed → no-change. */
   reload(): Promise<DiffConfigResult>
   /** Source paths matching the config includes/excludes. Does not parse. */
-  scan(): string[]
+  scan(options?: ScanOptions): string[]
   /** Scan, then parse every discovered source file via the engine fs. */
-  parseFiles(): ParseFileReport[]
+  parseFiles(options?: ScanOptions): ParseFileReport[]
   /** Route one watcher event into the engine. `false` = unknown path / no-op. */
   applyChange(change: SourceChange): boolean
   /** Route a batch of watcher events; returns each one's result. */
@@ -98,12 +103,16 @@ export interface Driver {
   codegen(options?: CodegenOptions): string[]
   /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
   cssgen(options?: CompileOptions): CompileOutput
+  /** CSS for selected cascade layers only. */
+  getLayerCss(options: LayerCssOptions): CompileOutput
   /** Generate split stylesheet files in memory without writing. */
-  splitCss(): CssFile[]
+  getSplitCss(options?: SplitCssOptions): CssFile[]
   /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
   writeCss(options: WriteCssOptions): WriteCssResult
+  /** Generate + write CSS for selected layers through the host filesystem. */
+  writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under the configured `outdir`. */
-  writeSplitCss(options?: { outdir?: string }): WriteFilesResult
+  writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
   /** Whether a changed path is the config file or one of its bundled dependencies.
@@ -156,12 +165,12 @@ export abstract class BaseDriver implements Driver {
   abstract applyChange(change: SourceChange): boolean
   abstract getOutdir(outdir?: string): string
 
-  scan(): string[] {
-    return this.#compiler.scan()
+  scan(options?: ScanOptions): string[] {
+    return this.#compiler.scan(options)
   }
 
-  parseFiles(): ParseFileReport[] {
-    return this.#compiler.parseFiles(this.scan())
+  parseFiles(options?: ScanOptions): ParseFileReport[] {
+    return this.#compiler.parseFiles(this.#compiler.scan(options))
   }
 
   applyChanges(changes: SourceChange[]): boolean[] {
@@ -184,8 +193,12 @@ export abstract class BaseDriver implements Driver {
     return this.#compiler.compile(options)
   }
 
-  splitCss(): CssFile[] {
-    return this.#compiler.splitCss()
+  getLayerCss(options: LayerCssOptions): CompileOutput {
+    return this.#compiler.getLayerCss(options)
+  }
+
+  getSplitCss(options?: SplitCssOptions): CssFile[] {
+    return this.#compiler.getSplitCss(options)
   }
 
   resolvePath(path: string): string {
@@ -205,8 +218,18 @@ export abstract class BaseDriver implements Driver {
     return this.#compiler.writeCss(options)
   }
 
-  writeSplitCss(options?: { outdir?: string }): WriteFilesResult {
-    return this.#compiler.writeSplitCss({ outdir: this.getConfiguredOutdir(options?.outdir) })
+  writeLayerCss(options: WriteLayerCssOptions): WriteCssResult {
+    return this.#compiler.writeLayerCss(options)
+  }
+
+  writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult {
+    return this.#compiler.writeSplitCss({
+      outdir: this.getConfiguredOutdir(options?.outdir),
+      layers: options?.layers,
+      minify: options?.minify,
+      emitLayerDeclaration: options?.emitLayerDeclaration,
+      cwd: options?.cwd,
+    })
   }
 
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] } {

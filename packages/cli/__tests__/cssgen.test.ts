@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Diagnostic } from '@pandacss/compiler'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -11,6 +11,29 @@ import {
   writeSyntaxError,
   writeWarningSource,
 } from './helpers'
+
+const MINIMAL_CSS_CONFIG = `export default {
+  outdir: 'styled-system',
+  include: ['**/*.tsx'],
+  importMap: {
+    css: ['@panda/css'],
+    recipe: ['@panda/recipes'],
+    pattern: ['@panda/patterns'],
+    jsx: ['@panda/jsx'],
+    tokens: ['@panda/tokens'],
+  },
+  theme: {
+    tokens: {
+      colors: {
+        red: { value: '#f00' },
+      },
+    },
+  },
+  utilities: {
+    color: { className: 'c', values: 'colors' },
+  },
+}
+`
 
 describe('cssgen command', () => {
   let dir: string | undefined
@@ -28,6 +51,17 @@ describe('cssgen command', () => {
     expect(result.parsed).toHaveLength(1)
 
     expect(readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')).toContain('red')
+  })
+
+  it('--minify writes compact CSS', async () => {
+    dir = createFixture()
+
+    await runCssgen({ cwd: dir, minify: true, logLevel: 'silent' })
+
+    const css = readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')
+
+    expect(css).toContain('{')
+    expect(css).not.toContain('\n  ')
   })
 
   it('reports zero parsed files when no sources match', async () => {
@@ -264,5 +298,47 @@ describe('cssgen command', () => {
     expect(parseFiles).not.toHaveBeenCalled()
     expect(css).toContain('4px')
     expect(css).toContain('8px')
+  })
+
+  it('--minimal emits usage CSS without token definitions', async () => {
+    dir = createFixture(MINIMAL_CSS_CONFIG)
+
+    await runCssgen({ cwd: dir, minimal: true, logLevel: 'silent' })
+
+    const css = readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')
+
+    expect(css).toContain('@layer utilities')
+    expect(css).not.toContain('@layer tokens')
+    expect(css).not.toContain('--colors-red:')
+    expect(css).toContain('.c_red')
+    expect(css).toContain('var(--colors-red)')
+  })
+
+  it('--splitting --minimal skips foundation CSS files', async () => {
+    dir = createFixture(MINIMAL_CSS_CONFIG)
+
+    await runCssgen({ cwd: dir, splitting: true, minimal: true, logLevel: 'silent' })
+
+    expect(existsSync(join(dir, 'styled-system', 'styles', 'utilities.css'))).toBe(true)
+    expect(existsSync(join(dir, 'styled-system', 'styles', 'tokens.css'))).toBe(false)
+    expect(existsSync(join(dir, 'styled-system', 'styles', 'global.css'))).toBe(false)
+    expect(existsSync(join(dir, 'styled-system', 'styles', 'reset.css'))).toBe(false)
+
+    const index = readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')
+    expect(index).toContain("@import './styles/utilities.css';")
+    expect(index).not.toContain('tokens.css')
+    expect(index).not.toContain('global.css')
+    expect(index).not.toContain('reset.css')
+  })
+
+  it('--splitting --minimal --minify writes compact usage CSS files', async () => {
+    dir = createFixture(MINIMAL_CSS_CONFIG)
+
+    await runCssgen({ cwd: dir, splitting: true, minimal: true, minify: true, logLevel: 'silent' })
+
+    const utilities = readFileSync(join(dir, 'styled-system', 'styles', 'utilities.css'), 'utf8')
+
+    expect(utilities).toContain('@layer utilities')
+    expect(utilities).not.toContain('\n  ')
   })
 })

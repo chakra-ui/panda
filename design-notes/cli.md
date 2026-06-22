@@ -226,7 +226,7 @@ Open gaps that stay outside the current CLI surface:
 
 - `studio` and `analyze` are not ported.
 - `ship` / `emit-pkg` is not ported.
-- the v1 positional `[files]` override is not wired.
+- v1 positional layer type arguments are intentionally not ported. `cssgen --minimal` covers usage-only package CSS.
 - lightningcss minify parity is still an open follow-up.
 
 Those gaps are intentional for now; the CLI prefers a smaller, reliable surface over a partial legacy clone.

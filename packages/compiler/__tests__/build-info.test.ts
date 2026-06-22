@@ -148,8 +148,8 @@ describe('compiler.buildInfo', () => {
     })
 
     // Utilities keep the token var; the consumer token layer supplies the final value.
-    const utilities = app.layerCss(['utilities'])
-    const tokens = app.layerCss(['tokens'])
+    const utilities = app.getLayerCss({ layers: ['utilities'] }).css
+    const tokens = app.getLayerCss({ layers: ['tokens'] }).css
 
     expect(utilities).toMatchInlineSnapshot(`
       "@layer utilities {
@@ -181,7 +181,7 @@ describe('compiler.buildInfo', () => {
     const app = consumer()
     const result = app.buildInfo.hydrate(libBuildInfo(), { name: '@acme/ds' })
     expect(result).toEqual({ ok: true, modules: ['button.tsx', 'card.tsx'] })
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .m_8px {
           margin: 8px;
@@ -209,7 +209,7 @@ describe('compiler.buildInfo', () => {
     // Resolve a barrel import to its module, then hydrate only that.
     const only = app.buildInfo.modulesFor(info, ['Button'])
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only }).modules).toEqual(['button.tsx'])
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .p_4px {
           padding: 4px;
@@ -250,7 +250,7 @@ describe('compiler.buildInfo', () => {
     const only = app.buildInfo.modulesFor(info, ['ActionButton'])
     expect(only).toEqual(['button.tsx'])
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only }).modules).toEqual(['button.tsx'])
-    expect(app.layerCss(['recipes'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer base {
           .button {
@@ -282,7 +282,7 @@ describe('compiler.buildInfo', () => {
       ok: true,
       modules: ['card.tsx'],
     })
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .padding_4px {
           padding: 4px;
@@ -309,7 +309,7 @@ describe('compiler.buildInfo', () => {
       ok: true,
       modules: ['card.tsx'],
     })
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .color_red {
           color: red;
@@ -342,7 +342,7 @@ describe('compiler.buildInfo', () => {
       ok: true,
       modules: ['button.tsx'],
     })
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .color_red {
           color: red;
@@ -350,7 +350,7 @@ describe('compiler.buildInfo', () => {
       }
       "
     `)
-    expect(app.layerCss(['recipes'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer base {
           .button {
@@ -379,7 +379,7 @@ describe('compiler.buildInfo', () => {
     const result = app.buildInfo.hydrate(libBuildInfo(), { name: '@acme/ds', only: ['button.tsx'] })
     expect(result).toEqual({ ok: true, modules: ['button.tsx'] })
     // card's `margin` is absent — only the imported `button` module hydrated.
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .p_4px {
           padding: 4px;
@@ -475,7 +475,7 @@ describe('compiler.buildInfo', () => {
     const lib = recipeConsumer()
     lib.parseFileSource('button.tsx', "import { button } from '@panda/recipes'\nbutton({ size: 'sm' })")
     lib.parseFileSource('tabs.tsx', "import { tabs } from '@panda/recipes'\ntabs({ size: 'sm' })")
-    const reference = lib.layerCss(['recipes'])
+    const reference = lib.getLayerCss({ layers: ['recipes'] }).css
 
     // A bare consumer (no source using the recipes) hydrates the lib's recipes.
     const app = createProject({
@@ -488,17 +488,17 @@ describe('compiler.buildInfo', () => {
         },
       },
     })
-    expect(app.layerCss(['recipes'])).toBe('')
+    expect(app.getLayerCss({ layers: ['recipes'] }).css).toBe('')
     const result = app.buildInfo.hydrate(recipeLibBuildInfo(), { name: '@acme/ds' })
     expect(result).toEqual({ ok: true, modules: ['button.tsx', 'tabs.tsx'] })
-    expect(app.layerCss(['recipes'])).toBe(reference)
+    expect(app.getLayerCss({ layers: ['recipes'] }).css).toBe(reference)
   })
 
   it('hydrate() tree-shakes recipes to the imported modules', () => {
     const app = recipeConsumer()
     const result = app.buildInfo.hydrate(recipeLibBuildInfo(), { name: '@acme/ds', only: ['button.tsx'] })
     expect(result).toEqual({ ok: true, modules: ['button.tsx'] })
-    const css = app.layerCss(['recipes'])
+    const css = app.getLayerCss({ layers: ['recipes'] }).css
     // button's recipe is present; tabs' slot recipe is tree-shaken out.
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
@@ -521,6 +521,6 @@ describe('compiler.buildInfo', () => {
     const app = consumer()
     const result = app.buildInfo.hydrate(withUnsupportedSchemaVersion(libBuildInfo()), { name: '@acme/ds' })
     expect(result).toEqual({ ok: false, reason: 'schemaVersion', modules: [] })
-    expect(app.layerCss(['utilities'])).toBe('')
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toBe('')
   })
 })

@@ -106,7 +106,7 @@ test('emitter parity battery', () => {
     try {
       const compiler = createCompilerFromSnapshot(snapshot, { crossFile: true }) as any
       compiler.parseFileSource(path, src)
-      v2 = fmt(compiler.layerCss(['recipes', 'utilities']) ?? '')
+      v2 = fmt(compiler.getLayerCss({ layers: ['recipes', 'utilities'] }).css ?? '')
     } catch (e) {
       v2 = `V2_ERROR: ${(e as Error).message}`
     }

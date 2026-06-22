@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createProject } from './test-utils'
 
-describe('compiler.splitCss()', () => {
+describe('compiler.getSplitCss()', () => {
   it('returns per-layer + per-recipe files plus index files', () => {
     const compiler = createProject({
       theme: {
@@ -24,7 +24,7 @@ describe('compiler.splitCss()', () => {
       'app.tsx',
       "import { css } from '@panda/css'\nimport { button } from '@panda/recipes'\ncss({ color: 'red' })\nbutton({ size: 'sm' })",
     )
-    expect(compiler.splitCss().map((file) => file.path)).toMatchInlineSnapshot(`
+    expect(compiler.getSplitCss().map((file) => file.path)).toMatchInlineSnapshot(`
       [
         "styles.css",
         "styles/global.css",
@@ -34,7 +34,8 @@ describe('compiler.splitCss()', () => {
         "styles/recipes.css",
       ]
     `)
-    expect(compiler.splitCss().find((file) => file.path === 'styles/recipes/button.css')?.code).toMatchInlineSnapshot(`
+    expect(compiler.getSplitCss().find((file) => file.path === 'styles/recipes/button.css')?.code)
+      .toMatchInlineSnapshot(`
       "@layer recipes {
         @layer base {
           .button {
@@ -49,7 +50,7 @@ describe('compiler.splitCss()', () => {
       }
       "
     `)
-    expect(compiler.splitCss().find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
+    expect(compiler.getSplitCss().find((file) => file.path === 'styles.css')?.code).toMatchInlineSnapshot(`
       "@layer reset, base, tokens,
              recipes,
              utilities;

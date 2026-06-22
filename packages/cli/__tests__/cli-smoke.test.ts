@@ -85,11 +85,20 @@ describe('cli smoke', () => {
     expect(result.stdout).not.toContain('validate')
   })
 
-  it.each(['build', 'dev', 'check', 'info', 'doctor'])('prints help for panda %s', (command) => {
+  it.each(['build', 'dev', 'check', 'info', 'doctor', 'cssgen'])('prints help for panda %s', (command) => {
     const result = runCli([command, '--help'])
 
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain(`panda ${command} v${version}`)
+  })
+
+  it('documents cssgen --minimal', () => {
+    const result = runCli(['cssgen', '--help'])
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('--minimal')
+    expect(result.stdout).toContain('--minify')
+    expect(result.stdout).toContain('Emit usage CSS only')
   })
 
   it.each(['inspect', 'validate', 'frobnicate'])('rejects unknown command %s', (command) => {

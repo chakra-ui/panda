@@ -17,7 +17,6 @@ import type {
   CodegenArtifactId,
   CodegenDependency,
   CssFile,
-  StylesheetLayerName,
   CompileFileManifest,
   CompileOptions,
   CompileOutput,
@@ -25,6 +24,8 @@ import type {
   EncodedRecipeStyles,
   FileInspectionResult,
   LayerNames,
+  LayerCssOptions,
+  SplitCssOptions,
   ScanOptions,
   ParseFileReport,
   ParsedFileView,
@@ -141,8 +142,8 @@ export declare class WasmCompiler {
   encodedRecipes(): EncodedRecipeStyles
   summary(): ProjectSummary
   compile(options?: CompileOptions): CompileOutput
-  layerCss(layers: StylesheetLayerName[]): string
-  splitCss(): CssFile[]
+  getLayerCss(options: LayerCssOptions): CompileOutput
+  getSplitCss(options?: SplitCssOptions): CssFile[]
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined
   generateAffectedArtifacts(dependencies: CodegenDependency[], options?: GenerateArtifactOptions): CodegenArtifact[]

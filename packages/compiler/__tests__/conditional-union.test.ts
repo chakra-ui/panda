@@ -10,7 +10,7 @@ function compile(source: string) {
     utilities: { margin: { className: 'm' }, padding: { className: 'p' } },
   })
   compiler.parseFileSource('app.tsx', source)
-  return compiler.layerCss(['utilities'])
+  return compiler.getLayerCss({ layers: ['utilities'] }).css
 }
 
 describe('conditional / multi-arg union extraction', () => {

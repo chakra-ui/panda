@@ -285,8 +285,19 @@ means you can annotate an exported inline recipe with only its variant keys and 
 import { cva } from 'styled-system/css'
 import type { RecipeRuntimeFn } from 'styled-system/types'
 
-export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> =
-  cva({ base: { px: '4' }, variants: { visual: { solid: { /* css */ }, outline: { /* css */ } } } })
+export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> = cva({
+  base: { px: '4' },
+  variants: {
+    visual: {
+      solid: {
+        /* css */
+      },
+      outline: {
+        /* css */
+      },
+    },
+  },
+})
 ```
 
 The same works for `styled(tag, {...})` via `StyledComponent<Tag, Props>` and for `sva` via `SlotRecipeRuntimeFn`. This
@@ -413,6 +424,22 @@ Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` i
 
 ---
 
+## CSS output for monorepos
+
+v2 keeps `panda cssgen --minimal` for packages that should emit usage CSS without duplicating foundation CSS. It writes
+recipes and utilities only; reset, base, and tokens should be emitted once by the app/root build.
+
+Recommended monorepo workflow:
+
+1. **App/root:** run a normal `panda build` or `panda cssgen` to emit the full stylesheet once.
+2. **Per package:** run `panda cssgen --minimal` to emit package-local usage CSS.
+3. **Published design systems:** ship `panda buildinfo` and hydrate in consumers (see `design-notes/build-info.md`).
+
+The v1 positional layer names (`preflight`, `global`, `tokens`, …) and positional glob override are not part of the v2
+CLI surface yet.
+
+---
+
 ## Still being finalized
 
 Known gaps in the beta. Expect them to change before stable:
@@ -424,8 +451,6 @@ Known gaps in the beta. Expect them to change before stable:
 - **CSS minification.** `minify: true` works in the native emitter; full parity with the v1 LightningCSS path is still
   open.
 - **PostCSS plugin.** Experimental (above).
-- **CLI `[files]` override.** The v1 positional include override for `panda build` isn't wired yet. The build uses the
-  config `include`.
 
 ---
 

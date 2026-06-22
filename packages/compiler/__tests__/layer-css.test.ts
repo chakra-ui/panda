@@ -13,9 +13,9 @@ function build() {
   return compiler
 }
 
-describe('compiler.layerCss()', () => {
+describe('compiler.getLayerCss()', () => {
   it('returns only the tokens layer (vars + keyframes)', () => {
-    expect(build().layerCss(['tokens'])).toMatchInlineSnapshot(`
+    expect(build().getLayerCss({ layers: ['tokens'] }).css).toMatchInlineSnapshot(`
       "@layer tokens {
         :where(:root, :host) {
           --colors-red: #f00;
@@ -34,7 +34,7 @@ describe('compiler.layerCss()', () => {
   })
 
   it('returns only the utilities layer', () => {
-    expect(build().layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(build().getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .c_red {
           color: var(--colors-red);
@@ -45,7 +45,7 @@ describe('compiler.layerCss()', () => {
   })
 
   it('concatenates layers in the requested order', () => {
-    expect(build().layerCss(['utilities', 'tokens'])).toMatchInlineSnapshot(`
+    expect(build().getLayerCss({ layers: ['utilities', 'tokens'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .c_red {
           color: var(--colors-red);
@@ -69,13 +69,13 @@ describe('compiler.layerCss()', () => {
   })
 
   it('returns empty for unknown or empty layer lists', () => {
-    expect(build().layerCss([])).toBe('')
-    expect(build().layerCss(['nope' as never])).toBe('')
+    expect(build().getLayerCss({ layers: [] }).css).toBe('')
+    expect(build().getLayerCss({ layers: ['nope' as never] }).css).toBe('')
   })
 
   it('is a subset of the full compiled css', () => {
     const compiler = build()
     const full = compiler.compile().css
-    expect(full.includes(compiler.layerCss(['utilities']).trim())).toBe(true)
+    expect(full.includes(compiler.getLayerCss({ layers: ['utilities'] }).css)).toBe(true)
   })
 })

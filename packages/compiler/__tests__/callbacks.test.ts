@@ -1524,7 +1524,7 @@ describe('Compiler callbacks', () => {
 
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ spaceX: '4' })`)
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .space-x_4 {
           margin-left: var(--spacing-4);
@@ -1562,7 +1562,7 @@ describe('Compiler callbacks', () => {
 
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ boxColor: 'red.500!' })`)
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .bc_red\\.500\\! {
           color: var(--colors-red-500) !important;
@@ -1598,7 +1598,7 @@ describe('Compiler callbacks', () => {
 
     compiler.parseFileSource('/virtual/Button.tsx', `import { css } from '@panda/css'\ncss({ debug: true })`)
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .debug_true:hover {
           border: 2px solid blue;
@@ -1647,7 +1647,7 @@ describe('Compiler callbacks', () => {
        css({ br: 'md' })`,
     )
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .rounded_md {
           border-radius: var(--radii-md);
@@ -1706,7 +1706,7 @@ describe('Compiler callbacks', () => {
        css({ gradientBorder: 'linear-gradient(to right, red, blue)' })`,
     )
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\) {
           --after-inset: calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px);
@@ -1760,7 +1760,7 @@ describe('Compiler callbacks', () => {
        css({ stackDir: 'column' })`,
     )
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .stack-dir_column {
           flex-direction: column;
@@ -1799,7 +1799,7 @@ describe('Compiler callbacks', () => {
        css({ layer: 10 })`,
     )
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .layer_10 {
           z-index: 10;
@@ -1845,7 +1845,7 @@ describe('Compiler callbacks', () => {
        css({ pill: 'md' })`,
     )
 
-    expect(compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .pill_md {
           border-radius: var(--radii-sm);

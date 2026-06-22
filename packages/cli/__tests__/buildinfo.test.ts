@@ -120,7 +120,7 @@ describe('buildinfo command', () => {
         "ok": true,
       }
     `)
-    expect(consumer.compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(consumer.compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .background_blue {
           background: blue;
@@ -143,7 +143,7 @@ describe('buildinfo command', () => {
 
     expect(applied.modules).toEqual(['button.tsx'])
     // button's `color: red` hydrated; card's `background: blue` tree-shaken out.
-    expect(consumer.compiler.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(consumer.compiler.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .color_red {
           color: red;

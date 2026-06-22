@@ -36,6 +36,9 @@ pub struct StylesheetOptions {
     pub include_static: bool,
     pub source_map: bool,
     pub emit_layer_declaration: bool,
+    /// When set, `split_css` emits only the selected layers (and rebuilds the
+    /// index `@layer` preamble + `@import` lines to match).
+    pub layers: Option<Vec<StylesheetLayer>>,
 }
 
 impl Default for StylesheetOptions {
@@ -45,6 +48,7 @@ impl Default for StylesheetOptions {
             include_static: false,
             source_map: false,
             emit_layer_declaration: true,
+            layers: None,
         }
     }
 }
@@ -296,6 +300,10 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         true,
     );
 
+    let selected = options.layers.as_deref();
+    let layer_selected =
+        |layer: StylesheetLayer| selected.is_none_or(|layers| layers.contains(&layer));
+
     let mut files: Vec<SplitCssFile> = Vec::new();
     let mut imports: Vec<String> = Vec::new();
 
@@ -305,6 +313,9 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         (StylesheetLayer::Tokens, "tokens.css"),
         (StylesheetLayer::Utilities, "utilities.css"),
     ] {
+        if !layer_selected(layer) {
+            continue;
+        }
         let css = full
             .layer_ranges
             .get(layer)
@@ -319,38 +330,51 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         }
     }
 
-    let recipe_files = emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
-    if !recipe_files.is_empty() {
-        let mut recipe_imports = Vec::with_capacity(recipe_files.len());
-        for (name, css) in &recipe_files {
-            recipe_imports.push(format!("@import './recipes/{name}.css';"));
+    if layer_selected(StylesheetLayer::Recipes) {
+        let recipe_files =
+            emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
+        if !recipe_files.is_empty() {
+            let mut recipe_imports = Vec::with_capacity(recipe_files.len());
+            for (name, css) in &recipe_files {
+                recipe_imports.push(format!("@import './recipes/{name}.css';"));
+                files.push(SplitCssFile {
+                    path: format!("styles/recipes/{name}.css"),
+                    code: ensure_trailing_newline(css),
+                });
+            }
             files.push(SplitCssFile {
-                path: format!("styles/recipes/{name}.css"),
-                code: ensure_trailing_newline(css),
+                path: "styles/recipes.css".to_owned(),
+                code: format!("{}\n", recipe_imports.join("\n")),
             });
+            imports.push("@import './styles/recipes.css';".to_owned());
         }
-        files.push(SplitCssFile {
-            path: "styles/recipes.css".to_owned(),
-            code: format!("{}\n", recipe_imports.join("\n")),
-        });
-        imports.push("@import './styles/recipes.css';".to_owned());
     }
 
-    for (theme_name, css) in
-        theme_css_entries_from_dictionary(input.config, token_dictionary.as_deref(), options.minify)
-    {
-        if css.trim().is_empty() {
-            continue;
+    if layer_selected(StylesheetLayer::Tokens) {
+        for (theme_name, css) in theme_css_entries_from_dictionary(
+            input.config,
+            token_dictionary.as_deref(),
+            options.minify,
+        ) {
+            if css.trim().is_empty() {
+                continue;
+            }
+            files.push(SplitCssFile {
+                path: format!("styles/themes/{}.css", file_stem(&theme_name)),
+                code: ensure_trailing_newline(&css),
+            });
         }
-        files.push(SplitCssFile {
-            path: format!("styles/themes/{}.css", file_stem(&theme_name)),
-            code: ensure_trailing_newline(&css),
-        });
     }
 
     // `styles.css` entry: the @layer order declaration + the imports above.
-    let mut index = layer_order_line(&input.config.layers);
-    index.push('\n');
+    let mut index = if options.emit_layer_declaration {
+        layer_order_declaration(&input.config.layers, selected)
+    } else {
+        String::new()
+    };
+    if !index.is_empty() {
+        index.push('\n');
+    }
     if !imports.is_empty() {
         index.push_str(&imports.join("\n"));
         index.push('\n');
@@ -441,13 +465,37 @@ fn ensure_trailing_newline(css: &str) -> String {
     }
 }
 
-fn layer_order_line(layers: &pandacss_config::CascadeLayers) -> String {
-    let names = layers.declaration_names();
+/// Return the cascade layer order declaration for all configured layers or a
+/// selected subset.
+#[must_use]
+pub fn layer_order_declaration(
+    layers: &pandacss_config::CascadeLayers,
+    selected: Option<&[StylesheetLayer]>,
+) -> String {
+    let names: Vec<String> = layers
+        .ordered()
+        .iter()
+        .filter_map(|(semantic, name)| {
+            let layer = StylesheetLayer::from_name(semantic)?;
+            selected
+                .is_none_or(|selected_layers| selected_layers.contains(&layer))
+                .then(|| (*name).to_owned())
+        })
+        .collect();
+    if names.is_empty() {
+        return String::new();
+    }
+    if names.len() <= 3 {
+        return format!("@layer {};", names.join(", "));
+    }
+    if names.len() == 4 {
+        return format!("@layer {},\n       {};", names[..3].join(", "), names[3]);
+    }
     format!(
         "@layer {},\n       {},\n       {};",
         names[..3].join(", "),
         names[3..names.len() - 1].join(", "),
-        names.last().expect("layer declaration names")
+        names[names.len() - 1]
     )
 }
 

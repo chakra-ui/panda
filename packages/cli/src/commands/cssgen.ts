@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { type ParseFileReport } from '@pandacss/compiler'
+import { type ParseFileReport, type StylesheetLayerName } from '@pandacss/compiler'
 import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { cssgenFlagsSchema } from '../schema'
@@ -21,10 +21,12 @@ export const cssgenCommand = defineCommand({
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
     outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
+    minimal: { type: 'boolean', description: 'Emit usage CSS only (recipes and utilities)' },
+    minify: { type: 'boolean', description: 'Minify emitted CSS (overrides config minify)' },
     ...outputArgs(),
     ...traceArgs(),
     'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
-    check: { type: 'boolean', description: 'Check generated CSS without writing' },
+    check: { type: 'boolean', description: 'Check generated CSS is up to date without writing' },
   }),
   run: async ({ args }) => setExitCode(await runCssgen(parseCliFlags(cssgenFlagsSchema, args))),
 })
@@ -122,11 +124,38 @@ type CssgenOnceResult = Pick<
   'parsed' | 'cssBytes' | 'diagnosticCount' | 'diagnostics' | 'missing' | 'stale'
 > & { cssFiles: number }
 
+const MINIMAL_LAYERS = ['recipes', 'utilities'] satisfies StylesheetLayerName[]
+
+function splitCssOptions(ctx: RunContext, flags: CssgenFlags) {
+  return {
+    outdir: ctx.outdir,
+    layers: flags.minimal ? MINIMAL_LAYERS : undefined,
+    emitLayerDeclaration: flags.minimal ? false : undefined,
+    minify: flags.minify,
+  }
+}
+
+function layerCssOptions(flags: CssgenFlags) {
+  return {
+    layers: MINIMAL_LAYERS,
+    emitLayerDeclaration: false,
+    minify: flags.minify,
+  }
+}
+
 export async function cssgenOnce(ctx: RunContext, outfile: string, flags: CssgenFlags): Promise<CssgenOnceResult> {
-  const parsed = time({ timings: ctx.timings, phase: 'parse', run: () => ctx.driver.parseFiles() })
+  const parsed = time({
+    timings: ctx.timings,
+    phase: 'parse',
+    run: () => ctx.driver.parseFiles(),
+  })
 
   if (flags.check) {
-    return time({ timings: ctx.timings, phase: 'check', run: () => checkCssgenOutput(ctx, outfile, flags, parsed) })
+    return time({
+      timings: ctx.timings,
+      phase: 'check',
+      run: () => checkCssgenOutput(ctx, outfile, flags, parsed),
+    })
   }
 
   return writeCssgenOutput(ctx, outfile, flags, parsed)
@@ -141,7 +170,12 @@ export async function writeCssgenOutput(
   const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
-    const output = time({ timings: ctx.timings, phase: 'write', run: () => ctx.driver.writeSplitCss() })
+    const output = time({
+      timings: ctx.timings,
+      phase: 'write',
+      run: () => ctx.driver.writeSplitCss(splitCssOptions(ctx, flags)),
+    })
+
     const cssBytes = output.files.reduce((total, file) => total + Buffer.byteLength(file.code), 0)
 
     if (shouldPrintHumanSummary(flags)) {
@@ -159,7 +193,15 @@ export async function writeCssgenOutput(
     }
   }
 
-  const output = time({ timings: ctx.timings, phase: 'write', run: () => ctx.driver.writeCss({ outfile }) })
+  const output = time({
+    timings: ctx.timings,
+    phase: 'write',
+    run: () =>
+      flags.minimal
+        ? ctx.driver.writeLayerCss({ outfile, ...layerCssOptions(flags) })
+        : ctx.driver.writeCss({ outfile, minify: flags.minify }),
+  })
+
   const cssBytes = Buffer.byteLength(output.css)
   const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
 
@@ -189,13 +231,19 @@ function checkCssgenOutput(
   const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
-    const files = time({ timings: ctx.timings, phase: 'emit', run: () => ctx.driver.splitCss() })
+    const files = time({
+      timings: ctx.timings,
+      phase: 'emit',
+      run: () => ctx.driver.getSplitCss(splitCssOptions(ctx, flags)),
+    })
+
     const check = checkExpectedFiles(
       files.map((file) => ({
         path: ctx.driver.compiler.joinPath([ctx.outdir, file.path]),
         code: file.code,
       })),
     )
+
     const cssBytes = files.reduce((total, file) => total + Buffer.byteLength(file.code), 0)
 
     if (shouldPrintHumanSummary(flags)) {
@@ -212,7 +260,13 @@ function checkCssgenOutput(
     }
   }
 
-  const output = time({ timings: ctx.timings, phase: 'emit', run: () => ctx.driver.cssgen() })
+  const output = time({
+    timings: ctx.timings,
+    phase: 'emit',
+    run: () =>
+      flags.minimal ? ctx.driver.getLayerCss(layerCssOptions(flags)) : ctx.driver.cssgen({ minify: flags.minify }),
+  })
+
   const cssBytes = Buffer.byteLength(output.css)
   const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
   const check = checkExpectedFiles([{ path: outfile, code: output.css }])

@@ -27,7 +27,10 @@ use pandacss_encoder::AtomValue;
 use pandacss_extractor::{DiagnosticSeverity, Literal, diagnostic_codes};
 use pandacss_fs::{FileSystem, OsPathSystem, OxcResolverFileSystem, PathSystem};
 
-use crate::compile::{CompileFileManifest, CompileOptions, CompileOutput};
+use crate::compile::{
+    CompileFileManifest, CompileOptions, CompileOutput, CssOutputOptions, LayerCssOptions,
+    WriteLayerCssOptions,
+};
 use crate::matcher::{TokenDictionary, from_core_token_dictionary};
 
 /// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.
@@ -177,12 +180,16 @@ pub struct WriteCssOptions {
     pub outfile: String,
     pub cwd: Option<String>,
     pub emit_layer_declaration: Option<bool>,
+    pub minify: Option<bool>,
 }
 
 #[napi(object)]
 pub struct WriteSplitCssOptions {
     pub outdir: String,
     pub cwd: Option<String>,
+    pub layers: Option<Vec<String>>,
+    pub emit_layer_declaration: Option<bool>,
+    pub minify: Option<bool>,
 }
 
 #[napi]
@@ -1107,6 +1114,7 @@ impl Compiler {
                 .is_none_or(CompileOptions::should_emit_layer_declaration),
             has_utility_transforms
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            options.as_ref().and_then(|options| options.minify),
         );
         crate::flush_tracing();
         Ok(output)
@@ -1122,7 +1130,7 @@ impl Compiler {
         env: Env,
         options: WriteCssOptions,
     ) -> napi::Result<WriteCssResult> {
-        let output = self.compile(env, to_compile_options(options.emit_layer_declaration))?;
+        let output = self.compile(env, Some(compile_options_from_write_css(&options)))?;
         let target = self.paths.resolve(
             &options.cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
             &options.outfile,
@@ -1148,7 +1156,8 @@ impl Compiler {
         env: Env,
         options: WriteSplitCssOptions,
     ) -> napi::Result<WriteFilesResult> {
-        let files = self.split_css(env)?;
+        let css_options = css_output_options_from_write_split(&options);
+        let files = self.get_split_css(env, Some(css_options))?;
         let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
         let root = self.paths.resolve(&cwd, &options.outdir);
         let paths = self.write_relative_files(
@@ -1163,15 +1172,20 @@ impl Compiler {
 
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
     /// (byte offsets stay valid); unknown layer names are skipped.
-    #[napi]
+    #[napi(js_name = getLayerCss)]
     #[allow(
         clippy::needless_pass_by_value,
         reason = "NAPI requires owned arguments"
     )]
-    pub fn layer_css(&mut self, env: Env, layers: Vec<String>) -> napi::Result<String> {
+    pub fn get_layer_css(
+        &mut self,
+        env: Env,
+        options: LayerCssOptions,
+    ) -> napi::Result<CompileOutput> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("layer_css").entered();
-        let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
+        let _span = tracing::trace_span!("get_layer_css").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms(env);
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {
             inner,
@@ -1191,30 +1205,72 @@ impl Compiler {
                 &env,
             )
         };
-        let token_dictionary = inner.config().token_dictionary();
-        let output = crate::compile::build_stylesheet_output(
+        let css_options = CssOutputOptions {
+            layers: None,
+            emit_layer_declaration: options.emit_layer_declaration,
+            minify: options.minify,
+        };
+        let output = crate::compile::build_layer_compile_output(
             inner,
             user_config,
-            token_dictionary,
             &static_pattern_atoms,
-            true,
+            static_pattern_diagnostics,
+            &options.layers,
             has_utility_transforms
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            Some(&css_options),
         );
-        let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
-            .iter()
-            .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
-            .collect();
         crate::flush_tracing();
-        Ok(output.get_layer_css(&selected))
+        Ok(output)
+    }
+
+    #[napi(js_name = writeLayerCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn write_layer_css(
+        &mut self,
+        env: Env,
+        options: WriteLayerCssOptions,
+    ) -> napi::Result<WriteCssResult> {
+        let output = self.get_layer_css(
+            env,
+            LayerCssOptions {
+                layers: options.layers,
+                emit_layer_declaration: options.emit_layer_declaration,
+                minify: options.minify,
+            },
+        )?;
+        let target = self.paths.resolve(
+            &options.cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            &options.outfile,
+        );
+        self.write_target_file(&target, &output.css)?;
+        Ok(WriteCssResult {
+            path: target,
+            css: output.css,
+            source_map: output.source_map,
+            manifest: output.manifest,
+            layer_ranges: output.layer_ranges,
+            diagnostics: output.diagnostics,
+        })
     }
 
     /// Split the stylesheet into per-file outputs (one per layer + per recipe,
     /// plus `recipes.css` / `styles.css` index files) for `--splitting`.
-    #[napi]
-    pub fn split_css(&mut self, env: Env) -> napi::Result<Vec<crate::compile::SplitCssFile>> {
+    #[napi(js_name = getSplitCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn get_split_css(
+        &mut self,
+        env: Env,
+        options: Option<CssOutputOptions>,
+    ) -> napi::Result<Vec<crate::compile::SplitCssFile>> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("split_css").entered();
+        let _span = tracing::trace_span!("get_split_css").entered();
         let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {
@@ -1241,6 +1297,7 @@ impl Compiler {
             &static_pattern_atoms,
             has_utility_transforms
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            options.as_ref(),
         );
         crate::flush_tracing();
         Ok(files)
@@ -1558,10 +1615,19 @@ fn generate_options(
     }
 }
 
-fn to_compile_options(emit_layer_declaration: Option<bool>) -> Option<CompileOptions> {
-    emit_layer_declaration.map(|emit_layer_declaration| CompileOptions {
-        emit_layer_declaration: Some(emit_layer_declaration),
-    })
+fn compile_options_from_write_css(options: &WriteCssOptions) -> CompileOptions {
+    CompileOptions {
+        emit_layer_declaration: options.emit_layer_declaration,
+        minify: options.minify,
+    }
+}
+
+fn css_output_options_from_write_split(options: &WriteSplitCssOptions) -> CssOutputOptions {
+    CssOutputOptions {
+        layers: options.layers.clone(),
+        emit_layer_declaration: options.emit_layer_declaration,
+        minify: options.minify,
+    }
 }
 
 fn to_codegen_artifact(artifact: Artifact) -> CodegenArtifact {

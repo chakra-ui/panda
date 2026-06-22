@@ -75,8 +75,8 @@ Three principles fall out of this:
 2. **CSS gen and artifact gen are distinct operations on distinct cadences** — mirroring v1's `panda cssgen` vs
    `panda codegen`. Artifacts regenerate rarely (config change); CSS regenerates every build. The Driver exposes them as
    separate methods, never a combined "build everything." CSS itself has three forms: `compile()` (the merged
-   stylesheet), `compiler.layerCss(layers)` (a merged subset string — `cssgen <type>` / `--minimal`), and
-   `compiler.splitCss()` (the `{path,code}[]` file set — `cssgen --splitting`; written like artifacts). See
+   stylesheet), `compiler.getLayerCss(options)` (a merged subset string — `cssgen --minimal`), and
+   `compiler.getSplitCss()` (the `{path,code}[]` file set — `cssgen --splitting`; written like artifacts). See
    [stylesheet](./stylesheet.md).
 3. **Reads + artifact writes via the engine; CSS routing via the host.** Source discovery + reading run through the
    Rust `pandacss_fs` engine (`scan`/`glob`/`sources`). Artifact *writing* also goes through the engine fs

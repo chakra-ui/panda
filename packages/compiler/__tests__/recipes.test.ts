@@ -241,7 +241,7 @@ describe('Compiler recipes', () => {
        export const button = <ButtonLink color="ghost.white" />`,
     )
 
-    expect(compiler.layerCss(['recipes', 'utilities'])).toMatchInlineSnapshot(`
+    expect(compiler.getLayerCss({ layers: ['recipes', 'utilities'] }).css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer variants {
           .button--color_ghost\\.white {

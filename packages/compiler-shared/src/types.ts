@@ -198,8 +198,31 @@ export interface WriteCssOptions extends CompileOptions {
   cwd?: string
 }
 
-export interface WriteSplitCssOptions {
-  outdir: string
+/** CSS emit overrides shared by cssgen, build, and dev. */
+export interface CssOutputOptions {
+  /** Layer filter for split output. Omit to emit all layers. */
+  layers?: StylesheetLayerName[]
+  emitLayerDeclaration?: boolean
+  minify?: boolean
+}
+
+/** Options for {@link Compiler.getLayerCss} / {@link Driver.getLayerCss}. */
+export interface LayerCssOptions {
+  layers: StylesheetLayerName[]
+  emitLayerDeclaration?: boolean
+  minify?: boolean
+}
+
+/** Options for in-memory split CSS generation. */
+export type SplitCssOptions = CssOutputOptions
+
+export interface WriteLayerCssOptions extends LayerCssOptions {
+  outfile: string
+  cwd?: string
+}
+
+export interface WriteSplitCssOptions extends CssOutputOptions {
+  outdir?: string
   cwd?: string
 }
 
@@ -374,6 +397,8 @@ export interface WriteFilesResult {
 export interface CompileOptions {
   /** Emit Panda's leading cascade-layer order declaration (`@layer reset, ...;`). */
   emitLayerDeclaration?: boolean
+  /** Override config `minify` for this compile. */
+  minify?: boolean
 }
 
 /** One extracted call argument. A literal `null` (`{ kind: 'value', value: null }`)
@@ -845,12 +870,12 @@ export interface Compiler {
   compile(options?: CompileOptions): CompileOutput
   /** CSS for the named layers only, concatenated in order — sliced in Rust so
    *  byte offsets stay valid. Pairs with `layers()` (names). Backs
-   *  `cssgen <layer>` / `--minimal`. */
-  layerCss(layers: StylesheetLayerName[]): string
+   *  `cssgen --minimal`. */
+  getLayerCss(options: LayerCssOptions): CompileOutput
   /** The stylesheet as a set of writable files (one per layer + per recipe,
    *  plus `recipes.css` / `styles.css` index files) — backs `cssgen --splitting`.
    *  The host writes each `path -> code`, the same model as `writeArtifacts`. */
-  splitCss(): CssFile[]
+  getSplitCss(options?: SplitCssOptions): CssFile[]
 
   /** Build-info distribution — produce, validate, and hydrate a design system's
    *  serialized encoder state. See {@link BuildInfoApi}. */
@@ -862,6 +887,8 @@ export interface Compiler {
   writeArtifacts(options: WriteArtifactsOptions): string[]
   /** Generate + write stylesheet CSS via the platform fs. */
   writeCss(options: WriteCssOptions): WriteCssResult
+  /** Generate + write CSS for selected layers via the platform fs. */
+  writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
   /** Generate + write split stylesheet files under `outdir` via the platform fs. */
   writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult
   /** Generate all codegen artifacts in memory without writing them. */

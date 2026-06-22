@@ -1,6 +1,7 @@
 use insta::assert_snapshot;
 
 use crate::common::{config, split_output};
+use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
 /// Render the split file set as `=== path ===\n<code>` blocks for snapshotting.
 fn render(files: &[pandacss_stylesheet::SplitCssFile]) -> String {
@@ -34,6 +35,7 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     let files = split_output(
         &config,
         "import { css } from '@panda/css'\nimport { button } from '@panda/recipes'\ncss({ color: 'red' })\nbutton({ size: 'sm' })",
+        StylesheetOptions::default(),
     );
     assert_snapshot!(render(&files), @"
     === styles.css ===
@@ -86,6 +88,41 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
 }
 
 #[test]
+fn split_css_with_layer_filter_skips_unselected_files() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": {
+            "tokens": { "colors": { "red": { "value": "#f00" } } }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" }
+        }
+    }));
+    let source = "import { css } from '@panda/css'\ncss({ color: 'red' })";
+    let files = split_output(
+        &config,
+        source,
+        StylesheetOptions {
+            layers: Some(vec![StylesheetLayer::Utilities]),
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    );
+
+    assert_snapshot!(render(&files), @"
+    === styles.css ===
+    @import './styles/utilities.css';
+
+    === styles/utilities.css ===
+    @layer utilities {
+      .c_red {
+        color: var(--colors-red);
+      }
+    }
+    ");
+}
+
+#[test]
 fn split_css_emits_theme_files() {
     let config = config(serde_json::json!({
         "theme": {
@@ -105,7 +142,7 @@ fn split_css_emits_theme_files() {
             }
         }
     }));
-    let files = split_output(&config, "");
+    let files = split_output(&config, "", StylesheetOptions::default());
 
     assert!(
         files

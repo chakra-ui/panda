@@ -24,7 +24,7 @@ describeIfBuilt('@pandacss/compiler-wasm build info', () => {
       modules: ['button.tsx', 'card.tsx'],
     })
 
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .background_blue {
           background: blue;
@@ -49,7 +49,7 @@ describeIfBuilt('@pandacss/compiler-wasm build info', () => {
     expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only: ['button.tsx'] }).modules).toEqual(['button.tsx'])
 
     // card's `background: blue` should not hydrate.
-    expect(app.layerCss(['utilities'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['utilities'] }).css).toMatchInlineSnapshot(`
       "@layer utilities {
         .color_red {
           color: red;
@@ -80,7 +80,7 @@ describeIfBuilt('@pandacss/compiler-wasm build info', () => {
 
     app.buildInfo.hydrate(info, { name: '@acme/ds', only })
 
-    expect(app.layerCss(['recipes'])).toMatchInlineSnapshot(`
+    expect(app.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
       "@layer recipes {
         @layer base {
           .button {

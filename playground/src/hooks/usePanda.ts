@@ -59,11 +59,11 @@ export function usePanda(mod: WasmModule | null, state: State, config: Config | 
     }
 
     const cssArtifacts: CssFileArtifact[] = [
-      { file: 'Utilities', code: compiler.layerCss(['utilities']) },
-      { file: 'Recipes', code: compiler.layerCss(['recipes']) },
-      { file: 'Tokens', code: compiler.layerCss(['tokens']) },
-      { file: 'Reset', code: compiler.layerCss(['reset']) },
-      { file: 'Global', code: compiler.layerCss(['base']) },
+      { file: 'Utilities', code: compiler.getLayerCss({ layers: ['utilities'] }).css },
+      { file: 'Recipes', code: compiler.getLayerCss({ layers: ['recipes'] }).css },
+      { file: 'Tokens', code: compiler.getLayerCss({ layers: ['tokens'] }).css },
+      { file: 'Reset', code: compiler.getLayerCss({ layers: ['reset'] }).css },
+      { file: 'Global', code: compiler.getLayerCss({ layers: ['base'] }).css },
     ]
 
     const previewCss = [css, compiler.compile().css].join('\n')

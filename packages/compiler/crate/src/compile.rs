@@ -20,12 +20,37 @@ pub struct CompileInput {
 #[derive(Default)]
 pub struct CompileOptions {
     pub emit_layer_declaration: Option<bool>,
+    pub minify: Option<bool>,
 }
 
 impl CompileOptions {
     pub(crate) fn should_emit_layer_declaration(&self) -> bool {
         self.emit_layer_declaration.unwrap_or(true)
     }
+}
+
+#[napi(object)]
+#[derive(Default)]
+pub struct CssOutputOptions {
+    pub layers: Option<Vec<String>>,
+    pub emit_layer_declaration: Option<bool>,
+    pub minify: Option<bool>,
+}
+
+#[napi(object)]
+pub struct LayerCssOptions {
+    pub layers: Vec<String>,
+    pub emit_layer_declaration: Option<bool>,
+    pub minify: Option<bool>,
+}
+
+#[napi(object)]
+pub struct WriteLayerCssOptions {
+    pub outfile: String,
+    pub layers: Vec<String>,
+    pub cwd: Option<String>,
+    pub emit_layer_declaration: Option<bool>,
+    pub minify: Option<bool>,
 }
 
 #[napi(object)]
@@ -143,6 +168,7 @@ pub fn compile(input: Option<CompileInput>) -> CompileOutput {
         static_pattern_diagnostics,
         emit_layer_declaration,
         None,
+        None,
     )
 }
 
@@ -153,23 +179,10 @@ pub(crate) fn build_compile_output(
     static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
     emit_layer_declaration: bool,
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
+    minify_override: Option<bool>,
 ) -> CompileOutput {
     let token_dictionary = project.config().token_dictionary();
-    let manifest_files = project
-        .file_manifest()
-        .into_iter()
-        .map(|(path, hash)| CompileFileManifest {
-            path: path.as_ref().to_owned(),
-            hash: format!("{hash:016x}"),
-        })
-        .collect();
-    let manifest_tokens = token_dictionary.as_ref().map_or_else(Vec::new, |dict| {
-        let mut paths: BTreeSet<String> = BTreeSet::new();
-        for token in dict.iter() {
-            paths.insert(token.path.to_string());
-        }
-        paths.into_iter().collect()
-    });
+    let manifest = compile_manifest(project, token_dictionary.as_ref());
     let output = build_stylesheet_output(
         project,
         user_config,
@@ -177,15 +190,66 @@ pub(crate) fn build_compile_output(
         static_pattern_atoms,
         emit_layer_declaration,
         utility_transform,
+        minify_override,
     );
     CompileOutput {
         css: output.css,
         source_map: output.source_map,
-        manifest: CompileManifest {
-            files: manifest_files,
-            tokens: manifest_tokens,
-        },
+        manifest,
         layer_ranges: layer_ranges_from(&output.layer_ranges),
+        diagnostics: project
+            .diagnostics()
+            .iter()
+            .cloned()
+            .chain(project.file_diagnostics().into_iter().cloned())
+            .chain(static_pattern_diagnostics)
+            .chain(output.diagnostics)
+            .map(crate::convert::convert_diagnostic)
+            .collect(),
+    }
+}
+
+pub(crate) fn build_layer_compile_output(
+    project: &mut pandacss_project::Project,
+    user_config: &UserConfig,
+    static_pattern_atoms: &[CoreAtom],
+    static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    layers: &[String],
+    utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
+    css_options: Option<&CssOutputOptions>,
+) -> CompileOutput {
+    let token_dictionary = project.config().token_dictionary();
+    let manifest = compile_manifest(project, token_dictionary.as_ref());
+    let emit_layer_declaration = css_options
+        .and_then(|options| options.emit_layer_declaration)
+        .unwrap_or(false);
+    let minify_override = css_options.and_then(|options| options.minify);
+    let output = build_stylesheet_output(
+        project,
+        user_config,
+        token_dictionary,
+        static_pattern_atoms,
+        false,
+        utility_transform,
+        minify_override,
+    );
+    let selected: Vec<pandacss_stylesheet::StylesheetLayer> = layers
+        .iter()
+        .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
+        .collect();
+    let mut css = output.get_layer_css(&selected);
+    if emit_layer_declaration {
+        let preamble =
+            pandacss_stylesheet::layer_order_declaration(&user_config.layers, Some(&selected));
+        if !preamble.is_empty() {
+            css.insert_str(0, &format!("{preamble}\n"));
+        }
+    }
+    CompileOutput {
+        css,
+        source_map: output.source_map,
+        manifest,
+        layer_ranges: empty_layer_ranges(),
         diagnostics: project
             .diagnostics()
             .iter()
@@ -211,6 +275,7 @@ pub(crate) fn build_split_css(
     user_config: &UserConfig,
     static_pattern_atoms: &[CoreAtom],
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
+    options: Option<&CssOutputOptions>,
 ) -> Vec<SplitCssFile> {
     let token_dictionary = project.config().token_dictionary();
     let snapshots = if let Some(transform) = utility_transform {
@@ -218,15 +283,22 @@ pub(crate) fn build_split_css(
     } else {
         project.stylesheet_snapshots(user_config)
     };
-    let options = pandacss_stylesheet::StylesheetOptions {
-        minify: user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false),
+    let selected_layers = options.and_then(|options| {
+        options.layers.as_ref().map(|layers| {
+            layers
+                .iter()
+                .filter_map(|name| pandacss_stylesheet::StylesheetLayer::from_name(name))
+                .collect::<Vec<_>>()
+        })
+    });
+    let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
+        minify: resolve_minify(user_config, options.and_then(|options| options.minify)),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
-        emit_layer_declaration: true,
+        emit_layer_declaration: options
+            .and_then(|options| options.emit_layer_declaration)
+            .unwrap_or(true),
+        layers: selected_layers,
     };
     pandacss_stylesheet::split_css(
         &pandacss_stylesheet::StylesheetInput {
@@ -239,7 +311,7 @@ pub(crate) fn build_split_css(
             static_pattern_atoms,
             token_refs: snapshots.token_refs,
         },
-        &options,
+        &stylesheet_options,
     )
     .into_iter()
     .map(|file| SplitCssFile {
@@ -258,6 +330,7 @@ pub(crate) fn build_stylesheet_output(
     static_pattern_atoms: &[CoreAtom],
     emit_layer_declaration: bool,
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
+    minify_override: Option<bool>,
 ) -> pandacss_stylesheet::StylesheetOutput {
     let snapshots = if let Some(transform) = utility_transform {
         project.stylesheet_snapshots_with_utility_transform(user_config, transform)
@@ -265,14 +338,11 @@ pub(crate) fn build_stylesheet_output(
         project.stylesheet_snapshots(user_config)
     };
     let options = pandacss_stylesheet::StylesheetOptions {
-        minify: user_config
-            .extra
-            .get("minify")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false),
+        minify: resolve_minify(user_config, minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
         source_map: false,
         emit_layer_declaration,
+        layers: None,
     };
     pandacss_stylesheet::compile(
         pandacss_stylesheet::StylesheetInput {
@@ -287,6 +357,48 @@ pub(crate) fn build_stylesheet_output(
         },
         &options,
     )
+}
+
+fn resolve_minify(user_config: &UserConfig, minify_override: Option<bool>) -> bool {
+    minify_override.unwrap_or_else(|| {
+        user_config
+            .extra
+            .get("minify")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
+    })
+}
+
+fn compile_manifest(
+    project: &pandacss_project::Project,
+    token_dictionary: Option<&std::sync::Arc<pandacss_tokens::TokenDictionary>>,
+) -> CompileManifest {
+    let files = project
+        .file_manifest()
+        .into_iter()
+        .map(|(path, hash)| CompileFileManifest {
+            path: path.as_ref().to_owned(),
+            hash: format!("{hash:016x}"),
+        })
+        .collect();
+    let tokens = token_dictionary.map_or_else(Vec::new, |dict| {
+        let mut paths: BTreeSet<String> = BTreeSet::new();
+        for token in dict.iter() {
+            paths.insert(token.path.to_string());
+        }
+        paths.into_iter().collect()
+    });
+    CompileManifest { files, tokens }
+}
+
+fn empty_layer_ranges() -> CompileLayerRanges {
+    CompileLayerRanges {
+        reset: None,
+        base: None,
+        tokens: None,
+        recipes: None,
+        utilities: None,
+    }
 }
 
 fn layer_ranges_from(r: &pandacss_stylesheet::StylesheetLayerRanges) -> CompileLayerRanges {
@@ -316,16 +428,6 @@ fn empty_compile_output() -> CompileOutput {
         },
         layer_ranges: empty_layer_ranges(),
         diagnostics: Vec::new(),
-    }
-}
-
-fn empty_layer_ranges() -> CompileLayerRanges {
-    CompileLayerRanges {
-        reset: None,
-        base: None,
-        tokens: None,
-        recipes: None,
-        utilities: None,
     }
 }
 

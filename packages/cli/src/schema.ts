@@ -36,6 +36,8 @@ export const cssgenFlagsSchema = commonFlagsSchema.extend({
   outfile: stringFlag,
   splitting: booleanFlag,
   check: booleanFlag,
+  minimal: booleanFlag,
+  minify: booleanFlag,
 })
 
 export const buildFlagsSchema = commonFlagsSchema.extend({

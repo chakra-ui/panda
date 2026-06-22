@@ -43,7 +43,7 @@ describe('preset color mix utility output', () => {
        })`,
     )
 
-    const css = compiler.layerCss(['utilities'])
+    const css = compiler.getLayerCss({ layers: ['utilities'] }).css
 
     expect(css).not.toContain('--mix-')
     expect(css).toMatchInlineSnapshot(`
@@ -117,7 +117,7 @@ describe('preset color mix utility output', () => {
        card({ variant: 'tinted' })`,
     )
 
-    const css = compiler.layerCss(['recipes'])
+    const css = compiler.getLayerCss({ layers: ['recipes'] }).css
 
     expect(css).toMatchInlineSnapshot(`
       "@layer recipes {
