@@ -15,6 +15,8 @@ export interface NodeDriverOptions {
   cwd: string
   /** Explicit config file (relative to `cwd`); otherwise discovered upward. */
   configPath?: string
+  /** Override the config's `include` globs (e.g. CLI `--include`). Empty/omitted keeps the config value. */
+  include?: string[]
 }
 
 type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
@@ -25,6 +27,7 @@ type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
  */
 export async function createNodeDriver(options: NodeDriverOptions): Promise<Driver> {
   const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath })
+  if (options.include?.length) loaded.config.include = options.include
   return new NodeDriver(options, loaded)
 }
 
@@ -52,6 +55,8 @@ class NodeDriver extends BaseDriver {
 
   async reload(): Promise<DiffConfigResult> {
     const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
+    // Re-apply before diffing so the override isn't seen as a config change.
+    if (this.#options.include?.length) next.config.include = this.#options.include
     const diff = diffConfig(this.#loaded, next)
     if (diff.hasChanged) {
       this.#loaded = next

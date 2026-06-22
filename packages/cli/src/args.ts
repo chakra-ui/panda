@@ -22,6 +22,28 @@ export function outputArgs(): ArgsDef {
   }
 }
 
+export function includeArgs(): ArgsDef {
+  return {
+    include: {
+      type: 'string',
+      valueHint: 'glob',
+      description: 'Source file globs to scan, replacing the config include list',
+    },
+  }
+}
+
+/** Normalize `--include` (string, repeated array, or comma-separated) into a glob list. */
+export function normalizeInclude(value: unknown): string[] | undefined {
+  if (value == null) return undefined
+
+  const globs = (Array.isArray(value) ? value : [value])
+    .flatMap((entry) => String(entry).split(','))
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+
+  return globs.length > 0 ? globs : undefined
+}
+
 export function traceArgs(): ArgsDef {
   return {
     trace: { type: 'boolean', description: 'Enable compiler tracing' },
@@ -79,7 +101,7 @@ function flagName(path: PropertyKey | undefined): string {
   return `--${String(path).replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`
 }
 
-function formatIssue(issue: z.ZodIssue, flags: Record<string, unknown>): string {
+function formatIssue(issue: z.core.$ZodIssue, flags: Record<string, unknown>): string {
   const path = issue.path[0]
   const name = flagName(path)
   const received = path === undefined ? undefined : flags[String(path)]

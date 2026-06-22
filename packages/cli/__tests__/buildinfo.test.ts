@@ -76,6 +76,15 @@ describe('buildinfo command', () => {
     `)
   })
 
+  it('--include narrows the scanned modules in the artifact', async () => {
+    dir = createLibFixture()
+
+    const result = await runBuildinfo({ cwd: dir, logLevel: 'silent', include: ['button.tsx'] })
+
+    expect(result.ok).toBe(true)
+    expect(Object.keys(readBuildInfo(dir).modules)).toEqual(['button.tsx'])
+  })
+
   it('tracks exports of recipe-consuming components with portable module keys', async () => {
     dir = mkdtempSync(join(tmpdir(), 'panda-cli-lib-'))
     writeFileSync(

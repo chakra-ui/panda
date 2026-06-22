@@ -2,7 +2,7 @@ import { type BuildInfo, type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, relative } from 'node:path'
-import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
+import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { runCommand } from '../run-command'
 import { buildinfoFlagsSchema } from '../schema'
 import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
@@ -18,6 +18,7 @@ export const buildinfoCommand = defineCommand({
   },
   args: () => ({
     ...baseArgs(),
+    ...includeArgs(),
     outfile: { type: 'string', description: "Output path, default './<outdir>/panda.buildinfo.json'", alias: 'o' },
     panda: { type: 'string', description: "Peer Panda version range to stamp into the artifact (default '*')" },
     minify: { type: 'boolean', description: 'Minify the generated JSON', alias: 'm' },

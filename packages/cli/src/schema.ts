@@ -14,6 +14,7 @@ const numberLikeFlag = z.union([z.string(), z.number()]).optional()
 export const commonFlagsSchema = z.object({
   cwd: stringFlag,
   config: stringFlag,
+  include: z.union([z.string(), z.array(z.string())]).optional(),
   watch: booleanFlag,
   json: booleanFlag,
   format: diagnosticFormatSchema.optional(),
@@ -72,6 +73,7 @@ export const buildinfoFlagsSchema = commonFlagsSchema.omit({ watch: true, watchD
 export const infoFlagsSchema = commonFlagsSchema.pick({
   cwd: true,
   config: true,
+  include: true,
   json: true,
   format: true,
   logLevel: true,
@@ -82,7 +84,9 @@ export const infoFlagsSchema = commonFlagsSchema.pick({
   traceFile: true,
 })
 
-export const doctorFlagsSchema = infoFlagsSchema
+// `doctor` validates config/diagnostics and never scans sources, so it must not
+// inherit `--include` from the shared info schema.
+export const doctorFlagsSchema = infoFlagsSchema.omit({ include: true })
 
 export const debugFlagsSchema = infoFlagsSchema.extend({
   outdir: stringFlag,

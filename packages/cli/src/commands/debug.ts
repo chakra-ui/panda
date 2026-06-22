@@ -1,7 +1,7 @@
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
-import { parseCliFlags, runtimeArgs } from '../args'
+import { includeArgs, parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
 import { debugFlagsSchema } from '../schema'
 import { diagnosticsPass, normalizeDiagnostics, type CliDiagnostic } from '../diagnostics'
@@ -16,6 +16,7 @@ export const debugCommand = defineCommand({
   },
   args: () => ({
     ...runtimeArgs(),
+    ...includeArgs(),
     outdir: { type: 'string', description: 'Debug output directory (used as-is; default <styled-system>/debug)' },
     dry: { type: 'boolean', description: 'Print the dump to stdout instead of writing files' },
     onlyConfig: { type: 'boolean', description: 'Only dump the resolved config, skip per-file extraction' },

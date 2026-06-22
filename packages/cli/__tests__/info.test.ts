@@ -27,6 +27,18 @@ describe('info command', () => {
     expect(JSON.parse(logs[0])).toMatchObject({ ok: true, command: 'info', sourceCount: 1, diagnostics: [] })
   })
 
+  it('--include replaces the reported source globs', async () => {
+    // info reports the include globs (sourceCount = glob count), so an override
+    // with two globs replaces the config's single default glob.
+    dir = createFixture()
+
+    const base = await runInfo({ cwd: dir })
+    const overridden = await runInfo({ cwd: dir, include: ['a/**/*.tsx', 'b/**/*.tsx'] })
+
+    expect(base.sourceCount).toBe(1)
+    expect(overridden.sourceCount).toBe(2)
+  })
+
   it('includes timings in json output', async () => {
     dir = createFixture()
 

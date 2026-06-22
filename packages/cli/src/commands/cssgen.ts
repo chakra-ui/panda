@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 import { type ParseFileReport, type StylesheetLayerName } from '@pandacss/compiler'
-import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
+import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { cssgenFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
@@ -18,6 +18,7 @@ export const cssgenCommand = defineCommand({
   },
   args: () => ({
     ...baseArgs(),
+    ...includeArgs(),
     watch: { type: 'boolean', description: 'Watch files and rebuild', alias: 'w' },
     outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },

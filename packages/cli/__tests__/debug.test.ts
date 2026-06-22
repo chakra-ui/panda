@@ -35,6 +35,19 @@ describe('debug command', () => {
     expect(extract.calls.length).toBeGreaterThan(0)
   })
 
+  it('--include overrides the config to extract otherwise-unscanned files', async () => {
+    dir = createFixture(`export default {
+      outdir: 'styled-system',
+      include: ['no-match/**/*.tsx'],
+      importMap: { css: ['@panda/css'] },
+    }`)
+
+    const result = await runDebug({ cwd: dir, include: ['**/*.tsx'], logLevel: 'silent' })
+
+    expect(result.sourceCount).toBe(1)
+    expect(existsSync(join(dir, 'styled-system', 'debug', 'App.tsx.extract.json'))).toBe(true)
+  })
+
   it('--only-config skips per-file extraction and css', async () => {
     dir = createFixture()
 

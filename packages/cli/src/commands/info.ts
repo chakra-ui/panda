@@ -1,6 +1,6 @@
 import { type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
-import { parseCliFlags, runtimeArgs } from '../args'
+import { includeArgs, parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
 import { infoFlagsSchema } from '../schema'
 import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
@@ -13,7 +13,7 @@ export const infoCommand = defineCommand({
     name: 'info',
     description: 'Show project and compiler info',
   },
-  args: runtimeArgs,
+  args: () => ({ ...runtimeArgs(), ...includeArgs() }),
   run: async ({ args }) => setExitCode(await runInfo(parseCliFlags(infoFlagsSchema, args))),
 })
 

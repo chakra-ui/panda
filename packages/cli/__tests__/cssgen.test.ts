@@ -78,6 +78,39 @@ describe('cssgen command', () => {
     })
   })
 
+  it('--include overrides a config that matches no sources', async () => {
+    dir = createFixture(`export default {
+      outdir: 'styled-system',
+      include: ['no-match/**/*.tsx'],
+      importMap: { css: ['@panda/css'] },
+    }`)
+
+    const result = await runCssgen({ cwd: dir, include: ['**/*.tsx'], logLevel: 'silent' })
+
+    expect(result.parsed).toHaveLength(1)
+    expect(readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')).toContain('red')
+  })
+
+  it('--include replaces the config include rather than merging', async () => {
+    dir = createFixture()
+
+    const result = await runCssgen({ cwd: dir, include: ['missing/**/*.tsx'], logLevel: 'silent' })
+
+    expect(result.parsed).toEqual([])
+  })
+
+  it('--include accepts a comma-separated glob list', async () => {
+    dir = createFixture(`export default {
+      outdir: 'styled-system',
+      include: ['no-match/**/*.tsx'],
+      importMap: { css: ['@panda/css'] },
+    }`)
+
+    const result = await runCssgen({ cwd: dir, include: 'missing/**/*.tsx,**/*.tsx', logLevel: 'silent' })
+
+    expect(result.parsed).toHaveLength(1)
+  })
+
   it('renders human diagnostics with severity, code, and message', async () => {
     dir = createFixture()
     writeSyntaxError(dir)
