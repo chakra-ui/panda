@@ -275,6 +275,7 @@ fn run_cold(config: &UserConfig, sources: &[(PathBuf, String)]) -> ColdRun {
             include_static: true,
             source_map: false,
             emit_layer_declaration: true,
+            ..StylesheetOptions::default()
         },
     );
     let compile = t0.elapsed();
@@ -334,6 +335,7 @@ fn run_watch(config: &UserConfig, sources: &[(PathBuf, String)]) -> WatchRun {
             include_static: true,
             source_map: false,
             emit_layer_declaration: true,
+            ..StylesheetOptions::default()
         },
     );
     let compile = t0.elapsed();
