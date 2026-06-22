@@ -59,7 +59,13 @@ export default function BlogPage() {
           </panda.p>
         </Stack>
 
-        <Stack gap="8" maxW="3xl" mx="auto">
+        <Box
+          display="grid"
+          gridTemplateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
+          gap="8"
+          maxW="7xl"
+          mx="auto"
+        >
           {posts.map(post => {
             const slug = post.slug.split('/').slice(1).join('/')
             return (
@@ -68,6 +74,7 @@ export default function BlogPage() {
                 href={`/blog/${slug}`}
                 className={css({
                   display: 'block',
+                  height: 'full',
                   p: '6',
                   bg: 'bg',
                   borderWidth: '1px',
@@ -116,7 +123,7 @@ export default function BlogPage() {
               </Link>
             )
           })}
-        </Stack>
+        </Box>
       </Container>
     </Box>
   )

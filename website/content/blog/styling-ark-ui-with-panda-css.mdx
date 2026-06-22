@@ -1,8 +1,6 @@
 ---
 title: 'How to Style Ark UI Components with Panda CSS'
-description:
-  'Ark UI ships accessible React components with no styles. Learn how to style them with Panda CSS, using data-state
-  conditions and slot recipes for the multi-part ones.'
+description: 'Pair Ark UI with Panda CSS to style headless components using data-state conditions and slot recipes.'
 date: 2026-06-19
 author: Esther Adebayo
 tags: [ark-ui, css, guides, recipes]
@@ -13,8 +11,10 @@ handling for things like checkboxes, dialogs, and menus, but no styles at all. H
 
 ![Styling Ark UI with Panda CSS](/ark-ui-panda.png)
 
-This post is about styling Ark UI with Panda CSS. We'll build a Checkbox and a Dialog, using Panda's tokens for the
-look, its conditions for the interactive states, and a slot recipe to keep the Dialog's many parts in one place.
+This post is about styling Ark UI with Panda CSS. We'll build a
+[Checkbox](https://ark-ui.com/react/docs/components/checkbox) and a
+[Dialog](https://ark-ui.com/react/docs/components/dialog), using Panda's tokens for the look, its conditions for the
+interactive states, and a slot recipe to keep the Dialog's many parts in one place.
 
 ## Why they work well together
 
@@ -381,6 +381,4 @@ keeps every part's styles together, and `createStyleContext` turns that recipe i
 anywhere without touching class names.
 
 To go deeper, see the Panda docs on [recipes](/docs/concepts/recipes), [slot recipes](/docs/concepts/slot-recipes),
-[conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context). On
-the Ark UI side, the [Checkbox](https://ark-ui.com/react/docs/components/checkbox) and
-[Dialog](https://ark-ui.com/react/docs/components/dialog) docs are the references to keep open while you build.
+[conditional styles](/docs/concepts/conditional-styles), and [JSX style context](/docs/concepts/jsx-style-context).
