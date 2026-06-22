@@ -839,7 +839,13 @@ type WithHTMLProps<T> = DistributiveOmit<T, OmittedHTMLProps> & PatchedHTMLProps
 fn index_module(ctx: CodegenContext<'_>) -> Module {
     // `./system` carries SystemProperties, selectors, and SystemStyleObject.
     let mut sources = vec!["./tokens", "./system", "./pattern", "./recipe"];
-    if matches!(ctx.config.jsx_framework.as_ref(), Some(JsxFramework::React)) {
+    // Re-export `./jsx` for any known framework — mirrors the jsx artifact gate.
+    if ctx
+        .config
+        .jsx_framework
+        .as_ref()
+        .is_some_and(JsxFramework::is_known)
+    {
         sources.push("./jsx");
     }
 

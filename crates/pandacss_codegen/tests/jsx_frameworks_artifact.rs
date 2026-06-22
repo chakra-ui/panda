@@ -1,6 +1,6 @@
 use crate::common::{artifact, file, paths};
 use pandacss_codegen::{ArtifactGraph, ArtifactId, GenerateOptions};
-use pandacss_config::{CssSyntaxKind, JsxStylePropsConfig, UserConfig};
+use pandacss_config::{CodegenFormat, CssSyntaxKind, JsxStylePropsConfig, UserConfig};
 
 fn config(framework: &str, template_literal: bool) -> UserConfig {
     let mut config: UserConfig = serde_json::from_value(serde_json::json!({
@@ -344,6 +344,25 @@ fn emits_template_literal_jsx_factory_for_non_react_frameworks() {
         assert!(
             jsx.contains(type_marker),
             "{framework} template type marker missing"
+        );
+    }
+}
+
+#[test]
+fn types_index_reexports_jsx_for_non_react_frameworks() {
+    for framework in ["preact", "qwik", "solid", "vue"] {
+        let artifacts = ArtifactGraph.generate_with_config(
+            &config(framework, false),
+            GenerateOptions {
+                format: CodegenFormat::Ts,
+                ..GenerateOptions::default()
+            },
+        );
+        let types = artifact(&artifacts, ArtifactId::Types);
+
+        assert!(
+            file(types, "types/index.ts").contains("export type * from './jsx';"),
+            "types/index.ts should re-export ./jsx for {framework}"
         );
     }
 }
