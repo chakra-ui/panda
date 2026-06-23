@@ -1364,7 +1364,17 @@ impl<'a> EmitContext<'a> {
         let mut composition_entries = Vec::new();
         for (key, value) in entries {
             if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
-                composition_entries.extend(style_entries);
+                let (base, conditional): (Vec<_>, Vec<_>) = style_entries
+                    .into_iter()
+                    .partition(|entry| entry.conditions.is_empty());
+                for sorted in self.sort.sorted_recipe_entries(&base) {
+                    if let Some(entry_declarations) =
+                        self.style_entry_declarations(sorted.entry, false)
+                    {
+                        append_declarations(&mut declarations, entry_declarations);
+                    }
+                }
+                composition_entries.extend(conditional);
                 continue;
             }
 
@@ -1396,6 +1406,16 @@ impl<'a> EmitContext<'a> {
                     &mut declarations,
                     &mut conditional_declarations,
                 ) {
+                    continue;
+                }
+                if !self.utility.is_known(key)
+                    && !pandacss_shared::css_properties::is_css_property(key)
+                {
+                    nested_rules.push(NestedStyleRule {
+                        selector: nested_selector(selector, key),
+                        value,
+                        condition: None,
+                    });
                     continue;
                 }
             }
@@ -1762,6 +1782,8 @@ impl<'a> EmitContext<'a> {
         raw: &str,
         value: Option<&AtomValue>,
     ) -> UtilityTransformResult {
+        let raw = collapse_multiline_value(raw);
+        let raw = raw.as_ref();
         if self.utility.should_transform(prop) {
             // Class hashes by the resolved value (`#ef4444`), matching legacy and
             // the runtime `token()` — `path` stays build-info only.
@@ -2094,6 +2116,14 @@ fn composition_style_object<'a>(prop: &str, styles: &'a Literal) -> Option<&'a L
         return None;
     }
     Some(styles)
+}
+
+fn collapse_multiline_value(raw: &str) -> Cow<'_, str> {
+    if raw.contains(['\n', '\r', '\t']) {
+        Cow::Owned(raw.split_whitespace().collect::<Vec<_>>().join(" "))
+    } else {
+        Cow::Borrowed(raw)
+    }
 }
 
 fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {

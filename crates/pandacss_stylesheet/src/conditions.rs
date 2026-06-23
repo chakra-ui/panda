@@ -118,11 +118,7 @@ pub(crate) fn is_nested_selector_key(key: &str) -> bool {
 }
 
 pub(crate) fn nested_selector(parent: &str, nested: &str) -> String {
-    if nested.contains('&') {
-        crate::selector::replace_selector_parent(nested, parent)
-    } else {
-        format!("{parent} {nested}")
-    }
+    crate::selector::replace_selector_parent(nested, parent)
 }
 
 fn query_raw_paths(query: &ConditionQuery) -> Vec<ConditionPath> {
