@@ -589,6 +589,130 @@ fn expands_static_css_slot_recipe_wildcard() {
 }
 
 #[test]
+fn static_recipe_compositions_resolve_token_values() {
+    let config = config(composition_recipe_fixture());
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .label {
+          font-size: var(--font-sizes-sm);
+        }
+      }
+      @layer variants {
+        .label--tone_danger {
+          color: var(--colors-red-500);
+        }
+      }
+      @layer compound_variants {
+        .label--compound__tone_danger {
+          animation-duration: var(--durations-fast);
+          animation-name: fade-in;
+        }
+      }
+    }
+    @layer recipes.slots {
+      @layer base {
+        .field__label {
+          font-size: var(--font-sizes-sm);
+        }
+      }
+      @layer variants {
+        .field__label--tone_danger {
+          color: var(--colors-red-500);
+        }
+      }
+      @layer compound_variants {
+        .field__helper--compound__tone_danger {
+          animation-duration: var(--durations-fast);
+          animation-name: fade-in;
+        }
+      }
+    }
+    ");
+}
+
+fn composition_recipe_fixture() -> serde_json::Value {
+    serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "tokens": {
+                "fontSizes": {
+                    "sm": { "value": "0.875rem" }
+                },
+                "colors": {
+                    "red": {
+                        "500": { "value": "#ef4444" }
+                    }
+                },
+                "durations": {
+                    "fast": { "value": "120ms" }
+                }
+            },
+            "textStyles": {
+                "sm": { "value": { "fontSize": "sm" } }
+            },
+            "layerStyles": {
+                "danger": { "value": { "color": "red.500" } }
+            },
+            "animationStyles": {
+                "fade": { "value": { "animationName": "fade-in", "animationDuration": "fast" } }
+            },
+            "recipes": {
+                "label": {
+                    "className": "label",
+                    "staticCss": ["*"],
+                    "base": { "textStyle": "sm" },
+                    "variants": {
+                        "tone": {
+                            "danger": { "layerStyle": "danger" }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "tone": "danger",
+                            "css": { "animationStyle": "fade" }
+                        }
+                    ]
+                }
+            },
+            "slotRecipes": {
+                "field": {
+                    "className": "field",
+                    "slots": ["label", "helper"],
+                    "staticCss": ["*"],
+                    "base": {
+                        "label": { "textStyle": "sm" }
+                    },
+                    "variants": {
+                        "tone": {
+                            "danger": {
+                                "label": { "layerStyle": "danger" }
+                            }
+                        }
+                    },
+                    "compoundVariants": [
+                        {
+                            "tone": "danger",
+                            "css": {
+                                "helper": { "animationStyle": "fade" }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "utilities": {
+            "animationDuration": { "className": "dur", "values": "durations" },
+            "animationName": { "className": "anim-name" },
+            "color": { "className": "c", "values": "colors" },
+            "fontSize": { "className": "fs", "values": "fontSizes" }
+        }
+    })
+}
+
+#[test]
 fn expands_static_recipe_compound_variant_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },

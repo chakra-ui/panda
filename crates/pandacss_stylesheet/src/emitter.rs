@@ -869,7 +869,8 @@ impl<'a> EmitContext<'a> {
             .chain(&recipes.variants)
             .chain(&recipes.compounds)
         {
-            for entry in &group.entries {
+            let entries = self.expand_recipe_style_entries(&group.entries);
+            for entry in &entries {
                 let Some(declarations) = self.recipe_entry_declarations(entry) else {
                     continue;
                 };
@@ -1210,7 +1211,8 @@ impl<'a> EmitContext<'a> {
         // Sorted recipe entries often lower to the same selector + wrapper
         // target; keep that block pending so declarations coalesce in order.
         let mut pending: Option<StyleRule> = None;
-        for entry in self.sort.sorted_recipe_entries(entries) {
+        let entries = self.expand_recipe_style_entries(entries);
+        for entry in self.sort.sorted_recipe_entries(&entries) {
             let Some(declarations) = self.style_entry_declarations(entry.entry, important) else {
                 continue;
             };
@@ -1710,7 +1712,8 @@ impl<'a> EmitContext<'a> {
             &rule_conditions,
         );
 
-        for entry in self.sort.sorted_recipe_entries(entries) {
+        let entries = self.expand_recipe_style_entries(entries);
+        for entry in self.sort.sorted_recipe_entries(&entries) {
             let Some(declarations) = self.recipe_entry_declarations(entry.entry) else {
                 continue;
             };
@@ -1730,6 +1733,65 @@ impl<'a> EmitContext<'a> {
         flush_pending_rule(pending, |pending| {
             write_rule(writer, &pending.target, &pending.declarations);
         });
+    }
+
+    fn expand_recipe_style_entries(&self, entries: &[RecipeStyleEntry]) -> Vec<RecipeStyleEntry> {
+        let mut seen = FxHashSet::default();
+        let mut out = Vec::new();
+        for entry in entries {
+            let mut active = FxHashSet::default();
+            self.expand_recipe_style_entry(entry, &mut active, &mut seen, &mut out);
+        }
+        out
+    }
+
+    fn push_recipe_style_entry(
+        entry: &RecipeStyleEntry,
+        seen: &mut FxHashSet<RecipeStyleEntry>,
+        out: &mut Vec<RecipeStyleEntry>,
+    ) {
+        let entry = entry.clone();
+        if seen.insert(entry.clone()) {
+            out.push(entry);
+        }
+    }
+
+    fn recipe_style_expansion_key(entry: &RecipeStyleEntry) -> (Box<str>, AtomValue) {
+        (entry.prop.clone(), entry.value.clone())
+    }
+
+    fn expand_recipe_style_entry(
+        &self,
+        entry: &RecipeStyleEntry,
+        active: &mut FxHashSet<(Box<str>, AtomValue)>,
+        seen: &mut FxHashSet<RecipeStyleEntry>,
+        out: &mut Vec<RecipeStyleEntry>,
+    ) {
+        let key = Self::recipe_style_expansion_key(entry);
+        if !active.insert(key.clone()) {
+            return;
+        }
+
+        let expanded = self
+            .composition_style_entries(entry.prop.as_ref(), &entry.value)
+            .or_else(|| self.nested_utility_style_entries(entry.prop.as_ref(), &entry.value));
+
+        let Some(entries) = expanded else {
+            Self::push_recipe_style_entry(entry, seen, out);
+            active.remove(&key);
+            return;
+        };
+
+        for mut next in entries {
+            if !entry.conditions.is_empty() {
+                let mut conditions = entry.conditions.clone();
+                conditions.extend(next.conditions.iter().cloned());
+                next.conditions = conditions;
+            }
+            next.important = entry.important || next.important;
+            self.expand_recipe_style_entry(&next, active, seen, out);
+        }
+        active.remove(&key);
     }
 
     fn recipe_entry_declarations(&self, entry: &RecipeStyleEntry) -> Option<Vec<Declaration>> {
