@@ -185,6 +185,25 @@ fn string_value_whitespace_is_collapsed_outside_quotes() {
 }
 
 #[test]
+fn template_literal_value_whitespace_is_collapsed_outside_quotes() {
+    assert_yaml_snapshot!(
+        extract("css({ gridTemplateAreas: `\n    \"preview name delete\" \n    \"preview size delete\"` })", &[css("css")]),
+        @r#"
+    calls:
+      - category: css
+        name: css
+        alias: css
+        data:
+          - gridTemplateAreas: "\"preview name delete\" \"preview size delete\""
+        span:
+          start: 0
+          end: 83
+    diagnostics: []
+    "#,
+    );
+}
+
+#[test]
 fn spread_overwrite_keeps_spread_position() {
     // Same upsert semantics but the duplicate enters through an inline
     // literal spread. The key from the spread keeps its position; the
@@ -1243,7 +1262,7 @@ fn template_literal_without_interpolation() {
         alias: css
         data:
           - color: red
-            font: "sans \n serif"
+            font: sans serif
         span:
           start: 0
           end: 44
@@ -2013,7 +2032,7 @@ fn array_value_preserves_elision_holes() {
 #[test]
 fn multiline_template_literal_with_interpolation_folds() {
     // Template spans multiple lines, with a const-bound interpolation.
-    // Newlines and indentation are preserved verbatim — matches JS.
+    // Newlines and indentation collapse like v1's `trimWhitespace` path.
     let result = extract_with(
         indoc! {r"
             const angle = '135deg';
@@ -2030,9 +2049,10 @@ fn multiline_template_literal_with_interpolation_folds() {
     );
     let lit = serde_json::to_value(&result.calls[0].data[0]).unwrap();
     let bg = lit["backgroundImage"].as_str().unwrap();
-    assert!(bg.starts_with("linear-gradient("));
-    assert!(bg.contains("135deg"), "interpolation folded");
-    assert!(bg.contains("#d946ef80 10%"));
+    assert_eq!(
+        bg,
+        "linear-gradient( 135deg, #d946ef80 10%, transparent 50% )"
+    );
 }
 
 // --- TS syntactic unwraps (additional coverage) ---

@@ -1182,6 +1182,42 @@ fn ts_satisfies_attribute_value() {
 }
 
 #[test]
+fn jsx_style_multiline_template_literal_collapses_whitespace() {
+    let source = indoc! {r##"
+        <Box
+          marginTop="3"
+          display="flex"
+          flexDir="column"
+          background="#e879f91a"
+          backgroundSize="8px 8px"
+          style={{
+            backgroundImage: `linear-gradient(
+              135deg,
+              #d946ef80 10%,
+              transparent 0,
+              transparent 50%,
+              #d946ef80 0,
+              #d946ef80 60%,
+              transparent 0,
+              transparent
+            )`,
+          }}
+        />
+    "##};
+
+    let result = extract(source, &[pattern_component("Box")]);
+    assert_yaml_snapshot!(jsx_data_for(&result.jsx, "Box"), @r##"
+    - marginTop: "3"
+      display: flex
+      flexDir: column
+      background: "#e879f91a"
+      backgroundSize: 8px 8px
+      style:
+        backgroundImage: "linear-gradient( 135deg, #d946ef80 10%, transparent 0, transparent 50%, #d946ef80 0, #d946ef80 60%, transparent 0, transparent )"
+    "##);
+}
+
+#[test]
 fn unary_in_attribute_value() {
     assert_yaml_snapshot!(
         extract(
@@ -1246,7 +1282,7 @@ fn template_literal_attribute_value() {
         alias: Box
         data:
           color: red
-          font: "sans \n serif"
+          font: sans serif
         span:
           start: 0
           end: 44

@@ -618,6 +618,25 @@ fn comma_group_nested_selector_scopes_every_member() {
 }
 
 #[test]
+fn multiline_value_collapses_whitespace_in_class_and_declaration() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ gridTemplateAreas: `\n    \"preview name delete\" \n    \"preview size delete\"` })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r#"
+@layer utilities {
+  .grid-template-areas_\"preview_name_delete\"_\"preview_size_delete\" {
+    grid-template-areas: "preview name delete" "preview size delete";
+  }
+}
+"#);
+}
+
+#[test]
 fn nested_pseudo_then_descendant_keeps_the_pseudo_on_the_parent() {
     // Two nested arbitrary `&` selectors form a parent->descendant chain:
     // `&:last-child` (outer) then `& .divider` (inner) must compose as

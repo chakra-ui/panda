@@ -681,7 +681,7 @@ pub(crate) fn template_literal_to_literal(
     }
     let tail = t.quasis.last()?;
     out.push_str(tail.value.cooked.as_ref()?.as_str());
-    Some(Literal::String(out))
+    Some(Literal::String(collapse_whitespace(&out).trim().to_owned()))
 }
 
 fn truthy(value: &Literal) -> bool {

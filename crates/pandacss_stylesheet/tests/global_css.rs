@@ -150,10 +150,10 @@ fn expands_global_css_composition_props_through_utilities() {
     --made-with-panda: '🐼';
   }
   pre, code {
-    animation: fade-in 120ms ease;
-    background-color: var(--colors-red-500);
     font-size: var(--font-sizes-sm);
     line-height: var(--line-heights-tight);
+    background-color: var(--colors-red-500);
+    animation: fade-in 120ms ease;
   }
 }
 ");
@@ -184,6 +184,87 @@ fn skips_unknown_global_css_composition_values() {
 @layer base {
   :root {
     --made-with-panda: '🐼';
+  }
+}
+");
+}
+
+#[test]
+fn bare_type_selector_nests_as_descendant() {
+    let config = config(serde_json::json!({
+        "globalCss": {
+            ".article": {
+                "h2": { "color": "blue" }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  .article h2 {
+    color: blue;
+  }
+}
+");
+}
+
+#[test]
+fn comma_group_distributes_parent_to_every_member() {
+    let config = config(serde_json::json!({
+        "globalCss": {
+            ".article": {
+                "h2, h3, h4": { "color": "blue" }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  .article h2, .article h3, .article h4 {
+    color: blue;
+  }
+}
+");
+}
+
+#[test]
+fn composition_and_sibling_override_merge_into_one_block() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "tokens": {
+                "fonts": { "code": { "value": "monospace" }, "sans": { "value": "system-ui" } }
+            },
+            "textStyles": {
+                "label": {
+                    "medium": { "value": { "fontFamily": "sans", "fontSize": "14px" } }
+                }
+            }
+        },
+        "globalCss": {
+            ".codeblock": {
+                "textStyle": "label.medium",
+                "fontFamily": "code"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @r"
+@layer base {
+  :root {
+    --made-with-panda: '🐼';
+  }
+  .codeblock {
+    font-family: code;
+    font-size: 14px;
   }
 }
 ");
@@ -439,6 +520,40 @@ fn emits_global_css_recursive_nesting_and_important() {
       }
       p ~ p {
         margin-top: 0;
+      }
+    }
+    ");
+}
+
+#[test]
+fn emits_global_css_recursive_nesting_from_selector_list_parent() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "margin": { "className": "m" },
+            "marginTop": { "className": "mt" }
+        },
+        "globalCss": {
+            "body > p, body > ul": {
+                "margin": 0,
+                "& ~ &": {
+                    "marginTop": 10
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      body > p, body > ul {
+        margin: 0;
+      }
+      :is(body > p) ~ :is(body > p), :is(body > ul) ~ :is(body > ul) {
+        margin-top: 10px;
       }
     }
     ");
