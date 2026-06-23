@@ -31,21 +31,27 @@
     "sandbox-waku-ts": "0.0.0",
     "@pandacss/dev": "1.11.3",
     "playground": "0.1.0",
-    "website": "1.0.0"
+    "website": "1.0.0",
+    "@pandacss/eslint-plugin": "2.0.0-beta.3"
   },
   "changesets": [
+    "cli-include-flag",
+    "codegen-types-index-jsx",
     "compiled-jsx-runtime-extraction",
     "config-bundle-temp-file",
     "css-property-value-map",
     "default-panda-build-command",
     "direct-mcp-package",
+    "eslint-plugin-core",
     "fix-classname-vendor-prefix",
     "fix-classname-whitespace-trim",
+    "fix-global-css-compositions",
     "fix-nested-ampersand-in-quoted-strings",
     "fix-object-map-literal-classnames",
     "fix-recipe-selection-no-variants",
     "fix-runtime-important-classname",
     "init-scaffold-default-presets",
+    "lint-inspection-result",
     "merge-adjacent-selectors",
     "native-token-css",
     "panda-debug-command",
@@ -54,7 +60,9 @@
     "postcss-v2-plugin",
     "preset-resolved-hook-utils",
     "sharp-tigers-tell",
+    "slot-recipe-infer-compound-slots",
     "sort-container-inline-size",
+    "tokens-svg-color-table",
     "utility-transform-grouped-emit",
     "write-if-changed-outputs"
   ]
