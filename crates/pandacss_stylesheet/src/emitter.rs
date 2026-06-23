@@ -1007,6 +1007,10 @@ impl<'a> EmitContext<'a> {
                     }
                     continue;
                 }
+                if self.is_bare_nested_selector_key(key) {
+                    self.collect_styles_usage(value, token_dictionary, keyframes, marks);
+                    continue;
+                }
             }
 
             if let Some(declarations) = self.serialized_property_declarations(key, value) {
@@ -1408,9 +1412,7 @@ impl<'a> EmitContext<'a> {
                 ) {
                     continue;
                 }
-                if !self.utility.is_known(key)
-                    && !pandacss_shared::css_properties::is_css_property(key)
-                {
+                if self.is_bare_nested_selector_key(key) {
                     nested_rules.push(NestedStyleRule {
                         selector: nested_selector(selector, key),
                         value,
@@ -1782,8 +1784,6 @@ impl<'a> EmitContext<'a> {
         raw: &str,
         value: Option<&AtomValue>,
     ) -> UtilityTransformResult {
-        let raw = collapse_multiline_value(raw);
-        let raw = raw.as_ref();
         if self.utility.should_transform(prop) {
             // Class hashes by the resolved value (`#ef4444`), matching legacy and
             // the runtime `token()` — `path` stays build-info only.
@@ -1959,6 +1959,10 @@ impl<'a> EmitContext<'a> {
 
         Some(self.style_object_entries(&result.styles))
     }
+
+    fn is_bare_nested_selector_key(&self, key: &str) -> bool {
+        !self.utility.is_known(key) && !pandacss_shared::css_properties::is_css_property(key)
+    }
 }
 
 struct NestedStyleRule<'a> {
@@ -2116,14 +2120,6 @@ fn composition_style_object<'a>(prop: &str, styles: &'a Literal) -> Option<&'a L
         return None;
     }
     Some(styles)
-}
-
-fn collapse_multiline_value(raw: &str) -> Cow<'_, str> {
-    if raw.contains(['\n', '\r', '\t']) {
-        Cow::Owned(raw.split_whitespace().collect::<Vec<_>>().join(" "))
-    } else {
-        Cow::Borrowed(raw)
-    }
 }
 
 fn default_transform(prop: &str, raw: &str) -> UtilityTransformResult {

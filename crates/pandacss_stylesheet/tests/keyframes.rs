@@ -117,6 +117,52 @@ fn optimize_keyframes_keeps_only_referenced_blocks() {
 }
 
 #[test]
+fn optimize_keyframes_keeps_global_css_bare_nested_selector_references() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                },
+                "fade": {
+                    "to": { "opacity": "0" }
+                }
+            }
+        },
+        "globalCss": {
+            ".article": {
+                "h2": {
+                    "animationName": "spin"
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Base]);
+
+    assert!(css.contains("@keyframes spin"));
+    assert!(!css.contains("@keyframes fade"));
+    assert_snapshot!(css, @"
+    @layer tokens {
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .article h2 {
+        animation-name: spin;
+      }
+    }
+    ");
+}
+
+#[test]
 fn optimize_keyframes_keeps_static_css_references() {
     let config = config(serde_json::json!({
         "optimize": { "removeUnusedKeyframes": true },
