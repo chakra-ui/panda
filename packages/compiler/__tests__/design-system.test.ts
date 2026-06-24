@@ -92,6 +92,18 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.validate(manifest)).toEqual({ ok: false, reason: 'schemaVersion' })
   })
 
+  it('validate() accepts when the running Panda major matches the manifest range', () => {
+    const app = project()
+    const manifest = app.designSystem.create(fullInput)
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: true })
+  })
+
+  it('validate() rejects when the running Panda major is outside the manifest range', () => {
+    const app = project()
+    const manifest = app.designSystem.create(fullInput)
+    expect(app.designSystem.validate(manifest, { pandaVersion: '1.9.0' })).toEqual({ ok: false, reason: 'pandaRange' })
+  })
+
   // --- load(): consumer side — validate + hydrate the library's build info ---
 
   // A library publishing two styled modules, plus the manifest pointing at it.
@@ -163,6 +175,17 @@ describe('compiler.designSystem', () => {
     const stale: DesignSystemManifest = { ...manifest, schemaVersion: manifest.schemaVersion + 1 }
 
     expect(app.designSystem.load(stale, { buildInfo })).toEqual({ ok: false, reason: 'schemaVersion', modules: [] })
+  })
+
+  it('load() bails when the running Panda major is outside the range — host re-extracts files', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+
+    expect(app.designSystem.load(manifest, { buildInfo, pandaVersion: '1.0.0' })).toEqual({
+      ok: false,
+      reason: 'pandaRange',
+      modules: [],
+    })
   })
 
   it('load() bails on an incompatible build info', () => {

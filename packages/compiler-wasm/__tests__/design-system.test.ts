@@ -80,6 +80,12 @@ describeIfBuilt('@pandacss/compiler-wasm designSystem', () => {
     expect(app.designSystem.validate(manifest)).toEqual({ ok: false, reason: 'schemaVersion' })
   })
 
+  it('validate() rejects when the running Panda major is outside the manifest range', async () => {
+    const app = await createCompiler(baseConfig)
+    const manifest = app.designSystem.create(fullInput)
+    expect(app.designSystem.validate(manifest, { pandaVersion: '1.9.0' })).toEqual({ ok: false, reason: 'pandaRange' })
+  })
+
   // load(): produce a manifest + build info on a lib, then load into a fresh
   // consumer across the wasm boundary — the full consumer round-trip.
   it('load() validates + tree-shakes the library build info to imported modules', async () => {

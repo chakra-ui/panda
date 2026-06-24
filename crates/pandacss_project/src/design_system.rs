@@ -1,8 +1,6 @@
 //! `panda.lib.json` — the manifest a library publishes so a consumer adopts it
-//! with one `designSystem: '@acme/ds'` field. Generation lives here (a
-//! [`Project`](crate::Project) method) so the schema version has one source of
-//! truth; the host owns fs + module resolution, this module only deals in
-//! values. See `design-notes/design-system-manifest.md`.
+//! with one `designSystem: '@acme/ds'` field. Values only; the host owns fs +
+//! module resolution. See `design-notes/design-system-manifest.md`.
 
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
@@ -74,9 +72,8 @@ pub struct ManifestInput {
 
 impl super::Project {
     /// Build a [`DesignSystemManifest`] from host-supplied fields, stamping
-    /// [`MANIFEST_SCHEMA_VERSION`]. Pure (no fs).
-    // PORT NOTE: a later phase fills `importMap`/parent `designSystem` from
-    // config when the input omits them, which is why this lives on `Project`.
+    /// [`MANIFEST_SCHEMA_VERSION`]. A `Project` method so a later phase can fill
+    /// `importMap`/parent `designSystem` from config. Pure (no fs).
     #[must_use]
     #[allow(
         clippy::unused_self,
@@ -102,20 +99,16 @@ impl super::Project {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "status", rename_all = "camelCase")]
 pub enum ChainPlan {
-    /// Deduped, root-first order (ancestors before descendants), so a leaf and
-    /// the consumer override their parents — preset inheritance precedence.
+    /// Deduped, root-first order (ancestors before descendants) — preset
+    /// inheritance precedence.
     Ordered { order: Vec<String> },
-    /// The chain revisits a package; `cycle` is the loop path for the diagnostic
-    /// (`@a → @b → @a`). A design system can't depend on itself.
+    /// The chain revisits a package; `cycle` is the loop path (`@a → @b → @a`).
     Cycle { cycle: Vec<String> },
 }
 
-/// Order a set of already-read manifests by their `designSystem` parent links
-/// into a root-first hydrate/merge plan, deduping shared ancestors and catching
-/// cycles. Pure value logic (no fs, no module resolution) — the host reads each
-/// level's manifest and hands the collected values here, so the recursion is
-/// exercised in-memory. A parent absent from the set is a chain boundary (the
-/// host owns parent-not-found via module resolution).
+/// Order already-read manifests by their `designSystem` parent links into a
+/// root-first merge/hydrate plan, deduping shared ancestors and catching cycles.
+/// A parent absent from the set is a chain boundary (the host resolves it).
 #[must_use]
 pub fn resolve_chain(manifests: &[DesignSystemManifest]) -> ChainPlan {
     // name → parent link, deduped by name (first wins); `present` preserves input

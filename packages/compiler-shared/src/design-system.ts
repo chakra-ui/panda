@@ -8,6 +8,7 @@ import type {
   DesignSystemManifest,
   DesignSystemManifestCompatibility,
   DesignSystemManifestInput,
+  DesignSystemValidateOptions,
 } from './types'
 
 /** The flat manifest primitives every binding (native / wasm) exposes; the
@@ -18,15 +19,33 @@ export interface DesignSystemNative {
   resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
+/** Major from a version or range (`^2.1.0` → `2`); `NaN` when no number is found
+ *  so an unreadable value fails the major check rather than passing silently. */
+const major = (value: string): number => {
+  const match = value.match(/\d+/)
+  return match ? Number(match[0]) : NaN
+}
+
 /** Build the `compiler.designSystem` namespace over a binding's primitives.
- *  `validate` checks `schemaVersion`; the peer-range check is host-layered.
- *  `load` reuses the `buildInfo` namespace to resolve + hydrate the library's
- *  pre-extracted styles, keeping that logic in one place. */
+ *  `validate` checks the wire-format `schemaVersion` and — given the consumer's
+ *  running `pandaVersion` — that its major matches the manifest's `panda` range.
+ *  Panda releases in lockstep, so the major boundary is the whole peer contract;
+ *  finer skew is already caught by `schemaVersion` + the build-info fingerprint.
+ *  `load` reuses the `buildInfo` namespace to hydrate the library's styles. */
 export function makeDesignSystemApi(native: DesignSystemNative, buildInfo: BuildInfoApi): DesignSystemApi {
   const schemaVersion = native.designSystemManifestSchemaVersion()
 
-  const validate = (manifest: DesignSystemManifest): DesignSystemManifestCompatibility =>
-    manifest.schemaVersion === schemaVersion ? { ok: true } : { ok: false, reason: 'schemaVersion' }
+  const validate = (
+    manifest: DesignSystemManifest,
+    options?: DesignSystemValidateOptions,
+  ): DesignSystemManifestCompatibility => {
+    if (manifest.schemaVersion !== schemaVersion) return { ok: false, reason: 'schemaVersion' }
+    const running = options?.pandaVersion
+    if (running !== undefined && major(running) !== major(manifest.panda)) {
+      return { ok: false, reason: 'pandaRange' }
+    }
+    return { ok: true }
+  }
 
   return {
     schemaVersion,
@@ -36,7 +55,7 @@ export function makeDesignSystemApi(native: DesignSystemNative, buildInfo: Build
     validate,
 
     load: (manifest: DesignSystemManifest, options: DesignSystemLoadOptions): DesignSystemLoadResult => {
-      const compat = validate(manifest)
+      const compat = validate(manifest, { pandaVersion: options.pandaVersion })
       if (!compat.ok) return { ok: false, reason: compat.reason, modules: [] }
 
       // `imports` omitted → hydrate every module (namespace import); otherwise
