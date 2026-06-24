@@ -64,8 +64,19 @@ we'll see, it's where Panda's conditions come in. Let's see it.
 
 ## Styling your first component: the Switch
 
-A Base UI Switch has two parts. `Switch.Root` is the track, and `Switch.Thumb` is the circle that slides across it. Here
-is the whole thing styled with Panda's `css` function:
+A Base UI Switch has two parts. `Switch.Root` is the track, and `Switch.Thumb` is the circle that slides across it.
+Here's what we're building:
+
+<video
+  src="/videos/base-ui-switch.mp4"
+  autoPlay
+  loop
+  muted
+  playsInline
+  style={{ width: '100%', maxWidth: '420px', borderRadius: '8px', margin: '1.5rem auto', display: 'block' }}
+/>
+
+And here it is, styled with Panda's `css` function:
 
 ```tsx
 import { Switch } from '@base-ui/react/switch'
@@ -133,7 +144,18 @@ condition for, like `data-popup-open`, you can add your own under `conditions.ex
 ## Styling a complex component: the Popover
 
 The Switch had two parts. A Popover, like many other Base UI components, has many more, and it spreads them across a
-portal, so it is where a styling approach really gets tested:
+portal, so it is where a styling approach really gets tested. Here's what we're building:
+
+<video
+  src="/videos/base-ui-popover.mp4"
+  autoPlay
+  loop
+  muted
+  playsInline
+  style={{ width: '100%', maxWidth: '420px', borderRadius: '8px', margin: '1.5rem auto', display: 'block' }}
+/>
+
+Its parts nest like this:
 
 ```tsx
 <Popover.Root>
