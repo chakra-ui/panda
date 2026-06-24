@@ -54,7 +54,17 @@ All the styling examples below import from your generated `styled-system` direct
 ## Styling your first component: the Checkbox
 
 An Ark UI Checkbox comes in a few parts. `Checkbox.Control` is the box, `Checkbox.Indicator` holds the check mark,
-`Checkbox.Label` is the text, and `Checkbox.HiddenInput` keeps it accessible and form-friendly.
+`Checkbox.Label` is the text, and `Checkbox.HiddenInput` keeps it accessible and form-friendly. Here's what we're
+building:
+
+<video
+  src="/videos/ark-ui-checkbox.mp4"
+  autoPlay
+  loop
+  muted
+  playsInline
+  style={{ width: '100%', maxWidth: '420px', borderRadius: '8px', margin: '1.5rem auto', display: 'block' }}
+/>
 
 Here's the whole thing, styled with Panda's `css` function:
 
@@ -126,7 +136,18 @@ So most of Ark UI's state model just works, with no config at all.
 ## Styling a complex component: the Dialog
 
 A Dialog has a lot more moving parts, and it renders them through a portal, so it's a better test of whether a styling
-approach holds up:
+approach holds up. Here's what we're building:
+
+<video
+  src="/videos/ark-ui-dialog.mp4"
+  autoPlay
+  loop
+  muted
+  playsInline
+  style={{ width: '100%', maxWidth: '420px', borderRadius: '8px', margin: '1.5rem auto', display: 'block' }}
+/>
+
+Its parts nest like this:
 
 ```tsx
 <Dialog.Root>
