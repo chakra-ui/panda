@@ -1,5 +1,15 @@
 # playground
 
+## 0.1.1-beta.5
+
+### Patch Changes
+
+- @pandacss/compiler-shared@2.0.0-beta.5
+- @pandacss/compiler-wasm@2.0.0-beta.5
+- @pandacss/config@2.0.0-beta.5
+- @pandacss/preset-base@2.0.0-beta.5
+- @pandacss/preset-panda@2.0.0-beta.5
+
 ## 0.1.1-beta.4
 
 ### Patch Changes

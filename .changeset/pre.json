@@ -50,6 +50,7 @@
     "fix-object-map-literal-classnames",
     "fix-recipe-selection-no-variants",
     "fix-runtime-important-classname",
+    "global-nesting-composition-parity",
     "init-scaffold-default-presets",
     "lint-inspection-result",
     "merge-adjacent-selectors",
