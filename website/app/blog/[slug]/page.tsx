@@ -4,6 +4,7 @@ import { Toc } from '@/components/ui/toc'
 import { generateOgImageUrl } from '@/lib/og-image'
 import { css } from '@/styled-system/css'
 import { Box, Stack, panda } from '@/styled-system/jsx'
+import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -15,7 +16,9 @@ export async function generateStaticParams() {
   return blog.map(post => ({ slug: post.slug.split('/').slice(1).join('/') }))
 }
 
-export async function generateMetadata({ params }: BlogPostPageProps) {
+export async function generateMetadata({
+  params
+}: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params
   const post = blog.find(p => p.slug === `blog/${slug}`)
 
@@ -118,24 +121,6 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
               </>
             )}
           </Box>
-          {post.tags && post.tags.length > 0 && (
-            <Box display="flex" gap="2" flexWrap="wrap">
-              {post.tags.map(tag => (
-                <panda.span
-                  key={tag}
-                  fontSize="xs"
-                  px="2"
-                  py="0.5"
-                  bg="bg.muted"
-                  borderWidth="1px"
-                  borderRadius="full"
-                  color="fg.muted"
-                >
-                  {tag}
-                </panda.span>
-              ))}
-            </Box>
-          )}
         </Stack>
 
         <div
@@ -145,6 +130,24 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
           })}
         >
           <MDXContent code={post.code} />
+          {post.tags && post.tags.length > 0 && (
+            <Box display="flex" gap="2" flexWrap="wrap" mt="10">
+              {post.tags.map(tag => (
+                <panda.span
+                  key={tag}
+                  fontSize="sm"
+                  px="2"
+                  py="0.5"
+                  bg="bg.muted"
+                  borderWidth="1px"
+                  borderRadius="md"
+                  color="fg.muted"
+                >
+                  #{tag}
+                </panda.span>
+              ))}
+            </Box>
+          )}
         </div>
       </Box>
 
