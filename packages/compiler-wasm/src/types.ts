@@ -13,6 +13,8 @@
 import type {
   Atom,
   BuildInfo,
+  DesignSystemManifest,
+  DesignSystemManifestInput,
   CodegenArtifact,
   CodegenArtifactId,
   CodegenDependency,
@@ -158,4 +160,8 @@ export declare class WasmCompiler {
   applyBuildInfo(name: string, buildInfo: BuildInfo, only?: string[]): boolean
   buildInfoSchemaVersion(): number
   configFingerprint(): string
+  // Flat design-system manifest primitives (the `makeDesignSystemApi` namespace
+  // is built over these in `web.ts`, mirroring the native binding).
+  createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
+  designSystemManifestSchemaVersion(): number
 }

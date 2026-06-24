@@ -9,6 +9,7 @@ mod build_info;
 mod codegen;
 mod config;
 mod css;
+mod design_system;
 mod files;
 mod introspect;
 mod recipes;

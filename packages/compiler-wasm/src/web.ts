@@ -22,6 +22,7 @@ import {
   assertProjectHooks,
   getTokenCategoryValues,
   makeBuildInfoApi,
+  makeDesignSystemApi,
   mergeCallbacks,
   prepareCompilerConfig,
 } from '@pandacss/compiler-shared'
@@ -29,6 +30,7 @@ import type {
   BuildInfoNative,
   Compiler,
   CompilerOptions,
+  DesignSystemNative,
   ProjectCallbacks,
   ProjectHooks,
   SerializedConfig,
@@ -100,10 +102,14 @@ export function build(
   // Expose the shared FS as a field so the return shape matches native.
   ;(compiler as unknown as { fs: WasmFileSystem }).fs = fs
 
-  // Wire the ergonomic `compiler.buildInfo` namespace over the wasm primitives,
-  // mirroring the native binding. Non-enumerable so it stays off snapshots.
-  Object.defineProperty(compiler, 'buildInfo', {
-    value: makeBuildInfoApi(compiler as unknown as BuildInfoNative),
+  // Wire the ergonomic `compiler.buildInfo` / `compiler.designSystem` namespaces
+  // over the wasm primitives, mirroring the native binding. Non-enumerable so
+  // they stay off snapshots.
+  const buildInfo = makeBuildInfoApi(compiler as unknown as BuildInfoNative)
+  Object.defineProperty(compiler, 'buildInfo', { value: buildInfo, enumerable: false })
+  Object.defineProperty(compiler, 'designSystem', {
+    // `load` reuses the `buildInfo` namespace just wired above.
+    value: makeDesignSystemApi(compiler as unknown as DesignSystemNative, buildInfo),
     enumerable: false,
   })
 

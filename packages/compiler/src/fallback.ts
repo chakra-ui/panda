@@ -2,6 +2,7 @@ import type {
   Atom,
   CompileOutput,
   Compiler,
+  DesignSystemManifestInput,
   Diagnostic,
   LayerCssOptions,
   SplitCssOptions,
@@ -12,8 +13,35 @@ import type {
   WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
-import { makeBuildInfoApi } from '@pandacss/compiler-shared'
+import { makeBuildInfoApi, makeDesignSystemApi } from '@pandacss/compiler-shared'
 import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
+
+/** No-op build-info primitives so the fallback compiler still satisfies the
+ *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
+const fallbackBuildInfo = makeBuildInfoApi({
+  serializeBuildInfo: () => ({
+    schemaVersion: -1,
+    panda: '',
+    configFingerprint: '',
+    strings: [],
+    atoms: [],
+    modules: {},
+  }),
+  applyBuildInfo: () => false,
+  buildInfoSchemaVersion: () => -1,
+  configFingerprint: () => '',
+})
+
+/** No-op design-system primitives; `validate` always reports incompatible
+ *  (`schemaVersion` is `-1`). */
+const fallbackDesignSystem = makeDesignSystemApi(
+  {
+    createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
+    designSystemManifestSchemaVersion: () => -1,
+    resolveDesignSystemChain: () => ({ status: 'ordered', order: [] }),
+  },
+  fallbackBuildInfo,
+)
 
 class FallbackExtractor implements ExtractorSession {
   extract() {
@@ -156,6 +184,7 @@ class FallbackCompiler implements Compiler {
     return []
   }
   readonly buildInfo = fallbackBuildInfo
+  readonly designSystem = fallbackDesignSystem
   generateArtifacts() {
     return []
   }
@@ -207,22 +236,6 @@ export const fallback: NativeBinding = {
   Extractor: FallbackExtractor as unknown as ExtractorSessionConstructor,
   Compiler: FallbackCompiler as unknown as CompilerConstructor,
 }
-
-/** No-op build-info primitives so the fallback compiler still satisfies the
- *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
-const fallbackBuildInfo = makeBuildInfoApi({
-  serializeBuildInfo: () => ({
-    schemaVersion: -1,
-    panda: '',
-    configFingerprint: '',
-    strings: [],
-    atoms: [],
-    modules: {},
-  }),
-  applyBuildInfo: () => false,
-  buildInfoSchemaVersion: () => -1,
-  configFingerprint: () => '',
-})
 
 function emptyCompileOutput(): CompileOutput {
   return {

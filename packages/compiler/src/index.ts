@@ -4,6 +4,7 @@ import type {
   CompileOutput,
   CompilerOptions,
   ConfigSnapshot,
+  DesignSystemNative,
   ProjectCallbacks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
@@ -12,6 +13,7 @@ import {
   assertProjectCallbacks,
   getTokenCategoryValues,
   makeBuildInfoApi,
+  makeDesignSystemApi,
   mergeCallbacks,
   mergeHooks,
   prepareCompilerConfig,
@@ -83,12 +85,14 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
   registerCallbacks(compiler, callbacks, options?.hooks, compiler.token_dictionary?.())
   attachBuildInfo(compiler)
+  attachDesignSystem(compiler)
 
   return compiler
 }
 
 /** Wire the ergonomic `compiler.buildInfo` namespace over the native primitives.
- *  Non-enumerable so it doesn't surface in snapshots of the native instance. */
+ *  Non-enumerable so it doesn't surface in snapshots of the native instance, and
+ *  lazy — the API is built on first access, then cached in place. */
 function attachBuildInfo(compiler: Compiler): void {
   Object.defineProperty(compiler, 'buildInfo', {
     enumerable: false,
@@ -96,6 +100,25 @@ function attachBuildInfo(compiler: Compiler): void {
     get() {
       const api = makeBuildInfoApi(compiler as unknown as BuildInfoNative)
       Object.defineProperty(compiler, 'buildInfo', {
+        value: api,
+        enumerable: false,
+        configurable: true,
+      })
+      return api
+    },
+  })
+}
+
+/** Wire `compiler.designSystem` over the native primitives; non-enumerable and
+ *  lazy, mirroring `buildInfo`. `designSystem.load` reuses the `buildInfo`
+ *  namespace (accessing it here triggers its own lazy build). */
+function attachDesignSystem(compiler: Compiler): void {
+  Object.defineProperty(compiler, 'designSystem', {
+    enumerable: false,
+    configurable: true,
+    get() {
+      const api = makeDesignSystemApi(compiler as unknown as DesignSystemNative, compiler.buildInfo)
+      Object.defineProperty(compiler, 'designSystem', {
         value: api,
         enumerable: false,
         configurable: true,
