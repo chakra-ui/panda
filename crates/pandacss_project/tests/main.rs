@@ -5,6 +5,7 @@ mod compositions;
 mod config;
 mod config_recipes;
 mod deprecation;
+mod design_system;
 mod diagnostics;
 mod extraction_pipeline;
 mod lifecycle;

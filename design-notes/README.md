@@ -44,6 +44,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.
+- [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda.lib.json` manifest, gen +
+  load as fs-free compiler methods (`compiler.designSystem.*`), the parent-chain walk for nested design systems, module/type
+  resolution, setup diagnostics, and the incremental PR breakdown.
 - [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems` resolves
   manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS modules.
 - [Chakra UI design-system migration](./chakra-ui-design-system-migration.md) — Chakra-specific plan for replacing
