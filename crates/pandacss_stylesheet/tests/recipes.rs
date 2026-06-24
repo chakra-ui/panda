@@ -784,3 +784,90 @@ fn emits_config_slot_recipe_css_with_responsive_then_condition_variant_order() {
     }
     ");
 }
+
+#[test]
+fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "breakpoints": { "xs": "480px", "xl": "1280px" },
+            "textStyles": {
+                "body": {
+                    "value": {
+                        "fontFamily": "Montserrat, sans-serif",
+                        "fontSize": { "base": "14px", "xs": "16px", "xl": "20px" },
+                        "fontStyle": "normal",
+                        "fontWeight": "500",
+                        "lineHeight": { "base": "18px", "xs": "20px", "xl": "26px" }
+                    }
+                }
+            },
+            "recipes": {
+                "viaTextStyle": {
+                    "className": "viaTextStyle",
+                    "base": { "textStyle": "body" }
+                },
+                "inlined": {
+                    "className": "inlined",
+                    "base": {
+                        "fontFamily": "Montserrat, sans-serif",
+                        "fontSize": { "base": "14px", "xs": "16px", "xl": "20px" },
+                        "fontStyle": "normal",
+                        "fontWeight": "500",
+                        "lineHeight": { "base": "18px", "xs": "20px", "xl": "26px" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { viaTextStyle, inlined } from '@panda/recipes'; viaTextStyle(); inlined()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .inlined {
+          font-family: Montserrat, sans-serif;
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 18px;
+        }
+        @media (width >= 30rem) {
+          .inlined {
+            font-size: 16px;
+            line-height: 20px;
+          }
+        }
+        @media (width >= 80rem) {
+          .inlined {
+            font-size: 20px;
+            line-height: 26px;
+          }
+        }
+        .viaTextStyle {
+          font-family: Montserrat, sans-serif;
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 18px;
+        }
+        @media (width >= 30rem) {
+          .viaTextStyle {
+            font-size: 16px;
+            line-height: 20px;
+          }
+        }
+        @media (width >= 80rem) {
+          .viaTextStyle {
+            font-size: 20px;
+            line-height: 26px;
+          }
+        }
+      }
+    }
+    ");
+}
