@@ -16,6 +16,22 @@ import type {
 import { makeBuildInfoApi, makeDesignSystemApi } from '@pandacss/compiler-shared'
 import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
 
+/** No-op build-info primitives so the fallback compiler still satisfies the
+ *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
+const fallbackBuildInfo = makeBuildInfoApi({
+  serializeBuildInfo: () => ({
+    schemaVersion: -1,
+    panda: '',
+    configFingerprint: '',
+    strings: [],
+    atoms: [],
+    modules: {},
+  }),
+  applyBuildInfo: () => false,
+  buildInfoSchemaVersion: () => -1,
+  configFingerprint: () => '',
+})
+
 /** No-op design-system primitives; `validate` always reports incompatible
  *  (`schemaVersion` is `-1`). */
 const fallbackDesignSystem = makeDesignSystemApi(
@@ -220,22 +236,6 @@ export const fallback: NativeBinding = {
   Extractor: FallbackExtractor as unknown as ExtractorSessionConstructor,
   Compiler: FallbackCompiler as unknown as CompilerConstructor,
 }
-
-/** No-op build-info primitives so the fallback compiler still satisfies the
- *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
-const fallbackBuildInfo = makeBuildInfoApi({
-  serializeBuildInfo: () => ({
-    schemaVersion: -1,
-    panda: '',
-    configFingerprint: '',
-    strings: [],
-    atoms: [],
-    modules: {},
-  }),
-  applyBuildInfo: () => false,
-  buildInfoSchemaVersion: () => -1,
-  configFingerprint: () => '',
-})
 
 function emptyCompileOutput(): CompileOutput {
   return {
