@@ -138,10 +138,10 @@ describe('staticCss.patterns (preset-base parity)', () => {
     expect(utilitiesCss(compiler)).toMatchInlineSnapshot(`
       "@layer utilities {
         .\\--bleed-x_token\\(spacing\\.4\\,_4\\) {
-          --bleed-x: var(--spacing-4);
+          --bleed-x: var(--spacing-4, 4);
         }
         .\\--bleed-y_token\\(spacing\\.0\\,_0\\) {
-          --bleed-y: var(--spacing-0);
+          --bleed-y: var(--spacing-0, 0);
         }
         .mx_calc\\(var\\(--bleed-x\\,_0\\)_\\*_-1\\) {
           margin-inline: calc(var(--bleed-x, 0) * -1);
