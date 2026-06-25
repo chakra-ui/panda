@@ -504,8 +504,10 @@ fn jsx_extraction_requires_jsx_framework() {
         <Image width="900" height="800" />
     "#};
     let result = extract(source, "Card.svelte", &panda_config());
-    let names: Vec<&str> = result.jsx.iter().map(|j| j.name.as_str()).collect();
-    assert!(names.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
 }
 
 #[test]
@@ -519,7 +521,15 @@ fn uppercase_component_extracts_with_jsx_framework() {
         <Image width="900" height="800" />
     "#};
     let result = extract(source, "Card.svelte", &panda_jsx_config());
-    let image: Vec<_> = result.jsx.iter().filter(|j| j.name == "Image").collect();
-    assert_eq!(image.len(), 1);
-    assert_eq!(image[0].data.to_json()["width"], "900");
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx:
+      - name: Image
+        data:
+          width: "900"
+          height: "800"
+    "#);
 }

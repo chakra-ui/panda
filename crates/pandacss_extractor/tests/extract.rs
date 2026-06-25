@@ -1,4 +1,4 @@
-use crate::common::{panda_config, panda_config_with_jsx, panda_jsx_config};
+use crate::common::{extract_shape, panda_config, panda_config_with_jsx, panda_jsx_config};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{CssSyntaxKind, JsxExtractionConfig, extract, extract_debug};
@@ -224,7 +224,10 @@ fn configured_jsx_components_require_jsx_framework() {
         "fixture.tsx",
         &panda_config_with_jsx(jsx.clone()),
     );
-    assert!(result.jsx.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
 
     assert_yaml_snapshot!(
         extract(
@@ -304,8 +307,10 @@ fn jsx_extraction_requires_jsx_framework() {
         )
     "#};
     let result = extract(source, "app.tsx", &panda_config());
-    let names: Vec<&str> = result.jsx.iter().map(|j| j.name.as_str()).collect();
-    assert!(names.is_empty());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
 }
 
 #[test]
@@ -324,8 +329,10 @@ fn jsx_factory_extraction_requires_jsx_framework() {
         &panda_config().with_syntax(CssSyntaxKind::TemplateLiteral),
     );
 
-    assert!(result.calls.is_empty(), "jsx factory calls must be gated");
-    assert!(result.jsx.is_empty(), "styled template usage must be gated");
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
     assert!(result.diagnostics.is_empty());
 }
 
@@ -338,7 +345,15 @@ fn uppercase_component_extracts_with_jsx_framework() {
         export const App = () => <Image width="900" height="800" />
     "#};
     let result = extract(source, "app.tsx", &panda_jsx_config());
-    let image: Vec<_> = result.jsx.iter().filter(|j| j.name == "Image").collect();
-    assert_eq!(image.len(), 1);
-    assert_eq!(image[0].data.to_json()["width"], "900");
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx:
+      - name: Image
+        data:
+          width: "900"
+          height: "800"
+    "#);
 }
