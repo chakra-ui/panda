@@ -1,4 +1,4 @@
-use super::support::apply_pattern_transform;
+use super::transforms::apply_pattern_transform;
 use super::{Compiler, RecipeEntry, StaticPatternResult};
 
 use napi::bindgen_prelude::Env;

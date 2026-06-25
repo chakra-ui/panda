@@ -1,6 +1,6 @@
-use super::support::{
-    apply_pattern_transform, apply_source_transforms, apply_utility_transform, convert_report,
-    glob_options,
+use super::interop::{convert_report, glob_options};
+use super::transforms::{
+    apply_pattern_transform, apply_source_transforms, apply_utility_transform,
 };
 use super::{Compiler, ParseFileReport, ParsedFileView, RecipeEntry, ScanOptions};
 

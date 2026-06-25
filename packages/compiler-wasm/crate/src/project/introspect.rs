@@ -3,8 +3,8 @@ use super::WasmCompiler;
 use serde::Serialize as _;
 use wasm_bindgen::prelude::*;
 
+use super::interop::{resolve_base, utility_value_source_to_json};
 use super::serde_types::{ResolveUtilityValueInputSerde, SourceEntrySerde};
-use super::support::{resolve_base, utility_value_source_to_json};
 use super::transforms::json_value_to_literal;
 
 #[wasm_bindgen]

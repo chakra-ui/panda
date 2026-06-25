@@ -1,4 +1,4 @@
-use super::support::{json_value_to_literal, resolve_base, utility_value_source_to_json};
+use super::interop::{json_value_to_literal, resolve_base, utility_value_source_to_json};
 use super::{
     Compiler, Diagnostic, ProjectSummary, ResolveUtilityValueInput, ResolvedUtilityValue,
     SourceEntry,

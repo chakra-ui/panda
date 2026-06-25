@@ -7,8 +7,8 @@ use serde::Serialize as _;
 use std::path::{Path, PathBuf};
 use wasm_bindgen::prelude::*;
 
+use super::interop::{collect_sorted_atoms, glob_options, parse_file_report};
 use super::serde_types::{CompileFileManifestSerde, ParsedFileViewSerde, RecipeEntrySerde};
-use super::support::{collect_sorted_atoms, glob_options, parse_file_report};
 use super::transforms::{
     apply_pattern_transform, apply_source_transforms, apply_utility_transform,
 };

@@ -11,10 +11,10 @@ mod config;
 mod css;
 mod design_system;
 mod files;
+mod interop;
 mod introspect;
 mod recipes;
 mod serde_types;
-mod support;
 mod transforms;
 
 use std::collections::HashMap;
@@ -28,7 +28,7 @@ use pandacss_config::{
 };
 use pandacss_fs::{MemoryFileSystem, PosixPathSystem};
 
-use self::support::{format_config_diagnostics, format_deserialize_error, with_wasm_fs};
+use self::interop::{format_config_diagnostics, format_deserialize_error, with_wasm_fs};
 use self::transforms::{
     get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
     utility_value_callbacks_from_options,

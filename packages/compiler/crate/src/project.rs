@@ -11,9 +11,9 @@ mod config;
 mod css;
 mod design_system;
 mod files;
+mod interop;
 mod introspect;
 mod recipes;
-mod support;
 mod transforms;
 
 use napi_derive::napi;
@@ -28,9 +28,9 @@ use pandacss_config::{
 };
 use pandacss_fs::OsPathSystem;
 
-use self::support::{
-    apply_project_options, format_config_diagnostics, get_pattern_transform_refs,
-    get_utility_transform_refs, resolve_utility_values_callbacks,
+use self::interop::{apply_project_options, format_config_diagnostics};
+use self::transforms::{
+    get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
 };
 
 /// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.

@@ -13,12 +13,14 @@ use crate::cache::{
 };
 use pandacss_config::{CallbackRef, JsxSpecifier, UserConfig, UtilityConfig, UtilityValues};
 
-use super::support::{atom_value_to_json, capitalize, js_error_message};
+use super::interop::{atom_value_to_json, capitalize, js_error_message};
 
+/*
+ * Callback registration.
+ */
 #[wasm_bindgen]
 impl WasmCompiler {
-    /// Register a JS-backed utility transform callback. The JS package wraps
-    /// the user callback so Rust only has to pass the raw value.
+    /// Register a JS-backed utility transform callback.
     #[wasm_bindgen(js_name = registerUtilityTransform)]
     pub fn register_utility_transform(&mut self, id: String, callback: js_sys::Function) {
         self.callbacks.utility_transforms.insert(id, callback);
@@ -26,8 +28,7 @@ impl WasmCompiler {
         self.inner.bump_parse_epoch();
     }
 
-    /// Register a JS-backed pattern transform callback. The wrapper package
-    /// installs callbacks referenced by the serialized config snapshot.
+    /// Register a JS-backed pattern transform callback.
     #[wasm_bindgen(js_name = registerPatternTransform)]
     pub fn register_pattern_transform(&mut self, id: String, callback: js_sys::Function) {
         self.callbacks.pattern_transforms.insert(id, callback);
@@ -35,8 +36,7 @@ impl WasmCompiler {
         self.inner.bump_parse_epoch();
     }
 
-    /// Register a JS-backed `parser:before` source transform with a Rust-side
-    /// filter. The filter is evaluated before calling into JS.
+    /// Register a JS-backed `parser:before` source transform.
     #[wasm_bindgen(js_name = registerSourceTransform)]
     pub fn register_source_transform(
         &mut self,
@@ -65,6 +65,9 @@ impl WasmCompiler {
     }
 }
 
+/*
+ * Config-time `utility.values` callbacks.
+ */
 pub(super) fn resolve_utility_values_callbacks(
     config: &mut UserConfig,
     token_dictionary: Option<&pandacss_tokens::TokenDictionary>,
@@ -149,6 +152,9 @@ fn utility_values_callback_id(utility: &UtilityConfig) -> Option<&str> {
     values.get("id")?.as_str()
 }
 
+/*
+ * Parse-time transform callbacks.
+ */
 #[allow(
     clippy::result_large_err,
     reason = "Err mirrors the shared Result<_, Diagnostic> transform-callback contract used by other JS callbacks"
@@ -375,6 +381,9 @@ fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: us
     );
 }
 
+/*
+ * Callback ref lookup.
+ */
 pub(super) fn get_utility_transform_refs(config: &UserConfig) -> HashMap<String, String> {
     let mut refs = HashMap::new();
     for (prop, utility) in &config.utilities {

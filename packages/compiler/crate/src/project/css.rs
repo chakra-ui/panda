@@ -1,11 +1,5 @@
-use super::support::{
-    apply_utility_transform, compile_options_from_write_css, css_output_options_from_write_split,
-    generate_options, to_codegen_artifact,
-};
-use super::{
-    CodegenArtifact, Compiler, GenerateArtifactOptions, WriteArtifactsOptions, WriteCssOptions,
-    WriteCssResult, WriteFilesResult, WriteSplitCssOptions,
-};
+use super::transforms::apply_utility_transform;
+use super::{Compiler, WriteCssOptions, WriteCssResult, WriteFilesResult, WriteSplitCssOptions};
 
 use napi::bindgen_prelude::Env;
 use napi_derive::napi;
@@ -16,40 +10,12 @@ use crate::compile::{
 use pandacss_encoder::AtomValue;
 use pandacss_fs::{FileSystem, PathSystem};
 
+/*
+ * Shared file-writing helpers for CSS and codegen outputs.
+ */
 #[napi]
 impl Compiler {
-    /// Generate artifacts and write them under `outdir` via the platform fs
-    /// (real disk on native). Returns the written paths.
-    ///
-    /// # Errors
-    /// Returns an error if a file fails to write.
-    #[napi(js_name = writeArtifacts)]
-    #[allow(
-        clippy::needless_pass_by_value,
-        reason = "NAPI requires owned arguments"
-    )]
-    pub fn write_artifacts(&self, options: WriteArtifactsOptions) -> napi::Result<Vec<String>> {
-        let artifacts = if let Some(artifacts) = options.artifacts {
-            artifacts
-        } else {
-            let generate = generate_options(
-                &self.user_config,
-                Some(GenerateArtifactOptions {
-                    force_import_extension: options.force_import_extension,
-                }),
-            );
-            self.inner
-                .generate_artifacts(&self.user_config, generate)
-                .into_iter()
-                .map(to_codegen_artifact)
-                .collect()
-        };
-        let cwd = options.cwd.unwrap_or_else(|| self.user_config.cwd.clone());
-        let root = self.paths.resolve(&cwd, &options.outdir);
-        self.write_artifacts_to_root(&root, &artifacts)
-    }
-
-    fn write_relative_files<'a>(
+    pub(super) fn write_relative_files<'a>(
         &self,
         root: &str,
         files: impl IntoIterator<Item = (&'a str, &'a str)>,
@@ -69,28 +35,7 @@ impl Compiler {
         Ok(written)
     }
 
-    fn write_artifacts_to_root(
-        &self,
-        root: &str,
-        artifacts: &[CodegenArtifact],
-    ) -> napi::Result<Vec<String>> {
-        let mut written = Vec::new();
-        for artifact in artifacts {
-            written.extend(
-                self.write_relative_files(
-                    root,
-                    artifact
-                        .files
-                        .iter()
-                        .map(|file| (file.path.as_str(), file.code.as_str())),
-                    "artifact",
-                )?,
-            );
-        }
-        Ok(written)
-    }
-
-    fn write_target_file(&self, target: &str, code: &str) -> napi::Result<()> {
+    pub(super) fn write_target_file(&self, target: &str, code: &str) -> napi::Result<()> {
         let parent = self.paths.dirname(target);
         if !parent.is_empty() {
             self.fs
@@ -103,6 +48,9 @@ impl Compiler {
             .map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
+    /*
+     * CSS compile/write entrypoints.
+     */
     #[napi]
     #[allow(
         clippy::needless_pass_by_value,
@@ -333,5 +281,23 @@ impl Compiler {
         );
         crate::flush_tracing();
         Ok(files)
+    }
+}
+
+/*
+ * CSS option conversion.
+ */
+fn compile_options_from_write_css(options: &WriteCssOptions) -> CompileOptions {
+    CompileOptions {
+        emit_layer_declaration: options.emit_layer_declaration,
+        minify: options.minify,
+    }
+}
+
+fn css_output_options_from_write_split(options: &WriteSplitCssOptions) -> CssOutputOptions {
+    CssOutputOptions {
+        layers: options.layers.clone(),
+        emit_layer_declaration: options.emit_layer_declaration,
+        minify: options.minify,
     }
 }
