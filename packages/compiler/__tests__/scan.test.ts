@@ -71,6 +71,34 @@ describe('scan/parseFiles (native fs engine)', () => {
     expect(css).toContain('blue')
   })
 
+  it('excludes the configured outdir from scan()', () => {
+    const outdir = mkdtempSync(join(tmpdir(), 'panda-scan-outdir-'))
+    try {
+      mkdirSync(join(outdir, 'src'), { recursive: true })
+      mkdirSync(join(outdir, 'styled-system', 'patterns'), { recursive: true })
+      writeFileSync(join(outdir, 'src', 'App.tsx'), "import { css } from '@panda/css'; css({ color: 'red.500' })")
+      writeFileSync(
+        join(outdir, 'styled-system', 'patterns', 'container.ts'),
+        "import { css } from '@panda/css'; css({ color: 'blue.500' })",
+      )
+
+      const compiler = createCompiler(
+        createUserConfig({
+          cwd: outdir,
+          include: ['**/*.{ts,tsx}'],
+          theme: { tokens: { colors: { red: { 500: { value: '#f00' } } } } },
+          utilities: { color: { className: 'c', values: 'colors' } },
+        }),
+      )
+
+      const files = compiler.scan().map((file) => file.replace(`${outdir}/`, ''))
+      expect(files).toContain('src/App.tsx')
+      expect(files).not.toContain('styled-system/patterns/container.ts')
+    } finally {
+      rmSync(outdir, { recursive: true, force: true })
+    }
+  })
+
   it('respects include overrides passed to parseFiles()', () => {
     const compiler = createCompiler(createUserConfig({ cwd: dir, include: ['**/*.tsx'] }))
     const paths = compiler.scan({ include: ['a.tsx'] })

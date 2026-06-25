@@ -48,12 +48,8 @@ pub fn expand(
             continue;
         }
         for style in styles {
-            let normalized = StyleNormalizer {
-                utility: Some(utility),
-                breakpoints: &breakpoints,
-                shorthand: true,
-            }
-            .normalize(&style);
+            let normalized =
+                StyleNormalizer::internal(Some(utility), &breakpoints).normalize(&style);
             encoder.process_atomic(normalized.as_ref());
         }
     }

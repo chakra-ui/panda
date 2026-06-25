@@ -51,6 +51,9 @@ impl Utility {
         shorthand_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
 
         for (name, target) in shorthand_entries {
+            if !self.shorthands_enabled {
+                continue;
+            }
             shorthands.insert(name.clone(), target.clone());
 
             let Some(property) = self.properties.get(target) else {

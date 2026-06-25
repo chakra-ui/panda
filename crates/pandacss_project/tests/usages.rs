@@ -41,6 +41,7 @@ fn span_text(source: &str, span: Option<Span>) -> &str {
 
 fn project() -> pandacss_project::Project {
     create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "tokens": {
                 "colors": { "red": { "300": { "value": "#f00" }, "500": { "value": "#e00" } } },
@@ -411,6 +412,7 @@ fn framework_template_style_entries_stay_report_only() {
 #[test]
 fn inspection_exposes_recipe_component_entries() {
     let result = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": { "jsx": ["Button"], "base": { "color": "red.500" } }

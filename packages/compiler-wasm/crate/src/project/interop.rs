@@ -170,7 +170,7 @@ pub(super) fn glob_options(
             .unwrap_or_else(|| user_config.include.clone()),
         exclude: overrides
             .exclude
-            .unwrap_or_else(|| user_config.exclude.clone()),
+            .unwrap_or_else(|| user_config.scan_exclude()),
         cwd: PathBuf::from(overrides.cwd.unwrap_or_else(|| user_config.cwd.clone())),
         absolute: true,
     })

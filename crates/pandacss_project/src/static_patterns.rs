@@ -119,11 +119,7 @@ impl ExpansionCtx<'_> {
             _ => return,
         };
 
-        let normalizer = StyleNormalizer {
-            utility: self.utility,
-            breakpoints: self.breakpoints,
-            shorthand: true,
-        };
+        let normalizer = StyleNormalizer::internal(self.utility, self.breakpoints);
 
         for (prop_name, values) in &per_property_values {
             for value in values {

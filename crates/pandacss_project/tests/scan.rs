@@ -45,6 +45,42 @@ fn scan_globs_reads_and_parses_via_memory_fs() {
 }
 
 #[test]
+fn scan_excludes_configured_outdir() {
+    let mut project = create_project(json!({ "outdir": "styled-system" }));
+    let fs = MemoryFileSystem::from_entries([
+        (
+            "/proj/src/App.tsx",
+            "import { css } from '@panda/css'; css({ color: 'red' })",
+        ),
+        (
+            "/proj/styled-system/patterns/container.ts",
+            "import { css } from '@panda/css'; css({ color: 'blue' })",
+        ),
+    ]);
+
+    let config = pandacss_config::UserConfig {
+        outdir: "styled-system".into(),
+        ..Default::default()
+    };
+    let count = pandacss_project::scan_files(
+        &fs,
+        &GlobOptions {
+            include: vec!["**/*.{ts,tsx}".into()],
+            exclude: config.scan_exclude(),
+            cwd: PathBuf::from("/proj"),
+            absolute: true,
+        },
+        |path, source| {
+            project.parse_file(path, source);
+        },
+    )
+    .expect("glob succeeds");
+
+    assert_eq!(count, 1);
+    assert_eq!(project.summary().files_processed, 1);
+}
+
+#[test]
 fn scan_honors_the_default_dts_exclude() {
     let mut project = create_project(json!({}));
     let fs = MemoryFileSystem::from_entries([

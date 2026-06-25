@@ -192,6 +192,9 @@ impl Extractor<'_, '_, '_> {
         match callee {
             Expression::Identifier(ident) => {
                 let matched = self.ctx.aliases.get(ident.name.as_str())?;
+                if matched.category == MatchCategory::Jsx && !self.ctx.config.has_jsx_framework {
+                    return None;
+                }
                 // `p({...})` where `p` is a namespace alias isn't a Panda call.
                 if matched.kind == ImportSpecifierKind::Namespace {
                     return None;
@@ -214,6 +217,9 @@ impl Extractor<'_, '_, '_> {
             Expression::StaticMemberExpression(_) => {
                 let (object, path) = flatten_static_member_path(callee)?;
                 let matched = self.ctx.aliases.get(object.name.as_str())?;
+                if matched.category == MatchCategory::Jsx && !self.ctx.config.has_jsx_framework {
+                    return None;
+                }
                 if let Some(resolver) = self.ctx.resolver
                     && !resolver.is_import_binding(object)
                 {

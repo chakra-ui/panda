@@ -136,11 +136,7 @@ impl StyleResolver<'_> {
     }
 
     fn normalizer(&self) -> StyleNormalizer<'_> {
-        StyleNormalizer {
-            utility: self.utility,
-            breakpoints: self.breakpoints,
-            shorthand: true,
-        }
+        StyleNormalizer::internal(self.utility, self.breakpoints)
     }
 }
 
@@ -1124,11 +1120,7 @@ impl RecipeTransformCtx<'_> {
     /// Encode a transform's style object into atoms via the normal encoder path,
     /// so nested conditions/selectors resolve instead of becoming junk props.
     fn encode(&self, styles: &Literal) -> FxHashSet<Atom> {
-        let normalizer = StyleNormalizer {
-            utility: self.utility,
-            breakpoints: self.breakpoints,
-            shorthand: true,
-        };
+        let normalizer = StyleNormalizer::internal(self.utility, self.breakpoints);
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
         encoder.process_atomic_with(styles, &normalizer);
         encoder.into_atoms()

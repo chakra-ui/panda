@@ -43,6 +43,7 @@ fn shorthands_can_be_disabled() {
     );
 
     assert_eq!(utility.resolve_shorthand("m"), "m");
+    assert_eq!(utility.canonical_property("m"), "margin");
     assert!(utility.is_known("margin"));
     assert!(!utility.is_known("m"));
 }

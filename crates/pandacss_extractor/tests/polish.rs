@@ -23,10 +23,22 @@ fn run(source: &str) -> ExtractUsage {
     extract(source, "fixture.tsx", &ExtractorConfig::new(matchers()))
 }
 
-fn run_with_factories(source: &str, factories: Vec<&str>) -> ExtractUsage {
+fn run_jsx(source: &str) -> ExtractUsage {
+    extract(
+        source,
+        "fixture.tsx",
+        &ExtractorConfig::new(matchers()).with_jsx_framework(true),
+    )
+}
+
+fn run_jsx_with_factories(source: &str, factories: Vec<&str>) -> ExtractUsage {
     let mut m = matchers();
     m.jsx_factories = Some(factories.into_iter().map(String::from).collect());
-    extract(source, "fixture.tsx", &ExtractorConfig::new(m))
+    extract(
+        source,
+        "fixture.tsx",
+        &ExtractorConfig::new(m).with_jsx_framework(true),
+    )
 }
 
 // --- TS enums ---
@@ -155,7 +167,7 @@ fn jsx_factory_names_are_explicitly_configured() {
         import { Panda } from '@panda/jsx';
         const a = <Panda.div color='red' />;
     "};
-    let jsx = run(src).jsx;
+    let jsx = run_jsx(src).jsx;
     assert!(
         jsx.is_empty(),
         "non-default factory `<Panda.x>` should not extract under defaults: {jsx:#?}"
@@ -169,7 +181,7 @@ fn custom_jsx_factory_extracts_member_chain() {
         import { Panda } from '@panda/jsx';
         const a = <Panda.div color='red' />;
     "};
-    assert_yaml_snapshot!(run_with_factories(src, vec!["Panda"]).jsx, @"
+    assert_yaml_snapshot!(run_jsx_with_factories(src, vec!["Panda"]).jsx, @"
     - category: jsx
       kind: factory
       name: Panda.div
@@ -190,7 +202,7 @@ fn custom_jsx_factory_excludes_default_styled() {
         import { styled } from '@panda/jsx';
         const a = <styled.div color='red' />;
     "};
-    let jsx = run_with_factories(src, vec!["Panda"]).jsx;
+    let jsx = run_jsx_with_factories(src, vec!["Panda"]).jsx;
     assert!(
         jsx.is_empty(),
         "`<styled.x>` should not extract when factories list is overridden to `['Panda']`: {jsx:#?}"
