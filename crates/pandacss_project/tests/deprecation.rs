@@ -118,6 +118,7 @@ fn multiple_deprecated_props_in_one_call_each_emit_a_warning() {
 #[test]
 fn jsx_usage_emits_warning_at_element_span() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "utilities": {
             "color": { "className": "c", "deprecated": true }
         }

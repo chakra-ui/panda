@@ -1,7 +1,7 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
-use crate::common::panda_config;
+use crate::common::{panda_config, panda_jsx_config};
 use pandacss_extractor::{CssSyntaxKind, ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
@@ -9,6 +9,14 @@ fn run(source: &str) -> ExtractUsage {
         source,
         "fixture.tsx",
         &panda_config().with_syntax(CssSyntaxKind::TemplateLiteral),
+    )
+}
+
+fn run_jsx(source: &str) -> ExtractUsage {
+    extract(
+        source,
+        "fixture.tsx",
+        &panda_jsx_config().with_syntax(CssSyntaxKind::TemplateLiteral),
     )
 }
 
@@ -25,7 +33,7 @@ fn css_tagged_template_media_query_matches_js_core_fixture() {
           }
         `
     "};
-    let result = run(source);
+    let result = run_jsx(source);
     assert_yaml_snapshot!(result.calls[0].data, @r#"
     - width: 500px
       height: 500px
@@ -54,7 +62,7 @@ fn css_tagged_template_native_nesting_matches_js_core_fixture() {
           }
         `
     "};
-    let result = run(source);
+    let result = run_jsx(source);
     assert_yaml_snapshot!(result.calls[0].data, @r#"
     - color: red
       "& p":
@@ -232,7 +240,7 @@ fn styled_tagged_template_uses_same_css_template_parser() {
           }
         `
     "};
-    let result = run(source);
+    let result = run_jsx(source);
     assert_yaml_snapshot!(result.jsx[0].data, @r#"
     "& figure":
       margin: "0"

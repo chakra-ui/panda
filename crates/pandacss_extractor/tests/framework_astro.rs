@@ -1,7 +1,7 @@
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 
-use crate::common::{extract_shape, import_shape, panda_config};
+use crate::common::{extract_shape, import_shape, panda_config, panda_jsx_config};
 use pandacss_extractor::{extract, scan_imports};
 
 #[test]
@@ -40,7 +40,7 @@ fn attribute_and_children_expressions_extract() {
         </p>
     "};
 
-    let result = extract(source, "page.astro", &panda_config());
+    let result = extract(source, "page.astro", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
@@ -65,7 +65,7 @@ fn frontmatter_const_resolves_in_template() {
         <section class={css(panel)} />
     "};
 
-    let result = extract(source, "page.astro", &panda_config());
+    let result = extract(source, "page.astro", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
@@ -87,7 +87,7 @@ fn jsx_style_props_extract_from_template() {
         <Box color="red" fontSize="2xl" />
     "#};
 
-    let result = extract(source, "page.astro", &panda_config());
+    let result = extract(source, "page.astro", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
@@ -236,4 +236,41 @@ fn spans_point_into_the_original_astro_source() {
     assert_eq!(result.calls.len(), 1);
     let span = &result.calls[0].span;
     assert_snapshot!(&source[span.start as usize..span.end as usize], @"css({ color: 'red' })");
+}
+
+#[test]
+fn jsx_extraction_requires_jsx_framework() {
+    let source = indoc! {r#"
+        ---
+        import { Box } from '@panda/jsx';
+        import { Image } from 'astro:assets';
+        ---
+        <Box color="red" />
+        <Image width="900" height="800" />
+    "#};
+    let result = extract(source, "page.astro", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+}
+
+#[test]
+fn uppercase_component_extracts_with_jsx_framework() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        import { Image } from 'astro:assets';
+        ---
+        <Image width="900" height="800" />
+    "#};
+    let result = extract(source, "page.astro", &panda_jsx_config());
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls: []
+    jsx:
+      - name: Image
+        data:
+          width: "900"
+          height: "800"
+    "#);
 }

@@ -1,7 +1,7 @@
-use crate::common::{panda_config, panda_config_with_jsx};
+use crate::common::{extract_shape, panda_config, panda_config_with_jsx, panda_jsx_config};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{JsxExtractionConfig, extract, extract_debug};
+use pandacss_extractor::{CssSyntaxKind, JsxExtractionConfig, extract, extract_debug};
 
 #[test]
 fn single_pass_extract_combines_calls_and_jsx() {
@@ -17,7 +17,7 @@ fn single_pass_extract_combines_calls_and_jsx() {
                 const el = <Box fontSize="lg" />
             "#},
             "fixture.tsx",
-            &panda_config(),
+            &panda_jsx_config(),
         ),
         @r#"
     imports:
@@ -215,15 +215,25 @@ fn extract_debug_skips_work_but_keeps_unmatched_imports() {
 }
 
 #[test]
-fn configured_jsx_components_still_extract_without_imports() {
+fn configured_jsx_components_require_jsx_framework() {
     let mut jsx = JsxExtractionConfig::default();
     jsx.component_names.insert("Card".into());
+
+    let result = extract(
+        "<Card color='red' onClick={handler} />",
+        "fixture.tsx",
+        &panda_config_with_jsx(jsx.clone()),
+    );
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
 
     assert_yaml_snapshot!(
         extract(
             "<Card color='red' onClick={handler} />",
             "fixture.tsx",
-            &panda_config_with_jsx(jsx),
+            &panda_config_with_jsx(jsx).with_jsx_framework(true),
         ),
         @"
     calls: []
@@ -282,4 +292,68 @@ fn parse_error_contract_diagnostics_and_partial_extractions() {
     // No assertion on `result.calls` — Oxc's recovery may or may not
     // expose the pre-error css() call depending on parser behaviour.
     // The point is that the API doesn't crash and surfaces the error.
+}
+
+#[test]
+fn jsx_extraction_requires_jsx_framework() {
+    let source = indoc! {r#"
+        import { Box } from "@panda/jsx"
+        import { Image } from "some-image-lib"
+        export const App = () => (
+          <>
+            <Box color="red" />
+            <Image width="900" height="800" />
+          </>
+        )
+    "#};
+    let result = extract(source, "app.tsx", &panda_config());
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+}
+
+#[test]
+fn jsx_factory_extraction_requires_jsx_framework() {
+    let source = indoc! {r#"
+        import { styled } from "@panda/jsx"
+
+        const Card = styled('div', { base: { color: 'red' } })
+        const Panel = styled.div`
+          padding: 4px;
+        `
+    "#};
+    let result = extract(
+        source,
+        "factory.tsx",
+        &panda_config().with_syntax(CssSyntaxKind::TemplateLiteral),
+    );
+
+    assert_yaml_snapshot!(extract_shape(&result), @"
+    calls: []
+    jsx: []
+    ");
+    assert!(result.diagnostics.is_empty());
+}
+
+#[test]
+fn uppercase_component_extracts_with_jsx_framework() {
+    let source = indoc! {r#"
+        import { css } from "@panda/css"
+        import { Image } from "some-image-lib"
+        const _ = css({ color: "red" })
+        export const App = () => <Image width="900" height="800" />
+    "#};
+    let result = extract(source, "app.tsx", &panda_jsx_config());
+    assert_yaml_snapshot!(extract_shape(&result), @r#"
+    calls:
+      - name: css
+        data:
+          color: red
+    jsx:
+      - name: Image
+        data:
+          width: "900"
+          height: "800"
+    "#);
 }

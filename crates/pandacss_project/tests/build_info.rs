@@ -256,6 +256,7 @@ fn build_info_serializes_recipes_with_per_module_provenance() {
 /// (`<Tabs.Root>`) — so we prove JSX usage feeds per-module recipe provenance.
 fn jsx_recipe_lib_project() -> pandacss_project::Project {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {
@@ -385,6 +386,7 @@ fn hydrate_with_module_filter_emits_only_imported_recipes() {
 #[test]
 fn build_info_maps_exports_of_recipe_consuming_components() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {
@@ -427,6 +429,7 @@ fn build_info_maps_exports_of_recipe_consuming_components() {
 #[test]
 fn build_info_tracks_named_specifier_exports() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": { "recipes": { "card": { "jsx": ["Card"], "base": { "padding": "4px" } } } }
     }));
     // `export { Local as Public }` — the exported (public) name is tracked.
@@ -448,6 +451,7 @@ fn build_info_tracks_named_specifier_exports() {
 
 fn jsx_button_project() -> pandacss_project::Project {
     create_project(json!({
+        "jsxFramework": "react",
         "theme": { "recipes": { "button": { "jsx": ["Button"], "base": { "display": "inline-flex" } } } }
     }))
 }
@@ -549,6 +553,7 @@ fn build_info_ignores_unresolved_or_cyclic_re_exports() {
 #[test]
 fn build_info_exports_round_trip_through_json() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": { "recipes": { "button": { "jsx": ["Button"], "base": { "display": "inline-flex" } } } }
     }));
     project.parse_file(
@@ -582,7 +587,9 @@ fn hydrate_rejects_incompatible_schema_version() {
 
 #[test]
 fn build_info_serializes_jsx_style_props_with_module_provenance() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     project.parse_file(
         "card.tsx",
         "import { Box } from '@panda/jsx'; export const Card = () => <Box color='red' padding='4px' />;",
@@ -606,7 +613,9 @@ fn build_info_serializes_jsx_style_props_with_module_provenance() {
 
 #[test]
 fn build_info_hydrates_jsx_style_props() {
-    let mut source = create_project(json!({}));
+    let mut source = create_project(json!({
+        "jsxFramework": "react"
+    }));
     source.parse_file(
         "card.tsx",
         "import { Box } from '@panda/jsx'; export const Card = () => <Box color='red' padding='4px' />;",
@@ -620,7 +629,9 @@ fn build_info_hydrates_jsx_style_props() {
 
 #[test]
 fn build_info_tree_shakes_jsx_style_props_by_module() {
-    let mut source = create_project(json!({}));
+    let mut source = create_project(json!({
+        "jsxFramework": "react"
+    }));
     source.parse_file(
         "card.tsx",
         "import { Box } from '@panda/jsx'; export const Card = () => <Box color='red' />;",
@@ -644,6 +655,7 @@ fn build_info_tree_shakes_jsx_style_props_by_module() {
 
 fn recipe_jsx_with_style_props_project() -> pandacss_project::Project {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {
@@ -696,6 +708,7 @@ fn build_info_hydrates_recipe_jsx_with_atomic_style_props() {
 #[test]
 fn build_info_serializes_pattern_jsx_with_module_provenance() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "none",
         "patterns": {
             "stack": {
@@ -724,6 +737,7 @@ fn build_info_serializes_pattern_jsx_with_module_provenance() {
 #[test]
 fn build_info_hydrates_pattern_jsx_atoms() {
     let mut source = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "none",
         "patterns": {
             "stack": {
@@ -755,7 +769,10 @@ fn build_info_hydrates_pattern_jsx_atoms() {
 
 #[test]
 fn build_info_serializes_jsx_factory_styles_with_module_provenance() {
-    let mut project = create_project(json!({ "jsxFactory": "panda" }));
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "jsxFactory": "panda"
+    }));
     project.parse_file(
         "notice.tsx",
         "import { panda } from '@panda/jsx'; export const Notice = panda('div', { color: 'red', padding: '4px' });",
@@ -772,7 +789,10 @@ fn build_info_serializes_jsx_factory_styles_with_module_provenance() {
 
 #[test]
 fn build_info_hydrates_jsx_factory_styles() {
-    let mut source = create_project(json!({ "jsxFactory": "panda" }));
+    let mut source = create_project(json!({
+        "jsxFramework": "react",
+        "jsxFactory": "panda"
+    }));
     source.parse_file(
         "notice.tsx",
         "import { panda } from '@panda/jsx'; export const Notice = panda('div', { color: 'red', padding: '4px' });",

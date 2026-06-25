@@ -10,6 +10,7 @@ use serde_json::json;
 #[test]
 fn pattern_defaults_apply_before_transform() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "patterns": {
             "stack": {
                 "jsxName": "Stack",
@@ -257,6 +258,7 @@ fn inline_pattern_raw_spread_uses_transformed_styles_in_nested_css() {
 #[test]
 fn strict_pattern_components_only_extract_pattern_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "patterns": {
             "panel": {
                 "jsxName": "Panel",
@@ -292,6 +294,7 @@ fn strict_pattern_components_only_extract_pattern_props() {
 #[test]
 fn pattern_blocklist_filters_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "patterns": {
             "panel": {
                 "jsxName": "Panel",
@@ -419,6 +422,7 @@ fn pattern_local_import_alias_routes_to_export_pattern() {
 #[test]
 fn pattern_function_and_jsx_share_transform_with_default_values() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "patterns": {
             "stack": {
                 "jsxName": "Stack",
@@ -614,6 +618,7 @@ fn object_value<'a>(literal: &'a Literal, key: &str) -> Option<&'a Literal> {
 #[test]
 fn extracted_jsx_carries_kind_from_config() {
     let project = create_project(json!({
+        "jsxFramework": "react",
         "patterns": {
             "stack": { "jsxName": "Stack", "properties": { "gap": { "type": "string" } } }
         },

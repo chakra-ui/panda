@@ -43,6 +43,10 @@ pub(crate) fn collect_template_styles(
     matched: &[MatchedImport],
     config: &ExtractorConfig,
 ) -> Vec<ExtractedJsx> {
+    if !config.has_jsx_framework {
+        return Vec::new();
+    }
+
     let context_source = template_context_source(source, path);
     let context = TemplateContext {
         source: context_source.as_ref(),
@@ -318,7 +322,10 @@ fn resolve_template_tag<'a>(
             _ => {}
         }
     }
-    if config.jsx.should_match_tag(tag_name) {
+    if config
+        .jsx
+        .should_match_tag(tag_name, config.has_jsx_framework)
+    {
         return Some(ResolvedTemplateTag {
             category: MatchCategory::Jsx,
             name: Cow::Borrowed(tag_name),

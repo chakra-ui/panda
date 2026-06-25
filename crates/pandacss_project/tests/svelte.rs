@@ -182,7 +182,9 @@ fn event_action_class_and_special_tag_expressions_are_extracted() {
 
 #[test]
 fn component_style_props_are_extracted_from_markup_attrs() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     let report = project.parse_file(
         "StyleProps.svelte",
         indoc! {r#"
@@ -208,7 +210,9 @@ fn component_style_props_are_extracted_from_markup_attrs() {
 
 #[test]
 fn component_expression_style_props_and_spreads_are_extracted() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     let report = project.parse_file(
         "ExpressionStyleProps.svelte",
         indoc! {r#"
@@ -244,7 +248,9 @@ fn component_expression_style_props_and_spreads_are_extracted() {
 
 #[test]
 fn script_constants_resolve_in_markup_style_props() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     let report = project.parse_file(
         "ResolvedStyleProps.svelte",
         indoc! {r#"
@@ -330,7 +336,9 @@ fn module_reactive_await_and_special_tags_are_tolerated() {
 
 #[test]
 fn native_svelte_tags_do_not_extract_style_props() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     let report = project.parse_file(
         "Native.svelte",
         indoc! {r#"
@@ -350,6 +358,7 @@ fn native_svelte_tags_do_not_extract_style_props() {
 #[test]
 fn markup_style_props_follow_minimal_jsx_style_prop_mode() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "minimal"
     }));
     let report = project.parse_file(
@@ -374,7 +383,9 @@ fn markup_style_props_follow_minimal_jsx_style_prop_mode() {
 
 #[test]
 fn namespace_component_style_props_are_extracted() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     let report = project.parse_file(
         "Namespace.svelte",
         indoc! {r#"
