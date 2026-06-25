@@ -92,6 +92,7 @@ describe('buildinfo command', () => {
       `export default {
         outdir: 'styled-system',
         include: ['**/*.tsx'],
+        jsxFramework: 'react',
         importMap: { css: ['@panda/css'], recipe: ['@panda/recipes'], pattern: ['@panda/patterns'], jsx: ['@panda/jsx'], tokens: ['@panda/tokens'] },
         theme: { recipes: { button: { jsx: ['Button'], base: { display: 'inline-flex' } } } },
       }`,
