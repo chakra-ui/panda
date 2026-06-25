@@ -13,12 +13,12 @@ import type {
   WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
-import { makeBuildInfoApi, makeDesignSystemApi } from '@pandacss/compiler-shared'
+import { BuildInfo, DesignSystem } from '@pandacss/compiler-shared'
 import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
 
 /** No-op build-info primitives so the fallback compiler still satisfies the
  *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
-const fallbackBuildInfo = makeBuildInfoApi({
+const fallbackBuildInfo = new BuildInfo({
   serializeBuildInfo: () => ({
     schemaVersion: -1,
     panda: '',
@@ -34,7 +34,7 @@ const fallbackBuildInfo = makeBuildInfoApi({
 
 /** No-op design-system primitives; `validate` always reports incompatible
  *  (`schemaVersion` is `-1`). */
-const fallbackDesignSystem = makeDesignSystemApi(
+const fallbackDesignSystem = new DesignSystem(
   {
     createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
     designSystemManifestSchemaVersion: () => -1,
@@ -58,6 +58,27 @@ class FallbackExtractor implements ExtractorSession {
 class FallbackCompiler implements Compiler {
   static fromConfig() {
     return new FallbackCompiler()
+  }
+  serializeBuildInfo() {
+    return fallbackBuildInfo.create({ panda: '' })
+  }
+  applyBuildInfo() {
+    return false
+  }
+  buildInfoSchemaVersion() {
+    return -1
+  }
+  configFingerprint() {
+    return ''
+  }
+  createDesignSystemManifest(input: DesignSystemManifestInput) {
+    return { ...input, schemaVersion: -1 }
+  }
+  designSystemManifestSchemaVersion() {
+    return -1
+  }
+  resolveDesignSystemChain() {
+    return { status: 'ordered', order: [] } as const
   }
   config() {
     return {}

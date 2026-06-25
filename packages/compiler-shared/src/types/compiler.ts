@@ -1,3 +1,5 @@
+import type { BuildInfo } from '../build-info'
+import type { DesignSystem } from '../design-system'
 import type { SerializedConfig } from './config'
 import type { Diagnostic } from './diagnostics'
 import type {
@@ -88,9 +90,9 @@ export interface BuildModuleEntry {
 }
 
 /**
- * Serialized encoder state that lets consumers hydrate CSS without re-extracting a library.
+ * Portable encoder artifact that lets consumers hydrate CSS without re-extracting a library.
  */
-export interface BuildInfo {
+export interface BuildInfoArtifact {
   schemaVersion: number
   panda: string
   configFingerprint: string
@@ -109,6 +111,13 @@ export interface BuildInfoCreateOptions {
   panda: string
 }
 
+export interface BuildInfoNormalizeOptions {
+  /**
+   * Rewrite a module key while preserving build-info cross references.
+   */
+  mapModuleKey(key: string): string
+}
+
 export interface BuildInfoHydrateOptions {
   /**
    * Stable source design-system name. Later hydrates of the same name replace cleanly.
@@ -123,17 +132,6 @@ export interface BuildInfoHydrateOptions {
 export type BuildInfoHydrateResult =
   | { ok: true; modules: string[] }
   | { ok: false; reason: BuildInfoIncompatibility; modules: [] }
-
-export interface BuildInfoApi {
-  readonly configFingerprint: string
-  create(options: BuildInfoCreateOptions): BuildInfo
-  validate(buildInfo: BuildInfo): BuildInfoCompatibility
-  /**
-   * Resolve barrel export names to module keys using `BuildInfo.exports`.
-   */
-  modulesFor(buildInfo: BuildInfo, exportNames: string[]): string[]
-  hydrate(buildInfo: BuildInfo, options: BuildInfoHydrateOptions): BuildInfoHydrateResult
-}
 
 /**
  * Design-system manifest (`panda.lib.json`).
@@ -188,7 +186,7 @@ export type DesignSystemChainPlan = { status: 'ordered'; order: string[] } | { s
 export type DesignSystemChainResult = { ok: true; order: string[] } | { ok: false; reason: 'cycle'; cycle: string[] }
 
 export interface DesignSystemLoadOptions {
-  buildInfo: BuildInfo
+  buildInfo: BuildInfoArtifact
   /**
    * Export names imported by the consumer; omit for namespace/all-module hydration.
    */
@@ -199,17 +197,6 @@ export interface DesignSystemLoadOptions {
 export type DesignSystemLoadResult =
   | { ok: true; name: string; modules: string[] }
   | { ok: false; reason: DesignSystemManifestIncompatibility | BuildInfoIncompatibility; modules: [] }
-
-export interface DesignSystemApi {
-  readonly schemaVersion: number
-  create(input: DesignSystemManifestInput): DesignSystemManifest
-  validate(manifest: DesignSystemManifest, options?: DesignSystemValidateOptions): DesignSystemManifestCompatibility
-  load(manifest: DesignSystemManifest, options: DesignSystemLoadOptions): DesignSystemLoadResult
-  /**
-   * Order manifests by parent links into a root-first plan, or report a cycle.
-   */
-  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainResult
-}
 
 /**
  * Configured compiler surface shared by native and wasm bindings.
@@ -251,8 +238,8 @@ export interface Compiler {
   getLayerCss(options: LayerCssOptions): CompileOutput
   getSplitCss(options?: SplitCssOptions): CssFile[]
 
-  readonly buildInfo: BuildInfoApi
-  readonly designSystem: DesignSystemApi
+  readonly buildInfo: BuildInfo
+  readonly designSystem: DesignSystem
 
   /**
    * Codegen artifacts.

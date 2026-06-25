@@ -20,9 +20,9 @@
 import {
   assertProjectCallbacks,
   assertProjectHooks,
+  BuildInfo,
+  DesignSystem,
   getTokenCategoryValues,
-  makeBuildInfoApi,
-  makeDesignSystemApi,
   mergeCallbacks,
   prepareCompilerConfig,
 } from '@pandacss/compiler-shared'
@@ -50,18 +50,24 @@ export type {
 // Re-export the shared contract so consumers get one import surface.
 export type * from '@pandacss/compiler-shared'
 
-/** `configCallbacks` carry construction-time `utility.values` resolvers. */
+/**
+ * `configCallbacks` carry construction-time `utility.values` resolvers.
+ */
 interface WasmFromConfigOptions {
   configCallbacks?: {
     utilityValues?: Record<string, (tokenDictionary: TokenDictionaryInput | undefined) => unknown>
   }
 }
 
-/** The raw wasm instance — superset of {@link Compiler} carrying the internal
- *  `token_dictionary` the facade hides. */
+/**
+ * The raw wasm instance - superset of {@link Compiler} carrying the internal
+ * `token_dictionary` the facade hides.
+ */
 interface RawWasmCompiler extends WasmCompiler {
   token_dictionary?(): TokenDictionaryInput | undefined
 }
+
+type RuntimeWasmCompiler = RawWasmCompiler & Compiler & BuildInfoNative & DesignSystemNative & { fs: WasmFileSystem }
 
 export interface WasmModule {
   WasmFileSystem: new () => WasmFileSystem
@@ -96,24 +102,24 @@ export function build(
   assertProjectHooks(hooks, callbacks)
 
   const prepared = prepareCompilerConfig(config)
-  const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks))
+  const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks)) as RuntimeWasmCompiler
   registerCallbacks(compiler, callbacks, hooks, compiler.token_dictionary?.())
 
   // Expose the shared FS as a field so the return shape matches native.
-  ;(compiler as unknown as { fs: WasmFileSystem }).fs = fs
+  compiler.fs = fs
 
   // Wire the ergonomic `compiler.buildInfo` / `compiler.designSystem` namespaces
   // over the wasm primitives, mirroring the native binding. Non-enumerable so
   // they stay off snapshots.
-  const buildInfo = makeBuildInfoApi(compiler as unknown as BuildInfoNative)
+  const buildInfo = new BuildInfo(compiler)
   Object.defineProperty(compiler, 'buildInfo', { value: buildInfo, enumerable: false })
   Object.defineProperty(compiler, 'designSystem', {
     // `load` reuses the `buildInfo` namespace just wired above.
-    value: makeDesignSystemApi(compiler as unknown as DesignSystemNative, buildInfo),
+    value: new DesignSystem(compiler, buildInfo),
     enumerable: false,
   })
 
-  return compiler as unknown as Compiler
+  return compiler
 }
 
 export function buildFromConfigOptions(callbacks: ProjectCallbacks): WasmFromConfigOptions | undefined {

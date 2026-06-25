@@ -12,7 +12,7 @@
 
 import type {
   Atom,
-  BuildInfo,
+  BuildInfoArtifact,
   DesignSystemManifest,
   DesignSystemManifestInput,
   CodegenArtifact,
@@ -154,14 +154,14 @@ export declare class WasmCompiler {
   /** Per-file view, or `null` when `path` isn't known. */
   getFile(path: string): ParsedFileView | null
   staticPatternAtoms(): StaticPatternResult
-  // Flat build-info primitives (the `makeBuildInfoApi` namespace is built over
-  // these in `web.ts`, mirroring the native binding).
-  serializeBuildInfo(panda: string): BuildInfo
-  applyBuildInfo(name: string, buildInfo: BuildInfo, only?: string[]): boolean
+  // Flat build-info primitives (the `BuildInfo` namespace is built over these
+  // in `web.ts`, mirroring the native binding).
+  serializeBuildInfo(panda: string): BuildInfoArtifact
+  applyBuildInfo(name: string, buildInfo: BuildInfoArtifact, only?: string[]): boolean
   buildInfoSchemaVersion(): number
   configFingerprint(): string
-  // Flat design-system manifest primitives (the `makeDesignSystemApi` namespace
-  // is built over these in `web.ts`, mirroring the native binding).
+  // Flat design-system manifest primitives (the `DesignSystem` namespace is
+  // built over these in `web.ts`, mirroring the native binding).
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
 }

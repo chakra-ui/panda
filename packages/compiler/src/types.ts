@@ -1,6 +1,8 @@
 import type {
+  BuildInfoNative,
   Compiler,
   CompileOutput,
+  DesignSystemNative,
   Diagnostic,
   ExtractedCall,
   ExtractedJsx,
@@ -133,7 +135,7 @@ export interface NativeCompilerOptions {
 
 /** The raw native instance — superset of {@link Compiler} carrying the internal
  *  methods the facade hides. */
-export interface RawCompiler extends Compiler {
+export interface RawCompiler extends Compiler, BuildInfoNative, DesignSystemNative {
   token_dictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void

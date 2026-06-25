@@ -1,6 +1,4 @@
 import {
-  checkManifestCompatibility,
-  DESIGN_SYSTEM_MANIFEST_SCHEMA_VERSION,
   outdirBasename,
   type DesignSystemManifest,
   type ImportMapInput,
@@ -16,6 +14,7 @@ import { ensureConfigObject, errorMessage, type ExtendableConfig } from './share
 
 export interface ResolvedDesignSystem {
   name: string
+  manifest: DesignSystemManifest
   manifestPath: string
   buildInfoPath: string
   files: string[]
@@ -26,7 +25,6 @@ export async function loadDesignSystemPreset(
   spec: string,
   cwd: string,
   deps: Set<string>,
-  options: { pandaVersion?: string },
 ): Promise<{ preset: ExtendableConfig; info: ResolvedDesignSystem }> {
   const require = createRequire(resolve(cwd, 'noop.js'))
 
@@ -53,15 +51,17 @@ export async function loadDesignSystemPreset(
   if (typeof manifest.buildInfo !== 'string') {
     throw new PandaError('CONFIG_ERROR', `💥 ${JSON.stringify(spec)} manifest is missing a "buildInfo" entry.`)
   }
-
-  const compat = checkManifestCompatibility(manifest, {
-    schemaVersion: DESIGN_SYSTEM_MANIFEST_SCHEMA_VERSION,
-    pandaVersion: options.pandaVersion,
-  })
-  if (!compat.ok) throw incompatibleError(spec, manifest, compat.reason, options.pandaVersion)
+  if (typeof manifest.designSystem === 'string' && manifest.designSystem.length > 0) {
+    throw new PandaError(
+      'CONFIG_ERROR',
+      `💥 designSystem ${JSON.stringify(spec)} extends ${JSON.stringify(manifest.designSystem)}, but nested design systems are not supported yet.`,
+    )
+  }
 
   const presetPath = resolve(dirname(manifestPath), manifest.preset)
+  const buildInfoPath = resolve(dirname(manifestPath), manifest.buildInfo)
   deps.add(presetPath)
+  deps.add(buildInfoPath)
 
   let preset: ExtendableConfig
   try {
@@ -79,8 +79,9 @@ export async function loadDesignSystemPreset(
     preset,
     info: {
       name: manifest.name ?? spec,
+      manifest,
       manifestPath,
-      buildInfoPath: resolve(dirname(manifestPath), manifest.buildInfo),
+      buildInfoPath,
       files: manifest.files ?? [],
       ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
     },
@@ -102,23 +103,4 @@ function designSystemImportMap(map: NonNullable<DesignSystemManifest['importMap'
     jsx: map.jsx ?? `${spec}/jsx`,
     tokens: map.tokens ?? `${spec}/tokens`,
   }
-}
-
-function incompatibleError(
-  spec: string,
-  manifest: DesignSystemManifest,
-  reason: 'schemaVersion' | 'pandaRange',
-  pandaVersion?: string,
-): PandaError {
-  if (reason === 'schemaVersion') {
-    return new PandaError(
-      'CONFIG_ERROR',
-      `💥 designSystem ${JSON.stringify(spec)} was built for a different Panda manifest format (schemaVersion ${manifest.schemaVersion}, this Panda expects ${DESIGN_SYSTEM_MANIFEST_SCHEMA_VERSION}). Upgrade Panda here, or rebuild the library with \`panda lib\`.`,
-    )
-  }
-  const running = pandaVersion ? ` (you are on ${pandaVersion})` : ''
-  return new PandaError(
-    'CONFIG_ERROR',
-    `💥 designSystem ${JSON.stringify(spec)} requires Panda ${manifest.panda}${running}. This project's Panda doesn't satisfy that range.`,
-  )
 }

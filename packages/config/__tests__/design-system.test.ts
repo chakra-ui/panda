@@ -44,6 +44,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
     expect(colors.dsOnly.value).toBe('ds')
     expect(dependencies.some((d) => d.endsWith('panda.lib.json'))).toBe(true)
     expect(dependencies.some((d) => d.endsWith('preset.mjs'))).toBe(true)
+    expect(dependencies.some((d) => d.endsWith('panda.buildinfo.json'))).toBe(true)
   })
 
   test('wires the dual-root importMap (DS roots + local outdir)', async () => {
@@ -60,6 +61,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
       'styled-system',
     ])
     expect(metadata?.designSystem?.name).toBe('@acme/ds')
+    expect(metadata?.designSystem?.manifest.name).toBe('@acme/ds')
     expect(metadata?.designSystem?.buildInfoPath).toMatch(/panda\.buildinfo\.json$/)
     expect(metadata?.designSystem?.files).toEqual(['./dist/**/*.mjs'])
   })
@@ -92,20 +94,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
     expect(dsRoot.tokens).toBe('@acme/ds/tokens')
   })
 
-  test('rejects a consumer whose Panda major is outside the manifest range', async () => {
-    await expect(
-      resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd, { pandaVersion: '1.9.0' }),
-    ).rejects.toThrow(/requires Panda \^2\.0\.0 \(you are on 1\.9\.0\)/)
-  })
-
-  test('accepts a matching Panda major', async () => {
-    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd, { pandaVersion: '2.3.1' })
-    const colors = config.theme?.tokens?.colors
-    if (!colors) throw new Error('expected resolved color tokens')
-    expect(colors.dsOnly.value).toBe('ds')
-  })
-
-  test('rejects a manifest built for a different schema version', async () => {
+  test('defers manifest compatibility to compiler hydration', async () => {
     const pkg = join(cwd, 'node_modules', '@acme', 'future')
     mkdirSync(pkg, { recursive: true })
     writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/future' }))
@@ -120,9 +109,9 @@ describe('resolveAuthoredPresets / designSystem', () => {
       }),
     )
     writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/future' } as any, cwd)).rejects.toThrow(
-      /different Panda manifest format/,
-    )
+
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/future' } as any, cwd)
+    expect(metadata?.designSystem?.buildInfoPath).toMatch(/b\.json$/)
   })
 
   test('rejects a manifest missing a buildInfo entry', async () => {
@@ -136,6 +125,27 @@ describe('resolveAuthoredPresets / designSystem', () => {
     writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
     await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' } as any, cwd)).rejects.toThrow(
       /missing a "buildInfo" entry/,
+    )
+  })
+
+  test('rejects parent design systems in the single-level loader', async () => {
+    const pkg = join(cwd, 'node_modules', '@acme', 'child')
+    mkdirSync(pkg, { recursive: true })
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/child' }))
+    writeFileSync(
+      join(pkg, 'panda.lib.json'),
+      JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/child',
+        panda: '^2.0.0',
+        preset: './p.mjs',
+        buildInfo: './b.json',
+        designSystem: '@acme/base',
+      }),
+    )
+    writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/child' } as any, cwd)).rejects.toThrow(
+      /nested design systems are not supported yet/,
     )
   })
 

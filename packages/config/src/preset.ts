@@ -8,7 +8,6 @@ import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from '
 import type { ConfigSources } from './sources'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
-import { readPandaVersion } from './version'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
 type ConfigSource = SourcedConfig['source']
@@ -34,7 +33,6 @@ export interface ResolveAuthoredPresetsOptions {
   trackSources?: boolean
   configFile?: string
   preserveRuntimeHooks?: boolean
-  pandaVersion?: string
 }
 
 export async function resolveAuthoredPresets(
@@ -56,9 +54,7 @@ export async function resolveAuthoredPresets(
   const designSystem = (config as UserConfig).designSystem
   let resolvedDesignSystem: { preset: ExtendableConfig; info: ResolvedDesignSystem } | undefined
   if (typeof designSystem === 'string' && designSystem.length > 0) {
-    resolvedDesignSystem = await loadDesignSystemPreset(designSystem, cwd, ctx.dependencies, {
-      pandaVersion: options.pandaVersion ?? readPandaVersion(),
-    })
+    resolvedDesignSystem = await loadDesignSystemPreset(designSystem, cwd, ctx.dependencies)
     await collectConfigs(resolvedDesignSystem.preset, { kind: 'preset', specifier: designSystem }, ctx, new WeakSet())
   }
 

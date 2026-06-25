@@ -1,4 +1,4 @@
-import { type BuildInfo, type Driver } from '@pandacss/compiler'
+import { type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, relative } from 'node:path'
@@ -55,7 +55,7 @@ export async function runBuildinfo(
         phase: 'buildinfo',
         run: () => {
           const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? '*' })
-          return normalizeBuildInfo(info, cwd)
+          return driver.compiler.buildInfo.normalize(info, { mapModuleKey: (key) => toRelativeKey(key, cwd) })
         },
       })
 
@@ -104,27 +104,6 @@ export async function runBuildinfo(
 
 function defaultOutfile(driver: Driver): string {
   return driver.compiler.joinPath([driver.paths().root, 'panda.buildinfo.json'])
-}
-
-/** Rewrite module keys (engine scan paths) to `cwd`-relative POSIX paths so the
- *  artifact is portable across machines — both the `modules` keys and the
- *  `exports` values, which reference the same module ids. */
-function normalizeBuildInfo(info: BuildInfo, cwd: string): BuildInfo {
-  const modules: BuildInfo['modules'] = {}
-
-  for (const [key, entry] of Object.entries(info.modules)) {
-    modules[toRelativeKey(key, cwd)] = entry
-  }
-
-  if (!info.exports) return { ...info, modules }
-
-  const exports: Record<string, string> = {}
-
-  for (const [name, key] of Object.entries(info.exports)) {
-    exports[name] = toRelativeKey(key, cwd)
-  }
-
-  return { ...info, modules, exports }
 }
 
 function toRelativeKey(key: string, cwd: string): string {

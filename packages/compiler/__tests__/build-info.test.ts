@@ -1,9 +1,9 @@
-import type { BuildInfo } from '@pandacss/compiler-shared'
+import type { BuildInfoArtifact } from '@pandacss/compiler-shared'
 import { describe, expect, it } from 'vitest'
 import { createProject } from './test-utils'
 
 // A "library" project that extracts two component modules.
-function libBuildInfo(): BuildInfo {
+function libBuildInfo(): BuildInfoArtifact {
   const lib = createProject({
     utilities: { padding: { className: 'p' }, margin: { className: 'm' } },
   })
@@ -12,7 +12,7 @@ function libBuildInfo(): BuildInfo {
   return lib.buildInfo.create({ panda: '^2.0.0' })
 }
 
-function withUnsupportedSchemaVersion(buildInfo: BuildInfo): BuildInfo {
+function withUnsupportedSchemaVersion(buildInfo: BuildInfoArtifact): BuildInfoArtifact {
   // One version ahead of the running binding — guaranteed incompatible.
   return {
     ...buildInfo,
@@ -222,6 +222,26 @@ describe('compiler.buildInfo', () => {
     `)
   })
 
+  it('normalize() rewrites module keys and export references together', () => {
+    const app = consumer()
+    const source = libBuildInfo()
+    const info = {
+      ...source,
+      modules: Object.fromEntries(Object.entries(source.modules).map(([key, entry]) => [`/repo/lib/${key}`, entry])),
+      exports: { Button: '/repo/lib/button.tsx', Card: '/repo/lib/card.tsx' },
+    }
+
+    const normalized = app.buildInfo.normalize(info, {
+      mapModuleKey: (key) => key.replace('/repo/lib/', ''),
+    })
+
+    expect(normalized.modules).toEqual({
+      'button.tsx': { atoms: [0, 2] },
+      'card.tsx': { atoms: [0, 1] },
+    })
+    expect(normalized.exports).toEqual({ Button: 'button.tsx', Card: 'card.tsx' })
+  })
+
   it('emits exports for recipe-consuming components, resolvable by name to recipe CSS', () => {
     // A design-system module whose exported component consumes a config recipe.
     const lib = createProject({
@@ -394,7 +414,7 @@ describe('compiler.buildInfo', () => {
 
   // A library shipping two recipes, each used from a distinct module so recipe
   // provenance is per-file (and thus tree-shakeable).
-  function recipeLibBuildInfo(): BuildInfo {
+  function recipeLibBuildInfo(): BuildInfoArtifact {
     const lib = createProject({
       theme: {
         recipes: {
