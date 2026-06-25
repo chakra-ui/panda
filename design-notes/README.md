@@ -11,21 +11,21 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 
 ### Architecture
 
-- [Compiler lifecycle](./compiler-lifecycle.md) — end-to-end `createCompiler(config)` flow (construct → ingest →
-  extract → encode → emit → output), build vs watch modes, and which phases are built vs deferred.
+- [Compiler lifecycle](./compiler-lifecycle.md) — end-to-end `createCompiler(config)` flow (construct → ingest → extract
+  → encode → emit → output), build vs watch modes, and which phases are built vs deferred.
 - [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
 - [Project lifecycle](./project-lifecycle.md) — `Project` add / replace / remove semantics for watch mode.
 - [Native stylesheet compiler](./stylesheet.md) — CSS emission, static CSS support, ordering, and minification boundary.
 - [Scope and boundaries](./scope-and-boundaries.md) — what's deliberately _not_ in the Rust pipeline.
-- [Output & host layer (Driver)](./output-and-host-layer.md) — the JS orchestration layer above the pure compiler:
-  the `Driver` contract + shared `BaseDriver` (hosts ship in `@pandacss/compiler` node / `@pandacss/compiler-wasm`
-  browser), CSS-vs-artifact cadence, sink routing, fs-engine `scan`, and the config-diff algorithm.
-- [Hooks](./hooks.md) — v2 plugin hook model: public `plugins` are named hook bundles over
-  one ordered hook registry. Covers the boundary-cost hook taxonomy (config/output hooks are host-only and free;
-  `parser:before` needs Rust-evaluated filters), Rolldown-style `{ filter, handler }` object hooks, native SFC adapters,
-  the span/sourcemap contract, and migration from v1 root `hooks`.
+- [Output & host layer (Driver)](./output-and-host-layer.md) — the JS orchestration layer above the pure compiler: the
+  `Driver` contract + shared `BaseDriver` (hosts ship in `@pandacss/compiler` node / `@pandacss/compiler-wasm` browser),
+  CSS-vs-artifact cadence, sink routing, fs-engine `scan`, and the config-diff algorithm.
+- [Hooks](./hooks.md) — v2 plugin hook model: public `plugins` are named hook bundles over one ordered hook registry.
+  Covers the boundary-cost hook taxonomy (config/output hooks are host-only and free; `parser:before` needs
+  Rust-evaluated filters), Rolldown-style `{ filter, handler }` object hooks, native SFC adapters, the span/sourcemap
+  contract, and migration from v1 root `hooks`.
 
 ### Subsystems
 
@@ -44,25 +44,28 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Build info](./build-info.md) — `panda.buildinfo.json`: the portable encoder state a design system ships, its
   condensed format, per-module tree-shaking + import resolution, stacked DS-on-DS consume sketch, the version guard, and
   the engine/JS/CLI layering.
-- [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda.lib.json` manifest, gen +
-  load as fs-free compiler methods (`compiler.designSystem.*`), the parent-chain walk for nested design systems, module/type
-  resolution, setup diagnostics, and the incremental PR breakdown.
-- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems` resolves
-  manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS modules.
+- [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda.lib.json` manifest,
+  gen + load as fs-free compiler methods (`compiler.designSystem.*`), the parent-chain walk for nested design systems,
+  module/type resolution, setup diagnostics, and the incremental PR breakdown.
+- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems`
+  resolves manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS
+  modules.
 - [Chakra UI design-system migration](./chakra-ui-design-system-migration.md) — Chakra-specific plan for replacing
   Emotion with a Panda v2 design-system package using a real Chakra-owned styled-system package, one app-composed
   `styled-system`, build info, component extraction metadata, framework aliases, and TypeScript path resolution.
 - [Container query theme API](./container-query-theme-api.md) — `theme.containers` as the shared scale for typed
   container conditions, `theme.containerNames` as named query scopes, native CSS props for container declaration, and
   migration guidance for legacy `containerSizes`/`cq` concepts.
-- [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in
-  style values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
+- [Token reference syntax](./token-reference-syntax.md) — `tokenSyntax: '$'`: Stitches-style `$` token syntax in style
+  values, replacing the v1 `tokens:created` rename hook. Includes the v1 → v2 migration guide.
 
 ### Boundary
 
 - [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
 - [CLI v2 direction](./cli.md) — production CLI host goals for the Rust compiler: lifecycle commands, schema-backed
   flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
+- [CLI analyze command](./cli-analyze.md) — proposed `panda analyze` usage-report command: naming, scopes, JSON/report
+  outputs, UI mode, and the `inspectFileSource` aggregation boundary.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
@@ -79,10 +82,11 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Instrumentation](./instrumentation.md) — `tracing` spans, native trace output, and release-only benchmark policy.
 - [Publish namespace](./publish-namespace.md) — placeholder crate names + rename plan before publish.
 - [Benchmarks](./bench/) — dated reports comparing implementations. Latest:
-  [generated-types-js-vs-rust](./bench/2026-06-01-generated-types-js-vs-rust.mdx) (−99% type instantiations, −21 to −25% memory vs legacy).
+  [generated-types-js-vs-rust](./bench/2026-06-01-generated-types-js-vs-rust.mdx) (−99% type instantiations, −21 to −25%
+  memory vs legacy).
 
 ## Migration plan vs design notes
 
-These notes describe the _current_ architecture. The earlier Rust/Oxc migration and spike planning docs were folded
-into the relevant design notes or left in git history. When a decision is implemented, capture the durable form here
-and link back to the specific note.
+These notes describe the _current_ architecture. The earlier Rust/Oxc migration and spike planning docs were folded into
+the relevant design notes or left in git history. When a decision is implemented, capture the durable form here and link
+back to the specific note.

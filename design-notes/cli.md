@@ -53,9 +53,9 @@ The root dispatcher is runless. `cli-main.ts` routes:
 
 This avoids citty's runnable-root double-run behavior while keeping bare `panda` useful.
 
-The default `panda` command and `panda build` both run codegen then cssgen on one driver pass (`runBuild` →
-`buildOnce`, composing `codegenOnce` + `cssgenOnce`). codegen runs first so `--clean` wipes the outdir before CSS is
-written. Diagnostics from both passes are merged; one combined `panda: ...` summary line replaces per-command summaries.
+The default `panda` command and `panda build` both run codegen then cssgen on one driver pass (`runBuild` → `buildOnce`,
+composing `codegenOnce` + `cssgenOnce`). codegen runs first so `--clean` wipes the outdir before CSS is written.
+Diagnostics from both passes are merged; one combined `panda: ...` summary line replaces per-command summaries.
 
 ## Flag schema boundary
 
@@ -224,7 +224,8 @@ v2 emits atomic CSS at the project level, so the dump carries one project styles
 
 Open gaps that stay outside the current CLI surface:
 
-- `studio` and `analyze` are not ported.
+- `studio` is not ported.
+- `analyze` is not ported; see [CLI analyze command](./cli-analyze.md) for the proposed usage-report direction.
 - `ship` / `emit-pkg` is not ported.
 - v1 positional layer type arguments are intentionally not ported. `cssgen --minimal` covers usage-only package CSS.
 - lightningcss minify parity is still an open follow-up.
@@ -245,6 +246,7 @@ doctor, info, and check commands must be scriptable.
 ## Related
 
 - [Compiler diagnostics](./compiler-diagnostics.md)
+- [CLI analyze command](./cli-analyze.md)
 - [Compiler lifecycle](./compiler-lifecycle.md)
 - [Output and host layer](./output-and-host-layer.md)
 - [Instrumentation](./instrumentation.md)
