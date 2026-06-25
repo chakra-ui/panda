@@ -61,7 +61,7 @@ function importMapFromRoot(root: string): ImportMapOutput {
   }
 }
 
-function outdirBasename(outdir: string): string {
+export function outdirBasename(outdir: string): string {
   const parts = outdir.split('/').filter(Boolean)
   return parts.at(-1) ?? outdir
 }

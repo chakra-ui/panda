@@ -1,7 +1,9 @@
 import {
   checkManifestCompatibility,
   DESIGN_SYSTEM_MANIFEST_SCHEMA_VERSION,
+  outdirBasename,
   type DesignSystemManifest,
+  type ImportMapInput,
   type ImportMapOption,
 } from '@pandacss/compiler-shared'
 import type { UserConfig } from '@pandacss/types'
@@ -48,6 +50,9 @@ export async function loadDesignSystemPreset(
   if (typeof manifest.preset !== 'string') {
     throw new PandaError('CONFIG_ERROR', `💥 ${JSON.stringify(spec)} manifest is missing a "preset" entry.`)
   }
+  if (typeof manifest.buildInfo !== 'string') {
+    throw new PandaError('CONFIG_ERROR', `💥 ${JSON.stringify(spec)} manifest is missing a "buildInfo" entry.`)
+  }
 
   const compat = checkManifestCompatibility(manifest, {
     schemaVersion: DESIGN_SYSTEM_MANIFEST_SCHEMA_VERSION,
@@ -85,13 +90,18 @@ export async function loadDesignSystemPreset(
 export function withDesignSystemImportMap(config: UserConfig, spec: string, info: ResolvedDesignSystem): UserConfig {
   const existing: ImportMapOption[] =
     config.importMap === undefined ? [] : Array.isArray(config.importMap) ? config.importMap : [config.importMap]
-  const dsRoot: ImportMapOption = info.importMap ?? spec
-  return { ...config, importMap: [dsRoot, outdirBasename(config.outdir), ...existing] }
+  const dsRoot: ImportMapOption = info.importMap ? designSystemImportMap(info.importMap, spec) : spec
+  return { ...config, importMap: [dsRoot, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
 }
 
-function outdirBasename(outdir: string | undefined): string {
-  const parts = (outdir ?? 'styled-system').split('/').filter(Boolean)
-  return parts.at(-1) ?? 'styled-system'
+function designSystemImportMap(map: NonNullable<DesignSystemManifest['importMap']>, spec: string): ImportMapInput {
+  return {
+    css: map.css ?? `${spec}/css`,
+    recipes: map.recipes ?? `${spec}/recipes`,
+    patterns: map.patterns ?? `${spec}/patterns`,
+    jsx: map.jsx ?? `${spec}/jsx`,
+    tokens: map.tokens ?? `${spec}/tokens`,
+  }
 }
 
 function incompatibleError(

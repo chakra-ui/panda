@@ -50,7 +50,13 @@ describe('resolveAuthoredPresets / designSystem', () => {
     const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd)
 
     expect(config.importMap).toEqual([
-      { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
+      {
+        css: '@acme/ds/css',
+        recipes: '@acme/ds/recipes',
+        patterns: '@acme/ds/patterns',
+        jsx: '@acme/ds/jsx',
+        tokens: '@acme/ds/tokens',
+      },
       'styled-system',
     ])
     expect(metadata?.designSystem?.name).toBe('@acme/ds')
@@ -61,9 +67,22 @@ describe('resolveAuthoredPresets / designSystem', () => {
   test('respects a custom outdir basename in the wired importMap', async () => {
     const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds', outdir: 'src/design' } as any, cwd)
     expect(config.importMap).toEqual([
-      { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
+      {
+        css: '@acme/ds/css',
+        recipes: '@acme/ds/recipes',
+        patterns: '@acme/ds/patterns',
+        jsx: '@acme/ds/jsx',
+        tokens: '@acme/ds/tokens',
+      },
       'design',
     ])
+  })
+
+  test('fills importMap keys the manifest omits from the design-system root', async () => {
+    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd)
+    const [dsRoot] = config.importMap as any[]
+    expect(dsRoot.patterns).toBe('@acme/ds/patterns')
+    expect(dsRoot.tokens).toBe('@acme/ds/tokens')
   })
 
   test('rejects a consumer whose Panda major is outside the manifest range', async () => {
@@ -96,6 +115,20 @@ describe('resolveAuthoredPresets / designSystem', () => {
     writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
     await expect(resolveAuthoredPresets({ designSystem: '@acme/future' } as any, cwd)).rejects.toThrow(
       /different Panda manifest format/,
+    )
+  })
+
+  test('rejects a manifest missing a buildInfo entry', async () => {
+    const pkg = join(cwd, 'node_modules', '@acme', 'no-buildinfo')
+    mkdirSync(pkg, { recursive: true })
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/no-buildinfo' }))
+    writeFileSync(
+      join(pkg, 'panda.lib.json'),
+      JSON.stringify({ schemaVersion: 1, name: '@acme/no-buildinfo', panda: '^2.0.0', preset: './p.mjs' }),
+    )
+    writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' } as any, cwd)).rejects.toThrow(
+      /missing a "buildInfo" entry/,
     )
   })
 
