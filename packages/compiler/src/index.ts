@@ -3,6 +3,7 @@ import type {
   CompileOutput,
   CompilerOptions,
   ConfigSnapshot,
+  DesignSystemBinding,
   ProjectCallbacks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
@@ -123,7 +124,7 @@ function attachDesignSystem(compiler: ReturnType<NonNullable<typeof nativeCompil
     enumerable: false,
     configurable: true,
     get() {
-      const api = new DesignSystem(compiler, compiler.buildInfo)
+      const api = new DesignSystem(toDesignSystemBinding(compiler), compiler.buildInfo)
       Object.defineProperty(compiler, 'designSystem', {
         value: api,
         enumerable: false,
@@ -132,6 +133,16 @@ function attachDesignSystem(compiler: ReturnType<NonNullable<typeof nativeCompil
       return api
     },
   })
+}
+
+function toDesignSystemBinding(
+  compiler: ReturnType<NonNullable<typeof nativeCompilerFromConfig>>,
+): DesignSystemBinding {
+  return {
+    createManifest: (input) => compiler.createDesignSystemManifest(input),
+    manifestSchemaVersion: () => compiler.designSystemManifestSchemaVersion(),
+    resolveChain: (manifests) => compiler.resolveDesignSystemChain(manifests),
+  }
 }
 
 function toNativeOptions(options: CompilerOptions | undefined): NativeCompilerOptions | undefined {

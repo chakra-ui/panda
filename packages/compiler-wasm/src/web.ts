@@ -30,7 +30,7 @@ import type {
   BuildInfoNative,
   Compiler,
   CompilerOptions,
-  DesignSystemNative,
+  DesignSystemBinding,
   ProjectCallbacks,
   ProjectHooks,
   SerializedConfig,
@@ -67,7 +67,7 @@ interface RawWasmCompiler extends WasmCompiler {
   token_dictionary?(): TokenDictionaryInput | undefined
 }
 
-type RuntimeWasmCompiler = RawWasmCompiler & Compiler & BuildInfoNative & DesignSystemNative & { fs: WasmFileSystem }
+type RuntimeWasmCompiler = RawWasmCompiler & Compiler & BuildInfoNative & { fs: WasmFileSystem }
 
 export interface WasmModule {
   WasmFileSystem: new () => WasmFileSystem
@@ -115,11 +115,19 @@ export function build(
   Object.defineProperty(compiler, 'buildInfo', { value: buildInfo, enumerable: false })
   Object.defineProperty(compiler, 'designSystem', {
     // `load` reuses the `buildInfo` namespace just wired above.
-    value: new DesignSystem(compiler, buildInfo),
+    value: new DesignSystem(toDesignSystemBinding(compiler), buildInfo),
     enumerable: false,
   })
 
   return compiler
+}
+
+function toDesignSystemBinding(compiler: RuntimeWasmCompiler): DesignSystemBinding {
+  return {
+    createManifest: (input) => compiler.createDesignSystemManifest(input),
+    manifestSchemaVersion: () => compiler.designSystemManifestSchemaVersion(),
+    resolveChain: (manifests) => compiler.resolveDesignSystemChain(manifests),
+  }
 }
 
 export function buildFromConfigOptions(callbacks: ProjectCallbacks): WasmFromConfigOptions | undefined {

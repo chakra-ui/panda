@@ -13,6 +13,7 @@
 import type {
   Atom,
   BuildInfoArtifact,
+  DesignSystemChainPlan,
   DesignSystemManifest,
   DesignSystemManifestInput,
   CodegenArtifact,
@@ -160,8 +161,9 @@ export declare class WasmCompiler {
   applyBuildInfo(name: string, buildInfo: BuildInfoArtifact, only?: string[]): boolean
   buildInfoSchemaVersion(): number
   configFingerprint(): string
-  // Flat design-system manifest primitives (the `DesignSystem` namespace is
-  // built over these in `web.ts`, mirroring the native binding).
+  // Raw design-system binding methods. `web.ts` adapts these into the smaller
+  // `DesignSystemBinding` contract used by the public namespace.
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
+  resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }

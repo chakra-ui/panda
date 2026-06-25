@@ -36,9 +36,9 @@ const fallbackBuildInfo = new BuildInfo({
  *  (`schemaVersion` is `-1`). */
 const fallbackDesignSystem = new DesignSystem(
   {
-    createDesignSystemManifest: (input: DesignSystemManifestInput) => ({ ...input, schemaVersion: -1 }),
-    designSystemManifestSchemaVersion: () => -1,
-    resolveDesignSystemChain: () => ({ status: 'ordered', order: [] }),
+    createManifest: (input) => ({ ...input, schemaVersion: -1 }),
+    manifestSchemaVersion: () => -1,
+    resolveChain: () => ({ status: 'ordered', order: [] }),
   },
   fallbackBuildInfo,
 )

@@ -11,13 +11,13 @@ import type {
 } from './types'
 
 /**
- * The flat manifest primitives every binding (native / wasm) exposes; the
- * `compiler.designSystem` namespace is built over these.
+ * Minimal primitives `DesignSystem` needs; native and wasm adapters can map
+ * their flat binding names into this smaller shape.
  */
-export interface DesignSystemNative {
-  createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
-  designSystemManifestSchemaVersion(): number
-  resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
+export interface DesignSystemBinding {
+  createManifest(input: DesignSystemManifestInput): DesignSystemManifest
+  manifestSchemaVersion(): number
+  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
 /**
@@ -30,18 +30,18 @@ const major = (value: string): number => {
 }
 
 export class DesignSystem {
-  readonly #native: DesignSystemNative
+  readonly #binding: DesignSystemBinding
   readonly #buildInfo: BuildInfo
   readonly schemaVersion: number
 
-  constructor(native: DesignSystemNative, buildInfo: BuildInfo) {
-    this.#native = native
+  constructor(binding: DesignSystemBinding, buildInfo: BuildInfo) {
+    this.#binding = binding
     this.#buildInfo = buildInfo
-    this.schemaVersion = native.designSystemManifestSchemaVersion()
+    this.schemaVersion = binding.manifestSchemaVersion()
   }
 
   create(input: DesignSystemManifestInput): DesignSystemManifest {
-    return this.#native.createDesignSystemManifest(input)
+    return this.#binding.createManifest(input)
   }
 
   validate(manifest: DesignSystemManifest, options?: DesignSystemValidateOptions): DesignSystemManifestCompatibility {
@@ -70,7 +70,7 @@ export class DesignSystem {
   }
 
   resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainResult {
-    const plan = this.#native.resolveDesignSystemChain(manifests)
+    const plan = this.#binding.resolveChain(manifests)
     return plan.status === 'ordered'
       ? { ok: true, order: plan.order }
       : { ok: false, reason: 'cycle', cycle: plan.cycle }
