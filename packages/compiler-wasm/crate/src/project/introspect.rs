@@ -55,6 +55,30 @@ impl WasmCompiler {
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Tokens that carry a hardcoded value, ranked (safe equivalents first).
+    ///
+    /// # Errors
+    /// Returns a JS error if serialization fails.
+    #[wasm_bindgen(js_name = suggestTokens)]
+    pub fn suggest_tokens(&self, prop: &str, value: &str) -> Result<JsValue, JsValue> {
+        let suggestions: Vec<serde_json::Value> = self
+            .inner
+            .suggest_tokens(prop, value)
+            .into_iter()
+            .map(|suggestion| {
+                serde_json::json!({
+                    "token": suggestion.token,
+                    "semantic": suggestion.semantic,
+                    "conditional": suggestion.conditional,
+                })
+            })
+            .collect();
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        suggestions
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Source globs + their static base dirs (for the host watcher).
     ///
     /// # Errors

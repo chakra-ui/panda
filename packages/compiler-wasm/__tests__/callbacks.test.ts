@@ -636,6 +636,7 @@ describeIfBuilt('@pandacss/compiler-wasm callbacks', () => {
           jsx: ['@panda/jsx'],
           tokens: ['@panda/tokens'],
         },
+        jsxFramework: 'react',
         conditions: {
           hover: '&:hover',
         },

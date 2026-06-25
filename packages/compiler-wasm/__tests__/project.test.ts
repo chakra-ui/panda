@@ -78,6 +78,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
         "types/system.d.ts",
         "types/pattern.d.ts",
         "types/recipe.d.ts",
+        "types/jsx.d.ts",
         "types/index.d.ts",
       ]
     `)
@@ -94,6 +95,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
         jsx: ['@panda/jsx'],
         tokens: ['@panda/tokens'],
       },
+      jsxFramework: 'react',
       patterns: {
         stack: {
           properties: {
@@ -258,6 +260,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
         jsx: ['@panda/jsx'],
         tokens: ['@panda/tokens'],
       },
+      jsxFramework: 'react',
       theme: {
         recipes: {
           button: {

@@ -40,6 +40,7 @@ import type {
   SourceEntry,
   Spec,
   StaticPatternResult,
+  TokenSuggestion,
   GenerateArtifactOptions,
   WriteArtifactsOptions,
   WriteCssOptions,
@@ -128,6 +129,7 @@ export declare class WasmCompiler {
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): FileInspectionResult
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
+  suggestTokens(prop: string, value: string): TokenSuggestion[]
   writeArtifacts(options: WriteArtifactsOptions): string[]
   writeCss(options: WriteCssOptions): WriteCssResult
   writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult

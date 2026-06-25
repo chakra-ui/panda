@@ -22,6 +22,7 @@ export const baseConfig = {
     jsx: ['@panda/jsx'],
     tokens: ['@panda/tokens'],
   },
+  jsxFramework: 'react',
   jsxFactory: 'styled',
 }
 
