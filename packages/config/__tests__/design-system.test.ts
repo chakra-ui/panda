@@ -60,10 +60,10 @@ describe('resolveAuthoredPresets / designSystem', () => {
       },
       'styled-system',
     ])
-    expect(metadata?.designSystem?.name).toBe('@acme/ds')
-    expect(metadata?.designSystem?.manifest.name).toBe('@acme/ds')
-    expect(metadata?.designSystem?.buildInfoPath).toMatch(/panda\.buildinfo\.json$/)
-    expect(metadata?.designSystem?.files).toEqual(['./dist/**/*.mjs'])
+    expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/ds'])
+    expect(metadata?.designSystem?.[0]?.manifest.name).toBe('@acme/ds')
+    expect(metadata?.designSystem?.[0]?.buildInfoPath).toMatch(/panda\.buildinfo\.json$/)
+    expect(metadata?.designSystem?.[0]?.files).toEqual(['./dist/**/*.mjs'])
   })
 
   test('respects a custom outdir basename in the wired importMap', async () => {
@@ -111,7 +111,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
     writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
 
     const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/future' } as any, cwd)
-    expect(metadata?.designSystem?.buildInfoPath).toMatch(/b\.json$/)
+    expect(metadata?.designSystem?.[0]?.buildInfoPath).toMatch(/b\.json$/)
   })
 
   test('rejects a manifest missing a buildInfo entry', async () => {
@@ -128,30 +128,126 @@ describe('resolveAuthoredPresets / designSystem', () => {
     )
   })
 
-  test('rejects parent design systems in the single-level loader', async () => {
-    const pkg = join(cwd, 'node_modules', '@acme', 'child')
-    mkdirSync(pkg, { recursive: true })
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/child' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
-        schemaVersion: 1,
-        name: '@acme/child',
-        panda: '^2.0.0',
-        preset: './p.mjs',
-        buildInfo: './b.json',
-        designSystem: '@acme/base',
-      }),
-    )
-    writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/child' } as any, cwd)).rejects.toThrow(
-      /nested design systems are not supported yet/,
-    )
-  })
-
   test('errors with guidance when the package does not resolve', async () => {
     await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' } as any, cwd)).rejects.toThrow(
       /designSystem "@acme\/missing" could not be resolved/,
     )
+  })
+})
+
+describe('resolveAuthoredPresets / designSystem nested chains', () => {
+  let cwd: string
+
+  const writeManifest = (dir: string, manifest: Record<string, unknown>, preset: string) => {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: manifest.name }))
+    writeFileSync(join(dir, 'panda.lib.json'), JSON.stringify({ schemaVersion: 1, panda: '^2.0.0', ...manifest }))
+    writeFileSync(join(dir, 'preset.mjs'), preset)
+  }
+
+  beforeAll(() => {
+    cwd = mkdtempSync(join(tmpdir(), 'panda-ds-chain-'))
+    const mods = join(cwd, 'node_modules')
+
+    writeManifest(
+      join(mods, '@acme', 'marketing'),
+      {
+        name: '@acme/marketing',
+        preset: './preset.mjs',
+        buildInfo: './bi.json',
+        designSystem: '@acme/foundations',
+        importMap: { css: '@acme/marketing/css' },
+      },
+      `export default { name: '@acme/marketing', theme: { tokens: { colors: { brand: { value: 'mk' }, mkOnly: { value: 'mk' } } } } }`,
+    )
+    writeManifest(
+      join(mods, '@acme', 'marketing', 'node_modules', '@acme', 'foundations'),
+      { name: '@acme/foundations', preset: './preset.mjs', buildInfo: './bi.json' },
+      `export default { name: '@acme/foundations', theme: { tokens: { colors: { brand: { value: 'fd' }, fdOnly: { value: 'fd' } } } } }`,
+    )
+
+    writeManifest(
+      join(mods, '@acme', 'loop-a'),
+      { name: '@acme/loop-a', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/loop-b' },
+      `export default { name: '@acme/loop-a' }`,
+    )
+    writeManifest(
+      join(mods, '@acme', 'loop-b'),
+      { name: '@acme/loop-b', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/loop-a' },
+      `export default { name: '@acme/loop-b' }`,
+    )
+
+    writeManifest(
+      join(mods, '@acme', 'orphan'),
+      { name: '@acme/orphan', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/ghost' },
+      `export default { name: '@acme/orphan' }`,
+    )
+
+    writeManifest(
+      join(mods, '@acme', 'skinned'),
+      { name: '@acme/skinned', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/raw' },
+      `export default { name: '@acme/skinned', theme: { tokens: { colors: { brand: { value: 'skin' }, skinOnly: { value: 'skin' } } } } }`,
+    )
+    writeManifest(
+      join(mods, '@acme', 'raw'),
+      { name: '@acme/raw-identity', preset: './preset.mjs', buildInfo: './bi.json' },
+      `export default { name: '@acme/raw-identity', theme: { tokens: { colors: { brand: { value: 'raw' }, rawOnly: { value: 'raw' } } } } }`,
+    )
+  })
+
+  afterAll(() => rmSync(cwd, { recursive: true, force: true }))
+
+  test('merges ancestors root-first so the leaf and the app override the root', async () => {
+    const { config } = await resolveAuthoredPresets(
+      { designSystem: '@acme/marketing', theme: { tokens: { colors: { brand: { value: 'app' } } } } } as any,
+      cwd,
+    )
+    const colors = config.theme?.tokens?.colors
+    if (!colors) throw new Error('expected resolved color tokens')
+    expect(colors.brand.value).toBe('app')
+    expect(colors.mkOnly.value).toBe('mk')
+    expect(colors.fdOnly.value).toBe('fd')
+  })
+
+  test('records the resolved chain root-first in metadata', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' } as any, cwd)
+    expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/foundations', '@acme/marketing'])
+  })
+
+  test('wires one importMap root per design system, root-first, then the local outdir', async () => {
+    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' } as any, cwd)
+    expect(config.importMap).toEqual([
+      '@acme/foundations',
+      {
+        css: '@acme/marketing/css',
+        recipes: '@acme/marketing/recipes',
+        patterns: '@acme/marketing/patterns',
+        jsx: '@acme/marketing/jsx',
+        tokens: '@acme/marketing/tokens',
+      },
+      'styled-system',
+    ])
+  })
+
+  test('reports a cycle in the parent chain', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' } as any, cwd)).rejects.toThrow(
+      /Design-system cycle: @acme\/loop-a → @acme\/loop-b → @acme\/loop-a/,
+    )
+  })
+
+  test('reports a parent that is not installed alongside its declaring library', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' } as any, cwd)).rejects.toThrow(
+      /designSystem "@acme\/orphan" extends "@acme\/ghost"/,
+    )
+  })
+
+  test('links the chain by specifier, so a parent whose manifest name differs still merges as the root', async () => {
+    const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/skinned' } as any, cwd)
+    const colors = config.theme?.tokens?.colors
+    if (!colors) throw new Error('expected resolved color tokens')
+    expect(colors.brand.value).toBe('skin')
+    expect(colors.rawOnly.value).toBe('raw')
+    expect(colors.skinOnly.value).toBe('skin')
+    expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/raw-identity', '@acme/skinned'])
   })
 })

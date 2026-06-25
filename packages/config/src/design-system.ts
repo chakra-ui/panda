@@ -21,24 +21,69 @@ export interface ResolvedDesignSystem {
   importMap?: DesignSystemManifest['importMap']
 }
 
-export async function loadDesignSystemPreset(
+export interface DesignSystemLevel {
+  preset: ExtendableConfig
+  info: ResolvedDesignSystem
+}
+
+export async function loadDesignSystemChain(
   spec: string,
   cwd: string,
   deps: Set<string>,
-): Promise<{ preset: ExtendableConfig; info: ResolvedDesignSystem }> {
-  const require = createRequire(resolve(cwd, 'noop.js'))
+): Promise<DesignSystemLevel[]> {
+  const levels: DesignSystemLevel[] = []
+  const seenAt = new Map<string, number>()
 
-  let manifestPath: string
-  try {
-    manifestPath = require.resolve(`${spec}/panda.lib.json`, { paths: [cwd] })
-  } catch {
-    throw new PandaError(
-      'CONFIG_ERROR',
-      `💥 designSystem ${JSON.stringify(spec)} could not be resolved. Install it, or — if it isn't a Panda design system — build it with \`panda lib\`.`,
-    )
+  let currentSpec = spec
+  let fromDir = cwd
+  let declaredBy: string | undefined
+
+  for (;;) {
+    const manifestPath = resolveManifestPath(currentSpec, fromDir)
+    if (manifestPath === undefined) {
+      throw declaredBy === undefined ? notResolvedError(currentSpec) : parentNotResolvedError(declaredBy, currentSpec)
+    }
+    const seen = seenAt.get(manifestPath)
+    if (seen !== undefined) {
+      throw cycleError([...levels.slice(seen).map((level) => level.info.name), levels[seen].info.name])
+    }
+    seenAt.set(manifestPath, levels.length)
+    deps.add(manifestPath)
+
+    const { level, parent } = await loadManifestLevel(currentSpec, manifestPath, deps)
+    levels.push(level)
+
+    if (parent === undefined) break
+    declaredBy = level.info.name
+    fromDir = dirname(manifestPath)
+    currentSpec = parent
   }
-  deps.add(manifestPath)
 
+  return levels.reverse()
+}
+
+export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDesignSystem[]): UserConfig {
+  const existing: ImportMapOption[] =
+    config.importMap === undefined ? [] : Array.isArray(config.importMap) ? config.importMap : [config.importMap]
+  const roots: ImportMapOption[] = infos.map((info) =>
+    info.importMap ? designSystemImportMap(info.importMap, info.name) : info.name,
+  )
+  return { ...config, importMap: [...roots, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
+}
+
+function resolveManifestPath(spec: string, fromDir: string): string | undefined {
+  try {
+    return createRequire(resolve(fromDir, 'noop.js')).resolve(`${spec}/panda.lib.json`, { paths: [fromDir] })
+  } catch {
+    return undefined
+  }
+}
+
+async function loadManifestLevel(
+  spec: string,
+  manifestPath: string,
+  deps: Set<string>,
+): Promise<{ level: DesignSystemLevel; parent: string | undefined }> {
   let manifest: DesignSystemManifest
   try {
     manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as DesignSystemManifest
@@ -50,12 +95,6 @@ export async function loadDesignSystemPreset(
   }
   if (typeof manifest.buildInfo !== 'string') {
     throw new PandaError('CONFIG_ERROR', `💥 ${JSON.stringify(spec)} manifest is missing a "buildInfo" entry.`)
-  }
-  if (typeof manifest.designSystem === 'string' && manifest.designSystem.length > 0) {
-    throw new PandaError(
-      'CONFIG_ERROR',
-      `💥 designSystem ${JSON.stringify(spec)} extends ${JSON.stringify(manifest.designSystem)}, but nested design systems are not supported yet.`,
-    )
   }
 
   const presetPath = resolve(dirname(manifestPath), manifest.preset)
@@ -75,24 +114,23 @@ export async function loadDesignSystemPreset(
     )
   }
 
+  const parent =
+    typeof manifest.designSystem === 'string' && manifest.designSystem.length > 0 ? manifest.designSystem : undefined
+
   return {
-    preset,
-    info: {
-      name: manifest.name ?? spec,
-      manifest,
-      manifestPath,
-      buildInfoPath,
-      files: manifest.files ?? [],
-      ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
+    parent,
+    level: {
+      preset,
+      info: {
+        name: manifest.name ?? spec,
+        manifest,
+        manifestPath,
+        buildInfoPath,
+        files: manifest.files ?? [],
+        ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
+      },
     },
   }
-}
-
-export function withDesignSystemImportMap(config: UserConfig, spec: string, info: ResolvedDesignSystem): UserConfig {
-  const existing: ImportMapOption[] =
-    config.importMap === undefined ? [] : Array.isArray(config.importMap) ? config.importMap : [config.importMap]
-  const dsRoot: ImportMapOption = info.importMap ? designSystemImportMap(info.importMap, spec) : spec
-  return { ...config, importMap: [dsRoot, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
 }
 
 function designSystemImportMap(map: NonNullable<DesignSystemManifest['importMap']>, spec: string): ImportMapInput {
@@ -103,4 +141,25 @@ function designSystemImportMap(map: NonNullable<DesignSystemManifest['importMap'
     jsx: map.jsx ?? `${spec}/jsx`,
     tokens: map.tokens ?? `${spec}/tokens`,
   }
+}
+
+function notResolvedError(spec: string): PandaError {
+  return new PandaError(
+    'CONFIG_ERROR',
+    `💥 designSystem ${JSON.stringify(spec)} could not be resolved. Install it, or — if it isn't a Panda design system — build it with \`panda lib\`.`,
+  )
+}
+
+function parentNotResolvedError(child: string, parent: string): PandaError {
+  return new PandaError(
+    'CONFIG_ERROR',
+    `💥 designSystem ${JSON.stringify(child)} extends ${JSON.stringify(parent)}, which isn't installed alongside it. Install it where ${JSON.stringify(child)} can resolve it, or rebuild that library with \`panda lib\`.`,
+  )
+}
+
+function cycleError(cycle: string[]): PandaError {
+  return new PandaError(
+    'CONFIG_ERROR',
+    `💥 Design-system cycle: ${cycle.join(' → ')}. A design system can't depend on itself.`,
+  )
 }

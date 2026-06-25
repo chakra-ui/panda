@@ -26,6 +26,6 @@ export interface LoadConfigResult {
   dependencies: string[]
   metadata?: {
     sources?: ConfigSources
-    designSystem?: ResolvedDesignSystem
+    designSystem?: ResolvedDesignSystem[]
   }
 }

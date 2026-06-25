@@ -387,9 +387,14 @@ them**.
    components are never re-extracted. Diagnostics: not-found, version-mismatch, peer-range. Manifest/preset/build-info
    registered as build deps. _Deferred to later phases:_ build-info tree-shaking to app imports (optimization) and the
    stale-build-info `files` re-extract fallback (Phase 5).
-3. **Nested chains.** `resolveChain` over manifest values: ordered plan, resolve-against-manifest-dir, cycle guard. Host
-   reads the parent chain and feeds values in. Diagnostics: cycle, parent-not-found. Tested as in-memory arrays (depth-N,
-   diamond, cycle).
+3. **Nested chains. ✅ Complete.** A manifest's own `designSystem` field links to its parent. The host
+   (`packages/config` `loadDesignSystemChain`) walks that chain, resolving each parent against the **previous manifest's
+   directory** (not the consumer cwd, so transitive parents work in workspaces and Docker layers), guards cycles with a
+   visited set, and merges presets root → leaf (ancestors lowest, leaf and app override). The node driver
+   (`packages/compiler` `hydrateDesignSystem`) hydrates each level under its own name. Diagnostics: cycle,
+   parent-not-found. The engine `resolveChain` primitive (root-first order, diamond dedup, cycle path) lands with single
+   level and is tested as in-memory arrays (depth-N, diamond, cycle); the host walk is tested end-to-end (depth-2 merge
+   order, dual importMap roots, resolve-against-manifest-dir, cycle, parent-not-found).
 4. **Smart `include`.** Bare specifiers resolve via Node resolution: manifest present → redirect; no manifest → auto-glob +
    extract. Diagnostic: in-include (batched).
 5. **`panda lib` + propagation.** The command (+ `--watch`): glob `src/` → `create` → write manifest/buildinfo/preset → sync
