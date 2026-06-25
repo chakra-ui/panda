@@ -360,11 +360,60 @@ Kept and published on the beta: `@pandacss/dev`, `@pandacss/cli`, `@pandacss/com
 `@pandacss/postcss` v2 runs on the new compiler driver and is experimental during the beta. If it gives you trouble, the
 Vite plugin or the CLI build is the steadier path right now.
 
-### Engine hooks removed
+### Hooks moved to plugins
 
-v1 hooks (`cssgen:done`, `context:created`, `parser:after`, `config:change`, and others) don't run in v2. Use
-`optimize.removeUnusedTokens` / `removeUnusedKeyframes` for unused theme CSS cleanup, or a PostCSS step after Panda for
-custom transforms.
+Hooks are not gone in v2. What changed is where hooks live and which v1 hooks still exist.
+
+In v2, hooks live under named plugins, not a root `hooks` object:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  plugins: [
+    {
+      name: 'local',
+      hooks: {
+        'parser:before': {
+          filter: { id: '**/*.{jsx,tsx}' },
+          handler: ({ content }) => content,
+        },
+      },
+    },
+  ],
+})
+```
+
+Supported v2 beta hooks:
+
+- `config:resolved`
+- `preset:resolved`
+- `parser:before`
+- `codegen:prepare`
+- `codegen:done`
+
+Removed v1 hooks:
+
+- `cssgen:done`
+- `context:created`
+- `parser:after`
+- `config:change`
+- `tokens:created`
+- `utility:created`
+- similar v1 engine hooks
+
+If you used `cssgen:done` to strip unused token variables or keyframes from the final CSS, use
+`optimize.removeUnusedTokens` / `removeUnusedKeyframes` instead. For other final CSS transforms, run a PostCSS step
+after Panda.
+
+`parser:before` still runs after Panda reads a file and before it parses the source. Use it for source transforms in
+mixed codebases.
+
+The v1 `parser:before.configure(...)` API for changing JSX extraction rules is removed. v2 `parser:before` receives file
+content and returns transformed content.
+
+If your v1 `parser:before` used `configure({ matchTag, matchTagProp })` to avoid Chakra v2 / Panda JSX name collisions,
+that `configure` API is the removed part. Do not expect the old callback to run unchanged.
 
 ### `createStyleContext` is now two helpers
 
