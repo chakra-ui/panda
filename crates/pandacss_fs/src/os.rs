@@ -8,7 +8,7 @@ use oxc_resolver::{FileMetadata, FileSystem as OxcResolverFileSystem, FileSystem
 use walkdir::WalkDir;
 
 use crate::FileSystem;
-use crate::glob::{GlobOptions, normalize_pattern};
+use crate::glob::{GlobOptions, effective_excludes, normalize_pattern};
 
 /// Native filesystem impl. Read primitives delegate to `oxc_resolver::FileSystemOs`;
 /// write primitives call `std::fs` directly; `glob` overrides the default walker to
@@ -65,12 +65,7 @@ impl FileSystem for OsFileSystem {
             return Ok(Vec::new());
         }
 
-        let default_excludes = ["**/*.d.ts".to_owned()];
-        let excludes: &[String] = if opts.exclude.is_empty() {
-            &default_excludes
-        } else {
-            &opts.exclude
-        };
+        let excludes = effective_excludes(opts);
 
         let mut results: Vec<PathBuf> = Vec::new();
 

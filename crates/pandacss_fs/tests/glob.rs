@@ -737,7 +737,6 @@ mod walker {
     #[test]
     fn caller_exclude_replaces_default() {
         let fs = MemoryFileSystem::from_entries([("/proj/types.d.ts", ""), ("/proj/main.ts", "")]);
-        // Non-empty exclude — default is NOT injected.
         let results = glob_filtered(&fs, "/proj", &["**/*.ts"], &["**/main.ts"]);
         assert_eq!(results, vec![PathBuf::from("/proj/types.d.ts")]);
     }

@@ -77,7 +77,7 @@ impl WasmCompiler {
     pub fn is_source_file(&self, path: &str) -> bool {
         let opts = GlobOptions {
             include: self.user_config.include.clone(),
-            exclude: self.user_config.exclude.clone(),
+            exclude: self.user_config.scan_exclude(),
             cwd: PathBuf::from(&self.user_config.cwd),
             absolute: true,
         };
