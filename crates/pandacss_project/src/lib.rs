@@ -56,7 +56,7 @@ use pandacss_extractor::{
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::diagnostic_codes;
-use pandacss_utility::{StyleNormalizer, Utility};
+use pandacss_utility::{ShorthandPolicy, StyleNormalizer, Utility};
 
 /// Key into the utility-transform override map: `(prop, original_value)`. The
 /// style object is a pure function of this key (conditions ride on the carrier
@@ -467,7 +467,11 @@ impl Project {
                         let pattern = compiled.patterns.transform_input(&call.name, arg);
                         match transform(pattern.name, pattern.styles.as_ref()) {
                             Ok(Some(style)) => {
-                                self.process_style_props(&mut encoder, &style);
+                                self.process_style_props(
+                                    &mut encoder,
+                                    &style,
+                                    ShorthandPolicy::Internal,
+                                );
                             }
                             Ok(None) => {}
                             Err(diagnostic) => report.diagnostics.push(with_callback_target(
@@ -511,7 +515,11 @@ impl Project {
                             .recipes
                             .style_props_for_recipes(&[recipe_name], default_props)
                         {
-                            self.process_style_props(&mut encoder, &style_props);
+                            self.process_style_props(
+                                &mut encoder,
+                                &style_props,
+                                ShorthandPolicy::Internal,
+                            );
                         }
                         encoded_recipes.process_usage(
                             &compiled.recipes,
@@ -530,7 +538,11 @@ impl Project {
                     };
                     match style {
                         JsxFactoryStaticStyle::Style(style) => {
-                            self.process_style_props(&mut encoder, style);
+                            self.process_style_props(
+                                &mut encoder,
+                                style,
+                                ShorthandPolicy::UserFacing,
+                            );
                         }
                         JsxFactoryStaticStyle::Recipe(config) => {
                             let Some(recipe) = Recipe::from_literal(config) else {
@@ -570,7 +582,7 @@ impl Project {
                     .recipes
                     .style_props_for_recipes(&recipe_names, &jsx.data)
                 {
-                    self.process_style_props(&mut encoder, &style_props);
+                    self.process_style_props(&mut encoder, &style_props, ShorthandPolicy::Internal);
                 }
                 for recipe_name in &recipe_names {
                     encoded_recipes.process_usage(
@@ -585,22 +597,23 @@ impl Project {
                 continue;
             }
 
-            let style = if let Some(transform) = pattern_transform.as_deref_mut() {
-                let pattern = compiled.patterns.transform_input(&jsx.name, &jsx.data);
-                match transform(pattern.name, pattern.styles.as_ref()) {
-                    Ok(Some(style)) => style,
-                    Ok(None) => jsx.data,
-                    Err(diagnostic) => {
-                        report
-                            .diagnostics
-                            .push(with_callback_target(diagnostic, "pattern", &jsx.name, None));
-                        jsx.data
+            let (style, shorthand_policy) =
+                if let Some(transform) = pattern_transform.as_deref_mut() {
+                    let pattern = compiled.patterns.transform_input(&jsx.name, &jsx.data);
+                    match transform(pattern.name, pattern.styles.as_ref()) {
+                        Ok(Some(style)) => (style, ShorthandPolicy::Internal),
+                        Ok(None) => (jsx.data.clone(), ShorthandPolicy::UserFacing),
+                        Err(diagnostic) => {
+                            report
+                                .diagnostics
+                                .push(with_callback_target(diagnostic, "pattern", &jsx.name, None));
+                            (jsx.data.clone(), ShorthandPolicy::UserFacing)
+                        }
                     }
-                }
-            } else {
-                jsx.data
-            };
-            self.process_style_props(&mut encoder, &style);
+                } else {
+                    (jsx.data.clone(), ShorthandPolicy::UserFacing)
+                };
+            self.process_style_props(&mut encoder, &style, shorthand_policy);
             report.jsx_usages += 1;
         }
 
@@ -875,13 +888,18 @@ impl Project {
         before != self.inline_recipes.len() + self.inline_slot_recipes.len()
     }
 
-    fn process_atomic(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+    fn process_atomic(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        style: &Literal,
+        policy: ShorthandPolicy,
+    ) {
         let _span = tracing::trace_span!("encoding_atomic").entered();
-        let normalizer = StyleNormalizer {
-            utility: self.config.utility.as_ref(),
-            breakpoints: &self.config.breakpoints,
-            shorthand: true,
-        };
+        let normalizer = StyleNormalizer::new(
+            self.config.utility.as_ref(),
+            &self.config.breakpoints,
+            policy,
+        );
         encoder.process_atomic_with(style, &normalizer);
     }
 
@@ -900,28 +918,33 @@ impl Project {
                     }
                 }
             }
-            _ => self.process_atomic(encoder, arg),
+            _ => self.process_atomic(encoder, arg, ShorthandPolicy::UserFacing),
         }
     }
 
-    fn process_style_props(&self, encoder: &mut Encoder<ProjectConditionMatcher>, style: &Literal) {
+    fn process_style_props(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        style: &Literal,
+        policy: ShorthandPolicy,
+    ) {
         let _span = tracing::trace_span!("encoding_style_props").entered();
         let Literal::Object(entries) = style else {
-            self.process_atomic(encoder, style);
+            self.process_atomic(encoder, style, policy);
             return;
         };
 
         let mut rest = Vec::with_capacity(entries.len());
         for (key, value) in entries {
             if is_css_prop(key) {
-                self.process_nested_css_prop(encoder, value);
+                self.process_nested_css_prop(encoder, value, policy);
             } else {
                 rest.push((key.clone(), value.clone()));
             }
         }
 
         if !rest.is_empty() {
-            self.process_atomic(encoder, &Literal::Object(rest));
+            self.process_atomic(encoder, &Literal::Object(rest), policy);
         }
     }
 
@@ -929,17 +952,18 @@ impl Project {
         &self,
         encoder: &mut Encoder<ProjectConditionMatcher>,
         value: &Literal,
+        policy: ShorthandPolicy,
     ) {
         match value {
             Literal::Array(items) => {
                 for item in items {
                     if !matches!(item, Literal::Null) {
-                        self.process_atomic(encoder, item);
+                        self.process_atomic(encoder, item, policy);
                     }
                 }
             }
             Literal::Null | Literal::Bool(false) => {}
-            _ => self.process_atomic(encoder, value),
+            _ => self.process_atomic(encoder, value, policy),
         }
     }
 

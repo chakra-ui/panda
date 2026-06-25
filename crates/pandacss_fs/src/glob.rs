@@ -5,6 +5,14 @@ use fast_glob::glob_match;
 
 use crate::FileSystem;
 
+#[must_use]
+pub fn effective_excludes(opts: &GlobOptions) -> Vec<String> {
+    if opts.exclude.is_empty() {
+        return vec!["**/*.d.ts".to_owned()];
+    }
+    opts.exclude.clone()
+}
+
 /// Strip a leading `./` so `./src/**` matches the cwd-relative `src/App.tsx`, like
 /// fast-glob/tinyglobby do on the JS side. `../x` (outside cwd) passes through.
 pub(crate) fn normalize_pattern(pattern: &str) -> &str {
@@ -17,7 +25,7 @@ pub(crate) fn normalize_pattern(pattern: &str) -> &str {
 pub struct GlobOptions {
     /// Glob patterns to match. Empty list returns an empty result (matches JS).
     pub include: Vec<String>,
-    /// Glob patterns to skip. When empty, defaults to `["**/*.d.ts"]` (matches JS).
+    /// Glob patterns to skip.
     pub exclude: Vec<String>,
     /// Base directory. Patterns and results are resolved relative to this.
     pub cwd: PathBuf,
@@ -51,12 +59,7 @@ pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
     let rel_str = rel.to_string_lossy();
     let rel_bytes = rel_str.as_bytes();
 
-    let default_excludes = ["**/*.d.ts".to_owned()];
-    let excludes: &[String] = if opts.exclude.is_empty() {
-        &default_excludes
-    } else {
-        &opts.exclude
-    };
+    let excludes = effective_excludes(opts);
     if excludes
         .iter()
         .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
@@ -120,13 +123,7 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
         return Ok(Vec::new());
     }
 
-    // JS auto-injects ["**/*.d.ts"] when exclude is empty.
-    let default_excludes = ["**/*.d.ts".to_owned()];
-    let excludes: &[String] = if opts.exclude.is_empty() {
-        &default_excludes
-    } else {
-        &opts.exclude
-    };
+    let excludes = effective_excludes(opts);
 
     let mut results: Vec<PathBuf> = Vec::new();
     let mut stack: Vec<PathBuf> = walk_roots(opts);
@@ -159,8 +156,6 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
             {
                 continue;
             }
-
-            // Recurse into directories; collect files matching any include.
             let meta = fs.metadata(&entry)?;
             if meta.is_dir() {
                 stack.push(entry);

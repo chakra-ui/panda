@@ -1952,11 +1952,7 @@ impl<'a> EmitContext<'a> {
     /// by calling `utility.transform` for every leaf. This is the Rust equivalent
     /// of the hashing half for grouped style objects.
     fn style_object_entries(&self, styles: &Literal) -> Vec<RecipeStyleEntry> {
-        let normalizer = StyleNormalizer {
-            utility: Some(self.utility),
-            breakpoints: &self.breakpoints,
-            shorthand: true,
-        };
+        let normalizer = StyleNormalizer::internal(Some(self.utility), &self.breakpoints);
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
         encoder.process_atomic_with(styles, &normalizer);
         encoder

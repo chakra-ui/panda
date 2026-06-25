@@ -7,15 +7,60 @@ use pandacss_extractor::Literal;
 
 use crate::Utility;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ShorthandPolicy {
+    #[default]
+    UserFacing,
+    Internal,
+}
+
 pub struct StyleNormalizer<'a> {
     pub utility: Option<&'a Utility>,
     pub breakpoints: &'a [String],
-    pub shorthand: bool,
+    pub policy: ShorthandPolicy,
 }
 
-impl StyleNormalizer<'_> {
+impl<'a> StyleNormalizer<'a> {
     #[must_use]
-    pub fn normalize<'a>(&self, style: &'a Literal) -> Cow<'a, Literal> {
+    pub fn new(
+        utility: Option<&'a Utility>,
+        breakpoints: &'a [String],
+        policy: ShorthandPolicy,
+    ) -> Self {
+        Self {
+            utility,
+            breakpoints,
+            policy,
+        }
+    }
+
+    #[must_use]
+    pub fn user_facing(utility: Option<&'a Utility>, breakpoints: &'a [String]) -> Self {
+        Self::new(utility, breakpoints, ShorthandPolicy::UserFacing)
+    }
+
+    #[must_use]
+    pub fn internal(utility: Option<&'a Utility>, breakpoints: &'a [String]) -> Self {
+        Self::new(utility, breakpoints, ShorthandPolicy::Internal)
+    }
+
+    fn resolves_shorthands(&self) -> bool {
+        match self.policy {
+            ShorthandPolicy::Internal => true,
+            ShorthandPolicy::UserFacing => self.utility.is_some_and(Utility::shorthands_enabled),
+        }
+    }
+
+    fn canonical_key<'b>(&'b self, key: &'b str) -> &'b str {
+        if !self.resolves_shorthands() {
+            return key;
+        }
+        self.utility
+            .map_or(key, |utility| utility.canonical_property(key))
+    }
+
+    #[must_use]
+    pub fn normalize<'b>(&self, style: &'b Literal) -> Cow<'b, Literal> {
         if self.utility.is_none() && self.breakpoints.is_empty() {
             return Cow::Borrowed(style);
         }
@@ -28,13 +73,7 @@ impl StyleNormalizer<'_> {
                 let mut out = Vec::with_capacity(entries.len());
 
                 for (key, value) in entries {
-                    let key = if self.shorthand {
-                        self.utility
-                            .map_or(key.as_str(), |utility| utility.resolve_shorthand(key))
-                            .to_owned()
-                    } else {
-                        key.clone()
-                    };
+                    let key = self.canonical_key(key).to_owned();
 
                     let value = match value {
                         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
@@ -105,12 +144,7 @@ impl StyleNormalizer<'_> {
 /// `Cow<Literal>` allocation when nothing actually changes.
 impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
     fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
-        if self.shorthand {
-            self.utility
-                .map_or(key, |utility| utility.resolve_shorthand(key))
-        } else {
-            key
-        }
+        self.canonical_key(key)
     }
 
     fn normalize_leaf<'a>(&self, _: &str, value: &'a Literal) -> Cow<'a, Literal> {

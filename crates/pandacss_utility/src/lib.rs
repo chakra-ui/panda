@@ -23,7 +23,7 @@ mod normalize;
 mod token_ref;
 mod type_data;
 
-pub use normalize::StyleNormalizer;
+pub use normalize::{ShorthandPolicy, StyleNormalizer};
 pub use token_ref::{expand_token_references_to_values, expand_token_references_to_vars};
 
 use token_ref::is_plain_token_path_like;
@@ -38,6 +38,7 @@ pub struct Utility {
     tokens: Option<Arc<TokenDictionary>>,
     fallback_transform: bool,
     hash_class_names: bool,
+    shorthands_enabled: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -116,6 +117,7 @@ impl Utility {
             tokens: options.tokens,
             fallback_transform: !entries.is_empty(),
             hash_class_names: options.hash_class_names,
+            shorthands_enabled: options.shorthands,
             ..Self::default()
         };
 
@@ -124,9 +126,7 @@ impl Utility {
                 utility.deprecated.insert(property.clone());
             }
 
-            if options.shorthands {
-                utility.collect_shorthands(property, config.shorthand.as_ref());
-            }
+            utility.collect_shorthands(property, config.shorthand.as_ref());
 
             utility.properties.insert(
                 property.clone(),
@@ -165,8 +165,14 @@ impl Utility {
     }
 
     #[must_use]
+    pub fn shorthands_enabled(&self) -> bool {
+        self.shorthands_enabled
+    }
+
+    #[must_use]
     pub fn is_known(&self, prop: &str) -> bool {
-        self.properties.contains_key(prop) || self.shorthands.contains_key(prop)
+        self.properties.contains_key(prop)
+            || (self.shorthands_enabled && self.shorthands.contains_key(prop))
     }
 
     #[must_use]
@@ -174,11 +180,13 @@ impl Utility {
         self.fallback_transform || self.is_known(prop)
     }
 
-    pub fn known_prop_names(&self) -> impl Iterator<Item = &str> {
-        self.properties
-            .keys()
-            .map(String::as_str)
-            .chain(self.shorthands.keys().map(String::as_str))
+    pub fn known_prop_names(&self) -> impl Iterator<Item = &str> + '_ {
+        let shorthands = self
+            .shorthands_enabled
+            .then(|| self.shorthands.keys().map(String::as_str))
+            .into_iter()
+            .flatten();
+        self.properties.keys().map(String::as_str).chain(shorthands)
     }
 
     #[must_use]
@@ -225,6 +233,14 @@ impl Utility {
 
     #[must_use]
     pub fn resolve_shorthand<'a>(&'a self, prop: &'a str) -> &'a str {
+        if !self.shorthands_enabled {
+            return prop;
+        }
+        self.canonical_property(prop)
+    }
+
+    #[must_use]
+    pub fn canonical_property<'a>(&'a self, prop: &'a str) -> &'a str {
         self.shorthands
             .get(prop)
             .map_or(prop, std::string::String::as_str)
@@ -452,13 +468,9 @@ impl Utility {
 
     #[must_use]
     pub fn normalize_style_object(&self, style: &Literal) -> Literal {
-        StyleNormalizer {
-            utility: Some(self),
-            breakpoints: &[],
-            shorthand: true,
-        }
-        .normalize(style)
-        .into_owned()
+        StyleNormalizer::internal(Some(self), &[])
+            .normalize(style)
+            .into_owned()
     }
 
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {

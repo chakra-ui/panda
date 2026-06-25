@@ -93,7 +93,7 @@ pub(super) fn glob_options(
             .unwrap_or_else(|| user_config.include.clone()),
         exclude: options
             .and_then(|opts| opts.exclude.clone())
-            .unwrap_or_else(|| user_config.exclude.clone()),
+            .unwrap_or_else(|| user_config.scan_exclude()),
         cwd: std::path::PathBuf::from(
             options
                 .and_then(|opts| opts.cwd.clone())

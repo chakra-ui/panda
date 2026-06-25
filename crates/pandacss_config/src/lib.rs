@@ -209,6 +209,21 @@ impl UserConfig {
         }
     }
 
+    /// `exclude` globs for source scanning, with the configured [`Self::outdir`]
+    /// appended so generated artifacts are not parsed as app source.
+    #[must_use]
+    pub fn scan_exclude(&self) -> Vec<String> {
+        let mut exclude = self.exclude.clone();
+        let outdir = self.outdir();
+        if !exclude_covers_outdir(&exclude, outdir) {
+            exclude.push(format!("{}/**", outdir.trim_end_matches('/')));
+        }
+        if !exclude.iter().any(|pattern| pattern == "**/*.d.ts") {
+            exclude.push("**/*.d.ts".to_owned());
+        }
+        exclude
+    }
+
     #[must_use]
     pub fn jsx_factory(&self) -> &str {
         if self.jsx_factory.is_empty() {
@@ -805,4 +820,21 @@ pub struct CallbackRef {
     pub kind: String,
     #[serde(default)]
     pub id: Option<String>,
+}
+
+fn exclude_covers_outdir(exclude: &[String], outdir: &str) -> bool {
+    let normalized = normalize_scan_path(outdir);
+    exclude.iter().any(|pattern| {
+        let pattern = normalize_scan_path(pattern);
+        pattern == normalized
+            || pattern == format!("{normalized}/**")
+            || pattern == format!("**/{normalized}/**")
+            || (pattern.ends_with("/**") && pattern.trim_end_matches("/**") == normalized)
+    })
+}
+
+fn normalize_scan_path(path: &str) -> String {
+    path.trim_start_matches("./")
+        .trim_end_matches('/')
+        .to_owned()
 }
