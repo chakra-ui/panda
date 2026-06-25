@@ -394,7 +394,11 @@ them**.
    (`packages/compiler` `hydrateDesignSystem`) hydrates each level under its own name. Diagnostics: cycle,
    parent-not-found. The engine `resolveChain` primitive (root-first order, diamond dedup, cycle path) lands with single
    level and is tested as in-memory arrays (depth-N, diamond, cycle); the host walk is tested end-to-end (depth-2 merge
-   order, dual importMap roots, resolve-against-manifest-dir, cycle, parent-not-found).
+   order, dual importMap roots, resolve-against-manifest-dir, cycle, parent-not-found). _Deferred:_ the runtime path does
+   **not** feed manifests through `resolveChain`. With a single `designSystem` parent the reachable chain is a strict line,
+   so the host orders it by reversing the walk and catches cycles by path — `resolveChain`'s topo-sort, diamond dedup, and
+   second cycle pass would all be no-ops on linear input. The runtime wiring earns its place only with [plural
+   parents](#why-singular), where a node gains two parents, the walk becomes a DAG, and diamonds can actually form.
 4. **Smart `include`.** Bare specifiers resolve via Node resolution: manifest present → redirect; no manifest → auto-glob +
    extract. Diagnostic: in-include (batched).
 5. **`panda lib` + propagation.** The command (+ `--watch`): glob `src/` → `create` → write manifest/buildinfo/preset → sync
