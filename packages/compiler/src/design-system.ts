@@ -15,5 +15,10 @@ export function hydrateDesignSystem(compiler: Compiler, ds: ResolvedDesignSystem
     )
     return
   }
-  compiler.buildInfo.hydrate(buildInfo, { name: ds.name })
+  const result = compiler.buildInfo.hydrate(buildInfo, { name: ds.name })
+  if (!result.ok) {
+    console.warn(
+      `[panda] designSystem "${ds.name}": build info at ${ds.buildInfoPath} is incompatible (${result.reason}); its components will not be hydrated and their styles may be missing.`,
+    )
+  }
 }

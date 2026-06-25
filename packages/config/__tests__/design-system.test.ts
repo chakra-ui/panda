@@ -78,6 +78,13 @@ describe('resolveAuthoredPresets / designSystem', () => {
     ])
   })
 
+  test('keeps the design-system root first when the consumer already has an importMap', async () => {
+    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds', importMap: '@my/aliases' } as any, cwd)
+    expect((config.importMap as any[])[0]).toMatchObject({ css: '@acme/ds/css' })
+    expect((config.importMap as any[])[1]).toBe('styled-system')
+    expect((config.importMap as any[])[2]).toBe('@my/aliases')
+  })
+
   test('fills importMap keys the manifest omits from the design-system root', async () => {
     const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd)
     const [dsRoot] = config.importMap as any[]
