@@ -2,16 +2,18 @@ import type { Diagnostic, SourceRange, Span } from './diagnostics'
 
 export type MatchCategory = 'css' | 'recipe' | 'pattern' | 'jsx' | 'tokens'
 
-/** One atomic style declaration. Conditions are outer→inner; unconditional
- *  atoms have an empty array. */
+/**
+ * One atomic style declaration. Conditions are outer to inner.
+ */
 export interface Atom {
   prop: string
   value: string | number | boolean | null
   conditions: string[]
 }
 
-/** One extracted call argument. A literal `null` (`{ kind: 'value', value: null }`)
- *  is distinguishable from a non-extractable argument (`{ kind: 'missing' }`). */
+/**
+ * Distinguishes a literal `null` from a non-extractable argument.
+ */
 export type ExtractedArg = { kind: 'value'; value: unknown } | { kind: 'missing'; value?: undefined }
 
 export interface ExtractedConditional {
@@ -21,23 +23,28 @@ export interface ExtractedConditional {
 
 export interface ExtractedCall {
   category: MatchCategory
-  /** Canonical Panda name; for `p.css(...)` the property name. */
+  /**
+   * Canonical Panda name; for `p.css(...)`, the property name.
+   */
   name: string
-  /** Local binding at the call site; namespace alias for `p.css(...)`. */
+  /**
+   * Local binding at the call site; namespace alias for `p.css(...)`.
+   */
   alias: string
-  /** One entry per source argument, in order; `length` matches arity. */
+  /**
+   * One entry per source argument, in order.
+   */
   data: ExtractedArg[]
   span: Span
 }
 
-/** Fine-grained JSX classification: a styled factory (`<styled.div>`), a
- *  pattern component (`<Stack>`), a recipe component (`<Button>`), or a plain
- *  configured component. */
+/**
+ * JSX origin classification for factories, patterns, recipes, and configured components.
+ */
 export type JsxKind = 'factory' | 'pattern' | 'recipe' | 'component'
 
 export interface ExtractedJsx {
   category: MatchCategory
-  /** Origin of the component — distinguishes jsx-factory/pattern/recipe. */
   kind: JsxKind
   name: string
   alias: string
@@ -56,7 +63,9 @@ export interface TokenRefSite {
   span: Span
   range: SourceRange
   needsCssVar: boolean
-  /** `true` when the call was `token.var(...)` rather than `token(...)`. */
+  /**
+   * True when the call was `token.var(...)` rather than `token(...)`.
+   */
   isVar: boolean
   resolved: boolean
   category?: string
@@ -64,8 +73,6 @@ export interface TokenRefSite {
 
 export type UsageKind = 'token' | 'property' | 'recipe' | 'pattern' | 'keyframe'
 
-/** One classified Panda usage with its source range — for reporting, lint, IDE.
- *  `name` is a token path, canonical property, or recipe/pattern name. */
 export interface UsageSite {
   kind: UsageKind
   name: string
@@ -98,7 +105,9 @@ export type StyleEntryFixability = 'report-only' | 'safe'
 export interface StyleEntryRef {
   kind: StyleEntryKind
   syntax: StyleEntrySyntax
-  /** Enclosing `css()`/recipe call or JSX element; `(owner, parent path)` is one style block. */
+  /**
+   * Enclosing call or JSX element; `(owner, path)` identifies one style block.
+   */
   owner: { kind: 'call' | 'jsx'; index: number }
   origin: StyleEntryOrigin
   span: Span
@@ -112,11 +121,12 @@ export interface StyleEntryRef {
   sourceValue: unknown
   resolvedValue: unknown
   fixable: StyleEntryFixability
-  /** Source span of each string leaf, so fixers can target the exact literal. */
+  /**
+   * Source spans for string leaves, used by precise fixers.
+   */
   valueSpans?: { value: string; span: Span }[]
 }
 
-/** An extracted call/JSX with a resolved source range, for inspection consumers. */
 export interface InspectionCall extends ExtractedCall {
   range: SourceRange
 }
@@ -132,4 +142,110 @@ export interface FileInspectionResult {
   tokenRefs: TokenRefSite[]
   componentEntries: ComponentEntryRef[]
   styleEntries: StyleEntryRef[]
+}
+
+export type UtilityValueInput = string | number | boolean | null
+
+export type UtilityResolvedScalar = string | number | boolean
+
+export type UtilityValueSource =
+  | { type: 'value-map'; key: string; aliases: string[] }
+  | { type: 'literal'; aliases: string[] }
+  | { type: 'token-reference' }
+  | { type: 'arbitrary' }
+
+export interface ResolveUtilityValueInput {
+  prop: string
+  value: UtilityValueInput
+}
+
+export interface ResolvedUtilityValue {
+  utility: string
+  className: string
+  cssValue: UtilityResolvedScalar
+  important: boolean
+  source: UtilityValueSource
+}
+
+export interface TokenSuggestion {
+  /**
+   * Category-relative path, for example `red.500` or `fg.error`.
+   */
+  token: string
+  semantic: boolean
+  conditional: boolean
+}
+
+export interface TokenLookup {
+  values: Record<string, string>
+  vars: Record<string, string>
+}
+
+export interface RawToken {
+  path: string
+  value: string
+  var?: string
+}
+
+export interface ColorMixResult {
+  invalid: boolean
+  value: string
+  color?: string
+}
+
+export interface RecipeEntry {
+  file: string
+  spanStart: number
+  /**
+   * Serialized `pandacss_recipes::Recipe` or slot recipe shape.
+   */
+  recipe: unknown
+}
+
+export interface RecipeStyleEntry {
+  prop: string
+  value: string | number | boolean | null
+  conditions: string[]
+}
+
+export interface RecipeStyleGroup {
+  recipe: string
+  slot?: string | null
+  className: string
+  entries: RecipeStyleEntry[]
+}
+
+export interface EncodedRecipeStyles {
+  base: RecipeStyleGroup[]
+  variants: RecipeStyleGroup[]
+  atomic: Atom[]
+}
+
+export interface ParseFileReport {
+  path: string
+  cssCalls: number
+  cvaCalls: number
+  svaCalls: number
+  jsxUsages: number
+  diagnostics: Diagnostic[]
+}
+
+export interface ProjectSummary {
+  filesProcessed: number
+  atomCount: number
+  recipeCount: number
+  slotRecipeCount: number
+}
+
+export interface ParsedFileView {
+  path: string
+  atoms: Atom[]
+  diagnostics: Diagnostic[]
+  recipes: RecipeEntry[]
+  slotRecipes: RecipeEntry[]
+}
+
+export interface StaticPatternResult {
+  atoms: Atom[]
+  diagnostics: Diagnostic[]
 }

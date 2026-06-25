@@ -3,7 +3,9 @@ export interface Span {
   end: number
 }
 
-/** 1-indexed line, 1-indexed UTF-16 column — matches `tsc`/editor reporting. */
+/**
+ * 1-indexed line, 1-indexed UTF-16 column, matching TypeScript/editor reporting.
+ */
 export interface SourceLocation {
   line: number
   column: number
@@ -16,7 +18,9 @@ export interface SourceRange {
 
 export interface DiagnosticLabel {
   message?: string
-  /** UTF-8 byte offsets. */
+  /**
+   * UTF-8 byte offsets.
+   */
   span?: Span
   location?: SourceRange
 }
@@ -29,7 +33,9 @@ export interface Diagnostic {
   severity: DiagnosticSeverity
   file?: string
   category?: string
-  /** UTF-8 byte offsets. */
+  /**
+   * UTF-8 byte offsets.
+   */
   span?: Span
   location?: SourceRange
   labels?: DiagnosticLabel[]

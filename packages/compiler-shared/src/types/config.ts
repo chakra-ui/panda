@@ -1,6 +1,8 @@
-import type { ProjectCallbacks } from './callbacks'
+import type { ColorMixResult, RawToken } from './extraction'
 
-/** Author import map (`ImportMapInput`). */
+/**
+ * Author import map before normalization.
+ */
 export interface ImportMapInput {
   css?: string | string[]
   recipe?: string | string[]
@@ -11,7 +13,9 @@ export interface ImportMapInput {
   tokens?: string | string[]
 }
 
-/** Normalized import map for snapshots and Rust. */
+/**
+ * Normalized import map passed to snapshots and Rust.
+ */
 export interface ImportMapOutput {
   css: string[]
   recipe: string[]
@@ -20,16 +24,13 @@ export interface ImportMapOutput {
   tokens: string[]
 }
 
-/** Styled-system root string or per-category object. */
 export type ImportMapOption = string | ImportMapInput
 
-/** JSON-safe, fully-resolved Panda config the compiler consumes.
- *
- *  Intentionally opaque: function-valued options (`utilities.*.transform`, …)
- *  are already lowered to `{ kind: 'js-callback', id }` refs, with the live
- *  functions supplied via {@link CompilerOptions.callbacks}. `@pandacss/config`
- *  produces values conforming to this; the compiler never imports config.
- *  `importMap` is expanded to {@link ImportMapOutput} before Rust. */
+/**
+ * JSON-safe, resolved Panda config consumed by the compiler.
+ * Function-valued options are lowered to callback refs, with live callbacks
+ * supplied through `CompilerOptions.callbacks`.
+ */
 export type SerializedConfig = Record<string, unknown>
 
 export interface SerializedRegex {
@@ -72,8 +73,9 @@ export type ProjectCallbackKind =
   | 'pattern.defaultValues'
   | 'parser:before'
 
-/** Serialized config paired with its live callbacks, as produced by the host's
- *  `createConfigSnapshot`. */
+/**
+ * Serialized config paired with the live callbacks and hooks that cannot cross JSON.
+ */
 export interface ConfigSnapshot {
   config: SerializedConfig
   callbacks?: ProjectCallbacks
@@ -81,8 +83,49 @@ export interface ConfigSnapshot {
 }
 
 export interface CompilerOptions {
-  /** Defaults to `true`; lets `token('…')` and `import { x } from './tokens'` fold. */
+  /**
+   * Defaults to true; enables token/import folding across files.
+   */
   crossFile?: boolean
   callbacks?: ProjectCallbacks
   hooks?: ProjectHooks
 }
+
+export interface TransformArgs {
+  token: ((path: string) => string | undefined) & { raw: (path: string) => RawToken | undefined }
+  raw: unknown
+  utils: {
+    colorMix(value: string): ColorMixResult
+  }
+}
+
+export interface PatternHelpers {
+  map(value: unknown, fn: (value: any) => any): unknown
+  isCssUnit(value: unknown): boolean
+  isCssVar(value: unknown): boolean
+  isCssFunction(value: unknown): boolean
+}
+
+export type UtilityValuesTheme = (category: string) => Record<string, string> | undefined
+export type UtilityValuesCallback = (theme: UtilityValuesTheme) => Record<string, string> | string[] | undefined
+export type UtilityTransformCallback = (value: string, args: TransformArgs) => unknown
+export type PatternTransformCallback = (props: Record<string, any>, helpers: PatternHelpers) => unknown
+export type PatternDefaultValuesCallback = (props: Record<string, any>) => unknown
+
+export interface SourceTransformArgs {
+  filePath: string
+  content: string
+  original?: string
+}
+
+export type SourceTransformCallback = (args: SourceTransformArgs) => string | void
+
+export interface ProjectCallbackMap {
+  'utility.transform': Record<string, UtilityTransformCallback>
+  'utility.values': Record<string, UtilityValuesCallback>
+  'pattern.transform': Record<string, PatternTransformCallback>
+  'pattern.defaultValues': Record<string, PatternDefaultValuesCallback>
+  'parser:before': Record<string, SourceTransformCallback>
+}
+
+export type ProjectCallbacks = Partial<ProjectCallbackMap>
