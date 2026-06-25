@@ -88,6 +88,7 @@ fn tracks_and_encodes_config_recipes() {
 #[test]
 fn splits_recipe_component_variant_and_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {
@@ -173,6 +174,7 @@ fn splits_recipe_component_variant_and_style_props() {
 #[test]
 fn dotted_recipe_variant_values_do_not_emit_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {
@@ -1526,6 +1528,7 @@ fn recipe_compound_variants_combine_selected_conditions_with_smart_mode() {
 #[test]
 fn recipe_components_support_conditional_variants_and_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "breakpoints": {
                 "md": "768px"
@@ -1595,6 +1598,7 @@ fn recipe_components_support_conditional_variants_and_style_props() {
 #[test]
 fn recipe_components_can_drive_multiple_config_recipes() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "toneRecipe": {
@@ -1654,6 +1658,7 @@ fn recipe_components_can_drive_multiple_config_recipes() {
 #[test]
 fn recipe_jsx_regex_names_match_components() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {

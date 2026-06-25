@@ -1,7 +1,7 @@
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 
-use crate::common::{extract_shape, import_shape, panda_config};
+use crate::common::{extract_shape, import_shape, panda_config, panda_jsx_config};
 use pandacss_extractor::{extract, extract_jsx, match_imports, scan_imports};
 
 #[test]
@@ -43,7 +43,7 @@ fn template_calls_and_style_props_extract_together() {
         <p class={css({ fontWeight: 'bold' })} />
     "#};
 
-    let result = extract(source, "Card.svelte", &panda_config());
+    let result = extract(source, "Card.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
@@ -69,7 +69,7 @@ fn native_tags_do_not_emit_template_style_props() {
         <div color="red" />
     "#};
 
-    let result = extract(source, "Native.svelte", &panda_config());
+    let result = extract(source, "Native.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx: []
@@ -86,7 +86,7 @@ fn staged_extract_jsx_includes_template_style_props() {
         <Box color="red" />
     "#};
 
-    let config = panda_config();
+    let config = panda_config().with_jsx_framework(true);
     let scan = scan_imports(source, "Card.svelte");
     let matched = match_imports(&scan, &config.matchers);
     let result = extract_jsx(source, "Card.svelte", &matched, &config);
@@ -131,7 +131,7 @@ fn module_and_instance_scripts_are_both_scanned() {
         <Box color="red" />
     "#};
 
-    let result = extract(source, "TwoScripts.svelte", &panda_config());
+    let result = extract(source, "TwoScripts.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls:
       - name: css
@@ -154,7 +154,7 @@ fn static_class_attrs_do_not_become_style_props() {
         <Box class="card" color="red" />
     "#};
 
-    let result = extract(source, "StaticClass.svelte", &panda_config());
+    let result = extract(source, "StaticClass.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -175,7 +175,7 @@ fn conditional_style_props_emit_conditional_literals() {
         <Box color={selected ? 'red' : 'blue'} />
     "};
 
-    let result = extract(source, "Conditional.svelte", &panda_config());
+    let result = extract(source, "Conditional.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -200,7 +200,7 @@ fn array_css_prop_from_script_constant_extracts() {
         <Box css={styles} />
     "};
 
-    let result = extract(source, "ArrayCss.svelte", &panda_config());
+    let result = extract(source, "ArrayCss.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -223,7 +223,7 @@ fn spread_filters_non_style_props() {
         <Box {...props} />
     "};
 
-    let result = extract(source, "SpreadFilter.svelte", &panda_config());
+    let result = extract(source, "SpreadFilter.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -244,7 +244,7 @@ fn namespace_component_style_props_extract() {
         <Panda.Box color="red" padding="4px" />
     "#};
 
-    let result = extract(source, "Namespace.svelte", &panda_config());
+    let result = extract(source, "Namespace.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -266,7 +266,7 @@ fn svelte_directive_attrs_are_ignored_but_static_siblings_extract() {
         <Box class:active={active} bind:this={ref} color="red" />
     "#};
 
-    let result = extract(source, "Directives.svelte", &panda_config());
+    let result = extract(source, "Directives.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -290,7 +290,7 @@ fn comments_inside_tags_are_ignored() {
         />
     "#};
 
-    let result = extract(source, "Comments.svelte", &panda_config());
+    let result = extract(source, "Comments.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -317,7 +317,7 @@ fn await_and_each_blocks_do_not_break_component_style_props() {
         {/await}
     "#};
 
-    let result = extract(source, "Blocks.svelte", &panda_config());
+    let result = extract(source, "Blocks.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -378,7 +378,7 @@ fn larger_svelte_file_mixes_scripts_blocks_calls_and_style_props() {
         </style>
     "#};
 
-    let result = extract(source, "Large.svelte", &panda_config());
+    let result = extract(source, "Large.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
@@ -437,7 +437,7 @@ fn snippets_render_and_key_blocks_are_tolerated() {
         {@render row(css({ margin: '8px' }))}
     "#};
 
-    let result = extract(source, "Snippets.svelte", &panda_config());
+    let result = extract(source, "Snippets.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls:
       - name: css
@@ -465,7 +465,7 @@ fn typescript_assertions_in_markup_style_props_fold() {
         <Box color={color as string} padding={spacing!} />
     "#};
 
-    let result = extract(source, "TypeScriptMarkup.svelte", &panda_config());
+    let result = extract(source, "TypeScriptMarkup.svelte", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx:
@@ -494,7 +494,7 @@ fn spans_point_into_the_original_svelte_source() {
 }
 
 #[test]
-fn non_panda_uppercase_component_ignored_without_jsx_framework() {
+fn jsx_extraction_requires_jsx_framework() {
     let source = indoc! {r#"
         <script>
           import { Box } from '@panda/jsx'
@@ -505,7 +505,7 @@ fn non_panda_uppercase_component_ignored_without_jsx_framework() {
     "#};
     let result = extract(source, "Card.svelte", &panda_config());
     let names: Vec<&str> = result.jsx.iter().map(|j| j.name.as_str()).collect();
-    assert_eq!(names, ["Box"]);
+    assert!(names.is_empty());
 }
 
 #[test]
@@ -518,11 +518,7 @@ fn uppercase_component_extracts_with_jsx_framework() {
         </script>
         <Image width="900" height="800" />
     "#};
-    let result = extract(
-        source,
-        "Card.svelte",
-        &panda_config().with_jsx_framework(true),
-    );
+    let result = extract(source, "Card.svelte", &panda_jsx_config());
     let image: Vec<_> = result.jsx.iter().filter(|j| j.name == "Image").collect();
     assert_eq!(image.len(), 1);
     assert_eq!(image[0].data.to_json()["width"], "900");

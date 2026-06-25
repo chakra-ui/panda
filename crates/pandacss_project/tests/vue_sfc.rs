@@ -211,7 +211,9 @@ fn complex_template_expressions_keep_delimiters_inside_strings() {
 
 #[test]
 fn component_style_props_are_extracted_from_template_attrs() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "vue"
+    }));
     let report = project.parse_file(
         "StyleProps.vue",
         indoc! {r#"
@@ -239,7 +241,9 @@ fn component_style_props_are_extracted_from_template_attrs() {
 
 #[test]
 fn component_bound_style_props_and_spreads_are_extracted() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "vue"
+    }));
     let report = project.parse_file(
         "BoundStyleProps.vue",
         indoc! {r#"
@@ -277,7 +281,9 @@ fn component_bound_style_props_and_spreads_are_extracted() {
 
 #[test]
 fn script_setup_constants_resolve_in_template_style_props() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "vue"
+    }));
     let report = project.parse_file(
         "ResolvedStyleProps.vue",
         indoc! {r#"
@@ -315,7 +321,9 @@ fn script_setup_constants_resolve_in_template_style_props() {
 
 #[test]
 fn nested_template_branches_extract_component_style_props() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "vue"
+    }));
     let report = project.parse_file(
         "NestedBranches.vue",
         indoc! {r#"
@@ -351,7 +359,9 @@ fn nested_template_branches_extract_component_style_props() {
 
 #[test]
 fn native_vue_tags_do_not_extract_style_props() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "vue"
+    }));
     let report = project.parse_file(
         "Native.vue",
         indoc! {r#"
@@ -373,6 +383,7 @@ fn native_vue_tags_do_not_extract_style_props() {
 #[test]
 fn template_style_props_follow_minimal_jsx_style_prop_mode() {
     let mut project = create_project(json!({
+        "jsxFramework": "vue",
         "jsxStyleProps": "minimal"
     }));
     let report = project.parse_file(
@@ -399,7 +410,9 @@ fn template_style_props_follow_minimal_jsx_style_prop_mode() {
 
 #[test]
 fn namespace_component_style_props_are_extracted() {
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "vue"
+    }));
     let report = project.parse_file(
         "Namespace.vue",
         indoc! {r#"

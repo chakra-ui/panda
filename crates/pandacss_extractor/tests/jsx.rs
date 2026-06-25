@@ -53,7 +53,9 @@ fn extract_template(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResu
         source,
         "fixture.tsx",
         matched,
-        &jsx_config(["styled", "Box", "Stack", "Grid"]).with_syntax(CssSyntaxKind::TemplateLiteral),
+        &jsx_config(["styled", "Box", "Stack", "Grid"])
+            .with_syntax(CssSyntaxKind::TemplateLiteral)
+            .with_jsx_framework(true),
     )
 }
 
@@ -1869,7 +1871,8 @@ fn styled_factory_member_tag_is_classified_as_factory() {
 
 #[test]
 fn pattern_jsx_name_is_classified_as_pattern() {
-    let config = jsx_kind_config(["styled", "Stack"], &[("Stack", JsxKind::Pattern)]);
+    let config = jsx_kind_config(["styled", "Stack"], &[("Stack", JsxKind::Pattern)])
+        .with_jsx_framework(true);
     let result = extract_jsx(
         "<Stack gap='4' />",
         "fixture.tsx",
@@ -1883,7 +1886,8 @@ fn pattern_jsx_name_is_classified_as_pattern() {
 
 #[test]
 fn recipe_jsx_name_is_classified_as_recipe() {
-    let config = jsx_kind_config(["styled", "Button"], &[("Button", JsxKind::Recipe)]);
+    let config = jsx_kind_config(["styled", "Button"], &[("Button", JsxKind::Recipe)])
+        .with_jsx_framework(true);
     let result = extract_jsx(
         "<Button size='lg' />",
         "fixture.tsx",

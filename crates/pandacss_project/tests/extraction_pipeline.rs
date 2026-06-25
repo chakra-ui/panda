@@ -138,7 +138,9 @@ fn cva_base_conditional_value_emits_both_branches() {
 #[test]
 fn jsx_style_props_feed_the_encoder() {
     // A JSX usage routes into the same encoder pipeline as css().
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     let report = project.parse_file(
         "a.tsx",
         indoc! {r"
@@ -161,6 +163,7 @@ fn jsx_style_props_feed_the_encoder() {
 #[test]
 fn jsx_condition_props_feed_conditioned_atoms() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "conditions": {
             "hover": "&:hover"
         },
@@ -196,6 +199,7 @@ fn jsx_condition_props_feed_conditioned_atoms() {
 #[test]
 fn jsx_factory_call_base_styles_feed_the_encoder() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxFactory": "panda"
     }));
 
@@ -235,6 +239,7 @@ fn jsx_factory_call_base_styles_feed_the_encoder() {
 #[test]
 fn jsx_factory_call_plain_style_object_stays_atomic_css() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxFactory": "panda"
     }));
 
@@ -270,6 +275,7 @@ fn jsx_factory_call_plain_style_object_stays_atomic_css() {
 #[test]
 fn jsx_factory_call_recipe_variants_feed_the_encoder() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxFactory": "panda"
     }));
 
@@ -339,6 +345,7 @@ fn jsx_factory_call_recipe_variants_feed_the_encoder() {
 #[test]
 fn jsx_factory_property_call_variants_without_base_feed_the_encoder() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxFactory": "panda"
     }));
 
@@ -387,6 +394,7 @@ fn jsx_factory_property_call_variants_without_base_feed_the_encoder() {
 #[test]
 fn jsx_factory_default_props_route_imported_recipe_usage() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "recipes": {
                 "button": {
@@ -459,6 +467,7 @@ fn jsx_factory_default_props_route_imported_recipe_usage() {
 #[test]
 fn jsx_factory_call_tagged_template_feeds_atomic_css() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "syntax": "template-literal"
     }));
 
@@ -529,6 +538,7 @@ fn css_tagged_template_feeds_atomic_css() {
 #[test]
 fn styled_member_tagged_template_feeds_jsx_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "syntax": "template-literal"
     }));
 
@@ -787,6 +797,7 @@ fn tagged_template_token_function_interpolations_fold() {
 #[test]
 fn tagged_template_string_fragment_interpolations_fold() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "syntax": "template-literal"
     }));
 
@@ -969,6 +980,7 @@ fn bare_slot_recipe_component_in_vue_template_emits_recipe_css() {
     // inferred jsx names (`Custom.Root`, `Custom.Label`) plus the template
     // `emit_empty` rule must produce the recipe base CSS without any props.
     let mut project = create_project(json!({
+        "jsxFramework": "vue",
         "theme": {
             "slotRecipes": {
                 "custom": {
@@ -1036,6 +1048,7 @@ fn kebab_case_recipe_component_in_vue_template_selects_variants() {
     // Vue templates may reference the PascalCase binding as `<custom-root>`;
     // the inferred `CustomRoot` jsx name must match and route variants.
     let mut project = create_project(json!({
+        "jsxFramework": "vue",
         "theme": {
             "slotRecipes": {
                 "custom": {
@@ -1087,6 +1100,7 @@ fn same_name_shorthand_variant_in_vue_template_selects_variants() {
     // Vue 3.4 same-name shorthand: `:size` binds the script `size` constant,
     // so the variant resolves through the script scope.
     let mut project = create_project(json!({
+        "jsxFramework": "vue",
         "theme": {
             "slotRecipes": {
                 "custom": {
@@ -1140,6 +1154,7 @@ fn same_name_shorthand_variant_in_vue_template_selects_variants() {
 #[test]
 fn named_slot_recipe_member_tag_routes_recipe_and_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "slotRecipes": {
                 "tabs": {
@@ -1216,7 +1231,9 @@ fn named_slot_recipe_member_tag_routes_recipe_and_style_props() {
 fn jsx_css_prop_object_feeds_styles() {
     // The `css` prop's object value is treated as nested styles, not a flat
     // `css`-named atom.
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     project.parse_file(
         "a.tsx",
         indoc! {r"
@@ -1237,7 +1254,9 @@ fn jsx_css_prop_object_feeds_styles() {
 #[test]
 fn jsx_css_prop_array_merges_each_object() {
     // Array form `css={[{...}, {...}]}` — each entry contributes atoms.
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     project.parse_file(
         "a.tsx",
         indoc! {r"
@@ -1259,7 +1278,9 @@ fn jsx_css_prop_array_merges_each_object() {
 fn wildcard_css_prop_feeds_styles() {
     // `*Css` props (e.g. `inputCss`) are treated as nested style objects, the
     // same as the bare `css` prop.
-    let mut project = create_project(json!({}));
+    let mut project = create_project(json!({
+        "jsxFramework": "react"
+    }));
     project.parse_file(
         "a.tsx",
         indoc! {r"

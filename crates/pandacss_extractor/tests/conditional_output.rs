@@ -6,13 +6,17 @@
 //! we emit both alternatives so the downstream encoder can generate
 //! atomic-CSS-style output.
 
-use crate::common::panda_config;
+use crate::common::{panda_config, panda_jsx_config};
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
 use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
     extract(source, "fixture.tsx", &panda_config())
+}
+
+fn run_jsx(source: &str) -> ExtractUsage {
+    extract(source, "fixture.tsx", &panda_jsx_config())
 }
 
 // --- ternary ---
@@ -128,7 +132,7 @@ fn ternary_in_jsx_attribute_emits_conditional() {
         import { Box } from '@panda/jsx';
         const el = <Box color={isDark ? 'white' : 'black'} />;
     "};
-    assert_yaml_snapshot!(run(src).jsx, @"
+    assert_yaml_snapshot!(run_jsx(src).jsx, @"
     - category: jsx
       kind: component
       name: Box

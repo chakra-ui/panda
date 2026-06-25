@@ -5,13 +5,17 @@
 //! `oxc_semantic` integration. These tests use the combined `extract()`
 //! entrypoint so the resolver is always present.
 
-use crate::common::panda_config;
+use crate::common::{panda_config, panda_jsx_config};
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use pandacss_extractor::{ExtractUsage, extract};
 
 fn run(source: &str) -> ExtractUsage {
     extract(source, "fixture.tsx", &panda_config())
+}
+
+fn run_jsx(source: &str) -> ExtractUsage {
+    extract(source, "fixture.tsx", &panda_jsx_config())
 }
 
 // --- identifier reference resolution ---
@@ -761,7 +765,7 @@ fn jsx_attribute_resolves_identifier() {
         const w = '5px';
         const el = <Box width={w} />;
     "};
-    assert_yaml_snapshot!(run(src).jsx, @"
+    assert_yaml_snapshot!(run_jsx(src).jsx, @"
     - category: jsx
       kind: component
       name: Box
@@ -781,7 +785,7 @@ fn jsx_spread_of_local_identifier_resolves() {
         const base = { color: 'red' };
         const el = <Box {...base} padding='4px' />;
     "};
-    assert_yaml_snapshot!(run(src).jsx, @"
+    assert_yaml_snapshot!(run_jsx(src).jsx, @"
     - category: jsx
       kind: component
       name: Box
@@ -803,7 +807,7 @@ fn jsx_tag_shadowed_by_param_is_not_extracted() {
           return <Box color='red' />;
         }
     "};
-    let jsx = run(src).jsx;
+    let jsx = run_jsx(src).jsx;
     assert!(
         jsx.is_empty(),
         "shadowed JSX tag must not extract: {jsx:#?}"
@@ -955,7 +959,7 @@ fn inner_scope_shadows_outer_same_named_const() {
           return <Box color={color} />;
         }
     "};
-    let json = serde_json::to_value(&run(src).jsx[0].data).unwrap();
+    let json = serde_json::to_value(&run_jsx(src).jsx[0].data).unwrap();
     assert_eq!(
         json["color"], "orange.500",
         "inner scope's binding should win, not the module-level one",
@@ -974,7 +978,7 @@ fn closure_captures_outer_const() {
           return <Box color={color} />;
         }
     "};
-    let json = serde_json::to_value(&run(src).jsx[0].data).unwrap();
+    let json = serde_json::to_value(&run_jsx(src).jsx[0].data).unwrap();
     assert_eq!(json["color"], "orange.600");
 }
 

@@ -237,7 +237,7 @@ fn run_extract<'cb>(
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
     let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
-        if should_collect_calls(&matched) {
+        if should_collect_calls(&matched, config) {
             let _span = tracing::trace_span!("visit_calls").entered();
             if verbose {
                 collect_calls_verbose(&parser_return.program, &ctx, &line_index)
@@ -249,7 +249,7 @@ fn run_extract<'cb>(
         } else {
             (Vec::new(), Vec::new(), Vec::new(), Vec::new())
         };
-    let mut jsx = if should_collect_jsx(&matched, config) {
+    let mut jsx = if should_collect_jsx(config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
         if verbose {
             let (jsx, refs) = collect_jsx_verbose(&parser_return.program, &ctx);
@@ -261,7 +261,7 @@ fn run_extract<'cb>(
     } else {
         Vec::new()
     };
-    if should_collect_jsx(&matched, config) {
+    if should_collect_jsx(config) {
         let _span = tracing::trace_span!("visit_template_styles").entered();
         jsx.extend(crate::template_styles::collect_template_styles(
             raw_source, path, &matched, config,
@@ -285,20 +285,18 @@ fn run_extract<'cb>(
     }
 }
 
-fn should_collect_calls(matched: &[MatchedImport]) -> bool {
-    !matched.is_empty()
+fn should_collect_calls(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
+    matched
+        .iter()
+        .any(|import| import.category != MatchCategory::Jsx || config.has_jsx_framework)
 }
 
 fn should_skip_extraction(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
-    matched.is_empty() && !config.has_jsx_framework && !config.jsx.has_component_matchers()
+    !should_collect_calls(matched, config) && !should_collect_jsx(config)
 }
 
-fn should_collect_jsx(matched: &[MatchedImport], config: &ExtractorConfig) -> bool {
+fn should_collect_jsx(config: &ExtractorConfig) -> bool {
     config.has_jsx_framework
-        || config.jsx.has_component_matchers()
-        || matched
-            .iter()
-            .any(|import| import.category == MatchCategory::Jsx)
 }
 
 fn dedupe_token_refs(token_refs: Vec<TokenRef>) -> Vec<TokenRef> {

@@ -57,6 +57,7 @@ fn invalid_serialized_jsx_regex_returns_error() {
 #[test]
 fn jsx_names_include_patterns_and_recipes() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxFactory": "styled",
         "patterns": {
             "stack": {},
@@ -210,6 +211,7 @@ fn utility_values_normalize_aliases() {
 #[test]
 fn jsx_shorthands_are_normalized() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "utilities": {
             "padding": { "shorthand": "p" }
         }
@@ -234,6 +236,7 @@ fn jsx_shorthands_are_normalized() {
 #[test]
 fn all_jsx_props_filter_valid_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "utilities": {
             "padding": { "shorthand": "p" }
         }
@@ -261,6 +264,7 @@ fn all_jsx_props_filter_valid_props() {
 #[test]
 fn generated_color_palette_utility_is_a_valid_jsx_prop() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "tokens": {
                 "colors": {
@@ -294,6 +298,7 @@ fn generated_color_palette_utility_is_a_valid_jsx_prop() {
 #[test]
 fn disabled_color_palette_generation_omits_jsx_prop_support() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "theme": {
             "colorPalette": {
                 "enabled": false
@@ -632,6 +637,7 @@ fn local_factory_alias_extracts_as_implicit_uppercase_component() {
 #[test]
 fn minimal_jsx_filters_style_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "minimal"
     }));
 
@@ -657,6 +663,7 @@ fn minimal_jsx_filters_style_props() {
 #[test]
 fn jsx_css_prop_arrays_are_processed_as_style_objects() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "minimal"
     }));
 
@@ -681,6 +688,7 @@ fn jsx_css_prop_arrays_are_processed_as_style_objects() {
 #[test]
 fn minimal_jsx_keeps_pattern_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "minimal",
         "patterns": {
             "stack": {
@@ -711,6 +719,7 @@ fn minimal_jsx_keeps_pattern_props() {
 #[test]
 fn none_jsx_keeps_component_props() {
     let mut project = create_project(json!({
+        "jsxFramework": "react",
         "jsxStyleProps": "none",
         "patterns": {
             "stack": {

@@ -1,7 +1,7 @@
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 
-use crate::common::{extract_shape, import_shape, panda_config};
+use crate::common::{extract_shape, import_shape, panda_config, panda_jsx_config};
 use pandacss_extractor::{JsxExtractionConfig, JsxKind};
 use pandacss_extractor::{extract, extract_jsx, match_imports, scan_imports};
 
@@ -46,7 +46,7 @@ fn template_calls_and_style_props_extract_together() {
         </script>
     "#};
 
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
@@ -80,7 +80,7 @@ fn nested_template_branches_emit_component_style_props() {
         </script>
     "#};
 
-    let result = extract(source, "Nested.vue", &panda_config());
+    let result = extract(source, "Nested.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -104,7 +104,7 @@ fn native_tags_do_not_emit_template_style_props() {
         </script>
     "#};
 
-    let result = extract(source, "Native.vue", &panda_config());
+    let result = extract(source, "Native.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx: []
@@ -122,7 +122,7 @@ fn staged_extract_jsx_includes_template_style_props() {
         </script>
     "#};
 
-    let config = panda_config();
+    let config = panda_config().with_jsx_framework(true);
     let scan = scan_imports(source, "Card.vue");
     let matched = match_imports(&scan, &config.matchers);
     let result = extract_jsx(source, "Card.vue", &matched, &config);
@@ -145,7 +145,7 @@ fn script_setup_aliases_and_template_calls_extract() {
         </script>
     "#};
 
-    let result = extract(source, "Alias.vue", &panda_config());
+    let result = extract(source, "Alias.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
@@ -172,7 +172,7 @@ fn script_and_script_setup_are_both_scanned() {
         </script>
     "#};
 
-    let result = extract(source, "TwoScripts.vue", &panda_config());
+    let result = extract(source, "TwoScripts.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls:
       - name: css
@@ -196,7 +196,7 @@ fn static_class_attrs_do_not_become_style_props() {
         </script>
     "#};
 
-    let result = extract(source, "StaticClass.vue", &panda_config());
+    let result = extract(source, "StaticClass.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -218,7 +218,7 @@ fn conditional_bound_style_props_emit_conditional_literals() {
         </script>
     "#};
 
-    let result = extract(source, "Conditional.vue", &panda_config());
+    let result = extract(source, "Conditional.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -244,7 +244,7 @@ fn array_css_prop_from_script_constant_extracts() {
         </script>
     "#};
 
-    let result = extract(source, "ArrayCss.vue", &panda_config());
+    let result = extract(source, "ArrayCss.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -267,7 +267,7 @@ fn v_bind_spread_filters_non_style_props() {
         </script>
     "#};
 
-    let result = extract(source, "SpreadFilter.vue", &panda_config());
+    let result = extract(source, "SpreadFilter.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -289,7 +289,7 @@ fn namespace_component_style_props_extract() {
         </script>
     "#};
 
-    let result = extract(source, "Namespace.vue", &panda_config());
+    let result = extract(source, "Namespace.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -312,7 +312,7 @@ fn dynamic_arg_style_props_are_skipped_but_static_siblings_extract() {
         </script>
     "#};
 
-    let result = extract(source, "DynamicArg.vue", &panda_config());
+    let result = extract(source, "DynamicArg.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx:
@@ -333,7 +333,7 @@ fn non_html_template_lang_is_skipped_for_template_attrs() {
         </script>
     "#};
 
-    let result = extract(source, "Pug.vue", &panda_config());
+    let result = extract(source, "Pug.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r"
     calls: []
     jsx: []
@@ -352,7 +352,7 @@ fn comments_and_tag_like_strings_do_not_break_template_extraction() {
         </script>
     "#};
 
-    let result = extract(source, "Comments.vue", &panda_config());
+    let result = extract(source, "Comments.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @r#"
     calls: []
     jsx:
@@ -412,7 +412,7 @@ fn larger_vue_sfc_mixes_scripts_templates_calls_and_style_props() {
         </style>
     "#};
 
-    let result = extract(source, "Large.vue", &panda_config());
+    let result = extract(source, "Large.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
@@ -466,7 +466,7 @@ fn slot_templates_and_v_memo_do_not_break_extraction() {
         </template>
     "#};
 
-    let result = extract(source, "Slots.vue", &panda_config());
+    let result = extract(source, "Slots.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
       - name: css
@@ -495,7 +495,7 @@ fn script_tag_attrs_with_gt_do_not_break_import_scan() {
         </template>
     "#};
 
-    let result = extract(source, "Generic.vue", &panda_config());
+    let result = extract(source, "Generic.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx:
@@ -540,7 +540,7 @@ fn bare_recipe_component_in_template_emits_usage() {
         </script>
     "#};
 
-    let mut config = panda_config();
+    let mut config = panda_jsx_config();
     config.matchers.jsx_kinds = [
         ("Custom.Root".to_owned(), JsxKind::Recipe),
         ("Custom.Label".to_owned(), JsxKind::Recipe),
@@ -578,7 +578,7 @@ fn bare_unconfigured_component_in_template_is_not_emitted() {
         import Sidebar from './Sidebar.vue'
         </script>
     "#};
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx: []
@@ -598,7 +598,7 @@ fn multi_statement_event_handler_does_not_break_the_parse() {
         import { Box } from '@panda/jsx';
         </script>
     "#};
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
@@ -619,7 +619,7 @@ fn single_expression_event_handler_still_parses() {
         import { Box } from '@panda/jsx';
         </script>
     "#};
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
@@ -644,7 +644,7 @@ fn same_name_shorthand_resolves_through_script_scope() {
         const fontSize = '12px'
         </script>
     "#};
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx:
@@ -667,7 +667,7 @@ fn same_name_shorthand_without_binding_is_dropped() {
         import { Box } from '@panda/jsx';
         </script>
     "#};
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx:
@@ -687,7 +687,7 @@ fn kebab_case_tag_resolves_to_configured_pascal_component() {
           <custom-root />
         </template>
     "};
-    let mut config = panda_config();
+    let mut config = panda_jsx_config();
     config.matchers.jsx_kinds = [("CustomRoot".to_owned(), JsxKind::Recipe)]
         .into_iter()
         .collect();
@@ -713,7 +713,7 @@ fn kebab_case_tag_without_configured_component_is_ignored() {
           <my-widget color="red" />
         </template>
     "#};
-    let result = extract(source, "Card.vue", &panda_config());
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
     jsx: []
@@ -721,7 +721,7 @@ fn kebab_case_tag_without_configured_component_is_ignored() {
 }
 
 #[test]
-fn non_panda_uppercase_component_ignored_without_jsx_framework() {
+fn jsx_extraction_requires_jsx_framework() {
     let source = indoc! {r#"
         <template>
           <Box color="red" />
@@ -734,7 +734,7 @@ fn non_panda_uppercase_component_ignored_without_jsx_framework() {
     "#};
     let result = extract(source, "Card.vue", &panda_config());
     let names: Vec<&str> = result.jsx.iter().map(|j| j.name.as_str()).collect();
-    assert_eq!(names, ["Box"]);
+    assert!(names.is_empty());
 }
 
 #[test]
@@ -749,7 +749,7 @@ fn uppercase_component_extracts_with_jsx_framework() {
         const _ = css({ color: 'red' })
         </script>
     "#};
-    let result = extract(source, "Card.vue", &panda_config().with_jsx_framework(true));
+    let result = extract(source, "Card.vue", &panda_jsx_config());
     let image: Vec<_> = result.jsx.iter().filter(|j| j.name == "Image").collect();
     assert_eq!(image.len(), 1);
     assert_eq!(image[0].data.to_json()["width"], "900");

@@ -1,7 +1,7 @@
 use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 
-use crate::common::{extract_shape, import_shape, panda_config};
+use crate::common::{extract_shape, import_shape, panda_config, panda_jsx_config};
 use pandacss_extractor::{extract, scan_imports};
 
 #[test]
@@ -40,7 +40,7 @@ fn attribute_and_children_expressions_extract() {
         </p>
     "};
 
-    let result = extract(source, "page.astro", &panda_config());
+    let result = extract(source, "page.astro", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
@@ -65,7 +65,7 @@ fn frontmatter_const_resolves_in_template() {
         <section class={css(panel)} />
     "};
 
-    let result = extract(source, "page.astro", &panda_config());
+    let result = extract(source, "page.astro", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls:
@@ -87,7 +87,7 @@ fn jsx_style_props_extract_from_template() {
         <Box color="red" fontSize="2xl" />
     "#};
 
-    let result = extract(source, "page.astro", &panda_config());
+    let result = extract(source, "page.astro", &panda_jsx_config());
     assert!(result.diagnostics.is_empty());
     assert_yaml_snapshot!(extract_shape(&result), @"
     calls: []
@@ -239,7 +239,7 @@ fn spans_point_into_the_original_astro_source() {
 }
 
 #[test]
-fn non_panda_uppercase_component_ignored_without_jsx_framework() {
+fn jsx_extraction_requires_jsx_framework() {
     let source = indoc! {r#"
         ---
         import { Box } from '@panda/jsx';
@@ -250,11 +250,7 @@ fn non_panda_uppercase_component_ignored_without_jsx_framework() {
     "#};
     let result = extract(source, "page.astro", &panda_config());
     let names: Vec<&str> = result.jsx.iter().map(|j| j.name.as_str()).collect();
-    assert_eq!(
-        names,
-        ["Box"],
-        "non-panda <Image> must not be extracted without a jsxFramework"
-    );
+    assert!(names.is_empty(), "jsx extraction requires a jsxFramework");
 }
 
 #[test]
@@ -266,11 +262,7 @@ fn uppercase_component_extracts_with_jsx_framework() {
         ---
         <Image width="900" height="800" />
     "#};
-    let result = extract(
-        source,
-        "page.astro",
-        &panda_config().with_jsx_framework(true),
-    );
+    let result = extract(source, "page.astro", &panda_jsx_config());
     let image: Vec<_> = result.jsx.iter().filter(|j| j.name == "Image").collect();
     assert_eq!(image.len(), 1);
     assert_eq!(image[0].data.to_json()["width"], "900");

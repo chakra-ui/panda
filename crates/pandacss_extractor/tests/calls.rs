@@ -106,6 +106,19 @@ fn extract_with(
     )
 }
 
+fn extract_with_jsx(
+    source: &str,
+    matched: &[MatchedImport],
+    matchers: &Matchers,
+) -> ExtractedCallsResult {
+    extract_calls(
+        source,
+        "fixture.tsx",
+        matched,
+        &ExtractorConfig::new(matchers.clone()).with_jsx_framework(true),
+    )
+}
+
 fn extract_template(source: &str, matched: &[MatchedImport]) -> ExtractedCallsResult {
     extract_calls(
         source,
@@ -115,7 +128,7 @@ fn extract_template(source: &str, matched: &[MatchedImport]) -> ExtractedCallsRe
     )
 }
 
-fn extract_with_template(
+fn extract_with_template_jsx(
     source: &str,
     matched: &[MatchedImport],
     matchers: &Matchers,
@@ -124,7 +137,9 @@ fn extract_with_template(
         source,
         "fixture.tsx",
         matched,
-        &ExtractorConfig::new(matchers.clone()).with_syntax(CssSyntaxKind::TemplateLiteral),
+        &ExtractorConfig::new(matchers.clone())
+            .with_jsx_framework(true)
+            .with_syntax(CssSyntaxKind::TemplateLiteral),
     )
 }
 
@@ -767,7 +782,7 @@ fn parse_error_surfaces_diagnostic() {
 fn multi_arg_call_extracts_all_literal_args() {
     // styled('div', { base: { color: 'red' } }) — both args are literal.
     assert_yaml_snapshot!(
-        extract(
+        extract_with_jsx(
             "styled('div', { base: { color: 'red' } })",
             &[MatchedImport {
                 category: MatchCategory::Jsx,
@@ -776,6 +791,7 @@ fn multi_arg_call_extracts_all_literal_args() {
                 alias: "styled".into(),
                 kind: ImportSpecifierKind::Named,
             }],
+            &panda_matchers("@panda"),
         ),
         @"
     calls:
@@ -833,7 +849,7 @@ fn jsx_factory_property_call_extracts_recipe_config() {
     }
     matchers.jsx_factories = Some(vec!["panda".into()]);
 
-    let result = extract_with(
+    let result = extract_with_jsx(
         "panda.div({ base: { color: 'red' }, variants: { size: { sm: { fontSize: '12px' } } } })",
         &[jsx_factory("panda")],
         &matchers,
@@ -851,7 +867,7 @@ fn jsx_factory_property_call_extracts_recipe_config() {
 
 #[test]
 fn jsx_factory_call_tagged_template_extracts_as_css() {
-    let result = extract_with_template(
+    let result = extract_with_template_jsx(
         "styled('span')`color: red; padding: 4px;`",
         &[jsx_factory("styled")],
         &panda_matchers("@panda"),
@@ -876,7 +892,7 @@ fn jsx_factory_call_tagged_template_extracts_as_css() {
 fn bare_jsx_factory_tagged_template_does_not_extract() {
     // `styled` without an element has no target; only member
     // (`styled.div`) and call (`styled('div')`) tags extract.
-    let result = extract_with_template(
+    let result = extract_with_template_jsx(
         "styled`display: flex;`",
         &[jsx_factory("styled")],
         &panda_matchers("@panda"),
@@ -890,7 +906,7 @@ fn bare_jsx_factory_tagged_template_does_not_extract() {
 
 #[test]
 fn unmatched_member_tagged_template_does_not_extract() {
-    let result = extract_with_template(
+    let result = extract_with_template_jsx(
         "other.div`display: flex;`",
         &[jsx_factory("styled")],
         &panda_matchers("@panda"),
@@ -904,7 +920,7 @@ fn unmatched_member_tagged_template_does_not_extract() {
 
 #[test]
 fn jsx_factory_call_tagged_template_ignored_in_object_syntax() {
-    let result = extract_with(
+    let result = extract_with_jsx(
         "styled('span')`color: red; padding: 4px;`",
         &[jsx_factory("styled")],
         &panda_matchers("@panda"),

@@ -43,6 +43,10 @@ pub(crate) fn collect_template_styles(
     matched: &[MatchedImport],
     config: &ExtractorConfig,
 ) -> Vec<ExtractedJsx> {
+    if !config.has_jsx_framework {
+        return Vec::new();
+    }
+
     let context_source = template_context_source(source, path);
     let context = TemplateContext {
         source: context_source.as_ref(),

@@ -92,6 +92,10 @@ pub fn extract_jsx(
     matched: &[MatchedImport],
     config: &ExtractorConfig,
 ) -> ExtractedJsxResult {
+    if !config.has_jsx_framework {
+        return ExtractedJsxResult::default();
+    }
+
     let allocator = Allocator::default();
     let raw_source = source;
     let source = crate::adapt_source(source, path);

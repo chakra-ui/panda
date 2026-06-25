@@ -36,6 +36,10 @@ pub fn panda_config() -> ExtractorConfig {
     ExtractorConfig::new(panda_matchers())
 }
 
+pub fn panda_jsx_config() -> ExtractorConfig {
+    panda_config().with_jsx_framework(true)
+}
+
 pub fn panda_config_with_jsx(jsx: JsxExtractionConfig) -> ExtractorConfig {
     panda_config().with_jsx(jsx)
 }
