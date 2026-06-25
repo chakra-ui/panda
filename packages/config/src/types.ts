@@ -1,5 +1,6 @@
 import type { ProjectCallbacks, ProjectHooks, SerializedConfig } from '@pandacss/compiler-shared'
 import type { HostHooks } from './hooks'
+import type { ResolvedDesignSystem } from './design-system'
 import type { ConfigSources } from './sources'
 
 export interface LoadConfigOptions {
@@ -25,5 +26,6 @@ export interface LoadConfigResult {
   dependencies: string[]
   metadata?: {
     sources?: ConfigSources
+    designSystem?: ResolvedDesignSystem
   }
 }

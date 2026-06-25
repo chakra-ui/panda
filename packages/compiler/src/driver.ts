@@ -9,6 +9,7 @@ import {
   type SourceChange,
 } from '@pandacss/compiler-shared'
 import { type HostHooks, type LoadConfigResult, diffConfig, loadConfig } from '@pandacss/config'
+import { hydrateDesignSystem } from './design-system'
 import { createCompilerFromSnapshot } from './index'
 
 export interface NodeDriverOptions {
@@ -177,7 +178,13 @@ function resolveHookHandler(value: unknown, name: string): HookHandler {
 }
 
 function buildFromConfig(loaded: LoadConfigResult): Compiler {
-  return createCompilerFromSnapshot({ config: loaded.config, callbacks: loaded.callbacks, hooks: loaded.hooks })
+  const compiler = createCompilerFromSnapshot({
+    config: loaded.config,
+    callbacks: loaded.callbacks,
+    hooks: loaded.hooks,
+  })
+  hydrateDesignSystem(compiler, loaded.metadata?.designSystem)
+  return compiler
 }
 
 function toGenerateArtifactOptions(options: CodegenOptions | undefined): GenerateArtifactOptions | undefined {

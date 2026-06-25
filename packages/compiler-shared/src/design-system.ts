@@ -19,11 +19,25 @@ export interface DesignSystemNative {
   resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
+export const DESIGN_SYSTEM_MANIFEST_SCHEMA_VERSION = 1
+
 /** Major from a version or range (`^2.1.0` → `2`); `NaN` when no number is found
  *  so an unreadable value fails the major check rather than passing silently. */
 const major = (value: string): number => {
   const match = value.match(/\d+/)
   return match ? Number(match[0]) : NaN
+}
+
+export function checkManifestCompatibility(
+  manifest: DesignSystemManifest,
+  options: { schemaVersion: number; pandaVersion?: string },
+): DesignSystemManifestCompatibility {
+  if (manifest.schemaVersion !== options.schemaVersion) return { ok: false, reason: 'schemaVersion' }
+  const running = options.pandaVersion
+  if (running !== undefined && major(running) !== major(manifest.panda)) {
+    return { ok: false, reason: 'pandaRange' }
+  }
+  return { ok: true }
 }
 
 /** Build the `compiler.designSystem` namespace over a binding's primitives.
@@ -38,14 +52,8 @@ export function makeDesignSystemApi(native: DesignSystemNative, buildInfo: Build
   const validate = (
     manifest: DesignSystemManifest,
     options?: DesignSystemValidateOptions,
-  ): DesignSystemManifestCompatibility => {
-    if (manifest.schemaVersion !== schemaVersion) return { ok: false, reason: 'schemaVersion' }
-    const running = options?.pandaVersion
-    if (running !== undefined && major(running) !== major(manifest.panda)) {
-      return { ok: false, reason: 'pandaRange' }
-    }
-    return { ok: true }
-  }
+  ): DesignSystemManifestCompatibility =>
+    checkManifestCompatibility(manifest, { schemaVersion, pandaVersion: options?.pandaVersion })
 
   return {
     schemaVersion,

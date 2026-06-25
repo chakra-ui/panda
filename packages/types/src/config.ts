@@ -219,6 +219,7 @@ interface FileSystemOptions {
    * ```
    */
   importMap?: ImportMapOption | Array<ImportMapOption>
+  designSystem?: string
   /**
    * List of files glob to watch for changes.
    * @default []

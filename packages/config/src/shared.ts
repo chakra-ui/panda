@@ -1,4 +1,5 @@
 import type { Config } from '@pandacss/types'
+import { PandaError } from './error'
 
 export type Dict = Record<string, any>
 export type Extendable<T> = T & { extend?: T }
@@ -24,4 +25,13 @@ export function clone<T>(value: T): T {
   }
 
   return value
+}
+
+export function ensureConfigObject(config: unknown, name: string): ExtendableConfig {
+  if (isPlainObject(config)) return config as ExtendableConfig
+  throw new PandaError('CONFIG_ERROR', `💥 Preset ${JSON.stringify(name)} must resolve to an object.`)
+}
+
+export function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
