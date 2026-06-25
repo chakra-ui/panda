@@ -72,8 +72,12 @@ A rule must carry at least `from` or `tag` (config-validation error otherwise).
 
 ### Semantics
 
-- **Baseline + cascade.** Panda's own detection (importMap components + uppercase tags) is the baseline; user rules
-  cascade on top. For a given tag the **last matching rule wins** (`ignore` or include) — the `.gitignore` / ESLint /
+- **Baseline + cascade.** Panda's own detection is the baseline; user rules cascade on top. The baseline is importMap
+  components (always) plus the implicit "any uppercase component" heuristic — but the **uppercase heuristic only applies
+  when a `jsxFramework` is configured**, i.e. Panda is acting as a JSX styling system. Without one, a capitalized
+  non-Panda component (e.g. astro's `<Image width height>`) is not a style usage and must not be extracted (matching v1,
+  which did no JSX style-prop extraction at all without a framework). For a given tag the **last matching rule wins**
+  (`ignore` or include) — the `.gitignore` / ESLint /
   CSS-source-order model. Chosen over "ignore-always-wins" because it preserves v1's expressive power (ignore a whole
   package but re-include one component) without losing local readability, and over a specificity model because
   computed specificity is a known source of confusion. Convention: **order general rules first, specific refinements
@@ -88,8 +92,8 @@ A rule must carry at least `from` or `tag` (config-validation error otherwise).
   subpaths (`/^~\/components/`). Relative specifiers (`./button`) are position-dependent — prefer `tag` or an alias.
 - **Preset merge.** Rules concatenate in config-resolution order with the app's rules last, so an app naturally
   overrides preset-contributed rules — consistent with last-match-wins.
-- Local, non-imported uppercase tags keep the native default (`is_uppercase_component_tag`) unless a later `ignore`
-  rule removes them.
+- Local, non-imported uppercase tags keep the native default (`is_uppercase_component_tag`, gated on a configured
+  `jsxFramework`) unless a later `ignore` rule removes them.
 
 This one surface replaces all three v1 knobs: `matchTag` (include by name), `matchTagMode: 'override'` (`ignore`), and
 `matchTagProp` (`props` / `ignoreProps`).

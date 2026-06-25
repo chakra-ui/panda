@@ -202,7 +202,13 @@ impl Extractor<'_, '_, '_> {
 
                 let tag_name = id.name.as_str();
                 let is_configured_component = self.ctx.config.jsx.is_component_tag(tag_name);
-                if !is_configured_component && !self.ctx.config.jsx.should_match_tag(tag_name) {
+                if !is_configured_component
+                    && !self
+                        .ctx
+                        .config
+                        .jsx
+                        .should_match_tag(tag_name, self.ctx.config.has_jsx_framework)
+                {
                     return None;
                 }
                 Some(ResolvedTag {
@@ -234,7 +240,13 @@ impl Extractor<'_, '_, '_> {
         let Some(matched) = self.ctx.aliases.get(root) else {
             let display = member_display(root, path);
             let is_configured_component = self.ctx.config.jsx.is_component_tag(&display);
-            if is_configured_component || self.ctx.config.jsx.should_match_tag(&display) {
+            if is_configured_component
+                || self
+                    .ctx
+                    .config
+                    .jsx
+                    .should_match_tag(&display, self.ctx.config.has_jsx_framework)
+            {
                 return Some(ResolvedTag {
                     category: MatchCategory::Jsx,
                     name: Cow::Owned(display),
@@ -339,7 +351,13 @@ impl Extractor<'_, '_, '_> {
 
                 let tag_name = id.name.as_str();
                 let is_configured_component = self.ctx.config.jsx.is_component_tag(tag_name);
-                if !is_configured_component && !self.ctx.config.jsx.should_match_tag(tag_name) {
+                if !is_configured_component
+                    && !self
+                        .ctx
+                        .config
+                        .jsx
+                        .should_match_tag(tag_name, self.ctx.config.has_jsx_framework)
+                {
                     return None;
                 }
                 Some(ResolvedTag {

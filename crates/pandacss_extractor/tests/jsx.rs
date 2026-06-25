@@ -44,7 +44,7 @@ fn extract(source: &str, matched: &[MatchedImport]) -> ExtractedJsxResult {
         source,
         "fixture.tsx",
         matched,
-        &jsx_config(["styled", "Box", "Stack", "Grid"]),
+        &jsx_config(["styled", "Box", "Stack", "Grid"]).with_jsx_framework(true),
     )
 }
 
@@ -66,7 +66,9 @@ fn extract_with_jsx_config(
         source,
         "fixture.tsx",
         matched,
-        &jsx_config(["styled", "Box", "Stack", "Grid"]).with_jsx(jsx),
+        &jsx_config(["styled", "Box", "Stack", "Grid"])
+            .with_jsx(jsx)
+            .with_jsx_framework(true),
     )
 }
 

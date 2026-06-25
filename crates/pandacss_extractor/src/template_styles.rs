@@ -318,7 +318,10 @@ fn resolve_template_tag<'a>(
             _ => {}
         }
     }
-    if config.jsx.should_match_tag(tag_name) {
+    if config
+        .jsx
+        .should_match_tag(tag_name, config.has_jsx_framework)
+    {
         return Some(ResolvedTemplateTag {
             category: MatchCategory::Jsx,
             name: Cow::Borrowed(tag_name),

@@ -254,8 +254,9 @@ impl JsxExtractionConfig {
     }
 
     #[must_use]
-    pub fn should_match_tag(&self, tag_name: &str) -> bool {
-        self.is_component_tag(tag_name) || is_uppercase_component_tag(tag_name)
+    pub fn should_match_tag(&self, tag_name: &str, has_jsx_framework: bool) -> bool {
+        self.is_component_tag(tag_name)
+            || (has_jsx_framework && is_uppercase_component_tag(tag_name))
     }
 
     #[must_use]

@@ -237,3 +237,42 @@ fn spans_point_into_the_original_astro_source() {
     let span = &result.calls[0].span;
     assert_snapshot!(&source[span.start as usize..span.end as usize], @"css({ color: 'red' })");
 }
+
+#[test]
+fn non_panda_uppercase_component_ignored_without_jsx_framework() {
+    let source = indoc! {r#"
+        ---
+        import { Box } from '@panda/jsx';
+        import { Image } from 'astro:assets';
+        ---
+        <Box color="red" />
+        <Image width="900" height="800" />
+    "#};
+    let result = extract(source, "page.astro", &panda_config());
+    let names: Vec<&str> = result.jsx.iter().map(|j| j.name.as_str()).collect();
+    assert_eq!(
+        names,
+        ["Box"],
+        "non-panda <Image> must not be extracted without a jsxFramework"
+    );
+}
+
+#[test]
+fn uppercase_component_extracts_with_jsx_framework() {
+    let source = indoc! {r#"
+        ---
+        import { css } from '@panda/css';
+        import { Image } from 'astro:assets';
+        ---
+        <Image width="900" height="800" />
+    "#};
+    let result = extract(
+        source,
+        "page.astro",
+        &panda_config().with_jsx_framework(true),
+    );
+    let image: Vec<_> = result.jsx.iter().filter(|j| j.name == "Image").collect();
+    assert_eq!(image.len(), 1);
+    assert_eq!(image[0].data.to_json()["width"], "900");
+    assert_eq!(image[0].data.to_json()["height"], "800");
+}

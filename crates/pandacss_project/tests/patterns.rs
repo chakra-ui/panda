@@ -614,6 +614,7 @@ fn object_value<'a>(literal: &'a Literal, key: &str) -> Option<&'a Literal> {
 #[test]
 fn extracted_jsx_carries_kind_from_config() {
     let project = create_project(json!({
+        "jsxFramework": "react",
         "patterns": {
             "stack": { "jsxName": "Stack", "properties": { "gap": { "type": "string" } } }
         },

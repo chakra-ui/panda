@@ -605,7 +605,8 @@ fn implicit_uppercase_jsx_components_follow_minimal_style_prop_mode() {
 #[test]
 fn local_factory_alias_extracts_as_implicit_uppercase_component() {
     let mut project = create_project(json!({
-        "jsxFactory": "panda"
+        "jsxFactory": "panda",
+        "jsxFramework": "react"
     }));
 
     let report = project.parse_file(
