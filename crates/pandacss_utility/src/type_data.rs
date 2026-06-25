@@ -242,6 +242,7 @@ fn value_alias_type_data(property: &UtilityPropertyTypeData) -> ValueAliasTypeDa
         + usize::from(property.token_category.is_some())
         + usize::from(property.mapped_css_property.is_some())
         + 4;
+
     let mut parts = Vec::with_capacity(capacity);
 
     if let Some(category) = &property.token_category {

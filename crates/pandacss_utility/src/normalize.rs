@@ -26,6 +26,7 @@ impl StyleNormalizer<'_> {
         match style {
             Literal::Object(entries) => {
                 let mut out = Vec::with_capacity(entries.len());
+
                 for (key, value) in entries {
                     let key = if self.shorthand {
                         self.utility
@@ -34,30 +35,40 @@ impl StyleNormalizer<'_> {
                     } else {
                         key.clone()
                     };
+
                     let value = match value {
                         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => {
                             self.normalize_owned(value)
                         }
                         _ => value.clone(),
                     };
+
                     Literal::upsert_object_entry(&mut out, key, value);
                 }
+
                 Literal::Object(out)
             }
+
             Literal::Array(items) => self.normalize_responsive_array(items),
+
             Literal::Conditional(branches) => Literal::Conditional(
                 branches
                     .iter()
                     .map(|branch| self.normalize_owned(branch))
                     .collect(),
             ),
+
             Literal::String(value) => Literal::String(value.clone()),
+
             Literal::Token { path, value } => Literal::Token {
                 path: path.clone(),
                 value: value.clone(),
             },
+
             Literal::Number(value) => Literal::Number(*value),
+
             Literal::Bool(value) => Literal::Bool(*value),
+
             Literal::Null => Literal::Null,
         }
     }

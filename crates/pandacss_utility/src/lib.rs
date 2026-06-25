@@ -118,6 +118,7 @@ impl Utility {
             hash_class_names: options.hash_class_names,
             ..Self::default()
         };
+
         for (property, config) in entries {
             if config.deprecated {
                 utility.deprecated.insert(property.clone());
@@ -126,6 +127,7 @@ impl Utility {
             if options.shorthands {
                 utility.collect_shorthands(property, config.shorthand.as_ref());
             }
+
             utility.properties.insert(
                 property.clone(),
                 UtilityProperty {
@@ -554,18 +556,22 @@ impl Utility {
                     .map(|(k, v)| (k.clone(), self.expand_styles_tree(v)))
                     .collect(),
             ),
+
             Literal::Array(items) => {
                 Literal::Array(items.iter().map(|v| self.expand_styles_tree(v)).collect())
             }
+
             Literal::Conditional(branches) => Literal::Conditional(
                 branches
                     .iter()
                     .map(|v| self.expand_styles_tree(v))
                     .collect(),
             ),
+
             Literal::String(s) | Literal::Token { value: s, .. } => {
                 Literal::String(self.expand_reference_in_value(s))
             }
+
             Literal::Number(_) | Literal::Bool(_) | Literal::Null => value.clone(),
         }
     }
@@ -603,7 +609,9 @@ impl Utility {
         let Some(tokens) = &self.tokens else {
             return;
         };
+
         let palettes = tokens.color_palettes();
+
         if palettes.is_empty() {
             return;
         }
@@ -681,8 +689,10 @@ fn register_composition_group(utility: &mut Utility, prop_name: &str, source: &V
     let Value::Object(root) = source else {
         return;
     };
+
     let mut values: FxHashMap<String, Literal> = FxHashMap::default();
     walk_composition_tree(root, "", &mut values);
+
     if values.is_empty() {
         return;
     }
@@ -711,6 +721,7 @@ fn walk_composition_tree(
         } else {
             format!("{prefix}.{key}")
         };
+
         match value {
             Value::Object(entries) => {
                 if let Some(styles) = entries.get("value") {
