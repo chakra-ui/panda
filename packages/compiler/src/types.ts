@@ -1,6 +1,10 @@
 import type {
+  BuildInfoNative,
   Compiler,
   CompileOutput,
+  DesignSystemChainPlan,
+  DesignSystemManifest,
+  DesignSystemManifestInput,
   Diagnostic,
   ExtractedCall,
   ExtractedJsx,
@@ -131,9 +135,15 @@ export interface NativeCompilerOptions {
   crossFile?: boolean
 }
 
+interface RawDesignSystemBinding {
+  createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
+  designSystemManifestSchemaVersion(): number
+  resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
+}
+
 /** The raw native instance — superset of {@link Compiler} carrying the internal
  *  methods the facade hides. */
-export interface RawCompiler extends Compiler {
+export interface RawCompiler extends Compiler, BuildInfoNative, RawDesignSystemBinding {
   token_dictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void

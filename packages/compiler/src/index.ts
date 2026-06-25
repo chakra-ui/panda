@@ -1,19 +1,18 @@
 import type {
-  BuildInfoNative,
   Compiler,
   CompileOutput,
   CompilerOptions,
   ConfigSnapshot,
-  DesignSystemNative,
+  DesignSystemBinding,
   ProjectCallbacks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
 import {
   assertProjectHooks,
   assertProjectCallbacks,
+  BuildInfo,
+  DesignSystem,
   getTokenCategoryValues,
-  makeBuildInfoApi,
-  makeDesignSystemApi,
   mergeCallbacks,
   mergeHooks,
   prepareCompilerConfig,
@@ -35,10 +34,12 @@ const nativeCompilerFromConfig =
     ? binding.Compiler.fromConfig.bind(binding.Compiler)
     : undefined
 
-/** One-shot stateless compile: build a compiler from `config`, parse every
- *  input file, and emit the stylesheet. Callback-bearing configs
- *  (`utilities.*.transform`, `patterns.*.transform`) are *not* supported here —
- *  use [`createCompiler`] + `options.callbacks` for those. */
+/**
+ * One-shot stateless compile: build a compiler from `config`, parse every
+ * input file, and emit the stylesheet. Callback-bearing configs
+ * (`utilities.*.transform`, `patterns.*.transform`) are *not* supported here -
+ * use [`createCompiler`] + `options.callbacks` for those.
+ */
 export function compile(input?: CompileInput): CompileOutput {
   return binding.compile(input)
 }
@@ -59,8 +60,10 @@ export function createCompiler(config: SerializedConfig, options?: CompilerOptio
   return build(config, options?.callbacks ?? {}, options)
 }
 
-/** Like {@link createCompiler}, but takes a snapshot; its callbacks merge under
- *  any in `options.callbacks`. */
+/**
+ * Like {@link createCompiler}, but takes a snapshot; its callbacks merge under
+ * any in `options.callbacks`.
+ */
 export function createCompilerFromSnapshot(snapshot: ConfigSnapshot, options?: CompilerOptions): Compiler {
   const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
   const hooks = mergeHooks(snapshot.hooks, options?.hooks)
@@ -90,15 +93,17 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   return compiler
 }
 
-/** Wire the ergonomic `compiler.buildInfo` namespace over the native primitives.
- *  Non-enumerable so it doesn't surface in snapshots of the native instance, and
- *  lazy — the API is built on first access, then cached in place. */
-function attachBuildInfo(compiler: Compiler): void {
+/**
+ * Wire the ergonomic `compiler.buildInfo` namespace over the native primitives.
+ * Non-enumerable so it doesn't surface in snapshots of the native instance, and
+ * lazy - the API is built on first access, then cached in place.
+ */
+function attachBuildInfo(compiler: ReturnType<NonNullable<typeof nativeCompilerFromConfig>>): void {
   Object.defineProperty(compiler, 'buildInfo', {
     enumerable: false,
     configurable: true,
     get() {
-      const api = makeBuildInfoApi(compiler as unknown as BuildInfoNative)
+      const api = new BuildInfo(compiler)
       Object.defineProperty(compiler, 'buildInfo', {
         value: api,
         enumerable: false,
@@ -109,15 +114,17 @@ function attachBuildInfo(compiler: Compiler): void {
   })
 }
 
-/** Wire `compiler.designSystem` over the native primitives; non-enumerable and
- *  lazy, mirroring `buildInfo`. `designSystem.load` reuses the `buildInfo`
- *  namespace (accessing it here triggers its own lazy build). */
-function attachDesignSystem(compiler: Compiler): void {
+/**
+ * Wire `compiler.designSystem` over the native primitives; non-enumerable and
+ * lazy, mirroring `buildInfo`. `designSystem.load` reuses the `buildInfo`
+ * namespace (accessing it here triggers its own lazy build).
+ */
+function attachDesignSystem(compiler: ReturnType<NonNullable<typeof nativeCompilerFromConfig>>): void {
   Object.defineProperty(compiler, 'designSystem', {
     enumerable: false,
     configurable: true,
     get() {
-      const api = makeDesignSystemApi(compiler as unknown as DesignSystemNative, compiler.buildInfo)
+      const api = new DesignSystem(toDesignSystemBinding(compiler), compiler.buildInfo)
       Object.defineProperty(compiler, 'designSystem', {
         value: api,
         enumerable: false,
@@ -126,6 +133,16 @@ function attachDesignSystem(compiler: Compiler): void {
       return api
     },
   })
+}
+
+function toDesignSystemBinding(
+  compiler: ReturnType<NonNullable<typeof nativeCompilerFromConfig>>,
+): DesignSystemBinding {
+  return {
+    createManifest: (input) => compiler.createDesignSystemManifest(input),
+    manifestSchemaVersion: () => compiler.designSystemManifestSchemaVersion(),
+    resolveChain: (manifests) => compiler.resolveDesignSystemChain(manifests),
+  }
 }
 
 function toNativeOptions(options: CompilerOptions | undefined): NativeCompilerOptions | undefined {

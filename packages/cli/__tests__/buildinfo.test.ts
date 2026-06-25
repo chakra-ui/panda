@@ -1,4 +1,4 @@
-import { createNodeDriver, type BuildInfo } from '@pandacss/compiler'
+import { createNodeDriver, type BuildInfoArtifact } from '@pandacss/compiler'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -15,7 +15,7 @@ function createLibFixture() {
   return dir
 }
 
-function readBuildInfo(dir: string, outfile = 'styled-system/panda.buildinfo.json'): BuildInfo {
+function readBuildInfo(dir: string, outfile = 'styled-system/panda.buildinfo.json'): BuildInfoArtifact {
   return JSON.parse(readFileSync(join(dir, outfile), 'utf8'))
 }
 

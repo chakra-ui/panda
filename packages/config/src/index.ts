@@ -4,6 +4,7 @@ export { diffConfig } from './diff'
 export { findConfig } from './find'
 export { bundleConfig } from './bundle'
 export { mergeConfigs } from './merge'
+export { readPandaVersion } from './version'
 
 export type { ConfigSnapshot } from './serialize'
 export type { DiffConfigResult } from './diff'

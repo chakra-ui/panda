@@ -1,4 +1,5 @@
-import { isPlainObject } from './shared'
+import { PandaError } from './error'
+import { isPlainObject, type ExtendableConfig } from './shared'
 
 interface TraverseItem {
   value: unknown
@@ -142,4 +143,31 @@ function traverseValue(
 
 function joinPath(parent: string, key: string, separator: string) {
   return parent ? `${parent}${separator}${key}` : key
+}
+
+export function attachRuntimeHooks(config: ExtendableConfig, configs: ExtendableConfig[]): ExtendableConfig {
+  const plugins = configs.flatMap((item) => {
+    if ('hooks' in item && item.hooks != null) {
+      throw new PandaError(
+        'CONFIG_ERROR',
+        '💥 `config.hooks` was removed in v2. Use `plugins: [{ name: "local", hooks: { ... } }]` instead.',
+      )
+    }
+    return [...(item.plugins ?? []), ...(item.extend?.plugins ?? [])]
+  })
+
+  for (const plugin of plugins) {
+    if (!isPlainObject(plugin) || typeof plugin.name !== 'string' || plugin.name.length === 0) {
+      throw new PandaError(
+        'CONFIG_ERROR',
+        '💥 Every plugin in `config.plugins` must be an object with a non-empty `name`.',
+      )
+    }
+  }
+
+  if (plugins.length > 0) {
+    config.plugins = plugins
+  }
+
+  return config
 }

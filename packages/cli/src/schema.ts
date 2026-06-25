@@ -1,4 +1,4 @@
-import type { BuildInfo, Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
+import type { BuildInfoArtifact, Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
 import type { OutputSink } from './output'
 import type { CliResult } from './result'
 import { z } from 'zod'
@@ -107,7 +107,7 @@ export type DebugFlags = z.infer<typeof debugFlagsSchema>
 
 export interface BuildinfoResult extends CommandResult {
   outfile?: string
-  buildInfo?: BuildInfo
+  buildInfo?: BuildInfoArtifact
   moduleCount: number
   atomCount: number
   recipeCount: number

@@ -74,6 +74,31 @@ work, and it's thrown away. The pain compounds in the shapes real users actually
 The goal is to make all of that one field for the consumer and one command for the author, and to make the engine reuse the
 library's extraction instead of repeating it.
 
+## Field report: questions from real consumers
+
+These are the questions library authors actually hit when shipping a component library on Panda — gathered so the design is
+validated against real pain, not a hypothetical. Each maps to a part of this design; three are already answered, two are
+open action items tracked below.
+
+| # | The question | Answer | Where |
+| - | ------------ | ------ | ----- |
+| 1 | *I split my library into a preset package and a components package, and the components import from the preset's `styled-system`. Now every consumer has to point their `outdir` at my package's path. How do I ship this cleanly?* | The preset package is the **design system** — it ships `panda.lib.json`, and the consumer writes one field, `designSystem`. The components package *consumes* that DS but isn't one itself, so it belongs in the consumer's smart **`include`**. The manifest's `importMap` keeps the shipped components importing from the DS's own styled-system, so **no consumer ever aliases `outdir`** — that's the whole point of decoupling the styled-system from the components. | [`importMap`](#the-manifest-pandalibjson), [smart `include`](#the-model-two-fields-two-questions) |
+| 2 | *My bundler pulls too much into the type declarations — Panda's generated types "aren't exported by styled-system/…", and my component's exported type collapses to `undefined`. Why?* | **A bundler-external problem, not a codegen gap.** Panda's generated types *are* exported; the DTS pass is re-resolving the local `styled-system` folder as a bundle input and failing. The DS model fixes the root cause: the styled-system becomes a **real package export** the bundler can resolve and externalize. Authoring guidance: mark the styled-system specifiers `external` so type builds reference the published declarations instead of inlining them. **Open: author-side bundling guidance** (below). | [Module/type resolution](#module-and-type-resolution) + open item |
+| 3 | *If my library and the consuming app each have their own `styled-system`, what actually goes wrong?* | Three things, worst first: (a) **broken runtime identity** — two copies of the JSX runtime mean two React contexts, so a library's slot-recipe provider and the app don't share state; (b) **duplicated CSS** for identical atoms; (c) **`cx`/`cva` divergence** across the copies. Sharing one styled-system via the DS manifest is what lets a library and an app share runtime code — the promise made real. | [CSS layering/dedup](#css-layering-tree-shaking-and-federation) |
+| 4 | *In a monorepo, editing a component in a workspace package refreshes the DOM but the CSS doesn't update until I fully restart. How do I fix it?* | The bundler's HMR re-runs the component's JS, but Panda's cssgen never fired — the edited package's source isn't a tracked build dependency. DS/`include` resolution must register **cross-package source globs as watched build deps** and re-run cssgen on change, independent of the bundler. **Open: cross-package watch dependency** (below). | [Loading the manifest](#loading-the-manifest-consumer) + open item |
+| 5 | *Should Panda's dev package be a `dependency` or a `peerDependency` of my library?* | **Peer.** A design system declares it as a peer; the manifest's `panda` field is the range a consumer's Panda must satisfy. One Panda per install, no version-doubling. | [`panda` + `schemaVersion`](#the-manifest-pandalibjson) |
+
+### Open action items
+
+- **Author-side bundling guidance (from #2).** `panda lib` ships the styled-system as package exports, but DS authors still
+  run their own bundler over component source. Document — and have `panda lib` scaffold/validate — that the styled-system
+  specifiers are marked `external` so DTS builds reference the published types rather than re-resolving a local folder. This
+  is docs + a setup check, not engine code.
+- **Cross-package watch dependency (from #4).** Resolving `designSystem`/smart-`include` must register the consumed package's
+  source globs (and `buildInfo` path) as cssgen build dependencies so a watch run regenerates CSS on a dependency-source
+  edit, not just on `panda.lib.json`/lockfile changes. Today only the manifest paths are registered (see
+  [Loading the manifest](#loading-the-manifest-consumer)); the source-glob case is the gap.
+
 ## Goals and non-goals
 
 **Goals**
@@ -354,8 +379,14 @@ them**.
 
 1. **Manifest value + engine gen/load (no user-facing change).** `DesignSystemManifest` type; `create` + `validate` over a
    `Project` value; (de)serialization. Unit-tested in-memory at Rust + native + wasm levels. No config field, no CLI.
-2. **`designSystem`, single level.** The config field; host resolves one manifest, merges preset, derives importMap,
-   validates + hydrates build info. Diagnostics: not-found, version-mismatch, peer-range. One-lib-→-one-app fixture.
+2. **`designSystem`, single level. ✅ Complete.** Public `designSystem` config field; host
+   (`packages/config` `loadDesignSystemPreset`) resolves the manifest, merges its preset as the lowest layer (user wins),
+   auto-wires the dual-root importMap (DS roots + local outdir), and validates the manifest's `schemaVersion` + Panda
+   peer-range before loading — a consumer outside the DS's major (e.g. Panda <2 against a `^2.0.0` DS) is rejected.
+   The node driver (`packages/compiler` `hydrateDesignSystem`) hydrates the library's build info, keyed by DS name, so its
+   components are never re-extracted. Diagnostics: not-found, version-mismatch, peer-range. Manifest/preset/build-info
+   registered as build deps. _Deferred to later phases:_ build-info tree-shaking to app imports (optimization) and the
+   stale-build-info `files` re-extract fallback (Phase 5).
 3. **Nested chains.** `resolveChain` over manifest values: ordered plan, resolve-against-manifest-dir, cycle guard. Host
    reads the parent chain and feeds values in. Diagnostics: cycle, parent-not-found. Tested as in-memory arrays (depth-N,
    diamond, cycle).

@@ -1,12 +1,13 @@
 import type { Config, UserConfig } from '@pandacss/types'
 import { normalize, relative } from 'node:path'
 import { bundleConfig } from './bundle'
+import { loadDesignSystemPreset, withDesignSystemImportMap, type ResolvedDesignSystem } from './design-system'
 import { PandaError } from './error'
-import { configResolvedUtils } from './hook-utils'
+import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
-import { isPlainObject, type ExtendableConfig } from './shared'
+import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
 type ConfigSource = SourcedConfig['source']
@@ -24,6 +25,7 @@ export interface ResolveAuthoredPresetsResult {
   dependencies: string[]
   metadata?: {
     sources?: ConfigSources
+    designSystem?: ResolvedDesignSystem
   }
 }
 
@@ -49,51 +51,39 @@ export async function resolveAuthoredPresets(
   const rootSource: ConfigSource = { kind: 'config' }
   if (options.configFile) rootSource.file = normalize(relative(cwd, options.configFile))
 
+  const designSystem = (config as UserConfig).designSystem
+  let resolvedDesignSystem: { preset: ExtendableConfig; info: ResolvedDesignSystem } | undefined
+  if (typeof designSystem === 'string' && designSystem.length > 0) {
+    resolvedDesignSystem = await loadDesignSystemPreset(designSystem, cwd, ctx.dependencies)
+    await collectConfigs(resolvedDesignSystem.preset, { kind: 'preset', specifier: designSystem }, ctx, new WeakSet())
+  }
+
   await collectConfigs(config, rootSource, ctx, new WeakSet())
+
+  const ds = resolvedDesignSystem
+  const finalize = (resolved: UserConfig): UserConfig =>
+    ds ? withDesignSystemImportMap(resolved, designSystem as string, ds.info) : resolved
+  const dsMetadata = ds ? { designSystem: ds.info } : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
     if (options.preserveRuntimeHooks) attachRuntimeHooks(merged.config, ctx.configs)
     return {
-      config: merged.config as UserConfig,
+      config: finalize(merged.config as UserConfig),
       dependencies: Array.from(ctx.dependencies),
-      metadata: { sources: merged.sources },
+      metadata: { sources: merged.sources, ...dsMetadata },
     }
   }
 
   return {
-    config: (options.preserveRuntimeHooks
-      ? attachRuntimeHooks(mergeConfigs(ctx.configs), ctx.configs)
-      : mergeConfigs(ctx.configs)) as UserConfig,
+    config: finalize(
+      (options.preserveRuntimeHooks
+        ? attachRuntimeHooks(mergeConfigs(ctx.configs), ctx.configs)
+        : mergeConfigs(ctx.configs)) as UserConfig,
+    ),
     dependencies: Array.from(ctx.dependencies),
+    ...(dsMetadata ? { metadata: dsMetadata } : {}),
   }
-}
-
-function attachRuntimeHooks(config: ExtendableConfig, configs: ExtendableConfig[]): ExtendableConfig {
-  const plugins = configs.flatMap((item) => {
-    if ('hooks' in item && item.hooks != null) {
-      throw new PandaError(
-        'CONFIG_ERROR',
-        '💥 `config.hooks` was removed in v2. Use `plugins: [{ name: "local", hooks: { ... } }]` instead.',
-      )
-    }
-    return [...(item.plugins ?? []), ...(item.extend?.plugins ?? [])]
-  })
-
-  for (const plugin of plugins) {
-    if (!isPlainObject(plugin) || typeof plugin.name !== 'string' || plugin.name.length === 0) {
-      throw new PandaError(
-        'CONFIG_ERROR',
-        '💥 Every plugin in `config.plugins` must be an object with a non-empty `name`.',
-      )
-    }
-  }
-
-  if (plugins.length > 0) {
-    config.plugins = plugins
-  }
-
-  return config
 }
 
 async function collectConfigs(
@@ -177,11 +167,6 @@ async function resolvePreset(preset: PresetEntry, cwd: string) {
   }
 }
 
-function ensureConfigObject(config: unknown, name: string): ExtendableConfig {
-  if (isPlainObject(config)) return config as ExtendableConfig
-  throw new PandaError('CONFIG_ERROR', `💥 Preset ${JSON.stringify(name)} must resolve to an object.`)
-}
-
 function presetName(config: unknown) {
   return isPlainObject(config) && typeof config.name === 'string' ? config.name : undefined
 }
@@ -193,8 +178,4 @@ function presetSource(config: unknown, specifier?: string, file?: string): Confi
   if (specifier) source.specifier = specifier
   if (file) source.file = file
   return source
-}
-
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error)
 }
