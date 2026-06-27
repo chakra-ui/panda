@@ -1,5 +1,11 @@
 # @pandacss/plugin-vue
 
+## 1.11.4
+
+### Patch Changes
+
+- @pandacss/types@1.11.4
+
 ## 1.11.3
 
 ### Patch Changes

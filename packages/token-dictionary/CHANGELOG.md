@@ -1,5 +1,15 @@
 # @pandacss/token-dictionary
 
+## 1.11.4
+
+### Patch Changes
+
+- e5e657c: Fix panda spec not generating descriptions and other properties (deprecated, extensions) for semantic tokens
+  set to a string value.
+  - @pandacss/logger@1.11.4
+  - @pandacss/shared@1.11.4
+  - @pandacss/types@1.11.4
+
 ## 1.11.3
 
 ### Patch Changes

@@ -1,5 +1,24 @@
 # @pandacss/node
 
+## 1.11.4
+
+### Patch Changes
+
+- 8252d77: Skip rewriting unchanged generated files in watch mode to avoid unnecessary reloads.
+- Updated dependencies [e5e657c]
+  - @pandacss/token-dictionary@1.11.4
+  - @pandacss/generator@1.11.4
+  - @pandacss/core@1.11.4
+  - @pandacss/parser@1.11.4
+  - @pandacss/reporter@1.11.4
+  - @pandacss/config@1.11.4
+  - @pandacss/logger@1.11.4
+  - @pandacss/plugin-lightningcss@1.11.4
+  - @pandacss/plugin-svelte@1.11.4
+  - @pandacss/plugin-vue@1.11.4
+  - @pandacss/shared@1.11.4
+  - @pandacss/types@1.11.4
+
 ## 1.11.3
 
 ### Patch Changes
