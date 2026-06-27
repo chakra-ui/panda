@@ -8,7 +8,14 @@ import {
   type Driver,
   type SourceChange,
 } from '@pandacss/compiler-shared'
-import { type HostHooks, type LoadConfigResult, diffConfig, loadConfig, resolveSmartInclude } from '@pandacss/config'
+import {
+  type HostHooks,
+  type LoadConfigResult,
+  diffConfig,
+  loadConfig,
+  mergeExcludes,
+  resolveSmartInclude,
+} from '@pandacss/config'
 import { hydrateDesignSystem } from './design-system'
 import { createCompilerFromSnapshot } from './index'
 
@@ -37,8 +44,8 @@ function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: st
   const resolved = resolveSmartInclude(include, cwd, deps)
   loaded.config.include = resolved.include
   if (resolved.excludes.length > 0) {
-    const existing = Array.isArray(loaded.config.exclude) ? loaded.config.exclude : []
-    loaded.config.exclude = [...existing, ...resolved.excludes]
+    const existing = Array.isArray(loaded.config.exclude) ? loaded.config.exclude : undefined
+    loaded.config.exclude = mergeExcludes(existing, resolved.excludes)
   }
   loaded.dependencies = Array.from(deps)
 }

@@ -4,7 +4,7 @@ export { diffConfig } from './diff'
 export { findConfig } from './find'
 export { bundleConfig } from './bundle'
 export { mergeConfigs } from './merge'
-export { resolveSmartInclude } from './smart-include'
+export { resolveSmartInclude, mergeExcludes } from './smart-include'
 export { readPandaVersion } from './version'
 
 export type { ConfigSnapshot } from './serialize'

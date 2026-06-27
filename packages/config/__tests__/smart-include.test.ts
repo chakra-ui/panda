@@ -56,7 +56,6 @@ describe('resolveAuthoredPresets / smart include', () => {
       `node_modules/widgets/**/*.{${EXT}}`,
     ])
     expect(config.exclude).toEqual([
-      '**/*.d.ts',
       'node_modules/@acme/charts/**/node_modules/**',
       'node_modules/widgets/**/node_modules/**',
     ])

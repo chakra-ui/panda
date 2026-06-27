@@ -57,9 +57,8 @@ export function expandSmartInclude(config: UserConfig, cwd: string, deps: Set<st
   return { ...config, include: resolved.include, exclude: mergeExcludes(config.exclude, resolved.excludes) }
 }
 
-function mergeExcludes(existing: string[] | undefined, additions: string[]): string[] {
-  const base = existing && existing.length > 0 ? existing : ['**/*.d.ts']
-  return [...base, ...additions]
+export function mergeExcludes(existing: string[] | undefined, additions: string[]): string[] {
+  return [...(existing ?? []), ...additions]
 }
 
 function resolvePackageDir(spec: string, cwd: string): string | undefined {
