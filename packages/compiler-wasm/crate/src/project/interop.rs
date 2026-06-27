@@ -11,7 +11,7 @@ use pandacss_config::UserConfig;
 
 use super::serde_types::{
     AtomSerde, CompileOptionsSerde, CssOutputOptionsSerde, GlobOverrides, ParseFileReportSerde,
-    WriteCssOptionsSerde, WriteSplitCssOptionsSerde,
+    WriteCssOptionsSerde, WriteLayerCssOptionsSerde, WriteSplitCssOptionsSerde,
 };
 
 /*
@@ -52,6 +52,12 @@ pub(super) fn css_output_options_from_js(
 
 pub(super) fn write_css_options_from_js(options: JsValue) -> Result<WriteCssOptionsSerde, JsValue> {
     parse_required_options(options, "writeCss")
+}
+
+pub(super) fn write_layer_css_options_from_js(
+    options: JsValue,
+) -> Result<WriteLayerCssOptionsSerde, JsValue> {
+    parse_required_options(options, "writeLayerCss")
 }
 
 pub(super) fn write_split_css_options_from_js(

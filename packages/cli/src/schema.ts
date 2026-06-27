@@ -1,4 +1,5 @@
 import type { BuildInfoArtifact, Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
+import type { UsageReport } from '@pandacss/compiler-shared'
 import type { OutputSink } from './output'
 import type { CliResult } from './result'
 import { z } from 'zod'
@@ -94,6 +95,17 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
   onlyConfig: booleanFlag,
 })
 
+export const analyzeFlagsSchema = commonFlagsSchema.extend({
+  scope: z
+    .enum(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe'])
+    .optional()
+    .describe(
+      'Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)',
+    ),
+  outfile: stringFlag,
+  limit: numberLikeFlag,
+})
+
 export type LogLevel = z.infer<typeof logLevelSchema>
 export type CommonFlags = z.infer<typeof commonFlagsSchema>
 export type CodegenFlags = z.infer<typeof codegenFlagsSchema>
@@ -104,6 +116,9 @@ export type BuildinfoFlags = z.infer<typeof buildinfoFlagsSchema>
 export type InfoFlags = z.infer<typeof infoFlagsSchema>
 export type DoctorFlags = z.infer<typeof doctorFlagsSchema>
 export type DebugFlags = z.infer<typeof debugFlagsSchema>
+type AnalyzeScopeRaw = z.infer<typeof analyzeFlagsSchema>['scope']
+export type AnalyzeScope = NonNullable<Exclude<AnalyzeScopeRaw, 'token' | 'recipe'>>
+export type AnalyzeFlags = z.infer<typeof analyzeFlagsSchema>
 
 export interface BuildinfoResult extends CommandResult {
   outfile?: string
@@ -144,6 +159,10 @@ export interface BuildResult extends CommandResult {
   diagnosticCount: number
   missing: string[]
   stale: string[]
+}
+
+export interface AnalyzeResult extends CommandResult, UsageReport {
+  scope: AnalyzeScope
 }
 
 export interface DebugResult extends CommandResult {

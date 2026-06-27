@@ -3,7 +3,8 @@ import { Inspector, Linter, ProjectCache, RangeIndex, resolvePandaSettings, sour
 import type { Compiler, FileInspectionResult } from '@pandacss/compiler'
 import type { LoadConfigResult } from '@pandacss/config'
 
-const emptyInspection = (): FileInspectionResult => ({
+const emptyInspection = (path = 'app.tsx'): FileInspectionResult => ({
+  path,
   usages: [],
   diagnostics: [],
   calls: [],
@@ -33,8 +34,8 @@ describe('resolvePandaSettings', () => {
 
 describe('Inspector', () => {
   test('caches one inspection result per compiler, path, and source key', () => {
-    const inspectFileSource = vi.fn(() => emptyInspection())
-    const compiler = { inspectFileSource } as unknown as Compiler
+    const inspectFile = vi.fn(({ path }: { path: string }) => emptyInspection(path))
+    const compiler = { inspectFile } as unknown as Compiler
     const inspector = new Inspector()
 
     const first = inspector.inspect(compiler, 'app.tsx', 'css({ color: "red.300" })')
@@ -43,7 +44,7 @@ describe('Inspector', () => {
 
     expect(first).toBe(second)
     expect(third).not.toBe(first)
-    expect(inspectFileSource).toHaveBeenCalledTimes(2)
+    expect(inspectFile).toHaveBeenCalledTimes(2)
   })
 
   test('source cache key includes source length', () => {
@@ -73,7 +74,7 @@ describe('ProjectCache', () => {
       hostHooks: {},
       dependencies: ['/repo/panda.config.ts'],
     }
-    const compiler = { inspectFileSource: () => emptyInspection() } as unknown as Compiler
+    const compiler = { inspectFile: ({ path }: { path: string }) => emptyInspection(path) } as unknown as Compiler
     const load = vi.fn(async () => result)
     const createCompiler = vi.fn(() => compiler)
     const cache = new ProjectCache({ load, createCompiler })
@@ -94,7 +95,8 @@ describe('ProjectCache', () => {
 describe('Linter', () => {
   test('loads a project and inspects the current source text', async () => {
     const inspection = emptyInspection()
-    const compiler = { inspectFileSource: vi.fn(() => inspection) } as unknown as Compiler
+    const inspectFile = vi.fn(() => inspection)
+    const compiler = { inspectFile } as unknown as Compiler
     const load = vi.fn(async (): Promise<LoadConfigResult> => {
       return {
         path: '/repo/panda.config.ts',
@@ -121,6 +123,6 @@ describe('Linter', () => {
       result: inspection,
     })
 
-    expect(compiler.inspectFileSource).toHaveBeenCalledWith('/repo/app.tsx', 'css({ color: "red.300" })')
+    expect(inspectFile).toHaveBeenCalledWith({ path: '/repo/app.tsx', source: 'css({ color: "red.300" })' })
   })
 })

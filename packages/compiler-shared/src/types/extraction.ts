@@ -135,6 +135,7 @@ export interface InspectionJsx extends ExtractedJsx {
 }
 
 export interface FileInspectionResult {
+  path: string
   usages: UsageSite[]
   diagnostics: Diagnostic[]
   calls: InspectionCall[]
@@ -142,6 +143,177 @@ export interface FileInspectionResult {
   tokenRefs: TokenRefSite[]
   componentEntries: ComponentEntryRef[]
   styleEntries: StyleEntryRef[]
+}
+
+/**
+ * In-memory source input for tooling inspection.
+ */
+export interface SourceFileInput {
+  path: string
+  source: string
+}
+
+/**
+ * Batch result for source inspection. Per-file entries are the source of truth;
+ * callers can derive flattened views or usage reports from `files`.
+ */
+export interface FileInspectionBatch {
+  sourceCount: number
+  files: FileInspectionResult[]
+}
+
+export type UsageReportScope = 'tokens' | 'recipes' | 'utilities' | 'patterns' | 'keyframes'
+
+export type UsageReportScopeOption = UsageReportScope | 'all'
+
+export type UsageReportCounts = Record<UsageReportScope, number>
+
+export type UsageReportSummary = Record<UsageReportScope, { used: number; unique: number }>
+
+export interface TokenUsageItem {
+  name: string
+  uses: number
+  files: number
+}
+
+export interface TokenRawValueUsage {
+  prop: string
+  value: string
+  uses: number
+  files: number
+  suggestions: TokenSuggestion[]
+}
+
+export interface TokenCategoryUsage {
+  category: string
+  total: number
+  used: number
+  unused: number
+  percentUsed: number
+  files: number
+  top: TokenUsageItem[]
+  rawValues: TokenRawValueUsage[]
+}
+
+export interface TokenUsageReport {
+  categories: TokenCategoryUsage[]
+}
+
+export interface RecipeVariantUsage {
+  name: string
+  uses: number
+  files: number
+}
+
+export interface RecipeUsageItem {
+  name: string
+  totalVariantValues: number
+  usedVariantValues: number
+  unusedVariantValues: number
+  percentUsed: number
+  files: number
+  top: RecipeVariantUsage[]
+  usedAs: { jsx: number; fn: number }
+}
+
+export interface RecipeUsageReport {
+  recipes: RecipeUsageItem[]
+}
+
+export interface UsageReportFileFact {
+  id: number
+  path: string
+  diagnostics: number
+}
+
+export interface UsageReportTokenFact {
+  id: number
+  path: string
+  category: string
+  configured: boolean
+}
+
+export interface UsageReportTokenUsageFact {
+  fileId: number
+  tokenId: number
+  line: number
+  column: number
+}
+
+export interface UsageReportRawValueFact {
+  id: number
+  prop: string
+  value: string
+  category: string
+}
+
+export interface UsageReportRawValueUsageFact {
+  fileId: number
+  rawValueId: number
+  line: number
+  column: number
+}
+
+export interface UsageReportRawValueSuggestionFact extends TokenSuggestion {
+  rawValueId: number
+}
+
+export interface UsageReportRecipeFact {
+  id: number
+  name: string
+  totalVariantValues: number
+  configured: boolean
+}
+
+export interface UsageReportRecipeUsageFact {
+  fileId: number
+  recipeId: number
+  syntax: 'jsx' | 'fn'
+  line: number
+  column: number
+}
+
+export interface UsageReportRecipeVariantUsageFact {
+  fileId: number
+  recipeId: number
+  variant: string
+  value: string
+  line: number
+  column: number
+}
+
+export interface UsageReportFacts {
+  files: UsageReportFileFact[]
+  tokens: UsageReportTokenFact[]
+  tokenUsages: UsageReportTokenUsageFact[]
+  rawValues: UsageReportRawValueFact[]
+  rawValueUsages: UsageReportRawValueUsageFact[]
+  rawValueSuggestions: UsageReportRawValueSuggestionFact[]
+  recipes: UsageReportRecipeFact[]
+  recipeUsages: UsageReportRecipeUsageFact[]
+  recipeVariantUsages: UsageReportRecipeVariantUsageFact[]
+}
+
+export interface UsageReportViews {
+  tokens: TokenUsageReport
+  recipes: RecipeUsageReport
+}
+
+export interface UsageReportFile {
+  path: string
+  counts: UsageReportCounts
+  diagnostics: number
+  sourceUsages: number
+}
+
+export interface UsageReport {
+  sourceCount: number
+  scope: UsageReportScopeOption
+  summary: UsageReportSummary
+  facts: UsageReportFacts
+  views?: UsageReportViews
+  files: UsageReportFile[]
+  sourceUsages: number
 }
 
 export type UtilityValueInput = string | number | boolean | null

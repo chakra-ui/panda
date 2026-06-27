@@ -4,6 +4,7 @@ import type {
   CompilerOptions,
   ConfigSnapshot,
   DesignSystemBinding,
+  SourceFileInput,
   ProjectCallbacks,
   SerializedConfig,
 } from '@pandacss/compiler-shared'
@@ -13,6 +14,8 @@ import {
   BuildInfo,
   DesignSystem,
   getTokenCategoryValues,
+  inspectFile,
+  inspectFiles,
   mergeCallbacks,
   mergeHooks,
   prepareCompilerConfig,
@@ -25,6 +28,7 @@ import type { CompileInput, NativeCompilerOptions, TokenDictionary, TraceOptions
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
 
+export { createUsageReport } from '@pandacss/compiler-shared'
 export { createNodeDriver } from './driver'
 export type { NodeDriverOptions } from './driver'
 
@@ -89,6 +93,7 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   registerCallbacks(compiler, callbacks, options?.hooks, compiler.token_dictionary?.())
   attachBuildInfo(compiler)
   attachDesignSystem(compiler)
+  attachInspection(compiler)
 
   return compiler
 }
@@ -132,6 +137,19 @@ function attachDesignSystem(compiler: ReturnType<NonNullable<typeof nativeCompil
       })
       return api
     },
+  })
+}
+
+function attachInspection(compiler: ReturnType<NonNullable<typeof nativeCompilerFromConfig>>): void {
+  Object.defineProperty(compiler, 'inspectFile', {
+    enumerable: false,
+    configurable: true,
+    value: (input: SourceFileInput) => inspectFile(compiler, input),
+  })
+  Object.defineProperty(compiler, 'inspectFiles', {
+    enumerable: false,
+    configurable: true,
+    value: (files: SourceFileInput[]) => inspectFiles(compiler, files),
   })
 }
 

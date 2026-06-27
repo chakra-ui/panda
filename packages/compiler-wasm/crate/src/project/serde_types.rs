@@ -85,6 +85,16 @@ pub(super) struct WriteCssOptionsSerde {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub(super) struct WriteLayerCssOptionsSerde {
+    pub(super) outfile: String,
+    pub(super) cwd: Option<String>,
+    pub(super) layers: Vec<String>,
+    pub(super) emit_layer_declaration: Option<bool>,
+    pub(super) minify: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(super) struct WriteSplitCssOptionsSerde {
     pub(super) outdir: String,
     pub(super) cwd: Option<String>,

@@ -46,6 +46,7 @@ import type {
   WriteCssOptions,
   WriteCssResult,
   WriteFilesResult,
+  WriteLayerCssOptions,
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
 
@@ -127,11 +128,12 @@ export declare class WasmCompiler {
   hasLayerDeclaration(css: string): boolean
   spec(): Spec
   sources(): SourceEntry[]
-  inspectFileSource(path: string, source: string): FileInspectionResult
+  inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]
   writeArtifacts(options: WriteArtifactsOptions): string[]
   writeCss(options: WriteCssOptions): WriteCssResult
+  writeLayerCss(options: WriteLayerCssOptions): WriteCssResult
   writeSplitCss(options: WriteSplitCssOptions): WriteFilesResult
   isEmpty(): boolean
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void

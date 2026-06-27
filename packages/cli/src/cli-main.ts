@@ -1,5 +1,6 @@
 import { defineCommand, renderUsage, runMain, type ArgsDef, type CommandDef } from 'citty'
 import { buildArgs, buildCommand, buildSubcommand, checkCommand, devCommand } from './commands/build'
+import { analyzeCommand } from './commands/analyze'
 import { buildinfoCommand } from './commands/buildinfo'
 import { codegenCommand } from './commands/codegen'
 import { cssgenCommand } from './commands/cssgen'
@@ -36,6 +37,7 @@ export async function main(argv = process.argv): Promise<void> {
       doctor: doctorCommand,
       debug: debugCommand,
       buildinfo: buildinfoCommand,
+      analyze: analyzeCommand,
       codegen: codegenCommand,
       cssgen: cssgenCommand,
     },

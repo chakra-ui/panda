@@ -19,7 +19,7 @@ export class Inspector {
     const cached = byPath.get(path)
     if (cached?.sourceKey === sourceKey) return cached.result
 
-    const result = compiler.inspectFileSource(path, source)
+    const result = compiler.inspectFile({ path, source })
     byPath.set(path, { sourceKey, result })
     return result
   }

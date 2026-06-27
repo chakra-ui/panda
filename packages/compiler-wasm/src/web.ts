@@ -22,7 +22,10 @@ import {
   assertProjectHooks,
   BuildInfo,
   DesignSystem,
+  createUsageReport,
   getTokenCategoryValues,
+  inspectFile,
+  inspectFiles,
   mergeCallbacks,
   prepareCompilerConfig,
 } from '@pandacss/compiler-shared'
@@ -34,6 +37,7 @@ import type {
   ProjectCallbacks,
   ProjectHooks,
   SerializedConfig,
+  SourceFileInput,
 } from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
 import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
@@ -118,6 +122,14 @@ export function build(
     value: new DesignSystem(toDesignSystemBinding(compiler), buildInfo),
     enumerable: false,
   })
+  Object.defineProperty(compiler, 'inspectFile', {
+    value: (input: SourceFileInput) => inspectFile(compiler, input),
+    enumerable: false,
+  })
+  Object.defineProperty(compiler, 'inspectFiles', {
+    value: (files: SourceFileInput[]) => inspectFiles(compiler, files),
+    enumerable: false,
+  })
 
   return compiler
 }
@@ -147,4 +159,4 @@ export function buildFromConfigOptions(callbacks: ProjectCallbacks): WasmFromCon
   }
 }
 
-export { mergeCallbacks }
+export { createUsageReport, mergeCallbacks }

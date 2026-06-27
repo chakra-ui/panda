@@ -6,7 +6,9 @@ import type {
   Atom,
   EncodedRecipeStyles,
   ExtractResult,
+  FileInspectionBatch,
   FileInspectionResult,
+  SourceFileInput,
   ParsedFileView,
   ParseFileReport,
   ProjectSummary,
@@ -256,7 +258,8 @@ export interface Compiler {
    * Tooling queries.
    */
   extractFileSource(path: string, source: string): ExtractResult
-  inspectFileSource(path: string, source: string): FileInspectionResult
+  inspectFile(input: SourceFileInput): FileInspectionResult
+  inspectFiles(files: SourceFileInput[]): FileInspectionBatch
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]
 

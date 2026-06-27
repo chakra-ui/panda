@@ -10,7 +10,7 @@ use wasm_bindgen::prelude::*;
 
 use super::interop::{
     compile_options_from_js, css_output_options_from_js, parse_required_options,
-    write_css_options_from_js, write_split_css_options_from_js,
+    write_css_options_from_js, write_layer_css_options_from_js, write_split_css_options_from_js,
 };
 use super::serde_types::{
     CompileFileManifestSerde, CompileLayerRangeSerde, CompileLayerRangesSerde,
@@ -133,6 +133,45 @@ impl WasmCompiler {
         );
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         output
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = writeLayerCss)]
+    pub fn write_layer_css(&mut self, options: JsValue) -> Result<JsValue, JsValue> {
+        let _span =
+            tracing::trace_span!("get_layer_css", method = "wasm_write_layer_css").entered();
+        let options = write_layer_css_options_from_js(options)?;
+        let layer_options = LayerCssOptionsSerde {
+            layers: options.layers,
+            emit_layer_declaration: options.emit_layer_declaration,
+            minify: options.minify,
+        };
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms();
+        let output = build_layer_compile_output(
+            &mut self.inner,
+            &self.user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+            &layer_options,
+        );
+        let target = self.paths.resolve(
+            &options.cwd.unwrap_or_else(|| self.user_config.cwd.clone()),
+            &options.outfile,
+        );
+        self.write_target_file(&target, &output.css)?;
+
+        let result = WriteCssResultSerde {
+            path: target,
+            css: output.css,
+            source_map: output.source_map,
+            manifest: output.manifest,
+            layer_ranges: output.layer_ranges,
+            diagnostics: output.diagnostics,
+        };
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }

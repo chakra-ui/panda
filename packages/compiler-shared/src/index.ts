@@ -13,6 +13,7 @@
  */
 
 export * from './types'
+export * from './inspection'
 export * from './build-info'
 export * from './design-system'
 export * from './callbacks'

@@ -40,7 +40,7 @@ describe('cli smoke', () => {
     expect(normalizeCliOutput(result.stdout)).toMatchInlineSnapshot(`
       "Generate the panda system and CSS. Run with no subcommand for the full build. (panda v<version>)
 
-      USAGE \`panda [OPTIONS] init|dev|build|check|info|doctor|debug|buildinfo|codegen|cssgen\`
+      USAGE \`panda [OPTIONS] init|dev|build|check|info|doctor|debug|buildinfo|analyze|codegen|cssgen\`
 
       OPTIONS
 
@@ -73,6 +73,7 @@ describe('cli smoke', () => {
       \`doctor\` Validate Panda setup and diagnostics
       \`debug\` Dump resolved config and per-file extraction for bug reports
       \`buildinfo\` Build a portable panda.buildinfo.json for a design-system library
+      \`analyze\` Inspect Panda usage across project sources
       \`codegen\` Generate the panda system
       \`cssgen\` Generate CSS from project files
 
@@ -80,13 +81,13 @@ describe('cli smoke', () => {
 
       "
     `)
-    expect(result.stdout).toContain('init|dev|build|check|info|doctor|debug|buildinfo|codegen|cssgen')
+    expect(result.stdout).toContain('init|dev|build|check|info|doctor|debug|buildinfo|analyze|codegen|cssgen')
     expect(result.stdout).toContain(`panda v${version}`)
     expect(result.stdout).not.toContain('inspect')
     expect(result.stdout).not.toContain('validate')
   })
 
-  it.each(['build', 'dev', 'check', 'info', 'doctor', 'cssgen'])('prints help for panda %s', (command) => {
+  it.each(['build', 'dev', 'check', 'info', 'doctor', 'analyze', 'cssgen'])('prints help for panda %s', (command) => {
     const result = runCli([command, '--help'])
 
     expect(result.exitCode).toBe(0)

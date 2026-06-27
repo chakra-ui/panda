@@ -10,6 +10,7 @@ import type {
   ExtractedJsx,
   ExtractResult,
   MatchCategory,
+  FileInspectionResult,
   SerializedConfig,
   SerializedHookFilter,
   Span,
@@ -144,6 +145,7 @@ interface RawDesignSystemBinding {
 /** The raw native instance — superset of {@link Compiler} carrying the internal
  *  methods the facade hides. */
 export interface RawCompiler extends Compiler, BuildInfoNative, RawDesignSystemBinding {
+  inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
   token_dictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void
   registerPatternTransform?(id: string, callback: (props: unknown, helpers: Record<string, unknown>) => unknown): void

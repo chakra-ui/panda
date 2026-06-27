@@ -82,7 +82,7 @@ describe('compiler.spec()', () => {
   })
 })
 
-describe('compiler.inspectFileSource()', () => {
+describe('compiler.inspectFile()', () => {
   it('classifies token / property / keyframe usages with ranges', () => {
     const compiler = createProject({
       theme: {
@@ -92,7 +92,7 @@ describe('compiler.inspectFileSource()', () => {
       utilities: { color: { className: 'c', values: 'colors' } },
     })
     const source = "import { css } from '@panda/css'\ncss({ color: 'red.500', animationName: 'spin' })"
-    const result = compiler.inspectFileSource('app.tsx', source)
+    const result = compiler.inspectFile({ path: 'app.tsx', source })
 
     expect(result.usages).toMatchInlineSnapshot(`
       [
@@ -197,7 +197,10 @@ describe('compiler.inspectFileSource()', () => {
 
   it('returns file-local diagnostics', () => {
     const compiler = createProject()
-    const result = compiler.inspectFileSource('app.tsx', "import { css } from '@panda/css'\ncss({ color: })")
+    const result = compiler.inspectFile({
+      path: 'app.tsx',
+      source: "import { css } from '@panda/css'\ncss({ color: })",
+    })
 
     expect(result.usages).toMatchInlineSnapshot(`[]`)
     expect(result.diagnostics.map(({ severity }) => ({ severity }))).toMatchInlineSnapshot(`
@@ -210,7 +213,7 @@ describe('compiler.inspectFileSource()', () => {
   })
 })
 
-describe('compiler.inspectFileSource() — token reference forms', () => {
+describe('compiler.inspectFile() — token reference forms', () => {
   it('captures token() calls, curly refs, and opacity modifiers through the binding', () => {
     const compiler = createProject({
       theme: { tokens: { colors: { red: { 300: { value: '#f00' }, 500: { value: '#e00' } } } } },
@@ -223,7 +226,7 @@ describe('compiler.inspectFileSource() — token reference forms', () => {
       "css({ color: 'red.300/40' })",
       "css({ '--ring': '{colors.red.500}' })",
     ].join('\n')
-    const result = compiler.inspectFileSource('app.tsx', source)
+    const result = compiler.inspectFile({ path: 'app.tsx', source })
     const kinds = result.usages.map(({ kind, name }) => `${kind} ${name}`)
     expect(kinds).toMatchInlineSnapshot(`
       [

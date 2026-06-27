@@ -26,10 +26,14 @@ command surface was narrowed around build, watch, check, diagnostics, and debug 
 
 V2 now has a stronger substrate for this command:
 
-- `compiler.inspectFileSource(path, source)` classifies Panda usage in one source file.
+- `compiler.inspectFile({ path, source })` classifies Panda usage in one source file.
+- `compiler.inspectFiles(files)` batches the same inspection without adding report-specific aggregation.
+- `createUsageReport(inspection, { scope, spec, suggestTokens })` joins source inspection with the configured
+  design-system surface.
 - `driver.scan()` already finds the project source set from config include/exclude rules.
-- `driver.introspect` indexes `compiler.spec()` so the host can join source usage with configured tokens, utilities,
-  recipes, patterns, and conditions.
+- `compiler.spec()` exposes configured tokens, utilities, recipes, patterns, and conditions for coverage reporting.
+- `compiler.suggestTokens(prop, value)` provides shared raw-value token suggestions without duplicating matching logic in
+  the CLI.
 
 That makes `analyze` a thin host-level aggregation command instead of another build path.
 
@@ -44,18 +48,18 @@ panda analyze
 Common forms:
 
 ```sh
-panda analyze "src/**/*.tsx"
 panda analyze --include "src/**/*.tsx"
 panda analyze --scope tokens
 panda analyze --scope recipes
+panda analyze --scope all
+panda analyze --limit 25
 panda analyze --json
 panda analyze --outfile panda-analysis.json
 panda analyze --report panda-analysis.html
-panda analyze --ui
 ```
 
-The optional positional glob is a compatibility convenience for v1 users. Internally it should normalize to the same
-include path as `--include`; new docs should prefer `--include` for consistency with the v2 CLI.
+Use `--include` for source narrowing. It is explicit, consistent with the v2 CLI, and avoids adding a positional form
+that competes with subcommands or future arguments.
 
 `--scope` should narrow the report. Public help should use plural section names:
 
@@ -64,6 +68,8 @@ all | tokens | recipes | utilities | patterns | keyframes
 ```
 
 The parser can accept v1 singular aliases (`token`, `recipe`) and normalize them to `tokens` and `recipes`.
+
+`--limit` caps terminal rows per detailed section. It does not affect JSON or report files.
 
 ## Naming
 
@@ -90,38 +96,83 @@ The surrounding commands stay distinct:
 
 ## Output Contract
 
-Human output should be compact by default:
+Human output should be a bounded ranked report. It should show enough detail to answer the common question without
+dumping every source site into the terminal:
 
 ```txt
 analyze: scanned 42 files
-tokens: 128 uses, 76 unique, 6 unused
-recipes: 14 uses, 3 recipes, 9 variant values
-utilities: 381 declarations, 37 properties
+
+Tokens
+Category   Used              Top tokens                         Raw values   Files
+colors     23/124 (18.55%)   red.500 (8), gray.100 (5)          6            14
+spacing    8/64 (12.50%)     4 (4), 2 (2), 6 (2)                3            9
+fonts      2/8 (25.00%)      body (1), heading (1)              0            3
+
+Recipes
+Recipe    Variants          Top variants                        Files   Used as
+button    5/12 (41.67%)     size.sm (4), variant.solid (3)      8       jsx 75%, fn 25%
+badge     2/6 (33.33%)      size.md (2), tone.info (1)          3       jsx 100%, fn 0%
 ```
 
-When a scope has useful detail, print a short table after the summary. Keep full per-file details in JSON or report
-output unless the user explicitly narrows the scope.
+Default human output should focus on `tokens` and `recipes`, matching the v1 job: understand design-token and recipe
+usage. `--scope all` can prepend a compact summary for the broader v2 scopes before the detailed token and recipe
+sections:
+
+```txt
+Summary
+tokens      31 uses, 17 unique, 9 unused in scanned sources
+recipes     14 uses, 2 recipes, 7 variant values
+utilities   381 declarations, 37 properties
+patterns    22 uses, 4 patterns
+keyframes   3 uses, 2 keyframes
+```
+
+Use precise, neutral labels:
+
+- `Used` should include both count and percentage, for example `23/124 (18.55%)`.
+- `Top tokens` and `Top variants` should include occurrence counts inline.
+- `Raw values` should replace v1's `Hardcoded` label. Analyze is observational; lint rules can decide whether a raw
+  value is a violation.
+- `Files` should count distinct scanned files containing that category, recipe, or item.
+
+Cap detailed terminal rows with `--limit` and keep full per-file details in JSON or report output. Human output may
+evolve; JSON is the stable scripting contract.
 
 JSON output should use the normal CLI result envelope and add analyze data:
 
 ```ts
 interface AnalyzeResult extends CliResult {
   sourceCount: number
-  scopes: AnalyzeScope[]
+  scope: AnalyzeScope | "all"
   summary: AnalyzeSummary
-  tokens?: TokenUsageReport
-  recipes?: RecipeUsageReport
-  utilities?: UtilityUsageReport
-  patterns?: PatternUsageReport
-  keyframes?: KeyframeUsageReport
+  facts: {
+    files: FileFact[]
+    tokens: TokenFact[]
+    tokenUsages: TokenUsageFact[]
+    rawValues: RawValueFact[]
+    rawValueUsages: RawValueUsageFact[]
+    rawValueSuggestions: RawValueSuggestionFact[]
+    recipes: RecipeFact[]
+    recipeUsages: RecipeUsageFact[]
+    recipeVariantUsages: RecipeVariantUsageFact[]
+  }
+  views?: {
+    tokens: TokenUsageReport
+    recipes: RecipeUsageReport
+  }
 }
 ```
+
+Treat `facts` as the source of truth. It should be table-shaped so terminal output, static HTML, and a future
+interactive viewer can all project from the same data. `views` are derived conveniences for the terminal renderer and
+simple JSON consumers.
 
 `--outfile` writes the JSON payload to a file and keeps stdout human-readable unless `--json` is also passed. This
 matches commands where the terminal remains useful while scripts receive a stable artifact.
 
-`--report <file>` should write a static HTML report from the same JSON model. Static HTML is the first UI step because
-it works in CI artifacts and pull-request workflows without starting a server.
+`--report <file>` should write a static HTML report from the same JSON model. Static HTML is the first report artifact
+because it works in CI artifacts and pull-request workflows without starting a server. Do not open a browser by
+default; a future `--open` flag can opt into that behavior.
 
 The report should be self-contained only when the payload is compact. Embed summaries, tables, per-file counts, and
 source references (`file`, `line`, `column`, `kind`, `name`), but do not embed source text, AST data, raw inspection
@@ -135,9 +186,18 @@ panda analyze --report-dir panda-analysis
 Directory mode can write `index.html` plus a JSON payload and assets. It keeps large monorepo reports useful without
 turning the default single-file report into a bloated artifact.
 
-`--ui` can come after the JSON model is stable. Treat it as a mode of `analyze`, not a new top-level command. It should
-load the same analysis data and provide filtering, sorting, and source drilldown for token paths, recipe variants, raw
-values, and files.
+An interactive viewer can come after the JSON model and static report are stable. Treat it as a mode of `analyze`, not
+a new top-level command. It should load the same analysis data and provide filtering, sorting, and source drilldown for
+token paths, recipe variants, raw values, and files.
+
+Modern analyzer CLIs tend to separate terminal, machine, and report outputs:
+
+- terminal output is compact and ranked,
+- JSON/raw data is explicit and stable,
+- static HTML/report output is a shareable artifact,
+- browser opening is opt-in.
+
+Follow that model here.
 
 ## Implementation Boundary
 
@@ -148,9 +208,12 @@ runCommand
   -> createNodeDriver
   -> driver.scan()
   -> read each source file
-  -> driver.compiler.inspectFileSource(path, source)
-  -> aggregate usages
-  -> join with driver.introspect.spec
+  -> driver.compiler.inspectFiles(files)
+  -> createUsageReport(inspection, {
+       scope,
+       spec: driver.compiler.spec(),
+       suggestTokens: driver.compiler.suggestTokens,
+     })
   -> render human/json/report
 ```
 
@@ -164,6 +227,23 @@ Primary aggregation inputs:
 - `styleEntries` for utility/property usage, source values, shorthand expansion, and raw value hotspots.
 - `componentEntries` and `jsx` for component, recipe, slot recipe, and pattern usage.
 - `diagnostics` from each inspected file, plus compiler diagnostics from config setup.
+- `compiler.spec()` for configured token categories, token values, recipes, slot recipes, utilities, patterns, and
+  keyframes.
+- `compiler.suggestTokens(prop, value)` for raw-value token suggestions after raw pairs have been deduplicated.
+
+`inspectFile` should stay source-local. It can enrich entries with cheap facts already known during classification:
+
+- canonical utility/property name,
+- token category,
+- known token path when a value resolves to a configured token,
+- raw source value,
+- recipe name,
+- static recipe variant name/value,
+- source syntax such as JSX prop, CSS call, recipe call, or pattern call.
+
+Do not compute project-wide coverage or token suggestions inside `inspectFile`. Coverage needs the full scanned batch
+plus the configured design-system surface. Token suggestions should be deduplicated first so repeated raw values do not
+cause repeated native calls.
 
 Output ordering must be deterministic: sort by scope, canonical name, file path, then range. This keeps snapshots,
 artifacts, and review diffs stable.
@@ -180,9 +260,13 @@ Compute unused coverage as:
 configured surface - observed static usage
 ```
 
-Token-level unused reporting is the safest first version. Recipe and recipe-variant coverage can ship when
-`compiler.spec()` exposes enough structured recipe metadata to distinguish the configured recipe surface from the
-observed recipe usage without reconstructing that model in the CLI.
+Token and recipe coverage should be part of the first data model, not a later add-on. `compiler.spec()` already exposes
+token categories and recipe variants, so `createUsageReport` can compute:
+
+- token category coverage from `spec.tokens.categories`,
+- token path usage from known observed token paths,
+- recipe variant-value coverage from `spec.recipes` and `spec.slotRecipes`,
+- recipe usage mode from JSX/component entries vs recipe function entries.
 
 Dynamic values should live in a separate `dynamic` or `unknown` bucket. Do not count them as used or unused. Coverage
 summaries should report known static usage alongside dynamic usage sites so the numbers remain honest:
@@ -195,7 +279,7 @@ tokens: 128 known uses, 12 dynamic sites, 6 unused in scanned sources
 
 Raw-value token suggestions should use shared compiler tooling, not duplicate matching logic in the CLI and lint rules.
 
-`analyze` should aggregate tokenization hotspots:
+`analyze` should aggregate tokenization hotspots after deduping raw value pairs:
 
 ```txt
 raw values: 24 color literals could map to existing tokens
@@ -208,8 +292,17 @@ editing and CI.
 ## Performance
 
 The command should be fast enough for local iteration but does not sit on the CSS build hot path. A bounded concurrency
-pool is appropriate: source file reads are IO-bound, while `inspectFileSource` crosses the native boundary and should
-not be fired unbounded across large repositories.
+pool is appropriate: source file reads are IO-bound, while source inspection crosses the native boundary and should not
+be fired unbounded across large repositories.
+
+Keep the report pass linear in the inspected entries plus configured surface size:
+
+```txt
+O(files + inspected entries + configured tokens + configured recipe variants)
+```
+
+Avoid repeated native calls in aggregation. For token suggestions, collect unique `{ prop, value }` pairs first, then
+call `suggestTokens` once per unique pair.
 
 The human renderer should aggregate as it goes and avoid keeping more source text than needed. JSON/report output can
 include exact ranges and file references, but should not embed full file contents.
@@ -230,14 +323,14 @@ in lint rules or a future explicit policy mode.
 
 ## Non-goals
 
-Do not rebuild v1's reporter stack in TypeScript. The v2 command should use `inspectFileSource` and `compiler.spec()` as
-the source of truth.
+Do not rebuild v1's reporter stack in TypeScript. The v2 command should use compiler source inspection and
+`compiler.spec()` as the source of truth.
 
 Do not make `analyze` an alias for `debug`, `info`, or `doctor`. It answers a different question and should not write
 bug report dumps or setup health checks.
 
-Do not make UI the first implementation. Stabilize the JSON data model and terminal report first, then build static HTML
-and an interactive viewer on top of that model.
+Do not make an interactive UI the first implementation. Stabilize the JSON data model and terminal report first, then
+build static HTML and an interactive viewer on top of that model.
 
 Do not let report output embed full project source by default. Source references are enough for the first report; source
 previews can be added later behind an explicit opt-in if they prove useful.
@@ -245,8 +338,11 @@ previews can be added later behind an explicit opt-in if they prove useful.
 ## Unresolved Questions
 
 - What should the inline HTML payload budget be before the CLI suggests `--report-dir`?
-- What exact recipe metadata needs to be added to `compiler.spec()` before recipe-variant coverage is reliable?
-- Which raw-value suggestion families should ship first: colors only, spacing/sizing too, or a configurable set?
+- What should the default `--limit` be for terminal rows per section?
+- Which raw-value suggestion families should be shown by default: colors only, spacing/sizing too, or all categories
+  where `suggestTokens` returns useful candidates?
+- Should `--report <file>` support only HTML first, or should `--report-format html|markdown` be introduced before the
+  first report implementation?
 
 ## Related
 

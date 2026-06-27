@@ -4,7 +4,10 @@ import type {
   Compiler,
   DesignSystemManifestInput,
   Diagnostic,
+  FileInspectionBatch,
+  FileInspectionResult,
   LayerCssOptions,
+  SourceFileInput,
   SplitCssOptions,
   WriteArtifactsOptions,
   WriteCssOptions,
@@ -147,8 +150,14 @@ class FallbackCompiler implements Compiler {
   sources() {
     return []
   }
-  inspectFileSource() {
+  inspectFileSource(_path: string, _source: string): Omit<FileInspectionResult, 'path'> {
     return { usages: [], diagnostics: [], calls: [], jsx: [], tokenRefs: [], componentEntries: [], styleEntries: [] }
+  }
+  inspectFile(input: SourceFileInput): FileInspectionResult {
+    return { ...this.inspectFileSource(input.path, input.source), path: input.path }
+  }
+  inspectFiles(files: SourceFileInput[]): FileInspectionBatch {
+    return { sourceCount: files.length, files: files.map((file) => this.inspectFile(file)) }
   }
   resolveUtilityValue() {
     return null

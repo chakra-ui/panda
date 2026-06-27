@@ -4,6 +4,7 @@ export { runCssgen, writeCssgenOutput } from './commands/cssgen'
 export { runDebug } from './commands/debug'
 export { runDoctor } from './commands/doctor'
 export { runBuildinfo } from './commands/buildinfo'
+export { runAnalyze } from './commands/analyze'
 export { infoDriver, runInfo } from './commands/info'
 export { runInit, setupGitIgnore } from './commands/init'
 export type {
@@ -11,6 +12,8 @@ export type {
   BuildResult,
   BuildinfoFlags,
   BuildinfoResult,
+  AnalyzeFlags,
+  AnalyzeResult,
   CodegenFlags,
   CodegenResult,
   CommandResult,
