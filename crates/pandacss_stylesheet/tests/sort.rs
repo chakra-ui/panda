@@ -66,6 +66,78 @@ fn applies_every_part_of_block_form_conditions() {
 }
 
 #[test]
+fn emits_side_border_shorthand_after_all_sides_shorthands() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "borderColor": { "className": "bd-c" },
+            "borderStyle": { "className": "border-style" },
+            "borderWidth": { "className": "bd-w" },
+            "borderInlineEnd": { "className": "bd-e" },
+            "borderEndStartRadius": { "className": "bdr-es" },
+            "borderStartStartRadius": { "className": "bdr-ss" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ borderColor: 'purple', borderStyle: 'solid', borderWidth: '1px', borderInlineEnd: '0', borderEndStartRadius: '6px', borderStartStartRadius: '6px' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .bd-c_purple {
+    border-color: purple;
+  }
+  .border-style_solid {
+    border-style: solid;
+  }
+  .bd-w_1px {
+    border-width: 1px;
+  }
+  .bd-e_0 {
+    border-inline-end: 0;
+  }
+  .bdr-es_6px {
+    border-end-start-radius: 6px;
+  }
+  .bdr-ss_6px {
+    border-start-start-radius: 6px;
+  }
+}
+");
+}
+
+#[test]
+fn emits_axis_border_shorthands_after_all_sides_shorthands() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "borderColor": { "className": "bd-c" },
+            "borderInlineColor": { "className": "bd-x-c" },
+            "borderBlockColor": { "className": "bd-y-c" }
+        }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'; css({ borderColor: 'red', borderInlineColor: 'green', borderBlockColor: 'blue' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+@layer utilities {
+  .bd-c_red {
+    border-color: red;
+  }
+  .bd-x-c_green {
+    border-inline-color: green;
+  }
+  .bd-y-c_blue {
+    border-block-color: blue;
+  }
+}
+");
+}
+
+#[test]
 fn sorts_breakpoints_by_resolved_width() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

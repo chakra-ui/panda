@@ -779,6 +779,12 @@ fn property_priority(prop: &str) -> u16 {
     if is_longhand_logical(prop) {
         return 3000;
     }
+    if is_border_side_shorthand(prop) {
+        return 2500;
+    }
+    if is_border_axis_shorthand(prop) {
+        return 2200;
+    }
     if is_shorthand_of_longhands(prop) {
         return 2000;
     }
@@ -826,17 +832,6 @@ fn is_shorthand_of_longhands(prop: &str) -> bool {
             | "borderColor"
             | "borderStyle"
             | "borderWidth"
-            | "borderBlockStart"
-            | "borderTop"
-            | "borderBlockEnd"
-            | "borderBottom"
-            | "borderInlineColor"
-            | "borderInlineStyle"
-            | "borderInlineWidth"
-            | "borderInlineStart"
-            | "borderLeft"
-            | "borderInlineEnd"
-            | "borderRight"
             | "borderImage"
             | "borderRadius"
             | "caret"
@@ -877,6 +872,32 @@ fn is_shorthand_of_longhands(prop: &str) -> bool {
             | "textEmphasis"
             | "textWrap"
             | "transition"
+    )
+}
+
+fn is_border_side_shorthand(prop: &str) -> bool {
+    matches!(
+        prop,
+        "borderInlineStart"
+            | "borderInlineEnd"
+            | "borderBlockStart"
+            | "borderBlockEnd"
+            | "borderTop"
+            | "borderRight"
+            | "borderBottom"
+            | "borderLeft"
+    )
+}
+
+fn is_border_axis_shorthand(prop: &str) -> bool {
+    matches!(
+        prop,
+        "borderInlineColor"
+            | "borderInlineStyle"
+            | "borderInlineWidth"
+            | "borderBlockColor"
+            | "borderBlockStyle"
+            | "borderBlockWidth"
     )
 }
 
@@ -957,9 +978,6 @@ fn is_longhand_logical(prop: &str) -> bool {
             | "backgroundSize"
             | "backgroundPositionX"
             | "backgroundPositionY"
-            | "borderBlockColor"
-            | "borderBlockStyle"
-            | "borderBlockWidth"
             | "borderBlockStartColor"
             | "borderBlockStartStyle"
             | "borderBlockStartWidth"
