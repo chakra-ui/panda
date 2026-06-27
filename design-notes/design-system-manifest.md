@@ -399,8 +399,19 @@ them**.
    so the host orders it by reversing the walk and catches cycles by path — `resolveChain`'s topo-sort, diamond dedup, and
    second cycle pass would all be no-ops on linear input. The runtime wiring earns its place only with [plural
    parents](#why-singular), where a node gains two parents, the walk becomes a DAG, and diamonds can actually form.
-4. **Smart `include`.** Bare specifiers resolve via Node resolution: manifest present → redirect; no manifest → auto-glob +
-   extract. Diagnostic: in-include (batched).
+4. **Smart `include`. ✅ Complete.** Bare specifiers in `include` resolve via Node resolution (`packages/config`
+   `expandSmartInclude`, run during `resolveAuthoredPresets`). An entry is treated as a package only if it matches the npm
+   package-name grammar — globs (incl. extglob), relative/absolute paths, and multi-segment paths pass through untouched.
+   The package directory resolves exports-safely (`<spec>/package.json`, else the package entry walked up to its
+   `package.json`); a `panda.lib.json` is then detected **on disk** (immune to `exports`): present → it's a design system,
+   batched `design_system_in_include` error redirecting to `designSystem`; absent → auto-glob the package source
+   (`<pkg>/**/*.{…}` over `SMART_INCLUDE_EXTENSIONS`, relative under cwd / absolute when hoisted, POSIX-separated), emit a
+   matching `<pkg>/**/node_modules/**` exclude so the consumed package's own deps aren't scanned (pnpm symlink farms), and
+   register its `package.json` as a config dep. The CLI `--include` override flows through the same resolution
+   (`resolveSmartInclude`), so a bare specifier works there too. _Deferred:_ cross-package **source** watch (open item #4)
+   — re-running cssgen on edits inside the consumed package, beyond the config-dep invalidation wired here. The extension
+   list is a hand-maintained mirror of the engine's parseable set (config is binding-free); a future engine-side extension
+   gate would make it the single source of truth.
 5. **`panda lib` + propagation.** The command (+ `--watch`): glob `src/` → `create` → write manifest/buildinfo/preset → sync
    exports. Register resolved paths as build deps; drift receipt + persisted state; stale-buildinfo fallback; token-conflict
    warning. Remove `ship`/`emit-pkg` with a migration note.

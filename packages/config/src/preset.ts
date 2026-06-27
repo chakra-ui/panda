@@ -11,6 +11,7 @@ import { PandaError } from './error'
 import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
+import { expandSmartInclude } from './smart-include'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 
@@ -68,8 +69,10 @@ export async function resolveAuthoredPresets(
   await collectConfigs(config, rootSource, ctx, new WeakSet())
 
   const dsInfos = dsChain.map((level) => level.info)
-  const finalize = (resolved: UserConfig): UserConfig =>
-    dsInfos.length > 0 ? withDesignSystemImportMap(resolved, dsInfos) : resolved
+  const finalize = (resolved: UserConfig): UserConfig => {
+    const withImportMap = dsInfos.length > 0 ? withDesignSystemImportMap(resolved, dsInfos) : resolved
+    return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
+  }
   const dsMetadata = dsInfos.length > 0 ? { designSystem: dsInfos } : undefined
 
   if (ctx.sourcedConfigs) {
