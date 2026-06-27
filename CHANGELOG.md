@@ -1,8 +1,16 @@
-# CHANGELOG
+  # CHANGELOG
 
 All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
+
+## [1.11.4](#1.11.4) - 2026-06-27
+
+### Fixed
+
+- Fix panda spec not generating descriptions and other properties (`deprecated`, `extensions`) for semantic tokens set to a string value.
+
+- Skip rewriting unchanged generated files in watch mode to avoid unnecessary reloads.
 
 ## [1.11.3](#1.11.3) - 2026-06-06
 
