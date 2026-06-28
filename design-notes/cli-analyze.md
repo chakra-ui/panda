@@ -36,8 +36,8 @@ V2 now has a stronger substrate for this command:
 - `driver.scan()` already finds the project source set from config include/exclude rules.
 - `compiler.spec()` exposes configured tokens, utilities, recipes, patterns, keyframes, and conditions for coverage
   reporting.
-- `compiler.suggestTokens(prop, value)` provides shared raw-value token suggestions without duplicating matching logic in
-  the CLI.
+- `compiler.suggestTokens(prop, value)` provides shared raw-value token suggestions without duplicating matching logic
+  in the CLI.
 
 That makes `analyze` a thin host-level aggregation command instead of another build path.
 
@@ -147,7 +147,7 @@ JSON output should use the normal CLI result envelope and add analyze data:
 ```ts
 interface AnalyzeResult extends CliResult {
   sourceCount: number
-  scope: AnalyzeScope | "all"
+  scope: AnalyzeScope | 'all'
   summary: AnalyzeSummary
   facts: {
     files: FileFact[]
