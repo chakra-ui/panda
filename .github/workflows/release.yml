@@ -200,6 +200,10 @@ jobs:
           name: compiler-wasm
           path: packages/compiler-wasm
 
+      - name: Stage wasi loader files at package root
+        working-directory: packages/compiler
+        run: mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi-browser.js artifacts/wasi-worker.mjs artifacts/wasi-worker-browser.mjs .
+
       - name: Stage platform npm packages
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm

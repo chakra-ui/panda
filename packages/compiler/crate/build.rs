@@ -12,17 +12,18 @@ fn link_wasi_reactor() {
     }
 
     let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
-    let Some(sysroot) = Command::new(rustc)
+    let output = Command::new(rustc)
         .args(["--print", "sysroot"])
         .output()
-        .ok()
-        .filter(|out| out.status.success())
-        .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_string())
-    else {
-        return;
-    };
+        .expect("failed to run `rustc --print sysroot`");
+    assert!(output.status.success(), "`rustc --print sysroot` failed");
+    let sysroot = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
     let crt = format!("{sysroot}/lib/rustlib/{target}/lib/self-contained/crt1-reactor.o");
+    assert!(
+        std::path::Path::new(&crt).exists(),
+        "missing {crt}: the reactor crt is required so the module runs its constructors under the emnapi loader"
+    );
     println!("cargo:rustc-link-arg={crt}");
     println!("cargo:rustc-link-arg=--export=_initialize");
 }
