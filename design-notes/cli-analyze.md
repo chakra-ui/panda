@@ -1,6 +1,6 @@
 ---
 title: CLI Analyze Command
-status: proposed
+status: implemented
 scope:
   - packages/cli
   - packages/compiler
@@ -19,6 +19,9 @@ anything except explicit report outputs.
 Keep the command name `analyze`. It is the v1 name, it reads as an action like the rest of the CLI, and it describes the
 work better than noun commands like `usage` or `report`. The output should be described as a **usage report**.
 
+The first implementation ships terminal output, JSON output, `--outfile`, and a static HTML report via `--report <dir>`.
+The HTML report supports local search/filtering over the same JSON model.
+
 ## Problem
 
 The v1 CLI exposed `panda analyze` for token and recipe reports. The initial v2 CLI intentionally left it out while the
@@ -31,7 +34,8 @@ V2 now has a stronger substrate for this command:
 - `createUsageReport(inspection, { scope, spec, suggestTokens })` joins source inspection with the configured
   design-system surface.
 - `driver.scan()` already finds the project source set from config include/exclude rules.
-- `compiler.spec()` exposes configured tokens, utilities, recipes, patterns, and conditions for coverage reporting.
+- `compiler.spec()` exposes configured tokens, utilities, recipes, patterns, keyframes, and conditions for coverage
+  reporting.
 - `compiler.suggestTokens(prop, value)` provides shared raw-value token suggestions without duplicating matching logic in
   the CLI.
 
@@ -167,6 +171,9 @@ Treat `facts` as the source of truth. It should be table-shaped so terminal outp
 interactive viewer can all project from the same data. `views` are derived conveniences for the terminal renderer and
 simple JSON consumers.
 
+`summary` includes `used`, `unique`, and configured `total` when the design-system surface exposes a denominator. The
+HTML report uses those totals to render overview progress relative to the configured surface.
+
 `--outfile` writes the JSON payload to a file and keeps stdout human-readable unless `--json` is also passed. This
 matches commands where the terminal remains useful while scripts receive a stable artifact.
 
@@ -186,9 +193,9 @@ future non-inline modes. Embed summaries, tables, per-file counts, and source re
 `kind`, `name`), but do not embed source text, AST data, or every extracted call payload. If payload size becomes a
 problem, add a future non-inline mode that loads `data.json` instead of embedding it.
 
-An interactive viewer can come after the JSON model and static report are stable. Treat it as a mode of `analyze`, not
-a new top-level command. It should load the same analysis data and provide filtering, sorting, and source drilldown for
-token paths, recipe variants, raw values, and files.
+The static HTML report is authored as a small Preact UI and bundled into the CLI report shell. It should load the same
+analysis data and provide filtering/searching for token paths, recipe variants, raw values, and files. Sorting,
+unused-only views, and source drilldown are follow-ups.
 
 Modern analyzer CLIs tend to separate terminal, machine, and report outputs:
 
@@ -260,12 +267,13 @@ Compute unused coverage as:
 configured surface - observed static usage
 ```
 
-Token and recipe coverage should be part of the first data model, not a later add-on. `compiler.spec()` already exposes
-token categories and recipe variants, so `createUsageReport` can compute:
+Configured totals should be part of the data model, not a UI-only calculation. `compiler.spec()` exposes token
+categories, recipe variants, utilities, patterns, and keyframe names, so `createUsageReport` can compute:
 
 - token category coverage from `spec.tokens.categories`,
 - token path usage from known observed token paths,
 - recipe variant-value coverage from `spec.recipes` and `spec.slotRecipes`,
+- configured totals for utilities, patterns, and keyframes,
 - recipe usage mode from JSX/component entries vs recipe function entries.
 
 Dynamic values should live in a separate `dynamic` or `unknown` bucket. Do not count them as used or unused. Coverage
@@ -342,6 +350,8 @@ previews can be added later behind an explicit opt-in if they prove useful.
   where `suggestTokens` returns useful candidates?
 - Should `--report` eventually support a non-inline mode for very large reports?
 - Should `--report-format html|markdown` be introduced later, or should HTML remain the only report artifact?
+- Should the HTML report add sorting, unused-only views, and source drilldown?
+- Should `--open` launch the generated report after writing it?
 
 ## Related
 
