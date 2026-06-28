@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { request } from 'node:http'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runAnalyze } from '../src'
@@ -187,6 +188,37 @@ describe('cli analyze', () => {
     expect(payload.facts.tokenUsages).toHaveLength(1)
   })
 
+  it('starts an analyze UI server with the latest report', async () => {
+    dir = createFixture()
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      "import { css } from '@panda/css';\nimport { token } from '@panda/tokens';\ncss({ color: token('colors.red.500') })",
+    )
+
+    const logs: string[] = []
+    const result = await runAnalyze(
+      { cwd: dir, logLevel: 'silent', scope: 'tokens', ui: true, uiPort: 0 },
+      { log: (message) => logs.push(message), error: (message) => logs.push(message) },
+    )
+
+    try {
+      expect(result.ok).toBe(true)
+      expect(result.ui).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
+
+      const html = await getHttpText(result.ui!)
+      expect(html).toContain('<title>Panda analyze report</title>')
+      expect(html).not.toContain('id="panda-analyze-data"')
+
+      const payload = await getHttpJson<AnalyzeReportPayload>(`${result.ui}/api/report`)
+      expect(payload.scope).toBe('tokens')
+      expect(payload.facts.files).toHaveLength(1)
+      expect(payload.facts.tokenUsages).toHaveLength(1)
+      expect(logs).toEqual([`analyze: UI running at ${result.ui}`, 'analyze: watching for changes'])
+    } finally {
+      await result.stop?.()
+    }
+  })
+
   it('prints a bounded token and recipe report', async () => {
     dir = createFixture(
       `export default {
@@ -259,6 +291,32 @@ describe('cli analyze', () => {
     `)
   })
 })
+
+function getHttpText(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const req = request(url, (res) => {
+      let body = ''
+      res.setEncoding('utf8')
+      res.on('data', (chunk) => {
+        body += chunk
+      })
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`Request failed with status ${res.statusCode}`))
+          return
+        }
+        resolve(body)
+      })
+    })
+
+    req.on('error', reject)
+    req.end()
+  })
+}
+
+async function getHttpJson<T>(url: string): Promise<T> {
+  return JSON.parse(await getHttpText(url)) as T
+}
 
 interface AnalyzeReportPayload {
   sourceCount: number

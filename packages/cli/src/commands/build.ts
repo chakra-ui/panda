@@ -11,6 +11,7 @@ import type { BuildFlags, BuildResult, RunContext } from '../schema'
 import { codegenOnce } from './codegen'
 import { cssgenOnce } from './cssgen'
 import { formatWatchError, startProjectWatch } from '../watch'
+import { createWatchLogger } from '../watch-logger'
 
 // Shared so the dispatcher in cli-main.ts can render these flags under `panda --help`,
 // where the default build is reachable but its command object lives outside the subcommand tree.
@@ -127,13 +128,14 @@ export async function runBuild(flags: BuildFlags = {}, output: OutputSink = cons
   })) as BuildResult
 
   if (flags.watch && !flags.check && runCtx) {
+    const watchLogger = createWatchLogger(runCtx.output)
     const stopWatch = await startProjectWatch({
       driver: result.driver!,
       cwd: runCtx.cwd,
       outdir: resolveOutdir!,
       debounceMs: parseMilliseconds(flags.watchDebounce),
-      onStatus: (message) => runCtx!.output.log(message),
-      onError: (error) => runCtx!.output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
+      onStatus: (message) => watchLogger.log(message),
+      onError: (error) => watchLogger.error(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
         result.driver!.applyChanges(events)
         Object.assign(result, await buildOnce(runCtx!, resolveOutfile!(), flags))

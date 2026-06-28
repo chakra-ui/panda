@@ -4,5 +4,5 @@
 '@pandacss/compiler-shared': patch
 ---
 
-Add `panda analyze` usage reports with JSON and static HTML output, including configured usage totals for report
-summaries.
+Add `panda analyze` usage reports with JSON, static HTML, and live UI output, including configured usage totals for
+report summaries.

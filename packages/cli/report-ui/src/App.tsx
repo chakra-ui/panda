@@ -152,8 +152,13 @@ function Summary(props: { report: UsageReport }) {
     <div class="metric-list">
       {summaryOrder.map((name) => {
         const value = props.report.summary[name] || { used: 0, unique: 0 }
-        const width = getMetricWidth(value.used, value.total, maxUsed)
-        const metricValue = typeof value.total === 'number' ? `${value.used} / ${value.total}` : value.used
+        const count = typeof value.total === 'number' ? value.unique : value.used
+        const width = getMetricWidth(count, value.total, maxUsed)
+        const metricValue = typeof value.total === 'number' ? `${count} / ${value.total}` : value.used
+        const detail =
+          typeof value.total === 'number'
+            ? `${value.used} ${value.used === 1 ? 'reference' : 'references'}`
+            : `${value.unique} unique`
 
         return (
           <div class="metric" key={name}>
@@ -164,7 +169,7 @@ function Summary(props: { report: UsageReport }) {
             <div class="meter" aria-hidden="true">
               <span style={{ '--width': `${width}%` }} />
             </div>
-            <div class="metric-detail">{value.unique} unique</div>
+            <div class="metric-detail">{detail}</div>
           </div>
         )
       })}

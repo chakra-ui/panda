@@ -11,6 +11,7 @@ import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
 import type { CheckOutput, CodegenFlags, CodegenResult, RunContext } from '../schema'
 import { formatWatchError, startProjectWatch } from '../watch'
+import { createWatchLogger } from '../watch-logger'
 
 export const codegenCommand = defineCommand({
   meta: {
@@ -62,13 +63,14 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
   })) as CodegenResult
 
   if (flags.watch && !flags.check && runCtx) {
+    const watchLogger = createWatchLogger(runCtx.output)
     const stopWatch = await startProjectWatch({
       driver: result.driver!,
       cwd: runCtx.cwd,
       outdir: () => result.driver!.getOutdir(flags.outdir),
       debounceMs: parseMilliseconds(flags.watchDebounce),
-      onStatus: (message) => runCtx!.output.log(message),
-      onError: (error) => runCtx!.output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
+      onStatus: (message) => watchLogger.log(message),
+      onError: (error) => watchLogger.error(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
         result.driver!.applyChanges(events)
         await codegenOnce(runCtx!, flags)

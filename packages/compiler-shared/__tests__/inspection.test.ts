@@ -405,6 +405,50 @@ describe('createUsageReport', () => {
       }
     `)
   })
+
+  test('uses source-backed value spans for token usage locations', () => {
+    const source = ['css({', "  color: 'red.500',", '})'].join('\n')
+    const valueStart = source.indexOf("'red.500'")
+    const inspection: FileInspectionBatch = {
+      sourceCount: 1,
+      files: [
+        file({
+          usages: [
+            {
+              kind: 'token',
+              name: 'colors.red.500',
+              range: { start: { line: 1, column: 1 }, end: { line: 3, column: 3 } },
+            },
+          ],
+          styleEntries: [
+            {
+              kind: 'utility',
+              syntax: 'css-call',
+              owner: { kind: 'call', index: 0 },
+              origin: 'local',
+              span: { start: 0, end: source.length },
+              range: { start: { line: 2, column: 3 }, end: { line: 2, column: 20 } },
+              path: ['color'],
+              name: 'color',
+              sourceValue: 'red.500',
+              resolvedValue: 'red.500',
+              fixable: 'safe',
+              valueSpans: [{ value: 'red.500', span: { start: valueStart, end: valueStart + "'red.500'".length } }],
+            },
+          ],
+        }),
+      ],
+    }
+
+    expect(createUsageReport(inspection, { spec, sourceByPath: { 'app.tsx': source } }).facts.tokenUsages).toEqual([
+      {
+        fileId: 0,
+        tokenId: 1,
+        line: 2,
+        column: 11,
+      },
+    ])
+  })
 })
 
 const spec: Spec = {

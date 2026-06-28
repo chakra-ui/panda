@@ -19,8 +19,8 @@ anything except explicit report outputs.
 Keep the command name `analyze`. It is the v1 name, it reads as an action like the rest of the CLI, and it describes the
 work better than noun commands like `usage` or `report`. The output should be described as a **usage report**.
 
-The first implementation ships terminal output, JSON output, `--outfile`, and a static HTML report via `--report <dir>`.
-The HTML report supports local search/filtering over the same JSON model.
+The first implementation ships terminal output, JSON output, `--outfile`, a static HTML report via `--report <dir>`, and
+a local live report via `--ui`. The HTML report supports local search/filtering over the same JSON model.
 
 ## Problem
 
@@ -60,6 +60,7 @@ panda analyze --limit 25
 panda analyze --json
 panda analyze --outfile panda-analysis.json
 panda analyze --report panda-analysis
+panda analyze --ui
 ```
 
 Use `--include` for source narrowing. It is explicit, consistent with the v2 CLI, and avoids adding a positional form
@@ -197,11 +198,16 @@ The static HTML report is authored as a small Preact UI and bundled into the CLI
 analysis data and provide filtering/searching for token paths, recipe variants, raw values, and files. Sorting,
 unused-only views, and source drilldown are follow-ups.
 
+`--ui` starts a local server for the same report UI, serves the latest analysis from `/api/report`, and refreshes the
+browser through server-sent events when source or config files change. It is a development workflow, not a CI artifact.
+Bind to `127.0.0.1` by default and let `--ui-host` / `--ui-port` customize the server when needed.
+
 Modern analyzer CLIs tend to separate terminal, machine, and report outputs:
 
 - terminal output is compact and ranked,
 - JSON/raw data is explicit and stable,
 - static HTML/report output is a shareable artifact,
+- live UI/server output is local and watch-driven,
 - browser opening is opt-in.
 
 Follow that model here.
@@ -221,7 +227,7 @@ runCommand
        spec: driver.compiler.spec(),
        suggestTokens: driver.compiler.suggestTokens,
      })
-  -> render human/json/report
+  -> render human/json/report/ui
 ```
 
 Do not call `driver.parseFiles()`, `driver.cssgen()`, or `codegen` from this command. Analyze reports source usage; it
@@ -337,8 +343,8 @@ Do not rebuild v1's reporter stack in TypeScript. The v2 command should use comp
 Do not make `analyze` an alias for `debug`, `info`, or `doctor`. It answers a different question and should not write
 bug report dumps or setup health checks.
 
-Do not make an interactive UI the first implementation. Stabilize the JSON data model and terminal report first, then
-build static HTML and an interactive viewer on top of that model.
+Do not make the interactive UI a separate analysis model. It should project the same JSON report used by terminal,
+`--outfile`, and `--report`.
 
 Do not let report output embed full project source by default. Source references are enough for the first report; source
 previews can be added later behind an explicit opt-in if they prove useful.

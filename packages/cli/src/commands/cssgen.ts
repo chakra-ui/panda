@@ -10,6 +10,7 @@ import { parseMilliseconds, time } from '../timing'
 import { setExitCode } from '../result'
 import type { CssgenFlags, CssgenResult, RunContext } from '../schema'
 import { formatWatchError, startProjectWatch } from '../watch'
+import { createWatchLogger } from '../watch-logger'
 
 export const cssgenCommand = defineCommand({
   meta: {
@@ -72,6 +73,7 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
   })) as CssgenResult
 
   if (flags.watch && !flags.check && runCtx) {
+    const watchLogger = createWatchLogger(runCtx.output)
     let current = {
       parsed: result.parsed,
       cssBytes: result.cssBytes,
@@ -86,8 +88,8 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
       cwd: runCtx.cwd,
       outdir: resolveOutdir!,
       debounceMs: parseMilliseconds(flags.watchDebounce),
-      onStatus: (message) => runCtx!.output.log(message),
-      onError: (error) => runCtx!.output.error?.(`panda: failed to process watch batch\n${formatWatchError(error)}`),
+      onStatus: (message) => watchLogger.log(message),
+      onError: (error) => watchLogger.error(`panda: failed to process watch batch\n${formatWatchError(error)}`),
       onSourceChange: async (events) => {
         result.driver!.applyChanges(events)
 

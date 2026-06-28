@@ -85,14 +85,25 @@ export function normalizeCliFlags(args: unknown): Record<string, unknown> {
   if (flags['watch-debounce'] !== undefined && flags.watchDebounce === undefined) {
     flags.watchDebounce = flags['watch-debounce']
   }
+  if (flags['ui-host'] !== undefined && flags.uiHost === undefined) flags.uiHost = flags['ui-host']
+  if (flags['ui-port'] !== undefined && flags.uiPort === undefined) flags.uiPort = flags['ui-port']
 
-  delete flags['log-level']
-  delete flags['max-warnings']
-  delete flags['trace-output']
-  delete flags['trace-file']
-  delete flags['watch-debounce']
+  return omitKeys(flags, [
+    'log-level',
+    'max-warnings',
+    'trace-output',
+    'trace-file',
+    'watch-debounce',
+    'ui-host',
+    'ui-port',
+  ])
+}
 
-  return flags
+function omitKeys<T extends Record<string, unknown>>(value: T, keys: string[]): T {
+  for (const key of keys) {
+    delete value[key]
+  }
+  return value
 }
 
 function flagName(path: PropertyKey | undefined): string {

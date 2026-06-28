@@ -1,8 +1,10 @@
 import type { UsageReport } from '@pandacss/compiler-shared'
 import { analyzeReportScript, analyzeReportStyle } from './analyze-report.generated'
 
-export function renderAnalyzeHtml(report: UsageReport): string {
-  const data = escapeScriptJson(JSON.stringify(report))
+export function renderAnalyzeHtml(report?: UsageReport): string {
+  const data = report
+    ? `\n  <script type="application/json" id="panda-analyze-data">${escapeScriptJson(JSON.stringify(report))}</script>`
+    : ''
 
   return `<!doctype html>
 <html lang="en">
@@ -15,7 +17,7 @@ export function renderAnalyzeHtml(report: UsageReport): string {
 </head>
 <body>
   <div id="root"></div>
-  <script type="application/json" id="panda-analyze-data">${data}</script>
+  ${data}
   <script>${analyzeReportScript}</script>
 </body>
 </html>`

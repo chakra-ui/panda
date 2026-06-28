@@ -18,6 +18,7 @@ import type {
   UsageReportSummary,
   UsageReportViews,
 } from './types/extraction'
+import type { SourceRange, Span } from './types/diagnostics'
 import type { Spec, SpecRecipe } from './types/output'
 
 const usageScopes: UsageReportScope[] = ['tokens', 'recipes', 'utilities', 'patterns', 'keyframes']
@@ -26,6 +27,7 @@ export interface UsageReportOptions {
   scope?: UsageReportScopeOption
   spec?: Spec
   suggestTokens?: (prop: string, value: string) => TokenSuggestion[]
+  sourceByPath?: Map<string, string> | Record<string, string>
 }
 
 /**
@@ -125,7 +127,7 @@ function createFacts(inspection: FileInspectionBatch, options: UsageReportOption
     if (fileId === undefined) continue
 
     if (includesScope(scope, 'tokens')) {
-      collectTokenFacts(facts, { file, fileId, spec, tokenIds, rawValueIds })
+      collectTokenFacts(facts, { file, fileId, spec, tokenIds, rawValueIds, source: getSource(options, file.path) })
     }
 
     if (includesScope(scope, 'recipes')) {
@@ -152,18 +154,20 @@ function collectTokenFacts(
     spec: Spec
     tokenIds: Map<string, number>
     rawValueIds: Map<string, number>
+    source?: string
   },
 ): void {
   for (const usage of ctx.file.usages) {
     if (usage.kind !== 'token') continue
 
     const tokenId = getTokenId(facts, ctx.tokenIds, usage.name, false)
+    const range = tokenUsageRange(ctx, usage)
 
     facts.tokenUsages.push({
       fileId: ctx.fileId,
       tokenId,
-      line: usage.range.start.line,
-      column: usage.range.start.column,
+      line: range.start.line,
+      column: range.start.column,
     })
   }
 
@@ -610,12 +614,94 @@ function hasTokenUsageInside(file: FileInspectionResult, style: StyleEntryRef): 
   return file.usages.some((usage) => usage.kind === 'token' && containsRange(style.range, usage.range))
 }
 
+function tokenUsageRange(
+  ctx: { file: FileInspectionResult; spec: Spec; tokenIds: Map<string, number>; source?: string },
+  usage: { name: string; range: SourceRange },
+): SourceRange {
+  const style = ctx.file.styleEntries.find((entry) => tokenStyleMatches(ctx, usage, entry))
+  const valueSpan = style?.valueSpans?.find((item) => tokenValueMatches(ctx.tokenIds, usage.name, item.value))
+
+  if (!valueSpan || !ctx.source) return style?.range ?? usage.range
+
+  return locateRange(ctx.source, innerValueSpan(ctx.source, valueSpan.span, valueSpan.value))
+}
+
+function tokenStyleMatches(
+  ctx: { spec: Spec; tokenIds: Map<string, number> },
+  usage: { name: string; range: SourceRange },
+  style: StyleEntryRef,
+): boolean {
+  if (style.kind !== 'utility') return false
+  if (!containsRange(usage.range, style.range)) return false
+
+  const raw = scalarString(style.sourceValue)
+  if (raw === undefined) return false
+
+  const prop = canonicalUtilityName(ctx.spec, style)
+  const category = ctx.spec.utilities.properties[prop]?.tokenCategory
+  if (!category) return false
+
+  return resolveTokenPath(ctx.tokenIds, category, raw) === usage.name
+}
+
+function tokenValueMatches(tokens: Map<string, number>, path: string, value: string): boolean {
+  if (value === path) return true
+
+  const category = tokenCategory(path)
+  return category ? resolveTokenPath(tokens, category, value) === path : false
+}
+
 function containsRange(outer: StyleEntryRef['range'], inner: StyleEntryRef['range']): boolean {
   return comparePosition(outer.start, inner.start) <= 0 && comparePosition(outer.end, inner.end) >= 0
 }
 
 function comparePosition(a: StyleEntryRef['range']['start'], b: StyleEntryRef['range']['start']): number {
   return a.line - b.line || a.column - b.column
+}
+
+function getSource(options: UsageReportOptions, path: string): string | undefined {
+  if (options.sourceByPath instanceof Map) return options.sourceByPath.get(path)
+  return options.sourceByPath?.[path]
+}
+
+function locateRange(source: string, span: Span): SourceRange {
+  return {
+    start: locatePosition(source, span.start),
+    end: locatePosition(source, span.end),
+  }
+}
+
+function innerValueSpan(source: string, span: Span, value: string): Span {
+  const snippet = source.slice(span.start, span.end)
+  const offset = snippet.indexOf(value)
+
+  if (offset === -1) return span
+
+  return {
+    start: span.start + Buffer.byteLength(snippet.slice(0, offset)),
+    end: span.start + Buffer.byteLength(snippet.slice(0, offset + value.length)),
+  }
+}
+
+function locatePosition(source: string, offset: number): SourceRange['start'] {
+  let line = 1
+  let column = 1
+  let bytes = 0
+
+  for (const char of source) {
+    if (bytes >= offset) break
+
+    bytes += Buffer.byteLength(char)
+
+    if (char === '\n') {
+      line += 1
+      column = 1
+    } else {
+      column += char.length
+    }
+  }
+
+  return { line, column }
 }
 
 function variantFromPath(path: string[]): { variant: string; value: string } | undefined {

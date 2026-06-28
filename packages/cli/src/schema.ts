@@ -105,6 +105,9 @@ export const analyzeFlagsSchema = commonFlagsSchema.extend({
   outfile: stringFlag,
   report: stringFlag,
   limit: numberLikeFlag,
+  ui: booleanFlag,
+  uiHost: stringFlag,
+  uiPort: numberLikeFlag,
 })
 
 export type LogLevel = z.infer<typeof logLevelSchema>
@@ -165,6 +168,7 @@ export interface BuildResult extends CommandResult {
 export interface AnalyzeResult extends CommandResult, UsageReport {
   scope: AnalyzeScope
   report?: string
+  ui?: string
 }
 
 export interface DebugResult extends CommandResult {

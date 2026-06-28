@@ -1,4 +1,5 @@
 import * as parcelWatcher from '@parcel/watcher'
+import { statSync } from 'node:fs'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import type { Driver, SourceChange } from '@pandacss/compiler'
 
@@ -78,6 +79,8 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   const configFiles = new Set(targets.config.map((path) => resolve(options.cwd, path)))
   const configDirs = new Set([...configFiles].map((path) => dirname(path)))
   const sourceDirs = new Set(targets.dirs.map((dir) => resolve(options.cwd, dir)))
+  const watchableConfigDirs = new Set([...configDirs].filter(isWatchableDirectory))
+  const watchableSourceDirs = new Set([...sourceDirs].filter(isWatchableDirectory))
   const debounceMs = options.debounceMs ?? 0
   let serialGate: Promise<void> = Promise.resolve()
   const currentOutdir = () => (typeof options.outdir === 'function' ? options.outdir() : options.outdir)
@@ -94,6 +97,7 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   const debouncer = createEventDebouncer<WatchEvent>(async (events) => {
     const batch = splitEvents(events, options.driver)
     await runSerialized(async () => {
+      options.onStatus?.(formatWatchChange(options.cwd, batch))
       options.onStatus?.(formatWatchRebuildStart(batch))
       if (batch.config.length > 0) {
         await options.onConfigChange(batch.config)
@@ -126,12 +130,12 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
   }
 
   await Promise.all([
-    ...[...sourceDirs].map((dir) => subscribe(dir)),
-    ...[...configDirs].map((dir) => subscribe(dir, (event) => options.driver.isConfigFile(event.path))),
+    ...[...watchableSourceDirs].map((dir) => subscribe(dir)),
+    ...[...watchableConfigDirs].map((dir) => subscribe(dir, (event) => options.driver.isConfigFile(event.path))),
   ])
   options.onStatus?.(
     formatWatchReady({
-      sourceDirs: sourceDirs.size,
+      sourceDirs: watchableSourceDirs.size,
       configFiles: configFiles.size + (options.driver.configPath ? 1 : 0),
       debounceMs,
       outdir: currentOutdir(),
@@ -178,11 +182,24 @@ export function formatWatchRebuildSuccess(batch: WatchBatch): string {
   return `watch: rebuilt ${batch.source.length} source events`
 }
 
+export function formatWatchChange(cwd: string, batch: WatchBatch): string {
+  if (batch.config.length > 0) return formatWatchChangeKind(cwd, 'config', batch.config)
+  return formatWatchChangeKind(cwd, 'source', batch.source)
+}
+
 export function isOutputEvent(cwd: string, outdir: string, event: WatchEvent): boolean {
   const outputDir = resolve(cwd, outdir)
   const target = resolve(cwd, event.path)
   const path = relative(outputDir, target)
   return path === '' || (!!path && !path.startsWith('..') && !isAbsolute(path))
+}
+
+export function isWatchableDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory()
+  } catch {
+    return false
+  }
 }
 
 function splitEvents(events: WatchEvent[], driver: Pick<Driver, 'isConfigFile'>): WatchBatch {
@@ -192,4 +209,15 @@ function splitEvents(events: WatchEvent[], driver: Pick<Driver, 'isConfigFile'>)
     else batch.source.push(event)
   }
   return batch
+}
+
+function formatWatchChangeKind(cwd: string, kind: 'config' | 'source', events: WatchEvent[]): string {
+  if (events.length === 1) return `watch: ${kind} changed ${formatWatchPath(cwd, events[0]!.path)}`
+  return `watch: ${events.length} ${kind} files changed`
+}
+
+function formatWatchPath(cwd: string, path: string): string {
+  const absolute = isAbsolute(path) ? path : resolve(cwd, path)
+  const formatted = relative(cwd, absolute)
+  return formatted && !formatted.startsWith('..') && !isAbsolute(formatted) ? formatted : path
 }
