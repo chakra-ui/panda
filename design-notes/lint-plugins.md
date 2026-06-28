@@ -63,22 +63,27 @@ the rule shape, not Chakra's TypeScript type-checker dependency.
 
 ## Packages
 
-One public package with two entry points (oxlint reuses the ESLint rules — see [Adapter Design](#adapter-design)):
+One public eslint package with two entry points (oxlint reuses the ESLint rules — see [Adapter Design](#adapter-design)).
+Shared inspection utilities live in **`@pandacss/compiler/tooling`** (a subpath on the existing compiler package) so
+eslint-plugin, language-server, and CLI config checks share one registry and one SpecIndex without new npm packages.
 
 ```txt
-@pandacss/eslint-plugin           # ESLint flat config (default export)
-@pandacss/eslint-plugin/oxlint    # oxlint JS-plugin entry (subpath)
+@pandacss/compiler/tooling         # registry, spec index, file inspect, config token queries
+@pandacss/eslint-plugin            # ESLint flat config (default export)
+@pandacss/eslint-plugin/oxlint     # oxlint JS-plugin entry (subpath)
 ```
 
 ```txt
-packages/eslint-plugin/src/core/*     # config load, compiler, spec indexing, per-file inspection, range helpers
-packages/eslint-plugin/src/rules/*    # rule modules (host-agnostic; used by both entries)
-packages/eslint-plugin/src/oxlint.ts  # self-loading oxlint entry
+packages/compiler/src/tooling/*  # shared query core (see language-service-implementation.md)
+packages/eslint-plugin/src/core/*  # ESLint settings → compiler/tooling; thin linter facade
+packages/eslint-plugin/src/rules/* # rule modules (host-agnostic; used by both entries)
+packages/eslint-plugin/src/oxlint.ts
 ```
 
-A single package avoids drift (one rule set, one version) and matches how oxlint consumes ESLint plugins. A separate
-`@pandacss/oxlint-plugin` would only be warranted if oxlint ever needed a fundamentally different runtime (e.g. a native
-Rust rule), which it doesn't today.
+A single eslint package avoids rule drift (one rule set, one version). Shared **project metadata** (load, cache, spec
+index, inspect) belongs in `@pandacss/compiler/tooling`, not inside eslint-plugin, so the language server does not
+depend on eslint. A separate `@pandacss/oxlint-plugin` would only be warranted if oxlint needed a fundamentally
+different runtime (e.g. a native Rust rule), which it doesn't today.
 
 ## Shared Project Metadata
 

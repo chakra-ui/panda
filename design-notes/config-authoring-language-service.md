@@ -9,32 +9,26 @@ scope:
   - future language service / editor integration
 ---
 
-# Config Authoring Language Service
+# Config authoring language service
 
-## Summary
+Improve `panda.config.*` editing with a language service — not ambient generated types, and not config files that import
+their own `styled-system` output.
 
-Panda should improve `panda.config.*` authoring with a language-service layer instead of generated ambient types or config
-files that depend on their own generated output.
+You want token, recipe, condition, and utility completions while editing config. Package types can describe config
+_shape_, but they can't know the merged design system after presets, string presets, and package presets resolve. That
+needs config loading at edit time.
 
-The core problem is project-specific autocomplete: users want token, semantic token, recipe, condition, and utility
-completions while editing config. Plain TypeScript types can provide the config shape, but they cannot reliably know the
-fully resolved design system when presets, string presets, package presets, and merged config are involved.
+**Plan:**
 
-The proposed direction is:
+- Stable package types for config shape
+- Generated types for app code (`css`, JSX props, recipes, token helpers)
+- A Panda language service for resolved completions, diagnostics, hover, and navigation
+- No ambient globals; no `styled-system` imports in `panda.config.ts`
 
-- keep stable package types for config shape,
-- keep generated types for app usage (`css`, JSX props, recipes, token helpers),
-- add a Panda language service for resolved design-system completions, diagnostics, hover, and navigation,
-- avoid ambient project globals and avoid importing generated `styled-system` types from `panda.config.ts`.
+## The chicken-and-egg problem
 
-## Problem
-
-Config authoring has a chicken-egg problem.
-
-`panda.config.ts` is the source used to produce generated types, but users also want config authoring to be aware of the
-design system defined by that config and its presets.
-
-For example:
+`panda.config.ts` produces generated types. You also want the editor to know the design system _defined by_ that config
+while you're writing it.
 
 ```ts
 export default defineConfig({
@@ -51,35 +45,32 @@ export default defineConfig({
 })
 ```
 
-The desired editor experience is autocomplete and validation for `colors.red.500`, including tokens from presets.
-TypeScript package types alone cannot know the resolved token dictionary because resolution requires Panda config loading
-and preset merging.
+You need autocomplete and validation for `colors.red.500`, including preset tokens. TypeScript package types can't build
+that dictionary — resolution runs through Panda's config loader and preset merge.
 
-## Non-Goals
+## What we're not doing
 
-- Do not require ambient generated types for config authoring.
-- Do not require `panda.config.ts` to import from `styled-system`.
-- Do not encode the full resolved design system into static package types.
-- Do not make generated types a prerequisite for editing config.
-- Do not replace TypeScript's normal type checking.
+- Ambient generated types for config authoring
+- `panda.config.ts` importing from `styled-system`
+- Encoding the full resolved design system in static package types
+- Requiring codegen before you can edit config
+- Replacing TypeScript's normal type checking
 
-## Why Not Ambient Types
+## Why we dropped ambient types
 
-The v1-style ambient approach made config authoring feel global and time-dependent:
+v1 ambient types created a loop:
 
-- config produces generated types,
-- generated types influence config authoring,
-- generated output can be missing or stale,
-- monorepos and package presets become fragile,
-- editor behavior depends on output directory state.
+- Config produces generated types
+- Generated types feed back into config authoring
+- Output can be missing or stale
+- Monorepos and package presets get fragile
+- Editor behavior depends on output directory state
 
-This also increases type graph complexity because project-specific unions must be made globally visible.
+Project-specific unions also had to be globally visible. v2 skips that loop.
 
-V2 should avoid that loop.
+## Why package types aren't enough
 
-## Why Package Types Alone Are Not Enough
-
-`defineConfig` and `satisfies UserConfig` are still useful for shape checking and literal preservation:
+`defineConfig` and `satisfies UserConfig` still help with shape and literal preservation:
 
 ```ts
 export default defineConfig({
@@ -95,76 +86,74 @@ export default defineConfig({
 })
 ```
 
-A `const` generic helper can infer token paths from the same object literal, but this only covers local inline tokens. It
-does not fully solve:
+A `const` generic can infer token paths from inline literals. It doesn't cover:
 
-- imported presets,
-- string presets,
-- package presets,
-- computed presets,
-- JS presets,
-- multi-config workspaces,
-- resolved semantic token aliases,
-- virtual tokens such as `colors.colorPalette.*`.
+- Imported, string, package, computed, or JS presets
+- Multi-config workspaces
+- Resolved semantic token aliases
+- Virtual tokens like `colors.colorPalette.*`
 
-For enterprise usage, autocomplete should reflect the actual resolved design system, not a TypeScript approximation.
+Autocomplete should reflect the resolved design system, not a TypeScript guess.
 
-## Proposed Architecture
+## How the pieces fit together
 
-Introduce a shared Panda language-service core and editor-facing wrappers.
+Intelligence once. Transport once. One first-party VS Code shell.
 
 ```txt
-@pandacss/language-service
-  - config discovery
-  - config loading / resolution
-  - preset merging
-  - design-system index
-  - completions
-  - diagnostics
-  - hover
-  - go-to-definition
-  - code actions
+@pandacss/compiler/tooling          (subpath — shared by eslint, LSP, CLI doctor)
+  config discovery, registry, spec index, file inspect, config token queries
 
-@pandacss/language-server
-  - LSP transport
-  - file watching
-  - workspace/project management
+@pandacss/language-server           (npm — `panda-language-server --stdio`)
+  LanguageService (completions, diagnostics, hover) + LSP transport
 
-VS Code extension / editor integrations
-  - starts the language server
-  - registers document selectors
-  - optional color decorators
+VS Code extension                   (first-party — ship this for most users)
+  spawn server, document selectors, workspace trust, color decorators, status
 ```
 
-The language service should reuse the same config resolver and compiler metadata as the CLI/runtime where possible. It
-should not reimplement Panda semantics separately.
+Reuse the same config resolver and compiler metadata as the CLI. Don't reimplement Panda semantics in the editor layer.
 
-## Responsibilities
+## Using it in your editor
 
-TypeScript continues to handle:
+We maintain one language server and one VS Code extension. Other editors talk to the same server through built-in LSP
+clients — docs and config snippets, not separate extension repos.
 
-- syntax errors,
-- TypeScript type checking,
-- import errors,
-- normal completions,
-- generated app type checking.
+| Layer                        | Who installs it | We maintain?         |
+| ---------------------------- | --------------- | -------------------- |
+| `@pandacss/compiler/tooling` | Transitive      | Yes (compiler subpath) |
+| `@pandacss/language-server`  | npm / bundled in VSIX | Yes            |
+| VS Code extension            | Marketplace     | Yes                  |
+| Neovim / Helix / Emacs / Zed | User LSP config | Docs only (at first) |
 
-Panda language service handles Panda-specific project intelligence:
+You don't import the language service, run it by hand, or add generated types to config. The extension or LSP client
+starts the server when the workspace has `panda.config.*`.
 
-- token-path completions,
-- `{token.path}` reference completions,
-- semantic token reference diagnostics,
-- recipe and slot recipe metadata,
-- condition completions,
-- utility property/value hints,
-- color previews,
-- hover with resolved token value and CSS variable,
-- go-to-definition for token references,
-- quick fixes for unknown token paths.
+**VS Code:** install the Panda extension. It starts `panda-language-server`, registers TS/JS/TSX/JSX and config files,
+and handles workspace trust plus optional color decorators.
 
-## Config Authoring UX
+**Other editors:** point your LSP client at the server binary. Neovim example:
 
-When editing:
+```lua
+require('lspconfig').panda.setup({
+  cmd = { 'panda-language-server', '--stdio' },
+  filetypes = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+  root_dir = require('lspconfig.util').root_pattern('panda.config.{ts,js,mjs,cjs}'),
+})
+```
+
+Helix, Emacs (`eglot` / `lsp-mode`), and Zed: same idea — `cmd` plus root dir on `panda.config.*`. Per-editor extensions
+are optional later. They add polish, not core behavior.
+
+TypeScript keeps type checking via `tsserver`. The Panda server runs in parallel and must not block TS completions.
+
+## What TypeScript handles vs what Panda handles
+
+**TypeScript:** syntax, types, imports, normal completions, generated app types.
+
+**Panda language service:** token-path completions, `{token.path}` references, semantic token diagnostics, recipe/slot
+metadata, conditions, utility hints, color previews, hover (resolved value + CSS var), go-to-definition, quick fixes for
+bad token paths.
+
+## Editing panda.config.ts
 
 ```ts
 semanticTokens: {
@@ -176,15 +165,15 @@ semanticTokens: {
 }
 ```
 
-the editor asks the Panda language server for completions. The server:
+The server:
 
-1. Determines the file belongs to a Panda project.
-2. Loads and resolves the nearest config.
-3. Builds a token dictionary from local config and presets.
-4. Detects the cursor is inside a token reference string.
-5. Returns matching token-path completions.
+1. Finds the Panda project for this file
+2. Loads and resolves the nearest config
+3. Builds a token dictionary from config + presets
+4. Detects the cursor inside a token reference string
+5. Returns matching paths
 
-Example completions:
+Completions might look like:
 
 ```txt
 colors.red.50
@@ -193,13 +182,7 @@ colors.red.500
 colors.red.900
 ```
 
-Hovering:
-
-```ts
-value: '{colors.red.500}'
-```
-
-can show:
+Hover on `{colors.red.500}`:
 
 ```txt
 colors.red.500
@@ -208,44 +191,26 @@ var(--colors-red-500)
 Defined in @pandacss/preset-panda
 ```
 
-A typo:
-
-```ts
-value: '{colors.reed.500}'
-```
-
-can produce:
+Typo `{colors.reed.500}`:
 
 ```txt
 Unknown token "colors.reed.500"
 Did you mean "colors.red.500"?
 ```
 
-## App File UX
+## Editing app files
 
-The same service can enhance app files:
+Same service, later phases:
 
 ```tsx
 css({ bg: 'red.500' })
 ```
 
-Possible features:
+Token and utility completions, recipe variants, conditions, deprecated-token warnings, hover, color decorators.
 
-- token completions,
-- utility value completions,
-- recipe variant completions,
-- condition completions,
-- deprecated token diagnostics,
-- hover previews,
-- color decorators.
+Generated types stay the primary safety layer for app code. The language service adds editor intelligence on top.
 
-Generated types remain the primary TypeScript safety layer for app usage. The language service is additive.
-
-## Presets
-
-Preset-aware autocomplete is the main reason to prefer a language service.
-
-Given:
+## Why presets need a language service
 
 ```ts
 export default defineConfig({
@@ -253,94 +218,59 @@ export default defineConfig({
 })
 ```
 
-the service resolves the actual preset graph and builds completions from the final merged design system.
+The service resolves the preset graph and completes from the merged design system. Package-level TypeScript can't model
+string presets, external packages, JS presets, composition, `extend` merging, or condition/token normalization reliably.
 
-This handles cases that package-level TypeScript helpers cannot reliably model:
+## What `defineConfig` still does
 
-- string presets,
-- external packages,
-- JS presets,
-- preset composition,
-- `extend` merging,
-- condition and token normalization.
+Narrow job:
 
-## Relationship To `defineConfig`
+- Stable config shape typing
+- Literal preservation
+- Contextual typing and helper ergonomics
+- No dependency on generated output
 
-`defineConfig` should still exist, but its job is narrow:
+It does not encode resolved project metadata. Inline type helpers are best-effort for local tokens. The language service
+owns resolved design-system data in the editor.
 
-- provide stable config shape typing,
-- preserve literals,
-- improve contextual typing,
-- support helper ergonomics,
-- avoid dependency on generated output.
+## Keeping editor and CI in sync
 
-It should not try to fully encode resolved project metadata.
-
-A lightweight type-level authoring layer may still help for local inline config, but it should be considered best-effort.
-The language service is the authoritative editor intelligence for resolved design-system data.
-
-## Diagnostics And CI
-
-Editor diagnostics must share logic with CLI diagnostics where possible.
-
-The language service can show fast feedback while editing, but CI should rely on CLI validation. This avoids editor-only
-correctness.
-
-For example:
+Share diagnostic logic with the CLI where you can. The editor gives fast feedback; CI is the source of truth.
 
 ```txt
 panda check
 ```
 
-or config validation during `panda codegen` should catch the same invalid token references that the editor reports.
+and config validation during `panda codegen` should catch the same bad token references the editor flags.
 
-## Caching And Performance
+## Caching and performance
 
-The language service must be incremental and non-blocking.
+Incremental and non-blocking:
 
-Recommended behavior:
+- Cache resolved config per workspace/config path
+- Debounce config reloads
+- Watch config files and preset dependencies
+- Rebuild indexes only when inputs change
+- Never block TypeScript completions
+- Return partial or empty Panda completions rather than freeze the editor
 
-- cache resolved config per workspace/config path,
-- debounce config reloads,
-- watch config files and preset dependencies,
-- rebuild token/recipe indexes only when relevant inputs change,
-- never block TypeScript completions,
-- return partial/no Panda completions rather than freezing the editor.
-
-Watch targets include:
-
-- `panda.config.*`,
-- preset files,
-- package preset dependencies when resolvable,
-- relevant package manifests/lockfiles,
-- generated build info if used.
-
-Config reload flow:
+Watch: `panda.config.*`, preset files, resolvable package presets, manifests/lockfiles, `panda.buildinfo.json` if used.
 
 ```txt
-file change
--> debounce
--> resolve config
--> merge presets
--> build design-system index
--> publish diagnostics
+file change → debounce → resolve config → merge presets → build index → publish diagnostics
 ```
 
-## Security
+## Loading config safely
 
-Config loading can execute user code. The language service should follow the same security posture as the CLI:
+Config loading runs user code. Same posture as the CLI:
 
-- only load workspace config,
-- avoid arbitrary background network work,
-- surface config-load errors as diagnostics,
-- isolate failures so the language server stays alive,
-- consider explicit trust/workspace gating in editor extensions.
+- Load workspace config only
+- No arbitrary background network
+- Config-load errors become diagnostics
+- Failures don't kill the language server
+- Workspace trust gating in the VS Code extension
 
-## Multiple Configs
-
-Enterprise monorepos may contain multiple Panda configs.
-
-The service should support multiple projects in one workspace:
+## Monorepos with multiple configs
 
 ```txt
 apps/web/panda.config.ts
@@ -348,53 +278,37 @@ packages/ui/panda.config.ts
 docs/panda.config.ts
 ```
 
-File-to-config matching should use include/exclude/source matching from the resolved config. If ambiguous, prefer nearest
-config and expose diagnostics or status output.
+Match files to config via include/exclude/source from the resolved config. If ambiguous, pick the nearest config and
+surface a diagnostic or status message.
 
-## LSP vs TypeScript Plugin
+## LSP first, TypeScript plugin later
 
-A TypeScript plugin can provide good VS Code/tsserver integration, but an LSP is more editor-neutral.
+Ship LSP + VS Code extension first. A TS plugin can merge completions into `tsserver` later, but it's VS Code–centric
+and doesn't help Neovim or Helix. Shared load/index logic lives in `@pandacss/compiler/tooling`; query + LSP logic
+lives in `@pandacss/language-server`; wrappers stay thin.
 
-Recommended layering:
+## What you gain and what it costs
 
-- implement `@pandacss/language-service` as transport-agnostic core,
-- expose an LSP server,
-- optionally expose a TypeScript plugin wrapper later.
+**Gain:** preset-aware autocomplete, no ambient types, no config/output loop, simpler type graph, monorepo-friendly,
+shared editor/CLI diagnostics.
 
-This avoids coupling all intelligence to tsserver while still allowing deep TS-editor integration where useful.
+**Cost:** more packages, one VS Code extension to maintain, config cache complexity, language service must track
+compiler semantics.
 
-## Tradeoffs
+## Open questions
 
-Benefits:
+- Editor-only hints vs CLI errors — which diagnostics go where?
+- Phase one scope for app files?
+- How to watch package preset dependencies?
+- Lightweight metadata endpoint from the Rust compiler for indexing?
+- Should `panda.buildinfo.json` feed editor indexes for design-system packages?
 
-- preset-aware autocomplete,
-- no ambient generated types,
-- no config/output chicken-egg dependency,
-- lower TypeScript type complexity,
-- better enterprise monorepo behavior,
-- shared diagnostics between editor and CLI.
+## Ship this
 
-Costs:
+Build config autocomplete as a language service, not ambient types.
 
-- more moving parts,
-- editor integration work,
-- config loading/cache complexity,
-- language service must stay in sync with compiler semantics,
-- non-VS Code editor support requires LSP polish.
+Ship `@pandacss/language-server` and a VS Code extension together. Document LSP setup for
+other editors. Skip per-editor extensions until someone needs the polish.
 
-## Open Questions
-
-- Should the first implementation be VS Code extension + language-service core, or full LSP from day one?
-- Which diagnostics should be editor-only hints vs CLI errors?
-- How much app-file intelligence should be included in phase one?
-- How should package preset dependency watching work?
-- Can the Rust compiler expose a lightweight metadata endpoint for editor indexing?
-- Should `panda.buildinfo.json` participate in editor indexing for design-system packages?
-
-## Recommendation
-
-Build config authoring autocomplete as a Panda language service, not as ambient generated types.
-
-Use stable package types for config shape, generated types for app code, and the language service for resolved
-design-system intelligence. This gives the best enterprise-grade balance: accurate preset-aware autocomplete without
-growing the TypeScript type graph or making config depend on its own generated output.
+Package types for config shape. Generated types for app code. Language service for resolved design-system intelligence
+in the editor.

@@ -70,6 +70,10 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
   compiler-backed source inspection, and `inspectFileSource`.
+- [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
+  `panda.config.*` without ambient generated types.
+- [Language service implementation](./language-service-implementation.md) — `compiler/tooling` subpath,
+  `@pandacss/language-server`, VS Code extension, phased rollout, migration from `panda-vscode`.
 
 ### Testing
 
