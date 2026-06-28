@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "include": ["src", "__tests__", "scripts", "report-ui/src"],
+  "exclude": ["dist", "report-ui/dist"]
+}

@@ -141,6 +141,7 @@ class FallbackCompiler implements Compiler {
       conditions: { keys: [], breakpoints: [], containers: [] },
       tokens: { categories: {}, colorPalettes: [], values: {}, deprecated: {} },
       utilities: { properties: {}, shorthands: {}, deprecated: {} },
+      keyframes: { keys: [] },
       patterns: {},
       recipes: {},
       slotRecipes: {},

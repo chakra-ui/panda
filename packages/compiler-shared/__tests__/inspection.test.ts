@@ -332,22 +332,27 @@ describe('createUsageReport', () => {
         "sourceUsages": 5,
         "summary": {
           "keyframes": {
+            "total": 1,
             "unique": 0,
             "used": 0,
           },
           "patterns": {
+            "total": 0,
             "unique": 0,
             "used": 0,
           },
           "recipes": {
+            "total": 1,
             "unique": 1,
             "used": 3,
           },
           "tokens": {
+            "total": 2,
             "unique": 1,
             "used": 1,
           },
           "utilities": {
+            "total": 1,
             "unique": 1,
             "used": 1,
           },
@@ -419,6 +424,7 @@ const spec: Spec = {
     shorthands: {},
     deprecated: {},
   },
+  keyframes: { keys: ['spin'] },
   patterns: {},
   recipes: {
     button: {

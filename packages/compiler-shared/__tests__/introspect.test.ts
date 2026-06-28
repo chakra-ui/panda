@@ -17,6 +17,7 @@ const spec: Spec = {
     shorthands: { p: 'padding' },
     deprecated: {},
   },
+  keyframes: { keys: [] },
   patterns: {
     stack: { name: 'stack', typeName: 'Stack', strict: false, blocklist: [], properties: {} },
     grid: { name: 'grid', typeName: 'Grid', strict: false, blocklist: [], properties: {} },

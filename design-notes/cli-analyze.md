@@ -55,7 +55,7 @@ panda analyze --scope all
 panda analyze --limit 25
 panda analyze --json
 panda analyze --outfile panda-analysis.json
-panda analyze --report panda-analysis.html
+panda analyze --report panda-analysis
 ```
 
 Use `--include` for source narrowing. It is explicit, consistent with the v2 CLI, and avoids adding a positional form
@@ -170,21 +170,21 @@ simple JSON consumers.
 `--outfile` writes the JSON payload to a file and keeps stdout human-readable unless `--json` is also passed. This
 matches commands where the terminal remains useful while scripts receive a stable artifact.
 
-`--report <file>` should write a static HTML report from the same JSON model. Static HTML is the first report artifact
-because it works in CI artifacts and pull-request workflows without starting a server. Do not open a browser by
-default; a future `--open` flag can opt into that behavior.
+`--report <dir>` should write a static HTML report directory from the same JSON model:
 
-The report should be self-contained only when the payload is compact. Embed summaries, tables, per-file counts, and
-source references (`file`, `line`, `column`, `kind`, `name`), but do not embed source text, AST data, raw inspection
-objects, or every extracted call payload. If the inline payload would exceed a fixed budget, the CLI should warn and
-suggest a directory report:
-
-```sh
-panda analyze --report-dir panda-analysis
+```txt
+panda-analysis/
+  index.html
+  data.json
 ```
 
-Directory mode can write `index.html` plus a JSON payload and assets. It keeps large monorepo reports useful without
-turning the default single-file report into a bloated artifact.
+Static HTML is the first report artifact because it works in CI artifacts and pull-request workflows without starting a
+server. Do not open a browser by default; a future `--open` flag can opt into that behavior.
+
+The report should embed the normalized data for convenient local viewing and also write `data.json` for tooling or
+future non-inline modes. Embed summaries, tables, per-file counts, and source references (`file`, `line`, `column`,
+`kind`, `name`), but do not embed source text, AST data, or every extracted call payload. If payload size becomes a
+problem, add a future non-inline mode that loads `data.json` instead of embedding it.
 
 An interactive viewer can come after the JSON model and static report are stable. Treat it as a mode of `analyze`, not
 a new top-level command. It should load the same analysis data and provide filtering, sorting, and source drilldown for
@@ -337,12 +337,11 @@ previews can be added later behind an explicit opt-in if they prove useful.
 
 ## Unresolved Questions
 
-- What should the inline HTML payload budget be before the CLI suggests `--report-dir`?
 - What should the default `--limit` be for terminal rows per section?
 - Which raw-value suggestion families should be shown by default: colors only, spacing/sizing too, or all categories
   where `suggestTokens` returns useful candidates?
-- Should `--report <file>` support only HTML first, or should `--report-format html|markdown` be introduced before the
-  first report implementation?
+- Should `--report` eventually support a non-inline mode for very large reports?
+- Should `--report-format html|markdown` be introduced later, or should HTML remain the only report artifact?
 
 ## Related
 

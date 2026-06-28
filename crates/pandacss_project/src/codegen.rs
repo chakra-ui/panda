@@ -50,6 +50,7 @@ impl Project {
                 .utility()
                 .map(Utility::type_data)
                 .unwrap_or_default(),
+            keyframes: user_config.keyframe_type_data(),
             patterns: user_config.pattern_type_data(),
             recipes: user_config.recipe_type_data(),
         }

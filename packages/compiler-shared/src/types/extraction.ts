@@ -168,7 +168,7 @@ export type UsageReportScopeOption = UsageReportScope | 'all'
 
 export type UsageReportCounts = Record<UsageReportScope, number>
 
-export type UsageReportSummary = Record<UsageReportScope, { used: number; unique: number }>
+export type UsageReportSummary = Record<UsageReportScope, { used: number; unique: number; total?: number }>
 
 export interface TokenUsageItem {
   name: string

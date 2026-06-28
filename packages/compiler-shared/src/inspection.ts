@@ -82,6 +82,10 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
     summary[key].unique = seen[key].size
   }
 
+  if (options.spec) {
+    applySummaryTotals(summary, options.spec)
+  }
+
   const report: UsageReport = {
     sourceCount: inspection.sourceCount,
     scope,
@@ -268,6 +272,17 @@ function createUsageViews(facts: UsageReportFacts, spec: Spec): UsageReportViews
     tokens: createTokenView(facts, spec),
     recipes: createRecipeView(facts),
   }
+}
+
+function applySummaryTotals(summary: UsageReportSummary, spec: Spec) {
+  summary.tokens.total = Object.values(spec.tokens.categories).reduce(
+    (total, category) => total + category.values.length,
+    0,
+  )
+  summary.recipes.total = Object.keys(spec.recipes).length + Object.keys(spec.slotRecipes).length
+  summary.utilities.total = Object.keys(spec.utilities.properties).length
+  summary.patterns.total = Object.keys(spec.patterns).length
+  summary.keyframes.total = spec.keyframes?.keys.length ?? 0
 }
 
 function createTokenView(facts: UsageReportFacts, spec: Spec): TokenUsageReport {

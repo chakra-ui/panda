@@ -109,22 +109,27 @@ describe('cli analyze', () => {
         "sourceUsages": 1,
         "summary": {
           "keyframes": {
+            "total": 0,
             "unique": 0,
             "used": 0,
           },
           "patterns": {
+            "total": 0,
             "unique": 0,
             "used": 0,
           },
           "recipes": {
+            "total": 0,
             "unique": 0,
             "used": 0,
           },
           "tokens": {
+            "total": 0,
             "unique": 1,
             "used": 1,
           },
           "utilities": {
+            "total": 0,
             "unique": 0,
             "used": 0,
           },
@@ -156,6 +161,30 @@ describe('cli analyze', () => {
         },
       }
     `)
+  })
+
+  it('writes a static HTML report directory', async () => {
+    dir = createFixture()
+    writeFileSync(
+      join(dir, 'App.tsx'),
+      "import { css } from '@panda/css';\nimport { token } from '@panda/tokens';\ncss({ color: token('colors.red.500') })",
+    )
+
+    const reportDir = join(dir, 'analysis', 'panda-report')
+    const result = await runAnalyze({ cwd: dir, logLevel: 'silent', scope: 'tokens', report: reportDir })
+
+    expect(result.ok).toBe(true)
+    expect(result.report).toBe(reportDir)
+    expect(existsSync(join(reportDir, 'index.html'))).toBe(true)
+    expect(existsSync(join(reportDir, 'data.json'))).toBe(true)
+
+    const html = readFileSync(join(reportDir, 'index.html'), 'utf8')
+    expect(html).toContain('<title>Panda analyze report</title>')
+    expect(html).toContain('id="panda-analyze-data"')
+
+    const payload = JSON.parse(readFileSync(join(reportDir, 'data.json'), 'utf8')) as AnalyzeReportPayload
+    expect(payload.facts.files).toHaveLength(1)
+    expect(payload.facts.tokenUsages).toHaveLength(1)
   })
 
   it('prints a bounded token and recipe report', async () => {

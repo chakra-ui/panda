@@ -40,6 +40,7 @@ pub struct TypeData {
     pub selectors: SelectorTypeData,
     pub tokens: TokenTypeData,
     pub utilities: UtilityTypeData,
+    pub keyframes: KeyframeTypeData,
     /// Flattened so `patterns` sits at the top level of the serialized spec
     /// rather than nested under `patterns.patterns`.
     #[serde(flatten)]
@@ -87,6 +88,12 @@ pub struct TokenTypeData {
     /// Deprecated token paths → deprecation (`true` or an author message).
     #[serde(default)]
     pub deprecated: BTreeMap<String, Deprecated>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KeyframeTypeData {
+    pub keys: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -261,6 +268,18 @@ impl UserConfig {
                 .iter()
                 .map(|(name, pattern)| (name.clone(), pattern.type_definition(name)))
                 .collect(),
+        }
+    }
+
+    #[must_use]
+    pub fn keyframe_type_data(&self) -> KeyframeTypeData {
+        KeyframeTypeData {
+            keys: self
+                .theme
+                .keyframes
+                .as_object()
+                .map(|keyframes| keyframes.keys().cloned().collect())
+                .unwrap_or_default(),
         }
     }
 

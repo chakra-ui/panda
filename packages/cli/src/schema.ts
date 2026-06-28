@@ -103,6 +103,7 @@ export const analyzeFlagsSchema = commonFlagsSchema.extend({
       'Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)',
     ),
   outfile: stringFlag,
+  report: stringFlag,
   limit: numberLikeFlag,
 })
 
@@ -163,6 +164,7 @@ export interface BuildResult extends CommandResult {
 
 export interface AnalyzeResult extends CommandResult, UsageReport {
   scope: AnalyzeScope
+  report?: string
 }
 
 export interface DebugResult extends CommandResult {

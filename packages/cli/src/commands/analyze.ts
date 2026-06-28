@@ -1,7 +1,8 @@
 import { createUsageReport, type RecipeUsageItem, type TokenCategoryUsage } from '@pandacss/compiler-shared'
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { dirname, join } from 'node:path'
+import { renderAnalyzeHtml } from '../analyze-report'
 import { baseArgs, includeArgs, normalizeInclude, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { diagnosticsPass, normalizeDiagnostics, type CliDiagnostic } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
@@ -27,6 +28,7 @@ export const analyzeCommand = defineCommand({
     },
     limit: { type: 'string', description: 'Maximum rows to show per terminal report section' },
     outfile: { type: 'string', description: 'Output path for a JSON report' },
+    report: { type: 'string', description: 'Output directory for a static HTML report' },
     ...outputArgs(),
     ...traceArgs(),
   }),
@@ -47,6 +49,7 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
         facts: report.facts,
         files: report.files,
         sourceUsages: report.sourceUsages,
+        report: undefined,
       }
     },
     async execute({ driver, cwd, timings }) {
@@ -93,6 +96,12 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
         writeFileSync(flags.outfile, JSON.stringify(report, null, 2))
       }
 
+      if (flags.report) {
+        mkdirSync(flags.report, { recursive: true })
+        writeFileSync(join(flags.report, 'data.json'), JSON.stringify(report, null, 2))
+        writeFileSync(join(flags.report, 'index.html'), renderAnalyzeHtml(report))
+      }
+
       const inspectionDiagnostics = inspection.files.flatMap((file) => file.diagnostics)
       const diagnostics = normalizeDiagnostics(
         [...fileDiagnostics, ...inspectionDiagnostics, ...driver.compiler.diagnostics()],
@@ -108,6 +117,7 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
           views: report.views,
           files: report.files,
           sourceUsages: report.sourceUsages,
+          report: flags.report,
         },
         diagnostics,
         ok: diagnosticsPass(diagnostics, flags.maxWarnings),
@@ -123,6 +133,10 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
 
         if (flags.outfile) {
           ctx.output.log(`analyze: wrote report to ${flags.outfile}`)
+        }
+
+        if (flags.report) {
+          ctx.output.log(`analyze: wrote HTML report to ${flags.report}`)
         }
       }
     },

@@ -34,8 +34,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format=esm --dts --no-splitting --shims && tsup src/cli-main.ts --format=esm --dts --no-splitting --shims --clean=false",
-    "build:fast": "tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
+    "build": "pnpm build:report && tsup src/index.ts --format=esm --dts --no-splitting --shims && tsup src/cli-main.ts --format=esm --dts --no-splitting --shims --clean=false",
+    "build:fast": "pnpm build:report && tsup src/index.ts src/cli-main.ts --format=esm --no-dts --no-splitting --shims",
+    "build:report": "rimraf report-ui/dist && tsup report-ui/src/main.tsx --format=iife --global-name=PandaAnalyzeReport --minify --no-dts --out-dir=report-ui/dist --platform=browser --target=es2020 && node scripts/write-analyze-report-bundle.mjs",
+    "report:dev": "pnpm report:fixture && vite --host 127.0.0.1 report-ui",
+    "report:fixture": "pnpm build:fast && node scripts/write-analyze-report-fixture.mjs",
     "dev": "pnpm build:fast --watch src",
     "test": "vitest run",
     "test:bin": "pnpm build:fast && vitest run __tests__/cli-bin-smoke.test.ts"
@@ -51,6 +54,10 @@
     "@parcel/watcher": "2.5.1",
     "citty": "0.1.6",
     "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "preact": "10.27.2",
+    "vite": "7.2.6"
   },
   "engines": {
     "node": ">=22"

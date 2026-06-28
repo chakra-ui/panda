@@ -238,6 +238,7 @@ export interface Spec {
     shorthands: Record<string, string>
     deprecated: Record<string, Deprecation>
   }
+  keyframes: { keys: string[] }
   patterns: Record<string, SpecPattern>
   recipes: Record<string, SpecRecipe>
   slotRecipes: Record<string, SpecSlotRecipe>

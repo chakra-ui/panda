@@ -80,6 +80,17 @@ describe('compiler.spec()', () => {
     }).spec()
     expect(spec.patterns.stack.deprecated).toMatchInlineSnapshot(`"use Flex instead"`)
   })
+
+  it('exposes configured keyframe names', () => {
+    const spec = createProject({
+      theme: {
+        keyframes: {
+          spin: { from: {}, to: {} },
+        },
+      },
+    }).spec()
+    expect(spec.keyframes.keys).toEqual(['spin'])
+  })
 })
 
 describe('compiler.inspectFile()', () => {
