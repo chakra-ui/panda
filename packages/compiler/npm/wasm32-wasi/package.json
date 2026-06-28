@@ -1,0 +1,36 @@
+{
+  "name": "@pandacss/compiler-wasm32-wasi",
+  "version": "1.0.0",
+  "cpu": [
+    "wasm32"
+  ],
+  "main": "compiler.wasi.cjs",
+  "browser": "compiler.wasi-browser.js",
+  "files": [
+    "compiler.wasm32-wasi.wasm",
+    "compiler.wasi.cjs",
+    "compiler.wasi-browser.js",
+    "wasi-worker.mjs",
+    "wasi-worker-browser.mjs"
+  ],
+  "description": "Native Rust binding for the Panda compiler engine",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "homepage": "https://panda-css.com",
+  "license": "MIT",
+  "dependencies": {
+    "@napi-rs/wasm-runtime": "^1.1.6",
+    "@emnapi/core": "1.11.1",
+    "@emnapi/runtime": "1.11.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/compiler"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

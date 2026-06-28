@@ -127,11 +127,44 @@ jobs:
             packages/compiler-wasm/pkg-web
           if-no-files-found: error
 
+  build-wasi:
+    name: Build wasi artifact
+    if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        uses: ./.github/composite-actions/install
+        with:
+          ignore-scripts: 'true'
+
+      - name: Add wasi Rust target
+        run: rustup target add wasm32-wasip1-threads
+
+      - name: Build wasi binding
+        working-directory: packages/compiler
+        run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target wasm32-wasip1-threads
+
+      - name: Upload wasi artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: bindings-wasm32-wasi
+          path: |
+            packages/compiler/compiler.wasm32-wasi.wasm
+            packages/compiler/compiler.wasi.cjs
+            packages/compiler/compiler.wasi-browser.js
+            packages/compiler/wasi-worker.mjs
+            packages/compiler/wasi-worker-browser.mjs
+          if-no-files-found: error
+
   release:
     name: Release
     needs:
       - build-native
       - build-wasm
+      - build-wasi
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -185,6 +218,8 @@ jobs:
         run: |
           find packages/compiler/npm -name '*.node'
           test "$(find packages/compiler/npm -name '*.node' | wc -l)" -eq 8
+          test -f packages/compiler/npm/wasm32-wasi/compiler.wasm32-wasi.wasm
+          test -f packages/compiler/npm/wasm32-wasi/compiler.wasi.cjs
           test -f packages/compiler-wasm/pkg-node/compiler_wasm_bg.wasm
           test -f packages/compiler-wasm/pkg-web/compiler_wasm_bg.wasm
 

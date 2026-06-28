@@ -79,7 +79,10 @@
   "pnpm": {
     "overrides": {
       "@swc/helpers@~0.4": "0.4.36",
-      "picomatch@4.0.3": "4.0.4"
+      "picomatch@4.0.3": "4.0.4",
+      "emnapi": "1.11.1",
+      "@emnapi/core": "1.11.1",
+      "@emnapi/runtime": "1.11.1"
     }
   }
 }
