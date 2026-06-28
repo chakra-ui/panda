@@ -34,6 +34,7 @@ export class StyleEncoder {
   //
   recipes = new Map<string, Set<string>>()
   recipes_base = new Map<string, Set<string>>()
+  grouped = new Map<string, Set<string>>()
 
   constructor(
     private context: Pick<
@@ -52,7 +53,9 @@ export class StyleEncoder {
   }
 
   isEmpty = () => {
-    return !this.atomic.size && !this.recipes.size && !this.compound_variants.size && !this.recipes_base.size
+    return (
+      !this.atomic.size && !this.recipes.size && !this.compound_variants.size && !this.recipes_base.size && !this.grouped.size
+    )
   }
 
   get results() {
@@ -60,6 +63,7 @@ export class StyleEncoder {
       atomic: this.atomic,
       recipes: this.recipes,
       recipes_base: this.recipes_base,
+      grouped: this.grouped,
     }
   }
   /**
@@ -138,7 +142,23 @@ export class StyleEncoder {
     this.hashStyleObject(this.atomic, styles)
   }
 
-  processStyleProps = (styleProps: StyleProps) => {
+  processGrouped = (styles: StyleResultObject) => {
+    const groupSet = new Set<string>()
+    this.hashStyleObject(groupSet, styles)
+
+    if (groupSet.size === 0) return
+
+    const sortedHashes = Array.from(groupSet).sort()
+    const groupId = sortedHashes.join('|')
+
+    const existing = this.grouped.get(groupId)
+    if (existing) return
+
+    this.grouped.set(groupId, groupSet)
+  }
+
+  processStyleProps = (styleProps: StyleProps, grouped = false) => {
+    const processFn = grouped ? this.processGrouped : this.processAtomic
     const styles = this.filterStyleProps(styleProps)
     const rest = {} as Dict
 
@@ -146,16 +166,16 @@ export class StyleEncoder {
       // css and *Css props (e.g. inputCss, wrapperCss) are style objects
       if (key === 'css' || key.endsWith('Css')) {
         if (Array.isArray(value)) {
-          value.forEach((style) => this.processAtomic(style))
+          value.forEach((style) => processFn(style))
         } else if (value) {
-          this.processAtomic(value)
+          processFn(value)
         }
       } else {
         rest[key] = value
       }
     }
 
-    this.processAtomic(rest)
+    processFn(rest)
   }
 
   processConfigSlotRecipeBase = (recipeName: string, config: SlotRecipeDefinition) => {
@@ -320,9 +340,15 @@ export class StyleEncoder {
   }
 
   toJSON = () => {
-    const styles = {
+    const styles: Record<string, any> = {
       atomic: Array.from(this.atomic),
       recipes: Object.fromEntries(Array.from(this.recipes.entries()).map(([name, set]) => [name, Array.from(set)])),
+    }
+
+    if (this.grouped.size) {
+      styles.grouped = Object.fromEntries(
+        Array.from(this.grouped.entries()).map(([id, set]) => [id, Array.from(set)]),
+      )
     }
 
     return {
@@ -342,6 +368,11 @@ export class StyleEncoder {
       this.processRecipeBase(recipeName)
       // process variants hashes
       const set = getOrCreateSet(this.recipes, recipeName)
+      hashes.forEach((hash) => set.add(hash))
+    })
+
+    Object.entries(styles.grouped ?? {}).forEach(([groupId, hashes]) => {
+      const set = getOrCreateSet(this.grouped, groupId)
       hashes.forEach((hash) => set.add(hash))
     })
 

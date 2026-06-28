@@ -27,13 +27,14 @@ import { Recipes } from './recipes'
 export class StyleDecoder {
   constructor(private context: Pick<Context, 'conditions' | 'utility' | 'recipes' | 'hash'>) {}
 
-  classNames = new Map<string, AtomicStyleResult | RecipeBaseResult>()
+  classNames = new Map<string, AtomicStyleResult | RecipeBaseResult | GroupedResult>()
   //
   atomic_cache = new Map<string, AtomicStyleResult>()
   group_cache = new Map<string, GroupedResult>()
   recipe_base_cache = new Map<string, RecipeBaseResult>()
   //
   atomic = new Set<AtomicStyleResult>()
+  grouped = new Set<GroupedResult>()
   //
   recipes = new Map<string, Set<AtomicStyleResult>>()
   recipes_base = new Map<string, Set<RecipeBaseResult>>()
@@ -43,12 +44,13 @@ export class StyleDecoder {
   }
 
   isEmpty = () => {
-    return !this.atomic.size && !this.recipes.size && !this.recipes_base.size
+    return !this.atomic.size && !this.grouped.size && !this.recipes.size && !this.recipes_base.size
   }
 
   get results() {
     return {
       atomic: this.atomic,
+      grouped: this.grouped,
       recipes: this.recipes,
       recipes_base: this.recipes_base,
     }
@@ -358,12 +360,32 @@ export class StyleDecoder {
     })
   }
 
+  collectGrouped = (encoder: StyleEncoder) => {
+    encoder.grouped.forEach((hashSet, groupId) => {
+      const groupKey = 'grouped:' + groupId
+      const style = this.getGroup(hashSet, groupKey)
+
+      const shortHash = this.context.utility.toHash(['grouped', groupId], this.context.utility.defaultHashFn)
+      const className = this.formatSelector([], shortHash)
+
+      const result: GroupedResult = {
+        ...style,
+        className,
+        result: { ['.' + className]: style.result },
+      }
+
+      this.grouped.add(result)
+      this.classNames.set(className, result)
+    })
+  }
+
   /**
    * Collect and re-create all styles and recipes objects from the style encoder
    * So that we can just iterate over them and transform resulting CSS objects into CSS strings
    */
   collect = (encoder: StyleEncoder) => {
     this.collectAtomic(encoder)
+    this.collectGrouped(encoder)
     this.collectRecipe(encoder)
     this.collectRecipeBase(encoder)
     return this
