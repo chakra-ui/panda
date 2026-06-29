@@ -128,10 +128,34 @@ describe('resolveAuthoredPresets / designSystem', () => {
     )
   })
 
+  test('attaches diagnostics for an invalid manifest', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' } as any, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_manifest_invalid',
+          severity: 'error',
+          category: 'config',
+        },
+      ],
+    })
+  })
+
   test('errors with guidance when the package does not resolve', async () => {
     await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' } as any, cwd)).rejects.toThrow(
       /designSystem "@acme\/missing" could not be resolved/,
     )
+  })
+
+  test('attaches diagnostics when the package does not resolve', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' } as any, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_manifest_not_found',
+          severity: 'error',
+          category: 'config',
+        },
+      ],
+    })
   })
 
   test('throws when manifest resolution fails for an unexpected reason', async () => {
@@ -145,6 +169,18 @@ describe('resolveAuthoredPresets / designSystem', () => {
     await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' } as any, cwd)).rejects.toThrow(
       /Failed to resolve designSystem "@acme\/broken-resolve"/,
     )
+  })
+
+  test('attaches diagnostics when manifest resolution fails for an unexpected reason', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' } as any, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_resolve_failed',
+          severity: 'error',
+          category: 'config',
+        },
+      ],
+    })
   })
 })
 
@@ -248,10 +284,34 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     )
   })
 
+  test('attaches diagnostics for a cycle in the parent chain', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' } as any, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_cycle',
+          severity: 'error',
+          category: 'config',
+        },
+      ],
+    })
+  })
+
   test('reports a parent that is not installed alongside its declaring library', async () => {
     await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' } as any, cwd)).rejects.toThrow(
       /designSystem "@acme\/orphan" extends "@acme\/ghost"/,
     )
+  })
+
+  test('attaches diagnostics for a parent that is not installed alongside its declaring library', async () => {
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' } as any, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_parent_not_found',
+          severity: 'error',
+          category: 'config',
+        },
+      ],
+    })
   })
 
   test('links the chain by specifier, so a parent whose manifest name differs still merges as the root', async () => {

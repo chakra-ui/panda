@@ -1,6 +1,6 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
 import { normalizeInclude } from './args'
-import { configLoadDiagnostic, diagnosticsPass, missingConfigDiagnostic, normalizeDiagnostics } from './diagnostics'
+import { configLoadDiagnostics, diagnosticsPass, missingConfigDiagnostic, normalizeDiagnostics } from './diagnostics'
 import {
   consoleOutput,
   createCommandOutput,
@@ -122,7 +122,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
       run: () => createNodeDriver({ cwd, configPath: flags.config, include: normalizeInclude(flags.include) }),
     })
   } catch (error) {
-    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
+    const diagnostics = configLoadDiagnostics(error, { cwd, file: flags.config })
     return finish(failData(diagnostics), diagnostics, false)
   }
 

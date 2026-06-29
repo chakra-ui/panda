@@ -17,7 +17,7 @@ import {
 } from '../output'
 import { createResult, setExitCode, toJsonPayload } from '../result'
 import { renderTimings, timeAsync } from '../timing'
-import { configLoadDiagnostic } from '../diagnostics'
+import { configLoadDiagnostics } from '../diagnostics'
 import type { InitFlags, InitResult, PhaseTimings } from '../schema'
 
 /** Presets scaffolded into the generated config and installed by `panda init`. */
@@ -128,7 +128,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
       codegenFiles = driver.codegen({ outdir: flags.outdir })
     }
   } catch (error) {
-    const diagnostics = [configLoadDiagnostic(error, { cwd, file: flags.config })]
+    const diagnostics = configLoadDiagnostics(error, { cwd, file: flags.config })
     const result: InitResult = createResult({
       command: 'init',
       startedAt,

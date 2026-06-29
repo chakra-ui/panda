@@ -3,8 +3,9 @@
 ## Summary
 
 Recoverable compiler issues use `Diagnostic` from `pandacss_shared`. Fatal setup failures still use
-`PandaError`/`Result`, so callers can distinguish "the operation failed" from "the operation completed with warnings
-or source-level errors".
+`PandaError`/`Result`, so callers can distinguish "the operation failed" from "the operation completed with warnings or
+source-level errors". When setup fails for structured user-facing reasons, `PandaError` carries diagnostics so CLI,
+JSON, and GitHub output can keep the specific codes.
 
 ## Stable Codes
 
@@ -16,6 +17,7 @@ Current codes:
 - `compile_placeholder`
 - `config_artifact_name_conflict`
 - `config_breakpoint_units_mixed`
+- `config_hooks_removed`
 - `config_condition_selector_invalid`
 - `config_token_circular_reference`
 - `config_token_key_contains_space`
@@ -26,10 +28,18 @@ Current codes:
 - `config_token_unknown_reference`
 - `deprecated_token_used`
 - `deprecated_utility_used`
+- `design_system_cycle`
+- `design_system_in_include`
+- `design_system_manifest_invalid`
+- `design_system_manifest_not_found`
+- `design_system_parent_not_found`
+- `design_system_resolve_failed`
+- `include_package_resolution_failed`
 - `invalid_color_opacity_modifier`
 - `js_parse_error`
 - `layer_name_collision`
 - `panda_call_unextractable`
+- `preset_resolution_failed`
 - `recipe_variant_dynamic`
 - `static_css_pattern_missing_transform`
 - `static_css_pattern_unknown`
@@ -72,6 +82,10 @@ Prefer emitting diagnostics at the layer that owns the facts:
   callback failures.
 - The stylesheet owns CSS generation diagnostics, including static CSS authoring issues and unsupported stylesheet
   modes.
+
+Fatal config/setup errors should still throw. Attach diagnostics to the thrown `PandaError` when the failure has stable,
+actionable causes, such as design-system resolution failures or manifest-bearing packages listed in `include`. Plain
+unexpected config-load failures still become `config_load_error`.
 
 `panda_call_unextractable` is intentionally narrow. It is emitted only for direct Panda calls whose arguments are all
 dynamic enough that no static CSS can be generated for that call. It is disabled when `jsxFramework` is configured,

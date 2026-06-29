@@ -38,6 +38,11 @@ export function collectParseDiagnostics(parsed: ParseFileReport[], cwd: string):
 }
 
 export function configLoadDiagnostic(error: unknown, options: { cwd: string; file?: string }): CliDiagnostic {
+  const diagnostics = pandaErrorDiagnostics(error)
+  if (diagnostics.length > 0) {
+    return normalizeDiagnostics(diagnostics, options)[0]
+  }
+
   return normalizeDiagnostics(
     [
       {
@@ -50,6 +55,13 @@ export function configLoadDiagnostic(error: unknown, options: { cwd: string; fil
     ],
     options,
   )[0]
+}
+
+export function configLoadDiagnostics(error: unknown, options: { cwd: string; file?: string }): CliDiagnostic[] {
+  const diagnostics = pandaErrorDiagnostics(error)
+  if (diagnostics.length > 0) return normalizeDiagnostics(diagnostics, options)
+
+  return [configLoadDiagnostic(error, options)]
 }
 
 export function missingConfigDiagnostic(configPath: string | undefined, cwd: string): CliDiagnostic | undefined {
@@ -226,6 +238,25 @@ function errorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return stripAnsi(error.message).replace(/\s+/g, ' ').trim()
 
   return stripAnsi(String(error)).replace(/\s+/g, ' ').trim()
+}
+
+function pandaErrorDiagnostics(error: unknown): Diagnostic[] {
+  if (typeof error !== 'object' || error === null || !('diagnostics' in error)) return []
+
+  const diagnostics = (error as { diagnostics?: unknown }).diagnostics
+  if (!Array.isArray(diagnostics)) return []
+
+  return diagnostics.filter(isDiagnostic)
+}
+
+function isDiagnostic(value: unknown): value is Diagnostic {
+  if (typeof value !== 'object' || value === null) return false
+  const diagnostic = value as Partial<Diagnostic>
+  return (
+    typeof diagnostic.code === 'string' &&
+    typeof diagnostic.message === 'string' &&
+    (diagnostic.severity === 'info' || diagnostic.severity === 'warning' || diagnostic.severity === 'error')
+  )
 }
 
 function stripAnsi(value: string): string {
