@@ -8,7 +8,14 @@ import {
   type Driver,
   type SourceChange,
 } from '@pandacss/compiler-shared'
-import { type HostHooks, type LoadConfigResult, diffConfig, loadConfig } from '@pandacss/config'
+import {
+  type HostHooks,
+  type LoadConfigResult,
+  diffConfig,
+  loadConfig,
+  mergeExcludes,
+  resolveSmartInclude,
+} from '@pandacss/config'
 import { hydrateDesignSystem } from './design-system'
 import { createCompilerFromSnapshot } from './index'
 
@@ -28,8 +35,19 @@ type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
  */
 export async function createNodeDriver(options: NodeDriverOptions): Promise<Driver> {
   const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath })
-  if (options.include?.length) loaded.config.include = options.include
+  if (options.include?.length) applyIncludeOverride(loaded, options.cwd, options.include)
   return new NodeDriver(options, loaded)
+}
+
+function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: string[]): void {
+  const deps = new Set(loaded.dependencies)
+  const resolved = resolveSmartInclude(include, cwd, deps)
+  loaded.config.include = resolved.include
+  if (resolved.excludes.length > 0) {
+    const existing = Array.isArray(loaded.config.exclude) ? loaded.config.exclude : undefined
+    loaded.config.exclude = mergeExcludes(existing, resolved.excludes)
+  }
+  loaded.dependencies = Array.from(deps)
 }
 
 class NodeDriver extends BaseDriver {
@@ -57,7 +75,7 @@ class NodeDriver extends BaseDriver {
   async reload(): Promise<DiffConfigResult> {
     const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
     // Re-apply before diffing so the override isn't seen as a config change.
-    if (this.#options.include?.length) next.config.include = this.#options.include
+    if (this.#options.include?.length) applyIncludeOverride(next, this.#options.cwd, this.#options.include)
     const diff = diffConfig(this.#loaded, next)
     if (diff.hasChanged) {
       this.#loaded = next

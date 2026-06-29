@@ -1,11 +1,17 @@
 import type { Config, UserConfig } from '@pandacss/types'
 import { normalize, relative } from 'node:path'
 import { bundleConfig } from './bundle'
-import { loadDesignSystemPreset, withDesignSystemImportMap, type ResolvedDesignSystem } from './design-system'
+import {
+  loadDesignSystemChain,
+  withDesignSystemImportMap,
+  type DesignSystemLevel,
+  type ResolvedDesignSystem,
+} from './design-system'
 import { PandaError } from './error'
 import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
+import { expandSmartInclude } from './smart-include'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 
@@ -25,7 +31,7 @@ export interface ResolveAuthoredPresetsResult {
   dependencies: string[]
   metadata?: {
     sources?: ConfigSources
-    designSystem?: ResolvedDesignSystem
+    designSystem?: ResolvedDesignSystem[]
   }
 }
 
@@ -52,18 +58,22 @@ export async function resolveAuthoredPresets(
   if (options.configFile) rootSource.file = normalize(relative(cwd, options.configFile))
 
   const designSystem = (config as UserConfig).designSystem
-  let resolvedDesignSystem: { preset: ExtendableConfig; info: ResolvedDesignSystem } | undefined
+  let dsChain: DesignSystemLevel[] = []
   if (typeof designSystem === 'string' && designSystem.length > 0) {
-    resolvedDesignSystem = await loadDesignSystemPreset(designSystem, cwd, ctx.dependencies)
-    await collectConfigs(resolvedDesignSystem.preset, { kind: 'preset', specifier: designSystem }, ctx, new WeakSet())
+    dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
+    for (const level of dsChain) {
+      await collectConfigs(level.preset, { kind: 'preset', specifier: level.info.name }, ctx, new WeakSet())
+    }
   }
 
   await collectConfigs(config, rootSource, ctx, new WeakSet())
 
-  const ds = resolvedDesignSystem
-  const finalize = (resolved: UserConfig): UserConfig =>
-    ds ? withDesignSystemImportMap(resolved, designSystem as string, ds.info) : resolved
-  const dsMetadata = ds ? { designSystem: ds.info } : undefined
+  const dsInfos = dsChain.map((level) => level.info)
+  const finalize = (resolved: UserConfig): UserConfig => {
+    const withImportMap = dsInfos.length > 0 ? withDesignSystemImportMap(resolved, dsInfos) : resolved
+    return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
+  }
+  const dsMetadata = dsInfos.length > 0 ? { designSystem: dsInfos } : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)

@@ -2,12 +2,15 @@ import { type BuildInfoArtifact, type Compiler } from '@pandacss/compiler-shared
 import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
 import { readFileSync } from 'node:fs'
 
-type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>
+type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
 
-export function hydrateDesignSystem(compiler: Compiler, ds: ResolvedDesignSystem | undefined): void {
-  if (!ds) return
-
+export function hydrateDesignSystem(compiler: Compiler, chain: ResolvedDesignSystem[] | undefined): void {
+  if (!chain || chain.length === 0) return
   const pandaVersion = readPandaVersion()
+  for (const ds of chain) hydrateLevel(compiler, ds, pandaVersion)
+}
+
+function hydrateLevel(compiler: Compiler, ds: ResolvedDesignSystem, pandaVersion: string | undefined): void {
   const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
   if (!compat.ok) {
     throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
