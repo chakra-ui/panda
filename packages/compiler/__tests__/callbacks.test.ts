@@ -11,6 +11,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
         },
         hooks: {
           'parser:before': [
@@ -55,6 +56,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
         },
         hooks: {
           'parser:before': [
@@ -88,6 +90,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -138,6 +141,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             tint: {
               transform: {
@@ -200,6 +204,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -321,6 +326,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           conditions: {
             hover: '&:hover',
           },
@@ -388,6 +394,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             inset: {
               property: 'inset',
@@ -452,6 +459,7 @@ describe('Compiler callbacks', () => {
             cwd: '/virtual',
             outdir: 'styled-system',
             importMap,
+            jsxFramework: 'react',
             utilities: {
               size: {
                 transform: {
@@ -475,6 +483,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           conditions: {
             hover: '&:hover',
           },
@@ -525,6 +534,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -571,6 +581,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -610,6 +621,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -664,6 +676,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -720,6 +733,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -775,6 +789,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             size: {
               transform: {
@@ -823,6 +838,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           conditions: {
             hover: '&:hover',
           },
@@ -902,6 +918,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           conditions: {
             hover: '&:hover',
           },
@@ -971,6 +988,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           patterns: {
             stack: {
               jsxName: 'Stack',
@@ -1032,6 +1050,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           patterns: {
             stack: {
               jsxName: 'Stack',
@@ -1094,6 +1113,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           patterns: {
             stack: {
               properties: {
@@ -1157,6 +1177,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           patterns: {
             stack: {
               jsxName: 'Stack',
@@ -1216,6 +1237,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           patterns: {
             stack: {
               jsxName: 'Stack',
@@ -1286,6 +1308,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           patterns: {
             stack: {
               properties: { align: {} },
@@ -1368,6 +1391,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           conditions: {
             hover: '&:hover',
           },
@@ -1445,6 +1469,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             alignItems: { className: 'ai' },
           },
@@ -1503,6 +1528,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           theme: { tokens: { spacing: { '4': { value: '1rem' } } } },
           utilities: {
             spaceX: {
@@ -1542,6 +1568,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           theme: { tokens: { colors: { red: { '500': { value: '#f00' } } } } },
           utilities: {
             boxColor: {
@@ -1579,6 +1606,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           conditions: { hover: '&:hover' },
           utilities: {
             debug: {
@@ -1615,6 +1643,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           theme: {
             tokens: {
               radii: {
@@ -1667,6 +1696,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             gradientBorder: {
               className: 'gradient-border',
@@ -1737,6 +1767,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             stackDir: {
               className: 'stack-dir',
@@ -1777,6 +1808,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           utilities: {
             layer: {
               className: 'layer',
@@ -1816,6 +1848,7 @@ describe('Compiler callbacks', () => {
           cwd: '/virtual',
           outdir: 'styled-system',
           importMap,
+          jsxFramework: 'react',
           theme: {
             tokens: {
               radii: {
