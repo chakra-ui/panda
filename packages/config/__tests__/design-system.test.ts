@@ -133,6 +133,19 @@ describe('resolveAuthoredPresets / designSystem', () => {
       /designSystem "@acme\/missing" could not be resolved/,
     )
   })
+
+  test('throws when manifest resolution fails for an unexpected reason', async () => {
+    const pkg = join(cwd, 'node_modules', '@acme', 'broken-resolve')
+    mkdirSync(pkg, { recursive: true })
+    writeFileSync(
+      join(pkg, 'package.json'),
+      JSON.stringify({ name: '@acme/broken-resolve', exports: { './panda.lib.json': 42 } }),
+    )
+
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' } as any, cwd)).rejects.toThrow(
+      /Failed to resolve designSystem "@acme\/broken-resolve"/,
+    )
+  })
 })
 
 describe('resolveAuthoredPresets / designSystem nested chains', () => {

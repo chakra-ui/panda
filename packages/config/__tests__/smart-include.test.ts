@@ -31,6 +31,7 @@ describe('resolveAuthoredPresets / smart include', () => {
     pkg('components', { 'index.js': 'export const PackageComponent = () => {}' })
 
     pkg('@acme/sealed', { 'dist/index.js': 'export const Sealed = () => {}' }, { exports: { '.': './dist/index.js' } })
+    pkg('@acme/broken', { 'index.js': 'export const Broken = () => {}' }, { exports: { '.': 42 } })
 
     pkg('@acme/ds', { 'panda.lib.json': manifest('@acme/ds') })
     pkg('@acme/ds2', { 'panda.lib.json': manifest('@acme/ds2') })
@@ -90,6 +91,12 @@ describe('resolveAuthoredPresets / smart include', () => {
   test('resolves a package whose exports hide ./package.json via its entry', async () => {
     const { config } = await resolveAuthoredPresets({ include: ['@acme/sealed'] } as any, cwd)
     expect(config.include).toEqual([`node_modules/@acme/sealed/**/*.{${EXT}}`])
+  })
+
+  test('throws when package resolution fails for an unexpected reason', async () => {
+    await expect(resolveAuthoredPresets({ include: ['@acme/broken'] } as any, cwd)).rejects.toThrow(
+      /Failed to resolve include package "@acme\/broken"/,
+    )
   })
 
   test('redirects a manifest-bearing package to designSystem', async () => {

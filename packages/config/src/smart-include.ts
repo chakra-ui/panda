@@ -1,13 +1,15 @@
 import type { UserConfig } from '@pandacss/types'
 import { existsSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { PandaError } from './error'
+import { tryResolveFrom } from './resolve'
+import { errorMessage } from './shared'
 
 export const SMART_INCLUDE_EXTENSIONS = ['js', 'mjs', 'cjs', 'jsx', 'ts', 'cts', 'mts', 'tsx', 'vue', 'svelte', 'astro']
 
 const MANIFEST = 'panda.lib.json'
 const PACKAGE_SPECIFIER = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/i
+const PATH_SEPARATOR = /[\\/]/
 
 export interface SmartIncludeResult {
   include: string[]
@@ -70,21 +72,28 @@ function isLocalPath(entry: string, cwd: string): boolean {
 }
 
 function resolvePackageDir(spec: string, cwd: string): string | undefined {
-  const require = createRequire(resolve(cwd, 'noop.js'))
-
-  const fromPackageJson = tryResolve(require, `${spec}/package.json`, cwd)
+  const fromPackageJson = tryResolve(`${spec}/package.json`, cwd)
   if (fromPackageJson !== undefined) return dirname(fromPackageJson)
 
-  const fromEntry = tryResolve(require, spec, cwd)
+  const fromEntry = tryResolve(spec, cwd)
   return fromEntry === undefined ? undefined : nearestPackageDir(fromEntry)
 }
 
-function tryResolve(require: ReturnType<typeof createRequire>, request: string, cwd: string): string | undefined {
+function tryResolve(request: string, cwd: string): string | undefined {
   try {
-    return require.resolve(request, { paths: [cwd] })
-  } catch {
-    return undefined
+    return tryResolveFrom(request, cwd)
+  } catch (error) {
+    throw new PandaError(
+      'CONFIG_ERROR',
+      `💥 Failed to resolve include package ${JSON.stringify(request)} from ${JSON.stringify(cwd)}: ${errorMessage(error)}`,
+    )
   }
+}
+
+function isInsideCwd(relativePath: string): boolean {
+  if (relativePath === '' || relativePath === '..') return false
+  if (isAbsolute(relativePath)) return false
+  return !relativePath.startsWith(`..${sep}`)
 }
 
 function nearestPackageDir(from: string): string | undefined {
@@ -99,12 +108,12 @@ function nearestPackageDir(from: string): string | undefined {
 
 function globBase(packageDir: string, cwd: string): string {
   const rel = relative(cwd, packageDir)
-  const base = rel !== '' && !rel.startsWith('..') ? rel : packageDir
+  const base = isInsideCwd(rel) ? rel : packageDir
   return toPosix(base)
 }
 
 function toPosix(path: string): string {
-  return path.split(/[\\/]/).join('/')
+  return path.split(PATH_SEPARATOR).join('/')
 }
 
 function inIncludeError(specs: string[]): PandaError {

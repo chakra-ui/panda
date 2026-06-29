@@ -6,10 +6,10 @@ import {
 } from '@pandacss/compiler-shared'
 import type { UserConfig } from '@pandacss/types'
 import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { PandaError } from './error'
+import { tryResolveFrom } from './resolve'
 import { ensureConfigObject, errorMessage, type ExtendableConfig } from './shared'
 
 export interface ResolvedDesignSystem {
@@ -74,9 +74,12 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
 
 function resolveManifestPath(spec: string, fromDir: string): string | undefined {
   try {
-    return createRequire(resolve(fromDir, 'noop.js')).resolve(`${spec}/panda.lib.json`, { paths: [fromDir] })
-  } catch {
-    return undefined
+    return tryResolveFrom(`${spec}/panda.lib.json`, fromDir)
+  } catch (error) {
+    throw new PandaError(
+      'CONFIG_ERROR',
+      `💥 Failed to resolve designSystem ${JSON.stringify(spec)} from ${JSON.stringify(fromDir)}: ${errorMessage(error)}`,
+    )
   }
 }
 
