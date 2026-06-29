@@ -412,9 +412,20 @@ them**.
    — re-running cssgen on edits inside the consumed package, beyond the config-dep invalidation wired here. The extension
    list is a hand-maintained mirror of the engine's parseable set (config is binding-free); a future engine-side extension
    gate would make it the single source of truth.
-5. **`panda lib` + propagation.** The command (+ `--watch`): glob `src/` → `create` → write manifest/buildinfo/preset → sync
-   exports. Register resolved paths as build deps; drift receipt + persisted state; stale-buildinfo fallback; token-conflict
-   warning. Remove `ship`/`emit-pkg` with a migration note.
+5. **`panda lib` + propagation. ✅ Complete.** The command (`packages/cli` `lib`, +`--watch`) globs the package source,
+   builds portable build info, compiles the author config into `preset.mjs`, writes manifest/buildinfo/preset into the
+   output dir (default `dist`), and syncs `package.json` exports (`./panda.lib.json`, `./preset`). It is idempotent. The
+   preset compiler (`packages/config` `compilePreset`) Rolldown-bundles the config and strips app/parent fields
+   (`designSystem`/`include`/`outdir`/…) via a virtual rest-spread entry, so a nested library ships its **own additions
+   only** — the parent travels in the manifest's `designSystem` field. The consumer side now emits a version drift
+   receipt from persisted `.panda/design-system-state.json` (`recordDrift`, surfaced once per run), a
+   `design_system_token_conflict` warning when a library and the consumer both define a token path (local wins; uses the
+   engine `token_conflicts` primitive over the author's pre-merge token paths), and the stale-buildinfo fallback —
+   re-extracting the manifest's `files` via a scoped scan when hydrate fails, instead of failing the build (fail-closed
+   only when no `files` exist). Host design-system diagnostics surface through `Driver.designSystemDiagnostics`, merged
+   into command output. `ship`/`emit-pkg` did not exist on v2, so there was nothing to remove. _Deferred:_ the styled-system
+   subpath exports (`./css`, `./recipes`, …) come from codegen output, tracked in Phase 6; cross-package **source** watch
+   (open item #4) beyond config-dep invalidation; build-info tree-shaking to the consumer's actual imports.
 6. **Overlay codegen / virtual styled-system.** The app emits only its delta; per-package layer ordering; merged type
    surface. Tracked in [virtual-styled-system.md](./virtual-styled-system.md).
 
