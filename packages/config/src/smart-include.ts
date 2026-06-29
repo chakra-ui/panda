@@ -89,7 +89,7 @@ function tryResolve(require: ReturnType<typeof createRequire>, request: string, 
 
 function nearestPackageDir(from: string): string | undefined {
   let dir = dirname(from)
-  for (;;) {
+  while (true) {
     if (existsSync(join(dir, 'package.json'))) return dir
     const parent = dirname(dir)
     if (parent === dir) return undefined

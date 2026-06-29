@@ -39,7 +39,7 @@ export async function loadDesignSystemChain(
   let fromDir = cwd
   let declaredBy: string | undefined
 
-  for (;;) {
+  while (true) {
     const manifestPath = resolveManifestPath(currentSpec, fromDir)
     if (manifestPath === undefined) {
       throw declaredBy === undefined ? notResolvedError(currentSpec) : parentNotResolvedError(declaredBy, currentSpec)
