@@ -73,7 +73,7 @@ describe('cli smoke', () => {
       \`doctor\` Validate Panda setup and diagnostics
       \`debug\` Dump resolved config and per-file extraction for bug reports
       \`buildinfo\` Build a portable panda.buildinfo.json for a design-system library
-      \`lib\` Publish a design system: write panda.lib.json, portable build info, and a compiled preset
+      \`lib\` Publish a design system: write panda.lib.json, portable build info, and a compiled preset, and sync package.json exports
       \`analyze\` Inspect Panda usage across project sources
       \`codegen\` Generate the panda system
       \`cssgen\` Generate CSS from project files

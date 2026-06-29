@@ -1,5 +1,5 @@
 import type { DesignSystemManifest } from '@pandacss/compiler-shared'
-import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -71,5 +71,14 @@ describe('lib command', () => {
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
     expect(result.ok).toBe(false)
     expect(result.diagnostics.some((d) => d.message?.includes('foundations'))).toBe(true)
+  })
+
+  it('watch mode generates once and exposes a stop handle', async () => {
+    dir = createLibFixture()
+    const result = await runLib({ cwd: dir, watch: true, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+    expect(typeof result.stop).toBe('function')
+    expect(existsSync(join(dir, 'dist', 'panda.lib.json'))).toBe(true)
+    await result.stop!()
   })
 })

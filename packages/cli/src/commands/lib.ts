@@ -9,7 +9,9 @@ import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type 
 import { setExitCode } from '../result'
 import { runCommand } from '../run-command'
 import { libFlagsSchema } from '../schema'
-import { time } from '../timing'
+import { parseMilliseconds, time } from '../timing'
+import { formatWatchError, startProjectWatch } from '../watch'
+import { createWatchLogger } from '../watch-logger'
 import type { LibFlags, LibResult, PhaseTimings } from '../schema'
 
 const DEFAULT_OUTDIR = 'dist'
@@ -18,7 +20,8 @@ const DEFAULT_FILES = ['./dist/**/*.{js,mjs}']
 export const libCommand = defineCommand({
   meta: {
     name: 'lib',
-    description: 'Publish a design system: write panda.lib.json, portable build info, and a compiled preset',
+    description:
+      'Publish a design system: write panda.lib.json, portable build info, and a compiled preset, and sync package.json exports',
   },
   args: () => ({
     ...baseArgs(),
@@ -30,9 +33,12 @@ export const libCommand = defineCommand({
     },
     panda: {
       type: 'string',
-      description: "Peer Panda range to stamp (default the package's @pandacss/dev peer, else '*')",
+      description: "Peer Panda version range to stamp (defaults to the package's @pandacss/dev peer, or '*')",
     },
-    files: { type: 'string', description: 'Re-extract fallback globs for consumers, comma-separated' },
+    files: {
+      type: 'string',
+      description: 'Re-extract fallback globs for consumers (comma-separated, or repeat the flag)',
+    },
     minify: { type: 'boolean', description: 'Minify the generated build info JSON', alias: 'm' },
     ...outputArgs(),
     ...traceArgs(),
@@ -42,13 +48,16 @@ export const libCommand = defineCommand({
 
 export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleOutput): Promise<LibResult> {
   let parsedFileCount = 0
+  let runCwd = flags.cwd ?? process.cwd()
 
-  return runCommand({
+  const result = (await runCommand({
     command: 'lib',
     flags,
     output,
+    keepTracing: !!flags.watch,
     failData: () => ({ exportsChanged: false }),
     async execute({ driver, cwd, timings }) {
+      runCwd = cwd
       const generated = await generateLib(driver, cwd, flags, timings)
       parsedFileCount = generated.parsedFileCount
       return {
@@ -71,7 +80,47 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
         )
       }
     },
-  }) as Promise<LibResult>
+  })) as LibResult
+
+  if (flags.watch && result.driver) {
+    const driver = result.driver
+    const watchLogger = createWatchLogger(output)
+    const regenerate = async () => {
+      const generated = await generateLib(driver, runCwd, flags, {})
+      Object.assign(result, {
+        manifestPath: generated.manifestPath,
+        buildInfoPath: generated.buildInfoPath,
+        presetPath: generated.presetPath,
+        exportsChanged: generated.exportsChanged,
+        diagnostics: generated.diagnostics,
+      })
+    }
+
+    const stopWatch = await startProjectWatch({
+      driver,
+      cwd: runCwd,
+      outdir: () => driver.resolvePath(flags.outdir ?? DEFAULT_OUTDIR),
+      debounceMs: parseMilliseconds(flags.watchDebounce),
+      onStatus: (message) => watchLogger.log(message),
+      onError: (error) => watchLogger.error(`panda: failed to rebuild design system\n${formatWatchError(error)}`),
+      onSourceChange: async (events) => {
+        driver.applyChanges(events)
+        await regenerate()
+      },
+      onConfigChange: async () => {
+        const diff = await driver.reload()
+        if (diff.hasChanged) await regenerate()
+      },
+    })
+
+    const stopTracing = result.stop
+    result.stop = async () => {
+      await stopWatch()
+      await stopTracing?.()
+    }
+  }
+
+  return result
 }
 
 interface GeneratedLib {
@@ -90,7 +139,9 @@ export async function generateLib(
   timings: PhaseTimings,
 ): Promise<GeneratedLib> {
   if (!driver.configPath) {
-    throw new Error('panda lib requires a resolved config file to compile the design system preset.')
+    throw new Error(
+      'panda lib requires a resolved config file to compile the design system preset. Run `panda init`, or check --config/--cwd.',
+    )
   }
 
   const parsed = time({ timings, phase: 'parse', run: () => driver.parseFiles() })
