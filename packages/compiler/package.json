@@ -36,7 +36,8 @@
     "build:fast": "tsup src/index.ts src/loader.ts --format=esm --platform=node --no-dts",
     "build:native": "napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts",
     "dev": "pnpm build:fast --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:webcontainer": "node scripts/verify-webcontainer-api.mjs"
   },
   "files": [
     "dist",

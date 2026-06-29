@@ -76,7 +76,9 @@ jobs:
       # Use napi directly so per-target flags are not lost behind pnpm's separator.
       - name: Build native binding
         working-directory: packages/compiler
-        run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target ${{ matrix.target }} ${{ matrix.args }}
+        run: >-
+          pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs
+          --dts native.d.ts --target ${{ matrix.target }} ${{ matrix.args }}
 
       - name: Upload native binary
         uses: actions/upload-artifact@v7
@@ -145,7 +147,9 @@ jobs:
 
       - name: Build wasi binding
         working-directory: packages/compiler
-        run: pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts --target wasm32-wasip1-threads
+        run: >-
+          pnpm exec napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs
+          --dts native.d.ts --target wasm32-wasip1-threads
 
       - name: Upload wasi artifact
         uses: actions/upload-artifact@v7
@@ -202,11 +206,27 @@ jobs:
 
       - name: Stage wasi loader files at package root
         working-directory: packages/compiler
-        run: mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi-browser.js artifacts/wasi-worker.mjs artifacts/wasi-worker-browser.mjs .
+        run: >-
+          mv artifacts/compiler.wasi.cjs artifacts/compiler.wasi-browser.js artifacts/wasi-worker.mjs
+          artifacts/wasi-worker-browser.mjs .
 
       - name: Stage platform npm packages
         working-directory: packages/compiler
         run: pnpm exec napi artifacts --output-dir artifacts --npm-dir npm
+
+      - name: Verify wasi binding loads
+        run: |
+          cleanup() {
+            rm -f packages/compiler/node_modules/@pandacss/compiler-wasm32-wasi
+            if [ -f packages/compiler/compiler.wasi.cjs.smoke ]; then
+              mv packages/compiler/compiler.wasi.cjs.smoke packages/compiler/compiler.wasi.cjs
+            fi
+          }
+          trap cleanup EXIT
+          mv packages/compiler/compiler.wasi.cjs packages/compiler/compiler.wasi.cjs.smoke
+          mkdir -p packages/compiler/node_modules/@pandacss
+          ln -s ../../npm/wasm32-wasi packages/compiler/node_modules/@pandacss/compiler-wasm32-wasi
+          NAPI_RS_FORCE_WASI=error node -e "const binding = require('./packages/compiler/binding.cjs'); if (typeof binding.compile !== 'function' || typeof binding.Compiler?.fromConfig !== 'function') process.exit(1)"
 
       - name: Build package JS
         run: |
@@ -229,7 +249,8 @@ jobs:
 
       - name: Publish
         id: changesets
-        if: ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        if: >-
+          ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         uses: changesets/action@v1
         with:
           publish: pnpm release

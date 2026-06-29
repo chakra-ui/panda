@@ -24,7 +24,15 @@ fn link_wasi_reactor() {
         std::path::Path::new(&crt).exists(),
         "missing {crt}: the reactor crt is required so the module runs its constructors under the emnapi loader"
     );
-    println!("cargo:rustc-link-arg=--allow-multiple-definition");
-    println!("cargo:rustc-link-arg={crt}");
-    println!("cargo:rustc-link-arg=--export=_initialize");
+    cargo_link_arg("--allow-multiple-definition");
+    cargo_link_arg(&crt);
+    cargo_link_arg("--export=_initialize");
+}
+
+#[expect(
+    clippy::disallowed_macros,
+    reason = "Cargo build scripts emit instructions to Cargo through stdout"
+)]
+fn cargo_link_arg(arg: &str) {
+    println!("cargo:rustc-link-arg={arg}");
 }
