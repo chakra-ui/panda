@@ -2,7 +2,7 @@
 //! with one `designSystem: '@acme/ds'` field. Values only; the host owns fs +
 //! module resolution. See `design-notes/design-system-manifest.md`.
 
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 
 /// Bumped when the wire shape changes; a version mismatch surfaces a diagnostic
@@ -92,6 +92,22 @@ impl super::Project {
             files: input.files,
         }
     }
+}
+
+/// Dotted token paths defined by both the consumer (`local`) and a design
+/// system (`ds`), sorted and deduped. Surfaced as `design_system_token_conflict`
+/// (warning, local wins). Pure (no fs).
+#[must_use]
+pub fn token_conflicts(local: &[String], ds: &[String]) -> Vec<String> {
+    let ds_set: FxHashSet<&str> = ds.iter().map(String::as_str).collect();
+    let mut hits: Vec<String> = local
+        .iter()
+        .filter(|path| ds_set.contains(path.as_str()))
+        .cloned()
+        .collect();
+    hits.sort_unstable();
+    hits.dedup();
+    hits
 }
 
 /// Outcome of [`resolve_chain`]: the order to merge presets + hydrate build
