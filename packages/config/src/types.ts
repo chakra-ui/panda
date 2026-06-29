@@ -27,5 +27,6 @@ export interface LoadConfigResult {
   metadata?: {
     sources?: ConfigSources
     designSystem?: ResolvedDesignSystem[]
+    userTokenPaths?: string[]
   }
 }

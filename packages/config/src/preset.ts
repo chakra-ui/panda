@@ -12,6 +12,7 @@ import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
 import { expandSmartInclude } from './smart-include'
+import { collectTokenPaths } from './token-paths'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 
@@ -32,6 +33,7 @@ export interface ResolveAuthoredPresetsResult {
   metadata?: {
     sources?: ConfigSources
     designSystem?: ResolvedDesignSystem[]
+    userTokenPaths?: string[]
   }
 }
 
@@ -73,7 +75,8 @@ export async function resolveAuthoredPresets(
     const withImportMap = dsInfos.length > 0 ? withDesignSystemImportMap(resolved, dsInfos) : resolved
     return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
   }
-  const dsMetadata = dsInfos.length > 0 ? { designSystem: dsInfos } : undefined
+  const dsMetadata =
+    dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(config) } : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)

@@ -16,6 +16,7 @@ import type {
   CompileOutput,
   CompileOptions,
   CssFile,
+  Diagnostic,
   LayerCssOptions,
   ParseFileReport,
   ScanOptions,
@@ -79,6 +80,8 @@ export interface Driver {
   readonly configDependencies: string[]
   /** Backward-looking designSystem version receipts since the last run (node only). */
   readonly designSystemDrift?: string[]
+  /** Host-side designSystem diagnostics (stale build info, token conflicts) from the last build (node only). */
+  readonly designSystemDiagnostics?: Diagnostic[]
   /** Introspection over the current config (cached; rebuilt on `reload`). */
   readonly introspect: Introspection
 

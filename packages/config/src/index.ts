@@ -9,6 +9,7 @@ export { readPandaVersion } from './version'
 export { compilePreset } from './lib-preset'
 export { readPackageIdentity, defaultImportMap, syncExports } from './lib-manifest'
 export { readDriftState, diffDrift, writeDriftState, formatDrift, recordDrift } from './drift'
+export { collectTokenPaths } from './token-paths'
 
 export type { CompilePresetResult } from './lib-preset'
 export type { PackageIdentity, SyncExportsResult } from './lib-manifest'

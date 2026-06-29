@@ -17,6 +17,7 @@ import {
   recordDrift,
   resolveSmartInclude,
 } from '@pandacss/config'
+import { type Diagnostic } from '@pandacss/compiler-shared'
 import { hydrateDesignSystem } from './design-system'
 import { createCompilerFromSnapshot } from './index'
 
@@ -55,16 +56,23 @@ class NodeDriver extends BaseDriver {
   #options: NodeDriverOptions
   #loaded: LoadConfigResult
   #designSystemDrift: string[]
+  #designSystemDiagnostics: Diagnostic[]
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
-    super(buildFromConfig(loaded))
+    const built = buildFromConfig(loaded)
+    super(built.compiler)
     this.#options = options
     this.#loaded = loaded
     this.#designSystemDrift = recordDesignSystemDrift(loaded, options.cwd)
+    this.#designSystemDiagnostics = built.designSystemDiagnostics
   }
 
   get designSystemDrift() {
     return this.#designSystemDrift
+  }
+
+  get designSystemDiagnostics() {
+    return this.#designSystemDiagnostics
   }
 
   get config() {
@@ -86,8 +94,10 @@ class NodeDriver extends BaseDriver {
     const diff = diffConfig(this.#loaded, next)
     if (diff.hasChanged) {
       this.#loaded = next
-      this.setCompiler(buildFromConfig(next))
+      const built = buildFromConfig(next)
+      this.setCompiler(built.compiler)
       this.#designSystemDrift = recordDesignSystemDrift(next, this.#options.cwd)
+      this.#designSystemDiagnostics = built.designSystemDiagnostics
     }
     return diff
   }
@@ -203,14 +213,18 @@ function resolveHookHandler(value: unknown, name: string): HookHandler {
   return handler as HookHandler
 }
 
-function buildFromConfig(loaded: LoadConfigResult): Compiler {
+function buildFromConfig(loaded: LoadConfigResult): { compiler: Compiler; designSystemDiagnostics: Diagnostic[] } {
   const compiler = createCompilerFromSnapshot({
     config: loaded.config,
     callbacks: loaded.callbacks,
     hooks: loaded.hooks,
   })
-  hydrateDesignSystem(compiler, loaded.metadata?.designSystem)
-  return compiler
+  const designSystemDiagnostics = hydrateDesignSystem(
+    compiler,
+    loaded.metadata?.designSystem,
+    loaded.metadata?.userTokenPaths ?? [],
+  )
+  return { compiler, designSystemDiagnostics }
 }
 
 function recordDesignSystemDrift(loaded: LoadConfigResult, cwd: string): string[] {
