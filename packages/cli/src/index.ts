@@ -4,6 +4,7 @@ export { runCssgen, writeCssgenOutput } from './commands/cssgen'
 export { runDebug } from './commands/debug'
 export { runDoctor } from './commands/doctor'
 export { runBuildinfo } from './commands/buildinfo'
+export { runLib } from './commands/lib'
 export { runAnalyze } from './commands/analyze'
 export { infoDriver, runInfo } from './commands/info'
 export { runInit, setupGitIgnore } from './commands/init'
@@ -28,5 +29,7 @@ export type {
   InfoResult,
   InitFlags,
   InitResult,
+  LibFlags,
+  LibResult,
   LogLevel,
 } from './schema'

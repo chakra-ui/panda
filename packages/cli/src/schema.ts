@@ -71,6 +71,13 @@ export const buildinfoFlagsSchema = commonFlagsSchema.omit({ watch: true, watchD
   minify: booleanFlag,
 })
 
+export const libFlagsSchema = commonFlagsSchema.extend({
+  outdir: stringFlag,
+  panda: stringFlag,
+  files: z.union([z.string(), z.array(z.string())]).optional(),
+  minify: booleanFlag,
+})
+
 export const infoFlagsSchema = commonFlagsSchema.pick({
   cwd: true,
   config: true,
@@ -117,6 +124,7 @@ export type CssgenFlags = z.infer<typeof cssgenFlagsSchema>
 export type BuildFlags = z.infer<typeof buildFlagsSchema>
 export type InitFlags = z.infer<typeof initFlagsSchema>
 export type BuildinfoFlags = z.infer<typeof buildinfoFlagsSchema>
+export type LibFlags = z.infer<typeof libFlagsSchema>
 export type InfoFlags = z.infer<typeof infoFlagsSchema>
 export type DoctorFlags = z.infer<typeof doctorFlagsSchema>
 export type DebugFlags = z.infer<typeof debugFlagsSchema>
@@ -131,6 +139,13 @@ export interface BuildinfoResult extends CommandResult {
   atomCount: number
   recipeCount: number
   bytes: number
+}
+
+export interface LibResult extends CommandResult {
+  manifestPath?: string
+  buildInfoPath?: string
+  presetPath?: string
+  exportsChanged: boolean
 }
 
 export interface CommandResult extends CliResult {
