@@ -14,6 +14,7 @@ import { ensureConfigObject, errorMessage, type ExtendableConfig } from './share
 
 export interface ResolvedDesignSystem {
   name: string
+  specifier: string
   manifest: DesignSystemManifest
   manifestPath: string
   buildInfoPath: string
@@ -66,7 +67,7 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
   const existing: ImportMapOption[] =
     config.importMap === undefined ? [] : Array.isArray(config.importMap) ? config.importMap : [config.importMap]
   const roots: ImportMapOption[] = infos.map((info) =>
-    info.importMap ? designSystemImportMap(info.importMap, info.name) : info.name,
+    info.importMap ? designSystemImportMap(info.importMap, info.specifier) : info.specifier,
   )
   return { ...config, importMap: [...roots, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
 }
@@ -123,6 +124,7 @@ async function loadManifestLevel(
       preset,
       info: {
         name: manifest.name ?? spec,
+        specifier: spec,
         manifest,
         manifestPath,
         buildInfoPath,

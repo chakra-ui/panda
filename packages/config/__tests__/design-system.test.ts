@@ -249,5 +249,6 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     expect(colors.rawOnly.value).toBe('raw')
     expect(colors.skinOnly.value).toBe('skin')
     expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/raw-identity', '@acme/skinned'])
+    expect(config.importMap).toEqual(['@acme/raw', '@acme/skinned', 'styled-system'])
   })
 })

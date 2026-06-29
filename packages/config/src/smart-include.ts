@@ -1,7 +1,7 @@
 import type { UserConfig } from '@pandacss/types'
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { PandaError } from './error'
 
 export const SMART_INCLUDE_EXTENSIONS = ['js', 'mjs', 'cjs', 'jsx', 'ts', 'cts', 'mts', 'tsx', 'vue', 'svelte', 'astro']
@@ -23,6 +23,10 @@ export function resolveSmartInclude(include: string[], cwd: string, deps: Set<st
 
   for (const entry of include) {
     if (!PACKAGE_SPECIFIER.test(entry)) {
+      next.push(entry)
+      continue
+    }
+    if (isLocalPath(entry, cwd)) {
       next.push(entry)
       continue
     }
@@ -59,6 +63,10 @@ export function expandSmartInclude(config: UserConfig, cwd: string, deps: Set<st
 
 export function mergeExcludes(existing: string[] | undefined, additions: string[]): string[] {
   return [...(existing ?? []), ...additions]
+}
+
+function isLocalPath(entry: string, cwd: string): boolean {
+  return existsSync(isAbsolute(entry) ? entry : resolve(cwd, entry))
 }
 
 function resolvePackageDir(spec: string, cwd: string): string | undefined {

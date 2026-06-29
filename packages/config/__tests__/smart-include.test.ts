@@ -28,6 +28,7 @@ describe('resolveAuthoredPresets / smart include', () => {
 
     pkg('@acme/charts', { 'index.js': 'export const Chart = () => {}' })
     pkg('widgets', { 'index.js': 'export const Widget = () => {}' })
+    pkg('components', { 'index.js': 'export const PackageComponent = () => {}' })
 
     pkg('@acme/sealed', { 'dist/index.js': 'export const Sealed = () => {}' }, { exports: { '.': './dist/index.js' } })
 
@@ -124,6 +125,12 @@ describe('resolveAuthoredPresets / smart include', () => {
     ]
     const { config } = await resolveAuthoredPresets({ include } as any, cwd)
     expect(config.include).toEqual(include)
+  })
+
+  test('prefers an existing local path over a package with the same name', async () => {
+    const { config } = await resolveAuthoredPresets({ include: ['components'] } as any, cwd)
+    expect(config.include).toEqual(['components'])
+    expect(config.exclude).toBeUndefined()
   })
 
   test('is a no-op when there is no include', async () => {
