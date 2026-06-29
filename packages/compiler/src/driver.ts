@@ -14,6 +14,7 @@ import {
   diffConfig,
   loadConfig,
   mergeExcludes,
+  recordDrift,
   resolveSmartInclude,
 } from '@pandacss/config'
 import { hydrateDesignSystem } from './design-system'
@@ -53,11 +54,17 @@ function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: st
 class NodeDriver extends BaseDriver {
   #options: NodeDriverOptions
   #loaded: LoadConfigResult
+  #designSystemDrift: string[]
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     super(buildFromConfig(loaded))
     this.#options = options
     this.#loaded = loaded
+    this.#designSystemDrift = recordDesignSystemDrift(loaded, options.cwd)
+  }
+
+  get designSystemDrift() {
+    return this.#designSystemDrift
   }
 
   get config() {
@@ -80,6 +87,7 @@ class NodeDriver extends BaseDriver {
     if (diff.hasChanged) {
       this.#loaded = next
       this.setCompiler(buildFromConfig(next))
+      this.#designSystemDrift = recordDesignSystemDrift(next, this.#options.cwd)
     }
     return diff
   }
@@ -203,6 +211,15 @@ function buildFromConfig(loaded: LoadConfigResult): Compiler {
   })
   hydrateDesignSystem(compiler, loaded.metadata?.designSystem)
   return compiler
+}
+
+function recordDesignSystemDrift(loaded: LoadConfigResult, cwd: string): string[] {
+  const chain = loaded.metadata?.designSystem
+  if (!chain || chain.length === 0) return []
+  return recordDrift(
+    cwd,
+    chain.map((ds) => ({ name: ds.name, version: ds.manifest.version })),
+  )
 }
 
 function toGenerateArtifactOptions(options: CodegenOptions | undefined): GenerateArtifactOptions | undefined {

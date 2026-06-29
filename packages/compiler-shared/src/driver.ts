@@ -77,6 +77,8 @@ export interface Driver {
   readonly configPath?: string
   /** Module ids to watch for config invalidation. */
   readonly configDependencies: string[]
+  /** Backward-looking designSystem version receipts since the last run (node only). */
+  readonly designSystemDrift?: string[]
   /** Introspection over the current config (cached; rebuilt on `reload`). */
   readonly introspect: Introspection
 
