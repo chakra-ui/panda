@@ -122,6 +122,7 @@ describe('Compiler', () => {
         "types/system.d.ts",
         "types/pattern.d.ts",
         "types/recipe.d.ts",
+        "types/jsx.d.ts",
         "types/index.d.ts",
       ]
     `)
@@ -405,6 +406,7 @@ describe('Compiler', () => {
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap,
+        jsxFramework: 'react',
         jsxStyleProps: 'none',
         patterns: {
           stack: {
