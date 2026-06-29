@@ -234,4 +234,12 @@ describe('compiler.designSystem', () => {
       cycle: ['@acme/a', '@acme/b', '@acme/a'],
     })
   })
+
+  it('tokenConflicts() reports paths defined by both sides, sorted', () => {
+    const app = project()
+    expect(app.designSystem.tokenConflicts(['colors.fg', 'colors.brand'], ['colors.brand', 'spacing.sm'])).toEqual([
+      'colors.brand',
+    ])
+    expect(app.designSystem.tokenConflicts(['colors.fg'], ['spacing.sm'])).toEqual([])
+  })
 })

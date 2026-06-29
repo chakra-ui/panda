@@ -44,4 +44,20 @@ impl WasmCompiler {
     pub fn design_system_manifest_schema_version(&self) -> u32 {
         pandacss_project::MANIFEST_SCHEMA_VERSION
     }
+
+    /// Dotted token paths defined by both the consumer and a design system,
+    /// sorted and deduped. Backs the `designSystem.tokenConflicts` JS namespace.
+    #[wasm_bindgen(js_name = designSystemTokenConflicts)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "wasm-bindgen requires owned arguments"
+    )]
+    pub fn design_system_token_conflicts(
+        &self,
+        local: Vec<String>,
+        ds: Vec<String>,
+    ) -> Vec<String> {
+        pandacss_project::token_conflicts(&local, &ds)
+    }
 }

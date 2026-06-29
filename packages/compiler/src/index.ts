@@ -160,6 +160,7 @@ function toDesignSystemBinding(
     createManifest: (input) => compiler.createDesignSystemManifest(input),
     manifestSchemaVersion: () => compiler.designSystemManifestSchemaVersion(),
     resolveChain: (manifests) => compiler.resolveDesignSystemChain(manifests),
+    tokenConflicts: (local, ds) => compiler.designSystemTokenConflicts(local, ds),
   }
 }
 
