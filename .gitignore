@@ -20,9 +20,15 @@ __pycache__/
 __generated__
 *.env
 target
+*.pending-snap
 *.node
 packages/compiler/native.d.ts
 packages/compiler/binding.cjs
+packages/compiler/browser.js
+packages/compiler/compiler.wasi-browser.js
+packages/compiler/compiler.wasi.cjs
+packages/compiler/wasi-worker-browser.mjs
+packages/compiler/wasi-worker.mjs
 .idea
 *.vsix
 .vercel
