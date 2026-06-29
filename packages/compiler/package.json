@@ -36,7 +36,8 @@
     "build:fast": "tsup src/index.ts src/loader.ts --format=esm --platform=node --no-dts",
     "build:native": "napi build --platform --release --manifest-path crate/Cargo.toml --output-dir . --js binding.cjs --dts native.d.ts",
     "dev": "pnpm build:fast --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:webcontainer": "node scripts/verify-webcontainer-api.mjs"
   },
   "files": [
     "dist",
@@ -53,10 +54,12 @@
       "x86_64-unknown-linux-musl",
       "aarch64-unknown-linux-musl",
       "x86_64-pc-windows-msvc",
-      "aarch64-pc-windows-msvc"
+      "aarch64-pc-windows-msvc",
+      "wasm32-wasip1-threads"
     ]
   },
   "dependencies": {
+    "@napi-rs/wasm-runtime": "^1.1.6",
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/config": "workspace:*"
   },

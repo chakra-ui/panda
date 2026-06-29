@@ -7,13 +7,18 @@ Panda's Rust pipeline ships through two cdylib crates with a shared philosophy: 
 binding crates are deliberate exceptions to the `pandacss_*` naming rule because the cdylib output filename is
 load-bearing on the JS side.
 
-| Crate                                          | Target                                  | Output                                                           | JS package               |
-| ---------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------- | ------------------------ |
-| `packages/compiler/crate` (`compiler_napi`)      | Native (NAPI)                           | `compiler.node`                                                   | `@pandacss/compiler`      |
+| Crate                                            | Target                                  | Output                                                             | JS package                |
+| ------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------ | ------------------------- |
+| `packages/compiler/crate` (`compiler_napi`)      | Native (NAPI)                           | `compiler.node`                                                    | `@pandacss/compiler`      |
 | `packages/compiler-wasm/crate` (`compiler_wasm`) | `wasm32-unknown-unknown` (wasm-bindgen) | `pkg-node/compiler_wasm_bg.wasm` + `pkg-web/compiler_wasm_bg.wasm` | `@pandacss/compiler-wasm` |
 
 Both depend on `pandacss_fs` with a single feature toggled (`os` for NAPI, `memory` for wasm) plus the rest of the core
 crates with `default-features = false` to keep wasm bundles lean.
+
+`@pandacss/compiler-wasm` and `@pandacss/compiler-wasm32-wasi` are intentionally separate packages. The former is the
+wasm-bindgen browser/playground host with its own loading API. The latter is produced from the NAPI crate for
+WebContainer-style environments where `@pandacss/compiler` must keep the generated `binding.cjs` surface but native
+`.node` files cannot load.
 
 ## What lives in the binding crates
 
@@ -175,8 +180,8 @@ The binding caches the parsed `UserConfig` on `Project` construction so each com
 entire JSON config again. The current output is `{ css, sourceMap, manifest, diagnostics }`; `sourceMap` and manifest
 hashes are still placeholders.
 
-`pandacss_stylesheet` emits and writer-minifies CSS. It does not run a CSS optimizer. The old `optimize` knob was removed
-from the native API so the boundary is explicit.
+`pandacss_stylesheet` emits and writer-minifies CSS. It does not run a CSS optimizer. The old `optimize` knob was
+removed from the native API so the boundary is explicit.
 
 ## Performance: serialization cost is real
 
@@ -193,13 +198,21 @@ serializing `Literal` to `JsValue` walks the same tree. Same constraint applies:
 ## Loader and fallback (NAPI)
 
 The TS wrapper (`packages/compiler/src/index.ts`) defines the public API and a no-op fallback for unsupported platforms.
-`src/load-binary.ts` looks for `compiler.node` next to the package root, then falls back to `@pandacss/compiler-native`.
-The native artifact and its auto-generated `native.d.ts` are gitignored.
+`src/load-binary.ts` loads the generated `binding.cjs`; that loader prefers the local/platform native package and falls
+back to `@pandacss/compiler-wasm32-wasi` when the native binding is unavailable. In WebContainer, if optional dependency
+resolution still fails, the loader installs `@pandacss/compiler-wasm32-wasi@<compiler version>` into
+`/tmp/pandacss-compiler-<version>` and requires `compiler.wasi.cjs` from there, matching Rolldown/Oxc's fallback shape.
+The WASI build is linked as a reactor with `_initialize` exported so emnapi runs the module constructors before use.
+Native artifacts, generated WASI files, and the auto-generated `native.d.ts` are gitignored.
+
+Use `pnpm --filter @pandacss/compiler verify:webcontainer` to serve the browser-based `@webcontainer/api` verification
+fixture. Pass `-- --compiler-tgz <path> --wasi-tgz <path>` to test local package tarballs before publishing; without
+tarballs it installs the current package version from npm.
 
 ## JS-host config callbacks
 
-Resolved config snapshots can carry callback references for config entries that cannot be represented as plain JSON.
-The serialized config stores a stable id, and the live JS function is kept in a sidecar callback map:
+Resolved config snapshots can carry callback references for config entries that cannot be represented as plain JSON. The
+serialized config stores a stable id, and the live JS function is kept in a sidecar callback map:
 
 ```ts
 {
@@ -225,8 +238,8 @@ The callback kinds are intentionally different:
 - `pattern.transform` runs before atomic encoding and returns a full system style object. Pattern output can contain
   nested config-derived conditions and breakpoints because it flows back through the normal style encoder.
 - `pattern.defaultValues` runs in the JS host before `pattern.transform`. Explicit props override defaults.
-- `utility.values` affects utility metadata and type/value availability. Prefer serializing resolved data when
-  possible; only keep it executable if the JS config model truly requires it.
+- `utility.values` affects utility metadata and type/value availability. Prefer serializing resolved data when possible;
+  only keep it executable if the JS config model truly requires it.
 
 Current support:
 
@@ -238,12 +251,11 @@ Current support:
   JS rather than being stubbed in Rust.
 - Utility transforms execute during `parseFile()` / `refreshFile()` for file-derived atoms and encoded recipe entries.
   `atoms()` and `encodedRecipes()` are pure reads and never call back into JS.
-- Utility transform results are cached by callback id, property, and raw value. The cached result is condition-free;
-  the original atom or recipe entry conditions are applied after expansion. Failed callback executions are reported as
+- Utility transform results are cached by callback id, property, and raw value. The cached result is condition-free; the
+  original atom or recipe entry conditions are applied after expansion. Failed callback executions are reported as
   `parseFile()` diagnostics and are not cached, so the next parse can retry the callback.
-- WASM registers both `utility.transform` and `pattern.transform` callbacks through the TS host wrapper. Pattern
-  and utility callbacks are installed before `parseFile()` so the Rust project can call back into JS before atomic
-  encoding.
+- WASM registers both `utility.transform` and `pattern.transform` callbacks through the TS host wrapper. Pattern and
+  utility callbacks are installed before `parseFile()` so the Rust project can call back into JS before atomic encoding.
 - WASM pattern transform results are cached by callback id, pattern name, and serialized props. Thrown callbacks become
   `parseFile()` diagnostics; failed calls are not cached.
 - `@pandacss/compiler-wasm` exposes `createCompilerFromWasmModule(mod, config, options)` for browser callers that import
@@ -268,8 +280,8 @@ themselves when they need control over the wasm fetch, then pass the initialized
 `@pandacss/compiler-wasm` ships a `./web` subpath export (`dist/web.mjs`) that carries only the wasm-module facade —
 `createCompilerFromWasmModule` and the shared types — with **no** `import('../pkg-node/...')` in its module graph.
 
-Because `src/web.ts` never references `pkg-node`, tsup injects no Node `fileURLToPath` shim into `dist/web.mjs`.
-Browser bundlers (webpack, Vite) that stub or remove `node:url` will not throw at module-eval time.
+Because `src/web.ts` never references `pkg-node`, tsup injects no Node `fileURLToPath` shim into `dist/web.mjs`. Browser
+bundlers (webpack, Vite) that stub or remove `node:url` will not throw at module-eval time.
 
 ```ts
 import initWasm, * as wasmMod from '@pandacss/compiler-wasm/pkg-web/compiler_wasm.js'
