@@ -8,7 +8,7 @@ import type { UserConfig } from '@pandacss/types'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { PandaError } from './error'
+import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { tryResolveFrom } from './resolve'
 import { ensureConfigObject, errorMessage, type ExtendableConfig } from './shared'
 import { collectTokenPaths } from './token-paths'
@@ -78,10 +78,8 @@ function resolveManifestPath(spec: string, fromDir: string): string | undefined 
   try {
     return tryResolveFrom(`${spec}/panda.lib.json`, fromDir)
   } catch (error) {
-    throw new PandaError(
-      'CONFIG_ERROR',
-      `💥 Failed to resolve designSystem ${JSON.stringify(spec)} from ${JSON.stringify(fromDir)}: ${errorMessage(error)}`,
-    )
+    const message = `Failed to resolve designSystem ${JSON.stringify(spec)} from ${JSON.stringify(fromDir)}: ${errorMessage(error)}`
+    throw createConfigError(message, [createConfigDiagnostic('design_system_resolve_failed', message)])
   }
 }
 
@@ -97,10 +95,10 @@ async function loadManifestLevel(
     throw new PandaError('CONFIG_ERROR', `💥 Failed to read ${JSON.stringify(manifestPath)}: ${errorMessage(error)}`)
   }
   if (typeof manifest.preset !== 'string') {
-    throw new PandaError('CONFIG_ERROR', `💥 ${JSON.stringify(spec)} manifest is missing a "preset" entry.`)
+    throw invalidManifestError(spec, 'preset')
   }
   if (typeof manifest.buildInfo !== 'string') {
-    throw new PandaError('CONFIG_ERROR', `💥 ${JSON.stringify(spec)} manifest is missing a "buildInfo" entry.`)
+    throw invalidManifestError(spec, 'buildInfo')
   }
 
   const presetPath = resolve(dirname(manifestPath), manifest.preset)
@@ -152,22 +150,33 @@ function designSystemImportMap(map: NonNullable<DesignSystemManifest['importMap'
 }
 
 function notResolvedError(spec: string): PandaError {
-  return new PandaError(
-    'CONFIG_ERROR',
-    `💥 designSystem ${JSON.stringify(spec)} could not be resolved. Install it, or — if it isn't a Panda design system — build it with \`panda lib\`.`,
-  )
+  const message = `designSystem ${JSON.stringify(spec)} could not be resolved. Install it, or — if it isn't a Panda design system — build it with \`panda lib\`.`
+  return createConfigError(message, [
+    createConfigDiagnostic('design_system_manifest_not_found', message, [
+      `Install ${JSON.stringify(spec)}, or build it with \`panda lib\` if it is a Panda design system.`,
+    ]),
+  ])
 }
 
 function parentNotResolvedError(child: string, parent: string): PandaError {
-  return new PandaError(
-    'CONFIG_ERROR',
-    `💥 designSystem ${JSON.stringify(child)} extends ${JSON.stringify(parent)}, which isn't installed alongside it. Install it where ${JSON.stringify(child)} can resolve it, or rebuild that library with \`panda lib\`.`,
-  )
+  const message = `designSystem ${JSON.stringify(child)} extends ${JSON.stringify(parent)}, which isn't installed alongside it. Install it where ${JSON.stringify(child)} can resolve it, or rebuild that library with \`panda lib\`.`
+  return createConfigError(message, [
+    createConfigDiagnostic('design_system_parent_not_found', message, [
+      `Install ${JSON.stringify(parent)} where ${JSON.stringify(child)} can resolve it, or rebuild ${JSON.stringify(child)} with \`panda lib\`.`,
+    ]),
+  ])
 }
 
 function cycleError(cycle: string[]): PandaError {
-  return new PandaError(
-    'CONFIG_ERROR',
-    `💥 Design-system cycle: ${cycle.join(' → ')}. A design system can't depend on itself.`,
-  )
+  const message = `Design-system cycle: ${cycle.join(' → ')}. A design system can't depend on itself.`
+  return createConfigError(message, [createConfigDiagnostic('design_system_cycle', message)])
+}
+
+function invalidManifestError(spec: string, field: string): PandaError {
+  const message = `${JSON.stringify(spec)} manifest is missing a "${field}" entry.`
+  return createConfigError(message, [
+    createConfigDiagnostic('design_system_manifest_invalid', message, [
+      `Rebuild ${JSON.stringify(spec)} with \`panda lib\`.`,
+    ]),
+  ])
 }

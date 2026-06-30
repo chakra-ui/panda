@@ -58,6 +58,7 @@ describe('Compiler recipes', () => {
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap,
+        jsxFramework: 'react',
         theme: {
           recipes: {
             button: {
@@ -110,6 +111,7 @@ describe('Compiler recipes', () => {
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap,
+        jsxFramework: 'react',
         theme: {
           recipes: {
             button: {
@@ -217,6 +219,7 @@ describe('Compiler recipes', () => {
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap,
+        jsxFramework: 'react',
         theme: {
           recipes: {
             button: {
@@ -259,6 +262,7 @@ describe('Compiler recipes', () => {
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap,
+        jsxFramework: 'react',
         theme: {
           recipes: {
             button: {
@@ -343,6 +347,7 @@ describe('Compiler recipes', () => {
         cwd: '/virtual',
         outdir: 'styled-system',
         importMap,
+        jsxFramework: 'react',
         theme: {
           breakpoints: {
             md: '768px',

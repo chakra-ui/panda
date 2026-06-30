@@ -1,4 +1,4 @@
-import { PandaError } from './error'
+import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { isPlainObject, type ExtendableConfig } from './shared'
 
 interface TraverseItem {
@@ -148,10 +148,12 @@ function joinPath(parent: string, key: string, separator: string) {
 export function attachRuntimeHooks(config: ExtendableConfig, configs: ExtendableConfig[]): ExtendableConfig {
   const plugins = configs.flatMap((item) => {
     if ('hooks' in item && item.hooks != null) {
-      throw new PandaError(
-        'CONFIG_ERROR',
-        '💥 `config.hooks` was removed in v2. Use `plugins: [{ name: "local", hooks: { ... } }]` instead.',
-      )
+      const message = '`config.hooks` was removed in v2. Use `plugins: [{ name: "local", hooks: { ... } }]` instead.'
+      throw createConfigError(message, [
+        createConfigDiagnostic('config_hooks_removed', message, [
+          'Move root `hooks` into `plugins: [{ name: "local", hooks: { ... } }]`.',
+        ]),
+      ])
     }
     return [...(item.plugins ?? []), ...(item.extend?.plugins ?? [])]
   })

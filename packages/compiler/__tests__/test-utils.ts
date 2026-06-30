@@ -15,6 +15,7 @@ export function createUserConfig(overrides: SerializedConfig = {}): SerializedCo
     outdir: 'styled-system',
     importMap,
     jsxFactory: 'styled',
+    jsxFramework: 'react',
     ...overrides,
   }
 }

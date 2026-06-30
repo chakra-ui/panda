@@ -7,7 +7,7 @@ import {
   type DesignSystemLevel,
   type ResolvedDesignSystem,
 } from './design-system'
-import { PandaError } from './error'
+import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
 import type { ConfigSources } from './sources'
@@ -160,10 +160,7 @@ async function resolvePreset(preset: PresetEntry, cwd: string) {
       }
     } catch (error) {
       if (error instanceof PandaError) throw error
-      throw new PandaError(
-        'CONFIG_ERROR',
-        `💥 Failed to resolve preset ${JSON.stringify(preset)}: ${errorMessage(error)}`,
-      )
+      throw presetResolutionError(JSON.stringify(preset), error)
     }
   }
 
@@ -176,8 +173,13 @@ async function resolvePreset(preset: PresetEntry, cwd: string) {
     }
   } catch (error) {
     if (error instanceof PandaError) throw error
-    throw new PandaError('CONFIG_ERROR', `💥 Failed to resolve preset "unknown-preset": ${errorMessage(error)}`)
+    throw presetResolutionError('"unknown-preset"', error)
   }
+}
+
+function presetResolutionError(name: string, error: unknown): PandaError {
+  const message = `Failed to resolve preset ${name}: ${errorMessage(error)}`
+  return createConfigError(message, [createConfigDiagnostic('preset_resolution_failed', message)])
 }
 
 function presetName(config: unknown) {

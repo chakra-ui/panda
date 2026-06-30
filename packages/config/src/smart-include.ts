@@ -1,7 +1,7 @@
 import type { UserConfig } from '@pandacss/types'
 import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { PandaError } from './error'
+import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { tryResolveFrom } from './resolve'
 import { errorMessage } from './shared'
 
@@ -83,10 +83,8 @@ function tryResolve(request: string, cwd: string): string | undefined {
   try {
     return tryResolveFrom(request, cwd)
   } catch (error) {
-    throw new PandaError(
-      'CONFIG_ERROR',
-      `💥 Failed to resolve include package ${JSON.stringify(request)} from ${JSON.stringify(cwd)}: ${errorMessage(error)}`,
-    )
+    const message = `Failed to resolve include package ${JSON.stringify(request)} from ${JSON.stringify(cwd)}: ${errorMessage(error)}`
+    throw createConfigError(message, [createConfigDiagnostic('include_package_resolution_failed', message)])
   }
 }
 
@@ -119,8 +117,15 @@ function toPosix(path: string): string {
 function inIncludeError(specs: string[]): PandaError {
   const list = specs.map((spec) => JSON.stringify(spec)).join(', ')
   const plural = specs.length > 1
-  return new PandaError(
-    'CONFIG_ERROR',
-    `💥 Design system${plural ? 's' : ''} in \`include\`: ${list}. ${plural ? 'They each ship' : 'It ships'} a ${MANIFEST}, so ${plural ? 'they belong' : 'it belongs'} in \`designSystem\`, not \`include\`. \`include\` is for files, not design systems.`,
+  const message = `Design system${plural ? 's' : ''} in \`include\`: ${list}. ${plural ? 'They each ship' : 'It ships'} a ${MANIFEST}, so ${plural ? 'they belong' : 'it belongs'} in \`designSystem\`, not \`include\`. \`include\` is for files, not design systems.`
+  return createConfigError(
+    message,
+    specs.map((spec) =>
+      createConfigDiagnostic(
+        'design_system_in_include',
+        `Design system ${JSON.stringify(spec)} is listed in \`include\`. Move it to \`designSystem\`; \`include\` is for files, not design systems.`,
+        [`Move ${JSON.stringify(spec)} to \`designSystem\`.`],
+      ),
+    ),
   )
 }

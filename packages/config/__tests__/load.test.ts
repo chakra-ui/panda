@@ -44,12 +44,21 @@ function hasOwnKey(value: unknown, key: string): boolean {
 }
 
 async function expectLoadError(files: Record<string, string>, expected: RegExp) {
+  const error = await loadConfigError(files)
+  expect(error).toBeInstanceOf(Error)
+  expect((error as Error).message).toMatch(expected)
+}
+
+async function loadConfigError(files: Record<string, string>) {
   const dir = mkdtempSync(join(tmpdir(), 'panda-config-error-'))
   try {
     for (const [file, source] of Object.entries(files)) {
       writeFileSync(join(dir, file), source)
     }
-    await expect(loadConfig({ cwd: dir })).rejects.toThrow(expected)
+    await loadConfig({ cwd: dir })
+    throw new Error('Expected loadConfig to fail')
+  } catch (error) {
+    return error
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -937,17 +946,18 @@ describe('loadConfig preset resolution', () => {
 
 describe('loadConfig errors', () => {
   test('rejects removed root hooks with a migration hint', async () => {
-    await expectLoadError(
-      {
-        'panda.config.ts': `export default {
+    const files = {
+      'panda.config.ts': `export default {
           outdir: 'styled-system',
           hooks: {
             'parser:before': ({ content }) => content,
           },
         }`,
-      },
-      /`config\.hooks` was removed in v2/,
-    )
+    }
+    await expectLoadError(files, /`config\.hooks` was removed in v2/)
+    await expect(loadConfigError(files)).resolves.toMatchObject({
+      diagnostics: [{ code: 'config_hooks_removed', severity: 'error', category: 'config' }],
+    })
   })
 
   test('rejects plugins without a name', async () => {
@@ -993,15 +1003,16 @@ describe('loadConfig errors', () => {
   })
 
   test('wraps rejected async presets in config errors', async () => {
-    await expectLoadError(
-      {
-        'panda.config.ts': `export default {
+    const files = {
+      'panda.config.ts': `export default {
           outdir: 'styled-system',
           presets: [Promise.reject(new Error('boom'))],
         }`,
-      },
-      /Failed to resolve preset "unknown-preset": boom/,
-    )
+    }
+    await expectLoadError(files, /Failed to resolve preset "unknown-preset": boom/)
+    await expect(loadConfigError(files)).resolves.toMatchObject({
+      diagnostics: [{ code: 'preset_resolution_failed', severity: 'error', category: 'config' }],
+    })
   })
 
   test('rejects string presets that export non-objects', async () => {

@@ -786,6 +786,14 @@ describe('resolveAuthoredPresets / errors', () => {
     ).rejects.toThrow(/Failed to resolve preset "unknown-preset": boom/)
   })
 
+  test('attaches diagnostics to rejected async presets', async () => {
+    await expect(
+      resolveAuthoredPresets({ presets: [Promise.reject(new Error('boom')) as any] } as any, '/project'),
+    ).rejects.toMatchObject({
+      diagnostics: [{ code: 'preset_resolution_failed', severity: 'error', category: 'config' }],
+    })
+  })
+
   test('rejects circular object preset graphs', async () => {
     const preset = definePreset({ name: 'cycle' } as any)
     ;(preset as any).presets = [preset]

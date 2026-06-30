@@ -99,6 +99,18 @@ describe('resolveAuthoredPresets / smart include', () => {
     )
   })
 
+  test('attaches diagnostics to include package resolution failures', async () => {
+    await expect(resolveAuthoredPresets({ include: ['@acme/broken'] } as any, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'include_package_resolution_failed',
+          severity: 'error',
+          category: 'config',
+        },
+      ],
+    })
+  })
+
   test('redirects a manifest-bearing package to designSystem', async () => {
     await expect(resolveAuthoredPresets({ include: ['@acme/ds'] } as any, cwd)).rejects.toThrow(
       /Design system in `include`: "@acme\/ds".*it belongs in `designSystem`/s,
@@ -115,6 +127,17 @@ describe('resolveAuthoredPresets / smart include', () => {
     await expect(
       resolveAuthoredPresets({ include: ['@acme/ds', '@acme/charts', '@acme/ds2'] } as any, cwd),
     ).rejects.toThrow(/Design systems in `include`: "@acme\/ds", "@acme\/ds2"/)
+  })
+
+  test('attaches one diagnostic per manifest-bearing include offender', async () => {
+    await expect(
+      resolveAuthoredPresets({ include: ['@acme/ds', '@acme/charts', '@acme/ds2'] } as any, cwd),
+    ).rejects.toMatchObject({
+      diagnostics: [
+        { code: 'design_system_in_include', severity: 'error', category: 'config' },
+        { code: 'design_system_in_include', severity: 'error', category: 'config' },
+      ],
+    })
   })
 
   test('leaves globs, paths, and local directory names untouched', async () => {

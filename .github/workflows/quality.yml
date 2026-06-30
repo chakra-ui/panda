@@ -71,7 +71,7 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
         env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
   tests:
     name: Unit Tests
@@ -95,6 +95,26 @@ jobs:
 
       - name: Run tests
         run: pnpm test && pnpm test:codegen
+
+  compiler-tests:
+    name: Compiler Tests
+    needs: build-native
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+
+      - name: Download native binding
+        uses: actions/download-artifact@v8
+        with:
+          name: compiler-native
+          path: packages/compiler
+
+      - name: Run compiler tests
+        run: pnpm --filter @pandacss/compiler test
 
   types:
     name: TypeScript
