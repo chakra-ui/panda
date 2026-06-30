@@ -3,8 +3,11 @@ export function collectTokenPaths(config: unknown): string[] {
   if (!theme || typeof theme !== 'object') return []
 
   const paths = new Set<string>()
-  collect((theme as Record<string, unknown>).tokens, [], paths)
-  collect((theme as Record<string, unknown>).semanticTokens, [], paths)
+  for (const layer of [theme as Record<string, unknown>, (theme as Record<string, unknown>).extend]) {
+    if (!layer || typeof layer !== 'object') continue
+    collect((layer as Record<string, unknown>).tokens, [], paths)
+    collect((layer as Record<string, unknown>).semanticTokens, [], paths)
+  }
   return [...paths].sort()
 }
 
