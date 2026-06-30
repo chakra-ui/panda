@@ -1,4 +1,4 @@
-import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
+import { createNodeDriver, type Diagnostic, type NodeDriver } from '@pandacss/compiler'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { normalizeInclude } from './args'
 import { configLoadDiagnostics, missingConfigDiagnostic, normalizeCliDiagnostics } from './diagnostics'
@@ -24,7 +24,7 @@ export interface CommandRunContext<TFlags extends CommonFlags = CommonFlags> {
   /** Raw sink passed into runX — used for JSON (machine-clean). */
   rawOutput: OutputSink
   timings: PhaseTimings
-  driver: Driver
+  driver: NodeDriver
 }
 
 export interface CommandExecuteResult<TData extends object> {
@@ -41,14 +41,17 @@ export interface RunCommandOptions<TFlags extends CommonFlags, TData extends obj
   failData: (diagnostics: Diagnostic[]) => Partial<TData>
   execute(ctx: CommandRunContext<TFlags>): Promise<CommandExecuteResult<TData>>
   /** Human-mode output after bootstrap failures and successful runs (not JSON). */
-  renderHuman?(ctx: Omit<CommandRunContext<TFlags>, 'driver'> & { driver?: Driver }, result: CliResult & TData): void
+  renderHuman?(
+    ctx: Omit<CommandRunContext<TFlags>, 'driver'> & { driver?: NodeDriver },
+    result: CliResult & TData,
+  ): void
   /** Keep tracing open until `result.stop()` (watch mode). */
   keepTracing?: boolean
 }
 
 export async function runCommand<TFlags extends CommonFlags, TData extends object>(
   options: RunCommandOptions<TFlags, TData>,
-): Promise<CliResult & TData & { driver?: Driver; stop?: () => Promise<void> }> {
+): Promise<CliResult & TData & { driver?: NodeDriver; stop?: () => Promise<void> }> {
   const {
     command,
     flags,
@@ -59,7 +62,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     keepTracing = false,
   } = options
 
-  type Result = CliResult & TData & { driver?: Driver; stop?: () => Promise<void> }
+  type Result = CliResult & TData & { driver?: NodeDriver; stop?: () => Promise<void> }
 
   const startedAt = performance.now()
   const cwd = resolveCwd(flags.cwd)
@@ -73,7 +76,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
       return
     }
 
-    const ctx: Omit<CommandRunContext<TFlags>, 'driver'> & { driver?: Driver } = {
+    const ctx: Omit<CommandRunContext<TFlags>, 'driver'> & { driver?: NodeDriver } = {
       command,
       flags,
       cwd,
@@ -92,7 +95,12 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     renderTimings({ command, timings, output: commandOutput, flags })
   }
 
-  const finish = (data: Partial<TData> | TData, diagnostics: Diagnostic[], ok: boolean, driver?: Driver): Result => {
+  const finish = (
+    data: Partial<TData> | TData,
+    diagnostics: Diagnostic[],
+    ok: boolean,
+    driver?: NodeDriver,
+  ): Result => {
     const result = createResult({
       command,
       startedAt,
@@ -115,7 +123,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     return finish(failData([missingConfig]), [missingConfig], false)
   }
 
-  let driver: Driver
+  let driver: NodeDriver
   try {
     driver = await timeAsync({
       timings,
@@ -152,7 +160,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
 }
 
 function renderDefaultHuman<TData extends object>(
-  ctx: Omit<CommandRunContext, 'driver'> & { driver?: Driver },
+  ctx: Omit<CommandRunContext, 'driver'> & { driver?: NodeDriver },
   result: CliResult & TData,
 ): void {
   if (result.diagnostics.length > 0) {

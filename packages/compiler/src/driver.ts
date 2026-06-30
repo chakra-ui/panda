@@ -4,19 +4,28 @@ import {
   type GenerateArtifactOptions,
   type CodegenOptions,
   type Compiler,
+  type Diagnostic,
   type DiffConfigResult,
-  type Driver,
   type SourceChange,
+  collectParseDiagnostics,
+  diagnosticsPass,
+  normalizeDiagnostics,
 } from '@pandacss/compiler-shared'
 import {
+  compilePreset,
+  defaultImportMap,
   type HostHooks,
   type LoadConfigResult,
   diffConfig,
   loadConfig,
   mergeExcludes,
+  readPackageIdentity,
   resolveSmartInclude,
+  syncExports,
+  toPosixRelative,
+  toRelativeKey,
+  type CompilePresetResult,
 } from '@pandacss/config'
-import { type Diagnostic } from '@pandacss/compiler-shared'
 import { hydrateDesignSystem } from './design-system'
 import { createCompilerFromSnapshot } from './index'
 
@@ -28,13 +37,38 @@ export interface NodeDriverOptions {
   include?: string[]
 }
 
+export interface WriteDesignSystemLibOptions {
+  outdir?: string
+  files?: string[]
+  panda?: string
+  minify?: boolean
+  maxWarnings?: number | string
+}
+
+export interface WriteDesignSystemLibResult {
+  manifestPath: string
+  buildInfoPath: string
+  presetPath: string
+  exportsChanged: boolean
+  parsedFileCount: number
+  diagnostics: Diagnostic[]
+}
+
 type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
+
+interface ParsedDesignSystemLib {
+  parsedFileCount: number
+  diagnostics: Diagnostic[]
+}
+
+const DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR = 'dist'
+const DEFAULT_DESIGN_SYSTEM_LIB_FILES = ['./**/*.{js,mjs}']
 
 /**
  * {@link Driver} backed by the native compiler (`OsFileSystem`). Loads the
  * config from disk; `scan` / `codegen` run through the Rust fs engine.
  */
-export async function createNodeDriver(options: NodeDriverOptions): Promise<Driver> {
+export async function createNodeDriver(options: NodeDriverOptions): Promise<NodeDriver> {
   const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath })
   if (options.include?.length) applyIncludeOverride(loaded, options.cwd, options.include)
   return new NodeDriver(options, loaded)
@@ -51,10 +85,11 @@ function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: st
   loaded.dependencies = Array.from(deps)
 }
 
-class NodeDriver extends BaseDriver {
+export class NodeDriver extends BaseDriver {
   #options: NodeDriverOptions
   #loaded: LoadConfigResult
   #designSystemDiagnostics: Diagnostic[]
+  #designSystemPreset: CompilePresetResult | undefined
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = buildFromConfig(loaded)
@@ -90,6 +125,7 @@ class NodeDriver extends BaseDriver {
       const built = buildFromConfig(next)
       this.setCompiler(built.compiler)
       this.#designSystemDiagnostics = built.designSystemDiagnostics
+      this.#designSystemPreset = undefined
     }
     return diff
   }
@@ -124,6 +160,21 @@ class NodeDriver extends BaseDriver {
 
   getOutdir(outdir?: string): string {
     return this.compiler.path.resolve(this.getConfiguredOutdir(outdir))
+  }
+
+  async writeDesignSystemLib(options: WriteDesignSystemLibOptions = {}): Promise<WriteDesignSystemLibResult> {
+    if (!this.#loaded.path) {
+      throw new Error(
+        'panda lib requires a resolved config file to compile the design system preset. Run `panda init`, or check --config/--cwd.',
+      )
+    }
+
+    const parsed = this.parseDesignSystemLib()
+    if (!diagnosticsPass(parsed.diagnostics, { maxWarnings: options.maxWarnings }))
+      return skippedDesignSystemLib(parsed)
+
+    const preset = await this.compileDesignSystemPreset()
+    return this.writeDesignSystemLibArtifacts(options, preset, parsed)
   }
 
   override codegen(options?: CodegenOptions): string[] {
@@ -187,6 +238,97 @@ class NodeDriver extends BaseDriver {
       return this.compiler.path.realpath(dependencyPath) === target
     })
   }
+
+  private parseDesignSystemLib(): ParsedDesignSystemLib {
+    const parsed = this.parseFiles()
+    const parseDiagnostics = collectParseDiagnostics(parsed, {
+      normalizeFile: (file) => stabilizePath(this.#options.cwd, file),
+    })
+    const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...this.compiler.diagnostics()], {
+      normalizeFile: (file) => stabilizePath(this.#options.cwd, file),
+    })
+
+    return { parsedFileCount: parsed.length, diagnostics }
+  }
+
+  private async compileDesignSystemPreset(): Promise<CompilePresetResult> {
+    return (this.#designSystemPreset ??= await compilePreset({
+      configPath: this.#loaded.path,
+      cwd: this.#options.cwd,
+    }))
+  }
+
+  private writeDesignSystemLibArtifacts(
+    options: WriteDesignSystemLibOptions,
+    preset: CompilePresetResult,
+    parsed: ParsedDesignSystemLib,
+  ): WriteDesignSystemLibResult {
+    const identity = readPackageIdentity(this.#options.cwd)
+    const pandaRange = options.panda ?? identity.pandaPeer ?? '*'
+    const outdir = options.outdir ?? DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR
+    const outRoot = this.compiler.path.resolve(outdir)
+
+    const manifestPath = this.compiler.path.join([outRoot, 'panda.lib.json'])
+    const buildInfoPath = this.compiler.path.join([outRoot, 'panda.buildinfo.json'])
+    const presetPath = this.compiler.path.join([outRoot, 'preset.mjs'])
+
+    const info = this.compiler.buildInfo.create({ panda: pandaRange })
+    const buildInfo = this.compiler.buildInfo.normalize(info, {
+      mapModuleKey: (key) => toRelativeKey(key, this.#options.cwd),
+    })
+
+    const manifest = this.compiler.designSystem.create({
+      name: identity.name,
+      version: identity.version,
+      panda: pandaRange,
+      preset: './preset.mjs',
+      buildInfo: './panda.buildinfo.json',
+      importMap: defaultImportMap(identity.name),
+      designSystem: typeof this.config.designSystem === 'string' ? this.config.designSystem : undefined,
+      files: options.files ?? DEFAULT_DESIGN_SYSTEM_LIB_FILES,
+    })
+
+    this.compiler.writeArtifacts({
+      outdir,
+      cwd: this.#options.cwd,
+      artifacts: [
+        {
+          id: 'design-system-lib',
+          files: [
+            {
+              path: 'panda.lib.json',
+              code: `${JSON.stringify(manifest, null, 2)}\n`,
+              dependencies: [],
+            },
+            {
+              path: 'panda.buildinfo.json',
+              code: JSON.stringify(buildInfo, null, options.minify ? 0 : 2),
+              dependencies: [],
+            },
+            {
+              path: 'preset.mjs',
+              code: preset.code,
+              dependencies: [],
+            },
+          ],
+        },
+      ],
+    })
+
+    const exportsChanged = syncPackageExports(this.compiler, identity.packagePath, {
+      manifestPath,
+      presetPath,
+    })
+
+    return {
+      manifestPath,
+      buildInfoPath,
+      presetPath,
+      exportsChanged,
+      parsedFileCount: parsed.parsedFileCount,
+      diagnostics: parsed.diagnostics,
+    }
+  }
 }
 
 type HookHandler = (args: unknown) => unknown
@@ -203,6 +345,51 @@ function resolveHookHandler(value: unknown, name: string): HookHandler {
   }
 
   return handler as HookHandler
+}
+
+function skippedDesignSystemLib(parsed: ParsedDesignSystemLib): WriteDesignSystemLibResult {
+  return {
+    manifestPath: '',
+    buildInfoPath: '',
+    presetPath: '',
+    exportsChanged: false,
+    parsedFileCount: parsed.parsedFileCount,
+    diagnostics: parsed.diagnostics,
+  }
+}
+
+function syncPackageExports(
+  compiler: Compiler,
+  packagePath: string,
+  paths: { manifestPath: string; presetPath: string },
+): boolean {
+  const base = compiler.path.dirname(packagePath)
+  const entries = {
+    './panda.lib.json': toPosixRelative(base, paths.manifestPath),
+    './preset': toPosixRelative(base, paths.presetPath),
+  }
+  const packageJson = compiler.fs.readFile(packagePath)
+  if (packageJson == null) {
+    throw new Error(`Could not read package.json at ${JSON.stringify(packagePath)}.`)
+  }
+  const result = syncExports({ packageJson, entries })
+  if (result.changed) {
+    compiler.writeArtifacts({
+      outdir: base,
+      artifacts: [
+        {
+          id: 'design-system-lib-package',
+          files: [{ path: 'package.json', code: result.json, dependencies: [] }],
+        },
+      ],
+    })
+  }
+  return result.changed
+}
+
+function stabilizePath(cwd: string, file: string): string {
+  const relativePath = toRelativeKey(file, cwd)
+  return relativePath && !relativePath.startsWith('..') ? relativePath : file
 }
 
 function buildFromConfig(loaded: LoadConfigResult): { compiler: Compiler; designSystemDiagnostics: Diagnostic[] } {

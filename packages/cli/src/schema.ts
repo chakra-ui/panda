@@ -1,4 +1,4 @@
-import type { BuildInfoArtifact, Driver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
+import type { BuildInfoArtifact, Driver, NodeDriver, ParseFileReport, TraceOptions } from '@pandacss/compiler'
 import type { UsageReport } from '@pandacss/compiler-shared'
 import type { OutputSink } from './output'
 import type { CliResult } from './result'
@@ -141,15 +141,15 @@ export interface BuildinfoResult extends CommandResult {
   bytes: number
 }
 
-export interface LibResult extends CommandResult {
+export interface LibResult extends CommandResult<NodeDriver> {
   manifestPath?: string
   buildInfoPath?: string
   presetPath?: string
   exportsChanged: boolean
 }
 
-export interface CommandResult extends CliResult {
-  driver?: Driver
+export interface CommandResult<TDriver extends Driver = Driver> extends CliResult {
+  driver?: TDriver
   stop?: () => Promise<void>
 }
 
