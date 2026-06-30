@@ -1,7 +1,5 @@
 import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
 import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
-import { readFileSync } from 'node:fs'
-import { dirname } from 'node:path'
 
 type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
 
@@ -30,7 +28,9 @@ function hydrateLevel(
 
   let buildInfo: BuildInfoArtifact | undefined
   try {
-    buildInfo = JSON.parse(readFileSync(ds.buildInfoPath, 'utf8')) as BuildInfoArtifact
+    const content = compiler.fs.readFile(ds.buildInfoPath)
+    if (content == null) throw new Error(`file not found`)
+    buildInfo = JSON.parse(content) as BuildInfoArtifact
   } catch (error) {
     if (!tryStaleFallback(compiler, ds, diagnostics)) throw hydrateReadError(ds, error)
   }
@@ -46,7 +46,9 @@ function hydrateLevel(
 
 function tryStaleFallback(compiler: Compiler, ds: ResolvedDesignSystem, diagnostics: Diagnostic[]): boolean {
   if (ds.files.length === 0) return false
-  const sources = compiler.scan({ include: ds.files, cwd: dirname(ds.manifestPath) })
+  const sources = compiler.scan({ include: ds.files, cwd: compiler.path.dirname(ds.manifestPath) })
+  if (sources.length === 0) return false
+
   compiler.parseFiles(sources)
   diagnostics.push({
     code: 'design_system_buildinfo_stale',

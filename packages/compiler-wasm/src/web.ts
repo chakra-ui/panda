@@ -38,6 +38,7 @@ import type {
   ProjectHooks,
   SerializedConfig,
   SourceFileInput,
+  CompilerPathSystem,
 } from '@pandacss/compiler-shared'
 import { registerCallbacks } from './callbacks'
 import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
@@ -71,7 +72,9 @@ interface RawWasmCompiler extends WasmCompiler {
   token_dictionary?(): TokenDictionaryInput | undefined
 }
 
-type RuntimeWasmCompiler = RawWasmCompiler & Compiler & BuildInfoNative & { fs: WasmFileSystem }
+type RuntimeWasmCompiler = RawWasmCompiler &
+  Compiler &
+  BuildInfoNative & { fs: WasmFileSystem; path: CompilerPathSystem }
 
 export interface WasmModule {
   WasmFileSystem: new () => WasmFileSystem
@@ -109,8 +112,9 @@ export function build(
   const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks)) as RuntimeWasmCompiler
   registerCallbacks(compiler, callbacks, hooks, compiler.token_dictionary?.())
 
-  // Expose the shared FS as a field so the return shape matches native.
-  compiler.fs = fs
+  // Expose host fs/path namespaces so the return shape matches native.
+  Object.defineProperty(compiler, 'fs', { value: fs, enumerable: false })
+  Object.defineProperty(compiler, 'path', { value: wasmPathSystem(compiler), enumerable: false })
 
   // Wire the ergonomic `compiler.buildInfo` / `compiler.designSystem` namespaces
   // over the wasm primitives, mirroring the native binding. Non-enumerable so
@@ -132,6 +136,15 @@ export function build(
   })
 
   return compiler
+}
+
+function wasmPathSystem(compiler: RawWasmCompiler): CompilerPathSystem {
+  return {
+    realpath: (path) => compiler.realpath(path),
+    resolve: (path, cwd) => compiler.resolvePath(path, cwd),
+    join: (parts) => compiler.joinPath(parts),
+    dirname: (path) => compiler.dirname(path),
+  }
 }
 
 function toDesignSystemBinding(compiler: RuntimeWasmCompiler): DesignSystemBinding {

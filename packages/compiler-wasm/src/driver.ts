@@ -43,7 +43,7 @@ export async function createBrowserDriver(options: BrowserDriverOptions): Promis
 
   if (options.sources) {
     for (const [path, content] of Object.entries(options.sources)) {
-      compiler.fs?.addFile(path, content)
+      compiler.fs.addFile?.(path, content)
     }
   }
   return new BrowserDriver(compiler, options.snapshot.config)
@@ -77,16 +77,16 @@ class BrowserDriver extends BaseDriver {
 
   applyChange(change: SourceChange): boolean {
     if (change.kind === 'unlink') {
-      this.compiler.fs?.removeFile(change.path)
+      this.compiler.fs.removeFile?.(change.path)
       return this.compiler.removeFile(change.path)
     }
     if (change.content == null) return false
-    this.compiler.fs?.addFile(change.path, change.content)
+    this.compiler.fs.addFile?.(change.path, change.content)
     this.compiler.parseFileSource(change.path, change.content)
     return true
   }
 
   getOutdir(outdir?: string): string {
-    return this.compiler.resolvePath(this.getConfiguredOutdir(outdir))
+    return this.compiler.path.resolve(this.getConfiguredOutdir(outdir))
   }
 }

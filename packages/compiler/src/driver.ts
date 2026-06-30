@@ -123,7 +123,7 @@ class NodeDriver extends BaseDriver {
   }
 
   getOutdir(outdir?: string): string {
-    return this.compiler.resolvePath(this.getConfiguredOutdir(outdir))
+    return this.compiler.path.resolve(this.getConfiguredOutdir(outdir))
   }
 
   override codegen(options?: CodegenOptions): string[] {
@@ -177,14 +177,14 @@ class NodeDriver extends BaseDriver {
   override isConfigFile(file: string): boolean {
     // `realpath` (via the fs engine) follows symlinks so paths to the same file
     // compare equal — `dependencies` are relative to `cwd` (config's `collectDependencies`).
-    const target = this.compiler.realpath(file)
-    const configPath = this.compiler.realpath(this.#loaded.path)
+    const target = this.compiler.path.realpath(file)
+    const configPath = this.compiler.path.realpath(this.#loaded.path)
 
     if (configPath === target) return true
 
     return this.#loaded.dependencies.some((dependency) => {
-      const dependencyPath = this.compiler.resolvePath(dependency, this.#options.cwd)
-      return this.compiler.realpath(dependencyPath) === target
+      const dependencyPath = this.compiler.path.resolve(dependency, this.#options.cwd)
+      return this.compiler.path.realpath(dependencyPath) === target
     })
   }
 }

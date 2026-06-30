@@ -119,7 +119,7 @@ describeIfBuilt('@pandacss/compiler-wasm project', () => {
 
   it('cross-file imports fold via the shared WasmFileSystem', async () => {
     const compiler = await createCompiler(baseConfig)
-    compiler.fs!.addFile('/proj/tokens.ts', "export const brand = '#ef4444'\n")
+    compiler.fs.addFile?.('/proj/tokens.ts', "export const brand = '#ef4444'\n")
     compiler.parseFileSource(
       '/proj/main.tsx',
       `import { brand } from './tokens'\nimport { css } from '@panda/css'\ncss({ color: brand })`,

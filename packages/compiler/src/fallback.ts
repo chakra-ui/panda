@@ -59,6 +59,18 @@ class FallbackExtractor implements ExtractorSession {
 }
 
 class FallbackCompiler implements Compiler {
+  readonly fs = {
+    readFile: (_path: string) => undefined,
+    exists: (_path: string) => false,
+  }
+
+  readonly path = {
+    realpath: (path: string) => path,
+    resolve: (path: string, cwd?: string) => this.resolvePath(path, cwd),
+    join: (parts: string[]) => this.joinPath(parts),
+    dirname: (path: string) => this.dirname(path),
+  }
+
   static fromConfig() {
     return new FallbackCompiler()
   }
@@ -112,6 +124,12 @@ class FallbackCompiler implements Compiler {
   }
   realpath(path: string) {
     return path
+  }
+  readFile(_path: string) {
+    return undefined
+  }
+  exists(_path: string) {
+    return false
   }
   resolvePath(path: string, cwd?: string) {
     if (!cwd || path.startsWith('/')) return path

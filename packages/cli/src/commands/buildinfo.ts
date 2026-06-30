@@ -103,7 +103,7 @@ export async function runBuildinfo(
 }
 
 function defaultOutfile(driver: Driver): string {
-  return driver.compiler.joinPath([driver.paths().root, 'panda.buildinfo.json'])
+  return driver.compiler.path.join([driver.paths().root, 'panda.buildinfo.json'])
 }
 
 function toRelativeKey(key: string, cwd: string): string {

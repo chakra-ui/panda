@@ -205,15 +205,15 @@ export abstract class BaseDriver implements Driver {
   }
 
   resolvePath(path: string): string {
-    return this.#compiler.resolvePath(path)
+    return this.#compiler.path.resolve(path)
   }
 
   paths(outdir?: string): DriverPaths {
     const root = this.getOutdir(outdir)
     return {
       root,
-      styleFile: this.#compiler.joinPath([root, 'styles.css']),
-      stylesDir: this.#compiler.joinPath([root, 'styles']),
+      styleFile: this.#compiler.path.join([root, 'styles.css']),
+      stylesDir: this.#compiler.path.join([root, 'styles']),
     }
   }
 

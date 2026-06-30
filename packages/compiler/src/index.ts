@@ -23,14 +23,14 @@ import {
 import { registerCallbacks } from './callbacks'
 import { fallback } from './fallback'
 import { loadNativeBinding } from './load-binary'
-import type { CompileInput, NativeCompilerOptions, TokenDictionary, TraceOptions } from './types'
+import type { CompileInput, NativeCompilerOptions, RawCompiler, TokenDictionary, TraceOptions } from './types'
 
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
 
 export { createUsageReport } from '@pandacss/compiler-shared'
-export { createNodeDriver } from './driver'
-export type { NodeDriverOptions } from './driver'
+export { NodeDriver, createNodeDriver } from './driver'
+export type { NodeDriverOptions, WriteDesignSystemLibOptions, WriteDesignSystemLibResult } from './driver'
 
 const binding = loadNativeBinding() ?? fallback
 const nativeCompilerFromConfig =
@@ -91,11 +91,37 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   const prepared = prepareCompilerConfig(config)
   const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
   registerCallbacks(compiler, callbacks, options?.hooks, compiler.token_dictionary?.())
+  attachFileSystem(compiler)
+  attachPathSystem(compiler)
   attachBuildInfo(compiler)
   attachDesignSystem(compiler)
   attachInspection(compiler)
 
   return compiler
+}
+
+function attachFileSystem(compiler: RawCompiler): void {
+  Object.defineProperty(compiler, 'fs', {
+    value: {
+      readFile: (path: string) => compiler.readFile(path),
+      exists: (path: string) => compiler.exists(path),
+    },
+    enumerable: false,
+    configurable: true,
+  })
+}
+
+function attachPathSystem(compiler: RawCompiler): void {
+  Object.defineProperty(compiler, 'path', {
+    value: {
+      realpath: (path: string) => compiler.realpath(path),
+      resolve: (path: string, cwd?: string) => compiler.resolvePath(path, cwd),
+      join: (parts: string[]) => compiler.joinPath(parts),
+      dirname: (path: string) => compiler.dirname(path),
+    },
+    enumerable: false,
+    configurable: true,
+  })
 }
 
 /**

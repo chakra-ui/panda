@@ -128,7 +128,7 @@ export async function codegenOnce(
 function checkCodegenOutput(ctx: RunContext, outdir: string): CheckOutput {
   const expected = ctx.driver.artifacts().flatMap((artifact) =>
     artifact.files.map((file) => ({
-      path: ctx.driver.compiler.joinPath([outdir, file.path]),
+      path: ctx.driver.compiler.path.join([outdir, file.path]),
       code: file.code,
     })),
   )

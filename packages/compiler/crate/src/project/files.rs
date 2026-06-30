@@ -143,6 +143,26 @@ impl Compiler {
             .into_owned()
     }
 
+    #[napi(js_name = readFile)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn read_file(&self, path: String) -> Option<String> {
+        self.fs.read_to_string(std::path::Path::new(&path)).ok()
+    }
+
+    #[napi]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    #[must_use]
+    pub fn exists(&self, path: String) -> bool {
+        self.fs.exists(std::path::Path::new(&path))
+    }
+
     /// Whether `path` is a source file the project extracts from — its
     /// `cwd`-relative form matches the configured `include`/`exclude` globs.
     /// For routing a watch event to `applyChange` vs ignoring it.

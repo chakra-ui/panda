@@ -242,7 +242,7 @@ function checkCssgenOutput(
 
     const check = checkExpectedFiles(
       files.map((file) => ({
-        path: ctx.driver.compiler.joinPath([ctx.outdir, file.path]),
+        path: ctx.driver.compiler.path.join([ctx.outdir, file.path]),
         code: file.code,
       })),
     )
