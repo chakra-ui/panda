@@ -1,23 +1,22 @@
-export function collectTokenPaths(config: unknown): string[] {
-  const theme = (config as { theme?: unknown } | undefined)?.theme
-  if (!theme || typeof theme !== 'object') return []
+import type { UserConfig } from '@pandacss/types'
+import { isPlainObject } from './shared'
+
+export function collectTokenPaths(config: Pick<UserConfig, 'theme'> | undefined): string[] {
+  if (!isPlainObject(config?.theme)) return []
 
   const paths = new Set<string>()
-  for (const layer of [theme as Record<string, unknown>, (theme as Record<string, unknown>).extend]) {
-    if (!layer || typeof layer !== 'object') continue
-    collect((layer as Record<string, unknown>).tokens, [], paths)
-    collect((layer as Record<string, unknown>).semanticTokens, [], paths)
-  }
+  collect(config.theme.tokens, [], paths)
+  collect(config.theme.semanticTokens, [], paths)
   return [...paths].sort()
 }
 
 function collect(node: unknown, trail: string[], out: Set<string>): void {
-  if (!node || typeof node !== 'object' || Array.isArray(node)) return
-  if ('value' in (node as object)) {
+  if (!isPlainObject(node)) return
+  if ('value' in node) {
     if (trail.length > 0) out.add(trail.join('.'))
     return
   }
-  for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
+  for (const [key, child] of Object.entries(node)) {
     collect(child, [...trail, key], out)
   }
 }

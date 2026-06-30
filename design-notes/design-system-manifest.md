@@ -436,9 +436,8 @@ Errors stop the build. Warnings continue when Panda has a clear fallback. The ap
 
 - **Manifest file.** Use standalone `panda.lib.json`, not a `package.json` field.
 - **Stale build info.** Re-extract that layer when `files` exists, warn, and continue.
-- **Token conflict.** App config wins, and Panda warns. Conflict detection compares declared token paths from both
-  `theme.tokens`/`theme.semanticTokens` and `theme.extend.tokens`/`theme.extend.semanticTokens`, so tokens added via
-  `extend` are covered.
+- **Token conflict.** App config wins, and Panda warns. Conflict detection compares token paths after each design
+  system preset and the app config are resolved into canonical `theme.tokens`/`theme.semanticTokens` shapes.
 - **Conditions.** Match by name. App condition definitions win on conflict.
 - **`staticCss`.** Travels through build info. No manifest field.
 - **CSS layer order.** Root design systems before child design systems before the app.

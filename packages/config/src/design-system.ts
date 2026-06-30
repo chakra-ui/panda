@@ -11,7 +11,6 @@ import { pathToFileURL } from 'node:url'
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { tryResolveFrom } from './resolve'
 import { ensureConfigObject, errorMessage, type ExtendableConfig } from './shared'
-import { collectTokenPaths } from './token-paths'
 
 export interface ResolvedDesignSystem {
   name: string
@@ -132,7 +131,7 @@ async function loadManifestLevel(
         manifestPath,
         buildInfoPath,
         files: manifest.files ?? [],
-        tokenPaths: collectTokenPaths(preset),
+        tokenPaths: [],
         ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
       },
     },

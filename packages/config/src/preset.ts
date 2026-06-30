@@ -27,6 +27,12 @@ interface CollectContext {
   presetResolvedHooks: Array<PluginHookEntry<'preset:resolved'>>
 }
 
+interface ConfigBlock {
+  configs: ExtendableConfig[]
+  sourcedConfigs?: SourcedConfig[]
+  resolved: UserConfig
+}
+
 export interface ResolveAuthoredPresetsResult {
   config: UserConfig
   dependencies: string[]
@@ -64,11 +70,20 @@ export async function resolveAuthoredPresets(
   if (typeof designSystem === 'string' && designSystem.length > 0) {
     dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
     for (const level of dsChain) {
-      await collectConfigs(level.preset, { kind: 'preset', specifier: level.info.name }, ctx, new WeakSet())
+      const block = await collectConfigBlock(
+        level.preset,
+        { kind: 'preset', specifier: level.info.name },
+        cwd,
+        ctx.dependencies,
+        options.trackSources,
+      )
+      level.info.tokenPaths = collectTokenPaths(block.resolved)
+      appendConfigBlock(ctx, block)
     }
   }
 
-  await collectConfigs(config, rootSource, ctx, new WeakSet())
+  const rootBlock = await collectConfigBlock(config, rootSource, cwd, ctx.dependencies, options.trackSources)
+  appendConfigBlock(ctx, rootBlock)
 
   const dsInfos = dsChain.map((level) => level.info)
   const finalize = (resolved: UserConfig): UserConfig => {
@@ -76,7 +91,7 @@ export async function resolveAuthoredPresets(
     return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
   }
   const dsMetadata =
-    dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(config) } : undefined
+    dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(rootBlock.resolved) } : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
@@ -96,6 +111,37 @@ export async function resolveAuthoredPresets(
     ),
     dependencies: Array.from(ctx.dependencies),
     ...(dsMetadata ? { metadata: dsMetadata } : {}),
+  }
+}
+
+async function collectConfigBlock(
+  config: ExtendableConfig,
+  source: ConfigSource,
+  cwd: string,
+  dependencies: Set<string>,
+  trackSources: boolean | undefined,
+): Promise<ConfigBlock> {
+  const ctx: CollectContext = {
+    cwd,
+    configs: [],
+    dependencies,
+    presetResolvedHooks: [],
+    ...(trackSources ? { sourcedConfigs: [] } : {}),
+  }
+
+  await collectConfigs(config, source, ctx, new WeakSet())
+
+  return {
+    configs: ctx.configs,
+    ...(ctx.sourcedConfigs ? { sourcedConfigs: ctx.sourcedConfigs } : {}),
+    resolved: mergeConfigs(ctx.configs) as UserConfig,
+  }
+}
+
+function appendConfigBlock(ctx: CollectContext, block: ConfigBlock): void {
+  ctx.configs.push(...block.configs)
+  if (ctx.sourcedConfigs && block.sourcedConfigs) {
+    ctx.sourcedConfigs.push(...block.sourcedConfigs)
   }
 }
 

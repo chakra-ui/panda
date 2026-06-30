@@ -13,28 +13,31 @@ describe('collectTokenPaths', () => {
     ).toEqual(['colors.brand', 'colors.text'])
   })
 
-  it('collects from theme.extend.tokens and theme.extend.semanticTokens', () => {
-    expect(
-      collectTokenPaths({
-        theme: {
-          extend: {
-            tokens: { colors: { brand: { value: '#ff0066' } } },
-            semanticTokens: { colors: { text: { value: '{colors.brand}' } } },
-          },
-        },
-      }),
-    ).toEqual(['colors.brand', 'colors.text'])
-  })
-
-  it('merges and dedupes paths across the base and extend layers', () => {
+  it('dedupes paths from the canonical token layer', () => {
     expect(
       collectTokenPaths({
         theme: {
           tokens: { colors: { brand: { value: '#ff0066' } } },
-          extend: { tokens: { colors: { brand: { value: '#0000ff' }, accent: { value: '#0f0' } } } },
+          semanticTokens: { colors: { brand: { value: '{colors.brand}' }, accent: { value: '{colors.brand}' } } },
         },
       }),
     ).toEqual(['colors.accent', 'colors.brand'])
+  })
+
+  it('collects nested token paths', () => {
+    expect(
+      collectTokenPaths({
+        theme: {
+          tokens: {
+            colors: {
+              brand: {
+                primary: { value: '#ff0066' },
+              },
+            },
+          },
+        },
+      }),
+    ).toEqual(['colors.brand.primary'])
   })
 
   it('returns an empty list when there is no theme', () => {
