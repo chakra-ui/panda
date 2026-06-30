@@ -1,9 +1,10 @@
 import { defineCommand, type ArgsDef } from 'citty'
+import { dedupeDiagnostics, diagnosticsPass, type Diagnostic } from '@pandacss/compiler-shared'
 import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { isCheckClean } from '../check'
 import { buildFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
-import { type CliDiagnostic, dedupeDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { normalizeCliDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
@@ -119,7 +120,7 @@ export async function runBuild(flags: BuildFlags = {}, output: OutputSink = cons
       return {
         data: { outdir, outfile, ...current },
         diagnostics: current.diagnostics,
-        ok: diagnosticsPass(current.diagnostics, flags.maxWarnings) && isCheckClean(current),
+        ok: diagnosticsPass(current.diagnostics, { maxWarnings: flags.maxWarnings }) && isCheckClean(current),
       }
     },
     renderHuman(ctx, commandResult) {
@@ -163,7 +164,7 @@ export async function runBuild(flags: BuildFlags = {}, output: OutputSink = cons
 }
 
 type BuildOnceResult = Pick<BuildResult, 'files' | 'parsed' | 'cssBytes' | 'diagnosticCount' | 'missing' | 'stale'> & {
-  diagnostics: CliDiagnostic[]
+  diagnostics: Diagnostic[]
 }
 
 async function buildOnce(ctx: RunContext, outfile: string, flags: BuildFlags): Promise<BuildOnceResult> {
@@ -180,7 +181,7 @@ async function buildOnce(ctx: RunContext, outfile: string, flags: BuildFlags): P
 
   // compiler diagnostics need normalizing; css.diagnostics are already normalized — just dedupe the union.
   const diagnostics = dedupeDiagnostics([
-    ...normalizeDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd }),
+    ...normalizeCliDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd }),
     ...css.diagnostics,
   ])
 

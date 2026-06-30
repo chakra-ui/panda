@@ -7,7 +7,14 @@ export { mergeConfigs } from './merge'
 export { resolveSmartInclude, mergeExcludes } from './smart-include'
 export { readPandaVersion } from './version'
 export { compilePreset } from './lib-preset'
-export { readPackageIdentity, defaultImportMap, syncExports } from './lib-manifest'
+export {
+  readPackageIdentity,
+  defaultImportMap,
+  syncExports,
+  toPosixPath,
+  toPosixRelative,
+  toRelativeKey,
+} from './lib-manifest'
 export { collectTokenPaths } from './token-paths'
 
 export type { CompilePresetOptions, CompilePresetResult } from './lib-preset'

@@ -1,6 +1,6 @@
 import type { DesignSystemManifestImportMap } from '@pandacss/compiler-shared'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, isAbsolute, join, relative } from 'node:path'
 
 export interface PackageIdentity {
   name: string
@@ -58,6 +58,19 @@ export function syncExports(options: SyncExportsOptions): SyncExportsResult {
   const changed = JSON.stringify(pkg.exports) !== JSON.stringify(merged)
   const out = { ...pkg, exports: merged }
   return { changed, json: `${JSON.stringify(out, null, 2)}\n` }
+}
+
+export function toPosixPath(path: string): string {
+  return path.split('\\').join('/')
+}
+
+export function toPosixRelative(from: string, to: string): string {
+  const rel = toPosixPath(relative(from, to))
+  return rel.startsWith('.') ? rel : `./${rel}`
+}
+
+export function toRelativeKey(key: string, cwd: string): string {
+  return toPosixPath(isAbsolute(key) ? relative(cwd, key) : key)
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

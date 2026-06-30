@@ -1,8 +1,9 @@
 import { defineCommand } from 'citty'
+import { countErrors, diagnosticsPass } from '@pandacss/compiler-shared'
 import { parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
+import { normalizeCliDiagnostics } from '../diagnostics'
 import { doctorFlagsSchema } from '../schema'
-import { countErrors, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import type { DoctorFlags, DoctorResult } from '../schema'
@@ -26,7 +27,7 @@ export async function runDoctor(flags: DoctorFlags = {}, output: OutputSink = co
       errors: diagnostics.length,
     }),
     async execute({ driver, cwd }) {
-      const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
+      const diagnostics = normalizeCliDiagnostics(driver.compiler.diagnostics(), { cwd })
       const errors = countErrors(diagnostics)
 
       return {
@@ -36,7 +37,7 @@ export async function runDoctor(flags: DoctorFlags = {}, output: OutputSink = co
           errors,
         },
         diagnostics,
-        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+        ok: diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings }),
       }
     },
     renderHuman(ctx, result) {

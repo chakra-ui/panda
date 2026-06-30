@@ -1,6 +1,7 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
+import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { normalizeInclude } from './args'
-import { configLoadDiagnostics, diagnosticsPass, missingConfigDiagnostic, normalizeDiagnostics } from './diagnostics'
+import { configLoadDiagnostics, missingConfigDiagnostic, normalizeCliDiagnostics } from './diagnostics'
 import {
   consoleOutput,
   createCommandOutput,
@@ -136,9 +137,9 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     driver,
   }
 
-  const { data, diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd }), ok } = await execute(ctx)
-  const merged = [...diagnostics, ...normalizeDiagnostics(driver.designSystemDiagnostics ?? [], { cwd })]
-  const passed = ok ?? diagnosticsPass(diagnostics, flags.maxWarnings)
+  const { data, diagnostics = normalizeCliDiagnostics(driver.compiler.diagnostics(), { cwd }), ok } = await execute(ctx)
+  const merged = [...diagnostics, ...normalizeCliDiagnostics(driver.designSystemDiagnostics ?? [], { cwd })]
+  const passed = ok ?? diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings })
   const result = finish(data, merged, passed, driver)
 
   if (keepTracing) {

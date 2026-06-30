@@ -1,11 +1,13 @@
 import { type Driver } from '@pandacss/compiler'
+import { toRelativeKey } from '@pandacss/config'
+import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, isAbsolute, relative } from 'node:path'
+import { dirname } from 'node:path'
 import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { runCommand } from '../run-command'
+import { collectCliParseDiagnostics, normalizeCliDiagnostics } from '../diagnostics'
 import { buildinfoFlagsSchema } from '../schema'
-import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import { time } from '../timing'
@@ -48,7 +50,7 @@ export async function runBuildinfo(
     async execute({ driver, cwd, timings }) {
       const parsed = time({ timings, phase: 'parse', run: () => driver.parseFiles() })
       parsedFileCount = parsed.length
-      const parseDiagnostics = collectParseDiagnostics(parsed, cwd)
+      const parseDiagnostics = collectCliParseDiagnostics(parsed, cwd)
 
       const buildInfo = time({
         timings,
@@ -71,7 +73,7 @@ export async function runBuildinfo(
         },
       })
 
-      const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...driver.compiler.diagnostics()], { cwd })
+      const diagnostics = normalizeCliDiagnostics([...parseDiagnostics, ...driver.compiler.diagnostics()], { cwd })
       const moduleCount = Object.keys(buildInfo.modules).length
       const recipeGroups = buildInfo.recipes
       const recipeCount = (recipeGroups?.base?.length ?? 0) + (recipeGroups?.variants?.length ?? 0)
@@ -86,7 +88,7 @@ export async function runBuildinfo(
           bytes: Buffer.byteLength(serialized),
         },
         diagnostics,
-        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+        ok: diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings }),
       }
     },
     renderHuman(ctx, result) {
@@ -104,9 +106,4 @@ export async function runBuildinfo(
 
 function defaultOutfile(driver: Driver): string {
   return driver.compiler.path.join([driver.paths().root, 'panda.buildinfo.json'])
-}
-
-function toRelativeKey(key: string, cwd: string): string {
-  const rel = isAbsolute(key) ? relative(cwd, key) : key
-  return rel.split('\\').join('/')
 }
