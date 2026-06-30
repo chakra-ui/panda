@@ -433,6 +433,24 @@ Hydrated CSS is emitted under design-system layers, ordered root-first before th
 
 Identical atoms still dedupe by normal atom identity. Versioned federation output is not part of this phase.
 
+## Versioning and breaking changes
+
+A "major change" in a design system is two different things, and Panda treats them differently.
+
+**Engine or format break.** A release whose manifest raises `schemaVersion`, or whose `panda` peer range no longer
+matches the consumer, is a hard incompatibility. Hydration fails closed with an actionable error. These are the only
+compatibility gates Panda enforces.
+
+**Token-shape break** — renaming, removing, or restructuring tokens. Panda does not police this. The manifest `version`
+is informational and never enforced; registry and version policy are non-goals. The design-system author owns declaring
+the break through normal semver and a changelog, and the consumer absorbs it by updating the dependency and
+regenerating. Nothing auto-updates: there is no cross-package source watch (Phase 6) and no registry integration.
+
+Known limitation: when consumer code references a token the upgraded design system no longer defines, Panda emits it as
+a literal CSS value with no diagnostic — so a breaking token removal degrades to dead CSS silently rather than a build
+error. The token-aware lint plugin, which reads the resolved config, is the intended guardrail; a build-time warning for
+unresolved token references is a possible follow-up.
+
 ## Diagnostics
 
 Setup is where this feature succeeds or fails. Diagnostics should say what happened and what to do next.
@@ -473,6 +491,9 @@ Errors stop the build. Warnings continue when Panda has a clear fallback. The ap
 - **`staticCss`.** Travels through build info. No manifest field.
 - **CSS layer order.** Root design systems before child design systems before the app.
 - **Private token visibility.** Out of scope for this manifest. Track as a type-surface problem.
+- **Version policy.** The manifest `version` is informational. Panda enforces only `schemaVersion` and the `panda` peer
+  range; token-shape breaking changes are the author's semver responsibility, and an unresolved token in consumer code
+  currently degrades to a literal value with no diagnostic.
 
 ## Field report from real consumers
 
