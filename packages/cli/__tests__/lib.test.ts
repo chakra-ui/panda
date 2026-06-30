@@ -41,7 +41,7 @@ describe('lib command', () => {
       {
         "buildInfo": "./panda.buildinfo.json",
         "files": [
-          "./**/*.{js,mjs}",
+          "../button.tsx",
         ],
         "importMap": {
           "css": "@acme/ds/css",

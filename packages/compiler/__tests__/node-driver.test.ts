@@ -375,7 +375,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
           "tokens": "@acme/ds/tokens",
         },
         "files": [
-          "./**/*.{js,mjs}",
+          "../button.tsx",
         ],
       }
     `)
@@ -501,6 +501,51 @@ describe('createNodeDriver designSystem', () => {
       expect(driver.isConfigFile(join(pkg, 'panda.lib.json'))).toBe(true)
       expect(driver.isConfigFile(join(pkg, 'preset.mjs'))).toBe(true)
       expect(driver.isConfigFile(join(pkg, 'panda.buildinfo.json'))).toBe(true)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('reloads when design-system build info changes', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-reload-'))
+
+    const first = createProject()
+    first.parseFileSource('button.tsx', "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })")
+
+    const second = createProject()
+    second.parseFileSource(
+      'button.tsx',
+      "import { css } from '@panda/css'\nexport const Button = css({ color: 'blue' })",
+    )
+
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds', include: ['App.tsx'] }",
+      'App.tsx': '',
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        panda: '^2.0.0',
+        preset: './preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        importMap: { css: '@acme/ds/css' },
+      }),
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(first.buildInfo.create({ panda: '^2.0.0' })),
+    })
+
+    try {
+      const driver = await createNodeDriver({ cwd: dir })
+      expect(driver.cssgen().css).toContain('color: red')
+
+      writeFileTree(dir, {
+        'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(second.buildInfo.create({ panda: '^2.0.0' })),
+      })
+
+      const diff = await driver.reload()
+      expect(diff.hasChanged).toBe(true)
+      expect(driver.cssgen().css).toContain('color: blue')
+      expect(driver.cssgen().css).not.toContain('color: red')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

@@ -1,5 +1,6 @@
 import {
   BaseDriver,
+  type BuildInfoArtifact,
   type CodegenArtifact,
   type GenerateArtifactOptions,
   type CodegenOptions,
@@ -90,6 +91,7 @@ export class NodeDriver extends BaseDriver {
   #loaded: LoadConfigResult
   #designSystemDiagnostics: Diagnostic[]
   #designSystemPreset: CompilePresetResult | undefined
+  #designSystemArtifactSnapshot: string
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = buildFromConfig(loaded)
@@ -97,6 +99,7 @@ export class NodeDriver extends BaseDriver {
     this.#options = options
     this.#loaded = loaded
     this.#designSystemDiagnostics = built.designSystemDiagnostics
+    this.#designSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, loaded)
   }
 
   get designSystemDiagnostics() {
@@ -120,14 +123,18 @@ export class NodeDriver extends BaseDriver {
     // Re-apply before diffing so the override isn't seen as a config change.
     if (this.#options.include?.length) applyIncludeOverride(next, this.#options.cwd, this.#options.include)
     const diff = diffConfig(this.#loaded, next)
-    if (diff.hasChanged) {
+    const nextDesignSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, next)
+    const designSystemArtifactsChanged = this.#designSystemArtifactSnapshot !== nextDesignSystemArtifactSnapshot
+
+    if (diff.hasChanged || designSystemArtifactsChanged) {
       this.#loaded = next
       const built = buildFromConfig(next)
       this.setCompiler(built.compiler)
       this.#designSystemDiagnostics = built.designSystemDiagnostics
       this.#designSystemPreset = undefined
+      this.#designSystemArtifactSnapshot = nextDesignSystemArtifactSnapshot
     }
-    return diff
+    return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
   }
 
   applyChange(change: SourceChange): boolean {
@@ -285,7 +292,7 @@ export class NodeDriver extends BaseDriver {
       buildInfo: './panda.buildinfo.json',
       importMap: defaultImportMap(identity.name),
       designSystem: typeof this.config.designSystem === 'string' ? this.config.designSystem : undefined,
-      files: options.files ?? DEFAULT_DESIGN_SYSTEM_LIB_FILES,
+      files: options.files ?? inferDesignSystemLibFiles(this.compiler, this.#options.cwd, outRoot, buildInfo),
     })
 
     this.compiler.writeArtifacts({
@@ -404,6 +411,35 @@ function buildFromConfig(loaded: LoadConfigResult): { compiler: Compiler; design
     loaded.metadata?.userTokenPaths ?? [],
   )
   return { compiler, designSystemDiagnostics }
+}
+
+function designSystemArtifactSnapshot(compiler: Compiler, loaded: LoadConfigResult): string {
+  return JSON.stringify(
+    loaded.metadata?.designSystem?.map((ds) => ({
+      name: ds.name,
+      specifier: ds.specifier,
+      manifest: ds.manifest,
+      manifestPath: ds.manifestPath,
+      buildInfoPath: ds.buildInfoPath,
+      buildInfo: compiler.fs.readFile(ds.buildInfoPath) ?? '',
+      files: ds.files,
+      tokenPaths: ds.tokenPaths,
+    })) ?? [],
+  )
+}
+
+function inferDesignSystemLibFiles(
+  compiler: Compiler,
+  cwd: string,
+  outRoot: string,
+  buildInfo: BuildInfoArtifact,
+): string[] {
+  const files = Object.keys(buildInfo.modules).map((key) => {
+    const file = compiler.path.resolve(key, cwd)
+    return toPosixRelative(outRoot, file)
+  })
+
+  return files.length > 0 ? [...new Set(files)] : DEFAULT_DESIGN_SYSTEM_LIB_FILES
 }
 
 function toGenerateArtifactOptions(options: CodegenOptions | undefined): GenerateArtifactOptions | undefined {

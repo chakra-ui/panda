@@ -1,0 +1,16 @@
+{
+  "name": "@sandbox/app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "panda --cwd .",
+    "dev": "panda dev --cwd ."
+  },
+  "dependencies": {
+    "@sandbox/ds": "workspace:*"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*"
+  }
+}

@@ -479,6 +479,24 @@ importers:
         specifier: 4.20.6
         version: 4.20.6
 
+  sandbox-design-system: {}
+
+  sandbox-design-system/packages/app:
+    dependencies:
+      '@sandbox/ds':
+        specifier: workspace:*
+        version: link:../ds
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../../packages/dev
+
+  sandbox-design-system/packages/ds:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../../packages/dev
+
   sandbox/astro:
     dependencies:
       '@astrojs/solid-js':

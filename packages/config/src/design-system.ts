@@ -5,7 +5,7 @@ import {
   type ImportMapOption,
 } from '@pandacss/compiler-shared'
 import type { UserConfig } from '@pandacss/types'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
@@ -107,7 +107,7 @@ async function loadManifestLevel(
 
   let preset: ExtendableConfig
   try {
-    const mod = await import(pathToFileURL(presetPath).href)
+    const mod = await import(presetImportUrl(presetPath))
     preset = ensureConfigObject(mod.default ?? mod, manifest.name ?? spec)
   } catch (error) {
     if (error instanceof PandaError) throw error
@@ -136,6 +136,12 @@ async function loadManifestLevel(
       },
     },
   }
+}
+
+function presetImportUrl(path: string): string {
+  const url = pathToFileURL(path)
+  url.searchParams.set('mtime', String(statSync(path).mtimeMs))
+  return url.href
 }
 
 function designSystemImportMap(map: NonNullable<DesignSystemManifest['importMap']>, spec: string): ImportMapInput {

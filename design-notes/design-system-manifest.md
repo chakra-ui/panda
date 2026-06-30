@@ -121,7 +121,7 @@ works from `node_modules`, a workspace symlink, or a Docker layer.
     "tokens": "@acme/ds/tokens",
   },
   "designSystem": "@acme/foundations", // optional parent
-  "files": ["./**/*.{js,mjs}"], // fallback when build info can't hydrate
+  "files": ["../src/button.tsx"], // fallback when build info can't hydrate
 }
 ```
 
@@ -132,7 +132,7 @@ Field meanings:
 - `importMap`: package roots used by the library's compiled JSX.
 - `designSystem`: this library's parent design system, if any.
 - `panda` and `schemaVersion`: compatibility guards.
-- `files`: fallback globs for stale or incompatible build info.
+- `files`: fallback files for stale or incompatible build info.
 
 ## Rust owns values, TypeScript owns files
 
@@ -197,6 +197,37 @@ field.
 
 It preserves existing root exports, including string and conditional root export forms.
 
+### Fallback files in workspaces and published packages
+
+Build info is the normal path. Consumers should hydrate `panda.buildinfo.json`, not re-scan the library.
+
+`files` is only the fallback path. Panda uses it when build info is stale or incompatible.
+
+By default, `panda lib` infers `files` from the modules it parsed and writes paths relative to `panda.lib.json`:
+
+```txt
+packages/ds/
+  src/button.tsx
+  dist/panda.lib.json
+```
+
+```json
+{
+  "files": ["../src/button.tsx"]
+}
+```
+
+That is the right default for monorepos and packages that publish source.
+
+Built-only packages should declare the files they actually publish:
+
+```sh
+panda lib --files './**/*.{js,mjs}'
+```
+
+Do not guess `src/*` to `dist/*`. Node can resolve package exports, but it cannot tell Panda how a library's build
+mapped source files to output files. The package author owns that contract.
+
 ## The consumer flow
 
 When an app config has `designSystem: '@acme/ds'`, the host:
@@ -210,8 +241,8 @@ When an app config has `designSystem: '@acme/ds'`, the host:
 7. Creates the compiler driver.
 8. Hydrates each design system's `panda.buildinfo.json`.
 
-If build info is stale but the manifest has `files`, Panda scans those fallback files relative to the manifest directory
-and emits `design_system_buildinfo_stale`. If there are no fallback files, Panda fails closed.
+If build info is stale but the manifest has `files`, Panda scans those files relative to the manifest directory and
+emits `design_system_buildinfo_stale`. If there are no fallback files, Panda fails closed.
 
 ## Flow sketch
 

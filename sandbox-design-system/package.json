@@ -1,0 +1,15 @@
+{
+  "name": "sandbox-design-system",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "ds:lib": "pnpm --filter @sandbox/ds lib",
+    "ds:watch": "pnpm --filter @sandbox/ds watch",
+    "app:build": "pnpm --filter @sandbox/app build",
+    "app:watch": "pnpm --filter @sandbox/app dev",
+    "build": "pnpm ds:lib && pnpm app:build",
+    "dev": "pnpm run --parallel \"/^(ds:watch|app:watch)$/\"",
+    "test": "pnpm -w build:fast && pnpm build"
+  }
+}
