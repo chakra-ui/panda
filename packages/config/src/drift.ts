@@ -34,9 +34,14 @@ export function diffDrift(prev: Record<string, string>, chain: DesignSystemVersi
   return entries
 }
 
-export function writeDriftState(cwd: string, chain: DesignSystemVersion[]): void {
+function toState(chain: DesignSystemVersion[]): Record<string, string> {
   const next: Record<string, string> = {}
   for (const level of chain) if (level.version !== undefined) next[level.name] = level.version
+  return next
+}
+
+export function writeDriftState(cwd: string, chain: DesignSystemVersion[]): void {
+  const next = toState(chain)
 
   const dir = join(cwd, STATE_DIR)
   mkdirSync(dir, { recursive: true })
@@ -52,9 +57,15 @@ export function formatDrift(entry: DriftEntry): string {
 
 export function recordDrift(cwd: string, chain: DesignSystemVersion[]): string[] {
   if (chain.length === 0) return []
-  const receipts = diffDrift(readDriftState(cwd), chain).map(formatDrift)
-  writeDriftState(cwd, chain)
+  const prev = readDriftState(cwd)
+  const receipts = diffDrift(prev, chain).map(formatDrift)
+  if (!sameState(prev, toState(chain))) writeDriftState(cwd, chain)
   return receipts
+}
+
+function sameState(a: Record<string, string>, b: Record<string, string>): boolean {
+  const keys = Object.keys(a)
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key])
 }
 
 function isStringRecord(value: unknown): value is Record<string, string> {

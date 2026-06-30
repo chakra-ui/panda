@@ -143,7 +143,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
 
   const { data, diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd }), ok } = await execute(ctx)
   const merged = [...diagnostics, ...normalizeDiagnostics(driver.designSystemDiagnostics ?? [], { cwd })]
-  const passed = ok ?? diagnosticsPass(merged, flags.maxWarnings)
+  const passed = ok ?? diagnosticsPass(diagnostics, flags.maxWarnings)
   const result = finish(data, merged, passed, driver)
 
   if (keepTracing) {

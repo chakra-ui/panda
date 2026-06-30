@@ -168,7 +168,7 @@ whether read from `node_modules`, a workspace symlink, or a Docker layer:
     "tokens": "@acme/ds/tokens"
   },
   "designSystem": "@acme/foundations", // OPTIONAL — this library's OWN parent DS (recorded by `panda lib`)
-  "files": ["./dist/**/*.{js,mjs}"]    // re-extract fallback when build info can't be hydrated
+  "files": ["./**/*.{js,mjs}"]         // re-extract fallback (relative to the manifest dir) when build info can't be hydrated
 }
 ```
 

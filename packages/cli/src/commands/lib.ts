@@ -1,4 +1,10 @@
-import { compilePreset, defaultImportMap, readPackageIdentity, syncExports } from '@pandacss/config'
+import {
+  compilePreset,
+  defaultImportMap,
+  readPackageIdentity,
+  syncExports,
+  type CompilePresetResult,
+} from '@pandacss/config'
 import { type Diagnostic, type Driver } from '@pandacss/compiler'
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -15,7 +21,7 @@ import { createWatchLogger } from '../watch-logger'
 import type { LibFlags, LibResult, PhaseTimings } from '../schema'
 
 const DEFAULT_OUTDIR = 'dist'
-const DEFAULT_FILES = ['./dist/**/*.{js,mjs}']
+const DEFAULT_FILES = ['./**/*.{js,mjs}']
 
 export const libCommand = defineCommand({
   meta: {
@@ -37,7 +43,8 @@ export const libCommand = defineCommand({
     },
     files: {
       type: 'string',
-      description: 'Re-extract fallback globs for consumers (comma-separated, or repeat the flag)',
+      description:
+        'Re-extract fallback globs for consumers, relative to the output dir (comma-separated, or repeat the flag)',
     },
     minify: { type: 'boolean', description: 'Minify the generated build info JSON', alias: 'm' },
     ...outputArgs(),
@@ -49,6 +56,7 @@ export const libCommand = defineCommand({
 export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleOutput): Promise<LibResult> {
   let parsedFileCount = 0
   let runCwd = flags.cwd ?? process.cwd()
+  let preset: CompilePresetResult | undefined
 
   const result = (await runCommand({
     command: 'lib',
@@ -59,6 +67,7 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
     async execute({ driver, cwd, timings }) {
       runCwd = cwd
       const generated = await generateLib(driver, cwd, flags, timings)
+      preset = generated.preset
       parsedFileCount = generated.parsedFileCount
       return {
         data: {
@@ -86,7 +95,8 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
     const driver = result.driver
     const watchLogger = createWatchLogger(output)
     const regenerate = async () => {
-      const generated = await generateLib(driver, runCwd, flags, {})
+      const generated = await generateLib(driver, runCwd, flags, {}, preset)
+      preset = generated.preset
       Object.assign(result, {
         manifestPath: generated.manifestPath,
         buildInfoPath: generated.buildInfoPath,
@@ -109,7 +119,10 @@ export async function runLib(flags: LibFlags = {}, output: OutputSink = consoleO
       },
       onConfigChange: async () => {
         const diff = await driver.reload()
-        if (diff.hasChanged) await regenerate()
+        if (diff.hasChanged) {
+          preset = undefined
+          await regenerate()
+        }
       },
     })
 
@@ -130,6 +143,7 @@ interface GeneratedLib {
   exportsChanged: boolean
   parsedFileCount: number
   diagnostics: Diagnostic[]
+  preset: CompilePresetResult
 }
 
 export async function generateLib(
@@ -137,6 +151,7 @@ export async function generateLib(
   cwd: string,
   flags: LibFlags,
   timings: PhaseTimings,
+  cachedPreset?: CompilePresetResult,
 ): Promise<GeneratedLib> {
   if (!driver.configPath) {
     throw new Error(
@@ -164,7 +179,7 @@ export async function generateLib(
     },
   })
 
-  const preset = await compilePreset(driver.configPath, cwd)
+  const preset = cachedPreset ?? (await compilePreset(driver.configPath, cwd))
 
   const manifest = driver.compiler.designSystem.create({
     name: identity.name,
@@ -199,6 +214,7 @@ export async function generateLib(
     exportsChanged,
     parsedFileCount: parsed.length,
     diagnostics,
+    preset,
   }
 }
 

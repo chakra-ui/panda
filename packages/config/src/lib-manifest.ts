@@ -49,14 +49,9 @@ export function syncExports(packageJson: string, entries: Record<string, string>
   const merged: Record<string, unknown> = { ...existing }
   for (const [key, value] of Object.entries(entries)) merged[key] = value
 
-  const next = sortKeys(merged)
-  const changed = JSON.stringify(sortKeys(existing)) !== JSON.stringify(next)
-  const out = { ...pkg, exports: next }
+  const changed = JSON.stringify(existing) !== JSON.stringify(merged)
+  const out = { ...pkg, exports: merged }
   return { changed, json: `${JSON.stringify(out, null, 2)}\n` }
-}
-
-function sortKeys(value: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
