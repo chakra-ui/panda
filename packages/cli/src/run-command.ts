@@ -2,7 +2,6 @@ import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compil
 import { normalizeInclude } from './args'
 import { configLoadDiagnostics, diagnosticsPass, missingConfigDiagnostic, normalizeDiagnostics } from './diagnostics'
 import {
-  allowsLogLevel,
   consoleOutput,
   createCommandOutput,
   renderCommandDiagnostics,
@@ -87,10 +86,6 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
       renderHuman(ctx, result)
     } else {
       renderDefaultHuman(ctx, result)
-    }
-
-    if (allowsLogLevel(flags, 'info')) {
-      for (const receipt of result.driver?.designSystemDrift ?? []) commandOutput.log(receipt)
     }
 
     renderTimings({ command, timings, output: commandOutput, flags })

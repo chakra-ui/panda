@@ -140,7 +140,6 @@ interface RawDesignSystemBinding {
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
   resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
-  designSystemTokenConflicts(local: string[], ds: string[]): string[]
 }
 
 /** The raw native instance — superset of {@link Compiler} carrying the internal

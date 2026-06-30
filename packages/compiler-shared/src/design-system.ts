@@ -18,7 +18,6 @@ export interface DesignSystemBinding {
   createManifest(input: DesignSystemManifestInput): DesignSystemManifest
   manifestSchemaVersion(): number
   resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
-  tokenConflicts(local: string[], ds: string[]): string[]
 }
 
 /**
@@ -75,9 +74,5 @@ export class DesignSystem {
     return plan.status === 'ordered'
       ? { ok: true, order: plan.order }
       : { ok: false, reason: 'cycle', cycle: plan.cycle }
-  }
-
-  tokenConflicts(local: string[], ds: string[]): string[] {
-    return this.#binding.tokenConflicts(local, ds)
   }
 }

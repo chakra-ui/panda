@@ -17,7 +17,7 @@ export interface RunCliResult {
 }
 
 export function runCli(args: string[], options: RunCliOptions = {}): RunCliResult {
-  const result = spawnSync(process.execPath, ['--import', 'tsx', cliMain, ...args], {
+  const result = spawnSync(process.execPath, ['--conditions=source', '--import', 'tsx', cliMain, ...args], {
     cwd: options.cwd ?? repoRoot,
     encoding: 'utf8',
     env: {

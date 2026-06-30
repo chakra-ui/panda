@@ -13,7 +13,13 @@ export interface CompilePresetResult {
   dependencies: string[]
 }
 
-export async function compilePreset(configPath: string, cwd: string): Promise<CompilePresetResult> {
+export interface CompilePresetOptions {
+  configPath: string
+  cwd: string
+}
+
+export async function compilePreset(options: CompilePresetOptions): Promise<CompilePresetResult> {
+  const { configPath, cwd } = options
   const build = await rolldown({
     input: VIRTUAL_ENTRY,
     cwd,
@@ -35,6 +41,8 @@ export async function compilePreset(configPath: string, cwd: string): Promise<Co
     throw new PandaError('CONFIG_ERROR', '💥 Preset bundle did not produce an executable module.')
   }
 
+  await validatePreset(output.code)
+
   const dependencies = Object.keys(output.modules ?? {}).filter((id) => id !== VIRTUAL_ENTRY)
   return { code: output.code, dependencies }
 }
@@ -48,7 +56,32 @@ function presetEntryPlugin(configPath: string) {
     load(id: string) {
       if (id !== VIRTUAL_ENTRY) return null
       const fields = APP_FIELDS.join(', ')
-      return `import __panda_lib_config from ${JSON.stringify(configPath)}\nconst { ${fields}, ...preset } = __panda_lib_config\nexport default preset\n`
+      return `import __panda_lib_config from ${JSON.stringify(configPath)}
+const __panda_lib_resolved = await __panda_lib_config
+if (!${isPlainObjectSource()}(__panda_lib_resolved)) throw new Error('Config must export or return an object.')
+const { ${fields}, ...preset } = __panda_lib_resolved
+export default preset
+`
     },
   }
+}
+
+function isPlainObjectSource(): string {
+  return `((value) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
+})`
+}
+
+async function validatePreset(code: string): Promise<void> {
+  try {
+    await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
+  } catch (error) {
+    throw new PandaError('CONFIG_ERROR', `💥 Failed to compile design system preset: ${errorMessage(error)}`)
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }

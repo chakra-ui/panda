@@ -31,7 +31,7 @@ describe('compilePreset', () => {
       }`,
     )
 
-    const { code } = await compilePreset(file, dir)
+    const { code } = await compilePreset({ configPath: file, cwd: dir })
     const out = join(dir, 'preset.mjs')
     writeFileSync(out, code)
 
@@ -60,5 +60,40 @@ process.stdout.write(JSON.stringify(out))
     expect(result.brand).toBe('#f00')
     expect(result.transformType).toBe('function')
     expect(result.transformResult).toEqual({ marginLeft: 4, marginRight: 4 })
+  })
+
+  test('awaits promise-like config exports before stripping fields', async () => {
+    const file = join(dir, 'async-panda.config.ts')
+    writeFileSync(
+      file,
+      `export default Promise.resolve({ include: ['src/**/*'], theme: { tokens: { colors: { brand: { value: 'red' } } } } })`,
+    )
+
+    const { code } = await compilePreset({ configPath: file, cwd: dir })
+    const out = join(dir, 'async-preset.mjs')
+    writeFileSync(out, code)
+    const probe = join(dir, 'async-probe.mjs')
+    writeFileSync(
+      probe,
+      `import preset from ${JSON.stringify(pathToFileURL(out).href)}
+process.stdout.write(JSON.stringify({
+  include: preset.include,
+  brand: preset.theme.tokens.colors.brand.value,
+}))
+`,
+    )
+    const mod = JSON.parse(execFileSync('node', [probe], { encoding: 'utf8' }))
+
+    expect(mod.include).toBeUndefined()
+    expect(mod.brand).toBe('red')
+  })
+
+  test('rejects config exports that cannot become a preset object', async () => {
+    const file = join(dir, 'invalid-panda.config.ts')
+    writeFileSync(file, `export default null`)
+
+    await expect(compilePreset({ configPath: file, cwd: dir })).rejects.toThrow(
+      /Config must export or return an object/,
+    )
   })
 })

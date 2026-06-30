@@ -40,7 +40,7 @@ function hydrateLevel(
     if (!result.ok && !tryStaleFallback(compiler, ds, diagnostics)) throw hydrateLoadError(ds, result.reason)
   }
 
-  diagnostics.push(...tokenConflictDiagnostics(compiler, ds, consumerTokenPaths))
+  diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
   return diagnostics
 }
 
@@ -57,13 +57,13 @@ function tryStaleFallback(compiler: Compiler, ds: ResolvedDesignSystem, diagnost
   return true
 }
 
-function tokenConflictDiagnostics(
-  compiler: Compiler,
-  ds: ResolvedDesignSystem,
-  consumerTokenPaths: string[],
-): Diagnostic[] {
+function tokenConflictDiagnostics(ds: ResolvedDesignSystem, consumerTokenPaths: string[]): Diagnostic[] {
   if (consumerTokenPaths.length === 0 || ds.tokenPaths.length === 0) return []
-  return compiler.designSystem.tokenConflicts(consumerTokenPaths, ds.tokenPaths).map((path) => ({
+
+  const designSystemTokenPaths = new Set(ds.tokenPaths)
+  const conflicts = [...new Set(consumerTokenPaths.filter((path) => designSystemTokenPaths.has(path)))].sort()
+
+  return conflicts.map((path) => ({
     code: 'design_system_token_conflict',
     severity: 'warning',
     category: 'designSystem',

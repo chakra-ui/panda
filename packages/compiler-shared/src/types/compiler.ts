@@ -149,7 +149,7 @@ export interface DesignSystemManifestImportMap {
 export interface DesignSystemManifestInput {
   name: string
   /**
-   * Informational; powers drift reporting but is not enforced.
+   * Informational package version; not enforced.
    */
   version?: string
   /**

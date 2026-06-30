@@ -5,7 +5,6 @@
 use crate::common::create_project;
 use pandacss_project::{
     ChainPlan, DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestInput, resolve_chain,
-    token_conflicts,
 };
 use serde_json::{from_value, json, to_value};
 
@@ -138,21 +137,4 @@ fn resolve_chain_reports_a_cycle_path() {
 #[test]
 fn resolve_chain_handles_an_empty_set() {
     assert_eq!(order(resolve_chain(&[])), Vec::<String>::new());
-}
-
-#[test]
-fn token_conflicts_reports_shared_paths_sorted() {
-    let local = vec!["colors.fg".to_owned(), "colors.brand".to_owned()];
-    let ds = vec!["colors.brand".to_owned(), "spacing.sm".to_owned()];
-    assert_eq!(
-        token_conflicts(&local, &ds),
-        vec!["colors.brand".to_owned()]
-    );
-}
-
-#[test]
-fn token_conflicts_empty_when_disjoint() {
-    let local = vec!["colors.fg".to_owned()];
-    let ds = vec!["spacing.sm".to_owned()];
-    assert!(token_conflicts(&local, &ds).is_empty());
 }

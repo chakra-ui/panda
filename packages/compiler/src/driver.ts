@@ -14,7 +14,6 @@ import {
   diffConfig,
   loadConfig,
   mergeExcludes,
-  recordDrift,
   resolveSmartInclude,
 } from '@pandacss/config'
 import { type Diagnostic } from '@pandacss/compiler-shared'
@@ -55,7 +54,6 @@ function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: st
 class NodeDriver extends BaseDriver {
   #options: NodeDriverOptions
   #loaded: LoadConfigResult
-  #designSystemDrift: string[]
   #designSystemDiagnostics: Diagnostic[]
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
@@ -63,12 +61,7 @@ class NodeDriver extends BaseDriver {
     super(built.compiler)
     this.#options = options
     this.#loaded = loaded
-    this.#designSystemDrift = recordDesignSystemDrift(loaded, options.cwd)
     this.#designSystemDiagnostics = built.designSystemDiagnostics
-  }
-
-  get designSystemDrift() {
-    return this.#designSystemDrift
   }
 
   get designSystemDiagnostics() {
@@ -96,7 +89,6 @@ class NodeDriver extends BaseDriver {
       this.#loaded = next
       const built = buildFromConfig(next)
       this.setCompiler(built.compiler)
-      this.#designSystemDrift = recordDesignSystemDrift(next, this.#options.cwd)
       this.#designSystemDiagnostics = built.designSystemDiagnostics
     }
     return diff
@@ -225,15 +217,6 @@ function buildFromConfig(loaded: LoadConfigResult): { compiler: Compiler; design
     loaded.metadata?.userTokenPaths ?? [],
   )
   return { compiler, designSystemDiagnostics }
-}
-
-function recordDesignSystemDrift(loaded: LoadConfigResult, cwd: string): string[] {
-  const chain = loaded.metadata?.designSystem
-  if (!chain || chain.length === 0) return []
-  return recordDrift(
-    cwd,
-    chain.map((ds) => ({ name: ds.name, version: ds.manifest.version })),
-  )
 }
 
 function toGenerateArtifactOptions(options: CodegenOptions | undefined): GenerateArtifactOptions | undefined {

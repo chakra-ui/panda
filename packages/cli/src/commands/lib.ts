@@ -143,7 +143,7 @@ interface GeneratedLib {
   exportsChanged: boolean
   parsedFileCount: number
   diagnostics: Diagnostic[]
-  preset: CompilePresetResult
+  preset?: CompilePresetResult
 }
 
 export async function generateLib(
@@ -161,6 +161,18 @@ export async function generateLib(
 
   const parsed = time({ timings, phase: 'parse', run: () => driver.parseFiles() })
   const parseDiagnostics = collectParseDiagnostics(parsed, cwd)
+  const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...driver.compiler.diagnostics()], { cwd })
+
+  if (!diagnosticsPass(diagnostics, flags.maxWarnings)) {
+    return {
+      manifestPath: '',
+      buildInfoPath: '',
+      presetPath: '',
+      exportsChanged: false,
+      parsedFileCount: parsed.length,
+      diagnostics,
+    }
+  }
 
   const identity = readPackageIdentity(cwd)
   const pandaRange = flags.panda ?? identity.pandaPeer ?? '*'
@@ -179,7 +191,7 @@ export async function generateLib(
     },
   })
 
-  const preset = cachedPreset ?? (await compilePreset(driver.configPath, cwd))
+  const preset = cachedPreset ?? (await compilePreset({ configPath: driver.configPath, cwd }))
 
   const manifest = driver.compiler.designSystem.create({
     name: identity.name,
@@ -205,8 +217,6 @@ export async function generateLib(
 
   const exportsChanged = syncPackageExports(identity.packagePath, { manifestPath, presetPath })
 
-  const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...driver.compiler.diagnostics()], { cwd })
-
   return {
     manifestPath,
     buildInfoPath,
@@ -224,7 +234,7 @@ function syncPackageExports(packagePath: string, paths: { manifestPath: string; 
     './panda.lib.json': toPosixRelative(base, paths.manifestPath),
     './preset': toPosixRelative(base, paths.presetPath),
   }
-  const result = syncExports(readFileSync(packagePath, 'utf8'), entries)
+  const result = syncExports({ packageJson: readFileSync(packagePath, 'utf8'), entries })
   if (result.changed) writeFileSync(packagePath, result.json)
   return result.changed
 }

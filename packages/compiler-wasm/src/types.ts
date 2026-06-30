@@ -170,5 +170,4 @@ export declare class WasmCompiler {
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
   resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
-  designSystemTokenConflicts(local: string[], ds: string[]): string[]
 }

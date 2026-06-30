@@ -54,20 +54,4 @@ impl Compiler {
         let plan = pandacss_project::resolve_chain(&manifests);
         serde_json::to_value(&plan).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
-
-    /// Dotted token paths defined by both the consumer and a design system,
-    /// sorted and deduped. Backs the `designSystem.tokenConflicts` JS namespace.
-    #[napi(js_name = designSystemTokenConflicts)]
-    #[must_use]
-    #[allow(
-        clippy::needless_pass_by_value,
-        reason = "NAPI requires owned arguments"
-    )]
-    pub fn design_system_token_conflicts(
-        &self,
-        local: Vec<String>,
-        ds: Vec<String>,
-    ) -> Vec<String> {
-        pandacss_project::token_conflicts(&local, &ds)
-    }
 }

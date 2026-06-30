@@ -43,19 +43,37 @@ export interface SyncExportsResult {
   json: string
 }
 
-export function syncExports(packageJson: string, entries: Record<string, string>): SyncExportsResult {
+export interface SyncExportsOptions {
+  packageJson: string
+  entries: Record<string, string>
+}
+
+export function syncExports(options: SyncExportsOptions): SyncExportsResult {
+  const { packageJson, entries } = options
   const pkg = JSON.parse(packageJson) as Record<string, unknown>
-  const existing = isPlainObject(pkg.exports) ? (pkg.exports as Record<string, unknown>) : {}
+  const existing = normalizeExports(pkg.exports)
   const merged: Record<string, unknown> = { ...existing }
   for (const [key, value] of Object.entries(entries)) merged[key] = value
 
-  const changed = JSON.stringify(existing) !== JSON.stringify(merged)
+  const changed = JSON.stringify(pkg.exports) !== JSON.stringify(merged)
   const out = { ...pkg, exports: merged }
   return { changed, json: `${JSON.stringify(out, null, 2)}\n` }
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function normalizeExports(exports: unknown): Record<string, unknown> {
+  if (exports === undefined) return {}
+  if (typeof exports === 'string') return { '.': exports }
+  if (!isPlainObject(exports)) return {}
+  if (isSubpathExportMap(exports)) return exports
+  return { '.': exports }
+}
+
+function isSubpathExportMap(exports: Record<string, unknown>): boolean {
+  return Object.keys(exports).some((key) => key === '.' || key.startsWith('./'))
 }
 
 function nearestPackageJson(start: string): string | undefined {

@@ -37,22 +37,73 @@ describe('lib command', () => {
     expect(result.ok).toBe(true)
 
     const manifest = readManifest(dir)
-    expect(manifest.schemaVersion).toBe(1)
-    expect(manifest.name).toBe('@acme/ds')
-    expect(manifest.version).toBe('1.2.3')
-    expect(manifest.panda).toBe('^2.0.0')
-    expect(manifest.preset).toBe('./preset.mjs')
-    expect(manifest.buildInfo).toBe('./panda.buildinfo.json')
-    expect(manifest.importMap?.css).toBe('@acme/ds/css')
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "buildInfo": "./panda.buildinfo.json",
+        "files": [
+          "./**/*.{js,mjs}",
+        ],
+        "importMap": {
+          "css": "@acme/ds/css",
+          "jsx": "@acme/ds/jsx",
+          "patterns": "@acme/ds/patterns",
+          "recipes": "@acme/ds/recipes",
+          "tokens": "@acme/ds/tokens",
+        },
+        "name": "@acme/ds",
+        "panda": "^2.0.0",
+        "preset": "./preset.mjs",
+        "schemaVersion": 1,
+        "version": "1.2.3",
+      }
+    `)
 
     const buildInfo = JSON.parse(readFileSync(join(dir, 'dist', 'panda.buildinfo.json'), 'utf8'))
     expect(Object.keys(buildInfo.modules).length).toBeGreaterThan(0)
     expect(readFileSync(join(dir, 'dist', 'preset.mjs'), 'utf8')).toMatch(/as default|export default/)
 
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
-    expect(pkg.exports['./panda.lib.json']).toBe('./dist/panda.lib.json')
-    expect(pkg.exports['./preset']).toBe('./dist/preset.mjs')
+    expect(pkg.exports).toMatchInlineSnapshot(`
+      {
+        "./panda.lib.json": "./dist/panda.lib.json",
+        "./preset": "./dist/preset.mjs",
+      }
+    `)
     expect(result.exportsChanged).toBe(true)
+  })
+
+  it('preserves an existing string root export when syncing package exports', async () => {
+    dir = createLibFixture()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: './dist/index.js' }, null, 2),
+    )
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports).toMatchInlineSnapshot(`
+      {
+        ".": "./dist/index.js",
+        "./panda.lib.json": "./dist/panda.lib.json",
+        "./preset": "./dist/preset.mjs",
+      }
+    `)
+  })
+
+  it('does not write artifacts or sync exports when diagnostics fail the warning budget', async () => {
+    dir = createLibFixture()
+    writeFileSync(join(dir, 'button.tsx'), "import { css } from '@panda/css'; css({ color: })")
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent', maxWarnings: 0 })
+    expect(result.ok).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda.lib.json'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda.buildinfo.json'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'preset.mjs'))).toBe(false)
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports).toBeUndefined()
   })
 
   it('is idempotent: a second run leaves the manifest byte-identical and exports unchanged', async () => {
