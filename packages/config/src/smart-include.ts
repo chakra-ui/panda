@@ -33,6 +33,14 @@ export function resolveSmartInclude(include: string[], cwd: string, deps: Set<st
       continue
     }
 
+    // A `panda lib` package exports `./panda.lib.json` but neither `.` nor
+    // `./package.json`, so resolvePackageDir can't see it. Probe the manifest
+    // the way designSystem resolution does.
+    if (tryResolveFrom(`${entry}/${MANIFEST}`, cwd) !== undefined) {
+      offenders.push(entry)
+      continue
+    }
+
     const packageDir = resolvePackageDir(entry, cwd)
     if (packageDir === undefined) {
       next.push(entry)
