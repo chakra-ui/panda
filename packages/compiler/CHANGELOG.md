@@ -1,5 +1,16 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.7
+
+### Patch Changes
+
+- 97d142a: Fix generated token types when a category has no tokens. A config with missing or empty categories no longer
+  collapses `TokenValue` to bare `string`, so native CSS value autocomplete (e.g. `currentColor`) stays intact.
+- 0a11fda: Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
+  updates its styles live, instead of leaving them stale until you restart the dev server.
+  - @pandacss/compiler-shared@2.0.0-beta.7
+  - @pandacss/config@2.0.0-beta.7
+
 ## 2.0.0-beta.6
 
 ### Minor Changes
