@@ -55,6 +55,7 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     ensureCodegen(state, { cwd, outdir: options.outdir })
     driver.parseFiles()
     registerDependencies(driver, result, cwd, fileName)
+    emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
     const output = driver.cssgen({ emitLayerDeclaration: false })
     emitDiagnostics(root, result, output.diagnostics)

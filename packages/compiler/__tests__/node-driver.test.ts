@@ -408,6 +408,55 @@ describe('NodeDriver writeDesignSystemLib', () => {
     `)
   })
 
+  it('does not publish hydrated parent build info as fallback files', async () => {
+    dir = createLibProject("  designSystem: '@acme/foundations',")
+
+    const parent = createProject()
+    parent.parseFileSource('surface.tsx', "import { css } from '@panda/css'; css({ color: 'teal' })")
+
+    writeFileTree(dir, {
+      'node_modules/@acme/foundations/package.json': JSON.stringify({ name: '@acme/foundations', version: '1.0.0' }),
+      'node_modules/@acme/foundations/panda.lib.json': JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/foundations',
+        panda: '^2.0.0',
+        preset: './preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        importMap: { css: '@acme/foundations/css' },
+      }),
+      'node_modules/@acme/foundations/preset.mjs': 'export default { name: "@acme/foundations" }',
+      'node_modules/@acme/foundations/panda.buildinfo.json': JSON.stringify(
+        parent.buildInfo.create({ panda: '^2.0.0' }),
+      ),
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    await driver.writeDesignSystemLib()
+
+    const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8'))
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "schemaVersion": 1,
+        "name": "@acme/ds",
+        "version": "1.2.3",
+        "panda": "^2.0.0",
+        "preset": "./preset.mjs",
+        "buildInfo": "./panda.buildinfo.json",
+        "importMap": {
+          "css": "@acme/ds/css",
+          "recipes": "@acme/ds/recipes",
+          "patterns": "@acme/ds/patterns",
+          "jsx": "@acme/ds/jsx",
+          "tokens": "@acme/ds/tokens",
+        },
+        "designSystem": "@acme/foundations",
+        "files": [
+          "../button.tsx",
+        ],
+      }
+    `)
+  })
+
   it('does not write artifacts when diagnostics fail the warning budget', async () => {
     dir = createLibProject()
     writeFileTree(dir, {

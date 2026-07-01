@@ -1,18 +1,17 @@
 import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  designSystem: '@sandbox/ds',
+  designSystem: '@sandbox/ds-nested',
   include: ['src/**/*.tsx'],
   outdir: 'styled-system',
   theme: {
     extend: {
       tokens: {
         colors: {
-          brand: { value: '#facc15' },
+          brand: { value: '#e11d48' },
         },
         spacing: {
-          4: { value: '1rem' },
-          6: { value: '1.5rem' },
+          2: { value: '0.5rem' },
         },
       },
     },

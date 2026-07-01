@@ -2,19 +2,15 @@ import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   presets: ['@pandacss/preset-base'],
-  include: ['src/**/*.{ts,tsx}'],
+  include: ['src/**/*.tsx'],
   outdir: 'styled-system',
   theme: {
     tokens: {
       colors: {
-        brand: { value: '#facc15' },
-      },
-      radii: {
-        md: { value: '0.375rem' },
+        foundation: { value: '#0f766e' },
       },
       spacing: {
-        2: { value: '0.5rem' },
-        3: { value: '0.75rem' },
+        foundationGap: { value: '10px' },
       },
     },
   },

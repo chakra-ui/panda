@@ -49,6 +49,8 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let driver: Driver | undefined
   let cwd = ''
   let outdir: string | undefined
+  let resolvedConfig: ResolvedConfig | undefined
+  let designSystemDiagnosticsKey = ''
   const rootIds = new Set<string>()
 
   const codegen = () => {
@@ -70,6 +72,15 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     }
   }
 
+  const warnDesignSystemDiagnostics = (warn: (message: string) => void) => {
+    const diagnostics = driver?.designSystemDiagnostics ?? []
+    const key = JSON.stringify(diagnostics)
+    if (key === designSystemDiagnosticsKey) return
+
+    designSystemDiagnosticsKey = key
+    warnDiagnostics(warn, diagnostics, 'while loading the design system')
+  }
+
   const invalidateRoots = (server: ViteDevServer): ModuleNode[] => {
     const mods: ModuleNode[] = []
     for (const id of rootIds) {
@@ -87,6 +98,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     enforce: 'pre',
 
     async configResolved(config: ResolvedConfig) {
+      resolvedConfig = config
       cwd = options.cwd ?? config.root
       driver = await createNodeDriver({ cwd, configPath: options.configPath })
       outdir = options.outdir
@@ -100,6 +112,13 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
       rootIds.add(id)
       addPandaWatchFiles((file) => this.addWatchFile(file), id)
+      warnDesignSystemDiagnostics((message) => {
+        if (resolvedConfig) {
+          resolvedConfig.logger.warn(message)
+        } else {
+          this.warn(message)
+        }
+      })
 
       const output = driver.cssgen({ emitLayerDeclaration: false })
       warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet')
@@ -116,6 +135,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
         codegen()
         driver.parseFiles()
+        warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
         invalidateRoots(ctx.server)
         ctx.server.ws.send({ type: 'full-reload' })
         return []

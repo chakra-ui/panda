@@ -1,12 +1,10 @@
 {
-  "name": "@sandbox/ds",
+  "name": "@sandbox/ds-nested",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./badge": "./src/badge/index.ts",
-    "./button": "./src/button/index.ts",
+    "./button": "./src/button.tsx",
     "./panda.lib.json": "./dist/panda.lib.json",
     "./preset": "./dist/preset.mjs"
   },
@@ -16,13 +14,13 @@
     "watch": "pnpm codegen && panda lib --watch"
   },
   "peerDependencies": {
-    "@pandacss/dev": "^2.0.0",
-    "react": ">=18"
+    "@pandacss/dev": "^2.0.0"
+  },
+  "dependencies": {
+    "@sandbox/foundations": "workspace:*"
   },
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
-    "@pandacss/preset-base": "workspace:*",
-    "@types/react": "19.2.7",
-    "react": "19.2.0"
+    "@pandacss/preset-base": "workspace:*"
   }
 }

@@ -4,12 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "foundations:lib": "pnpm --filter @sandbox/foundations lib",
+    "foundations:watch": "pnpm --filter @sandbox/foundations watch",
     "ds:lib": "pnpm --filter @sandbox/ds lib",
     "ds:watch": "pnpm --filter @sandbox/ds watch",
+    "ds-nested:lib": "pnpm --filter @sandbox/ds-nested lib",
+    "ds-nested:watch": "pnpm --filter @sandbox/ds-nested watch",
     "app:build": "pnpm --filter @sandbox/app build",
-    "app:watch": "pnpm --filter @sandbox/app dev",
-    "build": "pnpm ds:lib && pnpm app:build",
-    "dev": "pnpm run --parallel \"/^(ds:watch|app:watch)$/\"",
+    "app:dev": "pnpm --filter @sandbox/app dev",
+    "app-nested:build": "pnpm --filter @sandbox/app-nested build",
+    "app-nested:dev": "pnpm --filter @sandbox/app-nested dev",
+    "build": "pnpm ds:lib && pnpm app:build && pnpm foundations:lib && pnpm ds-nested:lib && pnpm app-nested:build",
+    "dev": "pnpm run --parallel \"/^(ds:watch|app:dev)$/\"",
+    "dev:nested": "pnpm run --parallel \"/^(foundations:watch|ds-nested:watch|app-nested:dev)$/\"",
     "test": "pnpm -w build:fast && pnpm build"
   }
 }

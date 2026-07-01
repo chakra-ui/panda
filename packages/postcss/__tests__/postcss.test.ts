@@ -13,6 +13,7 @@ interface MockDriver {
   configPath: string
   codegen: ReturnType<typeof vi.fn>
   cssgen: ReturnType<typeof vi.fn>
+  designSystemDiagnostics: Array<{ severity: 'warning' | 'error'; code: string; message: string }>
   getOutdir: ReturnType<typeof vi.fn>
   parseFiles: ReturnType<typeof vi.fn>
   reload: ReturnType<typeof vi.fn>
@@ -122,6 +123,25 @@ describe('@pandacss/postcss', () => {
     expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
       [
         "warning panda_call_unextractable dynamic style value",
+      ]
+    `)
+  })
+
+  it('emits design-system diagnostics with severity and code', async () => {
+    const { driver, run } = await setup()
+    driver.designSystemDiagnostics = [
+      {
+        severity: 'warning',
+        code: 'design_system_token_conflict',
+        message: 'Token "colors.brand" is defined by both "@acme/ds" and this config; the local value wins.',
+      },
+    ]
+
+    const result = await run(INPUT)
+
+    expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
+      [
+        "warning design_system_token_conflict Token "colors.brand" is defined by both "@acme/ds" and this config; the local value wins.",
       ]
     `)
   })
@@ -272,6 +292,7 @@ function createMockDriver(): MockDriver {
       layerRanges: {},
       diagnostics: [],
     })),
+    designSystemDiagnostics: [],
     getOutdir: vi.fn((outdir?: string) => (outdir ? `/project/${outdir}` : '/project/styled-system')),
     parseFiles: vi.fn(() => []),
     reload: vi.fn(async () => ({ hasChanged: false, dependencies: [], recipes: [], patterns: [], changes: [] })),

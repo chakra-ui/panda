@@ -228,6 +228,71 @@ panda lib --files './**/*.{js,mjs}'
 Do not guess `src/*` to `dist/*`. Node can resolve package exports, but it cannot tell Panda how a library's build
 mapped source files to output files. The package author owns that contract.
 
+### Monorepo task runners own the chain
+
+`panda lib` is the producer task. The consumer can be `panda dev`, `@pandacss/vite`, or `@pandacss/postcss`.
+
+In a monorepo, the task runner should wire the chain:
+
+```txt
+foundations:panda-lib -> ds:panda-lib -> app:panda-dev
+```
+
+The app watches design-system artifacts. It should not silently build every upstream package from source.
+
+Turbo-style setup:
+
+```jsonc
+{
+  "tasks": {
+    "lib": {
+      "dependsOn": ["^lib"],
+      "outputs": ["dist/panda.lib.json", "dist/panda.buildinfo.json", "dist/preset.mjs"],
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+    },
+    "lib:watch": {
+      "cache": false,
+      "persistent": true,
+    },
+  },
+}
+```
+
+Nx-style setup:
+
+```jsonc
+{
+  "targetDefaults": {
+    "lib": {
+      "dependsOn": [{ "projects": "{dependencies}", "target": "lib" }],
+      "outputs": [
+        "{projectRoot}/dist/panda.lib.json",
+        "{projectRoot}/dist/panda.buildinfo.json",
+        "{projectRoot}/dist/preset.mjs",
+      ],
+      "cache": true,
+    },
+  },
+}
+```
+
+For local development, run the producer watchers and the app watcher together:
+
+```sh
+  panda lib --watch # in each design-system package
+  panda dev         # or Vite/PostCSS in the app
+```
+
+That keeps ownership clear. Design-system packages produce artifacts. Apps consume artifacts. The repo tool handles
+ordering.
+
+Vite owns a dev server, so `@pandacss/vite` registers the design-system manifest, preset, and build-info files as watch
+inputs and reloads the driver when they change. PostCSS does the same through PostCSS dependency messages; build tools
+that honor those messages will rebuild when design-system artifacts change.
+
 ## The consumer flow
 
 When an app config has `designSystem: '@acme/ds'`, the host:
@@ -485,8 +550,8 @@ Errors stop the build. Warnings continue when Panda has a clear fallback. The ap
 
 - **Manifest file.** Use standalone `panda.lib.json`, not a `package.json` field.
 - **Stale build info.** Re-extract that layer when `files` exists, warn, and continue.
-- **Token conflict.** App config wins, and Panda warns. Conflict detection compares token paths after each design
-  system preset and the app config are resolved into canonical `theme.tokens`/`theme.semanticTokens` shapes.
+- **Token conflict.** App config wins, and Panda warns. Conflict detection compares token paths after each design system
+  preset and the app config are resolved into canonical `theme.tokens`/`theme.semanticTokens` shapes.
 - **Conditions.** Match by name. App condition definitions win on conflict.
 - **`staticCss`.** Travels through build info. No manifest field.
 - **CSS layer order.** Root design systems before child design systems before the app.

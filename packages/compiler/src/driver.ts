@@ -434,10 +434,12 @@ function inferDesignSystemLibFiles(
   outRoot: string,
   buildInfo: BuildInfoArtifact,
 ): string[] {
-  const files = Object.keys(buildInfo.modules).map((key) => {
-    const file = compiler.path.resolve(key, cwd)
-    return toPosixRelative(outRoot, file)
-  })
+  const files = Object.keys(buildInfo.modules)
+    .filter((key) => !key.startsWith('buildinfo:'))
+    .map((key) => {
+      const file = compiler.path.resolve(key, cwd)
+      return toPosixRelative(outRoot, file)
+    })
 
   return files.length > 0 ? [...new Set(files)] : DEFAULT_DESIGN_SYSTEM_LIB_FILES
 }

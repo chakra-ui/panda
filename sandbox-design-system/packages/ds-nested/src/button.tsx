@@ -1,8 +1,9 @@
 import { css } from '../styled-system/css'
 
-export const dsButton = css({
+export const dsNestedButton = css({
   color: 'white',
   backgroundColor: 'brand',
   borderRadius: 'md',
-  padding: '4',
+  borderColor: 'foundation',
+  padding: 'foundationGap',
 })
