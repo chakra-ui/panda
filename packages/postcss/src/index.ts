@@ -56,6 +56,7 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
 
     ensureCodegen(state, { cwd, outdir: options.outdir })
     syncProjectSources(state)
+    driver.syncDesignSystemSources()
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 

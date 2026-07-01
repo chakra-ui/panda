@@ -171,6 +171,23 @@ export class NodeDriver extends BaseDriver {
     return false
   }
 
+  override syncDesignSystemSources(): boolean[] {
+    const changes: SourceChange[] = []
+    const activeFiles = new Map(
+      this.compiler.fileManifest().map((file) => [this.compiler.path.realpath(file.path), file.path]),
+    )
+
+    for (const target of this.designSystemWatchTargets()) {
+      for (const path of target.sourceFiles) {
+        const activePath = activeFiles.get(this.compiler.path.realpath(path))
+        if (!activePath) continue
+        changes.push({ path: activePath, kind: this.compiler.fs.exists(path) ? 'change' : 'unlink' })
+      }
+    }
+
+    return this.applyChanges(changes)
+  }
+
   async reload(): Promise<DiffConfigResult> {
     const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
     // Re-apply before diffing so the override isn't seen as a config change.

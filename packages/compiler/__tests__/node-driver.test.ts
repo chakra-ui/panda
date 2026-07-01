@@ -606,6 +606,14 @@ describe('createNodeDriver designSystem', () => {
       expect(driver.designSystemWatchTargets()[0]?.sourceFiles).toEqual([source])
       expect(driver.isDesignSystemFile(source)).toBe('source')
 
+      writeFileTree(dir, {
+        'node_modules/@acme/ds/src/button.tsx':
+          "import { css } from '@panda/css'\nexport const Button = css({ color: 'blue' })",
+      })
+      expect(driver.syncDesignSystemSources()).toEqual([])
+      expect(driver.cssgen().css).toContain('color: red')
+      expect(driver.cssgen().css).not.toContain('color: blue')
+
       rmSync(source)
       expect(driver.isDesignSystemFile(source)).toBe('source')
 

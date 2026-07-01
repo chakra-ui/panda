@@ -22,6 +22,7 @@ interface MockDriver {
   reload: ReturnType<typeof vi.fn>
   scan: ReturnType<typeof vi.fn>
   syncDesignSystemFileChange: ReturnType<typeof vi.fn>
+  syncDesignSystemSources: ReturnType<typeof vi.fn>
 }
 
 afterEach(() => {
@@ -86,6 +87,7 @@ describe('@pandacss/postcss', () => {
     expect(driver.codegen).toHaveBeenCalledWith({ cwd: PROJECT_CWD, outdir: undefined })
     expect(driver.scan).toHaveBeenCalledTimes(1)
     expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'add' }])
+    expect(driver.syncDesignSystemSources).toHaveBeenCalledTimes(1)
     expect(driver.parseFiles).not.toHaveBeenCalled()
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false })
     expect(result.css).toMatchInlineSnapshot(
@@ -397,5 +399,6 @@ function createMockDriver(): MockDriver {
     reload: vi.fn(async () => ({ hasChanged: false, dependencies: [], recipes: [], patterns: [], changes: [] })),
     scan: vi.fn(() => ['/project/src/App.tsx']),
     syncDesignSystemFileChange: vi.fn(async () => false),
+    syncDesignSystemSources: vi.fn(() => []),
   } as unknown as MockDriver
 }

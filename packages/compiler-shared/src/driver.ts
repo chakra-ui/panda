@@ -106,6 +106,8 @@ export interface Driver {
   applyChanges(changes: SourceChange[]): boolean[]
   /** Route a watched design-system file change into artifact reload or source fallback parsing. */
   syncDesignSystemFileChange(change: SourceChange): Promise<boolean>
+  /** Refresh active design-system source fallback files. No-ops for build-info hydrated sources. */
+  syncDesignSystemSources(): boolean[]
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
   /** Resolve the configured output directory, optionally applying a caller override. */
@@ -198,6 +200,10 @@ export abstract class BaseDriver implements Driver {
 
   async syncDesignSystemFileChange(_change: SourceChange): Promise<boolean> {
     return false
+  }
+
+  syncDesignSystemSources(): boolean[] {
+    return []
   }
 
   artifacts(filter?: ArtifactFilter): CodegenArtifact[] {
