@@ -41,15 +41,19 @@ import type {
   WriteSplitCssOptions,
 } from './output'
 
-/**
- * In-memory filesystem exposed by the wasm/browser binding.
- */
 export interface CompilerFileSystem {
-  addFile(path: string, content: string): void
-  removeFile(path: string): boolean
-  readFile(path: string): string | undefined
+  readFile(path: string): string | null | undefined
   exists(path: string): boolean
-  fileCount(): number
+  addFile?(path: string, content: string): void
+  removeFile?(path: string): boolean
+  fileCount?(): number
+}
+
+export interface CompilerPathSystem {
+  realpath(path: string): string
+  resolve(path: string, cwd?: string): string
+  join(parts: string[]): string
+  dirname(path: string): string
 }
 
 /**
@@ -149,7 +153,7 @@ export interface DesignSystemManifestImportMap {
 export interface DesignSystemManifestInput {
   name: string
   /**
-   * Informational; powers drift reporting but is not enforced.
+   * Informational package version; not enforced.
    */
   version?: string
   /**
@@ -204,7 +208,8 @@ export type DesignSystemLoadResult =
  * Configured compiler surface shared by native and wasm bindings.
  */
 export interface Compiler {
-  readonly fs?: CompilerFileSystem
+  readonly fs: CompilerFileSystem
+  readonly path: CompilerPathSystem
 
   /**
    * Config and introspection.
@@ -220,10 +225,6 @@ export interface Compiler {
    * File discovery and parsing.
    */
   scan(options?: ScanOptions): string[]
-  realpath(path: string): string
-  resolvePath(path: string, cwd?: string): string
-  joinPath(parts: string[]): string
-  dirname(path: string): string
   isSourceFile(path: string): boolean
   parseFiles(paths: string[]): ParseFileReport[]
   parseFile(path: string): ParseFileReport

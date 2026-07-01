@@ -1,9 +1,10 @@
 import { type Driver } from '@pandacss/compiler'
+import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { defineCommand } from 'citty'
 import { includeArgs, parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
+import { normalizeCliDiagnostics } from '../diagnostics'
 import { infoFlagsSchema } from '../schema'
-import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import type { InfoFlags, InfoResult, InfoSummary } from '../schema'
@@ -31,12 +32,12 @@ export async function runInfo(flags: InfoFlags = {}, output: OutputSink = consol
       utilityCount: 0,
     }),
     async execute({ driver, cwd }) {
-      const diagnostics = normalizeDiagnostics(driver.compiler.diagnostics(), { cwd })
+      const diagnostics = normalizeCliDiagnostics(driver.compiler.diagnostics(), { cwd })
 
       return {
         data: infoDriver(driver),
         diagnostics,
-        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+        ok: diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings }),
       }
     },
     renderHuman(ctx, result) {

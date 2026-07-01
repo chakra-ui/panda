@@ -1,36 +1,76 @@
-import { type BuildInfoArtifact, type Compiler } from '@pandacss/compiler-shared'
+import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
 import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
-import { readFileSync } from 'node:fs'
 
 type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
 
-export function hydrateDesignSystem(compiler: Compiler, chain: ResolvedDesignSystem[] | undefined): void {
-  if (!chain || chain.length === 0) return
+export function hydrateDesignSystem(
+  compiler: Compiler,
+  chain: ResolvedDesignSystem[] | undefined,
+  consumerTokenPaths: string[] = [],
+): Diagnostic[] {
+  if (!chain || chain.length === 0) return []
   const pandaVersion = readPandaVersion()
-  for (const ds of chain) hydrateLevel(compiler, ds, pandaVersion)
+  const diagnostics: Diagnostic[] = []
+  for (const ds of chain) diagnostics.push(...hydrateLevel(compiler, ds, pandaVersion, consumerTokenPaths))
+  return diagnostics
 }
 
-function hydrateLevel(compiler: Compiler, ds: ResolvedDesignSystem, pandaVersion: string | undefined): void {
+function hydrateLevel(
+  compiler: Compiler,
+  ds: ResolvedDesignSystem,
+  pandaVersion: string | undefined,
+  consumerTokenPaths: string[],
+): Diagnostic[] {
   const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
-  if (!compat.ok) {
-    throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
-  }
+  if (!compat.ok) throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
 
-  let buildInfo: BuildInfoArtifact
+  const diagnostics: Diagnostic[] = []
+
+  let buildInfo: BuildInfoArtifact | undefined
   try {
-    buildInfo = JSON.parse(readFileSync(ds.buildInfoPath, 'utf8')) as BuildInfoArtifact
+    const content = compiler.fs.readFile(ds.buildInfoPath)
+    if (content == null) throw new Error(`file not found`)
+    buildInfo = JSON.parse(content) as BuildInfoArtifact
   } catch (error) {
-    throw new Error(
-      `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.buildInfoPath)}: ${errorMessage(error)}`,
-    )
+    if (!tryStaleFallback(compiler, ds, diagnostics)) throw hydrateReadError(ds, error)
   }
 
-  const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
-  if (!result.ok) {
-    throw new Error(
-      `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.buildInfoPath)}: incompatible buildInfo ${result.reason}.`,
-    )
+  if (buildInfo) {
+    const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
+    if (!result.ok && !tryStaleFallback(compiler, ds, diagnostics)) throw hydrateLoadError(ds, result.reason)
   }
+
+  diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
+  return diagnostics
+}
+
+function tryStaleFallback(compiler: Compiler, ds: ResolvedDesignSystem, diagnostics: Diagnostic[]): boolean {
+  if (ds.files.length === 0) return false
+  const sources = compiler.scan({ include: ds.files, cwd: compiler.path.dirname(ds.manifestPath) })
+  if (sources.length === 0) return false
+
+  compiler.parseFiles(sources)
+  diagnostics.push({
+    code: 'design_system_buildinfo_stale',
+    severity: 'warning',
+    category: 'designSystem',
+    message: `Re-extracting ${JSON.stringify(ds.name)} from source; rebuild it with \`panda lib\` to restore the fast path.`,
+  })
+  return true
+}
+
+function tokenConflictDiagnostics(ds: ResolvedDesignSystem, consumerTokenPaths: string[]): Diagnostic[] {
+  if (consumerTokenPaths.length === 0 || ds.tokenPaths.length === 0) return []
+
+  const designSystemTokenPaths = new Set(ds.tokenPaths)
+  const conflicts = [...new Set(consumerTokenPaths.filter((path) => designSystemTokenPaths.has(path)))].sort()
+
+  return conflicts.map((path) => ({
+    code: 'design_system_token_conflict',
+    severity: 'warning',
+    category: 'designSystem',
+    message: `Token ${JSON.stringify(path)} is defined by both ${JSON.stringify(ds.name)} and this config; the local value wins.`,
+  }))
 }
 
 function incompatibleManifestError(
@@ -48,6 +88,18 @@ function incompatibleManifestError(
   const running = pandaVersion ? ` (you are on ${pandaVersion})` : ''
   return new Error(
     `Failed to hydrate designSystem ${JSON.stringify(ds.name)}: manifest requires Panda ${ds.manifest.panda}${running}.`,
+  )
+}
+
+function hydrateReadError(ds: ResolvedDesignSystem, error: unknown): Error {
+  return new Error(
+    `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.buildInfoPath)}: ${errorMessage(error)}`,
+  )
+}
+
+function hydrateLoadError(ds: ResolvedDesignSystem, reason: string): Error {
+  return new Error(
+    `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.buildInfoPath)}: incompatible buildInfo ${reason}.`,
   )
 }
 

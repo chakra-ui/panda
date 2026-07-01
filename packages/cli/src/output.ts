@@ -1,7 +1,8 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Diagnostic } from '@pandacss/compiler'
-import { countErrors, renderDiagnostics, type DiagnosticFormat } from './diagnostics'
+import { countErrors } from '@pandacss/compiler-shared'
+import { renderDiagnostics, type DiagnosticFormat } from './diagnostics'
 import type { CommonFlags, LogLevel } from './schema'
 
 const LOG_LEVELS: Record<LogLevel, number> = {

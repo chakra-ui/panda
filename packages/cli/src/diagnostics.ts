@@ -1,12 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { isAbsolute, relative, resolve } from 'node:path'
-import type { Diagnostic, ParseFileReport } from '@pandacss/compiler'
+import {
+  collectParseDiagnostics,
+  normalizeDiagnostics,
+  type Diagnostic,
+  type ParseFileReport,
+} from '@pandacss/compiler-shared'
 
 export type DiagnosticFormat = 'human' | 'pretty' | 'json' | 'github'
-
-export interface CliDiagnostic extends Diagnostic {
-  file?: string
-}
 
 export interface DiagnosticRenderOptions {
   cwd: string
@@ -14,36 +15,27 @@ export interface DiagnosticRenderOptions {
   quiet?: boolean
 }
 
-export function withDiagnosticFile(diagnostic: Diagnostic, file?: string): CliDiagnostic {
-  return file ? { ...diagnostic, file } : diagnostic
-}
-
-export function normalizeDiagnostics(
+export function normalizeCliDiagnostics(
   diagnostics: Diagnostic[],
   options: { cwd: string; file?: string },
-): CliDiagnostic[] {
-  return dedupeDiagnostics(
-    diagnostics.map((diagnostic) => {
-      const file = diagnostic.file ?? options.file
-      return {
-        ...diagnostic,
-        file: file ? stabilizePath(options.cwd, file) : undefined,
-      }
-    }),
-  )
+): Diagnostic[] {
+  return normalizeDiagnostics(diagnostics, {
+    file: options.file,
+    normalizeFile: (file) => stabilizePath(options.cwd, file),
+  })
 }
 
-export function collectParseDiagnostics(parsed: ParseFileReport[], cwd: string): CliDiagnostic[] {
-  return parsed.flatMap((report) => normalizeDiagnostics(report.diagnostics, { cwd, file: report.path }))
+export function collectCliParseDiagnostics(parsed: ParseFileReport[], cwd: string): Diagnostic[] {
+  return collectParseDiagnostics(parsed, { normalizeFile: (file) => stabilizePath(cwd, file) })
 }
 
-export function configLoadDiagnostic(error: unknown, options: { cwd: string; file?: string }): CliDiagnostic {
+export function configLoadDiagnostic(error: unknown, options: { cwd: string; file?: string }): Diagnostic {
   const diagnostics = pandaErrorDiagnostics(error)
   if (diagnostics.length > 0) {
-    return normalizeDiagnostics(diagnostics, options)[0]
+    return normalizeCliDiagnostics(diagnostics, options)[0]
   }
 
-  return normalizeDiagnostics(
+  return normalizeCliDiagnostics(
     [
       {
         code: 'config_load_error',
@@ -57,21 +49,21 @@ export function configLoadDiagnostic(error: unknown, options: { cwd: string; fil
   )[0]
 }
 
-export function configLoadDiagnostics(error: unknown, options: { cwd: string; file?: string }): CliDiagnostic[] {
+export function configLoadDiagnostics(error: unknown, options: { cwd: string; file?: string }): Diagnostic[] {
   const diagnostics = pandaErrorDiagnostics(error)
-  if (diagnostics.length > 0) return normalizeDiagnostics(diagnostics, options)
+  if (diagnostics.length > 0) return normalizeCliDiagnostics(diagnostics, options)
 
   return [configLoadDiagnostic(error, options)]
 }
 
-export function missingConfigDiagnostic(configPath: string | undefined, cwd: string): CliDiagnostic | undefined {
+export function missingConfigDiagnostic(configPath: string | undefined, cwd: string): Diagnostic | undefined {
   if (!configPath) return undefined
 
   const filePath = isAbsolute(configPath) ? configPath : resolve(cwd, configPath)
 
   if (existsSync(filePath)) return undefined
 
-  return normalizeDiagnostics(
+  return normalizeCliDiagnostics(
     [
       {
         code: 'config_load_error',
@@ -86,7 +78,7 @@ export function missingConfigDiagnostic(configPath: string | undefined, cwd: str
 }
 
 export function renderDiagnostics(diagnostics: Diagnostic[], options: DiagnosticRenderOptions): string {
-  const normalized = normalizeDiagnostics(diagnostics, { cwd: options.cwd })
+  const normalized = normalizeCliDiagnostics(diagnostics, { cwd: options.cwd })
   const visible = options.quiet ? normalized.filter((diagnostic) => diagnostic.severity === 'error') : normalized
 
   if (visible.length === 0) return ''
@@ -104,7 +96,7 @@ export function renderDiagnostics(diagnostics: Diagnostic[], options: Diagnostic
   }
 }
 
-export function formatDiagnostic(diagnostic: CliDiagnostic): string {
+export function formatDiagnostic(diagnostic: Diagnostic): string {
   const location = diagnostic.location
     ? ` ${diagnostic.file ?? '<unknown>'}:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
     : diagnostic.file
@@ -114,44 +106,7 @@ export function formatDiagnostic(diagnostic: CliDiagnostic): string {
   return `${diagnostic.severity} ${diagnostic.code}${location} ${diagnostic.message}`
 }
 
-export function countErrors(diagnostics: Diagnostic[]): number {
-  return diagnostics.filter((diagnostic) => diagnostic.severity === 'error').length
-}
-
-export function countWarnings(diagnostics: Diagnostic[]): number {
-  return diagnostics.filter((diagnostic) => diagnostic.severity === 'warning').length
-}
-
-export function diagnosticsPass(diagnostics: Diagnostic[], maxWarningsValue?: number | string): boolean {
-  if (countErrors(diagnostics) > 0) return false
-
-  const maxWarnings = parseMaxWarnings(maxWarningsValue)
-
-  if (maxWarnings === undefined) return true
-
-  return countWarnings(diagnostics) <= maxWarnings
-}
-
-export function dedupeDiagnostics<T extends Diagnostic>(diagnostics: T[]): T[] {
-  const fileBackedKeys = new Set(diagnostics.filter((diagnostic) => diagnostic.file).map(diagnosticKeyWithoutFile))
-  const seen = new Set<string>()
-  const result: T[] = []
-
-  for (const diagnostic of diagnostics) {
-    if (!diagnostic.file && fileBackedKeys.has(diagnosticKeyWithoutFile(diagnostic))) continue
-
-    const key = diagnosticKey(diagnostic)
-
-    if (seen.has(key)) continue
-
-    seen.add(key)
-    result.push(diagnostic)
-  }
-
-  return result
-}
-
-function formatPrettyDiagnostic(diagnostic: CliDiagnostic, cwd: string): string {
+function formatPrettyDiagnostic(diagnostic: Diagnostic, cwd: string): string {
   const header = `${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`
   if (!diagnostic.file || !diagnostic.location) return formatDiagnostic(diagnostic)
 
@@ -181,7 +136,7 @@ function formatPrettyDiagnostic(diagnostic: CliDiagnostic, cwd: string): string 
   return [header, ...details].join('\n')
 }
 
-function formatGithubDiagnostic(diagnostic: CliDiagnostic): string {
+function formatGithubDiagnostic(diagnostic: Diagnostic): string {
   const command = diagnostic.severity === 'error' ? 'error' : 'warning'
   const props = [
     diagnostic.file ? `file=${escapeGithubProperty(diagnostic.file)}` : undefined,
@@ -201,18 +156,6 @@ function stabilizePath(cwd: string, file: string): string {
   return relativePath && !relativePath.startsWith('..') ? relativePath : file
 }
 
-function diagnosticKey(diagnostic: Diagnostic): string {
-  return [diagnostic.file ?? '', diagnosticKeyWithoutFile(diagnostic)].join('|')
-}
-
-function diagnosticKeyWithoutFile(diagnostic: Diagnostic): string {
-  const location = diagnostic.location
-    ? `${diagnostic.location.start.line}:${diagnostic.location.start.column}:${diagnostic.location.end.line}:${diagnostic.location.end.column}`
-    : ''
-  const span = diagnostic.span ? `${diagnostic.span.start}:${diagnostic.span.end}` : ''
-  return [diagnostic.code, diagnostic.message, diagnostic.severity, location, span].join('|')
-}
-
 function escapeGithubProperty(value: string): string {
   return value
     .replace(/%/g, '%25')
@@ -224,14 +167,6 @@ function escapeGithubProperty(value: string): string {
 
 function escapeGithubMessage(value: string): string {
   return value.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
-}
-
-function parseMaxWarnings(value: number | string | undefined): number | undefined {
-  if (value === undefined) return undefined
-
-  const number = typeof value === 'number' ? value : Number(value)
-
-  return Number.isFinite(number) ? number : undefined
 }
 
 function errorMessage(error: unknown): string {

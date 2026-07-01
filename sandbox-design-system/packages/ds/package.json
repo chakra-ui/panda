@@ -1,0 +1,22 @@
+{
+  "name": "@sandbox/ds",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./button": "./src/button.tsx",
+    "./panda.lib.json": "./dist/panda.lib.json",
+    "./preset": "./dist/preset.mjs"
+  },
+  "scripts": {
+    "codegen": "panda codegen --cwd .",
+    "lib": "pnpm codegen && panda lib --cwd .",
+    "watch": "pnpm codegen && panda lib --cwd . --watch"
+  },
+  "peerDependencies": {
+    "@pandacss/dev": "^2.0.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*"
+  }
+}

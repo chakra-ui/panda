@@ -1,5 +1,7 @@
 import {
   createUsageReport,
+  diagnosticsPass,
+  type Diagnostic,
   type RecipeUsageItem,
   type TokenCategoryUsage,
   type UsageReport,
@@ -11,7 +13,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { renderAnalyzeHtml } from '../analyze-report'
 import { startAnalyzeUiServer } from '../analyze-ui-server'
 import { baseArgs, includeArgs, normalizeInclude, outputArgs, parseCliFlags, traceArgs } from '../args'
-import { diagnosticsPass, normalizeDiagnostics, type CliDiagnostic } from '../diagnostics'
+import { normalizeCliDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import type { AnalyzeFlags, AnalyzeResult, AnalyzeScope } from '../schema'
@@ -190,7 +192,7 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
 
 interface AnalyzeOnceResult {
   report: UsageReport
-  diagnostics: CliDiagnostic[]
+  diagnostics: Diagnostic[]
   fingerprints: Map<string, string>
   ok: boolean
 }
@@ -204,7 +206,7 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
   const sources = scan.sort()
 
   const fileInputs: Array<{ path: string; source: string }> = []
-  const fileDiagnostics: CliDiagnostic[] = []
+  const fileDiagnostics: Diagnostic[] = []
   const fingerprints = new Map<string, string>()
   const sourceByPath = new Map<string, string>()
 
@@ -216,7 +218,7 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
       fingerprints.set(normalizeWatchPath(ctx.cwd, source), hashSource(contents))
     } catch (error) {
       fileDiagnostics.push(
-        ...normalizeDiagnostics(
+        ...normalizeCliDiagnostics(
           [
             {
               code: 'analyze_file_read_error',
@@ -243,7 +245,7 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
     suggestTokens: (prop, value) => ctx.driver.compiler.suggestTokens(prop, value),
   })
   const inspectionDiagnostics = inspection.files.flatMap((file) => file.diagnostics)
-  const diagnostics = normalizeDiagnostics(
+  const diagnostics = normalizeCliDiagnostics(
     [...fileDiagnostics, ...inspectionDiagnostics, ...ctx.driver.compiler.diagnostics()],
     { cwd: ctx.cwd },
   )
@@ -252,7 +254,7 @@ function analyzeOnce(ctx: CommandRunContext<AnalyzeFlags>, scope: AnalyzeScope):
     report,
     diagnostics,
     fingerprints,
-    ok: diagnosticsPass(diagnostics, ctx.flags.maxWarnings),
+    ok: diagnosticsPass(diagnostics, { maxWarnings: ctx.flags.maxWarnings }),
   }
 }
 

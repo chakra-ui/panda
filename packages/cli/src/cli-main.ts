@@ -8,6 +8,7 @@ import { debugCommand } from './commands/debug'
 import { doctorCommand } from './commands/doctor'
 import { infoCommand } from './commands/info'
 import { initCommand } from './commands/init'
+import { libCommand } from './commands/lib'
 import { ExitCode } from './result'
 import { readCliVersion } from './version'
 
@@ -37,6 +38,7 @@ export async function main(argv = process.argv): Promise<void> {
       doctor: doctorCommand,
       debug: debugCommand,
       buildinfo: buildinfoCommand,
+      lib: libCommand,
       analyze: analyzeCommand,
       codegen: codegenCommand,
       cssgen: cssgenCommand,

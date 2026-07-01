@@ -42,6 +42,14 @@ describe('resolveAuthoredPresets / smart include', () => {
       { exports: { '.': './dist/index.js' } },
     )
 
+    // The exact shape `panda lib` syncs: only the manifest and preset are
+    // exported — neither `.` nor `./package.json`.
+    pkg(
+      '@acme/lib-ds',
+      { 'panda.lib.json': manifest('@acme/lib-ds'), 'preset.mjs': 'export default {}' },
+      { exports: { './panda.lib.json': './panda.lib.json', './preset': './preset.mjs' } },
+    )
+
     mkdirSync(join(cwd, 'components'), { recursive: true })
   })
 
@@ -120,6 +128,12 @@ describe('resolveAuthoredPresets / smart include', () => {
   test('detects a manifest on disk even when exports would hide it', async () => {
     await expect(resolveAuthoredPresets({ include: ['@acme/sealed-ds'] } as any, cwd)).rejects.toThrow(
       /Design system in `include`: "@acme\/sealed-ds"/,
+    )
+  })
+
+  test('detects a `panda lib` package whose exports expose only the manifest', async () => {
+    await expect(resolveAuthoredPresets({ include: ['@acme/lib-ds'] } as any, cwd)).rejects.toThrow(
+      /Design system in `include`: "@acme\/lib-ds"/,
     )
   })
 

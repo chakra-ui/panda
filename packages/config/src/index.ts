@@ -6,7 +6,19 @@ export { bundleConfig } from './bundle'
 export { mergeConfigs } from './merge'
 export { resolveSmartInclude, mergeExcludes } from './smart-include'
 export { readPandaVersion } from './version'
+export { compilePreset } from './lib-preset'
+export {
+  readPackageIdentity,
+  defaultImportMap,
+  syncExports,
+  toPosixPath,
+  toPosixRelative,
+  toRelativeKey,
+} from './lib-manifest'
+export { collectTokenPaths } from './token-paths'
 
+export type { CompilePresetOptions, CompilePresetResult } from './lib-preset'
+export type { PackageIdentity, SyncExportsOptions, SyncExportsResult } from './lib-manifest'
 export type { ConfigSnapshot } from './serialize'
 export type { DiffConfigResult } from './diff'
 export type { HostHooks } from './hooks'

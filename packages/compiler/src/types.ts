@@ -142,9 +142,26 @@ interface RawDesignSystemBinding {
   resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
+interface RawFileSystemBinding {
+  readFile(path: string): string | null | undefined
+  exists(path: string): boolean
+}
+
+interface RawPathBinding {
+  realpath(path: string): string
+  resolvePath(path: string, cwd?: string): string
+  joinPath(parts: string[]): string
+  dirname(path: string): string
+}
+
 /** The raw native instance — superset of {@link Compiler} carrying the internal
  *  methods the facade hides. */
-export interface RawCompiler extends Compiler, BuildInfoNative, RawDesignSystemBinding {
+export interface RawCompiler
+  extends Compiler,
+    BuildInfoNative,
+    RawDesignSystemBinding,
+    RawFileSystemBinding,
+    RawPathBinding {
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
   token_dictionary?(): TokenDictionary | undefined
   registerUtilityTransform?(id: string, callback: (resolved: unknown, original: unknown) => unknown): void

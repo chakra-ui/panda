@@ -16,6 +16,7 @@ import type {
   CompileOutput,
   CompileOptions,
   CssFile,
+  Diagnostic,
   LayerCssOptions,
   ParseFileReport,
   ScanOptions,
@@ -77,6 +78,8 @@ export interface Driver {
   readonly configPath?: string
   /** Module ids to watch for config invalidation. */
   readonly configDependencies: string[]
+  /** Host-side designSystem diagnostics (stale build info, token conflicts) from the last build (node only). */
+  readonly designSystemDiagnostics?: Diagnostic[]
   /** Introspection over the current config (cached; rebuilt on `reload`). */
   readonly introspect: Introspection
 
@@ -202,15 +205,15 @@ export abstract class BaseDriver implements Driver {
   }
 
   resolvePath(path: string): string {
-    return this.#compiler.resolvePath(path)
+    return this.#compiler.path.resolve(path)
   }
 
   paths(outdir?: string): DriverPaths {
     const root = this.getOutdir(outdir)
     return {
       root,
-      styleFile: this.#compiler.joinPath([root, 'styles.css']),
-      stylesDir: this.#compiler.joinPath([root, 'styles']),
+      styleFile: this.#compiler.path.join([root, 'styles.css']),
+      stylesDir: this.#compiler.path.join([root, 'styles']),
     }
   }
 

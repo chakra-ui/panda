@@ -1,6 +1,6 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { resolveAuthoredPresets } from '../src/preset'
 
@@ -9,127 +9,235 @@ describe('resolveAuthoredPresets / designSystem', () => {
 
   beforeAll(() => {
     cwd = mkdtempSync(join(tmpdir(), 'panda-ds-'))
-    const pkg = join(cwd, 'node_modules', '@acme', 'ds')
-    mkdirSync(pkg, { recursive: true })
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.0.0' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        panda: '^2.0.0',
-        preset: './preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
+
+    // Base package used by the single design-system tests.
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/ds',
+      manifest: {
+        importMap: {
+          css: '@acme/ds/css',
+          recipes: '@acme/ds/recipes',
+          jsx: '@acme/ds/jsx',
+        },
         files: ['./dist/**/*.mjs'],
-      }),
-    )
-    writeFileSync(
-      join(pkg, 'preset.mjs'),
-      `export default { name: '@acme/ds', theme: { tokens: { colors: { brand: { value: 'ds' }, dsOnly: { value: 'ds' } } } } }`,
-    )
+      },
+      preset: {
+        name: '@acme/ds',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'ds' },
+              dsOnly: { value: 'ds' },
+            },
+          },
+        },
+      },
+    })
   })
 
   afterAll(() => rmSync(cwd, { recursive: true, force: true }))
 
   test('merges the published preset under the consuming config', async () => {
     const { config, dependencies } = await resolveAuthoredPresets(
-      { designSystem: '@acme/ds', theme: { tokens: { colors: { brand: { value: 'app' } } } } } as any,
+      {
+        designSystem: '@acme/ds',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'app' },
+            },
+          },
+        },
+      },
       cwd,
     )
 
-    const colors = config.theme?.tokens?.colors
-    if (!colors) throw new Error('expected resolved color tokens')
-    expect(colors.brand.value).toBe('app')
-    expect(colors.dsOnly.value).toBe('ds')
-    expect(dependencies.some((d) => d.endsWith('panda.lib.json'))).toBe(true)
-    expect(dependencies.some((d) => d.endsWith('preset.mjs'))).toBe(true)
-    expect(dependencies.some((d) => d.endsWith('panda.buildinfo.json'))).toBe(true)
+    expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`
+      {
+        "brand": "app",
+        "dsOnly": "ds",
+      }
+    `)
+
+    expect(toRelativePaths(cwd, dependencies)).toMatchInlineSnapshot(`
+      [
+        "node_modules/@acme/ds/panda.buildinfo.json",
+        "node_modules/@acme/ds/panda.lib.json",
+        "node_modules/@acme/ds/preset.mjs",
+      ]
+    `)
   })
 
   test('wires the dual-root importMap (DS roots + local outdir)', async () => {
-    const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd)
+    const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds' }, cwd)
 
-    expect(config.importMap).toEqual([
+    expect(config.importMap).toMatchInlineSnapshot(`
+      [
+        {
+          "css": "@acme/ds/css",
+          "jsx": "@acme/ds/jsx",
+          "patterns": "@acme/ds/patterns",
+          "recipes": "@acme/ds/recipes",
+          "tokens": "@acme/ds/tokens",
+        },
+        "styled-system",
+      ]
+    `)
+
+    expect(designSystemMetadata(cwd, metadata?.designSystem)).toMatchInlineSnapshot(`
+      [
+        {
+          "buildInfoPath": "node_modules/@acme/ds/panda.buildinfo.json",
+          "files": [
+            "./dist/**/*.mjs",
+          ],
+          "manifestName": "@acme/ds",
+          "name": "@acme/ds",
+        },
+      ]
+    `)
+  })
+
+  test('collects token metadata after resolving design-system and consumer config blocks', async () => {
+    const { metadata } = await resolveAuthoredPresets(
       {
-        css: '@acme/ds/css',
-        recipes: '@acme/ds/recipes',
-        patterns: '@acme/ds/patterns',
-        jsx: '@acme/ds/jsx',
-        tokens: '@acme/ds/tokens',
+        designSystem: '@acme/ds',
+        theme: {
+          extend: {
+            tokens: {
+              colors: {
+                brand: { value: 'app' },
+                appOnly: { value: 'app' },
+              },
+            },
+          },
+        },
       },
-      'styled-system',
-    ])
-    expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/ds'])
-    expect(metadata?.designSystem?.[0]?.manifest.name).toBe('@acme/ds')
-    expect(metadata?.designSystem?.[0]?.buildInfoPath).toMatch(/panda\.buildinfo\.json$/)
-    expect(metadata?.designSystem?.[0]?.files).toEqual(['./dist/**/*.mjs'])
+      cwd,
+    )
+
+    expect({
+      userTokenPaths: metadata?.userTokenPaths,
+      designSystemTokenPaths: metadata?.designSystem?.map((ds) => ds.tokenPaths),
+    }).toMatchInlineSnapshot(`
+      {
+        "designSystemTokenPaths": [
+          [
+            "colors.brand",
+            "colors.dsOnly",
+          ],
+        ],
+        "userTokenPaths": [
+          "colors.appOnly",
+          "colors.brand",
+        ],
+      }
+    `)
   })
 
   test('respects a custom outdir basename in the wired importMap', async () => {
-    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds', outdir: 'src/design' } as any, cwd)
-    expect(config.importMap).toEqual([
+    const { config } = await resolveAuthoredPresets(
       {
-        css: '@acme/ds/css',
-        recipes: '@acme/ds/recipes',
-        patterns: '@acme/ds/patterns',
-        jsx: '@acme/ds/jsx',
-        tokens: '@acme/ds/tokens',
+        designSystem: '@acme/ds',
+        outdir: 'src/design',
       },
-      'design',
-    ])
+      cwd,
+    )
+
+    expect(config.importMap).toMatchInlineSnapshot(`
+      [
+        {
+          "css": "@acme/ds/css",
+          "jsx": "@acme/ds/jsx",
+          "patterns": "@acme/ds/patterns",
+          "recipes": "@acme/ds/recipes",
+          "tokens": "@acme/ds/tokens",
+        },
+        "design",
+      ]
+    `)
   })
 
   test('keeps the design-system root first when the consumer already has an importMap', async () => {
-    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds', importMap: '@my/aliases' } as any, cwd)
-    expect((config.importMap as any[])[0]).toMatchObject({ css: '@acme/ds/css' })
-    expect((config.importMap as any[])[1]).toBe('styled-system')
-    expect((config.importMap as any[])[2]).toBe('@my/aliases')
+    const { config } = await resolveAuthoredPresets(
+      {
+        designSystem: '@acme/ds',
+        importMap: '@my/aliases',
+      },
+      cwd,
+    )
+
+    expect(config.importMap).toMatchInlineSnapshot(`
+      [
+        {
+          "css": "@acme/ds/css",
+          "jsx": "@acme/ds/jsx",
+          "patterns": "@acme/ds/patterns",
+          "recipes": "@acme/ds/recipes",
+          "tokens": "@acme/ds/tokens",
+        },
+        "styled-system",
+        "@my/aliases",
+      ]
+    `)
   })
 
   test('fills importMap keys the manifest omits from the design-system root', async () => {
-    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds' } as any, cwd)
-    const [dsRoot] = config.importMap as any[]
-    expect(dsRoot.patterns).toBe('@acme/ds/patterns')
-    expect(dsRoot.tokens).toBe('@acme/ds/tokens')
+    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/ds' }, cwd)
+
+    expect(config.importMap).toMatchInlineSnapshot(`
+      [
+        {
+          "css": "@acme/ds/css",
+          "jsx": "@acme/ds/jsx",
+          "patterns": "@acme/ds/patterns",
+          "recipes": "@acme/ds/recipes",
+          "tokens": "@acme/ds/tokens",
+        },
+        "styled-system",
+      ]
+    `)
   })
 
   test('defers manifest compatibility to compiler hydration', async () => {
-    const pkg = join(cwd, 'node_modules', '@acme', 'future')
-    mkdirSync(pkg, { recursive: true })
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/future' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/future',
+      manifest: {
         schemaVersion: 999,
-        name: '@acme/future',
-        panda: '^2.0.0',
         preset: './p.mjs',
         buildInfo: './b.json',
-      }),
-    )
-    writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
+      },
+      preset: 'export default {}',
+    })
 
-    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/future' } as any, cwd)
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/future' }, cwd)
+
     expect(metadata?.designSystem?.[0]?.buildInfoPath).toMatch(/b\.json$/)
   })
 
   test('rejects a manifest missing a buildInfo entry', async () => {
-    const pkg = join(cwd, 'node_modules', '@acme', 'no-buildinfo')
-    mkdirSync(pkg, { recursive: true })
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/no-buildinfo' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({ schemaVersion: 1, name: '@acme/no-buildinfo', panda: '^2.0.0', preset: './p.mjs' }),
-    )
-    writeFileSync(join(pkg, 'p.mjs'), 'export default {}')
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' } as any, cwd)).rejects.toThrow(
+    writeFileTree(moduleDir(cwd, '@acme/no-buildinfo'), {
+      'package.json': json({ name: '@acme/no-buildinfo' }),
+      'panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/no-buildinfo',
+        panda: '^2.0.0',
+        preset: './p.mjs',
+      }),
+      'p.mjs': 'export default {}',
+    })
+
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' }, cwd)).rejects.toThrow(
       /missing a "buildInfo" entry/,
     )
   })
 
+  // Manifest and package resolution failures.
+
   test('attaches diagnostics for an invalid manifest', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' } as any, cwd)).rejects.toMatchObject({
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/no-buildinfo' }, cwd)).rejects.toMatchObject({
       diagnostics: [
         {
           code: 'design_system_manifest_invalid',
@@ -141,13 +249,13 @@ describe('resolveAuthoredPresets / designSystem', () => {
   })
 
   test('errors with guidance when the package does not resolve', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' } as any, cwd)).rejects.toThrow(
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' }, cwd)).rejects.toThrow(
       /designSystem "@acme\/missing" could not be resolved/,
     )
   })
 
   test('attaches diagnostics when the package does not resolve', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' } as any, cwd)).rejects.toMatchObject({
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' }, cwd)).rejects.toMatchObject({
       diagnostics: [
         {
           code: 'design_system_manifest_not_found',
@@ -159,20 +267,22 @@ describe('resolveAuthoredPresets / designSystem', () => {
   })
 
   test('throws when manifest resolution fails for an unexpected reason', async () => {
-    const pkg = join(cwd, 'node_modules', '@acme', 'broken-resolve')
-    mkdirSync(pkg, { recursive: true })
-    writeFileSync(
-      join(pkg, 'package.json'),
-      JSON.stringify({ name: '@acme/broken-resolve', exports: { './panda.lib.json': 42 } }),
-    )
+    writeFileTree(moduleDir(cwd, '@acme/broken-resolve'), {
+      'package.json': json({
+        name: '@acme/broken-resolve',
+        exports: {
+          './panda.lib.json': 42,
+        },
+      }),
+    })
 
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' } as any, cwd)).rejects.toThrow(
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' }, cwd)).rejects.toThrow(
       /Failed to resolve designSystem "@acme\/broken-resolve"/,
     )
   })
 
   test('attaches diagnostics when manifest resolution fails for an unexpected reason', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' } as any, cwd)).rejects.toMatchObject({
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/broken-resolve' }, cwd)).rejects.toMatchObject({
       diagnostics: [
         {
           code: 'design_system_resolve_failed',
@@ -187,105 +297,162 @@ describe('resolveAuthoredPresets / designSystem', () => {
 describe('resolveAuthoredPresets / designSystem nested chains', () => {
   let cwd: string
 
-  const writeManifest = (dir: string, manifest: Record<string, unknown>, preset: string) => {
-    mkdirSync(dir, { recursive: true })
-    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: manifest.name }))
-    writeFileSync(join(dir, 'panda.lib.json'), JSON.stringify({ schemaVersion: 1, panda: '^2.0.0', ...manifest }))
-    writeFileSync(join(dir, 'preset.mjs'), preset)
-  }
-
   beforeAll(() => {
     cwd = mkdtempSync(join(tmpdir(), 'panda-ds-chain-'))
-    const mods = join(cwd, 'node_modules')
 
-    writeManifest(
-      join(mods, '@acme', 'marketing'),
-      {
-        name: '@acme/marketing',
-        preset: './preset.mjs',
-        buildInfo: './bi.json',
+    // Chain fixture:
+    // node_modules/
+    //   @acme/marketing/
+    //     panda.lib.json -> designSystem: "@acme/foundations"
+    //     node_modules/@acme/foundations/
+    const marketingDir = moduleDir(cwd, '@acme/marketing')
+    const foundationsDir = moduleDir(marketingDir, '@acme/foundations')
+
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/marketing',
+      manifest: {
         designSystem: '@acme/foundations',
         importMap: { css: '@acme/marketing/css' },
       },
-      `export default { name: '@acme/marketing', theme: { tokens: { colors: { brand: { value: 'mk' }, mkOnly: { value: 'mk' } } } } }`,
-    )
-    writeManifest(
-      join(mods, '@acme', 'marketing', 'node_modules', '@acme', 'foundations'),
-      { name: '@acme/foundations', preset: './preset.mjs', buildInfo: './bi.json' },
-      `export default { name: '@acme/foundations', theme: { tokens: { colors: { brand: { value: 'fd' }, fdOnly: { value: 'fd' } } } } }`,
-    )
+      preset: {
+        name: '@acme/marketing',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'mk' },
+              mkOnly: { value: 'mk' },
+            },
+          },
+        },
+      },
+    })
 
-    writeManifest(
-      join(mods, '@acme', 'loop-a'),
-      { name: '@acme/loop-a', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/loop-b' },
-      `export default { name: '@acme/loop-a' }`,
-    )
-    writeManifest(
-      join(mods, '@acme', 'loop-b'),
-      { name: '@acme/loop-b', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/loop-a' },
-      `export default { name: '@acme/loop-b' }`,
-    )
+    writeDesignSystemAt(foundationsDir, '@acme/foundations', {
+      preset: {
+        name: '@acme/foundations',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'fd' },
+              fdOnly: { value: 'fd' },
+            },
+          },
+        },
+      },
+    })
 
-    writeManifest(
-      join(mods, '@acme', 'orphan'),
-      { name: '@acme/orphan', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/ghost' },
-      `export default { name: '@acme/orphan' }`,
-    )
+    // Invalid chains.
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/loop-a',
+      manifest: { designSystem: '@acme/loop-b' },
+    })
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/loop-b',
+      manifest: { designSystem: '@acme/loop-a' },
+    })
 
-    writeManifest(
-      join(mods, '@acme', 'skinned'),
-      { name: '@acme/skinned', preset: './preset.mjs', buildInfo: './bi.json', designSystem: '@acme/raw' },
-      `export default { name: '@acme/skinned', theme: { tokens: { colors: { brand: { value: 'skin' }, skinOnly: { value: 'skin' } } } } }`,
-    )
-    writeManifest(
-      join(mods, '@acme', 'raw'),
-      { name: '@acme/raw-identity', preset: './preset.mjs', buildInfo: './bi.json' },
-      `export default { name: '@acme/raw-identity', theme: { tokens: { colors: { brand: { value: 'raw' }, rawOnly: { value: 'raw' } } } } }`,
-    )
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/orphan',
+      manifest: { designSystem: '@acme/ghost' },
+    })
+
+    // Package specifier and manifest name may differ.
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/skinned',
+      manifest: { designSystem: '@acme/raw' },
+      preset: {
+        name: '@acme/skinned',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'skin' },
+              skinOnly: { value: 'skin' },
+            },
+          },
+        },
+      },
+    })
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/raw',
+      manifest: { name: '@acme/raw-identity' },
+      preset: {
+        name: '@acme/raw-identity',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'raw' },
+              rawOnly: { value: 'raw' },
+            },
+          },
+        },
+      },
+    })
   })
 
   afterAll(() => rmSync(cwd, { recursive: true, force: true }))
 
   test('merges ancestors root-first so the leaf and the app override the root', async () => {
     const { config } = await resolveAuthoredPresets(
-      { designSystem: '@acme/marketing', theme: { tokens: { colors: { brand: { value: 'app' } } } } } as any,
+      {
+        designSystem: '@acme/marketing',
+        theme: {
+          tokens: {
+            colors: {
+              brand: { value: 'app' },
+            },
+          },
+        },
+      },
       cwd,
     )
-    const colors = config.theme?.tokens?.colors
-    if (!colors) throw new Error('expected resolved color tokens')
-    expect(colors.brand.value).toBe('app')
-    expect(colors.mkOnly.value).toBe('mk')
-    expect(colors.fdOnly.value).toBe('fd')
+
+    expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`
+      {
+        "brand": "app",
+        "fdOnly": "fd",
+        "mkOnly": "mk",
+      }
+    `)
   })
 
   test('records the resolved chain root-first in metadata', async () => {
-    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' } as any, cwd)
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' }, cwd)
+
     expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/foundations', '@acme/marketing'])
   })
 
   test('wires one importMap root per design system, root-first, then the local outdir', async () => {
-    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' } as any, cwd)
-    expect(config.importMap).toEqual([
-      '@acme/foundations',
-      {
-        css: '@acme/marketing/css',
-        recipes: '@acme/marketing/recipes',
-        patterns: '@acme/marketing/patterns',
-        jsx: '@acme/marketing/jsx',
-        tokens: '@acme/marketing/tokens',
-      },
-      'styled-system',
-    ])
+    const { config } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' }, cwd)
+
+    expect(config.importMap).toMatchInlineSnapshot(`
+      [
+        "@acme/foundations",
+        {
+          "css": "@acme/marketing/css",
+          "jsx": "@acme/marketing/jsx",
+          "patterns": "@acme/marketing/patterns",
+          "recipes": "@acme/marketing/recipes",
+          "tokens": "@acme/marketing/tokens",
+        },
+        "styled-system",
+      ]
+    `)
   })
 
   test('reports a cycle in the parent chain', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' } as any, cwd)).rejects.toThrow(
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' }, cwd)).rejects.toThrow(
       /Design-system cycle: @acme\/loop-a → @acme\/loop-b → @acme\/loop-a/,
     )
   })
 
   test('attaches diagnostics for a cycle in the parent chain', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' } as any, cwd)).rejects.toMatchObject({
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/loop-a' }, cwd)).rejects.toMatchObject({
       diagnostics: [
         {
           code: 'design_system_cycle',
@@ -297,13 +464,13 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
   })
 
   test('reports a parent that is not installed alongside its declaring library', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' } as any, cwd)).rejects.toThrow(
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' }, cwd)).rejects.toThrow(
       /designSystem "@acme\/orphan" extends "@acme\/ghost"/,
     )
   })
 
   test('attaches diagnostics for a parent that is not installed alongside its declaring library', async () => {
-    await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' } as any, cwd)).rejects.toMatchObject({
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/orphan' }, cwd)).rejects.toMatchObject({
       diagnostics: [
         {
           code: 'design_system_parent_not_found',
@@ -315,13 +482,111 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
   })
 
   test('links the chain by specifier, so a parent whose manifest name differs still merges as the root', async () => {
-    const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/skinned' } as any, cwd)
-    const colors = config.theme?.tokens?.colors
-    if (!colors) throw new Error('expected resolved color tokens')
-    expect(colors.brand.value).toBe('skin')
-    expect(colors.rawOnly.value).toBe('raw')
-    expect(colors.skinOnly.value).toBe('skin')
+    const { config, metadata } = await resolveAuthoredPresets({ designSystem: '@acme/skinned' }, cwd)
+
+    expect(tokenValues(config.theme?.tokens?.colors)).toMatchInlineSnapshot(`
+      {
+        "brand": "skin",
+        "rawOnly": "raw",
+        "skinOnly": "skin",
+      }
+    `)
+
     expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/raw-identity', '@acme/skinned'])
     expect(config.importMap).toEqual(['@acme/raw', '@acme/skinned', 'styled-system'])
   })
 })
+
+// Fixture helpers
+
+interface DesignSystemFixture {
+  manifest?: Record<string, unknown>
+  packageJson?: Record<string, unknown>
+  preset?: Record<string, unknown> | string
+}
+
+interface DesignSystemPackageFixture extends DesignSystemFixture {
+  cwd: string
+  name: string
+}
+
+interface ResolvedDesignSystemLike {
+  name: string
+  manifest: {
+    name?: string
+  }
+  buildInfoPath: string
+  files: string[]
+}
+
+function writeFileTree(root: string, files: Record<string, string>): void {
+  for (const [path, content] of Object.entries(files)) {
+    const target = join(root, path)
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, content)
+  }
+}
+
+function moduleDir(root: string, specifier: string): string {
+  return join(root, 'node_modules', ...specifier.split('/'))
+}
+
+function toRelativePaths(root: string, paths: string[]): string[] {
+  return paths.map((path) => toRelativePath(root, path)).sort()
+}
+
+function toRelativePath(root: string, filePath: string): string {
+  const realRoot = realpathSync(root)
+  const normalizedPath = filePath.startsWith(root) ? `${realRoot}${filePath.slice(root.length)}` : filePath
+  return relative(realRoot, normalizedPath).split('\\').join('/')
+}
+
+function designSystemMetadata(root: string, designSystems: ResolvedDesignSystemLike[] | undefined) {
+  return designSystems?.map((ds) => ({
+    name: ds.name,
+    manifestName: ds.manifest.name,
+    buildInfoPath: toRelativePath(root, ds.buildInfoPath),
+    files: ds.files,
+  }))
+}
+
+function tokenValues(tokens: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (!tokens) return {}
+  return Object.fromEntries(
+    Object.entries(tokens).map(([key, token]) => [
+      key,
+      typeof token === 'object' && token !== null && 'value' in token ? token.value : undefined,
+    ]),
+  )
+}
+
+function writeDesignSystemPackage(fixture: DesignSystemPackageFixture): void {
+  writeDesignSystemAt(moduleDir(fixture.cwd, fixture.name), fixture.name, fixture)
+}
+
+function writeDesignSystemAt(dir: string, fallbackName: string, fixture: DesignSystemFixture = {}): void {
+  const manifest = {
+    schemaVersion: 1,
+    name: fallbackName,
+    panda: '^2.0.0',
+    preset: './preset.mjs',
+    buildInfo: './panda.buildinfo.json',
+    ...fixture.manifest,
+  }
+  const presetPath = typeof manifest.preset === 'string' ? manifest.preset.replace(/^\.\//, '') : 'preset.mjs'
+  const packageName = typeof manifest.name === 'string' ? manifest.name : fallbackName
+
+  writeFileTree(dir, {
+    'package.json': json({ name: packageName, version: '1.0.0', ...fixture.packageJson }),
+    'panda.lib.json': json(manifest),
+    [presetPath]: presetModule(fixture.preset ?? { name: packageName }),
+  })
+}
+
+function presetModule(preset: Record<string, unknown> | string): string {
+  return typeof preset === 'string' ? preset : `export default ${json(preset)}`
+}
+
+function json(value: unknown): string {
+  return JSON.stringify(value, null, 2)
+}

@@ -16,7 +16,7 @@ pub const MANIFEST_SCHEMA_VERSION: u32 = 1;
 pub struct DesignSystemManifest {
     pub schema_version: u32,
     pub name: String,
-    /// Informational; powers the drift receipt, never enforced.
+    /// Informational package version, never enforced.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
     /// Peer Panda range the consumer's Panda must satisfy.

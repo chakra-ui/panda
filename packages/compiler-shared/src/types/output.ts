@@ -55,7 +55,7 @@ export interface CodegenFile {
 }
 
 export interface CodegenArtifact {
-  id: CodegenArtifactId
+  id: CodegenArtifactId | (string & {})
   files: CodegenFile[]
 }
 

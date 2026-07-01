@@ -2,6 +2,7 @@ packages:
   - 'bench'
   - 'packages/**'
   - 'sandbox/*'
+  - 'sandbox-design-system/**'
   - 'sandbox/component-lib/**'
   - 'playground'
   - 'website'

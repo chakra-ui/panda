@@ -1,10 +1,11 @@
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
+import { diagnosticsPass, type Diagnostic } from '@pandacss/compiler-shared'
 import { includeArgs, parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
+import { normalizeCliDiagnostics } from '../diagnostics'
 import { debugFlagsSchema } from '../schema'
-import { diagnosticsPass, normalizeDiagnostics, type CliDiagnostic } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
 import type { DebugFlags, DebugResult } from '../schema'
@@ -50,7 +51,7 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
         'config.json': JSON.stringify(driver.config, null, 2),
       }
 
-      const fileDiagnostics: CliDiagnostic[] = []
+      const fileDiagnostics: Diagnostic[] = []
 
       if (!flags.onlyConfig) {
         for (const source of sources) {
@@ -59,12 +60,12 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
           try {
             const code = readFileSync(source, 'utf8')
             const result = driver.compiler.extractFileSource(source, code)
-            fileDiagnostics.push(...normalizeDiagnostics(result.diagnostics, { cwd, file: source }))
+            fileDiagnostics.push(...normalizeCliDiagnostics(result.diagnostics, { cwd, file: source }))
             dump[`${safeName(cwd, source)}.extract.json`] = JSON.stringify(result, null, 2)
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
             fileDiagnostics.push(
-              ...normalizeDiagnostics(
+              ...normalizeCliDiagnostics(
                 [{ code: 'debug_extract_error', severity: 'error', message, category: 'debug' }],
                 { cwd, file: source },
               ),
@@ -79,8 +80,8 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
         dump['styles.css'] = driver.cssgen().css
       }
 
-      const diagnostics = normalizeDiagnostics(
-        [...normalizeDiagnostics(driver.compiler.diagnostics(), { cwd }), ...fileDiagnostics],
+      const diagnostics = normalizeCliDiagnostics(
+        [...normalizeCliDiagnostics(driver.compiler.diagnostics(), { cwd }), ...fileDiagnostics],
         { cwd },
       )
 
@@ -97,7 +98,7 @@ export async function runDebug(flags: DebugFlags = {}, output: OutputSink = cons
       return {
         data: { outdir: flags.dry ? undefined : outdir, files, sourceCount: sources.length },
         diagnostics,
-        ok: diagnosticsPass(diagnostics, flags.maxWarnings),
+        ok: diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings }),
       }
     },
     renderHuman(ctx, result) {

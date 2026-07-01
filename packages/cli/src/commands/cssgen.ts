@@ -1,10 +1,11 @@
 import { defineCommand } from 'citty'
 import { type ParseFileReport, type StylesheetLayerName } from '@pandacss/compiler'
+import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { cssgenFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
-import { collectParseDiagnostics, diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { collectCliParseDiagnostics, normalizeCliDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, time } from '../timing'
 import { setExitCode } from '../result'
@@ -64,7 +65,7 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
       return {
         data: { outfile, ...current },
         diagnostics: current.diagnostics,
-        ok: diagnosticsPass(current.diagnostics, flags.maxWarnings) && isCheckClean(current),
+        ok: diagnosticsPass(current.diagnostics, { maxWarnings: flags.maxWarnings }) && isCheckClean(current),
       }
     },
     renderHuman(ctx, commandResult) {
@@ -170,7 +171,7 @@ export async function writeCssgenOutput(
   flags: CssgenFlags,
   parsed: ParseFileReport[],
 ): Promise<CssgenOnceResult> {
-  const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
+  const parseDiagnostics = collectCliParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
     const output = time({
@@ -206,7 +207,7 @@ export async function writeCssgenOutput(
   })
 
   const cssBytes = Buffer.byteLength(output.css)
-  const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
+  const diagnostics = normalizeCliDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
 
   if (shouldPrintHumanSummary(flags)) {
     ctx.output.log(
@@ -231,7 +232,7 @@ function checkCssgenOutput(
   flags: CssgenFlags,
   parsed: ParseFileReport[],
 ): CssgenOnceResult {
-  const parseDiagnostics = collectParseDiagnostics(parsed, ctx.cwd)
+  const parseDiagnostics = collectCliParseDiagnostics(parsed, ctx.cwd)
 
   if (flags.splitting) {
     const files = time({
@@ -242,7 +243,7 @@ function checkCssgenOutput(
 
     const check = checkExpectedFiles(
       files.map((file) => ({
-        path: ctx.driver.compiler.joinPath([ctx.outdir, file.path]),
+        path: ctx.driver.compiler.path.join([ctx.outdir, file.path]),
         code: file.code,
       })),
     )
@@ -271,7 +272,7 @@ function checkCssgenOutput(
   })
 
   const cssBytes = Buffer.byteLength(output.css)
-  const diagnostics = normalizeDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
+  const diagnostics = normalizeCliDiagnostics([...parseDiagnostics, ...output.diagnostics], { cwd: ctx.cwd })
   const check = checkExpectedFiles([{ path: outfile, code: output.css }])
 
   if (shouldPrintHumanSummary(flags)) {

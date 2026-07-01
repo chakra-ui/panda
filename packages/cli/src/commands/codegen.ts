@@ -1,11 +1,12 @@
 import { defineCommand } from 'citty'
 import { rmSync } from 'node:fs'
 import { type DiffConfigResult } from '@pandacss/compiler'
+import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { baseArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'
 import { codegenFlagsSchema } from '../schema'
 import { runCommand } from '../run-command'
-import { diagnosticsPass, normalizeDiagnostics } from '../diagnostics'
+import { normalizeCliDiagnostics } from '../diagnostics'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { parseMilliseconds, timeAsync } from '../timing'
 import { setExitCode } from '../result'
@@ -49,12 +50,12 @@ export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = 
         phase: flags.check ? 'check' : 'codegen',
         run: () => codegenOnce(runCtx!, flags),
       })
-      const diagnostics = normalizeDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd })
+      const diagnostics = normalizeCliDiagnostics(ctx.driver.compiler.diagnostics(), { cwd: ctx.cwd })
 
       return {
         data: { outdir, ...current },
         diagnostics,
-        ok: diagnosticsPass(diagnostics, flags.maxWarnings) && isCheckClean(current),
+        ok: diagnosticsPass(diagnostics, { maxWarnings: flags.maxWarnings }) && isCheckClean(current),
       }
     },
     renderHuman(ctx, commandResult) {
@@ -128,7 +129,7 @@ export async function codegenOnce(
 function checkCodegenOutput(ctx: RunContext, outdir: string): CheckOutput {
   const expected = ctx.driver.artifacts().flatMap((artifact) =>
     artifact.files.map((file) => ({
-      path: ctx.driver.compiler.joinPath([outdir, file.path]),
+      path: ctx.driver.compiler.path.join([outdir, file.path]),
       code: file.code,
     })),
   )

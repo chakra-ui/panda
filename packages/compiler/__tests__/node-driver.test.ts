@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -9,8 +10,8 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { dirname, join } from 'node:path'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { createNodeDriver } from '../src'
 import { createProject } from './test-utils'
 
@@ -60,13 +61,23 @@ export default {
 }
 `
 
+function writeFileTree(root: string, files: Record<string, string>): void {
+  for (const [path, content] of Object.entries(files)) {
+    const target = join(root, path)
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, content)
+  }
+}
+
 describe('createNodeDriver', () => {
   let dir: string
 
   beforeAll(() => {
     dir = mkdtempSync(join(tmpdir(), 'panda-driver-'))
-    writeFileSync(join(dir, 'panda.config.ts'), CONFIG)
-    writeFileSync(join(dir, 'App.tsx'), "import { css } from '@panda/css'; css({ color: 'red' })")
+    writeFileTree(dir, {
+      'panda.config.ts': CONFIG,
+      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+    })
   })
 
   afterAll(() => {
@@ -307,10 +318,139 @@ describe('createNodeDriver', () => {
   })
 })
 
+describe('NodeDriver writeDesignSystemLib', () => {
+  let dir: string | undefined
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true })
+    dir = undefined
+  })
+
+  function createLibProject(extraConfig = ''): string {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-driver-lib-')))
+    const config = extraConfig ? CONFIG.replace('export default {', `export default {\n${extraConfig}`) : CONFIG
+
+    writeFileTree(root, {
+      'panda.config.ts': config,
+      'package.json': JSON.stringify(
+        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': '^2.0.0' } },
+        null,
+        2,
+      ),
+      'button.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+    })
+
+    return root
+  }
+
+  it('writes design-system lib artifacts and syncs package exports', async () => {
+    dir = createLibProject()
+
+    const driver = await createNodeDriver({ cwd: dir })
+    const result = await driver.writeDesignSystemLib()
+
+    expect(result).toMatchObject({
+      manifestPath: join(dir, 'dist', 'panda.lib.json'),
+      buildInfoPath: join(dir, 'dist', 'panda.buildinfo.json'),
+      presetPath: join(dir, 'dist', 'preset.mjs'),
+      exportsChanged: true,
+      parsedFileCount: 1,
+      diagnostics: [],
+    })
+
+    const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8'))
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "schemaVersion": 1,
+        "name": "@acme/ds",
+        "version": "1.2.3",
+        "panda": "^2.0.0",
+        "preset": "./preset.mjs",
+        "buildInfo": "./panda.buildinfo.json",
+        "importMap": {
+          "css": "@acme/ds/css",
+          "recipes": "@acme/ds/recipes",
+          "patterns": "@acme/ds/patterns",
+          "jsx": "@acme/ds/jsx",
+          "tokens": "@acme/ds/tokens",
+        },
+        "files": [
+          "../button.tsx",
+        ],
+      }
+    `)
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports).toMatchInlineSnapshot(`
+      {
+        "./panda.lib.json": "./dist/panda.lib.json",
+        "./preset": "./dist/preset.mjs",
+      }
+    `)
+  })
+
+  it('preserves an existing string root export', async () => {
+    dir = createLibProject()
+    writeFileTree(dir, {
+      'package.json': JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: './dist/index.js' }, null, 2),
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    await driver.writeDesignSystemLib()
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports).toMatchInlineSnapshot(`
+      {
+        ".": "./dist/index.js",
+        "./panda.lib.json": "./dist/panda.lib.json",
+        "./preset": "./dist/preset.mjs",
+      }
+    `)
+  })
+
+  it('does not write artifacts when diagnostics fail the warning budget', async () => {
+    dir = createLibProject()
+    writeFileTree(dir, {
+      'button.tsx': "import { css } from '@panda/css'; css({ color: })",
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    const result = await driver.writeDesignSystemLib({ maxWarnings: 0 })
+
+    expect(result.diagnostics.length).toBeGreaterThan(0)
+    expect(existsSync(join(dir, 'dist', 'panda.lib.json'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda.buildinfo.json'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'preset.mjs'))).toBe(false)
+  })
+
+  it('invalidates the compiled preset when config reloads', async () => {
+    dir = createLibProject("  theme: { tokens: { colors: { brand: { value: 'red' } } } },")
+
+    const driver = await createNodeDriver({ cwd: dir })
+    await driver.writeDesignSystemLib()
+    expect(readFileSync(join(dir, 'dist', 'preset.mjs'), 'utf8')).toContain('red')
+
+    writeFileTree(dir, {
+      'panda.config.ts': CONFIG.replace(
+        'export default {',
+        "export default {\n  theme: { tokens: { colors: { brand: { value: 'blue' } } } },",
+      ),
+    })
+
+    const diff = await driver.reload()
+    expect(diff.hasChanged).toBe(true)
+
+    await driver.writeDesignSystemLib()
+    expect(readFileSync(join(dir, 'dist', 'preset.mjs'), 'utf8')).toContain('blue')
+  })
+})
+
 describe('createNodeDriver isConfigFile (symlinks)', () => {
   it('matches the config file through a symlinked cwd', async () => {
     const real = realpathSync(mkdtempSync(join(tmpdir(), 'panda-real-')))
-    writeFileSync(join(real, 'panda.config.ts'), CONFIG)
+    writeFileTree(real, {
+      'panda.config.ts': CONFIG,
+    })
     const parent = realpathSync(mkdtempSync(join(tmpdir(), 'panda-link-')))
     const link = join(parent, 'proj')
     try {
@@ -333,17 +473,15 @@ describe('createNodeDriver designSystem', () => {
   it('loads a package manifest, hydrates build info, and tracks design-system dependencies', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-'))
     const pkg = join(dir, 'node_modules', '@acme', 'ds')
-    mkdirSync(pkg, { recursive: true })
 
     const lib = createProject()
     lib.parseFileSource('button.tsx', "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })")
 
-    writeFileSync(join(dir, 'panda.config.ts'), "export default { designSystem: '@acme/ds', include: ['App.tsx'] }")
-    writeFileSync(join(dir, 'App.tsx'), '')
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.0.0' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds', include: ['App.tsx'] }",
+      'App.tsx': '',
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
@@ -351,9 +489,9 @@ describe('createNodeDriver designSystem', () => {
         buildInfo: './panda.buildinfo.json',
         importMap: { css: '@acme/ds/css' },
       }),
-    )
-    writeFileSync(join(pkg, 'preset.mjs'), 'export default { name: "@acme/ds" }')
-    writeFileSync(join(pkg, 'panda.buildinfo.json'), JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })))
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
+    })
 
     try {
       const driver = await createNodeDriver({ cwd: dir })
@@ -368,24 +506,66 @@ describe('createNodeDriver designSystem', () => {
     }
   })
 
+  it('reloads when design-system build info changes', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-reload-'))
+
+    const first = createProject()
+    first.parseFileSource('button.tsx', "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })")
+
+    const second = createProject()
+    second.parseFileSource(
+      'button.tsx',
+      "import { css } from '@panda/css'\nexport const Button = css({ color: 'blue' })",
+    )
+
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds', include: ['App.tsx'] }",
+      'App.tsx': '',
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        panda: '^2.0.0',
+        preset: './preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        importMap: { css: '@acme/ds/css' },
+      }),
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(first.buildInfo.create({ panda: '^2.0.0' })),
+    })
+
+    try {
+      const driver = await createNodeDriver({ cwd: dir })
+      expect(driver.cssgen().css).toContain('color: red')
+
+      writeFileTree(dir, {
+        'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(second.buildInfo.create({ panda: '^2.0.0' })),
+      })
+
+      const diff = await driver.reload()
+      expect(diff.hasChanged).toBe(true)
+      expect(driver.cssgen().css).toContain('color: blue')
+      expect(driver.cssgen().css).not.toContain('color: red')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it('fails clearly when the manifest build info cannot be read', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-missing-'))
-    const pkg = join(dir, 'node_modules', '@acme', 'ds')
-    mkdirSync(pkg, { recursive: true })
 
-    writeFileSync(join(dir, 'panda.config.ts'), "export default { designSystem: '@acme/ds' }")
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.0.0' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds' }",
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
         preset: './preset.mjs',
         buildInfo: './missing.buildinfo.json',
       }),
-    )
-    writeFileSync(join(pkg, 'preset.mjs'), 'export default { name: "@acme/ds" }')
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+    })
 
     try {
       await expect(createNodeDriver({ cwd: dir })).rejects.toThrow(/Failed to hydrate designSystem "@acme\/ds"/)
@@ -396,25 +576,22 @@ describe('createNodeDriver designSystem', () => {
 
   it('fails clearly when the manifest schema is incompatible', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-schema-'))
-    const pkg = join(dir, 'node_modules', '@acme', 'ds')
-    mkdirSync(pkg, { recursive: true })
 
     const lib = createProject()
 
-    writeFileSync(join(dir, 'panda.config.ts'), "export default { designSystem: '@acme/ds' }")
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.0.0' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds' }",
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
         schemaVersion: 999,
         name: '@acme/ds',
         panda: '^2.0.0',
         preset: './preset.mjs',
         buildInfo: './panda.buildinfo.json',
       }),
-    )
-    writeFileSync(join(pkg, 'preset.mjs'), 'export default { name: "@acme/ds" }')
-    writeFileSync(join(pkg, 'panda.buildinfo.json'), JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })))
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
+    })
 
     try {
       await expect(createNodeDriver({ cwd: dir })).rejects.toThrow(/manifest schemaVersion 999 is incompatible/)
@@ -425,25 +602,22 @@ describe('createNodeDriver designSystem', () => {
 
   it('fails clearly when the manifest Panda range is incompatible', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-range-'))
-    const pkg = join(dir, 'node_modules', '@acme', 'ds')
-    mkdirSync(pkg, { recursive: true })
 
     const lib = createProject()
 
-    writeFileSync(join(dir, 'panda.config.ts'), "export default { designSystem: '@acme/ds' }")
-    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.0.0' }))
-    writeFileSync(
-      join(pkg, 'panda.lib.json'),
-      JSON.stringify({
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds' }",
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^999.0.0',
         preset: './preset.mjs',
         buildInfo: './panda.buildinfo.json',
       }),
-    )
-    writeFileSync(join(pkg, 'preset.mjs'), 'export default { name: "@acme/ds" }')
-    writeFileSync(join(pkg, 'panda.buildinfo.json'), JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })))
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
+    })
 
     try {
       await expect(createNodeDriver({ cwd: dir })).rejects.toThrow(/manifest requires Panda \^999\.0\.0/)
@@ -458,7 +632,9 @@ describe('createNodeDriver reload', () => {
 
   beforeAll(() => {
     dir = mkdtempSync(join(tmpdir(), 'panda-driver-reload-'))
-    writeFileSync(join(dir, 'panda.config.ts'), CONFIG)
+    writeFileTree(dir, {
+      'panda.config.ts': CONFIG,
+    })
   })
 
   afterAll(() => {
@@ -468,10 +644,9 @@ describe('createNodeDriver reload', () => {
   it('returns a non-empty diff after a config edit', async () => {
     const driver = await createNodeDriver({ cwd: dir })
 
-    writeFileSync(
-      join(dir, 'panda.config.ts'),
-      CONFIG.replace("defaultValues: { gap: '4' }", "defaultValues: { gap: '8' }"),
-    )
+    writeFileTree(dir, {
+      'panda.config.ts': CONFIG.replace("defaultValues: { gap: '4' }", "defaultValues: { gap: '8' }"),
+    })
     const diff = await driver.reload()
 
     expect({ hasChanged: diff.hasChanged, dependencies: diff.dependencies, patterns: diff.patterns })
