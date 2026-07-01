@@ -3,7 +3,6 @@ packages:
   - 'packages/**'
   - 'sandbox/*'
   - 'sandbox-design-system/**'
-  - 'sandbox/component-lib/**'
   - 'playground'
   - 'website'
   # napi platform packages are published by `napi pre-publish`, not the workspace.
