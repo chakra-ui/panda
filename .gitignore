@@ -48,3 +48,4 @@ packages/studio/src/lib/analysis.json
 storybook-static
 .cursor/plans
 .parity-out
+.playwright-mcp
