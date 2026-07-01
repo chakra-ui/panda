@@ -1,5 +1,16 @@
 # @pandacss/dev
 
+## 2.0.0-beta.8
+
+### Patch Changes
+
+- Updated dependencies [72580e5]
+  - @pandacss/compiler@2.0.0-beta.8
+  - @pandacss/postcss@2.0.0-beta.8
+  - @pandacss/cli@2.0.0-beta.8
+  - @pandacss/config@2.0.0-beta.8
+  - @pandacss/types@2.0.0-beta.8
+
 ## 2.0.0-beta.7
 
 ### Patch Changes
