@@ -188,7 +188,8 @@ Brief description of the change and its impact.
 ```
 
 Keep changesets **concise**: one or two sentences on user-visible impact. Skip root-cause essays, long before/after
-examples, and implementation detail — that belongs in the PR or commit message.
+examples, and implementation detail — that belongs in the PR or commit message. Changesets are user-facing copy, so
+follow [`TONE_OF_VOICE.md`](TONE_OF_VOICE.md).
 
 **Changeset types:**
 
@@ -505,9 +506,9 @@ side). All crates are `publish = false` today. See `design-notes/publish-namespa
 5. **Use workspace knowledge**: Remember this is a monorepo - changes may affect multiple packages
 6. **Document breaking changes**: If CSS output must change, explain why clearly
 7. **Check sandboxes**: Don't just test main packages - verify sandbox projects too
-8. **Write concise changesets and comments**: Changesets should state user impact in plain language (see
-   [Creating Changesets](#creating-changesets)). In code, keep comments minimal — prefer clearer names and structure
-   over narration; only comment non-obvious invariants or business rules
+8. **Write concise changesets and comments**: Changesets are user-facing — keep them to one or two sentences and follow
+   [`TONE_OF_VOICE.md`](TONE_OF_VOICE.md). In code, keep comments minimal — prefer clearer names and structure over
+   narration; only comment non-obvious invariants or business rules, in one short line.
 
 ## Emergency Rollback
 

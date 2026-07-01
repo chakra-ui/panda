@@ -194,7 +194,7 @@ fn tokens_module(data: &TokenTypeData) -> Module {
         parts.push("export type Token = string".to_owned());
         parts.push("export type ColorOpacityModifier = `${number}`".to_owned());
         parts.push("export type ColorOpacityToken = never".to_owned());
-        parts.push("export interface Tokens {\n  [category: string]: string\n}".to_owned());
+        parts.push("export interface Tokens {}".to_owned());
     } else {
         for category in data.categories.values() {
             parts.push(format!(
@@ -261,7 +261,10 @@ fn tokens_module(data: &TokenTypeData) -> Module {
         ));
     }
 
-    parts.push("export type TokenValue<T extends keyof Tokens> = Tokens[T]".to_owned());
+    parts.push(
+        "export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
+            .to_owned(),
+    );
 
     raw_type_module(parts.join("\n\n"))
 }

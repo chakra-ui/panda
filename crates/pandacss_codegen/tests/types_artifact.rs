@@ -264,7 +264,7 @@ fn emits_ts_source_types() {
 
         export type ColorPalette = "red" | "blue"
 
-        export type TokenValue<T extends keyof Tokens> = Tokens[T]
+        export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never
         "#}
         .trim()
     );
@@ -509,6 +509,94 @@ fn emits_ts_source_types() {
       <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
     }
     ");
+}
+
+#[test]
+fn token_value_allows_missing_utility_categories() {
+    let input = CodegenInput {
+        types: TypeData {
+            tokens: TokenTypeData {
+                categories: BTreeMap::from([(
+                    "spacing".into(),
+                    TokenCategoryTypeData {
+                        name: "spacing".into(),
+                        type_name: "SpacingToken".into(),
+                        values: vec!["4".into()],
+                    },
+                )]),
+                ..TokenTypeData::default()
+            },
+            utilities: UtilityTypeData {
+                properties: BTreeMap::from([(
+                    "color".into(),
+                    UtilityPropertyTypeData {
+                        name: "color".into(),
+                        css_property: Some("color".into()),
+                        token_category: Some("colors".into()),
+                        alias: "ColorsValue".into(),
+                        ..UtilityPropertyTypeData::default()
+                    },
+                )]),
+                aliases: BTreeMap::from([(
+                    "ColorsValue".into(),
+                    ValueAliasTypeData {
+                        name: "ColorsValue".into(),
+                        parts: vec![
+                            ValueTypePart::TokenCategory("colors".into()),
+                            ValueTypePart::CssVars,
+                            ValueTypePart::AnyString,
+                        ],
+                    },
+                )]),
+                ..UtilityTypeData::default()
+            },
+            ..TypeData::default()
+        },
+        ..CodegenInput::default()
+    };
+
+    let artifacts = ArtifactGraph.generate_with_input(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    let types = artifact(&artifacts, ArtifactId::Types);
+    let tokens = file(types, "types/tokens.ts");
+    let system = file(types, "types/system.ts");
+
+    assert!(tokens.contains("export type SpacingToken = \"4\""));
+    assert!(tokens.contains(
+        "export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
+    ));
+    assert!(system.contains(
+        "export type ColorsValue = ColorGlobals | TokenValue<\"colors\"> | CssVars | AnyString | AnyNumber"
+    ));
+    assert!(
+        system.contains(r#"  color?: ConditionalValue<ColorsValue | PropertyValueMap["color"]>"#)
+    );
+}
+
+#[test]
+fn empty_tokens_emit_no_index_signature() {
+    // An index signature widens `keyof Tokens` to `string`, collapsing `TokenValue`
+    // to bare `string` — which swallows the native CSS values it's unioned with.
+    let artifacts = ArtifactGraph.generate_with_input(
+        &CodegenInput::default(),
+        GenerateOptions {
+            format: CodegenFormat::Ts,
+            ..GenerateOptions::default()
+        },
+    );
+    let types = artifact(&artifacts, ArtifactId::Types);
+    let tokens = file(types, "types/tokens.ts");
+
+    assert!(tokens.contains("export interface Tokens {}"));
+    assert!(!tokens.contains("[category: string]"));
+    assert!(tokens.contains(
+        "export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
+    ));
 }
 
 #[test]
