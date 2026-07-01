@@ -10,6 +10,10 @@ packages/studio/styled-system
 packages/generator/src/artifacts/generated
 packages/config/__tests__/samples/ts-import-map/ts-import-map-outdir/**
 packages/config/__tests__/samples/ts-import-map-one-source/outdir/**
+packages/compiler/npm/wasm32-wasi/compiler.wasi-browser.js
+packages/compiler/npm/wasm32-wasi/compiler.wasi.cjs
+packages/compiler/npm/wasm32-wasi/wasi-worker-browser.mjs
+packages/compiler/npm/wasm32-wasi/wasi-worker.mjs
 website/pages/**/*.mdx
 .draft/**/*.mdx
 styled-system
