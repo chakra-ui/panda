@@ -1,7 +1,23 @@
 import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
-import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
+import { collectArtifactConflicts, readPandaVersion, type LoadConfigResult } from '@pandacss/config'
 
 type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
+
+export function artifactConflictDiagnostics(metadata: LoadConfigResult['metadata']): Diagnostic[] {
+  return collectArtifactConflicts(metadata).flatMap((conflict) => [
+    ...conflict.recipes.map((name) => artifactConflict('Recipe', name, conflict.name)),
+    ...conflict.patterns.map((name) => artifactConflict('Pattern', name, conflict.name)),
+  ])
+}
+
+function artifactConflict(kind: 'Recipe' | 'Pattern', name: string, designSystem: string): Diagnostic {
+  return {
+    code: 'design_system_artifact_conflict',
+    severity: 'warning',
+    category: 'designSystem',
+    message: `${kind} ${JSON.stringify(name)} is defined by both ${JSON.stringify(designSystem)} and this config; your definition is merged over the design system's.`,
+  }
+}
 
 export function hydrateDesignSystem(
   compiler: Compiler,

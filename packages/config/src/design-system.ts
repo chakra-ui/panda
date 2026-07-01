@@ -1,5 +1,6 @@
 import {
   outdirBasename,
+  type CodegenOverlay,
   type DesignSystemManifest,
   type ImportMapInput,
   type ImportMapOption,
@@ -20,6 +21,8 @@ export interface ResolvedDesignSystem {
   buildInfoPath: string
   files: string[]
   tokenPaths: string[]
+  recipeNames: string[]
+  patternNames: string[]
   importMap?: DesignSystemManifest['importMap']
 }
 
@@ -71,6 +74,58 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
     info.importMap ? designSystemImportMap(info.importMap, info.specifier) : info.specifier,
   )
   return { ...config, importMap: [...roots, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
+}
+
+export interface DesignSystemMetadata {
+  designSystem?: ResolvedDesignSystem[]
+  userRecipeNames?: string[]
+  userPatternNames?: string[]
+}
+
+export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined): CodegenOverlay | undefined {
+  const chain = metadata?.designSystem
+  if (!chain || chain.length !== 1) return undefined
+
+  const [ds] = chain
+  const appRecipes = new Set(metadata?.userRecipeNames ?? [])
+  const appPatterns = new Set(metadata?.userPatternNames ?? [])
+
+  return {
+    ...overlayRoots(ds),
+    ownedRecipes: ds.recipeNames.filter((name) => !appRecipes.has(name)),
+    ownedPatterns: ds.patternNames.filter((name) => !appPatterns.has(name)),
+  }
+}
+
+export interface DesignSystemArtifactConflict {
+  name: string
+  recipes: string[]
+  patterns: string[]
+}
+
+export function collectArtifactConflicts(metadata: DesignSystemMetadata | undefined): DesignSystemArtifactConflict[] {
+  const appRecipes = new Set(metadata?.userRecipeNames ?? [])
+  const appPatterns = new Set(metadata?.userPatternNames ?? [])
+  return (metadata?.designSystem ?? [])
+    .map((ds) => ({
+      name: ds.name,
+      recipes: ds.recipeNames.filter((name) => appRecipes.has(name)),
+      patterns: ds.patternNames.filter((name) => appPatterns.has(name)),
+    }))
+    .filter((entry) => entry.recipes.length > 0 || entry.patterns.length > 0)
+}
+
+function overlayRoots(ds: ResolvedDesignSystem): Pick<CodegenOverlay, 'jsx' | 'recipes' | 'patterns'> {
+  const map = ds.importMap
+  const root = (value: string | string[] | undefined, subpath: string): string => {
+    const resolved = Array.isArray(value) ? value[0] : value
+    return resolved ?? `${ds.specifier}/${subpath}`
+  }
+  return {
+    jsx: root(map?.jsx, 'jsx'),
+    recipes: root(map?.recipes, 'recipes'),
+    patterns: root(map?.patterns, 'patterns'),
+  }
 }
 
 function resolveManifestPath(spec: string, fromDir: string): string | undefined {
@@ -132,6 +187,8 @@ async function loadManifestLevel(
         buildInfoPath,
         files: manifest.files ?? [],
         tokenPaths: [],
+        recipeNames: [],
+        patternNames: [],
         ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
       },
     },

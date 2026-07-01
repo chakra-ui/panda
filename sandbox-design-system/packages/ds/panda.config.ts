@@ -17,5 +17,30 @@ export default defineConfig({
         3: { value: '0.75rem' },
       },
     },
+    recipes: {
+      tag: {
+        className: 'tag',
+        base: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderRadius: 'md',
+          paddingInline: '2',
+          fontSize: '14px',
+          color: 'white',
+          backgroundColor: 'black',
+        },
+      },
+      chip: {
+        className: 'chip',
+        base: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderRadius: 'md',
+          paddingInline: '2',
+          color: 'white',
+          backgroundColor: 'black',
+        },
+      },
+    },
   },
 })

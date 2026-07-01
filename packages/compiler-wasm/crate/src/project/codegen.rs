@@ -38,6 +38,7 @@ impl WasmCompiler {
                             force_import_extension: options.force_import_extension,
                         },
                     ),
+                    None,
                 )
                 .into_iter()
                 .map(to_codegen_artifact)
@@ -75,7 +76,7 @@ impl WasmCompiler {
             &self.user_config,
             &generate_artifact_options_from_js(options)?,
         );
-        serialize_codegen_artifacts(self.inner.generate_artifacts(&self.user_config, options))
+        serialize_codegen_artifacts(self.inner.generate_artifacts(&self.user_config, options, None))
     }
 
     /// Generate one codegen artifact by id.
@@ -93,7 +94,7 @@ impl WasmCompiler {
             &self.user_config,
             &generate_artifact_options_from_js(options)?,
         );
-        let artifact = self.inner.generate_artifact(&self.user_config, id, options);
+        let artifact = self.inner.generate_artifact(&self.user_config, id, options, None);
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         artifact
             .map(to_codegen_artifact)
@@ -124,6 +125,7 @@ impl WasmCompiler {
             &self.user_config,
             changed,
             options,
+            None,
         ))
     }
 }

@@ -28,5 +28,7 @@ export interface LoadConfigResult {
     sources?: ConfigSources
     designSystem?: ResolvedDesignSystem[]
     userTokenPaths?: string[]
+    userRecipeNames?: string[]
+    userPatternNames?: string[]
   }
 }

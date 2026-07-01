@@ -9,7 +9,7 @@ use serde_json::{Map, Value};
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConfigDependency, ConstDecl, DependencySet,
-    ExportDecl, Expr, ImportDecl, Item, ItemNode, Module, TsType,
+    Expr, ImportDecl, Item, ItemNode, Module, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -41,62 +41,71 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
         ConfigDependency::Prefix,
         ConfigDependency::Separator,
     ]);
-    let mut files = Vec::new();
+    let mut module_files = Vec::new();
     let mut stems =
         Vec::with_capacity(ctx.config.theme.recipes.len() + ctx.config.theme.slot_recipes.len());
 
-    files.extend(emit_module_files(
-        "recipes/runtime",
-        &runtime_module(ctx),
-        options.format,
-        false,
-        options.import_extensions,
-        runtime_dependencies,
-    ));
-
-    for (name, recipe) in &ctx.config.theme.recipes {
+    let push_recipe = |files: &mut Vec<ArtifactFile>,
+                       stems: &mut Vec<String>,
+                       name: &str,
+                       recipe: &RecipeConfig,
+                       slot: bool| {
+        if ctx.overlay.is_some_and(|overlay| overlay.owns_recipe(name)) {
+            return;
+        }
         let stem = file_stem(name);
         stems.push(stem.clone());
-        let type_name = ctx
-            .types
-            .recipes
-            .recipes
-            .get(name)
-            .map_or_else(|| pascal_case(name), |recipe| recipe.type_name.clone());
+        let type_name = if slot {
+            ctx.types
+                .recipes
+                .slot_recipes
+                .get(name)
+                .map_or_else(|| pascal_case(name), |recipe| recipe.type_name.clone())
+        } else {
+            ctx.types
+                .recipes
+                .recipes
+                .get(name)
+                .map_or_else(|| pascal_case(name), |recipe| recipe.type_name.clone())
+        };
 
         files.extend(emit_module_files(
             &format!("recipes/{stem}"),
-            &recipe_module(ctx, name, recipe, &type_name, false),
+            &recipe_module(ctx, name, recipe, &type_name, slot),
             options.format,
             false,
             options.import_extensions,
             recipe_dependencies,
         ));
+    };
+
+    for (name, recipe) in &ctx.config.theme.recipes {
+        push_recipe(&mut module_files, &mut stems, name, recipe, false);
     }
 
     for (name, recipe) in &ctx.config.theme.slot_recipes {
-        let stem = file_stem(name);
-        stems.push(stem.clone());
-        let type_name = ctx
-            .types
-            .recipes
-            .slot_recipes
-            .get(name)
-            .map_or_else(|| pascal_case(name), |recipe| recipe.type_name.clone());
+        push_recipe(&mut module_files, &mut stems, name, recipe, true);
+    }
 
+    let mut files = Vec::new();
+
+    let emit_runtime = ctx.overlay.is_none() || !stems.is_empty();
+    if emit_runtime {
         files.extend(emit_module_files(
-            &format!("recipes/{stem}"),
-            &recipe_module(ctx, name, recipe, &type_name, true),
+            "recipes/runtime",
+            &runtime_module(ctx),
             options.format,
             false,
             options.import_extensions,
-            recipe_dependencies,
+            runtime_dependencies,
         ));
     }
 
+    files.append(&mut module_files);
+
     files.extend(emit_module_files(
         "recipes/index",
-        &index_module(&stems),
+        &index_module(ctx, &stems),
         options.format,
         false,
         options.import_extensions,
@@ -205,12 +214,11 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
         .with_item(Item::runtime(ItemNode::RawStmt(recipe_runtime_code(ctx))))
 }
 
-fn index_module(stems: &[String]) -> Module {
-    stems.iter().fold(Module::new(), |module, stem| {
-        module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
-            source: format!("./{stem}"),
-        })))
-    })
+fn index_module(ctx: CodegenContext<'_>, stems: &[String]) -> Module {
+    let named_reexport = ctx
+        .overlay
+        .map(|overlay| (overlay.owned_recipe_idents(), overlay.recipes.as_str()));
+    crate::overlay::index_barrel(named_reexport, stems)
 }
 
 fn recipe_config_code(

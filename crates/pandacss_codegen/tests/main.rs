@@ -8,6 +8,7 @@ mod cx_artifact;
 mod emit;
 mod helpers_artifact;
 mod jsx_frameworks_artifact;
+mod overlay_artifact;
 mod patterns_artifact;
 mod react_jsx_artifact;
 mod recipes_artifact;

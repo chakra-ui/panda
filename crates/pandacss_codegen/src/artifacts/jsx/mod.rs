@@ -236,6 +236,12 @@ fn pattern_files(
 ) -> Vec<ArtifactFile> {
     let mut files = Vec::new();
     for (name, pattern) in &ctx.config.patterns {
+        if ctx
+            .overlay
+            .is_some_and(|overlay| overlay.owns_pattern(name))
+        {
+            continue;
+        }
         let stem = file_stem(name);
         let module = match ctx.config.jsx_framework.as_ref() {
             Some(JsxFramework::React) => react_pattern_jsx::module(ctx, name, pattern),
@@ -413,12 +419,7 @@ fn index_module(ctx: CodegenContext<'_>) -> Module {
                 "./create-slot-recipe-context".to_owned(),
             ]);
         }
-        sources.extend(
-            ctx.config
-                .patterns
-                .keys()
-                .map(|name| format!("./{}", file_stem(name))),
-        );
+        sources.extend(ctx.config.patterns.keys().map(|name| pattern_source(ctx, name)));
     }
 
     let mut module = sources.into_iter().fold(Module::new(), |module, source| {
@@ -450,4 +451,12 @@ fn index_module(ctx: CodegenContext<'_>) -> Module {
     })));
 
     module
+}
+
+fn pattern_source(ctx: CodegenContext<'_>, name: &str) -> String {
+    let stem = file_stem(name);
+    match ctx.overlay {
+        Some(overlay) if overlay.owns_pattern(name) => format!("{}/{stem}", overlay.jsx),
+        _ => format!("./{stem}"),
+    }
 }

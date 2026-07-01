@@ -135,6 +135,7 @@ pub struct ResolvedUtilityValue {
 #[napi(object)]
 pub struct GenerateArtifactOptions {
     pub force_import_extension: Option<bool>,
+    pub overlay: Option<CodegenOverlay>,
 }
 
 #[napi(object)]
@@ -143,6 +144,16 @@ pub struct WriteArtifactsOptions {
     pub cwd: Option<String>,
     pub force_import_extension: Option<bool>,
     pub artifacts: Option<Vec<CodegenArtifact>>,
+    pub overlay: Option<CodegenOverlay>,
+}
+
+#[napi(object)]
+pub struct CodegenOverlay {
+    pub jsx: String,
+    pub recipes: String,
+    pub patterns: String,
+    pub owned_recipes: Vec<String>,
+    pub owned_patterns: Vec<String>,
 }
 
 #[napi(object)]

@@ -13,7 +13,7 @@ use serde_json::{Map, Value};
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConfigDependency, ConstDecl,
-    DependencySet, ExportDecl, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode,
+    DependencySet, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode,
     JsDoc, Module, Param, PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
@@ -41,10 +41,37 @@ pub fn files(
         return Vec::new();
     }
 
-    let mut files = Vec::new();
+    let mut module_files = Vec::new();
     let mut names = Vec::new();
 
-    if !ctx.config.patterns.is_empty() {
+    for (name, pattern) in &ctx.config.patterns {
+        if ctx
+            .overlay
+            .is_some_and(|overlay| overlay.owns_pattern(name))
+        {
+            continue;
+        }
+        names.push(file_stem(name));
+        let meta = ctx.patterns.get(name);
+        let definition = ctx.types.patterns.patterns.get(name);
+        module_files.extend(emit_module_files(
+            &format!("patterns/{}", file_stem(name)),
+            &module_with_type_data(name, pattern, definition, meta),
+            options.format,
+            false,
+            options.import_extensions,
+            dependencies,
+        ));
+    }
+
+    let mut files = Vec::new();
+
+    let emit_runtime = if ctx.overlay.is_some() {
+        !names.is_empty()
+    } else {
+        !ctx.config.patterns.is_empty()
+    };
+    if emit_runtime {
         files.extend(emit_module_files(
             "patterns/runtime",
             &runtime_module(),
@@ -58,24 +85,16 @@ pub fn files(
         ));
     }
 
-    for (name, pattern) in &ctx.config.patterns {
-        names.push(file_stem(name));
-        let meta = ctx.patterns.get(name);
-        let definition = ctx.types.patterns.patterns.get(name);
-        files.extend(emit_module_files(
-            &format!("patterns/{}", file_stem(name)),
-            &module_with_type_data(name, pattern, definition, meta),
-            options.format,
-            false,
-            options.import_extensions,
-            dependencies,
-        ));
-    }
+    files.append(&mut module_files);
 
-    if !names.is_empty() {
+    if !names.is_empty()
+        || ctx
+            .overlay
+            .is_some_and(|overlay| !overlay.owned_patterns.is_empty())
+    {
         files.extend(emit_module_files(
             "patterns/index",
-            &index_module(&names),
+            &index_module(ctx, &names),
             options.format,
             false,
             options.import_extensions,
@@ -229,12 +248,11 @@ fn runtime_function(name: &str, params: Vec<Param>, return_type: TsType, body: &
     }))
 }
 
-fn index_module(names: &[String]) -> Module {
-    names.iter().fold(Module::new(), |module, name| {
-        module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
-            source: format!("./{name}"),
-        })))
-    })
+fn index_module(ctx: CodegenContext<'_>, names: &[String]) -> Module {
+    let named_reexport = ctx
+        .overlay
+        .map(|overlay| (overlay.owned_pattern_idents(), overlay.patterns.as_str()));
+    crate::overlay::index_barrel(named_reexport, names)
 }
 
 fn type_imports(
