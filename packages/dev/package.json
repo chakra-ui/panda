@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/dev",
-  "version": "2.0.0-beta.5",
+  "version": "2.0.0-beta.6",
   "description": "User-facing Panda CSS development package",
   "type": "module",
   "main": "./dist/index.js",

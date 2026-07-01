@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/eslint-plugin",
-  "version": "2.0.0-beta.5",
+  "version": "2.0.0-beta.6",
   "description": "ESLint rules for Panda CSS",
   "keywords": [
     "eslint",

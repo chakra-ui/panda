@@ -1,5 +1,18 @@
 # @pandacss/vite
 
+## 2.0.0-beta.6
+
+### Patch Changes
+
+- Updated dependencies [8a936bd]
+- Updated dependencies [82e7811]
+- Updated dependencies [b5a620d]
+- Updated dependencies [7b71a43]
+- Updated dependencies [d075c2b]
+- Updated dependencies [86504d6]
+  - @pandacss/compiler@2.0.0-beta.6
+  - @pandacss/compiler-shared@2.0.0-beta.6
+
 ## 2.0.0-beta.5
 
 ### Patch Changes

@@ -1,5 +1,30 @@
 # @pandacss/cli
 
+## 2.0.0-beta.6
+
+### Minor Changes
+
+- b5a620d: Add `panda lib` to package a Panda design system.
+
+  It scans your library source, writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs`, then syncs the
+  package exports. It can also run in watch mode.
+
+  Consumers also get token conflict warnings when the app and design system define the same token path; the app value
+  wins. If a library's build info is stale, Panda re-extracts its manifest `files` instead of failing the build.
+
+### Patch Changes
+
+- 8a936bd: Add `panda analyze` reports. You can write JSON, open a static HTML report, or run the live report UI.
+- Updated dependencies [8a936bd]
+- Updated dependencies [82e7811]
+- Updated dependencies [b5a620d]
+- Updated dependencies [7b71a43]
+- Updated dependencies [d075c2b]
+- Updated dependencies [86504d6]
+  - @pandacss/compiler@2.0.0-beta.6
+  - @pandacss/compiler-shared@2.0.0-beta.6
+  - @pandacss/config@2.0.0-beta.6
+
 ## 2.0.0-beta.5
 
 ### Patch Changes

@@ -1,5 +1,30 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.6
+
+### Minor Changes
+
+- b5a620d: Add `panda lib` to package a Panda design system.
+
+  It scans your library source, writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs`, then syncs the
+  package exports. It can also run in watch mode.
+
+  Consumers also get token conflict warnings when the app and design system define the same token path; the app value
+  wins. If a library's build info is stale, Panda re-extracts its manifest `files` instead of failing the build.
+
+- 7b71a43: Adopt a published design system with `designSystem: '@acme/ds'`.
+
+  Panda reads the library's `panda.lib.json`, merges its preset below your config, and reuses its pre-extracted styles.
+  If the design system needs a different Panda major version, Panda reports a clear error.
+
+### Patch Changes
+
+- 8a936bd: Add `panda analyze` reports. You can write JSON, open a static HTML report, or run the live report UI.
+- 82e7811: Add `compiler.designSystem` helpers for `panda.lib.json` manifests.
+
+  The new helpers create, validate, load, and order design-system manifests so consumers can adopt a library through the
+  `designSystem` config field.
+
 ## 2.0.0-beta.5
 
 ## 2.0.0-beta.4
