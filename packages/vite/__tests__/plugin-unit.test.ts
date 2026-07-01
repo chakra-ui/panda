@@ -32,7 +32,7 @@ describe('@pandacss/vite design-system HMR', () => {
         "/project/panda.config.ts",
         "/project/node_modules/@acme/ds/panda.lib.json",
         "/project/node_modules/@acme/ds/panda.buildinfo.json",
-        "/project/node_modules/@acme/ds/preset.mjs",
+        "/project/node_modules/@acme/ds/panda.preset.mjs",
         "/project/node_modules/@acme/ds/src/button.css.ts",
       ]
     `)
@@ -103,7 +103,7 @@ function createMockDriver() {
         name: '@acme/ds',
         manifestPath: '/project/node_modules/@acme/ds/panda.lib.json',
         buildInfoPath: '/project/node_modules/@acme/ds/panda.buildinfo.json',
-        presetPath: '/project/node_modules/@acme/ds/preset.mjs',
+        presetPath: '/project/node_modules/@acme/ds/panda.preset.mjs',
         sourceFiles: ['/project/node_modules/@acme/ds/src/button.css.ts'],
       },
     ]),

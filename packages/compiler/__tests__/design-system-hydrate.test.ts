@@ -25,7 +25,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         version: '1.0.0',
         exports: {
           './panda.lib.json': './dist/panda.lib.json',
-          './preset': './dist/preset.mjs',
+          './preset': './dist/panda.preset.mjs',
         },
       }),
       'node_modules/@acme/ds/dist/panda.lib.json': json({
@@ -33,7 +33,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         name: '@acme/ds',
         version: '1.0.0',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         files: ['./**/*.{js,mjs}'],
         importMap: {
@@ -44,7 +44,7 @@ describe('hydrateDesignSystem (consumer)', () => {
           tokens: '@acme/ds/tokens',
         },
       }),
-      'node_modules/@acme/ds/dist/preset.mjs': `export default { theme: { tokens: {} } }`,
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
       'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
       'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
         schemaVersion: 999,
@@ -73,7 +73,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         version: '1.0.0',
         exports: {
           './panda.lib.json': './dist/panda.lib.json',
-          './preset': './dist/preset.mjs',
+          './preset': './dist/panda.preset.mjs',
         },
       }),
       'node_modules/@acme/ds/dist/panda.lib.json': json({
@@ -81,7 +81,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         name: '@acme/ds',
         version: '1.0.0',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         importMap: {
           css: '@acme/ds/css',
@@ -91,7 +91,7 @@ describe('hydrateDesignSystem (consumer)', () => {
           tokens: '@acme/ds/tokens',
         },
       }),
-      'node_modules/@acme/ds/dist/preset.mjs': `export default { theme: { tokens: {} } }`,
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
       'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
       'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
         schemaVersion: 999,
@@ -121,14 +121,14 @@ describe('hydrateDesignSystem (consumer)', () => {
       'node_modules/@acme/ds/package.json': json({
         name: '@acme/ds',
         version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/preset.mjs' },
+        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
       }),
       'node_modules/@acme/ds/dist/panda.lib.json': json({
         schemaVersion: 1,
         name: '@acme/ds',
         version: '1.0.0',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         files: ['./**/*.{js,mjs}'],
         importMap: {
@@ -139,7 +139,7 @@ describe('hydrateDesignSystem (consumer)', () => {
           tokens: '@acme/ds/tokens',
         },
       }),
-      'node_modules/@acme/ds/dist/preset.mjs': `export default {
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
         theme: {
           tokens: {
             colors: {
@@ -183,14 +183,14 @@ describe('hydrateDesignSystem (consumer)', () => {
       'node_modules/@acme/ds/package.json': json({
         name: '@acme/ds',
         version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/preset.mjs' },
+        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
       }),
       'node_modules/@acme/ds/dist/panda.lib.json': json({
         schemaVersion: 1,
         name: '@acme/ds',
         version: '1.0.0',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         files: ['./**/*.{js,mjs}'],
         importMap: {
@@ -201,7 +201,7 @@ describe('hydrateDesignSystem (consumer)', () => {
           tokens: '@acme/ds/tokens',
         },
       }),
-      'node_modules/@acme/ds/dist/preset.mjs': `export default {
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
         theme: {
           tokens: {
             colors: {

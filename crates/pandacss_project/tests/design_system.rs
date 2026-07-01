@@ -13,7 +13,7 @@ fn full_input() -> ManifestInput {
         "name": "@acme/ds",
         "version": "1.2.3",
         "panda": "^2.0.0",
-        "preset": "./preset.mjs",
+        "preset": "./panda.preset.mjs",
         "buildInfo": "./panda.buildinfo.json",
         "importMap": { "css": "@acme/ds/css", "recipes": "@acme/ds/recipes" },
         "designSystem": "@acme/foundations",
@@ -45,7 +45,7 @@ fn omits_optional_fields_when_absent() {
     let input: ManifestInput = from_value(json!({
         "name": "@acme/ds",
         "panda": "^2.0.0",
-        "preset": "./preset.mjs",
+        "preset": "./panda.preset.mjs",
         "buildInfo": "./panda.buildinfo.json",
     }))
     .expect("deserialize minimal input");
@@ -79,7 +79,7 @@ fn node(name: &str, parent: Option<&str>) -> DesignSystemManifest {
         "schemaVersion": MANIFEST_SCHEMA_VERSION,
         "name": name,
         "panda": "^2.0.0",
-        "preset": "./preset.mjs",
+        "preset": "./panda.preset.mjs",
         "buildInfo": "./panda.buildinfo.json",
         "designSystem": parent,
     }))

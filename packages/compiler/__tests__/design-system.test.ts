@@ -8,7 +8,7 @@ const fullInput: DesignSystemManifestInput = {
   name: '@acme/ds',
   version: '1.2.3',
   panda: '^2.0.0',
-  preset: './preset.mjs',
+  preset: './panda.preset.mjs',
   buildInfo: './panda.buildinfo.json',
   importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
   designSystem: '@acme/foundations',
@@ -25,7 +25,7 @@ describe('compiler.designSystem', () => {
       name: '@acme/ds',
       version: '1.2.3',
       panda: '^2.0.0',
-      preset: './preset.mjs',
+      preset: './panda.preset.mjs',
       buildInfo: './panda.buildinfo.json',
       importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
       designSystem: '@acme/foundations',
@@ -37,7 +37,7 @@ describe('compiler.designSystem', () => {
     const manifest = project().designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './preset.mjs',
+      preset: './panda.preset.mjs',
       buildInfo: './panda.buildinfo.json',
     })
 
@@ -51,7 +51,7 @@ describe('compiler.designSystem', () => {
     const app = project()
     expect(() =>
       // @ts-expect-error - missing required `panda`
-      app.designSystem.create({ name: '@acme/ds', preset: './preset.mjs', buildInfo: './panda.buildinfo.json' }),
+      app.designSystem.create({ name: '@acme/ds', preset: './panda.preset.mjs', buildInfo: './panda.buildinfo.json' }),
     ).toThrow()
   })
 
@@ -59,7 +59,7 @@ describe('compiler.designSystem', () => {
     const manifest = project().designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './preset.mjs',
+      preset: './panda.preset.mjs',
       buildInfo: './panda.buildinfo.json',
       // @ts-expect-error - unknown field is dropped, not surfaced
       bogus: 'ignored',
@@ -71,7 +71,7 @@ describe('compiler.designSystem', () => {
     const manifest = project().designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './preset.mjs',
+      preset: './panda.preset.mjs',
       buildInfo: './panda.buildinfo.json',
       files: [],
     })
@@ -207,7 +207,7 @@ describe('compiler.designSystem', () => {
     project().designSystem.create({
       name,
       panda: '^2.0.0',
-      preset: './preset.mjs',
+      preset: './panda.preset.mjs',
       buildInfo: './panda.buildinfo.json',
       designSystem: parent,
     })

@@ -46,8 +46,8 @@ describe('resolveAuthoredPresets / smart include', () => {
     // exported — neither `.` nor `./package.json`.
     pkg(
       '@acme/lib-ds',
-      { 'panda.lib.json': manifest('@acme/lib-ds'), 'preset.mjs': 'export default {}' },
-      { exports: { './panda.lib.json': './panda.lib.json', './preset': './preset.mjs' } },
+      { 'panda.lib.json': manifest('@acme/lib-ds'), 'panda.preset.mjs': 'export default {}' },
+      { exports: { './panda.lib.json': './panda.lib.json', './preset': './panda.preset.mjs' } },
     )
 
     mkdirSync(join(cwd, 'components'), { recursive: true })

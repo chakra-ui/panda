@@ -64,7 +64,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
       [
         "node_modules/@acme/ds/panda.buildinfo.json",
         "node_modules/@acme/ds/panda.lib.json",
-        "node_modules/@acme/ds/preset.mjs",
+        "node_modules/@acme/ds/panda.preset.mjs",
       ]
     `)
   })
@@ -569,11 +569,11 @@ function writeDesignSystemAt(dir: string, fallbackName: string, fixture: DesignS
     schemaVersion: 1,
     name: fallbackName,
     panda: '^2.0.0',
-    preset: './preset.mjs',
+    preset: './panda.preset.mjs',
     buildInfo: './panda.buildinfo.json',
     ...fixture.manifest,
   }
-  const presetPath = typeof manifest.preset === 'string' ? manifest.preset.replace(/^\.\//, '') : 'preset.mjs'
+  const presetPath = typeof manifest.preset === 'string' ? manifest.preset.replace(/^\.\//, '') : 'panda.preset.mjs'
   const packageName = typeof manifest.name === 'string' ? manifest.name : fallbackName
 
   writeFileTree(dir, {

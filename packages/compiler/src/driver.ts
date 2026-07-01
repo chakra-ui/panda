@@ -331,7 +331,7 @@ export class NodeDriver extends BaseDriver {
 
     const manifestPath = this.compiler.path.join([outRoot, 'panda.lib.json'])
     const buildInfoPath = this.compiler.path.join([outRoot, 'panda.buildinfo.json'])
-    const presetPath = this.compiler.path.join([outRoot, 'preset.mjs'])
+    const presetPath = this.compiler.path.join([outRoot, 'panda.preset.mjs'])
 
     const info = this.compiler.buildInfo.create({ panda: pandaRange })
     const buildInfo = this.compiler.buildInfo.normalize(info, {
@@ -342,7 +342,7 @@ export class NodeDriver extends BaseDriver {
       name: identity.name,
       version: identity.version,
       panda: pandaRange,
-      preset: './preset.mjs',
+      preset: './panda.preset.mjs',
       buildInfo: './panda.buildinfo.json',
       importMap: defaultImportMap(identity.name),
       designSystem: typeof this.config.designSystem === 'string' ? this.config.designSystem : undefined,
@@ -367,7 +367,7 @@ export class NodeDriver extends BaseDriver {
               dependencies: [],
             },
             {
-              path: 'preset.mjs',
+              path: 'panda.preset.mjs',
               code: preset.code,
               dependencies: [],
             },

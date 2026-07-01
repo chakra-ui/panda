@@ -12,11 +12,11 @@ describe('lib-manifest', () => {
   })
 
   test('syncExports merges entries and is idempotent', () => {
-    const pkg = JSON.stringify({ name: '@acme/ds', exports: { './preset': './dist/preset.mjs' } })
+    const pkg = JSON.stringify({ name: '@acme/ds', exports: { './preset': './dist/panda.preset.mjs' } })
     const first = syncExports({
       packageJson: pkg,
       entries: {
-        './preset': './dist/preset.mjs',
+        './preset': './dist/panda.preset.mjs',
         './panda.lib.json': './dist/panda.lib.json',
       },
     })
@@ -25,7 +25,7 @@ describe('lib-manifest', () => {
     const second = syncExports({
       packageJson: first.json,
       entries: {
-        './preset': './dist/preset.mjs',
+        './preset': './dist/panda.preset.mjs',
         './panda.lib.json': './dist/panda.lib.json',
       },
     })

@@ -352,7 +352,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
     expect(result).toMatchObject({
       manifestPath: join(dir, 'dist', 'panda.lib.json'),
       buildInfoPath: join(dir, 'dist', 'panda.buildinfo.json'),
-      presetPath: join(dir, 'dist', 'preset.mjs'),
+      presetPath: join(dir, 'dist', 'panda.preset.mjs'),
       exportsChanged: true,
       parsedFileCount: 1,
       diagnostics: [],
@@ -365,7 +365,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
         "name": "@acme/ds",
         "version": "1.2.3",
         "panda": "^2.0.0",
-        "preset": "./preset.mjs",
+        "preset": "./panda.preset.mjs",
         "buildInfo": "./panda.buildinfo.json",
         "importMap": {
           "css": "@acme/ds/css",
@@ -384,7 +384,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
     expect(pkg.exports).toMatchInlineSnapshot(`
       {
         "./panda.lib.json": "./dist/panda.lib.json",
-        "./preset": "./dist/preset.mjs",
+        "./preset": "./dist/panda.preset.mjs",
       }
     `)
   })
@@ -403,7 +403,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
       {
         ".": "./dist/index.js",
         "./panda.lib.json": "./dist/panda.lib.json",
-        "./preset": "./dist/preset.mjs",
+        "./preset": "./dist/panda.preset.mjs",
       }
     `)
   })
@@ -420,11 +420,11 @@ describe('NodeDriver writeDesignSystemLib', () => {
         schemaVersion: 1,
         name: '@acme/foundations',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         importMap: { css: '@acme/foundations/css' },
       }),
-      'node_modules/@acme/foundations/preset.mjs': 'export default { name: "@acme/foundations" }',
+      'node_modules/@acme/foundations/panda.preset.mjs': 'export default { name: "@acme/foundations" }',
       'node_modules/@acme/foundations/panda.buildinfo.json': JSON.stringify(
         parent.buildInfo.create({ panda: '^2.0.0' }),
       ),
@@ -440,7 +440,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
         "name": "@acme/ds",
         "version": "1.2.3",
         "panda": "^2.0.0",
-        "preset": "./preset.mjs",
+        "preset": "./panda.preset.mjs",
         "buildInfo": "./panda.buildinfo.json",
         "importMap": {
           "css": "@acme/ds/css",
@@ -469,7 +469,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
     expect(result.diagnostics.length).toBeGreaterThan(0)
     expect(existsSync(join(dir, 'dist', 'panda.lib.json'))).toBe(false)
     expect(existsSync(join(dir, 'dist', 'panda.buildinfo.json'))).toBe(false)
-    expect(existsSync(join(dir, 'dist', 'preset.mjs'))).toBe(false)
+    expect(existsSync(join(dir, 'dist', 'panda.preset.mjs'))).toBe(false)
   })
 
   it('invalidates the compiled preset when config reloads', async () => {
@@ -477,7 +477,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
 
     const driver = await createNodeDriver({ cwd: dir })
     await driver.writeDesignSystemLib()
-    expect(readFileSync(join(dir, 'dist', 'preset.mjs'), 'utf8')).toContain('red')
+    expect(readFileSync(join(dir, 'dist', 'panda.preset.mjs'), 'utf8')).toContain('red')
 
     writeFileTree(dir, {
       'panda.config.ts': CONFIG.replace(
@@ -490,7 +490,7 @@ describe('NodeDriver writeDesignSystemLib', () => {
     expect(diff.hasChanged).toBe(true)
 
     await driver.writeDesignSystemLib()
-    expect(readFileSync(join(dir, 'dist', 'preset.mjs'), 'utf8')).toContain('blue')
+    expect(readFileSync(join(dir, 'dist', 'panda.preset.mjs'), 'utf8')).toContain('blue')
   })
 })
 
@@ -534,11 +534,11 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         importMap: { css: '@acme/ds/css' },
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
       'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
     })
 
@@ -554,16 +554,16 @@ describe('createNodeDriver designSystem', () => {
             "name": "@acme/ds",
             "manifestPath": "${realPkg}/panda.lib.json",
             "buildInfoPath": "${realPkg}/panda.buildinfo.json",
-            "presetPath": "${realPkg}/preset.mjs",
+            "presetPath": "${realPkg}/panda.preset.mjs",
             "sourceFiles": [],
           },
         ]
       `)
       expect(driver.isConfigFile(join(pkg, 'panda.lib.json'))).toBe(true)
-      expect(driver.isConfigFile(join(pkg, 'preset.mjs'))).toBe(true)
+      expect(driver.isConfigFile(join(pkg, 'panda.preset.mjs'))).toBe(true)
       expect(driver.isConfigFile(join(pkg, 'panda.buildinfo.json'))).toBe(true)
       expect(driver.isDesignSystemFile(join(pkg, 'panda.lib.json'))).toBe('artifact')
-      expect(driver.isDesignSystemFile(join(pkg, 'preset.mjs'))).toBe('artifact')
+      expect(driver.isDesignSystemFile(join(pkg, 'panda.preset.mjs'))).toBe('artifact')
       expect(driver.isDesignSystemFile(join(pkg, 'panda.buildinfo.json'))).toBe('artifact')
     } finally {
       rmSync(dir, { recursive: true, force: true })
@@ -588,12 +588,12 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         importMap: { css: '@acme/ds/css' },
         files: ['src/**/*.tsx'],
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
       'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
       'node_modules/@acme/ds/src/button.tsx':
         "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })",
@@ -642,11 +642,11 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         importMap: { css: '@acme/ds/css' },
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
       'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(first.buildInfo.create({ panda: '^2.0.0' })),
     })
 
@@ -688,11 +688,11 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
         importMap: { css: '@acme/ds/css' },
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
       'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(first.buildInfo.create({ panda: '^2.0.0' })),
     })
 
@@ -726,10 +726,10 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './missing.buildinfo.json',
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
     })
 
     try {
@@ -751,10 +751,10 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 999,
         name: '@acme/ds',
         panda: '^2.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
       'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
     })
 
@@ -777,10 +777,10 @@ describe('createNodeDriver designSystem', () => {
         schemaVersion: 1,
         name: '@acme/ds',
         panda: '^999.0.0',
-        preset: './preset.mjs',
+        preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
       }),
-      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.preset.mjs': 'export default { name: "@acme/ds" }',
       'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
     })
 

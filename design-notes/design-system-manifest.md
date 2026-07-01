@@ -111,7 +111,7 @@ works from `node_modules`, a workspace symlink, or a Docker layer.
   "name": "@acme/ds",
   "version": "1.2.3", // informational; never enforced
   "panda": "^2.0.0", // peer range the consumer must satisfy
-  "preset": "./preset.mjs", // compiled preset module
+  "preset": "./panda.preset.mjs", // compiled preset module
   "buildInfo": "./panda.buildinfo.json",
   "importMap": {
     "css": "@acme/ds/css",
@@ -163,10 +163,10 @@ It writes:
 ```txt
 dist/panda.lib.json
 dist/panda.buildinfo.json
-dist/preset.mjs
+dist/panda.preset.mjs
 ```
 
-`preset.mjs` is bundled from the author config, but app-only fields are stripped:
+`panda.preset.mjs` is bundled from the author config, but app-only fields are stripped:
 
 ```txt
 designSystem
@@ -190,7 +190,7 @@ field.
   "exports": {
     ".": "./dist/index.js",
     "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/preset.mjs",
+    "./preset": "./dist/panda.preset.mjs",
   },
 }
 ```
@@ -247,7 +247,7 @@ Turbo-style setup:
   "tasks": {
     "lib": {
       "dependsOn": ["^lib"],
-      "outputs": ["dist/panda.lib.json", "dist/panda.buildinfo.json", "dist/preset.mjs"],
+      "outputs": ["dist/panda.lib.json", "dist/panda.buildinfo.json", "dist/panda.preset.mjs"],
     },
     "dev": {
       "cache": false,
@@ -271,7 +271,7 @@ Nx-style setup:
       "outputs": [
         "{projectRoot}/dist/panda.lib.json",
         "{projectRoot}/dist/panda.buildinfo.json",
-        "{projectRoot}/dist/preset.mjs",
+        "{projectRoot}/dist/panda.preset.mjs",
       ],
       "cache": true,
     },
@@ -303,7 +303,7 @@ When an app config has `designSystem: '@acme/ds'`, the host:
 2. Reads that manifest.
 3. Walks the manifest's parent chain, resolving each parent from the previous manifest's directory.
 4. Orders the chain root-first.
-5. Imports each `preset.mjs`.
+5. Imports each `panda.preset.mjs`.
 6. Merges presets under the app config, so the app wins.
 7. Creates the compiler driver.
 8. Hydrates each design system's `panda.buildinfo.json`.
@@ -327,13 +327,13 @@ PRODUCER: @acme/ds
      │                       ├──► create panda.buildinfo.json
      │                       └──► create panda.lib.json manifest
      │
-     └───────────────► compile preset.mjs
+     └───────────────► compile panda.preset.mjs
                              │
                              ▼
                        strip app-only fields
                        include / outdir / importMap / designSystem
 
-  panda.lib.json + panda.buildinfo.json + preset.mjs
+  panda.lib.json + panda.buildinfo.json + panda.preset.mjs
      │
      ▼
   write dist artifacts
@@ -341,7 +341,7 @@ PRODUCER: @acme/ds
      ▼
   sync package.json exports
      ├── ./panda.lib.json -> ./dist/panda.lib.json
-     └── ./preset         -> ./dist/preset.mjs
+     └── ./preset         -> ./dist/panda.preset.mjs
 ```
 
 ```txt
@@ -364,7 +364,7 @@ CONSUMER APP
      └── no ───► use current manifest
                               │
                               ▼
-                       import preset.mjs
+                       import panda.preset.mjs
                               │
                               ▼
                        merge configs

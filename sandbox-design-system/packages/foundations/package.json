@@ -5,7 +5,7 @@
   "type": "module",
   "exports": {
     "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/preset.mjs"
+    "./preset": "./dist/panda.preset.mjs"
   },
   "scripts": {
     "codegen": "panda codegen",

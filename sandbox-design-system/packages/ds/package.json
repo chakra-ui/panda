@@ -8,7 +8,7 @@
     "./badge": "./src/badge/index.ts",
     "./button": "./src/button/index.ts",
     "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/preset.mjs"
+    "./preset": "./dist/panda.preset.mjs"
   },
   "scripts": {
     "codegen": "panda codegen",

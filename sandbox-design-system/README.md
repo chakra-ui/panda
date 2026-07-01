@@ -57,7 +57,7 @@ Check that each design-system package contains:
 - `styled-system/`
 - `panda.lib.json`
 - `panda.buildinfo.json`
-- `preset.mjs`
+- `panda.preset.mjs`
 
 `@sandbox/app` tests the React Vite plugin path. `@sandbox/app-postcss` mirrors it through `@pandacss/postcss`.
 `@sandbox/app-nested` tests the React Vite consumer path for a nested design-system chain. The apps override
