@@ -2,4 +2,7 @@
 '@pandacss/compiler': patch
 ---
 
-`styled-system/types/index` now re-exports `./jsx` for all JSX frameworks, not just React. Solid, Vue, Preact, and Qwik generated `types/jsx` but never re-exported it, which could cause "inferred type cannot be named" TypeScript errors.
+Re-export `styled-system/types/jsx` for every JSX framework.
+
+Solid, Vue, Preact, and Qwik projects now get the same JSX type entry as React, avoiding TypeScript's "inferred type
+cannot be named" errors.

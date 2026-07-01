@@ -3,4 +3,7 @@
 '@pandacss/compiler': minor
 ---
 
-Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`, `buildinfo`) to override the config's `include` globs for a single run. The flag is repeatable and accepts comma-separated values, and replaces (does not merge with) the configured globs — useful for scanning a subset of files in CI or one-off builds.
+Add `--include` to scanning commands: `panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`, and `buildinfo`.
+
+Use it to scan a smaller file set for one run. It replaces the configured `include` globs and can be repeated or passed
+comma-separated values.

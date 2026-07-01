@@ -2,5 +2,4 @@
 '@pandacss/compiler': patch
 ---
 
-Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including React,
-Preact, Vue, Solid, and Qwik builds.
+Extract `css` props from compiled JSX output for React, Preact, Vue, Solid, and Qwik.

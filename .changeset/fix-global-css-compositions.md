@@ -5,6 +5,5 @@
 
 Fix `globalCss` and token-reference parity with extracted styles.
 
-- Expand composition props and nested utility transforms in `globalCss`.
-- Resolve token references in raw at-rule conditions.
-- Preserve `token(path, fallback)` fallbacks in emitted CSS variables.
+`globalCss` now expands composition props and nested utility transforms, resolves token references in raw at-rules, and
+preserves `token(path, fallback)` fallbacks.
