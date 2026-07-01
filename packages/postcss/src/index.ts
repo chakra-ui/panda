@@ -118,6 +118,7 @@ function ensureCodegen(state: DriverState, options: { cwd: string; outdir: strin
 
 function registerDependencies(driver: Driver, result: Result, cwd: string, parent: string | undefined) {
   for (const source of driver.compiler.sources()) {
+    // `pattern` is already relative to `base` — the shape a `dir-dependency` wants.
     result.messages.push(
       withPluginMetadata(
         createSourceDependency({

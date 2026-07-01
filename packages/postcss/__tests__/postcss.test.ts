@@ -91,7 +91,7 @@ describe('@pandacss/postcss', () => {
       [
         {
           "dir": "/project/src",
-          "glob": "src/**/*.tsx",
+          "glob": "**/*.tsx",
           "parent": "/project/styles.css",
           "plugin": "pandacss",
           "type": "dir-dependency",
@@ -340,7 +340,8 @@ function createMockDriver(): MockDriver {
   return {
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes(INPUT)),
-      sources: vi.fn(() => [{ base: '/project/src', pattern: 'src/**/*.tsx' }]),
+      // `sources()` returns `pattern` relative to `base` — a coherent (dir, glob) pair.
+      sources: vi.fn(() => [{ base: '/project/src', pattern: '**/*.tsx' }]),
     },
     configDependencies: ['panda.config.ts', 'panda.tokens.ts'],
     configPath: '/project/panda.config.ts',

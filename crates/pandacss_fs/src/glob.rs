@@ -86,6 +86,19 @@ pub fn base_dir(pattern: &str) -> &str {
     }
 }
 
+/// The glob portion of `pattern` relative to its [`base_dir`]. `./src/**/*.tsx` →
+/// `**/*.tsx`. Paired with `base_dir`, gives a watcher a coherent `(dir, glob)`.
+#[must_use]
+pub fn relative_glob(pattern: &str) -> &str {
+    let normalized = normalize_pattern(pattern);
+    let base = base_dir(pattern);
+    if base.is_empty() {
+        normalized
+    } else {
+        normalized[base.len()..].trim_start_matches('/')
+    }
+}
+
 /// Concrete directories the walk should start from — `cwd` joined with each
 /// include's [`base_dir`]. Scoping the walk to `cwd/src` for `src/**/*.tsx`
 /// avoids traversing unrelated trees. Roots nested under a shallower root are

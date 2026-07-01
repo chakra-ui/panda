@@ -263,13 +263,13 @@ describe('compiler.inspectFile() — token reference forms', () => {
 })
 
 describe('compiler.sources()', () => {
-  it('returns globs with their static base dir', () => {
+  it('returns globs relative to their static base dir', () => {
     const compiler = createCompiler(createUserConfig({ cwd: '/proj', include: ['src/**/*.tsx', '**/*.ts'] }))
     expect(compiler.sources()).toMatchInlineSnapshot(`
       [
         {
           "base": "/proj/src",
-          "pattern": "src/**/*.tsx",
+          "pattern": "**/*.tsx",
         },
         {
           "base": "/proj",
