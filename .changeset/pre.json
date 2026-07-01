@@ -38,7 +38,8 @@
     "@sandbox/app-postcss": "0.0.0",
     "@sandbox/ds": "1.0.0",
     "@sandbox/ds-nested": "1.0.0",
-    "@sandbox/foundations": "1.0.0"
+    "@sandbox/foundations": "1.0.0",
+    "sandbox-vite-postcss": "0.0.0"
   },
   "changesets": [
     "analyze-report",
@@ -60,6 +61,7 @@
     "fix-object-map-literal-classnames",
     "fix-recipe-selection-no-variants",
     "fix-runtime-important-classname",
+    "fuzzy-token-categories",
     "global-nesting-composition-parity",
     "init-scaffold-default-presets",
     "jsx-extract-requires-framework",
@@ -69,6 +71,7 @@
     "panda-debug-command",
     "panda-v2-beta",
     "parse-errors-non-fatal",
+    "postcss-hmr-source-glob",
     "postcss-v2-plugin",
     "preset-resolved-hook-utils",
     "sharp-tigers-tell",

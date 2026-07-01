@@ -1,5 +1,7 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.7
+
 ## 2.0.0-beta.6
 
 ### Minor Changes

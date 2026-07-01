@@ -1,5 +1,16 @@
 # @pandacss/postcss
 
+## 2.0.0-beta.7
+
+### Patch Changes
+
+- 0a11fda: Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
+  updates its styles live, instead of leaving them stale until you restart the dev server.
+- Updated dependencies [97d142a]
+- Updated dependencies [0a11fda]
+  - @pandacss/compiler@2.0.0-beta.7
+  - @pandacss/compiler-shared@2.0.0-beta.7
+
 ## 2.0.0-beta.6
 
 ### Patch Changes
