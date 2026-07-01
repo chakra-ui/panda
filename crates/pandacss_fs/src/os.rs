@@ -3,12 +3,11 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use fast_glob::glob_match;
 use oxc_resolver::{FileMetadata, FileSystem as OxcResolverFileSystem, FileSystemOs, ResolveError};
 use walkdir::WalkDir;
 
 use crate::FileSystem;
-use crate::glob::{GlobOptions, effective_excludes, normalize_pattern};
+use crate::glob::{GlobOptions, effective_excludes, matches_any};
 
 /// Native filesystem impl. Read primitives delegate to `oxc_resolver::FileSystemOs`;
 /// write primitives call `std::fs` directly; `glob` overrides the default walker to
@@ -85,9 +84,7 @@ impl FileSystem for OsFileSystem {
                         return true; // root
                     }
                     let rel_bytes = rel_str.as_bytes();
-                    !excludes
-                        .iter()
-                        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
+                    !matches_any(&excludes, rel_bytes)
                 });
 
             for entry in walker {
@@ -116,11 +113,7 @@ impl FileSystem for OsFileSystem {
                 let rel_str = rel.to_string_lossy();
                 let rel_bytes = rel_str.as_bytes();
 
-                if opts
-                    .include
-                    .iter()
-                    .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
-                {
+                if matches_any(&opts.include, rel_bytes) {
                     if opts.absolute {
                         results.push(entry.path().to_path_buf());
                     } else {

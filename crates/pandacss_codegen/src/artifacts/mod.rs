@@ -10,4 +10,5 @@ pub mod recipes;
 pub mod sva;
 pub mod themes;
 pub mod tokens;
+pub mod ts_string;
 pub mod types;

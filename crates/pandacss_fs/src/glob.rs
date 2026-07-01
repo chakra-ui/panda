@@ -19,6 +19,13 @@ pub(crate) fn normalize_pattern(pattern: &str) -> &str {
     pattern.strip_prefix("./").unwrap_or(pattern)
 }
 
+/// Whether the cwd-relative `rel_bytes` matches any of `patterns`.
+pub(crate) fn matches_any(patterns: &[String], rel_bytes: &[u8]) -> bool {
+    patterns
+        .iter()
+        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
+}
+
 /// Discovery options. Mirrors `Runtime.fs.glob` from `@pandacss/types` so the Rust
 /// engine sees the same shape JS Panda already uses.
 #[derive(Debug, Clone)]
@@ -60,15 +67,10 @@ pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
     let rel_bytes = rel_str.as_bytes();
 
     let excludes = effective_excludes(opts);
-    if excludes
-        .iter()
-        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
-    {
+    if matches_any(&excludes, rel_bytes) {
         return false;
     }
-    opts.include
-        .iter()
-        .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
+    matches_any(&opts.include, rel_bytes)
 }
 
 /// The static directory prefix of a glob pattern — the part before the first
@@ -163,21 +165,13 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
             let rel_str = rel.to_string_lossy();
             let rel_bytes = rel_str.as_bytes();
 
-            if excludes
-                .iter()
-                .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
-            {
+            if matches_any(&excludes, rel_bytes) {
                 continue;
             }
             let meta = fs.metadata(&entry)?;
             if meta.is_dir() {
                 stack.push(entry);
-            } else if meta.is_file()
-                && opts
-                    .include
-                    .iter()
-                    .any(|pat| glob_match(normalize_pattern(pat).as_bytes(), rel_bytes))
-            {
+            } else if meta.is_file() && matches_any(&opts.include, rel_bytes) {
                 if opts.absolute {
                     results.push(entry);
                 } else {

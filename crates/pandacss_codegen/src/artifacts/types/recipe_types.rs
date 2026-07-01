@@ -2,7 +2,8 @@ use std::collections::BTreeMap;
 
 use pandacss_config::VariantTypeData;
 
-use crate::{ImportDecl, Item, ItemNode, Module};
+use crate::artifacts::ts_string::{quote_member, string_literal, string_union, type_raw};
+use crate::{ImportDecl, Module};
 
 pub(super) fn module() -> Module {
     Module::new()
@@ -172,41 +173,4 @@ fn variant_value_type(data: &VariantTypeData) -> String {
     } else {
         parts.join(" | ")
     }
-}
-
-fn string_union(values: &[String], fallback: &str) -> String {
-    if values.is_empty() {
-        return fallback.into();
-    }
-
-    values
-        .iter()
-        .map(|value| string_literal(value))
-        .collect::<Vec<_>>()
-        .join(" | ")
-}
-
-fn quote_member(value: &str) -> String {
-    if is_identifier(value) {
-        value.into()
-    } else {
-        string_literal(value)
-    }
-}
-
-fn string_literal(value: &str) -> String {
-    format!("{value:?}")
-}
-
-fn is_identifier(value: &str) -> bool {
-    let mut chars = value.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    (first.is_ascii_alphabetic() || first == '_' || first == '$')
-        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
-}
-
-fn type_raw(code: impl Into<String>) -> Item {
-    Item::ty(ItemNode::RawStmt(code.into()))
 }

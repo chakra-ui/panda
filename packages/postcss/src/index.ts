@@ -1,5 +1,5 @@
 import { createNodeDriver } from '@pandacss/compiler'
-import type { Diagnostic, Driver } from '@pandacss/compiler-shared'
+import { type Diagnostic, type Driver, formatDiagnostic } from '@pandacss/compiler-shared'
 import { extname, normalize, resolve } from 'node:path'
 import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root, TransformCallback } from 'postcss'
 
@@ -176,16 +176,6 @@ function withPluginMetadata(message: Message, parent: string | undefined): Messa
     plugin: PLUGIN_NAME,
     parent,
   }
-}
-
-function formatDiagnostic(diagnostic: Diagnostic) {
-  const file = diagnostic.file ? `${diagnostic.file}` : ''
-  const location = diagnostic.location
-    ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
-    : diagnostic.span
-      ? `:${diagnostic.span.start}`
-      : ''
-  return `${diagnostic.severity} ${diagnostic.code} ${file}${location} ${diagnostic.message}`.replace(/\s+/g, ' ')
 }
 
 function emitDiagnostics(root: Root, result: Result, diagnostics: Diagnostic[]) {

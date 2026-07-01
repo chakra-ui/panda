@@ -1,4 +1,5 @@
-use crate::{ImportDecl, Item, ItemNode, Module};
+use crate::artifacts::ts_string::type_raw;
+use crate::{ImportDecl, Module};
 
 pub(super) fn module() -> Module {
     Module::new()
@@ -36,8 +37,4 @@ export interface PatternRuntimeConfig<Props extends object = object> extends Pat
   transform: (props: Props, helpers: PatternHelpers) => SystemStyleObject
 }",
         ))
-}
-
-fn type_raw(code: impl Into<String>) -> Item {
-    Item::ty(ItemNode::RawStmt(code.into()))
 }

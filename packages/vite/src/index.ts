@@ -1,4 +1,5 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
+import { formatDiagnostic } from '@pandacss/compiler-shared'
 import { extname } from 'node:path'
 import type { HmrContext, ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 
@@ -9,16 +10,6 @@ export interface PandaPluginOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
-}
-
-function formatDiagnostic(diagnostic: Diagnostic): string {
-  const file = diagnostic.file ?? ''
-  const location = diagnostic.location
-    ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
-    : diagnostic.span
-      ? `:${diagnostic.span.start}`
-      : ''
-  return `${diagnostic.severity} ${diagnostic.code} ${file}${location} ${diagnostic.message}`.replace(/\s+/g, ' ')
 }
 
 function warnDiagnostics(

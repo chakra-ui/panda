@@ -11,6 +11,8 @@ use pandacss_config::{
 use pandacss_shared::{file_stem, js_ident, pascal_case};
 use serde_json::{Map, Value};
 
+use crate::artifacts::ts_string::is_identifier;
+
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConfigDependency, ConstDecl,
     DependencySet, ExportDecl, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode,
@@ -494,13 +496,4 @@ fn member_name(value: &str) -> TsMemberName {
     } else {
         TsMemberName::StringLiteral(value.into())
     }
-}
-
-fn is_identifier(value: &str) -> bool {
-    let mut chars = value.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    (first.is_ascii_alphabetic() || first == '_' || first == '$')
-        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }
