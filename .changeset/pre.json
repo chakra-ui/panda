@@ -71,6 +71,7 @@
     "panda-debug-command",
     "panda-v2-beta",
     "parse-errors-non-fatal",
+    "postcss-hmr-atoms",
     "postcss-hmr-source-glob",
     "postcss-v2-plugin",
     "preset-resolved-hook-utils",

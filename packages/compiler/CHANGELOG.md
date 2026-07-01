@@ -1,5 +1,18 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.8
+
+### Patch Changes
+
+- 72580e5: Fix PostCSS HMR style updates.
+
+  Component edits now keep previous atoms available during refresh, and design-system source fallback files refresh
+  through the driver instead of waiting for a restart.
+
+- Updated dependencies [72580e5]
+  - @pandacss/compiler-shared@2.0.0-beta.8
+  - @pandacss/config@2.0.0-beta.8
+
 ## 2.0.0-beta.7
 
 ### Patch Changes
