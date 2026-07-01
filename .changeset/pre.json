@@ -32,15 +32,25 @@
     "@pandacss/dev": "1.11.3",
     "playground": "0.1.0",
     "website": "1.0.0",
-    "@pandacss/eslint-plugin": "2.0.0-beta.3"
+    "@pandacss/eslint-plugin": "2.0.0-beta.3",
+    "@sandbox/app": "0.0.0",
+    "@sandbox/app-nested": "0.0.0",
+    "@sandbox/app-postcss": "0.0.0",
+    "@sandbox/ds": "1.0.0",
+    "@sandbox/ds-nested": "1.0.0",
+    "@sandbox/foundations": "1.0.0"
   },
   "changesets": [
+    "analyze-report",
     "cli-include-flag",
     "codegen-types-index-jsx",
     "compiled-jsx-runtime-extraction",
     "config-bundle-temp-file",
     "css-property-value-map",
     "default-panda-build-command",
+    "design-system-manifest",
+    "design-system-panda-lib",
+    "design-system-single-level",
     "direct-mcp-package",
     "eslint-plugin-core",
     "fix-classname-vendor-prefix",
@@ -52,6 +62,7 @@
     "fix-runtime-important-classname",
     "global-nesting-composition-parity",
     "init-scaffold-default-presets",
+    "jsx-extract-requires-framework",
     "lint-inspection-result",
     "merge-adjacent-selectors",
     "native-token-css",
@@ -65,6 +76,7 @@
     "sort-container-inline-size",
     "tokens-svg-color-table",
     "utility-transform-grouped-emit",
+    "wasi-stackblitz",
     "write-if-changed-outputs"
   ]
 }

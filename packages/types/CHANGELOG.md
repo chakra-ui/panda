@@ -1,5 +1,14 @@
 # @pandacss/types
 
+## 2.0.0-beta.6
+
+### Minor Changes
+
+- 7b71a43: Adopt a published design system with `designSystem: '@acme/ds'`.
+
+  Panda reads the library's `panda.lib.json`, merges its preset below your config, and reuses its pre-extracted styles.
+  If the design system needs a different Panda major version, Panda reports a clear error.
+
 ## 2.0.0-beta.5
 
 ## 2.0.0-beta.4
