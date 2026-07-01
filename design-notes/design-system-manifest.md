@@ -289,9 +289,11 @@ For local development, run the producer watchers and the app watcher together:
 That keeps ownership clear. Design-system packages produce artifacts. Apps consume artifacts. The repo tool handles
 ordering.
 
-Vite owns a dev server, so `@pandacss/vite` registers the design-system manifest, preset, and build-info files as watch
-inputs and reloads the driver when they change. PostCSS does the same through PostCSS dependency messages; build tools
-that honor those messages will rebuild when design-system artifacts change.
+Vite owns a dev server, so `@pandacss/vite` registers the design-system manifest, preset, build-info, and manifest
+`files` source matches as watch inputs. Artifact changes reload the driver, then re-parse consumer files so app atoms
+stay present. Source matches are routed through the compiler's incremental file change path for monorepo feedback while
+`panda lib --watch` updates the authoritative artifacts. PostCSS registers the same files through dependency messages;
+build tools that honor those messages will rebuild when design-system artifacts or source fallback files change.
 
 ## The consumer flow
 
@@ -509,7 +511,8 @@ compatibility gates Panda enforces.
 **Token-shape break** — renaming, removing, or restructuring tokens. Panda does not police this. The manifest `version`
 is informational and never enforced; registry and version policy are non-goals. The design-system author owns declaring
 the break through normal semver and a changelog, and the consumer absorbs it by updating the dependency and
-regenerating. Nothing auto-updates: there is no cross-package source watch (Phase 6) and no registry integration.
+regenerating. Panda can watch local design-system artifacts/source fallback files in dev, but package version policy and
+registry updates remain outside the manifest contract.
 
 Known limitation: when consumer code references a token the upgraded design system no longer defines, Panda emits it as
 a literal CSS value with no diagnostic — so a breaking token removal degrades to dead CSS silently rather than a build
@@ -585,8 +588,9 @@ app one shared runtime surface.
 
 ### Workspace package edits refresh JS but not CSS
 
-Bundler HMR can refresh the component while Panda cssgen does nothing. Cross-package source globs must become watched
-build deps. Today only manifest paths are registered.
+Bundler HMR can refresh the component while Panda cssgen does nothing. Vite and PostCSS now register design-system
+artifacts plus manifest `files` source matches as build deps, so CSS generation wakes up when workspace design-system
+source changes.
 
 ### Panda should be a peer dependency
 
@@ -595,7 +599,6 @@ A design-system package should peer-depend on Panda. The manifest `panda` field 
 ## Open follow-ups
 
 - Document and validate bundler externalization for styled-system package exports.
-- Watch cross-package source globs, not only manifest/build-info paths.
 - Decide whether TS path generation is needed or package exports are enough across bundlers.
 - Confirm workspace protocol and symlink resolution for `designSystem: '@acme/ds'`.
 - Design versioned federation output only if micro-frontend demand appears.

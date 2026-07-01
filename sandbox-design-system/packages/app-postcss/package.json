@@ -1,0 +1,27 @@
+{
+  "name": "@sandbox/app-postcss",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm codegen && vite build",
+    "codegen": "panda codegen",
+    "dev": "pnpm codegen && vite --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@sandbox/ds": "workspace:*",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/postcss": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "postcss": "8.5.14",
+    "typescript": "6.0.2",
+    "vite": "7.2.6"
+  }
+}

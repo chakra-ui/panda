@@ -145,6 +145,20 @@ function registerDependencies(driver: Driver, result: Result, cwd: string, paren
       ),
     )
   }
+
+  for (const target of driver.designSystemWatchTargets?.() ?? []) {
+    for (const file of [target.manifestPath, target.buildInfoPath, target.presetPath, ...target.sourceFiles]) {
+      result.messages.push(
+        withPluginMetadata(
+          {
+            type: 'dependency',
+            file: normalize(file),
+          },
+          parent,
+        ),
+      )
+    }
+  }
 }
 
 function createSourceDependency(source: { dir: string; glob: string }): Message {

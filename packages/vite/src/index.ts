@@ -60,15 +60,29 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   const addPandaWatchFiles = (addWatchFile: (file: string) => void, inputId: string) => {
     if (!driver) return
 
+    const seen = new Set<string>()
+    const watch = (file: string) => {
+      if (seen.has(file)) return
+      seen.add(file)
+      addWatchFile(file)
+    }
     const inputFile = inputId.split('?')[0]
     for (const file of driver.scan()) {
-      if (file !== inputFile) addWatchFile(file)
+      if (file !== inputFile) watch(file)
     }
     for (const dep of driver.watchTargets().config) {
-      addWatchFile(driver.resolvePath(dep))
+      watch(driver.resolvePath(dep))
     }
     if (driver.configPath) {
-      addWatchFile(driver.configPath)
+      watch(driver.configPath)
+    }
+    for (const target of driver.designSystemWatchTargets?.() ?? []) {
+      watch(target.manifestPath)
+      watch(target.buildInfoPath)
+      watch(target.presetPath)
+      for (const file of target.sourceFiles) {
+        watch(file)
+      }
     }
   }
 
@@ -91,6 +105,10 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       }
     }
     return mods
+  }
+
+  const withInvalidatedRoots = (server: ViteDevServer, modules: ModuleNode[]) => {
+    return [...new Set([...invalidateRoots(server), ...modules])]
   }
 
   return {
@@ -129,6 +147,17 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     async handleHotUpdate(ctx: HmrContext) {
       if (!driver) return
 
+      const designSystemFile = driver.isDesignSystemFile?.(ctx.file) ?? false
+      if (designSystemFile) {
+        const changed = await driver.syncDesignSystemFileChange({
+          path: ctx.file,
+          kind: 'change',
+          ...(designSystemFile === 'source' ? { content: await ctx.read() } : {}),
+        })
+        if (changed) warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
+        return withInvalidatedRoots(ctx.server, ctx.modules)
+      }
+
       if (driver.isConfigFile(ctx.file)) {
         const diff = await driver.reload()
         if (!diff.hasChanged) return
@@ -149,7 +178,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
           `while parsing ${ctx.file}`,
           ctx.file,
         )
-        return [...ctx.modules, ...invalidateRoots(ctx.server)]
+        return withInvalidatedRoots(ctx.server, ctx.modules)
       }
 
       return ctx.modules

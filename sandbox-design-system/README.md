@@ -5,6 +5,7 @@ Manual smoke test for React Vite apps consuming Panda design-system packages.
 ```txt
 @sandbox/ds
   -> @sandbox/app
+  -> @sandbox/app-postcss
 
 @sandbox/foundations
   -> @sandbox/ds-nested
@@ -36,6 +37,12 @@ For watch mode:
 pnpm --dir sandbox-design-system dev
 ```
 
+For the PostCSS consumer:
+
+```sh
+pnpm --dir sandbox-design-system dev:postcss
+```
+
 For the nested chain:
 
 ```sh
@@ -52,9 +59,9 @@ Check that each design-system package contains:
 - `panda.buildinfo.json`
 - `preset.mjs`
 
-`@sandbox/app` tests the simple React Vite consumer path. `@sandbox/app-nested` tests the React Vite consumer path for a
-nested design-system chain. Both apps override `colors.brand`, so each should print a `design_system_token_conflict`
-warning. The app token wins.
+`@sandbox/app` tests the React Vite plugin path. `@sandbox/app-postcss` mirrors it through `@pandacss/postcss`.
+`@sandbox/app-nested` tests the React Vite consumer path for a nested design-system chain. The apps override
+`colors.brand`, so each should print a `design_system_token_conflict` warning. The app token wins.
 
 ## Check stale build info
 

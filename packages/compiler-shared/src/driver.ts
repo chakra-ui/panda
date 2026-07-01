@@ -64,6 +64,16 @@ export interface DriverPaths {
   stylesDir: string
 }
 
+export interface DesignSystemWatchTarget {
+  name: string
+  manifestPath: string
+  buildInfoPath: string
+  presetPath: string
+  sourceFiles: string[]
+}
+
+export type DesignSystemWatchFileKind = 'artifact' | 'source'
+
 /** Host orchestrator above the pure {@link Compiler}: owns config lifecycle,
  *  source scanning (via the engine's fs), output cadence, and watch wiring.
  *  {@link BaseDriver} implements the shared behaviour; the node
@@ -94,6 +104,8 @@ export interface Driver {
   applyChange(change: SourceChange): boolean
   /** Route a batch of watcher events; returns each one's result. */
   applyChanges(changes: SourceChange[]): boolean[]
+  /** Route a watched design-system file change into artifact reload or source fallback parsing. */
+  syncDesignSystemFileChange(change: SourceChange): Promise<boolean>
   /** Codegen artifacts — full set, or only those affected by a diff. */
   artifacts(filter?: ArtifactFilter): CodegenArtifact[]
   /** Resolve the configured output directory, optionally applying a caller override. */
@@ -118,6 +130,10 @@ export interface Driver {
   writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult
   /** Watch targets for the host watcher: matched files, their base dirs, config deps. */
   watchTargets(): { sources: string[]; dirs: string[]; config: string[] }
+  /** Watch targets for hydrated design-system artifacts and source fallback files. */
+  designSystemWatchTargets(): DesignSystemWatchTarget[]
+  /** Classify a watched design-system file as an artifact or source fallback. */
+  isDesignSystemFile(file: string): DesignSystemWatchFileKind | false
   /** Whether a changed path is the config file or one of its bundled dependencies.
    *  Lets watch hosts route a change to `reload()` vs `applyChange()`. */
   isConfigFile(file: string): boolean
@@ -178,6 +194,10 @@ export abstract class BaseDriver implements Driver {
 
   applyChanges(changes: SourceChange[]): boolean[] {
     return changes.map((change) => this.applyChange(change))
+  }
+
+  async syncDesignSystemFileChange(_change: SourceChange): Promise<boolean> {
+    return false
   }
 
   artifacts(filter?: ArtifactFilter): CodegenArtifact[] {
@@ -242,6 +262,14 @@ export abstract class BaseDriver implements Driver {
       dirs: [...new Set(sources.map((source) => source.base))],
       config: this.configDependencies,
     }
+  }
+
+  designSystemWatchTargets(): DesignSystemWatchTarget[] {
+    return []
+  }
+
+  isDesignSystemFile(_file: string): DesignSystemWatchFileKind | false {
+    return false
   }
 
   // Config-file resolution is path-based and disk-bound, so it lives in the node

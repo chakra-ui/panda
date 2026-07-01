@@ -14,9 +14,12 @@ interface MockDriver {
   codegen: ReturnType<typeof vi.fn>
   cssgen: ReturnType<typeof vi.fn>
   designSystemDiagnostics: Array<{ severity: 'warning' | 'error'; code: string; message: string }>
+  designSystemWatchTargets: ReturnType<typeof vi.fn>
   getOutdir: ReturnType<typeof vi.fn>
+  isDesignSystemFile: ReturnType<typeof vi.fn>
   parseFiles: ReturnType<typeof vi.fn>
   reload: ReturnType<typeof vi.fn>
+  syncDesignSystemFileChange: ReturnType<typeof vi.fn>
 }
 
 afterEach(() => {
@@ -142,6 +145,62 @@ describe('@pandacss/postcss', () => {
     expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
       [
         "warning design_system_token_conflict Token "colors.brand" is defined by both "@acme/ds" and this config; the local value wins.",
+      ]
+    `)
+  })
+
+  it('registers design-system artifact and source file dependencies', async () => {
+    const { driver, run } = await setup()
+    driver.designSystemWatchTargets.mockReturnValueOnce([
+      {
+        name: '@acme/ds',
+        manifestPath: '/project/node_modules/@acme/ds/panda.lib.json',
+        buildInfoPath: '/project/node_modules/@acme/ds/panda.buildinfo.json',
+        presetPath: '/project/node_modules/@acme/ds/preset.mjs',
+        sourceFiles: ['/project/node_modules/@acme/ds/src/button.tsx'],
+      },
+    ])
+
+    const result = await run(INPUT)
+
+    expect(result.messages.filter((message) => message.type === 'dependency')).toMatchInlineSnapshot(`
+      [
+        {
+          "file": "/project/panda.config.ts",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/panda.tokens.ts",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/node_modules/@acme/ds/panda.lib.json",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/node_modules/@acme/ds/panda.buildinfo.json",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/node_modules/@acme/ds/preset.mjs",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
+        {
+          "file": "/project/node_modules/@acme/ds/src/button.tsx",
+          "parent": "/project/styles.css",
+          "plugin": "pandacss",
+          "type": "dependency",
+        },
       ]
     `)
   })
@@ -293,8 +352,11 @@ function createMockDriver(): MockDriver {
       diagnostics: [],
     })),
     designSystemDiagnostics: [],
+    designSystemWatchTargets: vi.fn(() => []),
     getOutdir: vi.fn((outdir?: string) => (outdir ? `/project/${outdir}` : '/project/styled-system')),
+    isDesignSystemFile: vi.fn(() => false),
     parseFiles: vi.fn(() => []),
     reload: vi.fn(async () => ({ hasChanged: false, dependencies: [], recipes: [], patterns: [], changes: [] })),
+    syncDesignSystemFileChange: vi.fn(async () => false),
   } as unknown as MockDriver
 }

@@ -5,6 +5,8 @@ import {
   type GenerateArtifactOptions,
   type CodegenOptions,
   type Compiler,
+  type DesignSystemWatchFileKind,
+  type DesignSystemWatchTarget,
   type Diagnostic,
   type DiffConfigResult,
   type SourceChange,
@@ -92,6 +94,7 @@ export class NodeDriver extends BaseDriver {
   #designSystemDiagnostics: Diagnostic[]
   #designSystemPreset: CompilePresetResult | undefined
   #designSystemArtifactSnapshot: string
+  #designSystemWatchTargets: DesignSystemWatchTarget[] | undefined
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = buildFromConfig(loaded)
@@ -118,6 +121,56 @@ export class NodeDriver extends BaseDriver {
     return this.#loaded.dependencies
   }
 
+  override designSystemWatchTargets(): DesignSystemWatchTarget[] {
+    return (this.#designSystemWatchTargets ??= (this.#loaded.metadata?.designSystem ?? []).map((ds) => {
+      const base = this.compiler.path.dirname(ds.manifestPath)
+      const presetPath = realpathIfExists(this.compiler, this.compiler.path.resolve(ds.manifest.preset, base))
+      const sourceFiles =
+        ds.files.length > 0
+          ? this.compiler.scan({ include: ds.files, cwd: base }).map((file) => realpathIfExists(this.compiler, file))
+          : []
+
+      return {
+        name: ds.name,
+        manifestPath: realpathIfExists(this.compiler, ds.manifestPath),
+        buildInfoPath: realpathIfExists(this.compiler, ds.buildInfoPath),
+        presetPath,
+        sourceFiles: [...new Set(sourceFiles)],
+      }
+    }))
+  }
+
+  override isDesignSystemFile(file: string): DesignSystemWatchFileKind | false {
+    const target = this.compiler.path.realpath(file)
+
+    for (const watchTarget of this.#designSystemWatchTargets ?? this.designSystemWatchTargets()) {
+      if (
+        [watchTarget.manifestPath, watchTarget.buildInfoPath, watchTarget.presetPath].some(
+          (path) => this.compiler.path.realpath(path) === target,
+        )
+      ) {
+        return 'artifact'
+      }
+
+      if (watchTarget.sourceFiles.some((path) => this.compiler.path.realpath(path) === target)) {
+        return 'source'
+      }
+    }
+
+    return false
+  }
+
+  override async syncDesignSystemFileChange(change: SourceChange): Promise<boolean> {
+    const kind = this.isDesignSystemFile(change.path)
+    if (kind === 'artifact') {
+      const diff = await this.reload()
+      if (diff.hasChanged) this.parseFiles()
+      return diff.hasChanged
+    }
+    if (kind === 'source') return this.applyChange(change)
+    return false
+  }
+
   async reload(): Promise<DiffConfigResult> {
     const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
     // Re-apply before diffing so the override isn't seen as a config change.
@@ -133,6 +186,7 @@ export class NodeDriver extends BaseDriver {
       this.#designSystemDiagnostics = built.designSystemDiagnostics
       this.#designSystemPreset = undefined
       this.#designSystemArtifactSnapshot = nextDesignSystemArtifactSnapshot
+      this.#designSystemWatchTargets = undefined
     }
     return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
   }
@@ -426,6 +480,10 @@ function designSystemArtifactSnapshot(compiler: Compiler, loaded: LoadConfigResu
       tokenPaths: ds.tokenPaths,
     })) ?? [],
   )
+}
+
+function realpathIfExists(compiler: Compiler, path: string): string {
+  return compiler.fs.exists(path) ? compiler.path.realpath(path) : path
 }
 
 function inferDesignSystemLibFiles(

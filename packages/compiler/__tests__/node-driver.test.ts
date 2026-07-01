@@ -545,11 +545,78 @@ describe('createNodeDriver designSystem', () => {
     try {
       const driver = await createNodeDriver({ cwd: dir })
       const css = driver.cssgen().css
+      const realPkg = realpathSync(pkg)
 
       expect(css).toContain('color: red')
+      expect(driver.designSystemWatchTargets()).toMatchInlineSnapshot(`
+        [
+          {
+            "name": "@acme/ds",
+            "manifestPath": "${realPkg}/panda.lib.json",
+            "buildInfoPath": "${realPkg}/panda.buildinfo.json",
+            "presetPath": "${realPkg}/preset.mjs",
+            "sourceFiles": [],
+          },
+        ]
+      `)
       expect(driver.isConfigFile(join(pkg, 'panda.lib.json'))).toBe(true)
       expect(driver.isConfigFile(join(pkg, 'preset.mjs'))).toBe(true)
       expect(driver.isConfigFile(join(pkg, 'panda.buildinfo.json'))).toBe(true)
+      expect(driver.isDesignSystemFile(join(pkg, 'panda.lib.json'))).toBe('artifact')
+      expect(driver.isDesignSystemFile(join(pkg, 'preset.mjs'))).toBe('artifact')
+      expect(driver.isDesignSystemFile(join(pkg, 'panda.buildinfo.json'))).toBe('artifact')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('tracks design-system source files listed in the manifest', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-source-watch-'))
+    const pkg = join(dir, 'node_modules', '@acme', 'ds')
+
+    const lib = createProject()
+    lib.parseFileSource(
+      'src/button.tsx',
+      "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })",
+    )
+
+    writeFileTree(dir, {
+      'panda.config.ts': "export default { designSystem: '@acme/ds', include: ['App.tsx'] }",
+      'App.tsx': '',
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        panda: '^2.0.0',
+        preset: './preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        importMap: { css: '@acme/ds/css' },
+        files: ['src/**/*.tsx'],
+      }),
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(lib.buildInfo.create({ panda: '^2.0.0' })),
+      'node_modules/@acme/ds/src/button.tsx':
+        "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })",
+    })
+
+    try {
+      const driver = await createNodeDriver({ cwd: dir })
+      const source = realpathSync(join(pkg, 'src', 'button.tsx'))
+
+      expect(driver.designSystemWatchTargets()[0]?.sourceFiles).toEqual([source])
+      expect(driver.isDesignSystemFile(source)).toBe('source')
+
+      rmSync(source)
+      expect(driver.isDesignSystemFile(source)).toBe('source')
+
+      await expect(
+        driver.syncDesignSystemFileChange({
+          path: source,
+          kind: 'change',
+          content: "import { css } from '@acme/ds/css'\nexport const Button = css({ color: 'blue' })",
+        }),
+      ).resolves.toBe(true)
+      expect(driver.cssgen().css).toContain('color: blue')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
@@ -595,6 +662,55 @@ describe('createNodeDriver designSystem', () => {
       expect(diff.hasChanged).toBe(true)
       expect(driver.cssgen().css).toContain('color: blue')
       expect(driver.cssgen().css).not.toContain('color: red')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('syncs design-system artifact changes without dropping consumer source state', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-driver-ds-artifact-sync-'))
+
+    const first = createProject()
+    first.parseFileSource('button.tsx', "import { css } from '@panda/css'\nexport const Button = css({ color: 'red' })")
+
+    const second = createProject()
+    second.parseFileSource(
+      'button.tsx',
+      "import { css } from '@panda/css'\nexport const Button = css({ color: 'blue' })",
+    )
+
+    writeFileTree(dir, {
+      'panda.config.ts':
+        "export default { designSystem: '@acme/ds', include: ['App.tsx'], importMap: { css: ['@panda/css'] } }",
+      'App.tsx': "import { css } from '@panda/css'\ncss({ color: 'green' })",
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', version: '1.0.0' }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        panda: '^2.0.0',
+        preset: './preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        importMap: { css: '@acme/ds/css' },
+      }),
+      'node_modules/@acme/ds/preset.mjs': 'export default { name: "@acme/ds" }',
+      'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(first.buildInfo.create({ panda: '^2.0.0' })),
+    })
+
+    try {
+      const driver = await createNodeDriver({ cwd: dir })
+      driver.parseFiles()
+      expect(driver.cssgen().css).toContain('color: green')
+
+      const buildInfoPath = join(dir, 'node_modules', '@acme', 'ds', 'panda.buildinfo.json')
+      writeFileTree(dir, {
+        'node_modules/@acme/ds/panda.buildinfo.json': JSON.stringify(second.buildInfo.create({ panda: '^2.0.0' })),
+      })
+
+      await expect(driver.syncDesignSystemFileChange({ path: buildInfoPath, kind: 'change' })).resolves.toBe(true)
+      const css = driver.cssgen().css
+      expect(css).toContain('color: green')
+      expect(css).toContain('color: blue')
+      expect(css).not.toContain('color: red')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
