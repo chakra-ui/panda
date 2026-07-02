@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileS
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { runLib } from '../src'
+import { runCodegen, runLib } from '../src'
 import { CONFIG } from './helpers'
 
 function createLibFixture(extraConfig = ''): string {
@@ -70,6 +70,27 @@ describe('lib command', () => {
       }
     `)
     expect(result.exportsChanged).toBe(true)
+  })
+
+  it('syncs styled-system subpath exports for categories the codegen emitted', async () => {
+    dir = createLibFixture()
+    await runCodegen({ cwd: dir, logLevel: 'silent' })
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports['./css']).toEqual({
+      types: './styled-system/css/index.d.ts',
+      default: './styled-system/css/index.js',
+    })
+    expect(pkg.exports['./tokens']).toEqual({
+      types: './styled-system/tokens/index.d.ts',
+      default: './styled-system/tokens/index.js',
+    })
+    expect(pkg.exports['./panda.lib.json']).toBe('./dist/panda.lib.json')
+    expect(pkg.exports['./recipes']).toBeUndefined()
+    expect(pkg.exports['./jsx']).toBeUndefined()
   })
 
   it('preserves an existing string root export when syncing package exports', async () => {

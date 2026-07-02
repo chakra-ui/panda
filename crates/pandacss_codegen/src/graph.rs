@@ -635,6 +635,7 @@ fn generate_node(
     }
 }
 
+
 fn source_extension(ext: SourceExt) -> &'static str {
     match ext {
         SourceExt::Ts => "ts",

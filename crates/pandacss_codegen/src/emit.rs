@@ -334,6 +334,11 @@ fn print_export(
                 print_source(source, ImportKind::Value, target, import_extensions, format)
             )
         }
+        ExportDecl::Named { names, source } => {
+            let source = print_source(source, ImportKind::Value, target, import_extensions, format);
+            let list = names.join(", ");
+            format!("export {{ {list} }} from '{source}';")
+        }
         ExportDecl::TypeStar { source } => {
             let source = print_source(source, ImportKind::Type, target, import_extensions, format);
             if matches!(target, EmitTarget::SourceTs) {

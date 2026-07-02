@@ -632,6 +632,43 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/preset-base
 
+  sandbox-design-system/packages/overlay:
+    dependencies:
+      '@sandbox/ds':
+        specifier: workspace:*
+        version: link:../ds
+      react:
+        specifier: 19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: 19.2.0
+        version: 19.2.0(react@19.2.0)
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../../packages/dev
+      '@pandacss/preset-base':
+        specifier: workspace:*
+        version: link:../../../packages/preset-base
+      '@pandacss/vite':
+        specifier: workspace:*
+        version: link:../../../packages/vite
+      '@types/react':
+        specifier: 19.2.7
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: 19.2.3
+        version: 19.2.3(@types/react@19.2.7)
+      '@vitejs/plugin-react':
+        specifier: 5.1.1
+        version: 5.1.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
+      typescript:
+        specifier: 6.0.2
+        version: 6.0.2
+      vite:
+        specifier: 7.2.6
+        version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+
   sandbox/astro:
     dependencies:
       '@astrojs/solid-js':

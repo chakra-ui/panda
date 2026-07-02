@@ -12,6 +12,7 @@ mod ast;
 mod context;
 mod emit;
 mod graph;
+mod overlay;
 mod ts_strip;
 
 pub use ast::{
@@ -25,4 +26,5 @@ pub use graph::{
     Artifact, ArtifactFile, ArtifactGraph, ArtifactId, ArtifactNode, ConfigDependency,
     DependencySet, GenerateOptions, emit_module_files,
 };
+pub use overlay::CodegenOverlay;
 pub use ts_strip::strip_typescript;

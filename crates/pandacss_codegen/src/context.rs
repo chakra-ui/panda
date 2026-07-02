@@ -9,6 +9,8 @@ use pandacss_config::{DEFAULT_PATTERN_JSX_ELEMENT, PatternConfig, TypeData, User
 use pandacss_shared::{file_stem, js_ident, pascal_case};
 use pandacss_tokens::TokenDictionary;
 
+use crate::CodegenOverlay;
+
 #[derive(Debug, Clone, Copy)]
 pub struct CodegenContext<'a> {
     pub config: &'a UserConfig,
@@ -16,6 +18,7 @@ pub struct CodegenContext<'a> {
     pub patterns: &'a BTreeMap<String, PatternCodegenMeta>,
     pub token_dictionary: Option<&'a TokenDictionary>,
     pub token_dictionary_provided: bool,
+    pub overlay: Option<&'a CodegenOverlay>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -25,6 +28,7 @@ pub struct CodegenInput {
     pub patterns: BTreeMap<String, PatternCodegenMeta>,
     pub token_dictionary: Option<Arc<TokenDictionary>>,
     pub token_dictionary_provided: bool,
+    pub overlay: Option<CodegenOverlay>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -53,6 +57,7 @@ impl<'a> CodegenContext<'a> {
             patterns: empty_patterns(),
             token_dictionary: None,
             token_dictionary_provided: false,
+            overlay: None,
         }
     }
 
@@ -65,6 +70,7 @@ impl<'a> CodegenContext<'a> {
             token_dictionary: input.token_dictionary.as_deref(),
             token_dictionary_provided: input.token_dictionary_provided
                 || input.token_dictionary.is_some(),
+            overlay: input.overlay.as_ref(),
         }
     }
 

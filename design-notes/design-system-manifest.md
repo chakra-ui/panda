@@ -183,7 +183,8 @@ importMap
 That means a nested library ships only its own additions. The parent travels through the manifest's `designSystem`
 field.
 
-`panda lib` also safely syncs package exports:
+`panda lib` also safely syncs package exports, including the styled-system subpath exports the consumer overlay
+re-exports:
 
 ```jsonc
 {
@@ -191,11 +192,17 @@ field.
     ".": "./dist/index.js",
     "./panda.lib.json": "./dist/panda.lib.json",
     "./preset": "./dist/panda.preset.mjs",
+    "./css": { "types": "./styled-system/css/index.d.ts", "default": "./styled-system/css/index.js" },
+    "./recipes": { "types": "./styled-system/recipes/index.d.ts", "default": "./styled-system/recipes/index.js" },
+    "./recipes/*": { "types": "./styled-system/recipes/*.d.ts", "default": "./styled-system/recipes/*.js" },
+    // …patterns, jsx, tokens
   },
 }
 ```
 
-It preserves existing root exports, including string and conditional root export forms.
+Only categories the codegen actually emitted are added, so a design system with no recipes never exports `./recipes`.
+The `recipes`/`patterns`/`jsx` categories also get a `/*` wildcard for deep imports. It preserves existing root exports,
+including string and conditional root export forms.
 
 ### Fallback files in workspaces and published packages
 
@@ -533,6 +540,7 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_parent_not_found`       | error    | a manifest parent does not resolve from the manifest dir    |
 | `design_system_buildinfo_stale`        | warning  | build info fails validation and fallback re-extract is used |
 | `design_system_token_conflict`         | warning  | design system and app both define the same token path       |
+| `design_system_artifact_conflict`      | warning  | design system and app both define the same recipe/pattern   |
 
 Errors stop the build. Warnings continue when Panda has a clear fallback. The app config wins token conflicts.
 
@@ -546,8 +554,12 @@ Errors stop the build. Warnings continue when Panda has a clear fallback. The ap
    Manifest-bearing packages are redirected to `designSystem`.
 5. **`panda lib` + propagation. ✅ Complete.** Write manifest/buildinfo/preset, sync safe package exports, warn for
    token conflicts, and fall back on stale build info when `files` exists.
-6. **Overlay codegen / virtual styled-system.** App emits only its delta; shared type/runtime surface lands through
-   [virtual-styled-system.md](./virtual-styled-system.md).
+6. **Overlay codegen / virtual styled-system. ✅ Complete (single-level).** With a single-level `designSystem`, the app
+   re-exports the design system's recipe, pattern, and jsx-component definitions and skips re-emitting them, emitting
+   only its own delta. The generic runtime (`css`, `cva`, `cx`, `helpers`, jsx factory) stays local because the app's
+   own modules import it relatively. Recipe/pattern name collisions warn (`design_system_artifact_conflict`) and the app
+   wins. Nested chains keep full-local codegen for now (merge and hydrate still apply); multi-root disambiguation is the
+   remaining follow-up. Details in [virtual-styled-system.md](./virtual-styled-system.md).
 
 ## Decisions
 
@@ -555,6 +567,14 @@ Errors stop the build. Warnings continue when Panda has a clear fallback. The ap
 - **Stale build info.** Re-extract that layer when `files` exists, warn, and continue.
 - **Token conflict.** App config wins, and Panda warns. Conflict detection compares token paths after each design system
   preset and the app config are resolved into canonical `theme.tokens`/`theme.semanticTokens` shapes.
+- **Artifact conflict.** When the app declares a recipe or pattern a design system already ships, the app's definition
+  is merged over the design system's (`theme.extend` deep-merge — the app wins per property, the design system's other
+  props and variants survive) and Panda warns (`design_system_artifact_conflict`). Overlay codegen emits the app's
+  module; the design-system re-export drops that name so there is no ambiguous export.
+- **Overlay codegen scope.** The codegen optimization is single-level in v1 and re-exports only the design system's
+  recipe/pattern/jsx _definitions_ — the library-sized part. The generic runtime (`css`, `cva`, `cx`, `helpers`, jsx
+  factory) is emitted locally because the app's own recipe/pattern modules import it by relative path; skipping it would
+  dangle those imports. Nested chains fall back to full-local codegen.
 - **Conditions.** Match by name. App condition definitions win on conflict.
 - **`staticCss`.** Travels through build info. No manifest field.
 - **CSS layer order.** Root design systems before child design systems before the app.

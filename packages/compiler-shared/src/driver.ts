@@ -12,6 +12,7 @@ import type {
   CodegenArtifact,
   CodegenDependency,
   CodegenOptions,
+  CodegenOverlay,
   Compiler,
   CompileOutput,
   CompileOptions,
@@ -145,8 +146,14 @@ export interface Driver {
 }
 
 /** Full codegen set, or only the artifacts affected by a config diff. */
-export function selectArtifacts(compiler: Compiler, filter?: ArtifactFilter): CodegenArtifact[] {
-  return filter?.dependencies ? compiler.generateAffectedArtifacts(filter.dependencies) : compiler.generateArtifacts()
+export function selectArtifacts(
+  compiler: Compiler,
+  filter?: ArtifactFilter,
+  overlay?: CodegenOverlay,
+): CodegenArtifact[] {
+  return filter?.dependencies
+    ? compiler.generateAffectedArtifacts(filter.dependencies, { overlay })
+    : compiler.generateArtifacts({ overlay })
 }
 
 /**
@@ -207,7 +214,7 @@ export abstract class BaseDriver implements Driver {
   }
 
   artifacts(filter?: ArtifactFilter): CodegenArtifact[] {
-    return selectArtifacts(this.#compiler, filter)
+    return selectArtifacts(this.#compiler, filter, this.codegenOverlay())
   }
 
   codegen(options?: CodegenOptions): string[] {
@@ -215,7 +222,12 @@ export abstract class BaseDriver implements Driver {
       outdir: this.getConfiguredOutdir(options?.outdir),
       cwd: options?.cwd,
       forceImportExtension: options?.forceImportExtension,
+      overlay: this.codegenOverlay(),
     })
+  }
+
+  protected codegenOverlay(): CodegenOverlay | undefined {
+    return undefined
   }
 
   cssgen(options?: CompileOptions): CompileOutput {

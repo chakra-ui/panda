@@ -25,7 +25,7 @@ fn generates_artifacts_from_resolved_project_state() {
     let project = Project::new(system);
 
     let artifact = project
-        .generate_artifact(&config, ArtifactId::Types, GenerateOptions::default())
+        .generate_artifact(&config, ArtifactId::Types, GenerateOptions::default(), None)
         .expect("types artifact");
     let tokens = artifact
         .files
@@ -137,7 +137,7 @@ fn generates_theme_artifact_files() {
     let system = System::new(config.clone()).expect("valid project config");
     let project = Project::new(system);
     let artifact = project
-        .generate_artifact(&config, ArtifactId::Themes, GenerateOptions::default())
+        .generate_artifact(&config, ArtifactId::Themes, GenerateOptions::default(), None)
         .expect("themes artifact");
 
     let mut files = artifact
@@ -268,7 +268,7 @@ fn falls_back_to_identity_transform_without_codegen_source() {
 /// The generated `patterns/stack` runtime module (skips the `.d.ts` declaration).
 fn pattern_runtime_code(project: &Project, config: &pandacss_config::UserConfig) -> String {
     let artifact = project
-        .generate_artifact(config, ArtifactId::Patterns, GenerateOptions::default())
+        .generate_artifact(config, ArtifactId::Patterns, GenerateOptions::default(), None)
         .expect("patterns artifact");
     artifact
         .files
@@ -288,6 +288,7 @@ fn generates_affected_artifacts_by_dependency() {
         &config,
         pandacss_codegen::DependencySet::one(ConfigDependency::Tokens),
         GenerateOptions::default(),
+        None,
     );
     let ids = artifacts
         .into_iter()

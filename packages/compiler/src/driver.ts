@@ -2,6 +2,7 @@ import {
   BaseDriver,
   type BuildInfoArtifact,
   type CodegenArtifact,
+  type CodegenOverlay,
   type GenerateArtifactOptions,
   type CodegenOptions,
   type Compiler,
@@ -15,6 +16,7 @@ import {
   normalizeDiagnostics,
 } from '@pandacss/compiler-shared'
 import {
+  buildCodegenOverlay,
   compilePreset,
   defaultImportMap,
   type HostHooks,
@@ -29,7 +31,7 @@ import {
   toRelativeKey,
   type CompilePresetResult,
 } from '@pandacss/config'
-import { hydrateDesignSystem } from './design-system'
+import { artifactConflictDiagnostics, hydrateDesignSystem } from './design-system'
 import { createCompilerFromSnapshot } from './index'
 
 export interface NodeDriverOptions {
@@ -95,6 +97,8 @@ export class NodeDriver extends BaseDriver {
   #designSystemPreset: CompilePresetResult | undefined
   #designSystemArtifactSnapshot: string
   #designSystemWatchTargets: DesignSystemWatchTarget[] | undefined
+  #codegenOverlay: CodegenOverlay | undefined
+  #codegenOverlayResolved = false
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = buildFromConfig(loaded)
@@ -107,6 +111,14 @@ export class NodeDriver extends BaseDriver {
 
   get designSystemDiagnostics() {
     return this.#designSystemDiagnostics
+  }
+
+  protected override codegenOverlay(): CodegenOverlay | undefined {
+    if (!this.#codegenOverlayResolved) {
+      this.#codegenOverlay = buildCodegenOverlay(this.#loaded.metadata)
+      this.#codegenOverlayResolved = true
+    }
+    return this.#codegenOverlay
   }
 
   get config() {
@@ -204,6 +216,8 @@ export class NodeDriver extends BaseDriver {
       this.#designSystemPreset = undefined
       this.#designSystemArtifactSnapshot = nextDesignSystemArtifactSnapshot
       this.#designSystemWatchTargets = undefined
+      this.#codegenOverlay = undefined
+      this.#codegenOverlayResolved = false
     }
     return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
   }
@@ -280,7 +294,8 @@ export class NodeDriver extends BaseDriver {
     cwd: string,
     options: CodegenOptions | undefined,
   ): string[] {
-    let artifacts = this.compiler.generateArtifacts(toGenerateArtifactOptions(options))
+    const overlay = this.codegenOverlay()
+    let artifacts = this.compiler.generateArtifacts({ ...toGenerateArtifactOptions(options), overlay })
 
     for (const entry of hooks) {
       const handler = resolveHookHandler(entry.value, 'codegen:prepare')
@@ -300,6 +315,7 @@ export class NodeDriver extends BaseDriver {
       cwd,
       forceImportExtension: options?.forceImportExtension,
       artifacts,
+      overlay,
     })
   }
 
@@ -396,6 +412,7 @@ export class NodeDriver extends BaseDriver {
     const exportsChanged = syncPackageExports(this.compiler, identity.packagePath, {
       manifestPath,
       presetPath,
+      styledDir: this.getOutdir(),
     })
 
     return {
@@ -436,15 +453,19 @@ function skippedDesignSystemLib(parsed: ParsedDesignSystemLib): WriteDesignSyste
   }
 }
 
+const STYLED_SYSTEM_CATEGORIES = ['css', 'recipes', 'patterns', 'jsx', 'tokens'] as const
+const DEEP_IMPORT_CATEGORIES = new Set(['recipes', 'patterns', 'jsx'])
+
 function syncPackageExports(
   compiler: Compiler,
   packagePath: string,
-  paths: { manifestPath: string; presetPath: string },
+  paths: { manifestPath: string; presetPath: string; styledDir: string },
 ): boolean {
   const base = compiler.path.dirname(packagePath)
   const entries = {
     './panda.lib.json': toPosixRelative(base, paths.manifestPath),
     './preset': toPosixRelative(base, paths.presetPath),
+    ...styledSystemExports(compiler, base, paths.styledDir),
   }
   const packageJson = compiler.fs.readFile(packagePath)
   if (packageJson == null) {
@@ -465,6 +486,29 @@ function syncPackageExports(
   return result.changed
 }
 
+function styledSystemExports(compiler: Compiler, base: string, styledDir: string): Record<string, unknown> {
+  const rel = (path: string) => toPosixRelative(base, path)
+  const find = (dir: string, names: string[]) =>
+    names.map((name) => compiler.path.join([dir, name])).find((path) => compiler.fs.readFile(path) != null)
+
+  const entries: Record<string, unknown> = {}
+  for (const category of STYLED_SYSTEM_CATEGORIES) {
+    const dir = compiler.path.join([styledDir, category])
+    const runtime = find(dir, ['index.mjs', 'index.js', 'index.ts'])
+    if (!runtime) continue
+    const types = find(dir, ['index.d.mts', 'index.d.ts'])
+    entries[`./${category}`] = types ? { types: rel(types), default: rel(runtime) } : rel(runtime)
+
+    if (DEEP_IMPORT_CATEGORIES.has(category)) {
+      const runtimeExt = runtime.endsWith('.mjs') ? 'mjs' : runtime.endsWith('.ts') ? 'ts' : 'js'
+      const runtimeGlob = `${rel(dir)}/*.${runtimeExt}`
+      const typesGlob = types ? `${rel(dir)}/*.${types.endsWith('.d.mts') ? 'd.mts' : 'd.ts'}` : undefined
+      entries[`./${category}/*`] = typesGlob ? { types: typesGlob, default: runtimeGlob } : runtimeGlob
+    }
+  }
+  return entries
+}
+
 function stabilizePath(cwd: string, file: string): string {
   const relativePath = toRelativeKey(file, cwd)
   return relativePath && !relativePath.startsWith('..') ? relativePath : file
@@ -476,11 +520,10 @@ function buildFromConfig(loaded: LoadConfigResult): { compiler: Compiler; design
     callbacks: loaded.callbacks,
     hooks: loaded.hooks,
   })
-  const designSystemDiagnostics = hydrateDesignSystem(
-    compiler,
-    loaded.metadata?.designSystem,
-    loaded.metadata?.userTokenPaths ?? [],
-  )
+  const designSystemDiagnostics = [
+    ...hydrateDesignSystem(compiler, loaded.metadata?.designSystem, loaded.metadata?.userTokenPaths ?? []),
+    ...artifactConflictDiagnostics(loaded.metadata),
+  ]
   return { compiler, designSystemDiagnostics }
 }
 

@@ -1,9 +1,13 @@
 use super::{
-    CodegenArtifact, CodegenFile, Compiler, GenerateArtifactOptions, WriteArtifactsOptions,
+    CodegenArtifact, CodegenFile, CodegenOverlay, Compiler, GenerateArtifactOptions,
+    WriteArtifactsOptions,
 };
 
 use napi_derive::napi;
-use pandacss_codegen::{Artifact, ArtifactId, ConfigDependency, DependencySet, GenerateOptions};
+use pandacss_codegen::{
+    Artifact, ArtifactId, CodegenOverlay as CodegenCrateOverlay, ConfigDependency, DependencySet,
+    GenerateOptions,
+};
 use pandacss_config::UserConfig;
 use pandacss_fs::PathSystem;
 
@@ -25,14 +29,10 @@ impl Compiler {
         let artifacts = if let Some(artifacts) = options.artifacts {
             artifacts
         } else {
-            let generate = generate_options(
-                &self.user_config,
-                Some(GenerateArtifactOptions {
-                    force_import_extension: options.force_import_extension,
-                }),
-            );
+            let generate = generate_options(&self.user_config, options.force_import_extension);
+            let overlay = options.overlay.map(to_crate_overlay);
             self.inner
-                .generate_artifacts(&self.user_config, generate)
+                .generate_artifacts(&self.user_config, generate, overlay)
                 .into_iter()
                 .map(to_codegen_artifact)
                 .collect()
@@ -62,10 +62,10 @@ impl Compiler {
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
         let _span = tracing::trace_span!("codegen", method = "generate_artifacts").entered();
-        let options = generate_options(&self.user_config, options);
+        let (generate, overlay) = split_options(&self.user_config, options);
         let artifacts = self
             .inner
-            .generate_artifacts(&self.user_config, options)
+            .generate_artifacts(&self.user_config, generate, overlay)
             .into_iter()
             .map(to_codegen_artifact)
             .collect();
@@ -88,10 +88,10 @@ impl Compiler {
         let id = id
             .parse::<ArtifactId>()
             .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
-        let options = generate_options(&self.user_config, options);
+        let (generate, overlay) = split_options(&self.user_config, options);
         let artifact = self
             .inner
-            .generate_artifact(&self.user_config, id, options)
+            .generate_artifact(&self.user_config, id, generate, overlay)
             .map(to_codegen_artifact);
         crate::flush_tracing();
         Ok(artifact)
@@ -111,10 +111,10 @@ impl Compiler {
         let _span =
             tracing::trace_span!("codegen", method = "generate_affected_artifacts").entered();
         let changed = dependency_set_from_strings(dependencies)?;
-        let options = generate_options(&self.user_config, options);
+        let (generate, overlay) = split_options(&self.user_config, options);
         let artifacts = self
             .inner
-            .generate_affected_artifacts(&self.user_config, changed, options)
+            .generate_affected_artifacts(&self.user_config, changed, generate, overlay)
             .into_iter()
             .map(to_codegen_artifact)
             .collect();
@@ -128,15 +128,36 @@ impl Compiler {
  */
 fn generate_options(
     user_config: &UserConfig,
-    options: Option<GenerateArtifactOptions>,
+    force_import_extension: Option<bool>,
 ) -> GenerateOptions {
-    let import_extensions = options
-        .and_then(|options| options.force_import_extension)
-        .unwrap_or(user_config.force_import_extension);
+    let import_extensions = force_import_extension.unwrap_or(user_config.force_import_extension);
 
     GenerateOptions {
         format: user_config.out_extension,
         import_extensions,
+    }
+}
+
+fn split_options(
+    user_config: &UserConfig,
+    options: Option<GenerateArtifactOptions>,
+) -> (GenerateOptions, Option<CodegenCrateOverlay>) {
+    let (force_import_extension, overlay) = options.map_or((None, None), |options| {
+        (options.force_import_extension, options.overlay)
+    });
+    (
+        generate_options(user_config, force_import_extension),
+        overlay.map(to_crate_overlay),
+    )
+}
+
+fn to_crate_overlay(overlay: CodegenOverlay) -> CodegenCrateOverlay {
+    CodegenCrateOverlay {
+        jsx: overlay.jsx,
+        recipes: overlay.recipes,
+        patterns: overlay.patterns,
+        owned_recipes: overlay.owned_recipes,
+        owned_patterns: overlay.owned_patterns,
     }
 }
 

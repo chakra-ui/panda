@@ -166,6 +166,7 @@ pub enum ItemNode {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExportDecl {
     Star { source: String },
+    Named { names: Vec<String>, source: String },
     TypeStar { source: String },
     TypeNamed { names: Vec<String>, source: String },
 }

@@ -4,13 +4,39 @@ Manual smoke test for React Vite apps consuming Panda design-system packages.
 
 ```txt
 @sandbox/ds
-  -> @sandbox/app
+  -> @sandbox/app          simple consume (no app recipes)
+  -> @sandbox/overlay      overlay codegen (app extends the design system)
   -> @sandbox/app-postcss
 
 @sandbox/foundations
   -> @sandbox/ds-nested
     -> @sandbox/app-nested
 ```
+
+`@sandbox/app` and `@sandbox/overlay` are kept separate on purpose: `app` is the plain consume path, `overlay` is the
+extension path. If one breaks and the other doesn't, you know which half to look at.
+
+## Overlay demo
+
+`@sandbox/overlay` exercises overlay codegen against `@sandbox/ds` (which ships `tag` and `chip` recipes). Run it:
+
+```sh
+pnpm -w build:fast
+pnpm --dir sandbox-design-system ds:lib
+pnpm --dir sandbox-design-system overlay:build   # or overlay:dev to open it
+```
+
+Then read `packages/overlay/styled-system/recipes/index.js`:
+
+```js
+export { chip } from '@sandbox/ds/recipes' // owned by the DS — re-exported, not re-emitted
+export * from './panel' // the app's own recipe — emitted locally
+export * from './tag' // the app redefined the DS's `tag` — app wins (prints design_system_artifact_conflict)
+```
+
+Only `panel.js` and `tag.js` are real modules under `recipes/`; `chip` is not re-emitted. The generic runtime
+(`css/`, `helpers.js`, the jsx factory) is still emitted locally because the app's own recipe modules import it by
+relative path. The Vite build is the real check that the `@sandbox/ds/*` re-exports resolve.
 
 ## Run it
 

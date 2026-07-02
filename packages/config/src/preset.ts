@@ -13,6 +13,7 @@ import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from '
 import type { ConfigSources } from './sources'
 import { expandSmartInclude } from './smart-include'
 import { collectTokenPaths } from './token-paths'
+import { collectPatternNames, collectRecipeNames } from './artifact-names'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 
@@ -40,6 +41,8 @@ export interface ResolveAuthoredPresetsResult {
     sources?: ConfigSources
     designSystem?: ResolvedDesignSystem[]
     userTokenPaths?: string[]
+    userRecipeNames?: string[]
+    userPatternNames?: string[]
   }
 }
 
@@ -78,6 +81,8 @@ export async function resolveAuthoredPresets(
         options.trackSources,
       )
       level.info.tokenPaths = collectTokenPaths(block.resolved)
+      level.info.recipeNames = collectRecipeNames(block.resolved)
+      level.info.patternNames = collectPatternNames(block.resolved)
       appendConfigBlock(ctx, block)
     }
   }
@@ -91,7 +96,14 @@ export async function resolveAuthoredPresets(
     return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
   }
   const dsMetadata =
-    dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(rootBlock.resolved) } : undefined
+    dsInfos.length > 0
+      ? {
+          designSystem: dsInfos,
+          userTokenPaths: collectTokenPaths(rootBlock.resolved),
+          userRecipeNames: collectRecipeNames(rootBlock.resolved),
+          userPatternNames: collectPatternNames(rootBlock.resolved),
+        }
+      : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
