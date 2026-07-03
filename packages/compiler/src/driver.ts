@@ -29,8 +29,7 @@ import {
   toRelativeKey,
   type CompilePresetResult,
 } from '@pandacss/config'
-import { hydrateDesignSystem } from './design-system'
-import { createCompilerFromSnapshot } from './index'
+import { createProjectFromLoadedConfig } from './tooling/create-project'
 
 export interface NodeDriverOptions {
   cwd: string
@@ -97,7 +96,7 @@ export class NodeDriver extends BaseDriver {
   #designSystemWatchTargets: DesignSystemWatchTarget[] | undefined
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
-    const built = buildFromConfig(loaded)
+    const built = createProjectFromLoadedConfig(loaded)
     super(built.compiler)
     this.#options = options
     this.#loaded = loaded
@@ -198,7 +197,7 @@ export class NodeDriver extends BaseDriver {
 
     if (diff.hasChanged || designSystemArtifactsChanged) {
       this.#loaded = next
-      const built = buildFromConfig(next)
+      const built = createProjectFromLoadedConfig(next)
       this.setCompiler(built.compiler)
       this.#designSystemDiagnostics = built.designSystemDiagnostics
       this.#designSystemPreset = undefined
@@ -468,20 +467,6 @@ function syncPackageExports(
 function stabilizePath(cwd: string, file: string): string {
   const relativePath = toRelativeKey(file, cwd)
   return relativePath && !relativePath.startsWith('..') ? relativePath : file
-}
-
-function buildFromConfig(loaded: LoadConfigResult): { compiler: Compiler; designSystemDiagnostics: Diagnostic[] } {
-  const compiler = createCompilerFromSnapshot({
-    config: loaded.config,
-    callbacks: loaded.callbacks,
-    hooks: loaded.hooks,
-  })
-  const designSystemDiagnostics = hydrateDesignSystem(
-    compiler,
-    loaded.metadata?.designSystem,
-    loaded.metadata?.userTokenPaths ?? [],
-  )
-  return { compiler, designSystemDiagnostics }
 }
 
 function designSystemArtifactSnapshot(compiler: Compiler, loaded: LoadConfigResult): string {
