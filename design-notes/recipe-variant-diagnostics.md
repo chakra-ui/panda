@@ -3,19 +3,19 @@
 ## Summary
 
 Warn when a config recipe usage passes a **dynamic variant value**, so only `defaultVariants` CSS is emitted at build
-time. This closes the gap where recipe calls and JSX recipe tags silently fall back to defaults — unlike `css()`,
-which already surfaces `panda_call_unextractable` when every argument is non-literal.
+time. This closes the gap where recipe calls and JSX recipe tags silently fall back to defaults — unlike `css()`, which
+already surfaces `panda_call_unextractable` when every argument is non-literal.
 
-The diagnostic does **not** change extraction or CSS output. It only makes the JIT recipe contract visible at parse
-time and points users to `staticCss: ['*']` or string-literal variant values.
+The diagnostic does **not** change extraction or CSS output. It only makes the JIT recipe contract visible at parse time
+and points users to `staticCss: ['*']` or string-literal variant values.
 
 ## Diagnostic
 
-| Field | Value |
-| ----- | ----- |
-| Code | `recipe_variant_dynamic` |
-| Severity | `warning` |
-| Owner | `pandacss_project` (requires compiled recipe registry) |
+| Field    | Value                                                  |
+| -------- | ------------------------------------------------------ |
+| Code     | `recipe_variant_dynamic`                               |
+| Severity | `warning`                                              |
+| Owner    | `pandacss_project` (requires compiled recipe registry) |
 
 Example message:
 
@@ -27,11 +27,11 @@ Use the **recipe config key** (`mediaGrid`), not the JSX tag (`MediaGrid`), in m
 
 ### Relationship to `panda_call_unextractable`
 
-Recipe function calls are intentionally excluded from `panda_call_unextractable` today — they are partially
-extractable (base + defaults always emit). A separate code keeps messages accurate.
+Recipe function calls are intentionally excluded from `panda_call_unextractable` today — they are partially extractable
+(base + defaults always emit). A separate code keeps messages accurate.
 
-Unlike `panda_call_unextractable`, **`recipe_variant_dynamic` stays enabled when `jsxFramework` is configured**.
-Dynamic recipe variants are not ambiguous style-object forwarding; they are a distinct JIT limitation.
+Unlike `panda_call_unextractable`, **`recipe_variant_dynamic` stays enabled when `jsxFramework` is configured**. Dynamic
+recipe variants are not ambiguous style-object forwarding; they are a distinct JIT limitation.
 
 ## Naming alignment (normal path, not an edge case)
 
@@ -46,8 +46,8 @@ Matching chain for JSX:
 2. Project: `find_by_jsx(jsx.name)` → config recipe key(s)
 3. For each unresolved prop key: warn only if key ∈ `variant_props` for at least one matched recipe
 
-Dynamic **non-variant** props on the same tag (e.g. `color={themeColor}` on `<Button>`) do **not** get this
-diagnostic — they follow the existing atomic style-prop path via `style_props_for_recipes`.
+Dynamic **non-variant** props on the same tag (e.g. `color={themeColor}` on `<Button>`) do **not** get this diagnostic —
+they follow the existing atomic style-prop path via `style_props_for_recipes`.
 
 ## Layer responsibilities
 
@@ -58,13 +58,13 @@ Record facts; do not know recipe config.
 **Recipe calls** — extend `ExtractedCall`:
 
 - `arg_count: u8` — distinguish `mediaGrid()` (silent) from `mediaGrid(arg)` (warn)
-- `unresolved_props: Vec<(String, Span)>` — object keys present in source whose values failed
-  `expression_to_literal` (populated in `object_to_literal` / call visitor)
+- `unresolved_props: Vec<(String, Span)>` — object keys present in source whose values failed `expression_to_literal`
+  (populated in `object_to_literal` / call visitor)
 
 **JSX** — extend `ExtractedJsx`:
 
-- `unresolved_props: Vec<(String, Span)>` — attributes that passed `should_extract_prop` but
-  `attribute_value` returned `None` (today: silent `return` in `merge_attribute`)
+- `unresolved_props: Vec<(String, Span)>` — attributes that passed `should_extract_prop` but `attribute_value` returned
+  `None` (today: silent `return` in `merge_attribute`)
 
 Mirror unresolved-prop tracking in framework template adapters (Vue/Svelte/Astro) where `ExtractedJsx` is produced.
 
@@ -74,20 +74,20 @@ Emit diagnostics using compiled state:
 
 **Function calls** (`MatchCategory::Recipe`):
 
-| Condition | Warn |
-| --------- | ---- |
+| Condition                                                             | Warn                               |
+| --------------------------------------------------------------------- | ---------------------------------- |
 | `arg_count > 0` and first arg fully non-literal (`data[0]` is `None`) | yes (call span), unless suppressed |
-| `arg_count == 0` | no |
-| Partial object: key in `unresolved_props` ∩ `variant_props` | yes (prop span), unless suppressed |
-| All variant keys literal | no |
+| `arg_count == 0`                                                      | no                                 |
+| Partial object: key in `unresolved_props` ∩ `variant_props`           | yes (prop span), unless suppressed |
+| All variant keys literal                                              | no                                 |
 
 **JSX** (`find_by_jsx(jsx.name)` non-empty):
 
-| Condition | Warn |
-| --------- | ---- |
+| Condition                                                          | Warn                               |
+| ------------------------------------------------------------------ | ---------------------------------- |
 | Prop in `unresolved_props` ∩ `variant_props` for matched recipe(s) | yes (prop span), unless suppressed |
-| Prop not a variant key | no |
-| Literal variant value | no |
+| Prop not a variant key                                             | no                                 |
+| Literal variant value                                              | no                                 |
 
 When multiple recipes share a JSX name, warn if the prop is a variant for **any** matched recipe (that is not
 suppressed); include the recipe key(s) in the message.
@@ -104,12 +104,12 @@ Reuse existing helpers in `recipes.rs`:
 
 **Suppress when**, for the matched recipe name:
 
-| Config | Covers |
-| ------ | ------ |
-| `staticCss: { recipes: '*' }` | all recipes, all variants |
-| `recipe.staticCss: ['*']` or `staticCss: { recipes: { mediaGrid: ['*'] } }` | all variants on that recipe |
+| Config                                                                      | Covers                                                    |
+| --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `staticCss: { recipes: '*' }`                                               | all recipes, all variants                                 |
+| `recipe.staticCss: ['*']` or `staticCss: { recipes: { mediaGrid: ['*'] } }` | all variants on that recipe                               |
 | `recipe.staticCss: [{ template: ['*'] }]` or `{ template: ['one', 'two'] }` | that variant key (any listed value or `*` within the key) |
-| Rule object with only `conditions` / `responsive` | does **not** suppress variant keys by itself |
+| Rule object with only `conditions` / `responsive`                           | does **not** suppress variant keys by itself              |
 
 Implementation sketch — add `RecipeRegistry::static_css_covers_variant(config, recipe_name, variant_key) -> bool`:
 
@@ -121,8 +121,8 @@ Implementation sketch — add `RecipeRegistry::static_css_covers_variant(config,
 Call this before emitting each diagnostic. When multiple recipes match a JSX tag, suppress only for recipes where
 coverage holds; warn for the rest.
 
-**Tests:** extend `diagnostics.rs` with a recipe that has `staticCss: ['*']` or `[{ template: ['*'] }]` and assert
-no warning on dynamic `template` usage.
+**Tests:** extend `diagnostics.rs` with a recipe that has `staticCss: ['*']` or `[{ template: ['*'] }]` and assert no
+warning on dynamic `template` usage.
 
 ### Optional import gating (v1.1)
 
@@ -157,7 +157,8 @@ Start **without** import gating in v1; add only if needed.
 - `unresolved_props` on `ExtractedCall` from `object_to_literal`
 - Filter keys against `variant_props` in project
 
-Phases 1 and 2 can ship in one PR (small surface). **`static_css_covers_variant` ships with the first diagnostic PR** — not a follow-up.
+Phases 1 and 2 can ship in one PR (small surface). **`static_css_covers_variant` ships with the first diagnostic PR** —
+not a follow-up.
 
 ### Phase 3 — JSX recipe tags
 

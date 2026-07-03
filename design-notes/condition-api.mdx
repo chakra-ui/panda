@@ -8,12 +8,12 @@ Exploration note. This is not an accepted design yet.
 
 Panda v2 should consider converging condition configuration on two explicit forms: a short selector form and a block
 form with `@slot`. Simple selectors can stay concise, but complex variants are represented as a nested rule tree with a
-slot that marks where generated declarations or utility rules are inserted. Array conditions should not be part of the v2
-API.
+slot that marks where generated declarations or utility rules are inserted. Array conditions should not be part of the
+v2 API.
 
 The main problem this note explores is theme and mode composition. Users expect a condition like dark mode plus a theme
-condition to work when the attributes live on the same element or on nested ancestors. Automatically merging selectors is
-too magical and can break valid DOM structures, so the API should make selector semantics explicit.
+condition to work when the attributes live on the same element or on nested ancestors. Automatically merging selectors
+is too magical and can break valid DOM structures, so the API should make selector semantics explicit.
 
 ## Current Problem
 

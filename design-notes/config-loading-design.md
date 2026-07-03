@@ -12,11 +12,11 @@ scope:
 ## Goal
 
 The new Rust codegen still needs a JavaScript-side config loader. User configs are JavaScript or TypeScript modules, and
-they can contain functions for patterns, hooks, presets, plugins, and other dynamic extension points. Rust should consume
-a serialized input; it should not become responsible for executing arbitrary user config modules.
+they can contain functions for patterns, hooks, presets, plugins, and other dynamic extension points. Rust should
+consume a serialized input; it should not become responsible for executing arbitrary user config modules.
 
-This is implemented by a **new, self-contained package `@pandacss/config`**. It owns the whole load → serialize
-pipeline itself and keeps its dependency surface deliberately small: `@pandacss/types` (config types),
+This is implemented by a **new, self-contained package `@pandacss/config`**. It owns the whole load → serialize pipeline
+itself and keeps its dependency surface deliberately small: `@pandacss/types` (config types),
 `@pandacss/compiler-shared` (the `SerializedConfig`/`ProjectCallbacks` contract), `rolldown` (bundling), and
 `javascript-stringify` (pattern source capture). It does **not** depend on `@pandacss/shared` or wrap the v1
 `@pandacss/config`, which stays as legacy/reference code. Config discovery walks up the tree itself rather than pulling
@@ -25,8 +25,8 @@ for config sections instead of the legacy generic merge helpers.
 
 The modules: `find.ts` (walk-up discovery), `bundle.ts` (Rolldown + `data:`-URL eval + dependency collection),
 `preset.ts` (authored preset recursion + `extend` merging), `sources.ts` (optional resolved-config source metadata),
-`serialize.ts` (`createConfigSnapshot` — function lowering + pattern source capture), `load.ts` (the
-`loadPandaConfig` entry that wires them together), plus `error.ts`/`types.ts`.
+`serialize.ts` (`createConfigSnapshot` — function lowering + pattern source capture), `load.ts` (the `loadPandaConfig`
+entry that wires them together), plus `error.ts`/`types.ts`.
 
 ### Scope (for now)
 
@@ -61,9 +61,9 @@ const { mod, dependencies } = await bundleNRequire(filepath, {
 })
 ```
 
-That package bundled the config with esbuild using `write: false`, read the bundled code from memory, temporarily patched
-`require.extensions`, and executed the in-memory bundle with CommonJS `module._compile`. No config bundle was written to
-disk in the normal path.
+That package bundled the config with esbuild using `write: false`, read the bundled code from memory, temporarily
+patched `require.extensions`, and executed the in-memory bundle with CommonJS `module._compile`. No config bundle was
+written to disk in the normal path.
 
 The important behavior to preserve is:
 
@@ -78,13 +78,13 @@ The new loader should use Rolldown as the only bundler. The current package alre
 generating ESM with Rolldown and loading it through a `data:` URL:
 
 ```ts
-const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`
+const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
 return import(dataUrl)
 ```
 
 This should remain the default. We should avoid Vite's temp-file ESM fallback unless we hit a runtime constraint that
-requires it. Vite writes temp files because it supports a broader set of config modes and debuggability tradeoffs;
-Panda can stay narrower and cheaper if in-memory loading is reliable for our config surface.
+requires it. Vite writes temp files because it supports a broader set of config modes and debuggability tradeoffs; Panda
+can stay narrower and cheaper if in-memory loading is reliable for our config surface.
 
 The compatibility target is the behavior, not the dependency: in-memory bundle, in-memory execution, and dependency
 reporting. The new package should not re-add `bundle-n-require`.
@@ -120,8 +120,8 @@ The important split is:
 - `callbacks` holds the live `utility.transform` / `utility.values` / `pattern.transform` / `pattern.defaultValues`
   functions, keyed by the ref `id`, so the compiler can invoke them during extraction.
 - `dependencies` is the module list used by watch mode.
-- `metadata.sources` is optional and only present when requested with `trackSources: true`; it is for JS-side tooling and
-  is not part of the Rust compiler snapshot.
+- `metadata.sources` is optional and only present when requested with `trackSources: true`; it is for JS-side tooling
+  and is not part of the Rust compiler snapshot.
 
 An earlier draft proposed a `codegen: CodegenInput` field, with JS building the codegen payload. That is **not** the
 boundary: Rust's `from_config` deserializes `SerializedConfig` into `UserConfig` and computes `TypeData` / the full
@@ -135,10 +135,12 @@ the generated pattern module — and Rust cannot stringify a JavaScript function
 function is replaced by its ref, the loader captures the source:
 
 ```ts
-const codegenSource = stringify(compact({
-  transform: pattern.transform,
-  defaultValues: pattern.defaultValues,
-}))
+const codegenSource = stringify(
+  compact({
+    transform: pattern.transform,
+    defaultValues: pattern.defaultValues,
+  }),
+)
 ```
 
 `stringify` here is the **`javascript-stringify`** package — the same serializer the legacy generator used. It emits
@@ -159,9 +161,9 @@ the identity fallback.
 
 ## Preset Resolution
 
-Preset resolution lives at the `@pandacss/config` boundary, before defaults and before
-`createConfigSnapshot()`. The Rust compiler receives a resolved serialized config; it does not resolve JavaScript preset
-modules or execute preset functions.
+Preset resolution lives at the `@pandacss/config` boundary, before defaults and before `createConfigSnapshot()`. The
+Rust compiler receives a resolved serialized config; it does not resolve JavaScript preset modules or execute preset
+functions.
 
 The loader resolves only presets explicitly authored in `config.presets`:
 
@@ -200,8 +202,8 @@ themes
 ```
 
 Base section entries establish or replace values. `extend` section entries merge into the accumulated section. Arrays in
-base entries replace prior arrays; arrays in `extend` entries concatenate. Top-level runtime-only fields
-(`presets`, `plugins`, `hooks`, `name`, and unexpected top-level `extend`) are stripped from the resolved config.
+base entries replace prior arrays; arrays in `extend` entries concatenate. Top-level runtime-only fields (`presets`,
+`plugins`, `hooks`, `name`, and unexpected top-level `extend`) are stripped from the resolved config.
 
 String preset dependencies are folded into `LoadedPandaConfig.dependencies` alongside root config bundle dependencies
 and explicit resolved `config.dependencies`. Dependency entries are deduped after resolution.
@@ -259,12 +261,12 @@ Example:
 }
 ```
 
-The paths are resolved paths, not authored `extend` paths. For example,
-`theme.extend.tokens.colors.brand.value` records as `theme.tokens.colors.brand.value`.
+The paths are resolved paths, not authored `extend` paths. For example, `theme.extend.tokens.colors.brand.value` records
+as `theme.tokens.colors.brand.value`.
 
 The tracking policy is deliberately compact. It records useful named boundaries and fields such as conditions,
-utilities, patterns, token paths, recipes, slot recipes, global entries, themes, and static CSS groups. It does not record
-every scalar in the config. Token normalization also moves source entries when flat token metadata is folded into
+utilities, patterns, token paths, recipes, slot recipes, global entries, themes, and static CSS groups. It does not
+record every scalar in the config. Token normalization also moves source entries when flat token metadata is folded into
 `DEFAULT`, so a flat token value that becomes `theme.tokens.colors.black.DEFAULT.value` keeps the original source ID.
 
 `sources` is not passed to Rust by default and is not part of `SerializedConfig`. The Rust compiler does not need it to
@@ -295,7 +297,7 @@ This gives watch mode two layers of invalidation:
 The second layer is `diffConfig(prev, next)`, exported from this package — a structural `microdiff` over two
 `SerializedConfig`s that maps each change to the coarse `CodegenDependency` bits the engine regenerates by (plus the
 specific recipe/pattern names that changed). Because the diff runs on the serialized config, a `utilities.*.transform`
-*body* edit is invisible (the lowered `{ kind:'js-callback', id }` ref is unchanged); pattern transform bodies escape
+_body_ edit is invisible (the lowered `{ kind:'js-callback', id }` ref is unchanged); pattern transform bodies escape
 this via their `codegenSource` string. Precise callback-change detection (hashing lowered sources) is deferred. The diff
 feeds the host orchestrator — see [output-and-host-layer](./output-and-host-layer.md).
 

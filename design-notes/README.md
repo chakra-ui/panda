@@ -21,6 +21,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   design-system architecture.
 - `stylesheet.md` owns CSS emission, writer minification, adjacent rule merging, and the missing CSS-aware optimizer
   boundary. Other notes should summarize and link to it.
+- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, drift/CI contracts, and optional
+  `panda lib --design-md`. Not the Google spec or MCP tools.
 
 ## Index
 
@@ -81,6 +83,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
 - [CLI analyze command](./cli-analyze.md) — implemented `panda analyze` usage-report command: naming, scopes,
   JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
+- [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
+  DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate, optional `panda lib --design-md`.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,

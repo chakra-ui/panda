@@ -4,10 +4,10 @@
 
 Panda should ship ESLint and Oxlint plugins on top of shared internal lint utilities.
 
-The shared utilities should load config with `@pandacss/config`, create a long-lived compiler with
-`@pandacss/compiler`, index `compiler.spec()`, and inspect source with `compiler.inspectFileSource()`. ESLint and
-Oxlint should keep their own ASTs for traversal, reporting, and fixes. Panda should provide the inspection data that
-describes what the source means to Panda.
+The shared utilities should load config with `@pandacss/config`, create a long-lived compiler with `@pandacss/compiler`,
+index `compiler.spec()`, and inspect source with `compiler.inspectFileSource()`. ESLint and Oxlint should keep their own
+ASTs for traversal, reporting, and fixes. Panda should provide the inspection data that describes what the source means
+to Panda.
 
 ```txt
 source text
@@ -63,9 +63,10 @@ the rule shape, not Chakra's TypeScript type-checker dependency.
 
 ## Packages
 
-One public eslint package with two entry points (oxlint reuses the ESLint rules — see [Adapter Design](#adapter-design)).
-Shared inspection utilities live in **`@pandacss/compiler/tooling`** (a subpath on the existing compiler package) so
-eslint-plugin, language-server, and CLI config checks share one registry and one SpecIndex without new npm packages.
+One public eslint package with two entry points (oxlint reuses the ESLint rules — see
+[Adapter Design](#adapter-design)). Shared inspection utilities live in **`@pandacss/compiler/tooling`** (a subpath on
+the existing compiler package) so eslint-plugin, language-server, and CLI config checks share one registry and one
+SpecIndex without new npm packages.
 
 ```txt
 @pandacss/compiler/tooling         # registry, spec index, file inspect, config token queries
@@ -130,8 +131,8 @@ patterns less opaque for lint rules by adding typed projections for recipe varia
 
 ## File Inspection API
 
-`inspectFileSource` is the lint boundary. It is already a tooling API, so avoid a `target: "lint"` mode. Make the default
-shape useful for lint, formatting, and IDE features.
+`inspectFileSource` is the lint boundary. It is already a tooling API, so avoid a `target: "lint"` mode. Make the
+default shape useful for lint, formatting, and IDE features.
 
 Current shape:
 
@@ -235,8 +236,8 @@ the entry came from after extraction. For example, `color` is `kind: "utility"` 
 
 Some of this is mostly plumbing from existing extractor output: calls, JSX, diagnostics, and internal `token_refs`
 already exist. Exact style entry ranges need source provenance because the folded `Literal::Object` intentionally stores
-normalized values, not written key/value spans. Use `extract_verbose()` for inspection-only source refs while keeping the
-lean extractor result unchanged for builds.
+normalized values, not written key/value spans. Use `extract_verbose()` for inspection-only source refs while keeping
+the lean extractor result unchanged for builds.
 
 Do not put the richer inspection model on the production build path. `parseFileSource()` and the lean extractor should
 stay optimized for compilation. `inspectFileSource()` is the on-demand tooling boundary, so it can serialize more data
@@ -244,13 +245,13 @@ and do extra classification as long as lint adapters call it once per file and c
 
 The first implementation should derive as much as possible from the current extraction result. It can expose calls, JSX,
 token refs, diagnostics, component entries, recipe ownership, and style-entry classification without a second parse.
-`extract_verbose()` should collect local source refs during the same traversal, then `inspectFileSource()` can mark direct
-local keys as `fixable: "safe"` and keep generated or framework-template entries as `fixable: "report-only"`.
+`extract_verbose()` should collect local source refs during the same traversal, then `inspectFileSource()` can mark
+direct local keys as `fixable: "safe"` and keep generated or framework-template entries as `fixable: "report-only"`.
 
 Keep a clear split between source provenance and normalized extraction output. `sourceValue` describes the written
 expression for reports and safe fixes. `resolvedValue` mirrors Panda's folded output and may contain conservative unions
-from ternaries, logical operators, spreads, responsive arrays, `css.raw`, cross-file constants, and computed keys. Do not
-treat `resolvedValue.kind === "conditional"` as exact runtime control flow.
+from ternaries, logical operators, spreads, responsive arrays, `css.raw`, cross-file constants, and computed keys. Do
+not treat `resolvedValue.kind === "conditional"` as exact runtime control flow.
 
 For example:
 
@@ -292,9 +293,9 @@ should be one `color` style entry. Its `sourceValue` keeps the ternary tree and 
 }
 ```
 
-JSX recipe components need both layers. The component entry captures the tag-level recipe or pattern usage; style entries
-capture prop-level keys after recipe ownership is known. Recipe variant props must be classified before utility props so
-variant values such as `"ghost.white"` are not treated as utility token paths.
+JSX recipe components need both layers. The component entry captures the tag-level recipe or pattern usage; style
+entries capture prop-level keys after recipe ownership is known. Recipe variant props must be classified before utility
+props so variant values such as `"ghost.white"` are not treated as utility token paths.
 
 ```tsx
 <Action size="sm" color="red" />
@@ -392,8 +393,8 @@ async function getPandaLintContext(context: RuleContext): Promise<PandaLintConte
 
 `Linter` composes `ProjectCache` and `Inspector`: `ProjectCache` owns async config loading and compiler creation;
 `Inspector` owns per-compiler file inspection caching by `(filename, sourceCacheKey)`. Keep ESLint rule visitors
-synchronous. Config/project loading must happen before rule visitors run, through a flat-config/plugin factory or another
-preload step; visitors should only consume already-available inspection data.
+synchronous. Config/project loading must happen before rule visitors run, through a flat-config/plugin factory or
+another preload step; visitors should only consume already-available inspection data.
 
 The plugin entry should be an async factory, e.g. `createPandaPlugin({ cwd, configPath })`, that preloads one
 `ProjectContext` and returns rule modules bound to that ready compiler. Rule factories can then call
@@ -450,10 +451,10 @@ Do not detect Panda components through TypeScript parser services.
 
 ## Property Ordering
 
-`props-order` should default to Panda's canonical property order. The source of truth is `compiler.spec().propertyOrder`,
-which is produced by the stylesheet sorter from the resolved utility properties. This order is cascade-aware: broad
-properties and shorthands sort before narrower longhands so generated CSS remains deterministic when style objects mix
-overlapping properties.
+`props-order` should default to Panda's canonical property order. The source of truth is
+`compiler.spec().propertyOrder`, which is produced by the stylesheet sorter from the resolved utility properties. This
+order is cascade-aware: broad properties and shorthands sort before narrower longhands so generated CSS remains
+deterministic when style objects mix overlapping properties.
 
 The rule should use `introspect(spec).compareProps()` / `sortProps()` instead of shipping a separate order table.
 Alternate order modes can be added later, but `panda` should remain the default:
@@ -486,17 +487,17 @@ explicit type annotation, and autofixes it by inserting a key-only annotation. T
 [isolated declarations guide](../website/content/docs/guides/isolated-declarations.mdx) for the user-facing patterns.
 
 This is the rare rule that is worth shipping only because of its fix. TypeScript already flags the missing annotation
-under `isolatedDeclarations`, but its quick-fix inlines the *resolved* type, which for an inline recipe includes the full
-CSS — the exact bloat users are escaping. The lint engine already knows the variant keys and slots from extraction, so it
-can insert the minimal annotation TypeScript can't produce.
+under `isolatedDeclarations`, but its quick-fix inlines the _resolved_ type, which for an inline recipe includes the
+full CSS — the exact bloat users are escaping. The lint engine already knows the variant keys and slots from extraction,
+so it can insert the minimal annotation TypeScript can't produce.
 
 Target detection:
 
 - Report on `export const x = <call>` where the callee resolves through `inspection.imports` to `cva`, `sva`, or the JSX
   factory (`styled`), and the declarator has no type annotation.
 - Skip non-exported consts. They don't reach declaration emit.
-- Skip calls whose recipe argument is a reference to an already-typed recipe function (the recipe-fn `styled(tag, button)`
-  overload already resolves to a named `__type`).
+- Skip calls whose recipe argument is a reference to an already-typed recipe function (the recipe-fn
+  `styled(tag, button)` overload already resolves to a named `__type`).
 
 Building the annotation from inspection data:
 
@@ -595,7 +596,8 @@ they rely on the resolved compiler model rather than string matching.
   `spec.recipes`.
 - `no-invalid-utility-value` 🟡 (O) — value a utility can't resolve; needs a clean `null`-vs-arbitrary signal from
   `resolveUtilityValue`.
-- `no-unknown-property` 🔴 (O) — typo'd style key; needs a CSS-property dictionary to avoid flagging valid arbitrary CSS.
+- `no-unknown-property` 🔴 (O) — typo'd style key; needs a CSS-property dictionary to avoid flagging valid arbitrary
+  CSS.
 - `no-invalid-nesting` ✅ (D, v1) — selector-shaped key with a nested object that Panda left `unknown` (missing `&`).
   Recommended (error); suggests prefixing `&`.
 - `no-dynamic-styling` 🟢 (D, v1) — values the compiler can't statically extract.
@@ -614,14 +616,14 @@ split per kind only if teams need different severities.
 - utilities / properties ✅ — `spec.utilities.deprecated`, matched against utility `styleEntries`.
 - recipes ✅ — `spec.recipes`/`spec.slotRecipes` carry `deprecated`; flagged via recipe `usages` (calls) and
   `componentEntries.recipe` (JSX).
-- patterns ✅ — `spec.patterns` carry `deprecated`; flagged via pattern `usages` (calls) and
-  `componentEntries.pattern` (JSX, resolved through `PatternRegistry::resolve_name`).
+- patterns ✅ — `spec.patterns` carry `deprecated`; flagged via pattern `usages` (calls) and `componentEntries.pattern`
+  (JSX, resolved through `PatternRegistry::resolve_name`).
 - recipe variants & values 🔴 — e.g. `variant="solid"` when `solid` is deprecated; needs per-variant deprecation in
   config + spec.
 
 Author messages (`deprecated: 'use X instead'`) flow through to the lint message for tokens, recipes, and patterns
-(utility config is boolean-only). **Conditions cannot be marked deprecated** — there is no config surface for it, so
-it is out of scope.
+(utility config is boolean-only). **Conditions cannot be marked deprecated** — there is no config surface for it, so it
+is out of scope.
 
 Compiler deprecation surface (done): `Token` carries the message; `spec.tokens.deprecated` / `spec.utilities.deprecated`
 are `name → (true | message)` maps; recipe/pattern type definitions expose `deprecated`; `spec.recipes`,
@@ -632,8 +634,9 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 - `no-important` ✅ (O) — flag `!important` (trailing `!` or `!important`) in style values.
 - `no-margin-properties` ✅ (O) — flag margin utilities (`margin`, `mt`, `mx`, logical `marginInline*`, …); nudge toward
   `gap`/layout patterns.
-- `no-physical-properties` ✅ (O) — flag physical properties/values that have logical equivalents (`left` → `insetInlineStart`,
-  `marginLeft` → `marginInlineStart`, `textAlign: 'left'` → `'start'`, …) via a curated physical→logical map.
+- `no-physical-properties` ✅ (O) — flag physical properties/values that have logical equivalents (`left` →
+  `insetInlineStart`, `marginLeft` → `marginInlineStart`, `textAlign: 'left'` → `'start'`, …) via a curated
+  physical→logical map.
 - `prefer-text-style` ✅ (O) — flag a style object that sets ≥2 typography properties (fontSize/fontWeight/lineHeight/…)
   that should be a single `textStyle` token; grouped per object via `calls`/`jsx` data.
 - `prefer-token` ✅ — raw value where a token category exists (colors, spacing, fontSizes, radii, …), backed by
@@ -644,8 +647,9 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
   The single configurable rule is the orthogonal API; v1's `no-hardcoded-color` name is dropped. Detection and per-leaf
   quick-fixes span every style-writing form: `css()`, style props, responsive arrays, per-prop conditions, and recipe
   styles in `cva()` / `sva()` / `styled('div', { ... })` (`base`, `variants.*`, `compoundVariants[].css`).
-- `restrict-styles` 🟢 (O) — general configurable restriction: glob property pattern → `{ limit, reason }`, where `limit`
-  bans the property (`null`) or whitelists allowed values. For custom team policies beyond the named rules above.
+- `restrict-styles` 🟢 (O) — general configurable restriction: glob property pattern → `{ limit, reason }`, where
+  `limit` bans the property (`null`) or whitelists allowed values. For custom team policies beyond the named rules
+  above.
 - `no-restricted-tokens` 🟢 (O) — deny specific tokens / palettes (legacy palette during a migration, internal-only
   tokens).
 - `prefer-semantic-tokens` 🟡 (O) — primitive token (`red.500`) where a semantic token exists; needs a semantic-token
@@ -676,13 +680,13 @@ are `name → (true | message)` maps; recipe/pattern type definitions expose `de
 
 Port status of the v1 rules (recommended ones default-on, the rest opt-in):
 
-- Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color` (→ `prefer-token` colors preset),
-  `no-invalid-token-paths`, `no-important`, `no-margin-properties`, `no-physical-properties`,
-  `prefer-unified-property-style` (→ `no-shorthand-longhand-mix`),
+- Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color` (→
+  `prefer-token` colors preset), `no-invalid-token-paths`, `no-important`, `no-margin-properties`,
+  `no-physical-properties`, `prefer-unified-property-style` (→ `no-shorthand-longhand-mix`),
   `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`), `no-invalid-nesting`.
-- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`),
-  `no-dynamic-styling` 🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡
-  (needs `imports` on the inspection result).
+- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`), `no-dynamic-styling`
+  🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡 (needs `imports` on the
+  inspection result).
 - Consolidated / renamed: `no-escape-hatch` → `no-arbitrary-values`; ad-hoc restrictions → `restrict-styles`.
 - Stylistic (Tier 3, fixable): `prefer-atomic-properties`, `prefer-composite-properties`.
   `prefer-unified-property-style` shipped as `no-shorthand-longhand-mix`; `prefer-{shorthand,longhand}-properties`

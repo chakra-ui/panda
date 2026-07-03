@@ -97,8 +97,8 @@ Autocomplete should reflect the resolved design system, not a TypeScript guess.
 
 ## How the pieces fit together
 
-Intelligence once. TS plugin transport first — it's the cheapest way to reach the file types that matter (config +
-app files are plain TypeScript, and `tsserver` has already parsed them).
+Intelligence once. TS plugin transport first — it's the cheapest way to reach the file types that matter (config + app
+files are plain TypeScript, and `tsserver` has already parsed them).
 
 ```txt
 @pandacss/compiler/tooling          (subpath — shared by eslint, plugin, CLI doctor)
@@ -123,20 +123,20 @@ rollout.
 We maintain one tsserver plugin and one thin VS Code extension. Other tsserver-backed editors load the same plugin
 through their own TypeScript integration — docs and config snippets, not separate extension repos.
 
-| Layer                         | Who installs it               | We maintain?               |
-| ------------------------------ | ------------------------------ | --------------------------- |
-| `@pandacss/compiler/tooling`  | Transitive                     | Yes (compiler subpath)      |
-| `@pandacss/typescript-plugin` | npm / bundled in VSIX          | Yes                         |
-| VS Code extension (thin)      | Marketplace                    | Yes                         |
-| Neovim / Helix / Emacs / Zed  | User `tsconfig.json` + TS host | Docs only                   |
-| `@pandacss/language-server`   | Deferred                       | Only for non-TS templates   |
+| Layer                         | Who installs it                | We maintain?              |
+| ----------------------------- | ------------------------------ | ------------------------- |
+| `@pandacss/compiler/tooling`  | Transitive                     | Yes (compiler subpath)    |
+| `@pandacss/typescript-plugin` | npm / bundled in VSIX          | Yes                       |
+| VS Code extension (thin)      | Marketplace                    | Yes                       |
+| Neovim / Helix / Emacs / Zed  | User `tsconfig.json` + TS host | Docs only                 |
+| `@pandacss/language-server`   | Deferred                       | Only for non-TS templates |
 
 You don't import the language service, run it by hand, or add generated types to config. The plugin loads inside
 `tsserver` itself when the workspace has `panda.config.*`.
 
 **VS Code:** install the Panda extension. It registers `@pandacss/typescript-plugin` with the built-in TypeScript
-extension via `contributes.typescriptServerPlugins` — no server process to spawn, no settings sync, workspace trust
-plus optional color decorators.
+extension via `contributes.typescriptServerPlugins` — no server process to spawn, no settings sync, workspace trust plus
+optional color decorators.
 
 **Other tsserver-backed editors:** add the plugin to `tsconfig.json`:
 
@@ -151,13 +151,13 @@ plus optional color decorators.
 Works anywhere `tsserver` runs the workspace's `typescript` — Neovim (`typescript-tools.nvim`, `ts_ls`), Zed, Emacs
 (`lsp-mode`'s `ts-ls`). No separate binary, no `root_dir` LSP wiring.
 
-**Non-TS-native templates (Vue, Svelte, Astro):** out of scope until [Deferred: standalone
-LSP](./language-service-implementation.md#deferred-standalone-lsp) — `tsserver` doesn't parse these files, so the
-plugin can't reach them; those need a real LSP integrated with the frameworks' own language tooling.
+**Non-TS-native templates (Vue, Svelte, Astro):** out of scope until
+[Deferred: standalone LSP](./language-service-implementation.md#deferred-standalone-lsp) — `tsserver` doesn't parse
+these files, so the plugin can't reach them; those need a real LSP integrated with the frameworks' own language tooling.
 
-TypeScript keeps type checking via `tsserver`. The Panda plugin runs inside the same process and must not block or
-crash the host's TS completions — see the [proxy/decorator
-pattern](./language-service-implementation.md#why-ts-plugin-before-lsp).
+TypeScript keeps type checking via `tsserver`. The Panda plugin runs inside the same process and must not block or crash
+the host's TS completions — see the
+[proxy/decorator pattern](./language-service-implementation.md#why-ts-plugin-before-lsp).
 
 ## What TypeScript handles vs what Panda handles
 
@@ -298,14 +298,15 @@ surface a diagnostic or status message.
 ## TS plugin first, LSP later
 
 Ship a tsserver plugin + thin VS Code extension first. `panda.config.ts` and most app files are plain TypeScript —
-`tsserver` already parses them, so a plugin reuses that parse for free instead of standing up a second server,
-protocol layer, and process to manage. It reaches VS Code, JetBrains, and any tsserver-backed Neovim/Zed/Emacs setup
-with zero extra infrastructure.
+`tsserver` already parses them, so a plugin reuses that parse for free instead of standing up a second server, protocol
+layer, and process to manage. It reaches VS Code, JetBrains, and any tsserver-backed Neovim/Zed/Emacs setup with zero
+extra infrastructure.
 
 An LSP is deferred until non-TS-native template files (Vue, Svelte, Astro) actually need coverage — `tsserver` can't
 parse those regardless of transport, so that's the point a real LSP earns its cost. Shared load/index logic lives in
-`@pandacss/compiler/tooling`; query logic lives in `@pandacss/typescript-plugin/service`, reusable unchanged by a
-future LSP adapter. Full rationale: [language-service-implementation.md](./language-service-implementation.md#why-ts-plugin-before-lsp).
+`@pandacss/compiler/tooling`; query logic lives in `@pandacss/typescript-plugin/service`, reusable unchanged by a future
+LSP adapter. Full rationale:
+[language-service-implementation.md](./language-service-implementation.md#why-ts-plugin-before-lsp).
 
 ## What you gain and what it costs
 
@@ -314,8 +315,8 @@ without generated tsconfig paths, no ambient types, no config/output loop, monor
 diagnostics, cheap reach (VS Code + tsserver-backed editors) before paying for a standalone LSP.
 
 **Cost:** the plugin runs in-process with `tsserver` — bugs or slow calls degrade the user's whole TS experience, not
-just Panda's features. Config cache complexity and version-skew risk across the TypeScript versions users select
-still apply either way.
+just Panda's features. Config cache complexity and version-skew risk across the TypeScript versions users select still
+apply either way.
 
 ## Open questions
 
@@ -328,11 +329,11 @@ still apply either way.
 
 ## Ship this
 
-Build config autocomplete as a language service, transported first via a tsserver plugin — not ambient types, not an
-LSP up front.
+Build config autocomplete as a language service, transported first via a tsserver plugin — not ambient types, not an LSP
+up front.
 
-Ship `@pandacss/language-server` and a VS Code extension together. Document LSP setup for
-other editors. Skip per-editor extensions until someone needs the polish.
+Ship `@pandacss/language-server` and a VS Code extension together. Document LSP setup for other editors. Skip per-editor
+extensions until someone needs the polish.
 
 Package types for config shape. Generated types for app code. Language service for resolved design-system intelligence
 in the editor.

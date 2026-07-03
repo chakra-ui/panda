@@ -36,8 +36,8 @@ to the `pandacss_*` rule because the cdylib name flows through to the JS loader 
 - **`packages/compiler/crate/Cargo.toml`** — `[package] name = "compiler_napi"`. Produces `compiler.node` consumed by
   `@pandacss/compiler`. `packages/compiler/src/load-binary.ts` requires the file at that exact name.
 - **`packages/compiler-wasm/crate/Cargo.toml`** — `[package] name = "compiler_wasm"`. wasm-pack produces
-  `compiler_wasm_bg.wasm` + `compiler_wasm.js` under `pkg-node/` and `pkg-web/`, consumed by `@pandacss/compiler-wasm`. The
-  TS wrapper imports from `../pkg-node/compiler_wasm.js`; renaming the crate would invalidate that path.
+  `compiler_wasm_bg.wasm` + `compiler_wasm.js` under `pkg-node/` and `pkg-web/`, consumed by `@pandacss/compiler-wasm`.
+  The TS wrapper imports from `../pkg-node/compiler_wasm.js`; renaming the crate would invalidate that path.
 
 Neither cdylib publishes to crates.io. Both ship only via npm.
 

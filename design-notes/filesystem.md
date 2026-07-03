@@ -5,8 +5,8 @@
 `pandacss_fs` is a Tier-0 crate that abstracts every filesystem touch in the Rust pipeline behind a `FileSystem` trait.
 Two impls ship behind cargo features: `OsFileSystem` (the `os` feature, default on native) and `MemoryFileSystem` (the
 `memory` feature, default on all targets). Core crates (`pandacss_extractor`, `pandacss_project`, and future crates that
-need I/O) call only through the trait — never `std::fs` directly — so the same code compiles to
-`wasm32-unknown-unknown` for the browser playground with `--no-default-features --features memory`.
+need I/O) call only through the trait — never `std::fs` directly — so the same code compiles to `wasm32-unknown-unknown`
+for the browser playground with `--no-default-features --features memory`.
 
 ## Why a new crate, why now
 
@@ -254,8 +254,8 @@ because the native `os` feature is not available.
 
 ## Source scanning (`scan` / `glob`)
 
-The fs engine is no longer just the cross-file resolver's read backend — it also powers **source discovery**. The binding
-`Compiler` holds a clone of the same fs instance it gives the resolver (`OsFileSystem` on native, the host's
+The fs engine is no longer just the cross-file resolver's read backend — it also powers **source discovery**. The
+binding `Compiler` holds a clone of the same fs instance it gives the resolver (`OsFileSystem` on native, the host's
 `MemoryFileSystem` on wasm) and exposes two entrypoints, backed by the generic
 `pandacss_project::scan_files(fs, opts, parse)` helper:
 
@@ -289,8 +289,8 @@ the concrete fs, so no `dyn` is needed — each binding monomorphizes over its o
   `pandacss_fs` for the walk + `ignore` for `.gitignore` semantics. Out of scope for Phase A/B.
 - **Native file watching.** `notify-debouncer-full` style. Stays out of v2.x per
   [scope-and-boundaries](./scope-and-boundaries.md).
-- **Persistent cache.** Add a crate only when cache behavior is implemented; it should use `pandacss_fs` for
-  persistence rather than direct `std::fs` calls.
+- **Persistent cache.** Add a crate only when cache behavior is implemented; it should use `pandacss_fs` for persistence
+  rather than direct `std::fs` calls.
 
 ## Related
 

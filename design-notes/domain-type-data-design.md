@@ -223,14 +223,14 @@ pub struct VariantTypeData {
 
 The method lives on the domain object that owns the knowledge:
 
-| Data                   | Owner method                    |
-| ---------------------- | ------------------------------- |
-| token category unions  | `TokenDictionary::type_data()`  |
-| utility value metadata | `Utility::type_data()`          |
-| condition keys         | `Conditions::type_data()`       |
-| selector metadata      | `Selectors::type_data()`        |
-| pattern properties     | `Patterns::type_data()`         |
-| recipe variants        | `Recipes::type_data()`          |
+| Data                   | Owner method                   |
+| ---------------------- | ------------------------------ |
+| token category unions  | `TokenDictionary::type_data()` |
+| utility value metadata | `Utility::type_data()`         |
+| condition keys         | `Conditions::type_data()`      |
+| selector metadata      | `Selectors::type_data()`       |
+| pattern properties     | `Patterns::type_data()`        |
+| recipe variants        | `Recipes::type_data()`         |
 
 The data structs live in `pandacss_config` for now. Domain crates return those structs from their existing resolved
 objects, and `pandacss_codegen` consumes them.
@@ -266,7 +266,8 @@ When a domain object changes, the compiler can map that change to `ConfigDepende
 Pattern transform source is separate from type data.
 
 `Patterns::type_data()` should expose the type shape of pattern props. Runtime transform source should come from a
-separate codegen metadata method because it is JavaScript-source metadata prepared while config functions are still live:
+separate codegen metadata method because it is JavaScript-source metadata prepared while config functions are still
+live:
 
 ```rust
 impl Patterns {

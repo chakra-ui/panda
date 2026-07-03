@@ -72,7 +72,7 @@ theme: {
 It generates unnamed conditions:
 
 ```ts
-'@/sm'     // @container (inline-size >= 24rem)
+'@/sm' // @container (inline-size >= 24rem)
 '@/smDown'
 '@/smOnly'
 '@/smToMd'
@@ -93,11 +93,11 @@ theme: {
 It generates named conditions:
 
 ```ts
-'@card/sm'     // @container card (inline-size >= 24rem)
+'@card/sm' // @container card (inline-size >= 24rem)
 '@card/smDown'
 '@card/smOnly'
 '@card/smToMd'
-'@sidebar/sm'  // @container sidebar (inline-size >= 24rem)
+'@sidebar/sm' // @container sidebar (inline-size >= 24rem)
 ```
 
 Range expansion mirrors breakpoints: the plain key is the "up" condition, and `Down`, `Only`, and `To` keys come from

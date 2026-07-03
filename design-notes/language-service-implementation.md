@@ -15,9 +15,12 @@ scope:
 Ship editor intelligence inside the panda-v2 monorepo, **TS plugin first**:
 
 1. **`@pandacss/compiler/tooling`** — subpath on the existing compiler package (not a new npm package)
-2. **`@pandacss/typescript-plugin`** — tsserver plugin: completions, hover, diagnostics, module resolution; runs in-process with `tsserver`
-3. **`packages/vscode`** — thin extension that registers the plugin via `contributes.typescriptServerPlugins` (Marketplace; not an npm library users import)
-4. **`@pandacss/language-server`** — deferred. Only build if/when non-TS-native template files need coverage `tsserver` can't give — see [Deferred: standalone LSP](#deferred-standalone-lsp)
+2. **`@pandacss/typescript-plugin`** — tsserver plugin: completions, hover, diagnostics, module resolution; runs
+   in-process with `tsserver`
+3. **`packages/vscode`** — thin extension that registers the plugin via `contributes.typescriptServerPlugins`
+   (Marketplace; not an npm library users import)
+4. **`@pandacss/language-server`** — deferred. Only build if/when non-TS-native template files need coverage `tsserver`
+   can't give — see [Deferred: standalone LSP](#deferred-standalone-lsp)
 
 No `@pandacss/toolkit`. No `@pandacss/language-service`. No `@pandacss/project`.
 
@@ -78,14 +81,14 @@ adapters for those frameworks — becomes the right call. See [Deferred: standal
 
 ## Package budget
 
-| Surface | New? | Role |
-| ------- | ---- | ---- |
-| `@pandacss/compiler/tooling` | Subpath only | Registry, spec index, inspect cache, config token + style-object queries, module resolution |
+| Surface                       | New?            | Role                                                                                                             |
+| ----------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `@pandacss/compiler/tooling`  | Subpath only    | Registry, spec index, inspect cache, config token + style-object queries, module resolution                      |
 | `@pandacss/typescript-plugin` | **New package** | `LanguageService` core + `ts.server.PluginModule` adapter, ships completions/hover/diagnostics/module resolution |
-| `packages/vscode` | **New folder** | Thin extension: `contributes.typescriptServerPlugins` registration, no server process |
-| `@pandacss/eslint-plugin` | Existing | Rules; core → `compiler/tooling` |
-| `@pandacss/cli` | Existing | Build → `createNodeDriver`; config check → `compiler/tooling` |
-| `@pandacss/language-server` | **Deferred** | Only if non-TS-native template files need coverage — see below |
+| `packages/vscode`             | **New folder**  | Thin extension: `contributes.typescriptServerPlugins` registration, no server process                            |
+| `@pandacss/eslint-plugin`     | Existing        | Rules; core → `compiler/tooling`                                                                                 |
+| `@pandacss/cli`               | Existing        | Build → `createNodeDriver`; config check → `compiler/tooling`                                                    |
+| `@pandacss/language-server`   | **Deferred**    | Only if non-TS-native template files need coverage — see below                                                   |
 
 Everything else stays where it is today.
 
@@ -93,10 +96,10 @@ Everything else stays where it is today.
 
 ### Two lifecycles, one load primitive
 
-| Lifecycle | Entry | Used by |
-| --------- | ----- | ------- |
-| **Build driver** | `createNodeDriver()` | CLI build/watch, codegen, analyze, MCP |
-| **Query registry** | `ProjectRegistry` in `compiler/tooling` | ESLint, typescript-plugin, CLI doctor |
+| Lifecycle          | Entry                                   | Used by                                |
+| ------------------ | --------------------------------------- | -------------------------------------- |
+| **Build driver**   | `createNodeDriver()`                    | CLI build/watch, codegen, analyze, MCP |
+| **Query registry** | `ProjectRegistry` in `compiler/tooling` | ESLint, typescript-plugin, CLI doctor  |
 
 Both use the same helper: `loadConfig` → `createCompilerFromSnapshot` → `hydrateDesignSystem`. Extract
 `createProjectFromConfig()` from `driver.ts` into `compiler/src/tooling/`; Driver and registry both call it.
@@ -210,8 +213,8 @@ interface ProjectRegistry {
 }
 ```
 
-Discovery/matching: same rules as [lint-plugins](./lint-plugins.md). Cache by `(cwd, configPath)`. Debounce
-invalidation (~300ms).
+Discovery/matching: same rules as [lint-plugins](./lint-plugins.md). Cache by `(cwd, configPath)`. Debounce invalidation
+(~300ms).
 
 ### Config queries
 
@@ -224,17 +227,17 @@ function resolveModuleTarget(specifier: string, importMap: ImportMapOutput): str
 
 `completeConfigStyleObject` covers `recipes.*.base`, `recipes.*.variants.*`, `globalCss`, `staticCss`, and
 `patterns.*.properties` — the same utility-key/condition-key/token-value completion app files need, just pointed at
-config-embedded object literals instead. No TypeScript typechecker involved — string/AST scan around cursor spans,
-using positions the plugin already has from `tsserver`'s parse.
+config-embedded object literals instead. No TypeScript typechecker involved — string/AST scan around cursor spans, using
+positions the plugin already has from `tsserver`'s parse.
 
 ## `@pandacss/typescript-plugin`
 
 One package, two layers inside it:
 
-| Layer | Path | Depends on |
-| ----- | ---- | ---------- |
-| **Service** | `src/service/` | `@pandacss/compiler/tooling` only |
-| **Plugin adapter** | `src/plugin/` | service + `typescript` (peer dep) |
+| Layer              | Path           | Depends on                        |
+| ------------------ | -------------- | --------------------------------- |
+| **Service**        | `src/service/` | `@pandacss/compiler/tooling` only |
+| **Plugin adapter** | `src/plugin/`  | service + `typescript` (peer dep) |
 
 ```txt
 packages/typescript-plugin/
@@ -262,8 +265,8 @@ interface LanguageService {
 - `getSemanticDiagnostics` — bad token/style-object diagnostics, same channel as TS errors
 - `resolveModuleNameLiterals` — redirect `designSystem`/`importMap` specifiers
 
-Every other method delegates untouched to the base language service (proxy pattern) — minimizes blast radius if
-Panda's logic throws or is slow.
+Every other method delegates untouched to the base language service (proxy pattern) — minimizes blast radius if Panda's
+logic throws or is slow.
 
 **Routing:**
 
@@ -278,7 +281,8 @@ plugin runs.
 
 `panda-css-vscode` on Marketplace. In the plugin-first world this is deliberately small:
 
-- `package.json` → `contributes.typescriptServerPlugins: [{ name: '@pandacss/typescript-plugin', enableForWorkspaceTypeScriptVersions: true }]`
+- `package.json` →
+  `contributes.typescriptServerPlugins: [{ name: '@pandacss/typescript-plugin', enableForWorkspaceTypeScriptVersions: true }]`
 - Bundles `@pandacss/typescript-plugin` as a dependency so VS Code's built-in TS extension can load it
 - No process spawning, no LSP client, no capability negotiation
 - Optional polish: workspace trust gating, color decorators via extension APIs (not `documentColor` — that's LSP-only)
@@ -287,16 +291,16 @@ This ships alongside the plugin (Phase 1/2), not deferred — it's the only way 
 
 ## Deferred: standalone LSP
 
-Do not build `@pandacss/language-server` yet. Build it only when a concrete file type forces it: non-TS-native
-templates (Vue SFC, Svelte, Astro) where `tsserver` has no parse to reuse at all.
+Do not build `@pandacss/language-server` yet. Build it only when a concrete file type forces it: non-TS-native templates
+(Vue SFC, Svelte, Astro) where `tsserver` has no parse to reuse at all.
 
 Before building it:
 
-- Check real demand — issues/upvotes on the old `panda-vscode` repo asking for Neovim/Helix/non-VS-Code support, or
-  for non-React framework template completions. If thin, the plugin-only path may cover the project for a long time.
-- If built, prefer integrating with the frameworks' **existing** language tooling (Volar for Vue, `svelte-language-server`,
-  Astro's language server) rather than shipping a second, competing generic LSP for the same files — those already
-  solve TS-interop inside non-TS templates; Panda only needs to plug completions into them.
+- Check real demand — issues/upvotes on the old `panda-vscode` repo asking for Neovim/Helix/non-VS-Code support, or for
+  non-React framework template completions. If thin, the plugin-only path may cover the project for a long time.
+- If built, prefer integrating with the frameworks' **existing** language tooling (Volar for Vue,
+  `svelte-language-server`, Astro's language server) rather than shipping a second, competing generic LSP for the same
+  files — those already solve TS-interop inside non-TS templates; Panda only needs to plug completions into them.
 - Reuse `src/service` from `@pandacss/typescript-plugin` unchanged — only the transport is new (`src/lsp` wrapping
   `vscode-languageserver`, mapping service types ↔ LSP types, no Panda logic in that layer).
 - This is also the point where pushing "position → extraction context" into Rust's extractor becomes justified — those
@@ -304,11 +308,11 @@ Before building it:
 
 ## CI parity
 
-| Surface | Config invalid `{colors.x}` | Config invalid style-object key/value | App invalid token |
-| ------- | --------------------------- | -------------------------------------- | ------------------ |
-| Editor (typescript-plugin) | Warning (configurable) | Warning (configurable) | Later phase |
-| `panda doctor` | Error | Error | N/A |
-| `@pandacss/eslint-plugin` | N/A initially | N/A initially | Error / warn |
+| Surface                    | Config invalid `{colors.x}` | Config invalid style-object key/value | App invalid token |
+| -------------------------- | --------------------------- | ------------------------------------- | ----------------- |
+| Editor (typescript-plugin) | Warning (configurable)      | Warning (configurable)                | Later phase       |
+| `panda doctor`             | Error                       | Error                                 | N/A               |
+| `@pandacss/eslint-plugin`  | N/A initially               | N/A initially                         | Error / warn      |
 
 Validation logic: **`@pandacss/compiler/tooling`** only. Severity differs by host.
 
@@ -361,14 +365,14 @@ Validation logic: **`@pandacss/compiler/tooling`** only. Severity differs by hos
 
 ## Testing
 
-| Layer | Where |
-| ----- | ----- |
-| Tooling | `packages/compiler` Vitest |
-| ESLint | `packages/eslint-plugin` (unchanged assertions) |
-| Service | `packages/typescript-plugin` Vitest (no `ts.server` types) |
+| Layer          | Where                                                                            |
+| -------------- | -------------------------------------------------------------------------------- |
+| Tooling        | `packages/compiler` Vitest                                                       |
+| ESLint         | `packages/eslint-plugin` (unchanged assertions)                                  |
+| Service        | `packages/typescript-plugin` Vitest (no `ts.server` types)                       |
 | Plugin adapter | `packages/typescript-plugin` integration harness against a real `ts.server` host |
-| VS Code | `@vscode/test-electron` smoke (plugin registration only) |
-| CLI | doctor fails on bad config token / style-object key |
+| VS Code        | `@vscode/test-electron` smoke (plugin registration only)                         |
+| CLI            | doctor fails on bad config token / style-object key                              |
 
 ## Open questions
 
