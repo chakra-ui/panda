@@ -1,6 +1,6 @@
 import { Linter, getContextFilename, getContextSource, type LintRuleContextLike } from './core'
-import type { ProjectContext } from './core/project-cache'
 import type { Deprecation } from '@pandacss/compiler'
+import { SpecIndex, type Project } from '@pandacss/compiler/tooling'
 import pkg from '../package.json'
 import {
   createExtractionDiagnosticsRule,
@@ -47,7 +47,7 @@ export interface PandaPluginOptions {
 
 export interface PandaProject {
   linter: Linter
-  project: ProjectContext
+  project: Project
 }
 
 export interface PandaPlugin {
@@ -62,19 +62,6 @@ export async function loadPandaProject(options: PandaPluginOptions = {}): Promis
     settings: options.configPath ? { panda: { configPath: options.configPath } } : {},
   })
   return { linter, project }
-}
-
-/** Property (and shorthand) → its token category, for every token-backed property. */
-function tokenCategoryByProperty(spec: ReturnType<ProjectContext['compiler']['spec']>): Map<string, string> {
-  const map = new Map<string, string>()
-  for (const [name, property] of Object.entries(spec.utilities.properties)) {
-    if (property.tokenCategory) map.set(name, property.tokenCategory)
-  }
-  for (const [shorthand, canonical] of Object.entries(spec.utilities.shorthands)) {
-    const category = map.get(canonical)
-    if (category) map.set(shorthand, category)
-  }
-  return map
 }
 
 // CSS-wide keywords (and `currentColor`/`transparent` when not defined as
@@ -96,7 +83,7 @@ const RAW_VALUE_KEYWORDS = new Set([
  * is not a `var(...)` token reference (and not a CSS-wide keyword). Checking for
  * `var(` is token-prefix agnostic.
  */
-function hardcodedValueClassifier(compiler: ProjectContext['compiler']): (prop: string, value: string) => boolean {
+function hardcodedValueClassifier(compiler: Project['compiler']): (prop: string, value: string) => boolean {
   const cache = new Map<string, boolean>()
   return (prop: string, value: string) => {
     const key = `${prop}\0${value}`
@@ -114,7 +101,7 @@ function hardcodedValueClassifier(compiler: ProjectContext['compiler']): (prop: 
 }
 
 /** Recipe name → deprecation, merged across recipes and slot recipes. */
-function recipeDeprecations(spec: ReturnType<ProjectContext['compiler']['spec']>): Record<string, Deprecation> {
+function recipeDeprecations(spec: ReturnType<Project['compiler']['spec']>): Record<string, Deprecation> {
   const out: Record<string, Deprecation> = {}
   for (const recipe of Object.values(spec.recipes)) {
     if (recipe.deprecated !== undefined) out[recipe.name] = recipe.deprecated
@@ -126,7 +113,7 @@ function recipeDeprecations(spec: ReturnType<ProjectContext['compiler']['spec']>
 }
 
 /** Pattern name → deprecation. */
-function patternDeprecations(spec: ReturnType<ProjectContext['compiler']['spec']>): Record<string, Deprecation> {
+function patternDeprecations(spec: ReturnType<Project['compiler']['spec']>): Record<string, Deprecation> {
   const out: Record<string, Deprecation> = {}
   for (const pattern of Object.values(spec.patterns)) {
     if (pattern.deprecated !== undefined) out[pattern.name] = pattern.deprecated
@@ -135,10 +122,10 @@ function patternDeprecations(spec: ReturnType<ProjectContext['compiler']['spec']
 }
 
 /** Bind every rule to an already-loaded project so rule visitors stay synchronous. */
-export function bindRules(linter: Linter, project: ProjectContext): Record<string, RuleModuleLike> {
+export function bindRules(linter: Linter, project: Project): Record<string, RuleModuleLike> {
   const spec = project.compiler.spec()
-  const categoryByProperty = tokenCategoryByProperty(spec)
-  const categoryOf = (prop: string) => categoryByProperty.get(prop)
+  const specIndex = new SpecIndex(spec)
+  const categoryOf = (prop: string) => specIndex.resolveTokenCategoryForProperty(prop)
   const isHardcodedValue = hardcodedValueClassifier(project.compiler)
   const suggest = (prop: string, value: string) => project.compiler.suggestTokens(prop, value)
   const suggestSemanticTokens = (path: string) => project.compiler.suggestSemanticTokens(path)

@@ -1,6 +1,7 @@
 import type { FileInspectionResult } from '@pandacss/compiler'
+import type { Project } from '@pandacss/compiler/tooling'
 import { Inspector } from './inspector'
-import { ProjectCache, type ProjectContext } from './project-cache'
+import { ProjectCache } from './project-cache'
 import { type PandaLintSettings, type RuleContextLike, resolvePandaSettings } from './settings'
 
 export interface SourceCodeLike {
@@ -18,7 +19,7 @@ export interface LintRuleContextLike extends RuleContextLike {
 }
 
 export interface LintInspection {
-  project: ProjectContext
+  project: Project
   settings: PandaLintSettings
   path: string
   source: string
@@ -39,7 +40,7 @@ export class Linter {
     this.#inspector = options.inspector ?? new Inspector()
   }
 
-  getProject(context: LintRuleContextLike): Promise<ProjectContext> {
+  getProject(context: LintRuleContextLike): Promise<Project> {
     return this.#projectCache.get(resolvePandaSettings(context))
   }
 
@@ -52,7 +53,7 @@ export class Linter {
     return { project, settings, path, source, result }
   }
 
-  inspectProject(project: ProjectContext, path: string, source: string): FileInspectionResult {
+  inspectProject(project: Project, path: string, source: string): FileInspectionResult {
     return this.#inspector.inspect(project.compiler, path, source)
   }
 
