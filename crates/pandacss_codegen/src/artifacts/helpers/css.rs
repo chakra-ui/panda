@@ -51,6 +51,17 @@ pub(super) fn normalize_style_object() -> Item {
     )
 }
 
+pub(super) fn sanitize_style_value() -> Item {
+    Item::runtime(ItemNode::RawStmt(
+        indoc! {r#"
+            const WHITESPACE_REGEX = /[\n\s]+/g
+            const sanitizeStyleValue = (value: any) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+        "#}
+        .trim()
+        .into(),
+    ))
+}
+
 pub(super) fn create_css_runtime() -> Item {
     helper_function(
         "createCssRuntime",
@@ -74,7 +85,7 @@ pub(super) fn create_css_runtime() -> Item {
                 const important = isImportant(value)
                 const [prop, ...all] = c.shift(paths)
                 const cond = filterBaseConditions(all)
-                const res = u.transform(prop, withoutSpace(withoutImportant(value)))
+                const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
                 let name = toClass(cond, res.className)
                 if (important) name += "!"
                 set.add(name)

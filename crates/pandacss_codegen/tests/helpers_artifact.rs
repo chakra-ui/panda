@@ -130,6 +130,9 @@ export function mergeProps(...src: Array<Record<string, any> | undefined>): Reco
   return out
 }
 
+const WHITESPACE_REGEX = /[\n\s]+/g
+const sanitizeStyleValue = (value: any) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+
 export function createCss(context: Record<string, any>): (...styles: any[]) => string {
   const { utility: u, hash, conditions: c = { shift: (v: any) => v, finalize: (v: any[]) => v, breakpoints: { keys: [] } } } = context
   const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
@@ -145,7 +148,7 @@ export function createCss(context: Record<string, any>): (...styles: any[]) => s
       if (value == null) return
       const [prop, ...all] = c.shift(paths)
       const cond = filterBaseConditions(all)
-      const res = u.transform(prop, withoutSpace(value))
+      const res = u.transform(prop, withoutSpace(sanitizeStyleValue(value)))
       set.add(toClass(cond, res.className))
     })
     let out = ""
@@ -407,6 +410,9 @@ export function mergeProps(...src) {
   return out
 }
 
+const WHITESPACE_REGEX = /[\n\s]+/g
+const sanitizeStyleValue = (value) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+
 export function createCss(context) {
   const { utility: u, hash, conditions: c = { shift: (v) => v, finalize: (v) => v, breakpoints: { keys: [] } } } = context
   const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
@@ -422,7 +428,7 @@ export function createCss(context) {
       if (value == null) return
       const [prop, ...all] = c.shift(paths)
       const cond = filterBaseConditions(all)
-      const res = u.transform(prop, withoutSpace(value))
+      const res = u.transform(prop, withoutSpace(sanitizeStyleValue(value)))
       set.add(toClass(cond, res.className))
     })
     let out = ""
@@ -638,6 +644,12 @@ fn emits_ts_source() {
 
     assert_eq!(paths(helpers), vec!["helpers.ts"]);
     let source = file(helpers, "helpers.ts");
+    assert!(
+        source.contains(
+            "const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value: any)"
+        ),
+        "multiline value sanitizer should reuse a module-scope regex"
+    );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
       const cache = new Map<string, ReturnType<T>>()
@@ -685,7 +697,7 @@ fn emits_ts_source() {
           const important = isImportant(value)
           const [prop, ...all] = c.shift(paths)
           const cond = filterBaseConditions(all)
-          const res = u.transform(prop, withoutSpace(withoutImportant(value)))
+          const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
           let name = toClass(cond, res.className)
           if (important) name += "!"
           set.add(name)
@@ -906,6 +918,11 @@ fn emits_js_runtime() {
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
     let source = file(helpers, "helpers.js");
+    assert!(
+        source
+            .contains("const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value)"),
+        "multiline value sanitizer should reuse a module-scope regex"
+    );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo(fn) {
       const cache = new Map()
@@ -953,7 +970,7 @@ fn emits_js_runtime() {
           const important = isImportant(value)
           const [prop, ...all] = c.shift(paths)
           const cond = filterBaseConditions(all)
-          const res = u.transform(prop, withoutSpace(withoutImportant(value)))
+          const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
           let name = toClass(cond, res.className)
           if (important) name += "!"
           set.add(name)

@@ -35,6 +35,7 @@ pub fn module() -> Module {
         .with_item(misc::memo())
         .with_item(misc::weak_memo())
         .with_item(object::merge_props())
+        .with_item(css::sanitize_style_value())
         .with_item(css::create_css_runtime())
         .with_item(css::hypenate_property())
         .with_item(split_props::split_props())
