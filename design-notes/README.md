@@ -7,6 +7,21 @@ These docs are point-in-time records. When you change the underlying design, upd
 rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/design) template (see
 [`template.md`](./template.md)) for new entries.
 
+## Canonical ownership
+
+Some topics span several notes. Keep the detailed contract in one place and link to it elsewhere.
+
+- `design-system-manifest.md` owns the `designSystem` config field, `panda.lib.json`, manifest parent chains,
+  diagnostics, and current built/deferred status.
+- `build-info.md` owns the portable build-info payload, token identity, hydration, module/export tree-shaking, and
+  stacked hydrate semantics.
+- `virtual-styled-system.md` owns the canonical DS `styled-system` package surface, dual importMap behavior, and overlay
+  codegen plan.
+- `chakra-ui-design-system-migration.md` applies those contracts to Chakra. It should not redefine the generic
+  design-system architecture.
+- `stylesheet.md` owns CSS emission, writer minification, adjacent rule merging, and the missing CSS-aware optimizer
+  boundary. Other notes should summarize and link to it.
+
 ## Index
 
 ### Architecture
@@ -47,9 +62,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Design-system manifest](./design-system-manifest.md) — `designSystem: '@acme/ds'`: the `panda.lib.json` manifest,
   gen + load as fs-free compiler methods (`compiler.designSystem.*`), the parent-chain walk for nested design systems,
   module/type resolution, setup diagnostics, and the incremental PR breakdown.
-- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems`
-  resolves manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS
-  modules.
+- [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystem` resolves
+  the manifest preset and dual importMap (DS + app overlay), with overlay codegen still planned for app extensions that
+  need JS/TS modules.
 - [Chakra UI design-system migration](./chakra-ui-design-system-migration.md) — Chakra-specific plan for replacing
   Emotion with a Panda v2 design-system package using a real Chakra-owned styled-system package, one app-composed
   `styled-system`, build info, component extraction metadata, framework aliases, and TypeScript path resolution.
@@ -64,8 +79,8 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
 - [CLI v2 direction](./cli.md) — production CLI host goals for the Rust compiler: lifecycle commands, schema-backed
   flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
-- [CLI analyze command](./cli-analyze.md) — proposed `panda analyze` usage-report command: naming, scopes, JSON/report
-  outputs, UI mode, and the `inspectFileSource` aggregation boundary.
+- [CLI analyze command](./cli-analyze.md) — implemented `panda analyze` usage-report command: naming, scopes,
+  JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,

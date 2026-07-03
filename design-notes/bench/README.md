@@ -34,10 +34,10 @@ design note explaining the trade-off.
   comparison of the Rust codegen vs legacy generator type graph (both `.d.ts`, `skipLibCheck`). Rust wins everything:
   **−99% instantiations**, −82 to −92% `Types`, −21 to −25% memory — via an own `CssValue`-based csstype + a single
   merged `system.d.ts`. (Lesson: measure `.d.ts`, not `.ts` source.)
-- [2026-06-02 — cli-codegen-js-vs-rust](./2026-06-02-cli-codegen-js-vs-rust.mdx) — end-to-end CLI wall time
-  (`codegen` + `cssgen`) on `sandbox/cli-v2`: v2 Rust CLI **~7× faster** (codegen 7.0×, cssgen 7.1×, n=9). Startup-bound
-  tiny-project number with honest caveats (not equal-work — v2 emitted fewer files at report time because the JSX artifact
-  pass was still landing; see 2026-06-04); `cssgen` is the apples-to-apples row.
+- [2026-06-02 — cli-codegen-js-vs-rust](./2026-06-02-cli-codegen-js-vs-rust.mdx) — end-to-end CLI wall time (`codegen` +
+  `cssgen`) on `sandbox/cli-v2`: v2 Rust CLI **~7× faster** (codegen 7.0×, cssgen 7.1×, n=9). Startup-bound tiny-project
+  number with honest caveats (not equal-work — v2 emitted fewer files at report time because the JSX artifact pass was
+  still landing; see 2026-06-04); `cssgen` is the apples-to-apples row.
 - [2026-06-04 — react-jsx-codegen-types](./2026-06-04-react-jsx-codegen-types.mdx) — `usage.tsx` coverage for the new
   React JSX codegen surface (`styled`, `StyledVariantProps`, `createRecipeContext`, `createSlotRecipeContext`). Rust JSX
   type-checks cleanly; simplification cut JSX instantiations by 14–32% from the first clean run. Legacy JSX rows are
@@ -45,7 +45,8 @@ design note explaining the trade-off.
 - [2026-06-08 — v2-vs-legacy-full-pipeline](./2026-06-08-v2-vs-legacy-full-pipeline.mdx) — first whole-pipeline
   (`parse → encode → emit`) comparison: perf **+** style-output parity **+** gaps. Emitter is **25–390× faster** and
   byte-identical on the core surface (atomic css, conditions, `!important`, recipes incl. compound/default variants,
-  patterns, `token()`, color tokens). Remaining work is front-end (no preset injection; hook-driven CSS transforms).
-  Fixed after the report: dynamic-import config bundling (A1, 2026-06-11), `./`-glob → 0 files (A2), object-map utility
-  class naming (B2, 2026-06-08), gradient transform alias (F3/B4). Ratified intentional diffs: inline `color-mix`
-  (was B1, 2026-06-12), modern breakpoint syntax. Full write-up in `bench/V2_VS_LEGACY_REPORT.md`.
+  patterns, `token()`, color tokens). Remaining work has shifted since that report: CSS-aware optimization,
+  import-narrowed design-system hydration, and hook-driven CSS transforms are the notable open pieces. Fixed after the
+  report: dynamic-import config bundling (A1, 2026-06-11), `./`-glob → 0 files (A2), object-map utility class naming
+  (B2, 2026-06-08), gradient transform alias (F3/B4). Ratified intentional diffs: inline `color-mix` (was B1,
+  2026-06-12), modern breakpoint syntax. Full write-up in `bench/V2_VS_LEGACY_REPORT.md`.

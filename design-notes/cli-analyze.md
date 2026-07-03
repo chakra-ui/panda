@@ -12,15 +12,15 @@ scope:
 
 ## Summary
 
-`panda analyze` should return a project-level usage report for Panda source usage: tokens, recipes, utilities, patterns,
-and keyframes. It is an observational command. It should not generate CSS, run codegen, mutate build caches, or write
-anything except explicit report outputs.
+`panda analyze` returns a project-level usage report for Panda source usage: tokens, recipes, utilities, patterns, and
+keyframes. It is an observational command. It does not generate CSS, run codegen, mutate build caches, or write anything
+except explicit report outputs.
 
 Keep the command name `analyze`. It is the v1 name, it reads as an action like the rest of the CLI, and it describes the
 work better than noun commands like `usage` or `report`. The output should be described as a **usage report**.
 
-The first implementation ships terminal output, JSON output, `--outfile`, a static HTML report via `--report <dir>`, and
-a local live report via `--ui`. The HTML report supports local search/filtering over the same JSON model.
+The implementation ships terminal output, JSON output, `--outfile`, a static HTML report via `--report <dir>`, and a
+local live report via `--ui`. The HTML report supports local search/filtering over the same JSON model.
 
 ## Problem
 
@@ -214,7 +214,7 @@ Follow that model here.
 
 ## Implementation Boundary
 
-`analyze` should live entirely at the JS CLI host layer:
+`analyze` lives entirely at the JS CLI host layer:
 
 ```txt
 runCommand

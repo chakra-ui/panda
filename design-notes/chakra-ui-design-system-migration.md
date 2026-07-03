@@ -39,6 +39,18 @@ Then the app maps Chakra's styled-system package root to that generated output:
 This gives Chakra a real fallback package for its own repo, tests, Storybook, and non-overridden installs, while still
 letting Panda apps override the runtime and declarations with app-generated artifacts.
 
+## Canonical scope
+
+This note is the Chakra-specific application of the generic design-system contracts:
+
+- [design-system-manifest.md](./design-system-manifest.md) owns `designSystem`, `panda.lib.json`, parent-chain
+  resolution, and diagnostics.
+- [build-info.md](./build-info.md) owns build-info hydration and module/export tree-shaking.
+- [virtual-styled-system.md](./virtual-styled-system.md) owns dual importMap, app-composed `styled-system`, and overlay
+  codegen.
+
+Keep this note focused on Chakra packaging, component metadata, framework aliases, and the Emotion removal path.
+
 ## Why This Shape
 
 Panda already generates category-root entrypoints:
@@ -119,8 +131,8 @@ Target `@chakra-ui/styled-system` exports:
     "./tokens": "./tokens/index.js",
     "./types": "./types/index.d.ts",
     "./panda.preset": "./panda.preset.js",
-    "./panda.buildinfo.json": "./panda.buildinfo.json"
-  }
+    "./panda.buildinfo.json": "./panda.buildinfo.json",
+  },
 }
 ```
 
@@ -131,8 +143,8 @@ Target `@chakra-ui/react` exports:
   "exports": {
     ".": "./dist/esm/index.js",
     "./panda.manifest.json": "./dist/panda.manifest.json",
-    "./panda.components.json": "./dist/panda.components.json"
-  }
+    "./panda.components.json": "./dist/panda.components.json",
+  },
 }
 ```
 
@@ -185,8 +197,8 @@ Panda-aware app:
     "importMap": "@chakra-ui/styled-system",
     "preset": "@chakra-ui/styled-system/panda.preset",
     "buildInfo": "@chakra-ui/styled-system/panda.buildinfo.json",
-    "components": "./panda.components.json"
-  }
+    "components": "./panda.components.json",
+  },
 }
 ```
 
@@ -199,7 +211,7 @@ The app config should stay simple:
 
 ```ts
 export default {
-  designSystems: ['@chakra-ui/react'],
+  designSystem: '@chakra-ui/react',
   theme: {
     extend: {
       tokens: {
@@ -227,8 +239,7 @@ App code remains normal Chakra:
 
 ```tsx
 import { Button } from '@chakra-ui/react'
-
-<Button colorPalette="brand" variant="marketing" />
+;<Button colorPalette="brand" variant="marketing" />
 ```
 
 The app-generated recipe reflects the merged config in **types**, **variant metadata**, and **extracted CSS** — not
@@ -404,7 +415,7 @@ Example:
 
 ```txt
 @acme/ui extends Chakra
-app designSystems: ['@acme/ui']
+app designSystem: '@acme/ui'
 
 presets:
   Chakra preset
@@ -440,7 +451,7 @@ Chakra must also publish component extraction metadata:
     "kind": "recipe",
     "recipe": "button",
     "element": "button",
-    "styleProps": true
+    "styleProps": true,
   },
   "Accordion": {
     "kind": "namespace",
@@ -449,10 +460,10 @@ Chakra must also publish component extraction metadata:
         "kind": "slotRecipe",
         "recipe": "accordion",
         "slot": "root",
-        "styleProps": true
-      }
-    }
-  }
+        "styleProps": true,
+      },
+    },
+  },
 }
 ```
 
@@ -498,16 +509,14 @@ Chakra CI should produce:
 4. `@chakra-ui/react/panda.manifest.json`.
 5. `@chakra-ui/react/panda.components.json`.
 
-App build should:
+Panda's generic app build responsibilities are covered by [design-system-manifest.md](./design-system-manifest.md),
+[build-info.md](./build-info.md), and [virtual-styled-system.md](./virtual-styled-system.md). Chakra adds these
+requirements on top:
 
-1. Resolve `designSystems`.
-2. Load manifests recursively.
-3. Merge presets and app config in graph order.
-4. Generate the final composed `styled-system`.
-5. Apply or validate runtime aliases.
-6. Apply or validate TypeScript paths.
-7. Hydrate design-system build info.
-8. Extract app source and emit CSS.
+1. Publish component metadata that maps Chakra exports to Panda recipes, slot recipes, and style-prop support.
+2. Ensure Chakra component source imports only package-root styled-system specifiers.
+3. Document or automate runtime aliases for Vite/Nuxt, Next webpack, and Next Turbopack.
+4. Generate or validate TypeScript paths for the same styled-system package roots.
 
 ## Diagnostics
 
@@ -522,17 +531,17 @@ Panda should diagnose:
 
 ## Open Questions
 
-1. Should manifests live only as `panda.manifest.json`, or also under a `package.json` field?
-2. How should transitive design-system extension metadata be represented?
-3. How much of `panda.components.json` can be generated from Chakra source conventions?
-4. What static CSS/safelist syntax is required for dynamic Chakra props?
-5. Should `panda codegen --update-tsconfig` preserve comments and formatting in common `tsconfig.json` shapes?
+1. Should Chakra publish the generic `panda.lib.json` directly, or a Chakra wrapper manifest that points at
+   `@chakra-ui/styled-system`?
+2. How much of `panda.components.json` can be generated from Chakra source conventions?
+3. What static CSS/safelist syntax is required for dynamic Chakra props?
+4. Should `panda codegen --update-tsconfig` preserve comments and formatting in common `tsconfig.json` shapes?
 
 ## Definition of Done
 
 - `@chakra-ui/react` depends on `@chakra-ui/styled-system`.
 - Chakra components import style helpers from `@chakra-ui/styled-system`.
-- `designSystems: ['@chakra-ui/react']` resolves Chakra preset, build info, component metadata, and styled-system package
+- `designSystem: '@chakra-ui/react'` resolves Chakra preset, build info, component metadata, and styled-system package
   root.
 - An app can add `colors.brand` and use `<Button colorPalette="brand" />` with correct CSS and types.
 - An app can add `button.variant.marketing` and use `<Button variant="marketing" />` with correct CSS and types.

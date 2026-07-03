@@ -15,16 +15,25 @@ related:
 
 ## Summary
 
-A published design system should ship a **canonical `styled-system/` runtime** (types + `css` / recipes / patterns /
-jsx helpers) on npm. Consuming apps should **not** regenerate and re-alias a full copy of that tree. Instead,
-`designSystems` registers DS packages; the host resolves each manifest → **preset + buildInfo + styled-system
-entrypoints**, merges presets without a duplicate `presets: ['@acme/ds/preset']` entry, and sets **`importMap` to both
-the DS package paths and the app’s local `outdir`**. App `panda codegen` emits only the **overlay** artifacts required
-when the app extends the merged config in ways that need new JS/TS modules (patterns with transforms, app JSX names,
-callbacks, merged types).
+A published design system should ship a **canonical `styled-system/` runtime** (types + `css` / recipes / patterns / jsx
+helpers) on npm. Consuming apps should **not** regenerate and re-alias a full copy of that tree. Today, `designSystem`
+registers one DS package; parent design systems are discovered through each manifest's `designSystem` field. The host
+resolves each manifest → **preset + buildInfo + styled-system import roots**, merges presets without a duplicate
+`presets: ['@acme/ds/preset']` entry, and sets **`importMap` to both the DS package paths and the app's local
+`outdir`**. App `panda codegen` still needs the planned **overlay** mode: emit only the artifacts required when the app
+extends the merged config in ways that need new JS/TS modules (patterns with transforms, app JSX names, callbacks,
+merged types).
 
 This note is the consume-side companion to [build-info.md](./build-info.md) (portable extraction) and
-[config-loading-design.md](./config-loading-design.md) (config snapshot). Discussion context: [Panda #3522](https://github.com/chakra-ui/panda/discussions/3522) item #7 (virtual / shared styled-system).
+[config-loading-design.md](./config-loading-design.md) (config snapshot). Discussion context:
+[Panda #3522](https://github.com/chakra-ui/panda/discussions/3522) item #7 (virtual / shared styled-system).
+
+## Canonical scope
+
+This note owns the canonical design-system `styled-system` package surface, dual importMap behavior, and overlay codegen
+plan. The `designSystem` field, `panda.lib.json`, manifest parent chains, and diagnostics are owned by
+[design-system-manifest.md](./design-system-manifest.md). Build-info hydration and tree-shaking are owned by
+[build-info.md](./build-info.md).
 
 ## Problem
 
@@ -39,78 +48,28 @@ where every package owns its codegen. It breaks for npm-published design systems
 ## Goals
 
 1. **DS owns the base styled-system** — published via `package.json` exports, built in DS CI.
-2. **`designSystems` is the entrypoint** — manifest supplies `preset`, `buildInfo`, and styled-system import paths; no
-   parallel `presets: ['@acme/ds/preset']` for registered DS packages.
+2. **Reuse the manifest entrypoint** — consume manifest import roots without requiring a parallel
+   `presets: ['@acme/ds/preset']` entry.
 3. **Dual `importMap`** — extraction matches imports from **both** `@acme/ds/...` (node_modules) **and**
    `./styled-system/...` (app overlay).
-4. **Overlay codegen** — app runs codegen only for config extensions that require new JS/TS files; not a duplicate of the
-   DS tree.
+4. **Overlay codegen** — app runs codegen only for config extensions that require new JS/TS files; not a duplicate of
+   the DS tree.
 5. **Build-info hydrate** — DS component CSS travels via `panda.buildinfo.json`; app does not re-extract DS source.
 
-Non-goals (for now): npm/pnpm **overrides** of a global `styled-system` package name; bundler-specific alias
-generation (Panda-owned `importMap` is the primary contract).
+Non-goals (for now): npm/pnpm **overrides** of a global `styled-system` package name; bundler-specific alias generation
+(Panda-owned `importMap` is the primary contract).
 
-## Manifest (package surface)
+## Design-system entrypoint
 
-Each design-system npm package ships a manifest (JSON or `package.json` field — exact wire format TBD):
-
-```json
-{
-  "schemaVersion": 1,
-  "name": "@acme/ui",
-  "panda": "^2.0.0",
-  "preset": "./panda.preset.js",
-  "buildInfo": "./styled-system/panda.buildinfo.json",
-  "styledSystem": {
-    "css": "@acme/ui/css",
-    "recipes": "@acme/ui/recipes",
-    "patterns": "@acme/ui/patterns",
-    "jsx": "@acme/ui/jsx",
-    "tokens": "@acme/ui/tokens"
-  },
-  "extends": "@acme/base"
-}
-```
-
-`styledSystem` values are **import specifiers** (package export subpaths), not filesystem paths. The host maps them
-into `importMap` after resolving the installed package location.
-
-## Consumer config shape
-
-```ts
-// panda.config.ts — target (sketch)
-export default {
-  designSystems: ['@acme/ui'],
-  // App overlay — merged on top of manifest preset(s); NOT a second DS preset import:
-  patterns: { hero: { transform, properties } },
-  conditions: { sidebar: '& [data-sidebar] &' },
-  theme: { extend: { tokens: { … } } },
-}
-```
-
-**No** `presets: ['@acme/ui/preset']` when `@acme/ui` is in `designSystems`. Escape hatch: `presets` remains for
-non-DS config (`@pandacss/preset-base`, internal shared presets) and explicit overrides.
-
-## Config resolution order
-
-```txt
-1. Resolve designSystems[] → manifests (node_modules / workspace)
-2. Resolve manifest.extends / dependencies → transitive DS presets (stacked DS)
-3. Import + merge manifest preset(s) → effective DS config
-4. Merge user panda.config on top (app patterns, conditions, theme.extend, …)
-5. Apply config defaults
-6. Derive effective importMap (DS paths + local outdir) — see below
-7. createConfigSnapshot → Rust compiler + callbacks
-8. Hydrate each manifest buildInfo (tree-shaken to app imports)
-9. codegen → local overlay only (see Codegen split)
-10. cssgen / watch
-```
-
-Steps 1–8 are host/`config` + compiler; step 9 is `panda codegen` (or driver codegen phase).
+The consumer entrypoint is `designSystem: '@acme/ui'`. The manifest schema, preset merge order, parent-chain walk, and
+fallback behavior live in [design-system-manifest.md](./design-system-manifest.md). This note starts after that: once
+the host has resolved the manifest chain, it needs a dual import map and, later, app-only overlay codegen.
 
 ## `importMap` input shapes (v1 parity)
 
-Author-facing `config.importMap` accepts **three input forms** (same contract as v1 `@pandacss/types` / `packages/core/src/import-map.ts`). The host **normalizes** all forms to a single internal `ImportMapOutput` — category keys with **`string[]`** values — before `createConfigSnapshot` and the Rust extractor.
+Author-facing `config.importMap` accepts **three input forms** (same contract as v1 `@pandacss/types` /
+`packages/core/src/import-map.ts`). The host **normalizes** all forms to a single internal `ImportMapOutput` — category
+keys with **`string[]`** values — before `createConfigSnapshot` and the Rust extractor.
 
 ```ts
 type ImportMapInput = {
@@ -185,12 +144,11 @@ alias for `recipes`). The extractor matches import sources by **substring** agai
 Normalization lives in **`@pandacss/compiler-shared`** (`normalizeImportMap`, `prepareCompilerConfig`), applied in
 `config` snapshots and native/wasm bindings before Rust. Rust only accepts the expanded `ImportMapOutput` shape.
 
-## `designSystems` + `importMap` merge
+## `designSystem` + `importMap` merge
 
-When `designSystems` is registered, the host **does not** require a duplicate DS preset entry. It **does** still derive
-import paths for extraction:
+After manifest resolution, the host derives import paths for extraction:
 
-1. For each resolved manifest, read `styledSystem` export roots (or derive from package name like string form above).
+1. For each resolved manifest, read `importMap` export roots (or derive from package name like string form above).
 2. Normalize user `importMap` (if any) via the same string | array | object rules.
 3. **Merge** auto DS paths with user paths — default: **prepend DS roots, append user roots** per category (same as
    array-of-strings semantics).
@@ -199,7 +157,7 @@ import paths for extraction:
 
 ```ts
 export default {
-  designSystems: ['@acme/ui'],
+  designSystem: '@acme/ui',
   patterns: { hero: { … } },
   // importMap omitted → host synthesizes:
   //   ['@acme/ui', '<outdir>']  (string array merge)
@@ -210,7 +168,7 @@ export default {
 
 ```ts
 export default {
-  designSystems: ['@acme/ui'],
+  designSystem: '@acme/ui',
   importMap: ['@acme/ui', 'styled-system'],
   patterns: { hero: { … } },
 }
@@ -220,7 +178,7 @@ export default {
 
 ```ts
 export default {
-  designSystems: ['@acme/ui'],
+  designSystem: '@acme/ui',
   importMap: {
     css: '@acme/ui/css',
     recipes: '@acme/ui/recipes',
@@ -232,19 +190,19 @@ export default {
 
 **Why both DS and local must appear (in any form):**
 
-| Source import | Matched when |
-| ------------- | ------------ |
-| `import { css } from '@panda/css'` | Bundler/tsconfig resolves to a path substring in `importMap.css` (DS and/or local) |
-| `import { button } from '@acme/ui/recipes'` | DS root in `importMap.recipe` |
-| `import { hero } from '@panda/patterns'` | Local `styled-system/patterns` in `importMap.pattern` (overlay codegen) |
-| DS package source using `@acme/ui/css` | DS root in `importMap.css` |
+| Source import                               | Matched when                                                                       |
+| ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `import { css } from '@panda/css'`          | Bundler/tsconfig resolves to a path substring in `importMap.css` (DS and/or local) |
+| `import { button } from '@acme/ui/recipes'` | DS root in `importMap.recipe`                                                      |
+| `import { hero } from '@panda/patterns'`    | Local `styled-system/patterns` in `importMap.pattern` (overlay codegen)            |
+| DS package source using `@acme/ui/css`      | DS root in `importMap.css`                                                         |
 
-User `importMap` **merges with** auto-generated DS entries; it does not replace them unless an explicit opt-out is
-added later (`importMapDesignSystems: false` or similar — TBD).
+User `importMap` **merges with** auto-generated DS entries; it does not replace them unless an explicit opt-out is added
+later (`importMapDesignSystems: false` or similar — TBD).
 
 Stacked DS (`@acme/ui` extends `@acme/base`): merged importMap includes **each registered DS root** that appears in
-manifest resolution (leaf first), then user roots, then local outdir. Transitive preset merge already folded base into the
-effective config; importMap only needs paths that appear in **source imports**.
+manifest resolution (leaf first), then user roots, then local outdir. Transitive preset merge already folded base into
+the effective config; importMap only needs paths that appear in **source imports**.
 
 ## Dual-root resolution (summary)
 
@@ -260,7 +218,7 @@ Regardless of author syntax, the **effective** normalized map for a typical DS a
 }
 ```
 
-String/array/object are equivalent ways to author that; `designSystems` auto-wiring produces the same via
+String/array/object are equivalent ways to author that; `designSystem` auto-wiring produces the same via
 `['@acme/ui', outdir]`.
 
 ## Codegen split: DS base vs app overlay
@@ -285,15 +243,15 @@ Full styled-system for **DS config at publish time**:
 `panda codegen` runs against the **merged config** (DS preset + app extensions) but writes **only artifacts the DS
 package does not ship**:
 
-| Extension kind | Needs local JS/TS? | Overlay output |
-| -------------- | -------------------- | -------------- |
-| Tokens / semantic tokens | Types only (optional) | `types/` merge or augment |
-| Utilities (standard) | Types only | `types/` |
-| Conditions | Types only | `types/` |
-| Config recipes (new names) | `recipes/*.mjs` + types | `recipes/`, `types/` |
-| Pattern + `transform` | `patterns/*.mjs`, `codegenSource`, jsx | `patterns/`, `jsx/`, `types/` |
-| `utility.transform` / `utility.values` | callbacks + types | callbacks in snapshot; no duplicate `css()` |
-| App-only JSX pattern | `jsx/*.mjs` | `jsx/`, `types/` |
+| Extension kind                         | Needs local JS/TS?                     | Overlay output                              |
+| -------------------------------------- | -------------------------------------- | ------------------------------------------- |
+| Tokens / semantic tokens               | Types only (optional)                  | `types/` merge or augment                   |
+| Utilities (standard)                   | Types only                             | `types/`                                    |
+| Conditions                             | Types only                             | `types/`                                    |
+| Config recipes (new names)             | `recipes/*.mjs` + types                | `recipes/`, `types/`                        |
+| Pattern + `transform`                  | `patterns/*.mjs`, `codegenSource`, jsx | `patterns/`, `jsx/`, `types/`               |
+| `utility.transform` / `utility.values` | callbacks + types                      | callbacks in snapshot; no duplicate `css()` |
+| App-only JSX pattern                   | `jsx/*.mjs`                            | `jsx/`, `types/`                            |
 
 **Default overlay layout:**
 
@@ -323,9 +281,9 @@ Config-only extensions (tokens, simple utilities) may need **types-only** regen 
 
 ```txt
 @app
-  panda.config.ts          designSystems: ['@acme/ui'], patterns: { hero }
+  panda.config.ts          designSystem: '@acme/ui', patterns: { hero }
         │
-        ├─► manifest @acme/ui → preset + buildInfo + styledSystem paths
+        ├─► manifest @acme/ui → preset + buildInfo + importMap paths
         │
         ├─► merged config ──► compiler (extract app source, emit app CSS)
         │
@@ -339,17 +297,18 @@ Config-only extensions (tokens, simple utilities) may need **types-only** regen 
 **App source:**
 
 ```tsx
-import { css } from '@panda/css'           // → @acme/ui/css (importMap)
+import { css } from '@panda/css' // → @acme/ui/css (importMap)
 import { Button } from '@acme/ui/jsx/button'
-import { hero } from '@panda/patterns'     // → ./styled-system/patterns/hero
+import { hero } from '@panda/patterns' // → ./styled-system/patterns/hero
 ```
 
 ## Stacked DS
 
-Middle DS (`@acme/ui`) preset already extends `@acme/base`. App lists `designSystems: ['@acme/ui']` only; host resolves
-`extends` and merges both presets. importMap uses **ui** styled-system paths by default; add **base** paths when the app
-imports `@acme/base/...` directly. Hydrate ui buildInfo first; hydrate base when imports require base-only modules not
-covered by ui’s artifact (see [build-info.md — Stacked design systems](./build-info.md#stacked-design-systems-ds-on-ds)).
+Middle DS (`@acme/ui`) manifest already points at `@acme/base`. App lists `designSystem: '@acme/ui'` only; host resolves
+parent links and merges both presets. importMap uses **ui** styled-system paths by default; add **base** paths when the
+app imports `@acme/base/...` directly. Hydrate ui buildInfo first; hydrate base when imports require base-only modules
+not covered by ui's artifact (see
+[build-info.md — Stacked design systems](./build-info.md#stacked-design-systems-ds-on-ds)).
 
 ## Package exports (DS)
 
@@ -363,38 +322,45 @@ covered by ui’s artifact (see [build-info.md — Stacked design systems](./bui
     "./recipes/*": "./styled-system/recipes/*",
     "./patterns/*": "./styled-system/patterns/*",
     "./jsx/*": "./styled-system/jsx/*",
-    "./types": "./styled-system/types/index.d.ts"
-  }
+    "./types": "./styled-system/types/index.d.ts",
+  },
 }
 ```
 
 ## Built vs deferred
 
 - ✅ **Build info** — produce, hydrate, tree-shake, token identity ([build-info.md](./build-info.md)).
-- ✅ **importMap** as substring arrays — extractor supports multiple paths per category today (normalized `ImportMapOutput` only).
-- ✅ **Preset merge** — `config` resolves authored presets.
+- ✅ **importMap** as substring arrays — extractor supports multiple paths per category today (normalized
+  `ImportMapOutput` only).
+- ✅ **Singular `designSystem` consume** — resolve `panda.lib.json`, merge manifest presets, prepend DS import-map
+  roots, hydrate build info, and fall back to manifest `files` when build info is stale.
+- ✅ **Preset merge** — `config` resolves authored presets and manifest presets.
 - ✅ **importMap normalization** — `normalizeImportMap` / `prepareCompilerConfig` in
-  [`packages/compiler-shared/src/import-map.ts`](../packages/compiler-shared/src/import-map.ts); applied in
-  `config` snapshots and native/wasm compiler bindings before Rust.
-- ⬜ **`designSystems` config field** — resolve manifest, merge preset, derive importMap, hydrate buildInfo.
-- ⬜ **importMap auto-wiring** — prepend DS manifest roots + append `outdir`; merge with user string/array/object.
-- ⬜ **Manifest wire format** — `styledSystem` paths, `extends`, optional `dependencies`.
+  [`packages/compiler-shared/src/import-map.ts`](../packages/compiler-shared/src/import-map.ts); applied in `config`
+  snapshots and native/wasm compiler bindings before Rust.
+- ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
+- ⬜ **Import-based hydration narrowing** — scan app imports and pass `only` to build-info hydration.
+- ⬜ **Expanded manifest wire format** — package-export `importMap` paths, optional dependency lists, and virtual
+  overlay metadata. The implemented `panda.lib.json` uses `importMap` and singular `designSystem` parent links today.
 - ⬜ **Overlay codegen** — emit only app delta; skip DS-owned modules; merged types from effective config.
 - ⬜ **Virtual styled-system DX** — no bundler aliases required for DS consume; TS `paths` generation optional.
 
 ## Unresolved questions
 
-- Manifest location: standalone `panda.manifest.json` vs `package.json` `"panda"` field vs `"exports"` convention.
-- importMap merge: append-only vs user override wins vs explicit `importMap.designSystems: false` opt-out.
+- Manifest location for the virtual overlay layer: reuse `panda.lib.json`, add a second manifest, or derive from
+  `package.json` exports.
+- importMap merge: append-only vs user override wins vs explicit `importMap.designSystem: false` opt-out.
 - Overlay codegen conflict when app redefines a DS pattern/recipe name.
 - TS project references: generate `paths` in tsconfig from effective importMap or rely on package exports only.
-- Monorepo workspace: `designSystems: ['workspace:@acme/ui']` resolution.
+- Monorepo workspace: `designSystem: 'workspace:@acme/ui'` resolution.
 - Whether local `styled-system/css` re-export barrel is required or dual importMap alone is enough for all bundlers.
 
 ## Related
 
 - [Build info](./build-info.md) — portable extraction, manifest sketch, stacked DS hydrate.
 - [Config loading](./config-loading-design.md) — snapshot, callbacks, preset resolution.
-- [Compiler lifecycle](./compiler-lifecycle.md) — Rust owns extract/emit + artifact generation; JS host orchestrates writes.
+- [Compiler lifecycle](./compiler-lifecycle.md) — Rust owns extract/emit + artifact generation; JS host orchestrates
+  writes.
 - [Output & host layer](./output-and-host-layer.md) — driver orchestration, config diff → codegen deps.
-- [Panda #3522](https://github.com/chakra-ui/panda/discussions/3522) — virtual / shared styled-system (#7), buildinfo tree-shaking (#8).
+- [Panda #3522](https://github.com/chakra-ui/panda/discussions/3522) — virtual / shared styled-system (#7), buildinfo
+  tree-shaking (#8).
