@@ -269,6 +269,28 @@ importers:
         specifier: 9.39.1
         version: 9.39.1(jiti@2.6.1)
 
+  packages/language-server:
+    dependencies:
+      '@pandacss/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
+      '@pandacss/typescript-plugin':
+        specifier: workspace:*
+        version: link:../typescript-plugin
+      vscode-languageserver:
+        specifier: ^9.0.1
+        version: 9.0.1
+      vscode-languageserver-textdocument:
+        specifier: ^1.0.12
+        version: 1.0.12
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../dev
+
   packages/mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -326,6 +348,22 @@ importers:
       ts-morph:
         specifier: 28.0.0
         version: 28.0.0
+
+  packages/typescript-plugin:
+    dependencies:
+      '@pandacss/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@pandacss/compiler-shared':
+        specifier: workspace:*
+        version: link:../compiler-shared
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../dev
+      typescript:
+        specifier: 6.0.2
+        version: 6.0.2
 
   packages/vite:
     dependencies:
@@ -830,6 +868,21 @@ importers:
       '@types/react-dom':
         specifier: 18.3.1
         version: 18.3.1
+      typescript:
+        specifier: 6.0.2
+        version: 6.0.2
+
+  sandbox/language-service:
+    devDependencies:
+      '@pandacss/dev':
+        specifier: workspace:*
+        version: link:../../packages/dev
+      '@pandacss/language-server':
+        specifier: workspace:*
+        version: link:../../packages/language-server
+      '@pandacss/typescript-plugin':
+        specifier: workspace:*
+        version: link:../../packages/typescript-plugin
       typescript:
         specifier: 6.0.2
         version: 6.0.2
@@ -17762,6 +17815,23 @@ packages:
         optional: true
       jsdom:
         optional: true
+
+  vscode-jsonrpc@8.2.0:
+    resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
+    engines: {node: '>=14.0.0'}
+
+  vscode-languageserver-protocol@3.17.5:
+    resolution: {integrity: sha512-mb1bvRJN8SVznADSGWM9u/b07H7Ecg0I3OgXDuLdn307rl/J3A9YD6/eYOssqhecL27hK1IPZAsaqh00i/Jljg==}
+
+  vscode-languageserver-textdocument@1.0.12:
+    resolution: {integrity: sha512-cxWNPesCnQCcMPeenjKKsOCKQZ/L6Tv19DTRIGuLWe32lyzWhihGVJ/rcckZXJxfdKCFvRLS3fpBIsV/ZGX4zA==}
+
+  vscode-languageserver-types@3.17.5:
+    resolution: {integrity: sha512-Ld1VelNuX9pdF39h2Hgaeb5hEZM2Z3jUrrMgWQAu82jMtZp7p3vJT3BzToKtZI7NgQssZje5o0zryOrhQvzQAg==}
+
+  vscode-languageserver@9.0.1:
+    resolution: {integrity: sha512-woByF3PDpkHFUreUa7Hos7+pUWdeWMXRd26+ZX2A8cFx6v/JPTtd4/uN0/jB6XQHYaOlHbio03NTHCqrgG5n7g==}
+    hasBin: true
 
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
@@ -38721,6 +38791,21 @@ snapshots:
       - terser
       - tsx
       - yaml
+
+  vscode-jsonrpc@8.2.0: {}
+
+  vscode-languageserver-protocol@3.17.5:
+    dependencies:
+      vscode-jsonrpc: 8.2.0
+      vscode-languageserver-types: 3.17.5
+
+  vscode-languageserver-textdocument@1.0.12: {}
+
+  vscode-languageserver-types@3.17.5: {}
+
+  vscode-languageserver@9.0.1:
+    dependencies:
+      vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.1.0: {}
 

@@ -1,0 +1,61 @@
+{
+  "name": "@pandacss/language-server",
+  "version": "2.0.0-beta.8",
+  "description": "Language Server Protocol server for Panda CSS config authoring",
+  "keywords": [
+    "language-server",
+    "lsp",
+    "panda",
+    "pandacss",
+    "css-in-js"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "panda-language-server": "./bin/panda-language-server.js"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/language-server"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format=esm --platform=node --dts",
+    "build:fast": "tsup src/index.ts --format=esm --platform=node --no-dts",
+    "dev": "pnpm build:fast --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "dependencies": {
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/typescript-plugin": "workspace:*",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
