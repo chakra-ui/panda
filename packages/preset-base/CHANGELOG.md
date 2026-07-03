@@ -1,5 +1,17 @@
 # @pandacss/preset-base
 
+## 2.0.0-beta.8
+
+### Patch Changes
+
+- @pandacss/types@2.0.0-beta.8
+
+## 2.0.0-beta.7
+
+### Patch Changes
+
+- @pandacss/types@2.0.0-beta.7
+
 ## 2.0.0-beta.6
 
 ### Patch Changes

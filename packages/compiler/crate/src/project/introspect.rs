@@ -84,7 +84,8 @@ impl Compiler {
         serde_json::Value::Array(suggestions)
     }
 
-    /// Source globs + their static base dirs (for the host watcher).
+    /// Source globs + their static base dirs for the host watcher. `pattern` is
+    /// relative to `base`, so `(base, pattern)` is a ready-to-use `(dir, glob)` pair.
     #[napi]
     #[must_use]
     pub fn sources(&self) -> Vec<SourceEntry> {
@@ -93,7 +94,7 @@ impl Compiler {
             .iter()
             .map(|pattern| SourceEntry {
                 base: resolve_base(&self.user_config.cwd, pattern),
-                pattern: pattern.clone(),
+                pattern: pandacss_fs::relative_glob(pattern).to_owned(),
             })
             .collect()
     }

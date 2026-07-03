@@ -75,7 +75,8 @@ pub struct ScanOptions {
     pub cwd: Option<String>,
 }
 
-/// A source glob with its static base directory (the dir a watcher subscribes to).
+/// A source glob paired with its static base directory. `base` is the dir a watcher
+/// subscribes to; `pattern` is the glob relative to `base`.
 #[napi(object)]
 pub struct SourceEntry {
     pub base: String,

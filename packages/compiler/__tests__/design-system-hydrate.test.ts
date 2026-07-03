@@ -35,7 +35,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         panda: '^2.0.0',
         preset: './panda.preset.mjs',
         buildInfo: './panda.buildinfo.json',
-        files: ['./**/*.{js,mjs}'],
+        files: ['./button.js'],
         importMap: {
           css: '@acme/ds/css',
           recipes: '@acme/ds/recipes',
@@ -58,6 +58,14 @@ describe('hydrateDesignSystem (consumer)', () => {
 
     expect(codes).toContain('design_system_buildinfo_stale')
     expect(driver.cssgen().css).toContain('rebeccapurple')
+
+    writeFileTree(cwd, {
+      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'dodgerblue' })",
+    })
+
+    expect(driver.syncDesignSystemSources()).toEqual([true])
+    expect(driver.cssgen().css).toContain('rebeccapurple')
+    expect(driver.cssgen().css).toContain('dodgerblue')
   })
 
   it('throws (fail-closed) when build info is stale and the manifest has no files fallback', async () => {

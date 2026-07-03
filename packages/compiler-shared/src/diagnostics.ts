@@ -13,6 +13,17 @@ export function withDiagnosticFile<T extends Diagnostic>(diagnostic: T, file?: s
   return file ? ({ ...diagnostic, file } as T) : diagnostic
 }
 
+/** Compact one-line rendering (`severity code file:line:col message`) for build-plugin logs. */
+export function formatDiagnostic(diagnostic: Diagnostic): string {
+  const file = diagnostic.file ?? ''
+  const location = diagnostic.location
+    ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
+    : diagnostic.span
+      ? `:${diagnostic.span.start}`
+      : ''
+  return `${diagnostic.severity} ${diagnostic.code} ${file}${location} ${diagnostic.message}`.replace(/\s+/g, ' ')
+}
+
 export function normalizeDiagnostics<T extends Diagnostic>(
   diagnostics: T[],
   options: NormalizeDiagnosticsOptions = {},

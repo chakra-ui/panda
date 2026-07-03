@@ -1,5 +1,5 @@
 import { createNodeDriver } from '@pandacss/compiler'
-import type { Diagnostic, Driver } from '@pandacss/compiler-shared'
+import { type Diagnostic, type Driver, formatDiagnostic, type SourceChange } from '@pandacss/compiler-shared'
 import { extname, normalize, resolve } from 'node:path'
 import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root, TransformCallback } from 'postcss'
 
@@ -19,6 +19,7 @@ export interface PluginOptions {
 interface DriverState {
   driver: Driver
   generatedOutdirs: Set<string>
+  parsedSources: Set<string>
 }
 
 const driverStates = new Map<string, DriverState>()
@@ -39,12 +40,13 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     let state = driverStates.get(key)
     if (!state) {
       const driver = await createNodeDriver({ cwd, configPath: options.configPath })
-      state = { driver, generatedOutdirs: new Set() }
+      state = { driver, generatedOutdirs: new Set(), parsedSources: new Set() }
       driverStates.set(key, state)
     } else {
       const diff = await state.driver.reload()
       if (diff.hasChanged) {
         state.generatedOutdirs.clear()
+        state.parsedSources.clear()
       }
     }
 
@@ -53,7 +55,8 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     if (!driver.compiler.hasLayerDeclaration(inputCss)) return
 
     ensureCodegen(state, { cwd, outdir: options.outdir })
-    driver.parseFiles()
+    syncProjectSources(state)
+    driver.syncDesignSystemSources()
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
@@ -116,8 +119,29 @@ function ensureCodegen(state: DriverState, options: { cwd: string; outdir: strin
   state.generatedOutdirs.add(outdirKey)
 }
 
+function syncProjectSources(state: DriverState) {
+  const files = new Set(state.driver.scan())
+  const changes: SourceChange[] = []
+
+  for (const path of state.parsedSources) {
+    if (!files.has(path)) {
+      changes.push({ path, kind: 'unlink' })
+      state.parsedSources.delete(path)
+    }
+  }
+
+  for (const path of files) {
+    const known = state.parsedSources.has(path)
+    changes.push({ path, kind: known ? 'change' : 'add' })
+    state.parsedSources.add(path)
+  }
+
+  state.driver.applyChanges(changes)
+}
+
 function registerDependencies(driver: Driver, result: Result, cwd: string, parent: string | undefined) {
   for (const source of driver.compiler.sources()) {
+    // `pattern` is already relative to `base` — the shape a `dir-dependency` wants.
     result.messages.push(
       withPluginMetadata(
         createSourceDependency({
@@ -175,16 +199,6 @@ function withPluginMetadata(message: Message, parent: string | undefined): Messa
     plugin: PLUGIN_NAME,
     parent,
   }
-}
-
-function formatDiagnostic(diagnostic: Diagnostic) {
-  const file = diagnostic.file ? `${diagnostic.file}` : ''
-  const location = diagnostic.location
-    ? `:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
-    : diagnostic.span
-      ? `:${diagnostic.span.start}`
-      : ''
-  return `${diagnostic.severity} ${diagnostic.code} ${file}${location} ${diagnostic.message}`.replace(/\s+/g, ' ')
 }
 
 function emitDiagnostics(root: Root, result: Result, diagnostics: Diagnostic[]) {

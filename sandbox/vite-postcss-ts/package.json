@@ -1,0 +1,26 @@
+{
+  "name": "sandbox-vite-postcss",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm codegen && vite",
+    "build": "pnpm codegen && tsc && vite build",
+    "preview": "vite preview",
+    "codegen": "panda codegen"
+  },
+  "dependencies": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/preset-base": "workspace:*",
+    "@pandacss/preset-panda": "workspace:*",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "typescript": "6.0.2",
+    "vite": "7.2.6"
+  }
+}

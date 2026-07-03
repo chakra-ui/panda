@@ -1,6 +1,7 @@
 use pandacss_shared::pascal_case;
 
-use crate::{CodegenContext, ImportDecl, Item, ItemNode, Module};
+use crate::artifacts::ts_string::type_raw;
+use crate::{CodegenContext, ImportDecl, Module};
 use pandacss_config::{CssSyntaxKind, JsxFramework};
 
 pub(super) fn module(ctx: CodegenContext<'_>) -> Module {
@@ -690,8 +691,4 @@ export type __HTML_PROPS__<T extends ElementType> = ComponentProps<T>"
     code = code.replace("__COMPONENT__", component_name);
     code = code.replace("__UPPER__", upper_name);
     code.replace("__HTML_PROPS__", html_props_name)
-}
-
-fn type_raw(code: impl Into<String>) -> Item {
-    Item::ty(ItemNode::RawStmt(code.into()))
 }

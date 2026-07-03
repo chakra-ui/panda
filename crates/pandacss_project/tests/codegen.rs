@@ -55,7 +55,7 @@ fn generates_artifacts_from_resolved_project_state() {
 
     export type ColorPalette = "red"
 
-    export type TokenValue<T extends keyof Tokens> = Tokens[T]
+    export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never
     "#);
 
     // `types/system` is the merged surface (own csstype + properties + selectors +

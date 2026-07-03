@@ -9,6 +9,7 @@ interface MockDriver {
     hasLayerDeclaration: ReturnType<typeof vi.fn>
     sources: ReturnType<typeof vi.fn>
   }
+  applyChanges: ReturnType<typeof vi.fn>
   configDependencies: string[]
   configPath: string
   codegen: ReturnType<typeof vi.fn>
@@ -19,7 +20,9 @@ interface MockDriver {
   isDesignSystemFile: ReturnType<typeof vi.fn>
   parseFiles: ReturnType<typeof vi.fn>
   reload: ReturnType<typeof vi.fn>
+  scan: ReturnType<typeof vi.fn>
   syncDesignSystemFileChange: ReturnType<typeof vi.fn>
+  syncDesignSystemSources: ReturnType<typeof vi.fn>
 }
 
 afterEach(() => {
@@ -82,7 +85,10 @@ describe('@pandacss/postcss', () => {
     const result = await run(INPUT)
 
     expect(driver.codegen).toHaveBeenCalledWith({ cwd: PROJECT_CWD, outdir: undefined })
-    expect(driver.parseFiles).toHaveBeenCalledTimes(1)
+    expect(driver.scan).toHaveBeenCalledTimes(1)
+    expect(driver.applyChanges).toHaveBeenCalledWith([{ path: '/project/src/App.tsx', kind: 'add' }])
+    expect(driver.syncDesignSystemSources).toHaveBeenCalledTimes(1)
+    expect(driver.parseFiles).not.toHaveBeenCalled()
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false })
     expect(result.css).toMatchInlineSnapshot(
       `"@layer reset, base, tokens, recipes, utilities;.text_red { color: red }"`,
@@ -91,7 +97,7 @@ describe('@pandacss/postcss', () => {
       [
         {
           "dir": "/project/src",
-          "glob": "src/**/*.tsx",
+          "glob": "**/*.tsx",
           "parent": "/project/styles.css",
           "plugin": "pandacss",
           "type": "dir-dependency",
@@ -291,6 +297,38 @@ describe('@pandacss/postcss', () => {
     expect(driver.codegen).toHaveBeenCalledTimes(2)
   })
 
+  it('refreshes known source files additively on repeated transforms', async () => {
+    const { driver, pandacss } = await setup()
+    const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
+
+    await processor.process(INPUT, { from: '/project/styles.css' })
+    await processor.process(INPUT, { from: '/project/styles.css' })
+
+    expect(driver.applyChanges).toHaveBeenNthCalledWith(1, [{ path: '/project/src/App.tsx', kind: 'add' }])
+    expect(driver.applyChanges).toHaveBeenNthCalledWith(2, [{ path: '/project/src/App.tsx', kind: 'change' }])
+    expect(driver.parseFiles).not.toHaveBeenCalled()
+  })
+
+  it('removes source files that disappear from the scan', async () => {
+    const { driver, pandacss } = await setup()
+    driver.scan
+      .mockReturnValueOnce(['/project/src/App.tsx', '/project/src/Card.tsx'])
+      .mockReturnValueOnce(['/project/src/App.tsx'])
+    const processor = postcss([pandacss({ cwd: PROJECT_CWD })])
+
+    await processor.process(INPUT, { from: '/project/styles.css' })
+    await processor.process(INPUT, { from: '/project/styles.css' })
+
+    expect(driver.applyChanges).toHaveBeenNthCalledWith(1, [
+      { path: '/project/src/App.tsx', kind: 'add' },
+      { path: '/project/src/Card.tsx', kind: 'add' },
+    ])
+    expect(driver.applyChanges).toHaveBeenNthCalledWith(2, [
+      { path: '/project/src/Card.tsx', kind: 'unlink' },
+      { path: '/project/src/App.tsx', kind: 'change' },
+    ])
+  })
+
   it('serializes concurrent transforms for the same driver key', async () => {
     const order: string[] = []
     const { createNodeDriver, pandacss } = await setup({
@@ -340,8 +378,10 @@ function createMockDriver(): MockDriver {
   return {
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes(INPUT)),
-      sources: vi.fn(() => [{ base: '/project/src', pattern: 'src/**/*.tsx' }]),
+      // `sources()` returns `pattern` relative to `base` — a coherent (dir, glob) pair.
+      sources: vi.fn(() => [{ base: '/project/src', pattern: '**/*.tsx' }]),
     },
+    applyChanges: vi.fn(() => [true]),
     configDependencies: ['panda.config.ts', 'panda.tokens.ts'],
     configPath: '/project/panda.config.ts',
     codegen: vi.fn(() => ['/project/styled-system/css/css.mjs']),
@@ -357,6 +397,8 @@ function createMockDriver(): MockDriver {
     isDesignSystemFile: vi.fn(() => false),
     parseFiles: vi.fn(() => []),
     reload: vi.fn(async () => ({ hasChanged: false, dependencies: [], recipes: [], patterns: [], changes: [] })),
+    scan: vi.fn(() => ['/project/src/App.tsx']),
     syncDesignSystemFileChange: vi.fn(async () => false),
+    syncDesignSystemSources: vi.fn(() => []),
   } as unknown as MockDriver
 }
