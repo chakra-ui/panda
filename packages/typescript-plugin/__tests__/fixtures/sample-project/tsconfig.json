@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "strict": true,
+    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
+  },
+  "include": ["panda.config.ts"]
+}
