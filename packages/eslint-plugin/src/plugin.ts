@@ -10,6 +10,7 @@ import {
   createNoImportantRule,
   createNoInvalidTokenPathsRule,
   createNoMarginPropertiesRule,
+  createNoPrimitiveTokenRule,
   createConsistentPropertyStyleRule,
   createNoInvalidNestingRule,
   createNoPhysicalPropertiesRule,
@@ -26,6 +27,7 @@ import {
   noInvalidTokenPathsRuleName,
   noMarginPropertiesRuleName,
   noPhysicalPropertiesRuleName,
+  noPrimitiveTokenRuleName,
   noShorthandLonghandMixRuleName,
   preferTextStyleRuleName,
   preferTokenRuleName,
@@ -139,6 +141,7 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
   const categoryOf = (prop: string) => categoryByProperty.get(prop)
   const isHardcodedValue = hardcodedValueClassifier(project.compiler)
   const suggest = (prop: string, value: string) => project.compiler.suggestTokens(prop, value)
+  const suggestSemanticTokens = (path: string) => project.compiler.suggestSemanticTokens(path)
   const inspect = (context: LintRuleContextLike) =>
     linter.inspectProject(project, getContextFilename(context), getContextSource(context))
 
@@ -160,6 +163,7 @@ export function bindRules(linter: Linter, project: ProjectContext): Record<strin
     [noDebugRuleName]: createNoDebugRule({ inspect }),
     // `recommended` scopes prefer-token to colors (the old `no-hardcoded-color`).
     [preferTokenRuleName]: createPreferTokenRule({ inspect, categoryOf, isHardcodedValue, suggest }),
+    [noPrimitiveTokenRuleName]: createNoPrimitiveTokenRule({ inspect, suggestSemanticTokens }),
     // Opt-in style/enforcement rules (not in `recommended`).
     [noImportantRuleName]: createNoImportantRule({ inspect }),
     [noMarginPropertiesRuleName]: createNoMarginPropertiesRule({ inspect }),

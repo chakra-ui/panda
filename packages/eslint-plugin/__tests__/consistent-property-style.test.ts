@@ -26,6 +26,7 @@ function createTempProject() {
     join(dir, 'panda.config.ts'),
     `export default {
       outdir: 'styled-system',
+      jsxFramework: 'react',
       importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'] },
       theme: { tokens: { colors: { red: { 500: { value: '#f00' } } }, spacing: { 4: { value: '1rem' } } } },
       utilities: {

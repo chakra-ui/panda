@@ -206,6 +206,59 @@ describe('compiler.inspectFile()', () => {
     `)
   })
 
+  it('exposes token metadata on style values', () => {
+    const compiler = createProject({
+      theme: {
+        tokens: {
+          colors: { red: { 500: { value: '#f00' } } },
+          spacing: { 4: { value: '1rem' } },
+        },
+        semanticTokens: {
+          colors: { fg: { error: { value: '{colors.red.500}' } } },
+        },
+      },
+      utilities: {
+        color: { className: 'c', values: 'colors' },
+        padding: { className: 'p', values: 'spacing', shorthand: 'p' },
+      },
+    })
+    const source = "import { css } from '@panda/css'\ncss({ color: 'red.500/40', p: '4' })"
+    const result = compiler.inspectFile({ path: 'app.tsx', source })
+
+    expect(
+      result.styleEntries.flatMap((entry) =>
+        (entry.valueSpans ?? []).map((span) => ({
+          value: span.value,
+          token: span.token,
+        })),
+      ),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "value": "red.500/40",
+          "token": {
+            "path": "colors.red.500",
+            "category": "colors",
+            "categoryPath": "red.500",
+            "modifier": "40",
+            "semantic": false,
+            "semanticCategory": true,
+          },
+        },
+        {
+          "value": "4",
+          "token": {
+            "path": "spacing.4",
+            "category": "spacing",
+            "categoryPath": "4",
+            "semantic": false,
+            "semanticCategory": false,
+          },
+        },
+      ]
+    `)
+  })
+
   it('returns file-local diagnostics', () => {
     const compiler = createProject()
     const result = compiler.inspectFile({
@@ -258,6 +311,80 @@ describe('compiler.inspectFile() — token reference forms', () => {
           "resolved": true,
         },
       ]
+    `)
+  })
+
+  it('exposes token metadata on token() refs', () => {
+    const compiler = createProject({
+      theme: {
+        tokens: { colors: { red: { 500: { value: '#f00' } } } },
+        semanticTokens: { colors: { fg: { error: { value: '{colors.red.500}' } } } },
+      },
+    })
+    const result = compiler.inspectFile({
+      path: 'app.tsx',
+      source: ["import { token } from '@panda/tokens'", "token('colors.red.500')", "token('colors.fg.error')"].join(
+        '\n',
+      ),
+    })
+
+    expect(result.tokenRefs.map(({ path, token }) => ({ path, token }))).toMatchInlineSnapshot(`
+      [
+        {
+          "path": "colors.red.500",
+          "token": {
+            "path": "colors.red.500",
+            "category": "colors",
+            "categoryPath": "red.500",
+            "semantic": false,
+            "semanticCategory": true,
+          },
+        },
+        {
+          "path": "colors.fg.error",
+          "token": {
+            "path": "colors.fg.error",
+            "category": "colors",
+            "categoryPath": "fg.error",
+            "semantic": true,
+            "semanticCategory": true,
+          },
+        },
+      ]
+    `)
+  })
+})
+
+describe('compiler.suggestSemanticTokens()', () => {
+  it('returns semantic equivalents for a primitive token path', () => {
+    const compiler = createProject({
+      theme: {
+        tokens: {
+          colors: { red: { 500: { value: '#f00' } } },
+          spacing: { 4: { value: '1rem' } },
+        },
+        semanticTokens: {
+          colors: { fg: { error: { value: '{colors.red.500}' } } },
+        },
+      },
+    })
+
+    expect({
+      red: compiler.suggestSemanticTokens('colors.red.500'),
+      semantic: compiler.suggestSemanticTokens('colors.fg.error'),
+      spacing: compiler.suggestSemanticTokens('spacing.4'),
+    }).toMatchInlineSnapshot(`
+      {
+        "red": [
+          {
+            "token": "fg.error",
+            "semantic": true,
+            "conditional": false,
+          },
+        ],
+        "semantic": [],
+        "spacing": [],
+      }
     `)
   })
 })

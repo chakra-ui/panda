@@ -184,6 +184,9 @@ class FallbackCompiler implements Compiler {
   suggestTokens() {
     return []
   }
+  suggestSemanticTokens() {
+    return []
+  }
   writeArtifacts(_options: WriteArtifactsOptions) {
     return []
   }

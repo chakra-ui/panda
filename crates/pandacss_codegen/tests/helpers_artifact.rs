@@ -634,6 +634,10 @@ export declare function withoutSpace<T extends string | number | boolean>(str: T
 ";
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "large generated helper snapshots are easier to review as one test"
+)]
 fn emits_ts_source() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
@@ -908,6 +912,10 @@ fn emits_js_get_slot_recipes() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "large generated helper snapshots are easier to review as one test"
+)]
 fn emits_js_runtime() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {

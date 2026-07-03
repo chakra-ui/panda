@@ -147,6 +147,8 @@ The rest are off by default. Turn them on per project:
 - `consistent-property-style` — enforce one property style: Panda shorthand aliases (`ml`) or longhand canonical names
   (`marginLeft`). Autofixable. Takes `style: 'shorthand' | 'longhand'` (default `longhand`) and `ignore`.
 - `prefer-text-style` — a style object setting two or more typography properties that should be one `textStyle` token.
+- `no-primitive-token` — a primitive/core token where a semantic token exists for that category. Takes `categories` and
+  `allow`.
 
 Enable an opt-in rule like any other:
 
@@ -189,6 +191,17 @@ Hardcoded colors value "#f00". Matching tokens: fg.error, red.500.
 Quick-fixes apply to each offending leaf — flat literals (`color: '#f00'`), values nested in conditions
 (`color: { base: '#f00' }`), and responsive-array elements (`color: ['#f00', ...]`). Coverage spans `css()`, style
 props, and recipe styles in `cva()` / `sva()` / `styled('div', { ... })` (`base`, `variants`, `compoundVariants`).
+
+`no-primitive-token` takes `categories` (which token categories to enforce; defaults to categories with semantic tokens)
+and `allow` (primitive token paths to permit):
+
+```js
+{ rules: { '@pandacss/no-primitive-token': ['error', { categories: ['colors'], allow: ['red.500'] }] } }
+```
+
+This complements `prefer-token`: `prefer-token` maps hardcoded CSS values to tokens; `no-primitive-token` maps primitive
+tokens to semantic tokens. Categories without semantic tokens are skipped, so spacing primitives are allowed unless you
+define semantic spacing tokens.
 
 ### Migrating from `no-hardcoded-color`
 

@@ -47,6 +47,13 @@ fn project() -> pandacss_project::Project {
                 "colors": { "red": { "300": { "value": "#f00" }, "500": { "value": "#e00" } } },
                 "spacing": { "4": { "value": "1rem" } }
             },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "error": { "value": "{colors.red.500}" }
+                    }
+                }
+            },
             "keyframes": {
                 "spin": { "from": {}, "to": {} },
                 "fade": { "from": {}, "to": {} }
@@ -249,6 +256,53 @@ fn inspection_exposes_token_ref_details() {
 }
 
 #[test]
+fn inspection_exposes_token_metadata_on_token_refs() {
+    let result = project().inspect_file_source(
+        "a.tsx",
+        indoc! {r"
+            import { token } from '@panda/tokens'
+            token('colors.red.500')
+            token('colors.fg.error')
+        "},
+    );
+
+    let refs = result
+        .token_refs
+        .iter()
+        .map(|token_ref| {
+            let token = token_ref.token.as_ref().expect("token metadata");
+            json!({
+                "path": token_ref.path,
+                "token": {
+                    "path": token.path,
+                    "category": token.category,
+                    "categoryPath": token.category_path,
+                    "semantic": token.semantic,
+                    "semanticCategory": token.semantic_category,
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+
+    assert_yaml_snapshot!(refs, @r"
+    - path: colors.red.500
+      token:
+        path: colors.red.500
+        category: colors
+        categoryPath: red.500
+        semantic: false
+        semanticCategory: true
+    - path: colors.fg.error
+      token:
+        path: colors.fg.error
+        category: colors
+        categoryPath: fg.error
+        semantic: true
+        semanticCategory: true
+    ");
+}
+
+#[test]
 fn inspection_exposes_safe_style_entries_for_local_object_props() {
     let source = indoc! {r"
         import { css } from '@panda/css'
@@ -302,6 +356,74 @@ fn inspection_exposes_safe_style_entries_for_local_object_props() {
         - color
       key: color
       value: "'red.300'"
+    "#);
+}
+
+#[test]
+fn inspection_exposes_token_metadata_on_style_value_spans() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({
+          color: { base: 'red.500/40', _hover: 'fg.error' },
+          p: '4',
+        })
+    "};
+    let result = project().inspect_file_source("a.tsx", source);
+
+    let spans = result
+        .style_entries
+        .iter()
+        .filter(|entry| entry.kind == pandacss_project::StyleEntryKind::Utility)
+        .flat_map(|entry| {
+            entry.value_spans.iter().map(|span| {
+                let token = span.token.as_ref().expect("token metadata");
+                json!({
+                    "entry": entry.path,
+                    "value": span.value,
+                    "token": {
+                        "path": token.path,
+                        "category": token.category,
+                        "categoryPath": token.category_path,
+                        "modifier": token.modifier,
+                        "semantic": token.semantic,
+                        "semanticCategory": token.semantic_category,
+                    }
+                })
+            })
+        })
+        .collect::<Vec<_>>();
+
+    assert_yaml_snapshot!(spans, @r#"
+    - entry:
+        - color
+      value: red.500/40
+      token:
+        path: colors.red.500
+        category: colors
+        categoryPath: red.500
+        modifier: "40"
+        semantic: false
+        semanticCategory: true
+    - entry:
+        - color
+      value: fg.error
+      token:
+        path: colors.fg.error
+        category: colors
+        categoryPath: fg.error
+        modifier: ~
+        semantic: true
+        semanticCategory: true
+    - entry:
+        - p
+      value: "4"
+      token:
+        path: spacing.4
+        category: spacing
+        categoryPath: "4"
+        modifier: ~
+        semantic: false
+        semanticCategory: false
     "#);
 }
 

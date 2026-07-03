@@ -131,6 +131,7 @@ export declare class WasmCompiler {
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]
+  suggestSemanticTokens(path: string): TokenSuggestion[]
   writeArtifacts(options: WriteArtifactsOptions): string[]
   writeCss(options: WriteCssOptions): WriteCssResult
   writeLayerCss(options: WriteLayerCssOptions): WriteCssResult

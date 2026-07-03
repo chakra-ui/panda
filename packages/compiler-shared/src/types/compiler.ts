@@ -263,6 +263,7 @@ export interface Compiler {
   inspectFiles(files: SourceFileInput[]): FileInspectionBatch
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]
+  suggestSemanticTokens(path: string): TokenSuggestion[]
 
   /**
    * Project state views.
