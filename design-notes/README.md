@@ -88,7 +88,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
   `panda.config.*` without ambient generated types.
 - [Language service implementation](./language-service-implementation.md) — `compiler/tooling` subpath,
-  `@pandacss/language-server`, VS Code extension, phased rollout, migration from `panda-vscode`.
+  `@pandacss/typescript-plugin` (tsserver plugin, ships first) + thin VS Code extension, phased rollout, standalone
+  `@pandacss/language-server` deferred until non-TS-native templates need it.
 
 ### Testing
 
