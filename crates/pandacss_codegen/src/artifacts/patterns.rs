@@ -348,13 +348,6 @@ fn properties_interface(
         }));
     }
 
-    members.push(TsMember {
-        name: TsMemberName::Ident("className".into()),
-        optional: true,
-        ty: TsType::Ref("string".into()),
-        js_doc: None,
-    });
-
     Item::interface_decl(InterfaceDecl {
         exported: true,
         name: name.into(),

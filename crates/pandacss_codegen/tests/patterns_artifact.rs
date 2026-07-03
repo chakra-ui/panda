@@ -196,7 +196,6 @@ fn emits_ts_source() {
           direction?: SystemProperties["flexDirection"]
           gap?: SystemProperties["gap"]
           justify?: SystemProperties["justifyContent"]
-          className?: string
         }
 
         type StackRestStyles = Omit<SystemStyleObject, keyof StackProperties>
@@ -317,7 +316,6 @@ fn emits_js_runtime_and_declarations() {
           direction?: SystemProperties["flexDirection"]
           gap?: SystemProperties["gap"]
           justify?: SystemProperties["justifyContent"]
-          className?: string
         }
 
         type StackRestStyles = Omit<SystemStyleObject, keyof StackProperties>
