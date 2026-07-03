@@ -137,7 +137,12 @@ fn generates_theme_artifact_files() {
     let system = System::new(config.clone()).expect("valid project config");
     let project = Project::new(system);
     let artifact = project
-        .generate_artifact(&config, ArtifactId::Themes, GenerateOptions::default(), None)
+        .generate_artifact(
+            &config,
+            ArtifactId::Themes,
+            GenerateOptions::default(),
+            None,
+        )
         .expect("themes artifact");
 
     let mut files = artifact
@@ -268,7 +273,12 @@ fn falls_back_to_identity_transform_without_codegen_source() {
 /// The generated `patterns/stack` runtime module (skips the `.d.ts` declaration).
 fn pattern_runtime_code(project: &Project, config: &pandacss_config::UserConfig) -> String {
     let artifact = project
-        .generate_artifact(config, ArtifactId::Patterns, GenerateOptions::default(), None)
+        .generate_artifact(
+            config,
+            ArtifactId::Patterns,
+            GenerateOptions::default(),
+            None,
+        )
         .expect("patterns artifact");
     artifact
         .files

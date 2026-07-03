@@ -419,7 +419,12 @@ fn index_module(ctx: CodegenContext<'_>) -> Module {
                 "./create-slot-recipe-context".to_owned(),
             ]);
         }
-        sources.extend(ctx.config.patterns.keys().map(|name| pattern_source(ctx, name)));
+        sources.extend(
+            ctx.config
+                .patterns
+                .keys()
+                .map(|name| pattern_source(ctx, name)),
+        );
     }
 
     let mut module = sources.into_iter().fold(Module::new(), |module, source| {

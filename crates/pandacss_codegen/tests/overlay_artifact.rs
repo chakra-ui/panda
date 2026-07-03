@@ -167,7 +167,11 @@ fn jsx_reexports_owned_ds_pattern_and_emits_app_delta() {
     let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
 
     // The generic jsx factory is still emitted locally.
-    assert!(!artifact(&artifacts, ArtifactId::JsxFactory).files.is_empty());
+    assert!(
+        !artifact(&artifacts, ArtifactId::JsxFactory)
+            .files
+            .is_empty()
+    );
 
     // Only the app pattern component is emitted; the DS one is re-exported.
     let jsx_patterns = artifact(&artifacts, ArtifactId::JsxPatterns);
@@ -189,7 +193,10 @@ fn jsx_conflict_keeps_app_component_local() {
 
     let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
 
-    assert_eq!(paths(artifact(&artifacts, ArtifactId::JsxPatterns)), vec!["jsx/stack.ts"]);
+    assert_eq!(
+        paths(artifact(&artifacts, ArtifactId::JsxPatterns)),
+        vec!["jsx/stack.ts"]
+    );
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.ts");
     assert!(index.contains("export * from './stack';"));
     assert!(!index.contains("@ds/jsx/stack"));

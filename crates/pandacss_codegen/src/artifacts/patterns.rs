@@ -15,8 +15,8 @@ use crate::artifacts::ts_string::is_identifier;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConfigDependency, ConstDecl,
-    DependencySet, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode,
-    JsDoc, Module, Param, PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
+    DependencySet, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module,
+    Param, PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 

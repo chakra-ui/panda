@@ -29,7 +29,10 @@ impl CodegenOverlay {
     }
 }
 
-pub(crate) fn index_barrel(named_reexport: Option<(Vec<String>, &str)>, app_stems: &[String]) -> Module {
+pub(crate) fn index_barrel(
+    named_reexport: Option<(Vec<String>, &str)>,
+    app_stems: &[String],
+) -> Module {
     let mut module = Module::new();
 
     if let Some((names, source)) = named_reexport.filter(|(names, _)| !names.is_empty()) {
