@@ -125,8 +125,18 @@ fn collapse_inferred_token_category(
     explicit_category: Option<&str>,
     tokens: Option<&TokenDictionary>,
 ) -> (Option<String>, Vec<String>) {
-    if explicit_category.is_some() {
-        return (explicit_category.map(str::to_owned), literals);
+    if let Some(category) = explicit_category {
+        let token_category = TokenCategory::from_path_segment(category);
+        let empty_known = !matches!(token_category, TokenCategory::Other(_))
+            && tokens.is_some_and(|tokens| {
+                tokens
+                    .category_values_str(&token_category)
+                    .is_none_or(FxHashMap::is_empty)
+            });
+        if empty_known {
+            return (None, literals);
+        }
+        return (Some(category.to_owned()), literals);
     }
 
     let Some(tokens) = tokens else {
