@@ -17,15 +17,15 @@ hardware: darwin arm64 (local dev machine; not a clean-room CI box)
 ## TL;DR
 
 The current Rust implementation is already **~7-14x faster than JS full `TokenDictionary.init()`** on synthetic themes
-when measured as an optimized Rust binary with parity-level derived token counts. This is despite Rust still walking some
-config trees and allocating path strings. Rust also now serves cached category values in effectively constant time and
-includes native value transforms for shadows, gradients, fonts, easings, borders, assets, and color-mix references.
+when measured as an optimized Rust binary with parity-level derived token counts. This is despite Rust still walking
+some config trees and allocating path strings. Rust also now serves cached category values in effectively constant time
+and includes native value transforms for shadows, gradients, fonts, easings, borders, assets, and color-mix references.
 
 | Input tokens | JS full build | Rust build | Rust vs JS full | JS register-only | Rust vs register-only |
-| ------------ | ------------: | ---------: | ---------------: | ---------------: | --------------------: |
-| 1,000        |       14.4 ms |     1.9 ms |          **7.5x** |           3.3 ms |                  1.7x |
-| 10,000       |      206.6 ms |    14.6 ms |         **14.1x** |          36.1 ms |                  2.5x |
-| 50,000       |     1007.3 ms |    83.5 ms |         **12.1x** |         227.9 ms |                  2.7x |
+| ------------ | ------------: | ---------: | --------------: | ---------------: | --------------------: |
+| 1,000        |       14.4 ms |     1.9 ms |        **7.5x** |           3.3 ms |                  1.7x |
+| 10,000       |      206.6 ms |    14.6 ms |       **14.1x** |          36.1 ms |                  2.5x |
+| 50,000       |     1007.3 ms |    83.5 ms |       **12.1x** |         227.9 ms |                  2.7x |
 
 `JS full` means `new TokenDictionary(config).init()`. `JS register-only` means `registerTokens()` plus
 `setComputedView()`; it is included as a lower-bound baseline for raw token walking, not as feature parity.
@@ -64,8 +64,8 @@ compact token records, resolve references once, materialize derived records, the
   direct-writes CSS custom property names instead of allocating temporary vectors for `join`/`replace`.
 - Current parity work adds virtual color palette generation and a cached color palette view. Include/exclude/enabled
   config is supported with simple wildcard matching, and the synthetic fixture token counts now match JS full counts.
-- The token CSS variable writer is now single-pass for the non-hashed path. This replaced an escape pass plus a dash-case
-  pass, recovering a meaningful part of the cost added by virtual color palette parity.
+- The token CSS variable writer is now single-pass for the non-hashed path. This replaced an escape pass plus a
+  dash-case pass, recovering a meaningful part of the cost added by virtual color palette parity.
 
 ## Measured Results
 
@@ -109,9 +109,9 @@ strings. Small dictionaries are dominated by harness overhead and dynamic path f
 
 | Input tokens | JS full category values | Rust category values |
 | ------------ | ----------------------: | -------------------: |
-| 1,000        |                  0.1 ms |             0.0004 ms |
-| 10,000       |                  1.0 ms |             0.0005 ms |
-| 50,000       |                  6.1 ms |             0.0005 ms |
+| 1,000        |                  0.1 ms |            0.0004 ms |
+| 10,000       |                  1.0 ms |            0.0005 ms |
+| 50,000       |                  6.1 ms |            0.0005 ms |
 
 Rust was initially slower here because `category_values()` cloned a fresh map per call. The dictionary now builds a
 category-values cache once and the bench uses the borrowed `category_values_str()` view.

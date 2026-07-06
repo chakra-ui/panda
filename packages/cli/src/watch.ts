@@ -19,11 +19,26 @@ export interface ProjectWatchOptions {
   onError?(error: unknown): void
   onSourceChange(events: WatchEvent[]): Promise<void> | void
   onConfigChange(events: WatchEvent[]): Promise<void> | void
+  // Full rebuild used to recover from a dropped-events signal (see the subscribe
+  // handler below). Defaults to `onSourceChange([])`, which re-reads from disk for
+  // the default `build`/`lib` commands; commands whose incremental `onSourceChange`
+  // skips a re-parse (`cssgen`, `analyze`) override this to force a full re-scan.
+  onRescan?(): Promise<void> | void
 }
 
 export function formatWatchError(error: unknown): string {
   if (error instanceof Error) return error.stack ?? error.message
   return String(error)
+}
+
+// `@parcel/watcher` relays a macOS FSEvents backpressure condition — its user- or
+// kernel-side event buffer overflowed and the OS coalesced the backlog — as a
+// *recoverable* subscribe-callback error whose message contains "must be
+// re-scanned" (the three variants live in @parcel/watcher's FSEventsBackend.cc).
+// Per Apple's FSEvents contract (`kFSEventStreamEventFlagMustScanSubDirs`) the
+// correct response is to re-scan, not to treat the watch as broken.
+export function isFsEventsRescanError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('must be re-scanned')
 }
 
 export function normalizeParcelEvent(event: { type: string; path: string }): WatchEvent | undefined {
@@ -94,6 +109,13 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
     return serialGate
   }
 
+  // Recovery for a dropped-events signal: a full rebuild that must re-read the
+  // filesystem, since the specific missed paths are unknown. Defaults to
+  // `onSourceChange([])`; commands with an incremental `onSourceChange` pass an
+  // explicit `onRescan` that re-parses from disk.
+  const rescan = (): Promise<void> =>
+    Promise.resolve(options.onRescan ? options.onRescan() : options.onSourceChange([]))
+
   const debouncer = createEventDebouncer<WatchEvent>(async (events) => {
     const batch = splitEvents(events, options.driver)
     await runSerialized(async () => {
@@ -116,7 +138,19 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
     const subscription = await parcelWatcher.subscribe(
       dir,
       (error, events) => {
-        if (error) throw error
+        if (error) {
+          // Rethrowing here escapes into @parcel/watcher's native callback as an
+          // uncaught exception and kills the watch process. A dropped-events
+          // signal is recoverable — the OS is asking us to re-scan — so run a
+          // full rebuild through the serial gate instead of crashing. Anything
+          // else is a genuine watcher failure and keeps the original throw.
+          if (isFsEventsRescanError(error)) {
+            options.onStatus?.('watch: dropped events, re-scanning')
+            void runSerialized(rescan)
+            return
+          }
+          throw error
+        }
         const normalized = events
           .map((event) => normalizeParcelEvent(event))
           .filter((event): event is WatchEvent => !!event)

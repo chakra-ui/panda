@@ -44,17 +44,18 @@ the `StyleNormalizer` consumed by `process_atomic_with`. It depends on `pandacss
 trait it implements — the one documented sibling-Tier-2 dep, in service of fusing the normalize+walk passes.
 
 `pandacss_stylesheet` consumes encoded atoms, recipe snapshots, utility metadata, and the supported static CSS config
-subset to produce CSS strings. It depends on `pandacss_encoder` for snapshot/atom types (not on `pandacss_project` —
-the project is a dev-dep used only for test wiring). It is an emitter/minifying writer, not a CSS optimizer.
+subset to produce CSS strings. It depends on `pandacss_encoder` for snapshot/atom types (not on `pandacss_project` — the
+project is a dev-dep used only for test wiring). It is an emitter/minifying writer, not a CSS optimizer; see
+[stylesheet.md](./stylesheet.md) for the canonical boundary.
 
 ### Tier 3 — façade
 
 `pandacss_project`.
 
 The `Project` crate wires everything together. `System` compiles immutable config-derived runtime state from
-`pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate is the primary entry point for
-`@pandacss/compiler` and the recommended entry point for any Rust consumer. Read-only DX surface; the binding talks to
-this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
+`pandacss_config::UserConfig` into `pandacss_project::Config`; `Project` owns mutable build/watch state. This crate is
+the primary entry point for `@pandacss/compiler` and the recommended entry point for any Rust consumer. Read-only DX
+surface; the binding talks to this, not to the lower tiers directly. See [project-lifecycle](./project-lifecycle.md).
 
 ### Future crates
 

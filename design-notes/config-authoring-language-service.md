@@ -97,53 +97,74 @@ Autocomplete should reflect the resolved design system, not a TypeScript guess.
 
 ## How the pieces fit together
 
-Intelligence once. Transport once. One first-party VS Code shell.
+Intelligence once. Two thin transports over the same core, built together — not sequentially — because TypeScript 7
+(Corsa/`tsgo`) is about to GA without support for the classic `tsserver` plugin API our original plan leaned on. See
+[language-service-implementation.md](./language-service-implementation.md#revised-both-transports-ship-in-phase-1-not-sequentially)
+for the full reasoning.
 
 ```txt
-@pandacss/compiler/tooling          (subpath — shared by eslint, LSP, CLI doctor)
-  config discovery, registry, spec index, file inspect, config token queries
+@pandacss/compiler/tooling          (subpath — shared by eslint, plugin, language server, CLI doctor)
+  config discovery, registry, spec index, file inspect, config token + style-object queries, module resolution
 
-@pandacss/language-server           (npm — `panda-language-server --stdio`)
-  LanguageService (completions, diagnostics, hover) + LSP transport
+@pandacss/typescript-plugin         (npm — tsserver plugin, runs in-process with classic Strada tsserver)
+  LanguageService (completions, diagnostics, hover, module resolution) + ts.server.PluginModule adapter
 
-VS Code extension                   (first-party — ship this for most users)
-  spawn server, document selectors, workspace trust, color decorators, status
+@pandacss/language-server           (npm — thin LSP transport over the same LanguageService)
+  for tsgo --lsp / TypeScript 7 (Corsa), and any generic LSP client
+
+packages/vscode (thin)              (first-party — registers the plugin, doesn't spawn a process)
+  contributes.typescriptServerPlugins, workspace trust, optional color decorators
 ```
 
 Reuse the same config resolver and compiler metadata as the CLI. Don't reimplement Panda semantics in the editor layer.
+See [language-service-implementation.md](./language-service-implementation.md) for the full rationale and phased
+rollout.
 
 ## Using it in your editor
 
-We maintain one language server and one VS Code extension. Other editors talk to the same server through built-in LSP
-clients — docs and config snippets, not separate extension repos.
+We maintain one tsserver plugin, one LSP server, and one thin VS Code extension. Other tsserver-backed editors load the
+plugin through their own TypeScript integration; any generic LSP client (including `tsgo`-backed editors) points at
+the LSP server instead — docs and config snippets, not separate extension repos.
 
-| Layer                        | Who installs it | We maintain?         |
-| ---------------------------- | --------------- | -------------------- |
-| `@pandacss/compiler/tooling` | Transitive      | Yes (compiler subpath) |
-| `@pandacss/language-server`  | npm / bundled in VSIX | Yes            |
-| VS Code extension            | Marketplace     | Yes                  |
-| Neovim / Helix / Emacs / Zed | User LSP config | Docs only (at first) |
+| Layer                         | Who installs it                | We maintain?           |
+| ----------------------------- | ------------------------------ | ----------------------- |
+| `@pandacss/compiler/tooling`  | Transitive                     | Yes (compiler subpath) |
+| `@pandacss/typescript-plugin` | npm / bundled in VSIX          | Yes                    |
+| `@pandacss/language-server`   | npm                            | Yes                    |
+| VS Code extension (thin)      | Marketplace                    | Yes                    |
+| Neovim / Helix / Emacs / Zed  | User `tsconfig.json` + TS host, or LSP client config | Docs only |
 
-You don't import the language service, run it by hand, or add generated types to config. The extension or LSP client
-starts the server when the workspace has `panda.config.*`.
+You don't import the language service, run it by hand, or add generated types to config. The plugin loads inside
+classic `tsserver` when the workspace has `panda.config.*`; the LSP server runs as its own process for everyone else.
 
-**VS Code:** install the Panda extension. It starts `panda-language-server`, registers TS/JS/TSX/JSX and config files,
-and handles workspace trust plus optional color decorators.
+**VS Code:** install the Panda extension. It registers `@pandacss/typescript-plugin` with the built-in TypeScript
+extension via `contributes.typescriptServerPlugins` — no server process to spawn, no settings sync, workspace trust plus
+optional color decorators. Works whether VS Code's TS install is classic Strada or TypeScript 7 (Corsa) transitions
+smoothly to the LSP path.
 
-**Other editors:** point your LSP client at the server binary. Neovim example:
+**Other tsserver-backed editors (classic TypeScript):** add the plugin to `tsconfig.json`:
 
-```lua
-require('lspconfig').panda.setup({
-  cmd = { 'panda-language-server', '--stdio' },
-  filetypes = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
-  root_dir = require('lspconfig.util').root_pattern('panda.config.{ts,js,mjs,cjs}'),
-})
+```json
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
+  }
+}
 ```
 
-Helix, Emacs (`eglot` / `lsp-mode`), and Zed: same idea — `cmd` plus root dir on `panda.config.*`. Per-editor extensions
-are optional later. They add polish, not core behavior.
+Works anywhere classic `tsserver` runs the workspace's `typescript` — Neovim (`typescript-tools.nvim`, `ts_ls`), Zed,
+Emacs (`lsp-mode`'s `ts-ls`). No separate binary, no `root_dir` LSP wiring.
 
-TypeScript keeps type checking via `tsserver`. The Panda server runs in parallel and must not block TS completions.
+**`tsgo`/TypeScript 7 (Corsa), or any generic LSP client:** point at `panda-language-server --stdio` instead — same
+completions, same underlying `LanguageService`, different transport.
+
+**Non-TS-native templates (Vue, Svelte, Astro):** out of scope until
+[Phase 4](./language-service-implementation.md#phase-4--non-ts-templates-demand-gated) — no TS-parsed AST exists for
+these files under either transport; they need integration with the frameworks' own language tooling.
+
+TypeScript keeps type checking via `tsserver`/`tsgo`. The Panda plugin runs inside the same process as classic
+`tsserver` and must not block or crash the host's TS completions — see the
+[proxy/decorator pattern](./language-service-implementation.md#why-a-plugin-at-all-still-applies-to-the-classic-adapter).
 
 ## What TypeScript handles vs what Panda handles
 
@@ -281,34 +302,49 @@ docs/panda.config.ts
 Match files to config via include/exclude/source from the resolved config. If ambiguous, pick the nearest config and
 surface a diagnostic or status message.
 
-## LSP first, TypeScript plugin later
+## Two transports, built together
 
-Ship LSP + VS Code extension first. A TS plugin can merge completions into `tsserver` later, but it's VS Code–centric
-and doesn't help Neovim or Helix. Shared load/index logic lives in `@pandacss/compiler/tooling`; query + LSP logic
-lives in `@pandacss/language-server`; wrappers stay thin.
+Ship a tsserver plugin, an LSP server, and a thin VS Code extension in the same phase. The original plan was
+plugin-first with the LSP deferred until non-TS-native template files (Vue, Svelte, Astro) needed it — `panda.config.ts`
+and most app files are plain TypeScript, so a plugin reusing `tsserver`'s own parse is genuinely the cheaper transport
+for those files.
+
+That's still true, but it's no longer the whole story: TypeScript 7 (Corsa/`tsgo`) is reaching GA without support for
+the classic plugin API the plugin depends on — its own interface is `tsgo --lsp`. Betting only on the classic plugin
+now means the whole editor story stops working the moment a user's workspace TypeScript moves to Corsa, with no
+defined replacement API yet. Since the query logic already lives in a transport-agnostic
+`@pandacss/typescript-plugin/service`, building the LSP adapter alongside the plugin adapter is cheap insurance, not a
+redesign — see
+[language-service-implementation.md](./language-service-implementation.md#revised-both-transports-ship-in-phase-1-not-sequentially)
+for the full reasoning. Non-TS-native templates remain their own, separate, still-deferred trigger for deeper Phase 4
+work, unrelated to the Corsa question.
 
 ## What you gain and what it costs
 
-**Gain:** preset-aware autocomplete, no ambient types, no config/output loop, simpler type graph, monorepo-friendly,
-shared editor/CLI diagnostics.
+**Gain:** preset-aware autocomplete for tokens and style objects (recipes, globalCss, staticCss), module resolution
+without generated tsconfig paths, no ambient types, no config/output loop, monorepo-friendly, shared editor/CLI
+diagnostics, and editor support that survives the Strada → Corsa transition without a rewrite.
 
-**Cost:** more packages, one VS Code extension to maintain, config cache complexity, language service must track
-compiler semantics.
+**Cost:** two adapters to maintain instead of one, though both are thin wrappers over the same core. The plugin still
+runs in-process with classic `tsserver` — bugs or slow calls degrade the user's whole TS experience there specifically.
+Config cache complexity and version-skew risk across TypeScript versions apply either way.
 
 ## Open questions
 
 - Editor-only hints vs CLI errors — which diagnostics go where?
-- Phase one scope for app files?
+- How much app-file coverage ships before non-TS templates are requested?
 - How to watch package preset dependencies?
 - Lightweight metadata endpoint from the Rust compiler for indexing?
 - Should `panda.buildinfo.json` feed editor indexes for design-system packages?
+- Real demand signal for non-TS-native templates before starting Phase 4
+- Once Corsa ships its own IPC-based plugin mechanism, whether a third adapter is worth it or the LSP transport
+  already covers it
 
 ## Ship this
 
-Build config autocomplete as a language service, not ambient types.
-
-Ship `@pandacss/language-server` and a VS Code extension together. Document LSP setup for
-other editors. Skip per-editor extensions until someone needs the polish.
+Build config autocomplete as a language service. Ship a tsserver plugin and an LSP server together, over one shared
+core, plus a thin VS Code extension — not ambient types, not a single-transport bet in an ecosystem mid-migration.
+Document LSP setup for other editors. Skip per-editor extensions until someone needs the polish.
 
 Package types for config shape. Generated types for app code. Language service for resolved design-system intelligence
 in the editor.

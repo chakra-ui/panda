@@ -196,7 +196,7 @@ interface CssFunction {
 const CSS_EXPORT: &str = r"/* @__PURE__ */ Object.assign(
   function css(...styles: any[]) {
     if (styles.length === 1 && isObject(styles[0])) return serializeCss(styles[0])
-    return serializeCss(mergeCss(...styles))
+    return serializeCssArgs(...styles)
   },
   {
     raw: function cssRaw(...styles: any[]) {
@@ -223,7 +223,7 @@ if (utilities) {
 
 const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
 
-const { serializeCss, mergeCss, assignCss } = createCssRuntime({
+const { serializeCss, serializeCssArgs, mergeCss, assignCss } = createCssRuntime({
   hash: __HASH__,
   conditions: {
     shift: sortConditions,

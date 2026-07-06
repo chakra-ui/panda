@@ -8,7 +8,7 @@
 //! indexes. Every read path is O(1) or O(matches), never O(n), backed by
 //! `rustc_hash::FxHashMap` indexes built once at construction time.
 
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::collections::{BTreeMap, hash_map::Entry};
 use std::sync::Arc;
 
@@ -63,6 +63,8 @@ pub struct TokenDictionary {
     /// `(String, String)` key would force a `to_owned` per call.
     #[cfg_attr(feature = "serde", serde(skip))]
     by_path_condition: FxHashMap<Arc<str>, FxHashMap<Arc<str>, usize>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    semantic_categories: FxHashSet<TokenCategory>,
     /// First-seen condition names. Built once so `conditions()` is a
     /// zero-work slice borrow.
     #[cfg_attr(feature = "serde", serde(skip))]
@@ -88,6 +90,23 @@ pub struct TokenSuggestion {
     pub semantic: bool,
     /// `true` when the token has condition variants (themes) — not a static equal.
     pub conditional: bool,
+}
+
+/// Resolved token path plus metadata needed by tooling.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResolvedTokenPath {
+    /// Full token path, e.g. `colors.red.500`.
+    pub path: String,
+    /// Top-level token category.
+    pub category: TokenCategory,
+    /// Category-relative token path, e.g. `red.500`.
+    pub category_path: String,
+    /// Optional modifier after `/`, e.g. `40` for `red.500/40`.
+    pub modifier: Option<String>,
+    /// `true` when the token is a semantic token.
+    pub semantic: bool,
+    /// `true` when this token's category defines at least one semantic token.
+    pub semantic_category: bool,
 }
 
 #[cfg(feature = "serde")]
@@ -383,6 +402,61 @@ impl TokenDictionary {
             .map(|&i| category_value(&self.tokens[i]))
     }
 
+    /// Resolve a full token path or category-relative value, preserving a
+    /// trailing `/modifier` in the returned metadata.
+    #[must_use]
+    pub fn resolve_token_path(
+        &self,
+        category: &TokenCategory,
+        value: &str,
+    ) -> Option<ResolvedTokenPath> {
+        let (base, modifier) = split_modifier(value.trim());
+        if base.is_empty() {
+            return None;
+        }
+
+        let path = if self.token(base).is_some() {
+            base.to_owned()
+        } else {
+            let mut candidate = String::with_capacity(category.as_str().len() + 1 + base.len());
+            candidate.push_str(category.as_str());
+            candidate.push('.');
+            candidate.push_str(base);
+            candidate
+        };
+
+        let token = self.token(&path)?;
+        Some(self.token_metadata(token, modifier.map(str::to_owned)))
+    }
+
+    /// Metadata for an existing token path.
+    #[must_use]
+    pub fn token_metadata(&self, token: &Token, modifier: Option<String>) -> ResolvedTokenPath {
+        let category_path = category_relative_path(&token.path, &token.category).to_owned();
+        ResolvedTokenPath {
+            path: token.path.to_string(),
+            category: token.category.clone(),
+            category_path,
+            modifier,
+            semantic: self.is_semantic_token(token.path.as_ref()),
+            semantic_category: self.has_semantic_tokens(&token.category),
+        }
+    }
+
+    /// Whether `path` is a semantic token.
+    #[must_use]
+    pub fn is_semantic_token(&self, path: &str) -> bool {
+        self.token(path)
+            .and_then(|token| parse_token_ref(token.original_value.as_deref()))
+            .is_some()
+    }
+
+    /// Whether a category contains at least one semantic token.
+    #[must_use]
+    pub fn has_semantic_tokens(&self, category: &TokenCategory) -> bool {
+        self.semantic_categories.contains(category)
+    }
+
     /// Tokens that carry a hardcoded `value` in `category`, ranked (safe
     /// equivalents first). Empty when nothing matches.
     #[must_use]
@@ -393,6 +467,25 @@ impl TokenDictionary {
             .and_then(|bucket| bucket.get(&key))
             .cloned()
             .unwrap_or_default()
+    }
+
+    /// Semantic tokens that carry the same final literal value as `path`.
+    #[must_use]
+    pub fn suggest_semantic_tokens(&self, path: &str) -> Vec<TokenSuggestion> {
+        let Some(token) = self.token(path) else {
+            return Vec::new();
+        };
+        let Some(category_path) = path
+            .strip_prefix(token.category.as_str())
+            .and_then(|rest| rest.strip_prefix('.'))
+        else {
+            return Vec::new();
+        };
+
+        self.suggest_tokens(&token.category, token.value.as_ref())
+            .into_iter()
+            .filter(|suggestion| suggestion.semantic && suggestion.token != category_path)
+            .collect()
     }
 
     #[must_use]
@@ -479,6 +572,31 @@ pub(crate) fn category_value(token: &Token) -> &str {
     } else {
         token.var.as_ref()
     }
+}
+
+/// A pure `{token.path}` reference (semantic/alias value), else `None`.
+pub(crate) fn parse_token_ref(original_value: Option<&str>) -> Option<&str> {
+    let value = original_value?.trim();
+    value
+        .strip_prefix('{')
+        .and_then(|rest| rest.strip_suffix('}'))
+        .filter(|inner| !inner.is_empty() && !inner.contains('{'))
+}
+
+fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a str {
+    path.strip_prefix(category.as_str())
+        .and_then(|rest| rest.strip_prefix('.'))
+        .unwrap_or(path)
+}
+
+fn split_modifier(value: &str) -> (&str, Option<&str>) {
+    value
+        .split_once('/')
+        .map_or((value, None), |(base, modifier)| {
+            let base = base.trim_end();
+            let modifier = modifier.trim();
+            (base, (!modifier.is_empty()).then_some(modifier))
+        })
 }
 
 pub(crate) fn join_segments(segments: &[&str]) -> String {

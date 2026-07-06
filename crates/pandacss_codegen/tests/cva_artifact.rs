@@ -36,6 +36,7 @@ fn emits_ts_source_cva() {
 
       const variantKeys = Object.keys(variants)
       const variantMap = toVariantMap(variants)
+      const resolveMemo = memo(resolve)
 
       const merge = (other: Record<string, any>) => {
         const override = defaults(other.config)
@@ -55,6 +56,7 @@ fn emits_ts_source_cva() {
         variantMap,
         variantKeys,
         raw: resolve,
+        __memoizedRaw__: resolveMemo,
         config,
         merge,
         splitVariantProps(props: Record<string, any>) {
@@ -100,6 +102,7 @@ fn emits_js_runtime_and_declarations() {
 
       const variantKeys = Object.keys(variants)
       const variantMap = toVariantMap(variants)
+      const resolveMemo = memo(resolve)
 
       const merge = (other) => {
         const override = defaults(other.config)
@@ -119,6 +122,7 @@ fn emits_js_runtime_and_declarations() {
         variantMap,
         variantKeys,
         raw: resolve,
+        __memoizedRaw__: resolveMemo,
         config,
         merge,
         splitVariantProps(props) {

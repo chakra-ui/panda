@@ -51,8 +51,8 @@ writer.
 - `file_parse` wraps `Project::parse_file_inner`, including `path`, `source_len`, and `cache_hit`.
 - `extraction` wraps Oxc extraction. Inside it: `oxc_parse`, `collect_imports`, `match_imports`, `semantic_build`,
   `visit_calls`, `visit_jsx` — added for per-phase profiling inside the extractor.
-- `encoding_atomic` / `encoding_style_props` wrap the project-side `process_atomic` / `process_style_props`. Inside
-  the atomic path: `encoder_atomic` covers the fused walker (`Encoder::process_atomic_with`).
+- `encoding_atomic` / `encoding_style_props` wrap the project-side `process_atomic` / `process_style_props`. Inside the
+  atomic path: `encoder_atomic` covers the fused walker (`Encoder::process_atomic_with`).
 - `recipe_resolution` wraps inline and config recipe parsing/resolution.
 - `boundary_encode` wraps Rust-to-JS serialization for NAPI and WASM outputs.
 
@@ -84,9 +84,9 @@ PANDA_TRACE_FILE=.panda/traces/binding-boundary.json \
 pnpm --filter @pandacss/bench binding-boundary --files 10 --repeat 10 --warm 2
 ```
 
-The traced run produced valid JSON with 847 entries and these span names:
-`config_compile`, `config_from_user_config`, `recipe_resolution`, `token_dictionary_build`, `file_parse`, `extraction`,
-`oxc_parse`, `encoding`, and `boundary_encode`.
+The traced run produced valid JSON with 847 entries and these span names: `config_compile`, `config_from_user_config`,
+`recipe_resolution`, `token_dictionary_build`, `file_parse`, `extraction`, `oxc_parse`, `encoding`, and
+`boundary_encode`.
 
 ## Enterprise Path
 

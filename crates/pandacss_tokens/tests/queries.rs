@@ -147,6 +147,84 @@ fn semantic_token_reference_expands_to_var_not_value() {
 }
 
 #[test]
+fn dictionary_resolves_token_metadata_and_semantic_suggestions() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "500": { "value": "#f00" } },
+                    "blue": { "500": { "value": "#00f" } }
+                },
+                "spacing": {
+                    "4": { "value": "1rem" }
+                }
+            },
+            "semanticTokens": {
+                "colors": {
+                    "fg": {
+                        "error": { "value": "{colors.red.500}" },
+                        "accent": { "value": "{colors.blue.500}" }
+                    }
+                }
+            }
+        }
+    }))
+    .expect("config");
+
+    let dict = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+
+    let primitive = dict
+        .resolve_token_path(&TokenCategory::Colors, "red.500/40")
+        .expect("primitive token");
+    let semantic = dict
+        .resolve_token_path(&TokenCategory::Colors, "colors.fg.error")
+        .expect("semantic token");
+
+    assert_yaml_snapshot!(json!({
+        "primitive": {
+            "path": primitive.path,
+            "category": primitive.category.as_str(),
+            "categoryPath": primitive.category_path,
+            "modifier": primitive.modifier,
+            "semantic": primitive.semantic,
+            "semanticCategory": primitive.semantic_category,
+        },
+        "semantic": {
+            "path": semantic.path,
+            "categoryPath": semantic.category_path,
+            "semantic": semantic.semantic,
+            "semanticCategory": semantic.semantic_category,
+        },
+        "spacingHasSemanticTokens": dict.has_semantic_tokens(&TokenCategory::Spacing),
+        "redSuggestions": dict
+            .suggest_semantic_tokens("colors.red.500")
+            .into_iter()
+            .map(|suggestion| suggestion.token)
+            .collect::<Vec<_>>(),
+        "spacingSuggestions": dict.suggest_semantic_tokens("spacing.4"),
+    }), @r##"
+    primitive:
+      path: colors.red.500
+      category: colors
+      categoryPath: red.500
+      modifier: "40"
+      semantic: false
+      semanticCategory: true
+    semantic:
+      path: colors.fg.error
+      categoryPath: fg.error
+      semantic: true
+      semanticCategory: true
+    spacingHasSemanticTokens: false
+    redSuggestions:
+      - fg.error
+    spacingSuggestions: []
+    "##);
+}
+
+#[test]
 fn color_mix_resolves_token_and_opacity_modifiers() {
     let dict = TokenDictionary::builder()
         .insert(t(

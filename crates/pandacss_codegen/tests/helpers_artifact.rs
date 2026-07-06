@@ -107,11 +107,27 @@ export function normalizeStyleObject(styles: Record<string, any>, context: Recor
 
 export function memo<T extends (...args: any[]) => any>(fn: T): T {
   const cache = new Map<string, ReturnType<T>>()
+  let lastKey: string | undefined
+  let lastValue: ReturnType<T>
+  let hasLast = false
   return ((...args: Parameters<T>) => {
     const key = JSON.stringify(args)
-    if (cache.has(key)) return cache.get(key)
+    if (hasLast && key === lastKey) return lastValue
+    if (cache.has(key)) {
+      const out = cache.get(key) as ReturnType<T>
+      cache.delete(key)
+      cache.set(key, out)
+      lastKey = key
+      lastValue = out
+      hasLast = true
+      return out
+    }
     const out = fn(...args)
     cache.set(key, out)
+    if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+    lastKey = key
+    lastValue = out
+    hasLast = true
     return out
   }) as T
 }
@@ -130,6 +146,9 @@ export function mergeProps(...src: Array<Record<string, any> | undefined>): Reco
   return out
 }
 
+const WHITESPACE_REGEX = /[\n\s]+/g
+const sanitizeStyleValue = (value: any) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+
 export function createCss(context: Record<string, any>): (...styles: any[]) => string {
   const { utility: u, hash, conditions: c = { shift: (v: any) => v, finalize: (v: any[]) => v, breakpoints: { keys: [] } } } = context
   const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
@@ -145,7 +164,7 @@ export function createCss(context: Record<string, any>): (...styles: any[]) => s
       if (value == null) return
       const [prop, ...all] = c.shift(paths)
       const cond = filterBaseConditions(all)
-      const res = u.transform(prop, withoutSpace(value))
+      const res = u.transform(prop, withoutSpace(sanitizeStyleValue(value)))
       set.add(toClass(cond, res.className))
     })
     let out = ""
@@ -384,11 +403,27 @@ export function normalizeStyleObject(styles, context, shorthand) {
 
 export function memo(fn) {
   const cache = new Map()
+  let lastKey
+  let lastValue
+  let hasLast = false
   return ((...args) => {
     const key = JSON.stringify(args)
-    if (cache.has(key)) return cache.get(key)
+    if (hasLast && key === lastKey) return lastValue
+    if (cache.has(key)) {
+      const out = cache.get(key)
+      cache.delete(key)
+      cache.set(key, out)
+      lastKey = key
+      lastValue = out
+      hasLast = true
+      return out
+    }
     const out = fn(...args)
     cache.set(key, out)
+    if (cache.size > 500) cache.delete(cache.keys().next().value)
+    lastKey = key
+    lastValue = out
+    hasLast = true
     return out
   })
 }
@@ -407,6 +442,9 @@ export function mergeProps(...src) {
   return out
 }
 
+const WHITESPACE_REGEX = /[\n\s]+/g
+const sanitizeStyleValue = (value) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+
 export function createCss(context) {
   const { utility: u, hash, conditions: c = { shift: (v) => v, finalize: (v) => v, breakpoints: { keys: [] } } } = context
   const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
@@ -422,7 +460,7 @@ export function createCss(context) {
       if (value == null) return
       const [prop, ...all] = c.shift(paths)
       const cond = filterBaseConditions(all)
-      const res = u.transform(prop, withoutSpace(value))
+      const res = u.transform(prop, withoutSpace(sanitizeStyleValue(value)))
       set.add(toClass(cond, res.className))
     })
     let out = ""
@@ -628,6 +666,10 @@ export declare function withoutSpace<T extends string | number | boolean>(str: T
 ";
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "large generated helper snapshots are easier to review as one test"
+)]
 fn emits_ts_source() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
@@ -638,20 +680,70 @@ fn emits_ts_source() {
 
     assert_eq!(paths(helpers), vec!["helpers.ts"]);
     let source = file(helpers, "helpers.ts");
+    assert!(
+        source.contains(
+            "const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value: any)"
+        ),
+        "multiline value sanitizer should reuse a module-scope regex"
+    );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
-      const cache = new Map<string, ReturnType<T>>()
+      const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
+      const stringCache = new Map<string, ReturnType<T>>()
+      let lastHash: number | undefined
+      let lastIsFlat = false
+      let lastKey: Parameters<T> | string | undefined
+      let lastValue: ReturnType<T>
+      let hasLast = false
       return ((...args: Parameters<T>) => {
+        const hash = flatHashOrNull(args)
+        if (hash !== null) {
+          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
+          let bucket = cache.get(hash)
+          if (bucket) {
+            for (let i = 0; i < bucket.length; i++) {
+              if (flatArgsEqual(args, bucket[i].args)) {
+                lastHash = hash
+                lastIsFlat = true
+                lastKey = args
+                lastValue = bucket[i].out
+                hasLast = true
+                return bucket[i].out
+              }
+            }
+          }
+          const out = fn(...args)
+          if (!bucket) {
+            bucket = []
+            cache.set(hash, bucket)
+          }
+          bucket.push({ args, out })
+          if (bucket.length > 8) bucket.shift()
+          if (cache.size > 500) cache.delete(cache.keys().next().value as number)
+          lastHash = hash
+          lastIsFlat = true
+          lastKey = args
+          lastValue = out
+          hasLast = true
+          return out
+        }
         const key = JSON.stringify(args)
-        if (cache.has(key)) {
-          const out = cache.get(key) as ReturnType<T>
-          cache.delete(key)
-          cache.set(key, out)
+        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
+        if (stringCache.has(key)) {
+          const out = stringCache.get(key) as ReturnType<T>
+          lastIsFlat = false
+          lastKey = key
+          lastValue = out
+          hasLast = true
           return out
         }
         const out = fn(...args)
-        cache.set(key, out)
-        if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+        stringCache.set(key, out)
+        if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
+        lastIsFlat = false
+        lastKey = key
+        lastValue = out
+        hasLast = true
         return out
       }) as T
     }
@@ -669,7 +761,7 @@ fn emits_ts_source() {
     }
     "#);
     assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
+    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
       const { utility: u, hash, conditions: c } = context
       const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
       const toClass = (paths: string[], name: string) => {
@@ -677,7 +769,7 @@ fn emits_ts_source() {
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+      const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
         const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set<string>()
         walkObject(obj, (value: any, paths: string[]) => {
@@ -685,7 +777,7 @@ fn emits_ts_source() {
           const important = isImportant(value)
           const [prop, ...all] = c.shift(paths)
           const cond = filterBaseConditions(all)
-          const res = u.transform(prop, withoutSpace(withoutImportant(value)))
+          const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
           let name = toClass(cond, res.className)
           if (important) name += "!"
           set.add(name)
@@ -693,7 +785,7 @@ fn emits_ts_source() {
         let out = ""
         for (const name of set) out += out ? " " + name : name
         return out
-      })
+      }))
       const resolve = (styles: Array<any> | IArguments) => {
         const out: any[] = []
         const visit = (items: Array<any> | IArguments) => {
@@ -720,14 +812,20 @@ fn emits_ts_source() {
       const mergeCss: (...styles: any[]) => any = function() {
         return mergeProps(...resolve(arguments))
       }
+      const serializeCssArgs = memo(function serializeCssArgs(...styles: any[]) {
+        return serializeCss(mergeCss(...styles))
+      })
       const assignCss: (...styles: any[]) => any = function() {
         const out: Record<string, any> = {}
         const resolved = resolve(arguments)
         for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
         return out
       }
-      return { serializeCss, mergeCss, assignCss }
+      return { serializeCss, serializeCssArgs, mergeCss, assignCss }
     }
+
+    const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
+    const MS_PROPERTY_REGEX = /^ms-/
     "#);
 }
 
@@ -778,17 +876,8 @@ fn emits_js_get_compound_variant_css() {
     assert_snapshot!(function_block(source, "getCompoundVariantCss"), @r#"
     export function getCompoundVariantCss(compoundVariants, variants) {
       let result = {}
-      outer: for (const variant of compoundVariants) {
-        for (const key in variant) {
-          if (key === "css" || key === "className" || key === "classNames") continue
-          const expected = variant[key]
-          const actual = variants[key]
-          if (Array.isArray(expected)) {
-            if (!expected.includes(actual)) continue outer
-          } else if (actual !== expected) {
-            continue outer
-          }
-        }
+      for (const variant of compoundVariants) {
+        if (!compoundVariantMatches(variant, variants)) continue
         result = mergeProps(result, variant.css)
       }
       return result
@@ -809,17 +898,8 @@ fn emits_js_get_compound_variant_class_names() {
     assert_snapshot!(function_block(source, "getCompoundVariantClassNames"), @r#"
     export function getCompoundVariantClassNames(compoundVariants, variants, formatClassName) {
       const classes = []
-      outer: for (const compound of compoundVariants) {
-        for (const key in compound) {
-          if (key === "css" || key === "className" || key === "classNames") continue
-          const expected = compound[key]
-          const actual = variants[key]
-          if (Array.isArray(expected)) {
-            if (!expected.includes(actual)) continue outer
-          } else if (actual !== expected) {
-            continue outer
-          }
-        }
+      for (const compound of compoundVariants) {
+        if (!compoundVariantMatches(compound, variants)) continue
         if (compound.className) classes.push(formatClassName ? formatClassName(compound.className) : compound.className)
       }
       return classes.join(" ")
@@ -896,6 +976,10 @@ fn emits_js_get_slot_recipes() {
 }
 
 #[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "large generated helper snapshots are easier to review as one test"
+)]
 fn emits_js_runtime() {
     let graph = ArtifactGraph;
     let artifacts = graph.generate(GenerateOptions {
@@ -906,20 +990,69 @@ fn emits_js_runtime() {
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
     let source = file(helpers, "helpers.js");
+    assert!(
+        source
+            .contains("const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value)"),
+        "multiline value sanitizer should reuse a module-scope regex"
+    );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo(fn) {
       const cache = new Map()
+      const stringCache = new Map()
+      let lastHash
+      let lastIsFlat = false
+      let lastKey
+      let lastValue
+      let hasLast = false
       return ((...args) => {
+        const hash = flatHashOrNull(args)
+        if (hash !== null) {
+          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey)) return lastValue
+          let bucket = cache.get(hash)
+          if (bucket) {
+            for (let i = 0; i < bucket.length; i++) {
+              if (flatArgsEqual(args, bucket[i].args)) {
+                lastHash = hash
+                lastIsFlat = true
+                lastKey = args
+                lastValue = bucket[i].out
+                hasLast = true
+                return bucket[i].out
+              }
+            }
+          }
+          const out = fn(...args)
+          if (!bucket) {
+            bucket = []
+            cache.set(hash, bucket)
+          }
+          bucket.push({ args, out })
+          if (bucket.length > 8) bucket.shift()
+          if (cache.size > 500) cache.delete(cache.keys().next().value)
+          lastHash = hash
+          lastIsFlat = true
+          lastKey = args
+          lastValue = out
+          hasLast = true
+          return out
+        }
         const key = JSON.stringify(args)
-        if (cache.has(key)) {
-          const out = cache.get(key)
-          cache.delete(key)
-          cache.set(key, out)
+        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
+        if (stringCache.has(key)) {
+          const out = stringCache.get(key)
+          lastIsFlat = false
+          lastKey = key
+          lastValue = out
+          hasLast = true
           return out
         }
         const out = fn(...args)
-        cache.set(key, out)
-        if (cache.size > 500) cache.delete(cache.keys().next().value)
+        stringCache.set(key, out)
+        if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value)
+        lastIsFlat = false
+        lastKey = key
+        lastValue = out
+        hasLast = true
         return out
       })
     }
@@ -937,66 +1070,72 @@ fn emits_js_runtime() {
     }
     "#);
     assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCssRuntime(context) {
-      const { utility: u, hash, conditions: c } = context
-      const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
-      const toClass = (paths, name) => {
-        const parts = c.finalize(paths)
-        parts.push(hash ? name : fmt(name))
-        return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
-      }
-      const serializeCss = weakMemo(function serializeCss({ base, ...styles } = {}) {
-        const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
-        const set = new Set()
-        walkObject(obj, (value, paths) => {
-          if (value == null) return
-          const important = isImportant(value)
-          const [prop, ...all] = c.shift(paths)
-          const cond = filterBaseConditions(all)
-          const res = u.transform(prop, withoutSpace(withoutImportant(value)))
-          let name = toClass(cond, res.className)
-          if (important) name += "!"
-          set.add(name)
-        })
-        let out = ""
-        for (const name of set) out += out ? " " + name : name
-        return out
-      })
-      const resolve = (styles) => {
-        const out = []
-        const visit = (items) => {
-          for (let i = 0; i < items.length; i++) {
-            const style = items[i]
-            if (Array.isArray(style)) {
-              visit(style)
-              continue
-            }
-            if (!isObject(style)) continue
-            for (const key in style) {
-              if (style[key] !== void 0) {
-                out.push(style)
-                break
-              }
-            }
+export function createCssRuntime(context) {
+  const { utility: u, hash, conditions: c } = context
+  const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
+  const toClass = (paths, name) => {
+    const parts = c.finalize(paths)
+    parts.push(hash ? name : fmt(name))
+    return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
+  }
+  const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
+    const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
+    const set = new Set()
+    walkObject(obj, (value, paths) => {
+      if (value == null) return
+      const important = isImportant(value)
+      const [prop, ...all] = c.shift(paths)
+      const cond = filterBaseConditions(all)
+      const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
+      let name = toClass(cond, res.className)
+      if (important) name += "!"
+      set.add(name)
+    })
+    let out = ""
+    for (const name of set) out += out ? " " + name : name
+    return out
+  }))
+  const resolve = (styles) => {
+    const out = []
+    const visit = (items) => {
+      for (let i = 0; i < items.length; i++) {
+        const style = items[i]
+        if (Array.isArray(style)) {
+          visit(style)
+          continue
+        }
+        if (!isObject(style)) continue
+        for (const key in style) {
+          if (style[key] !== void 0) {
+            out.push(style)
+            break
           }
         }
-        visit(styles)
-        if (out.length < 2) return out
-        for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-        return out
       }
-      const mergeCss = function() {
-        return mergeProps(...resolve(arguments))
-      }
-      const assignCss = function() {
-        const out = {}
-        const resolved = resolve(arguments)
-        for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
-        return out
-      }
-      return { serializeCss, mergeCss, assignCss }
     }
-    "#);
+    visit(styles)
+    if (out.length < 2) return out
+    for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
+    return out
+  }
+  const mergeCss = function() {
+    return mergeProps(...resolve(arguments))
+  }
+  const serializeCssArgs = memo(function serializeCssArgs(...styles) {
+    return serializeCss(mergeCss(...styles))
+  })
+  const assignCss = function() {
+    const out = {}
+    const resolved = resolve(arguments)
+    for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
+    return out
+  }
+  return { serializeCss, serializeCssArgs, mergeCss, assignCss }
+}
+
+const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
+const MS_PROPERTY_REGEX = /^ms-/
+"#);
 }
 
 #[test]
@@ -1009,5 +1148,5 @@ fn emits_declarations() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
+    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
 }

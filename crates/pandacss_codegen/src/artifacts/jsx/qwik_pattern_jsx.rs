@@ -1,4 +1,5 @@
 use pandacss_config::{JsxStylePropsConfig, PatternConfig};
+use pandacss_shared::js_ident;
 
 use crate::{CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
 
@@ -6,15 +7,15 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
     let factory = factory_name(ctx);
     let meta = ctx.pattern_jsx_meta(name, pattern);
     let omit_keys = qwik_omit_keys(&meta.omit_keys, &meta.props_name);
-    let pattern_keys_json = pattern_keys_json(pattern);
+    let pattern_fn = js_ident(name);
 
     let mut module = Module::new()
         .with_import(value_import(&["h"], "@builder.io/qwik"))
-        .with_import(ImportDecl::value(["splitProps"], "../helpers"))
         .with_import(value_import(
-            &[meta.raw_name.as_str()],
+            &[pattern_fn.as_str()],
             &format!("../patterns/{}", meta.stem),
         ))
+        .with_import(value_import(&["splitProps"], "../helpers"))
         .with_import(value_import(&[factory.as_str()], "./factory"))
         .with_import(type_import(&["Component"], "@builder.io/qwik"))
         .with_import(type_import(
@@ -36,8 +37,7 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
             &meta.jsx_name,
             &factory,
             &meta.jsx_element,
-            &meta.raw_name,
-            &pattern_keys_json,
+            &pattern_fn,
             style_props(ctx),
         )))
         .with_item(raw_type(format!(
@@ -55,8 +55,7 @@ fn pattern_runtime_body(
     jsx_name: &str,
     factory: &str,
     jsx_element: &str,
-    style_getter: &str,
-    pattern_keys_json: &str,
+    pattern_fn: &str,
     mode: JsxStylePropsConfig,
 ) -> String {
     let body = match mode {
@@ -73,17 +72,12 @@ fn pattern_runtime_body(
 
     format!(
         r"export const {jsx_name} = /* @__PURE__ */ function {jsx_name}(props) {{
-  const [patternProps, restProps] = splitProps(props, {pattern_keys_json})
-  const styleProps = {style_getter}(patternProps)
+  const [patternProps, restProps] = splitProps(props, {pattern_fn}.propKeys)
+  const styleProps = {pattern_fn}.raw(patternProps)
   {body}
   return h({factory}[{jsx_element:?}], mergedProps)
 }}"
     )
-}
-
-fn pattern_keys_json(pattern: &PatternConfig) -> String {
-    let keys = pattern.properties.keys().cloned().collect::<Vec<_>>();
-    serde_json::to_string(&keys).expect("pattern keys serialize")
 }
 
 fn qwik_omit_keys(omit_keys: &str, props_name: &str) -> String {

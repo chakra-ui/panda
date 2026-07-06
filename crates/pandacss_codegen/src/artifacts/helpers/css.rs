@@ -51,12 +51,23 @@ pub(super) fn normalize_style_object() -> Item {
     )
 }
 
+pub(super) fn sanitize_style_value() -> Item {
+    Item::runtime(ItemNode::RawStmt(
+        indoc! {r#"
+            const WHITESPACE_REGEX = /[\n\s]+/g
+            const sanitizeStyleValue = (value: any) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+        "#}
+        .trim()
+        .into(),
+    ))
+}
+
 pub(super) fn create_css_runtime() -> Item {
     helper_function(
         "createCssRuntime",
         vec![Param::typed("context", TsType::Raw("Record<string, any>".into()))],
         TsType::Raw(
-            "{ serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any }".into(),
+            "{ serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any }".into(),
         ),
         indoc! {r#"
             const { utility: u, hash, conditions: c } = context
@@ -66,7 +77,7 @@ pub(super) fn create_css_runtime() -> Item {
               parts.push(hash ? name : fmt(name))
               return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
             }
-            const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+            const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
               const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
               const set = new Set<string>()
               walkObject(obj, (value: any, paths: string[]) => {
@@ -74,7 +85,7 @@ pub(super) fn create_css_runtime() -> Item {
                 const important = isImportant(value)
                 const [prop, ...all] = c.shift(paths)
                 const cond = filterBaseConditions(all)
-                const res = u.transform(prop, withoutSpace(withoutImportant(value)))
+                const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
                 let name = toClass(cond, res.className)
                 if (important) name += "!"
                 set.add(name)
@@ -82,7 +93,7 @@ pub(super) fn create_css_runtime() -> Item {
               let out = ""
               for (const name of set) out += out ? " " + name : name
               return out
-            })
+            }))
             const resolve = (styles: Array<any> | IArguments) => {
               const out: any[] = []
               const visit = (items: Array<any> | IArguments) => {
@@ -109,17 +120,31 @@ pub(super) fn create_css_runtime() -> Item {
             const mergeCss: (...styles: any[]) => any = function() {
               return mergeProps(...resolve(arguments))
             }
+            const serializeCssArgs = memo(function serializeCssArgs(...styles: any[]) {
+              return serializeCss(mergeCss(...styles))
+            })
             const assignCss: (...styles: any[]) => any = function() {
               const out: Record<string, any> = {}
               const resolved = resolve(arguments)
               for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
               return out
             }
-            return { serializeCss, mergeCss, assignCss }
+            return { serializeCss, serializeCssArgs, mergeCss, assignCss }
         "#}
         .trim(),
         [],
     )
+}
+
+pub(super) fn hypenate_property_regexes() -> Item {
+    Item::runtime(ItemNode::RawStmt(
+        indoc! {r"
+            const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
+            const MS_PROPERTY_REGEX = /^ms-/
+        "}
+        .trim()
+        .into(),
+    ))
 }
 
 pub(super) fn hypenate_property() -> Item {
@@ -127,7 +152,7 @@ pub(super) fn hypenate_property() -> Item {
         "hypenateProperty",
         vec![Param::typed("property", TsType::Ref("string".into()))],
         TsType::Ref("string".into()),
-        r#"return property.startsWith("--") ? property : property.replace(/[A-Z]/g, "-$&").replace(/^ms-/, "-ms-").toLowerCase()"#,
+        r#"return property.startsWith("--") ? property : property.replace(HYPHENATE_PROPERTY_REGEX, "-$&").replace(MS_PROPERTY_REGEX, "-ms-").toLowerCase()"#,
         [],
     )
 }

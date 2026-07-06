@@ -40,6 +40,12 @@ panda lib
 The important boundary: Rust owns pure value logic. TypeScript owns Node resolution and disk writes. That keeps chain
 ordering, manifest validation, and hydration logic testable without a fixture filesystem.
 
+## Canonical scope
+
+This is the source of truth for the `designSystem` config field, `panda.lib.json`, parent-chain resolution,
+design-system diagnostics, and the current built/deferred status. [Build info](./build-info.md) owns the portable
+hydration payload. [Virtual styled-system](./virtual-styled-system.md) owns dual importMap and overlay codegen.
+
 ## The problem this solves
 
 Today, adopting a component library means hand-wiring several config knobs:
@@ -71,7 +77,7 @@ Goals:
 
 Non-goals:
 
-- Plural `designSystem`. Keep the field singular for now.
+- Plural `designSystems`. Keep the field singular for now.
 - Competing token sources as a feature. If both sides define `colors.brand`, local wins and Panda warns.
 - Runtime manifest consumption.
 - Registry integration or auto-publishing.

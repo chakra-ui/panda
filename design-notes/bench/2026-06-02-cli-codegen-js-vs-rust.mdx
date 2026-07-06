@@ -6,7 +6,8 @@ fixtures:
 hardware: darwin arm64 (local dev machine; not a clean-room CI box)
 caveats:
   - end-to-end CLI wall time on a tiny 2-file project — startup-bound, not a steady-state codegen number
-  - not equal-work — v2 emits 26 files vs 142 (jsx pass deferred), so `codegen` is partly "less output"; `cssgen` is the apples-to-apples row
+  - not equal-work — v2 emits 26 files vs 142 (jsx pass deferred), so `codegen` is partly "less output"; `cssgen` is the
+    apples-to-apples row
   - archived benchmark — the v2 CLI prototype measured here has since been merged into packages/cli
 ---
 
@@ -15,9 +16,9 @@ caveats:
 > End-to-end wall-clock comparison of the pre-merge v2 CLI prototype (native NAPI Rust engine) against the legacy JS CLI
 > running `codegen` and `cssgen` on the same project. The v2 implementation now lives in `packages/cli`. This is the
 > user-facing "how long does the command take" number — the thing someone feels on every save — not a per-workload
-> microbenchmark. For the
-> isolated extraction speedup, see [2026-05-16 extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx); for the
-> generated-type cost, [2026-06-01 generated-types-js-vs-rust](./2026-06-01-generated-types-js-vs-rust.mdx).
+> microbenchmark. For the isolated extraction speedup, see
+> [2026-05-16 extract-js-vs-rust](./2026-05-16-extract-js-vs-rust.mdx); for the generated-type cost,
+> [2026-06-01 generated-types-js-vs-rust](./2026-06-01-generated-types-js-vs-rust.mdx).
 
 ## TL;DR
 
@@ -26,9 +27,9 @@ the app actually uses.
 
 | Command   | old JS (mean) | v2 Rust (mean) | Speedup (mean) | Best-of (n=9) |
 | --------- | ------------: | -------------: | -------------: | ------------: |
-| `codegen` | 0.423 s       | 0.060 s        | **7.0×**       | 7.8×          |
-| `cssgen`  | 0.412 s       | 0.058 s        | **7.1×**       | 7.8×          |
-| total     | 0.835 s       | 0.118 s        | **7.1×**       | —             |
+| `codegen` |       0.423 s |        0.060 s |       **7.0×** |          7.8× |
+| `cssgen`  |       0.412 s |        0.058 s |       **7.1×** |          7.8× |
+| total     |       0.835 s |        0.118 s |       **7.1×** |             — |
 
 `n = 9` per command, mean of wall-clock `real`. v2 `cssgen` reported `diagnostics: 0`.
 
@@ -62,16 +63,16 @@ ceiling.
 The CLIs do not emit the same file set, so raw counts are not directly comparable — listed here so the `codegen` row
 isn't mistaken for equal work:
 
-| Category    | old JS | v2 Rust | Note                                                      |
-| ----------- | -----: | ------: | --------------------------------------------------------- |
-| `css/`      |     17 |      12 | runtime + decls; v2 has fewer decl files (consolidated)   |
-| `patterns/` |     42 |       0 | v2 doesn't emit built-in patterns when none are configured|
-| `recipes/`  |      8 |       5 | the `button` recipe is present in both                    |
-| `tokens/`   |      4 |       2 | `.d.mts` vs split `.d.ts`                                  |
-| `types/`    |     19 |       5 | v2 consolidates type surfaces (see 2026-06-01 report)     |
-| `jsx/`      |     49 |       0 | **deferred** — v2 jsx codegen is a separate later pass    |
-| root        |      3 |       3 | `helpers`, `styles.css`                                    |
-| **total**   |  **142** |  **27** |                                                          |
+| Category    |  old JS | v2 Rust | Note                                                       |
+| ----------- | ------: | ------: | ---------------------------------------------------------- |
+| `css/`      |      17 |      12 | runtime + decls; v2 has fewer decl files (consolidated)    |
+| `patterns/` |      42 |       0 | v2 doesn't emit built-in patterns when none are configured |
+| `recipes/`  |       8 |       5 | the `button` recipe is present in both                     |
+| `tokens/`   |       4 |       2 | `.d.mts` vs split `.d.ts`                                  |
+| `types/`    |      19 |       5 | v2 consolidates type surfaces (see 2026-06-01 report)      |
+| `jsx/`      |      49 |       0 | **deferred** — v2 jsx codegen is a separate later pass     |
+| root        |       3 |       3 | `helpers`, `styles.css`                                    |
+| **total**   | **142** |  **27** |                                                            |
 
 So part of the `codegen` speedup is simply less output. `jsx/` is the one intentional gap (a deferred pass, not a bug);
 the rest is v2 being leaner (only-configured patterns, consolidated types).
@@ -86,19 +87,19 @@ styles are equivalent:
 - `brand`/`danger` tokens resolve identically.
 
 The v2 `styles.css` is ~27% smaller only because the JS engine emits default utility-var registrations
-(`--blur`/`--backdrop-*`/`--gradient-*`/`--breakpoints-*`) for built-in utilities **this config never defines**; v2 emits
-only what's configured. No used style was missing or different.
+(`--blur`/`--backdrop-*`/`--gradient-*`/`--breakpoints-*`) for built-in utilities **this config never defines**; v2
+emits only what's configured. No used style was missing or different.
 
 ## Methodology
 
-| | |
-| ----------- | --------------------------------------------------------------------------- |
-| Fixture     | `sandbox/cli-v2` — plain-object config (1 recipe, ~15 utilities, `brand`/`danger` tokens, `globalCss`, `jsxFramework: 'react'`), 2 `.tsx` source files |
-| Commands    | `node packages/<cli>/bin.js <codegen\|cssgen> --cwd .` (raw, no pnpm wrapper) |
-| Samples     | 9 cold iterations per command, fresh process each                            |
-| Metric      | wall-clock `real`, reported as mean and best-of                              |
-| Toolchain   | node 22.20, Rust 1.93.0, darwin arm64                                        |
-| Pre-built   | all workspace dists (`pnpm build:fast`) + native `.node` (`build:native`)    |
+|           |                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fixture   | `sandbox/cli-v2` — plain-object config (1 recipe, ~15 utilities, `brand`/`danger` tokens, `globalCss`, `jsxFramework: 'react'`), 2 `.tsx` source files |
+| Commands  | `node packages/<cli>/bin.js <codegen\|cssgen> --cwd .` (raw, no pnpm wrapper)                                                                          |
+| Samples   | 9 cold iterations per command, fresh process each                                                                                                      |
+| Metric    | wall-clock `real`, reported as mean and best-of                                                                                                        |
+| Toolchain | node 22.20, Rust 1.93.0, darwin arm64                                                                                                                  |
+| Pre-built | all workspace dists (`pnpm build:fast`) + native `.node` (`build:native`)                                                                              |
 
 ## How to reproduce
 

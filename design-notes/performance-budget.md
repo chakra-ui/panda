@@ -28,10 +28,10 @@ project, this adds up.
 
 Two places use `SmallVec` to skip heap allocation when inline capacity suffices:
 
-| Site                     | Inline budget      | Role                                                                 |
-| ------------------------ | ------------------ | -------------------------------------------------------------------- |
-| `Atom::conditions`       | `INLINE_CONDS = 2` | Inline storage for condition chains; longer chains spill to heap     |
-| `Encoder::path` (walker) | `INLINE_PATH = 8`  | Reused traversal buffer; deeper nesting spills to heap               |
+| Site                     | Inline budget      | Role                                                             |
+| ------------------------ | ------------------ | ---------------------------------------------------------------- |
+| `Atom::conditions`       | `INLINE_CONDS = 2` | Inline storage for condition chains; longer chains spill to heap |
+| `Encoder::path` (walker) | `INLINE_PATH = 8`  | Reused traversal buffer; deeper nesting spills to heap           |
 
 These are **not semantic limits** — arbitrarily nested styles and long condition chains remain correct. Spilling only
 costs a heap allocation; the inline budget is tuned so typical shallow shapes avoid that cost.

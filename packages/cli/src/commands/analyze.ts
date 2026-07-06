@@ -166,6 +166,11 @@ export async function runAnalyze(flags: AnalyzeFlags = {}, output: OutputSink = 
         result.driver!.applyChanges(events)
         await refresh(reason)
       },
+      // onSourceChange short-circuits when the fingerprints are unchanged; a
+      // dropped-events re-scan has no events to fingerprint, so refresh directly.
+      onRescan: async () => {
+        await refresh('re-scan')
+      },
       onConfigChange: async (events) => {
         const reason = formatAnalyzeUiChange(runCtx!.cwd, 'config', events)
         watchLogger.log(`analyze: ${reason}`, { dedupeKey: `change:${reason}` })

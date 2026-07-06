@@ -28,6 +28,7 @@ panda check
 panda info
 panda doctor
 panda debug
+panda analyze
 ```
 
 Advanced commands remain available for lower-level workflows:
@@ -36,6 +37,7 @@ Advanced commands remain available for lower-level workflows:
 panda codegen
 panda cssgen
 panda buildinfo
+panda lib
 ```
 
 Bare `panda` is a shortcut for the default build (`panda build`).
@@ -154,7 +156,9 @@ Command-specific data is added to that envelope:
 - `info`: project summary (`configPath`, source count, artifacts, conditions, token categories, utilities)
 - `doctor`: `configPath`, `diagnosticCount`, `errors`
 - `debug`: `outdir`, written files, source count
+- `analyze`: source count, scope, summary, facts, report/UI paths
 - `buildinfo`: artifact metadata counts and output path
+- `lib`: manifest, build-info, preset paths, and whether `package.json` exports changed
 
 ## Observability
 
@@ -205,6 +209,7 @@ Watch mode keeps tracing active until the returned `stop()` function runs.
 - `panda info` prints project/compiler summary data.
 - `panda doctor` checks config loading and compiler diagnostics.
 - `panda debug` writes bug-report artifacts.
+- `panda analyze` reports Panda usage across project sources.
 
 `panda inspect` and `panda validate` are removed. Use `panda info` and `panda doctor`.
 
@@ -225,7 +230,6 @@ v2 emits atomic CSS at the project level, so the dump carries one project styles
 Open gaps that stay outside the current CLI surface:
 
 - `studio` is not ported.
-- `analyze` is not ported; see [CLI analyze command](./cli-analyze.md) for the proposed usage-report direction.
 - `ship` / `emit-pkg` is not ported.
 - v1 positional layer type arguments are intentionally not ported. `cssgen --minimal` covers usage-only package CSS.
 - lightningcss minify parity is still an open follow-up.

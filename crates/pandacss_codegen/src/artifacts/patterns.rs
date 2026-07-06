@@ -120,6 +120,7 @@ pub fn module_with_type_data(
     let type_name = format!("{}Properties", pascal_case(name));
     let styles_name = format!("{}Styles", pascal_case(name));
     let fn_type_name = format!("{}PatternFn", pascal_case(name));
+    let prop_keys = pattern_keys_json(pattern);
 
     let type_imports = type_imports(pattern, definition);
     let mut module = Module::new()
@@ -127,6 +128,7 @@ pub fn module_with_type_data(
             ["getPatternStyles", "patternFns"],
             "./runtime",
         ))
+        .with_import(ImportDecl::value(["memo"], "../helpers"))
         // The public fn pipes styles through `css()` to return a className.
         .with_import(ImportDecl::value(["css"], "../css/index"));
 
@@ -157,12 +159,17 @@ pub fn module_with_type_data(
             pattern,
             definition,
         ))
-        .with_item(pattern_fn_interface(&fn_type_name, &styles_name))
+        .with_item(pattern_fn_interface(
+            &fn_type_name,
+            &styles_name,
+            &type_name,
+        ))
         .with_item(raw_function(&raw_name, &config_name, &styles_name))
         .with_item(public_function_const(
             &function_name,
             &raw_name,
             &fn_type_name,
+            &prop_keys,
         ))
 }
 
@@ -366,13 +373,6 @@ fn properties_interface(
         }));
     }
 
-    members.push(TsMember {
-        name: TsMemberName::Ident("className".into()),
-        optional: true,
-        ty: TsType::Ref("string".into()),
-        js_doc: None,
-    });
-
     Item::interface_decl(InterfaceDecl {
         exported: true,
         name: name.into(),
@@ -413,7 +413,7 @@ fn styles_interface(
     )))
 }
 
-fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
+fn pattern_fn_interface(name: &str, styles_name: &str, properties_name: &str) -> Item {
     Item::interface_decl(InterfaceDecl {
         exported: false,
         name: name.into(),
@@ -435,6 +435,12 @@ fn pattern_fn_interface(name: &str, styles_name: &str) -> Item {
                 },
                 js_doc: None,
             },
+            TsMember {
+                name: TsMemberName::Ident("propKeys".into()),
+                optional: false,
+                ty: TsType::Raw(format!("Array<keyof {properties_name}>")),
+                js_doc: None,
+            },
         ],
         js_doc: None,
     })
@@ -453,17 +459,22 @@ fn raw_function(name: &str, config_name: &str, styles_name: &str) -> Item {
     }))
 }
 
-fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str) -> Item {
+fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str, prop_keys: &str) -> Item {
     Item::both(ItemNode::Const(ConstDecl {
         exported: true,
         declare: false,
         name: name.into(),
         type_annotation: Some(TsType::Ref(fn_type_name.into())),
         init: Some(crate::Expr::Raw(format!(
-            "/* @__PURE__ */ Object.assign(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}, {{ raw: {raw_name} }})"
+            "/* @__PURE__ */ Object.assign(memo(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}), {{ raw: {raw_name}, propKeys: {prop_keys} }})"
         ))),
         js_doc: None,
     }))
+}
+
+fn pattern_keys_json(pattern: &PatternConfig) -> String {
+    let keys = pattern.properties.keys().cloned().collect::<Vec<_>>();
+    serde_json::to_string(&keys).expect("pattern keys serialize")
 }
 
 fn raw_function_body(config_name: &str) -> String {

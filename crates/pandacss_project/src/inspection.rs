@@ -5,7 +5,7 @@ use pandacss_extractor::StyleSourceRef;
 use pandacss_extractor::{
     ExtractedCall, ExtractedJsx, JsxKind, LineIndex, Literal, MatchCategory, TokenRef,
 };
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{ResolvedTokenPath, TokenDictionary};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -92,6 +92,8 @@ pub struct TokenRefSite {
     pub resolved: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub token: Option<TokenValueRef>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -150,6 +152,20 @@ pub struct StyleEntryRef {
 pub struct ValueSpanRef {
     pub value: String,
     pub span: Span,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub token: Option<TokenValueRef>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenValueRef {
+    pub path: String,
+    pub category: String,
+    pub category_path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modifier: Option<String>,
+    pub semantic: bool,
+    pub semantic_category: bool,
 }
 
 /// Enclosing style owner (call or JSX element). `(owner, parent path)` groups
@@ -161,7 +177,7 @@ pub struct StyleEntryOwner {
     pub index: u32,
 }
 
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum StyleEntryKind {
     Utility,
@@ -241,6 +257,16 @@ pub(crate) fn token_ref_site(
     tokens: Option<&TokenDictionary>,
 ) -> TokenRefSite {
     let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
+    let category = token_ref
+        .path
+        .split_once('.')
+        .map(|(category, _)| category.to_owned());
+    let token = tokens
+        .and_then(|dict| {
+            dict.token(&token_ref.path)
+                .map(|token| dict.token_metadata(token, None))
+        })
+        .map(token_value_ref);
     TokenRefSite {
         path: token_ref.path.clone(),
         span: token_ref.span,
@@ -248,10 +274,8 @@ pub(crate) fn token_ref_site(
         needs_css_var: token_ref.needs_css_var,
         is_var: token_ref.is_var,
         resolved: tokens.is_some_and(|dict| dict.token(&token_ref.path).is_some()),
-        category: token_ref
-            .path
-            .split_once('.')
-            .map(|(category, _)| category.to_owned()),
+        category,
+        token,
     }
 }
 
@@ -333,4 +357,15 @@ pub(crate) fn style_entry(input: &StyleEntryInput<'_>) -> StyleEntryRef {
 
 fn literal_value(value: &Literal) -> Value {
     serde_json::to_value(value).unwrap_or(Value::Null)
+}
+
+pub(crate) fn token_value_ref(resolved: ResolvedTokenPath) -> TokenValueRef {
+    TokenValueRef {
+        path: resolved.path,
+        category: resolved.category.as_str().to_owned(),
+        category_path: resolved.category_path,
+        modifier: resolved.modifier,
+        semantic: resolved.semantic,
+        semantic_category: resolved.semantic_category,
+    }
 }

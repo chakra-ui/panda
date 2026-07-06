@@ -28,12 +28,7 @@ Plugins run in array order. No `enforce: 'pre' | 'post'` in v2.0.
 Presets and user config concatenate plugin arrays in source order:
 
 ```ts
-[
-  ...presetA.plugins,
-  ...presetB.plugins,
-  ...user.plugins,
-  ...user.extend.plugins,
-]
+;[...presetA.plugins, ...presetB.plugins, ...user.plugins, ...user.extend.plugins]
 ```
 
 Plugins are not merged by `name` and are not deduped by default. Duplicate names may warn for diagnostics, but adding
@@ -77,8 +72,8 @@ export default {
 
 ## Supported Hooks
 
-- **Class A: config / construction**: `preset:resolved`, `config:resolved`. Host-only and may be async because config and
-  preset resolution already run asynchronously.
+- **Class A: config / construction**: `preset:resolved`, `config:resolved`. Host-only and may be async because config
+  and preset resolution already run asynchronously.
 - **Class B: output / batch**: `codegen:prepare`, `codegen:done`. Host-only and sync; prepare runs before generated
   files are written, done runs after.
 - **Class C: per-file source transform**: `parser:before`. Hot path, sync-only, requires Rust-side filters.
@@ -106,10 +101,10 @@ files cross into JS and what source reaches Oxc.
 `preset:resolved` runs in the JS config host after each authored preset is loaded and before it is merged into the final
 config. A returned config replaces the preset for the rest of resolution.
 
-`config:resolved` runs in the JS config host after all authored presets are merged and before defaults and serialization.
-It receives `{ config, path, dependencies, utils }`. A returned config replaces the config for defaulting and
-serialization. Because it runs on the resolved shape, do not add new `extend` blocks there; update resolved keys directly
-such as `theme.tokens`, `staticCss`, `patterns`, and `utilities`.
+`config:resolved` runs in the JS config host after all authored presets are merged and before defaults and
+serialization. It receives `{ config, path, dependencies, utils }`. A returned config replaces the config for defaulting
+and serialization. Because it runs on the resolved shape, do not add new `extend` blocks there; update resolved keys
+directly such as `theme.tokens`, `staticCss`, `patterns`, and `utilities`.
 
 `parser:before` runs before native SFC adaptation and before Oxc parse:
 
@@ -228,8 +223,8 @@ export default {
 ### `cssgen:done`
 
 `cssgen:done` is not in the initial v2 hook set. For final CSS cleanup like removing unused variables/keyframes, prefer
-Panda's `optimize` options or a project PostCSS plugin after Panda. Reconsider a dedicated host-side CSS output hook only
-when v2 has a stable CSS artifact contract.
+Panda's `optimize` options or a project PostCSS plugin after Panda. Reconsider a dedicated host-side CSS output hook
+only when v2 has a stable CSS artifact contract.
 
 ### Removed Engine Hooks
 

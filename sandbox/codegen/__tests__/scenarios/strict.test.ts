@@ -24,6 +24,13 @@ describe('css', () => {
     assertType(css({ color: 'blue.300' }))
   })
 
+  test('native keyword for property backed by an empty token category', () => {
+    // `cursor` has no tokens in this config; native CSS keywords stay assignable
+    // under strictTokens rather than requiring the escape hatch.
+    assertType(css({ cursor: 'pointer' }))
+    assertType(css({ opacity: 0.5 }))
+  })
+
   test('css var', () => {
     assertType(css({ color: 'var(--button-color)' }))
     assertType(css({ display: 'var(--button-color)' }))

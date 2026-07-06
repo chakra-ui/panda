@@ -34,6 +34,155 @@ describe('generated runtime/cssgen parity', () => {
     expect(generatedCss).toContain(String.raw`.hover\:c_red\.500\!:hover`)
   })
 
+  it('uses the same multiline string value class names as cssgen', async () => {
+    const compiler = createProject({
+      outExtension: 'mjs',
+      utilities: {
+        margin: { className: 'm' },
+      },
+    })
+
+    const margin = `
+      1rem
+      2rem
+    `
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ margin: \`
+         1rem
+         2rem
+       \` })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ margin })
+    const generatedCss = compiler.compile({ emitLayerDeclaration: false }).css
+
+    expect(className).toBe('m_1rem_2rem')
+    expect(generatedCss).toContain(String.raw`.m_1rem_2rem`)
+    expect(generatedCss).toContain('margin: 1rem 2rem;')
+  })
+
+  it('uses the same repeated whitespace value class names as cssgen', async () => {
+    const compiler = createProject({
+      outExtension: 'mjs',
+      utilities: {
+        margin: { className: 'm' },
+      },
+    })
+
+    const margin = '1rem\t  2rem'
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ margin: '1rem\t  2rem' })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ margin })
+    const generatedCss = compiler.compile({ emitLayerDeclaration: false }).css
+
+    expect(className).toBe('m_1rem_2rem')
+    expect(generatedCss).toContain(String.raw`.m_1rem_2rem`)
+    expect(generatedCss).toContain('margin: 1rem 2rem;')
+  })
+
+  it('uses the same important multiline value class names as cssgen', async () => {
+    const compiler = createProject({
+      outExtension: 'mjs',
+      utilities: {
+        margin: { className: 'm' },
+      },
+    })
+
+    const margin = `
+      1rem
+      2rem
+      !important
+    `
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ margin: \`
+         1rem
+         2rem
+         !important
+       \` })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ margin })
+    const generatedCss = compiler.compile({ emitLayerDeclaration: false }).css
+
+    expect(className).toBe('m_1rem_2rem!')
+    expect(generatedCss).toContain(String.raw`.m_1rem_2rem\!`)
+    expect(generatedCss).toContain('margin: 1rem 2rem !important;')
+  })
+
+  it('uses the same conditional whitespace value class names as cssgen', async () => {
+    const compiler = createProject({
+      outExtension: 'mjs',
+      utilities: {
+        margin: { className: 'm' },
+      },
+      conditions: {
+        hover: '&:hover',
+      },
+    })
+
+    const margin = '1rem\t2rem'
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ _hover: { margin: '1rem\t2rem' } })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ _hover: { margin } })
+    const generatedCss = compiler.compile({ emitLayerDeclaration: false }).css
+
+    expect(className).toBe('hover:m_1rem_2rem')
+    expect(generatedCss).toContain(String.raw`.hover\:m_1rem_2rem:hover`)
+    expect(generatedCss).toContain('margin: 1rem 2rem;')
+  })
+
+  it('uses the same grid template areas class names as cssgen', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+
+    const gridTemplateAreas = `
+      "preview name delete"
+      "preview size delete"
+    `
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css';
+       css({ gridTemplateAreas: \`
+         "preview name delete"
+         "preview size delete"
+       \` })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ gridTemplateAreas })
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('grid-template-areas_"preview_name_delete"_"preview_size_delete"')
+    expect(utilitiesCss).toMatchInlineSnapshot(`
+      "@layer utilities {
+        .grid-template-areas_\\"preview_name_delete\\"_\\"preview_size_delete\\" {
+          grid-template-areas: "preview name delete" "preview size delete";
+        }
+      }
+      "
+    `)
+  })
+
   it('uses the same object-map literal class names as cssgen', async () => {
     const compiler = createProject({
       outExtension: 'mjs',

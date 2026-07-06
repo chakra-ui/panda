@@ -69,6 +69,7 @@ export interface TokenRefSite {
   isVar: boolean
   resolved: boolean
   category?: string
+  token?: TokenValueRef
 }
 
 export type UsageKind = 'token' | 'property' | 'recipe' | 'pattern' | 'keyframe'
@@ -124,7 +125,22 @@ export interface StyleEntryRef {
   /**
    * Source spans for string leaves, used by precise fixers.
    */
-  valueSpans?: { value: string; span: Span }[]
+  valueSpans?: StyleValueSpanRef[]
+}
+
+export interface StyleValueSpanRef {
+  value: string
+  span: Span
+  token?: TokenValueRef
+}
+
+export interface TokenValueRef {
+  path: string
+  category: string
+  categoryPath: string
+  modifier?: string
+  semantic: boolean
+  semanticCategory: boolean
 }
 
 export interface InspectionCall extends ExtractedCall {

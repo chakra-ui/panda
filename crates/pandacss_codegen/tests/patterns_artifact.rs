@@ -171,6 +171,7 @@ fn emits_ts_source() {
         file(patterns, "patterns/stack.ts"),
         indoc! {r#"
         import { getPatternStyles, patternFns } from './runtime';
+        import { memo } from '../helpers';
         import { css } from '../css/index';
         import type { PatternRuntimeConfig } from '../types/pattern';
         import type { SystemProperties, SystemStyleObject } from '../types/system';
@@ -196,7 +197,6 @@ fn emits_ts_source() {
           direction?: SystemProperties["flexDirection"]
           gap?: SystemProperties["gap"]
           justify?: SystemProperties["justifyContent"]
-          className?: string
         }
 
         type StackRestStyles = Omit<SystemStyleObject, keyof StackProperties>
@@ -206,6 +206,7 @@ fn emits_ts_source() {
         interface StackPatternFn {
           (styles?: StackStyles): string
           raw: (styles?: StackStyles) => SystemStyleObject
+          propKeys: Array<keyof StackProperties>
         }
 
         export function stackRaw(styles?: StackStyles): SystemStyleObject {
@@ -213,9 +214,9 @@ fn emits_ts_source() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }, { raw: stackRaw })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
         .trim()
     );
@@ -277,6 +278,7 @@ fn emits_js_runtime_and_declarations() {
         file(patterns, "patterns/stack.js"),
         indoc! {r#"
         import { getPatternStyles, patternFns } from './runtime';
+        import { memo } from '../helpers';
         import { css } from '../css/index';
 
         const stackConfig = {
@@ -297,9 +299,9 @@ fn emits_js_runtime_and_declarations() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }, { raw: stackRaw })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
         .trim()
     );
@@ -317,7 +319,6 @@ fn emits_js_runtime_and_declarations() {
           direction?: SystemProperties["flexDirection"]
           gap?: SystemProperties["gap"]
           justify?: SystemProperties["justifyContent"]
-          className?: string
         }
 
         type StackRestStyles = Omit<SystemStyleObject, keyof StackProperties>
@@ -327,6 +328,7 @@ fn emits_js_runtime_and_declarations() {
         interface StackPatternFn {
           (styles?: StackStyles): string
           raw: (styles?: StackStyles) => SystemStyleObject
+          propKeys: Array<keyof StackProperties>
         }
 
         export declare function stackRaw(styles?: StackStyles): SystemStyleObject;
@@ -353,6 +355,7 @@ fn can_emit_import_extensions() {
         file(patterns, "patterns/stack.mjs"),
         indoc! {r#"
         import { getPatternStyles, patternFns } from './runtime.mjs';
+        import { memo } from '../helpers.mjs';
         import { css } from '../css/index.mjs';
 
         const stackConfig = {
@@ -373,9 +376,9 @@ fn can_emit_import_extensions() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }, { raw: stackRaw })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
         .trim()
     );

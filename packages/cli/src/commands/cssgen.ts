@@ -97,6 +97,12 @@ export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = co
         current = await writeCssgenOutput(runCtx!, resolveOutfile!(), flags, current.parsed)
         Object.assign(result, current)
       },
+      // The incremental path above reuses the cached parse; on a dropped-events
+      // re-scan we must re-read every file, so go through cssgenOnce (parseFiles).
+      onRescan: async () => {
+        current = await cssgenOnce(runCtx!, resolveOutfile!(), flags)
+        Object.assign(result, current)
+      },
       onConfigChange: async () => {
         const diff = await result.driver!.reload()
 

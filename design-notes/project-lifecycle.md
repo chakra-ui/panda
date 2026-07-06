@@ -5,9 +5,9 @@
 `Project` is the Tier-3 façade that owns build / dev-server session state. The primary construction path is
 `UserConfig -> System -> Project`: `System::new(config)` compiles immutable config-derived runtime state, then `Project`
 owns the mutable per-file buckets and caches. Source files flow in through `parse_file`; the project extracts usages,
-decomposes `cva()` / `sva()` recipes, and feeds the results into a shared atomic encoder. The contract is
-**per-file replacement**: re-adding a path drops its previous contribution before re-encoding, so removed or renamed
-styles can't linger as ghost atoms in watch mode.
+decomposes `cva()` / `sva()` recipes, and feeds the results into a shared atomic encoder. The contract is **per-file
+replacement**: re-adding a path drops its previous contribution before re-encoding, so removed or renamed styles can't
+linger as ghost atoms in watch mode.
 
 ## Construction
 
@@ -19,32 +19,31 @@ let system = System::new(config)?;
 let mut project = Project::new(system);
 ```
 
-Config-derived construction is fallible. `pandacss_config::UserConfig` is the deserialized resolved input shape from
-the JS config loader. `System::new(config) -> pandacss_project::Result<System>` compiles it into fast Rust runtime
-structures: extractor matchers, JSX extraction config, utility metadata, conditions, breakpoints, patterns, recipes,
-and the token dictionary bridge. `Project::from_config(config)` simply builds a `System` and wraps it in a fresh
-project.
+Config-derived construction is fallible. `pandacss_config::UserConfig` is the deserialized resolved input shape from the
+JS config loader. `System::new(config) -> pandacss_project::Result<System>` compiles it into fast Rust runtime
+structures: extractor matchers, JSX extraction config, utility metadata, conditions, breakpoints, patterns, recipes, and
+the token dictionary bridge. `Project::from_config(config)` simply builds a `System` and wraps it in a fresh project.
 
 The config model is typed at the structural boundary. Fields such as `prefix`, `hash`, `jsxStyleProps`, `conditions`,
 `utilities`, `patterns`, recipes, slot recipes, and theme tokens deserialize into Rust structs/enums before the project
 sees them. `serde_json::Value` remains only for intentionally dynamic style payloads and extension bags:
 `SystemStyleObject`-like values, pattern `defaultValues`, utility value maps, token extensions, static/global CSS
 payloads, and unknown flattened config fields. That keeps the hot project path from repeatedly walking raw JSON while
-still accepting Panda's open-ended CSS object shapes. The compiled runtime config is `pandacss_project::Config`; the
-raw `UserConfig` is not stored in Rust project state.
+still accepting Panda's open-ended CSS object shapes. The compiled runtime config is `pandacss_project::Config`; the raw
+`UserConfig` is not stored in Rust project state.
 
 ## Lifecycle methods
 
-| Method                         | Behavior                                                                                             |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Method                         | Behavior                                                                                                  |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
 | `parse_file(path, source)`     | Extract + encode. Replaces any prior bucket for `path`. Returns a `ParseFileReport` with per-call counts. |
-| `refresh_file(path, source)`   | Re-parses _only if_ `path` is already known. Returns `false` for unknown paths.                      |
-| `remove_file(path)`            | Drops atoms + recipes + diagnostics for `path`. Idempotent; returns `true` if the path was known.    |
-| `get_file(path)`               | Returns a borrowed `ParsedFile<'_>` view, or `None`.                                                 |
-| `clear()`                      | Drops every path's state but keeps the compiled config.                                              |
-| `atoms()`                      | Deduplicated union across every currently-known file.                                                |
-| `recipes()` / `slot_recipes()` | Stable-order iterators keyed by `(file, span_start)`.                                                |
-| `summary()`                    | Cheap aggregate counts.                                                                              |
+| `refresh_file(path, source)`   | Re-parses _only if_ `path` is already known. Returns `false` for unknown paths.                           |
+| `remove_file(path)`            | Drops atoms + recipes + diagnostics for `path`. Idempotent; returns `true` if the path was known.         |
+| `get_file(path)`               | Returns a borrowed `ParsedFile<'_>` view, or `None`.                                                      |
+| `clear()`                      | Drops every path's state but keeps the compiled config.                                                   |
+| `atoms()`                      | Deduplicated union across every currently-known file.                                                     |
+| `recipes()` / `slot_recipes()` | Stable-order iterators keyed by `(file, span_start)`.                                                     |
+| `summary()`                    | Cheap aggregate counts.                                                                                   |
 
 ## Watch-mode contract
 

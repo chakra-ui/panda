@@ -27,6 +27,7 @@ pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
 const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig = {}, options = {}) {
   const recipeFn = recipeOrConfig.__cva__ || recipeOrConfig.__recipe__ ? recipeOrConfig : cva(recipeOrConfig)
   const composedRecipeFn = composeCvaFn(BaseComponent.__cva__, recipeFn)
+  const getRaw = composedRecipeFn.__memoizedRaw__ || composedRecipeFn.raw
   const variantKeys = composedRecipeFn.variantKeys
   const variantSet = new Set(variantKeys)
   const forwardFn = options.shouldForwardProp || ((prop) => !variantSet.has(prop) && !isCssProperty(prop))
@@ -36,7 +37,7 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
     ? (prop) => forwardPropSet.has(prop) || forwardFn(prop, variantKeys)
     : (prop) => forwardFn(prop, variantKeys)
 
-  const dataProps = options.dataAttr && recipeOrConfig.__name__ ? Object.assign({}, { 'data-recipe': recipeOrConfig.__name__ }) : {}
+  const dataProps = options.dataAttr && recipeOrConfig.__name__ ? { 'data-recipe': recipeOrConfig.__name__ } : {}
   const defaultProps = Object.assign(dataProps, options.defaultProps)
   const hasDefaultProps = Object.keys(defaultProps).length > 0
 
@@ -72,7 +73,7 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
       )
     } else {
       className = cx(
-        hasStyles ? serializeSplitStyles(propStyles, cssStyles, composedRecipeFn.raw(variantProps)) : composedRecipeFn(variantProps),
+        hasStyles ? serializeSplitStyles(propStyles, cssStyles, getRaw(variantProps)) : composedRecipeFn(variantProps),
         combinedProps.className,
       )
     }

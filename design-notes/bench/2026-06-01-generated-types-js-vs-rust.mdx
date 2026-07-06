@@ -58,11 +58,12 @@ output) is what these numbers reflect.
 ### How we got from −98% to −99% (kept as a record)
 
 The early cuts indexed a vendored, terse csstype (`CssProperties["display"]`) — fast, but ~50 instantiations and a heavy
-`Property` namespace in the wasm binary. Two dead ends along the way: a mapped `Exclude<keyof CssProperties, …>` fallback
-spiked to **2,647** instantiations (an `Exclude` over ~850 keys), and an `export type * → export type { CssProperties }`
-barrel tweak proved **perf-neutral** (kept only as API hygiene). The win came from replacing the vendored csstype with
-**our own `CssValue`-based csstype** (every native prop shares one cached type), which dropped instantiations to ~20 and
-let the `Property` namespace — and the 136KB asset — be deleted outright (the −24% memory).
+`Property` namespace in the wasm binary. Two dead ends along the way: a mapped `Exclude<keyof CssProperties, …>`
+fallback spiked to **2,647** instantiations (an `Exclude` over ~850 keys), and an
+`export type * → export type { CssProperties }` barrel tweak proved **perf-neutral** (kept only as API hygiene). The win
+came from replacing the vendored csstype with **our own `CssValue`-based csstype** (every native prop shares one cached
+type), which dropped instantiations to ~20 and let the `Property` namespace — and the 136KB asset — be deleted outright
+(the −24% memory).
 
 ## Recipe / pattern / cva (spot-checked separately)
 

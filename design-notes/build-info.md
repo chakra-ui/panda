@@ -3,8 +3,8 @@
 ## Summary
 
 `panda.buildinfo.json` is the **portable encoder state a design-system library ships** so a consuming app reuses its
-pre-extracted styles instead of re-extracting the components. It backs `designSystem` + `panda buildinfo`. The JS surface is
-one namespace:
+pre-extracted styles instead of re-extracting the components. It backs `designSystem` + `panda buildinfo`. The JS
+surface is one namespace:
 
 ```ts
 compiler.buildInfo.create({ panda }) // producer (panda buildinfo); configFingerprint is engine-owned
@@ -16,6 +16,13 @@ compiler.buildInfo.hydrate(info, { name, only }) // consumer (designSystem); `on
 
 It's a regenerable, key-validated cache: produce it from source, hydrate it (tree-shaken to imported components), and a
 version guard falls back to re-extraction when the two sides can't safely share.
+
+## Canonical scope
+
+This note owns the build-info payload, token identity, hydration, module/export tree-shaking, and stacked hydrate
+semantics. The `designSystem` field, `panda.lib.json`, parent-chain resolution, and diagnostics are owned by
+[design-system-manifest.md](./design-system-manifest.md). Dual importMap and overlay codegen are owned by
+[virtual-styled-system.md](./virtual-styled-system.md).
 
 ## Format (condensed)
 
@@ -40,9 +47,9 @@ px-driving type tag). Full atom/recipe data is kept (not pre-built CSS) so the c
 preserved instead of reducing tokens to opaque CSS values.
 
 **Token definitions are not in build info.** The artifact carries token _usage_ (path + producer-resolved value at
-extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in via
-the manifest — see [Design-system manifest](#design-system-manifest)). Hydrated utilities reference `var(--path)`; the
-consumer's `TokenDictionary` supplies the final CSS value at emit time.
+extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in
+via the manifest — see [design-system-manifest.md](./design-system-manifest.md)). Hydrated utilities reference
+`var(--path)`; the consumer's `TokenDictionary` supplies the final CSS value at emit time.
 
 ## Token identity (re-emit half)
 
@@ -76,14 +83,15 @@ The filter follows the app's imports, which rarely name a file:
 | `{ Button } from '@acme/ds'` (barrel) | `exports["Button"]` → `"button"` |
 | `* as DS` (namespace)                 | all modules (no tree-shaking)    |
 
-The barrel case needs `exports`, which the **engine** emits (it has the AST; the CLI would have to re-parse): export facts
-resolve to the style-contributing module (`pandacss_extractor::collect_export_info` → `FileEntry.exports` →
-`BuildInfo.exports`). A component consumed via JSX (`<Button>`) attributes its recipe to its module like any call, so its
-export resolves to the recipe-carrying module. Consumer lookup is O(1) via `modulesFor`. Covered today: locally-declared
-exports (`export function/const/class`, `export { local as Public }`), named re-exports (`export { X as Y } from './y'`),
-star re-exports (`export * from './y'`), and default re-exports (`export { default as Button } from './button'`). Namespace
-stars (`export * as DS from './ds'`) intentionally fall back to the namespace-import path for now.
-Panda-native scanning is primary (over-includes safely); a bundler plugin is the precise opt-in.
+The barrel case needs `exports`, which the **engine** emits (it has the AST; the CLI would have to re-parse): export
+facts resolve to the style-contributing module (`pandacss_extractor::collect_export_info` → `FileEntry.exports` →
+`BuildInfo.exports`). A component consumed via JSX (`<Button>`) attributes its recipe to its module like any call, so
+its export resolves to the recipe-carrying module. Consumer lookup is O(1) via `modulesFor`. Covered today:
+locally-declared exports (`export function/const/class`, `export { local as Public }`), named re-exports
+(`export { X as Y } from './y'`), star re-exports (`export * from './y'`), and default re-exports
+(`export { default as Button } from './button'`). Namespace stars (`export * as DS from './ds'`) intentionally fall back
+to the namespace-import path for now. Panda-native scanning is primary (over-includes safely); a bundler plugin is the
+precise opt-in.
 
 ## Recipes, slot recipes, patterns
 
@@ -103,12 +111,12 @@ Two paths, by how the engine encodes each:
 `validate` is pure and checks the wire `schemaVersion` against the running binding (`buildInfoSchemaVersion()`) — a
 cross-version hashing change is the real corruption vector (same atom, different class name). `hydrate` validates first;
 an incompatible artifact is a no-op (`{ ok: false, reason }`) the host handles by re-extracting the lib's source. The
-peer-range / `configFingerprint` checks share the `reason` union and are layered on by the host (it knows the running version).
-Same-version libs merge cleanly — atom hashes are content-addressed.
+peer-range / `configFingerprint` checks share the `reason` union and are layered on by the host (it knows the running
+version). Same-version libs merge cleanly — atom hashes are content-addressed.
 
-`configFingerprint` is the **engine's own** fingerprint (`Project::config_fingerprint`, also exposed on the NAPI binding as
-`configFingerprint()`), not a JS re-derivation: the engine is the component that knows which config drives encoding. It
-hashes the resolved `UserConfig` with machine-local IO / codegen fields removed (`cwd`/`outdir`/`include`/`exclude`/
+`configFingerprint` is the **engine's own** fingerprint (`Project::config_fingerprint`, also exposed on the NAPI binding
+as `configFingerprint()`), not a JS re-derivation: the engine is the component that knows which config drives encoding.
+It hashes the resolved `UserConfig` with machine-local IO / codegen fields removed (`cwd`/`outdir`/`include`/`exclude`/
 `importMap`/`jsx*`/`syntax`/codegen flags/validation) and object keys canonically ordered, so two libraries that differ
 only in those compare as compatible and the same library fingerprints identically across checkouts. The producer
 (`buildInfo.create({ panda })`) supplies only the published peer range; the host reads its own
@@ -124,53 +132,23 @@ only in those compare as compatible and the same library fingerprints identicall
   resolution; attached identically by the native (`@pandacss/compiler`) and browser (`@pandacss/compiler-wasm`) hosts.
   The engine emits `exports` itself, so both bindings carry it.
 - **`panda buildinfo`** (CLI, `packages/cli/src/commands/buildinfo.ts`) is the only package-aware layer: loads config →
-  `parseFiles` → `buildInfo.create({ panda })` → writes `panda.buildinfo.json`. It remaps the engine's absolute scan keys
-  to `cwd`-relative POSIX module ids — both `modules` keys and `exports` values; the `configFingerprint` is the engine's
-  fingerprint (no JS hashing).
+  `parseFiles` → `buildInfo.create({ panda })` → writes `panda.buildinfo.json`. It remaps the engine's absolute scan
+  keys to `cwd`-relative POSIX module ids — both `modules` keys and `exports` values; the `configFingerprint` is the
+  engine's fingerprint (no JS hashing).
 
-## Design-system manifest
+## Design-system boundary
 
-`BuildInfo` should stay the low-level engine payload: extracted atoms/recipes, module provenance, exports, schema guard.
-It should **not** become the preset artifact. The package-level consume shape should be a design-system manifest that ties
-the extracted style usage to the library's Panda preset:
+`BuildInfo` stays the low-level engine payload: extracted atoms/recipes, module provenance, exports, and schema guard.
+It is not the package manifest and it does not carry the executable preset. The package-level contract that ties a
+preset, build-info file, import map, fallback files, and optional parent design system together is
+[design-system-manifest.md](./design-system-manifest.md).
 
-```json
-{
-  "schemaVersion": 1,
-  "name": "@acme/ds",
-  "panda": "^2.0.0",
-  "buildInfo": "./styled-system/panda.buildinfo.json",
-  "preset": "./panda.preset.js"
-}
-```
+When a consumer uses `designSystem`, the Node host currently hydrates each manifest's whole build-info artifact. The
+lower-level engine can tree-shake with `hydrate({ only })`, and `modulesFor()` can map imported export names to module
+keys, but the host does not yet scan app imports to narrow design-system hydration.
 
-`designSystem: '@acme/ds'` would resolve this manifest, import/merge the preset into the consumer config, create the
-consumer `System`, read `buildInfo`, scan consumer imports, call `modulesFor()`, then hydrate only the used modules. Prefer
-linking to a JS preset over embedding it in JSON: presets may carry utilities, recipes, conditions, transforms, and other
-config shape that should remain executable/config-native.
-
-**Preset via entrypoint (goal).** When `designSystems` is registered, the consumer should **not** also list the DS preset
-in `presets` — the manifest is the entrypoint and its `preset` field is authoritative. Config-loader (or the consume host)
-resolves each design system → manifest → preset module, merges those presets into the effective config, then applies the
-user's local `panda.config` on top (app-only `patterns`, `conditions`, `theme.extend`, etc.). Duplicating
-`presets: ['@acme/ds/preset']` alongside `designSystems: ['@acme/ds']` should be unnecessary and ideally warned against.
-
-```ts
-// panda.config.ts — target consumer shape (sketch)
-export default {
-  designSystems: ['@acme/ui'], // manifest → preset + buildInfo + styled-system surface
-  patterns: { hero: { … } }, // app overlay only — not a second DS preset import
-  conditions: { sidebar: '…' },
-}
-```
-
-Stacked DS: if `@acme/ui`'s manifest declares `"extends": "@acme/base"`, the host resolves and merges **both** presets
-transitively — the app still lists only `designSystems: ['@acme/ui']` unless it imports base directly (then base may
-appear explicitly or via manifest dependency resolution). An escape hatch (`presets` for non-DS presets like
-`@pandacss/preset-base`, or an explicit override) can remain for advanced setups; DS presets should flow from
-`designSystems` by default.
-
-Consume-side layout (dual `importMap`, overlay codegen, DS npm exports): [virtual-styled-system.md](./virtual-styled-system.md).
+Consume-side package layout, dual importMap, overlay codegen, and DS npm exports are covered in
+[virtual-styled-system.md](./virtual-styled-system.md).
 
 This also means `configFingerprint` should likely evolve from strict full-config equality toward a **contract shape**
 check for design-system consumption: utility names/categories, class-name rules, conditions, recipe names, and similar
@@ -186,12 +164,13 @@ A design system built on another design system still ships **its own** build inf
 
 ### What each package ships
 
-Every design-system package publishes a manifest (see above) with two artifacts:
+Every design-system package publishes a manifest (see [design-system-manifest.md](./design-system-manifest.md)) with two
+artifacts:
 
-| Artifact | Role |
-| -------- | ---- |
-| `preset` | Executable config — usually `presets: ['@acme/base/preset']` plus local extensions. Defines the encoding contract (utilities, recipes, conditions, token paths). |
-| `buildInfo` | Portable encoder state from **`panda buildinfo` on this repo’s sources only**. Does not embed upstream build info. |
+| Artifact    | Role                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `preset`    | Executable config — usually `presets: ['@acme/base/preset']` plus local extensions. Defines the encoding contract (utilities, recipes, conditions, token paths). |
+| `buildInfo` | Portable encoder state from **`panda buildinfo` on this repo’s sources only**. Does not embed upstream build info.                                               |
 
 Example stack:
 
@@ -205,7 +184,7 @@ Example stack:
   └── panda.buildinfo.json          ← styles extracted from ui’s source only
 
 @app
-  ├── designSystems: ['@acme/ui']    ← manifest resolves ui preset (ui preset already extends base)
+  ├── designSystem: '@acme/ui'       ← manifest resolves ui preset (ui preset already extends base)
   └── hydrate: ui buildInfo (+ base if needed; see stacked scenarios)
 ```
 
@@ -239,8 +218,8 @@ Under the hood:
 - Recipe snapshots store in `hydrated_recipes` keyed by `name` and **merge** into the emit snapshot at CSS generation.
 - Atom dedup is content-addressed — identical atoms from two libs collapse to one utility class.
 
-Tree-shaking is **per artifact, per module key**: `modulesFor(uiInfo, ['Card'])` → ui module keys; base modules need
-a separate `modulesFor(baseInfo, …)` pass when the app imports base components directly or via re-exports ui does not
+Tree-shaking is **per artifact, per module key**: `modulesFor(uiInfo, ['Card'])` → ui module keys; base modules need a
+separate `modulesFor(baseInfo, …)` pass when the app imports base components directly or via re-exports ui does not
 cover in its artifact.
 
 ### Scenarios
@@ -263,56 +242,30 @@ cover in its artifact.
 - Base defines `colors.brand.500`; ui may extend in preset; app themes the same path — works when utility/token
   contracts align.
 
-### Proposed `designSystem` consume wiring (not built)
+### Host consume boundary
 
-Host orchestration for a stacked consumer — sketch for Phase 4:
+Manifest resolution and diagnostics are owned by [design-system-manifest.md](./design-system-manifest.md). The
+build-info-specific rule is: hydrate each package independently; never merge build-info JSON blobs. Presets merge in the
+config layer, while build info merges only through hydrated emit output. On fingerprint mismatch for one layer, the host
+falls back to that package's published source when `files` exists, or fails closed for that layer.
 
-```ts
-// panda.config.ts (sketch)
-export default {
-  designSystems: ['@acme/ui'], // manifest → preset + buildInfo; no duplicate presets entry
-  patterns: { hero: { … } }, // app-only overlay
-}
-```
+**Transitive discovery that is still deferred:**
 
-Per design system at build time:
-
-1. Resolve manifest (`name`, `preset`, `buildInfo`, `panda` range, optional `extends` / `dependencies`).
-2. Import and merge manifest preset(s) into the effective config — **not** from a parallel `presets: ['@acme/ui']` entry.
-3. Apply the user's local config on top (app patterns, conditions, theme overrides).
-4. `validate(buildInfo)` — schema + peer range + contract/fingerprint check against the consumer compiler.
-5. Scan consumer imports from that package (subpath → module key; barrel → `modulesFor(exports, importNames)`).
-6. `hydrate(buildInfo, { name, only })` for the resolved module set.
-7. Emit hydrated CSS under a package-scoped layer (e.g. `@layer ds-acme-ui { … }`) — layer naming TBD.
-
-**Resolution order (proposal):**
-
-- Resolve preset chain from manifest metadata (`extends`, `dependencies`) before merging local config.
-- Process `designSystems` in dependency order (leaf DS first or as declared in manifest — TBD).
-- Hydrate each package independently; never merge build-info JSON blobs — only merge **emit output** and **presets**.
-- On fingerprint mismatch for one layer: fall back to re-extracting **that package’s** published source (if shipped)
-  or fail closed for that layer only.
-
-**Transitive discovery (deferred):**
-
-- Today: no automatic “ui depends on base → pull base build info.” Host must list both or ui manifest must point at
-  base (`"dependencies": ["@acme/base"]` + resolve sibling manifest).
+- Today: parent chains travel through `manifest.designSystem`. There is no separate plural dependency list that says “ui
+  also needs base build info” unless the parent is declared as that chain.
 - Build-info `exports` maps are **in-repo only** — they do not resolve into `node_modules`. Cross-package barrel
   resolution is a host concern (manifest + import graph).
 
-### Practical guidance (until consume wiring lands)
+### Practical guidance
 
 ```txt
-1. Ship both artifacts from every layer consumers can import from.
-2. App lists designSystems only — host resolves presets from manifests (stacked extends via manifest metadata).
-3. App config holds app-only overlay (patterns, conditions, theme); not a duplicate DS preset import.
-4. App hydrates each package it imports styles from, tree-shaken via modulesFor + only.
-5. Compare configFingerprint per artifact against the consumer after preset merge.
-6. When in doubt, hydrate base + ui — over-including is safe; tree-shaking trims unused modules.
+1. Ship build info from every layer consumers can import from.
+2. App hydrates each package in the manifest chain. Import-based tree-shaking is still a host follow-up.
+3. Compare `configFingerprint` per artifact against the consumer after preset merge.
+4. When in doubt, declare the parent in `manifest.designSystem` so the consumer hydrates both layers.
 ```
 
-Track stacked-DS consume work under [Remaining — consume half](#remaining--consume-half-phase-4-the-value) below
-(`designSystem` wiring, manifest `extends` / dependency resolution, per-package CSS layers).
+Track remaining stacked-DS consume work under [Remaining — consume polish](#remaining--consume-polish) below.
 
 ## vs legacy (v1)
 
@@ -325,7 +278,8 @@ things:
   per-module `modules` + `hydrate({ only })`.
 - **Recipes** — v1 ships variant hashes only and **regenerates base from the consumer's config** (consumer must own the
   lib's recipe config; inline `cva`/`sva` can't travel). v2 ships the full snapshot — self-contained, lib's base wins.
-- **Guard** — v1 has a string `schemaVersion` only. v2 adds the engine `configFingerprint` + author `panda` range (#3522 #11).
+- **Guard** — v1 has a string `schemaVersion` only. v2 adds the engine `configFingerprint` + author `panda` range (#3522
+  #11).
 
 v1's edge: simplicity and eyeball-debuggable hashes. v2 trades that for the above + engine ownership. Not yet ported
 from `panda ship`: the `styles.css` / package scaffolding fallback for non-Panda consumers.
@@ -335,32 +289,28 @@ from `panda ship`: the `styles.css` / package scaffolding fallback for non-Panda
 - ✅ Atoms + **recipes/slot recipes** round-trip with per-module tree-shaking; patterns via atoms; recipe usage via
   **call _and_ JSX** (`<Button>`, `<Tabs.Root>`). Version guard, `modulesFor`. Tested at Rust + native + **wasm** levels
   (recipe CSS equality, tree-shaking).
-- ✅ **Engine `exports`** — export name → module for style-contributing modules, so a barrel import of a recipe-consuming
-  component resolves to (and hydrates) the right module. Covers local exports, named re-exports, star re-exports, and
-  default re-export aliases across already-parsed relative files.
+- ✅ **Engine `exports`** — export name → module for style-contributing modules, so a barrel import of a
+  recipe-consuming component resolves to (and hydrates) the right module. Covers local exports, named re-exports, star
+  re-exports, and default re-export aliases across already-parsed relative files.
 - ✅ **`panda buildinfo`** producer wired into `packages/cli`: portable artifact (relative `modules`/`exports`, stable
   `configFingerprint`), `--outfile` / `--minify` / `--panda`. Tested end-to-end (produce → read → hydrate → CSS).
-- ✅ **Cross-config token cascade test** — lib build info can be hydrated into a consumer with a different token value for
-  the same path: hydrated utilities keep `var(--token)` and the consumer token layer provides the final value.
+- ✅ **Cross-config token cascade test** — lib build info can be hydrated into a consumer with a different token value
+  for the same path: hydrated utilities keep `var(--token)` and the consumer token layer provides the final value.
 - ✅ **Token identity round-trip** — `Literal::Token` → `AtomValue::Token` → `BuildValue::Token { t, v }` → hydrate →
   consumer re-emit against the consumer `TokenDictionary`. Producer-resolved values in the artifact are informational;
   emit uses the consumer theme.
 
-The **producer artifact + both bindings are done**; the **token re-emit half** is done at the engine level. What's left
-is mostly the **consume** half (manifest → preset merge → `designSystem` wiring) plus a few loose ends.
+The **producer artifact + both bindings are done**. The **token re-emit half** is done at the engine level. The singular
+`designSystem` consume path is wired through config loading and the Node driver. What's left is import-based tree-shaken
+consume and virtual overlay polish.
 
-### Remaining — consume half (Phase 4, the value)
+### Remaining — consume polish
 
-- ⬜ **`designSystem` consume wiring** — `designSystem: '@acme/ds'` → resolve manifest → merge lib preset → scan the
-  consumer's DS imports → `modulesFor` → `hydrate({ only })` → emit under `@layer ds-{name}`. The "app actually uses it"
-  path; not built. See [Stacked design systems (DS on DS)](#stacked-design-systems-ds-on-ds) for multi-package hydrate +
-  manifest dependency sketch.
-- ⬜ **Preset delivery via manifest.** Build info does not ship token/utility/recipe _definitions_ — the manifest's
-  `preset` field does. Real apps still need `designSystem` to import/merge the lib preset into the consumer config before
-  hydration so token paths, utilities, and recipes exist on the consumer side. The engine cross-config test simulates
-  this by giving both sides matching utility/token contracts manually.
-- ⬜ **Stacked DS manifest dependencies** — transitive base build info when a middle DS re-exports upstream components;
-  manifest `extends` / `dependencies` resolution; per-package `@layer ds-{name}` emit ordering.
+- ⬜ **Import-based hydration narrowing** — scan the consumer's DS imports, map package exports to module keys, and call
+  `hydrate({ only })` instead of hydrating each build-info artifact wholesale.
+- ⬜ **Plural dependency metadata** — transitive build info for a middle DS that re-exports upstream components without
+  making that upstream package its `manifest.designSystem` parent.
+- ⬜ **Per-package CSS layers** — emit hydrated CSS under package-scoped layers such as `@layer ds-acme-ui`.
 
 ### Remaining — `exports` completeness
 
@@ -370,8 +320,4 @@ is mostly the **consume** half (manifest → preset merge → `designSystem` wir
 ### Loose ends
 
 - ⬜ `panda ship` parity: the `styles.css` / package-scaffolding fallback for non-Panda consumers (v1 had it).
-- ⬜ `validate` peer-range (`pandaRange`) is host-deferred (no semver dep); `staticCss` / `globalCss` capture in the
-  producer isn't wired.
-- ⚠️ Three pre-existing `compiler-wasm` tests fail once the (gitignored) wasm binary is rebuilt — `derives JSX pattern
-  matchers`, `refresh and remove update the atom set` (looks like a real refresh-replace bug), `tracks conditional config
-  recipe variants`. Orthogonal to build info (untouched by this work); needs a separate look.
+- ⬜ `staticCss` / `globalCss` capture in the producer isn't wired.

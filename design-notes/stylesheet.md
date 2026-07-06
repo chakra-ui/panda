@@ -2,11 +2,11 @@
 
 ## Summary
 
-`pandacss_stylesheet` emits native CSS from resolved config, borrowed atoms, token data, and encoded recipes. It owns CSS
-emission, supported static CSS expansion, layer slicing metadata, and writer formatting. It runs one CSS-aware pass at
-the IR level — adjacent rules sharing a declaration block are coalesced into a selector list (`grouped.rs`) — but no full
-optimizer (no parsing, prefixing, shorthand folding, or value minification); if those land, they belong in a CSS-aware
-optimizer such as `lightningcss`, not a raw whitespace pass.
+`pandacss_stylesheet` emits native CSS from resolved config, borrowed atoms, token data, and encoded recipes. It owns
+CSS emission, supported static CSS expansion, layer slicing metadata, and writer formatting. It runs one CSS-aware pass
+at the IR level — adjacent rules sharing a declaration block are coalesced into a selector list (`grouped.rs`) — but no
+full optimizer (no parsing, prefixing, shorthand folding, or value minification); if those land, they belong in a
+CSS-aware optimizer such as `lightningcss`, not a raw whitespace pass.
 
 ## Scope
 
@@ -17,8 +17,8 @@ Owned:
 - Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`.
 - Recipes layer: config recipes, slot recipes, compound variants, and split recipe files.
 - Utilities layer: dynamic atoms, recipe atomic atoms, static atoms, and utility sub-layers.
-- Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe wildcards,
-  base recipe styles, slot recipes, compound variants, responsive values, and configured conditions.
+- Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe
+  wildcards, base recipe styles, slot recipes, compound variants, responsive values, and configured conditions.
 - Layer preamble/ranges, custom layer names, modern breakpoint media syntax, and writer-level minification.
 - Adjacent rule merging: consecutive rules with an identical declaration block collapse into one comma-joined selector
   list (cascade-safe, adjacency-only — mirrors lightningcss's `CssRuleList::minify`).

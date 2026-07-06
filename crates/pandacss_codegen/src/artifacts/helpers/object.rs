@@ -75,6 +75,34 @@ pub(super) fn to_variant_map() -> Item {
     )
 }
 
+pub(super) fn compound_variant_matches() -> Item {
+    Item::runtime(ItemNode::Function(FunctionDecl {
+        exported: false,
+        declare: false,
+        name: "compoundVariantMatches".into(),
+        generic_params: Vec::new(),
+        params: vec![
+            Param::typed("compound", TsType::Raw("Record<string, any>".into())),
+            Param::typed("variants", TsType::Raw("Record<string, any>".into())),
+        ],
+        return_type: Some(TsType::Bool),
+        body: Some(Block::new(vec![Stmt::Raw(
+            indoc! {r#"
+                for (const key in compound) {
+                  if (key === "css" || key === "className" || key === "classNames") continue
+                  const expected = compound[key]
+                  const actual = variants[key]
+                  if (Array.isArray(expected) ? !expected.includes(actual) : actual !== expected) return false
+                }
+                return true
+            "#}
+            .trim()
+            .into(),
+        )])),
+        js_doc: None,
+    }))
+}
+
 pub(super) fn get_compound_variant_class_names() -> Item {
     helper_function(
         "getCompoundVariantClassNames",
@@ -92,17 +120,8 @@ pub(super) fn get_compound_variant_class_names() -> Item {
         TsType::Ref("string".into()),
         indoc! {r#"
             const classes: string[] = []
-            outer: for (const compound of compoundVariants) {
-              for (const key in compound) {
-                if (key === "css" || key === "className" || key === "classNames") continue
-                const expected = compound[key]
-                const actual = variants[key]
-                if (Array.isArray(expected)) {
-                  if (!expected.includes(actual)) continue outer
-                } else if (actual !== expected) {
-                  continue outer
-                }
-              }
+            for (const compound of compoundVariants) {
+              if (!compoundVariantMatches(compound, variants)) continue
               if (compound.className) classes.push(formatClassName ? formatClassName(compound.className) : compound.className)
             }
             return classes.join(" ")
@@ -123,23 +142,14 @@ pub(super) fn get_compound_variant_css() -> Item {
             Param::typed("variants", TsType::Raw("Record<string, any>".into())),
         ],
         TsType::Raw("Record<string, any>".into()),
-        indoc! {r#"
+        indoc! {r"
             let result = {}
-            outer: for (const variant of compoundVariants) {
-              for (const key in variant) {
-                if (key === "css" || key === "className" || key === "classNames") continue
-                const expected = variant[key]
-                const actual = variants[key]
-                if (Array.isArray(expected)) {
-                  if (!expected.includes(actual)) continue outer
-                } else if (actual !== expected) {
-                  continue outer
-                }
-              }
+            for (const variant of compoundVariants) {
+              if (!compoundVariantMatches(variant, variants)) continue
               result = mergeProps(result, variant.css)
             }
             return result
-        "#}
+        "}
         .trim(),
         [],
     )

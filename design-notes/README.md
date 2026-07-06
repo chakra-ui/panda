@@ -7,6 +7,23 @@ These docs are point-in-time records. When you change the underlying design, upd
 rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/design) template (see
 [`template.md`](./template.md)) for new entries.
 
+## Canonical ownership
+
+Some topics span several notes. Keep the detailed contract in one place and link to it elsewhere.
+
+- `design-system-manifest.md` owns the `designSystem` config field, `panda.lib.json`, manifest parent chains,
+  diagnostics, and current built/deferred status.
+- `build-info.md` owns the portable build-info payload, token identity, hydration, module/export tree-shaking, and
+  stacked hydrate semantics.
+- `virtual-styled-system.md` owns the canonical DS `styled-system` package surface, dual importMap behavior, and overlay
+  codegen plan.
+- `chakra-ui-design-system-migration.md` applies those contracts to Chakra. It should not redefine the generic
+  design-system architecture.
+- `stylesheet.md` owns CSS emission, writer minification, adjacent rule merging, and the missing CSS-aware optimizer
+  boundary. Other notes should summarize and link to it.
+- `cli-design-md.md` owns `panda design-md`, the Panda → DESIGN.md mapping, drift/CI contracts, and optional
+  `panda lib --design-md`. Not the Google spec or MCP tools.
+
 ## Index
 
 ### Architecture
@@ -68,8 +85,12 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Bindings](./bindings.md) — NAPI + WASM cdylibs, mirror types, `WasmFileSystem`/`Extractor` sessions, bundle size.
 - [CLI v2 direction](./cli.md) — production CLI host goals for the Rust compiler: lifecycle commands, schema-backed
   flags, diagnostics, CI contracts, watch behavior, debug artifacts, and observability.
-- [CLI analyze command](./cli-analyze.md) — proposed `panda analyze` usage-report command: naming, scopes, JSON/report
-  outputs, UI mode, and the `inspectFileSource` aggregation boundary.
+- [CLI analyze command](./cli-analyze.md) — implemented `panda analyze` usage-report command: naming, scopes,
+  JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
+- [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
+  DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate, optional `panda lib --design-md`.
+- [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: transform planning, printing, the
+  private `cn` helper, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
@@ -77,7 +98,9 @@ rolldown's [`meta/design/`](https://github.com/rolldown/rolldown/tree/main/meta/
 - [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
   `panda.config.*` without ambient generated types.
 - [Language service implementation](./language-service-implementation.md) — `compiler/tooling` subpath,
-  `@pandacss/language-server`, VS Code extension, phased rollout, migration from `panda-vscode`.
+  `@pandacss/typescript-plugin` (classic tsserver plugin) + `@pandacss/language-server` (LSP) shipping together in
+  Phase 1 over one shared core — TypeScript 7 (Corsa/`tsgo`) drops the classic plugin API, so both transports are
+  built now instead of deferring the LSP.
 
 ### Testing
 

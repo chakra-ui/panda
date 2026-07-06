@@ -51,6 +51,7 @@ describe('configs.recommended', () => {
       'no-deprecated',
       'no-debug',
       'prefer-token',
+      'no-primitive-token',
       'no-important',
       'no-margin-properties',
       'no-physical-properties',

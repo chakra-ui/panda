@@ -3,12 +3,12 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::category::TokenCategory;
 use crate::color_palette::{ColorPaletteView, build_color_palette_view};
 use crate::token::Token;
-use crate::{TokenDictionary, TokenSuggestion, category_value, normalize_value};
+use crate::{TokenDictionary, TokenSuggestion, category_value, normalize_value, parse_token_ref};
 
 #[derive(Debug, Clone, Default)]
 pub struct TokenDictionaryBuilder {
@@ -93,6 +93,7 @@ impl TokenDictionaryBuilder {
         let mut by_condition: FxHashMap<Arc<str>, Vec<usize>> = FxHashMap::default();
         let mut by_path_condition: FxHashMap<Arc<str>, FxHashMap<Arc<str>, usize>> =
             FxHashMap::default();
+        let mut semantic_categories: FxHashSet<TokenCategory> = FxHashSet::default();
         let mut conditions_order: Vec<Arc<str>> = Vec::new();
         let mut deprecated_paths_cache: Vec<Arc<str>> = Vec::new();
         let color_palettes = self
@@ -148,6 +149,9 @@ impl TokenDictionaryBuilder {
             if token.deprecated {
                 deprecated_paths_cache.push(Arc::clone(&token.path));
             }
+            if parse_token_ref(token.original_value.as_deref()).is_some() {
+                semantic_categories.insert(token.category.clone());
+            }
         }
 
         let suggestion_index = build_suggestion_index(&self.tokens, &by_path, &by_path_condition);
@@ -161,21 +165,13 @@ impl TokenDictionaryBuilder {
             category_values_cache,
             by_condition,
             by_path_condition,
+            semantic_categories,
             conditions_order,
             deprecated_paths_cache,
             suggestion_index,
             color_palettes,
         }
     }
-}
-
-/// A pure `{token.path}` reference (semantic/alias value), else `None`.
-fn parse_token_ref(original_value: Option<&str>) -> Option<&str> {
-    let value = original_value?.trim();
-    value
-        .strip_prefix('{')
-        .and_then(|rest| rest.strip_suffix('}'))
-        .filter(|inner| !inner.is_empty() && !inner.contains('{'))
 }
 
 /// Follow `{...}` references to the primitive literal, stopping at the first

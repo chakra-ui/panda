@@ -9,14 +9,15 @@ fixtures:
 hardware: darwin arm64 (local dev machine; not a clean-room CI box)
 caveats:
   - Rust JSX fixtures type-check cleanly
-  - legacy JSX rows are not comparable for split-context APIs because legacy lacks `createRecipeContext`, `createSlotRecipeContext`, and `StyledVariantProps`
+  - legacy JSX rows are not comparable for split-context APIs because legacy lacks `createRecipeContext`,
+    `createSlotRecipeContext`, and `StyledVariantProps`
   - benchmark uses real React 19 type declarations resolved from the workspace
 ---
 
 # React JSX codegen types
 
-The generated-types benchmark now exercises the React JSX surface with `usage.tsx`, not just `SystemStyleObject`.
-The JSX usage covers:
+The generated-types benchmark now exercises the React JSX surface with `usage.tsx`, not just `SystemStyleObject`. The
+JSX usage covers:
 
 - `styled('div')` and `styled.div`
 - `HTMLStyledProps` / `HTMLPandaProps`
@@ -52,10 +53,12 @@ The non-JSX type graph remains cheap in the same run:
 
 ## What changed
 
-The first clean JSX run proved the declarations were correct but heavier than necessary. The useful simplifications were:
+The first clean JSX run proved the declarations were correct but heavier than necessary. The useful simplifications
+were:
 
 - `ComponentProps<T>` no longer goes through React's full `LibraryManagedAttributes<ComponentPropsWithRef<T>>` path.
-- Context helpers return plain callable component types instead of `ForwardRefExoticComponent` / `ComponentType` wrappers.
+- Context helpers return plain callable component types instead of `ForwardRefExoticComponent` / `ComponentType`
+  wrappers.
 - `JsxHTMLProps` uses one non-distributive `Omit` merge instead of `DistributiveOmit<T, ...>` plus a second `Assign`.
 - Generated JSX props include `data-*` attributes on factory and context components.
 

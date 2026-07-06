@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
+  },
+  "include": ["panda.config.ts", "recipes/**/*.ts"]
+}

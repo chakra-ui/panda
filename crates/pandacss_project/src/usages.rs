@@ -15,7 +15,7 @@ use rustc_hash::FxHashMap;
 use crate::inspection::{
     FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryOwner, StyleEntryRef,
     StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
-    style_entry, token_ref_site,
+    style_entry, token_ref_site, token_value_ref,
 };
 use crate::{Project, ProjectConditionMatcher, SourceRange, Span};
 
@@ -136,6 +136,15 @@ impl Project {
             return Vec::new();
         };
         dict.suggest_tokens(&TokenCategory::from_path_segment(category), value)
+    }
+
+    /// Semantic tokens that carry the same value as `path`, ranked for tooling.
+    #[must_use]
+    pub fn suggest_semantic_tokens(&self, path: &str) -> Vec<TokenSuggestion> {
+        let Some(dict) = self.config.token_dictionary() else {
+            return Vec::new();
+        };
+        dict.suggest_semantic_tokens(path)
     }
 }
 
@@ -482,6 +491,14 @@ impl StyleEntryCollector<'_, '_> {
                         _ => StyleEntryKind::Unknown,
                     }
                 };
+                let token_category = (kind == StyleEntryKind::Utility)
+                    .then(|| {
+                        self.cx
+                            .utility
+                            .and_then(|utility| utility.token_category(key))
+                            .map(TokenCategory::from_path_segment)
+                    })
+                    .flatten();
                 out.push(style_entry(&StyleEntryInput {
                     kind,
                     syntax,
@@ -494,7 +511,7 @@ impl StyleEntryCollector<'_, '_> {
                     path,
                     source_ref,
                     source_range,
-                    value_spans: self.value_spans(path, value),
+                    value_spans: self.value_spans(path, value, token_category.as_ref()),
                 }));
             }
             path.pop();
@@ -507,10 +524,15 @@ impl StyleEntryCollector<'_, '_> {
             .copied()
     }
 
-    fn value_spans(&self, path: &[String], value: &Literal) -> Vec<ValueSpanRef> {
+    fn value_spans(
+        &self,
+        path: &[String],
+        value: &Literal,
+        token_category: Option<&TokenCategory>,
+    ) -> Vec<ValueSpanRef> {
         let mut out = Vec::new();
         let mut path = path.to_vec();
-        self.collect_value_spans(&mut path, value, &mut out);
+        self.collect_value_spans(&mut path, value, token_category, &mut out);
         out
     }
 
@@ -518,6 +540,7 @@ impl StyleEntryCollector<'_, '_> {
         &self,
         path: &mut Vec<String>,
         value: &Literal,
+        token_category: Option<&TokenCategory>,
         out: &mut Vec<ValueSpanRef>,
     ) {
         match value {
@@ -525,23 +548,30 @@ impl StyleEntryCollector<'_, '_> {
                 if let Some(source_ref) = self.source_ref(path)
                     && let Some(span) = source_ref.value_span
                 {
+                    let token = self
+                        .cx
+                        .tokens
+                        .zip(token_category)
+                        .and_then(|(dict, category)| dict.resolve_token_path(category, text))
+                        .map(token_value_ref);
                     out.push(ValueSpanRef {
                         value: text.clone(),
                         span,
+                        token,
                     });
                 }
             }
             Literal::Object(entries) => {
                 for (key, nested) in entries {
                     path.push(key.clone());
-                    self.collect_value_spans(path, nested, out);
+                    self.collect_value_spans(path, nested, token_category, out);
                     path.pop();
                 }
             }
             Literal::Array(items) => {
                 for (index, nested) in items.iter().enumerate() {
                     path.push(index.to_string());
-                    self.collect_value_spans(path, nested, out);
+                    self.collect_value_spans(path, nested, token_category, out);
                     path.pop();
                 }
             }

@@ -10,8 +10,8 @@ scope:
 
 ## Goal
 
-Generated types are a core Panda feature. The Rust codegen path must preserve autocomplete and type safety while reducing
-the editor and TypeScript compiler cost of the legacy generated type graph.
+Generated types are a core Panda feature. The Rust codegen path must preserve autocomplete and type safety while
+reducing the editor and TypeScript compiler cost of the legacy generated type graph.
 
 This is not an optional mode. We should build one best implementation and keep the existing user-facing strictness
 options:
@@ -66,22 +66,20 @@ types/pattern
 types/recipe
 ```
 
-`types/system` is the **merged** core surface — what were once `conditions`, `values`, `csstype`,
-`selectors`, `properties`, and `system-types` are one file. Fewer modules means fewer cross-module
-boundaries on the hot path (the recursive `SystemStyleObject` no longer reaches across support files),
-which matters at enterprise scale. `types/index` re-exports the public surface. Artifact dependencies
-stay granular:
+`types/system` is the **merged** core surface — what were once `conditions`, `values`, `csstype`, `selectors`,
+`properties`, and `system-types` are one file. Fewer modules means fewer cross-module boundaries on the hot path (the
+recursive `SystemStyleObject` no longer reaches across support files), which matters at enterprise scale. `types/index`
+re-exports the public surface. Artifact dependencies stay granular:
 
-| Artifact           | Depends on                                                       |
-| ------------------ | ---------------------------------------------------------------- |
-| `types/tokens`     | `CodegenFormat`, `Tokens`, `Themes`                              |
-| `types/system`     | `CodegenFormat`, `Conditions`, `Tokens`, `Utilities`, `Syntax`   |
-| `types/pattern`    | `CodegenFormat`, `Patterns`, `Utilities`, `Tokens`               |
-| `types/recipe`     | `CodegenFormat`, `Recipes`, `Conditions`                         |
+| Artifact        | Depends on                                                     |
+| --------------- | -------------------------------------------------------------- |
+| `types/tokens`  | `CodegenFormat`, `Tokens`, `Themes`                            |
+| `types/system`  | `CodegenFormat`, `Conditions`, `Tokens`, `Utilities`, `Syntax` |
+| `types/pattern` | `CodegenFormat`, `Patterns`, `Utilities`, `Tokens`             |
+| `types/recipe`  | `CodegenFormat`, `Recipes`, `Conditions`                       |
 
-This lets watch mode regenerate only the files whose type inputs changed. (Earlier drafts split
-`system` into five files by role; the measured win from one fast graph outweighed the
-finer-grained invalidation.)
+This lets watch mode regenerate only the files whose type inputs changed. (Earlier drafts split `system` into five files
+by role; the measured win from one fast graph outweighed the finer-grained invalidation.)
 
 ## Recursive CSS Shape
 
@@ -119,11 +117,11 @@ This preserves indefinite nesting:
 
 ```ts
 css({
-  color: "red.500",
+  color: 'red.500',
   _hover: {
-    "& svg": {
+    '& svg': {
       md: {
-        color: "blue.500",
+        color: 'blue.500',
       },
     },
   },
@@ -163,8 +161,8 @@ margin?: ConditionalValue<"auto" | Tokens["spacing"] | CssVars | AnyString>
 emit:
 
 ```ts
-export type SpacingValue = Tokens["spacing"] | CssVars | AnyString
-export type MarginValue = "auto" | SpacingValue
+export type SpacingValue = Tokens['spacing'] | CssVars | AnyString
+export type MarginValue = 'auto' | SpacingValue
 
 export interface SystemProperties {
   gap?: ConditionalValue<SpacingValue>
@@ -212,8 +210,8 @@ Avoid generated declarations like:
 
 ```ts
 export interface SystemProperties {
-  color?: ConditionalValue<Tokens["colors"] | CssVars | CssProperties["color"] | AnyString>
-  backgroundColor?: ConditionalValue<Tokens["colors"] | CssVars | CssProperties["backgroundColor"] | AnyString>
+  color?: ConditionalValue<Tokens['colors'] | CssVars | CssProperties['color'] | AnyString>
+  backgroundColor?: ConditionalValue<Tokens['colors'] | CssVars | CssProperties['backgroundColor'] | AnyString>
 }
 ```
 
@@ -225,13 +223,13 @@ entire type graph.
 When `strictTokens` is false, token-backed values keep autocomplete and allow CSS fallback/freeform values:
 
 ```ts
-export type ColorValue = Tokens["colors"] | CssVars | CssProperties["color"] | AnyString
+export type ColorValue = Tokens['colors'] | CssVars | CssProperties['color'] | AnyString
 ```
 
 When `strictTokens` is true, the same alias becomes stricter but still supports documented escape hatches:
 
 ```ts
-export type ColorValue = WithEscapeHatch<Tokens["colors"] | CssVars>
+export type ColorValue = WithEscapeHatch<Tokens['colors'] | CssVars>
 ```
 
 When `strictPropertyValues` is true, known keyword properties use `OnlyKnown`:
@@ -251,54 +249,53 @@ model.
 
 ## CSS Property Types (our own csstype)
 
-Panda owns its CSS-property type model — no vendored npm `csstype`. The whole native-property surface
-collapses to **one shared value type**:
+Panda owns its CSS-property type model — no vendored npm `csstype`. The whole native-property surface collapses to **one
+shared value type**:
 
 ```ts
-export type Globals = "inherit" | "initial" | "revert" | "revert-layer" | "unset"
+export type Globals = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset'
 export type CssValue = Globals | (string & {}) | number
 
 export interface CssProperties {
-  accentColor?: ConditionalValue<CssValue>   // ~540 native props, all share CssValue
+  accentColor?: ConditionalValue<CssValue> // ~540 native props, all share CssValue
   // …
 }
 export interface SystemProperties extends CssProperties {
-  color?: ConditionalValue<ColorsValue>       // configured utilities override with their alias
+  color?: ConditionalValue<ColorsValue> // configured utilities override with their alias
   // …
 }
 ```
 
 Why this shape:
 
-- **Completeness via `interface extends`.** `SystemProperties extends CssProperties` accepts *any*
-  CSS property (native props fall back to `CssValue`), while configured utilities override the
-  inherited member with their precise token alias. The alias is assignable to `CssValue`, so the
-  override is valid. No `Omit` / `Exclude` / intersection — a clean interface combine.
-- **One cached type for every native prop.** All ~540 native members are `ConditionalValue<CssValue>`,
-  so TypeScript instantiates that **once** and reuses it. Measured: the whole graph resolves at ~20
-  instantiations vs legacy's ~2,600 (see Benchmarks).
-- **Global keywords for free.** `Globals` in `CssValue` gives `inherit`/`unset`/… autocomplete on
-  every property at no per-property cost.
-- **Deliberate tradeoff:** native (non-utility) props do **not** get per-keyword autocomplete
-  (`display: 'flex'` suggestions). Configured utilities still get full token + literal autocomplete
-  (the base preset configures the keyword-bearing properties), and any string is still accepted via
-  `(string & {})`. We chose this — a vendored per-property keyword csstype is the single heaviest input
-  to the legacy type cost, and it ships in the `compiler-wasm` browser binary.
+- **Completeness via `interface extends`.** `SystemProperties extends CssProperties` accepts _any_ CSS property (native
+  props fall back to `CssValue`), while configured utilities override the inherited member with their precise token
+  alias. The alias is assignable to `CssValue`, so the override is valid. No `Omit` / `Exclude` / intersection — a clean
+  interface combine.
+- **One cached type for every native prop.** All ~540 native members are `ConditionalValue<CssValue>`, so TypeScript
+  instantiates that **once** and reuses it. Measured: the whole graph resolves at ~20 instantiations vs legacy's ~2,600
+  (see Benchmarks).
+- **Global keywords for free.** `Globals` in `CssValue` gives `inherit`/`unset`/… autocomplete on every property at no
+  per-property cost.
+- **Deliberate tradeoff:** native (non-utility) props do **not** get per-keyword autocomplete (`display: 'flex'`
+  suggestions). Configured utilities still get full token + literal autocomplete (the base preset configures the
+  keyword-bearing properties), and any string is still accepted via `(string & {})`. We chose this — a vendored
+  per-property keyword csstype is the single heaviest input to the legacy type cost, and it ships in the `compiler-wasm`
+  browser binary.
 
 ### Property registry (shared, single source of truth)
 
-The list of valid property names lives in **`pandacss_shared::css_properties::CSS_PROPERTY_NAMES`** —
-one flat, sorted, `@generated` list (mdn-data + Panda SVG additions; `-webkit-` + SVG kept, `-moz-`/
-`-ms-` dropped). Regenerate with `pnpm --filter @pandacss/is-valid-prop mdn:rust`.
+The list of valid property names lives in **`pandacss_shared::css_properties::CSS_PROPERTY_NAMES`** — one flat, sorted,
+`@generated` list (mdn-data + Panda SVG additions; `-webkit-` + SVG kept, `-moz-`/ `-ms-` dropped). Regenerate with
+`pnpm --filter @pandacss/is-valid-prop mdn:rust`.
 
-Both consumers read the **same** list, so "a valid property to extract" and "a property offered in the
-types" can never diverge:
+Both consumers read the **same** list, so "a valid property to extract" and "a property offered in the types" can never
+diverge:
 
 - the **extractor** `binary_search`es it for `is_css_property` (a hot path),
 - the **codegen** emits one `CssProperties` member per name.
 
-Selectors are generated locally (`Selector = `&${string}` | `@${string}``); we do not carry csstype's
-`Pseudos`.
+Selectors are generated locally (`Selector = `&${string}` | `@${string}``); we do not carry csstype's `Pseudos`.
 
 ## Token Types
 
@@ -313,8 +310,8 @@ export interface Tokens {
 ```
 
 Avoid using a global `Token` template-literal union as a dependency of most style properties. It is useful for token
-functions and CSS variable values, but it should not be threaded through every property when a category-specific alias is
-available.
+functions and CSS variable values, but it should not be threaded through every property when a category-specific alias
+is available.
 
 Preferred:
 
@@ -353,34 +350,32 @@ Pattern props must not use `any`. They should use the same property and value al
 
 Mapping:
 
-| Pattern property config | Generated type                                      |
-| ----------------------- | --------------------------------------------------- |
-| `type: "enum"`          | `ConditionalValue<"a" | "b">`                      |
-| `type: "token"`         | `ConditionalValue<TokenValue<"category">>`          |
-| `type: "token" + property` | `ConditionalValue<TokenValue<"category"> | SystemProperties["property"]>` |
-| `type: "property"`      | `SystemProperties["property"]`                      |
-| `type: "string"`        | `ConditionalValue<string>`                          |
-| `type: "number"`        | `ConditionalValue<number>`                          |
-| `type: "boolean"`       | `ConditionalValue<boolean>`                         |
-| unknown                 | `ConditionalValue<unknown>`                         |
+| Pattern property config    | Generated type                             |
+| -------------------------- | ------------------------------------------ | ------------------------------ |
+| `type: "enum"`             | `ConditionalValue<"a"                      | "b">`                          |
+| `type: "token"`            | `ConditionalValue<TokenValue<"category">>` |
+| `type: "token" + property` | `ConditionalValue<TokenValue<"category">   | SystemProperties["property"]>` |
+| `type: "property"`         | `SystemProperties["property"]`             |
+| `type: "string"`           | `ConditionalValue<string>`                 |
+| `type: "number"`           | `ConditionalValue<number>`                 |
+| `type: "boolean"`          | `ConditionalValue<boolean>`                |
+| unknown                    | `ConditionalValue<unknown>`                |
 
 Example:
 
 ```ts
 export interface StackProperties {
-  align?: SystemProperties["alignItems"]
-  justify?: SystemProperties["justifyContent"]
-  direction?: SystemProperties["flexDirection"]
-  gap?: SystemProperties["gap"]
+  align?: SystemProperties['alignItems']
+  justify?: SystemProperties['justifyContent']
+  direction?: SystemProperties['flexDirection']
+  gap?: SystemProperties['gap']
 }
 ```
 
 For non-strict patterns:
 
 ```ts
-interface StackStyles
-  extends StackProperties,
-    DistributiveOmit<SystemStyleObject, keyof StackProperties> {}
+interface StackStyles extends StackProperties, DistributiveOmit<SystemStyleObject, keyof StackProperties> {}
 ```
 
 This shape needs measurement. `DistributiveOmit` over a recursive style object can be expensive when generated for every
@@ -431,7 +426,7 @@ instantiation counts and does not weaken autocomplete.
 `jsxStyleProps` remains the main user-facing performance control for JSX surfaces:
 
 ```ts
-jsxStyleProps: "all" | "minimal" | "none"
+jsxStyleProps: 'all' | 'minimal' | 'none'
 ```
 
 This should not affect `css({ ... })` autocomplete. It only controls whether style props are attached directly to JSX
@@ -506,24 +501,26 @@ instantiations and memory in the medium and large fixtures.
 
 `pnpm bench:types` runs the harness:
 
-- Fixtures live in `fixtures/generated-types/configs/*.json` (`small`, `medium`, `large`, `strict`, `jsx-{all,minimal,none}`),
-  shared verbatim by both paths so the comparison is apples-to-apples.
-- `bench/src/bin/generated_types_perf.rs` emits the Rust-codegen styled-system per fixture; `bench/src/generated-types-perf.ts`
-  emits the legacy v1 styled-system via `@pandacss/node` (with `eject: true`, so no base preset is mixed in), drops an
-  identical `usage.ts` importing only `./styled-system/types`, and runs `tsc --extendedDiagnostics` on each.
+- Fixtures live in `fixtures/generated-types/configs/*.json` (`small`, `medium`, `large`, `strict`,
+  `jsx-{all,minimal,none}`), shared verbatim by both paths so the comparison is apples-to-apples.
+- `bench/src/bin/generated_types_perf.rs` emits the Rust-codegen styled-system per fixture;
+  `bench/src/generated-types-perf.ts` emits the legacy v1 styled-system via `@pandacss/node` (with `eject: true`, so no
+  base preset is mixed in), drops an identical `usage.ts` importing only `./styled-system/types`, and runs
+  `tsc --extendedDiagnostics` on each.
 - Output is written under `fixtures/generated-types/out/` (gitignored, reproducible).
 
-The usage exercises the **type graph** (`SystemStyleObject` recursion, tokens, conditions, nesting) — not the WIP runtime
-helpers (`cva`/`sva`/recipe runtimes), which still have type errors and are out of scope for type-cost measurement.
+The usage exercises the **type graph** (`SystemStyleObject` recursion, tokens, conditions, nesting), not the generated
+runtime helpers (`cva`/`sva`/recipe runtimes). Runtime helpers have their own codegen and sandbox coverage; this harness
+measures type-cost only.
 
-Current readings (both sides emitted as `.d.ts`, `skipLibCheck` on — the real-world scenario): Rust wins **every** metric
-across all fixtures — instantiations **−99%** (~20 vs legacy's ~2,600), `Types` **−82 to −92%**, memory **−21 to −25%**,
-check time **−40 to −67%**. The headline is instantiations: every native CSS property shares one cached
+Current readings (both sides emitted as `.d.ts`, `skipLibCheck` on — the real-world scenario): Rust wins **every**
+metric across all fixtures — instantiations **−99%** (~20 vs legacy's ~2,600), `Types` **−82 to −92%**, memory **−21 to
+−25%**, check time **−40 to −67%**. The headline is instantiations: every native CSS property shares one cached
 `ConditionalValue<CssValue>`, and `skipLibCheck` skips the declaration bodies, so only the user's own `css({…})` shape
 drives instantiation. Memory dropped further once the vendored csstype's `Property` namespace was removed entirely.
 
 Measurement only holds for `.d.ts` under `skipLibCheck` (how Panda ships). An early cut emitted the Rust side as `.ts`
-*source*, which defeated skipLibCheck on that side and made the (then-vendored) csstype look like a 2–3× `Types`
+_source_, which defeated skipLibCheck on that side and made the (then-vendored) csstype look like a 2–3× `Types`
 regression — a measurement artifact that vanished once the own `CssValue`-based csstype replaced the vendored keyword
 unions. Caveat: the 2026-06-01 `jsx-{all,minimal,none}` fixtures read identically because `usage.ts` imports only
 `./styled-system/types`, not the generated JSX runtime — so per-mode `jsxStyleProps` editor cost is not captured in that
@@ -544,7 +541,7 @@ benchmarks).
 5. Add snapshots for TS and JS/DTS outputs that show typed pattern props.
 6. Add strict typecheck fixtures for representative generated TS.
 7. Add editor-cost checks where possible, such as comparing generated type file size and TypeScript diagnostics timing
-    against the legacy shape.
+   against the legacy shape.
 8. Add regression fixtures for `strictTokens`, `strictPropertyValues`, and each `jsxStyleProps` setting.
 
 ## Non-Goals

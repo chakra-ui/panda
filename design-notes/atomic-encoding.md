@@ -4,8 +4,8 @@
 
 `pandacss_encoder` decomposes typed style objects (`Literal::Object`) and recipe models (`Recipe`, `SlotRecipe`) into a
 flat `FxHashSet<Atom>` — one `Atom` per `(prop, value, condition_chain)`. Config recipes reuse the same path, then map
-atoms into `RecipeStyleEntry` so the emitter can group rules under recipe class names. The encoder is CSS-syntax-agnostic;
-dedup is via the hash sets.
+atoms into `RecipeStyleEntry` so the emitter can group rules under recipe class names. The encoder is
+CSS-syntax-agnostic; dedup is via the hash sets.
 
 ## The Atom
 
@@ -44,9 +44,9 @@ pub struct RecipeStyleEntry {
 
 `RecipeStyleEntry` is the grouped-recipe IR (not a second serializer): the emitter writes declarations under a recipe
 class name. `RecipeStyleGroup::conditions` are class conditions from the selected variant (`size={{ md: "lg" }}`) — they
-may prefix the recipe class because the runtime returns that conditional class. `RecipeStyleEntry::conditions` are nested
-conditions from the style object (`variants.size.lg._hover`) — they apply to the fixed class selector and must **not**
-fold into the class name. Group condition order is runtime-visible and must be preserved in class names
+may prefix the recipe class because the runtime returns that conditional class. `RecipeStyleEntry::conditions` are
+nested conditions from the style object (`variants.size.lg._hover`) — they apply to the fixed class selector and must
+**not** fold into the class name. Group condition order is runtime-visible and must be preserved in class names
 (`md:hover:btn--size_lg` ≠ `hover:md:btn--size_lg`); the sorter's cascade-sorted view is for rule placement only, never
 runtime selectors.
 
@@ -84,8 +84,8 @@ fn walk(&mut self, value: &Literal) {
 }
 ```
 
-O(depth) allocation per root (not O(depth²) like clone-on-descend). The inline budget is an allocation heuristic — deeper
-nesting spills to the heap and remains correct.
+O(depth) allocation per root (not O(depth²) like clone-on-descend). The inline budget is an allocation heuristic —
+deeper nesting spills to the heap and remains correct.
 
 ## Conditional expansion
 
@@ -99,10 +99,10 @@ walkers must stay in sync here.
 Conditionals expand at **two levels**, because an array means different things in each position (merge-list as a `css()`
 arg, responsive array as a property value):
 
-- **Value-level** (a conditional *inside* a style object, `{ margin: cond ? '3' : '5' }`, or a recipe / cva / sva
-  value) — the encoder walker expands it here. An array branch at this level (`{ margin: cond ? ['1', '2'] : '5' }`) is
+- **Value-level** (a conditional _inside_ a style object, `{ margin: cond ? '3' : '5' }`, or a recipe / cva / sva value)
+  — the encoder walker expands it here. An array branch at this level (`{ margin: cond ? ['1', '2'] : '5' }`) is
   correctly responsive.
-- **Arg-level** (a conditional *as* a `css()` argument, `css(cond ? a : b)`) — `Project::process_css_arg` expands it
+- **Arg-level** (a conditional _as_ a `css()` argument, `css(cond ? a : b)`) — `Project::process_css_arg` expands it
   before the encoder, recursing into each branch as its own arg. This is what keeps an array inside a branch
   (`css(cond ? [a, b] : c)`) a **merge-list** (both unconditional), matching node's arg-level flattening — the encoder
   never sees that array, so it can't mistake it for responsive. `process_css_arg` handles `Literal::Array` (merge-list)

@@ -1,0 +1,15 @@
+{
+  "name": "sandbox-language-service",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "language-server": "node ../../packages/language-server/bin/panda-language-server.js --stdio"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "@pandacss/typescript-plugin": "workspace:*",
+    "@pandacss/language-server": "workspace:*",
+    "typescript": "6.0.2"
+  }
+}

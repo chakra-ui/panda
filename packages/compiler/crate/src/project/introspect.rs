@@ -84,6 +84,29 @@ impl Compiler {
         serde_json::Value::Array(suggestions)
     }
 
+    /// Semantic tokens that carry the same value as a token path.
+    #[napi(js_name = suggestSemanticTokens)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn suggest_semantic_tokens(&self, path: String) -> serde_json::Value {
+        let suggestions: Vec<serde_json::Value> = self
+            .inner
+            .suggest_semantic_tokens(&path)
+            .into_iter()
+            .map(|suggestion| {
+                serde_json::json!({
+                    "token": suggestion.token,
+                    "semantic": suggestion.semantic,
+                    "conditional": suggestion.conditional,
+                })
+            })
+            .collect();
+        serde_json::Value::Array(suggestions)
+    }
+
     /// Source globs + their static base dirs for the host watcher. `pattern` is
     /// relative to `base`, so `(base, pattern)` is a ready-to-use `(dir, glob)` pair.
     #[napi]

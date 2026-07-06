@@ -4,8 +4,8 @@
 
 The Rust pipeline currently owns parse → extract → encode → emit for the native compiler path. Built-in Vue/Svelte/Astro
 masking runs in `pandacss_extractor` before Oxc. Optimization, persistent cache, file discovery beyond globbing, and MDX
-preprocessing remain deliberately outside the current project/extractor contract. A list of things it explicitly **doesn't**
-own — and why — is more useful to future contributors than describing what it does. This doc is that list.
+preprocessing remain deliberately outside the current project/extractor contract. A list of things it explicitly
+**doesn't** own — and why — is more useful to future contributors than describing what it does. This doc is that list.
 
 ## Not in scope
 
@@ -38,15 +38,9 @@ fan out reads, fan in writes. Single-threaded for now keeps the encoder's path b
 
 ### CSS parsing / optimization
 
-Hand-rolled emitter — **no CSS parser dependency** in the current native stylesheet path. `pandacss_stylesheet` produces
-CSS strings directly from `Atom` and recipe records; it doesn't read CSS back in.
-
-**Why:** pulling in a full CSS parser for emission would be a bus-factor risk and a build-time cost the project doesn't
-need. The output shape is determined by Panda's own rules, not by re-parsing user CSS.
-
-There is also no raw string optimizer. A previous whitespace post-pass was removed because it could corrupt significant
-CSS whitespace in descendant selectors and quoted values. If optimization lands, it must be CSS-aware (for example
-`lightningcss`) and live behind an explicit optimizer boundary.
+CSS emission and writer minification are owned by [stylesheet.md](./stylesheet.md). The current native path does not
+parse emitted CSS, run prefixing, fold shorthands, or do value minification. If those land, they must live behind the
+CSS-aware optimizer boundary described there, not as a raw string post-process.
 
 ### Framework-specific source preprocessing
 
@@ -97,8 +91,8 @@ silently ignored or panicking. `pandacss_config::Theme` is typed for the structu
 
 ### Hooks executing arbitrary JS
 
-`compile()` does not _call_ JS plugins from Rust. Plugin execution stays on the JS side, with
-the Rust engine surfacing extraction results that JS-side hooks transform between phases.
+`compile()` does not _call_ JS plugins from Rust. Plugin execution stays on the JS side, with the Rust engine surfacing
+extraction results that JS-side hooks transform between phases.
 
 ## What this leaves the Rust pipeline owning
 
@@ -108,7 +102,7 @@ the Rust engine surfacing extraction results that JS-side hooks transform betwee
 - Recipe (`cva` / `sva`) parsing into typed shapes
 - Atomic encoding (one atom per `(prop, value, condition_chain)`)
 - CSS emission through `pandacss_stylesheet`
-- CSS optimization later via a CSS-aware optimizer such as `lightningcss`
+- CSS optimization later via the CSS-aware boundary described in [stylesheet.md](./stylesheet.md)
 
 Each of those is a closed system with a serializable input and output shape. JS calls in with a config + sources, Rust
 hands back CSS + manifest + diagnostics. Anything outside that contract lives on the JS side or in a separate crate.

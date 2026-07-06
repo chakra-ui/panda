@@ -138,6 +138,17 @@ describe('css', () => {
 
     expect(className).toMatchInlineSnapshot('"z_1002! hover:c_red.500!"')
   })
+
+  test('multiline string value', () => {
+    const className = css({
+      margin: `
+        1rem
+        2rem
+      `,
+    })
+
+    expect(className).toMatchInlineSnapshot('"m_1rem_2rem"')
+  })
 })
 
 describe('css.raw', () => {

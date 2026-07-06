@@ -1,7 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
 import { Inspector, Linter, ProjectCache, RangeIndex, resolvePandaSettings, sourceCacheKey } from '../src/core'
 import type { Compiler, FileInspectionResult } from '@pandacss/compiler'
-import type { LoadConfigResult } from '@pandacss/config'
 
 const emptyInspection = (path = 'app.tsx'): FileInspectionResult => ({
   path,
@@ -66,18 +65,16 @@ describe('RangeIndex', () => {
 })
 
 describe('ProjectCache', () => {
-  test('loads and creates a compiler once per settings key', async () => {
-    const result: LoadConfigResult = {
-      path: '/repo/panda.config.ts',
-      config: {},
-      callbacks: {},
-      hostHooks: {},
-      dependencies: ['/repo/panda.config.ts'],
-    }
+  test('builds a project once per settings key', async () => {
     const compiler = { inspectFile: ({ path }: { path: string }) => emptyInspection(path) } as unknown as Compiler
-    const load = vi.fn(async () => result)
-    const createCompiler = vi.fn(() => compiler)
-    const cache = new ProjectCache({ load, createCompiler })
+    const createProject = vi.fn(async () => ({
+      compiler,
+      configPath: '/repo/panda.config.ts',
+      dependencies: ['/repo/panda.config.ts'],
+      outdir: 'styled-system',
+      designSystemDiagnostics: [],
+    }))
+    const cache = new ProjectCache({ createProject })
     const settings = { cwd: '/repo', strictDiagnostics: false }
 
     await expect(cache.get(settings)).resolves.toMatchObject({
@@ -87,8 +84,7 @@ describe('ProjectCache', () => {
     })
     await cache.get(settings)
 
-    expect(load).toHaveBeenCalledTimes(1)
-    expect(createCompiler).toHaveBeenCalledTimes(1)
+    expect(createProject).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -97,17 +93,15 @@ describe('Linter', () => {
     const inspection = emptyInspection()
     const inspectFile = vi.fn(() => inspection)
     const compiler = { inspectFile } as unknown as Compiler
-    const load = vi.fn(async (): Promise<LoadConfigResult> => {
-      return {
-        path: '/repo/panda.config.ts',
-        config: {},
-        callbacks: {},
-        hostHooks: {},
-        dependencies: ['/repo/panda.config.ts'],
-      }
-    })
+    const createProject = vi.fn(async () => ({
+      compiler,
+      configPath: '/repo/panda.config.ts',
+      dependencies: ['/repo/panda.config.ts'],
+      outdir: 'styled-system',
+      designSystemDiagnostics: [],
+    }))
     const linter = new Linter({
-      projectCache: new ProjectCache({ load, createCompiler: vi.fn(() => compiler) }),
+      projectCache: new ProjectCache({ createProject }),
     })
 
     await expect(

@@ -1,0 +1,65 @@
+{
+  "name": "@pandacss/typescript-plugin",
+  "version": "2.0.0-beta.8",
+  "description": "TypeScript language service plugin for Panda CSS config authoring",
+  "keywords": [
+    "typescript-plugin",
+    "tsserver",
+    "panda",
+    "pandacss",
+    "css-in-js"
+  ],
+  "type": "module",
+  "main": "./plugin.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "require": "./plugin.cjs",
+      "default": "./dist/index.js"
+    },
+    "./service": {
+      "source": "./src/service/index.ts",
+      "types": "./dist/service/index.d.ts",
+      "default": "./dist/service/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/typescript-plugin"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup --dts",
+    "build:fast": "tsup --no-dts",
+    "dev": "pnpm build:fast --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist",
+    "plugin.cjs"
+  ],
+  "dependencies": {
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "workspace:*",
+    "typescript": "6.0.2"
+  },
+  "peerDependencies": {
+    "typescript": ">=5"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

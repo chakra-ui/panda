@@ -47,24 +47,13 @@ incremental, refcounted union.
 ### 4 · Emission — ✅ built · `pandacss_stylesheet`
 
 Atoms + recipes → CSS rules: conditions → selectors / media queries, class names, cascade layers, and the supported
-native static CSS subset. The crate emits formatted CSS or writer-minified CSS directly; it does not parse CSS.
-
-Covered today: `globalCss` + `globalVars` + `globalFontface` + `globalPositionTry` (base layer), `theme.tokens` + `theme.semanticTokens` + `theme.keyframes`
-(tokens layer), reset CSS when `preflight` is enabled, configured cascade-layer names + custom per-utility sub-layers
-(nested in utilities), and the supported `staticCss` subset (`staticCss.css`, `staticCss.recipes`, global
-`recipes: "*"`, recipe-level `recipe.staticCss`, slot recipes, compound variant CSS, responsive/configured condition
-expansion). `staticCss.patterns` expands configured patterns through their
-transform callbacks (same JS callback path as runtime pattern usage). Theme token vars
-in the tokens layer are gated by `staticCss.themes`; per-theme CSS artifact files
-(`styled-system/themes/*`) are always codegen'd for runtime `getTheme` / `injectTheme`
-regardless of that setting. Preflight reset CSS supports `preflight.scope` and
-`preflight.level` via native selector scoping (`selector.rs`).
+native static CSS subset. `pandacss_stylesheet` is the canonical note for static CSS coverage, layer slicing,
+writer-level minification, and adjacent rule merging.
 
 ### 5 · Optimization — ❌ unbuilt
 
-No native CSS optimizer runs today. `StylesheetOptions::minify` controls only writer formatting; there is deliberately no
-raw whitespace post-process because that corrupts valid CSS. If optimization lands, it should be CSS-aware
-(`lightningcss` or an equivalent parser-backed pass).
+No native CSS optimizer runs today. `StylesheetOptions::minify` controls only writer formatting. The optimizer boundary
+is owned by [stylesheet.md](./stylesheet.md).
 
 ### 6 · Output — ✅ built · `compiler_napi` + `pandacss_stylesheet`
 
@@ -90,20 +79,20 @@ registering nothing.
 ## JS ↔ Rust boundary
 
 - **JS host owns:** config loading/resolution (`@pandacss/compiler/loader`), file watching + glob orchestration,
-  `Driver.codegen()` / `writeArtifacts` (orchestration + disk I/O), plugin **hooks** (`codegen:prepare`, `codegen:done`),
-  the PostCSS plugin shell, and transform **callbacks** (arbitrary user functions can't live in Rust).
-- **Rust owns:** parse → extract → encode → emit, **`pandacss_codegen` artifact generation** for `styled-system/*`
-  (the runtime + types user code imports), plus the project atom/recipe registry. Optimization and persistent caches are
-  not built yet.
-- **Contract across it:** a resolved config snapshot + callback refs in; `generateArtifacts()` yields `{ path, code }[]`,
-  `compile()` yields `{ css, sourceMap, manifest, diagnostics }` out. Diagnostics flow back at every phase (parse errors
-  already do — see the parse-error contract in [extraction-pipeline](./extraction-pipeline.md)).
+  `Driver.codegen()` / `writeArtifacts` (orchestration + disk I/O), plugin **hooks** (`codegen:prepare`,
+  `codegen:done`), the PostCSS plugin shell, and transform **callbacks** (arbitrary user functions can't live in Rust).
+- **Rust owns:** parse → extract → encode → emit, **`pandacss_codegen` artifact generation** for `styled-system/*` (the
+  runtime + types user code imports), plus the project atom/recipe registry. Optimization and persistent caches are not
+  built yet.
+- **Contract across it:** a resolved config snapshot + callback refs in; `generateArtifacts()` yields
+  `{ path, code }[]`, `compile()` yields `{ css, sourceMap, manifest, diagnostics }` out. Diagnostics flow back at every
+  phase (parse errors already do — see the parse-error contract in [extraction-pipeline](./extraction-pipeline.md)).
 
 ## The manifest
 
 `compile()`'s `manifest` (`hashes`, `tokens`) is load-bearing, not decoration: it's the cache key + change-detection
-signal. The host diffs hashes to decide whether to push CSS (HMR) or skip; a `cacheDir` lets a cold build skip
-re-extraction of unchanged files. It's the seam where phase 6 meets the (future) `pandacss_cache` crate.
+signal. The host diffs hashes to decide whether to push CSS (HMR) or skip. Persistent cold-build caching is still future
+work; `cacheDir` is only a reserved API shape today.
 
 ## Guardrails
 
@@ -113,9 +102,8 @@ re-extraction of unchanged files. It's the seam where phase 6 meets the (future)
 - **Batch ingestion + parallelism.** Phase 1 is single-file. A `parseFiles(iter)` seam (with `rayon`) is the natural
   place for per-file parallelism without disturbing the single-file API (noted in
   [project-lifecycle](./project-lifecycle.md)).
-- **Static CSS ownership.** `pandacss_stylesheet` owns utility and recipe static CSS, reset/preflight, base/global
-  CSS + vars, token vars (including `staticCss.themes` pregeneration), and keyframes. Per-theme JSON artifacts
-  (`styled-system/themes/*`) are codegen'd in Rust for runtime `getTheme` / `injectTheme`.
+- **Static CSS ownership.** `pandacss_stylesheet` owns CSS emission and supported static CSS expansion. Per-theme JSON
+  artifacts (`styled-system/themes/*`) are codegen'd in Rust for runtime `getTheme` / `injectTheme`.
 - **Incremental CSS emission.** `Project` updates its atom registry incrementally, but `compile()` still sorts and emits
   from the whole project-wide atom set. A cached per-file/per-bucket emitter is a separate design, not a hidden behavior
   of the current crate.

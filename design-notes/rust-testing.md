@@ -7,15 +7,14 @@ The Rust engine is validated through **public-API integration tests** in `crates
 and especially **CSS output** — using inline `insta` snapshots. CSS snapshots are sacred: a diff is a product change,
 not a housekeeping update.
 
-Heavy crates (`pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen`) consolidate
-their integration suites into **one test binary** to avoid linking the same dev-deps dozens of times. Lighter crates
-keep Cargo's default one-binary-per-`tests/*.rs` layout because compile cost and artifact lock contention are
-acceptable.
+Heavy crates (`pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen`) consolidate their
+integration suites into **one test binary** to avoid linking the same dev-deps dozens of times. Lighter crates keep
+Cargo's default one-binary-per-`tests/*.rs` layout because compile cost and artifact lock contention are acceptable.
 
 ## Integration test harness (consolidated crates)
 
-`pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen` use a single integration
-binary named `integration`:
+`pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, and `pandacss_codegen` use a single integration binary
+named `integration`:
 
 ```toml
 # Cargo.toml
@@ -38,7 +37,7 @@ mod config_recipes;
 ```
 
 **Why `autotests = false` is mandatory.** Cargo autodiscovers every `tests/*.rs` as its own integration-test binary.
-Without disabling autodiscovery, `main.rs` would compile *and* every suite file would still compile as a standalone
+Without disabling autodiscovery, `main.rs` would compile _and_ every suite file would still compile as a standalone
 binary — doubling (or worse) link work and defeating the consolidation. Only `[[test]]` entries are built.
 
 Run the full consolidated suite for one crate:
@@ -70,10 +69,10 @@ Helper conventions:
 
 ## Which crates use which layout
 
-| Layout | Crates | Rationale |
-| --- | --- | --- |
-| **Consolidated** (`main.rs` + `autotests = false`) | `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen` | Large suite surface (15–18+ files); stylesheet dev-deps pull `pandacss_project`, extractor pulls `pandacss_fs` memory, codegen pulls the stylesheet tier transitively. Many binaries ⇒ slow compiles and `target/` lock contention during parallel `cargo test`. |
-| **Autodiscovered** (one `tests/<feature>.rs` binary each) | `pandacss_config`, `pandacss_encoder`, `pandacss_tokens`, `pandacss_recipes`, `pandacss_fs`, `pandacss_shared`, `pandacss_utility`, `pandacss_tracing` | Fewer files (1–6) and/or lighter dev-dep graphs; separate binaries aid targeted `cargo test -p … <file_stem>` filtering without maintaining `main.rs` module lists. |
+| Layout                                                    | Crates                                                                                                                                                 | Rationale                                                                                                                                                                                                                                                        |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Consolidated** (`main.rs` + `autotests = false`)        | `pandacss_stylesheet`, `pandacss_project`, `pandacss_extractor`, `pandacss_codegen`                                                                    | Large suite surface (15–18+ files); stylesheet dev-deps pull `pandacss_project`, extractor pulls `pandacss_fs` memory, codegen pulls the stylesheet tier transitively. Many binaries ⇒ slow compiles and `target/` lock contention during parallel `cargo test`. |
+| **Autodiscovered** (one `tests/<feature>.rs` binary each) | `pandacss_config`, `pandacss_encoder`, `pandacss_tokens`, `pandacss_recipes`, `pandacss_fs`, `pandacss_shared`, `pandacss_utility`, `pandacss_tracing` | Fewer files (1–6) and/or lighter dev-dep graphs; separate binaries aid targeted `cargo test -p … <file_stem>` filtering without maintaining `main.rs` module lists.                                                                                              |
 
 Adopt the consolidated harness when a crate's integration suite grows enough that **link time dominates iteration** or
 parallel test runs fight over the same test-binary artifacts. Do not consolidate crates with only a handful of small
@@ -84,7 +83,8 @@ test files — the `main.rs` bookkeeping cost isn't worth it.
 Public contracts are asserted with inline snapshots:
 
 - `assert_yaml_snapshot!(value, @"…")` — structured extraction/encoding results.
-- `assert_snapshot!(text, @"…")` — CSS and other text output (primary regression guard for [stylesheet](./stylesheet.md)).
+- `assert_snapshot!(text, @"…")` — CSS and other text output (primary regression guard for
+  [stylesheet](./stylesheet.md)).
 
 Review workflow:
 
@@ -128,24 +128,26 @@ For autodiscovered crates, the filter is often the file stem:
 cargo nextest run -p pandacss_extractor extract --locked
 ```
 
-Install [cargo-nextest](https://nexte.st/) once if it is not on PATH (CI uses `taiki-e/install-action@nextest`; root `pnpm rust:test` already runs nextest):
+Install [cargo-nextest](https://nexte.st/) once if it is not on PATH (CI uses `taiki-e/install-action@nextest`; root
+`pnpm rust:test` already runs nextest):
 
 ```sh
 cargo install cargo-nextest --locked
 ```
 
-Use `cargo test` when nextest is unavailable or you need unstable test flags. `pnpm rust:test:cargo` runs the full workspace with plain `cargo test`.
+Use `cargo test` when nextest is unavailable or you need unstable test flags. `pnpm rust:test:cargo` runs the full
+workspace with plain `cargo test`.
 
 **Stop on compiler warnings during iteration.** CI runs `clippy` with `-D warnings`; a warning left unfixed forces a
 full rebuild cycle later. Fix warnings before continuing to the next change.
 
 ## When to run full workspace tests
 
-| When | Command |
-| --- | --- |
-| Local iteration on one crate | `cargo check/nextest -p <crate> …` (above) |
-| Pre-PR / cross-crate change | `pnpm rust:check` then `pnpm rust:test` |
-| CI | Same as pre-PR — workspace `cargo nextest run --workspace --locked` + doc tests |
+| When                         | Command                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| Local iteration on one crate | `cargo check/nextest -p <crate> …` (above)                                      |
+| Pre-PR / cross-crate change  | `pnpm rust:check` then `pnpm rust:test`                                         |
+| CI                           | Same as pre-PR — workspace `cargo nextest run --workspace --locked` + doc tests |
 
 Run workspace tests when touching shared types (`pandacss_config`, `pandacss_shared`), workspace `Cargo.toml` /
 `rust-toolchain.toml`, or anything that could change a downstream crate's contract.
@@ -154,17 +156,17 @@ Run workspace tests when touching shared types (`pandacss_config`, `pandacss_sha
 
 Match legacy coverage at the layer that owns the behavior:
 
-| Concern | Test home | Assert |
-| --- | --- | --- |
-| Extraction shapes (calls, JSX, spreads) | `pandacss_extractor/tests/` | YAML snapshots on `ExtractUsage` |
-| Pattern routing, `defaultValues`, callback wiring | `pandacss_project/tests/patterns.rs` | Atom YAML via `parse_file_with` + mock `ParseTransforms` |
-| Preset pattern transforms (JS `patternFns`) | `packages/compiler/__tests__/callbacks.test.ts` | Atoms via real `pattern.transform` callbacks over NAPI |
-| Static pattern expansion | `pandacss_project/tests/static_patterns.rs` + `pandacss_stylesheet/tests/static_patterns.rs` | Atoms + CSS wire-up |
-| CSS / recipes / utilities emission | `pandacss_stylesheet/tests/` (`output.rs`, `atomic.rs`, …) | `assert_snapshot!` on CSS |
+| Concern                                           | Test home                                                                                    | Assert                                                   |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Extraction shapes (calls, JSX, spreads)           | `pandacss_extractor/tests/`                                                                  | YAML snapshots on `ExtractUsage`                         |
+| Pattern routing, `defaultValues`, callback wiring | `pandacss_project/tests/patterns.rs`                                                         | Atom YAML via `parse_file_with` + mock `ParseTransforms` |
+| Preset pattern transforms (JS `patternFns`)       | `packages/compiler/__tests__/callbacks.test.ts`                                              | Atoms via real `pattern.transform` callbacks over NAPI   |
+| Static pattern expansion                          | `pandacss_project/tests/static_patterns.rs` + `pandacss_stylesheet/tests/static_patterns.rs` | Atoms + CSS wire-up                                      |
+| CSS / recipes / utilities emission                | `pandacss_stylesheet/tests/` (`output.rs`, `atomic.rs`, …)                                   | `assert_snapshot!` on CSS                                |
 
-Do **not** port `preset-patterns.test.ts` (per-preset CSS matrix) into `pandacss_stylesheet` — preset transforms
-live in JS. Stylesheet `compile_css()` helpers call `parse_file()` without `ParseTransforms`, so pattern function
-calls need the project driver or compiler binding tests instead.
+Do **not** port `preset-patterns.test.ts` (per-preset CSS matrix) into `pandacss_stylesheet` — preset transforms live in
+JS. Stylesheet `compile_css()` helpers call `parse_file()` without `ParseTransforms`, so pattern function calls need the
+project driver or compiler binding tests instead.
 
 ## Private unit tests in `src/`
 
@@ -181,7 +183,8 @@ parity. If a `src/` test starts needing dev-deps or sibling crates, move it to i
 
 ## Unresolved Questions
 
-- Whether `pandacss_fs` (6 suite files, light dev-deps) should consolidate once parallel test runs show measurable link-time savings.
+- Whether `pandacss_fs` (6 suite files, light dev-deps) should consolidate once parallel test runs show measurable
+  link-time savings.
 - Standardizing `tests/common/` helpers that are duplicated across `pandacss_stylesheet` and `pandacss_project`.
 
 ## Related
@@ -189,4 +192,5 @@ parity. If a `src/` test starts needing dev-deps or sibling crates, move it to i
 - [Crate layering](./crate-layering.md) — tier model; explains why stylesheet tests dev-depend on `pandacss_project`.
 - [Native stylesheet compiler](./stylesheet.md) — CSS emission contracts guarded by `assert_snapshot!`.
 - [Project lifecycle](./project-lifecycle.md) — `Project` / `System` semantics exercised by `pandacss_project` tests.
-- [Performance budget](./performance-budget.md) — `PERF(port)` markers; benchmark before changing hot-path behavior tests assert.
+- [Performance budget](./performance-budget.md) — `PERF(port)` markers; benchmark before changing hot-path behavior
+  tests assert.

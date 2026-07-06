@@ -22,7 +22,7 @@ design has three core ideas:
 The public config API is intentionally flat for now:
 
 ```ts
-outExtension: "js" | "mjs" | "ts"
+outExtension: 'js' | 'mjs' | 'ts'
 forceImportExtension: boolean
 ```
 
@@ -30,10 +30,10 @@ forceImportExtension: boolean
 not need `forceConsistentTypeExtension`:
 
 | `outExtension` | Runtime source | Type file |
-| ---------------- | -------------- | --------- |
-| `ts`             | `.ts` / `.tsx` | none      |
-| `js`             | `.js`          | `.d.ts`   |
-| `mjs`            | `.mjs`         | `.d.mts`  |
+| -------------- | -------------- | --------- |
+| `ts`           | `.ts` / `.tsx` | none      |
+| `js`           | `.js`          | `.d.ts`   |
+| `mjs`          | `.mjs`         | `.d.mts`  |
 
 `forceImportExtension` controls whether generated import specifiers include the runtime/type extension. It is separate
 from `outExtension` because some package/bundler setups still prefer extensionless internal specifiers, while Deno and
@@ -47,12 +47,12 @@ Migration from earlier v2 drafts:
 
 ```ts
 // Before
-codegenFormat: "mjs"
+codegenFormat: 'mjs'
 codegenImportExtensions: true
 forceConsistentTypeExtension: true
 
 // After
-outExtension: "mjs"
+outExtension: 'mjs'
 forceImportExtension: true
 ```
 
@@ -83,13 +83,13 @@ pub enum CodegenFormat {
 
 The artifact graph includes every `ArtifactId` module in `crates/pandacss_codegen`. Sample nodes:
 
-| Artifact     | Output stem    | Current dependencies                         |
-| ------------ | -------------- | -------------------------------------------- |
-| `Helpers`    | `helpers`      | `CodegenFormat`                              |
-| `Selectors`  | `selectors`    | `CodegenFormat`                              |
-| `Cx`         | `cx`           | `CodegenFormat`                              |
-| `CssIndex`   | `css/index`    | `CodegenFormat`                              |
-| `Conditions` | `conditions/*` | `CodegenFormat`, `Conditions`, `Tokens`      |
+| Artifact     | Output stem    | Current dependencies                              |
+| ------------ | -------------- | ------------------------------------------------- |
+| `Helpers`    | `helpers`      | `CodegenFormat`                                   |
+| `Selectors`  | `selectors`    | `CodegenFormat`                                   |
+| `Cx`         | `cx`           | `CodegenFormat`                                   |
+| `CssIndex`   | `css/index`    | `CodegenFormat`                                   |
+| `Conditions` | `conditions/*` | `CodegenFormat`, `Conditions`, `Tokens`           |
 | `Themes`     | `themes/*`     | `CodegenFormat`, `Themes`, `Conditions`, `Tokens` |
 
 Each `ArtifactFile` carries its own dependency set:
@@ -192,7 +192,7 @@ transform. The difference is that our input language is intentionally narrower b
 This avoids maintaining two versions of helper bodies:
 
 ```ts
-const mergeCss: (...styles: any[]) => any = function() {
+const mergeCss: (...styles: any[]) => any = function () {
   return mergeProps(...resolve(arguments))
 }
 ```
@@ -200,7 +200,7 @@ const mergeCss: (...styles: any[]) => any = function() {
 becomes:
 
 ```js
-const mergeCss = function() {
+const mergeCss = function () {
   return mergeProps(...resolve(arguments))
 }
 ```
@@ -221,15 +221,15 @@ pub enum ModuleSpecifierPolicy {
 `Extensionless` matches the common package/bundler setup:
 
 ```ts
-import { css } from '../css';
-import type { Conditions } from './types/system';
+import { css } from '../css'
+import type { Conditions } from './types/system'
 ```
 
 `RuntimeAndTypes` is intended for runtimes that require exact specifiers, especially Deno:
 
 ```ts
-import { css } from '../css.ts';
-import type { Conditions } from './types/system.ts';
+import { css } from '../css.ts'
+import type { Conditions } from './types/system.ts'
 ```
 
 For split JS output, runtime imports should point at `.js` or `.mjs`, while declaration imports should point at `.d.ts`
@@ -259,12 +259,16 @@ The runtime helper bodies are written for generated bundle size and hot-path beh
 Example from `createCss`:
 
 ```ts
-const { utility: u, hash, conditions: c = { shift: (v: any) => v, finalize: (v: any[]) => v, breakpoints: { keys: [] } } } = context
-const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
+const {
+  utility: u,
+  hash,
+  conditions: c = { shift: (v: any) => v, finalize: (v: any[]) => v, breakpoints: { keys: [] } },
+} = context
+const fmt = (s: string) => (u.prefix ? u.prefix + '-' + s : s)
 const toClass = (paths: string[], name: string) => {
   const parts = c.finalize(paths)
   parts.push(hash ? name : fmt(name))
-  return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
+  return hash ? fmt(u.toHash(parts, toHash)) : parts.join(':')
 }
 ```
 
@@ -309,8 +313,8 @@ Remaining gaps (not regressions — the core artifact families below are impleme
 ## Config Loading
 
 Config loading is covered in [Config Loading Design](./config-loading-design.md). The key contract for codegen is that
-JavaScript loads and resolves user config, then passes Rust a serialized `CodegenInput` with any source strings needed by
-generated artifacts.
+JavaScript loads and resolves user config, then passes Rust a serialized `CodegenInput` with any source strings needed
+by generated artifacts.
 
 ## Generated Types
 
@@ -319,8 +323,8 @@ preserve autocomplete and recursive CSS nesting while replacing repeated inline 
 
 ## Pattern Transforms
 
-Pattern transforms are embedded in generated `patterns/*` modules from JS-prepared metadata, not from callback refs.
-See [Config Loading Design](./config-loading-design.md#pattern-codegen-metadata) for the `codegenSource` capture flow.
+Pattern transforms are embedded in generated `patterns/*` modules from JS-prepared metadata, not from callback refs. See
+[Config Loading Design](./config-loading-design.md#pattern-codegen-metadata) for the `codegenSource` capture flow.
 
 At codegen time Rust reads `PatternCodegenMeta.config_source` (populated from `config.patterns[name].codegenSource` in
 the serialized config). When present, the generated module embeds that source verbatim and calls
@@ -339,8 +343,8 @@ The graph emits the full `ArtifactId` set today, including:
 - JSX surfaces when configured (`jsx-factory`, `jsx-patterns`, framework-specific component wrappers, recipe context
   helpers).
 
-Remaining work is mostly polish: import-map-aware package entrypoints and finer-grained watch invalidation per pattern or
-recipe name.
+Remaining work is mostly polish: import-map-aware package entrypoints and using the tracked recipe/pattern names to
+scope watch-mode writes more narrowly.
 
 ## Design Principles
 

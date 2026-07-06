@@ -94,10 +94,12 @@ const SVA_IMPL: &str = r"(config) => {
     for (const [slot, slotFn] of slots) result[slot] = slotFn.raw(props)
     return result
   }
+  const rawMemo = memo(raw)
 
   return Object.assign(memo(svaFn), {
     __cva__: false,
     raw,
+    __memoizedRaw__: rawMemo,
     config,
     variantMap,
     variantKeys,
