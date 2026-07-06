@@ -281,6 +281,38 @@ fn collapses_resolved_theme_category_keys_for_typegen() {
 }
 
 #[test]
+fn drops_empty_token_category_so_native_values_survive() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "cursor": { "values": "cursor" },
+            "color": { "values": "colors" }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(
+                TokenDictionary::builder()
+                    .insert(Token::new(
+                        "colors.red",
+                        "#f00",
+                        "var(--colors-red)",
+                        TokenCategory::Colors,
+                    ))
+                    .build(),
+            )),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let type_data = utility.type_data();
+
+    let cursor = type_data.properties.get("cursor").expect("cursor");
+    assert_eq!(cursor.token_category, None);
+    assert_eq!(cursor.alias, "CursorValue");
+
+    let color = type_data.properties.get("color").expect("color");
+    assert_eq!(color.token_category.as_deref(), Some("colors"));
+}
+
+#[test]
 fn collapses_resolved_gradient_category_keys_for_typegen() {
     let utility = Utility::from_config_with_options(
         &utility_config(json!({

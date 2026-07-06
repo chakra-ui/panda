@@ -922,6 +922,12 @@ fn value_alias_type(
         return strict_property_value_type(entry, &literals, css_property);
     }
 
+    if let Some(entry) = strict_entry
+        && is_native_mirror_parts(parts)
+    {
+        return native_css_property_value_type(entry.name, options);
+    }
+
     // strictTokens: utilities with configured values are strict even without a
     // token category — v1 dropped the freeform csstype fallback for any utility
     // that had a values map. Number/boolean primitive hints keep their primitive
@@ -1001,6 +1007,20 @@ fn native_css_property_needs_any_string(entry: &strict_props::PropertyValueEntry
             | strict_props::PropertyValueKind::OverflowShort
             | strict_props::PropertyValueKind::OverscrollBehavior { open: false }
     )
+}
+
+fn is_native_mirror_parts(parts: &[ValueTypePart]) -> bool {
+    let mut has_string = false;
+    let mut has_number = false;
+    for part in parts {
+        match part {
+            ValueTypePart::Primitive(PrimitiveType::String) => has_string = true,
+            ValueTypePart::Primitive(PrimitiveType::Number) => has_number = true,
+            ValueTypePart::CssVars | ValueTypePart::AnyString => {}
+            _ => return false,
+        }
+    }
+    has_string && has_number
 }
 
 fn mapped_css_property_from_parts(parts: &[ValueTypePart]) -> Option<&str> {
