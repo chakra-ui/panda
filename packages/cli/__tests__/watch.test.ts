@@ -9,17 +9,73 @@ import {
   formatWatchRebuildStart,
   formatWatchRebuildSuccess,
   handleWatchBatch,
+  isFsEventsRescanError,
   isOutputEvent,
   isWatchableDirectory,
   normalizeParcelEvent,
+  startProjectWatch,
 } from '../src/watch'
 import { createWatchLogger } from '../src/watch-logger'
+import * as parcelWatcher from '@parcel/watcher'
+
+vi.mock('@parcel/watcher', () => ({ subscribe: vi.fn() }))
 
 describe('watch helpers', () => {
   it('normalizes parcel event types', () => {
     expect(normalizeParcelEvent({ type: 'create', path: '/x.tsx' })).toEqual({ kind: 'add', path: '/x.tsx' })
     expect(normalizeParcelEvent({ type: 'update', path: '/x.tsx' })).toEqual({ kind: 'change', path: '/x.tsx' })
     expect(normalizeParcelEvent({ type: 'delete', path: '/x.tsx' })).toEqual({ kind: 'unlink', path: '/x.tsx' })
+  })
+
+  it('recognizes recoverable @parcel/watcher re-scan errors', () => {
+    // The three macOS FSEvents backpressure messages @parcel/watcher can surface.
+    expect(
+      isFsEventsRescanError(new Error('Events were dropped by the FSEvents client. File system must be re-scanned.')),
+    ).toBe(true)
+    expect(isFsEventsRescanError(new Error('Events were dropped by the kernel. File system must be re-scanned.'))).toBe(
+      true,
+    )
+    expect(isFsEventsRescanError(new Error('Too many events. File system must be re-scanned.'))).toBe(true)
+
+    // Genuine watcher failures (and non-errors) must not be treated as recoverable.
+    expect(isFsEventsRescanError(new Error('Not a directory'))).toBe(false)
+    expect(isFsEventsRescanError('must be re-scanned')).toBe(false)
+    expect(isFsEventsRescanError(null)).toBe(false)
+  })
+
+  it('re-scans instead of crashing when the OS watcher drops events, and rethrows other errors', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'panda-watch-'))
+    let captured: ((error: Error | null, events: never[]) => void) | undefined
+
+    vi.mocked(parcelWatcher.subscribe).mockImplementation(async (_dir, callback) => {
+      captured = callback
+      return { unsubscribe: () => Promise.resolve() }
+    })
+
+    const onRescan = vi.fn()
+    const onSourceChange = vi.fn()
+    const stop = await startProjectWatch({
+      driver: { watchTargets: () => ({ config: [], dirs: [dir] }), isConfigFile: () => false } as any,
+      cwd: dir,
+      outdir: 'styled-system',
+      onSourceChange,
+      onConfigChange: vi.fn(),
+      onRescan,
+    })
+
+    try {
+      // A dropped-events backpressure signal must recover via a full re-scan, not crash.
+      captured!(new Error('Events were dropped by the FSEvents client. File system must be re-scanned.'), [])
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(onRescan).toHaveBeenCalledTimes(1)
+      expect(onSourceChange).not.toHaveBeenCalled()
+
+      // Any other error is a genuine watcher failure and still propagates.
+      expect(() => captured!(new Error('watcher backend crashed'), [])).toThrow('watcher backend crashed')
+    } finally {
+      await stop()
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   it('debounces multiple events into one batch', async () => {
