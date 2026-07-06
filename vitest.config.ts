@@ -44,7 +44,11 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@pandacss\/(.*)$/,
+        find: /^@pandacss\/([^/]+)\/(.*)$/,
+        replacement: resolve('./packages/$1/src/$2'),
+      },
+      {
+        find: /^@pandacss\/([^/]+)$/,
         replacement: resolve('./packages/$1/src'),
       },
     ],
