@@ -63,36 +63,25 @@ const SOLID_FACTORY_RUNTIME: &str = r"function styledFn(element, configOrCva = {
     const cssPropKeys = createMemo(() => Object.keys(bProps).filter((prop) => isCssProperty(prop)))
     const [styleProps, elementProps] = splitProps(bProps, cssPropKeys())
 
-    function recipeClass() {
+    const classes = () => {
       const [propStyles, cssStyles] = splitStyleProps(styleProps)
       const hasStyles = propStyles || cssStyles !== void 0
-      const compoundVariantClasses = __cvaFn__.__getCompoundVariantClasses__?.(variantProps)
-      return cx(
-        __cvaFn__(variantProps, false),
-        compoundVariantClasses,
-        hasStyles && serializeSplitStyles(propStyles, cssStyles),
-        localProps.class,
-        localProps.className,
-      )
-    }
-
-    function cvaClass() {
-      const [propStyles, cssStyles] = splitStyleProps(styleProps)
-      const hasStyles = propStyles || cssStyles !== void 0
+      if (localProps.unstyled) return cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), localProps.class, localProps.className)
+      if (configOrCva.__recipe__) {
+        const compoundVariantClasses = __cvaFn__.__getCompoundVariantClasses__?.(variantProps)
+        return cx(
+          __cvaFn__(variantProps, false),
+          compoundVariantClasses,
+          hasStyles && serializeSplitStyles(propStyles, cssStyles),
+          localProps.class,
+          localProps.className,
+        )
+      }
       return cx(
         hasStyles ? serializeSplitStyles(propStyles, cssStyles, getRaw(variantProps)) : __cvaFn__(variantProps),
         localProps.class,
         localProps.className,
       )
-    }
-
-    const classes = () => {
-      if (localProps.unstyled) {
-        const [propStyles, cssStyles] = splitStyleProps(styleProps)
-        const hasStyles = propStyles || cssStyles !== void 0
-        return cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), localProps.class, localProps.className)
-      }
-      return configOrCva.__recipe__ ? recipeClass() : cvaClass()
     }
 
     if (forwardedProps.className) delete forwardedProps.className

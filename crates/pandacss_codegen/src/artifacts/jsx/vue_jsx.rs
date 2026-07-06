@@ -36,7 +36,7 @@ const VUE_FACTORY_RUNTIME: &str = r"function styledFn(Dynamic, configOrCva = {},
   const shouldForwardProp = forwardPropSet
     ? (prop) => forwardPropSet.has(prop) || forwardFn(prop, variantKeys)
     : (prop) => forwardFn(prop, variantKeys)
-  const dataProps = options.dataAttr && configOrCva.__name__ ? Object.assign({}, { 'data-recipe': configOrCva.__name__ }) : {}
+  const dataProps = options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {}
   const defaultProps = Object.assign(dataProps, options.defaultProps)
   const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
   const __base__ = Dynamic.__base__ || Dynamic

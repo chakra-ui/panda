@@ -688,25 +688,59 @@ fn emits_ts_source() {
     );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
-      const cache = new Map<string, ReturnType<T>>()
-      let lastKey: string | undefined
+      const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
+      const stringCache = new Map<string, ReturnType<T>>()
+      let lastHash: number | undefined
+      let lastIsFlat = false
+      let lastKey: Parameters<T> | string | undefined
       let lastValue: ReturnType<T>
       let hasLast = false
       return ((...args: Parameters<T>) => {
+        const hash = flatHashOrNull(args)
+        if (hash !== null) {
+          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
+          let bucket = cache.get(hash)
+          if (bucket) {
+            for (let i = 0; i < bucket.length; i++) {
+              if (flatArgsEqual(args, bucket[i].args)) {
+                lastHash = hash
+                lastIsFlat = true
+                lastKey = args
+                lastValue = bucket[i].out
+                hasLast = true
+                return bucket[i].out
+              }
+            }
+          }
+          const out = fn(...args)
+          if (!bucket) {
+            bucket = []
+            cache.set(hash, bucket)
+          }
+          bucket.push({ args, out })
+          if (bucket.length > 8) bucket.shift()
+          if (cache.size > 500) cache.delete(cache.keys().next().value as number)
+          lastHash = hash
+          lastIsFlat = true
+          lastKey = args
+          lastValue = out
+          hasLast = true
+          return out
+        }
         const key = JSON.stringify(args)
-        if (hasLast && key === lastKey) return lastValue
-        if (cache.has(key)) {
-          const out = cache.get(key) as ReturnType<T>
-          cache.delete(key)
-          cache.set(key, out)
+        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
+        if (stringCache.has(key)) {
+          const out = stringCache.get(key) as ReturnType<T>
+          lastIsFlat = false
           lastKey = key
           lastValue = out
           hasLast = true
           return out
         }
         const out = fn(...args)
-        cache.set(key, out)
-        if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+        stringCache.set(key, out)
+        if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
+        lastIsFlat = false
         lastKey = key
         lastValue = out
         hasLast = true
@@ -842,17 +876,8 @@ fn emits_js_get_compound_variant_css() {
     assert_snapshot!(function_block(source, "getCompoundVariantCss"), @r#"
     export function getCompoundVariantCss(compoundVariants, variants) {
       let result = {}
-      outer: for (const variant of compoundVariants) {
-        for (const key in variant) {
-          if (key === "css" || key === "className" || key === "classNames") continue
-          const expected = variant[key]
-          const actual = variants[key]
-          if (Array.isArray(expected)) {
-            if (!expected.includes(actual)) continue outer
-          } else if (actual !== expected) {
-            continue outer
-          }
-        }
+      for (const variant of compoundVariants) {
+        if (!compoundVariantMatches(variant, variants)) continue
         result = mergeProps(result, variant.css)
       }
       return result
@@ -873,17 +898,8 @@ fn emits_js_get_compound_variant_class_names() {
     assert_snapshot!(function_block(source, "getCompoundVariantClassNames"), @r#"
     export function getCompoundVariantClassNames(compoundVariants, variants, formatClassName) {
       const classes = []
-      outer: for (const compound of compoundVariants) {
-        for (const key in compound) {
-          if (key === "css" || key === "className" || key === "classNames") continue
-          const expected = compound[key]
-          const actual = variants[key]
-          if (Array.isArray(expected)) {
-            if (!expected.includes(actual)) continue outer
-          } else if (actual !== expected) {
-            continue outer
-          }
-        }
+      for (const compound of compoundVariants) {
+        if (!compoundVariantMatches(compound, variants)) continue
         if (compound.className) classes.push(formatClassName ? formatClassName(compound.className) : compound.className)
       }
       return classes.join(" ")
@@ -982,24 +998,58 @@ fn emits_js_runtime() {
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo(fn) {
       const cache = new Map()
+      const stringCache = new Map()
+      let lastHash
+      let lastIsFlat = false
       let lastKey
       let lastValue
       let hasLast = false
       return ((...args) => {
+        const hash = flatHashOrNull(args)
+        if (hash !== null) {
+          if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey)) return lastValue
+          let bucket = cache.get(hash)
+          if (bucket) {
+            for (let i = 0; i < bucket.length; i++) {
+              if (flatArgsEqual(args, bucket[i].args)) {
+                lastHash = hash
+                lastIsFlat = true
+                lastKey = args
+                lastValue = bucket[i].out
+                hasLast = true
+                return bucket[i].out
+              }
+            }
+          }
+          const out = fn(...args)
+          if (!bucket) {
+            bucket = []
+            cache.set(hash, bucket)
+          }
+          bucket.push({ args, out })
+          if (bucket.length > 8) bucket.shift()
+          if (cache.size > 500) cache.delete(cache.keys().next().value)
+          lastHash = hash
+          lastIsFlat = true
+          lastKey = args
+          lastValue = out
+          hasLast = true
+          return out
+        }
         const key = JSON.stringify(args)
-        if (hasLast && key === lastKey) return lastValue
-        if (cache.has(key)) {
-          const out = cache.get(key)
-          cache.delete(key)
-          cache.set(key, out)
+        if (hasLast && !lastIsFlat && key === lastKey) return lastValue
+        if (stringCache.has(key)) {
+          const out = stringCache.get(key)
+          lastIsFlat = false
           lastKey = key
           lastValue = out
           hasLast = true
           return out
         }
         const out = fn(...args)
-        cache.set(key, out)
-        if (cache.size > 500) cache.delete(cache.keys().next().value)
+        stringCache.set(key, out)
+        if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value)
+        lastIsFlat = false
         lastKey = key
         lastValue = out
         hasLast = true

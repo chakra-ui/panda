@@ -53,31 +53,137 @@ pub(super) fn to_hash() -> Item {
     )
 }
 
+/// Cheap cache-key hash for `memo`'s common case (flat args of primitives);
+/// returns `null` on anything nested so `memo` can fall back to `JSON.stringify`.
+pub(super) fn flat_hash_or_null() -> Item {
+    Item::runtime(ItemNode::Function(FunctionDecl {
+        exported: false,
+        declare: false,
+        name: "flatHashOrNull".into(),
+        generic_params: Vec::new(),
+        params: vec![Param::typed("args", TsType::Raw("readonly any[]".into()))],
+        return_type: Some(TsType::Raw("number | null".into())),
+        body: Some(Block::new(vec![Stmt::Raw(
+            indoc! {r#"
+                let h = 5381
+                for (let a = 0; a < args.length; a++) {
+                  const obj = args[a]
+                  if (obj === null || typeof obj !== "object") { h = (h * 33) ^ 1; continue }
+                  for (const k in obj) {
+                    const v = obj[k]
+                    const tv = typeof v
+                    if (v !== null && tv === "object") return null
+                    for (let i = 0; i < k.length; i++) h = (h * 33) ^ k.charCodeAt(i)
+                    if (tv === "string") { for (let i = 0; i < v.length; i++) h = (h * 33) ^ v.charCodeAt(i) }
+                    else if (tv === "number") h = (h * 33) ^ (v | 0)
+                    else if (tv === "boolean") h = (h * 33) ^ (v ? 991 : 997)
+                    else h = (h * 33) ^ 2
+                  }
+                }
+                return h >>> 0
+            "#}
+            .trim()
+            .into(),
+        )])),
+        js_doc: None,
+    }))
+}
+
+/// Exact-match check to resolve `flatHashOrNull` collisions before trusting a cache hit.
+pub(super) fn flat_args_equal() -> Item {
+    Item::runtime(ItemNode::Function(FunctionDecl {
+        exported: false,
+        declare: false,
+        name: "flatArgsEqual".into(),
+        generic_params: Vec::new(),
+        params: vec![
+            Param::typed("a", TsType::Raw("readonly any[]".into())),
+            Param::typed("b", TsType::Raw("readonly any[]".into())),
+        ],
+        return_type: Some(TsType::Bool),
+        body: Some(Block::new(vec![Stmt::Raw(
+            indoc! {r#"
+                if (a.length !== b.length) return false
+                for (let i = 0; i < a.length; i++) {
+                  const oa = a[i]
+                  const ob = b[i]
+                  if (oa === ob) continue
+                  if (oa === null || ob === null || typeof oa !== "object" || typeof ob !== "object") return false
+                  let n = 0
+                  for (const k in oa) {
+                    if (oa[k] !== ob[k]) return false
+                    n++
+                  }
+                  if (n !== Object.keys(ob).length) return false
+                }
+                return true
+            "#}
+            .trim()
+            .into(),
+        )])),
+        js_doc: None,
+    }))
+}
+
 pub(super) fn memo() -> Item {
     helper_function(
         "memo",
         vec![Param::typed("fn", TsType::Raw("T".into()))],
         TsType::Raw("T".into()),
         indoc! {r"
-            const cache = new Map<string, ReturnType<T>>()
-            let lastKey: string | undefined
+            const cache = new Map<number, Array<{ args: Parameters<T>; out: ReturnType<T> }>>()
+            const stringCache = new Map<string, ReturnType<T>>()
+            let lastHash: number | undefined
+            let lastIsFlat = false
+            let lastKey: Parameters<T> | string | undefined
             let lastValue: ReturnType<T>
             let hasLast = false
             return ((...args: Parameters<T>) => {
+              const hash = flatHashOrNull(args)
+              if (hash !== null) {
+                if (hasLast && lastIsFlat && hash === lastHash && flatArgsEqual(args, lastKey as Parameters<T>)) return lastValue
+                let bucket = cache.get(hash)
+                if (bucket) {
+                  for (let i = 0; i < bucket.length; i++) {
+                    if (flatArgsEqual(args, bucket[i].args)) {
+                      lastHash = hash
+                      lastIsFlat = true
+                      lastKey = args
+                      lastValue = bucket[i].out
+                      hasLast = true
+                      return bucket[i].out
+                    }
+                  }
+                }
+                const out = fn(...args)
+                if (!bucket) {
+                  bucket = []
+                  cache.set(hash, bucket)
+                }
+                bucket.push({ args, out })
+                if (bucket.length > 8) bucket.shift()
+                if (cache.size > 500) cache.delete(cache.keys().next().value as number)
+                lastHash = hash
+                lastIsFlat = true
+                lastKey = args
+                lastValue = out
+                hasLast = true
+                return out
+              }
               const key = JSON.stringify(args)
-              if (hasLast && key === lastKey) return lastValue
-              if (cache.has(key)) {
-                const out = cache.get(key) as ReturnType<T>
-                cache.delete(key)
-                cache.set(key, out)
+              if (hasLast && !lastIsFlat && key === lastKey) return lastValue
+              if (stringCache.has(key)) {
+                const out = stringCache.get(key) as ReturnType<T>
+                lastIsFlat = false
                 lastKey = key
                 lastValue = out
                 hasLast = true
                 return out
               }
               const out = fn(...args)
-              cache.set(key, out)
-              if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+              stringCache.set(key, out)
+              if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
+              lastIsFlat = false
               lastKey = key
               lastValue = out
               hasLast = true

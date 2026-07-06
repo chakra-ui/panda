@@ -47,7 +47,7 @@ const FACTORY_RUNTIME: &str = r"function styledFn(BaseComponent, recipeOrConfig 
     ? (prop) => forwardPropSet.has(prop) || forwardFn(prop, variantKeys)
     : (prop) => forwardFn(prop, variantKeys)
 
-  const dataProps = options.dataAttr && recipeOrConfig.__name__ ? Object.assign({}, { 'data-recipe': recipeOrConfig.__name__ }) : {}
+  const dataProps = options.dataAttr && recipeOrConfig.__name__ ? { 'data-recipe': recipeOrConfig.__name__ } : {}
   const defaultProps = Object.assign(dataProps, options.defaultProps)
   const hasDefaultProps = Object.keys(defaultProps).length > 0
 
