@@ -14,5 +14,7 @@ export type {
   StyleObjectContext,
   StyleObjectCursorKind,
 } from './config-style-object'
+export { completeSemanticTokenObject } from './config-semantic-tokens'
+export type { SemanticTokenContext, SemanticTokenCursorKind } from './config-semantic-tokens'
 export { resolveModuleTarget } from './module-resolution'
 export type { ResolveModuleTargetOptions } from './module-resolution'

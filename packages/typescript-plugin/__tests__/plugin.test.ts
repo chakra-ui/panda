@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import ts from 'typescript'
 import { beforeAll, describe, expect, it } from 'vitest'
+import { createCompiler } from '@pandacss/compiler'
 import { createProjectFromConfig, type Project } from '@pandacss/compiler/tooling'
 import { createPluginModuleFactory } from '../src/plugin'
 
@@ -79,5 +80,59 @@ describe('a user editing panda.config.ts with the plugin installed in their edit
         ?.getSourceFiles()
         .some((file) => file.fileName === CONFIG_FILE),
     ).toBe(true)
+  })
+
+  it('sees a newly added token without restarting, once the project reloads underneath it', async () => {
+    const buildProject = (tokenName: string): Project => ({
+      compiler: createCompiler({
+        cwd: PROJECT_DIR,
+        outdir: 'styled-system',
+        theme: { tokens: { colors: { [tokenName]: { 500: { value: '#000' } } } } },
+        utilities: { color: { className: 'c', values: 'colors' } },
+      }),
+      configPath: CONFIG_FILE,
+      dependencies: [],
+      outdir: 'styled-system',
+      designSystemDiagnostics: [],
+    })
+
+    // Every completion request calls loadProject again — a real ProjectRegistry only does real
+    // work once its file-watcher invalidates a stale entry, but the plugin itself shouldn't be
+    // the thing pinning a stale project in place.
+    let project = buildProject('red')
+    const factory = createPluginModuleFactory(async () => project)
+
+    const text = `
+      import { defineConfig, defineGlobalStyles } from '@pandacss/dev'
+      export default defineConfig({
+        globalCss: defineGlobalStyles({ html: { color: '' } }),
+      })
+    `
+    const host = createEditorHost(CONFIG_FILE, text)
+    const languageService = ts.createLanguageService(host)
+    const pluginLanguageService = factory({ typescript: ts }).create({
+      project: { getCurrentDirectory: () => PROJECT_DIR } as unknown as ts.server.Project,
+      languageService,
+      languageServiceHost: host,
+      serverHost: {} as ts.server.ServerHost,
+      config: {},
+    })
+    const position = text.indexOf("''") + 1
+
+    await Promise.resolve()
+    await Promise.resolve()
+    const before = pluginLanguageService.getCompletionsAtPosition(CONFIG_FILE, position, {})
+    expect(before?.entries.some((entry) => entry.name === 'red.500')).toBe(true)
+    expect(before?.entries.some((entry) => entry.name === 'blue.500')).toBe(false)
+
+    // Swap in a "reloaded" project, as if the config's own tokens changed on disk.
+    project = buildProject('blue')
+    pluginLanguageService.getCompletionsAtPosition(CONFIG_FILE, position, {}) // triggers the refresh
+    await Promise.resolve()
+    await Promise.resolve()
+
+    const after = pluginLanguageService.getCompletionsAtPosition(CONFIG_FILE, position, {})
+    expect(after?.entries.some((entry) => entry.name === 'blue.500')).toBe(true)
+    expect(after?.entries.some((entry) => entry.name === 'red.500')).toBe(false)
   })
 })

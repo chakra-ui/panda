@@ -26,7 +26,7 @@ describe('a user editing a real, fully-wrapped panda.config.ts', () => {
     const position = source.indexOf("'red.500'") + 2
 
     const info = getStyleObjectCursorInfo(parse(source), position)
-    expect(info).toMatchObject({ cursorKind: 'value', propertyName: 'color' })
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['color'] })
   })
 
   it('gets suggestions inside a global style rule even though it sits under defineConfig', () => {
@@ -39,7 +39,7 @@ describe('a user editing a real, fully-wrapped panda.config.ts', () => {
     const position = source.indexOf("'red.500'") + 2
 
     const info = getStyleObjectCursorInfo(parse(source), position)
-    expect(info).toMatchObject({ cursorKind: 'value', propertyName: 'color' })
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['color'] })
   })
 
   it("doesn't get style suggestions while typing the selector name itself, only inside its rule", () => {

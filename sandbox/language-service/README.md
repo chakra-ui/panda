@@ -20,10 +20,16 @@ pnpm --filter @pandacss/language-server build
 2. VS Code should prompt **"Use Workspace Version"** for TypeScript — accept it (or run
    `TypeScript: Select TypeScript Version` → `Use Workspace Version` from the command palette).
    The plugin only loads under the workspace TS install, not VS Code's bundled one.
-3. Follow the `// Try it:` comments in `panda.config.ts` — delete a value and retype it inside:
+3. Follow the `// Try it:` comments in `panda.config.ts` and `recipes/button.ts` — delete a
+   value and retype it inside:
    - a semantic token reference (`{colors.re...}`) → token path completions
+   - `defineSemanticTokens({...})`'s own top level → token category names (`spacing`, not
+     `colors` — already used)
+   - a semantic token's `value: {...}` object → condition names (`base`, `_hover`, `sm`, ...)
    - a `defineGlobalStyles({...})` selector's style object → utility/condition keys, then values
-   - a `defineRecipe({...})`'s `base`/`variants.*.*` → same
+   - a `defineRecipe({...})`'s `base`/`variants.*.*` → same, **including in `recipes/button.ts`**
+     — the recipe is split out of `panda.config.ts` on purpose, to prove completions work
+     anywhere in the project, not just in the config's own file
 4. If nothing shows up: check the **TypeScript: Open TS Server Log** command — search for
    `@pandacss/typescript-plugin` to confirm it loaded (`Enabling plugin ...`, not `Skipped loading
    plugin ... because it did not expose a proper factory function`).
@@ -47,9 +53,9 @@ vim.lsp.start({
 
 ## Known gaps at this stage
 
-- Only `defineRecipe`'s `base`/`variants.*.*` and `defineGlobalStyles` selectors are recognized —
-  `staticCss` has no `define*()` wrapper yet, so it won't get completions (see
-  `design-notes/language-service-implementation.md`).
+- Recognized so far: `defineRecipe`'s `base`/`variants.*.*`, `defineGlobalStyles` selectors, and
+  `defineSemanticTokens`/`defineSemanticTokens.<category>`. `defineTokens` (plain, non-semantic)
+  and `staticCss` have no completion support yet (see `design-notes/language-service-implementation.md`).
 - No `packages/vscode` extension yet — zero-config auto-registration isn't built; this sandbox's
   `tsconfig.json` registers the plugin manually, same as any other tsserver-backed editor would
   today.

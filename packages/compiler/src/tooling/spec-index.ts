@@ -48,6 +48,12 @@ export class SpecIndex {
     const names = this.spec.keyframes.keys
     return prefix ? names.filter((name) => name.startsWith(prefix)) : names
   }
+
+  /** Token category names actually present in this config (`colors`, `spacing`, ...). */
+  resolveTokenCategories(prefix = ''): string[] {
+    const names = Object.keys(this.spec.tokens.categories)
+    return prefix ? names.filter((name) => name.startsWith(prefix)) : names
+  }
 }
 
 function buildCategoryByProperty(spec: Spec): Map<string, string> {

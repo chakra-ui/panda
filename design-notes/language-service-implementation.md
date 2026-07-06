@@ -270,9 +270,14 @@ not by utility property — `GlobalStyleObject = { [selector: string]: SystemSty
 activates one level inside it, not at the call's own top level). A bare `globalCss: { color: 'red.500' }` with no
 `defineGlobalStyles` wrapper gets **no completion** by design. `staticCss` has no `define*` helper today, so it's
 unsupported until one exists or a carve-out is added; recipe `compoundVariants` and `defineSlotRecipe` are similarly
-out of scope for now (only `defineRecipe`'s `base` and `variants.<name>.<value>` are recognized). Token-path completion
-(`{colors.red.500}`) is unaffected by this — it's pure string scanning inside any string literal, with no shape
-ambiguity to resolve, so it stays ungated.
+out of scope for now. `defineRecipe`'s `base` and `variants.<name>.<value>` are recognized **at any nesting depth
+underneath them**, not just the exact top level — a condition value (`base._hover`, `variants.size.sm._hover`, ...)
+is a `SystemStyleObject` too and needs the same completion. (First shipped depth-exact — `localPath.length === 1`/
+`=== 3` — which silently broke as soon as a condition nested one level deeper; caught by a user testing nested
+conditions directly, not by the original test suite, which never tried a condition inside `base`/`variants.*.*`.
+Fixed to `localPath[0] === 'base'` / `localPath[0] === 'variants' && localPath.length >= 3`, matching
+`defineGlobalStyles`'s existing any-depth rule.) Token-path completion (`{colors.red.500}`) is unaffected by this —
+it's pure string scanning inside any string literal, with no shape ambiguity to resolve, so it stays ungated.
 
 ### Completion parity target: match what codegen's generated types would give you
 
@@ -306,6 +311,80 @@ guessing:
 - **Recipe variant name authoring** (`defineRecipe({variants: {...}})`): confirmed **no gap** — `RecipeVariantRecord`
   (`packages/types/src/recipe.ts:6`) is fully generic, so even generated-type tooling gives zero variant-name
   completion when *authoring* a recipe (only when *calling* one). Nothing to match here.
+
+### A utility's own inline conditional value (2026-07-03)
+
+`ConditionalValue<V> = V | Array<V | null> | { [condition]?: ConditionalValue<V> }`
+(`packages/types/src/conditions.ts:47`) — `backgroundColor: { base: 'blue.500', sm: 'red' }` and
+`backgroundColor: ['blue.500', 'red']` are both real syntax, and the object form nests recursively
+(`{ sm: { md: '...' } }`). The array form worked by accident from the start — the old cursor-detection code only
+excluded *object* initializers when searching for "the property whose value contains the cursor," so an array wasn't
+filtered out and the outer key resolved correctly. The object form was broken: the cursor's enclosing object literal
+*is* the conditional-value wrapper itself, so the old code read its own inner key (`sm`) as "the property," not the
+real utility one level up (`backgroundColor`) — reported by a user testing the exact case directly, not caught by
+the test suite (which never wrote this shape).
+
+Fixed by changing what the AST layer hands the completion layer: instead of resolving a single `propertyName`,
+`getStyleObjectCursorInfo` now returns the full style-object-relative key chain (`propertyPath: string[]`, e.g.
+`['backgroundColor', 'sm']`) down to the cursor. `ast.ts` has no spec access, so it can't classify a given segment as
+a condition (nested style object) vs. a utility (its own conditional-value wrapper) — `completeConfigStyleObject`
+does that, walking the path and treating the *first* segment that resolves as a real utility as the active property;
+everything after it is condition keys wrapping that same property's value, at any depth. There's never more than one
+active property along a path, since a condition's value is always a nested style object, never a conditional-value
+shape. This also cleanly subsumes the array case (arrays contribute no path segment, so the enclosing key is reached
+directly) and the earlier nested-condition fix (`base._hover.color` → `propertyPath: ['_hover', 'color']`, resolves
+to `color`) without special-casing either.
+
+### `defineSemanticTokens` / `defineSemanticTokens.<category>` (2026-07-03)
+
+`defineSemanticTokens` is a `Proxy` (`packages/dev/src/config.ts:105`) — both the full form
+(`defineSemanticTokens({ colors: {...} })`, category-keyed) and the per-category form
+(`defineSemanticTokens.colors({...})`, already scoped) are valid and both need detection; the AST match handles a
+`PropertyAccessExpression` callee in addition to the plain-identifier case the recipe/globalCss detection uses.
+Two completion positions, both gated the same required-`define*()`-call way as recipes/globalCss:
+
+- **Category names** (`colors`, `spacing`, ...) — only at the full form's own top-level object (`SpecIndex.resolveTokenCategories`, sourced from `spec.tokens.categories`); not offered for the per-category form, since it's already inside one.
+- **Condition names** inside a token's `value: {...}` object, plus the literal `base` key (the semantic-token default-value convention — confirmed against `crates/pandacss_project/tests/codegen.rs:106-124`'s real fixtures, which use `base`/`_osDark`). Detection walks up through nested conditional values (`value: { _dark: { sm: ... } }`) since `SemanticToken`'s value type is recursive (`packages/types/src/tokens.ts:13-20`).
+
+Token-ref values inside a semantic token (`value: '{colors.red.500}'`) already worked before this — that path is the
+pre-existing ungated string-literal token-ref scan, unrelated to define*-gating.
+
+### Config split across multiple files
+
+Nothing about the AST detection is file-path-specific — `findEnclosingDefineCall`/`findEnclosingSemanticTokensCall`
+run on whatever file is open, so a `defineRecipe(...)` in `recipes/button.ts` imported into `panda.config.ts` was
+already detected correctly once verified against a real sandbox file split this way. The one real gap was
+`ProjectRegistry`'s cache key: it used the *edited file's* directory verbatim, so editing files in different
+subdirectories of the same project — all resolving to the same `panda.config.ts` via `@pandacss/config`'s upward
+`findConfig` search — created one redundant project load per distinct directory instead of sharing one cached load.
+Fixed by resolving the real config path with `findConfig` first and keying the cache on that
+(`packages/compiler/src/tooling/registry.ts`).
+
+### Cached projects never refreshed (2026-07-03)
+
+Neither transport ever invalidated a cached project once loaded — `ProjectRegistry.invalidate()` existed but nothing
+called it, and the classic plugin's `context` was set once via `loadProject(...).then(...)` at `create()` time and
+never again. Editing `panda.config.ts` (adding a token, a condition, ...) and saving had no effect until the TS
+server / language server restarted — self-identified while auditing the feature end-to-end, not reported by a user.
+A rejected load compounded this: a promise that rejects is still a cached promise, so a config with a typo stayed
+broken even after the typo was fixed and saved.
+
+Fixed in `ProjectRegistry` (`packages/compiler/src/tooling/registry.ts`): watches the resolved config file's
+directory (not the file itself — editors that save via atomic rename/replace can silently stop notifying a
+file-level watcher) before the load even settles, so a fix-and-save after a failed load retries. Once a project
+resolves, upgrades the watch to cover its `dependencies` too (the split-file case). Any change evicts just that
+project's cache entry, not the whole cache.
+
+The language-server already called `resolveContext` (→ `registry.getProject`) on every request, so it picked this up
+for free. The classic plugin didn't use `ProjectRegistry` at all — `loadProject` defaulted straight to
+`createProjectFromConfig`, cached forever in a closure variable — so it needed two changes: route its default loader
+through a shared `ProjectRegistry` instance, and call the load on every `getCompletionsAtPosition`/
+`getQuickInfoAtPosition` request instead of once at `create()`. Repeating the load per request is not the same cost
+as repeating a *build* per request — `getProject` is a cache hit (a resolved-path lookup + an already-resolved
+promise) until a watcher actually fires, so the steady-state per-request cost is unchanged from before this fix.
+Verified against a real `tsserver` process and a real `panda-language-server` subprocess: edited a real token into
+the sandbox's `panda.config.ts` on disk mid-session (no restart) and confirmed it appeared in completions for
+`recipes/button.ts`, a different open file, within one poll.
 
 ## `@pandacss/typescript-plugin`
 

@@ -1,11 +1,16 @@
 import ts from 'typescript'
 import type { ImportMapOutput } from '@pandacss/compiler-shared'
-import { createProjectFromConfig, SpecIndex, type CompletionEntry, type Project } from '@pandacss/compiler/tooling'
+import { ProjectRegistry, SpecIndex, type CompletionEntry, type Project } from '@pandacss/compiler/tooling'
 import { getCompletions, getHover, type LanguageServiceContext } from '../service/language-service'
 
 const EMPTY_IMPORT_MAP: ImportMapOutput = { css: [], recipe: [], pattern: [], jsx: [], tokens: [] }
 
 export type ProjectLoader = (key: { cwd: string }) => Promise<Project>
+
+// Shared across every project this tsserver process opens — safe to share since
+// ProjectRegistry keys by resolved config path, not by caller-provided cwd.
+const defaultRegistry = new ProjectRegistry()
+const defaultLoadProject: ProjectLoader = (key) => defaultRegistry.getProject(key)
 
 function readScriptText(host: ts.LanguageServiceHost, fileName: string): string | undefined {
   const snapshot = host.getScriptSnapshot(fileName)
@@ -51,7 +56,7 @@ function mergeCompletions(prior: ts.CompletionInfo | undefined, entries: Complet
 }
 
 export function createPluginModuleFactory(
-  loadProject: ProjectLoader = createProjectFromConfig,
+  loadProject: ProjectLoader = defaultLoadProject,
 ): ts.server.PluginModuleFactory {
   return () => {
     function create(info: ts.server.PluginCreateInfo): ts.LanguageService {
@@ -62,20 +67,27 @@ export function createPluginModuleFactory(
         proxy[key] = (...args: unknown[]) => original.apply(info.languageService, args)
       }
 
-      // Completion methods must stay synchronous but project loading isn't — kick it off
-      // once; until it resolves, Panda completions are simply absent.
+      // Completion methods must stay synchronous but project loading isn't. `refresh()` is
+      // called on every request below, not just once here: `loadProject` is a ProjectRegistry
+      // lookup, so it's a cheap cache hit once warm, a fresh reload once the config's own
+      // file-watcher invalidates it (edited config, or a previously failed load fixed and
+      // saved), and never leaves `context` pinned to a stale spec until tsserver restarts.
       let context: LanguageServiceContext | undefined
-      loadProject({ cwd: info.project.getCurrentDirectory() })
-        .then((project) => {
-          context = {
-            specIndex: new SpecIndex(project.compiler.spec()),
-            importMap: project.compiler.spec().importMap ?? EMPTY_IMPORT_MAP,
-            outdir: project.outdir,
-          }
-        })
-        .catch(() => undefined)
+      const refresh = (): void => {
+        loadProject({ cwd: info.project.getCurrentDirectory() })
+          .then((project) => {
+            context = {
+              specIndex: new SpecIndex(project.compiler.spec()),
+              importMap: project.compiler.spec().importMap ?? EMPTY_IMPORT_MAP,
+              outdir: project.outdir,
+            }
+          })
+          .catch(() => undefined)
+      }
+      refresh()
 
       proxy.getCompletionsAtPosition = (fileName, position, options, formattingSettings) => {
+        refresh()
         const prior = info.languageService.getCompletionsAtPosition(fileName, position, options, formattingSettings)
         if (!context) return prior
         const doc = readDocument(info.languageService, info.languageServiceHost, fileName)
@@ -86,6 +98,7 @@ export function createPluginModuleFactory(
       }
 
       proxy.getQuickInfoAtPosition = (fileName, position) => {
+        refresh()
         const prior = info.languageService.getQuickInfoAtPosition(fileName, position)
         if (!context) return prior
         const doc = readDocument(info.languageService, info.languageServiceHost, fileName)

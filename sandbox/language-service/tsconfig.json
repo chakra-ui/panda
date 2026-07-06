@@ -7,5 +7,5 @@
     "skipLibCheck": true,
     "plugins": [{ "name": "@pandacss/typescript-plugin" }]
   },
-  "include": ["panda.config.ts"]
+  "include": ["panda.config.ts", "recipes/**/*.ts"]
 }

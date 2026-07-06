@@ -79,6 +79,76 @@ describe('a user typing inside panda.config.ts', () => {
     expect(entries.map((entry) => entry.name)).toEqual(expect.arrayContaining(['color', '_hover']))
   })
 
+  it("sees a utility's own values inside its inline conditional value, e.g. color: { sm: 're' }", () => {
+    const context = createContext()
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { color: { base: 'blue.500', sm: 're' } } }) },
+      })
+    `
+    const position = source.lastIndexOf("'re'") + 3
+
+    const entries = getCompletions({ fileName: 'panda.config.ts', source, position }, context)
+
+    expect(entries).toEqual(expect.arrayContaining([{ name: 'red.500', kind: 'token' }]))
+  })
+
+  it('sees condition names, not utility names, on an empty key inside an inline conditional value', () => {
+    const context = createContext()
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { color: { base: 'blue.500',  } } }) },
+      })
+    `
+    const position = source.lastIndexOf(',  }') + 2
+
+    const entries = getCompletions({ fileName: 'panda.config.ts', source, position }, context)
+
+    expect(entries.map((entry) => entry.name)).toEqual(expect.arrayContaining(['_hover']))
+    expect(entries.map((entry) => entry.name)).not.toContain('color')
+  })
+
+  it('sees category names while starting a new entry inside defineSemanticTokens({...})', () => {
+    const context = createContext()
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: { semanticTokens: defineSemanticTokens({  }) },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+
+    const entries = getCompletions({ fileName: 'panda.config.ts', source, position }, context)
+
+    expect(entries).toEqual(expect.arrayContaining([{ name: 'colors', kind: 'category' }]))
+  })
+
+  it("sees condition names while filling in a semantic token's conditional value, e.g. _hover", () => {
+    const context = createContext()
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: {
+          semanticTokens: defineSemanticTokens({
+            colors: { danger: { value: {  } } },
+          }),
+        },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+
+    const entries = getCompletions({ fileName: 'panda.config.ts', source, position }, context)
+
+    expect(entries).toEqual(
+      expect.arrayContaining([
+        { name: 'base', kind: 'condition' },
+        { name: '_hover', kind: 'condition' },
+      ]),
+    )
+  })
+
   it("gets no suggestions if they haven't wrapped their styles in defineGlobalStyles yet", () => {
     const context = createContext()
     const source = `

@@ -1,4 +1,5 @@
-import { defineConfig, defineGlobalStyles, defineRecipe } from '@pandacss/dev'
+import { defineConfig, defineGlobalStyles, defineSemanticTokens } from '@pandacss/dev'
+import { buttonRecipe } from './recipes/button'
 
 export default defineConfig({
   outdir: 'styled-system',
@@ -13,13 +14,22 @@ export default defineConfig({
         4: { value: '1rem' },
       },
     },
-    semanticTokens: {
+    semanticTokens: defineSemanticTokens({
       colors: {
         // Try it: put your cursor inside the string below (e.g. right after "colors.re")
         // and retype — you should see colors.red.500 suggested.
-        danger: { value: '{colors.red.500}' },
+        danger: {
+          value: {
+            // Try it: put your cursor on a new line here and type "_" —
+            // you should see base, _hover, _focus, sm, md, lg suggested.
+            base: '{colors.red.500}',
+          },
+        },
       },
-    },
+      // Try it: put your cursor on a new line here and start typing — you should see
+      // every token category this config actually has (spacing, but not colors, since
+      // colors is already used above).
+    }),
     breakpoints: {
       sm: '640px',
       md: '768px',
@@ -29,23 +39,10 @@ export default defineConfig({
       spin: { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
       fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
     },
+    // The button recipe lives in ./recipes/button.ts — completions work there too, not
+    // just in this file. See that file for its own "Try it" walkthrough.
     recipes: {
-      button: defineRecipe({
-        className: 'button',
-        base: {
-          // Try it: put your cursor on a new line here and start typing —
-          // "pa" -> padding, "anim" -> animationName, "_h" -> the hover condition, "sm" -> the breakpoint.
-          color: 'blue.500',
-        },
-        variants: {
-          size: {
-            sm: {
-              // Variant leaves are style objects too — try typing a property here.
-              padding: '4',
-            },
-          },
-        },
-      }),
+      button: buttonRecipe,
     },
   },
 
@@ -56,6 +53,7 @@ export default defineConfig({
 
   utilities: {
     color: { className: 'c', values: 'colors' },
+    backgroundColor: { className: 'bg', values: 'colors', shorthand: 'bgColor' },
     padding: { className: 'p', values: 'spacing', shorthand: 'p' },
     animationName: { className: 'anim', values: 'keyframes' },
     scrollbar: { className: 'scr', values: ['visible', 'hidden'] },

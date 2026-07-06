@@ -3,11 +3,12 @@ import type { ImportMapOutput } from '@pandacss/compiler-shared'
 import {
   completeConfigStyleObject,
   completeConfigTokenPath,
+  completeSemanticTokenObject,
   findConfigTokenRefAt,
   resolveModuleTarget,
 } from '@pandacss/compiler/tooling'
 import type { CompletionEntry, SpecIndex } from '@pandacss/compiler/tooling'
-import { findEnclosingStringLiteral, getStyleObjectCursorInfo } from './ast'
+import { findEnclosingStringLiteral, getSemanticTokenCursorInfo, getStyleObjectCursorInfo } from './ast'
 
 export interface DocumentQuery {
   fileName: string
@@ -47,10 +48,16 @@ export function getCompletions(query: DocumentQuery, context: LanguageServiceCon
     }
   }
 
+  const prefix = literal ? query.source.slice(literalContentStart(literal), query.position) : ''
+
   const cursorInfo = getStyleObjectCursorInfo(sourceFile, query.position)
   if (cursorInfo) {
-    const prefix = literal ? query.source.slice(literalContentStart(literal), query.position) : ''
     return completeConfigStyleObject({ ...cursorInfo, prefix }, context.specIndex)
+  }
+
+  const semanticTokenCursorInfo = getSemanticTokenCursorInfo(sourceFile, query.position)
+  if (semanticTokenCursorInfo) {
+    return completeSemanticTokenObject({ ...semanticTokenCursorInfo, prefix }, context.specIndex)
   }
 
   return []

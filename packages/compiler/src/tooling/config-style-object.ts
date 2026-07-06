@@ -5,11 +5,16 @@ export type StyleObjectCursorKind = 'key' | 'value'
 export interface StyleObjectContext {
   existingKeys: string[]
   cursorKind: StyleObjectCursorKind
-  propertyName?: string
+  /**
+   * Style-object-relative key chain leading to the cursor (see typescript-plugin's
+   * `getStyleObjectCursorInfo`) — e.g. `['color']`, or `['backgroundColor', 'sm']` for a
+   * utility's own inline conditional value (`backgroundColor: { sm: 're' }`).
+   */
+  propertyPath: string[]
   prefix: string
 }
 
-export type CompletionEntryKind = 'utility' | 'condition' | 'token' | 'keyframe' | 'literal' | 'keyword'
+export type CompletionEntryKind = 'utility' | 'condition' | 'token' | 'keyframe' | 'literal' | 'keyword' | 'category'
 
 export interface CompletionEntry {
   name: string
@@ -22,8 +27,18 @@ const CSS_WIDE_KEYWORDS = ['inherit', 'initial', 'revert', 'revert-layer', 'unse
 // Caller must confirm the position is actually a style object first (see
 // typescript-plugin's define*()-gated AST detection) — this has no opinion on where.
 export function completeConfigStyleObject(context: StyleObjectContext, index: SpecIndex): CompletionEntry[] {
+  // The first segment that resolves as a real utility claims everything after it as condition
+  // keys wrapping that same property's inline conditional value, at any depth — a condition's
+  // own value is always a nested style object, never a utility's conditional-value shape, so
+  // there's never more than one active property along a given path.
+  const activeProperty = context.propertyPath.find((segment) => isKnownUtilityProperty(segment, index))
+
   if (context.cursorKind === 'value') {
-    return context.propertyName ? completeStyleValue(context.propertyName, context.prefix, index) : []
+    return activeProperty ? completeStyleValue(activeProperty, context.prefix, index) : []
+  }
+
+  if (activeProperty) {
+    return completeConditionKey(context.existingKeys, context.prefix, index)
   }
   return completeStyleKey(context.existingKeys, context.prefix, index)
 }
@@ -45,6 +60,16 @@ function completeStyleKey(existingKeys: string[], prefix: string, index: SpecInd
     .map((name) => ({ name, kind: 'condition' }))
 
   return [...utilities, ...conditions]
+}
+
+// Inside a utility's own inline conditional value (`backgroundColor: { | }`) only
+// condition/breakpoint keys are valid — utility names don't belong here.
+function completeConditionKey(existingKeys: string[], prefix: string, index: SpecIndex): CompletionEntry[] {
+  const used = new Set(existingKeys)
+  return index
+    .resolveStyleObjectKeys()
+    .filter((name) => !used.has(name) && name.startsWith(prefix))
+    .map((name) => ({ name, kind: 'condition' }))
 }
 
 function completeStyleValue(property: string, prefix: string, index: SpecIndex): CompletionEntry[] {

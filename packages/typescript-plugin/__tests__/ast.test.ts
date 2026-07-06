@@ -1,6 +1,11 @@
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
-import { findEnclosingDefineCall, getContainerPath, getStyleObjectCursorInfo } from '../src/service/ast'
+import {
+  findEnclosingDefineCall,
+  getContainerPath,
+  getSemanticTokenCursorInfo,
+  getStyleObjectCursorInfo,
+} from '../src/service/ast'
 
 function parse(source: string) {
   return ts.createSourceFile('panda.config.ts', source, ts.ScriptTarget.Latest, true)
@@ -39,7 +44,7 @@ describe('a user editing panda.config.ts', () => {
     const position = source.indexOf("'r'") + 2
     const info = getStyleObjectCursorInfo(parse(source), position)
 
-    expect(info).toMatchObject({ cursorKind: 'value', propertyName: 'color', existingKeys: ['color'] })
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['color'] })
   })
 
   it('doesn\'t get suggestions while typing the selector itself (e.g. "html"), only inside its rule', () => {
@@ -63,7 +68,7 @@ describe('a user editing panda.config.ts', () => {
     const position = source.indexOf("'red.500'") + 2
     const info = getStyleObjectCursorInfo(parse(source), position)
 
-    expect(info).toMatchObject({ cursorKind: 'value', propertyName: 'color' })
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['color'] })
   })
 
   it('also gets value suggestions while editing a recipe variant, e.g. variants.size.sm', () => {
@@ -76,7 +81,102 @@ describe('a user editing panda.config.ts', () => {
     const position = source.indexOf("'red.500'") + 2
     const info = getStyleObjectCursorInfo(parse(source), position)
 
-    expect(info).toMatchObject({ cursorKind: 'value', propertyName: 'color' })
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['color'] })
+  })
+
+  it('also gets suggestions inside a condition nested in a recipe variant, e.g. variants.size.sm._hover', () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: {
+          button: defineRecipe({
+            variants: { size: { sm: { color: 'red.500', _hover: { color: 'blue.500' } } } },
+          }),
+        },
+      })
+    `
+    const position = source.lastIndexOf("'blue.500'") + 2
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['_hover', 'color'] })
+  })
+
+  it('also gets suggestions inside a condition nested in base, e.g. base._hover', () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { color: 'red.500', _hover: { color: 'blue.500' } } }) },
+      })
+    `
+    const position = source.lastIndexOf("'blue.500'") + 2
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['_hover', 'color'] })
+  })
+
+  it('gets property-name suggestions on an empty line inside a nested condition, e.g. base._hover', () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { _hover: {  } } }) },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'key', existingKeys: [] })
+  })
+
+  it("gets the outer property's value suggestions inside its own inline conditional value, e.g. backgroundColor: { sm: 're' }", () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { backgroundColor: { base: 'blue.500', sm: 're' } } }) },
+      })
+    `
+    const position = source.lastIndexOf("'re'") + 2
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['backgroundColor', 'sm'] })
+  })
+
+  it('gets condition suggestions (not utility names) on an empty key inside an inline conditional value', () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { backgroundColor: { base: 'blue.500',  } } }) },
+      })
+    `
+    const position = source.lastIndexOf(',  }') + 2
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'key', propertyPath: ['backgroundColor'], existingKeys: ['base'] })
+  })
+
+  it("resolves the same outer property for the array form, e.g. backgroundColor: ['blue.500', 're']", () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { backgroundColor: ['blue.500', 're'] } }) },
+      })
+    `
+    const position = source.lastIndexOf("'re'") + 2
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['backgroundColor'] })
+  })
+
+  it('resolves the outer property even when the conditional value nests further, e.g. sm: { md: "re" }', () => {
+    const source = `
+      import { defineConfig, defineRecipe } from '@pandacss/dev'
+      export default defineConfig({
+        recipes: { button: defineRecipe({ base: { backgroundColor: { sm: { md: 're' } } } }) },
+      })
+    `
+    const position = source.lastIndexOf("'re'") + 2
+    const info = getStyleObjectCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'value', propertyPath: ['backgroundColor', 'sm', 'md'] })
   })
 
   it("doesn't get style suggestions while filling in the recipe's own metadata, e.g. className", () => {
@@ -120,6 +220,114 @@ describe('recognizing which define*() call the cursor is inside', () => {
     `
     const sourceFile = parse(source)
     expect(findEnclosingDefineCall(sourceFile)).toBeUndefined()
+  })
+})
+
+describe('a user editing semantic tokens', () => {
+  it('gets category suggestions on an empty line inside defineSemanticTokens({...})', () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: { semanticTokens: defineSemanticTokens({  }) },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    const info = getSemanticTokenCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'category', existingKeys: [] })
+  })
+
+  it('excludes categories already used from the suggestion list', () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: { semanticTokens: defineSemanticTokens({ colors: {},  }) },
+      })
+    `
+    const position = source.lastIndexOf(',  }') + 2
+    const info = getSemanticTokenCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'category', existingKeys: ['colors'] })
+  })
+
+  it("gets condition suggestions inside a token's conditional value object", () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: {
+          semanticTokens: defineSemanticTokens({
+            colors: { danger: { value: {  } } },
+          }),
+        },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    const info = getSemanticTokenCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'condition', existingKeys: [] })
+  })
+
+  it('also gets condition suggestions nested inside another condition, e.g. _dark.sm', () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: {
+          semanticTokens: defineSemanticTokens({
+            colors: { danger: { value: { base: 'red', _dark: {  } } } },
+          }),
+        },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    const info = getSemanticTokenCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'condition', existingKeys: [] })
+  })
+
+  it('doesn\'t get suggestions while naming the token itself (e.g. "danger")', () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: { semanticTokens: defineSemanticTokens({ colors: { danger: { value: 'red' } } }) },
+      })
+    `
+    const position = source.indexOf('danger') + 1
+    expect(getSemanticTokenCursorInfo(parse(source), position)).toBeUndefined()
+  })
+
+  it('recognizes the per-category proxy form, defineSemanticTokens.colors({...})', () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: {
+          semanticTokens: { colors: defineSemanticTokens.colors({ danger: { value: {  } } }) },
+        },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    const info = getSemanticTokenCursorInfo(parse(source), position)
+
+    expect(info).toMatchObject({ cursorKind: 'condition', existingKeys: [] })
+  })
+
+  it("doesn't offer category suggestions at the top level of the per-category proxy form", () => {
+    const source = `
+      import { defineConfig, defineSemanticTokens } from '@pandacss/dev'
+      export default defineConfig({
+        theme: { semanticTokens: { colors: defineSemanticTokens.colors({  }) } },
+      })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    expect(getSemanticTokenCursorInfo(parse(source), position)).toBeUndefined()
+  })
+
+  it("gets no suggestions if they haven't wrapped semantic tokens in defineSemanticTokens yet", () => {
+    const source = `
+      import { defineConfig } from '@pandacss/dev'
+      export default defineConfig({ theme: { semanticTokens: { colors: {  } } } })
+    `
+    const position = source.lastIndexOf('{  }') + 1
+    expect(getSemanticTokenCursorInfo(parse(source), position)).toBeUndefined()
   })
 })
 
