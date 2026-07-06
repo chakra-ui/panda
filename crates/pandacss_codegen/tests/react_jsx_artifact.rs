@@ -126,18 +126,18 @@ fn react_jsx_pattern_component_spreads_raw_styles() {
         "jsx/stack.mjs",
     );
 
-    // The component must spread the raw style *object* (`stackRaw`), not the
-    // public `stack()` (a className string), and the `forwardRef(...)` call
+    // The component must spread the raw style object from `stack.raw(...)`,
+    // not the public `stack()` className path, and the `forwardRef(...)` call
     // must be closed.
     assert_snapshot!(stack, @r#"
     import { createElement, forwardRef } from 'react';
+    import { stack } from '../patterns/stack';
     import { splitProps } from '../helpers';
-    import { stackRaw } from '../patterns/stack';
     import { panda } from './factory';
 
     export const Stack = /* @__PURE__ */ forwardRef(function Stack(props, ref) {
-      const [patternProps, restProps] = splitProps(props, ["direction","gap"])
-      const styleProps = stackRaw(patternProps)
+      const [patternProps, restProps] = splitProps(props, stack.propKeys)
+      const styleProps = stack.raw(patternProps)
       const mergedProps = { ref, ...styleProps, ...restProps }
       return createElement(panda["section"], mergedProps)
     })
@@ -265,10 +265,13 @@ fn helper_owns_jsx_helpers() {
         "const [htmlProps, forwardedProps, variantProps, propStyles, cssStyles, elementProps] = splitJsxProps("
     ));
     assert!(factory.contains("const hasStyles = propStyles || cssStyles !== void 0"));
+    assert!(
+        factory.contains("const getRaw = composedRecipeFn.__memoizedRaw__ || composedRecipeFn.raw")
+    );
     assert!(factory.contains("const variantKeys = composedRecipeFn.variantKeys"));
     assert!(factory.contains("const variantSet = new Set(variantKeys)"));
     assert!(factory.contains(
-        "hasStyles ? serializeSplitStyles(propStyles, cssStyles, composedRecipeFn.raw(variantProps)) : composedRecipeFn(variantProps)"
+        "hasStyles ? serializeSplitStyles(propStyles, cssStyles, getRaw(variantProps)) : composedRecipeFn(variantProps)"
     ));
     assert!(!factory.contains("const { css: cssStyles, ...propStyles } = styleProps"));
     assert!(!factory.contains("splitProps(\n      combinedProps"));

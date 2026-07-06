@@ -45,10 +45,12 @@ fn emits_ts_source_sva() {
         for (const [slot, slotFn] of slots) result[slot] = slotFn.raw(props)
         return result
       }
+      const rawMemo = memo(raw)
 
       return Object.assign(memo(svaFn), {
         __cva__: false,
         raw,
+        __memoizedRaw__: rawMemo,
         config,
         variantMap,
         variantKeys,
@@ -105,10 +107,12 @@ fn emits_js_runtime_and_declarations() {
         for (const [slot, slotFn] of slots) result[slot] = slotFn.raw(props)
         return result
       }
+      const rawMemo = memo(raw)
 
       return Object.assign(memo(svaFn), {
         __cva__: false,
         raw,
+        __memoizedRaw__: rawMemo,
         config,
         variantMap,
         variantKeys,

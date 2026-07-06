@@ -91,6 +91,7 @@ const CVA_IMPL: &str = r"(config) => {
 
   const variantKeys = Object.keys(variants)
   const variantMap = toVariantMap(variants)
+  const resolveMemo = memo(resolve)
 
   const merge = (other: Record<string, any>) => {
     const override = defaults(other.config)
@@ -110,6 +111,7 @@ const CVA_IMPL: &str = r"(config) => {
     variantMap,
     variantKeys,
     raw: resolve,
+    __memoizedRaw__: resolveMemo,
     config,
     merge,
     splitVariantProps(props: Record<string, any>) {

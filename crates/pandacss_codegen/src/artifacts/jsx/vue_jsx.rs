@@ -27,6 +27,7 @@ pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
 const VUE_FACTORY_RUNTIME: &str = r"function styledFn(Dynamic, configOrCva = {}, options = {}) {
   const cvaFn = configOrCva.__cva__ || configOrCva.__recipe__ ? configOrCva : cva(configOrCva)
   const __cvaFn__ = composeCvaFn(Dynamic.__cva__, cvaFn)
+  const getRaw = __cvaFn__.__memoizedRaw__ || __cvaFn__.raw
   const variantKeys = __cvaFn__.variantKeys
   const variantSet = new Set(variantKeys)
   const forwardFn = options.shouldForwardProp || ((prop) => !variantSet.has(prop) && !isCssProperty(prop))
@@ -67,7 +68,7 @@ const VUE_FACTORY_RUNTIME: &str = r"function styledFn(Dynamic, configOrCva = {},
           )
         }
         return cx(
-          hasStyles ? serializeSplitStyles(propStyles, cssStyles, __cvaFn__.raw(variantProps)) : __cvaFn__(variantProps),
+          hasStyles ? serializeSplitStyles(propStyles, cssStyles, getRaw(variantProps)) : __cvaFn__(variantProps),
           combinedProps.value.className,
           combinedProps.value.class,
         )

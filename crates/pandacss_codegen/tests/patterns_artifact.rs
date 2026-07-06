@@ -206,6 +206,7 @@ fn emits_ts_source() {
         interface StackPatternFn {
           (styles?: StackStyles): string
           raw: (styles?: StackStyles) => SystemStyleObject
+          propKeys: Array<keyof StackProperties>
         }
 
         export function stackRaw(styles?: StackStyles): SystemStyleObject {
@@ -215,7 +216,7 @@ fn emits_ts_source() {
 
         export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }), { raw: stackRaw })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
         .trim()
     );
@@ -300,7 +301,7 @@ fn emits_js_runtime_and_declarations() {
 
         export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }), { raw: stackRaw })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
         .trim()
     );
@@ -327,6 +328,7 @@ fn emits_js_runtime_and_declarations() {
         interface StackPatternFn {
           (styles?: StackStyles): string
           raw: (styles?: StackStyles) => SystemStyleObject
+          propKeys: Array<keyof StackProperties>
         }
 
         export declare function stackRaw(styles?: StackStyles): SystemStyleObject;
@@ -376,7 +378,7 @@ fn can_emit_import_extensions() {
 
         export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }), { raw: stackRaw })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
         "#}
         .trim()
     );

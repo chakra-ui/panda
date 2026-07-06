@@ -60,17 +60,27 @@ pub(super) fn memo() -> Item {
         TsType::Raw("T".into()),
         indoc! {r"
             const cache = new Map<string, ReturnType<T>>()
+            let lastKey: string | undefined
+            let lastValue: ReturnType<T>
+            let hasLast = false
             return ((...args: Parameters<T>) => {
               const key = JSON.stringify(args)
+              if (hasLast && key === lastKey) return lastValue
               if (cache.has(key)) {
                 const out = cache.get(key) as ReturnType<T>
                 cache.delete(key)
                 cache.set(key, out)
+                lastKey = key
+                lastValue = out
+                hasLast = true
                 return out
               }
               const out = fn(...args)
               cache.set(key, out)
               if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+              lastKey = key
+              lastValue = out
+              hasLast = true
               return out
             }) as T
         "}

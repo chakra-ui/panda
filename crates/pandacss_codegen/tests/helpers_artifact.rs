@@ -107,11 +107,27 @@ export function normalizeStyleObject(styles: Record<string, any>, context: Recor
 
 export function memo<T extends (...args: any[]) => any>(fn: T): T {
   const cache = new Map<string, ReturnType<T>>()
+  let lastKey: string | undefined
+  let lastValue: ReturnType<T>
+  let hasLast = false
   return ((...args: Parameters<T>) => {
     const key = JSON.stringify(args)
-    if (cache.has(key)) return cache.get(key)
+    if (hasLast && key === lastKey) return lastValue
+    if (cache.has(key)) {
+      const out = cache.get(key) as ReturnType<T>
+      cache.delete(key)
+      cache.set(key, out)
+      lastKey = key
+      lastValue = out
+      hasLast = true
+      return out
+    }
     const out = fn(...args)
     cache.set(key, out)
+    if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+    lastKey = key
+    lastValue = out
+    hasLast = true
     return out
   }) as T
 }
@@ -387,11 +403,27 @@ export function normalizeStyleObject(styles, context, shorthand) {
 
 export function memo(fn) {
   const cache = new Map()
+  let lastKey
+  let lastValue
+  let hasLast = false
   return ((...args) => {
     const key = JSON.stringify(args)
-    if (cache.has(key)) return cache.get(key)
+    if (hasLast && key === lastKey) return lastValue
+    if (cache.has(key)) {
+      const out = cache.get(key)
+      cache.delete(key)
+      cache.set(key, out)
+      lastKey = key
+      lastValue = out
+      hasLast = true
+      return out
+    }
     const out = fn(...args)
     cache.set(key, out)
+    if (cache.size > 500) cache.delete(cache.keys().next().value)
+    lastKey = key
+    lastValue = out
+    hasLast = true
     return out
   })
 }
@@ -657,17 +689,27 @@ fn emits_ts_source() {
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
       const cache = new Map<string, ReturnType<T>>()
+      let lastKey: string | undefined
+      let lastValue: ReturnType<T>
+      let hasLast = false
       return ((...args: Parameters<T>) => {
         const key = JSON.stringify(args)
+        if (hasLast && key === lastKey) return lastValue
         if (cache.has(key)) {
           const out = cache.get(key) as ReturnType<T>
           cache.delete(key)
           cache.set(key, out)
+          lastKey = key
+          lastValue = out
+          hasLast = true
           return out
         }
         const out = fn(...args)
         cache.set(key, out)
         if (cache.size > 500) cache.delete(cache.keys().next().value as string)
+        lastKey = key
+        lastValue = out
+        hasLast = true
         return out
       }) as T
     }
@@ -685,7 +727,7 @@ fn emits_ts_source() {
     }
     "#);
     assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
+    export function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any } {
       const { utility: u, hash, conditions: c } = context
       const fmt = (s: string) => u.prefix ? u.prefix + "-" + s : s
       const toClass = (paths: string[], name: string) => {
@@ -736,14 +778,20 @@ fn emits_ts_source() {
       const mergeCss: (...styles: any[]) => any = function() {
         return mergeProps(...resolve(arguments))
       }
+      const serializeCssArgs = memo(function serializeCssArgs(...styles: any[]) {
+        return serializeCss(mergeCss(...styles))
+      })
       const assignCss: (...styles: any[]) => any = function() {
         const out: Record<string, any> = {}
         const resolved = resolve(arguments)
         for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
         return out
       }
-      return { serializeCss, mergeCss, assignCss }
+      return { serializeCss, serializeCssArgs, mergeCss, assignCss }
     }
+
+    const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
+    const MS_PROPERTY_REGEX = /^ms-/
     "#);
 }
 
@@ -934,17 +982,27 @@ fn emits_js_runtime() {
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo(fn) {
       const cache = new Map()
+      let lastKey
+      let lastValue
+      let hasLast = false
       return ((...args) => {
         const key = JSON.stringify(args)
+        if (hasLast && key === lastKey) return lastValue
         if (cache.has(key)) {
           const out = cache.get(key)
           cache.delete(key)
           cache.set(key, out)
+          lastKey = key
+          lastValue = out
+          hasLast = true
           return out
         }
         const out = fn(...args)
         cache.set(key, out)
         if (cache.size > 500) cache.delete(cache.keys().next().value)
+        lastKey = key
+        lastValue = out
+        hasLast = true
         return out
       })
     }
@@ -962,66 +1020,72 @@ fn emits_js_runtime() {
     }
     "#);
     assert_snapshot!(function_block(source, "createCss"), @r#"
-    export function createCssRuntime(context) {
-      const { utility: u, hash, conditions: c } = context
-      const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
-      const toClass = (paths, name) => {
-        const parts = c.finalize(paths)
-        parts.push(hash ? name : fmt(name))
-        return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
-      }
-      const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
-        const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
-        const set = new Set()
-        walkObject(obj, (value, paths) => {
-          if (value == null) return
-          const important = isImportant(value)
-          const [prop, ...all] = c.shift(paths)
-          const cond = filterBaseConditions(all)
-          const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
-          let name = toClass(cond, res.className)
-          if (important) name += "!"
-          set.add(name)
-        })
-        let out = ""
-        for (const name of set) out += out ? " " + name : name
-        return out
-      }))
-      const resolve = (styles) => {
-        const out = []
-        const visit = (items) => {
-          for (let i = 0; i < items.length; i++) {
-            const style = items[i]
-            if (Array.isArray(style)) {
-              visit(style)
-              continue
-            }
-            if (!isObject(style)) continue
-            for (const key in style) {
-              if (style[key] !== void 0) {
-                out.push(style)
-                break
-              }
-            }
+export function createCssRuntime(context) {
+  const { utility: u, hash, conditions: c } = context
+  const fmt = (s) => u.prefix ? u.prefix + "-" + s : s
+  const toClass = (paths, name) => {
+    const parts = c.finalize(paths)
+    parts.push(hash ? name : fmt(name))
+    return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
+  }
+  const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
+    const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
+    const set = new Set()
+    walkObject(obj, (value, paths) => {
+      if (value == null) return
+      const important = isImportant(value)
+      const [prop, ...all] = c.shift(paths)
+      const cond = filterBaseConditions(all)
+      const res = u.transform(prop, withoutSpace(withoutImportant(sanitizeStyleValue(value))))
+      let name = toClass(cond, res.className)
+      if (important) name += "!"
+      set.add(name)
+    })
+    let out = ""
+    for (const name of set) out += out ? " " + name : name
+    return out
+  }))
+  const resolve = (styles) => {
+    const out = []
+    const visit = (items) => {
+      for (let i = 0; i < items.length; i++) {
+        const style = items[i]
+        if (Array.isArray(style)) {
+          visit(style)
+          continue
+        }
+        if (!isObject(style)) continue
+        for (const key in style) {
+          if (style[key] !== void 0) {
+            out.push(style)
+            break
           }
         }
-        visit(styles)
-        if (out.length < 2) return out
-        for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
-        return out
       }
-      const mergeCss = function() {
-        return mergeProps(...resolve(arguments))
-      }
-      const assignCss = function() {
-        const out = {}
-        const resolved = resolve(arguments)
-        for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
-        return out
-      }
-      return { serializeCss, mergeCss, assignCss }
     }
-    "#);
+    visit(styles)
+    if (out.length < 2) return out
+    for (let i = 0; i < out.length; i++) out[i] = normalizeStyleObject(out[i], context)
+    return out
+  }
+  const mergeCss = function() {
+    return mergeProps(...resolve(arguments))
+  }
+  const serializeCssArgs = memo(function serializeCssArgs(...styles) {
+    return serializeCss(mergeCss(...styles))
+  })
+  const assignCss = function() {
+    const out = {}
+    const resolved = resolve(arguments)
+    for (let i = 0; i < resolved.length; i++) Object.assign(out, resolved[i])
+    return out
+  }
+  return { serializeCss, serializeCssArgs, mergeCss, assignCss }
+}
+
+const HYPHENATE_PROPERTY_REGEX = /[A-Z]/g
+const MS_PROPERTY_REGEX = /^ms-/
+"#);
 }
 
 #[test]
@@ -1034,5 +1098,5 @@ fn emits_declarations() {
     let helpers = artifact(&artifacts, ArtifactId::Helpers);
 
     assert_eq!(paths(helpers), vec!["helpers.js", "helpers.d.ts"]);
-    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
+    assert_snapshot!(declaration_lines(file(helpers, "helpers.d.ts")), @"export declare function createCssRuntime(context: Record<string, any>): { serializeCss: (...styles: any[]) => string; serializeCssArgs: (...styles: any[]) => string; mergeCss: (...styles: any[]) => any; assignCss: (...styles: any[]) => any };");
 }

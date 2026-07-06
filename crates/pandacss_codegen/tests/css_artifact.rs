@@ -100,7 +100,7 @@ fn emits_ts_source_css() {
 
     const resolveShorthand = (prop: string) => shorthands.get(prop) || prop
 
-    const { serializeCss, mergeCss, assignCss } = createCssRuntime({
+    const { serializeCss, serializeCssArgs, mergeCss, assignCss } = createCssRuntime({
       hash: false,
       conditions: {
         shift: sortConditions,
@@ -125,7 +125,7 @@ fn emits_ts_source_css() {
     export const css: CssFunction = /* @__PURE__ */ Object.assign(
       function css(...styles: any[]) {
         if (styles.length === 1 && isObject(styles[0])) return serializeCss(styles[0])
-        return serializeCss(mergeCss(...styles))
+        return serializeCssArgs(...styles)
       },
       {
         raw: function cssRaw(...styles: any[]) {
@@ -188,7 +188,7 @@ fn emits_js_runtime_and_declarations() {
 
     const resolveShorthand = (prop) => shorthands.get(prop) || prop
 
-    const { serializeCss, mergeCss, assignCss } = createCssRuntime({
+    const { serializeCss, serializeCssArgs, mergeCss, assignCss } = createCssRuntime({
       hash: false,
       conditions: {
         shift: sortConditions,
@@ -213,7 +213,7 @@ fn emits_js_runtime_and_declarations() {
     export const css = /* @__PURE__ */ Object.assign(
       function css(...styles) {
         if (styles.length === 1 && isObject(styles[0])) return serializeCss(styles[0])
-        return serializeCss(mergeCss(...styles))
+        return serializeCssArgs(...styles)
       },
       {
         raw: function cssRaw(...styles) {

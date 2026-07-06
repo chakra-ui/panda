@@ -72,7 +72,11 @@ fn emits_pattern_jsx_for_non_react_frameworks() {
             code.contains(runtime_marker),
             "{framework} pattern runtime missing"
         );
-        assert!(code.contains("stackRaw(patternProps)") || code.contains("stackRaw(props)"));
+        assert!(
+            code.contains("stack.raw(patternProps)")
+                || code.contains("stackRaw(patternProps)")
+                || code.contains("stackRaw(props)")
+        );
         assert!(!code.starts_with("\"use client\";"));
         assert!(
             dts.contains(type_marker),
