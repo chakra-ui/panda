@@ -693,7 +693,7 @@ fn emits_ts_source() {
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+      const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
         const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set<string>()
         walkObject(obj, (value: any, paths: string[]) => {
@@ -709,7 +709,7 @@ fn emits_ts_source() {
         let out = ""
         for (const name of set) out += out ? " " + name : name
         return out
-      })
+      }))
       const resolve = (styles: Array<any> | IArguments) => {
         const out: any[] = []
         const visit = (items: Array<any> | IArguments) => {
@@ -970,7 +970,7 @@ fn emits_js_runtime() {
         parts.push(hash ? name : fmt(name))
         return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
       }
-      const serializeCss = weakMemo(function serializeCss({ base, ...styles } = {}) {
+      const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles } = {}) {
         const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
         const set = new Set()
         walkObject(obj, (value, paths) => {
@@ -986,7 +986,7 @@ fn emits_js_runtime() {
         let out = ""
         for (const name of set) out += out ? " " + name : name
         return out
-      })
+      }))
       const resolve = (styles) => {
         const out = []
         const visit = (items) => {

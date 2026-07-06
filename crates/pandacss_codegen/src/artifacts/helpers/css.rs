@@ -77,7 +77,7 @@ pub(super) fn create_css_runtime() -> Item {
               parts.push(hash ? name : fmt(name))
               return hash ? fmt(u.toHash(parts, toHash)) : parts.join(":")
             }
-            const serializeCss = weakMemo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
+            const serializeCss = weakMemo(memo(function serializeCss({ base, ...styles }: Record<string, any> = {}) {
               const obj = normalizeStyleObject(base ? Object.assign(styles, base) : styles, context)
               const set = new Set<string>()
               walkObject(obj, (value: any, paths: string[]) => {
@@ -93,7 +93,7 @@ pub(super) fn create_css_runtime() -> Item {
               let out = ""
               for (const name of set) out += out ? " " + name : name
               return out
-            })
+            }))
             const resolve = (styles: Array<any> | IArguments) => {
               const out: any[] = []
               const visit = (items: Array<any> | IArguments) => {
