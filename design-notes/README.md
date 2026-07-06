@@ -85,6 +85,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
 - [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
   DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate, optional `panda lib --design-md`.
+- [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: transform planning, printing, the
+  private `cn` helper, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
