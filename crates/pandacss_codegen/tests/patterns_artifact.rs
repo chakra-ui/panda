@@ -171,6 +171,7 @@ fn emits_ts_source() {
         file(patterns, "patterns/stack.ts"),
         indoc! {r#"
         import { getPatternStyles, patternFns } from './runtime';
+        import { memo } from '../helpers';
         import { css } from '../css/index';
         import type { PatternRuntimeConfig } from '../types/pattern';
         import type { SystemProperties, SystemStyleObject } from '../types/system';
@@ -212,9 +213,9 @@ fn emits_ts_source() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }, { raw: stackRaw })
+        }), { raw: stackRaw })
         "#}
         .trim()
     );
@@ -276,6 +277,7 @@ fn emits_js_runtime_and_declarations() {
         file(patterns, "patterns/stack.js"),
         indoc! {r#"
         import { getPatternStyles, patternFns } from './runtime';
+        import { memo } from '../helpers';
         import { css } from '../css/index';
 
         const stackConfig = {
@@ -296,9 +298,9 @@ fn emits_js_runtime_and_declarations() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }, { raw: stackRaw })
+        }), { raw: stackRaw })
         "#}
         .trim()
     );
@@ -351,6 +353,7 @@ fn can_emit_import_extensions() {
         file(patterns, "patterns/stack.mjs"),
         indoc! {r#"
         import { getPatternStyles, patternFns } from './runtime.mjs';
+        import { memo } from '../helpers.mjs';
         import { css } from '../css/index.mjs';
 
         const stackConfig = {
@@ -371,9 +374,9 @@ fn can_emit_import_extensions() {
           return stackConfig.transform(s, patternFns)
         }
 
-        export const stack = /* @__PURE__ */ Object.assign(function stack(styles = {}) {
+        export const stack = /* @__PURE__ */ Object.assign(memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }, { raw: stackRaw })
+        }), { raw: stackRaw })
         "#}
         .trim()
     );

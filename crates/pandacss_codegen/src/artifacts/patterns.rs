@@ -108,6 +108,7 @@ pub fn module_with_type_data(
             ["getPatternStyles", "patternFns"],
             "./runtime",
         ))
+        .with_import(ImportDecl::value(["memo"], "../helpers"))
         // The public fn pipes styles through `css()` to return a className.
         .with_import(ImportDecl::value(["css"], "../css/index"));
 
@@ -435,7 +436,7 @@ fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str) -> Item
         name: name.into(),
         type_annotation: Some(TsType::Ref(fn_type_name.into())),
         init: Some(crate::Expr::Raw(format!(
-            "/* @__PURE__ */ Object.assign(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}, {{ raw: {raw_name} }})"
+            "/* @__PURE__ */ Object.assign(memo(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}), {{ raw: {raw_name} }})"
         ))),
         js_doc: None,
     }))
