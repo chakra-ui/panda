@@ -70,7 +70,56 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(driver.reload).not.toHaveBeenCalled()
     expect(driver.applyChange).not.toHaveBeenCalled()
     expect(invalidateModule).toHaveBeenCalledWith(rootModule)
-    expect(modules).toEqual([rootModule, componentModule])
+    expect(modules).toMatchInlineSnapshot(`
+      [
+        {
+          "id": "/project/src/index.css",
+        },
+        {
+          "id": "/project/node_modules/@acme/ds/src/button.tsx",
+        },
+      ]
+    `)
+  })
+
+  it('warns on source-transform diagnostics and returns transformed code', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const warn = vi.fn()
+
+    driver.compiler.transformSource.mockReturnValueOnce({
+      code: 'export const cls = "color_red"',
+      map: 'source-map',
+      changed: true,
+      bailed: false,
+      diagnostics: [
+        {
+          code: 'panda-transform-warning',
+          severity: 'warning',
+          message: 'transformed with a warning',
+        },
+      ],
+      dependencies: ['/project/theme.ts'],
+      helper: { needsCx: false, needsCva: false, needsSva: false },
+    })
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    const result = plugin.transform.call(
+      { addWatchFile: vi.fn(), warn },
+      "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
+      '/project/src/app.tsx',
+    )
+
+    expect(warn.mock.calls[0]?.[0]).toMatchInlineSnapshot(`
+      "panda: 1 diagnostic(s) while transforming source
+      warning panda-transform-warning /project/src/app.tsx transformed with a warning"
+    `)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "code": "export const cls = "color_red"",
+        "map": "source-map",
+      }
+    `)
   })
 })
 
@@ -92,6 +141,15 @@ function createMockDriver() {
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes('@layer')),
       getFile: vi.fn(() => ({ diagnostics: [] })),
+      transformSource: vi.fn((_path: string, source: string) => ({
+        code: source,
+        map: null,
+        changed: false,
+        bailed: false,
+        diagnostics: [],
+        dependencies: [],
+        helper: { needsCx: false, needsCva: false, needsSva: false },
+      })),
     },
     configPath: '/project/panda.config.ts',
     designSystemDiagnostics: [],
