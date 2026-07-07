@@ -20,10 +20,12 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 mod normalize;
+mod runtime_class;
 mod token_ref;
 mod type_data;
 
 pub use normalize::{ShorthandPolicy, StyleNormalizer};
+pub use runtime_class::runtime_class_name_for_atom;
 pub use token_ref::{expand_token_references_to_values, expand_token_references_to_vars};
 
 use token_ref::is_plain_token_path_like;
@@ -290,6 +292,11 @@ impl Utility {
     #[must_use]
     pub fn prefix(&self) -> &str {
         &self.prefix
+    }
+
+    #[must_use]
+    pub fn hash_class_names(&self) -> bool {
+        self.hash_class_names
     }
 
     #[must_use]

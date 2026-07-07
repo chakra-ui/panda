@@ -1,12 +1,13 @@
-import type { Compiler, CompilerOptions } from '@pandacss/compiler-shared'
+import type { CompilerOptions } from '@pandacss/compiler-shared'
 import { type LoadConfigOptions, type LoadConfigResult, loadConfig } from '@pandacss/config'
 import { createCompilerFromSnapshot } from './index'
+import type { NativeCompiler } from './types'
 
 export type { LoadConfigOptions, LoadConfigResult } from '@pandacss/config'
 
 export interface LoadCompilerResult {
   /** The compiler built from the loaded config snapshot. */
-  compiler: Compiler
+  compiler: NativeCompiler
   /** Resolved config path. */
   path: string
   /** Module ids to watch for invalidation. */

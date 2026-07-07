@@ -1,33 +1,49 @@
 # Transformer
 
-Host-neutral source transforms for Panda, centered on a Rust core and a tiny private runtime helper for the cases that
-cannot be erased at build time.
+Host-neutral source transforms for Panda. Rust owns semantics; `@pandacss/transformer` is the thin JS facade.
 
 ## Summary
 
-Panda's current Vite plugin is mostly a CSS root and HMR integration. The next step is real source transforms:
+Panda's Vite plugin started as CSS-root and HMR wiring. The next step is real source transforms:
 
-- `css({...})` -> class string
-- pattern calls -> class string
-- recipe calls -> class string
-- token calls -> literal string
-- JSX style props -> rewritten JSX with static classes
+- `css({...})` → class string
+- pattern calls → class string
+- recipe calls → class string (inline `cva` / `sva` / `styled` where safe)
+- JSX style props → rewritten JSX with static classes
 
-Most of that can compile away to plain strings. Some sites cannot. The common case is JSX that already has a dynamic
-`className` prop and now needs Panda's generated classes added to it. For those cases we want one tiny private helper,
-named `cn`, that only joins class fragments the transformer emits.
+Most of that compiles to plain strings. Some sites cannot. The usual case is JSX with a dynamic `className` that also
+needs Panda classes. For those, the transformer emits a tiny private `cx` helper that only joins class fragments it
+produced.
 
-This note defines the Rust-core transformer architecture, the JS facade, the helper contract, and the bundler adapter
-model for Vite, Rollup, Rolldown, webpack, and Rspack.
+This note covers the Rust crate, the `@pandacss/transformer` package, the internal runtime module contract, and how
+bundler adapters plug in.
+
+## Current state
+
+What ships on the v2 branch today:
+
+| Piece                                         | Status                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `crates/pandacss_transformer`                 | Inspect, plan, print, dead-import cleanup, helper import sync                        |
+| Rust printer                                  | Single `string_wizard::MagicString` pass; v3 source map on changed output            |
+| `@pandacss/transformer`                       | `transformSource`, host-neutral hooks, internal runtime, optional `unplugin` exports |
+| `@pandacss/vite`                              | Transform hooks from `@pandacss/transformer`; CSS-root and HMR stay in Vite          |
+| Internal runtime module                       | `@pandacss-internal/css` → `\0pandacss:internal:css`; symbols injected on demand     |
+| Rollup / webpack / Rspack / Rolldown adapters | Not shipped yet                                                                      |
+
+Runtime symbols today: `cx as __pcx`, `cva as __pcva`, `sva as __psva`. Inline `cva()` / `sva()` / `styled()` rewrites
+bail when per-slot variant classes would diverge (runtime expects one shared string per option).
+
+Options and bindings use `helper.cx` and `needsCx` / `needsCva` / `needsSva` for internal runtime demand.
 
 ## Canonical scope
 
 This folder owns:
 
 - the `crates/pandacss_transformer` crate shape
-- the `packages/transformer` facade shape
-- the private `cn` helper contract
-- the abstract helper import ID
+- the `@pandacss/transformer` (`packages/transformer`) facade shape
+- the private `cx` helper and internal css runtime module
+- the abstract `@pandacss-internal/css` import ID
 - the host adapter model
 - the transformer test matrix
 
@@ -53,7 +69,8 @@ There are three separate problems to solve:
 1. Panda does not yet have a host-neutral source-transform layer.
 2. The bundler-specific code should not each reimplement the same transform planner.
 3. The compiler already owns parse and extraction, so a Node-only transformer would duplicate compiler semantics.
-4. Some transformed call sites still need a runtime join, but we do not want to ship a full public `cn` runtime.
+4. Some transformed call sites still need a runtime join, but we do not ship a public `cx` (or `cn`) utility in
+   `styled-system/`.
 
 If we solve only the Vite case, we will hard-code Vite assumptions into the transform contract. That would make later
 webpack, Rspack, Rollup, or Rolldown support more expensive than it needs to be.
@@ -61,9 +78,9 @@ webpack, Rspack, Rollup, or Rolldown support more expensive than it needs to be.
 ## Goals
 
 1. Put transform semantics in one Rust crate: `crates/pandacss_transformer`.
-2. Keep `packages/transformer` as a thin facade for host-facing ergonomics.
-3. Keep bundler packages thin. They should adapt host APIs, not own transform semantics.
-4. Make the `cn` helper private and tiny.
+2. Keep `@pandacss/transformer` as a thin facade for host-facing ergonomics.
+3. Keep bundler packages thin. They adapt host APIs, not transform semantics.
+4. Keep the `cx` helper private and tiny.
 5. Allow the transform to choose between:
    - plain string literals
    - inline concat
@@ -77,8 +94,8 @@ webpack, Rspack, Rollup, or Rolldown support more expensive than it needs to be.
 
 ## Non-goals
 
-1. Replacing `clsx`, `tailwind-merge`, or `cnfast` as a user-facing utility.
-2. Making `cn` part of generated `styled-system/`.
+1. Replacing `clsx`, `tailwind-merge`, or similar as a user-facing utility.
+2. Putting `cx` in generated `styled-system/`.
 3. Adding runtime class conflict merging.
 4. Keeping unsafe transforms alive by routing them through the helper.
 
@@ -95,45 +112,39 @@ Why:
 
 If we keep the real planner in JS long-term, we create a second compiler beside the compiler.
 
-## Why keep `packages/transformer`
+## Why `@pandacss/transformer`
 
-`packages/transformer` is still the right package name for the JS side.
+`@pandacss/transformer` is the JS package name. It is internal-first and not a user-facing styled-system surface.
 
-Its job changes. It is no longer the semantic core. It becomes the thin facade that:
+Its job:
 
-- calls the Rust transformer
-- applies or serializes edits for host-facing output
-- owns helper-source strings or runtime module text
-- exposes a small JS API to bundler adapters
-- hides NAPI or wasm binding details from hosts
+- call the Rust transformer through `@pandacss/compiler`
+- expose `transformSource` and host-neutral plugin hooks
+- own internal runtime source (`cx`, `css`, `cva`, `sva`) served from `@pandacss-internal/css`
+- optionally wrap hooks with `unplugin` for Rollup/webpack-style hosts
+
+Transform semantics stay in Rust. Bundler packages depend on `@pandacss/transformer`, not the other way around.
 
 ## Package boundaries
 
-`crates/pandacss_transformer` should be internal-first. `packages/transformer` should also be internal-first. Neither
-should start with a public user-facing API promise.
+`crates/pandacss_transformer` should be internal-first. `@pandacss/transformer` should also be internal-first. Neither
+should promise a stable public API yet.
 
-The Rust crate should depend on:
+The Rust crate depends on:
 
 - existing Rust compiler crates
 - Oxc spans and diagnostics
-- a string-edit and sourcemap utility suitable for Rust printing
+- `string_wizard` for edit application and source maps
 
-The Rust crate should not depend on:
+The Rust crate does not depend on Vite, Rollup, webpack, Rspack, or Rolldown.
 
-- Vite
-- Rollup
-- webpack
-- Rspack
-- Rolldown
-
-`packages/transformer` should depend on:
+`@pandacss/transformer` depends on:
 
 - `@pandacss/compiler` or `@pandacss/compiler-wasm`
 - `@pandacss/compiler-shared`
+- `unplugin` (adapter only; not part of the transform contract)
 
-It should not depend on bundler packages.
-
-Bundler packages depend on `packages/transformer`, not the other way around.
+It does not depend on bundler packages.
 
 ## Recommended split
 
@@ -141,24 +152,21 @@ The recommended architecture is:
 
 ```txt
 crates/pandacss_transformer
-  - inspect
-  - plan
-  - bailout rules
-  - helper demand
-  - dependency tracking
-  - abstract edits or rewrite IR
+  - plan (rewrites, bailouts, helper demand)
+  - apply (string_wizard edits + source map)
+  - imports (dead Panda import cleanup)
+  - helper (cx merge printing, internal import sync)
+  - targets: css, jsx, recipes, patterns, styled, recipe_inline
 
-packages/transformer
-  - JS facade over native/wasm bindings
-  - optional edit application if Phase 1 uses JS printing
-  - helper module source text
-  - host-facing `transformSource(...)` API
+@pandacss/transformer  (packages/transformer)
+  - transformSource → compiler binding
+  - createPandaSourcePluginHooks (resolveId / load / transform)
+  - runtime/internal (cx, css, cva, sva bundled for virtual module)
+  - pandaTransformer — optional unplugin wrapper
 
-packages/vite | packages/rollup | packages/webpack | packages/rspack | packages/rolldown
-  - host hooks
-  - watch registration
-  - helper-module resolution
-  - source-map return shape expected by the host
+@pandacss/vite | future rollup / webpack / rspack / rolldown packages
+  - host hooks, watch, HMR
+  - call @pandacss/transformer; resolve @pandacss-internal/css
 ```
 
 ## The package shape
@@ -170,52 +178,20 @@ At a high level, the transformer design owns four things:
 3. **Code printing**
 4. **Private helper metadata**
 
-Suggested internal layout:
+Implemented layout (will grow; not every aspirational module exists yet):
 
 ```txt
-crates/pandacss_transformer/
-  src/
-    lib.rs
-    inspect.rs
-    plan/
-      mod.rs
-      build_plan.rs
-      helper_usage.rs
-      bailouts.rs
-    print/
-      mod.rs
-      edits.rs
-      imports.rs
-      jsx.rs
-      helpers.rs
-    targets/
-      mod.rs
-      css_call.rs
-      pattern_call.rs
-      recipe_call.rs
-      token_call.rs
-      jsx_style.rs
-      jsx_pattern.rs
-      jsx_recipe.rs
+crates/pandacss_transformer/src/
+  lib.rs, plan.rs, apply.rs, imports.rs, helper.rs
+  jsx.rs, styled.rs, recipe_inline.rs, resolve.rs
 
-packages/transformer/
-  src/
-    index.ts
-    native.ts
-    wasm.ts
-    ids.ts
-    options.ts
-    apply/
-      apply-edits.ts
-      sourcemap.ts
-    runtime/
-      cn.ts
-    testing/
-      fixtures.ts
-      snapshots.ts
+packages/transformer/src/
+  index.ts, transform.ts, hooks.ts, plugin.ts
+  runtime/internal/   # cx, css, cva, sva, load, ids
 ```
 
-This is a shape, not a file-by-file commitment.
+Older sketches that split `inspect.rs`, `print/*`, and `targets/*` into many files describe the target decomposition,
+not a file-by-file commitment.
 
 ## The three-phase model
 
@@ -249,7 +225,7 @@ interface TransformPlan {
   dependencies: string[]
   diagnostics: Diagnostic[]
   helper: {
-    needsCn: boolean
+    needsCx: boolean
     candidateSites: number
   }
   bailed: boolean
@@ -275,7 +251,7 @@ interface TransformOutput {
   map: SourceMapLike | null
   dependencies: string[]
   imports: {
-    needsCn: boolean
+    needsCx: boolean
   }
 }
 ```
@@ -289,48 +265,16 @@ The printer is also responsible for:
 
 ## Printer strategy
 
-We should explicitly separate the target architecture from the rollout architecture.
-
-### Target architecture
-
 Printing lives in Rust.
 
-That keeps:
+`crates/pandacss_transformer` collects rewrites, import edits, and helper prepends into one edit list, then applies them
+with `string_wizard::MagicString` and emits a v3 source map when output changes.
 
-- edit decisions
-- edit application
-- sourcemap generation
-- dead-import cleanup
+That keeps plan decisions, edit application, dead-import cleanup, helper import sync, and source maps on the same side
+of the boundary as the planner.
 
-on the same side of the boundary as the planner.
-
-### Rollout architecture
-
-Phase 1 may still apply Rust-produced edits in JS if that is the shortest path to something correct. In that shape:
-
-- Rust returns abstract edits plus helper facts
-- `packages/transformer` applies those edits and generates the host-facing source map
-
-That is acceptable only as a transition state. The semantic source of truth still needs to be Rust.
-
-## Rust string-editing engine
-
-Rolldown already maintains a Rust crate named `string_wizard` with a `MagicString` type and optional sourcemap support.
-That makes it a strong candidate for Panda's Rust-side printer.
-
-Use it as a candidate, not a locked commitment yet.
-
-Why it is promising:
-
-- it is built for string editing
-- it exposes a `MagicString` model
-- it has sourcemap support
-- it is already used in a production-grade Rust bundler project
-
-Adoption rule:
-
-- prefer `string_wizard` if its edit model and sourcemap fidelity match Panda's transform needs
-- otherwise keep the Rust transformer printer abstract enough to swap the underlying edit engine
+`@pandacss/transformer` does not re-apply edits in JS. It forwards `transformSource` to the compiler binding and serves
+the bundled internal runtime for `@pandacss-internal/css`.
 
 ## Proposed package API
 
@@ -352,7 +296,9 @@ interface TransformResult {
   diagnostics: Diagnostic[]
   dependencies: string[]
   helper: {
-    needsCn: boolean
+    needsCx: boolean
+    needsCva: boolean
+    needsSva: boolean
   }
 }
 
@@ -364,7 +310,7 @@ Important boundaries:
 - the JS facade accepts source text and a transformer binding
 - it does not accept a Vite plugin context, a webpack loader context, or a Rollup plugin object
 - it reports dependency paths, but does not register them with any host directly
-- the only helper fact hosts need is whether `cn` must be resolvable in the rewritten file
+- helper facts in bindings: `needsCx`, `needsCva`, `needsSva` — which internal runtime symbols the rewritten file uses
 
 Suggested binding shape:
 
@@ -398,9 +344,9 @@ Suggested shape:
 
 ```ts
 interface TransformerOptions {
-  mode: "build" | "serve"
+  mode: 'build' | 'serve'
   helper: {
-    cn: false | true | "auto"
+    cx: false | true | 'auto'
   }
   targets?: {
     css?: boolean
@@ -425,46 +371,39 @@ loader ordering.
 
 ## The private helper contract
 
-The helper should be called `cn`.
+The class-merge helper is `cx`. Transformed source aliases it to `__pcx` so user `cx` bindings do not collide.
 
-The import in transformed code should always be aliased to an internal local name:
+Recipe inlines use `cva as __pcva` and `sva as __psva` from the same internal module when those rewrites run.
+
+Import shape in transformed code:
 
 ```ts
-import { cn as __pcn } from "@pandacss-internal/transformer/cn"
+import { cx as __pcx } from '@pandacss-internal/css'
 ```
 
-Why this exact shape:
+Hosts resolve that specifier to an internal module ID and return bundled runtime source from `@pandacss/transformer`
+(today: `\0pandacss:internal:css`).
 
-- the export name is short
-- the local alias avoids collisions with user `cn`
-- the source import is a valid bare module specifier for every host
-- the package-like prefix is easier to intercept than a `virtual:` or custom URL scheme
+Only symbols the file uses are injected. A file with only `__pcva` gets `cva as __pcva`; a file with only static classes
+gets no import.
 
-The bundler adapter then resolves that source ID to its own host-native internal ID.
+### Why `@pandacss-internal/css`
 
-### Why not `virtual:panda-internal/cn`
+One virtual module covers `cx`, `css`, `cva`, and `sva`. That matches the styled-system/css surface the inlines need,
+without separate per-helper URLs.
 
-That works well in Vite and Rollup, but it pushes Vite/Rollup naming into the host-neutral contract.
+Bare specifiers work across Vite, Rollup, webpack, and Rspack. Custom `virtual:` schemes do not.
 
-webpack and Rspack work more naturally with bare specifiers, aliases, and synthetic modules than with custom URL-style
-schemes. The abstract import should be the format that all hosts can intercept cleanly.
+### Why not put `cx` in `styled-system`
 
-### Why not put `cn` in `styled-system`
-
-Because it would become a public runtime API too early. The helper is a transformer detail, not a stable user-facing
-contract.
+It would become a public runtime API too early. The runtime is a transformer detail, not a stable user contract.
 
 ## The helper behavior
 
 The helper only joins the shapes the transformer emits:
 
 ```ts
-type PandaClassPart =
-  | string
-  | false
-  | null
-  | undefined
-  | PandaClassPart[]
+type PandaClassPart = string | false | null | undefined | PandaClassPart[]
 ```
 
 Behavior:
@@ -481,20 +420,20 @@ Behavior:
 The first version should stay boring:
 
 ```ts
-export function cn(...parts: PandaClassPart[]): string {
-  let out = ""
+export function cx(...parts: PandaClassPart[]): string {
+  let out = ''
 
   for (const part of parts) {
     if (!part) continue
 
     if (Array.isArray(part)) {
-      const value = cn(...part)
+      const value = cx(...part)
       if (!value) continue
-      out = out ? out + " " + value : value
+      out = out ? out + ' ' + value : value
       continue
     }
 
-    out = out ? out + " " + part : part
+    out = out ? out + ' ' + part : part
   }
 
   return out
@@ -506,11 +445,9 @@ We can flatten the implementation later if benchmarks say it matters.
 This helper is the direct successor to the earlier prototype's JSX class merge logic. The difference is packaging:
 
 - old branch: inline concat lived inside the JSX printer
-- new design: helper use is a printer choice backed by one tiny shared runtime
-- old branch: helpers were prepended as raw strings
-- new design: helpers resolve through host adapters via an abstract internal import
+- new design: helper use is a printer choice; runtime resolves through `@pandacss-internal/css`
 
-## When the planner may request `cn`
+## When the planner may request `cx`
 
 The helper is for the narrow cases that survive build-time erasure.
 
@@ -527,7 +464,7 @@ Examples:
 ```
 
 ```tsx
-<div className={__pcn(props.className, "c_red.500")} />
+<div className={__pcx(props.className, 'c_red.500')} />
 ```
 
 ```tsx
@@ -535,10 +472,10 @@ Examples:
 ```
 
 ```tsx
-<button className={__pcn(props.className, "button button--size_sm", "c_red.500")} />
+<button className={__pcx(props.className, 'button button--size_sm', 'c_red.500')} />
 ```
 
-## When the planner must not request `cn`
+## When the planner must not request `cx`
 
 The helper does not justify unsafe transforms.
 
@@ -555,8 +492,8 @@ Also do not use the helper when:
 - two string literals can be folded at build time
 - inline concat is smaller than helper import + helper call
 
-When `helper.cn` is `false`, helper-eligible sites should still be marked by the planner so the printer can fall back to
-inline concat where safe.
+When `helper.cx` is `false`, helper-eligible sites should still be marked so the printer can fall back to inline concat
+where safe.
 
 ## Helper-vs-inline choice
 
@@ -594,10 +531,8 @@ Do not partially rewrite a site unless the residual runtime semantics are still 
 
 There are two different kinds of "dynamic":
 
-- **finite dynamic**
-  The source is dynamic at runtime, but every branch is statically known at build time.
-- **open-ended dynamic**
-  The runtime value is not statically enumerable by the transformer.
+- **finite dynamic** The source is dynamic at runtime, but every branch is statically known at build time.
+- **open-ended dynamic** The runtime value is not statically enumerable by the transformer.
 
 Examples:
 
@@ -725,7 +660,7 @@ valid DOM styling semantics on the rewritten intrinsic element.
 - fully static style props
 - finite conditional style props where every branch resolves to known classes
 - conditional object values and nested condition wrappers when normalization stays within the branch budget
-- dynamic existing `className` merges, handled with inline concat or `cn`
+- dynamic existing `className` merges, handled with inline concat or `cx`
 
 #### Must bail
 
@@ -825,7 +760,7 @@ cannot be left on the element as if they still had Panda runtime meaning.
 - finite conditional variant props whose branches map to known classes
 - conditional prop objects and nested condition wrappers when normalization stays within the branch budget
 - static leftover style props
-- dynamic existing `className` merge via inline concat or `cn`
+- dynamic existing `className` merge via inline concat or `cx`
 
 #### Must bail
 
@@ -840,14 +775,14 @@ Important rule:
 
 ### Summary matrix
 
-| Surface | Finite dynamic | Open-ended dynamic | Default policy |
-| --- | --- | --- | --- |
-| `css(...)` | rewrite to expression if normalized tree stays within budget | preserve original call | partial rewrite allowed |
-| pattern function call | rewrite to expression if normalized tree stays within budget | preserve original call | partial rewrite allowed |
-| recipe function call | rewrite to expression if normalized tree stays within budget | usually preserve original call | partial rewrite allowed |
-| JSX style props | rewrite if every dynamic branch is enumerable and tree stays within budget | bail whole element | no unresolved residual props |
-| JSX pattern props | rewrite if every dynamic branch is enumerable and tree stays within budget | bail whole element | no unresolved residual props |
-| JSX recipe props | rewrite if every dynamic branch is enumerable and tree stays within budget | bail whole element | no unresolved residual props |
+| Surface               | Finite dynamic                                                             | Open-ended dynamic             | Default policy               |
+| --------------------- | -------------------------------------------------------------------------- | ------------------------------ | ---------------------------- |
+| `css(...)`            | rewrite to expression if normalized tree stays within budget               | preserve original call         | partial rewrite allowed      |
+| pattern function call | rewrite to expression if normalized tree stays within budget               | preserve original call         | partial rewrite allowed      |
+| recipe function call  | rewrite to expression if normalized tree stays within budget               | usually preserve original call | partial rewrite allowed      |
+| JSX style props       | rewrite if every dynamic branch is enumerable and tree stays within budget | bail whole element             | no unresolved residual props |
+| JSX pattern props     | rewrite if every dynamic branch is enumerable and tree stays within budget | bail whole element             | no unresolved residual props |
+| JSX recipe props      | rewrite if every dynamic branch is enumerable and tree stays within budget | bail whole element             | no unresolved residual props |
 
 This is the key distinction:
 
@@ -867,8 +802,8 @@ The bundler packages should own only host APIs:
 Each host package should:
 
 1. pick source files to transform
-2. call `packages/transformer`
-3. resolve the internal `@pandacss-internal/transformer/cn` helper import
+2. call `@pandacss/transformer`
+3. resolve `@pandacss-internal/css`
 4. wire watch / invalidation hooks
 5. expose host-native tests
 
@@ -881,28 +816,15 @@ The host package should not:
 
 ## Internal module responsibilities
 
-The package layout should map to clear responsibilities:
+Responsibility split today:
 
-- `targets/*`
-  Normalize compiler inspection facts into transformable target records.
-- `plan/build-plan.ts`
-  Produce rewrite or bailout decisions per target.
-- `plan/helper-usage.ts`
-  Aggregate helper candidates at file scope.
-- `plan/bailouts.ts`
-  Hold all "preserve original source" rules in one place.
-- `print/apply-plan.ts`
-  Apply all edits with one `MagicString` instance and generate the source map.
-- `print/imports.ts`
-  Remove dead Panda imports and inject the helper import if needed.
-- `print/jsx.ts`
-  Rewrite JSX tags and merge `className`.
-- `print/helpers.ts`
-  Compare inline concat against helper-call output when helper mode allows both.
-- `runtime/cn.ts`
-  Provide the tiny helper source every host will expose under its own internal module ID.
-- `ids.ts`
-  Own the canonical helper specifier `@pandacss-internal/transformer/cn`.
+- **Rust (`crates/pandacss_transformer`)** — plan rewrites, apply edits (`string_wizard`), dead-import cleanup, sync
+  internal css import, `cx` merge printing for JSX.
+- **`@pandacss/transformer`** — `transformSource` binding, host-neutral hooks, bundled runtime for
+  `@pandacss-internal/css`, optional `unplugin` wrapper.
+- **Host packages (e.g. `@pandacss/vite`)** — wire hooks, watch, HMR; do not own transform semantics.
+
+Canonical internal specifier: `@pandacss-internal/css`. Resolved ID in Vite today: `\0pandacss:internal:css`.
 
 ## Dependency tracking
 
@@ -918,34 +840,20 @@ equivalent host-native primitive.
 
 ## Implementation phases
 
-Ship this in stages:
+### Done (v2 branch)
 
-### Phase 1
+- `crates/pandacss_transformer` with css, jsx, recipes, patterns, styled/cva/sva inlines
+- Rust printing via `string_wizard` + source maps
+- `@pandacss/transformer` facade and internal css virtual module
+- Vite transform hooks (CSS-root and HMR remain in `@pandacss/vite`)
+- `cx` behind `helper.cx` option
 
-- create `crates/pandacss_transformer`
-- expose it through `@pandacss/compiler`
-- keep `packages/transformer` as the JS facade
-- support `css`, patterns, recipes, tokens, and JSX rewrites
-- support `cn` behind an option
-- ship via Vite first
+### Next
 
-### Phase 2
-
-- add Rollup on the same contract
-- share the same transform snapshots between Vite and Rollup adapters
-- decide whether JS-side edit application can be removed immediately
-
-### Phase 3
-
-- add webpack loader or plugin integration
-- validate the same adapter shape on Rspack
-- harden dependency tracking
-- move printer and sourcemaps fully into Rust if Phase 1 shipped a JS printer
-
-### Phase 4
-
-- validate Rolldown parity
-- decide whether Rollup compatibility is enough or a dedicated adapter is required
+- Rollup adapter on the same contract
+- webpack / Rspack loader or plugin path
+- Rolldown parity validation
+- Sandbox e2e across hosts
 
 ## Why this structure matters
 
@@ -979,7 +887,7 @@ file captures the behavior contract without tying the design note to branch hist
 
 ## Unresolved questions
 
-- Should `packages/transformer` remain internal-only, or do we expect third-party host adapters?
+- Should `@pandacss/transformer` stay internal-only, or do we expect third-party host adapters?
 - Should helper choice compare raw bytes or minified bytes?
 - Should `Rspack` be a separate package, or a thin wrapper over the webpack adapter?
 - Should `Rolldown` be a separate package, or a thin wrapper over the Rollup adapter?

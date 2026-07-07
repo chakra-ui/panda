@@ -85,8 +85,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
   JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
 - [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
   DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate, optional `panda lib --design-md`.
-- [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: transform planning, printing, the
-  private `cn` helper, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
+- [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: planning, printing, the private
+  `cx` runtime module, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
   `{ config, callbacks }` snapshot, pattern `codegenSource` capture, and the `@pandacss/compiler/loader` integration.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
@@ -94,9 +94,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
   `panda.config.*` without ambient generated types.
 - [Language service implementation](./language-service-implementation.md) — `compiler/tooling` subpath,
-  `@pandacss/typescript-plugin` (classic tsserver plugin) + `@pandacss/language-server` (LSP) shipping together in
-  Phase 1 over one shared core — TypeScript 7 (Corsa/`tsgo`) drops the classic plugin API, so both transports are
-  built now instead of deferring the LSP.
+  `@pandacss/typescript-plugin` (classic tsserver plugin) + `@pandacss/language-server` (LSP) shipping together in Phase
+  1 over one shared core — TypeScript 7 (Corsa/`tsgo`) drops the classic plugin API, so both transports are built now
+  instead of deferring the LSP.
 
 ### Testing
 

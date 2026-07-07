@@ -51,4 +51,14 @@ impl Config {
     pub fn utility(&self) -> Option<&Utility> {
         self.utility.as_ref()
     }
+
+    #[must_use]
+    pub fn extractor_config(&self) -> &ExtractorConfig {
+        &self.extractor_config
+    }
+
+    #[must_use]
+    pub fn conditions(&self) -> &ProjectConditionMatcher {
+        &self.conditions
+    }
 }

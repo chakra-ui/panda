@@ -51,8 +51,8 @@ use smallvec::SmallVec;
 use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
-    CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, LineIndex, Literal, MatchCategory,
-    extract,
+    CrossFileResolver, ExportInfo, ExtractedCall, ExtractedJsx, JsxKind, LineIndex, Literal,
+    MatchCategory, extract,
 };
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::diagnostic_codes;
@@ -1195,10 +1195,162 @@ impl Project {
     pub fn config_fingerprint(&self) -> &str {
         &self.config_fingerprint
     }
+
+    /// Encode one style object into atoms for build-time transforms without
+    /// mutating project file state.
+    pub fn encode_atomic_for_transform(
+        &self,
+        encoder: &mut Encoder<ProjectConditionMatcher>,
+        style: &Literal,
+        policy: ShorthandPolicy,
+    ) {
+        self.process_atomic(encoder, style, policy);
+    }
+
+    /// Resolve a config recipe call to the class string a static runtime call
+    /// would return. Slot recipes and conditional variants return `None`.
+    #[must_use]
+    pub fn class_names_for_recipe_call(
+        &self,
+        recipe_name: &str,
+        args: &[Option<Literal>],
+    ) -> Option<Vec<String>> {
+        let compiled = self.config.as_ref();
+        let empty = Literal::Object(Vec::new());
+        let arg = match args.first().and_then(|arg| arg.as_ref()) {
+            None => &empty,
+            Some(Literal::Object(_)) => args.first().and_then(|arg| arg.as_ref())?,
+            Some(_) => return None,
+        };
+        compiled.recipes.class_names_for_recipe_call(
+            recipe_name,
+            arg,
+            &compiled.conditions,
+            &compiled.breakpoints,
+            compiled.optimize.smart_compound_variants,
+        )
+    }
+
+    /// Resolve a pattern call to atomic class names when the pattern has no JS
+    /// transform callback. Patterns that require a transform return `None`.
+    #[must_use]
+    pub fn class_names_for_pattern_call(
+        &self,
+        pattern_name: &str,
+        args: &[Option<Literal>],
+    ) -> Option<Vec<String>> {
+        if self.config.patterns.requires_transform(pattern_name) {
+            return None;
+        }
+        let empty = Literal::Object(Vec::new());
+        let arg = match args.first().and_then(|arg| arg.as_ref()) {
+            None => &empty,
+            Some(Literal::Object(_)) => args.first().and_then(|arg| arg.as_ref())?,
+            Some(_) => return None,
+        };
+        let prepared = self.config.patterns.transform_input(pattern_name, arg);
+        self.class_names_for_style_literal(prepared.styles.as_ref())
+    }
+
+    /// Resolve one encoded atom to the runtime `css()` class string.
+    #[must_use]
+    pub fn atomic_class_name_for_transform(&self, atom: &Atom) -> Option<String> {
+        let utility = self.config.utility()?;
+        let literal = atom_value_to_transform_literal(atom.value())?;
+        pandacss_utility::runtime_class_name_for_atom(
+            utility,
+            &self.config.conditions,
+            atom.prop(),
+            atom.conditions(),
+            &literal,
+            atom.important(),
+        )
+    }
+
+    /// Resolve one static style object to atomic utility class names.
+    #[must_use]
+    pub fn class_names_for_style_literal(&self, style: &Literal) -> Option<Vec<String>> {
+        let mut encoder = Encoder::with_conditions(self.config.conditions.clone());
+        self.encode_atomic_for_transform(&mut encoder, style, ShorthandPolicy::UserFacing);
+        let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
+        if atoms.is_empty() {
+            return None;
+        }
+        atoms.sort_by(compare_atoms_by_emit_order);
+        let classes: Vec<String> = atoms
+            .iter()
+            .filter_map(|atom| self.atomic_class_name_for_transform(atom))
+            .collect();
+        if classes.is_empty() {
+            None
+        } else {
+            Some(classes)
+        }
+    }
+
+    /// Resolve a matched JSX element to the class strings a static runtime
+    /// render would apply. Recipe JSX merges variant classes with leftover
+    /// style props; pattern JSX runs the pattern transform first.
+    #[must_use]
+    pub fn class_names_for_jsx_usage(&self, jsx: &ExtractedJsx) -> Option<Vec<String>> {
+        let compiled = self.config.as_ref();
+        let data = &jsx.data;
+        let entries = literal_entries(data)?;
+        if entries.is_empty() {
+            return None;
+        }
+
+        match jsx.kind {
+            JsxKind::Recipe => {
+                let recipe_names = compiled.recipes.find_by_jsx(&jsx.name);
+                if recipe_names.is_empty() {
+                    return None;
+                }
+                let recipe_names: Vec<&str> = recipe_names.into_iter().collect();
+                let mut classes = Vec::new();
+                for recipe_name in &recipe_names {
+                    if let Some(recipe_classes) =
+                        self.class_names_for_recipe_call(recipe_name, &[Some(data.clone())])
+                    {
+                        classes.extend(recipe_classes);
+                    }
+                }
+                if let Some(style_props) = compiled
+                    .recipes
+                    .style_props_for_recipes(&recipe_names, data)
+                    && let Some(atomic) = self.class_names_for_style_literal(&style_props)
+                {
+                    classes.extend(atomic);
+                }
+                (!classes.is_empty()).then_some(classes)
+            }
+            JsxKind::Pattern => {
+                if compiled.patterns.requires_transform(&jsx.name) {
+                    return None;
+                }
+                let prepared = compiled.patterns.transform_input(&jsx.name, data);
+                self.class_names_for_style_literal(prepared.styles.as_ref())
+            }
+            JsxKind::Factory | JsxKind::Component => self.class_names_for_style_literal(data),
+        }
+    }
 }
 
 fn is_css_prop(key: &str) -> bool {
     key == "css" || key.ends_with("Css")
+}
+
+fn atom_value_to_transform_literal(value: &pandacss_encoder::AtomValue) -> Option<Literal> {
+    Some(match value {
+        pandacss_encoder::AtomValue::String(raw) => Literal::String(raw.to_string()),
+        pandacss_encoder::AtomValue::Number(raw) => Literal::Number(raw.parse().ok()?),
+        pandacss_encoder::AtomValue::Token { path, value, .. } => Literal::Token {
+            path: path.to_string(),
+            value: value.to_string(),
+        },
+        pandacss_encoder::AtomValue::Bool(value) => Literal::Bool(*value),
+        pandacss_encoder::AtomValue::Null => Literal::Null,
+    })
 }
 
 enum JsxFactoryStaticStyle<'a> {

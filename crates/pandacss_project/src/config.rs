@@ -115,6 +115,7 @@ pub(crate) struct PatternDefinition {
     pub(crate) jsx_regexes: Vec<Regex>,
     pub(crate) props: Vec<String>,
     pub(crate) default_values: Option<Literal>,
+    pub(crate) requires_transform: bool,
     strict: bool,
     blocklist: Vec<String>,
 }
@@ -187,6 +188,7 @@ fn pattern_definitions_from_config(
                     .default_values
                     .as_ref()
                     .and_then(non_callback_literal_from_json),
+                requires_transform: config.transform.is_some(),
                 strict: config.strict,
                 blocklist: config.blocklist.clone(),
             })

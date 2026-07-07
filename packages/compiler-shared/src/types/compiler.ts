@@ -56,6 +56,36 @@ export interface CompilerPathSystem {
   dirname(path: string): string
 }
 
+export interface TransformSourceOptions {
+  mode?: 'build' | 'serve'
+  helperCx?: 'auto' | 'true' | 'false'
+  targetsCss?: boolean
+  targetsPatterns?: boolean
+  targetsRecipes?: boolean
+  targetsTokens?: boolean
+  targetsJsx?: boolean
+}
+
+export interface TransformHelperFacts {
+  needsCx: boolean
+  needsCva: boolean
+  needsSva: boolean
+}
+
+export interface TransformSourceResult {
+  code: string
+  map: string | null
+  changed: boolean
+  bailed: boolean
+  diagnostics: Diagnostic[]
+  dependencies: string[]
+  helper: TransformHelperFacts
+}
+
+export interface SourceTransformer {
+  transformSource(path: string, source: string, options?: TransformSourceOptions): TransformSourceResult
+}
+
 /**
  * Portable design-system encoder state (`panda.buildinfo.json`).
  */
@@ -210,6 +240,12 @@ export type DesignSystemLoadResult =
 export interface Compiler {
   readonly fs: CompilerFileSystem
   readonly path: CompilerPathSystem
+
+  /**
+   * Optional source transform seam. Native/compiler-adapter surfaces provide
+   * it; runtimes without the transformer may omit it.
+   */
+  transformSource?: SourceTransformer['transformSource']
 
   /**
    * Config and introspection.

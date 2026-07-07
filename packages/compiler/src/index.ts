@@ -1,5 +1,5 @@
 import type {
-  Compiler,
+  Compiler as SharedCompiler,
   CompileOutput,
   CompilerOptions,
   ConfigSnapshot,
@@ -23,7 +23,14 @@ import {
 import { registerCallbacks } from './callbacks'
 import { fallback } from './fallback'
 import { loadNativeBinding } from './load-binary'
-import type { CompileInput, NativeCompilerOptions, RawCompiler, TokenDictionary, TraceOptions } from './types'
+import type {
+  CompileInput,
+  NativeCompilerOptions,
+  NativeCompiler,
+  RawCompiler,
+  TokenDictionary,
+  TraceOptions,
+} from './types'
 
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
@@ -60,7 +67,7 @@ export function shutdownTracing(): boolean {
   return binding.shutdownTracing?.() ?? false
 }
 
-export function createCompiler(config: SerializedConfig, options?: CompilerOptions): Compiler {
+export function createCompiler(config: SerializedConfig, options?: CompilerOptions): NativeCompiler {
   return build(config, options?.callbacks ?? {}, options)
 }
 
@@ -68,7 +75,7 @@ export function createCompiler(config: SerializedConfig, options?: CompilerOptio
  * Like {@link createCompiler}, but takes a snapshot; its callbacks merge under
  * any in `options.callbacks`.
  */
-export function createCompilerFromSnapshot(snapshot: ConfigSnapshot, options?: CompilerOptions): Compiler {
+export function createCompilerFromSnapshot(snapshot: ConfigSnapshot, options?: CompilerOptions): NativeCompiler {
   const callbacks = mergeCallbacks(snapshot.callbacks, options?.callbacks)
   const hooks = mergeHooks(snapshot.hooks, options?.hooks)
   return build(snapshot.config, callbacks, { ...options, hooks })
@@ -80,7 +87,7 @@ export function getBindingInfo() {
   }
 }
 
-function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: CompilerOptions): Compiler {
+function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: CompilerOptions): NativeCompiler {
   assertProjectCallbacks(config, callbacks)
   assertProjectHooks(options?.hooks, callbacks)
 

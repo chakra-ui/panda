@@ -1,6 +1,6 @@
 import type {
   BuildInfoNative,
-  Compiler,
+  Compiler as SharedCompiler,
   CompileOutput,
   DesignSystemChainPlan,
   DesignSystemManifest,
@@ -13,7 +13,10 @@ import type {
   FileInspectionResult,
   SerializedConfig,
   SerializedHookFilter,
+  SourceTransformer,
   Span,
+  TransformSourceOptions,
+  TransformSourceResult,
 } from '@pandacss/compiler-shared'
 
 export interface CompileInput {
@@ -156,8 +159,13 @@ interface RawPathBinding {
 
 /** The raw native instance — superset of {@link Compiler} carrying the internal
  *  methods the facade hides. */
+export interface NativeCompiler extends SharedCompiler, SourceTransformer {}
+
+/** The raw native instance — superset of {@link NativeCompiler} carrying the internal
+ *  methods the facade hides. */
 export interface RawCompiler
-  extends Compiler,
+  extends NativeCompiler,
+    SourceTransformer,
     BuildInfoNative,
     RawDesignSystemBinding,
     RawFileSystemBinding,
@@ -195,3 +203,5 @@ export interface NativeBinding {
   Extractor: ExtractorSessionConstructor
   Compiler: CompilerConstructor
 }
+
+export type { SourceTransformer, TransformSourceOptions, TransformSourceResult } from '@pandacss/compiler-shared'

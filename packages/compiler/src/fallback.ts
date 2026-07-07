@@ -17,7 +17,13 @@ import type {
   WriteSplitCssOptions,
 } from '@pandacss/compiler-shared'
 import { BuildInfo, DesignSystem } from '@pandacss/compiler-shared'
-import type { CompilerConstructor, ExtractorSession, ExtractorSessionConstructor, NativeBinding } from './types'
+import type {
+  CompilerConstructor,
+  ExtractorSession,
+  ExtractorSessionConstructor,
+  NativeBinding,
+  TransformSourceResult,
+} from './types'
 
 /** No-op build-info primitives so the fallback compiler still satisfies the
  *  `Compiler.buildInfo` surface; `validate`/`hydrate` always report incompatible. */
@@ -171,6 +177,17 @@ class FallbackCompiler implements Compiler {
   }
   inspectFileSource(_path: string, _source: string): Omit<FileInspectionResult, 'path'> {
     return { usages: [], diagnostics: [], calls: [], jsx: [], tokenRefs: [], componentEntries: [], styleEntries: [] }
+  }
+  transformSource(path: string, source: string): TransformSourceResult {
+    return {
+      code: source,
+      map: null,
+      changed: false,
+      bailed: false,
+      diagnostics: [],
+      dependencies: [],
+      helper: { needsCx: false, needsCva: false, needsSva: false },
+    }
   }
   inspectFile(input: SourceFileInput): FileInspectionResult {
     return { ...this.inspectFileSource(input.path, input.source), path: input.path }

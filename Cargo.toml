@@ -36,6 +36,7 @@ pandacss_recipes = { path = "crates/pandacss_recipes" }
 pandacss_shared = { path = "crates/pandacss_shared" }
 pandacss_stylesheet = { path = "crates/pandacss_stylesheet" }
 pandacss_tokens = { path = "crates/pandacss_tokens" }
+pandacss_transformer = { path = "crates/pandacss_transformer" }
 pandacss_tracing = { path = "crates/pandacss_tracing" }
 pandacss_utility = { path = "crates/pandacss_utility" }
 serde = { version = "1.0.228", features = ["derive"] }
@@ -50,6 +51,7 @@ indexmap = { version = "2.14.0", features = ["serde"] }
 rustc-hash = "2.1"
 ryu = "1.0"
 smallvec = { version = "1.13", features = ["serde"] }
+string_wizard = "1.1.4"
 walkdir = "2"
 regex = "1.12.2"
 tracing = "0.1.44"

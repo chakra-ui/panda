@@ -134,7 +134,6 @@ export function build(
     value: (files: SourceFileInput[]) => inspectFiles(compiler, files),
     enumerable: false,
   })
-
   return compiler
 }
 

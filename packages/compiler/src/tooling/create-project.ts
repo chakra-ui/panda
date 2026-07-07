@@ -1,7 +1,8 @@
-import { defaultConfig, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
+import { defaultConfig, type Diagnostic } from '@pandacss/compiler-shared'
 import { loadConfig, type LoadConfigResult } from '@pandacss/config'
 import { hydrateDesignSystem } from '../design-system'
 import { createCompilerFromSnapshot } from '../index'
+import type { NativeCompiler } from '../types'
 
 export interface ProjectKey {
   cwd: string
@@ -10,7 +11,7 @@ export interface ProjectKey {
 }
 
 export interface Project {
-  compiler: Compiler
+  compiler: NativeCompiler
   configPath: string
   dependencies: string[]
   outdir: string

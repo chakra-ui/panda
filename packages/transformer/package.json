@@ -1,0 +1,66 @@
+{
+  "name": "@pandacss/transformer",
+  "version": "2.0.0-beta.8",
+  "description": "Source transformer facade for Panda CSS",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cx": {
+      "source": "./src/runtime/internal/cx.ts",
+      "types": "./dist/runtime/cx.d.ts",
+      "default": "./dist/runtime/cx.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/transformer"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:fast": "tsup --no-dts",
+    "dev": "tsup --no-dts --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-shared": "workspace:*",
+    "unplugin": "^2.3.10"
+  },
+  "peerDependencies": {
+    "vite": ">=6.0.0",
+    "webpack": ">=5.0.0",
+    "rollup": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    },
+    "rollup": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

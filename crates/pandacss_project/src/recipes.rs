@@ -317,6 +317,62 @@ impl RecipeRegistry {
         format!("{class_name}__{slot}")
     }
 
+    /// Resolve config recipe call sites to the class names a static runtime call
+    /// would apply. Slot recipes and conditional variant selections return `None`.
+    pub(crate) fn class_names_for_recipe_call(
+        &self,
+        recipe_name: &str,
+        selected: &Literal,
+        conditions: &ProjectConditionMatcher,
+        breakpoints: &[String],
+        smart_compound_variants: bool,
+    ) -> Option<Vec<String>> {
+        let node = self.recipe(recipe_name)?;
+
+        let mut classes = Vec::new();
+        if let Some(base) = node.base.as_ref() {
+            classes.push(base.class_name.to_string());
+        }
+
+        let selected = selected_variants(&node.default_variants, selected, conditions, breakpoints);
+        for group in &node.variants {
+            let Some(selected_values) = selected.get(group.name.as_ref()) else {
+                continue;
+            };
+            for selected_value in selected_values {
+                if !selected_value.conditions.is_empty() {
+                    return None;
+                }
+                let Some(option) = group.options.get(selected_value.key.as_ref()) else {
+                    continue;
+                };
+                classes.push(option.class_name.to_string());
+            }
+        }
+
+        if smart_compound_variants {
+            for compound in &node.compounds {
+                let Some(extra_conditions) = compound_conditions(compound, &selected) else {
+                    continue;
+                };
+                if !extra_conditions.is_empty() {
+                    return None;
+                }
+                push_compound_class_names(&mut classes, compound);
+            }
+        } else {
+            for compound in &node.compounds {
+                push_compound_class_names(&mut classes, compound);
+            }
+        }
+
+        if classes.is_empty() {
+            None
+        } else {
+            Some(classes)
+        }
+    }
+
     pub(crate) fn process_static_css(
         &self,
         encoded: &mut EncodedRecipes,
@@ -1550,6 +1606,13 @@ fn compound_conditions(
         extend_unique_conditions(&mut out, &selected_value.conditions);
     }
     Some(out)
+}
+
+fn push_compound_class_names(classes: &mut Vec<String>, compound: &ResolvedCompoundVariant) {
+    match &compound.target {
+        CompoundTarget::Recipe(part) => classes.push(part.class_name.to_string()),
+        CompoundTarget::Slots(_) => {}
+    }
 }
 
 fn extend_unique_conditions(

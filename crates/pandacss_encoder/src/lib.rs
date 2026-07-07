@@ -251,6 +251,14 @@ impl ConditionMatcher for ConditionSet {
     }
 }
 
+impl ConditionSet {
+    /// Whether `key` is a configured condition name (including `_`-prefixed keys).
+    #[must_use]
+    pub fn is_configured_name(&self, key: &str) -> bool {
+        self.names.contains(key)
+    }
+}
+
 /// Inline normalization the encoder applies during a single walk over the
 /// input style — avoids the upfront `StyleNormalizer.normalize` pass and the
 /// `Cow<Literal>` it produces. Default impls are no-ops; the project layer
