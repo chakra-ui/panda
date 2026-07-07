@@ -23,8 +23,14 @@ extension path. If one breaks and the other doesn't, you know which half to look
 ```sh
 pnpm -w build:fast
 pnpm --dir sandbox-design-system ds:lib
-pnpm --dir sandbox-design-system overlay:build   # or overlay:dev to open it
+pnpm --dir sandbox-design-system overlay:build    # or overlay:dev to open it
+pnpm --dir sandbox-design-system overlay:verify   # asserts the output is virtualized
 ```
+
+`overlay:verify` (run automatically inside `build`/`test`) fails if the overlay re-emitted DS
+recipes/patterns locally instead of re-exporting them. A Vite build passes either way, so this
+assertion is the only thing that catches a stale `compiler.node` silently falling back to a full
+tree — rebuild native with `pnpm --filter @pandacss/compiler build:native` if it fails.
 
 Then read `packages/overlay/styled-system/recipes/index.js`:
 
