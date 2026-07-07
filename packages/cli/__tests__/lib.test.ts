@@ -72,6 +72,18 @@ describe('lib command', () => {
     expect(result.exportsChanged).toBe(true)
   })
 
+  it('stamps a concrete major when the package declares no @pandacss/dev peer', async () => {
+    dir = createLibFixture()
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.2.3' }, null, 2))
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const manifest = readManifest(dir)
+    expect(manifest.panda).not.toBe('*')
+    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+  })
+
   it('syncs styled-system subpath exports for categories the codegen emitted', async () => {
     dir = createLibFixture()
     await runCodegen({ cwd: dir, logLevel: 'silent' })

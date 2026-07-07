@@ -10,20 +10,14 @@ import type {
   DesignSystemValidateOptions,
 } from './types'
 
-/**
- * Minimal primitives `DesignSystem` needs; native and wasm adapters can map
- * their flat binding names into this smaller shape.
- */
 export interface DesignSystemBinding {
   createManifest(input: DesignSystemManifestInput): DesignSystemManifest
   manifestSchemaVersion(): number
   resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
-/**
- * Major from a version or range (`^2.1.0` -> `2`); `NaN` when no number is found
- * so an unreadable value fails the major check rather than passing silently.
- */
+/** Major from a version or range (`^2.1.0` -> `2`); `NaN` when no number is found
+ *  so an unreadable value fails the major check rather than passing silently. */
 const major = (value: string): number => {
   const match = value.match(/\d+/)
   return match ? Number(match[0]) : NaN
@@ -59,8 +53,6 @@ export class DesignSystem {
     const compat = this.validate(manifest, { pandaVersion: options.pandaVersion })
     if (!compat.ok) return { ok: false, reason: compat.reason, modules: [] }
 
-    // `imports` omitted -> hydrate every module (namespace import); otherwise
-    // resolve the touched modules so only their CSS emits (tree-shaking).
     const only =
       options.imports !== undefined ? this.#buildInfo.modulesFor(options.buildInfo, options.imports) : undefined
     const result = this.#buildInfo.hydrate(options.buildInfo, { name: manifest.name, only })

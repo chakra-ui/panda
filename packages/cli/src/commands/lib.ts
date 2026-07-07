@@ -27,7 +27,8 @@ export const libCommand = defineCommand({
     },
     panda: {
       type: 'string',
-      description: "Peer Panda version range to stamp (defaults to the package's @pandacss/dev peer, or '*')",
+      description:
+        "Peer Panda version range to stamp (defaults to the package's @pandacss/dev peer, or the running Panda's major)",
     },
     files: {
       type: 'string',

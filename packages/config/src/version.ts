@@ -10,3 +10,8 @@ export function readPandaVersion(): string | undefined {
     return undefined
   }
 }
+
+export function runningPandaRange(): string | undefined {
+  const match = readPandaVersion()?.match(/\d+/)
+  return match ? `^${match[0]}.0.0` : undefined
+}

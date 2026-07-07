@@ -5,7 +5,7 @@ export { findConfig } from './find'
 export { bundleConfig } from './bundle'
 export { mergeConfigs } from './merge'
 export { resolveSmartInclude, mergeExcludes } from './smart-include'
-export { readPandaVersion } from './version'
+export { readPandaVersion, runningPandaRange } from './version'
 export { compilePreset } from './lib-preset'
 export {
   readPackageIdentity,

@@ -1,5 +1,5 @@
 import { type Driver } from '@pandacss/compiler'
-import { toRelativeKey } from '@pandacss/config'
+import { runningPandaRange, toRelativeKey } from '@pandacss/config'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -22,7 +22,10 @@ export const buildinfoCommand = defineCommand({
     ...baseArgs(),
     ...includeArgs(),
     outfile: { type: 'string', description: "Output path, default './<outdir>/panda.buildinfo.json'", alias: 'o' },
-    panda: { type: 'string', description: "Peer Panda version range to stamp into the artifact (default '*')" },
+    panda: {
+      type: 'string',
+      description: "Peer Panda version range to stamp into the artifact (defaults to the running Panda's major)",
+    },
     minify: { type: 'boolean', description: 'Minify the generated JSON', alias: 'm' },
     ...outputArgs(),
     ...traceArgs(),
@@ -56,7 +59,7 @@ export async function runBuildinfo(
         timings,
         phase: 'buildinfo',
         run: () => {
-          const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? '*' })
+          const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? runningPandaRange() ?? '*' })
           return driver.compiler.buildInfo.normalize(info, { mapModuleKey: (key) => toRelativeKey(key, cwd) })
         },
       })
