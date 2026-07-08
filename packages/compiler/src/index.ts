@@ -1,5 +1,4 @@
 import type {
-  Compiler as SharedCompiler,
   CompileOutput,
   CompilerOptions,
   ConfigSnapshot,

@@ -22,6 +22,7 @@ import type {
   ExtractorSession,
   ExtractorSessionConstructor,
   NativeBinding,
+  NativeTransformSourceInput,
   TransformSourceResult,
 } from './types'
 
@@ -178,9 +179,9 @@ class FallbackCompiler implements Compiler {
   inspectFileSource(_path: string, _source: string): Omit<FileInspectionResult, 'path'> {
     return { usages: [], diagnostics: [], calls: [], jsx: [], tokenRefs: [], componentEntries: [], styleEntries: [] }
   }
-  transformSource(path: string, source: string): TransformSourceResult {
+  transformSource(input: NativeTransformSourceInput): TransformSourceResult {
     return {
-      code: source,
+      code: input.source,
       map: null,
       changed: false,
       bailed: false,

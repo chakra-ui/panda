@@ -1,13 +1,76 @@
 import { describe, expect, test } from 'vitest'
 import { getBindingInfo } from '../src'
-import { createProject } from './test-utils'
+import { createTransformProject } from './test-utils'
 
-const compiler = createProject({
+const compiler = createTransformProject({
   utilities: {
     color: {},
     marginTop: {},
     padding: {},
     display: {},
+  },
+})
+
+const pandaJsxCompiler = createTransformProject({
+  jsxFactory: 'panda',
+  jsxFramework: 'react',
+  utilities: {
+    color: {},
+    fontWeight: {},
+    gap: {},
+    justifyContent: {},
+  },
+  patterns: {
+    box: {
+      jsxName: 'Box',
+      properties: {},
+    },
+    hstack: {
+      jsxName: 'HStack',
+      properties: {
+        gap: {
+          type: 'property',
+          value: 'gap',
+        },
+      },
+    },
+    wrap: {
+      jsxName: 'Wrap',
+      properties: {
+        gap: {
+          type: 'property',
+          value: 'gap',
+        },
+        justifyContent: {
+          type: 'property',
+          value: 'justifyContent',
+        },
+      },
+    },
+  },
+})
+
+// Config recipe with a compound variant, default (eager) compound mode.
+const recipeCompiler = createTransformProject({
+  theme: {
+    recipes: {
+      button: {
+        className: 'button',
+        base: { display: 'inline-flex' },
+        defaultVariants: { size: 'md', variant: 'solid' },
+        variants: {
+          size: { sm: { fontSize: '12px' }, md: { fontSize: '16px' }, lg: { fontSize: '18px' } },
+          variant: { solid: { color: 'white' }, outline: { color: 'blue' } },
+        },
+        compoundVariants: [{ size: 'sm', variant: 'outline', css: { padding: '2px' } }],
+      },
+    },
+  },
+  utilities: {
+    display: { className: 'd' },
+    fontSize: { className: 'fs' },
+    color: { className: 'c' },
+    padding: {},
   },
 })
 
@@ -30,7 +93,7 @@ describe('compiler.transformSource', () => {
       "export const cls = css({ color: 'red', marginTop: '4px' })",
     )
 
-    const result = compiler.transformSource('src/button.tsx', source)
+    const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect({
       changed: result.changed,
       bailed: result.bailed,
@@ -47,7 +110,7 @@ describe('compiler.transformSource', () => {
   test('rewrites namespace css member calls', () => {
     const source = lines("import * as panda from '@panda/css'", "export const cls = panda.css({ color: 'red' })")
 
-    const result = compiler.transformSource('src/button.tsx', source)
+    const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.code).toMatchInlineSnapshot(`
       "export const cls = "color_red""
     `)
@@ -59,7 +122,7 @@ describe('compiler.transformSource', () => {
       "export const cls = css({ color: 'red', padding: '4px', color: 'blue' })",
     )
 
-    const result = compiler.transformSource('src/styles.ts', source)
+    const result = compiler.transformSource({ path: 'src/styles.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "export const cls = "color_blue padding_4px""
     `)
@@ -71,7 +134,7 @@ describe('compiler.transformSource', () => {
       "export const raw = css.raw({ color: 'red', padding: '4px' })",
     )
 
-    const result = compiler.transformSource('src/styles.ts', source)
+    const result = compiler.transformSource({ path: 'src/styles.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       "export const raw = "color_red padding_4px""
     `)
@@ -80,7 +143,7 @@ describe('compiler.transformSource', () => {
   test('rewrites multiple static css() calls in one file', () => {
     const source = lines("import { css } from '@panda/css'", "css({ color: 'red' })", "css({ marginTop: '4px' })")
 
-    const result = compiler.transformSource('src/styles.ts', source)
+    const result = compiler.transformSource({ path: 'src/styles.ts', source })
     expect(result.code).toMatchInlineSnapshot(`
       ""color_red"
       "margin-top_4px""
@@ -94,7 +157,7 @@ describe('compiler.transformSource', () => {
       'export const dynamicCls = css({ color: props.color })',
     )
 
-    const result = compiler.transformSource('src/mixed.tsx', source)
+    const result = compiler.transformSource({ path: 'src/mixed.tsx', source })
     expect({
       changed: result.changed,
       bailed: result.bailed,
@@ -113,7 +176,7 @@ describe('compiler.transformSource', () => {
   test('leaves unextractable dynamic css() calls untouched', () => {
     const source = lines("import { css } from '@panda/css'", 'export const cls = css({ color: props.color })')
 
-    const result = compiler.transformSource('src/button.tsx', source)
+    const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect({
       changed: result.changed,
       bailed: result.bailed,
@@ -134,7 +197,7 @@ describe('compiler.transformSource', () => {
       "export const cls = css({ color: isError ? 'red' : 'blue' })",
     )
 
-    const result = compiler.transformSource('src/button.tsx', source)
+    const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect({
       changed: result.changed,
       bailed: result.bailed,
@@ -155,7 +218,7 @@ describe('compiler.transformSource', () => {
       "export const cls = css({ color: dark ? 'red' : 'blue' })",
     )
 
-    const result = compiler.transformSource('src/button.tsx', source)
+    const result = compiler.transformSource({ path: 'src/button.tsx', source })
     expect(result.code).toMatchInlineSnapshot(`
       "const dark = true
       export const cls = "color_red""
@@ -165,7 +228,9 @@ describe('compiler.transformSource', () => {
   test('forwards transform target options to the native layer', () => {
     const source = lines("import { css } from '@panda/css'", "export const cls = css({ color: 'red' })")
 
-    const result = compiler.transformSource('src/button.tsx', source, {
+    const result = compiler.transformSource({
+      path: 'src/button.tsx',
+      source,
       targetsCss: false,
       targetsPatterns: true,
     })
@@ -181,6 +246,68 @@ describe('compiler.transformSource', () => {
         "code": "import { css } from '@panda/css'
       export const cls = css({ color: 'red' })",
       }
+    `)
+  })
+
+  test('rewrites pattern JSX css props with the panda factory config', () => {
+    const source = lines(
+      "import { HStack } from '@panda/jsx'",
+      'export const el = <HStack gap="4" css={{ color: \'red\' }} />',
+    )
+
+    const result = pandaJsxCompiler.transformSource({ path: 'src/patterns.tsx', source })
+    expect(result.code).toMatchInlineSnapshot(`
+      "export const el = <div className="color_red gap_4" />"
+    `)
+  })
+
+  test('rewrites panda factory member tags to intrinsic elements', () => {
+    const source = lines(
+      "import { panda } from '@panda/jsx'",
+      'export const el = <panda.footer color="red" fontWeight="bold">footer</panda.footer>',
+    )
+
+    const result = pandaJsxCompiler.transformSource({ path: 'src/footer.tsx', source })
+    expect(result.code).toMatchInlineSnapshot(`
+      "export const el = <footer className="color_red font-weight_bold">footer</footer>"
+    `)
+  })
+
+  test('rewrites Box as component identifiers without losing the target component', () => {
+    const source = lines(
+      "import { Box } from '@panda/jsx'",
+      'export const el = <Box as={ChevronDownIcon} color="red" />',
+    )
+
+    const result = pandaJsxCompiler.transformSource({ path: 'src/box.tsx', source })
+    expect(result.code).toMatchInlineSnapshot(`
+      "export const el = <ChevronDownIcon className="color_red" />"
+    `)
+  })
+
+  test('inlines a config recipe compound class only when the combination matches', () => {
+    const source = lines(
+      "import { button } from '@panda/recipes'",
+      "export const cls = button({ size: 'sm', variant: 'outline' })",
+    )
+
+    const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { button } from '@panda/recipes'
+      export const cls = "button button--size_sm button--variant_outline button--compound__size_sm__variant_outline""
+    `)
+  })
+
+  test('omits a config recipe compound class when the combination does not match in eager mode', () => {
+    const source = lines(
+      "import { button } from '@panda/recipes'",
+      "export const cls = button({ size: 'lg', variant: 'outline' })",
+    )
+
+    const result = recipeCompiler.transformSource({ path: 'src/button.tsx', source })
+    expect(result.code).toMatchInlineSnapshot(`
+      "import { button } from '@panda/recipes'
+      export const cls = "button button--size_lg button--variant_outline""
     `)
   })
 })

@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { TransformSourceResult } from '@pandacss/compiler-shared'
+import type { TransformSourceInput } from '@pandacss/transformer'
 
 const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 
@@ -83,11 +85,11 @@ describe('@pandacss/vite design-system HMR', () => {
   })
 
   it('warns on source-transform diagnostics and returns transformed code', async () => {
-    const { driver, pandacss } = await setup()
+    const { createSourceTransformer, driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
     const warn = vi.fn()
 
-    driver.compiler.transformSource.mockReturnValueOnce({
+    driver.sourceTransformer.transformSource.mockReturnValueOnce({
       code: 'export const cls = "color_red"',
       map: 'source-map',
       changed: true,
@@ -104,6 +106,7 @@ describe('@pandacss/vite design-system HMR', () => {
     })
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    expect(createSourceTransformer).toHaveBeenCalledWith(driver.compiler)
     const result = plugin.transform.call(
       { addWatchFile: vi.fn(), warn },
       "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
@@ -126,30 +129,40 @@ describe('@pandacss/vite design-system HMR', () => {
 async function setup() {
   const driver = createMockDriver()
   const createNodeDriver = vi.fn(async () => driver)
+  const createSourceTransformer = vi.fn(() => driver.sourceTransformer)
 
   vi.doMock('@pandacss/compiler', () => ({
     createNodeDriver,
   }))
+  vi.doMock('@pandacss/transformer', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@pandacss/transformer')>()),
+    createSourceTransformer,
+  }))
 
   const { pandacss } = await import('../src')
 
-  return { createNodeDriver, driver, pandacss }
+  return { createNodeDriver, createSourceTransformer, driver, pandacss }
 }
 
 function createMockDriver() {
-  return {
-    compiler: {
-      hasLayerDeclaration: vi.fn((css: string) => css.includes('@layer')),
-      getFile: vi.fn(() => ({ diagnostics: [] })),
-      transformSource: vi.fn((_path: string, source: string) => ({
-        code: source,
+  const sourceTransformer = {
+    transformSource: vi.fn(
+      (input: TransformSourceInput): TransformSourceResult => ({
+        code: input.source,
         map: null,
         changed: false,
         bailed: false,
         diagnostics: [],
         dependencies: [],
         helper: { needsCx: false, needsCva: false, needsSva: false },
-      })),
+      }),
+    ),
+  }
+  return {
+    sourceTransformer,
+    compiler: {
+      hasLayerDeclaration: vi.fn((css: string) => css.includes('@layer')),
+      getFile: vi.fn(() => ({ diagnostics: [] })),
     },
     configPath: '/project/panda.config.ts',
     designSystemDiagnostics: [],

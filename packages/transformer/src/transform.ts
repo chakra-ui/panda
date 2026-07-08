@@ -1,44 +1,48 @@
 import type {
-  Diagnostic,
+  Compiler,
   SourceTransformer,
-  TransformHelperFacts,
+  TransformResult,
+  TransformSourceInput,
+  NativeTransformSourceInput,
   TransformSourceOptions,
+  TransformSourceRequest,
   TransformSourceResult,
+  TransformerOptions,
+} from '@pandacss/compiler-shared'
+export type {
+  SourceTransformer,
+  TransformResult,
+  TransformSourceInput,
+  TransformSourceRequest,
+  TransformerOptions,
 } from '@pandacss/compiler-shared'
 
-export interface TransformerOptions {
-  mode?: 'build' | 'serve'
-  helper?: {
-    cx?: false | true | 'auto'
-  }
-  targets?: {
-    css?: boolean
-    patterns?: boolean
-    recipes?: boolean
-    tokens?: boolean
-    jsx?: boolean
-  }
-  include?: RegExp | RegExp[]
-  exclude?: RegExp | RegExp[]
+interface RawSourceTransformBinding {
+  transformSource(input: NativeTransformSourceInput): TransformSourceResult
 }
 
-export interface TransformResult {
-  code: string
-  map: string | null
-  changed: boolean
-  bailed: boolean
-  diagnostics: Diagnostic[]
-  dependencies: string[]
-  helper: TransformHelperFacts
+export function createSourceTransformer(compiler: Compiler): SourceTransformer {
+  const binding = compiler as unknown as Partial<RawSourceTransformBinding>
+  return {
+    compiler,
+    transformSource(input) {
+      if (typeof binding.transformSource !== 'function') {
+        throw new Error('Source transforms are not available for this compiler instance')
+      }
+      return normalizeResult(binding.transformSource(toNativeInput(input)))
+    },
+  }
 }
 
-export function transformSource(
-  compiler: SourceTransformer,
-  path: string,
-  source: string,
-  options: TransformerOptions = {},
-): TransformResult {
-  const result: TransformSourceResult = compiler.transformSource(path, source, toNativeOptions(options))
+export function transformSource(input: TransformSourceRequest): TransformResult {
+  const transformer = input.transformer ?? (input.compiler ? createSourceTransformer(input.compiler) : undefined)
+  if (!transformer) {
+    throw new Error('Source transforms require a compiler or source transformer')
+  }
+  return transformer.transformSource(input)
+}
+
+function normalizeResult(result: TransformSourceResult): TransformResult {
   return {
     code: result.code,
     map: result.map,
@@ -47,6 +51,14 @@ export function transformSource(
     diagnostics: result.diagnostics,
     dependencies: result.dependencies,
     helper: result.helper,
+  }
+}
+
+function toNativeInput(input: TransformSourceInput): NativeTransformSourceInput {
+  return {
+    path: input.path,
+    source: input.source,
+    ...toNativeOptions(input),
   }
 }
 

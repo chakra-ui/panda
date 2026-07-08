@@ -19,7 +19,7 @@ tests should inherit that corpus instead of replacing it.
 
 | Layer                           | Location                             | Status            |
 | ------------------------------- | ------------------------------------ | ----------------- |
-| Rust transformer snapshots      | `crates/pandacss_transformer/tests/` | 209 tests passing |
+| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/` | via `cargo nextest run -p pandacss_project transform` |
 | JS facade + runtime             | `packages/transformer/__tests__/`    | 14 tests passing  |
 | Vite plugin                     | `packages/vite/__tests__/`           | 8 tests passing   |
 | Host e2e / bundle-size fixtures | sandbox                              | not started       |

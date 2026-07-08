@@ -38,6 +38,7 @@ mod recipes;
 mod runtime_config;
 mod static_patterns;
 mod system;
+mod transform;
 mod transform_cache;
 mod usages;
 
@@ -1204,7 +1205,7 @@ impl Project {
         style: &Literal,
         policy: ShorthandPolicy,
     ) {
-        self.process_atomic(encoder, style, policy);
+        self.process_style_props(encoder, style, policy);
     }
 
     /// Resolve a config recipe call to the class string a static runtime call
@@ -1227,19 +1228,22 @@ impl Project {
             arg,
             &compiled.conditions,
             &compiled.breakpoints,
-            compiled.optimize.smart_compound_variants,
         )
     }
 
-    /// Resolve a pattern call to atomic class names when the pattern has no JS
-    /// transform callback. Patterns that require a transform return `None`.
+    /// Resolve a pattern call to atomic class names.
+    ///
+    /// When the pattern declares a JS transform, pass it via `pattern_transform`.
+    /// Bail only when a transform is required but missing.
     #[must_use]
     pub fn class_names_for_pattern_call(
         &self,
         pattern_name: &str,
         args: &[Option<Literal>],
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> Option<Vec<String>> {
-        if self.config.patterns.requires_transform(pattern_name) {
+        let requires_transform = self.config.patterns.requires_transform(pattern_name);
+        if requires_transform && pattern_transform.is_none() {
             return None;
         }
         let empty = Literal::Object(Vec::new());
@@ -1249,7 +1253,15 @@ impl Project {
             Some(_) => return None,
         };
         let prepared = self.config.patterns.transform_input(pattern_name, arg);
-        self.class_names_for_style_literal(prepared.styles.as_ref())
+        let styles = if let Some(transform) = pattern_transform {
+            match transform(prepared.name, prepared.styles.as_ref()) {
+                Ok(Some(style)) => style,
+                Ok(None) | Err(_) => return None,
+            }
+        } else {
+            prepared.styles.into_owned()
+        };
+        self.class_names_for_style_literal(&styles)
     }
 
     /// Resolve one encoded atom to the runtime `css()` class string.
@@ -1290,9 +1302,13 @@ impl Project {
 
     /// Resolve a matched JSX element to the class strings a static runtime
     /// render would apply. Recipe JSX merges variant classes with leftover
-    /// style props; pattern JSX runs the pattern transform first.
+    /// style props; pattern JSX applies `pattern_transform` when provided.
     #[must_use]
-    pub fn class_names_for_jsx_usage(&self, jsx: &ExtractedJsx) -> Option<Vec<String>> {
+    pub fn class_names_for_jsx_usage(
+        &self,
+        jsx: &ExtractedJsx,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> Option<Vec<String>> {
         let compiled = self.config.as_ref();
         let data = &jsx.data;
         let entries = literal_entries(data)?;
@@ -1325,11 +1341,20 @@ impl Project {
                 (!classes.is_empty()).then_some(classes)
             }
             JsxKind::Pattern => {
-                if compiled.patterns.requires_transform(&jsx.name) {
+                let requires_transform = compiled.patterns.requires_transform(&jsx.name);
+                if requires_transform && pattern_transform.is_none() {
                     return None;
                 }
                 let prepared = compiled.patterns.transform_input(&jsx.name, data);
-                self.class_names_for_style_literal(prepared.styles.as_ref())
+                let styles = if let Some(transform) = pattern_transform {
+                    match transform(prepared.name, prepared.styles.as_ref()) {
+                        Ok(Some(style)) => style,
+                        Ok(None) | Err(_) => return None,
+                    }
+                } else {
+                    prepared.styles.into_owned()
+                };
+                self.class_names_for_style_literal(&styles)
             }
             JsxKind::Factory | JsxKind::Component => self.class_names_for_style_literal(data),
         }
@@ -1824,4 +1849,10 @@ pub use pandacss_extractor::{
 pub use pandacss_recipes::{
     CompoundVariant, SlotCompoundVariant, SlotVariantGroup, SlotVariantOption, VariantGroup,
     VariantOption,
+};
+pub use transform::{
+    CSS_HELPER_LOCAL, CVA_HELPER_LOCAL, CX_HELPER_LOCAL, CX_HELPER_MODULE, HelperCxMode,
+    INTERNAL_CSS_MODULE, SVA_HELPER_LOCAL, TransformHelperFacts, TransformMode, TransformOptions,
+    TransformOutput, TransformTargets, inject_cx_import, inject_internal_css_import,
+    inject_internal_css_import_at, sync_internal_css_import, transform_source,
 };

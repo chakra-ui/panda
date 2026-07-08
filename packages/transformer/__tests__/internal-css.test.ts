@@ -48,6 +48,35 @@ describe('@pandacss-internal/css runtime', () => {
     })
   })
 
+  it('sva supports generated slot class maps and shared variant strings', () => {
+    const dialog = sva({
+      slots: ['root', 'content'],
+      className: {
+        root: 'chakra-dialog',
+        content: 'chakra-dialog__content',
+      },
+      base: {
+        root: 'bg_bg',
+        content: 'shadow_lg',
+      },
+      variants: {
+        placement: {
+          top: 'items_start mx_auto',
+        },
+      },
+      defaultVariants: {
+        placement: 'top',
+      },
+    })
+
+    expect(dialog()).toMatchInlineSnapshot(`
+      {
+        "content": "shadow_lg chakra-dialog__content items_start mx_auto",
+        "root": "bg_bg chakra-dialog items_start mx_auto",
+      }
+    `)
+  })
+
   it('recognizes the virtual internal css import id', () => {
     expect(isInternalCssImport('@pandacss-internal/css')).toBe(true)
     expect(isInternalCssImport('@panda/css')).toBe(false)

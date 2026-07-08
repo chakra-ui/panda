@@ -1,29 +1,29 @@
-import type { Compiler, SourceTransformer } from '@pandacss/compiler-shared'
+import type {
+  Compiler,
+  PandaSourceTransformContext,
+  PandaSourceTransformResult,
+  PandaTransformerOptions,
+  SourceTransformer,
+} from '@pandacss/compiler-shared'
 import { getInternalCssRuntimeSource, resolveCxSeparator } from './runtime/internal/load'
 import { INTERNAL_CSS_RESOLVED_ID, isInternalCssImport, isInternalCssResolvedId } from './runtime/internal/ids'
-import { shouldTransform, transformSource, type TransformResult, type TransformerOptions } from './transform'
+import { createSourceTransformer, shouldTransform, transformSource } from './transform'
+export type {
+  PandaSourceTransformContext,
+  PandaSourceTransformResult,
+  PandaTransformerOptions,
+} from '@pandacss/compiler-shared'
 
-export type TransformerCompiler = Compiler & SourceTransformer
-
-export interface PandaTransformerOptions extends TransformerOptions {
-  /** Resolved Panda compiler instance from `createCompiler()` or `createNodeDriver()`. */
-  compiler?: TransformerCompiler
-  /** Lazy compiler access for hosts that initialize the driver in `configResolved`. */
-  getCompiler?: () => TransformerCompiler | undefined
+export function resolveCompiler(options: PandaTransformerOptions): Compiler | undefined {
+  return options.compiler ?? options.getCompiler?.() ?? resolveTransformer(options)?.compiler
 }
 
-export function resolveCompiler(options: PandaTransformerOptions): TransformerCompiler | undefined {
-  return options.compiler ?? options.getCompiler?.()
-}
+export function resolveTransformer(options: PandaTransformerOptions): SourceTransformer | undefined {
+  const transformer = options.transformer ?? options.getTransformer?.()
+  if (transformer) return transformer
 
-export interface PandaSourceTransformContext {
-  addWatchFile?: (file: string) => void
-}
-
-export interface PandaSourceTransformResult
-  extends Pick<TransformResult, 'diagnostics' | 'dependencies' | 'changed' | 'bailed'> {
-  code: string
-  map: string | null
+  const compiler = options.compiler ?? options.getCompiler?.()
+  return compiler ? createSourceTransformer(compiler) : undefined
 }
 
 export function runSourceTransform(
@@ -34,10 +34,17 @@ export function runSourceTransform(
 ): PandaSourceTransformResult | null {
   if (!shouldTransform(id, options)) return null
 
-  const compiler = resolveCompiler(options)
-  if (!compiler) return null
+  const transformer = resolveTransformer(options)
+  if (!transformer) return null
 
-  const result = transformSource(compiler, id, code, options)
+  const {
+    compiler: _compiler,
+    getCompiler: _getCompiler,
+    getTransformer: _getTransformer,
+    transformer: _transformer,
+    ...transformOptions
+  } = options
+  const result = transformSource({ ...transformOptions, transformer, path: id, source: code })
   for (const dep of result.dependencies) {
     ctx.addWatchFile?.(dep)
   }

@@ -13,8 +13,8 @@ import type {
   FileInspectionResult,
   SerializedConfig,
   SerializedHookFilter,
-  SourceTransformer,
   Span,
+  NativeTransformSourceInput,
   TransformSourceOptions,
   TransformSourceResult,
 } from '@pandacss/compiler-shared'
@@ -157,15 +157,17 @@ interface RawPathBinding {
   dirname(path: string): string
 }
 
-/** The raw native instance — superset of {@link Compiler} carrying the internal
- *  methods the facade hides. */
-export interface NativeCompiler extends SharedCompiler, SourceTransformer {}
+export interface NativeCompiler extends SharedCompiler {}
+
+export interface RawSourceTransformBinding {
+  transformSource(input: NativeTransformSourceInput): TransformSourceResult
+}
 
 /** The raw native instance — superset of {@link NativeCompiler} carrying the internal
  *  methods the facade hides. */
 export interface RawCompiler
   extends NativeCompiler,
-    SourceTransformer,
+    RawSourceTransformBinding,
     BuildInfoNative,
     RawDesignSystemBinding,
     RawFileSystemBinding,
@@ -204,4 +206,9 @@ export interface NativeBinding {
   Compiler: CompilerConstructor
 }
 
-export type { SourceTransformer, TransformSourceOptions, TransformSourceResult } from '@pandacss/compiler-shared'
+export type {
+  NativeSourceTransformer,
+  NativeTransformSourceInput,
+  TransformSourceOptions,
+  TransformSourceResult,
+} from '@pandacss/compiler-shared'

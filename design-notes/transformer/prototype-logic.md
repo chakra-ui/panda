@@ -11,7 +11,7 @@ The prototype did not ship a dedicated `cx` helper yet. It did establish the pie
 3. dead-import cleanup before helper injection
 4. single-file orchestration with a stable pass order
 
-We moved that logic into `crates/pandacss_transformer` (print) and `@pandacss/transformer` (runtime delivery).
+We moved that logic into `pandacss_project::transform` (print) and `@pandacss/transformer` (runtime delivery).
 
 ## Single-file transform shape
 

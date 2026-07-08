@@ -325,7 +325,6 @@ impl RecipeRegistry {
         selected: &Literal,
         conditions: &ProjectConditionMatcher,
         breakpoints: &[String],
-        smart_compound_variants: bool,
     ) -> Option<Vec<String>> {
         let node = self.recipe(recipe_name)?;
 
@@ -350,20 +349,16 @@ impl RecipeRegistry {
             }
         }
 
-        if smart_compound_variants {
-            for compound in &node.compounds {
-                let Some(extra_conditions) = compound_conditions(compound, &selected) else {
-                    continue;
-                };
-                if !extra_conditions.is_empty() {
-                    return None;
-                }
-                push_compound_class_names(&mut classes, compound);
+        // Gate compounds by selection to match the runtime; `smartCompoundVariants`
+        // only affects which compound CSS is emitted, not resolved class names.
+        for compound in &node.compounds {
+            let Some(extra_conditions) = compound_conditions(compound, &selected) else {
+                continue;
+            };
+            if !extra_conditions.is_empty() {
+                return None;
             }
-        } else {
-            for compound in &node.compounds {
-                push_compound_class_names(&mut classes, compound);
-            }
+            push_compound_class_names(&mut classes, compound);
         }
 
         if classes.is_empty() {

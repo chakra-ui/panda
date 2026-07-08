@@ -1,8 +1,8 @@
-import type { SourceTransformer, TransformSourceResult } from '@pandacss/compiler-shared'
+import type { Compiler, NativeSourceTransformer, TransformSourceResult } from '@pandacss/compiler-shared'
 import { describe, expect, it, vi } from 'vitest'
 import { runSourceTransform } from '../src/hooks'
 import { INTERNAL_CSS_IMPORT, INTERNAL_CSS_RESOLVED_ID } from '../src/runtime/internal/ids'
-import { shouldTransform, transformSource } from '../src/transform'
+import { createSourceTransformer, shouldTransform, transformSource } from '../src/transform'
 
 describe('shouldTransform', () => {
   it('matches source files and ignores assets', () => {
@@ -45,11 +45,17 @@ describe('transformSource', () => {
         dependencies: ['/project/tokens.ts'],
         helper: { needsCx: false, needsCva: false, needsSva: false },
       })),
-    }
+    } as NativeSourceTransformer
 
-    const result = transformSource(compiler as SourceTransformer, '/project/App.tsx', "css({ color: 'red' })")
+    const result = transformSource({
+      compiler: compiler as unknown as Compiler,
+      path: '/project/App.tsx',
+      source: "css({ color: 'red' })",
+    })
 
-    expect(compiler.transformSource).toHaveBeenCalledWith('/project/App.tsx', "css({ color: 'red' })", {
+    expect(compiler.transformSource).toHaveBeenCalledWith({
+      path: '/project/App.tsx',
+      source: "css({ color: 'red' })",
       mode: undefined,
       helperCx: 'auto',
       targetsCss: undefined,
@@ -76,6 +82,44 @@ describe('transformSource', () => {
       }
     `)
   })
+
+  it('supports object input through a reusable source transformer', () => {
+    const compiler = {
+      transformSource: vi.fn(() => ({
+        code: '"color_blue"',
+        map: null,
+        changed: true,
+        bailed: false,
+        diagnostics: [],
+        dependencies: [],
+        helper: { needsCx: false, needsCva: false, needsSva: false },
+      })),
+    } as NativeSourceTransformer
+
+    const transformer = createSourceTransformer(compiler as unknown as Compiler)
+
+    expect(
+      transformer.transformSource({
+        path: '/project/App.tsx',
+        source: "css({ color: 'blue' })",
+        targets: { css: true, jsx: true },
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "bailed": false,
+        "changed": true,
+        "code": ""color_blue"",
+        "dependencies": [],
+        "diagnostics": [],
+        "helper": {
+          "needsCva": false,
+          "needsCx": false,
+          "needsSva": false,
+        },
+        "map": null,
+      }
+    `)
+  })
 })
 
 describe('runSourceTransform', () => {
@@ -86,7 +130,7 @@ describe('runSourceTransform', () => {
       severity: 'warning',
       message: 'watch this transform',
     }
-    const compiler: SourceTransformer = {
+    const compiler = {
       transformSource: vi.fn(() => ({
         code: '"color_red"',
         map: 'test-map',
@@ -96,7 +140,7 @@ describe('runSourceTransform', () => {
         dependencies: ['/project/tokens.ts'],
         helper: { needsCx: false, needsCva: false, needsSva: false },
       })),
-    }
+    } as unknown as Compiler
 
     const result = runSourceTransform({ addWatchFile }, { compiler }, "css({ color: 'red' })", '/project/App.tsx')
 

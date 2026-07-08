@@ -6,12 +6,20 @@ import { shouldTransform } from './transform'
 export type { PandaTransformerOptions } from './hooks'
 
 export const pandaTransformer = createUnplugin<PandaTransformerOptions>((options) => {
-  const { compiler: _compiler, getCompiler: _getCompiler, ...transformOptions } = options
+  const {
+    compiler: _compiler,
+    transformer: _transformer,
+    getCompiler: _getCompiler,
+    getTransformer: _getTransformer,
+    ...transformOptions
+  } = options
 
   const hooks = createPandaSourcePluginHooks(() => ({
     ...transformOptions,
     compiler: options.compiler,
+    transformer: options.transformer,
     getCompiler: options.getCompiler,
+    getTransformer: options.getTransformer,
   }))
 
   return {

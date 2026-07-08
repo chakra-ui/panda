@@ -85,7 +85,7 @@ The Rollup adapter should mirror Vite:
 
 Design Rolldown support as Rollup-shaped first. Validate plugin parity before calling it complete.
 
-Rolldown maintains `string_wizard`, which Panda already uses in `crates/pandacss_transformer` for edits and source maps.
+Rolldown maintains `string_wizard`, which Panda already uses in `pandacss_project::transform` for edits and source maps.
 That affects printer choice, not the host contract.
 
 Shipping rule: do not mark Rolldown done until helper resolution, source maps, and watch rebuilds all pass.

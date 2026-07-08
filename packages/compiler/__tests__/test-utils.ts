@@ -1,4 +1,4 @@
-import type { CompilerOptions, SerializedConfig } from '../src'
+import type { CompilerOptions, NativeSourceTransformer, SerializedConfig } from '../src'
 import { createCompiler } from '../src'
 
 export const importMap = {
@@ -24,4 +24,11 @@ export function createUserConfig(overrides: SerializedConfig = {}): SerializedCo
  *  (named `createProject` historically — it's the project/compiler test handle). */
 export function createProject(userConfig: SerializedConfig = {}, options: CompilerOptions = { crossFile: false }) {
   return createCompiler(createUserConfig(userConfig), options)
+}
+
+export function createTransformProject(
+  userConfig: SerializedConfig = {},
+  options: CompilerOptions = { crossFile: false },
+) {
+  return createProject(userConfig, options) as ReturnType<typeof createProject> & NativeSourceTransformer
 }

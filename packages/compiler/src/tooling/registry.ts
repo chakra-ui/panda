@@ -3,8 +3,6 @@ import { dirname, join } from 'node:path'
 import { findConfig } from '@pandacss/config'
 import { createProjectFromConfig, type Project, type ProjectKey } from './create-project'
 
-export type { ProjectKey }
-
 export interface ProjectRegistryOptions {
   createProject?: (key: ProjectKey) => Promise<Project>
 }

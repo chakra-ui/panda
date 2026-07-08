@@ -19,13 +19,22 @@ export {
   createPandaSourcePluginHooks,
   type PandaSourceTransformResult,
   resolveCompiler,
+  resolveTransformer,
   runSourceTransform,
   type PandaSourceTransformContext,
   type PandaTransformerOptions,
-  type TransformerCompiler,
 } from './hooks'
 export { pandaTransformer } from './plugin'
-export { shouldTransform, transformSource, type TransformResult, type TransformerOptions } from './transform'
+export {
+  createSourceTransformer,
+  shouldTransform,
+  transformSource,
+  type SourceTransformer,
+  type TransformResult,
+  type TransformerOptions,
+  type TransformSourceInput,
+  type TransformSourceRequest,
+} from './transform'
 
 import pandaTransformer from './plugin'
 

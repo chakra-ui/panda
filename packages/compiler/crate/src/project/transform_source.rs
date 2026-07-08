@@ -1,13 +1,20 @@
+use super::transforms::{
+    apply_pattern_transform, apply_source_transforms, apply_utility_transform,
+};
 use super::{Compiler, Diagnostic};
 use crate::convert::convert_diagnostic;
 
+use napi::bindgen_prelude::Env;
 use napi_derive::napi;
-use pandacss_transformer::{
+use pandacss_encoder::AtomValue;
+use pandacss_project::{
     HelperCxMode, TransformMode, TransformOptions, TransformTargets, transform_source,
 };
 
 #[napi(object)]
-pub struct TransformSourceOptions {
+pub struct TransformSourceInput {
+    pub path: String,
+    pub source: String,
     pub mode: Option<String>,
     pub helper_cx: Option<String>,
     pub targets_css: Option<bool>,
@@ -44,16 +51,14 @@ impl Compiler {
         reason = "NAPI requires owned arguments"
     )]
     pub fn transform_source(
-        &self,
-        path: String,
-        source: String,
-        options: Option<TransformSourceOptions>,
+        &mut self,
+        env: Env,
+        input: TransformSourceInput,
     ) -> TransformSourceResult {
-        let options = options
-            .as_ref()
-            .map(into_transform_options)
-            .unwrap_or_default();
-        let output = transform_source(&self.inner, &path, &source, &options);
+        crate::init_tracing();
+        let options = into_transform_options(&input);
+        let output = self.transform_inner(&env, &input.path, &input.source, &options);
+        crate::flush_tracing();
         TransformSourceResult {
             code: output.code,
             map: output.map,
@@ -72,25 +77,87 @@ impl Compiler {
             },
         }
     }
+
+    /// Shared transform path — wires the same pattern/source/utility callbacks as
+    /// `parse_inner`, then calls `Project::transform_source_with`.
+    fn transform_inner(
+        &mut self,
+        env: &Env,
+        path: &str,
+        source: &str,
+        options: &TransformOptions,
+    ) -> pandacss_project::TransformOutput {
+        let has_source_transforms = self.callbacks.has_source_transforms();
+        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
+            return transform_source(&self.inner, path, source, options);
+        }
+        let Compiler {
+            inner, callbacks, ..
+        } = self;
+        let pattern_cache = &mut callbacks.transform_cache.pattern;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut pattern_transform = |name: &str, styles: &pandacss_extractor::Literal| {
+            apply_pattern_transform(
+                name,
+                styles,
+                &callbacks.pattern_transform_refs,
+                &callbacks.pattern_transforms,
+                pattern_cache,
+                env,
+            )
+        };
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                resolved,
+                original,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                env,
+            )
+        };
+        let mut source_transform = |path: &str, source: &str| {
+            apply_source_transforms(path, source, &callbacks.source_transforms, env)
+        };
+        inner.transform_source_with(
+            path,
+            source,
+            options,
+            pandacss_project::ParseTransforms {
+                source: has_source_transforms.then_some(
+                    &mut source_transform as &mut pandacss_project::SourceTransformFn<'_>,
+                ),
+                pattern: has_pattern_transforms.then_some(
+                    &mut pattern_transform as &mut pandacss_project::PatternTransformFn<'_>,
+                ),
+                utility: has_utility_transforms.then_some(
+                    &mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>,
+                ),
+            },
+        )
+    }
 }
 
-fn into_transform_options(options: &TransformSourceOptions) -> TransformOptions {
+fn into_transform_options(input: &TransformSourceInput) -> TransformOptions {
     TransformOptions {
-        mode: match options.mode.as_deref() {
+        mode: match input.mode.as_deref() {
             Some("serve") => TransformMode::Serve,
             _ => TransformMode::Build,
         },
-        helper_cx: match options.helper_cx.as_deref() {
+        helper_cx: match input.helper_cx.as_deref() {
             Some("true") => HelperCxMode::True,
             Some("false") => HelperCxMode::False,
             _ => HelperCxMode::Auto,
         },
         targets: TransformTargets {
-            css: options.targets_css.unwrap_or(false),
-            patterns: options.targets_patterns.unwrap_or(false),
-            recipes: options.targets_recipes.unwrap_or(false),
-            tokens: options.targets_tokens.unwrap_or(false),
-            jsx: options.targets_jsx.unwrap_or(false),
+            css: input.targets_css.unwrap_or(false),
+            patterns: input.targets_patterns.unwrap_or(false),
+            recipes: input.targets_recipes.unwrap_or(false),
+            tokens: input.targets_tokens.unwrap_or(false),
+            jsx: input.targets_jsx.unwrap_or(false),
         },
     }
 }

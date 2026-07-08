@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
 import { Inspector, Linter, ProjectCache, RangeIndex, resolvePandaSettings, sourceCacheKey } from '../src/core'
-import type { Compiler, FileInspectionResult } from '@pandacss/compiler'
+import type { FileInspectionResult, NativeCompiler } from '@pandacss/compiler'
 
 const emptyInspection = (path = 'app.tsx'): FileInspectionResult => ({
   path,
@@ -34,7 +34,7 @@ describe('resolvePandaSettings', () => {
 describe('Inspector', () => {
   test('caches one inspection result per compiler, path, and source key', () => {
     const inspectFile = vi.fn(({ path }: { path: string }) => emptyInspection(path))
-    const compiler = { inspectFile } as unknown as Compiler
+    const compiler = { inspectFile } as unknown as NativeCompiler
     const inspector = new Inspector()
 
     const first = inspector.inspect(compiler, 'app.tsx', 'css({ color: "red.300" })')
@@ -66,7 +66,7 @@ describe('RangeIndex', () => {
 
 describe('ProjectCache', () => {
   test('builds a project once per settings key', async () => {
-    const compiler = { inspectFile: ({ path }: { path: string }) => emptyInspection(path) } as unknown as Compiler
+    const compiler = { inspectFile: ({ path }: { path: string }) => emptyInspection(path) } as unknown as NativeCompiler
     const createProject = vi.fn(async () => ({
       compiler,
       configPath: '/repo/panda.config.ts',
@@ -92,7 +92,7 @@ describe('Linter', () => {
   test('loads a project and inspects the current source text', async () => {
     const inspection = emptyInspection()
     const inspectFile = vi.fn(() => inspection)
-    const compiler = { inspectFile } as unknown as Compiler
+    const compiler = { inspectFile } as unknown as NativeCompiler
     const createProject = vi.fn(async () => ({
       compiler,
       configPath: '/repo/panda.config.ts',

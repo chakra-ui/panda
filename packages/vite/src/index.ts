@@ -2,9 +2,10 @@ import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compil
 import { formatDiagnostic, withDiagnosticFile } from '@pandacss/compiler-shared'
 import {
   createPandaSourcePluginHooks,
+  createSourceTransformer,
   runSourceTransform,
   type PandaTransformerOptions,
-  type TransformerCompiler,
+  type SourceTransformer,
 } from '@pandacss/transformer'
 import { extname } from 'node:path'
 import type { HmrContext, ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
@@ -44,11 +45,12 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let outdir: string | undefined
   let resolvedConfig: ResolvedConfig | undefined
   let designSystemDiagnosticsKey = ''
+  let sourceTransformer: SourceTransformer | undefined
   const rootIds = new Set<string>()
-  const getTransformerCompiler = () => driver?.compiler as TransformerCompiler | undefined
   const sourceHooks = createPandaSourcePluginHooks(() => ({
     ...transformerOptions,
-    getCompiler: getTransformerCompiler,
+    getCompiler: () => driver?.compiler,
+    getTransformer: () => sourceTransformer,
   }))
 
   const codegen = () => {
@@ -117,6 +119,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       resolvedConfig = config
       cwd = cwdOption ?? config.root
       driver = await createNodeDriver({ cwd, configPath })
+      sourceTransformer = createSourceTransformer(driver.compiler)
       outdir = outdirOption
       codegen()
       driver.parseFiles()
@@ -135,7 +138,8 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         this,
         {
           ...transformerOptions,
-          getCompiler: getTransformerCompiler,
+          getCompiler: () => driver?.compiler,
+          getTransformer: () => sourceTransformer,
         },
         code,
         id,

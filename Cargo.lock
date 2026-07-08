@@ -105,7 +105,6 @@ dependencies = [
  "pandacss_stylesheet",
  "pandacss_tokens",
  "pandacss_tracing",
- "pandacss_transformer",
  "serde",
  "serde_json",
  "smallvec",
@@ -1232,6 +1231,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
+ "string_wizard",
  "tracing",
 ]
 
@@ -1306,25 +1306,6 @@ dependencies = [
  "tracing",
  "tracing-chrome",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "pandacss_transformer"
-version = "0.0.0"
-dependencies = [
- "indoc",
- "insta",
- "pandacss_config",
- "pandacss_encoder",
- "pandacss_extractor",
- "pandacss_fs",
- "pandacss_project",
- "pandacss_recipes",
- "pandacss_shared",
- "pandacss_utility",
- "serde",
- "serde_json",
- "string_wizard",
 ]
 
 [[package]]

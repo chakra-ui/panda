@@ -77,9 +77,10 @@ transitively. Merging is reversible later; splitting clean code post-merge is an
 (via `fast-glob`), and the binding/JS host calls it explicitly. When `.gitignore`-aware walking lands, it goes in a
 separate `pandacss_discover` crate built on `pandacss_fs` + the `ignore` crate.
 
-**"Should `pandacss_project` mutate source files?"** — No. `ParsedFile` is intentionally read-only. It is _not_ a
-ts-morph `SourceFile` analog — naming it `SourceFile` would invite `copy()` / `move()` / `applyTextChanges()` requests
-that don't fit Panda's extractor role.
+**"Should `pandacss_project` mutate source files?"** — `ParsedFile` stays read-only (not a ts-morph `SourceFile` analog —
+no `copy()` / `move()` / `applyTextChanges()` on file state). Source rewrite is different: `Project::transform_source`
+/ `transform_source_with` take source text and return a new string (+ map). That lives in `pandacss_project::transform`
+so rewrite shares `ParseTransforms` with `parse_file_with`.
 
 **"Should `pandacss_extractor` know about `pandacss_tokens`?"** — Yes, but narrowly. `pandacss_extractor` depends on
 `pandacss_tokens` so the static evaluator can fold `token('colors.red.500')` calls. The dependency is one-directional;
