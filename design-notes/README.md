@@ -106,6 +106,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
 ### Performance & operations
 
 - [Performance budget](./performance-budget.md) — `PERF(port)` markers, allocation choices, `FxHashMap` usage.
+- [Benchmark suite](./benchmark-suite.md) — `bench/` as one `corpus × mode × target` matrix (extraction, runtime/SSR,
+  transformer, CSS size) vs v1 and the competitive field; fairness rules, competitor axis, and the CSS-size
+  label-and-gate.
 - [Instrumentation](./instrumentation.md) — `tracing` spans, native trace output, and release-only benchmark policy.
 - [Publish namespace](./publish-namespace.md) — placeholder crate names + rename plan before publish.
 - [Benchmarks](./bench/) — dated reports comparing implementations. Latest:
