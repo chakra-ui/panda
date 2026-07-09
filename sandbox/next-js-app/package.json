@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "codegen": "panda codegen",
-    "dev": "pnpm codegen && rimraf .next && next dev",
-    "build": "pnpm codegen && next build",
+    "dev": "rimraf .next && next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@pandacss/dev": "workspace:*",
     "@pandacss/preset-base": "workspace:*",
-    "@pandacss/preset-panda": "workspace:*"
+    "@pandacss/preset-panda": "workspace:*",
+    "@pandacss/webpack": "workspace:*"
   }
 }

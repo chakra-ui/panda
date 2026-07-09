@@ -1,1 +1,1 @@
-@layer reset, base, tokens, recipes, utilities;
+@import '../../styled-system/styles.css';
