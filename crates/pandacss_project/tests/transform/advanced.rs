@@ -147,6 +147,20 @@ advanced_snapshot!(
 // --- cross-file spreads under conditions (cross_file.rs) ---
 
 #[test]
+fn helper_injection_does_not_panic_on_multibyte_source() {
+    // The helper-usage byte scan must not slice inside a multibyte char (`«`).
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx';
+        // « guillemet comment »
+        export const Box = styled.div`color: red;`;
+    "};
+    let output = transform_template_literal("src/box.tsx", source);
+
+    assert!(output.changed);
+    assert!(output.code.contains("__pcva"));
+}
+
+#[test]
 fn folds_an_imported_scalar_value_and_reports_the_dependency() {
     let source = indoc! {r"
         import { brand } from './tokens';

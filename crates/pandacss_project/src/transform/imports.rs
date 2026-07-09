@@ -199,10 +199,14 @@ pub(crate) fn local_binding_used(source: &str, local: &str, import_span: Span) -
         .unwrap_or(source.len())
         .min(source.len());
     let local_len = local.len();
+    let bytes = source.as_bytes();
+    let local_bytes = local.as_bytes();
     let mut index = 0usize;
 
-    while index + local_len <= source.len() {
-        if &source[index..index + local_len] != local {
+    // Byte comparison: `local` is an ASCII identifier, and slicing `source`
+    // directly panics when `index` lands inside a multibyte char.
+    while index + local_len <= bytes.len() {
+        if &bytes[index..index + local_len] != local_bytes {
             index += 1;
             continue;
         }
