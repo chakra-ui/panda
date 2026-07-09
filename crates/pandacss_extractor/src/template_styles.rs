@@ -34,6 +34,8 @@ struct ResolvedTemplateTag<'a> {
     /// emit a usage even without extractable attrs, so a bare
     /// `<Custom.Root>` still renders its recipe's base + default variants.
     emit_empty: bool,
+    /// Mirrors `ResolvedTag::panda_owned` — matched Panda import vs name-only.
+    panda_owned: bool,
 }
 
 #[must_use]
@@ -279,6 +281,7 @@ fn collect_tag(
             },
             closing_span: None,
             attributes: Vec::new(),
+            panda_owned: resolved.panda_owned,
         });
     }
 
@@ -307,6 +310,7 @@ fn resolve_template_tag<'a>(
                         name: Cow::Borrowed(&item.name),
                         alias: Cow::Borrowed(&item.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
             }
@@ -318,6 +322,7 @@ fn resolve_template_tag<'a>(
                         name: Cow::Borrowed(path),
                         alias: Cow::Borrowed(&item.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
             }
@@ -333,6 +338,7 @@ fn resolve_template_tag<'a>(
             name: Cow::Borrowed(tag_name),
             alias: Cow::Borrowed(tag_name),
             emit_empty: config.jsx.is_component_tag(tag_name),
+            panda_owned: false,
         });
     }
     // Vue resolves kebab-case tags against PascalCase bindings
@@ -347,6 +353,7 @@ fn resolve_template_tag<'a>(
                 name: Cow::Owned(pascal),
                 alias: Cow::Borrowed(tag_name),
                 emit_empty: true,
+                panda_owned: false,
             });
         }
     }

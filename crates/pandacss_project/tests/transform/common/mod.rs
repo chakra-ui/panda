@@ -363,6 +363,9 @@ pub fn project_with_jsx_recipes() -> Project {
     Project::new(
         System::new(create_config(json!({
             "jsxFramework": "react",
+            // Design system ships `<Button>` from `@acme/ui`, mapped into the jsx
+            // importMap so Panda owns it (recipe components aren't in `@panda/jsx`).
+            "importMap": { "jsx": ["@panda/jsx", "@acme/ui"] },
             "utilities": {
                 "color": {},
                 "fontSize": { "className": "fs" }
@@ -404,6 +407,8 @@ pub fn project_with_jsx_slot_recipes() -> Project {
     Project::new(
         System::new(create_config(json!({
             "jsxFramework": "react",
+            // `<Tabs>` ships from `@acme/ui`, mapped into the jsx importMap.
+            "importMap": { "jsx": ["@panda/jsx", "@acme/ui"] },
             "utilities": {
                 "color": {},
                 "padding": {}

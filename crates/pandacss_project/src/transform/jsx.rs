@@ -21,6 +21,14 @@ pub(crate) fn rewrites_for_jsx_element(
     needs_cx: &mut bool,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Vec<Rewrite> {
+    // Only rewrite tags Panda owns (resolved via a matched import). Name-only
+    // matches (`jsxStyleProps`/recipe `jsx` allowlist, or a lib component that
+    // collides with a pattern name) are extracted for CSS but left untouched —
+    // rewriting them would replace a user's component with a `div`.
+    if !jsx.panda_owned {
+        return Vec::new();
+    }
+
     let Some(slice) = span_slice(source, jsx.span) else {
         return Vec::new();
     };

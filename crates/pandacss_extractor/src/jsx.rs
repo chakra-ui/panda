@@ -77,6 +77,11 @@ pub struct ExtractedJsx {
     /// opening tag from exact boundaries instead of re-scanning source text.
     #[serde(skip)]
     pub attributes: Vec<JsxAttr>,
+    /// Tag resolved via a matched Panda import (importMap-aware): the transform
+    /// may rewrite it. `false` for name-only matches — extracted for CSS, but the
+    /// JSX is left untouched.
+    #[serde(skip)]
+    pub panda_owned: bool,
 }
 
 /// One opening-element attribute located from the AST.
@@ -226,6 +231,9 @@ pub(crate) struct ResolvedTag<'a> {
     pub(crate) name: Cow<'a, str>,
     pub(crate) alias: Cow<'a, str>,
     pub(crate) emit_empty: bool,
+    /// Resolved via a matched Panda import (importMap-aware) — Panda owns it.
+    /// `false` for the name-only `should_match_tag` fallback.
+    pub(crate) panda_owned: bool,
 }
 
 impl Extractor<'_, '_, '_> {
@@ -256,6 +264,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Borrowed(&matched.name),
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
 
@@ -275,6 +284,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: is_configured_component,
+                    panda_owned: false,
                 })
             }
             JSXElementName::MemberExpression(member) => {
@@ -311,6 +321,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Owned(display),
                     alias: Cow::Borrowed(root),
                     emit_empty: is_configured_component,
+                    panda_owned: false,
                 });
             }
             return None;
@@ -334,6 +345,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Owned(display),
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
 
@@ -346,6 +358,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Owned(display),
                     alias: Cow::Borrowed(&matched.alias),
                     emit_empty: true,
+                    panda_owned: true,
                 })
             }
             ImportSpecifierKind::Namespace => {
@@ -363,6 +376,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Owned(join_path(path)),
                     alias: Cow::Borrowed(&matched.alias),
                     emit_empty: true,
+                    panda_owned: true,
                 })
             }
             ImportSpecifierKind::Default => None,
@@ -405,6 +419,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Borrowed(&matched.name),
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
 
@@ -424,6 +439,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: is_configured_component,
+                    panda_owned: false,
                 })
             }
             Expression::StringLiteral(s) => {
@@ -436,6 +452,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: true,
+                    panda_owned: false,
                 })
             }
             Expression::StaticMemberExpression(member) => {
@@ -464,6 +481,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let tag_name = resolved.name.as_ref().to_owned();
             let alias = resolved.alias.into_owned();
             let emit_empty = resolved.emit_empty;
+            let panda_owned = resolved.panda_owned;
             let mut entries: Vec<(String, Literal)> = Vec::with_capacity(element.attributes.len());
             // Conditional-spread branches accumulate separately and fold in after
             // all attributes (node's `spreadConditions`), so their union survives
@@ -514,6 +532,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     .as_ref()
                     .map(|c| span_from_oxc(c.span)),
                 attributes: collect_jsx_attrs(&element.attributes),
+                panda_owned,
             });
         }
         walk::walk_jsx_element(self, jsx_el);
@@ -539,6 +558,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 span: span_from_oxc(tagged.span),
                 closing_span: None,
                 attributes: Vec::new(),
+                panda_owned: resolved.panda_owned,
             });
         }
         walk::walk_tagged_template_expression(self, tagged);

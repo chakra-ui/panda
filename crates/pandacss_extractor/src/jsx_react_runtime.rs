@@ -159,6 +159,7 @@ pub(crate) fn extract_call(
         span: span_from_oxc(call.span),
         closing_span: None,
         attributes: Vec::new(),
+        panda_owned: resolved.panda_owned,
     })
 }
 

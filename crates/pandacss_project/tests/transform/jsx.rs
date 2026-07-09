@@ -202,6 +202,19 @@ fn merges_dynamic_class_name_with_inline_concat() {
 }
 
 #[test]
+fn wraps_a_leading_ternary_class_name_before_appending() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={ok ? 'a' : 'b'} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={(ok ? 'a' : 'b') + " color_red"} />;"#);
+}
+
+#[test]
 fn leaves_dynamic_style_prop_untouched_without_file_bail() {
     let source = indoc! {r#"
         import { Box } from '@panda/jsx';
@@ -257,7 +270,7 @@ fn rewrites_static_sites_in_mixed_jsx_file() {
 #[test]
 fn rewrites_recipe_jsx_element() {
     let source = indoc! {r#"
-        import { Button } from '@panda/jsx';
+        import { Button } from '@acme/ui';
         export const el = <Button size="sm" color="red" />;
     "#};
 
@@ -268,9 +281,44 @@ fn rewrites_recipe_jsx_element() {
 }
 
 #[test]
+fn leaves_a_recipe_jsx_component_from_a_library_untouched() {
+    // `jsx: ["Button"]` matches by name for CSS extraction, but a Button imported
+    // from the user's own library is not Panda-owned: the component applies the
+    // recipe internally, so the transform must not rewrite the call site.
+    let source = indoc! {r#"
+        import { Button } from '@/components/button';
+        export const el = <Button size="sm" color="red" />;
+    "#};
+
+    let output = transform_jsx_recipes("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { Button } from '@/components/button';
+    export const el = <Button size="sm" color="red" />;
+    "#);
+}
+
+#[test]
+fn leaves_a_style_prop_component_from_a_library_untouched() {
+    let source = indoc! {r#"
+        import { Card } from '@/components/card';
+        export const el = <Card color="red" />;
+    "#};
+
+    let output = transform_jsx_recipes("src/app.tsx", source);
+
+    assert!(!output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { Card } from '@/components/card';
+    export const el = <Card color="red" />;
+    "#);
+}
+
+#[test]
 fn rewrites_recipe_jsx_with_deeply_nested_conditional_style_prop() {
     let source = indoc! {r#"
-        import { Button } from '@panda/jsx';
+        import { Button } from '@acme/ui';
         export const el = (
           <Button
             size="sm"

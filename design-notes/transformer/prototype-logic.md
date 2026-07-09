@@ -83,6 +83,25 @@ conditional fragments. One tiny join helper beats ad hoc concat at every rewrite
 - skip JSX elements that matched but have no style props
 - per-element JSX bail (not whole-file bail) when one site is unsafe
 
+## JSX ownership gate
+
+Only rewrite a JSX tag Panda **owns** — a tag resolved via a matched import
+(importMap-aware): factory (`panda.div`, `styled.button`), patterns, or any
+module the user adds to `importMap.jsx`. These render an intrinsic element with
+the classes, so emitting `<div className=…>` is render-identical.
+
+Tags matched by **name only** are not owned and stay untouched:
+
+- `jsxStyleProps: 'all'` matches any uppercase component (`<Card color="red" />`)
+- a recipe's `jsx: ['Button']` / slot recipe `jsx: ['Tabs']` allowlist
+- a library component that collides with a pattern name (`<HStack>` from another lib)
+
+Name matching still drives **CSS extraction** (the user's own component applies
+the recipe/atomic classes internally). Only the source rewrite is gated —
+rewriting a library component to a `<div>` would swap out the real component.
+The gate is the `panda_owned` flag on `ExtractedJsx`; see
+`pandacss_project::transform::jsx::rewrites_for_jsx_element`.
+
 ## Dead-import cleanup rules to preserve
 
 1. remove Panda imports only after rewrites are applied

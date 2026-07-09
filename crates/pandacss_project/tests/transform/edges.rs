@@ -162,7 +162,7 @@ edge_snapshot!(
     transform_jsx_recipes(
         "src/app.tsx",
         indoc! {r#"
-            import { Button } from '@panda/jsx';
+            import { Button } from '@acme/ui';
             export const el = <Button size={isMobile ? 'sm' : 'lg'} />;
         "#},
     ),
@@ -174,7 +174,7 @@ edge_snapshot!(
     transform_jsx_recipes(
         "src/app.tsx",
         indoc! {r#"
-            import { Button } from '@panda/jsx';
+            import { Button } from '@acme/ui';
             export const el = (
               <Button
                 size={isMobile ? 'sm' : 'lg'}
@@ -195,7 +195,7 @@ edge_snapshot!(
     transform_jsx_slot_recipes(
         "src/app.tsx",
         indoc! {r#"
-            import { Tabs } from '@panda/jsx';
+            import { Tabs } from '@acme/ui';
             export const el = (
               <Tabs.Trigger
                 size="sm"
