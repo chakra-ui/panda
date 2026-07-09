@@ -1,6 +1,6 @@
 //! JSX opening-element and React runtime call rewrites.
 
-use pandacss_extractor::ExtractedJsx;
+use pandacss_extractor::{ExtractedJsx, JsxKind};
 
 use crate::PatternTransformFn;
 use crate::Project;
@@ -9,6 +9,7 @@ use super::jsx_element;
 use super::jsx_parse;
 use super::jsx_runtime;
 use super::plan::{HelperCxMode, Rewrite};
+use super::recipe_inline;
 use super::resolve::span_slice;
 
 /// Rewrite one extracted JSX site (opening element or runtime call).
@@ -33,6 +34,16 @@ pub(crate) fn rewrites_for_jsx_element(
         return Vec::new();
     };
 
+    // A factory-member tagged-template *definition* (`styled.div`color: red``):
+    // desugar to the object-call form the object syntax already precomputes,
+    // `styled.div(__pcva({ base: '…' }))`. Template literals are static (no
+    // `${…}` interpolation), so the style object is fully known at build time.
+    if jsx.kind == JsxKind::Factory
+        && let Some(rewrite) = styled_template_definition_rewrite(project, jsx, slice)
+    {
+        return vec![rewrite];
+    }
+
     if jsx_parse::is_jsx_element_syntax(slice) {
         jsx_element::rewrites_for_jsx_opening_element(
             project,
@@ -52,4 +63,26 @@ pub(crate) fn rewrites_for_jsx_element(
             pattern_transform,
         )
     }
+}
+
+/// Desugar a factory-member tagged template to a precomputed cva call, e.g.
+/// `styled.div(__pcva({ base: 'color_red' }))`. `None` unless the slice is a
+/// member tagged template with resolvable styles (so JSX elements and empty
+/// templates fall through untouched).
+fn styled_template_definition_rewrite(
+    project: &Project,
+    jsx: &ExtractedJsx,
+    slice: &str,
+) -> Option<Rewrite> {
+    let backtick = slice.find('`')?;
+    let member = slice[..backtick].trim_end();
+    if member.is_empty() || member.contains(['<', '(']) {
+        return None;
+    }
+    let config = recipe_inline::styled_config_call(project, &jsx.data)?;
+    Some(Rewrite {
+        start: jsx.span.start,
+        end: jsx.span.end,
+        content: format!("{member}({config})"),
+    })
 }

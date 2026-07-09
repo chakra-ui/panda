@@ -42,6 +42,17 @@ pub(crate) fn rewrite_for_sva_call(
     })
 }
 
+/// `__pcva({ … })` for a static style object / cva config, or `None` when it has
+/// no resolvable styles. Shared by the object-form config-arg rewrite and the
+/// template-literal styled-definition desugar.
+pub(crate) fn styled_config_call(project: &Project, config: &Literal) -> Option<String> {
+    if !is_static_style_literal(config) {
+        return None;
+    }
+    let encoded = encode_cva_config(project, config)?;
+    Some(format!("{CVA_HELPER_LOCAL}({encoded})"))
+}
+
 pub(crate) fn encode_cva_config(project: &Project, config: &Literal) -> Option<String> {
     if is_recipe_config(config) {
         let recipe = Recipe::from_literal(config)?;
@@ -326,15 +337,12 @@ pub(crate) fn rewrite_styled_config_arg(
     config_arg_index: usize,
     config: &Literal,
 ) -> Option<Rewrite> {
-    if !is_static_style_literal(config) {
-        return None;
-    }
     let arg = arg_spans.get(config_arg_index)?;
-    let encoded = encode_cva_config(project, config)?;
+    let content = styled_config_call(project, config)?;
     Some(Rewrite {
         start: arg.start,
         end: arg.end,
-        content: format!("{CVA_HELPER_LOCAL}({encoded})"),
+        content,
     })
 }
 

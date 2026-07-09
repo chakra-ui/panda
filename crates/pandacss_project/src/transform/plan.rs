@@ -5,7 +5,7 @@ use pandacss_extractor::{ExtractUsage, MatchCategory};
 use crate::PatternTransformFn;
 use crate::Project;
 
-use super::helper::CX_HELPER_LOCAL;
+use super::helper::{CVA_HELPER_LOCAL, CX_HELPER_LOCAL};
 use super::resolve;
 
 #[derive(Debug, Clone, Default)]
@@ -216,14 +216,18 @@ pub(crate) fn build_plan(
 
     if targets.jsx_enabled() {
         for jsx in &extracted.jsx {
-            plan.rewrites.extend(super::jsx::rewrites_for_jsx_element(
+            let rewrites = super::jsx::rewrites_for_jsx_element(
                 project,
                 source,
                 jsx,
                 options.helper_cx,
                 &mut plan.helper.needs_cx,
                 pattern_transform.as_deref_mut(),
-            ));
+            );
+            for rewrite in &rewrites {
+                plan.helper.needs_cva |= rewrite.content.contains(CVA_HELPER_LOCAL);
+            }
+            plan.rewrites.extend(rewrites);
         }
     }
 

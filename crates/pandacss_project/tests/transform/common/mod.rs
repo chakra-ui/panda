@@ -296,7 +296,8 @@ pub fn transform_cross_file(
 pub fn template_literal_project() -> Project {
     Project::new(
         System::new(create_config(json!({
-            "syntax": "template-literal"
+            "syntax": "template-literal",
+            "jsxFramework": "react"
         })))
         .expect("config"),
     )
