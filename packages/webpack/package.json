@@ -18,7 +18,12 @@
       "types": "./dist/next.d.ts",
       "default": "./dist/next.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./css-loader": {
+      "source": "./src/css-loader.ts",
+      "types": "./dist/css-loader.d.ts",
+      "default": "./dist/css-loader.js"
+    }
   },
   "sideEffects": false,
   "homepage": "https://panda-css.com",
@@ -31,8 +36,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/next.ts --format=cjs,esm --platform=node --dts --no-splitting",
-    "build:fast": "tsup src/index.ts src/next.ts --format=cjs,esm --platform=node --no-dts --no-splitting",
+    "build": "tsup src/index.ts src/next.ts src/css-loader.ts --format=cjs,esm --platform=node --dts --no-splitting",
+    "build:fast": "tsup src/index.ts src/next.ts src/css-loader.ts --format=cjs,esm --platform=node --no-dts --no-splitting",
     "dev": "pnpm build:fast --watch src",
     "test": "vitest run"
   },
