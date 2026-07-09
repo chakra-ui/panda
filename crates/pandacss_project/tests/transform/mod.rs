@@ -22,6 +22,7 @@ mod advanced;
 mod bailout;
 mod conditional;
 mod css_cases;
+mod css_mixed;
 mod edges;
 mod helper;
 mod import_cleanup;

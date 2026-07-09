@@ -16,6 +16,8 @@ pub struct FragmentProperty {
     pub spread: bool,
     /// Value is a nested object literal (`key: { … }`).
     pub value_is_dynamic: bool,
+    /// Source of just the value (`None` for a spread).
+    pub value_raw: Option<String>,
 }
 
 /// A parsed call-expression fragment.
@@ -59,12 +61,14 @@ pub fn parse_object_fragment(source: &str) -> Option<Vec<FragmentProperty>> {
                 raw: slice(source, prop.span)?,
                 spread: false,
                 value_is_dynamic: matches!(prop.value, Expression::ObjectExpression(_)),
+                value_raw: slice(source, prop.value.span()),
             }),
             ObjectPropertyKind::SpreadProperty(spread) => properties.push(FragmentProperty {
                 key: None,
                 raw: slice(source, spread.span)?,
                 spread: true,
                 value_is_dynamic: true,
+                value_raw: None,
             }),
         }
     }

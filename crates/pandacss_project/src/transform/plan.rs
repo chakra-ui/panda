@@ -5,6 +5,7 @@ use pandacss_extractor::{ExtractUsage, MatchCategory};
 use crate::PatternTransformFn;
 use crate::Project;
 
+use super::helper::CX_HELPER_LOCAL;
 use super::resolve;
 
 #[derive(Debug, Clone, Default)]
@@ -165,8 +166,12 @@ pub(crate) fn build_plan(
                     call.span,
                     &call.data,
                     &call.arg_spans,
+                    options.helper_cx,
                 ) {
-                    Some(rewrite) => plan.rewrites.push(rewrite),
+                    Some(rewrite) => {
+                        plan.helper.needs_cx |= rewrite.content.contains(CX_HELPER_LOCAL);
+                        plan.rewrites.push(rewrite);
+                    }
                     None if super::css_conditional::args_need_conditional_rewrite(
                         source,
                         &call.arg_spans,

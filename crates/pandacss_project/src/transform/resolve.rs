@@ -10,7 +10,8 @@ use crate::PatternTransformFn;
 use crate::Project;
 
 use super::css_conditional;
-use super::plan::Rewrite;
+use super::helper::CX_HELPER_LOCAL;
+use super::plan::{HelperCxMode, Rewrite};
 
 /// Returns `None` when the literal cannot be encoded to stable class strings.
 pub(crate) fn classes_for_css_args(
@@ -119,6 +120,7 @@ pub(crate) fn rewrite_for_css_call(
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
     arg_spans: &[pandacss_shared::Span],
+    helper_cx: HelperCxMode,
 ) -> Option<Rewrite> {
     if css_call_has_unresolved_identifier_spread(source, span) {
         return None;
@@ -133,7 +135,141 @@ pub(crate) fn rewrite_for_css_call(
         });
     }
     let classes = classes_for_css_args(project, args)?;
-    Some(rewrite_for_class_names(span, &classes))
+    match analyze_css_arg(source, args, arg_spans) {
+        CssArgShape::AllStatic => Some(rewrite_for_class_names(span, &classes)),
+        // A dynamic prop is nested (or otherwise unclean); leave the call so
+        // nothing is silently dropped.
+        CssArgShape::NeedsBail => None,
+        // Inline the static props and keep the open-ended dynamic ones in a
+        // runtime `css()` call, merged by `cx` — matches the runtime output.
+        CssArgShape::TopLevelMixed(dynamic) => {
+            if helper_cx == HelperCxMode::False {
+                return None;
+            }
+            let callee = css_callee(source, span, arg_spans)?;
+            Some(Rewrite {
+                start: span.start,
+                end: span.end,
+                content: format!(
+                    "{CX_HELPER_LOCAL}({}, {callee}({{ {} }}))",
+                    js_string_literal(&classes.join(" ")),
+                    dynamic.join(", ")
+                ),
+            })
+        }
+    }
+}
+
+enum CssArgShape {
+    AllStatic,
+    NeedsBail,
+    /// Source of each open-ended dynamic top-level prop (`width: props.w`).
+    TopLevelMixed(Vec<String>),
+}
+
+/// Classify a single-object `css()` arg into fully static, a clean top-level
+/// static+dynamic mix, or "needs bail" (nested drop / spread / unparseable).
+fn analyze_css_arg(
+    source: &str,
+    args: &[Option<Literal>],
+    arg_spans: &[pandacss_shared::Span],
+) -> CssArgShape {
+    // When the arg can't be analyzed cleanly, fall back to the plain rewrite
+    // (unchanged behavior); only a *detected* nested drop bails.
+    if args.len() != 1 {
+        return CssArgShape::AllStatic;
+    }
+    let Some(Some(Literal::Object(folded))) = args.first() else {
+        return CssArgShape::AllStatic;
+    };
+    let Some(arg_span) = arg_spans.first() else {
+        return CssArgShape::AllStatic;
+    };
+    let Some(arg_src) = span_slice(source, *arg_span) else {
+        return CssArgShape::AllStatic;
+    };
+    let Some(props) = pandacss_extractor::parse_object_fragment(arg_src.trim()) else {
+        return CssArgShape::AllStatic;
+    };
+
+    let mut dynamic = Vec::new();
+    for prop in &props {
+        // A spread reaching here already folded in (unresolvable bare-identifier
+        // spreads bailed earlier); its props are already in `folded`.
+        if prop.spread {
+            continue;
+        }
+        let Some(key) = prop.key.as_deref() else {
+            return CssArgShape::AllStatic;
+        };
+        match folded.iter().find(|(folded_key, _)| folded_key == key) {
+            None => dynamic.push(prop.raw.clone()),
+            Some((_, folded_value)) => {
+                if prop.value_is_dynamic
+                    && prop
+                        .value_raw
+                        .as_deref()
+                        .is_none_or(|value| object_value_has_drop(value, folded_value))
+                {
+                    return CssArgShape::NeedsBail;
+                }
+            }
+        }
+    }
+
+    if dynamic.is_empty() {
+        CssArgShape::AllStatic
+    } else {
+        CssArgShape::TopLevelMixed(dynamic)
+    }
+}
+
+/// `true` when the source object literal has any prop the folded value dropped
+/// (recursively) — i.e. folding lost a nested dynamic prop.
+fn object_value_has_drop(source_obj: &str, folded: &Literal) -> bool {
+    let Literal::Object(folded) = folded else {
+        return true;
+    };
+    let Some(props) = pandacss_extractor::parse_object_fragment(source_obj.trim()) else {
+        return true;
+    };
+    props.iter().any(|prop| {
+        if prop.spread {
+            return false;
+        }
+        let Some(key) = prop.key.as_deref() else {
+            return true;
+        };
+        match folded.iter().find(|(folded_key, _)| folded_key == key) {
+            None => true,
+            Some((_, folded_value)) => {
+                prop.value_is_dynamic
+                    && prop
+                        .value_raw
+                        .as_deref()
+                        .is_none_or(|value| object_value_has_drop(value, folded_value))
+            }
+        }
+    })
+}
+
+/// The callee text of a call, e.g. `css` or `p.css`, from between the call
+/// start and its first argument.
+fn css_callee(
+    source: &str,
+    span: pandacss_shared::Span,
+    arg_spans: &[pandacss_shared::Span],
+) -> Option<String> {
+    let arg_start = usize::try_from(arg_spans.first()?.start).ok()?;
+    let start = usize::try_from(span.start).ok()?;
+    let prefix = source.get(start..arg_start)?;
+    Some(
+        prefix
+            .trim_end()
+            .trim_end_matches('(')
+            .trim_end()
+            .to_owned(),
+    )
 }
 
 pub(crate) fn rewrite_for_recipe_call(
