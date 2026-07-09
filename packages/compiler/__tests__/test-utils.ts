@@ -32,3 +32,8 @@ export function createTransformProject(
 ) {
   return createProject(userConfig, options) as ReturnType<typeof createProject> & NativeSourceTransformer
 }
+
+/** Join source lines for transform fixtures. */
+export function lines(...parts: string[]) {
+  return parts.join('\n')
+}
