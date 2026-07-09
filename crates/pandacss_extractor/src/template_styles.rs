@@ -277,6 +277,8 @@ fn collect_tag(
                 start: u32::try_from(tag_start).unwrap_or(u32::MAX),
                 end: u32::try_from(tag_end + 1).unwrap_or(u32::MAX),
             },
+            closing_span: None,
+            attributes: Vec::new(),
         });
     }
 

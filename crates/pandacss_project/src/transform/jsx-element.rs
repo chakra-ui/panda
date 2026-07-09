@@ -13,12 +13,12 @@ use super::jsx_conditional::{
     dynamic_style_expression_should_skip, jsx_data_has_finite_conditional,
     jsx_data_within_branch_budget,
 };
-use super::jsx_parse::{ParsedAttribute, ParsedOpeningElement, parse_opening_element};
+use super::jsx_parse::{ParsedAttribute, ParsedOpeningElement};
 use super::jsx_shared::{
     ElementTag, plan_opening_class_name, resolve_element_tag, should_skip_style_prop,
 };
 use super::plan::{HelperCxMode, Rewrite};
-use super::resolve::{is_static_style_literal, span_slice};
+use super::resolve::is_static_style_literal;
 
 pub(super) fn rewrites_for_jsx_opening_element(
     project: &Project,
@@ -32,12 +32,8 @@ pub(super) fn rewrites_for_jsx_opening_element(
         return Vec::new();
     }
 
-    let Some(slice) = span_slice(source, jsx.span) else {
-        return Vec::new();
-    };
-    let Some(parsed) = parse_opening_element(slice) else {
-        return Vec::new();
-    };
+    let parsed =
+        ParsedOpeningElement::from_ast(source, &jsx.attributes, jsx.closing_span.is_none());
     let Some(class_name) =
         plan_opening_class_name(project, jsx, &parsed, helper_cx, pattern_transform)
     else {
@@ -57,9 +53,7 @@ pub(super) fn rewrites_for_jsx_opening_element(
         content: format_opening_element(project, jsx, &tag, &parsed, &class_name),
     }];
 
-    if !parsed.self_closing
-        && let Some(closing) = closing_tag_rewrite(source, jsx, &tag, jsx.span.end)
-    {
+    if let Some(closing) = closing_tag_rewrite(jsx, &tag) {
         rewrites.push(closing);
     }
 
@@ -72,12 +66,8 @@ fn opening_element_should_skip(
     jsx: &ExtractedJsx,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> bool {
-    let Some(slice) = span_slice(source, jsx.span) else {
-        return true;
-    };
-    let Some(parsed) = parse_opening_element(slice) else {
-        return true;
-    };
+    let parsed =
+        ParsedOpeningElement::from_ast(source, &jsx.attributes, jsx.closing_span.is_none());
 
     if parsed.attributes.iter().any(ParsedAttribute::is_spread) {
         return true;
@@ -171,21 +161,11 @@ fn format_opening_element(
     out
 }
 
-fn closing_tag_rewrite(
-    source: &str,
-    jsx: &ExtractedJsx,
-    tag: &ElementTag,
-    opening_end: u32,
-) -> Option<Rewrite> {
-    let needle = format!("</{}>", jsx.name);
-    let start = usize::try_from(opening_end).ok()?;
-    let rest = source.get(start..)?;
-    let offset = rest.find(needle.as_str())?;
-    let start = start + offset;
-    let end = start + needle.len();
+fn closing_tag_rewrite(jsx: &ExtractedJsx, tag: &ElementTag) -> Option<Rewrite> {
+    let closing = jsx.closing_span?;
     Some(Rewrite {
-        start: u32::try_from(start).ok()?,
-        end: u32::try_from(end).ok()?,
+        start: closing.start,
+        end: closing.end,
         content: format!("</{}>", tag.opening_name()),
     })
 }

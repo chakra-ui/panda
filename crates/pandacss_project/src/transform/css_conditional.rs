@@ -12,7 +12,7 @@ use pandacss_shared::Span;
 
 use super::jsx_parse::{ParsedObjectLiteral, parse_object_literal, parse_static_string};
 use super::jsx_parse::{ParsedTernary, parse_top_level_ternary};
-use super::resolve::{call_arg_span, classes_for_css_args};
+use super::resolve::classes_for_css_args;
 
 const MAX_CONDITIONAL_SITES: usize = 64;
 
@@ -35,7 +35,7 @@ pub(crate) fn args_have_finite_conditional(args: &[Option<Literal>]) -> bool {
 
 pub(crate) fn args_need_conditional_rewrite(
     source: &str,
-    call_span: Span,
+    arg_spans: &[Span],
     args: &[Option<Literal>],
 ) -> bool {
     let Some(arg) = args.first().and_then(|value| value.as_ref()) else {
@@ -47,7 +47,7 @@ pub(crate) fn args_need_conditional_rewrite(
     ) {
         return true;
     }
-    let Some(arg_source) = css_call_arg_source(source, call_span) else {
+    let Some(arg_source) = css_call_arg_source(source, arg_spans) else {
         return args_have_finite_conditional(args);
     };
     let Literal::Object(entries) = arg else {
@@ -62,11 +62,11 @@ pub(crate) fn args_need_conditional_rewrite(
 pub(crate) fn class_expression_for_css_call(
     project: &Project,
     source: &str,
-    call_span: Span,
+    arg_spans: &[Span],
     args: &[Option<Literal>],
 ) -> Option<String> {
     let arg = args.first().and_then(|value| value.as_ref())?;
-    let arg_source = css_call_arg_source(source, call_span)?;
+    let arg_source = css_call_arg_source(source, arg_spans)?;
 
     if let Literal::Conditional(branches) = arg
         && branches.iter().all(is_object_branch)
@@ -101,10 +101,10 @@ pub(crate) fn class_expression_for_css_call(
     )
 }
 
-fn css_call_arg_source(source: &str, call_span: Span) -> Option<&str> {
-    let (arg_start, arg_end) = call_arg_span(source, call_span, 0)?;
-    let start = usize::try_from(arg_start).ok()?;
-    let end = usize::try_from(arg_end).ok()?;
+fn css_call_arg_source<'a>(source: &'a str, arg_spans: &[Span]) -> Option<&'a str> {
+    let span = arg_spans.first()?;
+    let start = usize::try_from(span.start).ok()?;
+    let end = usize::try_from(span.end).ok()?;
     source.get(start..end)
 }
 
@@ -123,8 +123,10 @@ fn whole_arg_expression(
         return None;
     }
     Some(format!(
-        "{} ? \"{}\" : \"{}\"",
-        ternary.condition, branch_classes[0], branch_classes[1]
+        "{} ? {} : {}",
+        ternary.condition,
+        super::resolve::js_string_literal(&branch_classes[0]),
+        super::resolve::js_string_literal(&branch_classes[1])
     ))
 }
 
@@ -166,8 +168,10 @@ fn single_site_expression(
                 return None;
             }
             Some(format!(
-                "{} ? \"{}\" : \"{}\"",
-                condition, branch_classes[0], branch_classes[1]
+                "{} ? {} : {}",
+                condition,
+                super::resolve::js_string_literal(&branch_classes[0]),
+                super::resolve::js_string_literal(&branch_classes[1])
             ))
         }
     }
@@ -485,11 +489,11 @@ mod tests {
             Some(Literal::Object(entries)) => entries.as_slice(),
             _ => panic!("expected object arg"),
         };
-        let arg_source = css_call_arg_source(source, call.span).expect("arg source");
+        let arg_source = css_call_arg_source(source, &call.arg_spans).expect("arg source");
         let parsed = parse_object_literal(arg_source).expect("parsed arg");
         let sites = collect_conditional_sites(&parsed, entries);
         assert_eq!(sites.len(), 1);
-        let expr = class_expression_for_css_call(&project, source, call.span, &call.data)
+        let expr = class_expression_for_css_call(&project, source, &call.arg_spans, &call.data)
             .expect("expression");
         assert_eq!(expr, r#"unk ? "hover:color_red" : "hover:color_blue""#);
     }

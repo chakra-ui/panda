@@ -75,6 +75,16 @@ enum ClassFragment {
     Expr(String),
 }
 
+/// Falls back to the `className={"…"}` expression form when the value has a
+/// quote/backslash a double-quoted JSX attribute can't hold.
+fn class_name_attribute(value: &str) -> String {
+    if value.contains('"') || value.contains('\\') {
+        format!("className={{{}}}", super::resolve::js_string_literal(value))
+    } else {
+        format!("className=\"{value}\"")
+    }
+}
+
 fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> ClassNamePrint {
     if fragments.is_empty() {
         return ClassNamePrint {
@@ -96,7 +106,7 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
             .collect::<Vec<_>>()
             .join(" ");
         return ClassNamePrint {
-            attribute: format!("className=\"{value}\""),
+            attribute: class_name_attribute(&value),
             needs_cx: false,
         };
     }
@@ -104,7 +114,7 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
     if fragments.len() == 1 {
         return match &fragments[0] {
             ClassFragment::Static(value) => ClassNamePrint {
-                attribute: format!("className=\"{value}\""),
+                attribute: class_name_attribute(value),
                 needs_cx: false,
             },
             ClassFragment::Expr(expr) => ClassNamePrint {
@@ -119,7 +129,7 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
         let args = fragments
             .iter()
             .map(|fragment| match fragment {
-                ClassFragment::Static(value) => format!("\"{value}\""),
+                ClassFragment::Static(value) => super::resolve::js_string_literal(value),
                 ClassFragment::Expr(expr) => expr.clone(),
             })
             .collect::<Vec<_>>()

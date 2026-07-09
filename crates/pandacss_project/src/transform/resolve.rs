@@ -118,13 +118,14 @@ pub(crate) fn rewrite_for_css_call(
     source: &str,
     span: pandacss_shared::Span,
     args: &[Option<Literal>],
+    arg_spans: &[pandacss_shared::Span],
 ) -> Option<Rewrite> {
     if css_call_has_unresolved_identifier_spread(source, span) {
         return None;
     }
-    if css_conditional::args_need_conditional_rewrite(source, span, args) {
+    if css_conditional::args_need_conditional_rewrite(source, arg_spans, args) {
         let expression =
-            css_conditional::class_expression_for_css_call(project, source, span, args)?;
+            css_conditional::class_expression_for_css_call(project, source, arg_spans, args)?;
         return Some(Rewrite {
             start: span.start,
             end: span.end,
@@ -165,12 +166,17 @@ pub(crate) fn rewrite_for_pattern_call(
 }
 
 fn rewrite_for_class_names(span: pandacss_shared::Span, classes: &[String]) -> Rewrite {
-    let class_string = classes.join(" ");
     Rewrite {
         start: span.start,
         end: span.end,
-        content: format!("\"{class_string}\""),
+        content: js_string_literal(&classes.join(" ")),
     }
+}
+
+/// Quote a class string as a JS string literal, escaping embedded quotes and
+/// backslashes (arbitrary values like `content: '"x"'`).
+pub(crate) fn js_string_literal(value: &str) -> String {
+    serde_json::to_string(value).expect("string serializes as JSON")
 }
 
 pub(crate) fn span_slice(source: &str, span: pandacss_shared::Span) -> Option<&str> {
@@ -181,102 +187,6 @@ pub(crate) fn span_slice(source: &str, span: pandacss_shared::Span) -> Option<&s
 
 pub(crate) fn call_is_raw_member(source: &str, span: pandacss_shared::Span) -> bool {
     span_slice(source, span).is_some_and(|slice| slice.contains(".raw("))
-}
-
-/// Byte span of the `index`th argument inside a call expression.
-pub(crate) fn call_arg_span(
-    source: &str,
-    call_span: pandacss_shared::Span,
-    index: usize,
-) -> Option<(u32, u32)> {
-    let slice = span_slice(source, call_span)?;
-    let open_paren = slice.find('(')?;
-    let args_start = open_paren + 1;
-    let args_end = slice.rfind(')')?;
-    let args = &slice[args_start..args_end];
-    let (rel_start, rel_end) = arg_range_in_list(args, index)?;
-    let base = call_span.start + u32::try_from(args_start).ok()?;
-    Some((
-        base + u32::try_from(rel_start).ok()?,
-        base + u32::try_from(rel_end).ok()?,
-    ))
-}
-
-fn arg_range_in_list(args: &str, target_index: usize) -> Option<(usize, usize)> {
-    let bytes = args.as_bytes();
-    let mut index = 0;
-    let mut arg_index = 0;
-    let mut arg_start: Option<usize> = None;
-    let mut depth_paren = 0_i32;
-    let mut depth_brace = 0_i32;
-    let mut depth_bracket = 0_i32;
-    let mut in_string: Option<u8> = None;
-
-    while index < bytes.len() {
-        let byte = bytes[index];
-
-        if let Some(quote) = in_string {
-            if byte == b'\\' {
-                index = index.saturating_add(2);
-                continue;
-            }
-            if byte == quote {
-                in_string = None;
-            }
-            index += 1;
-            continue;
-        }
-
-        if byte == b'\'' || byte == b'"' {
-            in_string = Some(byte);
-            arg_start.get_or_insert(index);
-            index += 1;
-            continue;
-        }
-
-        if depth_paren == 0 && depth_brace == 0 && depth_bracket == 0 && byte == b',' {
-            if let Some(start) = arg_start {
-                if arg_index == target_index {
-                    return Some((start, trim_end_whitespace(args, index)));
-                }
-                arg_index += 1;
-                arg_start = None;
-            }
-            index += 1;
-            continue;
-        }
-
-        match byte {
-            b'(' => depth_paren += 1,
-            b')' => depth_paren -= 1,
-            b'{' => depth_brace += 1,
-            b'}' => depth_brace -= 1,
-            b'[' => depth_bracket += 1,
-            b']' => depth_bracket -= 1,
-            _ => {}
-        }
-
-        if arg_start.is_none() && !byte.is_ascii_whitespace() {
-            arg_start = Some(index);
-        }
-        index += 1;
-    }
-
-    arg_start.and_then(|start| {
-        if arg_index == target_index {
-            Some((start, trim_end_whitespace(args, bytes.len())))
-        } else {
-            None
-        }
-    })
-}
-
-fn trim_end_whitespace(input: &str, end: usize) -> usize {
-    let mut end = end.min(input.len());
-    while end > 0 && input.as_bytes()[end - 1].is_ascii_whitespace() {
-        end -= 1;
-    }
-    end
 }
 
 fn is_tagged_template_span(slice: &str) -> bool {

@@ -16,9 +16,8 @@ use crate::{
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXElementName, JSXExpression, JSXMemberExpression,
-    JSXMemberExpressionObject, JSXOpeningElement, Program, StaticMemberExpression,
-    TaggedTemplateExpression,
+    JSXAttributeValue, JSXElement, JSXElementName, JSXExpression, JSXMemberExpression,
+    JSXMemberExpressionObject, Program, StaticMemberExpression, TaggedTemplateExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -70,6 +69,26 @@ pub struct ExtractedJsx {
     /// signal.
     pub data: Literal,
     pub span: Span,
+    /// `</Name>` span from the AST; `None` when self-closing. Lets the transform
+    /// edit the exact closing tag instead of text-searching for it.
+    #[serde(skip)]
+    pub closing_span: Option<Span>,
+    /// Per-attribute spans/kinds from the AST, so the transform reconstructs the
+    /// opening tag from exact boundaries instead of re-scanning source text.
+    #[serde(skip)]
+    pub attributes: Vec<JsxAttr>,
+}
+
+/// One opening-element attribute located from the AST.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct JsxAttr {
+    /// `None` for `{...spread}`.
+    pub name: Option<String>,
+    pub span: Span,
+    pub spread: bool,
+    /// Value is an expression container (`={…}`) or JSX, not a string literal.
+    pub dynamic: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -157,6 +176,42 @@ pub(crate) fn collect_jsx_verbose(
     };
     extractor.visit_program(program);
     (out, style_source_refs)
+}
+
+fn collect_jsx_attrs(attributes: &[JSXAttributeItem<'_>]) -> Vec<JsxAttr> {
+    attributes
+        .iter()
+        .map(|item| match item {
+            JSXAttributeItem::SpreadAttribute(spread) => JsxAttr {
+                name: None,
+                span: span_from_oxc(spread.span),
+                spread: true,
+                dynamic: true,
+            },
+            JSXAttributeItem::Attribute(attr) => JsxAttr {
+                name: Some(jsx_attribute_name(&attr.name)),
+                span: span_from_oxc(attr.span),
+                spread: false,
+                dynamic: matches!(
+                    attr.value.as_ref(),
+                    Some(
+                        JSXAttributeValue::ExpressionContainer(_)
+                            | JSXAttributeValue::Element(_)
+                            | JSXAttributeValue::Fragment(_)
+                    )
+                ),
+            },
+        })
+        .collect()
+}
+
+fn jsx_attribute_name(name: &JSXAttributeName<'_>) -> String {
+    match name {
+        JSXAttributeName::Identifier(id) => id.name.to_string(),
+        JSXAttributeName::NamespacedName(ns) => {
+            format!("{}:{}", ns.namespace.name, ns.name.name)
+        }
+    }
 }
 
 pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
@@ -402,7 +457,8 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         walk::walk_call_expression(self, call);
     }
 
-    fn visit_jsx_opening_element(&mut self, element: &JSXOpeningElement<'a>) {
+    fn visit_jsx_element(&mut self, jsx_el: &JSXElement<'a>) {
+        let element = &jsx_el.opening_element;
         if let Some(resolved) = self.resolve_tag(&element.name) {
             let category = resolved.category;
             let tag_name = resolved.name.as_ref().to_owned();
@@ -427,7 +483,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 Literal::combine_object_entry(&mut entries, key, value);
             }
             if entries.is_empty() && !emit_empty {
-                walk::walk_jsx_opening_element(self, element);
+                walk::walk_jsx_element(self, jsx_el);
                 return;
             }
             let kind = jsx_kind(&self.ctx.config.matchers, &tag_name, &alias);
@@ -453,9 +509,14 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 alias,
                 data: Literal::Object(entries),
                 span: span_from_oxc(element.span),
+                closing_span: jsx_el
+                    .closing_element
+                    .as_ref()
+                    .map(|c| span_from_oxc(c.span)),
+                attributes: collect_jsx_attrs(&element.attributes),
             });
         }
-        walk::walk_jsx_opening_element(self, element);
+        walk::walk_jsx_element(self, jsx_el);
     }
 
     fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
@@ -476,6 +537,8 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 alias: resolved.alias.into_owned(),
                 data,
                 span: span_from_oxc(tagged.span),
+                closing_span: None,
+                attributes: Vec::new(),
             });
         }
         walk::walk_tagged_template_expression(self, tagged);

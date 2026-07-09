@@ -17,7 +17,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
@@ -50,6 +50,10 @@ pub struct ExtractedCall {
     #[serde(skip)]
     pub jsx_recipe_ident: Option<String>,
     pub span: Span,
+    /// Source span of each argument, from the AST — lets the transform locate an
+    /// argument to rewrite without re-scanning the call for commas/parens.
+    #[serde(skip)]
+    pub arg_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -395,6 +399,11 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|arg| argument_to_literal(arg, resolver))
                 .collect();
+            let arg_spans: Vec<Span> = call
+                .arguments
+                .iter()
+                .map(|arg| span_from_oxc(arg.span()))
+                .collect();
             // Drop only when nothing was extractable. Otherwise keep
             // positional `None` slots so consumers know which arg was
             // non-literal.
@@ -419,6 +428,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     data,
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
+                    arg_spans,
                 });
             } else if category != MatchCategory::Jsx
                 && !data.is_empty()
@@ -454,6 +464,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 data: vec![Some(object)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
+                arg_spans: vec![span_from_oxc(tagged.span)],
             });
         }
         if let Some(resolved) = self.resolve_callee_expr(&tagged.tag)
@@ -469,6 +480,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 data: vec![Some(object)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
+                arg_spans: vec![span_from_oxc(tagged.span)],
             });
         }
         walk::walk_tagged_template_expression(self, tagged);

@@ -6,7 +6,7 @@ use pandacss_recipes::{CompoundVariant, Recipe, SlotCompoundVariant, SlotRecipe}
 
 use super::helper::{CVA_HELPER_LOCAL, SVA_HELPER_LOCAL};
 use super::plan::Rewrite;
-use super::resolve::{call_arg_span, is_static_style_literal};
+use super::resolve::is_static_style_literal;
 
 pub(crate) fn rewrite_for_cva_call(
     project: &Project,
@@ -322,19 +322,18 @@ fn escape_js_key(key: &str) -> String {
 
 pub(crate) fn rewrite_styled_config_arg(
     project: &Project,
-    source: &str,
-    call_span: pandacss_shared::Span,
+    arg_spans: &[pandacss_shared::Span],
     config_arg_index: usize,
     config: &Literal,
 ) -> Option<Rewrite> {
     if !is_static_style_literal(config) {
         return None;
     }
-    let (start, end) = call_arg_span(source, call_span, config_arg_index)?;
+    let arg = arg_spans.get(config_arg_index)?;
     let encoded = encode_cva_config(project, config)?;
     Some(Rewrite {
-        start,
-        end,
+        start: arg.start,
+        end: arg.end,
         content: format!("{CVA_HELPER_LOCAL}({encoded})"),
     })
 }
@@ -342,7 +341,6 @@ pub(crate) fn rewrite_styled_config_arg(
 /// `styled('tag', config)` / `styled.tag(config)` factory call transforms.
 pub(crate) fn rewrite_for_styled_call(
     project: &Project,
-    source: &str,
     call: &pandacss_extractor::ExtractedCall,
 ) -> Option<Rewrite> {
     if call.category != pandacss_extractor::MatchCategory::Jsx || call.jsx_recipe_ident.is_some() {
@@ -353,7 +351,7 @@ pub(crate) fn rewrite_for_styled_call(
     }
 
     let (config_index, config) = styled_config_arg(call)?;
-    rewrite_styled_config_arg(project, source, call.span, config_index, config)
+    rewrite_styled_config_arg(project, &call.arg_spans, config_index, config)
 }
 
 fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {
@@ -376,24 +374,4 @@ fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<(usize,
     }
 
     None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::super::resolve::span_slice;
-    use super::*;
-
-    #[test]
-    fn call_arg_span_finds_second_argument() {
-        let source = "styled('div', { color: 'red' })";
-        let span = pandacss_shared::Span {
-            start: 0,
-            end: u32::try_from(source.len()).expect("span"),
-        };
-        let (start, end) = call_arg_span(source, span, 1).expect("arg span");
-        assert_eq!(
-            span_slice(source, pandacss_shared::Span { start, end }),
-            Some("{ color: 'red' }")
-        );
-    }
 }

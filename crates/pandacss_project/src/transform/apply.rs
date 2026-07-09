@@ -38,7 +38,8 @@ pub(crate) fn build_transform_edits(
 ) -> Vec<Edit> {
     let mut edits = Vec::new();
 
-    for rewrite in &plan.rewrites {
+    let rewrites = dedup_overlapping_rewrites(&plan.rewrites);
+    for rewrite in &rewrites {
         edits.push(Edit::Update {
             start: rewrite.start,
             end: rewrite.end,
@@ -46,7 +47,7 @@ pub(crate) fn build_transform_edits(
         });
     }
 
-    let projected = project_rewrites(source, &plan.rewrites);
+    let projected = project_rewrites(source, &rewrites);
 
     if !plan.bailed {
         edits.extend(imports::plan_panda_import_edits(
@@ -70,6 +71,24 @@ pub(crate) fn build_transform_edits(
     }
 
     edits
+}
+
+/// Drop rewrites that overlap an earlier, wider one so `MagicString` never gets
+/// overlapping edits (which it silently discards). Keeps the outermost; a nested
+/// site stays as-is inside the outer rewrite's output.
+fn dedup_overlapping_rewrites(rewrites: &[Rewrite]) -> Vec<Rewrite> {
+    let mut sorted: Vec<&Rewrite> = rewrites.iter().collect();
+    sorted.sort_by(|a, b| a.start.cmp(&b.start).then(b.end.cmp(&a.end)));
+    let mut kept: Vec<Rewrite> = Vec::new();
+    let mut covered_end = 0u32;
+    for rewrite in sorted {
+        if rewrite.start < covered_end {
+            continue;
+        }
+        covered_end = rewrite.end;
+        kept.push(rewrite.clone());
+    }
+    kept
 }
 
 /// Apply edits and emit transformed code plus an optional source map JSON string.

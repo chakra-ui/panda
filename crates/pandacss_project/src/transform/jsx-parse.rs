@@ -11,6 +11,33 @@ pub(super) struct ParsedOpeningElement {
 }
 
 impl ParsedOpeningElement {
+    /// Build from AST-located attribute spans so boundaries are exact (no
+    /// brace/quote scanning). Per-attribute value parsing still reads the
+    /// correctly-bounded `raw`.
+    pub(super) fn from_ast(
+        source: &str,
+        attributes: &[pandacss_extractor::JsxAttr],
+        self_closing: bool,
+    ) -> Self {
+        let attributes = attributes
+            .iter()
+            .filter_map(|attr| {
+                let start = usize::try_from(attr.span.start).ok()?;
+                let end = usize::try_from(attr.span.end).ok()?;
+                Some(ParsedAttribute {
+                    name: attr.name.clone(),
+                    raw: source.get(start..end)?.to_owned(),
+                    spread: attr.spread,
+                    dynamic: attr.dynamic,
+                })
+            })
+            .collect();
+        ParsedOpeningElement {
+            attributes,
+            self_closing,
+        }
+    }
+
     pub(super) fn has_unresolved_as_prop(&self) -> bool {
         self.attributes
             .iter()
@@ -215,397 +242,25 @@ pub(super) struct ParsedCallExpression {
     pub args: Vec<String>,
 }
 
-pub(super) fn parse_opening_element(slice: &str) -> Option<ParsedOpeningElement> {
-    let trimmed = slice.trim();
-    let body = trimmed.strip_prefix('<')?;
-    let self_closing = body.trim_end().ends_with("/>");
-    let body = if self_closing {
-        body.trim_end().strip_suffix("/>")?.trim_end()
-    } else {
-        body.strip_suffix('>')?.trim_end()
-    };
-
-    let mut rest = skip_tag_name(body);
-    let mut attributes = Vec::new();
-
-    while !rest.is_empty() {
-        rest = rest.trim_start();
-        if rest.is_empty() {
-            break;
-        }
-        let (attr, remaining) = parse_attribute(rest)?;
-        attributes.push(attr);
-        rest = remaining;
-    }
-
-    Some(ParsedOpeningElement {
-        attributes,
-        self_closing,
+pub(super) fn parse_call_expression(slice: &str) -> Option<ParsedCallExpression> {
+    let call = pandacss_extractor::parse_call_fragment(slice.trim())?;
+    Some(ParsedCallExpression {
+        callee: call.callee,
+        args: call.args,
     })
 }
 
-pub(super) fn parse_call_expression(slice: &str) -> Option<ParsedCallExpression> {
-    let trimmed = slice.trim();
-    let open_paren = trimmed.find('(')?;
-    let callee = trimmed[..open_paren].trim().to_owned();
-    let paren_slice = take_balanced_parens(trimmed.get(open_paren..)?)?;
-    let inner = paren_slice.strip_prefix('(')?.strip_suffix(')')?.trim();
-    let args = split_top_level_args(inner);
-    Some(ParsedCallExpression { callee, args })
-}
-
-fn take_balanced_parens(input: &str) -> Option<&str> {
-    let mut depth = 0;
-    for (index, ch) in input.char_indices() {
-        match ch {
-            '(' => depth += 1,
-            ')' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(&input[..=index]);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
 pub(crate) fn parse_object_literal(slice: &str) -> Option<ParsedObjectLiteral> {
-    let trimmed = slice.trim();
-    let inner = trimmed.strip_prefix('{')?.strip_suffix('}')?.trim();
-    if inner.is_empty() {
-        return Some(ParsedObjectLiteral {
-            properties: Vec::new(),
-        });
-    }
-
-    let mut properties = Vec::new();
-    let mut rest = inner;
-    while !rest.is_empty() {
-        rest = rest.trim_start();
-        if rest.is_empty() {
-            break;
-        }
-        if rest.starts_with('}') {
-            break;
-        }
-        let (prop, remaining) = parse_object_property(rest)?;
-        properties.push(prop);
-        rest = remaining.trim_start();
-        if rest.starts_with(',') {
-            rest = rest[1..].trim_start();
-        }
-    }
-
+    let properties = pandacss_extractor::parse_object_fragment(slice.trim())?
+        .into_iter()
+        .map(|property| ParsedProperty {
+            key: property.key,
+            raw: property.raw,
+            spread: property.spread,
+            value_is_dynamic: property.value_is_dynamic,
+        })
+        .collect();
     Some(ParsedObjectLiteral { properties })
-}
-
-fn parse_object_property(input: &str) -> Option<(ParsedProperty, &str)> {
-    let input = input.trim_start();
-    if let Some(stripped) = input.strip_prefix("...") {
-        let (expr, rest) = take_expression_until_top_level_comma(stripped)?;
-        return Some((
-            ParsedProperty {
-                key: None,
-                raw: format!("...{expr}"),
-                spread: true,
-                value_is_dynamic: true,
-            },
-            rest,
-        ));
-    }
-
-    if input.starts_with('{') {
-        let (raw, rest) = take_braced(input)?;
-        return Some((
-            ParsedProperty {
-                key: None,
-                raw: raw.to_owned(),
-                spread: raw.starts_with("{..."),
-                value_is_dynamic: true,
-            },
-            rest,
-        ));
-    }
-
-    let (key, rest) = take_prop_key(input)?;
-    let rest = rest.trim_start();
-    if !rest.starts_with(':') {
-        return None;
-    }
-    let rest = rest[1..].trim_start();
-    let (value, rest) = take_prop_value(rest)?;
-    let value_is_dynamic = value.trim_start().starts_with('{');
-    Some((
-        ParsedProperty {
-            key: Some(key.to_owned()),
-            raw: format!("{key}: {value}"),
-            spread: false,
-            value_is_dynamic,
-        },
-        rest,
-    ))
-}
-
-fn take_prop_key(input: &str) -> Option<(&str, &str)> {
-    let input = input.trim_start();
-    if let Some(stripped) = input.strip_prefix('\'') {
-        let end = find_closing_quote(stripped, '\'')?;
-        return Some((&input[1..=end], &input[end + 2..]));
-    }
-    if let Some(stripped) = input.strip_prefix('"') {
-        let end = find_closing_quote(stripped, '"')?;
-        return Some((&input[1..=end], &input[end + 2..]));
-    }
-    take_attr_name(input)
-}
-
-fn take_prop_value(input: &str) -> Option<(&str, &str)> {
-    let input = input.trim_start();
-    if input.starts_with('{') {
-        let (raw, rest) = take_braced(input)?;
-        return Some((raw, rest));
-    }
-    if input.starts_with('\'') || input.starts_with('"') {
-        return take_attr_value(input);
-    }
-    let mut len = 0;
-    for (index, ch) in input.char_indices() {
-        if ch == ',' {
-            break;
-        }
-        len = index + ch.len_utf8();
-    }
-    if len == 0 {
-        return None;
-    }
-    Some((&input[..len], &input[len..]))
-}
-
-fn split_top_level_args(input: &str) -> Vec<String> {
-    let mut args = Vec::new();
-    let mut start = 0;
-    let mut depth_paren = 0;
-    let mut depth_brace = 0;
-    let mut depth_bracket = 0;
-    let mut in_string = None::<char>;
-    let mut escaped = false;
-    let bytes = input.as_bytes();
-    let mut index = 0;
-
-    while index < bytes.len() {
-        let ch = input[index..].chars().next().expect("valid utf8");
-        let ch_len = ch.len_utf8();
-
-        if let Some(quote) = in_string {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote {
-                in_string = None;
-            }
-            index += ch_len;
-            continue;
-        }
-
-        match ch {
-            '\'' | '"' => in_string = Some(ch),
-            '(' => depth_paren += 1,
-            ')' => depth_paren -= 1,
-            '{' => depth_brace += 1,
-            '}' => depth_brace -= 1,
-            '[' => depth_bracket += 1,
-            ']' => depth_bracket -= 1,
-            ',' if depth_paren == 0 && depth_brace == 0 && depth_bracket == 0 => {
-                args.push(input[start..index].trim().to_owned());
-                start = index + ch_len;
-            }
-            _ => {}
-        }
-        index += ch_len;
-    }
-
-    let tail = input[start..].trim();
-    if !tail.is_empty() {
-        args.push(tail.to_owned());
-    }
-    args
-}
-
-fn skip_tag_name(input: &str) -> &str {
-    let mut end = 0;
-    for (i, ch) in input.char_indices() {
-        if ch.is_whitespace() || ch == '/' || ch == '>' {
-            end = i;
-            break;
-        }
-        end = i + ch.len_utf8();
-    }
-    &input[end..]
-}
-
-fn parse_attribute(input: &str) -> Option<(ParsedAttribute, &str)> {
-    if input.starts_with('{') {
-        let (raw, rest) = take_braced(input)?;
-        return Some((
-            ParsedAttribute {
-                name: None,
-                raw: raw.to_owned(),
-                spread: raw.starts_with("{..."),
-                dynamic: true,
-            },
-            rest,
-        ));
-    }
-
-    let (name, rest) = take_attr_name(input)?;
-    let rest = rest.trim_start();
-    if rest.is_empty() || rest.starts_with('>') || rest.starts_with('/') {
-        return Some((
-            ParsedAttribute {
-                name: Some(name.to_owned()),
-                raw: name.to_owned(),
-                spread: false,
-                dynamic: false,
-            },
-            rest,
-        ));
-    }
-
-    if !rest.starts_with('=') {
-        return Some((
-            ParsedAttribute {
-                name: Some(name.to_owned()),
-                raw: name.to_owned(),
-                spread: false,
-                dynamic: false,
-            },
-            rest,
-        ));
-    }
-
-    let (value, rest) = take_attr_value(&rest[1..])?;
-    let dynamic = value.starts_with('{');
-    Some((
-        ParsedAttribute {
-            name: Some(name.to_owned()),
-            raw: format!("{name}={value}"),
-            spread: false,
-            dynamic,
-        },
-        rest,
-    ))
-}
-
-fn take_attr_name(input: &str) -> Option<(&str, &str)> {
-    let mut len = 0;
-    for ch in input.chars() {
-        if ch.is_whitespace() || ch == '=' || ch == '>' || ch == '/' || ch == ':' || ch == ',' {
-            break;
-        }
-        len += ch.len_utf8();
-    }
-    if len == 0 {
-        return None;
-    }
-    Some((&input[..len], &input[len..]))
-}
-
-fn take_attr_value(input: &str) -> Option<(&str, &str)> {
-    let input = input.trim_start();
-    if let Some(inner) = input.strip_prefix('"') {
-        let end = find_closing_quote(inner, '"')? + 1;
-        return Some((&input[..=end], &input[end + 1..]));
-    }
-    if let Some(inner) = input.strip_prefix('\'') {
-        let end = find_closing_quote(inner, '\'')? + 1;
-        return Some((&input[..=end], &input[end + 1..]));
-    }
-    if input.starts_with('{') {
-        let (raw, rest) = take_braced(input)?;
-        return Some((raw, rest));
-    }
-    None
-}
-
-fn find_closing_quote(input: &str, quote: char) -> Option<usize> {
-    let mut escaped = false;
-    for (idx, ch) in input.char_indices() {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        if ch == '\\' {
-            escaped = true;
-            continue;
-        }
-        if ch == quote {
-            return Some(idx);
-        }
-    }
-    None
-}
-
-fn take_braced(input: &str) -> Option<(&str, &str)> {
-    let mut depth = 0;
-    for (idx, ch) in input.char_indices() {
-        match ch {
-            '{' => depth += 1,
-            '}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some((&input[..=idx], &input[idx + 1..]));
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn take_expression_until_top_level_comma(input: &str) -> Option<(&str, &str)> {
-    let input = input.trim_start();
-    let mut depth_paren = 0_i32;
-    let mut depth_brace = 0_i32;
-    let mut depth_bracket = 0_i32;
-    let mut in_string = None::<char>;
-    let mut escaped = false;
-    let mut index = 0;
-    let chars: Vec<char> = input.chars().collect();
-
-    while index < chars.len() {
-        let ch = chars[index];
-        if let Some(quote) = in_string {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote {
-                in_string = None;
-            }
-            index += 1;
-            continue;
-        }
-
-        match ch {
-            '\'' | '"' | '`' => in_string = Some(ch),
-            '(' => depth_paren += 1,
-            ')' => depth_paren -= 1,
-            '{' => depth_brace += 1,
-            '}' => depth_brace -= 1,
-            '[' => depth_bracket += 1,
-            ']' => depth_bracket -= 1,
-            ',' if depth_paren == 0 && depth_brace == 0 && depth_bracket == 0 => {
-                return Some((input[..index].trim(), &input[index + 1..]));
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-
-    (!input.is_empty()).then_some((input.trim(), ""))
 }
 
 pub(crate) fn parse_static_string(value: &str) -> Option<String> {
@@ -648,61 +303,12 @@ pub(crate) struct ParsedTernary {
 }
 
 pub(crate) fn parse_top_level_ternary(expression: &str) -> Option<ParsedTernary> {
-    let expression = expression.trim();
-    let question = find_top_level_operator(expression, '?')?;
-    let condition = expression[..question].trim().to_owned();
-    let rest = expression[question + 1..].trim_start();
-    let colon = find_top_level_operator(rest, ':')?;
-    let consequent = rest[..colon].trim().to_owned();
-    let alternate = rest[colon + 1..].trim().to_owned();
-    if condition.is_empty() || consequent.is_empty() || alternate.is_empty() {
-        return None;
-    }
+    let ternary = pandacss_extractor::parse_ternary_fragment(expression.trim())?;
     Some(ParsedTernary {
-        condition,
-        consequent,
-        alternate,
+        condition: ternary.condition,
+        consequent: ternary.consequent,
+        alternate: ternary.alternate,
     })
-}
-
-fn find_top_level_operator(input: &str, operator: char) -> Option<usize> {
-    let mut depth_paren = 0;
-    let mut depth_brace = 0;
-    let mut depth_bracket = 0;
-    let mut in_string = None::<char>;
-    let mut escaped = false;
-
-    for (index, ch) in input.char_indices() {
-        if let Some(quote) = in_string {
-            if escaped {
-                escaped = false;
-                continue;
-            }
-            if ch == '\\' {
-                escaped = true;
-                continue;
-            }
-            if ch == quote {
-                in_string = None;
-            }
-            continue;
-        }
-
-        match ch {
-            '\'' | '"' | '`' => in_string = Some(ch),
-            '(' => depth_paren += 1,
-            ')' => depth_paren -= 1,
-            '{' => depth_brace += 1,
-            '}' => depth_brace -= 1,
-            '[' => depth_bracket += 1,
-            ']' => depth_bracket -= 1,
-            ch if ch == operator && depth_paren == 0 && depth_brace == 0 && depth_bracket == 0 => {
-                return Some(index);
-            }
-            _ => {}
-        }
-    }
-    None
 }
 
 #[cfg(test)]

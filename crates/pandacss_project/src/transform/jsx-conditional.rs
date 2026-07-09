@@ -297,7 +297,7 @@ pub(super) fn dynamic_style_expression_should_skip(expression: &str) -> bool {
     if parse_top_level_ternary(expression).is_some() {
         return false;
     }
-    contains_top_level_logical(expression, "&&") || contains_top_level_logical(expression, "||")
+    pandacss_extractor::is_logical_expression(expression)
 }
 
 pub(super) fn dynamic_class_name_expression_should_skip(expression: &str) -> bool {
@@ -311,50 +311,6 @@ pub(super) fn dynamic_class_name_expression_should_skip(expression: &str) -> boo
     ["clsx(", "cn(", "classNames(", "classnames("]
         .iter()
         .any(|needle| expression.contains(needle))
-}
-
-fn contains_top_level_logical(input: &str, operator: &str) -> bool {
-    let mut depth_paren = 0;
-    let mut depth_brace = 0;
-    let mut depth_bracket = 0;
-    let mut in_string = None::<char>;
-    let mut escaped = false;
-    let op_chars: Vec<char> = operator.chars().collect();
-    let mut index = 0;
-    let chars: Vec<char> = input.chars().collect();
-
-    while index < chars.len() {
-        let ch = chars[index];
-        if let Some(quote) = in_string {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == quote {
-                in_string = None;
-            }
-            index += 1;
-            continue;
-        }
-
-        match ch {
-            '\'' | '"' | '`' => in_string = Some(ch),
-            '(' => depth_paren += 1,
-            ')' => depth_paren -= 1,
-            '{' => depth_brace += 1,
-            '}' => depth_brace -= 1,
-            '[' => depth_bracket += 1,
-            ']' => depth_bracket -= 1,
-            _ if depth_paren == 0 && depth_brace == 0 && depth_bracket == 0 => {
-                if chars[index..].starts_with(&op_chars) {
-                    return true;
-                }
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    false
 }
 
 #[cfg(test)]

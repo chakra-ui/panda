@@ -106,6 +106,10 @@ pub(crate) struct Rewrite {
     pub content: String,
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "single dispatch over every matched call/jsx/token kind"
+)]
 pub(crate) fn build_plan(
     project: &Project,
     source: &str,
@@ -155,10 +159,18 @@ pub(crate) fn build_plan(
                         plan.helper.needs_sva = true;
                     }
                 }
-                _ => match resolve::rewrite_for_css_call(project, source, call.span, &call.data) {
+                _ => match resolve::rewrite_for_css_call(
+                    project,
+                    source,
+                    call.span,
+                    &call.data,
+                    &call.arg_spans,
+                ) {
                     Some(rewrite) => plan.rewrites.push(rewrite),
                     None if super::css_conditional::args_need_conditional_rewrite(
-                        source, call.span, &call.data,
+                        source,
+                        &call.arg_spans,
+                        &call.data,
                     ) =>
                     {
                         plan.bailed = true;
@@ -187,8 +199,7 @@ pub(crate) fn build_plan(
                 }
             }
             MatchCategory::Jsx if targets.jsx_enabled() => {
-                if let Some(rewrite) =
-                    super::recipe_inline::rewrite_for_styled_call(project, source, call)
+                if let Some(rewrite) = super::recipe_inline::rewrite_for_styled_call(project, call)
                 {
                     plan.rewrites.push(rewrite);
                     plan.helper.needs_cva = true;

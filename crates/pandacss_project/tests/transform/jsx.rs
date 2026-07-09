@@ -1,9 +1,72 @@
 use super::common::{
     project_with_jsx, transform_jsx, transform_jsx_patterns, transform_jsx_recipes,
     transform_jsx_with_project, transform_panda_jsx, transform_panda_jsx_patterns,
+    transform_with_project,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
+
+#[test]
+fn does_not_corrupt_output_when_a_css_call_is_nested_in_a_rewritten_element() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red" data-x={css({ color: 'blue' })} />;
+    "#};
+
+    let output = transform_with_project(&project_with_jsx(), "src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { css } from '@panda/css';
+    export const el = <div data-x={css({ color: 'blue' })} className="color_red" />;
+    "#);
+}
+
+#[test]
+fn rewrites_the_matching_closing_tag_for_nested_same_name_elements() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red"><Box>inner</Box></Box>;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { Box } from '@panda/jsx';
+    export const el = <div className="color_red"><Box>inner</Box></div>;
+    "#);
+}
+
+#[test]
+fn handles_a_brace_inside_an_attribute_string_value() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box json={'}'} color="red" />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div json={'}'} className="color_red" />;"#);
+}
+
+#[test]
+fn does_not_match_a_closing_tag_inside_a_string_child() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red">{"</Box>"}</Box>;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { Box } from '@panda/jsx';
+    export const el = <div className="color_red">{"</Box>"}</div>;
+    "#);
+}
 
 #[test]
 fn rewrites_box_to_intrinsic_with_class_name() {
@@ -95,6 +158,33 @@ fn merges_existing_static_class_name() {
 
     assert!(output.changed);
     assert_snapshot!(output.code, @r#"export const el = <div className="foo color_red" />;"#);
+}
+
+#[test]
+fn merges_existing_class_name_with_style_props_and_css_prop() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className="foo" color="red" css={{ padding: '2' }} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div className="foo color_red padding_2" />;"#);
+}
+
+#[test]
+fn merges_dynamic_class_name_with_style_props_and_css_prop() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box className={props.className} color="red" css={{ padding: '2' }} />;
+    "#};
+
+    let output = transform_jsx("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.bailed);
+    assert_snapshot!(output.code, @r#"export const el = <div className={props.className + " color_red padding_2"} />;"#);
 }
 
 #[test]

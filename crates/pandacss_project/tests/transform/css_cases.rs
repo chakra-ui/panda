@@ -208,3 +208,16 @@ transform_snapshot!(
     true,
     @r#"export const cls = "hover:color_red";"#
 );
+
+#[test]
+fn escapes_class_names_containing_quotes() {
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        export const cls = css({ content: '"x"' });
+    "#};
+
+    let output = transform("src/styles.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const cls = "content_\"x\"";"#);
+}
