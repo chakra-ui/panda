@@ -362,7 +362,8 @@ interface TransformerOptions {
 `targets` gates which categories rewrite. When the object is omitted (or every flag is unset), all of `css`, `jsx`,
 `patterns`, and `recipes` are on by default — `grid()` / `stack()` and static `button()` calls inline alongside `css()`.
 Setting any flag switches to opt-in: only the categories you enable run. Every category still bails to the runtime call
-on anything dynamic, so the default is safe. `tokens` is reserved and has no rewrite pass yet.
+on anything dynamic, so the default is safe. `tokens` inlines static `token()` / `token.var()` calls to their
+resolved value.
 
 The helper flag starts simple:
 

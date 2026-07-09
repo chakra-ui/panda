@@ -74,6 +74,11 @@ const recipeCompiler = createTransformProject({
   },
 })
 
+// Token dictionary for token() / token.var() inlining.
+const tokenCompiler = createTransformProject({
+  theme: { tokens: { colors: { red: { 500: { value: '#ef4444' } } } } },
+})
+
 function lines(...parts: string[]) {
   return parts.join('\n')
 }
@@ -308,6 +313,20 @@ describe('compiler.transformSource', () => {
     expect(result.code).toMatchInlineSnapshot(`
       "import { button } from '@panda/recipes'
       export const cls = "button button--size_lg button--variant_outline""
+    `)
+  })
+
+  test('inlines token() calls to their value and token.var() to a css var', () => {
+    const source = lines(
+      "import { token } from '@panda/tokens'",
+      "export const a = token('colors.red.500')",
+      "export const b = token.var('colors.red.500')",
+    )
+
+    const result = tokenCompiler.transformSource({ path: 'src/theme.ts', source })
+    expect(result.code).toMatchInlineSnapshot(`
+      "export const a = "#ef4444"
+      export const b = "var(--colors-red-500)""
     `)
   })
 })

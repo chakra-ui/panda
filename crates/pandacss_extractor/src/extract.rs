@@ -32,6 +32,9 @@ pub struct TokenRef {
     /// `true` when the call was `token.var(...)` rather than `token(...)`.
     #[serde(default)]
     pub is_var: bool,
+    /// Resolved value the source transform inlines; `None` keeps the runtime call.
+    #[serde(skip)]
+    pub value: Option<String>,
 }
 
 /// Lean extraction result for the production hot path — strips `imports`

@@ -1,5 +1,6 @@
 use super::common::{
-    project_with_pattern, project_with_recipes, transform_with_options, transform_with_project,
+    project_with_pattern, project_with_recipes, project_with_tokens, transform_with_options,
+    transform_with_project,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
@@ -52,6 +53,19 @@ fn default_targets_enable_recipe_transforms() {
     import { button } from '@panda/recipes';
     export const cls = "button button--size_sm";
     "#);
+}
+
+#[test]
+fn default_targets_enable_token_transforms() {
+    let source = indoc! {r#"
+        import { token } from '@panda/tokens';
+        export const red = token('colors.red.500');
+    "#};
+
+    let output = transform_with_project(&project_with_tokens(), "src/theme.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r##"export const red = "#ef4444";"##);
 }
 
 #[test]

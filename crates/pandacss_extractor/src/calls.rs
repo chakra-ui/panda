@@ -369,6 +369,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     span: span_from_oxc(call.span),
                     needs_css_var: resolver.token_call_needs_css_var(call),
                     is_var: resolver.token_call_is_var(call),
+                    value: resolver.token_call_value(call),
                 });
             } else if let Some(path) = resolver.token_call_path(call) {
                 token_refs.push(TokenRef {
@@ -376,6 +377,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     span: span_from_oxc(call.span),
                     needs_css_var: resolver.token_call_needs_css_var(call),
                     is_var: resolver.token_call_is_var(call),
+                    value: resolver.token_call_value(call),
                 });
             }
         }

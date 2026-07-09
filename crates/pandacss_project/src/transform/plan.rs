@@ -81,6 +81,11 @@ impl TransformTargets {
         self.jsx || self.is_empty()
     }
 
+    #[must_use]
+    pub fn tokens_enabled(&self) -> bool {
+        self.tokens || self.is_empty()
+    }
+
     fn is_empty(&self) -> bool {
         !self.css && !self.patterns && !self.recipes && !self.tokens && !self.jsx
     }
@@ -120,6 +125,7 @@ pub(crate) fn build_plan(
         && !targets.patterns_enabled()
         && !targets.recipes_enabled()
         && !targets.jsx_enabled()
+        && !targets.tokens_enabled()
     {
         return plan;
     }
@@ -205,5 +211,32 @@ pub(crate) fn build_plan(
         }
     }
 
+    if targets.tokens_enabled() {
+        push_token_rewrites(&mut plan, extracted);
+    }
+
     plan
+}
+
+/// Inline standalone `token()` / `token.var()` calls to their resolved value.
+/// Skips calls nested inside a rewrite that already inlines them (e.g. a
+/// rewritten `css()`), and calls that don't resolve.
+fn push_token_rewrites(plan: &mut TransformPlan, extracted: &ExtractUsage) {
+    let claimed: Vec<(u32, u32)> = plan.rewrites.iter().map(|r| (r.start, r.end)).collect();
+    let mut seen: Vec<u32> = Vec::new();
+    for token_ref in &extracted.token_refs {
+        let (start, end) = (token_ref.span.start, token_ref.span.end);
+        let Some(value) = token_ref.value.as_deref() else {
+            continue;
+        };
+        if claimed.iter().any(|(s, e)| start >= *s && end <= *e) || seen.contains(&start) {
+            continue;
+        }
+        seen.push(start);
+        plan.rewrites.push(Rewrite {
+            start,
+            end,
+            content: serde_json::to_string(value).expect("string serializes as JSON"),
+        });
+    }
 }

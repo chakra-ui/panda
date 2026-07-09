@@ -1,6 +1,7 @@
 import { css, sva } from '../styled-system/css'
 import { Box, Circle, HStack, Square, Wrap, panda } from '../styled-system/jsx'
 import { grid } from '../styled-system/patterns'
+import { token } from '../styled-system/tokens'
 
 const proofSlots = sva({
   slots: ['root', 'item'],
@@ -65,6 +66,10 @@ export function SourceTransformProof() {
       <article className={slots.root}>
         <span className={slots.item}>slot recipe proof</span>
       </article>
+
+      <p style={{ color: token('colors.red.500'), borderBottom: `1px solid ${token.var('colors.blue.500')}` }}>
+        token proof
+      </p>
     </section>
   )
 }

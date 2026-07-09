@@ -180,6 +180,22 @@ pub fn project_with_rich_recipes() -> Project {
     )
 }
 
+/// Project with a token dictionary for `token()` / `token.var()` transforms.
+pub fn project_with_tokens() -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "theme": {
+                "tokens": {
+                    "colors": {
+                        "red": { "500": { "value": "#ef4444" } }
+                    }
+                }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
 /// Config slot recipe — call-form usage is left to the runtime.
 pub fn project_with_config_slot_recipe() -> Project {
     Project::new(

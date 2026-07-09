@@ -30,6 +30,7 @@ mod patterns;
 mod recipe_inline;
 mod recipes;
 mod targets;
+mod tokens;
 #[allow(
     clippy::module_inception,
     reason = "core transform suite mirrors the crate's original tests/transform.rs filename"
