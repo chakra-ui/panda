@@ -164,7 +164,9 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
                 }
             }
             ClassFragment::Expr(value) => {
-                let wrap = index > 0 && value.contains('?');
+                // Parenthesize a ternary so an adjacent `+ " …"` can't bind
+                // inside a branch (`a ? b : c + " x"` → `a ? b : (c + " x")`).
+                let wrap = value.contains('?');
                 if wrap {
                     expr.push('(');
                 }
