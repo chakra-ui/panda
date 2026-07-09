@@ -97,25 +97,16 @@ impl CrossFileResolver {
         }
     }
 
-    /// Returns `None` when the specifier doesn't resolve, the file can't
-    /// be read or parsed, `name` isn't a foldable `const` export, or
-    /// we're already mid-load for the same file (cycle guard).
-    #[must_use]
-    pub fn resolve_named_export(
-        &self,
-        from_file: &Path,
-        specifier: &str,
-        name: &str,
-        matchers: Option<&Matchers>,
-        tokens: Option<&TokenDictionary>,
-    ) -> Option<Literal> {
-        self.inner
-            .resolve_named_export(from_file, specifier, name, matchers, tokens)
-    }
-
     pub(crate) fn as_lookup(&self) -> &dyn CrossFileLookup {
         self.inner.as_ref()
     }
+}
+
+/// A cross-file lookup: the folded value plus the resolved module path
+/// (recorded as a build dependency even when the value doesn't fold).
+pub(crate) struct CrossFileResolution {
+    pub(crate) value: Option<Literal>,
+    pub(crate) path: Option<PathBuf>,
 }
 
 /// Object-safe interface the rest of the crate consumes. Keeps the
@@ -128,7 +119,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
         name: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
-    ) -> Option<Literal>;
+    ) -> CrossFileResolution;
 
     fn cache_len(&self) -> usize;
 }
@@ -197,18 +188,31 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         name: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
-    ) -> Option<Literal> {
-        let directory = from_file.parent()?;
-        let resolution = self.inner.resolve(directory, specifier).ok()?;
+    ) -> CrossFileResolution {
+        let none = || CrossFileResolution {
+            value: None,
+            path: None,
+        };
+        let Some(directory) = from_file.parent() else {
+            return none();
+        };
+        let Ok(resolution) = self.inner.resolve(directory, specifier) else {
+            return none();
+        };
         let path = resolution.full_path();
 
+        // The module resolved, so it's a build dependency regardless of whether
+        // the export folds — record `path` on every remaining exit.
         if let Some(exports) = self
             .cache
             .lock()
             .expect("cross-file cache poisoned")
             .get(&path)
         {
-            return exports.get(name).cloned();
+            return CrossFileResolution {
+                value: exports.get(name).cloned(),
+                path: Some(path),
+            };
         }
 
         // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
@@ -216,7 +220,10 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         {
             let mut in_flight = self.in_flight.lock().expect("cross-file guard poisoned");
             if !in_flight.insert(guard_key.clone()) {
-                return None;
+                return CrossFileResolution {
+                    value: None,
+                    path: Some(path),
+                };
             }
         }
 
@@ -232,8 +239,11 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         self.cache
             .lock()
             .expect("cross-file cache poisoned")
-            .insert(path, exports);
-        value
+            .insert(path.clone(), exports);
+        CrossFileResolution {
+            value,
+            path: Some(path),
+        }
     }
 
     fn cache_len(&self) -> usize {
@@ -275,13 +285,16 @@ fn collect_from_named(
         let exported = module_export_name(&specifier.exported);
         let local = module_export_name(&specifier.local);
         let value = if let Some(source) = &decl.source {
-            lookup.resolve_named_export(
-                path,
-                source.value.as_str(),
-                &local,
-                resolver.matchers(),
-                resolver.tokens(),
-            )
+            // Transitive re-export deps aren't threaded back to the importer yet.
+            lookup
+                .resolve_named_export(
+                    path,
+                    source.value.as_str(),
+                    &local,
+                    resolver.matchers(),
+                    resolver.tokens(),
+                )
+                .value
         } else {
             resolver.resolve_root_name(&local)
         };

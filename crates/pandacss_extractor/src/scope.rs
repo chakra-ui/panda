@@ -23,7 +23,7 @@ use oxc_ast::ast::{
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use crate::cross_file::{CrossFileLookup, CrossFileResolver};
@@ -52,6 +52,9 @@ pub(crate) struct Resolver<'a, 'cb> {
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
+    /// Resolved paths of cross-file modules read during this file's extraction,
+    /// surfaced as transform build dependencies for watch invalidation.
+    cross_file_deps: RefCell<FxHashSet<PathBuf>>,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
 }
 
@@ -97,6 +100,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             line_index,
             diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
+            cross_file_deps: RefCell::default(),
             pattern_raw_transform,
         }
     }
@@ -127,6 +131,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             line_index,
             diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
+            cross_file_deps: RefCell::default(),
             pattern_raw_transform,
         }
     }
@@ -141,6 +146,14 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     /// build path.
     pub(crate) fn take_token_refs(&self) -> Vec<TokenRef> {
         std::mem::take(&mut self.token_refs.borrow_mut())
+    }
+
+    /// Resolved cross-file module paths read during extraction.
+    pub(crate) fn take_cross_file_deps(&self) -> Vec<String> {
+        std::mem::take(&mut *self.cross_file_deps.borrow_mut())
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect()
     }
 
     pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
@@ -410,7 +423,12 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         let module = import_module?;
         let name = imported_name?;
-        cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens)
+        let resolution =
+            cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens);
+        if let Some(path) = resolution.path {
+            self.cross_file_deps.borrow_mut().insert(path);
+        }
+        resolution.value
     }
 
     pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {

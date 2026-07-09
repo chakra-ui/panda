@@ -120,7 +120,9 @@ pub(crate) fn build_plan(
 ) -> TransformPlan {
     let mut plan = TransformPlan {
         rewrites: Vec::new(),
-        dependencies: Vec::new(),
+        // Cross-file modules read to fold imported values — reported so the host
+        // re-transforms this file when one of them changes.
+        dependencies: extracted.dependencies.clone(),
         helper: TransformHelperFacts::default(),
         bailed: false,
     };

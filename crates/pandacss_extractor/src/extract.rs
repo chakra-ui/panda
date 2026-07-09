@@ -54,6 +54,10 @@ pub struct ExtractUsage {
     /// wire (consumed project-side only).
     #[serde(skip)]
     pub exports: ExportInfo,
+    /// Resolved cross-file module paths read to fold imported values. Surfaced
+    /// as transform build dependencies for watch invalidation. Project-side only.
+    #[serde(skip)]
+    pub dependencies: Vec<String>,
 }
 
 /// Verbose extraction result for on-demand tooling. Includes the same core
@@ -103,6 +107,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
         exports: outcome.exports,
+        dependencies: outcome.dependencies,
     }
 }
 
@@ -131,6 +136,7 @@ where
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
         exports: outcome.exports,
+        dependencies: outcome.dependencies,
     }
 }
 
@@ -174,6 +180,7 @@ struct ExtractResult {
     token_refs: Vec<TokenRef>,
     style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
+    dependencies: Vec<String>,
 }
 
 fn run_extract<'cb>(
@@ -220,6 +227,7 @@ fn run_extract<'cb>(
             token_refs: Vec::new(),
             style_source_refs: Vec::new(),
             exports,
+            dependencies: Vec::new(),
         };
     }
 
@@ -275,6 +283,7 @@ fn run_extract<'cb>(
     diagnostics.extend(resolver.take_diagnostics());
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
+    let dependencies = resolver.take_cross_file_deps();
 
     ExtractResult {
         imports,
@@ -285,6 +294,7 @@ fn run_extract<'cb>(
         token_refs,
         style_source_refs,
         exports,
+        dependencies,
     }
 }
 

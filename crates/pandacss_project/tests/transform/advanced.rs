@@ -146,6 +146,41 @@ advanced_snapshot!(
 
 // --- cross-file spreads under conditions (cross_file.rs) ---
 
+#[test]
+fn folds_an_imported_scalar_value_and_reports_the_dependency() {
+    let source = indoc! {r"
+        import { brand } from './tokens';
+        import { css } from '@panda/css';
+        export const cls = css({ color: brand });
+    "};
+    let output = transform_cross_file(
+        "main.tsx",
+        source,
+        &[("tokens.ts", "export const brand = 'red';\n")],
+    );
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { brand } from './tokens';
+    export const cls = "color_red";
+    "#);
+    // The imported file is a build dependency so the host re-transforms `main`
+    // when `tokens.ts` changes.
+    assert_eq!(output.dependencies, vec!["/proj/tokens.ts".to_owned()]);
+}
+
+#[test]
+fn reports_no_dependencies_without_a_cross_file_import() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        export const cls = css({ color: 'red' });
+    "};
+    let output = transform_cross_file("main.tsx", source, &[]);
+
+    assert!(output.changed);
+    assert!(output.dependencies.is_empty());
+}
+
 advanced_snapshot!(
     imported_object_spreads_under_hover,
     {
