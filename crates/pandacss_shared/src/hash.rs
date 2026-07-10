@@ -1,4 +1,4 @@
-/// Canonical `key=value` pairs for a compound-variant definition (sorted keys).
+/// Sorted `key=value,...` string identifying a compound-variant combo.
 #[must_use]
 pub fn compound_combo_string(pairs: &[(impl AsRef<str>, impl AsRef<str>)]) -> String {
     let mut sorted: Vec<_> = pairs
@@ -13,9 +13,8 @@ pub fn compound_combo_string(pairs: &[(impl AsRef<str>, impl AsRef<str>)]) -> St
         .join(",")
 }
 
-/// Class name for a config-recipe compound variant: author `className` or
-/// `{base}--{hash(combo)}` / `{base}--compound__{key}{separator}{value}__...`
-/// when hashing is disabled.
+/// Compound-variant class name: author `className`, else `{base}--{hash(combo)}`
+/// or `{base}--compound__{key}{separator}{value}__...` when hashing is off.
 #[must_use]
 pub fn compound_class_name(
     base_class: &str,
@@ -60,15 +59,13 @@ fn compound_readable_suffix(
     format!("compound__{pairs}")
 }
 
-/// Replace spaces with underscores so a value can sit inside a class name.
 #[must_use]
 pub fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
-/// `FxHasher`-backed hash of any `Hash` value; not adversary-resistant, so
-/// only use it for internal cache keys and fingerprints (see
-/// `design-notes/performance-budget.md`).
+/// `FxHasher`-backed hash; not adversary-resistant, so only for internal
+/// cache keys and fingerprints (`design-notes/performance-budget.md`).
 #[must_use]
 pub fn fx_hash(value: impl std::hash::Hash) -> u64 {
     use std::hash::Hasher;
@@ -77,19 +74,16 @@ pub fn fx_hash(value: impl std::hash::Hash) -> u64 {
     hasher.finish()
 }
 
-/// JS-compatible hash used by Panda's CSS variable hashing.
-///
-/// This mirrors `packages/shared/src/hash.ts` but keeps the hot path
-/// allocation-free for ASCII token names, which is the overwhelmingly
-/// common case (`colors-red-500`, `spacing-sm`, ...).
+/// JS-compatible hash for CSS variable naming; mirrors `packages/shared/src/hash.ts`.
+/// Allocation-free on the hot path for ASCII token names (`colors-red-500`, `spacing-sm`).
 #[must_use]
 pub fn to_hash(value: &str) -> String {
     to_name(to_phash(5381, value).cast_unsigned())
 }
 
-/// DJB2-style rolling hash over the string in reverse, matching the JS source.
+/// DJB2 rolling hash over the string in reverse, matching the JS source.
 fn to_phash(mut h: i32, value: &str) -> i32 {
-    // Fast path: a byte is its own char code for ASCII, so skip UTF-16 encoding.
+    // ASCII bytes are their own char codes, so skip UTF-16 encoding.
     if value.is_ascii() {
         for byte in value.bytes().rev() {
             h = h.wrapping_mul(33) ^ i32::from(byte);
@@ -98,7 +92,7 @@ fn to_phash(mut h: i32, value: &str) -> i32 {
         return h;
     }
 
-    // Non-ASCII: hash UTF-16 code units to match JS `charCodeAt` semantics.
+    // Non-ASCII: hash UTF-16 code units to match JS `charCodeAt`.
     for ch in value.chars().rev() {
         let mut units = [0u16; 2];
         let encoded = ch.encode_utf16(&mut units);
@@ -111,8 +105,7 @@ fn to_phash(mut h: i32, value: &str) -> i32 {
     h
 }
 
-/// Encode the hash code as a base-52 `[a-zA-Z]` name, least-significant digit
-/// first into a fixed buffer (filled back-to-front).
+/// Base-52 `[a-zA-Z]` encoding of the hash code, least-significant digit first.
 fn to_name(code: u32) -> String {
     let mut chars = [0u8; 8];
     let mut index = chars.len();

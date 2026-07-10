@@ -1,8 +1,6 @@
 //! React runtime call rewrites (`jsx`, `jsxs`, `createElement`, …).
 
-use std::collections::HashSet;
-
-use pandacss_extractor::{ExtractedJsx, Literal};
+use pandacss_extractor::ExtractedJsx;
 
 use crate::PatternTransformFn;
 use crate::Project;
@@ -17,9 +15,12 @@ use super::jsx_conditional::{
 use super::jsx_parse::{
     ParsedObjectLiteral, ParsedProperty, parse_call_expression, parse_object_literal,
 };
-use super::jsx_shared::{plan_runtime_class_name, resolve_element_tag, should_skip_style_prop};
+use super::jsx_shared::{
+    data_is_static, plan_runtime_class_name, resolve_element_tag, should_skip_style_prop,
+    style_prop_keys,
+};
 use super::plan::{HelperCxMode, Rewrite};
-use super::resolve::{is_static_style_literal, span_slice};
+use super::resolve::span_slice;
 
 pub(super) fn rewrites_for_jsx_runtime_call(
     project: &Project,
@@ -175,21 +176,4 @@ fn format_props_object(
 
     parts.push(format_object_class_name(class_name));
     format!("{{ {} }}", parts.join(", "))
-}
-
-fn data_is_static(data: &Literal) -> bool {
-    match data {
-        Literal::Object(entries) if entries.is_empty() => true,
-        other => is_static_style_literal(other),
-    }
-}
-
-fn style_prop_keys(data: &Literal) -> HashSet<&str> {
-    let mut keys = HashSet::new();
-    if let Literal::Object(entries) = data {
-        for (key, _) in entries {
-            keys.insert(key.as_str());
-        }
-    }
-    keys
 }

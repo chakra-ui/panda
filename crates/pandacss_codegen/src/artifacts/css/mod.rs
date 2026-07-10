@@ -89,18 +89,14 @@ fn css_runtime_code(ctx: CodegenContext<'_>) -> String {
         .replace("__HASH__", hash)
 }
 
-/// Encodes the utility table as `prop:className/shorthand1/...` entries joined by
-/// `,`, mirroring the runtime decoder. A shorthand equal to its className is
-/// emitted as `1` to save bytes. Returns the encoded string and whether any
-/// shorthand exists.
+/// Encodes the utility table as `prop:className/shorthand1/...` entries joined
+/// by `,`, mirroring the runtime decoder. A shorthand equal to its className
+/// becomes `1` to save bytes.
 ///
-/// A className the runtime can reproduce on its own — i.e. it equals
-/// `hypenateProperty(prop)` — is *redundant*: the transform's
-/// `classNameByProp.get(prop) || hypenateProperty(prop)` fallback yields the
-/// same class. Such entries are dropped entirely (or reduced to just their
-/// shorthands), shrinking the table. The check uses a JS-faithful hyphenation
-/// so vendor-prefixed props (`WebkitX` → `-webkit-x` at runtime) — where the
-/// stored class differs from the fallback — are always kept.
+/// A className the runtime can already reproduce — `hypenateProperty(prop)` —
+/// is redundant and gets dropped (or reduced to just its shorthands): the
+/// transform's fallback yields the same class anyway. Vendor-prefixed props
+/// (`WebkitX` → `-webkit-x`) never match the fallback, so they're always kept.
 fn encode_utilities(ctx: CodegenContext<'_>) -> (String, bool) {
     let utilities = &ctx.types.utilities;
 
@@ -172,9 +168,8 @@ fn js_hyphenate_property(property: &str) -> String {
 }
 
 // PORT NOTE: the trailing duplicate `(styles: Styles)` overload is load-bearing
-// (same as v1): it makes tsc elaborate argument mismatches at the offending
-// property instead of collapsing them into a call-site "No overload matches"
-// error, which property-level `@ts-expect-error` directives rely on.
+// (same as v1) — it keeps tsc's error on the offending property instead of a
+// call-site "No overload matches", which `@ts-expect-error` directives rely on.
 const CSS_TYPES: &str = r"type Styles = SystemStyleObject | undefined | null | false
 
 interface CssRawFunction {

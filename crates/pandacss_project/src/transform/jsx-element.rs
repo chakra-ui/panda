@@ -1,8 +1,6 @@
 //! JSX opening-element rewrites.
 
-use std::collections::HashSet;
-
-use pandacss_extractor::{ExtractedJsx, Literal};
+use pandacss_extractor::ExtractedJsx;
 
 use crate::PatternTransformFn;
 use crate::Project;
@@ -15,10 +13,10 @@ use super::jsx_conditional::{
 };
 use super::jsx_parse::{ParsedAttribute, ParsedOpeningElement};
 use super::jsx_shared::{
-    ElementTag, plan_opening_class_name, resolve_element_tag, should_skip_style_prop,
+    ElementTag, data_is_static, plan_opening_class_name, resolve_element_tag,
+    should_skip_style_prop, style_prop_keys,
 };
 use super::plan::{HelperCxMode, Rewrite};
-use super::resolve::is_static_style_literal;
 
 pub(super) fn rewrites_for_jsx_opening_element(
     project: &Project,
@@ -168,21 +166,4 @@ fn closing_tag_rewrite(jsx: &ExtractedJsx, tag: &ElementTag) -> Option<Rewrite> 
         end: closing.end,
         content: format!("</{}>", tag.opening_name()),
     })
-}
-
-fn data_is_static(data: &Literal) -> bool {
-    match data {
-        Literal::Object(entries) if entries.is_empty() => true,
-        other => is_static_style_literal(other),
-    }
-}
-
-fn style_prop_keys(data: &Literal) -> HashSet<&str> {
-    let mut keys = HashSet::new();
-    if let Literal::Object(entries) = data {
-        for (key, _) in entries {
-            keys.insert(key.as_str());
-        }
-    }
-    keys
 }

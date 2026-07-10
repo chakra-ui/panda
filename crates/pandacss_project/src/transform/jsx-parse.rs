@@ -11,9 +11,8 @@ pub(super) struct ParsedOpeningElement {
 }
 
 impl ParsedOpeningElement {
-    /// Build from AST-located attribute spans so boundaries are exact (no
-    /// brace/quote scanning). Per-attribute value parsing still reads the
-    /// correctly-bounded `raw`.
+    /// Builds from AST-located attribute spans, so boundaries are exact
+    /// without brace/quote scanning.
     pub(super) fn from_ast(
         source: &str,
         attributes: &[pandacss_extractor::JsxAttr],
@@ -292,7 +291,6 @@ fn unquote(value: &str) -> String {
         .replace("\\'", "'")
 }
 
-// --- ternary (merged from ternary.rs) ---
 #[derive(Debug, Clone)]
 pub(crate) struct ParsedTernary {
     pub condition: String,

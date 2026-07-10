@@ -1,10 +1,9 @@
-//! Native CSS property value shapes for generated `PropertyValueMap` entries.
+//! Native CSS property value shapes for `PropertyValueMap` entries, sourced
+//! from csstype@3.2.3's `index.d.ts`. Keyword unions cover the v1
+//! `strictPropertyList`; composite kinds (`Length`, `Color`, …) cover native
+//! length/color autocomplete on `SystemProperties`.
 //!
-//! Keyword unions cover the v1 `strictPropertyList`; composite kinds (`Length`,
-//! `Color`, …) cover native length/color autocomplete on `SystemProperties`.
-//!
-//! Sourced from csstype@3.2.3 `index.d.ts`. Regenerate:
-//! `python3 crates/pandacss_codegen/scripts/sync_strict_props.py --write`
+//! Regenerate: `python3 crates/pandacss_codegen/scripts/sync_strict_props.py --write`
 
 #[derive(Clone, Copy)]
 pub(crate) enum PropertyValueKind {

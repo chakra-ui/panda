@@ -53,8 +53,7 @@ pub(super) fn to_hash() -> Item {
     )
 }
 
-/// Cheap cache-key hash for `memo`'s common case (flat args of primitives);
-/// returns `null` on anything nested so `memo` can fall back to `JSON.stringify`.
+/// Cheap hash for `memo`'s common case (flat primitive args); `null` on anything nested falls back to `JSON.stringify`.
 pub(super) fn flat_hash_or_null() -> Item {
     Item::runtime(ItemNode::Function(FunctionDecl {
         exported: false,

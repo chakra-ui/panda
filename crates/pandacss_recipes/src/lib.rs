@@ -1,16 +1,12 @@
-//! Typed recipe / slot-recipe model and atomic decomposition.
+//! Typed recipe / slot-recipe model and atomic decomposition. Mirrors the
+//! cva / sva pipeline from `packages/parser` + `packages/core`: the extractor
+//! produces a raw [`Literal::Object`] per `cva(...)` / `sva(...)` call, this
+//! crate types it as [`Recipe`] / [`SlotRecipe`], and the encoder emits atomic
+//! CSS from the typed shape.
 //!
-//! Mirrors the cva / sva pipeline from `packages/parser` + `packages/core`:
-//! the extractor produces a raw [`Literal::Object`] for each `cva(...)` /
-//! `sva(...)` call, this crate turns it into a typed [`Recipe`] /
-//! [`SlotRecipe`], and the encoder consumes the typed shape to emit
-//! atomic CSS rules.
-//!
-//! Variants are stored in *source order* so downstream emit is
-//! deterministic. Unknown keys parse as no-ops (forward-compat); malformed
-//! shapes return `None` and let downstream decide whether to surface a
-//! diagnostic. Slot inference (`SlotRecipe::infer_slots`) mirrors the
-//! JS-side `Recipes.inferSlots`.
+//! Variants keep source order for deterministic emit. Unknown keys are no-ops
+//! (forward-compat); malformed shapes return `None`. `SlotRecipe::infer_slots`
+//! mirrors the JS-side `Recipes.inferSlots`.
 
 use rustc_hash::FxHashSet;
 use serde::Serialize;
@@ -68,8 +64,8 @@ pub struct VariantOption {
     pub style: Literal,
 }
 
-/// `{ size: 'sm', intent: 'danger', css: { … } }` — all `conditions` must
-/// match for `css` to apply on top of base + per-variant styles.
+/// `{ size: 'sm', intent: 'danger', css: {…} }` — all `conditions` must match
+/// for `css` to layer on top of base + per-variant styles.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CompoundVariant {
     pub conditions: Vec<(String, Vec<String>)>,
@@ -82,8 +78,7 @@ pub struct CompoundVariant {
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotRecipe {
-    /// Slot names. Inferred from `base` + variant option keys when the
-    /// user omits the field.
+    /// Slot names; inferred from `base` + variant option keys when omitted.
     pub slots: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub base: Vec<(String, Literal)>,
@@ -116,9 +111,8 @@ pub struct SlotCompoundVariant {
 }
 
 impl Recipe {
-    /// Returns `None` only when the argument isn't an object. Partial
-    /// shapes (missing `base` or `variants`) parse with `None` / empty
-    /// fields so downstream consumers decide how strict to be.
+    /// `None` only when `literal` isn't an object. A partial shape (missing
+    /// `base` or `variants`) parses with empty fields instead of failing.
     #[must_use]
     pub fn from_literal(literal: &Literal) -> Option<Self> {
         Self::from_literal_owned(literal.clone())
@@ -145,9 +139,8 @@ impl Recipe {
         Some(recipe)
     }
 
-    /// Lazy iterator over every style object the encoder hashes: `base`,
-    /// every `variant.option.style`, every `compoundVariant.css`. No
-    /// intermediate Vec allocation.
+    /// Lazy iterator over every style object the encoder hashes: `base`, each
+    /// variant option's style, each compound variant's `css`.
     pub fn atomic_styles(&self) -> impl Iterator<Item = &Literal> + '_ {
         self.base
             .as_ref()
@@ -204,9 +197,8 @@ impl SlotRecipe {
         })
     }
 
-    /// Slot names in first-appearance order from `base.<slot>`, every variant
-    /// option's per-slot map, and every compound variant's `css` slot map.
-    /// Matches JS-side `Recipes.inferSlots`.
+    /// Slot names in first-appearance order across `base`, variant options,
+    /// and compound variants. Matches JS-side `Recipes.inferSlots`.
     #[must_use]
     pub fn infer_slots(
         base: &[(String, Literal)],
@@ -244,14 +236,11 @@ impl SlotRecipe {
         order
     }
 
-    /// `(slot_name, inner_iter)` in `self.slots` order; each inner
-    /// iterator emits styles in base → variants → compound order. Slots
-    /// not in `self.slots` are silently dropped.
-    // PERF(port): the per-slot filter rescans base / variants / compound
-    // for every slot, so total work is O(slots × styles). Lazy shape is
-    // deliberate — callers needing one slot pay only that slot's cost. If
-    // multi-slot consumers dominate in a profile, pre-bucketize once into
-    // `FxHashMap<&str, Vec<&Literal>>` and hand out borrowed slices.
+    /// `(slot_name, inner_iter)` per `self.slots`, each inner iterator in
+    /// base → variants → compound order. Slots outside `self.slots` are dropped.
+    // PERF(port): O(slots × styles) — rescans base/variants/compound per slot.
+    // Deliberate: callers needing one slot pay only that cost. If multi-slot
+    // consumers dominate, pre-bucketize into `FxHashMap<&str, Vec<&Literal>>`.
     pub fn atomic_styles_per_slot(
         &self,
     ) -> impl Iterator<Item = (&str, impl Iterator<Item = &Literal>)> + '_ {
@@ -298,6 +287,7 @@ fn parse_variants_owned(literal: Literal) -> Vec<VariantGroup> {
     let Some(groups) = object_entries_owned(literal) else {
         return Vec::new();
     };
+
     let mut out: Vec<VariantGroup> = Vec::with_capacity(groups.len());
     for (name, options_lit) in groups {
         let mut options: Vec<VariantOption> = Vec::new();
@@ -309,11 +299,48 @@ fn parse_variants_owned(literal: Literal) -> Vec<VariantGroup> {
         }
         out.push(VariantGroup { name, options });
     }
+
     out
 }
 
-/// Entries missing `css` drop; condition values support Panda's
-/// `OneOrMore` shape (`"sm"` or `["sm", "md"]`).
+/// Parsed compound-variant entries, before `css` is projected into shape `C`.
+struct CompoundVariantEntries<C> {
+    conditions: Vec<(String, Vec<String>)>,
+    css: Option<C>,
+    class_name: Option<String>,
+}
+
+/// Splits a compound-variant entry list into conditions/css/className.
+/// Conditions accept `"sm"` or `["sm", "md"]`. `parse_css` shapes the raw
+/// `css` value: a [`Literal`] for [`Recipe`], a per-slot map for [`SlotRecipe`].
+fn parse_compound_variant_entries<C>(
+    entries: Vec<(String, Literal)>,
+    parse_css: impl Fn(Literal) -> C,
+) -> CompoundVariantEntries<C> {
+    let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
+    let mut css: Option<C> = None;
+    let mut class_name: Option<String> = None;
+
+    for (key, value) in entries {
+        if key == "css" {
+            css = Some(parse_css(value));
+        } else if key == "className" {
+            if let Literal::String(name) = value {
+                class_name = Some(name);
+            }
+        } else if let Some(value) = variant_condition_values(&value) {
+            conditions.push((key, value));
+        }
+    }
+
+    CompoundVariantEntries {
+        conditions,
+        css,
+        class_name,
+    }
+}
+
+/// Entries missing `css` drop.
 fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
     let Literal::Array(items) = literal else {
         return Vec::new();
@@ -322,24 +349,11 @@ fn parse_compound_variants_owned(literal: Literal) -> Vec<CompoundVariant> {
         .into_iter()
         .filter_map(|item| {
             let entries = object_entries_owned(item)?;
-            let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
-            let mut css: Option<Literal> = None;
-            let mut class_name: Option<String> = None;
-            for (key, value) in entries {
-                if key == "css" {
-                    css = Some(value);
-                } else if key == "className" {
-                    if let Literal::String(name) = value {
-                        class_name = Some(name);
-                    }
-                } else if let Some(value) = variant_condition_values(&value) {
-                    conditions.push((key, value));
-                }
-            }
+            let parsed = parse_compound_variant_entries(entries, std::convert::identity);
             Some(CompoundVariant {
-                conditions,
-                css: css?,
-                class_name,
+                conditions: parsed.conditions,
+                css: parsed.css?,
+                class_name: parsed.class_name,
             })
         })
         .collect()
@@ -379,6 +393,7 @@ fn parse_slot_variants_owned(literal: Literal) -> Vec<SlotVariantGroup> {
     let Some(groups) = object_entries_owned(literal) else {
         return Vec::new();
     };
+
     let mut out: Vec<SlotVariantGroup> = Vec::with_capacity(groups.len());
     for (name, options_lit) in groups {
         let mut options: Vec<SlotVariantOption> = Vec::new();
@@ -391,6 +406,7 @@ fn parse_slot_variants_owned(literal: Literal) -> Vec<SlotVariantGroup> {
         }
         out.push(SlotVariantGroup { name, options });
     }
+
     out
 }
 
@@ -402,27 +418,15 @@ fn parse_slot_compound_variants_owned(literal: Literal) -> Vec<SlotCompoundVaria
         .into_iter()
         .filter_map(|item| {
             let entries = object_entries_owned(item)?;
-            let mut conditions: Vec<(String, Vec<String>)> = Vec::new();
-            let mut css: Vec<(String, Literal)> = Vec::new();
-            let mut class_name: Option<String> = None;
-            for (key, value) in entries {
-                if key == "css" {
-                    css = parse_slot_styles_owned(value);
-                } else if key == "className" {
-                    if let Literal::String(name) = value {
-                        class_name = Some(name);
-                    }
-                } else if let Some(value) = variant_condition_values(&value) {
-                    conditions.push((key, value));
-                }
-            }
+            let parsed = parse_compound_variant_entries(entries, parse_slot_styles_owned);
+            let css = parsed.css.unwrap_or_default();
             if css.is_empty() {
                 None
             } else {
                 Some(SlotCompoundVariant {
-                    conditions,
+                    conditions: parsed.conditions,
                     css,
-                    class_name,
+                    class_name: parsed.class_name,
                 })
             }
         })

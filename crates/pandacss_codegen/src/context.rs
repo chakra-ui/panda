@@ -1,7 +1,5 @@
-//! Inputs every generator reads: the resolved config, the derived [`TypeData`]
-//! (token/condition/property type info for the `.d.ts` artifacts), and
-//! per-pattern codegen metadata. [`CodegenContext`] borrows them; [`CodegenInput`]
-//! owns them for callers that build the data up first.
+//! Inputs every generator reads: the resolved config, derived [`TypeData`], and
+//! per-pattern metadata. [`CodegenContext`] borrows them; [`CodegenInput`] owns them.
 
 use std::{collections::BTreeMap, sync::Arc};
 

@@ -1,17 +1,8 @@
-//! Typed literal values read out of source by the extractor.
+//! Typed literal values read out of source, and the fold from an Oxc
+//! `Expression` to a `Literal`.
 //!
-//! `Literal` preserves intent (static literal, not arbitrary JSON), keeps
-//! object-key insertion order, and is the entry point for static evaluation.
-//! Serialization goes through the custom `Serialize` impl below to preserve
-//! the integer/float distinction the JS extractor emits.
-//!
-//! With a [`Resolver`] supplied (the production hot path via `extract()`),
-//! `expression_to_literal` folds primitives, objects, arrays, spreads,
-//! syntactic unwraps (paren, `as`, `satisfies`, `!`), constant folding
-//! (unary/binary/logical/conditional/template), scope resolution
-//! (identifiers, static/computed members, indexing), optional chains,
-//! tagged templates, and `token()` / `token.var()` calls. Without a
-//! resolver only pure-literal expressions fold.
+//! With a [`Resolver`], `expression_to_literal` also folds identifiers,
+//! member access, and `token()` calls. Without one, only pure literals fold.
 
 use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, BinaryExpression, BinaryOperator, CallExpression,
@@ -30,8 +21,8 @@ use crate::Resolver;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
     String(String),
-    /// A resolved `token()` / `token.var()` call. `value` is the CSS value the
-    /// current config emits; `path` preserves token identity for build info.
+    /// A resolved `token()` / `token.var()` call: `value` is the emitted CSS,
+    /// `path` keeps the token identity around for build info.
     Token {
         path: String,
         value: String,
@@ -39,22 +30,19 @@ pub enum Literal {
     Number(f64),
     Bool(bool),
     Null,
-    /// Keys in source order. `Vec` because extraction never looks up by key;
-    /// downstream code that does can build its own index.
+    /// Source-ordered `Vec`, not a map — extraction never looks up by key.
     Object(Vec<(String, Literal)>),
     Array(Vec<Literal>),
-    /// Branches from a ternary or logical expression whose deciding side
-    /// isn't statically known. The encoder emits each branch under a
-    /// different runtime condition. Serializes as
-    /// `{ "kind": "conditional", "branches": [...] }`.
+    /// Branches from a ternary/logical expression whose deciding side isn't
+    /// static. Serializes as `{ "kind": "conditional", "branches": [...] }`
+    /// so the encoder can emit each branch under its own runtime condition.
     Conditional(Vec<Literal>),
 }
 
 impl Literal {
-    // PERF(port): O(n²) on object construction (linear scan per insert).
-    // Deliberately kept: real style objects rarely exceed ~50 keys, where
-    // the Vec scan beats a HashMap on cache locality and zero allocation.
-    // Bench before swapping; HashMap wins around n=128 for String keys.
+    // PERF(port): O(n²) linear-scan insert, kept on purpose — style objects
+    // stay under ~50 keys, where Vec beats a HashMap on cache locality.
+    // HashMap only wins around n=128; bench before swapping.
     pub fn upsert_object_entry(entries: &mut Vec<(String, Self)>, key: String, value: Self) {
         if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
             entry.1 = value;
@@ -63,11 +51,10 @@ impl Literal {
         }
     }
 
-    /// Accumulate a value into `entries` instead of overwriting: if the key
-    /// already holds a value, keep both as `Conditional` alternatives. Used for
-    /// conditional-spread branches (`...(cond ? a : b)`) so each branch's keys
-    /// stay separately applicable and the encoder emits the union of atoms —
-    /// node models these as separate `spreadConditions` objects.
+    /// Accumulate instead of overwrite: an existing key becomes a
+    /// `Conditional` of both values. For conditional-spread branches
+    /// (`...(cond ? a : b)`), so each branch's keys stay applicable — node's
+    /// `spreadConditions` does the same.
     pub(crate) fn combine_object_entry(
         entries: &mut Vec<(String, Self)>,
         key: String,
@@ -81,7 +68,6 @@ impl Literal {
         }
     }
 
-    /// Fold two values into a flat `Conditional` of alternatives.
     fn combine_alternative(self, other: Self) -> Self {
         let mut branches = match self {
             Self::Conditional(existing) => existing,
@@ -94,9 +80,8 @@ impl Literal {
         Self::Conditional(branches)
     }
 
-    /// Coerce a `serde_json::Value` into a `Literal`, dropping any child that
-    /// doesn't convert (e.g. a non-finite number) rather than failing the
-    /// whole array/object. The inverse of [`Literal::to_json`].
+    /// Inverse of [`Literal::to_json`]. Drops a child that doesn't convert
+    /// (e.g. a non-finite number) instead of failing the whole array/object.
     #[must_use]
     pub fn from_json(value: &serde_json::Value) -> Option<Self> {
         match value {
@@ -209,11 +194,9 @@ fn json_number(value: f64) -> Option<serde_json::Value> {
 }
 
 /// Fold an expression to a `Literal` if it resolves to a static value.
-///
-/// Pass `None` for `resolver` only in unit tests that exercise pure literal
-/// folding. Production `extract()` paths always supply a resolver, which
-/// unlocks identifier references, shorthand props, and member access on
-/// resolved objects/arrays.
+/// `resolver` is `None` only in unit tests exercising pure literal folding —
+/// production `extract()` always supplies one, unlocking identifiers, member
+/// access, and shorthand props.
 pub(crate) fn expression_to_literal(
     expr: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
@@ -247,25 +230,22 @@ pub(crate) fn expression_to_literal(
             computed_member_to_literal(member, resolver)
         }
 
-        // `a?.b` — treat as transparent unwrap. A non-resolvable base
-        // returns `None`, which we accept as "short-circuited to undefined".
+        // `a?.b`: an unresolvable base is treated as short-circuited to undefined.
         Expression::ChainExpression(chain) => chain_to_literal(chain, resolver),
 
-        // Tag identity is ignored — downstream extraction decides whether
-        // the call site is a Panda usage.
+        // Tag identity is ignored; the caller decides if this is a Panda usage.
         Expression::TaggedTemplateExpression(t) => tagged_template_to_literal(t, resolver),
 
-        // Only `token(...)` / `token.var(...)` fold here; resolver gates
-        // against locally-shadowed names.
+        // Only `token(...)` / `token.var(...)` fold; resolver gates shadowing.
         Expression::CallExpression(call) => call_to_literal(call, resolver),
 
         _ => None,
     }
 }
 
-/// Collapse runs of whitespace to a single space (like JS `trimWhitespace`), but
-/// leave whitespace *inside* quoted substrings untouched — it's significant for
-/// `content`, quoted font names, etc. (node collapses those too and loses it).
+/// Collapse whitespace runs to a single space, like JS `trimWhitespace` —
+/// except *inside* quoted substrings, which stay untouched even though node
+/// collapses (and loses) them too. Matters for `content`, quoted font names.
 pub(crate) fn collapse_whitespace(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     let mut quote: Option<char> = None;
@@ -291,22 +271,20 @@ pub(crate) fn object_to_literal(
     obj: &ObjectExpression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
-    // PORT NOTE: lenient per-member folding to match the JS extractor. A
-    // property whose key or value doesn't fold (a dynamic value, an
-    // unresolvable spread) is *skipped*, not fatal — the static siblings still
-    // extract. e.g. `css({ color: 'red', width: props.w })` keeps `color`, and
-    // `sva({ slots: [...anatomy.keys()], base })` keeps `base` (slots infer).
+    // PORT NOTE: folding is lenient per-member, matching the JS extractor. A
+    // property that doesn't fold is skipped, not fatal, so static siblings
+    // still extract (`css({ color: 'red', width: props.w })` keeps `color`).
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(obj.properties.len());
-    // Conditional-spread keys accumulate here, separate from the regular
-    // last-wins `entries`, and fold in *after* every property is processed. node
-    // tracks these as a standalone `spreadConditions` channel that a later
-    // static key can't overwrite, so the branch values survive regardless of
-    // where the spread sits in the object literal.
+
+    // Conditional-spread keys land here instead of `entries` and fold in after
+    // every property, so a later static key can't overwrite a branch value —
+    // this is node's standalone `spreadConditions` channel.
     let mut spread_conditions: Vec<(String, Literal)> = Vec::new();
+
     for prop in &obj.properties {
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
-                // Getters / setters / methods can't be statically evaluated — skip.
+                // Getters, setters, and methods can't be statically evaluated.
                 if prop.method || prop.kind != PropertyKind::Init {
                     continue;
                 }
@@ -326,9 +304,8 @@ pub(crate) fn object_to_literal(
                             Literal::upsert_object_entry(&mut entries, k, v);
                         }
                     }
-                    // A conditional spread (`...(cond ? a : b)`) contributes each
-                    // branch's keys as separately-applicable styles; accumulate
-                    // every branch value per key into the spread channel.
+                    // `...(cond ? a : b)`: each branch's keys stay separately
+                    // applicable, so accumulate them in the spread channel.
                     Some(Literal::Conditional(branches)) => {
                         for branch in branches {
                             if let Literal::Object(inner_entries) = branch {
@@ -344,15 +321,13 @@ pub(crate) fn object_to_literal(
         }
     }
 
-    // Union the conditional-spread values into the final object — combining (not
-    // overwriting) so a colliding static value is kept alongside the branches.
+    // Combine, don't overwrite — a colliding static value survives alongside the branches.
     for (k, v) in spread_conditions {
         Literal::combine_object_entry(&mut entries, k, v);
     }
 
-    // An object whose members were *all* unresolvable carries nothing static to
-    // extract: drop it so a fully-dynamic call doesn't emit a phantom empty
-    // style. An explicitly-empty `{}` (no properties) still resolves to `{}`.
+    // All members unresolvable → nothing static to extract, so drop it rather
+    // than emit a phantom empty style. An explicit `{}` still resolves to `{}`.
     if entries.is_empty() && !obj.properties.is_empty() {
         return None;
     }
@@ -374,9 +349,9 @@ fn array_to_literal(
                 };
                 items.extend(inner_items);
             }
-            // An unresolvable or `undefined` element holds its slot as `Null`
-            // (like an elision) rather than dropping the whole array, so later
-            // responsive values keep their breakpoint positions — matching node.
+            // An unresolvable/`undefined` element holds its slot as `Null`
+            // instead of dropping the array, so later breakpoints keep their
+            // position — matches node.
             _ => items.push(
                 element
                     .as_expression()
@@ -426,8 +401,7 @@ fn computed_member_to_literal(
     let key = match key_literal {
         Literal::String(s) | Literal::Token { value: s, .. } => s,
         Literal::Number(n) => number_as_key(n),
-        // `obj[true]` / `obj[null]` are valid JS but don't show up in real
-        // Panda code — drop to keep the surface narrow.
+        // `obj[true]` / `obj[null]` are valid JS but not real Panda usage.
         _ => return None,
     };
     lookup_member(&object, &key)
@@ -457,7 +431,7 @@ fn chain_to_literal(
             computed_member_to_literal(member, resolver)
         }
         ChainElement::TSNonNullExpression(e) => expression_to_literal(&e.expression, resolver),
-        // Calls don't fold; private fields aren't meaningful for style extraction.
+        // Calls don't fold; private fields aren't style-relevant.
         ChainElement::CallExpression(_) | ChainElement::PrivateFieldExpression(_) => None,
     }
 }
@@ -564,8 +538,8 @@ fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) ->
     }
 }
 
-/// JS `===` for the literal subset. Object/array literals always compare
-/// unequal (reference identity); cross-type pairs are always `false`.
+/// JS `===`. Objects/arrays compare unequal (reference identity); cross-type
+/// pairs are always `false`.
 fn strict_eq(a: &Literal, b: &Literal) -> bool {
     match (a, b) {
         (Literal::Null, Literal::Null) => true,
@@ -580,8 +554,8 @@ fn strict_eq(a: &Literal, b: &Literal) -> bool {
     }
 }
 
-/// JS `==`, restricted to literal-on-literal. Mixed object/array cases
-/// return `None` — they'd need runtime `ToPrimitive` we don't model.
+/// JS `==` for literals. Mixed object/array pairs return `None` — they'd
+/// need runtime `ToPrimitive`, which we don't model.
 fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
     if matches!(
         (a, b),
@@ -610,8 +584,8 @@ fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
     }
 }
 
-/// JS `<`: lexicographic for two strings, else numeric with `ToNumber`
-/// coercion. `None` when coercion fails on either side.
+/// JS `<`: lexicographic for two strings, else `ToNumber`-coerced. `None`
+/// if coercion fails on either side.
 fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
     if is_string_like(a) && is_string_like(b) {
         return Some(coerce_to_string(a)? < coerce_to_string(b)?);
@@ -622,7 +596,6 @@ fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
 }
 
 fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
-    // Left folds → short-circuit to the chosen side.
     if let Some(left) = expression_to_literal(&l.left, resolver) {
         return match l.operator {
             LogicalOperator::And => {
@@ -648,9 +621,9 @@ fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) 
             }
         };
     }
-    // Left didn't fold: it's the dynamic condition / short-circuit value, not a
-    // style alternative. For `&&`/`||`/`??` the only extractable style is the
-    // right operand (matches node's `maybeResolveConditionalExpression`).
+    // Left didn't fold, so it's a dynamic condition, not a style alternative —
+    // the right operand is the only extractable style (node's
+    // `maybeResolveConditionalExpression` does the same).
     expression_to_literal(&l.right, resolver)
 }
 
@@ -668,11 +641,9 @@ fn eval_conditional(
     conditional_from_branches(&c.consequent, &c.alternate, resolver)
 }
 
-/// Resolve a ternary's two branches the way node's `maybeResolveConditionalExpression`
-/// does: keep whatever folds. Both fold → `Conditional` alternatives (collapsed
-/// to one when equal); only one folds → that branch alone (the other is dynamic,
-/// but the static branch is still a possible value worth emitting); neither
-/// folds → drop.
+/// Keep whatever folds, like node's `maybeResolveConditionalExpression`: both
+/// branches fold → `Conditional` (collapsed to one if equal); only one folds →
+/// that branch alone; neither folds → drop.
 fn conditional_from_branches(
     a: &Expression<'_>,
     b: &Expression<'_>,
@@ -716,9 +687,8 @@ fn truthy(value: &Literal) -> bool {
     }
 }
 
-/// JS `ToString` for the kinds we fold. Object/array/conditional return
-/// `None` — `[object Object]` and `"a,b,c"` aren't useful for styles, and
-/// `Conditional` has no single string form.
+/// JS `ToString`. Object/array/conditional are `None` — `[object Object]`
+/// and `"a,b,c"` aren't useful styles, and `Conditional` has no single form.
 fn coerce_to_string(lit: &Literal) -> Option<String> {
     match lit {
         Literal::String(s) | Literal::Token { value: s, .. } => Some(s.clone()),
@@ -729,8 +699,8 @@ fn coerce_to_string(lit: &Literal) -> Option<String> {
     }
 }
 
-/// JS `ToNumber`. Returns `None` where JS would yield `NaN` — we drop
-/// rather than emit a value that doesn't round-trip through JSON.
+/// JS `ToNumber`. `None` where JS would yield `NaN`, since that doesn't
+/// round-trip through JSON.
 fn coerce_to_number(lit: &Literal) -> Option<f64> {
     match lit {
         Literal::Number(n) => Some(*n),
@@ -748,8 +718,8 @@ fn coerce_to_number(lit: &Literal) -> Option<f64> {
     }
 }
 
-/// Token literals behave like strings for JS coercion/equality but keep a
-/// separate path for build-info identity.
+/// `Token` behaves like a string for coercion/equality but keeps its path
+/// around separately for build-info identity.
 fn is_string_like(value: &Literal) -> bool {
     matches!(value, Literal::String(_) | Literal::Token { .. })
 }

@@ -57,9 +57,8 @@ fn runtime_code(ctx: CodegenContext<'_>, prefix: &str, hash: bool) -> String {
         serde_json::to_string(&ctx.types.tokens.values).expect("token values should serialize");
     let var_prefix = var_prefix(prefix, hash);
 
-    // The var-ref is derived from the path (never stored): `toVar` reproduces
-    // the build-time css var exactly. The prefix segment is constant so it's
-    // baked in; only the per-path name is computed at runtime.
+    // Var refs aren't stored — `toVar` recomputes them at runtime to match the
+    // build-time css var exactly. Only the prefix segment is baked in as a constant.
     let to_var = if hash {
         format!(
             "function toVar(path: string): string {{\n  return {var_prefix} + toHash(path.replaceAll(\".\", \"-\")) + \")\"\n}}"
@@ -81,8 +80,7 @@ fn runtime_code(ctx: CodegenContext<'_>, prefix: &str, hash: bool) -> String {
     format!("const tokens: Record<string, string> = {tokens}\n\n{to_var}\n\n{COLOR_MIX_FN}")
 }
 
-/// The constant `var(--{prefix-}` segment. The prefix is hashed-mode-raw but
-/// var-name-sanitized otherwise, mirroring `pandacss_tokens::css_var_variable`.
+/// The constant `var(--{prefix-}` segment, mirroring `pandacss_tokens::css_var_variable`.
 fn var_prefix(prefix: &str, hash: bool) -> String {
     let mut out = String::from("\"var(--");
     if !prefix.is_empty() {
@@ -97,8 +95,7 @@ fn var_prefix(prefix: &str, hash: bool) -> String {
     out
 }
 
-/// Mirror of `pandacss_tokens::push_css_var_name` for the constant prefix
-/// segment. The runtime `toVar` applies the same rules to the per-path name.
+/// Mirrors `pandacss_tokens::push_css_var_name`; `toVar` applies the same rules at runtime.
 fn push_css_var_name(out: &mut String, value: &str) {
     for ch in value.chars() {
         if ch.is_ascii_uppercase() {

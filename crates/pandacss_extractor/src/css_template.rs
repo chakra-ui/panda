@@ -21,9 +21,9 @@ pub(crate) fn css_template_to_object(
     Some(css_to_object(&text))
 }
 
-/// Scan cleaned CSS token-by-token, maintaining a stack of open selector
-/// nodes: a selector opens a child node (auto-prefixed `& ` when bare), `}`
-/// pops, and each `prop: value` declaration writes into the current node.
+/// Scan cleaned CSS token-by-token with a stack of open selector nodes: a
+/// selector opens a child (auto-prefixed `& ` when bare), `}` pops, and each
+/// `prop: value` declaration writes into the current node.
 fn css_to_object(val: &str) -> Literal {
     let cleaned = clean_css(val);
     let css = cleaned.as_ref();

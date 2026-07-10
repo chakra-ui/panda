@@ -1,7 +1,6 @@
-//! Expand `staticCss.patterns` into atoms. Each entry names a configured
-//! pattern and a set of prop rules; the pattern's transform callback (when it
-//! has one) runs per rule, and the resulting styles are encoded like any other
-//! static CSS. Unknown patterns / missing transforms surface as diagnostics.
+//! Expands `staticCss.patterns` into atoms: runs each pattern's transform (if
+//! any) per rule, then encodes the result like any static CSS. Unknown
+//! patterns or missing transforms become diagnostics.
 
 use pandacss_config::{PatternConfig, PatternPropertyConfig, UserConfig};
 use pandacss_encoder::{Atom, ConditionSet, Encoder};
@@ -14,7 +13,7 @@ use serde_json::Value;
 use crate::PatternTransformFn;
 use crate::patterns::PatternRegistry;
 
-/// `(property → selected values, conditions)` parsed from one static-pattern rule object.
+/// One rule's parsed `(property -> values, conditions)`.
 type ParsedObjectRule = (Vec<(String, Vec<String>)>, Vec<String>);
 
 pub(crate) fn expand_static_patterns(
@@ -33,6 +32,7 @@ pub(crate) fn expand_static_patterns(
     else {
         return Vec::new();
     };
+
     let breakpoints = config.theme.breakpoint_names();
     let responsive: Vec<String> = breakpoints
         .iter()
@@ -86,6 +86,7 @@ pub(crate) fn expand_static_patterns(
 
     let mut atoms: Vec<Atom> = encoder.into_atoms().into_iter().collect();
     atoms.sort_by(|a, b| a.prop().cmp(b.prop()));
+
     atoms
 }
 
@@ -261,19 +262,14 @@ impl ExpansionCtx<'_> {
             let mut conditional = Vec::with_capacity(1 + conditions.len());
             conditional.push(("base".to_owned(), val.clone()));
             for condition in conditions {
-                conditional.push((self.condition_key(condition), val.clone()));
+                conditional.push((
+                    crate::condition_style_key(self.config, condition),
+                    val.clone(),
+                ));
             }
             out.push((prop, Literal::Object(conditional)));
         }
         Literal::Object(out)
-    }
-
-    fn condition_key(&self, condition: &str) -> String {
-        if self.config.is_condition_key(condition) {
-            condition.to_owned()
-        } else {
-            format!("_{condition}")
-        }
     }
 }
 

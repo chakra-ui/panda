@@ -1,12 +1,7 @@
-//! Design-token dictionary — read-only lookup view over a resolved
-//! Panda theme. Used by the Rust extractor (`token('path')` resolution),
-//! utility transforms, and the future Rust emitter.
-//!
-//! The public project API builds this from config, while this crate owns
-//! the token-domain details: walking theme tokens, semantic tokens,
-//! breakpoint tokens, theme variant tokens, and building the lookup
-//! indexes. Every read path is O(1) or O(matches), never O(n), backed by
-//! `rustc_hash::FxHashMap` indexes built once at construction time.
+//! Design-token dictionary: a read-only lookup view over a resolved Panda
+//! theme, used for `token('path')` resolution, utility transforms, and
+//! codegen. Every read is O(1) or O(matches) via `FxHashMap` indexes built
+//! once at construction time.
 
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::collections::{BTreeMap, hash_map::Entry};
@@ -36,17 +31,14 @@ pub use token::{Token, TokenExtensions};
 
 /// Snapshot of a token dictionary. Immutable once built.
 ///
-/// Serde emits only `tokens`; the indexes are derived state, rebuilt via the
-/// builder on `Deserialize`. The custom `Deserialize` below prevents the
-/// "deserialized dictionary has empty indexes" hazard a naked derive would
-/// introduce.
+/// Serde only emits `tokens` — indexes are derived, so a naked derive would
+/// deserialize into a dictionary with empty indexes. The custom `Deserialize`
+/// below rebuilds them through the builder instead.
 #[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct TokenDictionary {
     tokens: Vec<Token>,
-    /// `path` → base token index. Base wins over conditional for the same
-    /// path so `get()` returns the canonical value — matches JS view
-    /// semantics where `rawValues` is keyed by name without condition.
+    /// path -> base token index; base wins over conditional (matches JS `rawValues` keying).
     #[cfg_attr(feature = "serde", serde(skip))]
     by_path: FxHashMap<Arc<str>, usize>,
     #[cfg_attr(feature = "serde", serde(skip))]
@@ -59,20 +51,17 @@ pub struct TokenDictionary {
     category_values_cache: FxHashMap<TokenCategory, FxHashMap<Arc<str>, Arc<str>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     by_condition: FxHashMap<Arc<str>, Vec<usize>>,
-    /// Nested so lookups never allocate (two O(1) hashes); a flat
-    /// `(String, String)` key would force a `to_owned` per call.
+    /// Nested so a lookup is two O(1) hashes instead of allocating a `(String, String)` key.
     #[cfg_attr(feature = "serde", serde(skip))]
     by_path_condition: FxHashMap<Arc<str>, FxHashMap<Arc<str>, usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     semantic_categories: FxHashSet<TokenCategory>,
-    /// First-seen condition names. Built once so `conditions()` is a
-    /// zero-work slice borrow.
+    /// First-seen condition order, so `conditions()` is a zero-cost slice borrow.
     #[cfg_attr(feature = "serde", serde(skip))]
     conditions_order: Vec<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     deprecated_paths_cache: Vec<Arc<str>>,
-    /// `category → normalized final literal → ranked tokens carrying that value`.
-    /// Powers value→token suggestions (the rule lists them; the developer picks).
+    /// category -> normalized literal -> ranked suggestion tokens.
     #[cfg_attr(feature = "serde", serde(skip))]
     suggestion_index: FxHashMap<TokenCategory, FxHashMap<String, Vec<TokenSuggestion>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
@@ -86,9 +75,9 @@ pub struct TokenDictionary {
 pub struct TokenSuggestion {
     /// Category-relative path (`red.500`, `fg.error`).
     pub token: String,
-    /// `true` when the token references another token (the semantic layer).
+    /// `true` if the token references another token.
     pub semantic: bool,
-    /// `true` when the token has condition variants (themes) — not a static equal.
+    /// `true` if the token has condition variants (themes).
     pub conditional: bool,
 }
 
@@ -118,8 +107,6 @@ impl<'de> Deserialize<'de> for TokenDictionary {
             tokens: Vec<Token>,
         }
         let wire = Wire::deserialize(deserializer)?;
-        // Rebuild through the public builder so indexes (and color palettes,
-        // when absent) are derived — no need to reach the builder's fields.
         Ok(TokenDictionaryBuilder::default()
             .extend(wire.tokens)
             .build())
@@ -141,8 +128,7 @@ impl TokenDictionary {
     ///
     /// # Errors
     ///
-    /// Returns an error when token transforms encounter invalid configured
-    /// values, such as malformed color-mix opacity expressions.
+    /// Returns an error on invalid token transforms, e.g. malformed color-mix opacity.
     pub fn from_config(config: &pandacss_config::UserConfig) -> Result<Option<Self>, TokenError> {
         let _span = tracing::debug_span!("token_dictionary_build", source = "config").entered();
         Self::from_options(TokenDictionaryOptions::from_config(config))
@@ -152,8 +138,7 @@ impl TokenDictionary {
     ///
     /// # Errors
     ///
-    /// Returns an error when token transforms encounter invalid configured
-    /// values, such as malformed color-mix opacity expressions.
+    /// Returns an error on invalid token transforms, e.g. malformed color-mix opacity.
     pub fn from_options(options: TokenDictionaryOptions<'_>) -> Result<Option<Self>, TokenError> {
         let _span = tracing::debug_span!("token_dictionary_build", source = "options").entered();
         from_config::create_token_dictionary(options)
@@ -255,8 +240,7 @@ impl TokenDictionary {
         self.by_path.get(path).map(|&i| &self.tokens[i])
     }
 
-    /// Conditional record for a path. Callers can combine with [`Self::token`]
-    /// to model JS's "use condition value if present, else base."
+    /// Combine with [`Self::token`] for JS's "condition value if present, else base."
     #[must_use]
     pub fn token_with_condition(&self, path: &str, condition: &str) -> Option<&Token> {
         self.by_path_condition
@@ -265,15 +249,12 @@ impl TokenDictionary {
             .map(|&i| &self.tokens[i])
     }
 
-    /// Reverse lookup from a CSS variable string to the token that
-    /// declared it.
     #[must_use]
     pub fn token_by_var(&self, var: &str) -> Option<&Token> {
         self.by_var.get(var).map(|&i| &self.tokens[i])
     }
 
-    /// Allocating variant of [`Self::get_str`] for callers that need
-    /// ownership. Prefer the borrow form when possible.
+    /// Allocating variant of [`Self::get_str`]; prefer the borrow form when possible.
     #[must_use]
     pub fn get(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_str(path, fallback).map(str::to_owned)
@@ -285,9 +266,7 @@ impl TokenDictionary {
         self.get_var_str(path, fallback).map(str::to_owned)
     }
 
-    /// JSON-safe projection for JS interop. Keys are token paths; values are
-    /// the canonical token value / CSS-var string that [`Self::token`] would
-    /// resolve for each path.
+    /// JSON-safe `{ path -> value }` / `{ path -> var }` projection for JS interop.
     #[must_use]
     pub fn flat_maps(&self) -> (BTreeMap<String, String>, BTreeMap<String, String>) {
         let mut indexes: Vec<usize> = self.by_path.values().copied().collect();
@@ -342,31 +321,18 @@ impl TokenDictionary {
 
         let color = self.get_var_str(color_path, None).unwrap_or(color_path);
         let opacity = if let Some(opacity) = self.get_str(&format!("opacity.{raw_opacity}"), None) {
-            let opacity = opacity.parse::<f64>().ok()?;
-            let mut out = number_to_js_string(opacity * 100.0);
-            out.push('%');
-            out
+            opacity_percent(opacity.parse::<f64>().ok()?)
         } else if raw_opacity.parse::<f64>().is_ok() {
-            let mut out = String::with_capacity(raw_opacity.len() + 1);
-            out.push_str(raw_opacity);
-            out.push('%');
-            out
+            raw_percent(raw_opacity)
         } else {
             return None;
         };
 
-        let mut out =
-            String::with_capacity("color-mix(in oklab, ".len() + color.len() + opacity.len() + 15);
-        out.push_str("color-mix(in oklab, ");
-        out.push_str(color);
-        out.push(' ');
-        out.push_str(&opacity);
-        out.push_str(", transparent)");
-        Some(out)
+        Some(compose_color_mix(color, &opacity))
     }
 
-    /// Snapshot of `{ path → value }` for one category. Only base tokens
-    /// are included; conditional variants live under their own indices.
+    /// Snapshot of `{ path -> value }` for one category. Base tokens only —
+    /// conditional variants live under their own indices.
     #[must_use]
     pub fn category_values(&self, category: &TokenCategory) -> FxHashMap<String, String> {
         self.category_values_cache
@@ -388,7 +354,7 @@ impl TokenDictionary {
         self.category_values_cache.get(category)
     }
 
-    /// Iterate token categories that have at least one value in this dictionary.
+    /// Categories with at least one token in this dictionary.
     pub fn categories(&self) -> impl Iterator<Item = &TokenCategory> {
         self.category_values_cache.keys()
     }
@@ -402,8 +368,7 @@ impl TokenDictionary {
             .map(|&i| category_value(&self.tokens[i]))
     }
 
-    /// Resolve a full token path or category-relative value, preserving a
-    /// trailing `/modifier` in the returned metadata.
+    /// Resolve a full or category-relative token path, preserving a trailing `/modifier`.
     #[must_use]
     pub fn resolve_token_path(
         &self,
@@ -429,7 +394,6 @@ impl TokenDictionary {
         Some(self.token_metadata(token, modifier.map(str::to_owned)))
     }
 
-    /// Metadata for an existing token path.
     #[must_use]
     pub fn token_metadata(&self, token: &Token, modifier: Option<String>) -> ResolvedTokenPath {
         let category_path = category_relative_path(&token.path, &token.category).to_owned();
@@ -443,7 +407,6 @@ impl TokenDictionary {
         }
     }
 
-    /// Whether `path` is a semantic token.
     #[must_use]
     pub fn is_semantic_token(&self, path: &str) -> bool {
         self.token(path)
@@ -451,14 +414,12 @@ impl TokenDictionary {
             .is_some()
     }
 
-    /// Whether a category contains at least one semantic token.
     #[must_use]
     pub fn has_semantic_tokens(&self, category: &TokenCategory) -> bool {
         self.semantic_categories.contains(category)
     }
 
-    /// Tokens that carry a hardcoded `value` in `category`, ranked (safe
-    /// equivalents first). Empty when nothing matches.
+    /// Tokens carrying `value` in `category`, ranked safe-equivalents first.
     #[must_use]
     pub fn suggest_tokens(&self, category: &TokenCategory, value: &str) -> Vec<TokenSuggestion> {
         let key = normalize_value(category, value);
@@ -530,9 +491,8 @@ pub struct TokenCssConditionVars<'a> {
 }
 
 fn is_theme_condition(condition: &str) -> bool {
-    // Theme variant tokens are collected under `_theme{CapitalizedName}` in
-    // `from_config::create_token_dictionary`. Native token CSS emits them only
-    // when `staticCss.themes` is configured (see `static_theme_condition_filter`).
+    // Theme tokens use the `_theme{Capitalized}` condition set in
+    // `from_config::create_token_dictionary`; see `static_theme_condition_filter`.
     let first_segment = condition.split(':').next().unwrap_or(condition);
     first_segment
         .strip_prefix("_theme")
@@ -540,8 +500,8 @@ fn is_theme_condition(condition: &str) -> bool {
         .is_some_and(char::is_uppercase)
 }
 
-/// Canonicalize a value for matching: colors via hex normalization, dimensions
-/// via `to_rem` (`16px` ↔ `1rem`); everything else trimmed.
+/// Canonicalize for matching: colors via hex normalization, dimensions via
+/// `to_rem` (`16px` == `1rem`), everything else trimmed.
 pub(crate) fn normalize_value(category: &TokenCategory, value: &str) -> String {
     if matches!(category, TokenCategory::Colors) {
         return normalize_color(value);
@@ -614,4 +574,33 @@ pub(crate) fn join_segments(segments: &[&str]) -> String {
 
 pub(crate) fn raw_css_var(value: &str) -> Option<&str> {
     value.strip_prefix("var(")?.strip_suffix(')')
+}
+
+/// Shared by [`TokenDictionary::color_mix_str`] and `from_config`'s
+/// `{color/opacity}` reference expansion.
+pub(crate) fn compose_color_mix(color: &str, opacity_percent: &str) -> String {
+    let mut out = String::with_capacity(
+        "color-mix(in oklab, ".len() + color.len() + opacity_percent.len() + 15,
+    );
+    out.push_str("color-mix(in oklab, ");
+    out.push_str(color);
+    out.push(' ');
+    out.push_str(opacity_percent);
+    out.push_str(", transparent)");
+    out
+}
+
+/// Format an opacity ratio (`0.5`) as the `color-mix()` percent literal (`50%`).
+pub(crate) fn opacity_percent(ratio: f64) -> String {
+    let mut out = number_to_js_string(ratio * 100.0);
+    out.push('%');
+    out
+}
+
+/// Append `%` to an already-validated raw opacity number string.
+pub(crate) fn raw_percent(raw: &str) -> String {
+    let mut out = String::with_capacity(raw.len() + 1);
+    out.push_str(raw);
+    out.push('%');
+    out
 }

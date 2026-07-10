@@ -1,6 +1,5 @@
-//! The `types/*` artifacts: the `.d.ts` surface users' editors see — token
-//! paths, condition keys, property values, and the system style-object types,
-//! derived from the config's [`TypeData`](pandacss_config::TypeData).
+//! The `types/*` artifacts: the `.d.ts` surface a user's editor sees, derived
+//! from the config's [`TypeData`](pandacss_config::TypeData).
 
 mod data_type;
 mod jsx_types;
@@ -172,9 +171,7 @@ fn condition_type_parts(
         .join("\n");
     let container_name = string_union_with_fallback(&data.containers, "AnyString");
 
-    // PORT NOTE: v1 arrays are `Array<V | null>`; the `undefined` member only
-    // leaked in through csstype's optional-property fallback, which strictTokens
-    // dropped — so sparse `undefined` entries error exactly when strictTokens is on.
+    // PORT NOTE: v1's `undefined` array member only leaked in via csstype's optional-property fallback, which strictTokens dropped.
     let array_member = if options.strict_tokens {
         "Array<T | null>"
     } else {
@@ -279,8 +276,7 @@ fn value_alias_parts(
 ) -> Vec<String> {
     let strict = options.strict_tokens || options.strict_property_values;
 
-    // The color-opacity / important modifiers are only reachable from strict
-    // aliases — keep the default (non-strict) output on the lean escape hatch.
+    // Color-opacity / important modifiers are only reachable from strict aliases.
     let escape_hatch = if strict {
         "type WithColorOpacityModifier<T> = [T] extends [string] ? `${T}/${string}` & { __colorOpacityModifier?: true } : never\n\n\
          type ImportantMark = \"!\" | \"!important\"\n\
@@ -322,8 +318,7 @@ fn value_alias_parts(
     parts
 }
 
-/// Map each utility value alias to its native CSS property entry when the alias
-/// should inherit `strict_props` shapes in default mode.
+/// Maps each utility value alias to its native CSS property entry, for default-mode `strict_props` inheritance.
 fn strict_alias_entries(
     data: &UtilityTypeData,
 ) -> std::collections::BTreeMap<&str, &'static strict_props::PropertyValueEntry> {
@@ -340,7 +335,6 @@ fn strict_alias_entries(
     entries
 }
 
-/// Resolved conditional value type for one native CSS property key.
 fn native_css_property_value_type(name: &str, options: pandacss_config::TypegenOptions) -> String {
     let Some(entry) = strict_props::property_value_entry(name) else {
         return "CssValue".into();
@@ -367,7 +361,6 @@ fn should_strict_narrow_native_property(
         && matches!(entry.keywords_open(), Some(false))
 }
 
-/// Resolved conditional value type for one configured utility key.
 fn utility_system_property_type(
     property: &UtilityPropertyTypeData,
     options: pandacss_config::TypegenOptions,
@@ -407,8 +400,7 @@ fn utility_system_property_type(
     render_ts_union([alias.to_owned(), "CssValue".into()])
 }
 
-/// v1 `cssFallback`: when a utility's resolved CSS property is a known native
-/// prop, union its `PropertyValueMap` entry (or `CssValue`) in default mode.
+/// v1 `cssFallback` — unions the native `PropertyValueMap` entry for a known CSS property.
 fn utility_css_fallback_type(property: &UtilityPropertyTypeData) -> Option<String> {
     let css_property = property
         .css_property
@@ -422,8 +414,8 @@ fn utility_css_fallback_type(property: &UtilityPropertyTypeData) -> Option<Strin
     Some(css_property_value_ref(css_property))
 }
 
-/// Utility that only mirrors a native strict-prop entry — no tokens, literals, or
-/// custom value map. These use the native `PropertyValueMap` entry on `SystemProperties`.
+/// True when the utility has no tokens, literals, or custom values, so it can
+/// mirror `SystemProperties`' native `PropertyValueMap` entry directly.
 fn is_native_strict_mirror(property: &UtilityPropertyTypeData) -> bool {
     if property.token_category.is_some()
         || !property.literals.is_empty()
@@ -464,7 +456,6 @@ fn format_property_member(name: &str, value_type: &str) -> String {
     )
 }
 
-/// Emit a single `SystemProperties` surface: native CSS props plus utility overrides.
 fn build_system_properties_members(
     data: &UtilityTypeData,
     options: pandacss_config::TypegenOptions,
@@ -630,9 +621,8 @@ fn css_datatype_type_parts() -> Vec<String> {
     ]
 }
 
-/// The single combined type surface: `SystemProperties`, selectors, the recursive
-/// `SystemStyleObject`, globals, and keyframe/fontface shapes — all in one file so
-/// there are no cross-module boundaries on the hot path.
+/// `SystemProperties`, selectors, `SystemStyleObject`, globals, and keyframe/fontface
+/// shapes — all in one file so there's no cross-module boundary on the hot path.
 fn system_module(
     conditions: &ConditionTypeData,
     data: &UtilityTypeData,
@@ -844,9 +834,8 @@ type WithHTMLProps<T> = DistributiveOmit<T, OmittedHTMLProps> & PatchedHTMLProps
 }
 
 fn index_module(ctx: CodegenContext<'_>) -> Module {
-    // `./system` carries SystemProperties, selectors, and SystemStyleObject.
     let mut sources = vec!["./tokens", "./system", "./pattern", "./recipe"];
-    // Re-export `./jsx` for any known framework — mirrors the jsx artifact gate.
+    // Mirrors the jsx artifact's own framework gate.
     if ctx
         .config
         .jsx_framework
@@ -875,9 +864,8 @@ fn value_alias_type(
     let mapped_css_property = mapped_css_property_from_parts(parts);
     let token_backed = has_token_part(parts);
 
-    // Strictness is baked into the alias (computed once per category) rather than
-    // wrapped per-property — so every property is a uniform `ConditionalValue<Alias>`
-    // and the strict wrappers instantiate once each, not once per property.
+    // Strictness lives in the alias, computed once per category, not wrapped
+    // per property — so tsc instantiates each strict wrapper once, not per property.
     if options.strict_tokens && token_backed {
         let strict_parts = parts
             .iter()
@@ -898,17 +886,15 @@ fn value_alias_type(
             strict_parts.join(" | ")
         };
 
-        // CSS-wide keywords (and the non-tokenizable per-category keywords like
-        // `auto`/`currentColor`) stay assignable under strictTokens — they have no
-        // token to substitute and aren't a design-drift risk.
+        // CSS-wide keywords (`auto`, `currentColor`, …) stay assignable under
+        // strictTokens — there's no token to substitute, so no design-drift risk.
         let globals = strict_token_globals(parts);
         return format!("WithEscapeHatch<{globals} | {strict_type}>");
     }
 
-    // Properties in the v1 `strictPropertyList` narrow to their CSS keyword
-    // union (configured utility values take precedence over the csstype-derived
-    // table). v1's strictTokens also narrowed these when the csstype union was
-    // closed (no `(string & {})` member), e.g. `position` — mirror that.
+    // v1 `strictPropertyList` props narrow to their CSS keyword union (configured
+    // utility values win over the csstype table). Mirror v1: strictTokens also
+    // narrows these when the csstype union is closed, e.g. `position`.
     if let Some(entry) = strict_entry
         && entry.is_keywords()
         && should_strict_narrow_native_property(entry.name, entry, options)
@@ -928,11 +914,9 @@ fn value_alias_type(
         return native_css_property_value_type(entry.name, options);
     }
 
-    // strictTokens: utilities with configured values are strict even without a
-    // token category — v1 dropped the freeform csstype fallback for any utility
-    // that had a values map. Number/boolean primitive hints keep their primitive
-    // (mirrors v1's `UtilityValues` entries); a freeform `string` primitive makes
-    // the wrap a no-op, so those aliases stay on the plain loose union.
+    // strictTokens: a utility with configured values is strict even without a
+    // token category — v1 dropped the freeform fallback for any utility with a
+    // values map. A freeform `string` primitive makes the wrap a no-op.
     let freeform = parts
         .iter()
         .any(|part| matches!(part, ValueTypePart::Primitive(PrimitiveType::String)));
@@ -983,6 +967,7 @@ fn default_utility_alias_with_native(
         .map(value_part)
         .collect();
     rendered.push(native);
+
     if native_css_property_needs_any_string(entry) {
         rendered.push("AnyString".into());
     }
@@ -995,6 +980,7 @@ fn default_utility_alias_with_native(
     {
         rendered.push("AnyNumber".into());
     }
+
     render_ts_union(rendered)
 }
 
@@ -1020,6 +1006,7 @@ fn is_native_mirror_parts(parts: &[ValueTypePart]) -> bool {
             _ => return false,
         }
     }
+
     has_string && has_number
 }
 
@@ -1033,14 +1020,13 @@ fn mapped_css_property_from_parts(parts: &[ValueTypePart]) -> Option<&str> {
     })
 }
 
-/// Strict native / utility value types with escape hatches where applicable.
 fn strict_property_value_type(
     entry: &strict_props::PropertyValueEntry,
     literals: &[String],
     mapped_css_property: Option<&str>,
 ) -> String {
-    // Open keyword props keep `(string & {})` on `PropertyValueMap` for default mode.
-    // Under strict narrowing, emit closed keyword unions instead of indexing the map.
+    // Open keyword props keep `(string & {})` in default mode; strict narrowing
+    // emits a closed keyword union instead of indexing `PropertyValueMap`.
     if literals.is_empty()
         && mapped_css_property.is_none()
         && let strict_props::PropertyValueKind::Keywords {
@@ -1130,9 +1116,8 @@ fn strict_keywords_type(
 }
 
 fn value_parts_union(parts: &[ValueTypePart], strict_tokens: bool) -> String {
-    // Union the mapped css property's raw value type into value aliases only when
-    // the utility config declares an explicit `property` field and `strictTokens`
-    // is off.
+    // Only unions the mapped CSS property's raw type when the utility declares
+    // an explicit `property` field and `strictTokens` is off.
     let mut rendered = parts
         .iter()
         .filter(|part| !(strict_tokens && matches!(part, ValueTypePart::CssProperty(_))))
@@ -1143,8 +1128,7 @@ fn value_parts_union(parts: &[ValueTypePart], strict_tokens: bool) -> String {
         return "unknown".into();
     }
 
-    // Mirror strictTokens: token utilities accept category globals (currentColor,
-    // auto, …) in default mode too — including shorthands sharing the alias.
+    // Mirror strictTokens: token utilities accept category globals in default mode too.
     if !strict_tokens && has_token_part(parts) {
         rendered.insert(0, strict_token_globals(parts));
     }
@@ -1165,9 +1149,8 @@ fn has_token_part(parts: &[ValueTypePart]) -> bool {
         .any(|part| matches!(part, ValueTypePart::TokenCategory(_)))
 }
 
-/// The globals alias a token category's strict type unions in: the CSS-wide
-/// keywords plus the non-tokenizable keywords that category's properties accept
-/// (per csstype). Categories with no extra keywords fall back to bare `Globals`.
+/// The CSS-wide keywords plus the non-tokenizable keywords `category`'s
+/// properties accept (per csstype). No extras falls back to bare `Globals`.
 fn category_globals(category: &str) -> &'static str {
     match category {
         "colors" => "ColorGlobals",
@@ -1177,7 +1160,6 @@ fn category_globals(category: &str) -> &'static str {
     }
 }
 
-/// Union of the globals aliases for every token category present in `parts`.
 fn strict_token_globals(parts: &[ValueTypePart]) -> String {
     let mut names: Vec<&str> = parts
         .iter()
@@ -1188,11 +1170,12 @@ fn strict_token_globals(parts: &[ValueTypePart]) -> String {
         .collect();
     names.sort_unstable();
     names.dedup();
-    // Every category alias already includes `Globals`, so drop the bare base when a
-    // richer alias is present to keep the union tight.
+
+    // Every category alias already includes `Globals` — drop the bare one once a richer alias is present.
     if names.len() > 1 {
         names.retain(|name| *name != "Globals");
     }
+
     if names.is_empty() {
         "Globals".to_owned()
     } else {

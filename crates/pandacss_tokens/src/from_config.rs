@@ -5,7 +5,7 @@ use pandacss_config::{
     ColorPaletteOptions, Deprecated, SemanticTokens, SemanticValue, Theme, ThemeVariantsMap,
     TokenEntry, TokenGroup, TokenNode, Tokens, UserConfig,
 };
-use pandacss_shared::{capitalize, number_to_js_string, to_hash};
+use pandacss_shared::{capitalize, to_hash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::{
@@ -35,10 +35,10 @@ impl<'a> TokenDictionaryOptions<'a> {
     }
 }
 
-/// Build the full token dictionary from config in fixed phases: base tokens →
-/// breakpoints → semantic tokens → per-theme-variant tokens → derived negative
-/// spacing → virtual `colorPalette` tokens → resolve `{…}` references → drop
-/// empties. Returns `None` when the config contributes no tokens.
+/// Fixed build phases: base tokens -> breakpoints -> semantic tokens ->
+/// per-theme-variant tokens -> negative spacing -> virtual `colorPalette`
+/// tokens -> resolve `{…}` references -> drop empties. `None` if the config
+/// contributes no tokens.
 pub(crate) fn create_token_dictionary(
     options: TokenDictionaryOptions<'_>,
 ) -> Result<Option<TokenDictionary>, TokenError> {
@@ -125,6 +125,45 @@ fn collect_breakpoint_tokens(
     }
 }
 
+/// Canonical `(field, category, wire name)` list for every token category —
+/// shared by [`collect_tokens`] and [`collect_semantic_tokens`] so the two
+/// walkers can't drift out of sync when a category is added or renamed.
+macro_rules! for_each_token_field {
+    ($mac:ident) => {
+        $mac!(cursor, TokenCategory::Cursor, "cursor");
+        $mac!(z_index, TokenCategory::ZIndex, "zIndex");
+        $mac!(opacity, TokenCategory::Opacity, "opacity");
+        $mac!(colors, TokenCategory::Colors, "colors");
+        $mac!(fonts, TokenCategory::Fonts, "fonts");
+        $mac!(font_sizes, TokenCategory::FontSizes, "fontSizes");
+        $mac!(font_weights, TokenCategory::FontWeights, "fontWeights");
+        $mac!(line_heights, TokenCategory::LineHeights, "lineHeights");
+        $mac!(
+            letter_spacings,
+            TokenCategory::LetterSpacings,
+            "letterSpacings"
+        );
+        $mac!(sizes, TokenCategory::Sizes, "sizes");
+        $mac!(shadows, TokenCategory::Shadows, "shadows");
+        $mac!(spacing, TokenCategory::Spacing, "spacing");
+        $mac!(radii, TokenCategory::Radii, "radii");
+        $mac!(borders, TokenCategory::Borders, "borders");
+        $mac!(durations, TokenCategory::Durations, "durations");
+        $mac!(easings, TokenCategory::Easings, "easings");
+        $mac!(animations, TokenCategory::Animations, "animations");
+        $mac!(blurs, TokenCategory::Blurs, "blurs");
+        $mac!(gradients, TokenCategory::Gradients, "gradients");
+        $mac!(assets, TokenCategory::Assets, "assets");
+        $mac!(border_widths, TokenCategory::BorderWidths, "borderWidths");
+        $mac!(aspect_ratios, TokenCategory::AspectRatios, "aspectRatios");
+        $mac!(
+            container_names,
+            TokenCategory::Other("containerNames".into()),
+            "containerNames"
+        );
+    };
+}
+
 fn collect_tokens(
     builder: &mut TokenDictionaryBuilder,
     context: &mut BuildContext<'_>,
@@ -132,58 +171,19 @@ fn collect_tokens(
     condition: Option<&str>,
 ) {
     macro_rules! collect {
-        ($name:literal, $category:expr, $group:expr) => {
-            collect_token_category(builder, context, $name, &$category, $group, condition);
+        ($field:ident, $category:expr, $name:literal) => {
+            collect_token_category(
+                builder,
+                context,
+                $name,
+                &$category,
+                &tokens.$field,
+                condition,
+            );
         };
     }
 
-    collect!("cursor", TokenCategory::Cursor, &tokens.cursor);
-    collect!("zIndex", TokenCategory::ZIndex, &tokens.z_index);
-    collect!("opacity", TokenCategory::Opacity, &tokens.opacity);
-    collect!("colors", TokenCategory::Colors, &tokens.colors);
-    collect!("fonts", TokenCategory::Fonts, &tokens.fonts);
-    collect!("fontSizes", TokenCategory::FontSizes, &tokens.font_sizes);
-    collect!(
-        "fontWeights",
-        TokenCategory::FontWeights,
-        &tokens.font_weights
-    );
-    collect!(
-        "lineHeights",
-        TokenCategory::LineHeights,
-        &tokens.line_heights
-    );
-    collect!(
-        "letterSpacings",
-        TokenCategory::LetterSpacings,
-        &tokens.letter_spacings
-    );
-    collect!("sizes", TokenCategory::Sizes, &tokens.sizes);
-    collect!("shadows", TokenCategory::Shadows, &tokens.shadows);
-    collect!("spacing", TokenCategory::Spacing, &tokens.spacing);
-    collect!("radii", TokenCategory::Radii, &tokens.radii);
-    collect!("borders", TokenCategory::Borders, &tokens.borders);
-    collect!("durations", TokenCategory::Durations, &tokens.durations);
-    collect!("easings", TokenCategory::Easings, &tokens.easings);
-    collect!("animations", TokenCategory::Animations, &tokens.animations);
-    collect!("blurs", TokenCategory::Blurs, &tokens.blurs);
-    collect!("gradients", TokenCategory::Gradients, &tokens.gradients);
-    collect!("assets", TokenCategory::Assets, &tokens.assets);
-    collect!(
-        "borderWidths",
-        TokenCategory::BorderWidths,
-        &tokens.border_widths
-    );
-    collect!(
-        "aspectRatios",
-        TokenCategory::AspectRatios,
-        &tokens.aspect_ratios
-    );
-    collect!(
-        "containerNames",
-        TokenCategory::Other("containerNames".into()),
-        &tokens.container_names
-    );
+    for_each_token_field!(collect);
 }
 
 fn collect_semantic_tokens(
@@ -193,65 +193,19 @@ fn collect_semantic_tokens(
     forced_condition: Option<&str>,
 ) {
     macro_rules! collect {
-        ($name:literal, $category:expr, $group:expr) => {
+        ($field:ident, $category:expr, $name:literal) => {
             collect_semantic_category(
                 builder,
                 context,
                 $name,
                 &$category,
-                $group,
+                &tokens.$field,
                 forced_condition,
             );
         };
     }
 
-    collect!("cursor", TokenCategory::Cursor, &tokens.cursor);
-    collect!("zIndex", TokenCategory::ZIndex, &tokens.z_index);
-    collect!("opacity", TokenCategory::Opacity, &tokens.opacity);
-    collect!("colors", TokenCategory::Colors, &tokens.colors);
-    collect!("fonts", TokenCategory::Fonts, &tokens.fonts);
-    collect!("fontSizes", TokenCategory::FontSizes, &tokens.font_sizes);
-    collect!(
-        "fontWeights",
-        TokenCategory::FontWeights,
-        &tokens.font_weights
-    );
-    collect!(
-        "lineHeights",
-        TokenCategory::LineHeights,
-        &tokens.line_heights
-    );
-    collect!(
-        "letterSpacings",
-        TokenCategory::LetterSpacings,
-        &tokens.letter_spacings
-    );
-    collect!("sizes", TokenCategory::Sizes, &tokens.sizes);
-    collect!("shadows", TokenCategory::Shadows, &tokens.shadows);
-    collect!("spacing", TokenCategory::Spacing, &tokens.spacing);
-    collect!("radii", TokenCategory::Radii, &tokens.radii);
-    collect!("borders", TokenCategory::Borders, &tokens.borders);
-    collect!("durations", TokenCategory::Durations, &tokens.durations);
-    collect!("easings", TokenCategory::Easings, &tokens.easings);
-    collect!("animations", TokenCategory::Animations, &tokens.animations);
-    collect!("blurs", TokenCategory::Blurs, &tokens.blurs);
-    collect!("gradients", TokenCategory::Gradients, &tokens.gradients);
-    collect!("assets", TokenCategory::Assets, &tokens.assets);
-    collect!(
-        "borderWidths",
-        TokenCategory::BorderWidths,
-        &tokens.border_widths
-    );
-    collect!(
-        "aspectRatios",
-        TokenCategory::AspectRatios,
-        &tokens.aspect_ratios
-    );
-    collect!(
-        "containerNames",
-        TokenCategory::Other("containerNames".into()),
-        &tokens.container_names
-    );
+    for_each_token_field!(collect);
 }
 
 fn collect_token_category<T: TokenValueString>(
@@ -322,9 +276,9 @@ fn collect_semantic_category<T: TokenValueString>(
     });
 }
 
-/// Flatten a (possibly nested) semantic value, invoking `visit` once per
-/// concrete value with its condition. Nested conditions are colon-joined
-/// (`_dark` inside `md` -> `md:_dark`); a top-level `base` carries `None`.
+/// Flatten a nested semantic value, calling `visit` once per concrete value.
+/// Conditions colon-join on nesting (`_dark` inside `md` -> `md:_dark`); a
+/// top-level `base` carries `None`.
 fn visit_semantic_values<T>(
     value: &SemanticValue<T>,
     condition: Option<&str>,
@@ -406,9 +360,9 @@ struct TokenPath {
 }
 
 impl TokenPath {
-    /// Build the dotted path (`colors.red.500`) and CSS-var name
-    /// (`colors-red-500`) from segments, dropping any `DEFAULT` segment. Two
-    /// passes: precompute lengths to size the buffers exactly, then fill them.
+    /// Dotted path (`colors.red.500`) and CSS-var name (`colors-red-500`) from
+    /// segments, dropping any `DEFAULT` segment. Precomputes buffer lengths to
+    /// avoid reallocating while filling them.
     fn from_segments(segments: &[&str]) -> Self {
         let mut dotted_len = 0;
         let mut css_var_len = 0;
@@ -495,6 +449,7 @@ fn push_token(
             token.set_extension("isDefault", "true");
         }
     }
+
     builder.push(token);
     context.count += 1;
 }
@@ -559,8 +514,8 @@ fn expand_token_references(builder: &mut TokenDictionaryBuilder) -> Result<(), T
         return Ok(());
     }
 
-    // Index path -> token, base tokens first so an unconditional value wins;
-    // a second pass fills paths that only have conditional variants.
+    // Index base tokens first so an unconditional value wins; a second pass
+    // fills paths that only have conditional variants.
     let mut by_path: FxHashMap<Arc<str>, usize> =
         FxHashMap::with_capacity_and_hasher(tokens.len(), rustc_hash::FxBuildHasher);
     for (index, token) in tokens.iter().enumerate() {
@@ -593,9 +548,9 @@ fn expand_token_references(builder: &mut TokenDictionaryBuilder) -> Result<(), T
     Ok(())
 }
 
-/// For every positive spacing token, synthesize a negative sibling
-/// (`spacing.4` -> `spacing.-4`) whose value is `calc(var(--…) * -1)`, carrying
-/// over the source token's condition/metadata.
+/// Synthesize a negative sibling for every positive spacing token
+/// (`spacing.4` -> `spacing.-4`, value `calc(var(--…) * -1)`), carrying over
+/// the source token's condition/metadata.
 fn add_negative_spacing_tokens(builder: &mut TokenDictionaryBuilder) {
     let tokens = builder.tokens_mut();
     if tokens.is_empty() {
@@ -650,11 +605,10 @@ fn remove_empty_tokens(builder: &mut TokenDictionaryBuilder) {
     builder.retain_tokens(|token| !token.value.is_empty());
 }
 
-/// Generate the `colorPalette` machinery. For each concrete color token, this
-/// (1) emits virtual `colors.colorPalette.*` placeholder tokens for every
-/// ancestor palette root, and (2) records palette → (virtual var → token var)
-/// mappings so `colorPalette="…"` can later swap a whole palette in. Honors the
-/// `include`/`exclude` glob filters.
+/// For each concrete color token, emit virtual `colors.colorPalette.*`
+/// placeholders for every ancestor palette root and record palette -> (virtual
+/// var -> token var) mappings so `colorPalette="…"` can swap a whole palette
+/// in. Honors the `include`/`exclude` glob filters.
 fn add_virtual_color_palette_tokens(
     builder: &mut TokenDictionaryBuilder,
     context: &BuildContext<'_>,
@@ -666,8 +620,6 @@ fn add_virtual_color_palette_tokens(
 
     let mut palette = PaletteAccumulator::default();
 
-    // Collect roots from every concrete (non-virtual, unconditional) color
-    // token, tagging each with the palette it belongs to.
     for token in builder.tokens_mut().iter_mut() {
         if !is_concrete_color(token) {
             continue;
@@ -696,8 +648,8 @@ fn is_concrete_color(token: &Token) -> bool {
         && token.condition.is_none()
 }
 
-/// Accumulates the virtual palette tokens + palette mappings discovered while
-/// scanning color tokens, then [`Self::emit`]s them into the builder.
+/// Virtual palette tokens + mappings discovered while scanning color tokens,
+/// flushed into the builder by [`Self::emit`].
 #[derive(Default)]
 struct PaletteAccumulator {
     virtual_paths: FxHashSet<String>,
@@ -705,7 +657,7 @@ struct PaletteAccumulator {
 }
 
 impl PaletteAccumulator {
-    /// Register one color token against every ancestor palette root
+    /// Register `token` under every ancestor palette root
     /// (`button.primary.500` -> roots `button`, `button.primary`).
     fn collect_token(
         &mut self,
@@ -737,8 +689,7 @@ impl PaletteAccumulator {
         segments: &[&str],
         context: &BuildContext<'_>,
     ) {
-        // Only reached with `root_len == 1`, so the key path is everything past
-        // `colors.<root>`.
+        // Only called with root_len == 1, so segments[2..] is the path past colors.<root>.
         if segments[2..].is_empty() {
             return;
         }
@@ -755,15 +706,13 @@ impl PaletteAccumulator {
     }
 
     fn emit(self, builder: &mut TokenDictionaryBuilder, context: &BuildContext<'_>) {
-        // Sorted so virtual-token emission order is deterministic.
         let mut virtual_paths: Vec<String> = self.virtual_paths.into_iter().collect();
         virtual_paths.sort();
 
         for path in virtual_paths {
             let token_path = TokenPath::from_owned_path(path);
-            // A virtual token's value is its own var-ref (v1's `isVirtual ->
-            // varRef` rule), so `token('colors.colorPalette.500')` resolves to
-            // `var(--colors-color-palette-500)` instead of the path string.
+            // v1's isVirtual -> varRef rule: value is its own var-ref, so
+            // `token('colors.colorPalette.500')` resolves to `var(...)`, not the path.
             let var = css_var(token_path.css_var_name.as_str(), context);
             let mut token = Token::new(
                 token_path.dotted.as_str(),
@@ -799,8 +748,8 @@ fn matches_color_palette_options(path: &str, options: &ColorPaletteOptions) -> b
             .any(|pattern| wildcard_match(pattern, path))
 }
 
-/// Glob match supporting `*` (any run) and `?` (one char), with backtracking
-/// on the last `*` so patterns like `button.*` match greedily but correctly.
+/// Glob match for `*` (any run) and `?` (one char), backtracking on the last
+/// `*` so patterns like `button.*` match correctly.
 fn wildcard_match(pattern: &str, value: &str) -> bool {
     if pattern == value || pattern == "*" {
         return true;
@@ -881,9 +830,8 @@ fn expand_references(
     Ok(Some(out))
 }
 
-/// Resolve a `{color/opacity}` reference into a `color-mix(...)` expression.
-/// `opacity` may be a token (`opacity.50` -> 50%) or a bare number; either way
-/// the color mixes with `transparent` at that percentage.
+/// Resolve `{color/opacity}` into a `color-mix(...)` expression. `opacity` may
+/// be a token (`opacity.50` -> 50%) or a bare number.
 fn color_mix(
     value: &str,
     tokens: &[Token],
@@ -911,26 +859,14 @@ fn color_mix(
         let opacity = opacity.parse::<f64>().map_err(|_| {
             TokenError::token(format!("Invalid color mix at {value}: {color_path}"))
         })?;
-        let mut out = number_to_js_string(opacity * 100.0);
-        out.push('%');
-        out
+        crate::opacity_percent(opacity)
     } else if raw_opacity.parse::<f64>().is_ok() {
-        let mut out = String::with_capacity(raw_opacity.len() + 1);
-        out.push_str(raw_opacity);
-        out.push('%');
-        out
+        crate::raw_percent(raw_opacity)
     } else {
         return Err(TokenError::token(format!(
             "Invalid color mix at {value}: {color_path}"
         )));
     };
 
-    let mut out =
-        String::with_capacity("color-mix(in oklab, ".len() + color.len() + opacity.len() + 15);
-    out.push_str("color-mix(in oklab, ");
-    out.push_str(color);
-    out.push(' ');
-    out.push_str(&opacity);
-    out.push_str(", transparent)");
-    Ok(out)
+    Ok(crate::compose_color_mix(color, &opacity))
 }

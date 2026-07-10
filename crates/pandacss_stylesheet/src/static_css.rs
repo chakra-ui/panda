@@ -152,7 +152,7 @@ fn expand_css_rule(
 }
 
 /// Wrap a value as `{ base: value, <cond>: value, … }` so it emits both
-/// unconditionally and under each condition. Bare names are prefixed with `_`
+/// unconditionally and under each condition. Bare names get a `_` prefix
 /// unless they're configured condition keys.
 fn conditional_value(config: &UserConfig, conditions: &[String], value: &Literal) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];

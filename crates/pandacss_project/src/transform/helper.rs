@@ -33,18 +33,10 @@ pub(crate) fn merge_class_name_fragments(
     panda: &str,
 ) -> ClassNamePrint {
     let panda = panda.trim();
-    let mut fragments = Vec::new();
-
-    if let Some(existing) = existing_static.filter(|value| !value.is_empty()) {
-        fragments.push(ClassFragment::Static(existing.to_owned()));
-    }
-    if let Some(expr) = existing_dynamic {
-        fragments.push(ClassFragment::Expr(expr.to_owned()));
-    }
+    let mut fragments = existing_class_name_fragments(existing_static, existing_dynamic);
     if !panda.is_empty() {
         fragments.push(ClassFragment::Static(panda.to_owned()));
     }
-
     merge_fragments(helper_cx, &fragments)
 }
 
@@ -54,19 +46,27 @@ pub(crate) fn merge_class_name_with_expression(
     existing_dynamic: Option<&str>,
     panda_expr: &str,
 ) -> ClassNamePrint {
-    let mut fragments = Vec::new();
+    let mut fragments = existing_class_name_fragments(existing_static, existing_dynamic);
+    if !panda_expr.trim().is_empty() {
+        fragments.push(ClassFragment::Expr(panda_expr.to_owned()));
+    }
+    merge_fragments(helper_cx, &fragments)
+}
 
+/// The pre-existing `className` split into fragments. The two callers differ
+/// only in how they classify the *new* Panda-generated piece.
+fn existing_class_name_fragments(
+    existing_static: Option<&str>,
+    existing_dynamic: Option<&str>,
+) -> Vec<ClassFragment> {
+    let mut fragments = Vec::new();
     if let Some(existing) = existing_static.filter(|value| !value.is_empty()) {
         fragments.push(ClassFragment::Static(existing.to_owned()));
     }
     if let Some(expr) = existing_dynamic {
         fragments.push(ClassFragment::Expr(expr.to_owned()));
     }
-    if !panda_expr.trim().is_empty() {
-        fragments.push(ClassFragment::Expr(panda_expr.to_owned()));
-    }
-
-    merge_fragments(helper_cx, &fragments)
+    fragments
 }
 
 #[derive(Debug, Clone)]

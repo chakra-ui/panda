@@ -7,11 +7,10 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::FileSystem;
 
-/// In-memory filesystem. Backed by a `FxHashMap<PathBuf, Vec<u8>>` for content and a
-/// `FxHashSet<PathBuf>` for directories. Mutations go through `&self` via `RwLock`
-/// so the FS can be shared via `Arc<MemoryFileSystem>` without coordinating mutable
-/// borrows — important for the wasm playground where React effects push files into
-/// a shared handle.
+/// In-memory filesystem: `FxHashMap<PathBuf, Vec<u8>>` for files, `FxHashSet<PathBuf>`
+/// for directories. Mutations go through `&self` via `RwLock` so `Arc<MemoryFileSystem>`
+/// can be shared without coordinating mutable borrows (the wasm playground pushes files
+/// from React effects into a shared handle).
 #[derive(Default, Clone, Debug)]
 pub struct MemoryFileSystem {
     inner: Arc<RwLock<MemoryState>>,
@@ -29,15 +28,11 @@ impl MemoryFileSystem {
         Self::default()
     }
 
-    /// Bulk-load from `(path, content)` pairs.
-    ///
-    /// Named distinct from `FromIterator::from_iter` because `MemoryFileSystem`
-    /// itself isn't a collection — we don't want callers to expect
-    /// `iter.collect::<MemoryFileSystem>()` to work.
+    /// Bulk-load from `(path, content)` pairs. Not named `from_iter`: a
+    /// `MemoryFileSystem` isn't a collection, so `.collect()` shouldn't work on it.
     ///
     /// # Panics
-    /// Panics if the internal lock is poisoned (only possible if another
-    /// thread panicked while holding it).
+    /// Lock poisoned.
     pub fn from_entries<I, P, C>(entries: I) -> Self
     where
         I: IntoIterator<Item = (P, C)>,
@@ -51,10 +46,10 @@ impl MemoryFileSystem {
         fs
     }
 
-    /// Add or replace a file. Auto-registers every ancestor as a directory.
+    /// Adds or replaces a file, auto-registering every ancestor as a directory.
     ///
     /// # Panics
-    /// Panics if the internal lock is poisoned.
+    /// Lock poisoned.
     pub fn add_file(&self, path: PathBuf, content: Vec<u8>) {
         let mut state = self.inner.write().expect("memory FS poisoned");
         Self::register_ancestors(&mut state.dirs, &path);
@@ -64,7 +59,7 @@ impl MemoryFileSystem {
     /// Snapshot of all `(path, content)` entries. Test helper; allocates.
     ///
     /// # Panics
-    /// Panics if the internal lock is poisoned.
+    /// Lock poisoned.
     #[must_use]
     pub fn snapshot(&self) -> Vec<(PathBuf, Vec<u8>)> {
         let state = self.inner.read().expect("memory FS poisoned");
@@ -78,14 +73,14 @@ impl MemoryFileSystem {
     /// Number of files stored.
     ///
     /// # Panics
-    /// Panics if the internal lock is poisoned.
+    /// Lock poisoned.
     #[must_use]
     pub fn len(&self) -> usize {
         self.inner.read().expect("memory FS poisoned").files.len()
     }
 
     /// # Panics
-    /// Panics if the internal lock is poisoned.
+    /// Lock poisoned.
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.inner
@@ -126,6 +121,7 @@ impl FileSystem for MemoryFileSystem {
                 format!("file not found: {}", path.display()),
             ));
         }
+
         Ok(())
     }
 
@@ -146,18 +142,17 @@ impl FileSystem for MemoryFileSystem {
 
     fn read_dir(&self, path: &Path) -> io::Result<Vec<PathBuf>> {
         let state = self.inner.read().expect("memory FS poisoned");
-        // Empty path and "/" act as implicit roots; otherwise require an
-        // explicit dir entry.
+
+        // Empty path and "/" are implicit roots; anything else needs a dir entry.
         if !state.dirs.contains(path) && path.as_os_str() != "/" && path.as_os_str() != "" {
             return Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 format!("directory not found: {}", path.display()),
             ));
         }
-        // This memory FS is intentionally optimized for simple fixtures and
-        // wasm-backed virtual filesystems. Directory listing scans the current
-        // path set instead of maintaining a children index; production OS
-        // traversal uses `OsFileSystem`.
+
+        // Scans the full path set rather than keeping a children index — fine
+        // for fixtures and the wasm playground; `OsFileSystem` handles production scale.
         let mut entries: Vec<PathBuf> = Vec::new();
 
         for p in state.files.keys() {
@@ -209,6 +204,7 @@ impl OxcResolverFileSystem for MemoryFileSystem {
                 format!("path not found: {}", path.display()),
             ));
         }
+
         Ok(FileMetadata::new(is_file, is_dir, false))
     }
 

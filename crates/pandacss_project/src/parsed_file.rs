@@ -7,10 +7,10 @@ use pandacss_recipes::{Recipe, SlotRecipe};
 
 use crate::{Diagnostic, RecipeKey};
 
-/// Borrowed read-only view of one parsed file. **Read-only by design** —
-/// unlike ts-morph's `SourceFile`, this view does not mutate, copy, move,
-/// save, or emit; Panda is an extractor, not a codemod toolkit. Re-process
-/// via [`crate::Project::refresh_file`] / [`crate::Project::parse_file`].
+/// Borrowed read-only view of one parsed file. Unlike ts-morph's
+/// `SourceFile`, it can't mutate, copy, move, save, or emit — Panda is an
+/// extractor, not a codemod toolkit. Re-process via
+/// [`crate::Project::refresh_file`] / [`crate::Project::parse_file`].
 pub struct ParsedFile<'a> {
     pub(crate) path: &'a str,
     pub(crate) atoms: &'a FxHashSet<Atom>,
@@ -33,9 +33,8 @@ impl<'a> ParsedFile<'a> {
             .unwrap_or(self.path)
     }
 
-    /// File extension *without* the leading dot — `"tsx"` for
-    /// `"button.tsx"`. Differs from ts-morph's `getExtension()` (which
-    /// returns `".tsx"`); Rust convention keeps the borrow allocation-free.
+    /// Extension without the leading dot — `"tsx"` for `"button.tsx"`.
+    /// ts-morph's `getExtension()` returns `".tsx"`; this stays allocation-free.
     #[must_use]
     pub fn extension(&self) -> &'a str {
         std::path::Path::new(self.path)

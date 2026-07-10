@@ -2,9 +2,9 @@
 //! map (export name → module key) so a consumer can resolve a barrel import
 //! (`import { Button } from '@acme/ds'`) to the module it must hydrate.
 
-use oxc_ast::ast::{
-    BindingPattern, Declaration, ImportOrExportKind, ModuleExportName, Program, Statement,
-};
+use oxc_ast::ast::{BindingPattern, Declaration, ImportOrExportKind, Program, Statement};
+
+use crate::imports::module_export_name;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ExportInfo {
@@ -107,8 +107,4 @@ fn push_declaration_names(declaration: &Declaration<'_>, names: &mut Vec<String>
         }
         _ => {}
     }
-}
-
-fn module_export_name(name: &ModuleExportName<'_>) -> String {
-    name.name().to_string()
 }

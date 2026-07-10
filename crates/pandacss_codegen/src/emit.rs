@@ -1,7 +1,6 @@
-//! Print an [`ast::Module`](crate::ast) to source text. Two modes: emit a
-//! single `.ts` source file, or *split* into a runtime file (`.js`/`.mjs`, with
-//! TS types stripped via [`strip_typescript`]) plus a `.d.ts`. [`EmitTarget`]
-//! selects which projection a given print pass produces.
+//! Prints an [`ast::Module`](crate::ast) to source text: a single `.ts` file,
+//! or split into runtime `.js`/`.mjs` (types stripped via [`strip_typescript`])
+//! plus a `.d.ts`. [`EmitTarget`] picks which projection a print pass produces.
 
 use crate::ast::{
     Assignment, Block, ConstDecl, ExportDecl, Expr, FunctionDecl, ImportDecl, ImportKind,
@@ -105,8 +104,7 @@ pub fn emit_module(module: &Module, mode: EmitMode) -> PrintedFiles {
     }
 }
 
-/// Prepend the module's directive prologue (e.g. `"use client"`) to emitted
-/// runtime/source code. Type declarations never carry directives.
+/// Prepends the directive prologue (e.g. `"use client"`); never called for `.d.ts`.
 fn with_directive(module: &Module, code: String) -> String {
     match module.directive.as_deref() {
         Some(directive) if !code.is_empty() => format!("\"{directive}\";\n\n{code}"),
@@ -161,8 +159,7 @@ fn print_module_with_format(
             }),
     );
 
-    // Drop blank lines only for the `.d.ts` (where a type-stripped runtime item
-    // leaves an empty slot); the `.ts`/`.js` keep them as intentional spacing.
+    // Only `.d.ts` drops blank lines — a type-stripped runtime item leaves one behind.
     let lines = lines
         .into_iter()
         .filter(|(_, line)| !line.is_empty() || !matches!(target, EmitTarget::Dts))
@@ -196,9 +193,7 @@ fn should_print_import(import: &ImportDecl, target: EmitTarget) -> bool {
     }
 }
 
-/// Item visibility per target: `Both` everywhere, `Runtime` items only in the
-/// `.ts`/`.js`, `Type` items only in the `.ts`/`.d.ts`. This is what splits one
-/// AST into the runtime + types projections.
+/// Splits one AST into the runtime and types projections.
 fn should_print_item(item: &Item, target: EmitTarget) -> bool {
     match (item.role, target) {
         (ItemRole::Both, _)
@@ -390,6 +385,7 @@ fn print_const(decl: &ConstDecl, target: EmitTarget) -> String {
     } else {
         ""
     };
+
     join_doc(
         &doc,
         format!("{export}{declare}const {}{ty}{init}{suffix}", decl.name),

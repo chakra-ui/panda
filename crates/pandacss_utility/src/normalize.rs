@@ -122,9 +122,9 @@ impl<'a> StyleNormalizer<'a> {
             );
         }
 
-        // With breakpoints, a positional array becomes a keyed object
-        // (`["a", "b"]` -> `{ sm: "a", md: "b" }`); `null` slots are skipped.
+        // `["a", "b"]` -> `{ sm: "a", md: "b" }`; `null` slots skip.
         let mut out = Vec::with_capacity(items.len().min(self.breakpoints.len()));
+
         for (index, item) in items.iter().enumerate() {
             let Some(key) = self.breakpoints.get(index) else {
                 continue;
@@ -140,8 +140,7 @@ impl<'a> StyleNormalizer<'a> {
     }
 }
 
-/// Drives the encoder's fused walker — no upfront normalization pass, no
-/// `Cow<Literal>` allocation when nothing actually changes.
+/// Drives the encoder's fused walker: no upfront normalize pass, no `Cow<Literal>` alloc.
 impl pandacss_encoder::NormalizeAtomic for StyleNormalizer<'_> {
     fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
         self.canonical_key(key)

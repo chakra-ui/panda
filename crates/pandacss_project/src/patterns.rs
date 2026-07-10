@@ -8,8 +8,7 @@ use pandacss_extractor::Literal;
 
 use crate::config::PatternDefinition;
 
-/// Maps a pattern's config name and every JSX tag/regex it matches to its
-/// entry, so an extracted call or component can be resolved to its pattern.
+/// Maps a pattern's config name and every JSX tag/regex it matches to its entry.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct PatternRegistry {
     exact: FxHashMap<String, PatternEntry>,

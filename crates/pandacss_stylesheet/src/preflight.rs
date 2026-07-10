@@ -1,12 +1,11 @@
 //! Static preflight (reset) CSS data.
 //!
 //! Mirrors `packages/generator/src/artifacts/css/reset-css.ts`. Properties are
-//! pre-hyphenated and values are stored as `&'static str`, so emission is a
-//! zero-allocation walk over slices that live in `.rodata` — no JSON parse,
-//! no `String` per leaf, no `Vec` bookkeeping.
+//! pre-hyphenated `&'static str` slices living in `.rodata`, so emission is a
+//! zero-allocation walk with no JSON parse and no per-leaf `String`.
 //!
 //! The nested `@supports` block in v1's `::placeholder` definition is hoisted
-//! into its own top-level at-rule (semantically equivalent CSS, simpler data).
+//! into its own top-level at-rule (same CSS, simpler data).
 
 use std::borrow::Cow;
 
@@ -28,8 +27,8 @@ pub(crate) struct PreflightAtRule {
 }
 
 /// Emit the reset, optionally scoped. `scope` is a selector (e.g. `.pd-reset`);
-/// `level` controls whether the reset targets descendants (`parent`) or the
-/// scoped element itself (`element`). Mirrors `reset-css.ts`'s scope handling.
+/// `level` controls whether the reset targets descendants or the scoped
+/// element itself.
 pub(crate) fn write(writer: &mut CssWriter, scope: Option<&str>, level: PreflightLevel) {
     let mode = match level {
         PreflightLevel::Parent => ScopeMode::Parent,
@@ -58,8 +57,8 @@ fn write_rule(writer: &mut CssWriter, rule: &PreflightRule, scope: Option<&str>,
     });
 }
 
-/// Top-level rules in v1's emit order (the `reset` definition then the
-/// `scoped` block, merged via `Object.assign`).
+/// Top-level rules in v1's emit order: the `reset` definition then the
+/// `scoped` block, merged via `Object.assign`.
 static RULES: &[PreflightRule] = &[
     PreflightRule {
         selector: "html, :host",
@@ -260,8 +259,8 @@ static RULES: &[PreflightRule] = &[
     },
 ];
 
-/// At-rule carve-outs. Today: only the placeholder color-mix fallback that
-/// v1 nests inside `::placeholder` via `@supports`.
+/// At-rule carve-outs. Today: just the placeholder color-mix fallback v1
+/// nests inside `::placeholder` via `@supports`.
 static AT_RULES: &[PreflightAtRule] = &[PreflightAtRule {
     prelude: "@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px)",
     rule: PreflightRule {

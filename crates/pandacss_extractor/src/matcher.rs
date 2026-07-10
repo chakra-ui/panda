@@ -25,6 +25,15 @@ pub enum MatchCategory {
     Tokens,
 }
 
+impl MatchCategory {
+    /// Categories whose factory exposes a `.raw()` escape hatch (`css.raw`,
+    /// `cva.raw`, pattern `.raw`). Tokens and JSX tags don't have one.
+    #[must_use]
+    pub(crate) fn supports_raw(self) -> bool {
+        matches!(self, Self::Css | Self::Recipe | Self::Pattern)
+    }
+}
+
 /// Fine-grained classification of a matched JSX usage, carried on
 /// [`crate::ExtractedJsx`] so consumers don't re-derive it from config.
 /// `Factory` is detected via [`Matchers::jsx_factories`]; `Pattern`/`Recipe`
@@ -122,9 +131,8 @@ pub enum CssSyntaxKind {
 impl Matcher {
     #[must_use]
     fn accepts_module(&self, module: &str) -> bool {
-        // Substring match by design: Panda's JS ImportMap does the same
-        // so `panda/css` matches both `@my-org/panda/css` and
-        // `styled-system/css`.
+        // Substring match by design, like Panda's JS ImportMap: `panda/css`
+        // matches both `@my-org/panda/css` and `styled-system/css`.
         self.modules
             .iter()
             .any(|candidate| module.contains(candidate.as_str()))
@@ -410,6 +418,32 @@ impl Matchers {
         };
         matcher.names.accepts(name)
     }
+
+    /// True when `name` (a local alias or canonical import name) is a
+    /// configured JSX factory that accepts member-chain tags like `<styled.div>`.
+    #[must_use]
+    pub(crate) fn is_jsx_factory(&self, name: &str) -> bool {
+        self.jsx_factories
+            .as_ref()
+            .is_some_and(|factories| factories.iter().any(|factory| factory == name))
+    }
+}
+
+/// Render a flattened member-access path back to dotted form:
+/// `member_display("styled", &["div"])` → `"styled.div"`.
+pub(crate) fn member_display(root: &str, path: &[&str]) -> String {
+    let mut out = String::with_capacity(
+        root.len()
+            + 1
+            + path.iter().map(|part| part.len()).sum::<usize>()
+            + path.len().saturating_sub(1),
+    );
+    out.push_str(root);
+    for part in path {
+        out.push('.');
+        out.push_str(part);
+    }
+    out
 }
 
 /// Per-file context shared between the call and JSX visitors.

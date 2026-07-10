@@ -27,7 +27,6 @@ pub(crate) enum Edit {
     },
 }
 
-/// Build the full edit list for one transform.
 #[must_use]
 pub(crate) fn build_transform_edits(
     project: &Project,
@@ -73,9 +72,9 @@ pub(crate) fn build_transform_edits(
     edits
 }
 
-/// Drop rewrites that overlap an earlier, wider one so `MagicString` never gets
-/// overlapping edits (which it silently discards). Keeps the outermost; a nested
-/// site stays as-is inside the outer rewrite's output.
+/// Drops rewrites overlapping an earlier, wider one — `MagicString` silently
+/// discards overlapping edits. Keeps the outermost; a nested site stays as-is
+/// inside the outer rewrite's output.
 fn dedup_overlapping_rewrites(rewrites: &[Rewrite]) -> Vec<Rewrite> {
     let mut sorted: Vec<&Rewrite> = rewrites.iter().collect();
     sorted.sort_by(|a, b| a.start.cmp(&b.start).then(b.end.cmp(&a.end)));

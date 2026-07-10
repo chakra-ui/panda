@@ -5,7 +5,8 @@
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
 use crate::adapter::{
-    blank_like, copy_range, find_bytes, find_matching_brace, has_extension, starts_with, tag_blocks,
+    blank_like, copy_range, find_bytes, find_matching_brace, has_extension, has_non_html_lang,
+    starts_with, tag_blocks,
 };
 use crate::{
     ExtractedJsx, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport,
@@ -29,10 +30,9 @@ struct ResolvedTemplateTag<'a> {
     category: MatchCategory,
     name: Cow<'a, str>,
     alias: Cow<'a, str>,
-    /// Mirrors the TSX visitor's `ResolvedTag::emit_empty`: matched Panda
-    /// imports and configured component names (recipe/pattern jsx names)
-    /// emit a usage even without extractable attrs, so a bare
-    /// `<Custom.Root>` still renders its recipe's base + default variants.
+    /// Mirrors `ResolvedTag::emit_empty`: a matched Panda import or
+    /// configured component name emits even with no extractable attrs, so a
+    /// bare `<Custom.Root>` still renders its recipe's base + defaults.
     emit_empty: bool,
     /// Mirrors `ResolvedTag::panda_owned` — matched Panda import vs name-only.
     panda_owned: bool,
@@ -329,6 +329,7 @@ fn resolve_template_tag<'a>(
             _ => {}
         }
     }
+
     if config
         .jsx
         .should_match_tag(tag_name, config.has_jsx_framework)
@@ -341,10 +342,11 @@ fn resolve_template_tag<'a>(
             panda_owned: false,
         });
     }
+
     // Vue resolves kebab-case tags against PascalCase bindings
-    // (`<custom-root>` -> `CustomRoot`); match configured component names the
-    // same way. Svelte components are always capitalized, so kebab tags there
-    // are custom elements and stay unmatched.
+    // (`<custom-root>` -> `CustomRoot`), same as configured component names.
+    // Svelte components are always capitalized, so kebab tags there are
+    // custom elements and stay unmatched.
     if matches!(framework, Framework::Vue) && tag_name.contains('-') {
         let pascal = pandacss_shared::pascal_case(tag_name);
         if config.jsx.is_component_tag(&pascal) {
@@ -722,30 +724,4 @@ fn find_markup_tag_end(source: &str, from: usize, limit: usize) -> Option<usize>
         index += 1;
     }
     None
-}
-
-fn has_non_html_lang(source: &str, start: usize, end: usize) -> bool {
-    let Some(attrs) = source.get(start..=end) else {
-        return false;
-    };
-    let lower = attrs.to_ascii_lowercase();
-    let Some(lang_index) = lower.find("lang") else {
-        return false;
-    };
-    let after_lang = lang_index + "lang".len();
-    let Some(rest) = lower.get(after_lang..) else {
-        return false;
-    };
-    if !rest.trim_start().starts_with('=') {
-        return false;
-    }
-    let value = rest
-        .trim_start()
-        .trim_start_matches('=')
-        .trim_start()
-        .trim_matches(|ch| ch == '"' || ch == '\'' || ch == '>' || ch == '/')
-        .split_ascii_whitespace()
-        .next()
-        .unwrap_or_default();
-    !matches!(value, "" | "html")
 }

@@ -3,26 +3,22 @@ use std::path::{Path, PathBuf};
 
 use oxc_resolver::FileSystem as OxcResolverFileSystem;
 
-/// Filesystem abstraction over the Panda Rust pipeline.
+/// Filesystem abstraction over the Panda Rust pipeline. Inherits read primitives
+/// (`read`, `read_to_string`, `metadata`, `symlink_metadata`, `read_link`,
+/// `canonicalize`) from [`oxc_resolver::FileSystem`] and adds writes, `read_dir`,
+/// `exists`, and `glob`.
 ///
-/// Inherits read primitives from [`oxc_resolver::FileSystem`] (`read`, `read_to_string`,
-/// `metadata`, `symlink_metadata`, `read_link`, `canonicalize`) so the resolver can use any
-/// `FileSystem` impl. Adds the write side plus `read_dir`, `exists`, and `glob`.
-///
-/// **Not object-safe** because `oxc_resolver::FileSystem::new() -> Self` is an associated
-/// function returning `Self`. Consumer crates take `F: FileSystem` generic parameters rather
-/// than `Arc<dyn FileSystem>`. This matches rolldown's pattern.
+/// Not object-safe: `oxc_resolver::FileSystem::new() -> Self` returns `Self`, so
+/// consumers take a generic `F: FileSystem` rather than `Arc<dyn FileSystem>`.
 pub trait FileSystem: Send + Sync + OxcResolverFileSystem {
-    /// Write `content` to `path`, creating the file or truncating an existing one.
+    /// Writes `content` to `path`, creating or truncating it.
     ///
     /// # Errors
     /// See [`std::fs::write`].
     fn write(&self, path: &Path, content: &[u8]) -> io::Result<()>;
 
-    /// Write `content` only when the on-disk bytes differ.
-    ///
-    /// Returns `true` when the file was written and `false` when the existing
-    /// bytes already matched `content`.
+    /// Writes `content` only when it differs from the on-disk bytes. Returns
+    /// whether it wrote.
     ///
     /// # Errors
     /// Propagates any read error except `NotFound`, plus any write error.
@@ -69,10 +65,9 @@ pub trait FileSystem: Send + Sync + OxcResolverFileSystem {
     /// See [`std::fs::read_dir`].
     fn read_dir(&self, path: &Path) -> io::Result<Vec<PathBuf>>;
 
-    /// Find files matching `opts.include` under `opts.cwd`, skipping any path whose
-    /// relative form matches a pattern in `opts.exclude`. Default impl walks via
-    /// [`Self::read_dir`] + `fast-glob` matchers; OS impl overrides with `walkdir`
-    /// for native-fast traversal.
+    /// Files matching `opts.include` under `opts.cwd`, minus `opts.exclude`.
+    /// Default impl walks via [`Self::read_dir`] + `fast-glob`; `OsFileSystem`
+    /// overrides with `walkdir` for native-fast traversal.
     ///
     /// # Errors
     /// Propagates any error from `read_dir` or `metadata`.

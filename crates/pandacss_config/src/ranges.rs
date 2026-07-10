@@ -26,12 +26,14 @@ pub(crate) fn sorted_scale(scale: &BTreeMap<String, String>) -> Vec<ScaleEntry> 
         .iter()
         .map(|(name, value)| (name.clone(), value.clone(), scale_sort_value(value)))
         .collect::<Vec<_>>();
+
     entries.sort_by(|(name_a, _, value_a), (name_b, _, value_b)| {
         value_a
             .partial_cmp(value_b)
             .unwrap_or(std::cmp::Ordering::Equal)
             .then_with(|| name_a.cmp(name_b))
     });
+
     entries
         .into_iter()
         .map(|(name, value, _)| ScaleEntry { name, value })
@@ -107,8 +109,7 @@ pub(crate) fn range_query(feature: &str, min: Option<&str>, max: Option<&str>) -
     }
 }
 
-/// Numeric weight for sorting string scales by their leading magnitude
-/// (`"48rem"` -> `48`). Unparseable values sort last via `INFINITY`.
+/// Leading-magnitude sort weight (`"48rem"` -> `48`); unparseable values sort last.
 fn scale_sort_value(value: &str) -> f64 {
     value
         .chars()

@@ -1,6 +1,4 @@
-//! Shared helpers used by Panda Rust crates.
-//!
-//! This crate intentionally stays at the bottom of the dependency graph:
+//! Shared helpers for Panda Rust crates. Bottom of the dependency graph —
 //! no dependencies on other Panda crates.
 
 pub mod css_escape;

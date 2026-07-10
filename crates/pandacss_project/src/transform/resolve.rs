@@ -77,20 +77,13 @@ fn encode_css_arg(
     }
 }
 
+/// A style value is static (safe to fold to a class string at build time) when
+/// it holds no dynamic/`Conditional` leaves anywhere in its shape.
 fn is_static_css_arg(arg: &Literal) -> bool {
     match arg {
-        Literal::Object(entries) => entries.iter().all(|(_, value)| is_static_css_value(value)),
+        Literal::Object(entries) => entries.iter().all(|(_, value)| is_static_css_arg(value)),
         Literal::Conditional(branches) => branches.iter().all(is_static_css_arg),
         Literal::Array(items) => items.iter().all(is_static_css_arg),
-        _ => true,
-    }
-}
-
-fn is_static_css_value(value: &Literal) -> bool {
-    match value {
-        Literal::Object(entries) => entries.iter().all(|(_, value)| is_static_css_value(value)),
-        Literal::Conditional(branches) => branches.iter().all(is_static_css_value),
-        Literal::Array(items) => items.iter().all(is_static_css_value),
         Literal::String(_)
         | Literal::Number(_)
         | Literal::Bool(_)

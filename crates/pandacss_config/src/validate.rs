@@ -77,30 +77,37 @@ fn warn(code: &'static str, message: impl Into<String>) -> Diagnostic {
     Diagnostic::warning(code, message)
 }
 
-/// Warn when breakpoints mix units (e.g. `px` and `rem`) — merge-rules in the
-/// emitter assume a single comparable unit.
+/// Emitter merge-rules assume one comparable unit, so mixed `px`/`rem` breakpoints warn.
 fn validate_breakpoints(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>) {
     let Some(entries) = value.and_then(Value::as_object) else {
         return;
     };
 
+    warn_on_mixed_units(
+        entries.values().map(value_string),
+        diagnostic_codes::CONFIG_BREAKPOINT_UNITS_MIXED,
+        |joined| format!("All breakpoints must use the same unit: `{joined}`"),
+        diagnostics,
+    );
+}
+
+/// Shared by [`validate_breakpoints`] and [`validate_container_units`]: push
+/// one `code` diagnostic if `values` uses more than one unit.
+fn warn_on_mixed_units(
+    values: impl Iterator<Item = String>,
+    code: &'static str,
+    message: impl FnOnce(&str) -> String,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let mut units = BTreeSet::new();
-    let mut values = Vec::new();
-    for value in entries.values() {
-        let text = value_string(value);
-        values.push(text.clone());
-        units.insert(unit_of(&text).unwrap_or("px").to_owned());
+    let mut values: Vec<String> = values.collect();
+    for value in &values {
+        units.insert(unit_of(value).unwrap_or("px").to_owned());
     }
 
     if units.len() > 1 {
         values.sort();
-        diagnostics.push(warn(
-            diagnostic_codes::CONFIG_BREAKPOINT_UNITS_MIXED,
-            format!(
-                "All breakpoints must use the same unit: `{}`",
-                values.join(", ")
-            ),
-        ));
+        diagnostics.push(warn(code, message(&values.join(", "))));
     }
 }
 
@@ -108,6 +115,7 @@ fn validate_conditions(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>)
     let Some(entries) = value.and_then(Value::as_object) else {
         return;
     };
+
     for (name, condition) in entries {
         if let Some(condition) = condition.as_str() {
             validate_condition_selector(condition, diagnostics);
@@ -293,23 +301,12 @@ fn validate_container_units(
     scale: &BTreeMap<String, String>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    let mut units = BTreeSet::new();
-    let mut values = Vec::new();
-    for value in scale.values() {
-        values.push(value.clone());
-        units.insert(unit_of(value).unwrap_or("px").to_owned());
-    }
-
-    if units.len() > 1 {
-        values.sort();
-        diagnostics.push(warn(
-            diagnostic_codes::CONFIG_CONTAINER_UNITS_MIXED,
-            format!(
-                "All container sizes in `{path}` must use the same unit: `{}`",
-                values.join(", ")
-            ),
-        ));
-    }
+    warn_on_mixed_units(
+        scale.values().cloned(),
+        diagnostic_codes::CONFIG_CONTAINER_UNITS_MIXED,
+        |joined| format!("All container sizes in `{path}` must use the same unit: `{joined}`"),
+        diagnostics,
+    );
 }
 
 fn is_valid_container_name(name: &str) -> bool {
@@ -445,10 +442,9 @@ fn validate_tokens(
     validate_token_references(tokens, diagnostics);
 }
 
-/// Walk one token tree (`tokens` or `semanticTokens`), recording each token's
-/// value/type into `tokens` and warning on malformed entries (spaces in keys,
-/// missing `value`, doubly-nested `value`). Harvests `{…}` references for the
-/// later cross-token reference pass.
+/// Walk one token tree (`tokens` or `semanticTokens`), recording values/types
+/// into `tokens`, warning on malformed entries, and harvesting `{…}`
+/// references for the later cross-token reference pass.
 fn validate_token_tree(
     root: &Value,
     kind: &'static str,
@@ -463,6 +459,7 @@ fn validate_token_tree(
         let Some(value) = get_path(root, &path) else {
             continue;
         };
+
         tokens.type_by_path.insert(formatted.clone(), kind);
         tokens
             .value_at_path
@@ -508,10 +505,8 @@ fn validate_token_tree(
     }
 }
 
-/// Cross-token reference validation: flags self-references, missing/unknown
-/// referenced tokens, and circular chains. Each token's reference graph is
-/// explored with a worklist (`stack` + `seen`); a dep that loops back to the
-/// origin `path` is a cycle.
+/// Flags self-references, missing/unknown referenced tokens, and circular
+/// chains, walking each token's reference graph with a `stack`/`seen` worklist.
 fn validate_token_references(tokens: &TokenData, diagnostics: &mut Vec<Diagnostic>) {
     for (path, refs) in &tokens.refs_by_path {
         if refs.contains(path) {
@@ -524,7 +519,6 @@ fn validate_token_references(tokens: &TokenData, diagnostics: &mut Vec<Diagnosti
         let mut stack = vec![path.clone()];
         let mut seen = BTreeSet::new();
         while let Some(mut current_path) = stack.pop() {
-            // A `token/opacity` reference keys off the token path alone.
             if let Some((token_path, _opacity)) = current_path.split_once('/') {
                 current_path = token_path.to_owned();
             }
@@ -554,6 +548,7 @@ fn validate_token_references(tokens: &TokenData, diagnostics: &mut Vec<Diagnosti
             let Some(deps) = tokens.refs_by_path.get(&current_path) else {
                 continue;
             };
+
             for dep in deps {
                 if dep == path {
                     diagnostics.push(warn(
@@ -570,8 +565,7 @@ fn validate_token_references(tokens: &TokenData, diagnostics: &mut Vec<Diagnosti
     }
 }
 
-/// Collect the path to every token leaf — a node is a leaf once it has a
-/// `value` key (or isn't an object). Reuses one `path` buffer across recursion.
+/// Path to every token leaf (a `value` key, or a non-object). Reuses one `path` buffer.
 fn collect_token_paths(value: &Value, path: &mut Vec<String>, out: &mut Vec<Vec<String>>) {
     let Some(map) = value.as_object() else {
         if !path.is_empty() {
@@ -612,8 +606,7 @@ fn has_nested_value_value(value: &Value) -> bool {
     contains_key_path(value, &["value"])
 }
 
-/// Deep search for a `path` of nested keys anywhere in `value` — used to
-/// detect a `value.value` shape regardless of nesting depth.
+/// Deep search for a nested `path` of keys anywhere in `value` (detects `value.value` at any depth).
 fn contains_key_path(value: &Value, path: &[&str]) -> bool {
     if path.is_empty() {
         return true;
@@ -652,6 +645,7 @@ fn validate_artifact_names(names: &ArtifactNames, diagnostics: &mut Vec<Diagnost
             ));
         }
     }
+
     for recipe in &names.slot_recipes {
         if names.patterns.contains(recipe) {
             diagnostics.push(warn(
@@ -703,8 +697,7 @@ fn is_token_reference(value: &str) -> bool {
     value.contains('{') && value.contains('}')
 }
 
-/// Extract every `{token.path}` reference from a serialized value, dropping any
-/// `/opacity` suffix so the result keys directly into the token map.
+/// Every `{token.path}` reference in a serialized value, `/opacity` suffix stripped.
 fn references(value: &str) -> BTreeSet<String> {
     let mut refs = BTreeSet::new();
     let mut rest = value;

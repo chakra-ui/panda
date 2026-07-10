@@ -1,4 +1,5 @@
-use crate::{ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
+use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
+use crate::{ImportDecl, Module};
 
 pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
     let runtime = FACTORY_RUNTIME
@@ -123,33 +124,3 @@ function createJsxFactory() {
 }
 
 export const __FACTORY__ = /* @__PURE__ */ createJsxFactory()";
-
-fn value_import(names: &[&str], source: &str) -> ImportDecl {
-    ImportDecl {
-        kind: ImportKind::Value,
-        specifiers: names
-            .iter()
-            .map(|name| ImportSpecifier::Named((*name).into()))
-            .collect(),
-        source: source.into(),
-    }
-}
-
-fn type_import(names: &[&str], source: &str) -> ImportDecl {
-    ImportDecl {
-        kind: ImportKind::Type,
-        specifiers: names
-            .iter()
-            .map(|name| ImportSpecifier::Named((*name).into()))
-            .collect(),
-        source: source.into(),
-    }
-}
-
-fn raw_runtime(code: impl Into<String>) -> Item {
-    Item::runtime(ItemNode::RawStmt(code.into()))
-}
-
-fn raw_type(code: impl Into<String>) -> Item {
-    Item::ty(ItemNode::RawStmt(code.into()))
-}

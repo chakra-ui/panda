@@ -1,9 +1,7 @@
 use std::path::{Path, PathBuf};
 
-/// Path operations for a filesystem host.
-///
-/// Kept separate from [`crate::FileSystem`] because joining and resolving paths
-/// do not require IO, but their semantics are host-specific.
+/// Host-specific path operations (join/resolve), kept separate from
+/// [`crate::FileSystem`] since they need no IO.
 pub trait PathSystem: Send + Sync {
     fn is_absolute(&self, path: &str) -> bool;
     fn join(&self, parts: &[&str]) -> String;

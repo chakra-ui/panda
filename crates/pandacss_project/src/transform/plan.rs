@@ -120,8 +120,8 @@ pub(crate) fn build_plan(
 ) -> TransformPlan {
     let mut plan = TransformPlan {
         rewrites: Vec::new(),
-        // Cross-file modules read to fold imported values — reported so the host
-        // re-transforms this file when one of them changes.
+        // Reported so the host re-transforms this file when a cross-file
+        // module read to fold an imported value changes.
         dependencies: extracted.dependencies.clone(),
         helper: TransformHelperFacts::default(),
         bailed: false,
@@ -240,12 +240,13 @@ pub(crate) fn build_plan(
     plan
 }
 
-/// Inline standalone `token()` / `token.var()` calls to their resolved value.
-/// Skips calls nested inside a rewrite that already inlines them (e.g. a
-/// rewritten `css()`), and calls that don't resolve.
+/// Inlines standalone `token()`/`token.var()` calls to their resolved value.
+/// Skips calls already covered by another rewrite (e.g. inside a rewritten
+/// `css()`), and calls that don't resolve.
 fn push_token_rewrites(plan: &mut TransformPlan, extracted: &ExtractUsage) {
     let claimed: Vec<(u32, u32)> = plan.rewrites.iter().map(|r| (r.start, r.end)).collect();
     let mut seen: Vec<u32> = Vec::new();
+
     for token_ref in &extracted.token_refs {
         let (start, end) = (token_ref.span.start, token_ref.span.end);
         let Some(value) = token_ref.value.as_deref() else {

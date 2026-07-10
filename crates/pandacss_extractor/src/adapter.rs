@@ -36,6 +36,36 @@ pub(crate) fn has_extension(path: &str, extension: &str) -> bool {
         .is_some_and(|actual| actual.eq_ignore_ascii_case(extension))
 }
 
+/// `true` when a Vue `<template lang="…">` attribute names something other than
+/// HTML (`pug`, etc.) — such templates aren't scanned by either the mask or the
+/// template-style collector. `start`/`end` bound the opening tag's attribute text.
+#[must_use]
+pub(crate) fn has_non_html_lang(source: &str, start: usize, end: usize) -> bool {
+    let Some(attrs) = source.get(start..=end) else {
+        return false;
+    };
+    let lower = attrs.to_ascii_lowercase();
+    let Some(lang_index) = lower.find("lang") else {
+        return false;
+    };
+    let after_lang = lang_index + "lang".len();
+    let Some(rest) = lower.get(after_lang..) else {
+        return false;
+    };
+    if !rest.trim_start().starts_with('=') {
+        return false;
+    }
+    let value = rest
+        .trim_start()
+        .trim_start_matches('=')
+        .trim_start()
+        .trim_matches(|ch| ch == '"' || ch == '\'' || ch == '>' || ch == '/')
+        .split_ascii_whitespace()
+        .next()
+        .unwrap_or_default();
+    !matches!(value, "" | "html")
+}
+
 pub(crate) struct TagBlock {
     pub(crate) open_start: usize,
     pub(crate) open_end: usize,

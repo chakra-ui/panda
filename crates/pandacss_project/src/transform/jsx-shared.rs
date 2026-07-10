@@ -1,6 +1,8 @@
 //! Shared JSX rewrite helpers (including element-tag resolution).
 
-use pandacss_extractor::{ExtractedJsx, JsxKind};
+use std::collections::HashSet;
+
+use pandacss_extractor::{ExtractedJsx, JsxKind, Literal};
 
 use crate::PatternTransformFn;
 use crate::Project;
@@ -14,9 +16,31 @@ use super::jsx_parse::{
     ParsedAttribute, ParsedObjectLiteral, ParsedOpeningElement, ParsedProperty,
 };
 use super::plan::HelperCxMode;
+use super::resolve::is_static_style_literal;
 
 pub(super) fn should_skip_style_prop(key: &str) -> bool {
     matches!(key, "children" | "key" | "ref")
+}
+
+/// Whether a JSX site's extracted `data` is static enough to rewrite: empty,
+/// or free of dynamic/conditional values.
+pub(super) fn data_is_static(data: &Literal) -> bool {
+    match data {
+        Literal::Object(entries) if entries.is_empty() => true,
+        other => is_static_style_literal(other),
+    }
+}
+
+/// Top-level keys of a JSX site's extracted `data` object, for skipping props
+/// already captured there.
+pub(super) fn style_prop_keys(data: &Literal) -> HashSet<&str> {
+    let mut keys = HashSet::new();
+    if let Literal::Object(entries) = data {
+        for (key, _) in entries {
+            keys.insert(key.as_str());
+        }
+    }
+    keys
 }
 
 pub(super) fn plan_opening_class_name(

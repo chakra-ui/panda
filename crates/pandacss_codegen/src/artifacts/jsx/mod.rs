@@ -169,11 +169,9 @@ pub fn generate_index(
     }
 }
 
-// Factory/helper/pattern/index modules stay server-safe (no hooks or context),
-// so they carry no "use client" directive — server components can use the jsx
-// factory at module scope, and the re-export index keeps `export *` (which RSC
-// bundlers reject inside a client boundary). Only the react recipe-context
-// modules are client boundaries (they call `createContext`) and declare it
+// Factory/helper/pattern/index modules are server-safe (no hooks or context) —
+// no "use client" directive, so the `export *` index stays RSC-legal. Only
+// recipe-context modules call `createContext`; they declare "use client"
 // themselves via `Module::with_directive`.
 fn framework_files(
     ctx: CodegenContext<'_>,

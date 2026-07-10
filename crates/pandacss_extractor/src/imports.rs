@@ -81,8 +81,6 @@ pub fn scan_imports(source: &str, path: &str) -> ImportScanResult {
     }
 }
 
-// Internal: borrows an Oxc `Program` which we don't expose on the public
-// surface.
 #[must_use]
 pub(crate) fn collect_imports(program: &Program<'_>) -> Vec<ImportRecord> {
     let mut out = Vec::new();
@@ -171,12 +169,10 @@ fn specifier_record(spec: &ImportDeclarationSpecifier<'_>) -> ImportSpecifier {
     }
 }
 
-fn module_export_name(name: &ModuleExportName<'_>) -> String {
-    match name {
-        ModuleExportName::IdentifierName(n) => n.name.to_string(),
-        ModuleExportName::IdentifierReference(n) => n.name.to_string(),
-        ModuleExportName::StringLiteral(s) => s.value.to_string(),
-    }
+/// Shared by `export_names.rs` and `cross_file.rs`, which handle the same
+/// `ModuleExportName` shape on the export side of specifiers.
+pub(crate) fn module_export_name(name: &ModuleExportName<'_>) -> String {
+    name.name().to_string()
 }
 
 fn binding_name(binding: &BindingIdentifier<'_>) -> String {

@@ -90,23 +90,14 @@ impl Project {
         let edits = apply::build_transform_edits(self, path, source, &plan, options.helper_cx);
         let (code, map) = apply::apply_edits(source, path, &edits);
         let changed = code != source;
-
-        if !changed {
-            return TransformOutput {
-                code,
-                map: None,
-                changed: false,
-                bailed: plan.bailed,
-                diagnostics,
-                dependencies: plan.dependencies,
-                helper: plan.helper,
-            };
-        }
+        // No edits landed: report an unchanged source regardless of what
+        // `apply_edits` returned for the map.
+        let map = changed.then_some(map).flatten();
 
         TransformOutput {
             code,
             map,
-            changed: true,
+            changed,
             bailed: plan.bailed,
             diagnostics,
             dependencies: plan.dependencies,

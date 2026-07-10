@@ -28,9 +28,9 @@ pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Con
     compile_config_with_token_dictionary(config, None)
 }
 
-/// Compile a user config into the immutable runtime [`Config`]: the extractor
-/// matchers + JSX config, utility metadata, condition matcher, pattern/recipe
-/// registries, and the token dictionary (reused if the caller already built one).
+/// Compiles a user config into the immutable runtime [`Config`]: extractor
+/// matchers, utility metadata, conditions, and pattern/recipe registries.
+/// Reuses `token_dictionary` if the caller already built one.
 pub(crate) fn compile_config_with_token_dictionary(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
@@ -240,34 +240,49 @@ fn slot_recipe_definitions(
     Ok(out)
 }
 
-fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<RecipeKey, Recipe> {
+/// Builds the `(file, span) -> Recipe` map config recipes share with inline
+/// `cva()`/`sva()` ones (see [`RecipeKey`]): `{prefix}.{name}` keyed by
+/// declaration order, so config recipes sort deterministically too.
+fn config_recipe_keys<D, T: Clone>(
+    prefix: &str,
+    definitions: &[D],
+    name: impl Fn(&D) -> &str,
+    index: impl Fn(&D) -> u32,
+    recipe: impl Fn(&D) -> &T,
+) -> BTreeMap<RecipeKey, T> {
     let mut out = BTreeMap::new();
-    for recipe in recipes {
+    for definition in definitions {
         out.insert(
             RecipeKey {
-                file: Arc::from(format!("theme.recipes.{}", recipe.name)),
-                span_start: recipe.index,
+                file: Arc::from(format!("{prefix}.{}", name(definition))),
+                span_start: index(definition),
             },
-            recipe.recipe.clone(),
+            recipe(definition).clone(),
         );
     }
     out
 }
 
+fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<RecipeKey, Recipe> {
+    config_recipe_keys(
+        "theme.recipes",
+        recipes,
+        |recipe| recipe.name.as_str(),
+        |recipe| recipe.index,
+        |recipe| &recipe.recipe,
+    )
+}
+
 fn config_slot_recipes_from_definitions(
     recipes: &[SlotRecipeDefinition],
 ) -> BTreeMap<RecipeKey, SlotRecipe> {
-    let mut out = BTreeMap::new();
-    for recipe in recipes {
-        out.insert(
-            RecipeKey {
-                file: Arc::from(format!("theme.slotRecipes.{}", recipe.name)),
-                span_start: recipe.index,
-            },
-            recipe.recipe.clone(),
-        );
-    }
-    out
+    config_recipe_keys(
+        "theme.slotRecipes",
+        recipes,
+        |recipe| recipe.name.as_str(),
+        |recipe| recipe.index,
+        |recipe| &recipe.recipe,
+    )
 }
 
 fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
@@ -313,10 +328,9 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     }
 }
 
-/// Flatten patterns + recipes + slot recipes into the extractor's JSX config:
-/// the set of component names/regexes to match, plus each component's prop
-/// allowlist, strict flag, and blocklist (keyed separately for name vs regex
-/// matches).
+/// Flattens patterns, recipes, and slot recipes into the extractor's JSX
+/// config: component names/regexes to match, plus each one's prop allowlist,
+/// strict flag, and blocklist.
 fn jsx_extraction_config_from_definitions(
     config: &pandacss_config::UserConfig,
     entries: &ConfigDefinitions,
@@ -330,6 +344,7 @@ fn jsx_extraction_config_from_definitions(
     let mut component_regex_strict = Vec::new();
     let mut component_blocklist = FxHashMap::default();
     let mut component_regex_blocklist = Vec::new();
+
     for pattern in &entries.patterns {
         collect_component_entry(
             &pattern.jsx_names,
@@ -370,6 +385,7 @@ fn jsx_extraction_config_from_definitions(
             &mut component_regex_props,
         );
     }
+
     let valid_style_props = valid_jsx_style_props_from_config(utility, &entries.condition_names);
     JsxExtractionConfig {
         style_props: jsx_style_props_from_config(config),

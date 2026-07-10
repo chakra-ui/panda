@@ -27,11 +27,10 @@ fn collapse_whitespace(value: &str) -> String {
     out
 }
 
-/// CSS named colors that are shorter than their URL-encoded hex (`#` → `%23`).
-///
-/// Each row is `(name, six_digit_hex, optional_short_hex)`; the `(ff)?` / `(f)?`
-/// alpha forms are derived. Order matches the JS `shorterNames` table so that on
-/// hex collisions (aqua/cyan share `#00ffff`) the first-listed name wins.
+/// CSS named colors shorter than their URL-encoded hex (`#` -> `%23`). Rows are
+/// `(name, six_digit_hex, optional_short_hex)`; order matches the JS
+/// `shorterNames` table so hex collisions (aqua/cyan share `#00ffff`) resolve
+/// to the first-listed name.
 const SHORTER_NAMES: &[(&str, &str, Option<&str>)] = &[
     ("aqua", "#00ffff", Some("#0ff")),
     ("azure", "#f0ffff", None),
@@ -112,13 +111,11 @@ fn shorter_name_for(hex: &str) -> Option<&'static str> {
 /// case-insensitive, only `{3,4,6,8}`-digit runs, and a `(?!\w)` word boundary.
 fn color_code_to_shorter_names(value: &str) -> String {
     let bytes = value.as_bytes();
-    // Byte buffer: we only push ASCII names or copy original byte ranges, so
-    // UTF-8 sequences are preserved intact.
+    // Only ASCII names or copied original byte ranges get pushed, so UTF-8 stays intact.
     let mut out: Vec<u8> = Vec::with_capacity(value.len());
     let mut i = 0;
     while i < bytes.len() {
         if bytes[i] != b'#' {
-            // Copy the whole non-`#` run (including any UTF-8 multibyte chars).
             let start = i;
             while i < bytes.len() && bytes[i] != b'#' {
                 i += 1;

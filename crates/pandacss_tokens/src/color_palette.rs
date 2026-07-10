@@ -9,8 +9,7 @@ use crate::category::TokenCategory;
 use crate::token::Token;
 use crate::{join_segments, raw_css_var};
 
-/// `palette -> (virtual var -> token var)` index backing color-palette
-/// resolution. Built alongside the dictionary's other indexes.
+/// `palette -> (virtual var -> token var)` index backing color-palette resolution.
 #[derive(Debug, Clone, Default)]
 pub struct ColorPaletteView {
     palettes: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>>,
@@ -45,12 +44,10 @@ impl ColorPaletteView {
     }
 }
 
-/// Build the `colorPalette` index: for each concrete color token, map every
-/// ancestor palette root (e.g. `button`, `button.primary`) to the virtual
-/// `colors.colorPalette.*` var it should resolve through. Two passes — collect
-/// the virtual vars first, then wire each concrete token to them.
+/// Build the `colorPalette` index: map every ancestor palette root (e.g.
+/// `button`, `button.primary`) to the virtual `colors.colorPalette.*` var it
+/// should resolve through.
 pub(crate) fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
-    // Pass 1: index the virtual `colorPalette` placeholder vars by path.
     let mut virtual_vars: FxHashMap<&str, &str> = FxHashMap::default();
     for token in tokens {
         if token.category == TokenCategory::Colors && token.extension("isVirtual") == Some("true") {
@@ -62,8 +59,6 @@ pub(crate) fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
         return ColorPaletteView::default();
     }
 
-    // Pass 2: for each concrete color token, register it under every ancestor
-    // palette root that has a matching virtual var.
     let mut palettes: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Arc<str>>> = FxHashMap::default();
     for token in tokens {
         if token.category != TokenCategory::Colors
@@ -100,9 +95,9 @@ pub(crate) fn build_color_palette_view(tokens: &[Token]) -> ColorPaletteView {
     ColorPaletteView { palettes }
 }
 
-/// The palette-name segments of a color token path: `colors` prefix and the
-/// final value segment dropped (`["colors","button","primary","500"]` ->
-/// `["button","primary"]`). `None` for non-color or virtual `colorPalette` paths.
+/// Palette-name segments of a color path, dropping `colors` and the final value
+/// segment (`colors.button.primary.500` -> `["button","primary"]`). `None` for
+/// non-color or virtual `colorPalette` paths.
 pub(crate) fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option<&'a [&'a str]> {
     if segments.first().copied() != Some("colors")
         || segments.get(1).copied() == Some("colorPalette")
@@ -118,9 +113,8 @@ pub(crate) fn color_palette_path_segments<'a>(segments: &'a [&'a str]) -> Option
     .filter(|segments| !segments.is_empty())
 }
 
-/// The virtual lookup key for a palette root: the segments after the root
-/// become `colors.colorPalette.<rest>` (or bare `colors.colorPalette` when the
-/// root is the whole path).
+/// Virtual lookup key for a palette root: segments after the root become
+/// `colors.colorPalette.<rest>` (bare `colors.colorPalette` if the root is the whole path).
 pub(crate) fn virtual_color_palette_path(segments: &[&str], root_len: usize) -> String {
     let suffix = &segments[(1 + root_len)..];
     if suffix.is_empty() {

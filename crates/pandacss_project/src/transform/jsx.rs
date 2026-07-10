@@ -22,10 +22,9 @@ pub(crate) fn rewrites_for_jsx_element(
     needs_cx: &mut bool,
     pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Vec<Rewrite> {
-    // Only rewrite tags Panda owns (resolved via a matched import). Name-only
-    // matches (`jsxStyleProps`/recipe `jsx` allowlist, or a lib component that
-    // collides with a pattern name) are extracted for CSS but left untouched —
-    // rewriting them would replace a user's component with a `div`.
+    // Only rewrite tags Panda owns. A name-only match (`jsxStyleProps`, or a
+    // lib component colliding with a pattern name) is extracted for CSS but
+    // left untouched: rewriting it would replace a user's component with a `div`.
     if !jsx.panda_owned {
         return Vec::new();
     }
@@ -34,10 +33,9 @@ pub(crate) fn rewrites_for_jsx_element(
         return Vec::new();
     };
 
-    // A factory-member tagged-template *definition* (`styled.div`color: red``):
-    // desugar to the object-call form the object syntax already precomputes,
-    // `styled.div(__pcva({ base: '…' }))`. Template literals are static (no
-    // `${…}` interpolation), so the style object is fully known at build time.
+    // A factory-member tagged-template definition (`styled.div`color: red``)
+    // desugars to `styled.div(__pcva({ base: '…' }))` — static, no `${…}`
+    // interpolation, so the style object is fully known at build time.
     if jsx.kind == JsxKind::Factory
         && let Some(rewrite) = styled_template_definition_rewrite(project, jsx, slice)
     {
@@ -65,10 +63,9 @@ pub(crate) fn rewrites_for_jsx_element(
     }
 }
 
-/// Desugar a factory-member tagged template to a precomputed cva call, e.g.
+/// Desugars a factory-member tagged template to a precomputed cva call, e.g.
 /// `styled.div(__pcva({ base: 'color_red' }))`. `None` unless the slice is a
-/// member tagged template with resolvable styles (so JSX elements and empty
-/// templates fall through untouched).
+/// member tagged template with resolvable styles.
 fn styled_template_definition_rewrite(
     project: &Project,
     jsx: &ExtractedJsx,

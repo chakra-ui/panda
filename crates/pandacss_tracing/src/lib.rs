@@ -1,7 +1,5 @@
-//! Tracing bootstrap for native Panda Rust entrypoints.
-//!
-//! Core crates should only emit `tracing` spans. This crate owns subscriber
-//! setup so output choices stay at the executable / binding boundary.
+//! Tracing bootstrap for native Panda Rust entrypoints. Core crates only emit
+//! `tracing` spans; this crate owns subscriber setup and output choices.
 
 use std::fmt::Write as _;
 use std::io::Write as _;
@@ -72,10 +70,8 @@ impl TraceConfig {
     }
 }
 
-/// Initialize native tracing from `PANDA_TRACE*` env vars.
-///
-/// Calling this multiple times is intentionally harmless. Env parsing and
-/// subscriber installation both happen at most once per process.
+/// Initializes native tracing from `PANDA_TRACE*` env vars. Safe to call more
+/// than once — parsing and subscriber install each happen at most once per process.
 pub fn init_from_env() {
     let Some(config) = ENV_CONFIG.get_or_init(TraceConfig::from_env).clone() else {
         return;
@@ -125,8 +121,7 @@ fn install(config: TraceConfig) -> bool {
             let subscriber = registry.with(chrome_layer);
 
             if try_init(subscriber) {
-                // Park the flush guard in a static — dropping it would truncate
-                // the trace. `shutdown`/`flush` reach it from there.
+                // Dropping the flush guard truncates the trace, so park it in a static.
                 let guard_slot = CHROME_GUARD.get_or_init(|| Mutex::new(None));
                 if let Ok(mut slot) = guard_slot.lock() {
                     *slot = Some(guard);

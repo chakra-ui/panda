@@ -13,10 +13,8 @@ use crate::patterns::PatternRegistry;
 use crate::recipes::RecipeRegistry;
 use crate::{ProjectConditionMatcher, RecipeKey, Result};
 
-/// Immutable, read-optimized runtime config derived from a Panda user config.
-///
-/// `UserConfig` is the deserialized resolved input shape. This `Config`
-/// is the compiled model consumed by extraction and project state.
+/// Immutable, read-optimized runtime config compiled from [`UserConfig`] (the
+/// deserialized resolved input) for extraction and project state to consume.
 #[allow(
     clippy::struct_field_names,
     reason = "field names mirror the config sections they hold"

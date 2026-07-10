@@ -23,8 +23,7 @@ impl TokenDictionaryBuilder {
         self
     }
 
-    /// Imperative variant of [`Self::insert`] for `&mut` callers where a
-    /// consuming chain is awkward.
+    /// `&mut` variant of [`Self::insert`] for callers where a consuming chain is awkward.
     pub fn push(&mut self, token: Token) -> &mut Self {
         self.tokens.push(token);
         self
@@ -55,9 +54,8 @@ impl TokenDictionaryBuilder {
         self
     }
 
-    /// Bulk-insert from flat `path → value` and `path → var` maps (a JSON
-    /// dump from the JS dictionary view). Category is inferred from the
-    /// path's first segment; condition is `None`.
+    /// Bulk-insert from flat `path -> value`/`path -> var` maps (a JS dictionary dump).
+    /// Category is inferred from the path's first segment; condition is `None`.
     #[must_use]
     pub fn extend_flat<I, P, V>(mut self, values: I, vars: &HashMap<String, String>) -> Self
     where
@@ -100,9 +98,8 @@ impl TokenDictionaryBuilder {
             .color_palettes
             .unwrap_or_else(|| build_color_palette_view(&self.tokens));
 
-        // Single pass: unconditional tokens overwrite `by_path` / `by_var`;
-        // conditional tokens only fill those entries when no unconditional
-        // sibling did — matches Panda's "use whatever is defined" fallback.
+        // Unconditional tokens overwrite by_path/by_var; conditional tokens only
+        // fill gaps — matches JS's "use whatever is defined" fallback.
         for (i, token) in self.tokens.iter().enumerate() {
             by_category
                 .entry(token.category.clone())
@@ -117,8 +114,7 @@ impl TokenDictionaryBuilder {
                     .entry(Arc::from(condition))
                     .or_default()
                     .push(i);
-                // Capacity hint of 2 — real themes rarely exceed 3
-                // condition variants per path.
+                // Capacity hint of 2: themes rarely exceed 3 condition variants per path.
                 by_path_condition
                     .entry(Arc::clone(&token.path))
                     .or_insert_with(|| {
@@ -174,8 +170,8 @@ impl TokenDictionaryBuilder {
     }
 }
 
-/// Follow `{...}` references to the primitive literal, stopping at the first
-/// repeated token so a cyclic alias can't loop.
+/// Follow `{...}` references to the primitive literal; stop at the first
+/// repeat so a cyclic alias can't loop.
 fn resolve_final_literal(
     tokens: &[Token],
     by_path: &FxHashMap<Arc<str>, usize>,
@@ -198,9 +194,8 @@ fn resolve_final_literal(
     tokens[index].value.to_string()
 }
 
-/// Build `category → normalized final literal → ranked tokens carrying that
-/// value`. Both primitives and semantic tokens (resolved through their `{...}`
-/// reference) are listed; the rule shows them and the developer chooses.
+/// Build `category -> normalized literal -> ranked tokens carrying that value`,
+/// resolving semantic tokens through their `{...}` reference first.
 fn build_suggestion_index(
     tokens: &[Token],
     by_path: &FxHashMap<Arc<str>, usize>,
@@ -243,8 +238,7 @@ fn build_suggestion_index(
             });
     }
 
-    // Rank each bucket: safe equivalents (unconditional) first, then semantic,
-    // then shorter/lexical path. The lint rule decides how many to show.
+    // Rank: unconditional first, then semantic, then shorter/lexical path.
     for buckets in index.values_mut() {
         for candidates in buckets.values_mut() {
             candidates.sort_by(|a, b| {

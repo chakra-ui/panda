@@ -79,7 +79,6 @@ pub enum StylesheetLayer {
 
 impl StylesheetLayer {
     /// Map a cascade-layer name (`"reset"`, `"tokens"`, …) to its variant.
-    /// Unknown names return `None` so callers can skip them.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
@@ -148,8 +147,8 @@ pub struct StylesheetInput<'a> {
     pub utility_styles: &'a emitter::UtilityStyleOverrides,
 }
 
-/// Whether the config has any static CSS work that stylesheet compilation should
-/// include: top-level `staticCss.*` or recipe-level `theme.*.staticCss`.
+/// Whether the config requests any static CSS: top-level `staticCss.*` or
+/// recipe-level `theme.*.staticCss`.
 #[must_use]
 pub fn has_static_css(config: &UserConfig) -> bool {
     static_css::has_static_css(config)
@@ -181,8 +180,6 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     };
     let utility = utility_from_config(input.config, token_dictionary.clone());
 
-    // Assemble the atom set: extracted atoms + (optionally) static-CSS and
-    // static-pattern atoms.
     let mut atoms = input.atoms.iter().collect::<Vec<_>>();
     let generated = if options.include_static {
         static_css::expand(
@@ -203,7 +200,6 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         atoms.extend(input.static_pattern_atoms.iter());
     }
 
-    // Fold any precomputed static recipe snapshot into the dynamic recipes.
     let encoded_recipes = if options.include_static {
         if input.static_encoded_recipes.is_none() && static_css::has_static_recipes(input.config) {
             diagnostics.push(Diagnostic::warning(
@@ -218,6 +214,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     } else {
         None
     };
+
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
     let emitted = emitter::emit(
         input.config,
@@ -499,20 +496,18 @@ pub fn layer_order_declaration(
     )
 }
 
-/// Emits one warning per duplicate name when two or more semantic layers
-/// map to the same string (e.g. `{reset: "x", base: "x"}`). The output
-/// still emits each block under the colliding name — matches v1's
-/// permissive behavior. With only five layers a linear scan is faster
-/// (and clearer) than a `HashMap`.
+/// Emits one warning per duplicate name when two or more semantic layers map
+/// to the same string (e.g. `{reset: "x", base: "x"}`) — the output still
+/// emits each block under the colliding name, matching v1's permissive
+/// behavior. With only five layers a linear scan beats a `HashMap`.
 fn push_layer_collision_diagnostics(
     layers: &pandacss_config::CascadeLayers,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let entries = layers.ordered();
     for (i, (_, name)) in entries.iter().enumerate() {
-        // Only report a name once, on its first collision. Skip if any
-        // earlier slot already used the same name (handled in the prior
-        // iteration's `j` loop).
+        // Report each colliding name once, at its first index; the scan below
+        // already covers every later index sharing that name.
         if entries[..i].iter().any(|(_, prior)| prior == name) {
             continue;
         }
@@ -562,6 +557,7 @@ fn merge_encoded_recipes(
     extend_recipe_groups(&mut merged.base, &static_recipes.base);
     extend_recipe_groups(&mut merged.variants, &static_recipes.variants);
     extend_recipe_groups(&mut merged.compounds, &static_recipes.compounds);
+
     let mut atom_set = FxHashSet::default();
     for atom in &merged.atomic {
         atom_set.insert(atom.clone());
@@ -591,6 +587,7 @@ fn extend_recipe_groups(
     for (index, group) in target.iter().enumerate() {
         indexes.insert(recipe_group_key(group), index);
     }
+
     let target_len = target.len();
     let mut merges = Vec::new();
     let mut additions: Vec<RecipeStyleGroupSnapshot> = Vec::new();
@@ -609,6 +606,7 @@ fn extend_recipe_groups(
             additions.push(group.clone());
         }
     }
+
     drop(indexes);
     for (index, entries) in merges {
         target[index].entries.extend(entries);

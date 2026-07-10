@@ -22,6 +22,7 @@ pub fn runtime_class_name_for_atom(
     let authored = literal_to_class_value(value)?;
     let (raw, lit_important) = split_important(&authored);
     let important = important || lit_important;
+
     let mut base = utility.transform_str(prop, raw.as_ref()).class_name;
     if important {
         base.push('!');

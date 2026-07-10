@@ -1,10 +1,8 @@
 use regex::Regex;
 
-/// Compile a JavaScript-style regex source and flags pair into Rust `regex`.
-///
-/// Supported semantic flags are `i`, `m`, and `s`. JS-only stateful/unicode
-/// flags (`g`, `u`, `y`, `d`) are accepted and ignored because they don't
-/// change simple `test()`-style matching for JSX component names here.
+/// Compiles a JS `(source, flags)` regex pair into Rust `regex`. `i`/`m`/`s`
+/// map directly; `g`/`u`/`y`/`d` are accepted but ignored — irrelevant for
+/// the simple `test()`-style matching used here.
 #[must_use]
 pub fn compile_js_regex(source: &str, flags: &str) -> Option<Regex> {
     let mut options = String::new();

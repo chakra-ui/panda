@@ -42,9 +42,8 @@ pub(crate) fn rewrite_for_sva_call(
     })
 }
 
-/// `__pcva({ … })` for a static style object / cva config, or `None` when it has
-/// no resolvable styles. Shared by the object-form config-arg rewrite and the
-/// template-literal styled-definition desugar.
+/// `__pcva({ … })` for a static style object or cva config, or `None` if it
+/// has no resolvable styles.
 pub(crate) fn styled_config_call(project: &Project, config: &Literal) -> Option<String> {
     if !is_static_style_literal(config) {
         return None;
@@ -141,15 +140,7 @@ fn print_recipe_config(project: &Project, recipe: &Recipe) -> Option<String> {
         parts.push(format!("variants: {{ {} }}", groups.join(", ")));
     }
 
-    if !recipe.default_variants.is_empty() {
-        let defaults = recipe
-            .default_variants
-            .iter()
-            .map(|(key, value)| format!("{}: '{}'", escape_js_key(key), escape_js(value)))
-            .collect::<Vec<_>>()
-            .join(", ");
-        parts.push(format!("defaultVariants: {{ {defaults} }}"));
-    }
+    push_default_variants_part(&mut parts, &recipe.default_variants);
 
     if !recipe.compound_variants.is_empty() {
         let compounds = recipe
@@ -214,15 +205,7 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
         parts.push(format!("variants: {{ {} }}", groups.join(", ")));
     }
 
-    if !recipe.default_variants.is_empty() {
-        let defaults = recipe
-            .default_variants
-            .iter()
-            .map(|(key, value)| format!("{}: '{}'", escape_js_key(key), escape_js(value)))
-            .collect::<Vec<_>>()
-            .join(", ");
-        parts.push(format!("defaultVariants: {{ {defaults} }}"));
-    }
+    push_default_variants_part(&mut parts, &recipe.default_variants);
 
     if !recipe.compound_variants.is_empty() {
         let compounds = recipe
@@ -238,6 +221,20 @@ fn print_slot_recipe_config(project: &Project, recipe: &SlotRecipe) -> Option<St
     }
 
     Some(format!("{{ {} }}", parts.join(", ")))
+}
+
+/// `defaultVariants: { … }` config part, shared by [`print_recipe_config`] and
+/// [`print_slot_recipe_config`] (both recipe kinds share the same shape).
+fn push_default_variants_part(parts: &mut Vec<String>, default_variants: &[(String, String)]) {
+    if default_variants.is_empty() {
+        return;
+    }
+    let defaults = default_variants
+        .iter()
+        .map(|(key, value)| format!("{}: '{}'", escape_js_key(key), escape_js(value)))
+        .collect::<Vec<_>>()
+        .join(", ");
+    parts.push(format!("defaultVariants: {{ {defaults} }}"));
 }
 
 fn encode_shared_slot_variant_option(

@@ -1,22 +1,13 @@
-//! Atomic style encoder for the Panda Rust engine.
-//!
-//! Takes a typed style object ([`pandacss_extractor::Literal::Object`]) or a recipe
-//! model ([`pandacss_recipes::Recipe`] / [`pandacss_recipes::SlotRecipe`]) and decomposes
-//! it into a flat set of [`Atom`] records — one per
-//! `(prop, value, condition_chain)` triple. The emitter turns those atoms
-//! into CSS rules; the encoder doesn't care about CSS syntax.
+//! Atomic style encoder: decomposes a style object ([`pandacss_extractor::Literal::Object`])
+//! or recipe ([`pandacss_recipes::Recipe`] / [`SlotRecipe`]) into flat [`Atom`] records, one
+//! per `(prop, value, condition_chain)`. No CSS syntax here — the emitter handles that.
 //!
 //! ## Hot-path tradeoffs
 //!
-//! - Single reused path buffer during recursion → O(depth) allocation,
-//!   not O(depth²).
-//! - `SmallVec` inline budgets for `Atom::conditions` and the walk path →
-//!   fewer heap allocs on shallow shapes; arbitrary nesting/condition depth
-//!   still works via transparent spill.
-//! - `Box<str>` for `Atom` strings → 8 bytes saved per string vs `String`
-//!   (no capacity field); fine because atoms are immutable.
-//! - `FxHashSet<Atom>` for dedup — non-cryptographic hash for internal
-//!   trusted data.
+//! One reused path buffer during recursion (O(depth) allocation, not O(depth²)); `SmallVec`
+//! inline budgets on `Atom::conditions` and the walk path (fewer heap allocs on shallow shapes,
+//! transparent spill on deep ones); `Box<str>` atom strings (8 bytes lighter than `String`,
+//! fine since atoms are immutable); `FxHashSet<Atom>` dedup (non-cryptographic, trusted data).
 
 use std::borrow::Cow;
 use std::cmp::Ordering;
@@ -30,18 +21,16 @@ use pandacss_extractor::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{number_to_js_string, push_number_to_js_string, split_important};
 
-// PERF(port): SmallVec inline capacity for `Atom::conditions` — not a semantic
-// limit. Longer condition chains still work (heap spill). Tuned to avoid an
-// extra allocation on the common shallow case.
+// PERF(port): `Atom::conditions` inline budget, not a semantic limit — longer
+// chains still work via heap spill. Tuned to skip an allocation on the common shallow case.
 const INLINE_CONDS: usize = 2;
 
-/// Inline-allocated condition list (outer→inner) shared by atoms and recipe
-/// style entries. A concrete `SmallVec` size — naming it keeps downstream code
-/// off generic `[T; N]`, which needs smallvec's `const_generics` feature.
+/// Condition list (outer→inner) shared by atoms and recipe style entries. A
+/// named `SmallVec` size keeps downstream code off generic `[T; N]`.
 pub type ConditionList = SmallVec<[Box<str>; INLINE_CONDS]>;
 
-// PERF(port): SmallVec inline capacity for the encoder walk `path` buffer — not
-// a max nesting depth. Deeper style objects spill to the heap transparently.
+// PERF(port): encoder walk `path` buffer inline budget, not a max depth —
+// deeper style objects spill to the heap transparently.
 const INLINE_PATH: usize = 8;
 
 /// One atomic style declaration: `(prop, value, conditions)`.
@@ -60,14 +49,12 @@ pub struct Atom {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum AtomValue {
     String(Box<str>),
-    /// A token-derived value. `path` preserves author intent for build info,
-    /// while `value` is the resolved CSS string used for emission.
+    /// `path` preserves author intent for build info; `value` is the resolved CSS string.
     Token {
         path: Box<str>,
         value: Box<str>,
     },
-    /// Numbers stored as their JS string form so `Atom` can be `Hash`
-    /// (f64 isn't `Eq`). Round-trips through `to_string()` exactly.
+    /// JS string form, so `Atom` can be `Hash` (f64 isn't `Eq`).
     Number(Box<str>),
     Bool(bool),
     Null,
@@ -213,10 +200,8 @@ impl Hash for Atom {
     }
 }
 
-/// Decides which object keys are *conditions* vs CSS properties.
-///
-/// Callers must derive this from the resolved Panda config so condition
-/// recognition matches the user's configured conditions and breakpoints.
+/// Decides which object keys are conditions vs CSS properties. Callers derive
+/// this from the resolved Panda config so it matches configured conditions/breakpoints.
 pub trait ConditionMatcher {
     fn is_condition(&self, key: &str) -> bool;
 }
@@ -259,33 +244,28 @@ impl ConditionSet {
     }
 }
 
-/// Inline normalization the encoder applies during a single walk over the
-/// input style — avoids the upfront `StyleNormalizer.normalize` pass and the
-/// `Cow<Literal>` it produces. Default impls are no-ops; the project layer
-/// supplies a real impl via `pandacss_utility::StyleNormalizer`.
+/// Inline normalization applied during a single walk, instead of an upfront
+/// `StyleNormalizer.normalize` pass. Default impls are no-ops; the project
+/// layer supplies `pandacss_utility::StyleNormalizer`.
 pub trait NormalizeAtomic {
     /// Canonical key for an Object entry (shorthand expansion).
-    /// May borrow from `self` (e.g. utility-owned strings) or pass the input through.
     fn resolve_key<'a>(&'a self, key: &'a str) -> &'a str {
         key
     }
 
-    /// Normalize a leaf value before atom construction.
-    /// Returns `Cow::Borrowed(value)` when nothing changes — no alloc.
+    /// Normalizes a leaf value; `Cow::Borrowed` when nothing changes.
     fn normalize_leaf<'a>(&self, _prop: &str, value: &'a Literal) -> Cow<'a, Literal> {
         Cow::Borrowed(value)
     }
 
-    /// For `Literal::Array` items at responsive positions: the synthetic
-    /// condition name to attach (e.g. `"sm"`). `None` → arrays don't encode
-    /// (matches the pre-fusion default-walker behavior).
+    /// Synthetic condition name for a responsive `Literal::Array` item (e.g.
+    /// `"sm"`). `None` means arrays don't encode.
     fn array_condition(&self, _index: usize) -> Option<&str> {
         None
     }
 }
 
-/// Zero-cost "do nothing" implementation. Use when the caller has already
-/// normalized the input.
+/// No-op impl for callers that already normalized the input.
 pub struct NoNormalize;
 impl NormalizeAtomic for NoNormalize {}
 
@@ -302,15 +282,13 @@ impl<C: ConditionMatcher> Encoder<C> {
         }
     }
 
-    /// Iteration order isn't stable across runs — sort by
-    /// `(prop, conditions, value)` if you need determinism.
+    /// Iteration order isn't stable — sort by `(prop, conditions, value)` for determinism.
     #[must_use]
     pub fn atoms(&self) -> &FxHashSet<Atom> {
         &self.atoms
     }
 
-    /// Cheaper than `atoms().clone()` — the inner set moves out, no
-    /// re-hash.
+    /// Cheaper than `atoms().clone()` — moves the set out, no re-hash.
     #[must_use]
     pub fn into_atoms(self) -> FxHashSet<Atom> {
         self.atoms
@@ -325,17 +303,16 @@ impl<C: ConditionMatcher> Encoder<C> {
         self.atoms.reserve(additional);
     }
 
-    /// Walk a style object and emit one atom per leaf. Mirrors
-    /// `processAtomic` in the JS encoder.
+    /// Walks a style object, emitting one atom per leaf. Mirrors `processAtomic` in the JS encoder.
     pub fn process_atomic(&mut self, style: &Literal) {
         let _span = tracing::trace_span!("encoding", kind = "encoder_atomic").entered();
         let mut path = SmallVec::new();
         self.walk(style, &mut path);
     }
 
-    /// Fused variant: walks `style` once while applying `norm` inline (key
-    /// resolution, leaf normalization, responsive-array expansion). Caller
-    /// avoids the upfront `StyleNormalizer.normalize` allocation pass.
+    /// Fused variant: walks once while applying `norm` inline (key resolution,
+    /// leaf normalization, responsive-array expansion), skipping the upfront
+    /// `StyleNormalizer.normalize` allocation pass.
     pub fn process_atomic_with<'a, N: NormalizeAtomic>(&mut self, style: &'a Literal, norm: &'a N) {
         let _span = tracing::trace_span!("encoder_atomic").entered();
         let mut path = SmallVec::new();
@@ -358,8 +335,6 @@ impl<C: ConditionMatcher> Encoder<C> {
         }
     }
 
-    // Descends with push, ascends with pop on the shared path buffer.
-    // The outermost non-condition key is the atom's `prop`.
     fn walk<'a>(
         &mut self,
         value: &'a Literal,
@@ -378,8 +353,7 @@ impl<C: ConditionMatcher> Encoder<C> {
             return;
         }
 
-        // A conditional (`cond ? a : b`) could resolve to either branch at
-        // runtime, so emit each branch's atoms under the same path.
+        // `cond ? a : b` could take either branch at runtime — emit both under the same path.
         if let Literal::Conditional(branches) = value {
             for branch in branches {
                 self.walk(branch, path);
@@ -387,7 +361,6 @@ impl<C: ConditionMatcher> Encoder<C> {
             return;
         }
 
-        // Leaf: the accumulated path becomes one atom.
         if let Some(atom) = Self::atom_from_path(path, value) {
             self.atoms.insert(atom);
         }
@@ -429,8 +402,7 @@ impl<C: ConditionMatcher> Encoder<C> {
                 }
             }
             Literal::Conditional(branches) => {
-                // A conditional could resolve to either branch at runtime;
-                // emit each branch's atoms under the same path.
+                // Either branch could run at runtime — emit both under the same path.
                 for branch in branches {
                     self.walk_with(branch, norm, path);
                 }
@@ -450,9 +422,8 @@ impl<C: ConditionMatcher> Encoder<C> {
     }
 
     fn atom_from_path(path: &[PathSegment<'_>], leaf: &Literal) -> Option<Atom> {
-        // An `_`-prefixed key that isn't a known condition is an unresolved
-        // condition reference (typo like `_hovr`) — never a valid property in
-        // Panda — so emit nothing rather than a bogus `_hovr: …` declaration.
+        // An unresolved `_`-prefixed key (e.g. a typo like `_hovr`) is never a
+        // valid Panda property — emit nothing rather than a bogus declaration.
         if path
             .iter()
             .any(|s| !s.is_condition && s.name.starts_with('_'))
@@ -460,8 +431,7 @@ impl<C: ConditionMatcher> Encoder<C> {
             return None;
         }
 
-        // `find` walks outer→inner so the *first* non-condition key wins,
-        // matching JS semantics for the property name.
+        // Outer→inner walk order, so the first non-condition key wins (JS parity).
         let prop = path.iter().find(|s| !s.is_condition)?.name.into();
         let conditions: SmallVec<[Box<str>; INLINE_CONDS]> = path
             .iter()
@@ -513,9 +483,9 @@ struct EncodedLeaf {
     important: bool,
 }
 
-/// Coerce a numeric string to its JS `Number()` value so it dedupes with the bare
-/// number and gets px (`"1e3"` → 1000, `".5"` → 0.5). Leading-zero ints stay
-/// strings (`"01"`, like node); non-finite parses are rejected.
+/// Coerces a numeric string to its JS `Number()` value, so it dedupes with the
+/// bare number and gets px (`"1e3"` → 1000, `".5"` → 0.5). Leading-zero ints
+/// stay strings (`"01"`, like node); non-finite parses are rejected.
 fn canonical_number(s: &str) -> Option<f64> {
     if s.starts_with('0') && s.as_bytes().get(1).is_some_and(u8::is_ascii_digit) {
         return None;
@@ -530,8 +500,7 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
                 return None;
             }
             let (value, important) = split_important(s);
-            // A numeric string == the bare number: encode as `Number` so it
-            // dedupes with `1` and gets px (tokens still resolve by string form).
+            // `"1"` == `1`: encode as `Number` so it dedupes and gets px.
             let value = match canonical_number(&value) {
                 Some(n) => AtomValue::Number(number_to_js_string(n).into_boxed_str()),
                 None => AtomValue::String(value.into_owned().into_boxed_str()),
@@ -571,8 +540,7 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
                 important,
             })
         }
-        // Conditionals are expanded into their branches by the walkers before
-        // reaching a leaf, so they never arrive here.
+        // Conditionals are expanded into branches by the walkers before reaching a leaf.
         Literal::Conditional(_) | Literal::Object(_) => None,
     }
 }

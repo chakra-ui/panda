@@ -353,8 +353,7 @@ pub enum Deprecated {
 }
 
 impl Deprecated {
-    /// Whether this represents an active deprecation (`true` or a non-empty
-    /// message). `deprecated: false` and an empty message are inactive.
+    /// `true` unless `Bool(false)` or an empty message.
     #[must_use]
     pub fn is_active(&self) -> bool {
         match self {
@@ -363,8 +362,7 @@ impl Deprecated {
         }
     }
 
-    /// Normalize an optional config value to an active deprecation, collapsing
-    /// `Some(Bool(false))` / empty messages to `None`.
+    /// Collapses `Some(Bool(false))` and empty messages to `None`.
     #[must_use]
     pub fn normalize(value: Option<&Deprecated>) -> Option<Deprecated> {
         value.filter(|value| value.is_active()).cloned()

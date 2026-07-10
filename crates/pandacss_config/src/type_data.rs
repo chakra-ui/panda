@@ -1,10 +1,9 @@
 //! Config-derived type information for codegen and tooling.
 //!
-//! [`TypeData`] distills a resolved config into the shapes the `.d.ts`
-//! generators need — condition keys, token categories/values, utility property
-//! types, pattern/recipe variant types — built via the `*_type_data` methods on
-//! [`UserConfig`]. [`Spec`] wraps it with the extra bits an external introspector
-//! wants (property order, jsx factory, import map).
+//! [`TypeData`] distills a resolved config into the shapes `.d.ts` generators
+//! need, built via the `*_type_data` methods on [`UserConfig`]. [`Spec`] adds
+//! the extras an external introspector wants (property order, jsx factory,
+//! import map).
 
 use std::collections::BTreeMap;
 
@@ -41,12 +40,10 @@ pub struct TypeData {
     pub tokens: TokenTypeData,
     pub utilities: UtilityTypeData,
     pub keyframes: KeyframeTypeData,
-    /// Flattened so `patterns` sits at the top level of the serialized spec
-    /// rather than nested under `patterns.patterns`.
+    /// Flattened so `patterns` sits at the spec's top level, not under `patterns.patterns`.
     #[serde(flatten)]
     pub patterns: PatternTypeData,
-    /// Flattened so `recipes` and `slotRecipes` sit at the top level of the
-    /// serialized spec rather than nested under `recipes.recipes`.
+    /// Flattened so `recipes`/`slotRecipes` sit at the spec's top level, not under `recipes.recipes`.
     #[serde(flatten)]
     pub recipes: RecipeTypeData,
 }
@@ -80,12 +77,11 @@ pub struct SelectorTypeData {
 pub struct TokenTypeData {
     pub categories: BTreeMap<String, TokenCategoryTypeData>,
     pub color_palettes: Vec<String>,
-    /// Runtime `token()` map: `path -> value`. The value is empty when it
-    /// equals the token's CSS var, which the runtime `token.var` reproduces
-    /// via `toVar(path)` — so var-refs are derived, not stored.
+    /// Runtime `token()` map: `path -> value`, empty when the value equals the
+    /// token's CSS var (`token.var` derives it via `toVar(path)` instead).
     #[serde(default)]
     pub values: BTreeMap<String, String>,
-    /// Deprecated token paths → deprecation (`true` or an author message).
+    /// Deprecated token paths -> deprecation (`true` or an author message).
     #[serde(default)]
     pub deprecated: BTreeMap<String, Deprecated>,
 }
@@ -109,12 +105,10 @@ pub struct TokenCategoryTypeData {
 pub struct UtilityTypeData {
     pub properties: BTreeMap<String, UtilityPropertyTypeData>,
     pub shorthands: BTreeMap<String, String>,
-    /// Deprecated property names → deprecation. Utility config is boolean-only,
-    /// so values are always `true`.
+    /// Deprecated property names -> deprecation. Utility config is boolean-only, so always `true`.
     pub deprecated: BTreeMap<String, Deprecated>,
     pub aliases: BTreeMap<String, ValueAliasTypeData>,
-    /// Unprefixed class name for each real property (`prop -> className`),
-    /// used by the runtime `css` transform. Excludes shorthand aliases.
+    /// Unprefixed class name per real property, for the runtime `css` transform. Excludes shorthands.
     #[serde(default)]
     pub class_names: BTreeMap<String, String>,
 }
@@ -251,8 +245,7 @@ impl UserConfig {
 
     #[must_use]
     pub fn condition_type_data(&self) -> ConditionTypeData {
-        // Keep `base` in both condition keys and breakpoints. Runtime
-        // condition helpers treat it as the no-condition branch.
+        // `base` stays in both keys and breakpoints — runtime helpers treat it as no-condition.
         ConditionTypeData {
             keys: self.condition_names(),
             breakpoints: self.theme.breakpoint_names(),

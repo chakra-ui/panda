@@ -138,8 +138,7 @@ fn variant_type(type_name: &str, variants: &BTreeMap<String, VariantTypeData>) -
 }
 
 fn variant_props_type(props_name: &str, variant_name: &str, has_compound_variants: bool) -> String {
-    // The runtime rejects conditional variant values when compound variants
-    // exist, so the props type drops the ConditionalValue wrapper too.
+    // The runtime rejects conditional variant values when compound variants exist.
     if has_compound_variants {
         return format!(
             "export type {props_name} = {{\n  [K in keyof {variant_name}]?: {variant_name}[K]\n}}"

@@ -14,16 +14,14 @@ use rustc_hash::FxHashMap;
 use crate::{Utility, UtilityProperty};
 
 impl Utility {
-    /// Project the utility metadata into the codegen [`UtilityTypeData`]
-    /// (property value types, shorthands, value aliases, class names).
+    /// Projects the utility metadata into the codegen [`UtilityTypeData`].
     #[must_use]
     pub fn type_data(&self) -> UtilityTypeData {
         let mut properties = BTreeMap::new();
         let mut aliases = BTreeMap::new();
         let mut class_names = BTreeMap::new();
 
-        // This is a codegen snapshot, not an extraction hot path. Sort once so
-        // generated types are stable across runs.
+        // Codegen snapshot, not a hot path — sort once for stable output across runs.
         let mut property_entries = self.properties.iter().collect::<Vec<_>>();
         property_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
 
@@ -62,8 +60,7 @@ impl Utility {
 
             let data = property_type_data(name, property, tokens);
 
-            // Many shorthands share the same value alias as their longhand.
-            // Keep one alias body and let properties reference it by name.
+            // Shorthands often share their longhand's alias — keep one body, reference by name.
             aliases
                 .entry(data.alias.clone())
                 .or_insert_with(|| value_alias_type_data(&data));
@@ -85,9 +82,8 @@ impl Utility {
     }
 }
 
-/// Type info for one utility property: its literal value keys (sorted) and the
-/// name of the value-alias type its values resolve to (a token category alias,
-/// or `<Prop>Value`).
+/// Type info for one property: sorted literal value keys, plus the value-alias
+/// type name (a token category alias, or `<Prop>Value`).
 fn property_type_data(
     name: &str,
     property: &UtilityProperty,
@@ -117,9 +113,9 @@ fn property_type_data(
     }
 }
 
-/// When a utility's resolved value map contains every key from a token category
-/// (typical of `values(theme) { ...theme('spacing') }`), collapse those keys to
-/// `TokenValue<"category">` for typegen — matching v1's `type:Tokens["…"]` stub.
+/// Collapses a value map that covers a whole token category (e.g.
+/// `values(theme) { ...theme('spacing') }`) to `TokenValue<"category">`,
+/// matching v1's `type:Tokens["…"]` stub.
 fn collapse_inferred_token_category(
     literals: Vec<String>,
     explicit_category: Option<&str>,
@@ -230,8 +226,7 @@ fn utility_value_alias_name(
     format!("{}Value", pascal_case(alias_property))
 }
 
-/// `values: { type: 'boolean' }` is a type hint, not a values map — the
-/// property accepts the named primitive instead of literal keys.
+/// `values: { type: 'boolean' }` is a primitive type hint, not a values map.
 fn primitive_type_hint(values: &FxHashMap<String, Literal>) -> Option<PrimitiveType> {
     if values.len() != 1 {
         return None;
@@ -247,9 +242,8 @@ fn primitive_type_hint(values: &FxHashMap<String, Literal>) -> Option<PrimitiveT
     }
 }
 
-/// Build the union of value-type parts a property's alias accepts — token
-/// category, raw CSS property values, configured literals, and an optional
-/// primitive fallback — in the order they should appear in the generated type.
+/// Union of value-type parts a property's alias accepts, in generated-type
+/// order: token category, mapped CSS property, literals, primitive fallback.
 fn value_alias_type_data(property: &UtilityPropertyTypeData) -> ValueAliasTypeData {
     let capacity = property.literals.len()
         + usize::from(property.token_category.is_some())

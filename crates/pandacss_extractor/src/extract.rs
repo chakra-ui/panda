@@ -275,6 +275,7 @@ fn run_extract<'cb>(
         } else {
             (Vec::new(), Vec::new(), Vec::new(), Vec::new())
         };
+
     let mut jsx = if should_collect_jsx(config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
         if verbose {

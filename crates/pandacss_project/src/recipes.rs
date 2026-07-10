@@ -1,14 +1,11 @@
 //! Recipe compilation, resolution, and the incremental encoded-recipe cache.
 //!
-//! Three layers:
-//! - [`RecipeRegistry`] compiles config recipe/slot-recipe definitions into
-//!   resolved nodes (`base`, `variants`, `compoundVariants` pre-encoded to
-//!   atoms / style entries) and indexes them for JSX-name lookup.
-//! - Usage resolution (`process_usage`) takes a call/JSX usage's props, picks
-//!   the selected variants (with config defaults), and emits the matching
-//!   style groups.
-//! - `EncodedRecipesCache` keeps a refcounted union of encoded groups across
-//!   files so watch-mode add/remove is O(changed), mirroring the atom cache.
+//! - [`RecipeRegistry`] compiles config recipes into resolved nodes (base,
+//!   variants, compounds pre-encoded to atoms) and indexes them by JSX name.
+//! - `process_usage` picks a call/JSX usage's selected variants and emits the
+//!   matching style groups.
+//! - `EncodedRecipesCache` refcounts encoded groups across files, so
+//!   watch-mode add/remove is O(changed), like the atom cache.
 
 use regex::RegexSet;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -23,9 +20,7 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{Diagnostic, Literal};
 use pandacss_recipes::{Recipe, SlotRecipe};
-use pandacss_shared::{
-    compound_class_name, diagnostic_codes, number_to_js_string, split_important,
-};
+use pandacss_shared::{compound_class_name, number_to_js_string, split_important};
 use pandacss_utility::{StyleNormalizer, Utility};
 
 use std::hash::Hash;
@@ -67,9 +62,9 @@ struct SlotRecipeNode {
     compounds: Vec<ResolvedCompoundVariant>,
 }
 
-/// A `base` block or one variant option, pre-resolved: its class name plus the
-/// style entries it contributes. `Resolved*` types are the compiled form the
-/// registry holds so usage resolution is a lookup, not a re-parse.
+/// A `base` block or one variant option, pre-resolved to its class name and
+/// style entries — the compiled form the registry holds so usage resolution
+/// is a lookup, not a re-parse.
 #[derive(Debug, Clone)]
 struct ResolvedRecipePart {
     class_name: Box<str>,
@@ -319,8 +314,8 @@ impl RecipeRegistry {
         format!("{class_name}__{slot}")
     }
 
-    /// Resolve config recipe call sites to the class names a static runtime call
-    /// would apply. Slot recipes and conditional variant selections return `None`.
+    /// Class names a static runtime call would apply. `None` for slot recipes
+    /// or conditional variant selections.
     pub(crate) fn class_names_for_recipe_call(
         &self,
         recipe_name: &str,
@@ -351,8 +346,8 @@ impl RecipeRegistry {
             }
         }
 
-        // Gate compounds by selection to match the runtime; `smartCompoundVariants`
-        // only affects which compound CSS is emitted, not resolved class names.
+        // `smartCompoundVariants` only affects which compound CSS is emitted,
+        // not resolved class names — always gate by selection here.
         for compound in &node.compounds {
             let Some(extra_conditions) = compound_conditions(compound, &selected) else {
                 continue;
@@ -604,14 +599,11 @@ fn conditional_static_value(
     value: &Literal,
 ) -> Literal {
     let mut entries = vec![("base".to_owned(), value.clone())];
-    entries.extend(conditions.iter().map(|condition| {
-        let key = if config.is_condition_key(condition) {
-            condition.clone()
-        } else {
-            format!("_{condition}")
-        };
-        (key, value.clone())
-    }));
+    entries.extend(
+        conditions
+            .iter()
+            .map(|condition| (crate::condition_style_key(config, condition), value.clone())),
+    );
     Literal::Object(entries)
 }
 
@@ -884,6 +876,32 @@ struct RecipeVariantKey {
     conditions: SmallVec<[Box<str>; 2]>,
 }
 
+/// `(recipe, slot)` identity shared by [`RecipePartKey`] and [`RecipeVariantKey`].
+trait RecipeGroupKey {
+    fn recipe(&self) -> &str;
+    fn slot(&self) -> Option<&str>;
+}
+
+impl RecipeGroupKey for RecipePartKey {
+    fn recipe(&self) -> &str {
+        &self.recipe
+    }
+
+    fn slot(&self) -> Option<&str> {
+        self.slot.as_deref()
+    }
+}
+
+impl RecipeGroupKey for RecipeVariantKey {
+    fn recipe(&self) -> &str {
+        &self.recipe
+    }
+
+    fn slot(&self) -> Option<&str> {
+        self.slot.as_deref()
+    }
+}
+
 impl EncodedRecipes {
     pub(crate) fn new(smart_compound_variants: bool) -> Self {
         Self {
@@ -928,9 +946,8 @@ impl EncodedRecipes {
         missing
     }
 
-    /// Record the style groups one recipe usage contributes: its `base` plus
-    /// every selected variant option (and matching compound variants). Dispatches
-    /// to the recipe vs slot-recipe path; unknown names are no-ops.
+    /// Records one usage's style groups: `base`, selected variants, and
+    /// matching compounds. Unknown recipe names are no-ops.
     pub(crate) fn process_usage(
         &mut self,
         recipes: &RecipeRegistry,
@@ -1130,9 +1147,9 @@ impl EncodedRecipes {
     #[must_use]
     pub fn snapshot(&self) -> EncodedRecipesSnapshot {
         EncodedRecipesSnapshot {
-            base: sorted_recipe_part_group_snapshots(&self.base),
-            variants: sorted_recipe_variant_group_snapshots(&self.variants),
-            compounds: sorted_recipe_variant_group_snapshots(&self.compounds),
+            base: sorted_group_snapshots(&self.base),
+            variants: sorted_group_snapshots(&self.variants),
+            compounds: sorted_group_snapshots(&self.compounds),
             atomic: sorted_atoms_vec(&self.atomic),
         }
     }
@@ -1170,8 +1187,8 @@ struct RecipeTransformCtx<'a> {
 }
 
 impl RecipeTransformCtx<'_> {
-    /// Encode a transform's style object into atoms via the normal encoder path,
-    /// so nested conditions/selectors resolve instead of becoming junk props.
+    /// Runs a transform's style object through the normal encoder path, so
+    /// nested conditions/selectors resolve instead of becoming junk props.
     fn encode(&self, styles: &Literal) -> FxHashSet<Atom> {
         let normalizer = StyleNormalizer::internal(self.utility, self.breakpoints);
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
@@ -1227,8 +1244,8 @@ fn transform_atoms(
             // Empty result drops the carrier atom (parity with node).
             Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
             Ok(Some(styles)) => {
-                // Recipe atomic has no per-utility class: re-encode into atoms
-                // and prefix the carrier atom's conditions.
+                // No per-utility class here: re-encode into atoms, prefixing
+                // the carrier atom's conditions.
                 let conditions: SmallVec<[Box<str>; 2]> =
                     atom.conditions().iter().cloned().collect();
                 out.extend(
@@ -1240,10 +1257,11 @@ fn transform_atoms(
             Ok(None) => {
                 out.insert(atom);
             }
-            Err(diagnostic) => diagnostics.push(with_callback_target(
+            Err(diagnostic) => diagnostics.push(crate::with_callback_target(
                 diagnostic,
+                "utility",
                 atom.prop(),
-                Some(&atom_value_summary(atom.value())),
+                Some(&crate::atom_value_summary(atom.value())),
             )),
         }
     }
@@ -1283,9 +1301,7 @@ fn transform_recipe_entries(
                 {
                     out.extend(entries);
                 } else {
-                    // Re-encode nested transform output into entries,
-                    // prefixing the originating entry's conditions /
-                    // important.
+                    // Re-encode, prefixing the entry's conditions/important.
                     for atom in ctx.encode(&styles) {
                         let mut conditions = entry.conditions.clone();
                         conditions.extend(atom.conditions().iter().cloned());
@@ -1301,10 +1317,11 @@ fn transform_recipe_entries(
             Ok(None) => {
                 out.insert(entry);
             }
-            Err(diagnostic) => diagnostics.push(with_callback_target(
+            Err(diagnostic) => diagnostics.push(crate::with_callback_target(
                 diagnostic,
+                "utility",
                 entry.prop.as_ref(),
-                Some(&atom_value_summary(&entry.value)),
+                Some(&crate::atom_value_summary(&entry.value)),
             )),
         }
     }
@@ -1359,28 +1376,6 @@ fn flat_transform_recipe_value(value: &Literal) -> Option<(AtomValue, bool)> {
         Literal::Bool(value) => Some((AtomValue::Bool(*value), false)),
         Literal::Null => Some((AtomValue::Null, false)),
         Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_) => None,
-    }
-}
-
-fn with_callback_target(mut diagnostic: Diagnostic, prop: &str, value: Option<&str>) -> Diagnostic {
-    if diagnostic.code != diagnostic_codes::TRANSFORM_CALLBACK_FAILED {
-        return diagnostic;
-    }
-    let target = value.map_or_else(
-        || format!("utility `{prop}`"),
-        |value| format!("utility `{prop}` with value `{value}`"),
-    );
-    diagnostic.message = format!("{} ({target})", diagnostic.message);
-    diagnostic
-}
-
-fn atom_value_summary(value: &AtomValue) -> String {
-    match value {
-        AtomValue::String(value) | AtomValue::Number(value) | AtomValue::Token { value, .. } => {
-            value.to_string()
-        }
-        AtomValue::Bool(value) => value.to_string(),
-        AtomValue::Null => "null".to_owned(),
     }
 }
 
@@ -1442,9 +1437,8 @@ impl EncodedRecipesCache {
     }
 }
 
-/// Materialize `source`'s groups into `view`, refcounted per-entry in
-/// `counts`. Shared by the base/variant/compound layers, which differ only in
-/// key type (`RecipePartKey` vs `RecipeVariantKey`).
+/// Materializes `source`'s groups into `view`, refcounted per-entry in
+/// `counts`. Shared by the base/variant/compound layers.
 fn add_recipe_groups<K: Eq + Hash + Clone>(
     view: &mut FxHashMap<K, RecipeStyleGroup>,
     counts: &mut FxHashMap<K, CountedRecipeStyleGroup>,
@@ -1471,8 +1465,8 @@ fn add_recipe_groups<K: Eq + Hash + Clone>(
     }
 }
 
-/// The inverse of [`add_recipe_groups`]: decrement refcounts and drop a
-/// group's entry (or the whole group) once nothing references it anymore.
+/// Inverse of [`add_recipe_groups`]: decrement refcounts, dropping an entry
+/// (or the whole group) once nothing references it.
 fn remove_recipe_groups<K: Eq + Hash + Clone>(
     view: &mut FxHashMap<K, RecipeStyleGroup>,
     counts: &mut FxHashMap<K, CountedRecipeStyleGroup>,
@@ -1568,10 +1562,10 @@ struct SelectedVariantValue {
     conditions: SmallVec<[Box<str>; 2]>,
 }
 
-/// Resolve which variant value(s) a usage selects per variant prop, starting
-/// from the recipe's `defaultVariants` and overriding with the usage's props.
-/// A value may be responsive/conditional (`size={{ base: 'sm', md: 'lg' }}`),
-/// so each selection carries the conditions under which it applies.
+/// Which variant value(s) a usage selects per variant prop: starts from the
+/// recipe's `defaultVariants`, then overrides with the usage's props. A value
+/// may be responsive (`size={{ base: 'sm', md: 'lg' }}`), so each selection
+/// carries the conditions it applies under.
 fn selected_variants(
     defaults: &FxHashMap<Box<str>, Box<str>>,
     selected: &Literal,
@@ -1590,17 +1584,18 @@ fn selected_variants(
             )
         })
         .collect();
+
     let Some(entries) = literal_entries(selected) else {
         return out;
     };
+
     for (key, value) in entries {
         let mut values = Vec::new();
         let mut path = SmallVec::<[Box<str>; 2]>::new();
         collect_selected_variant_values(value, conditions, breakpoints, &mut path, &mut values);
-        // An explicitly-provided key overrides its default even when the value
-        // yields no usable variant (`size: []` / `{}` / `null`) — matching JS
-        // destructuring, where a default applies only to an *absent* key.
-        // (`size: undefined` is dropped upstream, so it never reaches here.)
+        // An explicit key overrides its default even with no usable variant
+        // (`size: []` / `{}` / `null`) — JS destructuring only applies a
+        // default to an *absent* key (`size: undefined` never reaches here).
         if values.is_empty() {
             out.remove(key.as_str());
         } else {
@@ -1610,9 +1605,8 @@ fn selected_variants(
     out
 }
 
-/// Walk a variant value, descending through condition keys (`base`, `md`, …)
-/// while accumulating the condition `path`, and record each leaf variant key
-/// with the conditions it was found under.
+/// Walks a variant value through its condition keys (`base`, `md`, …),
+/// recording each leaf variant key with the conditions found above it.
 fn collect_selected_variant_values(
     value: &Literal,
     conditions: &ProjectConditionMatcher,
@@ -1678,38 +1672,17 @@ fn literal_to_variant_key(value: &Literal) -> Option<String> {
     }
 }
 
-fn sorted_recipe_part_group_snapshots(
-    groups: &FxHashMap<RecipePartKey, RecipeStyleGroup>,
+/// Shared by the base/variant/compound snapshot layers. Base groups always
+/// carry empty `conditions`, so sorting on it unconditionally is a no-op
+/// there — one ordering works for every caller.
+fn sorted_group_snapshots<K: RecipeGroupKey>(
+    groups: &FxHashMap<K, RecipeStyleGroup>,
 ) -> Vec<RecipeStyleGroupSnapshot> {
     let mut out: Vec<_> = groups
         .iter()
         .map(|(key, group)| RecipeStyleGroupSnapshot {
-            recipe: key.recipe.clone(),
-            slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
-                serde_json::Value::String(slot.to_string())
-            }),
-            class_name: group.class_name.clone(),
-            conditions: group.conditions.clone(),
-            entries: sorted_recipe_entries(&group.entries),
-        })
-        .collect();
-    out.sort_by(|a, b| {
-        a.recipe
-            .cmp(&b.recipe)
-            .then_with(|| slot_sort_key(&a.slot).cmp(slot_sort_key(&b.slot)))
-            .then_with(|| a.class_name.cmp(&b.class_name))
-    });
-    out
-}
-
-fn sorted_recipe_variant_group_snapshots(
-    groups: &FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
-) -> Vec<RecipeStyleGroupSnapshot> {
-    let mut out: Vec<_> = groups
-        .iter()
-        .map(|(key, group)| RecipeStyleGroupSnapshot {
-            recipe: key.recipe.clone(),
-            slot: key.slot.as_ref().map_or(serde_json::Value::Null, |slot| {
+            recipe: key.recipe().into(),
+            slot: key.slot().map_or(serde_json::Value::Null, |slot| {
                 serde_json::Value::String(slot.to_string())
             }),
             class_name: group.class_name.clone(),

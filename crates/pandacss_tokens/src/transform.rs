@@ -1,6 +1,5 @@
 //! Serialize typed token values (shadows, borders, gradients, assets, …) to
-//! their final CSS string form. Ports the per-category transformers from
-//! `packages/core`'s token pipeline; output must match the JS strings byte-for-byte.
+//! their CSS string form; output must match `packages/core` byte-for-byte.
 
 use pandacss_config::{
     AssetType, AssetValue, BorderStyle, BorderValue, EasingValue, FontValue, GradientStops,
@@ -168,8 +167,7 @@ fn shadow_to_string(value: &Shadow) -> String {
         offset_x.len() + offset_y.len() + blur.len() + spread.len() + value.color.len() + 12,
     );
     if value.inset.unwrap_or(false) {
-        // Matches the JS transformer, which stores "inset " before joining
-        // the parts with spaces.
+        // Double space is intentional: JS writes "inset " then joins with spaces.
         out.push_str("inset  ");
     }
     out.push_str(&offset_x);
@@ -195,9 +193,8 @@ fn px(value: &StringOrNumber) -> String {
     }
 }
 
-/// Coerce a border-width value to a CSS length. Unlike [`px`], a string that
-/// already carries a unit (or a token reference) passes through untouched;
-/// only bare numbers get `px` appended.
+/// Like [`px`], but a string already carrying a unit or token reference
+/// passes through untouched — only bare numbers get `px` appended.
 fn to_unit(value: &StringOrNumber) -> String {
     match value {
         StringOrNumber::Number(value) => {

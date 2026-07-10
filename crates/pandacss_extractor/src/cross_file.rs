@@ -1,32 +1,24 @@
-//! Cross-file import resolution.
+//! Cross-file import resolution: when the same-file [`crate::Resolver`] hits
+//! `import { x } from './tokens'`, this module loads the target file and
+//! folds the requested export. Module resolution itself is `oxc_resolver`
+//! (relative paths, extensions, tsconfig paths, package.json `exports`).
 //!
-//! When the same-file [`crate::Resolver`] hits an `import { x } from
-//! './tokens'` reference, it asks this module to load the target file
-//! and fold the requested export's value. Module resolution itself is
-//! delegated to `oxc_resolver` (relative paths, extension probing,
-//! tsconfig paths, package.json `exports`).
+//! `CrossFileResolver` type-erases over [`pandacss_fs::FileSystem`] so
+//! consumer types (`ExtractorConfig`, `Project`) stay non-generic; the
+//! concrete impl is `ResolverImpl<F>` behind a `Box<dyn CrossFileLookup>`.
 //!
-//! `CrossFileResolver` is type-erased over the [`pandacss_fs::FileSystem`]
-//! impl so consumer types (`ExtractorConfig`, `Project`) stay
-//! non-generic. The concrete impl lives in `ResolverImpl<F>` behind a
-//! `Box<dyn CrossFileLookup>`.
+//! Cache: `path → HashMap<exported_name, Literal>`. Each file parses and
+//! folds once per session, then drops its AST.
 //!
-//! Cache shape is `path → HashMap<exported_name, Literal>`: each file is
-//! parsed and folded exactly once per session, and the AST is dropped
-//! after exports are extracted so we don't keep every imported file's
-//! `Program` alive.
-//!
-//! Folds top-level `export const X = <foldable>`. Does *not* yet fold
-//! re-exports, `export default`, or non-const declarations — add when the
-//! simple case proves out.
+//! Folds top-level `export const X = <foldable>` only — not re-exports,
+//! `export default`, or non-const declarations yet.
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, ExportNamedDeclaration, ModuleExportName, Program, Statement,
-    VariableDeclaration,
+    BindingPattern, Declaration, ExportNamedDeclaration, Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
 use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
@@ -36,7 +28,10 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
-use crate::{Matchers, TokenDictionary, collect_imports, match_import_records, scope::Resolver};
+use crate::{
+    Matchers, TokenDictionary, collect_imports, imports::module_export_name, match_import_records,
+    scope::Resolver,
+};
 
 type FileExports = FxHashMap<String, Literal>;
 
@@ -178,8 +173,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             None,
         );
 
-        // Oxc returns a partial AST on parse errors; walk what we get,
-        // matching the JS extractor's recovery behavior.
+        // Oxc returns a partial AST on parse errors — walk what we get.
         Some(collect_exports(
             &parser_return.program,
             path,
@@ -224,8 +218,8 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         };
         let path = resolution.full_path();
 
-        // The module resolved, so it's a build dependency regardless of whether
-        // the export folds — record `path` on every remaining exit.
+        // A resolved module is a build dependency even if the export doesn't
+        // fold — record `path` on every remaining exit.
         if let Some(exports) = self
             .cache
             .lock()
@@ -381,8 +375,4 @@ fn collect_pattern_bindings(
             collect_pattern_bindings(&assignment.left, resolver, out);
         }
     }
-}
-
-fn module_export_name(name: &ModuleExportName<'_>) -> String {
-    name.name().to_string()
 }

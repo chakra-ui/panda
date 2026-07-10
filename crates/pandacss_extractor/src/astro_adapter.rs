@@ -1,9 +1,9 @@
 //! Astro source adapter.
 //!
-//! Oxc has no `.astro` parser and its error recovery can't survive the `---`
-//! frontmatter fences (ts-morph forces `ScriptKind.TSX` and recovers; Oxc bails),
-//! so we mask `.astro` into plain TSX before parsing — same strategy as
-//! [`mask_vue`](crate::vue_adapter)/[`mask_svelte`](crate::svelte_adapter).
+//! Oxc has no `.astro` parser, and its error recovery can't survive the `---`
+//! frontmatter fences (ts-morph forces `ScriptKind.TSX` and recovers; Oxc
+//! bails). So we mask `.astro` into plain TSX before parsing, same strategy
+//! as [`mask_vue`](crate::vue_adapter)/[`mask_svelte`](crate::svelte_adapter).
 //!
 //! Two regions are copied onto a blanked canvas:
 //! - the `---`-fenced frontmatter, verbatim, so its `import`s and `const`s stay in

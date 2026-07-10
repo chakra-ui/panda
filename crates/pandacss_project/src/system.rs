@@ -7,11 +7,9 @@ use pandacss_tokens::TokenDictionary;
 use crate::Result;
 use crate::runtime_config::Config;
 
-/// Immutable runtime model derived from a Panda config.
-///
-/// `System` is intentionally separate from [`crate::Project`]: config
-/// compilation happens once here, while a project owns watch-mode file
-/// state and extraction caches.
+/// Immutable runtime model derived from a Panda config. Separate from
+/// [`crate::Project`]: config compiles once here, while a project owns
+/// watch-mode file state and extraction caches.
 pub struct System {
     config: Arc<Config>,
     config_fingerprint: Arc<str>,
@@ -65,10 +63,8 @@ impl System {
         &self.config
     }
 
-    /// Stable fingerprint of the resolved config's output-affecting fields — the
-    /// collision guard stamped into build info. Machine-local IO / codegen
-    /// fields are excluded so the same library fingerprints identically across
-    /// checkouts. See [`config_fingerprint`].
+    /// Fingerprint of the config's output-affecting fields, stamped into
+    /// build info as a collision guard. See [`config_fingerprint`].
     #[must_use]
     pub fn config_fingerprint(&self) -> &str {
         &self.config_fingerprint
@@ -90,10 +86,9 @@ impl System {
     }
 }
 
-/// Config keys that don't affect the encoded atoms/recipes a library ships nor
-/// how a consumer re-emits them — machine-local IO, extraction wiring, and
-/// codegen options. Excluded from the fingerprint so two libraries that only
-/// differ here (e.g. a changed `include` glob) still compare as compatible.
+/// Keys that don't affect a library's shipped atoms/recipes — machine-local
+/// IO, extraction wiring, codegen options. Excluded so a changed `include`
+/// glob doesn't make two otherwise-identical libraries look incompatible.
 const FINGERPRINT_IGNORED_KEYS: &[&str] = &[
     "cwd",
     "outdir",
@@ -112,9 +107,8 @@ const FINGERPRINT_IGNORED_KEYS: &[&str] = &[
 ];
 
 /// Deterministic fingerprint of a resolved [`UserConfig`]'s output-affecting
-/// fields. The engine owns this (it knows which config drives encoding), so the
-/// `panda lib` producer never re-derives it. Stable across machines: IO/codegen
-/// fields are dropped and object keys are canonically ordered before hashing.
+/// fields. Stable across machines: IO/codegen fields are dropped and object
+/// keys are canonically ordered before hashing.
 #[must_use]
 pub fn config_fingerprint(config: &UserConfig) -> Arc<str> {
     let mut value = serde_json::to_value(config).unwrap_or(serde_json::Value::Null);

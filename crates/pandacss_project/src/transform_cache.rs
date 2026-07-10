@@ -43,11 +43,10 @@ pub fn atom_value_cache_key(value: &AtomValue) -> AtomValueCacheKey {
     }
 }
 
-/// Build a cache key without first serializing the literal to JSON.
-///
-/// Returns `None` once the approximate retained key size exceeds
-/// `max_key_bytes`, letting callers skip caching large transform inputs before
-/// allocating a JSON string just for lookup.
+/// Builds a cache key without first serializing the literal to JSON. Returns
+/// `None` once the retained key size exceeds `max_key_bytes`, so callers can
+/// skip caching large transform inputs instead of allocating a JSON string
+/// just for the lookup.
 #[must_use]
 pub fn literal_cache_key(value: &Literal, max_key_bytes: usize) -> Option<LiteralCacheKey> {
     let mut budget = CacheKeyBudget::new(max_key_bytes);

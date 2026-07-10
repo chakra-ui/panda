@@ -202,10 +202,10 @@ fn collect_conditional_sites_from_parsed(
             let Some(ternary) = parse_top_level_ternary(&expr) else {
                 continue;
             };
-            let Some(consequent) = parse_branch_object_literal(&ternary.consequent) else {
+            let Some(consequent) = parse_object_expression(&ternary.consequent) else {
                 continue;
             };
-            let Some(alternate) = parse_branch_object_literal(&ternary.alternate) else {
+            let Some(alternate) = parse_object_expression(&ternary.alternate) else {
                 continue;
             };
             let mut affected_keys = HashSet::new();
@@ -312,15 +312,9 @@ fn literal_object_entries_at_key<'a>(
         .unwrap_or(&[])
 }
 
-fn parse_branch_object_literal(expression: &str) -> Option<ParsedObjectLiteral> {
-    let trimmed = expression.trim();
-    if trimmed.starts_with('{') {
-        parse_object_literal(trimmed)
-    } else {
-        None
-    }
-}
-
+/// Parse an object-literal expression, or `None` when `expr` isn't one (a
+/// bare identifier, string, ternary, …). Shared by branch-object parsing
+/// (ternary consequent/alternate) and nested property parsing.
 fn parse_object_expression(expr: &str) -> Option<ParsedObjectLiteral> {
     let trimmed = expr.trim();
     if trimmed.starts_with('{') {

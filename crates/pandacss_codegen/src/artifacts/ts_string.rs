@@ -1,6 +1,5 @@
-//! Small shared helpers for building TypeScript type source — string literals,
-//! unions, member quoting, and raw type statements. Used across the `types`,
-//! `patterns`, and recipe/jsx type artifacts.
+//! Shared helpers for building TypeScript type source: string literals, unions,
+//! member quoting, and raw type statements.
 
 use crate::{Item, ItemNode};
 
@@ -9,7 +8,6 @@ pub(crate) fn string_literal(value: &str) -> String {
     format!("{value:?}")
 }
 
-/// A `" | "`-joined union of string literals, or `fallback` when empty.
 pub(crate) fn string_union(values: &[String], fallback: &str) -> String {
     if values.is_empty() {
         return fallback.into();
@@ -22,7 +20,7 @@ pub(crate) fn string_union(values: &[String], fallback: &str) -> String {
         .join(" | ")
 }
 
-/// Like [`string_union`] but always unions the `fallback` in (`"a" | "b" | Fallback`).
+/// Unlike [`string_union`], always unions `fallback` in even when `values` is non-empty.
 pub(crate) fn string_union_with_fallback(values: &[String], fallback: &str) -> String {
     if values.is_empty() {
         return fallback.into();
@@ -30,7 +28,6 @@ pub(crate) fn string_union_with_fallback(values: &[String], fallback: &str) -> S
     format!("{} | {fallback}", string_union(values, fallback))
 }
 
-/// An interface/object member name: bare when a valid JS identifier, else quoted.
 pub(crate) fn quote_member(value: &str) -> String {
     if is_identifier(value) {
         value.into()
@@ -39,7 +36,6 @@ pub(crate) fn quote_member(value: &str) -> String {
     }
 }
 
-/// Whether `value` is a valid unquoted JS identifier.
 pub(crate) fn is_identifier(value: &str) -> bool {
     let mut chars = value.chars();
     let Some(first) = chars.next() else {
@@ -49,7 +45,6 @@ pub(crate) fn is_identifier(value: &str) -> bool {
         && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }
 
-/// A raw type statement item from pre-rendered TS source.
 pub(crate) fn type_raw(code: impl Into<String>) -> Item {
     Item::ty(ItemNode::RawStmt(code.into()))
 }

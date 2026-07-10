@@ -24,8 +24,7 @@ impl Project {
         }
     }
 
-    /// Assemble the full [`TypeData`] from the project's compiled state (token
-    /// dictionary, utilities) plus config-derived sections.
+    /// Assembles [`TypeData`] from compiled state (tokens, utilities) and config.
     #[must_use]
     pub fn type_data(&self, user_config: &UserConfig) -> TypeData {
         let _span = tracing::trace_span!("type_data").entered();
@@ -79,8 +78,7 @@ impl Project {
             .find(|artifact| artifact.id == id)
     }
 
-    /// Regenerate only the artifacts whose declared config dependencies
-    /// intersect `changed` — the incremental-codegen path for config edits.
+    /// Regenerates only the artifacts whose config dependencies intersect `changed`.
     #[must_use]
     pub fn generate_affected_artifacts(
         &self,
@@ -97,9 +95,8 @@ impl Project {
     }
 }
 
-/// Pattern transform/defaultValues source, prepared by the JS config loader and
-/// embedded verbatim by the pattern generator. Patterns without a source fall
-/// back to the generator's identity transform.
+/// Pattern transform/defaultValues source from the JS config loader, embedded
+/// verbatim by the pattern generator. No source falls back to identity.
 fn pattern_codegen_meta(config: &UserConfig) -> BTreeMap<String, PatternCodegenMeta> {
     config
         .patterns
