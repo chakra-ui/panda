@@ -1,5 +1,6 @@
-import { createNodeDriver, type Driver } from '@pandacss/compiler'
+import { createNodeDriver, type NodeDriver } from '@pandacss/compiler'
 import { pandaTransformer, type PandaTransformerOptions } from '@pandacss/transformer'
+import { dirname } from 'node:path'
 import type { Plugin } from 'rollup'
 
 export interface PandaRollupOptions extends PandaTransformerOptions {
@@ -11,6 +12,12 @@ export interface PandaRollupOptions extends PandaTransformerOptions {
   outdir?: string
   /** File name of the emitted stylesheet asset. Defaults to `panda.css`. */
   fileName?: string
+  /**
+   * Emit design-system lib artifacts (`panda.lib.json`, `panda.buildinfo.json`,
+   * `panda.preset.mjs`) next to the bundle and sync the package `exports`, like
+   * `panda lib`. Defaults to `false`.
+   */
+  lib?: boolean
 }
 
 /**
@@ -23,9 +30,9 @@ export interface PandaRollupOptions extends PandaTransformerOptions {
  *   a Rollup asset, since Rollup has no built-in CSS handling.
  */
 export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
-  const { cwd: cwdOption, configPath, outdir, fileName = 'panda.css', ...transformerOptions } = options
+  const { cwd: cwdOption, configPath, outdir, fileName = 'panda.css', lib = false, ...transformerOptions } = options
   const cwd = cwdOption ?? process.cwd()
-  let driver: Driver | undefined
+  let driver: NodeDriver | undefined
   let ready: Promise<void> | undefined
 
   const build = () => {
@@ -62,10 +69,19 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       }
     },
 
-    generateBundle() {
+    async generateBundle(output) {
       if (!driver) return
       const { css } = driver.cssgen()
       this.emitFile({ type: 'asset', fileName, source: css })
+
+      if (!lib) return
+      // Empty `files`: the bundle is transformed, so a source re-scan can't work —
+      // buildinfo is authoritative and stale means "rebuild".
+      const libOutdir = output.dir ?? (output.file ? dirname(output.file) : undefined)
+      const result = await driver.writeDesignSystemLib({ outdir: libOutdir, files: [] })
+      for (const diagnostic of result.diagnostics) {
+        if (diagnostic.severity === 'error') this.warn(diagnostic.message)
+      }
     },
   }
 
