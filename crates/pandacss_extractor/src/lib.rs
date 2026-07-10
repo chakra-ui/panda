@@ -51,7 +51,7 @@ pub use literal::Literal;
 pub use matcher::{
     CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory,
     MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
-    match_imports,
+    match_import_records_resolved, match_imports,
 };
 pub use pandacss_shared::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,

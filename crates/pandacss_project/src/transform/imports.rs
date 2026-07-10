@@ -17,16 +17,28 @@ pub(crate) fn plan_panda_import_edits(
     source: &str,
     usage_source: &str,
 ) -> Vec<Edit> {
-    let modules = panda_modules(project);
-    if modules.is_empty() {
+    let config = project.config().extractor_config();
+    let matchers = &config.matchers;
+    if !matchers.has_module_matchers() {
         return Vec::new();
     }
 
     let scan = scan_imports(source, path);
+    let file_path = std::path::Path::new(path);
     let mut edits = Vec::new();
 
     for record in &scan.imports {
-        if record.type_only || !is_panda_module(&modules, &record.module) {
+        if record.type_only {
+            continue;
+        }
+        let is_panda = matchers.record_is_panda_import(record, |specifier| {
+            config
+                .cross_file
+                .as_ref()
+                .and_then(|resolver| resolver.resolve_path(file_path, specifier))
+                .map(|resolved| resolved.to_string_lossy().into_owned())
+        });
+        if !is_panda {
             continue;
         }
         if let ImportKind::Value = record.kind
@@ -115,26 +127,6 @@ fn import_line_range(source: &str, span: Span) -> (u32, u32) {
         end += 1;
     }
     (start, u32::try_from(end).unwrap_or(start))
-}
-
-fn panda_modules(project: &Project) -> Vec<String> {
-    let config = project.config().extractor_config();
-    let matchers = &config.matchers;
-    let mut modules = Vec::new();
-    modules.extend(matchers.css.modules.iter().cloned());
-    modules.extend(matchers.recipe.modules.iter().cloned());
-    modules.extend(matchers.pattern.modules.iter().cloned());
-    if let Some(jsx) = &matchers.jsx {
-        modules.extend(jsx.modules.iter().cloned());
-    }
-    modules.extend(matchers.tokens.modules.iter().cloned());
-    modules.sort();
-    modules.dedup();
-    modules
-}
-
-fn is_panda_module(modules: &[String], module: &str) -> bool {
-    modules.iter().any(|candidate| candidate == module)
 }
 
 fn format_import(record: &ImportRecord, specifiers: &[&ImportSpecifier]) -> String {

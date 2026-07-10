@@ -29,7 +29,7 @@ use oxc_ast::ast::{
     VariableDeclaration,
 };
 use oxc_parser::Parser;
-use oxc_resolver::{ResolveOptions, ResolverGeneric};
+use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
 use oxc_span::SourceType;
 use pandacss_fs::FileSystem;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -46,6 +46,8 @@ fn default_resolve_options() -> ResolveOptions {
             .iter()
             .map(|s| (*s).to_string())
             .collect(),
+        // Auto-discover tsconfig so `paths` aliases resolve (matches rolldown/tsc).
+        tsconfig: Some(TsconfigDiscovery::Auto),
         ..ResolveOptions::default()
     }
 }
@@ -100,6 +102,11 @@ impl CrossFileResolver {
     pub(crate) fn as_lookup(&self) -> &dyn CrossFileLookup {
         self.inner.as_ref()
     }
+
+    #[must_use]
+    pub fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
+        self.inner.resolve_path(from_file, specifier)
+    }
 }
 
 /// A cross-file lookup: the folded value plus the resolved module path
@@ -120,6 +127,8 @@ pub(crate) trait CrossFileLookup: Send + Sync {
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
     ) -> CrossFileResolution;
+
+    fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf>;
 
     fn cache_len(&self) -> usize;
 }
@@ -181,6 +190,20 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 }
 
 impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
+    fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
+        // `resolve_file` is the only API that honors `TsconfigDiscovery::Auto`,
+        // but it panics on a non-file path — guard first.
+        if !<F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
+            .is_ok_and(oxc_resolver::FileMetadata::is_file)
+        {
+            return None;
+        }
+        self.inner
+            .resolve_file(from_file, specifier)
+            .ok()
+            .map(|resolution| resolution.full_path())
+    }
+
     fn resolve_named_export(
         &self,
         from_file: &Path,

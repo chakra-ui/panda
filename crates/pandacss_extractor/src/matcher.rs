@@ -131,6 +131,43 @@ impl Matcher {
     }
 }
 
+impl Matchers {
+    /// True if `module` is a Panda import for any category. The single source of
+    /// truth for import matching — shared by extraction and the transform's
+    /// dead-import cleanup so the two can't drift (e.g. relative
+    /// `../styled-system/css` must match everywhere the bare form does).
+    #[must_use]
+    pub fn accepts_module(&self, module: &str) -> bool {
+        active_categories(self)
+            .iter()
+            .any(|(_, matcher)| matcher.accepts_module(module))
+    }
+
+    /// True if any category declares modules to match against.
+    #[must_use]
+    pub fn has_module_matchers(&self) -> bool {
+        active_categories(self)
+            .iter()
+            .any(|(_, matcher)| !matcher.modules.is_empty())
+    }
+
+    /// True if `record` imports from a Panda module — by raw specifier, or (for
+    /// tsconfig `paths` aliases) by the resolved path when a binding is
+    /// Panda-named. `resolve` runs only on the alias path.
+    #[must_use]
+    pub fn record_is_panda_import(
+        &self,
+        record: &ImportRecord,
+        resolve: impl FnOnce(&str) -> Option<String>,
+    ) -> bool {
+        if self.accepts_module(&record.module) {
+            return true;
+        }
+        has_panda_named_specifier(record, &active_categories(self))
+            && resolve(&record.module).is_some_and(|path| self.accepts_module(&path))
+    }
+}
+
 /// Full extractor configuration: import matchers plus the runtime state
 /// the extractor needs (resolved token dictionary, cross-file resolver).
 /// Separate from [`Matchers`] so the import-matching config stays small
@@ -419,17 +456,25 @@ pub fn match_imports(scan: &ImportScanResult, matchers: &Matchers) -> Vec<Matche
 /// Type-only imports (declaration or specifier level) are skipped.
 #[must_use]
 pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Vec<MatchedImport> {
+    match_import_records_resolved(records, matchers, |_| None)
+}
+
+/// Like [`match_import_records`], but when a specifier's raw text misses, `resolve`
+/// is consulted to follow tsconfig `paths` aliases. It fires only for imports
+/// carrying a Panda-named binding, so ordinary imports never touch the filesystem.
+#[must_use]
+pub fn match_import_records_resolved(
+    records: &[ImportRecord],
+    matchers: &Matchers,
+    mut resolve: impl FnMut(&str) -> Option<String>,
+) -> Vec<MatchedImport> {
     let categories = active_categories(matchers);
     let mut out = Vec::new();
     for record in records {
         if record.type_only {
             continue;
         }
-        let source_categories: SmallVec<[(MatchCategory, &Matcher); 5]> = categories
-            .iter()
-            .copied()
-            .filter(|(_, matcher)| matcher.accepts_module(&record.module))
-            .collect();
+        let source_categories = source_categories_for_record(record, &categories, &mut resolve);
         if source_categories.is_empty() {
             continue;
         }
@@ -453,6 +498,33 @@ pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Ve
     out
 }
 
+/// Categories whose import modules match `record` — by raw text, falling back to
+/// resolving tsconfig `paths` aliases when a Panda-named binding is present.
+fn source_categories_for_record<'a>(
+    record: &ImportRecord,
+    categories: &[(MatchCategory, &'a Matcher)],
+    resolve: &mut impl FnMut(&str) -> Option<String>,
+) -> SmallVec<[(MatchCategory, &'a Matcher); 5]> {
+    let by_text: SmallVec<[(MatchCategory, &Matcher); 5]> = categories
+        .iter()
+        .copied()
+        .filter(|(_, matcher)| matcher.accepts_module(&record.module))
+        .collect();
+    if !by_text.is_empty() {
+        return by_text;
+    }
+    if has_panda_named_specifier(record, categories)
+        && let Some(resolved) = resolve(&record.module)
+    {
+        return categories
+            .iter()
+            .copied()
+            .filter(|(_, matcher)| matcher.accepts_module(&resolved))
+            .collect();
+    }
+    SmallVec::new()
+}
+
 fn matching_category_for_specifier(
     specifier: &ImportSpecifier,
     source_categories: &[(MatchCategory, &Matcher)],
@@ -461,6 +533,20 @@ fn matching_category_for_specifier(
         (specifier.kind == ImportSpecifierKind::Namespace
             || matcher.names.accepts(&specifier.imported))
         .then_some(*category)
+    })
+}
+
+fn has_panda_named_specifier(
+    record: &ImportRecord,
+    categories: &[(MatchCategory, &Matcher)],
+) -> bool {
+    record.specifiers.iter().any(|specifier| {
+        !specifier.type_only
+            && specifier.kind != ImportSpecifierKind::Default
+            && (specifier.kind == ImportSpecifierKind::Namespace
+                || categories
+                    .iter()
+                    .any(|(_, matcher)| matcher.names.accepts(&specifier.imported)))
     })
 }
 

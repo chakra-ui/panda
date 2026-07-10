@@ -12,7 +12,7 @@ use crate::source_refs::StyleSourceRef;
 use crate::{
     Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal,
     MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
-    collect_parser_diagnostics, match_import_records,
+    collect_parser_diagnostics, match_import_records_resolved,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -183,6 +183,21 @@ struct ExtractResult {
     dependencies: Vec<String>,
 }
 
+fn match_file_imports(
+    config: &ExtractorConfig,
+    path: &str,
+    imports: &[ImportRecord],
+) -> Vec<MatchedImport> {
+    let file_path = std::path::Path::new(path);
+    match_import_records_resolved(imports, &config.matchers, |specifier| {
+        config
+            .cross_file
+            .as_ref()
+            .and_then(|resolver| resolver.resolve_path(file_path, specifier))
+            .map(|resolved| resolved.to_string_lossy().into_owned())
+    })
+}
+
 fn run_extract<'cb>(
     source: &str,
     path: &str,
@@ -208,7 +223,7 @@ fn run_extract<'cb>(
     };
     let matched = {
         let _span = tracing::trace_span!("match_imports").entered();
-        match_import_records(&imports, &config.matchers)
+        match_file_imports(config, path, &imports)
     };
 
     // Export surface is collected from the same parse — no second AST walk.

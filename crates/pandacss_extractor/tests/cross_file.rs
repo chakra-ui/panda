@@ -6,9 +6,9 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::common::panda_config;
+use crate::common::{matcher, panda_config};
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{CrossFileResolver, ExtractUsage, extract};
+use pandacss_extractor::{CrossFileResolver, ExtractUsage, ExtractorConfig, Matchers, extract};
 use pandacss_fs::MemoryFileSystem;
 
 /// Build an in-memory project at `/proj` with `main.tsx` plus N sibling
@@ -29,6 +29,38 @@ fn project(main_source: &str, siblings: &[(&str, &str)]) -> (MemoryFileSystem, P
 fn run(fs: &MemoryFileSystem, main_path: &Path, source: &str) -> ExtractUsage {
     let config = panda_config().with_cross_file(CrossFileResolver::with_fs(fs.clone()));
     extract(source, main_path.to_str().unwrap(), &config)
+}
+
+#[test]
+fn tsconfig_path_alias_import_is_matched() {
+    // tsconfig `paths` aliases styled-system to `@styles/*`. `@styles/css` shares
+    // no substring with `styled-system/css`, so matching must resolve the alias.
+    let fs = MemoryFileSystem::new();
+    fs.add_file(
+        PathBuf::from("/proj/tsconfig.json"),
+        br#"{ "compilerOptions": { "baseUrl": ".", "paths": { "@styles/*": ["./styled-system/*"] } } }"#.to_vec(),
+    );
+    fs.add_file(
+        PathBuf::from("/proj/styled-system/css.ts"),
+        b"export const css = 0;\n".to_vec(),
+    );
+    let main = PathBuf::from("/proj/main.tsx");
+    let source = indoc::indoc! {r"
+        import { css } from '@styles/css';
+        css({ color: 'red' });
+    "};
+    fs.add_file(main.clone(), source.as_bytes().to_vec());
+
+    let matchers = Matchers {
+        css: matcher("styled-system/css", ["css", "cva", "sva"]),
+        ..Default::default()
+    };
+    let config =
+        ExtractorConfig::new(matchers).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let result = extract(source, main.to_str().unwrap(), &config);
+
+    assert_eq!(result.calls.len(), 1, "aliased css() should extract");
+    assert_eq!(result.calls[0].name, "css");
 }
 
 fn assert_send_sync<T: Send + Sync>() {}

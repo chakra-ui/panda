@@ -1,11 +1,13 @@
 //! Dead import cleanup after static inlining.
 
 use super::common::{
-    project_with_jsx, transform, transform_jsx, transform_jsx_with_helper, transform_with_project,
+    create_config, project_with_jsx, transform, transform_jsx, transform_jsx_with_helper,
+    transform_with_project,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
-use pandacss_project::{HelperCxMode, inject_cx_import, sync_internal_css_import};
+use pandacss_project::{HelperCxMode, Project, System, inject_cx_import, sync_internal_css_import};
+use serde_json::json;
 
 #[test]
 fn removes_fully_inlined_css_import() {
@@ -17,6 +19,32 @@ fn removes_fully_inlined_css_import() {
     let output = transform("src/styles.ts", source);
 
     assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    export const cls = "color_red";
+    "#);
+}
+
+#[test]
+fn removes_fully_inlined_css_import_from_relative_styled_system_path() {
+    // A design-system build imports the generated runtime by relative path.
+    // Cleanup must match it the way the extractor does (substring), or the dead
+    // import survives after inlining and drags the whole styled-system runtime
+    // into the consuming bundle.
+    let project = Project::new(
+        System::new(create_config(
+            json!({ "importMap": { "css": ["styled-system/css"] } }),
+        ))
+        .expect("config"),
+    );
+    let source = indoc! {r#"
+        import { css } from '../styled-system/css';
+        export const cls = css({ color: 'red' });
+    "#};
+
+    let output = transform_with_project(&project, "src/button.tsx", source);
+
+    assert!(output.changed);
+    assert!(!output.code.contains("styled-system/css"));
     assert_snapshot!(output.code, @r#"
     export const cls = "color_red";
     "#);
