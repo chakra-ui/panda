@@ -744,7 +744,7 @@ fn walk_composition_tree(
         match value {
             Value::Object(entries) => {
                 if let Some(styles) = entries.get("value") {
-                    if let Some(literal) = value_to_literal(styles) {
+                    if let Some(literal) = Literal::from_json(styles) {
                         out.insert(path, literal);
                     }
                 } else {
@@ -752,29 +752,11 @@ fn walk_composition_tree(
                 }
             }
             _ => {
-                if let Some(literal) = value_to_literal(value) {
+                if let Some(literal) = Literal::from_json(value) {
                     out.insert(path, literal);
                 }
             }
         }
-    }
-}
-
-fn value_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(s) => Some(Literal::String(s.clone())),
-        Value::Number(n) => n.as_f64().map(Literal::Number),
-        Value::Bool(b) => Some(Literal::Bool(*b)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => Some(Literal::Array(
-            items.iter().filter_map(value_to_literal).collect(),
-        )),
-        Value::Object(entries) => Some(Literal::Object(
-            entries
-                .iter()
-                .filter_map(|(k, v)| Some((k.clone(), value_to_literal(v)?)))
-                .collect(),
-        )),
     }
 }
 
@@ -804,7 +786,7 @@ fn values_map(value: Option<&UtilityValues>) -> FxHashMap<String, Literal> {
         }
         Some(UtilityValues::Map(values)) => {
             for (key, value) in values {
-                if let Some(value) = json_to_literal(value) {
+                if let Some(value) = Literal::from_json(value) {
                     out.insert(key.clone(), value);
                 }
             }
@@ -879,25 +861,6 @@ fn arbitrary_value(value: &str) -> String {
         inner.trim().to_owned()
     } else {
         value.to_owned()
-    }
-}
-
-fn json_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(value) => Some(Literal::String(value.clone())),
-        Value::Number(value) => value.as_f64().map(Literal::Number),
-        Value::Bool(value) => Some(Literal::Bool(*value)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => items
-            .iter()
-            .map(json_to_literal)
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Array),
-        Value::Object(entries) => entries
-            .iter()
-            .map(|(key, value)| json_to_literal(value).map(|value| (key.clone(), value)))
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Object),
     }
 }
 

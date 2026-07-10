@@ -1255,6 +1255,7 @@ version = "0.0.0"
 dependencies = [
  "itoa",
  "regex",
+ "rustc-hash",
  "ryu",
  "serde",
  "serde_json",

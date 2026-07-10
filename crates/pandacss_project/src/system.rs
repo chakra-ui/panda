@@ -1,10 +1,8 @@
-use std::hash::Hasher;
 use std::sync::Arc;
 
 use pandacss_config::{UserConfig, ValidationMode, validate_config};
 use pandacss_shared::Diagnostic;
 use pandacss_tokens::TokenDictionary;
-use rustc_hash::FxHasher;
 
 use crate::Result;
 use crate::runtime_config::Config;
@@ -129,9 +127,8 @@ pub fn config_fingerprint(config: &UserConfig) -> Arc<str> {
     let mut canonical = String::new();
     write_canonical(&mut canonical, &value);
 
-    let mut hasher = FxHasher::default();
-    hasher.write(canonical.as_bytes());
-    Arc::from(format!("cfg1-{:016x}", hasher.finish()).as_str())
+    let hash = pandacss_shared::fx_hash(&canonical);
+    Arc::from(format!("cfg1-{hash:016x}").as_str())
 }
 
 /// Serialize a JSON value with object keys in sorted order, so the fingerprint

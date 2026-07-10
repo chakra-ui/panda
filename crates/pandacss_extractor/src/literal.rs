@@ -94,6 +94,28 @@ impl Literal {
         Self::Conditional(branches)
     }
 
+    /// Coerce a `serde_json::Value` into a `Literal`, dropping any child that
+    /// doesn't convert (e.g. a non-finite number) rather than failing the
+    /// whole array/object. The inverse of [`Literal::to_json`].
+    #[must_use]
+    pub fn from_json(value: &serde_json::Value) -> Option<Self> {
+        match value {
+            serde_json::Value::String(s) => Some(Self::String(s.clone())),
+            serde_json::Value::Number(n) => n.as_f64().map(Self::Number),
+            serde_json::Value::Bool(b) => Some(Self::Bool(*b)),
+            serde_json::Value::Null => Some(Self::Null),
+            serde_json::Value::Array(items) => Some(Self::Array(
+                items.iter().filter_map(Self::from_json).collect(),
+            )),
+            serde_json::Value::Object(entries) => Some(Self::Object(
+                entries
+                    .iter()
+                    .filter_map(|(k, v)| Some((k.clone(), Self::from_json(v)?)))
+                    .collect(),
+            )),
+        }
+    }
+
     #[must_use]
     pub fn to_json(&self) -> serde_json::Value {
         match self {

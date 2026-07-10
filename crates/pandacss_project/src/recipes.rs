@@ -28,8 +28,10 @@ use pandacss_shared::{
 };
 use pandacss_utility::{StyleNormalizer, Utility};
 
+use std::hash::Hash;
+
 use crate::config::{RecipeDefinition, SlotRecipeDefinition};
-use crate::{ProjectConditionMatcher, literal_entries};
+use crate::{ProjectConditionMatcher, literal_entries, refcount_add, refcount_remove};
 
 /// Compiled config recipes, indexed for resolution and JSX-tag lookup.
 /// `jsx_to_recipes` handles exact tag matches; `regex_jsx_*` handle the
@@ -1400,54 +1402,53 @@ impl EncodedRecipesCache {
     }
 
     pub(crate) fn add_from(&mut self, recipes: &EncodedRecipes) {
-        add_recipe_part_groups(&mut self.view.base, &mut self.base_counts, &recipes.base);
-        add_recipe_variant_groups(
+        add_recipe_groups(&mut self.view.base, &mut self.base_counts, &recipes.base);
+        add_recipe_groups(
             &mut self.view.variants,
             &mut self.variant_counts,
             &recipes.variants,
         );
-        add_recipe_variant_groups(
+        add_recipe_groups(
             &mut self.view.compounds,
             &mut self.compound_counts,
             &recipes.compounds,
         );
         for atom in &recipes.atomic {
-            let count = self.atomic_counts.entry(atom.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
-                self.view.atomic.insert(atom.clone());
-            }
+            let view_atomic = &mut self.view.atomic;
+            refcount_add(&mut self.atomic_counts, atom, || {
+                view_atomic.insert(atom.clone());
+            });
         }
     }
 
     pub(crate) fn remove_from(&mut self, recipes: &EncodedRecipes) {
-        remove_recipe_part_groups(&mut self.view.base, &mut self.base_counts, &recipes.base);
-        remove_recipe_variant_groups(
+        remove_recipe_groups(&mut self.view.base, &mut self.base_counts, &recipes.base);
+        remove_recipe_groups(
             &mut self.view.variants,
             &mut self.variant_counts,
             &recipes.variants,
         );
-        remove_recipe_variant_groups(
+        remove_recipe_groups(
             &mut self.view.compounds,
             &mut self.compound_counts,
             &recipes.compounds,
         );
         for atom in &recipes.atomic {
-            if let Some(count) = self.atomic_counts.get_mut(atom) {
-                *count -= 1;
-                if *count == 0 {
-                    self.atomic_counts.remove(atom);
-                    self.view.atomic.remove(atom);
-                }
-            }
+            let view_atomic = &mut self.view.atomic;
+            refcount_remove(&mut self.atomic_counts, atom, || {
+                view_atomic.remove(atom);
+            });
         }
     }
 }
 
-fn add_recipe_part_groups(
-    view: &mut FxHashMap<RecipePartKey, RecipeStyleGroup>,
-    counts: &mut FxHashMap<RecipePartKey, CountedRecipeStyleGroup>,
-    source: &FxHashMap<RecipePartKey, RecipeStyleGroup>,
+/// Materialize `source`'s groups into `view`, refcounted per-entry in
+/// `counts`. Shared by the base/variant/compound layers, which differ only in
+/// key type (`RecipePartKey` vs `RecipeVariantKey`).
+fn add_recipe_groups<K: Eq + Hash + Clone>(
+    view: &mut FxHashMap<K, RecipeStyleGroup>,
+    counts: &mut FxHashMap<K, CountedRecipeStyleGroup>,
+    source: &FxHashMap<K, RecipeStyleGroup>,
 ) {
     for (key, group) in source {
         let counted = counts
@@ -1463,47 +1464,19 @@ fn add_recipe_part_groups(
             entries: FxHashSet::default(),
         });
         for entry in &group.entries {
-            let count = counted.entries.entry(entry.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
+            refcount_add(&mut counted.entries, entry, || {
                 view_group.entries.insert(entry.clone());
-            }
-        }
-    }
-}
-
-fn add_recipe_variant_groups(
-    view: &mut FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
-    counts: &mut FxHashMap<RecipeVariantKey, CountedRecipeStyleGroup>,
-    source: &FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
-) {
-    for (key, group) in source {
-        let counted = counts
-            .entry(key.clone())
-            .or_insert_with(|| CountedRecipeStyleGroup {
-                class_name: group.class_name.clone(),
-                conditions: group.conditions.clone(),
-                entries: FxHashMap::default(),
             });
-        let view_group = view.entry(key.clone()).or_insert_with(|| RecipeStyleGroup {
-            class_name: counted.class_name.clone(),
-            conditions: counted.conditions.clone(),
-            entries: FxHashSet::default(),
-        });
-        for entry in &group.entries {
-            let count = counted.entries.entry(entry.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
-                view_group.entries.insert(entry.clone());
-            }
         }
     }
 }
 
-fn remove_recipe_part_groups(
-    view: &mut FxHashMap<RecipePartKey, RecipeStyleGroup>,
-    counts: &mut FxHashMap<RecipePartKey, CountedRecipeStyleGroup>,
-    source: &FxHashMap<RecipePartKey, RecipeStyleGroup>,
+/// The inverse of [`add_recipe_groups`]: decrement refcounts and drop a
+/// group's entry (or the whole group) once nothing references it anymore.
+fn remove_recipe_groups<K: Eq + Hash + Clone>(
+    view: &mut FxHashMap<K, RecipeStyleGroup>,
+    counts: &mut FxHashMap<K, CountedRecipeStyleGroup>,
+    source: &FxHashMap<K, RecipeStyleGroup>,
 ) {
     for (key, group) in source {
         let Some(counted) = counts.get_mut(key) else {
@@ -1513,41 +1486,9 @@ fn remove_recipe_part_groups(
             continue;
         };
         for entry in &group.entries {
-            if let Some(count) = counted.entries.get_mut(entry) {
-                *count -= 1;
-                if *count == 0 {
-                    counted.entries.remove(entry);
-                    view_group.entries.remove(entry);
-                }
-            }
-        }
-        if counted.entries.is_empty() {
-            counts.remove(key);
-            view.remove(key);
-        }
-    }
-}
-
-fn remove_recipe_variant_groups(
-    view: &mut FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
-    counts: &mut FxHashMap<RecipeVariantKey, CountedRecipeStyleGroup>,
-    source: &FxHashMap<RecipeVariantKey, RecipeStyleGroup>,
-) {
-    for (key, group) in source {
-        let Some(counted) = counts.get_mut(key) else {
-            continue;
-        };
-        let Some(view_group) = view.get_mut(key) else {
-            continue;
-        };
-        for entry in &group.entries {
-            if let Some(count) = counted.entries.get_mut(entry) {
-                *count -= 1;
-                if *count == 0 {
-                    counted.entries.remove(entry);
-                    view_group.entries.remove(entry);
-                }
-            }
+            refcount_remove(&mut counted.entries, entry, || {
+                view_group.entries.remove(entry);
+            });
         }
         if counted.entries.is_empty() {
             counts.remove(key);

@@ -182,25 +182,7 @@ fn string_array(value: Option<&Value>) -> Vec<String> {
 
 fn static_values(value: &Value) -> Vec<Literal> {
     match value {
-        Value::Array(items) => items.iter().filter_map(value_to_literal).collect(),
-        _ => value_to_literal(value).into_iter().collect(),
-    }
-}
-
-fn value_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(value) => Some(Literal::String(value.clone())),
-        Value::Number(value) => value.as_f64().map(Literal::Number),
-        Value::Bool(value) => Some(Literal::Bool(*value)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => Some(Literal::Array(
-            items.iter().filter_map(value_to_literal).collect(),
-        )),
-        Value::Object(entries) => Some(Literal::Object(
-            entries
-                .iter()
-                .filter_map(|(key, value)| Some((key.clone(), value_to_literal(value)?)))
-                .collect(),
-        )),
+        Value::Array(items) => items.iter().filter_map(Literal::from_json).collect(),
+        _ => Literal::from_json(value).into_iter().collect(),
     }
 }

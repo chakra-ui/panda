@@ -43,10 +43,10 @@ mod transform_cache;
 mod usages;
 
 use std::collections::BTreeMap;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::sync::Arc;
 
-use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use pandacss_config::UserConfig;
@@ -90,6 +90,39 @@ pub use transform_cache::{
 };
 
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
+
+/// Bump `counts[key]` and run `on_first` on the 0→1 transition. Shared shape
+/// behind every refcounted view in this crate (`atoms_cache`,
+/// `utility_styles_cache`, `EncodedRecipesCache`'s atomic/base/variant/compound
+/// maps): a per-file value stays materialized in the paired view as long as
+/// at least one file still references it.
+pub(crate) fn refcount_add<K: Eq + Hash + Clone>(
+    counts: &mut FxHashMap<K, u32>,
+    key: &K,
+    on_first: impl FnOnce(),
+) {
+    let count = counts.entry(key.clone()).or_insert(0);
+    *count += 1;
+    if *count == 1 {
+        on_first();
+    }
+}
+
+/// Decrement `counts[key]` and run `on_zero` on the 1→0 transition, removing
+/// `key` from `counts` at that point. The inverse of [`refcount_add`].
+pub(crate) fn refcount_remove<K: Eq + Hash + Clone>(
+    counts: &mut FxHashMap<K, u32>,
+    key: &K,
+    on_zero: impl FnOnce(),
+) {
+    if let Some(count) = counts.get_mut(key) {
+        *count -= 1;
+        if *count == 0 {
+            counts.remove(key);
+            on_zero();
+        }
+    }
+}
 
 /// One project. Hold one per build / dev-server session and feed
 /// every file through `parse_file`.
@@ -761,19 +794,16 @@ impl Project {
     fn add_file_state(&mut self, path: Arc<str>, entry: FileEntry) {
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
-            let count = self.atom_counts.entry(atom.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
-                self.atoms_cache.insert(atom.clone());
-            }
+            let atoms_cache = &mut self.atoms_cache;
+            refcount_add(&mut self.atom_counts, atom, || {
+                atoms_cache.insert(atom.clone());
+            });
         }
         for (key, styles) in &entry.utility_styles {
-            let count = self.utility_styles_counts.entry(key.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
-                self.utility_styles_cache
-                    .insert(key.clone(), styles.clone());
-            }
+            let utility_styles_cache = &mut self.utility_styles_cache;
+            refcount_add(&mut self.utility_styles_counts, key, || {
+                utility_styles_cache.insert(key.clone(), styles.clone());
+            });
         }
         self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
         self.files.insert(path, entry);
@@ -817,20 +847,19 @@ impl Project {
             missing_recipes
         };
 
-        for atom in missing_atoms {
-            let count = self.atom_counts.entry(atom.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
-                self.atoms_cache.insert(atom);
-            }
+        for atom in &missing_atoms {
+            let atoms_cache = &mut self.atoms_cache;
+            refcount_add(&mut self.atom_counts, atom, || {
+                atoms_cache.insert(atom.clone());
+            });
         }
 
         for (key, styles) in missing_utility_styles {
-            let count = self.utility_styles_counts.entry(key.clone()).or_insert(0);
-            *count += 1;
-            if *count == 1 {
-                self.utility_styles_cache.insert(key, styles);
-            }
+            let counts_key = key.clone();
+            let utility_styles_cache = &mut self.utility_styles_cache;
+            refcount_add(&mut self.utility_styles_counts, &counts_key, || {
+                utility_styles_cache.insert(key, styles);
+            });
         }
 
         self.encoded_recipes_cache.add_from(&missing_recipes);
@@ -840,22 +869,16 @@ impl Project {
         let entry = self.files.remove(path)?;
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
-            if let Some(count) = self.atom_counts.get_mut(atom) {
-                *count -= 1;
-                if *count == 0 {
-                    self.atom_counts.remove(atom);
-                    self.atoms_cache.remove(atom);
-                }
-            }
+            let atoms_cache = &mut self.atoms_cache;
+            refcount_remove(&mut self.atom_counts, atom, || {
+                atoms_cache.remove(atom);
+            });
         }
         for key in entry.utility_styles.keys() {
-            if let Some(count) = self.utility_styles_counts.get_mut(key) {
-                *count -= 1;
-                if *count == 0 {
-                    self.utility_styles_counts.remove(key);
-                    self.utility_styles_cache.remove(key);
-                }
-            }
+            let utility_styles_cache = &mut self.utility_styles_cache;
+            refcount_remove(&mut self.utility_styles_counts, key, || {
+                utility_styles_cache.remove(key);
+            });
         }
         self.encoded_recipes_cache
             .remove_from(&entry.encoded_recipes);
@@ -1809,9 +1832,7 @@ fn atom_value_summary(value: &AtomValue) -> String {
 }
 
 fn hash_source(source: &str) -> u64 {
-    let mut hasher = FxHasher::default();
-    source.hash(&mut hasher);
-    hasher.finish()
+    pandacss_shared::fx_hash(source)
 }
 
 pub(crate) fn literal_entries(value: &Literal) -> Option<&[(String, Literal)]> {

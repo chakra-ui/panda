@@ -22,7 +22,7 @@ use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
-use rustc_hash::{FxHashSet, FxHasher};
+use rustc_hash::FxHashSet;
 use serde::{Serialize, Serializer};
 use smallvec::SmallVec;
 
@@ -499,12 +499,7 @@ fn hash_atom_parts(
     conditions: &SmallVec<[Box<str>; INLINE_CONDS]>,
     important: bool,
 ) -> u64 {
-    let mut hasher = FxHasher::default();
-    prop.hash(&mut hasher);
-    value.hash(&mut hasher);
-    conditions.hash(&mut hasher);
-    important.hash(&mut hasher);
-    hasher.finish()
+    pandacss_shared::fx_hash((prop, value, conditions, important))
 }
 
 #[derive(Debug, Clone)]

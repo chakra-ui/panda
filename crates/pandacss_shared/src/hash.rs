@@ -66,6 +66,17 @@ pub fn without_space(value: &str) -> String {
     value.replace(' ', "_")
 }
 
+/// `FxHasher`-backed hash of any `Hash` value; not adversary-resistant, so
+/// only use it for internal cache keys and fingerprints (see
+/// `design-notes/performance-budget.md`).
+#[must_use]
+pub fn fx_hash(value: impl std::hash::Hash) -> u64 {
+    use std::hash::Hasher;
+    let mut hasher = rustc_hash::FxHasher::default();
+    value.hash(&mut hasher);
+    hasher.finish()
+}
+
 /// JS-compatible hash used by Panda's CSS variable hashing.
 ///
 /// This mirrors `packages/shared/src/hash.ts` but keeps the hot path
