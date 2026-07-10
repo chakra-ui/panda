@@ -18,13 +18,14 @@ Inline recipe rewrites may also need `cva as __pcva` or `sva as __psva` from the
 
 ## Support matrix
 
-| Host     | Transform hook shape                  | Internal module shape                    | Watch / invalidation model             | Status                    |
-| -------- | ------------------------------------- | ---------------------------------------- | -------------------------------------- | ------------------------- |
-| Vite     | plugin `transform`                    | virtual module                           | dev server module graph + file watcher | transform hooks wired     |
-| Rollup   | plugin `transform`                    | virtual module                           | watch cache + plugin invalidation      | planned                   |
-| Rolldown | Rollup-like plugin path               | virtual module                           | watch cache                            | planned; validate parity  |
-| webpack  | loader or plugin-driven transform     | synthetic module or alias-backed runtime | loader dependencies + compiler watch   | planned                   |
-| Rspack   | webpack-compatible loader/plugin path | synthetic module or alias-backed runtime | loader dependencies + compiler watch   | planned via webpack shape |
+| Host      | Transform hook shape                  | Internal module shape        | Watch / invalidation model             | Status                          |
+| --------- | ------------------------------------- | ---------------------------- | -------------------------------------- | ------------------------------- |
+| Vite      | plugin `transform`                    | virtual module               | dev server module graph + file watcher | shipped (`@pandacss/vite`)      |
+| Rollup    | plugin `transform`                    | virtual module               | plugin `watchChange` + emitted asset   | shipped (`@pandacss/rollup`)    |
+| Rolldown  | runs the Rollup plugin unchanged      | virtual module               | plugin `watchChange`                   | validated via the Rollup plugin |
+| webpack   | `pre` loader + orchestration plugin   | virtual module (unplugin)    | loader dependencies + `watchRun`       | shipped (`@pandacss/webpack`)   |
+| Rspack    | webpack-compatible loader/plugin path | synthetic module or aliased  | loader dependencies + compiler watch   | planned via webpack shape       |
+| Turbopack | `turbopack.rules` loader (JS only)    | data URL (no virtual module) | loader dependencies                    | blocked on CSS aggregation      |
 
 ## Shared host contract
 
@@ -71,50 +72,81 @@ config, and future cross-file transform dependencies.
 
 ## Rollup
 
-Rollup uses the same virtual-module model as Vite: `resolveId`, `load`, and `transform`.
+`@pandacss/rollup` ships. It reuses Vite's virtual-module model (`resolveId` / `load` / `transform`) through
+`@pandacss/transformer`'s `rollup` unplugin, plus a small orchestration plugin:
 
-The Rollup adapter should mirror Vite:
+- `pandaTransformer.rollup()` handles the transform and the `@pandacss-internal/css` module.
+- `buildStart` runs codegen + `parseFiles`; `watchChange` folds edits in incrementally.
+- `generateBundle` emits the stylesheet as a Rollup asset. Rollup has no CSS pipeline, so the plugin owns delivery.
 
-1. `transform` calls `@pandacss/transformer`
-2. `resolveId` intercepts `@pandacss-internal/css`
-3. `load` returns bundled runtime for `\0pandacss:internal:css`
-
-`@pandacss/transformer` already exports `rollup` via `unplugin` for early integration tests.
+Verified: `css()` / `token()` / patterns / recipes inline, the runtime module bundles cleanly, source maps chain back to
+the original source, and watch rebuilds emit fresh CSS.
 
 ## Rolldown
 
-Design Rolldown support as Rollup-shaped first. Validate plugin parity before calling it complete.
+The Rollup plugin runs under Rolldown unchanged — no `@pandacss/rolldown` package. Rolldown targets Rollup-plugin
+compatibility, so the same `resolveId` / `load` / `transform` / `emitFile` / `generateBundle` surface just works.
+Rolldown compiles TS/JSX itself (OXC), so the config drops esbuild and node-resolve.
 
-Rolldown maintains `string_wizard`, which Panda already uses in `pandacss_project::transform` for edits and source maps.
-That affects printer choice, not the host contract.
+The shipping rule is met, verified on the unmodified Rollup plugin:
 
-Shipping rule: do not mark Rolldown done until helper resolution, source maps, and watch rebuilds all pass.
+- helper resolution — `@pandacss-internal/css` bundles, no dangling import
+- source maps — v3, mapping to the original pre-transform source
+- watch rebuilds — a style edit rebuilds and re-emits CSS (~20ms)
+
+Scope: standalone Rollup and Rolldown, plus `tsdown` (the Rolldown library bundler). Rolldown-powered Vite runs Vite
+plugins, so it stays with `@pandacss/vite`, not this.
+
+Rolldown maintains `string_wizard`, which Panda uses in `pandacss_project::transform` for edits and source maps. That
+affects printer choice, not the host contract.
 
 ## webpack
 
-webpack needs a loader-first adapter, not a different transform contract.
+`@pandacss/webpack` ships as a loader-first adapter. It did not need the alias-backed synthetic module the earlier plan
+assumed — the shared unplugin handles the runtime module:
 
-1. Panda transform loader rewrites JS/TS source
-2. Loader returns code + source map
-3. Loader or companion plugin resolves `@pandacss-internal/css`
-4. Loader calls `@pandacss/transformer` backed by the native compiler
+- `pandaTransformer.webpack()` rewrites source and resolves `@pandacss-internal/css` (virtual module, not an alias).
+- A `pre` `.css` loader injects `cssgen()` into any layer-declaring stylesheet in-memory — the Vite `.css` transform
+  analog. It `addDependency`s every source, so a source edit rebuilds the stylesheet. Dev HMR without a disk write.
+- The plugin builds the driver in `beforeCompile` and folds edits in via `watchRun`; the driver reads changed files
+  through its own fs.
 
-Start with alias-backed synthetic module resolution unless a smaller loader-injected request path is clearly better.
+Tested on Next.js (webpack): `next build` emits the correct stylesheet, `next dev` HMRs style edits. Users keep
+`@layer …;` in `globals.css`.
 
-Use `this.addDependency` for config and future cross-file edges. The internal runtime itself is static.
+## Turbopack
+
+Not built. The hard part isn't the transform — it's CSS delivery.
+
+Turbopack has no plugin API, only loaders via `turbopack.rules` (run through `loader-runner`). The constraints:
+
+- Loaders must return JavaScript. CSS/asset-emitting loaders aren't supported.
+- Options must be plain data — no functions, no `require()`d modules.
+- No virtual modules, no `emitFile`, no `resolve` (use `getResolve`). `addDependency` and `getOptions` do work.
+
+So the webpack plugin machinery doesn't carry over, and `@pandacss-internal/css` can't resolve as a virtual module.
+
+next-yak (which supports Turbopack) sidesteps this: its SWC transform encodes extracted CSS as `data:text/css;base64,…`
+imports, which Turbopack's native CSS pipeline consumes — no virtual module, and the loader returns JS.
+
+The crux for Panda: next-yak's CSS is per-component, so one data URL per module is natural. Panda's CSS is atomic,
+layered, and deduped across the whole app — per-file data URLs would duplicate atoms everywhere and lose layer order.
+The CSS-aggregation strategy is the design problem to solve first. An SWC plugin doesn't help: Panda's engine is OXC +
+native NAPI, SWC plugins are SWC-AST + Wasm with no fs, and the CSS question stays open.
 
 ## Rspack
 
-Rspack targets webpack plugin and loader compatibility. Implement the webpack adapter shape first, fork only on real
-incompatibilities.
+Rspack targets webpack plugin and loader compatibility. Implement the webpack adapter shape (now shipped) first, fork
+only on real incompatibilities.
 
 ## Why not one host package for everything
 
 Integration points differ too much:
 
 - Vite and Rollup: plugin hooks and virtual modules
+- Rolldown: runs the Rollup adapter unchanged
 - webpack and Rspack: loader/plugin composition
-- Rolldown: needs parity validation first
+- Turbopack: loaders only, no virtual modules — CSS must ride inline (data URLs)
 
 One Rust core, one JS facade (`@pandacss/transformer`), small host adapters.
 

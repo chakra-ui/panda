@@ -164,9 +164,10 @@ pandacss_project::transform
   - runtime/internal (cx, css, cva, sva bundled for virtual module)
   - pandaTransformer — optional unplugin wrapper
 
-@pandacss/vite | future rollup / webpack / rspack / rolldown packages
+@pandacss/vite | @pandacss/rollup | @pandacss/webpack | future rspack package
   - host hooks, watch, HMR
   - call @pandacss/transformer; resolve @pandacss-internal/css
+  - Rolldown runs @pandacss/rollup unchanged; Turbopack is blocked on CSS aggregation
 ```
 
 ## The package shape
@@ -799,10 +800,9 @@ This is the key distinction:
 The bundler packages should own only host APIs:
 
 - `@pandacss/vite`
-- future `@pandacss/rollup`
-- future `@pandacss/webpack`
+- `@pandacss/rollup` (also runs unchanged under Rolldown)
+- `@pandacss/webpack`
 - future `@pandacss/rspack`
-- future `@pandacss/rolldown`
 
 Each host package should:
 
