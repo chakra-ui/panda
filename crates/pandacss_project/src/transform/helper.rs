@@ -27,30 +27,75 @@ pub(crate) struct ClassNamePrint {
 }
 
 pub(crate) fn merge_class_name_fragments(
+    class_attr: &str,
     helper_cx: HelperCxMode,
     existing_static: Option<&str>,
     existing_dynamic: Option<&str>,
     panda: &str,
 ) -> ClassNamePrint {
     let panda = panda.trim();
+    if let Some(existing) = existing_dynamic
+        && !panda.is_empty()
+        && let Some(merged) =
+            merge_into_literal_class_expression(existing, &super::resolve::js_string_literal(panda))
+    {
+        return ClassNamePrint {
+            attribute: format!("{class_attr}={{{merged}}}"),
+            needs_cx: false,
+        };
+    }
     let mut fragments = existing_class_name_fragments(existing_static, existing_dynamic);
     if !panda.is_empty() {
         fragments.push(ClassFragment::Static(panda.to_owned()));
     }
-    merge_fragments(helper_cx, &fragments)
+    merge_fragments(class_attr, helper_cx, &fragments)
 }
 
 pub(crate) fn merge_class_name_with_expression(
+    class_attr: &str,
     helper_cx: HelperCxMode,
     existing_static: Option<&str>,
     existing_dynamic: Option<&str>,
     panda_expr: &str,
 ) -> ClassNamePrint {
+    let panda_expr = panda_expr.trim();
+    if let Some(existing) = existing_dynamic
+        && !panda_expr.is_empty()
+        && let Some(merged) = merge_into_literal_class_expression(existing, panda_expr)
+    {
+        return ClassNamePrint {
+            attribute: format!("{class_attr}={{{merged}}}"),
+            needs_cx: false,
+        };
+    }
     let mut fragments = existing_class_name_fragments(existing_static, existing_dynamic);
-    if !panda_expr.trim().is_empty() {
+    if !panda_expr.is_empty() {
         fragments.push(ClassFragment::Expr(panda_expr.to_owned()));
     }
-    merge_fragments(helper_cx, &fragments)
+    merge_fragments(class_attr, helper_cx, &fragments)
+}
+
+/// `[a, b]` array or `{a: true}` record class expression — Qwik/Vue's own
+/// supported `class` shapes (<https://qwik.dev/docs/core/styles/>).
+pub(super) fn is_array_or_object_class_literal(expression: &str) -> bool {
+    let expression = expression.trim();
+    (expression.starts_with('[') && expression.ends_with(']'))
+        || (expression.starts_with('{') && expression.ends_with('}'))
+}
+
+/// Appends the resolved Panda piece into an existing array/record class
+/// expression instead of string-concatenating something that isn't a string
+/// at runtime.
+fn merge_into_literal_class_expression(existing: &str, new_element: &str) -> Option<String> {
+    let existing = existing.trim();
+    if existing.starts_with('[') && existing.ends_with(']') {
+        let body = existing[..existing.len() - 1].trim_end();
+        return Some(format!("{body}, {new_element}]"));
+    }
+    if existing.starts_with('{') && existing.ends_with('}') {
+        return Some(format!("[{existing}, {new_element}]"));
+    }
+    None
 }
 
 /// The pre-existing `className` split into fragments. The two callers differ
@@ -77,18 +122,25 @@ enum ClassFragment {
 
 /// Falls back to the `className={"…"}` expression form when the value has a
 /// quote/backslash a double-quoted JSX attribute can't hold.
-fn class_name_attribute(value: &str) -> String {
+fn class_name_attribute(class_attr: &str, value: &str) -> String {
     if value.contains('"') || value.contains('\\') {
-        format!("className={{{}}}", super::resolve::js_string_literal(value))
+        format!(
+            "{class_attr}={{{}}}",
+            super::resolve::js_string_literal(value)
+        )
     } else {
-        format!("className=\"{value}\"")
+        format!("{class_attr}=\"{value}\"")
     }
 }
 
-fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> ClassNamePrint {
+fn merge_fragments(
+    class_attr: &str,
+    helper_cx: HelperCxMode,
+    fragments: &[ClassFragment],
+) -> ClassNamePrint {
     if fragments.is_empty() {
         return ClassNamePrint {
-            attribute: "className=\"\"".to_owned(),
+            attribute: format!("{class_attr}=\"\""),
             needs_cx: false,
         };
     }
@@ -106,7 +158,7 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
             .collect::<Vec<_>>()
             .join(" ");
         return ClassNamePrint {
-            attribute: class_name_attribute(&value),
+            attribute: class_name_attribute(class_attr, &value),
             needs_cx: false,
         };
     }
@@ -114,11 +166,11 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
     if fragments.len() == 1 {
         return match &fragments[0] {
             ClassFragment::Static(value) => ClassNamePrint {
-                attribute: class_name_attribute(value),
+                attribute: class_name_attribute(class_attr, value),
                 needs_cx: false,
             },
             ClassFragment::Expr(expr) => ClassNamePrint {
-                attribute: format!("className={{{expr}}}"),
+                attribute: format!("{class_attr}={{{expr}}}"),
                 needs_cx: false,
             },
         };
@@ -135,7 +187,7 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
             .collect::<Vec<_>>()
             .join(", ");
         return ClassNamePrint {
-            attribute: format!("className={{{CX_HELPER_LOCAL}({args})}}"),
+            attribute: format!("{class_attr}={{{CX_HELPER_LOCAL}({args})}}"),
             needs_cx: true,
         };
     }
@@ -179,7 +231,7 @@ fn merge_fragments(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> Clas
     }
 
     ClassNamePrint {
-        attribute: format!("className={{{expr}}}"),
+        attribute: format!("{class_attr}={{{expr}}}"),
         needs_cx: false,
     }
 }
@@ -200,20 +252,20 @@ fn should_use_cx(helper_cx: HelperCxMode, fragments: &[ClassFragment]) -> bool {
     }
 }
 
-pub(crate) fn format_object_class_name(print: &ClassNamePrint) -> String {
+pub(crate) fn format_object_class_name(class_attr: &str, print: &ClassNamePrint) -> String {
     if let Some(inner) = print
         .attribute
-        .strip_prefix("className=\"")
+        .strip_prefix(&format!("{class_attr}=\""))
         .and_then(|value| value.strip_suffix('"'))
     {
-        return format!("className: '{inner}'");
+        return format!("{class_attr}: '{inner}'");
     }
     if let Some(expr) = print
         .attribute
-        .strip_prefix("className={")
+        .strip_prefix(&format!("{class_attr}={{"))
         .and_then(|value| value.strip_suffix('}'))
     {
-        return format!("className: {expr}");
+        return format!("{class_attr}: {expr}");
     }
     print.attribute.clone()
 }
@@ -309,15 +361,26 @@ mod tests {
 
     #[test]
     fn folds_multiple_static_fragments_to_one_literal() {
-        let print = merge_class_name_fragments(HelperCxMode::Auto, Some("foo"), None, "bar baz");
+        let print = merge_class_name_fragments(
+            "className",
+            HelperCxMode::Auto,
+            Some("foo"),
+            None,
+            "bar baz",
+        );
         assert_eq!(print.attribute, r#"className="foo bar baz""#);
         assert!(!print.needs_cx);
     }
 
     #[test]
     fn dynamic_plus_static_uses_inline_concat_in_auto_mode() {
-        let print =
-            merge_class_name_fragments(HelperCxMode::Auto, None, Some("props.cls"), "color_red");
+        let print = merge_class_name_fragments(
+            "className",
+            HelperCxMode::Auto,
+            None,
+            Some("props.cls"),
+            "color_red",
+        );
         assert_eq!(print.attribute, r#"className={props.cls + " color_red"}"#);
         assert!(!print.needs_cx);
     }
@@ -325,6 +388,7 @@ mod tests {
     #[test]
     fn two_expressions_use_cx_in_auto_mode() {
         let print = merge_class_name_with_expression(
+            "className",
             HelperCxMode::Auto,
             None,
             Some("props.cls"),
@@ -339,8 +403,13 @@ mod tests {
 
     #[test]
     fn true_mode_uses_cx_for_dynamic_and_static_pair() {
-        let print =
-            merge_class_name_fragments(HelperCxMode::True, None, Some("props.cls"), "color_red");
+        let print = merge_class_name_fragments(
+            "className",
+            HelperCxMode::True,
+            None,
+            Some("props.cls"),
+            "color_red",
+        );
         assert_eq!(
             print.attribute,
             r#"className={__pcx(props.cls, "color_red")}"#
@@ -351,6 +420,7 @@ mod tests {
     #[test]
     fn false_mode_never_emits_cx_even_with_multiple_expressions() {
         let print = merge_class_name_with_expression(
+            "className",
             HelperCxMode::False,
             None,
             Some("props.cls"),
@@ -367,6 +437,7 @@ mod tests {
     #[test]
     fn wraps_trailing_ternary_when_concatenating_after_static() {
         let print = merge_class_name_with_expression(
+            "className",
             HelperCxMode::False,
             Some("foo"),
             None,
@@ -376,6 +447,14 @@ mod tests {
             print.attribute,
             r#"className={"foo" + " " + (isError ? "color_red" : "color_blue")}"#
         );
+    }
+
+    #[test]
+    fn solid_class_attribute_merges_static_fragments() {
+        let print =
+            merge_class_name_fragments("class", HelperCxMode::Auto, Some("foo"), None, "bar baz");
+        assert_eq!(print.attribute, r#"class="foo bar baz""#);
+        assert!(!print.needs_cx);
     }
 
     #[test]

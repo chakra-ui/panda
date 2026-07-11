@@ -43,18 +43,18 @@ impl ParsedOpeningElement {
             .any(|attr| attr.name.as_deref() == Some("as") && !attr.as_is_resolvable())
     }
 
-    pub(super) fn static_class_name(&self) -> Option<String> {
+    pub(super) fn static_class_name(&self, class_attr: &str) -> Option<String> {
         for attr in &self.attributes {
-            if attr.name.as_deref() == Some("className") && !attr.is_dynamic() {
+            if attr.name.as_deref() == Some(class_attr) && !attr.is_dynamic() {
                 return attr.static_string_value();
             }
         }
         None
     }
 
-    pub(super) fn dynamic_class_name_expression(&self) -> Option<String> {
+    pub(super) fn dynamic_class_name_expression(&self, class_attr: &str) -> Option<String> {
         for attr in &self.attributes {
-            if attr.name.as_deref() == Some("className") && attr.is_dynamic() {
+            if attr.name.as_deref() == Some(class_attr) && attr.is_dynamic() {
                 return attr.braced_expression_value();
             }
         }
@@ -134,18 +134,18 @@ impl ParsedObjectLiteral {
             .any(|prop| prop.key.as_deref() == Some("as") && !prop.as_is_resolvable())
     }
 
-    pub(super) fn static_class_name(&self) -> Option<String> {
+    pub(super) fn static_class_name(&self, class_attr: &str) -> Option<String> {
         for prop in &self.properties {
-            if prop.key.as_deref() == Some("className") {
+            if prop.key.as_deref() == Some(class_attr) {
                 return prop.static_string_value();
             }
         }
         None
     }
 
-    pub(super) fn dynamic_class_name_expression(&self) -> Option<String> {
+    pub(super) fn dynamic_class_name_expression(&self, class_attr: &str) -> Option<String> {
         for prop in &self.properties {
-            if prop.key.as_deref() == Some("className") {
+            if prop.key.as_deref() == Some(class_attr) {
                 if prop.static_string_value().is_some() {
                     return None;
                 }

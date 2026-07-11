@@ -50,22 +50,25 @@ pub(super) fn plan_opening_class_name(
     helper_cx: HelperCxMode,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassNamePrint> {
+    let class_attr = project.config().extractor_config().class_attribute;
     if let Some(expression) =
         class_expression_for_jsx_data(project, jsx, parsed, pattern_transform.as_deref_mut())
     {
         return Some(merge_class_name_with_expression(
+            class_attr,
             helper_cx,
-            parsed.static_class_name().as_deref(),
-            parsed.dynamic_class_name_expression().as_deref(),
+            parsed.static_class_name(class_attr).as_deref(),
+            parsed.dynamic_class_name_expression(class_attr).as_deref(),
             &expression,
         ));
     }
 
     let classes = project.class_names_for_jsx_usage(jsx, pattern_transform)?;
     Some(merge_class_name_fragments(
+        class_attr,
         helper_cx,
-        parsed.static_class_name().as_deref(),
-        parsed.dynamic_class_name_expression().as_deref(),
+        parsed.static_class_name(class_attr).as_deref(),
+        parsed.dynamic_class_name_expression(class_attr).as_deref(),
         &classes.join(" "),
     ))
 }
@@ -78,6 +81,7 @@ pub(super) fn plan_runtime_class_name(
     helper_cx: HelperCxMode,
     mut pattern_transform: Option<&mut PatternTransformFn<'_>>,
 ) -> Option<ClassNamePrint> {
+    let class_attr = project.config().extractor_config().class_attribute;
     if let Some(expression) = class_expression_for_runtime_props(
         project,
         jsx,
@@ -85,22 +89,24 @@ pub(super) fn plan_runtime_class_name(
         pattern_transform.as_deref_mut(),
     ) {
         return Some(merge_class_name_with_expression(
+            class_attr,
             helper_cx,
-            parsed.static_class_name().as_deref(),
-            parsed.dynamic_class_name_expression().as_deref(),
+            parsed.static_class_name(class_attr).as_deref(),
+            parsed.dynamic_class_name_expression(class_attr).as_deref(),
             &expression,
         ));
     }
 
     let classes = project.class_names_for_jsx_usage(jsx, pattern_transform)?;
     let print = merge_class_name_fragments(
+        class_attr,
         helper_cx,
-        parsed.static_class_name().as_deref(),
-        parsed.dynamic_class_name_expression().as_deref(),
+        parsed.static_class_name(class_attr).as_deref(),
+        parsed.dynamic_class_name_expression(class_attr).as_deref(),
         &classes.join(" "),
     );
     Some(ClassNamePrint {
-        attribute: format_object_class_name(&print),
+        attribute: format_object_class_name(class_attr, &print),
         needs_cx: print.needs_cx,
     })
 }

@@ -1,7 +1,7 @@
 use super::common::{
-    project_with_jsx, transform_jsx, transform_jsx_patterns, transform_jsx_recipes,
-    transform_jsx_with_project, transform_panda_jsx, transform_panda_jsx_patterns,
-    transform_with_project,
+    project_with_jsx, transform_jsx, transform_jsx_patterns, transform_jsx_qwik,
+    transform_jsx_recipes, transform_jsx_solid, transform_jsx_with_project, transform_panda_jsx,
+    transform_panda_jsx_patterns, transform_with_project,
 };
 use indoc::indoc;
 use insta::assert_snapshot;
@@ -895,4 +895,114 @@ fn rewrites_nested_conditional_with_static_peel_on_same_element() {
       <div className={isDark ? "color_blue hover:dark:color_white" : "color_blue hover:dark:color_black"} />
     );
     "#);
+}
+
+#[test]
+fn rewrites_box_to_intrinsic_with_class_name_solid() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red" />;
+    "#};
+
+    let output = transform_jsx_solid("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class="color_red" />;"#);
+}
+
+#[test]
+fn merges_dynamic_class_expression_solid() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box class={props.class} color="red" />;
+    "#};
+
+    let output = transform_jsx_solid("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class={props.class + " color_red"} />;"#);
+}
+
+#[test]
+fn rewrites_jsx_runtime_call_solid() {
+    let source = indoc! {r#"
+        import { jsx } from 'react/jsx-runtime';
+        import { Box } from '@panda/jsx';
+
+        export const el = jsx(Box, { color: 'red', children: 'hi' });
+    "#};
+
+    let output = transform_jsx_solid("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @"
+    import { jsx } from 'react/jsx-runtime';
+
+    export const el = jsx('div', { children: 'hi', class: 'color_red' });
+    ");
+}
+
+#[test]
+fn rewrites_box_to_intrinsic_with_class_name_qwik() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box color="red" />;
+    "#};
+
+    let output = transform_jsx_qwik("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class="color_red" />;"#);
+}
+
+#[test]
+fn merges_dynamic_class_expression_qwik() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box class={styles.container} color="red" />;
+    "#};
+
+    let output = transform_jsx_qwik("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class={styles.container + " color_red"} />;"#);
+}
+
+#[test]
+fn merges_resolved_class_into_qwik_array_expression() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box class={[styles.container, 'p-8']} color="red" />;
+    "#};
+
+    let output = transform_jsx_qwik("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class={[styles.container, 'p-8', "color_red"]} />;"#);
+}
+
+#[test]
+fn merges_resolved_class_into_qwik_mixed_array_expression() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box class={[styles.container, 'p-8', flag ? 'a' : 'b', { active: true }]} color="red" />;
+    "#};
+
+    let output = transform_jsx_qwik("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class={[styles.container, 'p-8', flag ? 'a' : 'b', { active: true }, "color_red"]} />;"#);
+}
+
+#[test]
+fn merges_resolved_class_into_qwik_record_expression() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx';
+        export const el = <Box class={{ 'text-red-500': isError, 'p-4': true }} color="blue" />;
+    "#};
+
+    let output = transform_jsx_qwik("src/app.tsx", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"export const el = <div class={[{ 'text-red-500': isError, 'p-4': true }, "color_blue"]} />;"#);
 }

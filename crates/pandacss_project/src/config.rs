@@ -6,8 +6,8 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use pandacss_config::{
-    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxSpecifier,
-    JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
+    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxFramework,
+    JsxSpecifier, JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
     CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
@@ -55,6 +55,7 @@ pub(crate) fn compile_config_with_token_dictionary(
         jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
+    extractor_config.class_attribute = class_attribute_for_framework(config.jsx_framework.as_ref());
     extractor_config.syntax = extractor_syntax_from_config(config.syntax);
     extractor_config.token_dictionary = token_dictionary;
 
@@ -499,6 +500,14 @@ fn extractor_syntax_from_config(syntax: ConfigCssSyntaxKind) -> CssSyntaxKind {
     match syntax {
         ConfigCssSyntaxKind::TemplateLiteral => CssSyntaxKind::TemplateLiteral,
         ConfigCssSyntaxKind::ObjectLiteral => CssSyntaxKind::ObjectLiteral,
+    }
+}
+
+/// Solid/Vue/Qwik use `class` on intrinsic elements; everything else `className`.
+fn class_attribute_for_framework(framework: Option<&JsxFramework>) -> &'static str {
+    match framework {
+        Some(JsxFramework::Solid | JsxFramework::Vue | JsxFramework::Qwik) => "class",
+        _ => "className",
     }
 }
 

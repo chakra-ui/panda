@@ -180,11 +180,13 @@ impl Matchers {
 /// the extractor needs (resolved token dictionary, cross-file resolver).
 /// Separate from [`Matchers`] so the import-matching config stays small
 /// and reusable.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ExtractorConfig {
     pub matchers: Matchers,
     pub jsx: JsxExtractionConfig,
     pub has_jsx_framework: bool,
+    /// `"className"` for React/Preact, `"class"` for Solid/Vue/Qwik.
+    pub class_attribute: &'static str,
     pub syntax: CssSyntaxKind,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,
@@ -195,6 +197,12 @@ pub struct ExtractorConfig {
     pub cross_file: Option<crate::CrossFileResolver>,
 }
 
+impl Default for ExtractorConfig {
+    fn default() -> Self {
+        Self::new(Matchers::default())
+    }
+}
+
 impl ExtractorConfig {
     #[must_use]
     pub fn new(matchers: Matchers) -> Self {
@@ -202,6 +210,7 @@ impl ExtractorConfig {
             matchers,
             jsx: JsxExtractionConfig::default(),
             has_jsx_framework: false,
+            class_attribute: "className",
             syntax: CssSyntaxKind::default(),
             token_dictionary: None,
             cross_file: None,
@@ -211,6 +220,12 @@ impl ExtractorConfig {
     #[must_use]
     pub fn with_jsx_framework(mut self, enabled: bool) -> Self {
         self.has_jsx_framework = enabled;
+        self
+    }
+
+    #[must_use]
+    pub fn with_class_attribute(mut self, class_attribute: &'static str) -> Self {
+        self.class_attribute = class_attribute;
         self
     }
 

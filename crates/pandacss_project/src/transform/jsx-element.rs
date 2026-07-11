@@ -86,7 +86,9 @@ fn opening_element_should_skip(
     }
 
     let tag_name = &jsx.name;
-    let jsx_config = &project.config().extractor_config().jsx;
+    let extractor_config = project.config().extractor_config();
+    let jsx_config = &extractor_config.jsx;
+    let class_attr = extractor_config.class_attribute;
     let data_keys = style_prop_keys(&jsx.data);
 
     for attr in &parsed.attributes {
@@ -97,7 +99,7 @@ fn opening_element_should_skip(
             continue;
         }
         if let Some(expr) = attr.expression_source() {
-            if name == "className" && dynamic_class_name_expression_should_skip(&expr) {
+            if name == class_attr && dynamic_class_name_expression_should_skip(&expr) {
                 return true;
             }
             if jsx_config.should_extract_prop(tag_name, name)
@@ -127,7 +129,9 @@ fn format_opening_element(
     parsed: &ParsedOpeningElement,
     class_name: &helper::ClassNamePrint,
 ) -> String {
-    let jsx_config = &project.config().extractor_config().jsx;
+    let extractor_config = project.config().extractor_config();
+    let jsx_config = &extractor_config.jsx;
+    let class_attr = extractor_config.class_attribute;
     let tag_name = &jsx.name;
     let mut out = String::new();
     out.push('<');
@@ -137,7 +141,7 @@ fn format_opening_element(
         let Some(name) = attr.name.as_deref() else {
             continue;
         };
-        if name == "as" || name == "className" || should_skip_style_prop(name) {
+        if name == "as" || name == class_attr || should_skip_style_prop(name) {
             continue;
         }
         if jsx_config.should_extract_prop(tag_name, name) {

@@ -360,6 +360,58 @@ pub fn project_with_jsx() -> Project {
     )
 }
 
+pub fn project_with_jsx_solid() -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "jsxFramework": "solid",
+            "shorthands": true,
+            "utilities": {
+                "color": {},
+                "padding": {},
+                "backgroundColor": { "shorthand": "bg" },
+                "margin": {}
+            },
+            "conditions": {
+                "hover": "&:hover",
+                "dark": ".dark &"
+            },
+            "theme": {
+                "breakpoints": {
+                    "sm": "640px",
+                    "md": "768px"
+                }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
+pub fn project_with_jsx_qwik() -> Project {
+    Project::new(
+        System::new(create_config(json!({
+            "jsxFramework": "qwik",
+            "shorthands": true,
+            "utilities": {
+                "color": {},
+                "padding": {},
+                "backgroundColor": { "shorthand": "bg" },
+                "margin": {}
+            },
+            "conditions": {
+                "hover": "&:hover",
+                "dark": ".dark &"
+            },
+            "theme": {
+                "breakpoints": {
+                    "sm": "640px",
+                    "md": "768px"
+                }
+            }
+        })))
+        .expect("config"),
+    )
+}
+
 pub fn project_with_jsx_recipes() -> Project {
     Project::new(
         System::new(create_config(json!({
@@ -635,6 +687,14 @@ pub fn transform_jsx_with_helper(
 
 pub fn transform_jsx(path: &str, source: &str) -> pandacss_project::TransformOutput {
     transform_source(&project_with_jsx(), path, source, &jsx_only_options())
+}
+
+pub fn transform_jsx_solid(path: &str, source: &str) -> pandacss_project::TransformOutput {
+    transform_source(&project_with_jsx_solid(), path, source, &jsx_only_options())
+}
+
+pub fn transform_jsx_qwik(path: &str, source: &str) -> pandacss_project::TransformOutput {
+    transform_source(&project_with_jsx_qwik(), path, source, &jsx_only_options())
 }
 
 pub fn transform_template_literal(path: &str, source: &str) -> pandacss_project::TransformOutput {

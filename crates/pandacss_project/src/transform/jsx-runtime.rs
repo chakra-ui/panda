@@ -117,7 +117,9 @@ fn runtime_call_should_skip(
     }
 
     let tag_name = &jsx.name;
-    let jsx_config = &project.config().extractor_config().jsx;
+    let extractor_config = project.config().extractor_config();
+    let jsx_config = &extractor_config.jsx;
+    let class_attr = extractor_config.class_attribute;
     let data_keys = style_prop_keys(&jsx.data);
 
     for prop in &props.properties {
@@ -128,7 +130,7 @@ fn runtime_call_should_skip(
             continue;
         }
         if let Some(expr) = prop.expression_source() {
-            if key == "className" && dynamic_class_name_expression_should_skip(&expr) {
+            if key == class_attr && dynamic_class_name_expression_should_skip(&expr) {
                 return true;
             }
             if jsx_config.should_extract_prop(tag_name, key)
@@ -157,7 +159,9 @@ fn format_props_object(
     parsed: &ParsedObjectLiteral,
     class_name: &helper::ClassNamePrint,
 ) -> String {
-    let jsx_config = &project.config().extractor_config().jsx;
+    let extractor_config = project.config().extractor_config();
+    let jsx_config = &extractor_config.jsx;
+    let class_attr = extractor_config.class_attribute;
     let tag_name = &jsx.name;
     let mut parts = Vec::new();
 
@@ -165,7 +169,7 @@ fn format_props_object(
         let Some(key) = prop.key.as_deref() else {
             continue;
         };
-        if key == "as" || key == "className" {
+        if key == "as" || key == class_attr {
             continue;
         }
         if jsx_config.should_extract_prop(tag_name, key) {
@@ -174,6 +178,6 @@ fn format_props_object(
         parts.push(prop.raw.clone());
     }
 
-    parts.push(format_object_class_name(class_name));
+    parts.push(format_object_class_name(class_attr, class_name));
     format!("{{ {} }}", parts.join(", "))
 }

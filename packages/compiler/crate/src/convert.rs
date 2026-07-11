@@ -164,6 +164,7 @@ pub(crate) fn to_core_matcher(m: Matcher) -> pandacss_extractor::Matcher {
 /// JS-wire compat) → core `ExtractorConfig`.
 pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig {
     let has_jsx_framework = m.jsx_framework.is_some();
+    let class_attribute = class_attribute_for_jsx_framework(m.jsx_framework.as_deref());
     let syntax = syntax_from_string(m.syntax.as_deref());
     let token_dictionary = m
         .token_dictionary
@@ -174,12 +175,22 @@ pub(crate) fn to_core_config(m: Matchers) -> pandacss_extractor::ExtractorConfig
         matchers: to_core_matchers(m),
         jsx: pandacss_extractor::JsxExtractionConfig::default(),
         has_jsx_framework,
+        class_attribute,
         syntax,
         token_dictionary,
         // Cross-file resolution isn't on the flat `Matchers` shape — the
         // session class wires it up explicitly. Free-function callers
         // extract single files anyway, so a per-call cache wouldn't help.
         cross_file: None,
+    }
+}
+
+/// Mirrors `pandacss_project::config::class_attribute_for_framework` for the
+/// flat NAPI `Matchers` shape, whose `jsx_framework` is a wire string.
+fn class_attribute_for_jsx_framework(value: Option<&str>) -> &'static str {
+    match value {
+        Some("solid" | "vue" | "qwik") => "class",
+        _ => "className",
     }
 }
 

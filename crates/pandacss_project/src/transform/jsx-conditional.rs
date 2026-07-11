@@ -305,6 +305,9 @@ pub(super) fn dynamic_class_name_expression_should_skip(expression: &str) -> boo
     if expression.contains('`') && expression.contains("${") {
         return true;
     }
+    if super::helper::is_array_or_object_class_literal(expression) {
+        return false;
+    }
     if dynamic_style_expression_should_skip(expression) {
         return true;
     }
@@ -410,6 +413,27 @@ mod tests {
     fn skips_clsx_class_name_expression() {
         assert!(super::dynamic_class_name_expression_should_skip(
             "clsx('a', cond && 'b')"
+        ));
+    }
+
+    #[test]
+    fn allows_qwik_array_class_expression() {
+        assert!(!super::dynamic_class_name_expression_should_skip(
+            "[styles.container, 'p-8', props.isHighAttention ? 'text-green-500' : 'text-slate-500', { active: true }]"
+        ));
+    }
+
+    #[test]
+    fn allows_qwik_record_class_expression() {
+        assert!(!super::dynamic_class_name_expression_should_skip(
+            "{ 'text-green-500': props.isHighAttention, 'p-4': true }"
+        ));
+    }
+
+    #[test]
+    fn allows_plain_identifier_class_expression() {
+        assert!(!super::dynamic_class_name_expression_should_skip(
+            "styles.container"
         ));
     }
 }
