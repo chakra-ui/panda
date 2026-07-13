@@ -1,7 +1,5 @@
-//! The artifact graph: which `styled-system/*` modules exist ([`ArtifactId`]),
-//! what config each depends on ([`ConfigDependency`]), and how to emit them to
-//! files. Declaring per-artifact config dependencies lets a config diff
-//! regenerate only the affected artifacts instead of the whole system.
+//! The artifact graph: which `styled-system/*` files exist, what config each
+//! depends on, so a config diff regenerates only the affected artifacts.
 
 use pandacss_config::{CodegenFormat, UserConfig};
 use std::str::FromStr;

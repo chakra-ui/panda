@@ -12,21 +12,13 @@ pub struct HookFilter {
 impl HookFilter {
     #[must_use]
     pub fn admits(&self, path: &str, source: &str) -> bool {
-        if !self.id_exclude.is_empty() && self.id_exclude.iter().any(|pat| pat.matches(path)) {
-            return false;
-        }
-        if !self.id_include.is_empty() && !self.id_include.iter().any(|pat| pat.matches(path)) {
-            return false;
-        }
-        if !self.code_exclude.is_empty() && self.code_exclude.iter().any(|pat| pat.matches(source))
-        {
-            return false;
-        }
-        if !self.code_include.is_empty() && !self.code_include.iter().any(|pat| pat.matches(source))
-        {
-            return false;
-        }
-        true
+        passes(&self.id_exclude, &self.id_include, path, IdPattern::matches)
+            && passes(
+                &self.code_exclude,
+                &self.code_include,
+                source,
+                CodePattern::matches,
+            )
     }
 
     /// # Errors
@@ -59,6 +51,23 @@ impl HookFilter {
         }
         Ok(filter)
     }
+}
+
+/// Exclude/include gate shared by id- and code-based filtering: reject any
+/// exclude match, then (if include patterns exist) require one.
+fn passes<T>(
+    exclude: &[T],
+    include: &[T],
+    input: &str,
+    matches: impl Fn(&T, &str) -> bool,
+) -> bool {
+    if !exclude.is_empty() && exclude.iter().any(|pat| matches(pat, input)) {
+        return false;
+    }
+    if !include.is_empty() && !include.iter().any(|pat| matches(pat, input)) {
+        return false;
+    }
+    true
 }
 
 #[derive(Debug, Clone)]
@@ -114,11 +123,20 @@ fn parse_id_patterns(
     Ok((parse_id_pattern_list(value)?, Vec::new()))
 }
 
-fn parse_id_pattern_list(value: &serde_json::Value) -> std::result::Result<Vec<IdPattern>, String> {
+/// A filter pattern field accepts either one pattern or an array of them.
+/// Shared by [`parse_id_pattern_list`] and [`parse_code_patterns`].
+fn parse_pattern_list<T>(
+    value: &serde_json::Value,
+    parse_one: impl Fn(&serde_json::Value) -> std::result::Result<T, String>,
+) -> std::result::Result<Vec<T>, String> {
     match value {
-        serde_json::Value::Array(items) => items.iter().map(parse_id_pattern).collect(),
-        _ => Ok(vec![parse_id_pattern(value)?]),
+        serde_json::Value::Array(items) => items.iter().map(parse_one).collect(),
+        _ => Ok(vec![parse_one(value)?]),
     }
+}
+
+fn parse_id_pattern_list(value: &serde_json::Value) -> std::result::Result<Vec<IdPattern>, String> {
+    parse_pattern_list(value, parse_id_pattern)
 }
 
 fn parse_id_pattern(value: &serde_json::Value) -> std::result::Result<IdPattern, String> {
@@ -130,10 +148,7 @@ fn parse_id_pattern(value: &serde_json::Value) -> std::result::Result<IdPattern,
 }
 
 fn parse_code_patterns(value: &serde_json::Value) -> std::result::Result<Vec<CodePattern>, String> {
-    match value {
-        serde_json::Value::Array(items) => items.iter().map(parse_code_pattern).collect(),
-        _ => Ok(vec![parse_code_pattern(value)?]),
-    }
+    parse_pattern_list(value, parse_code_pattern)
 }
 
 fn parse_code_pattern(value: &serde_json::Value) -> std::result::Result<CodePattern, String> {

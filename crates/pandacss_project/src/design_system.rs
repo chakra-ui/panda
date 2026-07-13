@@ -71,9 +71,9 @@ pub struct ManifestInput {
 }
 
 impl super::Project {
-    /// Build a [`DesignSystemManifest`] from host-supplied fields, stamping
-    /// [`MANIFEST_SCHEMA_VERSION`]. A `Project` method so a later phase can fill
-    /// `importMap`/parent `designSystem` from config. Pure (no fs).
+    /// Builds a [`DesignSystemManifest`] from host-supplied fields, stamping
+    /// [`MANIFEST_SCHEMA_VERSION`]. Pure (no fs); stays a `Project` method so a
+    /// later phase can fill `importMap`/parent `designSystem` from config.
     #[must_use]
     #[allow(
         clippy::unused_self,

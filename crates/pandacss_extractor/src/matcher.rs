@@ -25,6 +25,15 @@ pub enum MatchCategory {
     Tokens,
 }
 
+impl MatchCategory {
+    /// Categories whose factory exposes a `.raw()` escape hatch (`css.raw`,
+    /// `cva.raw`, pattern `.raw`). Tokens and JSX tags don't have one.
+    #[must_use]
+    pub(crate) fn supports_raw(self) -> bool {
+        matches!(self, Self::Css | Self::Recipe | Self::Pattern)
+    }
+}
+
 /// Fine-grained classification of a matched JSX usage, carried on
 /// [`crate::ExtractedJsx`] so consumers don't re-derive it from config.
 /// `Factory` is detected via [`Matchers::jsx_factories`]; `Pattern`/`Recipe`
@@ -122,12 +131,48 @@ pub enum CssSyntaxKind {
 impl Matcher {
     #[must_use]
     fn accepts_module(&self, module: &str) -> bool {
-        // Substring match by design: Panda's JS ImportMap does the same
-        // so `panda/css` matches both `@my-org/panda/css` and
-        // `styled-system/css`.
+        // Substring match by design, like Panda's JS ImportMap: `panda/css`
+        // matches both `@my-org/panda/css` and `styled-system/css`.
         self.modules
             .iter()
             .any(|candidate| module.contains(candidate.as_str()))
+    }
+}
+
+impl Matchers {
+    /// True if `module` is a Panda import for any category. The single source of
+    /// truth for import matching — shared by extraction and the transform's
+    /// dead-import cleanup so the two can't drift (e.g. relative
+    /// `../styled-system/css` must match everywhere the bare form does).
+    #[must_use]
+    pub fn accepts_module(&self, module: &str) -> bool {
+        active_categories(self)
+            .iter()
+            .any(|(_, matcher)| matcher.accepts_module(module))
+    }
+
+    /// True if any category declares modules to match against.
+    #[must_use]
+    pub fn has_module_matchers(&self) -> bool {
+        active_categories(self)
+            .iter()
+            .any(|(_, matcher)| !matcher.modules.is_empty())
+    }
+
+    /// True if `record` imports from a Panda module — by raw specifier, or (for
+    /// tsconfig `paths` aliases) by the resolved path when a binding is
+    /// Panda-named. `resolve` runs only on the alias path.
+    #[must_use]
+    pub fn record_is_panda_import(
+        &self,
+        record: &ImportRecord,
+        resolve: impl FnOnce(&str) -> Option<String>,
+    ) -> bool {
+        if self.accepts_module(&record.module) {
+            return true;
+        }
+        has_panda_named_specifier(record, &active_categories(self))
+            && resolve(&record.module).is_some_and(|path| self.accepts_module(&path))
     }
 }
 
@@ -135,11 +180,13 @@ impl Matcher {
 /// the extractor needs (resolved token dictionary, cross-file resolver).
 /// Separate from [`Matchers`] so the import-matching config stays small
 /// and reusable.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ExtractorConfig {
     pub matchers: Matchers,
     pub jsx: JsxExtractionConfig,
     pub has_jsx_framework: bool,
+    /// `"className"` for React/Preact, `"class"` for Solid/Vue/Qwik.
+    pub class_attribute: &'static str,
     pub syntax: CssSyntaxKind,
     /// When `Some`, `token('x.y')` calls fold to the looked-up value.
     pub token_dictionary: Option<Arc<TokenDictionary>>,
@@ -150,6 +197,12 @@ pub struct ExtractorConfig {
     pub cross_file: Option<crate::CrossFileResolver>,
 }
 
+impl Default for ExtractorConfig {
+    fn default() -> Self {
+        Self::new(Matchers::default())
+    }
+}
+
 impl ExtractorConfig {
     #[must_use]
     pub fn new(matchers: Matchers) -> Self {
@@ -157,6 +210,7 @@ impl ExtractorConfig {
             matchers,
             jsx: JsxExtractionConfig::default(),
             has_jsx_framework: false,
+            class_attribute: "className",
             syntax: CssSyntaxKind::default(),
             token_dictionary: None,
             cross_file: None,
@@ -166,6 +220,12 @@ impl ExtractorConfig {
     #[must_use]
     pub fn with_jsx_framework(mut self, enabled: bool) -> Self {
         self.has_jsx_framework = enabled;
+        self
+    }
+
+    #[must_use]
+    pub fn with_class_attribute(mut self, class_attribute: &'static str) -> Self {
+        self.class_attribute = class_attribute;
         self
     }
 
@@ -373,6 +433,32 @@ impl Matchers {
         };
         matcher.names.accepts(name)
     }
+
+    /// True when `name` (a local alias or canonical import name) is a
+    /// configured JSX factory that accepts member-chain tags like `<styled.div>`.
+    #[must_use]
+    pub(crate) fn is_jsx_factory(&self, name: &str) -> bool {
+        self.jsx_factories
+            .as_ref()
+            .is_some_and(|factories| factories.iter().any(|factory| factory == name))
+    }
+}
+
+/// Render a flattened member-access path back to dotted form:
+/// `member_display("styled", &["div"])` → `"styled.div"`.
+pub(crate) fn member_display(root: &str, path: &[&str]) -> String {
+    let mut out = String::with_capacity(
+        root.len()
+            + 1
+            + path.iter().map(|part| part.len()).sum::<usize>()
+            + path.len().saturating_sub(1),
+    );
+    out.push_str(root);
+    for part in path {
+        out.push('.');
+        out.push_str(part);
+    }
+    out
 }
 
 /// Per-file context shared between the call and JSX visitors.
@@ -419,17 +505,25 @@ pub fn match_imports(scan: &ImportScanResult, matchers: &Matchers) -> Vec<Matche
 /// Type-only imports (declaration or specifier level) are skipped.
 #[must_use]
 pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Vec<MatchedImport> {
+    match_import_records_resolved(records, matchers, |_| None)
+}
+
+/// Like [`match_import_records`], but when a specifier's raw text misses, `resolve`
+/// is consulted to follow tsconfig `paths` aliases. It fires only for imports
+/// carrying a Panda-named binding, so ordinary imports never touch the filesystem.
+#[must_use]
+pub fn match_import_records_resolved(
+    records: &[ImportRecord],
+    matchers: &Matchers,
+    mut resolve: impl FnMut(&str) -> Option<String>,
+) -> Vec<MatchedImport> {
     let categories = active_categories(matchers);
     let mut out = Vec::new();
     for record in records {
         if record.type_only {
             continue;
         }
-        let source_categories: SmallVec<[(MatchCategory, &Matcher); 5]> = categories
-            .iter()
-            .copied()
-            .filter(|(_, matcher)| matcher.accepts_module(&record.module))
-            .collect();
+        let source_categories = source_categories_for_record(record, &categories, &mut resolve);
         if source_categories.is_empty() {
             continue;
         }
@@ -453,6 +547,33 @@ pub fn match_import_records(records: &[ImportRecord], matchers: &Matchers) -> Ve
     out
 }
 
+/// Categories whose import modules match `record` — by raw text, falling back to
+/// resolving tsconfig `paths` aliases when a Panda-named binding is present.
+fn source_categories_for_record<'a>(
+    record: &ImportRecord,
+    categories: &[(MatchCategory, &'a Matcher)],
+    resolve: &mut impl FnMut(&str) -> Option<String>,
+) -> SmallVec<[(MatchCategory, &'a Matcher); 5]> {
+    let by_text: SmallVec<[(MatchCategory, &Matcher); 5]> = categories
+        .iter()
+        .copied()
+        .filter(|(_, matcher)| matcher.accepts_module(&record.module))
+        .collect();
+    if !by_text.is_empty() {
+        return by_text;
+    }
+    if has_panda_named_specifier(record, categories)
+        && let Some(resolved) = resolve(&record.module)
+    {
+        return categories
+            .iter()
+            .copied()
+            .filter(|(_, matcher)| matcher.accepts_module(&resolved))
+            .collect();
+    }
+    SmallVec::new()
+}
+
 fn matching_category_for_specifier(
     specifier: &ImportSpecifier,
     source_categories: &[(MatchCategory, &Matcher)],
@@ -461,6 +582,20 @@ fn matching_category_for_specifier(
         (specifier.kind == ImportSpecifierKind::Namespace
             || matcher.names.accepts(&specifier.imported))
         .then_some(*category)
+    })
+}
+
+fn has_panda_named_specifier(
+    record: &ImportRecord,
+    categories: &[(MatchCategory, &Matcher)],
+) -> bool {
+    record.specifiers.iter().any(|specifier| {
+        !specifier.type_only
+            && specifier.kind != ImportSpecifierKind::Default
+            && (specifier.kind == ImportSpecifierKind::Namespace
+                || categories
+                    .iter()
+                    .any(|(_, matcher)| matcher.names.accepts(&specifier.imported)))
     })
 }
 

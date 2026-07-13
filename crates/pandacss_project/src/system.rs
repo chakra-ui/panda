@@ -1,19 +1,15 @@
-use std::hash::Hasher;
 use std::sync::Arc;
 
 use pandacss_config::{UserConfig, ValidationMode, validate_config};
 use pandacss_shared::Diagnostic;
 use pandacss_tokens::TokenDictionary;
-use rustc_hash::FxHasher;
 
 use crate::Result;
 use crate::runtime_config::Config;
 
-/// Immutable runtime model derived from a Panda config.
-///
-/// `System` is intentionally separate from [`crate::Project`]: config
-/// compilation happens once here, while a project owns watch-mode file
-/// state and extraction caches.
+/// Immutable runtime model derived from a Panda config. Separate from
+/// [`crate::Project`]: config compiles once here, while a project owns
+/// watch-mode file state and extraction caches.
 pub struct System {
     config: Arc<Config>,
     config_fingerprint: Arc<str>,
@@ -67,10 +63,8 @@ impl System {
         &self.config
     }
 
-    /// Stable fingerprint of the resolved config's output-affecting fields — the
-    /// collision guard stamped into build info. Machine-local IO / codegen
-    /// fields are excluded so the same library fingerprints identically across
-    /// checkouts. See [`config_fingerprint`].
+    /// Fingerprint of the config's output-affecting fields, stamped into
+    /// build info as a collision guard. See [`config_fingerprint`].
     #[must_use]
     pub fn config_fingerprint(&self) -> &str {
         &self.config_fingerprint
@@ -92,10 +86,9 @@ impl System {
     }
 }
 
-/// Config keys that don't affect the encoded atoms/recipes a library ships nor
-/// how a consumer re-emits them — machine-local IO, extraction wiring, and
-/// codegen options. Excluded from the fingerprint so two libraries that only
-/// differ here (e.g. a changed `include` glob) still compare as compatible.
+/// Keys that don't affect a library's shipped atoms/recipes — machine-local
+/// IO, extraction wiring, codegen options. Excluded so a changed `include`
+/// glob doesn't make two otherwise-identical libraries look incompatible.
 const FINGERPRINT_IGNORED_KEYS: &[&str] = &[
     "cwd",
     "outdir",
@@ -114,9 +107,8 @@ const FINGERPRINT_IGNORED_KEYS: &[&str] = &[
 ];
 
 /// Deterministic fingerprint of a resolved [`UserConfig`]'s output-affecting
-/// fields. The engine owns this (it knows which config drives encoding), so the
-/// `panda lib` producer never re-derives it. Stable across machines: IO/codegen
-/// fields are dropped and object keys are canonically ordered before hashing.
+/// fields. Stable across machines: IO/codegen fields are dropped and object
+/// keys are canonically ordered before hashing.
 #[must_use]
 pub fn config_fingerprint(config: &UserConfig) -> Arc<str> {
     let mut value = serde_json::to_value(config).unwrap_or(serde_json::Value::Null);
@@ -129,9 +121,8 @@ pub fn config_fingerprint(config: &UserConfig) -> Arc<str> {
     let mut canonical = String::new();
     write_canonical(&mut canonical, &value);
 
-    let mut hasher = FxHasher::default();
-    hasher.write(canonical.as_bytes());
-    Arc::from(format!("cfg1-{:016x}", hasher.finish()).as_str())
+    let hash = pandacss_shared::fx_hash(&canonical);
+    Arc::from(format!("cfg1-{hash:016x}").as_str())
 }
 
 /// Serialize a JSON value with object keys in sorted order, so the fingerprint

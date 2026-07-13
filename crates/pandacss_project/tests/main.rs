@@ -14,6 +14,7 @@ mod patterns;
 mod scan;
 mod static_patterns;
 mod svelte;
+mod transform;
 mod transform_cache;
 mod usages;
 mod utility_value;

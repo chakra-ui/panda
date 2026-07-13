@@ -77,6 +77,7 @@ fn index_files(
 ) -> Vec<ArtifactFile> {
     let runtime = runtime_code();
     let types = types_code(themes);
+
     match options.format {
         CodegenFormat::Ts => vec![ArtifactFile {
             path: "themes/index.ts".to_owned(),

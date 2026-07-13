@@ -168,8 +168,8 @@ pub struct TokenValueRef {
     pub semantic_category: bool,
 }
 
-/// Enclosing style owner (call or JSX element). `(owner, parent path)` groups
-/// sibling entries from one style block; `span`/`range` are per-property.
+/// Enclosing style owner (call or JSX element); `(owner, parent path)` groups
+/// sibling entries from one style block.
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StyleEntryOwner {

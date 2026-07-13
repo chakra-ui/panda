@@ -1,8 +1,7 @@
-//! `panda.buildinfo.json` — the serialized encoder state a design-system library
-//! ships so a consuming app hydrates its pre-extracted styles without
-//! re-extracting (Linear OSS-2355). Condensed via a string intern table +
-//! positional atom encoding; per-module atom indices drive tree-shaking (the
-//! consumer hydrates only the modules it imports). See
+//! `panda.buildinfo.json` — serialized encoder state a design-system library
+//! ships so a consuming app hydrates pre-extracted styles instead of
+//! re-extracting. Condensed via a string intern table and positional atom
+//! encoding; per-module atom indices drive tree-shaking. See
 //! `design-notes/build-info.md`.
 
 use std::collections::BTreeMap;
@@ -41,16 +40,15 @@ pub struct BuildInfo {
     /// Per published module (source-file key) → indices into `atoms` /
     /// `recipes`. Lets the consumer hydrate only imported modules.
     pub modules: BTreeMap<String, ModuleEntry>,
-    /// Exported component name → module key, for modules that contribute styles
-    /// (atoms or recipes). Lets a consumer resolve a barrel import
-    /// (`import { Button } from '@acme/ds'`) to the module it must hydrate.
-    /// Omitted when empty.
+    /// Exported component name -> module key, so a consumer can resolve a
+    /// barrel import (`import { Button } from '@acme/ds'`) to the module it
+    /// must hydrate. Omitted when empty.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub exports: BTreeMap<String, String>,
 }
 
 /// Recipe + slot-recipe groups, mirroring `EncodedRecipesSnapshot` but interned.
-/// Base groups index `[0, base.len())`, variant groups continue from there — the
+/// Base groups index `[0, base.len())`, variants continue from there — that
 /// combined index is what `ModuleEntry.recipes` references.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct BuildRecipes {
@@ -318,6 +316,23 @@ fn recipes_from_build(
     }
 }
 
+/// Indices selected by `only_modules`, reading `field` (`.atoms` or `.recipes`)
+/// off each named module's [`ModuleEntry`]. `None` means "no restriction" —
+/// distinct from an empty set, which would select nothing.
+fn selected_module_indices(
+    info: &BuildInfo,
+    only_modules: Option<&[String]>,
+    field: impl Fn(&ModuleEntry) -> &[u32],
+) -> Option<FxHashSet<u32>> {
+    only_modules.map(|modules| {
+        modules
+            .iter()
+            .filter_map(|module| info.modules.get(module))
+            .flat_map(|entry| field(entry).iter().copied())
+            .collect()
+    })
+}
+
 /// Reconstruct an [`Atom`] from its build encoding against the intern table.
 #[must_use]
 fn atom_from_build(build: &BuildAtom, strings: &[String]) -> Option<Atom> {
@@ -330,10 +345,10 @@ fn atom_from_build(build: &BuildAtom, strings: &[String]) -> Option<Atom> {
 }
 
 impl super::Project {
-    /// Serialize the project's encoded atoms into a [`BuildInfo`], with per-module
-    /// provenance for tree-shaking. Producer-side only (`panda buildinfo`) — not on
-    /// the compile hot path. `config_fingerprint` is the engine-owned fingerprint
-    /// of the resolved config (the caller only supplies the published `panda` range).
+    /// Serializes the project's encoded atoms into a [`BuildInfo`], with
+    /// per-module provenance for tree-shaking. Producer-side only
+    /// (`panda buildinfo`), not on the compile hot path. The caller supplies
+    /// only the published `panda` range; `config_fingerprint` is derived here.
     #[must_use]
     #[allow(
         clippy::cast_possible_truncation,
@@ -341,7 +356,8 @@ impl super::Project {
     )]
     pub fn build_info(&self, panda: String) -> BuildInfo {
         let config_fingerprint = self.config_fingerprint.to_string();
-        // Deduped, emit-ordered atoms — the index space the modules reference.
+
+        // Deduped, emit-ordered — modules reference this index space.
         let mut atoms: Vec<&Atom> = self.atoms_cache.iter().collect();
         atoms.sort_by(|a, b| super::compare_atoms_by_emit_order(a, b));
         let position: FxHashMap<&Atom, u32> = atoms
@@ -353,9 +369,8 @@ impl super::Project {
         let mut interner = Interner::default();
         let build_atoms = atoms.iter().map(|atom| interner.build_atom(atom)).collect();
 
-        // Recipes: serialize the aggregated snapshot, and map each group's class
-        // name to its combined (base ++ variants ++ compounds) index for per-module
-        // provenance.
+        // Map each group's class name to its combined (base+variants+compounds)
+        // index for per-module provenance.
         let recipe_snapshot = self.encoded_recipes_cache.view().snapshot();
         let recipes = interner.build_recipes(&recipe_snapshot);
         let recipe_index: FxHashMap<&str, u32> = recipe_snapshot
@@ -400,7 +415,7 @@ impl super::Project {
                 },
             );
         }
-        // Fold per-file export facts into a flat name → styled-module map (barrel resolution).
+        // Barrel resolution: flatten per-file export facts to name -> styled module.
         let exports = ExportResolver::new(&self.files, styled_modules).resolve_all();
 
         BuildInfo {
@@ -415,15 +430,15 @@ impl super::Project {
         }
     }
 
-    /// Hydrate a library's pre-extracted atoms into this project (additive),
-    /// optionally restricted to the named modules so only imported components'
-    /// CSS emits (tree-shaking). Atoms hydrate under a synthetic `buildinfo:{name}`
-    /// file key, so re-hydration replaces cleanly.
+    /// Hydrates a library's pre-extracted atoms into this project (additive),
+    /// optionally restricted to `only_modules` so only imported components'
+    /// CSS emits. Atoms hydrate under a synthetic `buildinfo:{name}` file key,
+    /// so re-hydration replaces cleanly.
     ///
-    /// Returns `false` (no-op) when the artifact's [`SCHEMA_VERSION`] is
-    /// incompatible — the caller then falls back to re-extracting the library's
-    /// source. The semver peer-range + `config_fingerprint` gate lives in the JS layer
-    /// (it knows the consumer's Panda version); this only guards the wire format.
+    /// Returns `false` (no-op) when [`SCHEMA_VERSION`] doesn't match — the
+    /// caller falls back to re-extracting the library's source. This only
+    /// guards the wire format; the semver peer-range and `config_fingerprint`
+    /// check happens in the JS layer, which knows the consumer's Panda version.
     pub fn hydrate(
         &mut self,
         name: &str,
@@ -434,20 +449,8 @@ impl super::Project {
             return false;
         }
 
-        let selected_atoms: Option<FxHashSet<u32>> = only_modules.map(|modules| {
-            modules
-                .iter()
-                .filter_map(|module| info.modules.get(module))
-                .flat_map(|entry| entry.atoms.iter().copied())
-                .collect()
-        });
-        let selected_recipes: Option<FxHashSet<u32>> = only_modules.map(|modules| {
-            modules
-                .iter()
-                .filter_map(|module| info.modules.get(module))
-                .flat_map(|entry| entry.recipes.iter().copied())
-                .collect()
-        });
+        let selected_atoms = selected_module_indices(info, only_modules, |entry| &entry.atoms);
+        let selected_recipes = selected_module_indices(info, only_modules, |entry| &entry.recipes);
 
         let atoms: FxHashSet<Atom> = info
             .atoms
@@ -461,8 +464,7 @@ impl super::Project {
             .filter_map(|(_, build)| atom_from_build(build, &info.strings))
             .collect();
 
-        // Recipes hydrate by storing their reconstructed snapshot under the lib's
-        // name; `stylesheet_snapshots` merges it into what the emitter sees.
+        // Stored under the lib's name; `stylesheet_snapshots` merges it in.
         let recipes = recipes_from_build(&info.recipes, &info.strings, selected_recipes.as_ref());
         self.set_hydrated_recipes(name, recipes);
 
@@ -489,8 +491,8 @@ impl super::Project {
     }
 }
 
-/// Resolve export surfaces across already-parsed project files. Only modules that
-/// contribute styles (`styled_modules`) map to themselves; everything else is reached
+/// Resolves export surfaces across already-parsed project files. Modules that
+/// contribute styles (`styled_modules`) map to themselves; the rest resolve
 /// via re-export edges collected at extraction time.
 struct ExportResolver {
     files: BTreeMap<String, ExportInfo>,

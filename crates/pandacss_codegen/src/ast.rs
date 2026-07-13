@@ -1,14 +1,12 @@
-//! A minimal TypeScript AST — just the node kinds the artifact builders emit, built
-//! fluently and printed by [`crate::emit`]. Each [`Item`] is tagged with an
-//! [`ItemRole`] (runtime vs type-only) so the split-output path can drop the
-//! type items from the `.js` and keep them in the `.d.ts`.
+//! A minimal TypeScript AST covering only what the artifact builders emit.
+//! Each [`Item`] carries an [`ItemRole`] (runtime vs type-only) so split
+//! output can drop type items from `.js` and keep them in `.d.ts`.
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Module {
     pub imports: Vec<ImportDecl>,
     pub items: Vec<Item>,
-    /// Emitted as the first line of runtime/source output (e.g. `"use client"`
-    /// for RSC client boundaries). Never emitted in `.d.ts` files.
+    /// First line of runtime output (e.g. `"use client"`). Never emitted in `.d.ts`.
     pub directive: Option<String>,
 }
 

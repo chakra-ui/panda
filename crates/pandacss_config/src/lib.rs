@@ -61,11 +61,9 @@ pub enum CssSyntaxKind {
     ObjectLiteral,
 }
 
-/// JSON-safe resolved config snapshot produced on the JavaScript side.
-///
-/// JavaScript remains responsible for executing `panda.config.*`,
-/// resolving presets, and running config-phase plugins. Rust consumes this
-/// serializable shape after runtime-only hooks/plugins have been removed.
+/// JSON-safe resolved config snapshot from the JS side. JS still executes
+/// `panda.config.*`, resolves presets, and runs config-phase plugins; Rust
+/// gets this shape after runtime-only hooks/plugins are stripped.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(
@@ -209,8 +207,7 @@ impl UserConfig {
         }
     }
 
-    /// `exclude` globs for source scanning, with the configured [`Self::outdir`]
-    /// appended so generated artifacts are not parsed as app source.
+    /// `exclude` globs plus [`Self::outdir`], so generated artifacts aren't parsed as app source.
     #[must_use]
     pub fn scan_exclude(&self) -> Vec<String> {
         let mut exclude = self.exclude.clone();
@@ -322,8 +319,8 @@ fn capitalize_for_theme_condition(value: &str) -> String {
     out
 }
 
-/// Stylesheet optimization switches. All optimizations are opt-in because
-/// Panda normally emits the complete token/keyframe surface for external CSS.
+/// Stylesheet optimization switches, opt-in since Panda normally emits the
+/// complete token/keyframe surface for external CSS.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptimizeConfig {
@@ -331,18 +328,16 @@ pub struct OptimizeConfig {
     pub remove_unused_tokens: bool,
     #[serde(default)]
     pub remove_unused_keyframes: bool,
-    /// When false (default), emit all config-recipe compound variant groups on
-    /// first recipe usage. When true, only emit compound groups whose variant
-    /// keys match statically-selected props (smaller CSS; pair with
-    /// `staticCss.recipes`).
+    /// Default `false` emits every compound variant group on first recipe
+    /// usage. `true` emits only groups matching statically-selected props
+    /// (smaller CSS; pair with `staticCss.recipes`).
     #[serde(default)]
     pub smart_compound_variants: bool,
 }
 
-/// User-facing names for the five cascade layers. Matches v1's
-/// `config.layers: Partial<CascadeLayers>` — any field a user omits keeps
-/// its default. The semantic identity (`StylesheetLayer::*`) is fixed; only
-/// the emitted name changes.
+/// User-facing names for the five cascade layers (matches v1's
+/// `config.layers: Partial<CascadeLayers>`). The semantic identity
+/// (`StylesheetLayer::*`) is fixed; only the emitted name changes.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CascadeLayers {
@@ -387,9 +382,8 @@ impl CascadeLayers {
         "utilities".to_owned()
     }
 
-    /// Single source of truth for the fixed emit order: each pair is
-    /// `(semantic_field_name, user_facing_name)`. Used both for emission
-    /// and collision detection so the order is never duplicated.
+    /// Fixed emit order as `(semantic_field_name, user_facing_name)` pairs —
+    /// single source of truth for both emission and collision detection.
     #[must_use]
     pub fn ordered(&self) -> [(&'static str, &str); 5] {
         [
@@ -438,8 +432,7 @@ impl CascadeLayers {
     }
 }
 
-/// Reset / preflight CSS configuration. Matches JS shape:
-/// `preflight: true | false | { scope?: string; level?: 'parent' | 'element' }`.
+/// Reset/preflight config; matches JS `true | false | { scope?, level? }`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum PreflightConfig {
@@ -498,8 +491,7 @@ pub enum ValidationMode {
 }
 
 /// Output format for generated artifacts. `Ts` emits source `.ts` directly;
-/// `Js`/`Mjs` split each module into a runtime file (`CommonJS` / ESM) plus a
-/// `.d.ts`. Drives the consumer codegen emit mode + file extensions.
+/// `Js`/`Mjs` split into a runtime file (`CommonJS`/ESM) plus a `.d.ts`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CodegenFormat {
@@ -714,9 +706,8 @@ pub struct PatternConfig {
     pub default_values: Option<Value>,
     #[serde(default)]
     pub transform: Option<CallbackRef>,
-    /// Pre-stringified `{ transform, defaultValues }` source for codegen, prepared
-    /// by the JS config loader (Rust never stringifies a JS function). Embedded
-    /// verbatim into the generated pattern module.
+    /// Pre-stringified `{ transform, defaultValues }` from the JS config loader
+    /// (Rust never stringifies a JS function), embedded verbatim into codegen.
     #[serde(default, rename = "codegenSource")]
     pub codegen_source: Option<String>,
     #[serde(default)]

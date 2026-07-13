@@ -21,9 +21,9 @@ pub(crate) fn css_template_to_object(
     Some(css_to_object(&text))
 }
 
-/// Scan cleaned CSS token-by-token, maintaining a stack of open selector
-/// nodes: a selector opens a child node (auto-prefixed `& ` when bare), `}`
-/// pops, and each `prop: value` declaration writes into the current node.
+/// Scan cleaned CSS token-by-token with a stack of open selector nodes: a
+/// selector opens a child (auto-prefixed `& ` when bare), `}` pops, and each
+/// `prop: value` declaration writes into the current node.
 fn css_to_object(val: &str) -> Literal {
     let cleaned = clean_css(val);
     let css = cleaned.as_ref();
@@ -168,6 +168,14 @@ fn next_css_token(css: &str, start: usize) -> Option<CssToken<'_>> {
     while pos < bytes.len() {
         match bytes[pos] {
             b'}' => {
+                // A block's last declaration may omit its trailing `;`
+                // (`{ color: blue }`). Emit it first; `}` closes on the next call.
+                if !css[start..pos].trim().is_empty() {
+                    return Some(CssToken {
+                        kind: CssTokenKind::Declaration(&css[start..pos]),
+                        end: pos,
+                    });
+                }
                 pos += 1;
                 while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
                     pos += 1;
@@ -193,7 +201,11 @@ fn next_css_token(css: &str, start: usize) -> Option<CssToken<'_>> {
         }
     }
 
-    None
+    // A trailing declaration with no terminator (`color: red` at end of input).
+    (!css[start..].trim().is_empty()).then(|| CssToken {
+        kind: CssTokenKind::Declaration(&css[start..]),
+        end: css.len(),
+    })
 }
 
 fn parse_declaration(declaration: &str) -> Option<(String, String)> {

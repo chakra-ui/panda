@@ -1,17 +1,11 @@
-//! Same-file static evaluator for identifier and member-access resolution.
+//! Same-file static evaluator. Answers "is this identifier a Panda import (or
+//! a local shadowing one)?" and "does it resolve to a literal?", matching
+//! ts-evaluator: same-file const/let/var with a literal initializer, never
+//! mutated, never an import.
 //!
-//! Wraps `oxc_semantic` to answer two questions the call/JSX visitors need:
-//! "is this identifier a Panda import or a local that shadows one?", and
-//! "does this identifier resolve to a literal value?" (matches ts-evaluator
-//! semantics: same-file const/let/var with a literal initializer, never
-//! mutated, never an import).
-//!
-//! Not folded (matches ts-evaluator): mutated bindings, function params,
-//! function/class declarations, unresolved imports (cross-file is a
-//! separate slice), destructuring defaults, TDZ violations. Member access
-//! and array indexing are handled in `literal::expression_to_literal` once
-//! an identifier resolves to an Object/Array — the resolver itself only
-//! deals in whole-identifier resolution.
+//! Member access and array indexing happen in `literal::expression_to_literal`
+//! once an identifier resolves to an Object/Array — this module only resolves
+//! whole identifiers.
 
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -23,7 +17,7 @@ use oxc_ast::ast::{
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolFlags, SymbolId};
 use pandacss_tokens::{TokenCategory, TokenDictionary};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use crate::cross_file::{CrossFileLookup, CrossFileResolver};
@@ -35,11 +29,10 @@ pub(crate) type PatternRawTransformFn<'a> =
     dyn FnMut(&str, &Literal) -> Result<Option<Literal>, crate::Diagnostic> + 'a;
 pub(crate) type PatternRawTransformCell<'a> = RefCell<&'a mut PatternRawTransformFn<'a>>;
 
-/// Per-file symbol/scope index plus a memo of resolved literal values.
-///
-/// Also recognizes Panda `token()` / `token.var()` calls and resolves them
-/// through the supplied [`TokenDictionary`]; the alias table maps local
-/// names back to their `tokens`-category import.
+/// Per-file symbol/scope index plus a memo of resolved literal values. Also
+/// resolves Panda `token()` / `token.var()` calls through the supplied
+/// [`TokenDictionary`], using the alias table to map local names back to
+/// their `tokens`-category import.
 pub(crate) struct Resolver<'a, 'cb> {
     semantic: Semantic<'a>,
     // PERF(port): FxHashMap keys are u32 newtypes — SipHash overhead is waste.
@@ -52,6 +45,9 @@ pub(crate) struct Resolver<'a, 'cb> {
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
     token_refs: RefCell<Vec<TokenRef>>,
+    /// Resolved paths of cross-file modules read during this file's extraction,
+    /// surfaced as transform build dependencies for watch invalidation.
+    cross_file_deps: RefCell<FxHashSet<PathBuf>>,
     pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
 }
 
@@ -85,22 +81,21 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         line_index: Option<&'a crate::LineIndex<'a>>,
         pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
     ) -> Self {
-        let semantic = SemanticBuilder::new().build(program).semantic;
-        Self {
-            semantic,
-            cache: RefCell::default(),
-            aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
+        Self::build_from_lookup(
+            program,
+            matched,
             matchers,
             tokens,
-            cross_file: cross_file.map(CrossFileResolver::as_lookup),
+            cross_file.map(CrossFileResolver::as_lookup),
             source_path,
             line_index,
-            diagnostics: RefCell::default(),
-            token_refs: RefCell::default(),
             pattern_raw_transform,
-        }
+        )
     }
 
+    /// Like [`Self::build`], but for callers that already have a type-erased
+    /// `&dyn CrossFileLookup` — used when resolving an imported file's own
+    /// exports (see `cross_file.rs`).
     #[allow(
         clippy::too_many_arguments,
         reason = "cross-file resolver construction mirrors the extraction pipeline state"
@@ -111,6 +106,32 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         tokens: Option<&'a TokenDictionary>,
         cross_file: Option<&'a dyn CrossFileLookup>,
         matchers: Option<&'a Matchers>,
+        source_path: Option<PathBuf>,
+        line_index: Option<&'a crate::LineIndex<'a>>,
+        pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
+    ) -> Self {
+        Self::build_from_lookup(
+            program,
+            matched,
+            matchers,
+            tokens,
+            cross_file,
+            source_path,
+            line_index,
+            pattern_raw_transform,
+        )
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "shared constructor body for the two `build*` entrypoints above"
+    )]
+    fn build_from_lookup(
+        program: &'a oxc_ast::ast::Program<'a>,
+        matched: &'a [MatchedImport],
+        matchers: Option<&'a Matchers>,
+        tokens: Option<&'a TokenDictionary>,
+        cross_file: Option<&'a dyn CrossFileLookup>,
         source_path: Option<PathBuf>,
         line_index: Option<&'a crate::LineIndex<'a>>,
         pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
@@ -127,6 +148,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             line_index,
             diagnostics: RefCell::default(),
             token_refs: RefCell::default(),
+            cross_file_deps: RefCell::default(),
             pattern_raw_transform,
         }
     }
@@ -136,11 +158,19 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     }
 
     /// Token paths resolved from `token()` / `token.var()` calls, with spans.
-    /// Resolution lowers these calls to their value/var, so the path is only
-    /// recoverable here — consumed by on-demand tooling (`usages`), not the
-    /// build path.
+    /// Folding lowers a call to its value/var and erases the path, so this is
+    /// the only place to recover it — consumed by on-demand tooling
+    /// (`usages`), not the build path.
     pub(crate) fn take_token_refs(&self) -> Vec<TokenRef> {
         std::mem::take(&mut self.token_refs.borrow_mut())
+    }
+
+    /// Resolved cross-file module paths read during extraction.
+    pub(crate) fn take_cross_file_deps(&self) -> Vec<String> {
+        std::mem::take(&mut *self.cross_file_deps.borrow_mut())
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect()
     }
 
     pub(crate) fn tokens(&self) -> Option<&'a TokenDictionary> {
@@ -164,10 +194,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .symbol_id()
     }
 
-    /// `true` iff the identifier resolves to an `import` specifier.
-    /// Unresolved (free) names return `true` — they're usually globals or
-    /// implicit imports the binder couldn't see, and downstream alias
-    /// lookup by name is authoritative.
+    /// `true` iff the identifier resolves to an `import` specifier. Free
+    /// (unresolved) names also return `true` — they're usually globals or
+    /// implicit imports the binder can't see, and alias lookup by name
+    /// downstream is authoritative.
     pub(crate) fn is_import_binding(&self, ident: &IdentifierReference<'_>) -> bool {
         let Some(symbol_id) = self.symbol_for_identifier(ident) else {
             return true;
@@ -178,8 +208,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             .contains(SymbolFlags::Import)
     }
 
-    /// Resolve `token('path')` / `token.var('path')` to its dictionary
-    /// value. Mirrors the JS extractor's behavior in `maybe-box-node.ts`.
+    /// Resolve `token('path')` / `token.var('path')` to its dictionary value.
+    /// Mirrors the JS extractor's `maybe-box-node.ts`.
     pub(crate) fn resolve_token_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
         let dict = self.tokens?;
         let (path, is_var, fallback) = self.token_call_parts(call)?;
@@ -191,6 +221,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 span: crate::span_from_oxc(call.span),
                 needs_css_var: is_var,
                 is_var,
+                value: None,
             });
             return None;
         };
@@ -204,10 +235,11 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             span: crate::span_from_oxc(call.span),
             needs_css_var: resolution.needs_css_var,
             is_var,
+            value: Some(resolution.value.clone()),
         });
 
-        // Preserve token path + resolved value when the dictionary knows the path;
-        // fall back to a plain string for synthetic/alias-only resolutions.
+        // Known token path → keep it with the value; synthetic/alias-only
+        // resolutions fall back to a plain string.
         Some(if let Some(path) = resolution.token_path {
             Literal::Token {
                 path,
@@ -228,6 +260,13 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     pub(crate) fn token_call_path(&self, call: &CallExpression<'_>) -> Option<String> {
         let (path, _, _) = self.token_call_parts(call)?;
         Some(path)
+    }
+
+    /// Resolved value a `token()` call inlines to; `None` if unresolvable.
+    pub(crate) fn token_call_value(&self, call: &CallExpression<'_>) -> Option<String> {
+        let dict = self.tokens?;
+        let (path, is_var, fallback) = self.token_call_parts(call)?;
+        token_call_resolution(dict, &path, is_var, fallback.as_deref()).map(|res| res.value)
     }
 
     pub(crate) fn token_call_is_var(&self, call: &CallExpression<'_>) -> bool {
@@ -342,9 +381,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         if flags.contains(SymbolFlags::Import) {
             return self.resolve_import_symbol(symbol_id);
         }
-        // Mutation invalidates folding. Enum symbols are also re-checked
-        // because `enum X { … }; X = …` is legal and we keep a single-
-        // assignment stance everywhere.
+        // We take a single-assignment stance everywhere, so mutation always
+        // invalidates folding — `enum X { … }; X = …` is legal JS, so this
+        // check applies to enum symbols too.
         if scoping.symbol_is_mutated(symbol_id) {
             return None;
         }
@@ -354,21 +393,15 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             AstKind::VariableDeclarator(declarator) if flags.intersects(SymbolFlags::Variable) => {
                 self.resolve_declarator(declarator, symbol_id)
             }
-            // Enum members without an initializer (auto-incremented) drop —
-            // matches the JS extractor.
             AstKind::TSEnumDeclaration(decl) => Some(resolve_enum_as_object(decl)),
-            // `function f(x: { color: 'red' })` lets `x.color` fold via the
-            // readonly literal type members. Mirrors the JS extractor's
-            // ParameterDeclaration+TypeLiteral fallback.
             AstKind::FormalParameter(param) => resolve_param_as_type_literal(param),
             _ => None,
         }
     }
 
     /// Walk from an import-bound symbol up to its `ImportDeclaration` to
-    /// recover `(specifier, imported_name)`, then delegate to the cross-
-    /// file resolver. Only named-export specifiers are resolved here;
-    /// default/namespace imports return `None`.
+    /// recover `(specifier, imported_name)`, then delegate to the cross-file
+    /// resolver. Default/namespace imports return `None`.
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
         let cross_file = self.cross_file?;
         let from_file = self.source_path.as_ref()?;
@@ -401,7 +434,12 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         let module = import_module?;
         let name = imported_name?;
-        cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens)
+        let resolution =
+            cross_file.resolve_named_export(from_file, module, name, self.matchers, self.tokens);
+        if let Some(path) = resolution.path {
+            self.cross_file_deps.borrow_mut().insert(path);
+        }
+        resolution.value
     }
 
     pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
@@ -417,14 +455,14 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         let name = match matched.kind {
             ImportSpecifierKind::Named => {
-                if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
+                if path.as_slice() != ["raw"] || !matched.category.supports_raw() {
                     return None;
                 }
                 matched.name.as_str()
             }
             ImportSpecifierKind::Namespace => {
                 let (&property, raw_tail) = path.split_first()?;
-                if raw_tail != ["raw"] || !is_raw_category(matched.category) {
+                if raw_tail != ["raw"] || !matched.category.supports_raw() {
                     return None;
                 }
                 if !matchers.category_accepts_name(matched.category, property) {
@@ -534,14 +572,11 @@ fn is_css_var_value(value: &str) -> bool {
     value.trim().starts_with("var(")
 }
 
-fn is_raw_category(category: MatchCategory) -> bool {
-    matches!(
-        category,
-        MatchCategory::Css | MatchCategory::Recipe | MatchCategory::Pattern
-    )
-}
-
-fn flatten_static_member_path<'a>(
+/// Flatten a chain of static member accesses to its root identifier plus the
+/// dotted property path: `css.raw` → (`css`, `["raw"]`); `p.css.raw` →
+/// (`p`, `["css", "raw"]`). Shared by the raw-style-call resolver here and the
+/// call-site callee resolver in `calls.rs`.
+pub(crate) fn flatten_static_member_path<'a>(
     expr: &'a Expression<'_>,
 ) -> Option<(&'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
     let mut path = SmallVec::new();
@@ -633,11 +668,10 @@ fn resolve_pattern_path(
             None
         }
         BindingPattern::AssignmentPattern(asgn) => {
-            // `{ x = 'red' } = src` — present → recurse with source; missing
-            // (Null) → fold the default and recurse with that. The default
-            // expression resolves without a Resolver, so identifier defaults
-            // don't chain — same limitation as the JS extractor outside its
-            // main scope walker.
+            // `{ x = 'red' } = src`: missing (Null) → fold the default and
+            // recurse with that. The default itself resolves without a
+            // Resolver, so identifier defaults don't chain — same limitation
+            // as the JS extractor outside its main scope walker.
             if matches!(source, Literal::Null) {
                 let default_value = expression_to_literal(&asgn.right, resolver)?;
                 resolve_pattern_path(&asgn.left, &default_value, target, resolver)
@@ -670,7 +704,7 @@ fn binding_property_key(
 }
 
 /// Synthesize a `Literal::Object` from a TS enum's member initializers.
-/// Members without an initializer drop — matches the JS extractor.
+/// Auto-incremented members (no initializer) drop — matches the JS extractor.
 fn resolve_enum_as_object(decl: &oxc_ast::ast::TSEnumDeclaration<'_>) -> Literal {
     let mut entries: Vec<(String, Literal)> = Vec::with_capacity(decl.body.members.len());
     for member in &decl.body.members {
@@ -682,8 +716,7 @@ fn resolve_enum_as_object(decl: &oxc_ast::ast::TSEnumDeclaration<'_>) -> Literal
         let Some(init) = member.initializer.as_ref() else {
             continue;
         };
-        // Initializer evaluated without a Resolver — sufficient for the
-        // common string/numeric literal case.
+        // No Resolver here — sufficient for the common string/numeric case.
         if let Some(value) = expression_to_literal(init, None) {
             entries.push((name, value));
         }

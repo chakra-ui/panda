@@ -20,6 +20,17 @@ pub(super) fn module(ctx: CodegenContext<'_>) -> Module {
         .with_item(raw_type(JSX_HELPER_TYPES))
 }
 
+pub(super) fn value_import(names: &[&str], source: &str) -> ImportDecl {
+    ImportDecl {
+        kind: ImportKind::Value,
+        specifiers: names
+            .iter()
+            .map(|name| ImportSpecifier::Named((*name).into()))
+            .collect(),
+        source: source.into(),
+    }
+}
+
 pub(super) fn type_import(names: &[&str], source: &str) -> ImportDecl {
     ImportDecl {
         kind: ImportKind::Type,

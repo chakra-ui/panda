@@ -230,19 +230,7 @@ fn recipe_config_code(
     recipe: &RecipeConfig,
     slot: bool,
 ) -> String {
-    let variant_map = if slot {
-        ctx.types
-            .recipes
-            .slot_recipes
-            .get(name)
-            .map(|recipe| &recipe.variants)
-    } else {
-        ctx.types
-            .recipes
-            .recipes
-            .get(name)
-            .map(|recipe| &recipe.variants)
-    };
+    let variant_map = recipe_variant_data(ctx, name, slot);
 
     let mut config = Map::new();
     config.insert("name".into(), Value::String(name.into()));

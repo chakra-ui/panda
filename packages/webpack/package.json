@@ -1,0 +1,66 @@
+{
+  "name": "@pandacss/webpack",
+  "version": "2.0.0-beta.8",
+  "description": "webpack plugin for Panda CSS (Next.js compatible)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "author": "Segun Adebayo <joseshegs@gmail.com>",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./next": {
+      "source": "./src/next.ts",
+      "types": "./dist/next.d.ts",
+      "default": "./dist/next.js"
+    },
+    "./package.json": "./package.json",
+    "./css-loader": {
+      "source": "./src/css-loader.ts",
+      "types": "./dist/css-loader.d.ts",
+      "default": "./dist/css-loader.js"
+    }
+  },
+  "sideEffects": false,
+  "homepage": "https://panda-css.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chakra-ui/panda.git",
+    "directory": "packages/webpack"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/next.ts src/css-loader.ts --format=cjs,esm --platform=node --dts --no-splitting",
+    "build:fast": "tsup src/index.ts src/next.ts src/css-loader.ts --format=cjs,esm --platform=node --no-dts --no-splitting",
+    "dev": "pnpm build:fast --watch src",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@pandacss/compiler": "workspace:*",
+    "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/transformer": "workspace:*"
+  },
+  "peerDependencies": {
+    "webpack": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "webpack": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "webpack": "5.102.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

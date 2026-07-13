@@ -1,6 +1,5 @@
 //! The `patterns/*` artifacts: one runtime function + type per configured
-//! pattern (`stack`, `grid`, …), generated from each pattern's prop set and
-//! transform source.
+//! pattern, generated from its prop set and transform source.
 
 use std::collections::BTreeSet;
 
@@ -353,33 +352,19 @@ fn properties_interface(
     let mut members = Vec::with_capacity(pattern.properties.len() + 1);
 
     if let Some(definition) = definition {
-        members.extend(
-            definition
-                .properties
-                .iter()
-                .map(|(name, property)| TsMember {
-                    name: member_name(name),
-                    optional: true,
-                    ty: TsType::Raw(crate::artifacts::types::pattern_property_type(
-                        &property.kind,
-                    )),
-                    js_doc: property.description.as_ref().map(|description| JsDoc {
-                        text: Some(description.clone()),
-                        deprecated: None,
-                        default: None,
-                    }),
-                }),
-        );
+        members.extend(definition.properties.iter().map(|(name, property)| {
+            let ty = TsType::Raw(crate::artifacts::types::pattern_property_type(
+                &property.kind,
+            ));
+            property_member(name, ty, property.description.as_deref())
+        }));
     } else {
-        members.extend(pattern.properties.iter().map(|(name, property)| TsMember {
-            name: member_name(name),
-            optional: true,
-            ty: fallback_property_type(property),
-            js_doc: property.description.as_ref().map(|description| JsDoc {
-                text: Some(description.clone()),
-                deprecated: None,
-                default: None,
-            }),
+        members.extend(pattern.properties.iter().map(|(name, property)| {
+            property_member(
+                name,
+                fallback_property_type(property),
+                property.description.as_deref(),
+            )
         }));
     }
 
@@ -390,6 +375,19 @@ fn properties_interface(
         members,
         js_doc: None,
     })
+}
+
+fn property_member(name: &str, ty: TsType, description: Option<&str>) -> TsMember {
+    TsMember {
+        name: member_name(name),
+        optional: true,
+        ty,
+        js_doc: description.map(|description| JsDoc {
+            text: Some(description.to_owned()),
+            deprecated: None,
+            default: None,
+        }),
+    }
 }
 
 fn styles_interface(
@@ -429,7 +427,7 @@ fn pattern_fn_interface(name: &str, styles_name: &str, properties_name: &str) ->
         name: name.into(),
         extends: Vec::new(),
         members: vec![
-            // Normal call returns a className string; only `.raw` returns styles.
+            // Calling directly returns a className; `.raw` returns styles.
             TsMember {
                 name: TsMemberName::Raw(format!("(styles?: {styles_name})")),
                 optional: false,

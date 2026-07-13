@@ -1,8 +1,5 @@
-//! Condition resolution and selector lowering for stylesheet emission.
-//!
-//! This module turns condition keys such as `_hover`, `md`, and block-form
-//! conditions into raw selector or at-rule paths, then applies those paths to
-//! lowered rule targets.
+//! Turns condition keys (`_hover`, `md`, block-form conditions) into raw
+//! selector / at-rule paths, then applies those paths to lowered rule targets.
 
 use pandacss_config::{ConditionQuery, UserConfig};
 
@@ -52,8 +49,7 @@ pub(crate) fn lower_selector_conditions(
     base: &str,
     conditions: &[ConditionPaths],
 ) -> Vec<LoweredTarget> {
-    // Global CSS and token CSS resolve condition keys before they reach this
-    // point, but still need the same path-product lowering as atom rules.
+    // Global/token CSS resolve condition keys earlier, but still need this lowering.
     lower_target_resolved_conditions(&LoweredTarget::new(base), conditions)
 }
 
@@ -61,40 +57,38 @@ pub(crate) fn lower_target_resolved_conditions(
     base: &LoweredTarget,
     conditions: &[ConditionPaths],
 ) -> Vec<LoweredTarget> {
-    let mut targets = vec![base.clone()];
-    for paths in conditions {
-        let mut next = Vec::new();
-        for target in &targets {
-            for path in paths {
-                let mut target = target.clone();
-                for raw in path {
-                    apply_raw_condition(&mut target.selector, &mut target.wrappers, raw);
-                }
-                next.push(target);
-            }
-        }
-        targets = next;
-    }
-    targets
+    lower_conditions_with(base.clone(), conditions, apply_raw_condition)
 }
 
 pub(crate) fn lower_token_conditions(
     base: &str,
     conditions: &[ConditionPaths],
 ) -> Vec<LoweredTarget> {
-    let mut targets = vec![LoweredTarget::new(base)];
+    lower_conditions_with(
+        LoweredTarget::new(base),
+        conditions,
+        |selector, wrappers, raw| {
+            apply_token_raw_condition(base, selector, wrappers, raw);
+        },
+    )
+}
+
+/// Path-product expansion: each condition key may resolve to multiple raw
+/// paths, so every existing target is cloned once per path. `apply` turns one
+/// raw condition part into a selector/wrapper mutation.
+fn lower_conditions_with(
+    base: LoweredTarget,
+    conditions: &[ConditionPaths],
+    mut apply: impl FnMut(&mut String, &mut Vec<String>, &str),
+) -> Vec<LoweredTarget> {
+    let mut targets = vec![base];
     for paths in conditions {
         let mut next = Vec::new();
         for target in &targets {
             for path in paths {
                 let mut target = target.clone();
                 for raw in path {
-                    apply_token_raw_condition(
-                        base,
-                        &mut target.selector,
-                        &mut target.wrappers,
-                        raw,
-                    );
+                    apply(&mut target.selector, &mut target.wrappers, raw);
                 }
                 next.push(target);
             }
@@ -170,8 +164,6 @@ fn expand_breakpoint_at_rule(config: &UserConfig, raw: &str) -> Option<String> {
     config.breakpoint_condition(params)
 }
 
-/// Apply one raw condition part to a lowered target: at-rules wrap, `&`
-/// substitutes the selector, and plain selectors become ancestors.
 fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &str) {
     if raw.starts_with('@') {
         wrappers.push(raw.to_owned());
@@ -182,10 +174,9 @@ fn apply_raw_condition(selector: &mut String, wrappers: &mut Vec<String>, raw: &
     }
 }
 
-/// Like [`apply_raw_condition`] but for token-var rules, which start from the
-/// `cssVarRoot` selector. A ` &` parent condition replaces the root outright
-/// (or nests into it); plain conditions append as descendants and the stray
-/// root is cleaned up afterward.
+/// Token-var version of [`apply_raw_condition`]: starts from `cssVarRoot`,
+/// where a ` &` parent condition replaces or nests into the root and the
+/// stray root gets cleaned up afterward.
 fn apply_token_raw_condition(
     css_var_root: &str,
     selector: &mut String,
@@ -218,8 +209,7 @@ fn apply_token_raw_condition(
     }
 }
 
-/// Extract the parent part of a ` &` condition (`.dark &` -> `.dark`). Multiple
-/// such selectors collapse into a single `:where(a, b)` group.
+/// Extract the parent of a ` &` condition (`.dark &` -> `.dark`); multiple collapse into `:where(a, b)`.
 fn token_parent_selector(raw: &str) -> Option<String> {
     let selectors = crate::selector::split_selector_list(raw)
         .into_iter()
@@ -239,8 +229,7 @@ fn token_parent_selector(raw: &str) -> Option<String> {
     }
 }
 
-/// Strip the now-redundant `cssVarRoot` left behind after a `&` substitution
-/// nested a condition into the root selector.
+/// Strip the redundant `cssVarRoot` left behind by a `&` substitution.
 fn cleanup_token_selector(css_var_root: &str, selector: &mut String) {
     if selector == css_var_root {
         return;

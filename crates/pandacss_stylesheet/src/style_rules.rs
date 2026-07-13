@@ -1,8 +1,6 @@
-//! Small internal style-rule model used by the emitter.
-//!
-//! Keep this module focused on rule identity, declarations, and write-time
-//! coalescing. Condition resolution lives in `conditions.rs`; cascade ordering
-//! lives in `sort.rs`.
+//! Internal style-rule model used by the emitter: rule identity, declarations,
+//! and write-time coalescing. Condition resolution lives in `conditions.rs`;
+//! cascade ordering lives in `sort.rs`.
 
 use std::borrow::Cow;
 

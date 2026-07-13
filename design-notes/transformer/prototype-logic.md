@@ -1,184 +1,154 @@
 # Prototype logic
 
-The behavior we already proved in the earlier prototype, rewritten here as implementation guidance rather than branch
-history.
+Behavior we proved in the earlier prototype, written as implementation guidance — not branch history.
 
 ## Summary
 
-The earlier prototype did **not** yet have a dedicated `cxm` or `cn` helper.
+The prototype did not ship a dedicated `cx` helper yet. It did establish the pieces we kept:
 
-What it did have was the exact precursor design we should build from:
-
-1. file-local runtime helper injection for generated helpers
-2. concrete JSX `className` merge rules
+1. file-local runtime injection only when needed
+2. JSX `className` merge rules
 3. dead-import cleanup before helper injection
-4. a single-file transform orchestrator with a stable pass order
+4. single-file orchestration with a stable pass order
 
-Those pieces are the logic we want to preserve while moving to a host-neutral `packages/transformer` package.
+We moved that logic into `pandacss_project::transform` (print) and `@pandacss/transformer` (runtime delivery).
 
 ## Single-file transform shape
 
-The prototype transform worked like this:
+Prototype flow:
 
 1. create one `MagicString`
 2. run target-specific inline passes
-3. track whether helper code is needed
+3. track helper demand
 4. remove dead Panda imports
-5. inject helper source
-6. return rewritten code plus a high-resolution source map
+5. inject helper import
+6. return rewritten code plus source map
 
-The pass order was effectively:
+Pass order:
 
 1. `css()`
 2. patterns
-3. `cva()`
-4. `sva()`
-5. config recipes
-6. JSX style props
-7. `token()`
-8. `token.var()`
-9. dead import cleanup
-10. helper injection
+3. `cva()` / `sva()` / `styled()`
+4. JSX style props
+5. dead import cleanup
+6. internal css import sync
 
-That sequencing matters:
+Dead import cleanup runs after rewrites. Helper import sync runs after cleanup. Helper demand is collected during
+rewriting, not with a second parse.
 
-- dead import cleanup must run after rewrites
-- helper injection must run after dead import cleanup
-- helper demand should be collected during rewriting, not with a second parse
+v2 implements the same order in Rust via `build_transform_edits` + one `string_wizard` pass.
 
-## Helper delivery precedent
+## Helper delivery
 
-The prototype already injected private runtime helper code only when the transformed file needed it.
+Prototype injected private runtime source into the file. v2 emits a host-neutral import and serves runtime from a
+virtual module:
 
-Important characteristics:
+```ts
+import { cx as __pcx } from '@pandacss-internal/css'
+```
 
-- helpers were private implementation details
-- helpers were emitted only on demand
-- helpers were intentionally tiny
-- helper code used broad-compatibility syntax and avoided fragile initialization ordering
+`@pandacss/transformer` bundles `cx`, `css`, `cva`, and `sva` for that module. Only symbols the file uses are imported.
 
-That is the right precedent for `cn`. The main architectural change is delivery:
+## `className` merge logic to preserve
 
-- earlier prototype: inject helper source directly into the transformed file
-- new design: emit a host-neutral internal import and let the bundler adapter serve the helper module
+- no existing `className` → static `className="..."`
+- existing string `className` → fold to one static string at build time
+- existing expression → inline concat or `__pcx(...)` depending on fragment count and `helper.cx` mode
 
-## `className` merge logic we should preserve
+Static + static: one literal, no helper. One dynamic + one static Panda fragment: inline concat often wins. Several
+fragments or multiple expressions: `cx` is cleaner.
 
-The prototype already had explicit `className` merge behavior:
+## Why `cx` is the join helper
 
-- no existing `className` print a plain static `className="..."`
-- existing string `className` fold at build time to one static string
-- existing expression `className={expr}` print an inline concat form
-
-That is the first real decision tree for the future `cn` helper.
-
-The new printer should preserve those semantics:
-
-- static + static fold to one literal, no helper
-- dynamic expression + one static Panda fragment compare inline concat against helper call
-- dynamic expression + several static or conditional Panda fragments helper becomes more attractive
-
-## Why `cn` is the natural next step
-
-Inline concat is enough for a simple case such as:
+Inline concat works for simple cases:
 
 ```tsx
 <Box className={props.className} mt="4" />
 ```
 
-which can become:
+→
 
 ```tsx
 <div className={props.className + ' mt_4'} />
 ```
 
-That approach stops scaling cleanly once the printer needs to merge:
+It stops scaling when the printer must merge dynamic `className`, recipe classes, variant classes, atomic leftovers, and
+conditional fragments. One tiny join helper beats ad hoc concat at every rewrite site.
 
-- existing dynamic `className`
-- recipe base classes
-- recipe variant classes
-- atomic leftovers
-- optional conditional fragments
-
-At that point one tiny join helper is cleaner than growing ad hoc concat printers in many rewrite sites.
-
-## Bailout rules we should preserve
-
-The prototype already had important safety rules:
+## Bailout rules to preserve
 
 - bail on spread attributes
 - bail on complex `as={condition ? A : B}`
-- bail when style props contain conditionals the flattener cannot resolve
-- skip JSX elements that matched but have no actual style props
+- bail when style props contain unresolvable conditionals
+- skip JSX elements that matched but have no style props
+- per-element JSX bail (not whole-file bail) when one site is unsafe
 
-Those rules belong in the new transform planner, not in host adapters.
+## JSX ownership gate
 
-## Dead-import cleanup rules we should preserve
+Only rewrite a JSX tag Panda **owns** — a tag resolved via a matched import
+(importMap-aware): factory (`panda.div`, `styled.button`), patterns, or any
+module the user adds to `importMap.jsx`. These render an intrinsic element with
+the classes, so emitting `<div className=…>` is render-identical.
 
-The prototype's import cleanup had two key constraints:
+Tags matched by **name only** are not owned and stay untouched:
+
+- `jsxStyleProps: 'all'` matches any uppercase component (`<Card color="red" />`)
+- a recipe's `jsx: ['Button']` / slot recipe `jsx: ['Tabs']` allowlist
+- a library component that collides with a pattern name (`<HStack>` from another lib)
+
+Name matching still drives **CSS extraction** (the user's own component applies
+the recipe/atomic classes internally). Only the source rewrite is gated —
+rewriting a library component to a `<div>` would swap out the real component.
+The gate is the `panda_owned` flag on `ExtractedJsx`; see
+`pandacss_project::transform::jsx::rewrites_for_jsx_element`.
+
+## Dead-import cleanup rules to preserve
 
 1. remove Panda imports only after rewrites are applied
-2. do not get tricked by import names appearing inside emitted class strings
+2. do not treat import names inside emitted class strings as live bindings
 
-The exact string-scanning approach used in the prototype should not automatically become the final shared
-implementation, but the contract is correct:
+Contract:
 
-- fully inlined imports should disappear
-- partially live imports should be narrowed
-- `import type` should remain untouched
-- non-Panda imports should remain untouched
-- bailout cases should keep their imports
+- fully inlined imports disappear
+- partially live imports narrow
+- `import type` stays untouched
+- non-Panda imports stay untouched
+- bailout cases keep their imports
 
-## Virtual-module logic we should preserve
+v2 uses Oxc import spans plus `local_binding_used` on projected source, not regex-only scanning.
 
-The prototype already used a clear split between:
+## Virtual-module pattern to preserve
 
-- unresolved user-facing IDs
-- resolved internal IDs
+Split between user-facing specifier and resolved internal ID. Preserve query suffixes when matching.
 
-It also preserved query suffixes when matching internal virtual modules.
+Today:
 
-That pattern should carry forward for Vite and Rollup helper resolution:
+- source import: `@pandacss-internal/css`
+- resolved internal ID: `\0pandacss:internal:css`
 
-- source import: `@pandacss-internal/transformer/cn`
-- resolved internal ID: `\0pandacss:transformer:cn`
+## Mapping into `@pandacss/transformer`
 
-## How this maps into `packages/transformer`
-
-Map the earlier prototype into the new package like this:
-
-- top-level single-file orchestration becomes `transformSource(...)`
-- per-target inline functions become `targets/*` plus `plan/*` and `print/*`
-- helper-needed booleans become file-level helper demand tracked by planner and printer
-- direct helper injection becomes internal helper import insertion
-- JSX concat branch becomes the `cn` helper decision point
+| Prototype                   | v2                                                            |
+| --------------------------- | ------------------------------------------------------------- |
+| single-file orchestrator    | `transform_source` in Rust; `transformSource` in JS           |
+| per-target inline functions | `plan.rs`, `jsx.rs`, `recipe_inline.rs`, `styled.rs`, …       |
+| helper-needed booleans      | `TransformHelperFacts` (`needs_cx`, `needs_cva`, `needs_sva`) |
+| direct helper prepend       | `plan_internal_css_prepend` + `string_wizard` prepend         |
+| JSX concat branch           | `helper.rs` merge + `__pcx` emission                          |
 
 ## What not to copy literally
 
-The earlier prototype is a behavior reference, not a packaging reference.
+- host-specific injection in the shared transformer layer
+- prepend-only helper delivery as the only model
+- regex-only import cleanup when spans are available
+- host-specific naming in the shared contract
 
-Do not copy these details unchanged:
+Copy the behavior contract. The packaging changed.
 
-- host-owned helper injection mechanics into the shared transformer layer
-- direct helper-source prepend as the only delivery model
-- regex-only import cleanup if compiler spans give us a safer path
-- host-specific naming in the shared transformer contract
+## Design rule for `cx`
 
-Copy the behavior contract. Rebuild the packaging.
-
-## Design rule for `cn`
-
-The clearest rule preserved from the prototype is:
-
-- merging `className` belongs in the shared printer
-
-Not in:
-
-- Vite-specific code
-- JSX-only code paths
-- recipe-only code paths
-
-`cn` should be one private, shared print primitive that any transformed site can request once the planner marks it safe.
+`className` merging belongs in the shared printer (`helper.rs`), not in Vite-only or JSX-only code paths. Any
+transformed site can request `__pcx` once the planner marks it safe.
 
 ## Related
 

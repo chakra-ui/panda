@@ -8,6 +8,7 @@ use crate::{
     css_template::css_template_to_object,
     jsx_react_runtime,
     literal::{collapse_whitespace, expression_to_literal},
+    matcher::member_display,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
     },
@@ -16,9 +17,8 @@ use crate::{
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, Expression, IdentifierReference, JSXAttributeItem, JSXAttributeName,
-    JSXAttributeValue, JSXElementName, JSXExpression, JSXMemberExpression,
-    JSXMemberExpressionObject, JSXOpeningElement, Program, StaticMemberExpression,
-    TaggedTemplateExpression,
+    JSXAttributeValue, JSXElement, JSXElementName, JSXExpression, JSXMemberExpression,
+    JSXMemberExpressionObject, Program, StaticMemberExpression, TaggedTemplateExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -27,21 +27,13 @@ use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
 
-fn is_jsx_factory(matchers: &Matchers, name: &str) -> bool {
-    matchers
-        .jsx_factories
-        .as_ref()
-        .is_some_and(|factories| factories.iter().any(|factory| factory == name))
-}
-
 /// Classify a resolved JSX tag. Factories win (matched against the local
 /// `alias` or canonical `name`); pattern/recipe names come from
 /// `jsx_kinds`; anything else is a plain component.
 pub(crate) fn jsx_kind(matchers: &Matchers, name: &str, alias: &str) -> JsxKind {
-    // The factory is the leading segment: `<styled.div>` (alias `styled`) and
-    // `<JSX.styled.div>` (alias `JSX`) both have name `styled.div`.
+    // The factory is the leading segment of `name`, e.g. `styled` in `styled.div`.
     let leading = name.split('.').next().unwrap_or(name);
-    if is_jsx_factory(matchers, alias) || is_jsx_factory(matchers, leading) {
+    if matchers.is_jsx_factory(alias) || matchers.is_jsx_factory(leading) {
         return JsxKind::Factory;
     }
     matchers
@@ -64,12 +56,36 @@ pub struct ExtractedJsx {
     /// Local root binding (`"styled"` for `<styled.div>`, `"JSX"` for
     /// `<JSX.Stack>`).
     pub alias: String,
-    /// Prop/value map. Non-literal attribute values are skipped. Literal
-    /// `{...spread}` attributes merge in source order. Empty for matched
-    /// elements with no extractable props — the element itself is the
-    /// signal.
+    /// Prop/value map; non-literal values are skipped and literal spreads
+    /// merge in source order. Empty for a matched element with no
+    /// extractable props — the element itself is the signal.
     pub data: Literal,
     pub span: Span,
+    /// `</Name>` span from the AST; `None` when self-closing. Lets the transform
+    /// edit the exact closing tag instead of text-searching for it.
+    #[serde(skip)]
+    pub closing_span: Option<Span>,
+    /// Per-attribute spans/kinds from the AST, so the transform reconstructs the
+    /// opening tag from exact boundaries instead of re-scanning source text.
+    #[serde(skip)]
+    pub attributes: Vec<JsxAttr>,
+    /// Tag resolved via a matched Panda import (importMap-aware): the transform
+    /// may rewrite it. `false` for name-only matches — extracted for CSS, but the
+    /// JSX is left untouched.
+    #[serde(skip)]
+    pub panda_owned: bool,
+}
+
+/// One opening-element attribute located from the AST.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct JsxAttr {
+    /// `None` for `{...spread}`.
+    pub name: Option<String>,
+    pub span: Span,
+    pub spread: bool,
+    /// Value is an expression container (`={…}`) or JSX, not a string literal.
+    pub dynamic: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -159,6 +175,42 @@ pub(crate) fn collect_jsx_verbose(
     (out, style_source_refs)
 }
 
+fn collect_jsx_attrs(attributes: &[JSXAttributeItem<'_>]) -> Vec<JsxAttr> {
+    attributes
+        .iter()
+        .map(|item| match item {
+            JSXAttributeItem::SpreadAttribute(spread) => JsxAttr {
+                name: None,
+                span: span_from_oxc(spread.span),
+                spread: true,
+                dynamic: true,
+            },
+            JSXAttributeItem::Attribute(attr) => JsxAttr {
+                name: Some(jsx_attribute_name(&attr.name)),
+                span: span_from_oxc(attr.span),
+                spread: false,
+                dynamic: matches!(
+                    attr.value.as_ref(),
+                    Some(
+                        JSXAttributeValue::ExpressionContainer(_)
+                            | JSXAttributeValue::Element(_)
+                            | JSXAttributeValue::Fragment(_)
+                    )
+                ),
+            },
+        })
+        .collect()
+}
+
+fn jsx_attribute_name(name: &JSXAttributeName<'_>) -> String {
+    match name {
+        JSXAttributeName::Identifier(id) => id.name.to_string(),
+        JSXAttributeName::NamespacedName(ns) => {
+            format!("{}:{}", ns.namespace.name, ns.name.name)
+        }
+    }
+}
+
 pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
     ctx: &'walk VisitorContext<'ctx, 'cb>,
     out: &'walk mut Vec<ExtractedJsx>,
@@ -171,6 +223,9 @@ pub(crate) struct ResolvedTag<'a> {
     pub(crate) name: Cow<'a, str>,
     pub(crate) alias: Cow<'a, str>,
     pub(crate) emit_empty: bool,
+    /// `true` when resolved via a matched Panda import; `false` for the
+    /// name-only `should_match_tag` fallback.
+    pub(crate) panda_owned: bool,
 }
 
 impl Extractor<'_, '_, '_> {
@@ -201,6 +256,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Borrowed(&matched.name),
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
 
@@ -220,6 +276,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: is_configured_component,
+                    panda_owned: false,
                 })
             }
             JSXElementName::MemberExpression(member) => {
@@ -256,15 +313,16 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Owned(display),
                     alias: Cow::Borrowed(root),
                     emit_empty: is_configured_component,
+                    panda_owned: false,
                 });
             }
             return None;
         };
         match matched.kind {
             ImportSpecifierKind::Named => {
-                // Named member tags are Panda usages only for JSX factories
-                // or for member names explicitly configured by recipes.
-                if is_jsx_factory(&self.ctx.config.matchers, &matched.name) {
+                // A named member tag is a Panda usage only for a factory or a
+                // recipe-configured member name.
+                if self.ctx.config.matchers.is_jsx_factory(&matched.name) {
                     if !self
                         .ctx
                         .config
@@ -279,6 +337,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Owned(display),
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
 
@@ -291,6 +350,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Owned(display),
                     alias: Cow::Borrowed(&matched.alias),
                     emit_empty: true,
+                    panda_owned: true,
                 })
             }
             ImportSpecifierKind::Namespace => {
@@ -308,6 +368,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Owned(join_path(path)),
                     alias: Cow::Borrowed(&matched.alias),
                     emit_empty: true,
+                    panda_owned: true,
                 })
             }
             ImportSpecifierKind::Default => None,
@@ -350,6 +411,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Borrowed(&matched.name),
                         alias: Cow::Borrowed(&matched.alias),
                         emit_empty: true,
+                        panda_owned: true,
                     });
                 }
 
@@ -369,6 +431,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: is_configured_component,
+                    panda_owned: false,
                 })
             }
             Expression::StringLiteral(s) => {
@@ -381,6 +444,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(tag_name),
                     alias: Cow::Borrowed(tag_name),
                     emit_empty: true,
+                    panda_owned: false,
                 })
             }
             Expression::StaticMemberExpression(member) => {
@@ -402,16 +466,18 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
         walk::walk_call_expression(self, call);
     }
 
-    fn visit_jsx_opening_element(&mut self, element: &JSXOpeningElement<'a>) {
+    fn visit_jsx_element(&mut self, jsx_el: &JSXElement<'a>) {
+        let element = &jsx_el.opening_element;
         if let Some(resolved) = self.resolve_tag(&element.name) {
             let category = resolved.category;
             let tag_name = resolved.name.as_ref().to_owned();
             let alias = resolved.alias.into_owned();
             let emit_empty = resolved.emit_empty;
+            let panda_owned = resolved.panda_owned;
             let mut entries: Vec<(String, Literal)> = Vec::with_capacity(element.attributes.len());
-            // Conditional-spread branches accumulate separately and fold in after
-            // all attributes (node's `spreadConditions`), so their union survives
-            // regardless of a colliding explicit prop's position.
+
+            // Conditional-spread branches accumulate here and fold in after every
+            // attribute (node's `spreadConditions`), surviving a colliding prop.
             let mut spread_conditions: Vec<(String, Literal)> = Vec::new();
             for item in &element.attributes {
                 merge_attribute(
@@ -426,10 +492,12 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             for (key, value) in spread_conditions {
                 Literal::combine_object_entry(&mut entries, key, value);
             }
+
             if entries.is_empty() && !emit_empty {
-                walk::walk_jsx_opening_element(self, element);
+                walk::walk_jsx_element(self, jsx_el);
                 return;
             }
+
             let kind = jsx_kind(&self.ctx.config.matchers, &tag_name, &alias);
             if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
                 let owner = StyleSourceOwner {
@@ -446,6 +514,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     style_source_refs,
                 );
             }
+
             self.out.push(ExtractedJsx {
                 category,
                 kind,
@@ -453,9 +522,15 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 alias,
                 data: Literal::Object(entries),
                 span: span_from_oxc(element.span),
+                closing_span: jsx_el
+                    .closing_element
+                    .as_ref()
+                    .map(|c| span_from_oxc(c.span)),
+                attributes: collect_jsx_attrs(&element.attributes),
+                panda_owned,
             });
         }
-        walk::walk_jsx_opening_element(self, element);
+        walk::walk_jsx_element(self, jsx_el);
     }
 
     fn visit_tagged_template_expression(&mut self, tagged: &TaggedTemplateExpression<'a>) {
@@ -476,6 +551,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 alias: resolved.alias.into_owned(),
                 data,
                 span: span_from_oxc(tagged.span),
+                closing_span: None,
+                attributes: Vec::new(),
+                panda_owned: resolved.panda_owned,
             });
         }
         walk::walk_tagged_template_expression(self, tagged);
@@ -525,21 +603,6 @@ fn flatten_expr_member<'a>(
             _ => return None,
         }
     }
-}
-
-fn member_display(root: &str, path: &[&str]) -> String {
-    let mut out = String::with_capacity(
-        root.len()
-            + 1
-            + path.iter().map(|part| part.len()).sum::<usize>()
-            + path.len().saturating_sub(1),
-    );
-    out.push_str(root);
-    for part in path {
-        out.push('.');
-        out.push_str(part);
-    }
-    out
 }
 
 fn join_path(path: &[&str]) -> String {

@@ -12,12 +12,19 @@ This matrix combines:
 
 The goal is not to copy another project's implementation. The goal is to steal the failure cases that matter.
 
-The earlier prototype matters here because it already covered the first generation of class-merge behavior. The `cn`
-tests should explicitly inherit that corpus instead of replacing it.
+The earlier prototype matters here because it already covered the first generation of class-merge behavior. The `cx`
+tests should inherit that corpus instead of replacing it.
+
+## Current coverage (v2 branch)
+
+| Layer                           | Location                             | Status            |
+| ------------------------------- | ------------------------------------ | ----------------- |
+| Rust transformer snapshots      | `crates/pandacss_project/tests/transform/` | via `cargo nextest run -p pandacss_project transform` |
+| JS facade + runtime             | `packages/transformer/__tests__/`    | 14 tests passing  |
+| Vite plugin                     | `packages/vite/__tests__/`           | 8 tests passing   |
+| Host e2e / bundle-size fixtures | sandbox                              | not started       |
 
 ## Test layers
-
-Split the suite into five layers.
 
 ### 1. Rust transformer unit tests
 
@@ -39,16 +46,18 @@ Run against real bundler APIs.
 
 Measure whether helper mode and source transforms actually reduce built JS.
 
-## Unit tests: `cn`
+## Unit tests: `cx`
 
-- `cn("a")` -> `"a"`
-- `cn("a", "b")` -> `"a b"`
-- `cn("", "a")` -> `"a"`
-- `cn(false, "a")` -> `"a"`
-- `cn(null, undefined, "a")` -> `"a"`
-- `cn(["a", ["b", false], "c"])` -> `"a b c"`
-- `cn("a", "a")` keeps duplicates
-- `cn()` -> `""`
+- `cx('a')` → `'a'`
+- `cx('a', 'b')` → `'a b'`
+- `cx('', 'a')` → `'a'`
+- `cx(false, 'a')` → `'a'`
+- `cx(null, undefined, 'a')` → `'a'`
+- `cx(['a', ['b', false], 'c'])` → `'a b c'`
+- `cx('a', 'a')` keeps duplicates
+- `cx()` → `''`
+
+Implemented in `packages/transformer/__tests__/cx.test.ts`.
 
 ## Unit tests: branch-compat merge behavior
 

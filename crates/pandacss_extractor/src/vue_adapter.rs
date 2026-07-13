@@ -1,8 +1,8 @@
 //! Vue SFC source adapter.
 
 use crate::adapter::{
-    JsState, blank_like, copy_expression, copy_range, find_bytes, find_tag_end, starts_with,
-    tag_blocks,
+    JsState, blank_like, copy_expression, copy_range, find_bytes, find_tag_end, has_non_html_lang,
+    starts_with, tag_blocks,
 };
 
 #[must_use]
@@ -21,32 +21,6 @@ pub(crate) fn mask_vue(source: &str) -> String {
     }
 
     String::from_utf8(mask).expect("source mask remains valid utf-8")
-}
-
-fn has_non_html_lang(source: &str, start: usize, end: usize) -> bool {
-    let Some(attrs) = source.get(start..=end) else {
-        return false;
-    };
-    let lower = attrs.to_ascii_lowercase();
-    let Some(lang_index) = lower.find("lang") else {
-        return false;
-    };
-    let after_lang = lang_index + "lang".len();
-    let Some(rest) = lower.get(after_lang..) else {
-        return false;
-    };
-    if !rest.trim_start().starts_with('=') {
-        return false;
-    }
-    let value = rest
-        .trim_start()
-        .trim_start_matches('=')
-        .trim_start()
-        .trim_matches(|ch| ch == '"' || ch == '\'' || ch == '>' || ch == '/')
-        .split_ascii_whitespace()
-        .next()
-        .unwrap_or_default();
-    !matches!(value, "" | "html")
 }
 
 fn copy_vue_template_expressions(mask: &mut [u8], source: &str, start: usize, end: usize) {

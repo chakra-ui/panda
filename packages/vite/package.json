@@ -36,7 +36,8 @@
   ],
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
-    "@pandacss/compiler-shared": "workspace:*"
+    "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/transformer": "workspace:*"
   },
   "peerDependencies": {
     "vite": ">=6.0.0"

@@ -3,12 +3,9 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-/// Token category — the top-level bucket a path belongs to.
-///
-/// Variant names match `packages/types/src/tokens.ts` so JS-resolved
-/// dictionaries serialize cleanly into Rust without an extra translation
-/// step. Unknown categories fall through to [`Self::Other`] preserving
-/// the original spelling.
+/// Variant names match `packages/types/src/tokens.ts`, so JS-resolved
+/// dictionaries serialize straight into Rust. Unknown categories fall
+/// through to [`Self::Other`], preserving the original spelling.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]

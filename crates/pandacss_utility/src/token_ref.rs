@@ -33,8 +33,8 @@ fn expand_token_references(
     replace_token_functions(&with_braces, tokens, resolution)
 }
 
-/// Replace each `{token.path}` occurrence with its CSS-var form, leaving an
-/// unterminated `{` (no closing brace) and the rest of the string verbatim.
+/// Replaces each `{token.path}` with its CSS-var form. An unterminated `{`
+/// (no closing brace) and the rest of the string pass through verbatim.
 fn replace_wrapped_references(
     value: &str,
     open: char,
@@ -70,9 +70,8 @@ fn replace_wrapped_references(
     out
 }
 
-/// Replace each `token(path, fallback?)` call with the resolved var, using the
-/// fallback (or the raw path) when the token is unknown. Paren-matched so
-/// nested `token(...)` args don't truncate early.
+/// Replaces each `token(path, fallback?)` with the resolved var, or the
+/// fallback/raw path when unknown. Paren-matched so nested calls don't truncate early.
 fn replace_token_functions(
     value: &str,
     tokens: &TokenDictionary,

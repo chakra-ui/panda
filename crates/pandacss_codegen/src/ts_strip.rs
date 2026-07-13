@@ -1,11 +1,6 @@
-//! Strip TypeScript type syntax from emitted source to produce the runtime
-//! `.js`. A single-pass character scanner, *not* a parser — it tracks string
-//! and paren/brace state to find param/return type annotations and remove them.
-//!
-//! This is safe only because the input is always generator-emitted code (the
-//! [`crate::emit`] printer drops whole type-only items first), so the surface
-//! is a constrained subset — no arbitrary TS, no edge cases a real parser would
-//! need to handle.
+//! Strips TypeScript syntax from generated source to produce runtime `.js` —
+//! a single-pass character scanner, not a parser. Safe only because the input
+//! is always generator-emitted code: a constrained subset, never arbitrary TS.
 
 #[must_use]
 pub fn strip_typescript(code: &str) -> String {
@@ -68,10 +63,8 @@ pub fn strip_typescript(code: &str) -> String {
             continue;
         }
 
-        // Optional-parameter marker: `name?: T` → drop the `?` and its type. The
-        // `?` must follow an identifier (the param name): this excludes regex
-        // non-capturing groups `(?:…)` and conditional types, while a ternary
-        // `a ? b : c` never has `?` directly adjacent to `:`.
+        // Optional-parameter marker `name?: T`. Requiring an identifier before
+        // the `?` rules out regex non-capturing groups `(?:…)` and ternaries.
         if ch == '?'
             && previous_significant(&chars, index)
                 .is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$')
@@ -133,9 +126,8 @@ fn should_strip_return_type(chars: &[char], colon: usize) -> bool {
 
     let candidate_end = skip_return_type_annotation(chars, colon + 1);
 
-    // A genuine return type is immediately followed by the function body `{`.
-    // Without this guard a ternary whose `:` also follows a `)` — e.g.
-    // `cond ? foo(x) : bar` — looks identical and would be wrongly stripped.
+    // A real return type is followed by `{`. Without this check, a ternary
+    // like `cond ? foo(x) : bar` looks identical and gets stripped by mistake.
     if chars.get(candidate_end) != Some(&'{') {
         return false;
     }

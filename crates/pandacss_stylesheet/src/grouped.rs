@@ -53,9 +53,9 @@ fn sort_children(node: &mut GroupNode) {
 }
 
 /// Collapse consecutive rules with identical declaration blocks into one
-/// comma-joined selector list (e.g. `.a {…} .b {…}` → `.a, .b {…}`). Only
-/// adjacent rules merge, so the cascade is preserved; at-rule wrappers are
-/// separate children and act as barriers. Mirrors lightningcss's adjacent
+/// comma-joined selector list (`.a {…} .b {…}` → `.a, .b {…}`). Only adjacent
+/// rules merge, preserving the cascade; at-rule wrappers are separate
+/// children and act as barriers. Mirrors lightningcss's adjacent
 /// `CssRuleList::minify` merge.
 fn merge_adjacent_rules(node: &mut GroupNode) {
     if node.rules.len() > 1 {

@@ -1,6 +1,5 @@
-/// Indentation-aware CSS string builder. In `minify` mode every method skips
-/// the cosmetic whitespace (newlines, indents, the space after `:`), so the
-/// same emit code produces pretty or minified output without branching.
+/// Indentation-aware CSS string builder. `minify` mode skips cosmetic
+/// whitespace so the same emit code produces pretty or minified output.
 pub struct CssWriter {
     out: String,
     minify: bool,
@@ -53,9 +52,9 @@ impl CssWriter {
         self.block(write);
     }
 
-    /// Write an at-rule whose head is a fixed prefix + dynamic identifier
-    /// (`@keyframes spin`, `@property --x`). Saves the `format!`
-    /// allocation a caller would otherwise pay per invocation.
+    /// At-rule with a fixed prefix + dynamic identifier (`@keyframes spin`,
+    /// `@property --x`), skipping the `format!` allocation a caller would
+    /// otherwise pay per call.
     pub fn at_rule_named(&mut self, prefix: &str, name: &str, write: impl FnOnce(&mut Self)) {
         self.write_indent();
         self.out.push_str(prefix);

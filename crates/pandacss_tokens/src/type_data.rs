@@ -18,8 +18,7 @@ impl TokenDictionary {
             let category_name = category.as_str();
             let name = category_name.to_owned();
 
-            // Token unions are category-relative: `red.500`, not
-            // `colors.red.500`, matching legacy generated token types.
+            // Category-relative (`red.500`, not `colors.red.500`) — matches legacy codegen.
             let mut values = values
                 .keys()
                 .map(|key| {
@@ -54,8 +53,7 @@ impl TokenDictionary {
         let values = raw_values
             .into_iter()
             .map(|(path, value)| {
-                // Empty when the value is just the token's var-ref; the runtime
-                // `token.var` derives it via `toVar(path)` instead of storing it.
+                // Empty means the value equals the var-ref; `token.var` derives it via `toVar(path)`.
                 if vars.get(&path).is_some_and(|var| *var == value) {
                     (path, String::new())
                 } else {

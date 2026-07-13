@@ -1,7 +1,7 @@
 //! Position-carrying source inspection for tooling (reporting, lint, IDE).
 //! `inspect_file_source()` re-extracts a file and classifies each site (token,
-//! property, recipe, pattern, keyframe) — the engine knows the token
-//! dictionary, utilities, and keyframes, so classification is authoritative.
+//! property, recipe, pattern, keyframe) using the engine's own token
+//! dictionary, utilities, and keyframes.
 
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
@@ -27,9 +27,8 @@ struct Cx<'a> {
 }
 
 impl Project {
-    /// Classify every Panda usage in a file (token / property / recipe / pattern)
-    /// with its source range, plus file-local extraction diagnostics. On-demand
-    /// — not part of the build path.
+    /// Classifies every Panda usage in a file with its source range, plus
+    /// file-local diagnostics. On-demand — not part of the build path.
     #[must_use]
     pub fn inspect_file_source(&self, path: &str, source: &str) -> FileInspectionResult {
         let result = extract_verbose(source, path, &self.config.extractor_config);
@@ -46,6 +45,7 @@ impl Project {
         let mut style_entries = Vec::new();
         let mut component_entries = Vec::new();
         let source_refs = source_ref_map(&result.style_source_refs);
+
         for (index, call) in result.calls.iter().enumerate() {
             collect_call_styles(
                 call,
@@ -57,6 +57,7 @@ impl Project {
                 &mut style_entries,
             );
         }
+
         for (index, jsx) in result.jsx.iter().enumerate() {
             let range = line_index.locate_range(jsx.span.start, jsx.span.end);
             component_entries.push(component_entry(self, jsx, &range));
@@ -85,9 +86,10 @@ impl Project {
                 }
             }
         }
-        // `token()` / `token.var()` calls resolve to a value/var during extraction,
-        // so the path is only available from the extractor's captured refs. Their
-        // span is the call itself — a tighter site than the enclosing style call.
+
+        // `token()`/`token.var()` resolve to a value/var during extraction, so
+        // the path only comes from the extractor's captured refs. The span is
+        // the call itself — tighter than the enclosing style call.
         for token_ref in &result.token_refs {
             let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
             sites.push(site(UsageKind::Token, &token_ref.path, &range));
@@ -97,6 +99,7 @@ impl Project {
             .iter()
             .map(|token_ref| token_ref_site(token_ref, &line_index, cx.tokens))
             .collect();
+
         FileInspectionResult {
             usages: sites,
             diagnostics: result.diagnostics,
@@ -121,8 +124,8 @@ impl Project {
         }
     }
 
-    /// Tokens that carry a hardcoded `value` on `prop`, ranked (safe equivalents
-    /// first). The lint rule lists these and lets the developer choose.
+    /// Tokens carrying `value` on `prop`, ranked with safe equivalents first.
+    /// The lint rule lists these and lets the developer choose.
     #[must_use]
     pub fn suggest_tokens(&self, prop: &str, value: &str) -> Vec<TokenSuggestion> {
         let Some(utility) = self.config.utility() else {
@@ -165,9 +168,8 @@ fn source_ref_map(refs: &[StyleSourceRef]) -> FxHashMap<SourceRefKey, &StyleSour
     map
 }
 
-/// Classify one extracted call and collect its usages + style entries. Handles
-/// `css({...})`, the recipe factories (`cva`/`sva`/`styled`), and recipe/pattern
-/// call sites.
+/// Classifies one extracted call and collects its usages + style entries:
+/// `css({...})`, the recipe factories, and recipe/pattern call sites.
 #[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
 fn collect_call_styles(
     call: &ExtractedCall,
@@ -190,7 +192,7 @@ fn collect_call_styles(
     };
     match (call.category, call.name.as_str()) {
         (MatchCategory::Css, "css") => {
-            // `css(a, b, …)` merges every style-object argument, so inspect them all.
+            // `css(a, b, …)` merges every arg, so inspect them all.
             for index in 0..call.data.len() {
                 if let Some(entries) = call_object(call, index) {
                     walk_object(entries, cx, &range, sites);
@@ -203,8 +205,7 @@ fn collect_call_styles(
                 }
             }
         }
-        // `cva({...})` (atomic recipe) / `sva({...})` (slot recipe) — the recipe
-        // config is the first argument.
+        // The recipe config is the first argument for both `cva` and `sva`.
         (MatchCategory::Css, "cva") => {
             collect_recipe(
                 call_object(call, 0),
@@ -227,9 +228,8 @@ fn collect_call_styles(
                 style_entries,
             );
         }
-        // Factory calls: `styled('div', config)` (config at arg 1) and
-        // `styled.div(config)` (config at arg 0). A config carrying recipe keys is
-        // walked as a recipe; otherwise it is a flat style object.
+        // `styled('div', config)` puts config at arg 1; `styled.div(config)` at
+        // arg 0. A config with recipe keys is walked as a recipe, else flat.
         (MatchCategory::Jsx, _) => {
             if let Some(config) = call_object(call, 1).or_else(|| call_object(call, 0)) {
                 if has_recipe_keys(config) {
@@ -267,8 +267,8 @@ fn call_object(call: &ExtractedCall, index: usize) -> Option<&[(String, Literal)
     }
 }
 
-/// Whether a factory config object is a recipe (carries `base`/`variants`/…)
-/// rather than a flat style object.
+/// Whether a factory config carries recipe keys (`base`/`variants`/…) rather
+/// than being a flat style object.
 fn has_recipe_keys(config: &[(String, Literal)]) -> bool {
     config.iter().any(|(key, _)| {
         matches!(
@@ -278,10 +278,9 @@ fn has_recipe_keys(config: &[(String, Literal)]) -> bool {
     })
 }
 
-/// Walk a recipe config (`cva`/`sva`/`styled`) and collect the style objects it
-/// holds: `base`, every `variants.<key>.<value>`, and each `compoundVariants[].css`.
-/// `slotted` recipes (`sva`) nest a slot level inside each style object. Paths
-/// match the source refs collected over the same config so leaves stay fixable.
+/// Walks a recipe config and collects the style objects it holds: `base`,
+/// every `variants.<key>.<value>`, and each `compoundVariants[].css`. Slotted
+/// recipes (`sva`) nest a slot level inside each style object.
 #[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
 fn collect_recipe(
     config: Option<&[(String, Literal)]>,
@@ -354,8 +353,8 @@ fn collect_recipe(
     }
 }
 
-/// Collect one recipe style object at `base_path`. For a slotted recipe the value
-/// is `{ slot: styleObject }`; otherwise it is the style object directly.
+/// Collects one recipe style object at `base_path`. A slotted value is
+/// `{ slot: styleObject }`; otherwise it's the style object directly.
 #[allow(clippy::too_many_arguments, reason = "threads inspection accumulators")]
 fn recipe_style(
     value: &Literal,
@@ -613,13 +612,13 @@ fn walk_prop(
                 .map_or(prop, |utility| utility.resolve_shorthand(prop));
             sites.push(site(UsageKind::Property, canonical, range));
 
+            // A `Literal::Token` already has its path via `token_refs`, so skip
+            // the category-relative heuristic to avoid duplicate sites.
             if let Some(dict) = cx.tokens
-                // `Literal::Token` already records the path via `token_refs` — skip
-                // the category-relative heuristic to avoid duplicate sites.
                 && !matches!(value, Literal::Token { .. })
             {
-                // Bare category-relative value on a known utility — `color: 'red.300'`,
-                // with an optional `/opacity` modifier (`red.300/40`).
+                // Bare category-relative value on a known utility, e.g.
+                // `color: 'red.300'` (optionally `red.300/40`).
                 if let Some(utility) = cx.utility
                     && let Some(category) = utility.token_category(prop)
                 {
@@ -628,18 +627,13 @@ fn walk_prop(
                         sites.push(site(UsageKind::Token, &path, range));
                     }
                 }
-                // References embedded in the value string: `{colors.red.200}`, a
-                // resolved `token(...)` call (lowered to `var(--…)` by extraction),
-                // or a value that is itself a token path.
                 collect_token_refs(raw, dict, &mut |path| {
                     sites.push(site(UsageKind::Token, path, range));
                 });
             }
 
-            // `animation` / `animationName` reference a defined keyframe by name.
-            // Matching every whitespace/comma-separated word against the keyframe
-            // set captures shorthands (`spin 1s linear`) and lists (`spin, fade`)
-            // regardless of where the name sits.
+            // Match each whitespace/comma-separated word against the keyframe
+            // set, catching shorthands (`spin 1s linear`) and lists (`spin, fade`).
             if matches!(canonical, "animation" | "animationName") {
                 for word in raw
                     .split([' ', ','])
@@ -673,25 +667,19 @@ fn walk_prop(
     }
 }
 
-/// Strip a trailing `/opacity` color modifier — `red.300/40` → `red.300`. Token
-/// paths never contain `/`, so this is safe to apply to any candidate path.
+/// Strips a trailing `/opacity` color modifier: `red.300/40` -> `red.300`.
+/// Safe on any candidate path since token paths never contain `/`.
 fn strip_modifier(value: &str) -> &str {
     value
         .split_once('/')
         .map_or(value, |(base, _)| base.trim_end())
 }
 
-/// Emit every token path referenced inside a value string. Covers the forms that
-/// survive extraction as text, including when interpolated into a longhand value
-/// (`border: '1px solid {colors.red.300}'`):
-/// - `{colors.red.200}` curly references,
-/// - `token(colors.red.300)` references written *inside* a string (a call
-///   expression `token(...)` is instead resolved during extraction and captured
-///   via [`token_refs`](pandacss_extractor::TokenRef)),
-/// - a value that is itself a token path (`'colors.red.400'`).
-///
-/// Every candidate path is run through [`strip_modifier`] so `/opacity` suffixes
-/// still resolve to the base token.
+/// Emits every token path referenced inside a value string: `{colors.red.200}`
+/// curly refs, `token(...)` written inside a string (a bare `token(...)` call
+/// is resolved during extraction and captured via
+/// [`token_refs`](pandacss_extractor::TokenRef) instead), and a value that's
+/// itself a token path. Each candidate runs through [`strip_modifier`] first.
 fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&str)) {
     let mut embedded = false;
 
@@ -720,8 +708,8 @@ fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&
         rest = &after[end..];
     }
 
-    // A whole-value token path (e.g. `'--ring': 'colors.red.400'`). Skip when the
-    // value already carried `{…}` / `token(…)` references handled above.
+    // A whole-value token path, e.g. `'--ring': 'colors.red.400'`. Skip if the
+    // value already carried a `{…}`/`token(…)` reference handled above.
     if !embedded {
         let key = strip_modifier(raw.trim());
         if !key.is_empty() && dict.token(key).is_some() {
@@ -730,7 +718,7 @@ fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&
     }
 }
 
-/// A key that nests a style object rather than naming a property: a configured
+/// A key that nests a style object rather than naming a property: a
 /// condition, a raw selector (`&:hover`), or an at-rule (`@media`).
 fn is_nesting(key: &str, cx: &Cx) -> bool {
     cx.conditions.is_condition(key) || is_raw_selector(key)

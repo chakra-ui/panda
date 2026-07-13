@@ -1,8 +1,8 @@
 //! CSS emission orchestration for the native stylesheet compiler.
 //!
-//! The emitter gathers atoms, tokens, globals, and recipes, lowers them through
-//! the shared style-rule model, groups compatible at-rule wrappers, and writes
-//! the final layered CSS string.
+//! Turns atoms, recipe entries, tokens, and global config into `LoweredTarget`
+//! rules, groups rules that share `@media`/`@supports` wrappers, and writes
+//! the layered CSS string.
 
 use std::{borrow::Cow, ops::Range};
 
@@ -67,10 +67,12 @@ pub fn emit<'a>(
     let layers = &config.layers;
     let mut writer = CssWriter::new(minify, capacity_hint(&atoms, recipes));
     let mut layer_ranges = StylesheetLayerRanges::default();
+
     if emit_layer_declaration {
         write_layer_order(&mut writer, layers, minify);
         writer.newline();
     }
+
     if config.preflight.enabled() {
         let options = config.preflight.options();
         let scope = options.and_then(|options| options.scope.as_deref());
@@ -81,6 +83,7 @@ pub fn emit<'a>(
             crate::preflight::write(writer, scope, level);
         }));
     }
+
     if has_base_layer(config) {
         layer_ranges.base = Some(write_layer(&mut writer, &layers.base, |writer| {
             write_made_with_panda_marker(writer);
@@ -90,10 +93,12 @@ pub fn emit<'a>(
             serialize_global_position_try(writer, &config.global_position_try);
         }));
     }
+
     if !recipes.atomic.is_empty() {
         atoms.extend(recipes.atomic.iter());
     }
     atoms = dedup_atom_refs(atoms);
+
     let keyframes = as_non_empty_object(&config.theme.keyframes);
     let usage = if config.optimize.remove_unused_tokens || config.optimize.remove_unused_keyframes {
         Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
@@ -112,6 +117,7 @@ pub fn emit<'a>(
                 .as_ref()
                 .is_some_and(|usage| has_used_keyframes(keyframes, &usage.keyframes))
     });
+
     if prepared_token_vars.is_some() || keyframes.is_some() {
         layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
             if let Some(token_vars) = prepared_token_vars.as_ref() {
@@ -127,9 +133,11 @@ pub fn emit<'a>(
             }
         }));
     }
+
     if has_recipe_rules(recipes) {
         layer_ranges.recipes = Some(cx.write_recipes_layer(&mut writer, recipes, &layers.recipes));
     }
+
     if !atoms.is_empty() {
         let sorted = cx.sort.sorted_atoms(atoms);
         let buckets = bucket_atoms_by_layer(&cx, sorted);
@@ -154,6 +162,7 @@ pub fn emit<'a>(
             }));
         }
     }
+
     EmitOutput {
         css: writer.finish(),
         layer_ranges,
@@ -209,6 +218,7 @@ pub fn emit_theme_css(
     if prepared.base.is_empty() && prepared.conditions.is_empty() {
         return None;
     }
+
     let mut writer = CssWriter::new(minify, 512);
     EmitContext::serialize_token_vars_with_root(&mut writer, &prepared, &theme_root);
     Some(trim_final_newline(writer.finish()))
@@ -261,8 +271,8 @@ fn seed_static_theme_token_vars(
     used
 }
 
-/// Per-recipe CSS for split output: groups the recipe layer's base + variant
-/// groups by recipe name (first-seen order) and re-emits each as its own
+/// Per-recipe CSS for split output: groups base, variant, and compound
+/// entries by recipe name (first-seen order) and re-emits each as its own
 /// `@layer recipes { … }` block. Returns `(recipe_name, css)`.
 #[must_use]
 pub fn emit_recipe_split<'a>(
@@ -434,6 +444,7 @@ fn static_theme_condition_filter(config: &UserConfig) -> Option<ThemeConditionFi
         .keys()
         .map(|theme| (theme.as_str(), theme_condition_name(theme)))
         .collect::<Vec<_>>();
+
     let mut conditions = FxHashSet::default();
     for theme in themes.iter().filter_map(|theme| theme.as_str()) {
         if let Some((_, condition)) = configured.iter().find(|(name, _)| *name == theme) {
@@ -528,8 +539,8 @@ fn serialize_global_position_try(writer: &mut CssWriter, value: &Value) {
     }
 }
 
-/// A single rule object or an array of them, as one slice — the
-/// `FontfaceRule | FontfaceRule[]` shape both globals share.
+/// Normalizes the `FontfaceRule | FontfaceRule[]` shape both globals share
+/// into a slice, so callers always iterate rules the same way.
 fn at_rule_variants(value: &Value) -> &[Value] {
     match value {
         Value::Array(items) => items.as_slice(),
@@ -537,8 +548,8 @@ fn at_rule_variants(value: &Value) -> &[Value] {
     }
 }
 
-/// Write a flat at-rule descriptor block (no nesting): hyphenated property,
-/// rendered value. `false` and structural values are skipped.
+/// Write a flat, unnested descriptor block: each property is hyphenated and
+/// its value rendered. `false` and structural values are skipped.
 fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<String, Value>) {
     for (prop, value) in body {
         if let Some(rendered) = render_descriptor_value(prop, value) {
@@ -548,7 +559,7 @@ fn write_at_rule_descriptors(writer: &mut CssWriter, body: &serde_json::Map<Stri
 }
 
 /// Render an at-rule descriptor value. Scalars defer to
-/// [`render_primitive_value`]; arrays join with `,` (matching v1's
+/// [`render_declaration_value`]; arrays join with `,` (matching v1's
 /// `String(array)` for multi-source `src`).
 fn render_descriptor_value(prop: &str, value: &Value) -> Option<String> {
     match value {
@@ -804,8 +815,8 @@ fn expand_condition_paths(
         .collect()
 }
 
-/// Custom-utility transform styles by `(prop, original_value)` — the structural
-/// match of `pandacss_project::UtilityStyleKey`'s map.
+/// Custom-utility transform overrides keyed by `(prop, original_value)`;
+/// mirrors the shape of `pandacss_project::UtilityStyleKey`'s map.
 pub type UtilityStyleOverrides = FxHashMap<(Box<str>, AtomValue), Literal>;
 
 struct EmitContext<'a> {
@@ -1133,6 +1144,7 @@ impl<'a> EmitContext<'a> {
         let Some(raw) = raw.as_deref() else {
             return;
         };
+
         let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
         if self.collect_grouped_atom_rules(
             atom,
@@ -1143,7 +1155,8 @@ impl<'a> EmitContext<'a> {
         ) {
             return;
         }
-        let numeric_hint = atom_numeric_hint(atom.value());
+
+        let numeric_hint = atom_value_numeric_hint(atom.value());
         for rule in self.lower_target(
             Target::Class {
                 name: &result.class_name,
@@ -1173,7 +1186,9 @@ impl<'a> EmitContext<'a> {
         grouped: &mut GroupNode,
     ) -> bool {
         let styles = if is_composition_prop(atom.prop()) {
-            // A composition resolving to its own key emits nothing (still handled).
+            // An unresolved composition (styles == { prop: prop }) has no CSS to
+            // emit, but the caller must still treat it as handled here, not fall
+            // through to the flat-declaration path.
             let Some(styles) = composition_style_object(atom.prop(), &result.styles) else {
                 return true;
             };
@@ -1242,21 +1257,7 @@ impl<'a> EmitContext<'a> {
         let Literal::Object(entries) = styles else {
             return None;
         };
-        let mut declarations = Vec::with_capacity(entries.len());
-        for (prop, value) in entries {
-            if let Some(value) = literal_to_css(prop, value, numeric_hint) {
-                let (value, value_important) = split_important(&value);
-                append_declaration(
-                    &mut declarations,
-                    Declaration {
-                        prop: hyphenate_property(prop),
-                        value: value.into_owned(),
-                        important: important || value_important,
-                    },
-                );
-            }
-        }
-        Some(declarations)
+        Some(declarations_from_entries(entries, important, numeric_hint))
     }
 
     fn write_collected_styles(&self, writer: &mut CssWriter, value: &Value) {
@@ -1362,8 +1363,9 @@ impl<'a> EmitContext<'a> {
             return;
         };
 
-        // Walk one style object in three buckets: direct declarations, nested
-        // selector/condition blocks, and property-level conditional values.
+        // Walk one style object into buckets: direct declarations, composition/
+        // nested-utility entries, nested selector/condition blocks, and
+        // property-level conditional values.
         let mut declarations = Vec::with_capacity(entries.len());
         let mut nested_rules = Vec::new();
         let mut conditional_declarations = Vec::new();
@@ -1624,9 +1626,6 @@ impl<'a> EmitContext<'a> {
         (!conditions.is_empty()).then_some(conditions)
     }
 
-    /// Emit one recipe class's rules. Entries are sorted then coalesced:
-    /// consecutive entries that resolve to the same rule target (selector +
-    /// wrappers) are merged into a single block rather than re-opening it.
     fn write_recipes_layer(
         &self,
         writer: &mut CssWriter,
@@ -1672,9 +1671,9 @@ impl<'a> EmitContext<'a> {
             || has_regular_recipe_groups(compounds)
         {
             writer.layer(recipes_layer, |writer| {
-                write_recipe_base_groups(self, writer, base, false);
-                write_recipe_variant_groups(self, writer, variants, false);
-                write_recipe_compound_groups(self, writer, compounds, false);
+                write_recipe_group_layer(self, writer, "base", base, false);
+                write_recipe_group_layer(self, writer, "variants", variants, false);
+                write_recipe_group_layer(self, writer, "compound_variants", compounds, false);
             });
         }
 
@@ -1684,13 +1683,16 @@ impl<'a> EmitContext<'a> {
             || has_slot_recipe_groups(compounds)
         {
             writer.layer(&slot_layer, |writer| {
-                write_recipe_base_groups(self, writer, base, true);
-                write_recipe_variant_groups(self, writer, variants, true);
-                write_recipe_compound_groups(self, writer, compounds, true);
+                write_recipe_group_layer(self, writer, "base", base, true);
+                write_recipe_group_layer(self, writer, "variants", variants, true);
+                write_recipe_group_layer(self, writer, "compound_variants", compounds, true);
             });
         }
     }
 
+    /// Emit one recipe class's rules. Entries are sorted then coalesced:
+    /// consecutive entries that resolve to the same rule target (selector +
+    /// wrappers) are merged into a single block rather than re-opening it.
     fn write_recipe_group(
         &self,
         writer: &mut CssWriter,
@@ -1822,22 +1824,11 @@ impl<'a> EmitContext<'a> {
         let Literal::Object(entries) = &result.styles else {
             return None;
         };
-
-        let mut declarations = Vec::with_capacity(entries.len());
-        for (prop, literal) in entries {
-            if let Some(value) = literal_to_css(prop, literal, atom_value_numeric_hint(value)) {
-                let (value, value_important) = split_important(&value);
-                append_declaration(
-                    &mut declarations,
-                    Declaration {
-                        prop: hyphenate_property(prop),
-                        value: value.into_owned(),
-                        important: important || value_important,
-                    },
-                );
-            }
-        }
-        Some(declarations)
+        Some(declarations_from_entries(
+            entries,
+            important,
+            atom_value_numeric_hint(value),
+        ))
     }
 
     fn transform_atom(
@@ -1885,8 +1876,6 @@ impl<'a> EmitContext<'a> {
     }
 
     fn lower_target(&self, target: Target<'_>, conditions: &[&str]) -> Vec<LoweredTarget> {
-        // Build the base selector once, then apply condition wrappers/selectors
-        // through the shared lowering path for atom and recipe rules.
         let selector = self.selector_for_target(target);
         self.lower_rule_conditions(&LoweredTarget::new(selector), conditions)
     }
@@ -1948,9 +1937,8 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    /// Legacy's `transformStyles` hashes a style object, then decodes the group
-    /// by calling `utility.transform` for every leaf. This is the Rust equivalent
-    /// of the hashing half for grouped style objects.
+    /// Ports the hashing half of v1's `transformStyles`: hash the style object,
+    /// then decode it via `utility.transform` on each leaf.
     fn style_object_entries(&self, styles: &Literal) -> Vec<RecipeStyleEntry> {
         let normalizer = StyleNormalizer::internal(Some(self.utility), &self.breakpoints);
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
@@ -2079,9 +2067,13 @@ fn has_regular_recipe_groups(groups: &[&RecipeStyleGroupSnapshot]) -> bool {
     groups.iter().any(|group| !is_slot_recipe_group(group))
 }
 
-fn write_recipe_base_groups(
+/// Write one recipe sub-layer (`base`, `variants`, `compound_variants`),
+/// filtered to regular or slot-recipe groups. The three sub-layers share this
+/// shape and differ only in `layer_name`.
+fn write_recipe_group_layer(
     cx: &EmitContext<'_>,
     writer: &mut CssWriter,
+    layer_name: &str,
     groups: &[&RecipeStyleGroupSnapshot],
     slots: bool,
 ) {
@@ -2093,49 +2085,7 @@ fn write_recipe_base_groups(
     if groups.is_empty() {
         return;
     }
-    writer.layer("base", |writer| {
-        for group in groups {
-            cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
-        }
-    });
-}
-
-fn write_recipe_variant_groups(
-    cx: &EmitContext<'_>,
-    writer: &mut CssWriter,
-    groups: &[&RecipeStyleGroupSnapshot],
-    slots: bool,
-) {
-    let groups = groups
-        .iter()
-        .copied()
-        .filter(|group| is_slot_recipe_group(group) == slots)
-        .collect::<Vec<_>>();
-    if groups.is_empty() {
-        return;
-    }
-    writer.layer("variants", |writer| {
-        for group in groups {
-            cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
-        }
-    });
-}
-
-fn write_recipe_compound_groups(
-    cx: &EmitContext<'_>,
-    writer: &mut CssWriter,
-    groups: &[&RecipeStyleGroupSnapshot],
-    slots: bool,
-) {
-    let groups = groups
-        .iter()
-        .copied()
-        .filter(|group| is_slot_recipe_group(group) == slots)
-        .collect::<Vec<_>>();
-    if groups.is_empty() {
-        return;
-    }
-    writer.layer("compound_variants", |writer| {
+    writer.layer(layer_name, |writer| {
         for group in groups {
             cx.write_recipe_group(writer, &group.class_name, &group.conditions, &group.entries);
         }
@@ -2226,8 +2176,28 @@ fn literal_to_css<'a>(
     }
 }
 
-fn atom_numeric_hint(value: &AtomValue) -> Option<&str> {
-    atom_value_numeric_hint(value)
+/// Shared by the atom and recipe-entry declaration paths, which differ only
+/// in how they obtain `entries` and `numeric_hint`.
+fn declarations_from_entries(
+    entries: &[(String, Literal)],
+    important: bool,
+    numeric_hint: Option<&str>,
+) -> Vec<Declaration> {
+    let mut declarations = Vec::with_capacity(entries.len());
+    for (prop, value) in entries {
+        if let Some(value) = literal_to_css(prop, value, numeric_hint) {
+            let (value, value_important) = split_important(&value);
+            append_declaration(
+                &mut declarations,
+                Declaration {
+                    prop: hyphenate_property(prop),
+                    value: value.into_owned(),
+                    important: important || value_important,
+                },
+            );
+        }
+    }
+    declarations
 }
 
 fn atom_value_numeric_hint(value: &AtomValue) -> Option<&str> {
@@ -2258,38 +2228,33 @@ fn finalized_class_name_owned(
     if conditions.is_empty() {
         return class_name;
     }
-    let capacity = conditions.iter().map(|c| c.len() + 3).sum::<usize>() + class_name.len();
-    let mut out = String::with_capacity(capacity);
-    for condition in conditions {
-        if !out.is_empty() {
-            out.push(':');
-        }
-        // Mirror the runtime `finalizeConditions` so the emitted selector matches
-        // the class the runtime puts on the element: raw selectors / at-rules
-        // (`&`, `@`) wrap in `[…]` (spaces→`_`); named conditions drop leading `_`.
-        push_finalized_condition(config, &mut out, condition);
-    }
-    out.push(':');
-    out.push_str(&class_name);
-    out
+    condition_prefixed_name(config, &class_name, conditions)
 }
 
 fn hash_class_name(config: &UserConfig, class_name: &str, conditions: &[&str]) -> String {
     if conditions.is_empty() {
         return to_hash(class_name);
     }
+    to_hash(&condition_prefixed_name(config, class_name, conditions))
+}
 
+/// Build `cond1:cond2:...:class_name`, shared by the plain and hashed class
+/// name paths. Mirror the runtime `finalizeConditions` so the emitted
+/// selector matches the class the runtime puts on the element: raw selectors
+/// / at-rules (`&`, `@`) wrap in `[…]` (spaces→`_`); named conditions drop
+/// their leading `_`.
+fn condition_prefixed_name(config: &UserConfig, class_name: &str, conditions: &[&str]) -> String {
     let capacity = conditions.iter().map(|c| c.len() + 3).sum::<usize>() + class_name.len();
-    let mut input = String::with_capacity(capacity);
+    let mut out = String::with_capacity(capacity);
     for condition in conditions {
-        if !input.is_empty() {
-            input.push(':');
+        if !out.is_empty() {
+            out.push(':');
         }
-        push_finalized_condition(config, &mut input, condition);
+        push_finalized_condition(config, &mut out, condition);
     }
-    input.push(':');
-    input.push_str(class_name);
-    to_hash(&input)
+    out.push(':');
+    out.push_str(class_name);
+    out
 }
 
 fn push_finalized_condition(config: &UserConfig, out: &mut String, condition: &str) {

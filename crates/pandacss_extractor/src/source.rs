@@ -1,10 +1,9 @@
 //! Byte-offset → (line, column) translation for diagnostics.
 //!
 //! Extraction spans stay as byte offsets for compactness (hundreds per file).
-//! A `LineIndex` is built once per file and translates parse-error offsets
-//! into `SourceLocation` records. Columns are 1-indexed UTF-16 code units
-//! to match TypeScript / `ts-morph` — the format every Panda user already
-//! sees in their editor and `tsc` output.
+//! `LineIndex` builds once per file and translates offsets to `SourceLocation`.
+//! Columns are 1-indexed UTF-16 code units, matching TypeScript/`ts-morph` —
+//! the format every Panda user already sees in their editor and `tsc` output.
 
 use pandacss_shared::{SourceLocation, SourceRange};
 

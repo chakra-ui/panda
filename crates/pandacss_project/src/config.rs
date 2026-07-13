@@ -6,8 +6,8 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use pandacss_config::{
-    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxSpecifier,
-    JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
+    CompoundVariantConfig, CssSyntaxKind as ConfigCssSyntaxKind, ImportMap, JsxFramework,
+    JsxSpecifier, JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
     CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Literal,
@@ -28,9 +28,9 @@ pub(crate) fn compile_config(config: &pandacss_config::UserConfig) -> Result<Con
     compile_config_with_token_dictionary(config, None)
 }
 
-/// Compile a user config into the immutable runtime [`Config`]: the extractor
-/// matchers + JSX config, utility metadata, condition matcher, pattern/recipe
-/// registries, and the token dictionary (reused if the caller already built one).
+/// Compiles a user config into the immutable runtime [`Config`]: extractor
+/// matchers, utility metadata, conditions, and pattern/recipe registries.
+/// Reuses `token_dictionary` if the caller already built one.
 pub(crate) fn compile_config_with_token_dictionary(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
@@ -55,6 +55,7 @@ pub(crate) fn compile_config_with_token_dictionary(
         jsx_extraction_config_from_definitions(config, &entries, &utility),
     );
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
+    extractor_config.class_attribute = class_attribute_for_framework(config.jsx_framework.as_ref());
     extractor_config.syntax = extractor_syntax_from_config(config.syntax);
     extractor_config.token_dictionary = token_dictionary;
 
@@ -115,6 +116,7 @@ pub(crate) struct PatternDefinition {
     pub(crate) jsx_regexes: Vec<Regex>,
     pub(crate) props: Vec<String>,
     pub(crate) default_values: Option<Literal>,
+    pub(crate) requires_transform: bool,
     strict: bool,
     blocklist: Vec<String>,
 }
@@ -187,6 +189,7 @@ fn pattern_definitions_from_config(
                     .default_values
                     .as_ref()
                     .and_then(non_callback_literal_from_json),
+                requires_transform: config.transform.is_some(),
                 strict: config.strict,
                 blocklist: config.blocklist.clone(),
             })
@@ -238,34 +241,49 @@ fn slot_recipe_definitions(
     Ok(out)
 }
 
-fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<RecipeKey, Recipe> {
+/// Builds the `(file, span) -> Recipe` map config recipes share with inline
+/// `cva()`/`sva()` ones (see [`RecipeKey`]): `{prefix}.{name}` keyed by
+/// declaration order, so config recipes sort deterministically too.
+fn config_recipe_keys<D, T: Clone>(
+    prefix: &str,
+    definitions: &[D],
+    name: impl Fn(&D) -> &str,
+    index: impl Fn(&D) -> u32,
+    recipe: impl Fn(&D) -> &T,
+) -> BTreeMap<RecipeKey, T> {
     let mut out = BTreeMap::new();
-    for recipe in recipes {
+    for definition in definitions {
         out.insert(
             RecipeKey {
-                file: Arc::from(format!("theme.recipes.{}", recipe.name)),
-                span_start: recipe.index,
+                file: Arc::from(format!("{prefix}.{}", name(definition))),
+                span_start: index(definition),
             },
-            recipe.recipe.clone(),
+            recipe(definition).clone(),
         );
     }
     out
 }
 
+fn config_recipes_from_definitions(recipes: &[RecipeDefinition]) -> BTreeMap<RecipeKey, Recipe> {
+    config_recipe_keys(
+        "theme.recipes",
+        recipes,
+        |recipe| recipe.name.as_str(),
+        |recipe| recipe.index,
+        |recipe| &recipe.recipe,
+    )
+}
+
 fn config_slot_recipes_from_definitions(
     recipes: &[SlotRecipeDefinition],
 ) -> BTreeMap<RecipeKey, SlotRecipe> {
-    let mut out = BTreeMap::new();
-    for recipe in recipes {
-        out.insert(
-            RecipeKey {
-                file: Arc::from(format!("theme.slotRecipes.{}", recipe.name)),
-                span_start: recipe.index,
-            },
-            recipe.recipe.clone(),
-        );
-    }
-    out
+    config_recipe_keys(
+        "theme.slotRecipes",
+        recipes,
+        |recipe| recipe.name.as_str(),
+        |recipe| recipe.index,
+        |recipe| &recipe.recipe,
+    )
 }
 
 fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
@@ -311,10 +329,9 @@ fn matchers_from_definitions(config: &ConfigDefinitions) -> Matchers {
     }
 }
 
-/// Flatten patterns + recipes + slot recipes into the extractor's JSX config:
-/// the set of component names/regexes to match, plus each component's prop
-/// allowlist, strict flag, and blocklist (keyed separately for name vs regex
-/// matches).
+/// Flattens patterns, recipes, and slot recipes into the extractor's JSX
+/// config: component names/regexes to match, plus each one's prop allowlist,
+/// strict flag, and blocklist.
 fn jsx_extraction_config_from_definitions(
     config: &pandacss_config::UserConfig,
     entries: &ConfigDefinitions,
@@ -328,6 +345,7 @@ fn jsx_extraction_config_from_definitions(
     let mut component_regex_strict = Vec::new();
     let mut component_blocklist = FxHashMap::default();
     let mut component_regex_blocklist = Vec::new();
+
     for pattern in &entries.patterns {
         collect_component_entry(
             &pattern.jsx_names,
@@ -368,6 +386,7 @@ fn jsx_extraction_config_from_definitions(
             &mut component_regex_props,
         );
     }
+
     let valid_style_props = valid_jsx_style_props_from_config(utility, &entries.condition_names);
     JsxExtractionConfig {
         style_props: jsx_style_props_from_config(config),
@@ -481,6 +500,14 @@ fn extractor_syntax_from_config(syntax: ConfigCssSyntaxKind) -> CssSyntaxKind {
     match syntax {
         ConfigCssSyntaxKind::TemplateLiteral => CssSyntaxKind::TemplateLiteral,
         ConfigCssSyntaxKind::ObjectLiteral => CssSyntaxKind::ObjectLiteral,
+    }
+}
+
+/// Solid/Vue/Qwik use `class` on intrinsic elements; everything else `className`.
+fn class_attribute_for_framework(framework: Option<&JsxFramework>) -> &'static str {
+    match framework {
+        Some(JsxFramework::Solid | JsxFramework::Vue | JsxFramework::Qwik) => "class",
+        _ => "className",
     }
 }
 

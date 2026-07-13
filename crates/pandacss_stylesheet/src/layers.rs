@@ -1,12 +1,10 @@
-//! Cascade-layer declaration detection over raw CSS — used by bundler hosts to
-//! find the stylesheet root (the file declaring `@layer reset, base, …;`) to
-//! inject the compiled CSS into.
+//! Finds the `@layer reset, base, …;` declaration in raw CSS — the stylesheet
+//! root a bundler host injects compiled CSS into.
 
-/// `true` when `css` contains an `@layer a, b, c;` *statement* (not a
+/// `true` when `css` declares an `@layer a, b, c;` *statement* (not an
 /// `@layer x { … }` block) whose comma list includes every name in `layers`.
 /// A declared sub-layer (`recipes.base`) satisfies a root-layer lookup
-/// (`recipes`) so host code can still find the stylesheet root after recipe
-/// sub-layers are expanded in the declaration.
+/// (`recipes`), so this still finds the root after sub-layers are expanded.
 #[must_use]
 pub fn has_layer_declaration(css: &str, layers: &[&str]) -> bool {
     let mut rest = css;

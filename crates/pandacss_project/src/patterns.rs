@@ -8,8 +8,7 @@ use pandacss_extractor::Literal;
 
 use crate::config::PatternDefinition;
 
-/// Maps a pattern's config name and every JSX tag/regex it matches to its
-/// entry, so an extracted call or component can be resolved to its pattern.
+/// Maps a pattern's config name and every JSX tag/regex it matches to its entry.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct PatternRegistry {
     exact: FxHashMap<String, PatternEntry>,
@@ -20,6 +19,7 @@ pub(crate) struct PatternRegistry {
 struct PatternEntry {
     base_name: String,
     default_values: Option<Arc<Literal>>,
+    requires_transform: bool,
 }
 
 pub(crate) struct PatternTransformInput<'a> {
@@ -35,6 +35,7 @@ impl PatternRegistry {
             let entry = PatternEntry {
                 base_name: definition.name.clone(),
                 default_values,
+                requires_transform: definition.requires_transform,
             };
 
             registry
@@ -80,6 +81,12 @@ impl PatternRegistry {
     /// Resolve a pattern name or JSX tag to the canonical pattern name.
     pub(crate) fn resolve_name(&self, name: &str) -> Option<&str> {
         self.find(name).map(|entry| entry.base_name.as_str())
+    }
+
+    #[must_use]
+    pub(crate) fn requires_transform(&self, name: &str) -> bool {
+        self.find(name)
+            .is_some_and(|entry| entry.requires_transform)
     }
 
     fn find(&self, name: &str) -> Option<&PatternEntry> {

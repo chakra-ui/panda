@@ -10,6 +10,7 @@ publish = false
 [dependencies]
 itoa = { workspace = true }
 regex = { workspace = true }
+rustc-hash = { workspace = true }
 ryu = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -15,6 +15,7 @@ mod cross_file;
 mod css_template;
 mod export_names;
 mod extract;
+mod fragment;
 mod imports;
 mod jsx;
 mod jsx_react_runtime;
@@ -40,13 +41,17 @@ pub use imports::{
 pub use cross_file::CrossFileResolver;
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
+pub use fragment::{
+    FragmentCall, FragmentProperty, FragmentTernary, is_logical_expression, parse_call_fragment,
+    parse_object_fragment, parse_ternary_fragment,
+};
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
-pub use jsx::{ExtractedJsx, ExtractedJsxResult, extract_jsx};
+pub use jsx::{ExtractedJsx, ExtractedJsxResult, JsxAttr, extract_jsx};
 pub use literal::Literal;
 pub use matcher::{
     CssSyntaxKind, ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory,
     MatchedImport, Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
-    match_imports,
+    match_import_records_resolved, match_imports,
 };
 pub use pandacss_shared::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,

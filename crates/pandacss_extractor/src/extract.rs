@@ -12,7 +12,7 @@ use crate::source_refs::StyleSourceRef;
 use crate::{
     Diagnostic, ExportInfo, ExtractedCall, ExtractedJsx, ExtractorConfig, ImportRecord, Literal,
     MatchCategory, MatchedImport, Span, VisitorContext, collect_imports,
-    collect_parser_diagnostics, match_import_records,
+    collect_parser_diagnostics, match_import_records_resolved,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -32,6 +32,9 @@ pub struct TokenRef {
     /// `true` when the call was `token.var(...)` rather than `token(...)`.
     #[serde(default)]
     pub is_var: bool,
+    /// Resolved value the source transform inlines; `None` keeps the runtime call.
+    #[serde(skip)]
+    pub value: Option<String>,
 }
 
 /// Lean extraction result for the production hot path — strips `imports`
@@ -51,6 +54,10 @@ pub struct ExtractUsage {
     /// wire (consumed project-side only).
     #[serde(skip)]
     pub exports: ExportInfo,
+    /// Resolved cross-file module paths read to fold imported values. Surfaced
+    /// as transform build dependencies for watch invalidation. Project-side only.
+    #[serde(skip)]
+    pub dependencies: Vec<String>,
 }
 
 /// Verbose extraction result for on-demand tooling. Includes the same core
@@ -100,6 +107,7 @@ pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsa
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
         exports: outcome.exports,
+        dependencies: outcome.dependencies,
     }
 }
 
@@ -128,6 +136,7 @@ where
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
         exports: outcome.exports,
+        dependencies: outcome.dependencies,
     }
 }
 
@@ -171,6 +180,22 @@ struct ExtractResult {
     token_refs: Vec<TokenRef>,
     style_source_refs: Vec<StyleSourceRef>,
     exports: ExportInfo,
+    dependencies: Vec<String>,
+}
+
+fn match_file_imports(
+    config: &ExtractorConfig,
+    path: &str,
+    imports: &[ImportRecord],
+) -> Vec<MatchedImport> {
+    let file_path = std::path::Path::new(path);
+    match_import_records_resolved(imports, &config.matchers, |specifier| {
+        config
+            .cross_file
+            .as_ref()
+            .and_then(|resolver| resolver.resolve_path(file_path, specifier))
+            .map(|resolved| resolved.to_string_lossy().into_owned())
+    })
 }
 
 fn run_extract<'cb>(
@@ -198,7 +223,7 @@ fn run_extract<'cb>(
     };
     let matched = {
         let _span = tracing::trace_span!("match_imports").entered();
-        match_import_records(&imports, &config.matchers)
+        match_file_imports(config, path, &imports)
     };
 
     // Export surface is collected from the same parse — no second AST walk.
@@ -217,6 +242,7 @@ fn run_extract<'cb>(
             token_refs: Vec::new(),
             style_source_refs: Vec::new(),
             exports,
+            dependencies: Vec::new(),
         };
     }
 
@@ -249,6 +275,7 @@ fn run_extract<'cb>(
         } else {
             (Vec::new(), Vec::new(), Vec::new(), Vec::new())
         };
+
     let mut jsx = if should_collect_jsx(config) {
         let _span = tracing::trace_span!("visit_jsx").entered();
         if verbose {
@@ -272,6 +299,7 @@ fn run_extract<'cb>(
     diagnostics.extend(resolver.take_diagnostics());
     token_refs.extend(resolver.take_token_refs());
     let token_refs = dedupe_token_refs(token_refs);
+    let dependencies = resolver.take_cross_file_deps();
 
     ExtractResult {
         imports,
@@ -282,6 +310,7 @@ fn run_extract<'cb>(
         token_refs,
         style_source_refs,
         exports,
+        dependencies,
     }
 }
 

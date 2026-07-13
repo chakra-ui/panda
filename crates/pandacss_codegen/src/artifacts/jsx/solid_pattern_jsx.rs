@@ -1,8 +1,7 @@
 use pandacss_config::{JsxStylePropsConfig, PatternConfig};
 
-use crate::{
-    CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
-};
+use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
+use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
 
 pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
     let factory = factory_name(ctx);
@@ -104,34 +103,4 @@ fn factory_name(ctx: CodegenContext<'_>) -> String {
 
 fn style_props(ctx: CodegenContext<'_>) -> JsxStylePropsConfig {
     ctx.config.jsx_style_props.unwrap_or_default()
-}
-
-fn value_import(names: &[&str], source: &str) -> ImportDecl {
-    ImportDecl {
-        kind: ImportKind::Value,
-        specifiers: names
-            .iter()
-            .map(|name| ImportSpecifier::Named((*name).into()))
-            .collect(),
-        source: source.into(),
-    }
-}
-
-fn type_import(names: &[&str], source: &str) -> ImportDecl {
-    ImportDecl {
-        kind: ImportKind::Type,
-        specifiers: names
-            .iter()
-            .map(|name| ImportSpecifier::Named((*name).into()))
-            .collect(),
-        source: source.into(),
-    }
-}
-
-fn raw_runtime(code: impl Into<String>) -> Item {
-    Item::runtime(ItemNode::RawStmt(code.into()))
-}
-
-fn raw_type(code: impl Into<String>) -> Item {
-    Item::ty(ItemNode::RawStmt(code.into()))
 }

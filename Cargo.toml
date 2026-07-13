@@ -50,6 +50,7 @@ indexmap = { version = "2.14.0", features = ["serde"] }
 rustc-hash = "2.1"
 ryu = "1.0"
 smallvec = { version = "1.13", features = ["serde"] }
+string_wizard = "1.1.4"
 walkdir = "2"
 regex = "1.12.2"
 tracing = "0.1.44"

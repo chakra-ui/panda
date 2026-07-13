@@ -1,11 +1,10 @@
 //! Deterministic cascade ordering for emitted rules.
 //!
-//! Atoms/recipe entries are sorted by a composite [`CssRuleKey`] so the output
-//! cascade is stable and correct regardless of extraction order: unconditional
-//! rules first, then selector-conditioned, then at-rule-conditioned; within
-//! those, by media-query width, pseudo-class priority, and finally property
-//! specificity (longhands after shorthands so they win the cascade). Mirrors
-//! the JS sort in `packages/core`.
+//! Atoms/recipe entries are sorted by a composite [`CssRuleKey`], independent
+//! of extraction order: unconditional rules first, then selector-conditioned,
+//! then at-rule-conditioned; within those, by media-query width, pseudo-class
+//! priority, and finally property specificity (longhands after shorthands so
+//! they win the cascade). Mirrors the JS sort in `packages/core`.
 
 use std::cmp::Ordering;
 
@@ -210,7 +209,8 @@ impl PartialOrd for CssRuleKey {
 }
 
 /// Top-level grouping: unconditional rules emit before selector-conditioned,
-/// which emit before at-rule-conditioned. Variant order = cascade order.
+/// which emit before at-rule-conditioned. Variants are declared in that same
+/// order so the derived `Ord` sorts buckets by cascade priority directly.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 enum RuleBucket {
     Base,
@@ -341,8 +341,9 @@ struct QuerySize {
 }
 
 impl QuerySize {
-    /// Sort weight: min ascends (mobile-first), max descends (negated) so the
-    /// larger breakpoint comes first — matching how each direction must cascade.
+    /// Sort weight: `min` sorts by ascending value (mobile-first); `max`
+    /// negates the value so the largest breakpoint sorts first, matching
+    /// desktop-first cascade order.
     fn sort_value(self) -> f64 {
         match self.direction {
             QueryDirection::Min | QueryDirection::Unknown => self.value,
@@ -401,41 +402,42 @@ impl PartialOrd for SelectorKey {
 }
 
 fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
-    // Two nested-selector conditions that establish a descendant/child/sibling
-    // relationship are ORDER-SIGNIFICANT: `&:last-child` then `& .divider` must
-    // compose as `.cls:last-child .divider`, never `.cls .divider:last-child`.
-    // The pseudo-rank sort below would float the relational `& .divider`
-    // (rank 0) ahead of the pseudo `&:last-child` (rank > 0), relocating the
-    // pseudo onto the descendant. Keep author order (stable sort) whenever
-    // either side carries a relational combinator so the nesting can't invert.
+    // Nested-selector conditions with a descendant/child/sibling relationship
+    // are ORDER-SIGNIFICANT: `&:last-child` then `& .divider` must compose as
+    // `.cls:last-child .divider`, never `.cls .divider:last-child`. The
+    // pseudo-rank sort below would float `& .divider` (rank 0) ahead of
+    // `&:last-child` (rank > 0), relocating the pseudo onto the descendant.
+    // Keep author order whenever either side carries a relational combinator.
     if condition_is_relational(config, a) || condition_is_relational(config, b) {
         return Ordering::Equal;
     }
 
-    let mut a_at_rules = Vec::new();
-    let mut a_selectors = Vec::new();
-    collect_condition_parts(config, a, &mut a_at_rules, &mut a_selectors);
-    a_at_rules.sort();
-    a_selectors.sort();
-
-    let mut b_at_rules = Vec::new();
-    let mut b_selectors = Vec::new();
-    collect_condition_parts(config, b, &mut b_at_rules, &mut b_selectors);
-    b_at_rules.sort();
-    b_selectors.sort();
+    let (a_at_rules, a_selectors) = sorted_condition_parts(config, a);
+    let (b_at_rules, b_selectors) = sorted_condition_parts(config, b);
 
     compare_condition_apply_parts(&a_at_rules, &a_selectors, &b_at_rules, &b_selectors)
         .then_with(|| a.cmp(b))
 }
 
-/// True when `condition` is a RAW nested arbitrary selector authored as an
-/// object key (not a registered breakpoint / container / named / theme
-/// condition) that nests its subject under a combinator (descendant ` `, child
-/// `>`, adjacent `+`, general sibling `~`) relative to `&`. Such keys form an
-/// authored parent→descendant chain, so reordering one past another would
-/// change the ancestor chain. A bare compound like `&:last-child` is NOT
-/// relational (the pseudo sits on the subject) and still sorts normally; named
-/// conditions (`_dark`, `_ltr`, …) keep their existing cascade sort.
+fn sorted_condition_parts(
+    config: &UserConfig,
+    condition: &str,
+) -> (Vec<AtRuleKey>, Vec<SelectorKey>) {
+    let mut at_rules = Vec::new();
+    let mut selectors = Vec::new();
+    collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
+    at_rules.sort();
+    selectors.sort();
+    (at_rules, selectors)
+}
+
+/// True when `condition` is a raw nested selector, authored as an object key
+/// (not a registered breakpoint / container / named / theme condition), that
+/// nests its subject under a combinator (` `, `>`, `+`, `~`) relative to `&`.
+/// Reordering these would change the authored ancestor chain. A bare compound
+/// like `&:last-child` is not relational (the pseudo sits on the subject) and
+/// still sorts normally; named conditions (`_dark`, `_ltr`, …) keep their
+/// existing cascade sort.
 fn condition_is_relational(config: &UserConfig, condition: &str) -> bool {
     if !condition_is_raw_selector(config, condition) {
         return false;
@@ -448,10 +450,10 @@ fn condition_is_relational(config: &UserConfig, condition: &str) -> bool {
         .any(|selector| selector_has_top_level_combinator(&selector.raw))
 }
 
-/// A condition that resolves to its own literal text — i.e. it is NOT a
-/// breakpoint, container, registered, or theme condition. These are the raw
-/// arbitrary selectors authored directly as nested object keys (`&:last-child`,
-/// `& .divider`), whose author order is structurally significant.
+/// A condition that resolves to its own literal text, not a breakpoint,
+/// container, registered, or theme condition — a raw selector authored
+/// directly as a nested object key (`&:last-child`, `& .divider`), whose
+/// author order is structurally significant.
 fn condition_is_raw_selector(config: &UserConfig, condition: &str) -> bool {
     if config.breakpoint_condition(condition).is_some()
         || config.container_condition(condition).is_some()
@@ -588,9 +590,10 @@ fn collect_raw_part(raw: &str, at_rules: &mut Vec<AtRuleKey>, selectors: &mut Ve
     }
 }
 
-/// Min-direction needles across every size axis. Modern (`feature >=`, what the
-/// emitter writes for both `@media (width …)` and `@container (inline-size …)`)
-/// plus legacy `min-*` forms for user-authored conditions.
+/// Min-direction needles across every size axis: the modern `feature >=`
+/// syntax the emitter writes for both `@media (width …)` and
+/// `@container (inline-size …)`, plus legacy `min-*` forms for user-authored
+/// conditions.
 const MIN_SIZE_NEEDLES: [&str; 12] = [
     "width >=",
     "min-width:",

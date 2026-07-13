@@ -1,9 +1,9 @@
 //! Selector-list utilities: comma splitting and scoped rewriting for preflight.
 //!
 //! Comma splitting ignores nested `(...)` / `[...]` groups and backslash escapes.
-//! Element scoping peels trailing `::pseudo` suffixes only at paren/bracket depth
-//! zero, then either rewrites the list with a shared suffix or appends the scope
-//! class to each part. Parent scoping prefixes every comma-separated selector.
+//! Element scoping peels trailing `::pseudo` suffixes at depth zero, then shares
+//! one suffix across the list or appends the scope class per part. Parent
+//! scoping prefixes every comma-separated selector.
 
 /// Preflight root selector collapsed to a scope class/id when scoped.
 pub const PREFLIGHT_ROOT: &str = "html, :host";
@@ -85,7 +85,7 @@ fn scope_element_part(part: &str, scope: &str) -> String {
     }
 }
 
-/// True when the part is only one or more `::pseudo` segments (no subject selector).
+/// True when `part` is nothing but a chain of `::pseudo` segments (no subject selector).
 fn is_standalone_pseudo_element(part: &str) -> bool {
     peel_trailing_pseudo_elements(part).is_some_and(|(rest, _)| rest.is_empty())
 }

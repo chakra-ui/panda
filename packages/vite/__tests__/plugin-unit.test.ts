@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { TransformSourceResult } from '@pandacss/compiler-shared'
+import type { TransformSourceInput } from '@pandacss/transformer'
 
 const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 
@@ -70,25 +72,94 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(driver.reload).not.toHaveBeenCalled()
     expect(driver.applyChange).not.toHaveBeenCalled()
     expect(invalidateModule).toHaveBeenCalledWith(rootModule)
-    expect(modules).toEqual([rootModule, componentModule])
+    expect(modules).toMatchInlineSnapshot(`
+      [
+        {
+          "id": "/project/src/index.css",
+        },
+        {
+          "id": "/project/node_modules/@acme/ds/src/button.tsx",
+        },
+      ]
+    `)
+  })
+
+  it('warns on source-transform diagnostics and returns transformed code', async () => {
+    const { createSourceTransformer, driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const warn = vi.fn()
+
+    driver.sourceTransformer.transformSource.mockReturnValueOnce({
+      code: 'export const cls = "color_red"',
+      map: 'source-map',
+      changed: true,
+      bailed: false,
+      diagnostics: [
+        {
+          code: 'panda-transform-warning',
+          severity: 'warning',
+          message: 'transformed with a warning',
+        },
+      ],
+      dependencies: ['/project/theme.ts'],
+      helper: { needsCx: false, needsCva: false, needsSva: false },
+    })
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    expect(createSourceTransformer).toHaveBeenCalledWith(driver.compiler)
+    const result = plugin.transform.call(
+      { addWatchFile: vi.fn(), warn },
+      "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
+      '/project/src/app.tsx',
+    )
+
+    expect(warn.mock.calls[0]?.[0]).toMatchInlineSnapshot(`
+      "panda: 1 diagnostic(s) while transforming source
+      warning panda-transform-warning /project/src/app.tsx transformed with a warning"
+    `)
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "code": "export const cls = "color_red"",
+        "map": "source-map",
+      }
+    `)
   })
 })
 
 async function setup() {
   const driver = createMockDriver()
   const createNodeDriver = vi.fn(async () => driver)
+  const createSourceTransformer = vi.fn(() => driver.sourceTransformer)
 
   vi.doMock('@pandacss/compiler', () => ({
     createNodeDriver,
   }))
+  vi.doMock('@pandacss/transformer', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@pandacss/transformer')>()),
+    createSourceTransformer,
+  }))
 
   const { pandacss } = await import('../src')
 
-  return { createNodeDriver, driver, pandacss }
+  return { createNodeDriver, createSourceTransformer, driver, pandacss }
 }
 
 function createMockDriver() {
+  const sourceTransformer = {
+    transformSource: vi.fn(
+      (input: TransformSourceInput): TransformSourceResult => ({
+        code: input.source,
+        map: null,
+        changed: false,
+        bailed: false,
+        diagnostics: [],
+        dependencies: [],
+        helper: { needsCx: false, needsCva: false, needsSva: false },
+      }),
+    ),
+  }
   return {
+    sourceTransformer,
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes('@layer')),
       getFile: vi.fn(() => ({ diagnostics: [] })),

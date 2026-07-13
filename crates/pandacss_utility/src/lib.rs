@@ -1,9 +1,6 @@
-//! Utility metadata support for config-derived native extraction.
-//!
-//! This is intentionally narrower than Panda's JavaScript `Utility`
-//! engine. V1 handles serialized, data-only utility metadata needed to
-//! canonicalize extracted style props. Executable transforms remain host
-//! callbacks on the binding side.
+//! Config-derived utility metadata for native extraction. Narrower than the JS
+//! `Utility` engine: this handles data-only canonicalization; executable
+//! transforms stay host callbacks on the binding side.
 
 use std::collections::BTreeMap;
 use std::sync::Arc;
@@ -20,10 +17,12 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 mod normalize;
+mod runtime_class;
 mod token_ref;
 mod type_data;
 
 pub use normalize::{ShorthandPolicy, StyleNormalizer};
+pub use runtime_class::runtime_class_name_for_atom;
 pub use token_ref::{expand_token_references_to_values, expand_token_references_to_vars};
 
 use token_ref::is_plain_token_path_like;
@@ -246,8 +245,7 @@ impl Utility {
             .map_or(prop, std::string::String::as_str)
     }
 
-    /// Token category a property's values resolve against (e.g. `colors`).
-    /// Resolves shorthands first.
+    /// Token category a property's values resolve against, e.g. `colors`.
     #[must_use]
     pub fn token_category(&self, prop: &str) -> Option<&str> {
         self.properties
@@ -256,7 +254,6 @@ impl Utility {
             .as_deref()
     }
 
-    /// Resolves shorthand defensively before looking up the override.
     #[must_use]
     pub fn layer(&self, prop: &str) -> Option<&str> {
         let prop = self.resolve_shorthand(prop);
@@ -290,6 +287,11 @@ impl Utility {
     #[must_use]
     pub fn prefix(&self) -> &str {
         &self.prefix
+    }
+
+    #[must_use]
+    pub fn hash_class_names(&self) -> bool {
+        self.hash_class_names
     }
 
     #[must_use]
@@ -454,10 +456,9 @@ impl Utility {
         }
     }
 
-    /// Resolve a raw value through the utility's `values` category (token refs,
-    /// `[arbitrary]`, then category lookup `spacing.4` → `var(--spacing-4)`) —
-    /// the value node feeds a `transform` callback as its positional arg.
-    /// Passes the input through unchanged when no category matches.
+    /// Resolves a raw value through token refs, `[arbitrary]`, then category
+    /// lookup (`spacing.4` → `var(--spacing-4)`) as a `transform` callback arg.
+    /// Passes through unchanged when no category matches.
     #[must_use]
     pub fn resolve_values_value(&self, prop: &str, value: &str) -> String {
         let key = self.resolve_shorthand(prop);
@@ -523,8 +524,7 @@ impl Utility {
         }
     }
 
-    /// Whether a color-category value uses an opacity modifier that cannot be
-    /// resolved to `color-mix`.
+    /// Whether `value` has an opacity modifier that can't resolve to `color-mix`.
     #[must_use]
     pub fn is_invalid_color_opacity_modifier(&self, value: &str) -> bool {
         split_top_level_slash(value).is_some()
@@ -533,9 +533,7 @@ impl Utility {
     }
 
     fn default_style(&self, prop: &str, value: &Literal) -> Literal {
-        // Composition-style values (Object/Array/Conditional from a values
-        // map) are already the final style shape — pass through with token
-        // refs expanded, no extra `prop: value` wrap.
+        // Composition values are already the final shape — expand token refs, don't wrap.
         if matches!(
             value,
             Literal::Object(_) | Literal::Array(_) | Literal::Conditional(_)
@@ -737,7 +735,7 @@ fn walk_composition_tree(
         match value {
             Value::Object(entries) => {
                 if let Some(styles) = entries.get("value") {
-                    if let Some(literal) = value_to_literal(styles) {
+                    if let Some(literal) = Literal::from_json(styles) {
                         out.insert(path, literal);
                     }
                 } else {
@@ -745,29 +743,11 @@ fn walk_composition_tree(
                 }
             }
             _ => {
-                if let Some(literal) = value_to_literal(value) {
+                if let Some(literal) = Literal::from_json(value) {
                     out.insert(path, literal);
                 }
             }
         }
-    }
-}
-
-fn value_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(s) => Some(Literal::String(s.clone())),
-        Value::Number(n) => n.as_f64().map(Literal::Number),
-        Value::Bool(b) => Some(Literal::Bool(*b)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => Some(Literal::Array(
-            items.iter().filter_map(value_to_literal).collect(),
-        )),
-        Value::Object(entries) => Some(Literal::Object(
-            entries
-                .iter()
-                .filter_map(|(k, v)| Some((k.clone(), value_to_literal(v)?)))
-                .collect(),
-        )),
     }
 }
 
@@ -797,7 +777,7 @@ fn values_map(value: Option<&UtilityValues>) -> FxHashMap<String, Literal> {
         }
         Some(UtilityValues::Map(values)) => {
             for (key, value) in values {
-                if let Some(value) = json_to_literal(value) {
+                if let Some(value) = Literal::from_json(value) {
                     out.insert(key.clone(), value);
                 }
             }
@@ -849,8 +829,8 @@ fn has_token_reference(value: &str) -> bool {
     value.contains("token(") || (value.contains('{') && value.contains('}'))
 }
 
-/// Unwrap the `[arbitrary]` escape hatch (`[2px]` -> `2px`), but only when the
-/// brackets balance — a stray inner `]` leaves the value untouched.
+/// Unwraps the `[arbitrary]` escape hatch (`[2px]` -> `2px`) when brackets
+/// balance; a stray inner `]` leaves the value untouched.
 fn arbitrary_value(value: &str) -> String {
     let value = value.trim();
     if !value.starts_with('[') || !value.ends_with(']') {
@@ -875,32 +855,12 @@ fn arbitrary_value(value: &str) -> String {
     }
 }
 
-fn json_to_literal(value: &Value) -> Option<Literal> {
-    match value {
-        Value::String(value) => Some(Literal::String(value.clone())),
-        Value::Number(value) => value.as_f64().map(Literal::Number),
-        Value::Bool(value) => Some(Literal::Bool(*value)),
-        Value::Null => Some(Literal::Null),
-        Value::Array(items) => items
-            .iter()
-            .map(json_to_literal)
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Array),
-        Value::Object(entries) => entries
-            .iter()
-            .map(|(key, value)| json_to_literal(value).map(|value| (key.clone(), value)))
-            .collect::<Option<Vec<_>>>()
-            .map(Literal::Object),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::split_top_level_slash;
 
-    // These cases are not observable through the public `transform` API because
-    // the color-mix resolver rejects them before the split is visible, so they
-    // are covered here against the private helper directly.
+    // Covered against the private helper: the color-mix resolver rejects these
+    // before the split is visible, so `transform` can't observe them.
 
     #[test]
     fn splits_after_a_color_function_with_inner_slash() {

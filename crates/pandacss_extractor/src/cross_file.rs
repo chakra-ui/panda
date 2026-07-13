@@ -1,42 +1,37 @@
-//! Cross-file import resolution.
+//! Cross-file import resolution: when the same-file [`crate::Resolver`] hits
+//! `import { x } from './tokens'`, this module loads the target file and
+//! folds the requested export. Module resolution itself is `oxc_resolver`
+//! (relative paths, extensions, tsconfig paths, package.json `exports`).
 //!
-//! When the same-file [`crate::Resolver`] hits an `import { x } from
-//! './tokens'` reference, it asks this module to load the target file
-//! and fold the requested export's value. Module resolution itself is
-//! delegated to `oxc_resolver` (relative paths, extension probing,
-//! tsconfig paths, package.json `exports`).
+//! `CrossFileResolver` type-erases over [`pandacss_fs::FileSystem`] so
+//! consumer types (`ExtractorConfig`, `Project`) stay non-generic; the
+//! concrete impl is `ResolverImpl<F>` behind a `Box<dyn CrossFileLookup>`.
 //!
-//! `CrossFileResolver` is type-erased over the [`pandacss_fs::FileSystem`]
-//! impl so consumer types (`ExtractorConfig`, `Project`) stay
-//! non-generic. The concrete impl lives in `ResolverImpl<F>` behind a
-//! `Box<dyn CrossFileLookup>`.
+//! Cache: `path → HashMap<exported_name, Literal>`. Each file parses and
+//! folds once per session, then drops its AST.
 //!
-//! Cache shape is `path → HashMap<exported_name, Literal>`: each file is
-//! parsed and folded exactly once per session, and the AST is dropped
-//! after exports are extracted so we don't keep every imported file's
-//! `Program` alive.
-//!
-//! Folds top-level `export const X = <foldable>`. Does *not* yet fold
-//! re-exports, `export default`, or non-const declarations — add when the
-//! simple case proves out.
+//! Folds top-level `export const X = <foldable>` only — not re-exports,
+//! `export default`, or non-const declarations yet.
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, ExportNamedDeclaration, ModuleExportName, Program, Statement,
-    VariableDeclaration,
+    BindingPattern, Declaration, ExportNamedDeclaration, Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
-use oxc_resolver::{ResolveOptions, ResolverGeneric};
+use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
 use oxc_span::SourceType;
 use pandacss_fs::FileSystem;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
-use crate::{Matchers, TokenDictionary, collect_imports, match_import_records, scope::Resolver};
+use crate::{
+    Matchers, TokenDictionary, collect_imports, imports::module_export_name, match_import_records,
+    scope::Resolver,
+};
 
 type FileExports = FxHashMap<String, Literal>;
 
@@ -46,6 +41,8 @@ fn default_resolve_options() -> ResolveOptions {
             .iter()
             .map(|s| (*s).to_string())
             .collect(),
+        // Auto-discover tsconfig so `paths` aliases resolve (matches rolldown/tsc).
+        tsconfig: Some(TsconfigDiscovery::Auto),
         ..ResolveOptions::default()
     }
 }
@@ -97,25 +94,21 @@ impl CrossFileResolver {
         }
     }
 
-    /// Returns `None` when the specifier doesn't resolve, the file can't
-    /// be read or parsed, `name` isn't a foldable `const` export, or
-    /// we're already mid-load for the same file (cycle guard).
-    #[must_use]
-    pub fn resolve_named_export(
-        &self,
-        from_file: &Path,
-        specifier: &str,
-        name: &str,
-        matchers: Option<&Matchers>,
-        tokens: Option<&TokenDictionary>,
-    ) -> Option<Literal> {
-        self.inner
-            .resolve_named_export(from_file, specifier, name, matchers, tokens)
-    }
-
     pub(crate) fn as_lookup(&self) -> &dyn CrossFileLookup {
         self.inner.as_ref()
     }
+
+    #[must_use]
+    pub fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
+        self.inner.resolve_path(from_file, specifier)
+    }
+}
+
+/// A cross-file lookup: the folded value plus the resolved module path
+/// (recorded as a build dependency even when the value doesn't fold).
+pub(crate) struct CrossFileResolution {
+    pub(crate) value: Option<Literal>,
+    pub(crate) path: Option<PathBuf>,
 }
 
 /// Object-safe interface the rest of the crate consumes. Keeps the
@@ -128,7 +121,9 @@ pub(crate) trait CrossFileLookup: Send + Sync {
         name: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
-    ) -> Option<Literal>;
+    ) -> CrossFileResolution;
+
+    fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf>;
 
     fn cache_len(&self) -> usize;
 }
@@ -178,8 +173,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             None,
         );
 
-        // Oxc returns a partial AST on parse errors; walk what we get,
-        // matching the JS extractor's recovery behavior.
+        // Oxc returns a partial AST on parse errors — walk what we get.
         Some(collect_exports(
             &parser_return.program,
             path,
@@ -190,6 +184,20 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 }
 
 impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
+    fn resolve_path(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
+        // `resolve_file` is the only API that honors `TsconfigDiscovery::Auto`,
+        // but it panics on a non-file path — guard first.
+        if !<F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
+            .is_ok_and(oxc_resolver::FileMetadata::is_file)
+        {
+            return None;
+        }
+        self.inner
+            .resolve_file(from_file, specifier)
+            .ok()
+            .map(|resolution| resolution.full_path())
+    }
+
     fn resolve_named_export(
         &self,
         from_file: &Path,
@@ -197,18 +205,31 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         name: &str,
         matchers: Option<&Matchers>,
         tokens: Option<&TokenDictionary>,
-    ) -> Option<Literal> {
-        let directory = from_file.parent()?;
-        let resolution = self.inner.resolve(directory, specifier).ok()?;
+    ) -> CrossFileResolution {
+        let none = || CrossFileResolution {
+            value: None,
+            path: None,
+        };
+        let Some(directory) = from_file.parent() else {
+            return none();
+        };
+        let Ok(resolution) = self.inner.resolve(directory, specifier) else {
+            return none();
+        };
         let path = resolution.full_path();
 
+        // A resolved module is a build dependency even if the export doesn't
+        // fold — record `path` on every remaining exit.
         if let Some(exports) = self
             .cache
             .lock()
             .expect("cross-file cache poisoned")
             .get(&path)
         {
-            return exports.get(name).cloned();
+            return CrossFileResolution {
+                value: exports.get(name).cloned(),
+                path: Some(path),
+            };
         }
 
         // Cycle guard: `a.ts ↔ b.ts` would otherwise overflow the stack.
@@ -216,7 +237,10 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         {
             let mut in_flight = self.in_flight.lock().expect("cross-file guard poisoned");
             if !in_flight.insert(guard_key.clone()) {
-                return None;
+                return CrossFileResolution {
+                    value: None,
+                    path: Some(path),
+                };
             }
         }
 
@@ -232,8 +256,11 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         self.cache
             .lock()
             .expect("cross-file cache poisoned")
-            .insert(path, exports);
-        value
+            .insert(path.clone(), exports);
+        CrossFileResolution {
+            value,
+            path: Some(path),
+        }
     }
 
     fn cache_len(&self) -> usize {
@@ -275,13 +302,16 @@ fn collect_from_named(
         let exported = module_export_name(&specifier.exported);
         let local = module_export_name(&specifier.local);
         let value = if let Some(source) = &decl.source {
-            lookup.resolve_named_export(
-                path,
-                source.value.as_str(),
-                &local,
-                resolver.matchers(),
-                resolver.tokens(),
-            )
+            // Transitive re-export deps aren't threaded back to the importer yet.
+            lookup
+                .resolve_named_export(
+                    path,
+                    source.value.as_str(),
+                    &local,
+                    resolver.matchers(),
+                    resolver.tokens(),
+                )
+                .value
         } else {
             resolver.resolve_root_name(&local)
         };
@@ -345,8 +375,4 @@ fn collect_pattern_bindings(
             collect_pattern_bindings(&assignment.left, resolver, out);
         }
     }
-}
-
-fn module_export_name(name: &ModuleExportName<'_>) -> String {
-    name.name().to_string()
 }

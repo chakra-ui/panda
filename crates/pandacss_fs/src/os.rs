@@ -7,11 +7,10 @@ use oxc_resolver::{FileMetadata, FileSystem as OxcResolverFileSystem, FileSystem
 use walkdir::WalkDir;
 
 use crate::FileSystem;
-use crate::glob::{GlobOptions, effective_excludes, matches_any};
+use crate::glob::{GlobOptions, effective_excludes, matches_any, relative_to};
 
-/// Native filesystem impl. Read primitives delegate to `oxc_resolver::FileSystemOs`;
-/// write primitives call `std::fs` directly; `glob` overrides the default walker to
-/// use `walkdir` for native-fast directory traversal.
+/// Native filesystem impl. Reads delegate to `oxc_resolver::FileSystemOs`, writes
+/// call `std::fs` directly, and `glob` overrides the default walker with `walkdir`.
 #[derive(Clone)]
 pub struct OsFileSystem(Arc<FileSystemOs>);
 
@@ -68,17 +67,14 @@ impl FileSystem for OsFileSystem {
 
         let mut results: Vec<PathBuf> = Vec::new();
 
-        // Scope the walk to each include's hoisted base dir instead of all of `cwd`.
-        // Roots are disjoint (nested ones are dropped), so no path is visited twice.
+        // Disjoint hoisted base dirs, so no path is visited twice.
         for root in crate::glob::walk_roots(opts) {
-            // `walkdir`'s `filter_entry` prunes a directory before descending — same
-            // semantics as the default walker but one syscall path per directory instead
-            // of per file.
+            // `filter_entry` prunes a directory before descending into it.
             let walker = WalkDir::new(&root)
                 .follow_links(true)
                 .into_iter()
                 .filter_entry(|entry| {
-                    let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
+                    let rel = relative_to(entry.path(), &opts.cwd);
                     let rel_str = rel.to_string_lossy();
                     if rel_str.is_empty() {
                         return true; // root
@@ -88,8 +84,7 @@ impl FileSystem for OsFileSystem {
                 });
 
             for entry in walker {
-                // Tolerate permission errors and missing base dirs mid-walk; fail on
-                // anything else.
+                // Tolerate permission/missing-dir errors mid-walk; fail on anything else.
                 let entry = match entry {
                     Ok(e) => e,
                     Err(err)
@@ -109,7 +104,7 @@ impl FileSystem for OsFileSystem {
                     continue;
                 }
 
-                let rel = entry.path().strip_prefix(&opts.cwd).unwrap_or(entry.path());
+                let rel = relative_to(entry.path(), &opts.cwd);
                 let rel_str = rel.to_string_lossy();
                 let rel_bytes = rel_str.as_bytes();
 

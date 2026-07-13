@@ -6,6 +6,7 @@ import { button, someRecipe } from '../styled-system/recipes'
 import { Badge, badge } from './Badge'
 import { AnotherButtonWithRegex, Button, ListedButton } from './Button'
 import { Card } from './Card'
+import { SourceTransformProof } from './SourceTransformProof'
 
 const SomeRecipe = panda('div', someRecipe)
 
@@ -140,6 +141,8 @@ function App() {
       >
         spinning
       </span>
+
+      <SourceTransformProof />
     </div>
   )
 }

@@ -23,14 +23,12 @@ pub fn split_important(value: &str) -> (Cow<'_, str>, bool) {
     (without_important(value), important)
 }
 
-/// Locate the `!important` marker, returning the byte range to strip — from
-/// the `!` (including any whitespace before it) through the keyword. A bare
-/// `!` with no keyword still counts, matching the JS behavior.
+/// Byte range to strip for `!important`: the `!` plus leading whitespace
+/// through the keyword. A bare `!` with no keyword still counts (JS parity).
 fn important_marker(value: &str) -> Option<(usize, usize)> {
     let bytes = value.as_bytes();
     let bang = bytes.iter().position(|byte| *byte == b'!')?;
 
-    // Back-scan over whitespace so `red !important` strips the space too.
     let mut start = bang;
     while start > 0 && bytes[start - 1].is_ascii_whitespace() {
         start -= 1;

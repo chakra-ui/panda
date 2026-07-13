@@ -1,6 +1,4 @@
-//! Shared helpers used by Panda Rust crates.
-//!
-//! This crate intentionally stays at the bottom of the dependency graph:
+//! Shared helpers for Panda Rust crates. Bottom of the dependency graph —
 //! no dependencies on other Panda crates.
 
 pub mod css_escape;
@@ -19,7 +17,7 @@ pub use diagnostic::{
     codes as diagnostic_codes,
 };
 pub use error::{PandaError, PandaResult};
-pub use hash::{compound_class_name, compound_combo_string, to_hash, without_space};
+pub use hash::{compound_class_name, compound_combo_string, fx_hash, to_hash, without_space};
 pub use important::{is_important, split_important, without_important};
 pub use regex::compile_js_regex;
 pub use strings::{

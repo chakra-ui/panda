@@ -1,11 +1,9 @@
-//! In-process span-duration aggregator.
+//! In-process span-duration aggregator, for benches/tests that need exact
+//! per-span totals without parsing chrome-json: install [`SpanTimings`] as a
+//! subscriber, run traced code, then call [`SpanTimings::snapshot`].
 //!
-//! Lets benches/tests measure exact per-span totals without parsing
-//! chrome-json. Install [`SpanTimings`] as a subscriber, run code that emits
-//! spans, then call [`SpanTimings::snapshot`] to read sorted totals.
-//!
-//! Note: counts and durations are taken from `on_enter` → `on_exit` pairs.
-//! Re-entering the same span accumulates additional time and bumps the count.
+//! Counts/durations come from `on_enter` → `on_exit` pairs; re-entering a
+//! span accumulates time and bumps the count.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -16,7 +14,6 @@ use tracing::span::{Attributes, Id};
 use tracing_subscriber::layer::{Context, Layer};
 use tracing_subscriber::registry::LookupSpan;
 
-/// Total time and call count for a single span name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpanStat {
     pub name: &'static str,
@@ -53,14 +50,13 @@ impl SpanTimings {
         Arc::new(Self::default())
     }
 
-    /// Reset all collected timings to zero. Useful between phases.
     pub fn clear(&self) {
         if let Ok(mut map) = self.inner.lock() {
             map.clear();
         }
     }
 
-    /// Snapshot the current totals, sorted by total time descending.
+    /// Current totals, sorted by total time descending.
     #[must_use]
     pub fn snapshot(&self) -> Vec<SpanStat> {
         let Ok(map) = self.inner.lock() else {
@@ -79,7 +75,6 @@ impl SpanTimings {
         out
     }
 
-    /// Build a `tracing-subscriber` layer that feeds into this collector.
     #[must_use]
     pub fn layer<S>(self: &Arc<Self>) -> SpanTimingsLayer<S>
     where
@@ -100,7 +95,6 @@ impl SpanTimings {
     }
 }
 
-/// `tracing-subscriber` Layer that records span enter/exit durations.
 pub struct SpanTimingsLayer<S> {
     timings: Arc<SpanTimings>,
     _marker: std::marker::PhantomData<fn(S)>,

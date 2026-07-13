@@ -6,28 +6,20 @@ use crate::{
     MatchedImport, Span, TokenRef,
     css_template::css_template_to_object,
     literal::expression_to_literal,
+    matcher::member_display,
+    scope::flatten_static_member_path,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_object_source_refs,
     },
     span_from_oxc,
 };
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{
-    Argument, CallExpression, Expression, IdentifierReference, TaggedTemplateExpression,
-};
+use oxc_ast::ast::{Argument, CallExpression, Expression, TaggedTemplateExpression};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use serde::Serialize;
-use smallvec::SmallVec;
 use std::borrow::Cow;
-
-fn is_jsx_factory(matchers: &crate::Matchers, name: &str) -> bool {
-    matchers
-        .jsx_factories
-        .as_ref()
-        .is_some_and(|factories| factories.iter().any(|factory| factory == name))
-}
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -39,10 +31,9 @@ pub struct ExtractedCall {
     /// Local binding at the call site — differs from `name` when the
     /// import was aliased (`import { css as nCss }`).
     pub alias: String,
-    /// One entry per source argument, in order. `None` means the
-    /// argument was present but not literal-extractable yet (identifier,
-    /// non-foldable expression). Calls where *every* argument is
-    /// non-extractable are dropped.
+    /// One entry per source argument, in order. `None` means present but
+    /// not foldable (identifier, dynamic expression). A call drops only
+    /// when every argument is `None`.
     pub data: Vec<Option<Literal>>,
     /// Internal-only hint for JSX factory calls such as
     /// `styled("button", button, { defaultProps })`, where the second
@@ -50,6 +41,10 @@ pub struct ExtractedCall {
     #[serde(skip)]
     pub jsx_recipe_ident: Option<String>,
     pub span: Span,
+    /// Source span of each argument, from the AST — lets the transform locate an
+    /// argument to rewrite without re-scanning the call for commas/parens.
+    #[serde(skip)]
+    pub arg_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -199,10 +194,9 @@ impl Extractor<'_, '_, '_> {
                 if matched.kind == ImportSpecifierKind::Namespace {
                     return None;
                 }
-                // Scope guard: skip when the identifier binds to a local
-                // (`function f(css) { css({}) }`). Stage-by-stage testing
-                // entrypoints fall back to name-based matching when no
-                // resolver is supplied.
+                // Skip a local shadowing the import (`function f(css) { css({}) }`).
+                // Staged testing entrypoints have no resolver, so they fall
+                // back to name-based matching.
                 if let Some(resolver) = self.ctx.resolver
                     && !resolver.is_import_binding(ident)
                 {
@@ -228,7 +222,7 @@ impl Extractor<'_, '_, '_> {
 
                 if matched.kind == ImportSpecifierKind::Named {
                     if matched.category == MatchCategory::Jsx
-                        && is_jsx_factory(&self.ctx.config.matchers, &matched.name)
+                        && self.ctx.config.matchers.is_jsx_factory(&matched.name)
                     {
                         return Some(ResolvedCallee {
                             category: matched.category,
@@ -236,7 +230,7 @@ impl Extractor<'_, '_, '_> {
                             alias: &matched.alias,
                         });
                     }
-                    if path.as_slice() != ["raw"] || !is_raw_category(matched.category) {
+                    if path.as_slice() != ["raw"] || !matched.category.supports_raw() {
                         return None;
                     }
                     return Some(ResolvedCallee {
@@ -253,7 +247,7 @@ impl Extractor<'_, '_, '_> {
                 if !raw_tail.is_empty() && raw_tail != ["raw"] {
                     return None;
                 }
-                if raw_tail == ["raw"] && !is_raw_category(matched.category) {
+                if raw_tail == ["raw"] && !matched.category.supports_raw() {
                     return None;
                 }
                 if !self
@@ -276,13 +270,6 @@ impl Extractor<'_, '_, '_> {
     }
 }
 
-fn is_raw_category(category: MatchCategory) -> bool {
-    matches!(
-        category,
-        MatchCategory::Css | MatchCategory::Recipe | MatchCategory::Pattern
-    )
-}
-
 fn should_emit_call(
     category: MatchCategory,
     data: &[Option<Literal>],
@@ -296,9 +283,9 @@ fn should_emit_call(
                 .any(|literal| matches!(literal, Literal::Object(_)));
     }
     if matches!(category, MatchCategory::Recipe | MatchCategory::Pattern) {
-        // A config-recipe or pattern call always renders its base + default
-        // styles, even with a missing, dynamic, or non-object arg (which
-        // destructures to "no selection" at runtime), so it always emits.
+        // A config-recipe/pattern call always renders base + default styles,
+        // even with a missing or dynamic arg (destructures to "no selection"
+        // at runtime) — so it always emits.
         return true;
     }
     data.iter().any(Option::is_some)
@@ -323,41 +310,6 @@ fn dynamic_style_value_diagnostic(
     diagnostic
 }
 
-fn flatten_static_member_path<'a>(
-    expr: &'a Expression<'_>,
-) -> Option<(&'a IdentifierReference<'a>, SmallVec<[&'a str; 3]>)> {
-    let mut path = SmallVec::new();
-    let mut current = expr;
-    loop {
-        match current {
-            Expression::StaticMemberExpression(member) => {
-                path.push(member.property.name.as_str());
-                current = &member.object;
-            }
-            Expression::Identifier(ident) => {
-                path.reverse();
-                return Some((ident, path));
-            }
-            _ => return None,
-        }
-    }
-}
-
-fn member_display(root: &str, path: &[&str]) -> String {
-    let mut out = String::with_capacity(
-        root.len()
-            + 1
-            + path.iter().map(|part| part.len()).sum::<usize>()
-            + path.len().saturating_sub(1),
-    );
-    out.push_str(root);
-    for part in path {
-        out.push('.');
-        out.push_str(part);
-    }
-    out
-}
-
 impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let (Some(resolver), Some(token_refs)) =
@@ -369,6 +321,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     span: span_from_oxc(call.span),
                     needs_css_var: resolver.token_call_needs_css_var(call),
                     is_var: resolver.token_call_is_var(call),
+                    value: resolver.token_call_value(call),
                 });
             } else if let Some(path) = resolver.token_call_path(call) {
                 token_refs.push(TokenRef {
@@ -376,6 +329,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     span: span_from_oxc(call.span),
                     needs_css_var: resolver.token_call_needs_css_var(call),
                     is_var: resolver.token_call_is_var(call),
+                    value: resolver.token_call_value(call),
                 });
             }
         }
@@ -388,14 +342,18 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let jsx_recipe_ident = (category == MatchCategory::Jsx)
                 .then(|| self.jsx_recipe_identifier(call))
                 .flatten();
+
             let data: Vec<Option<Literal>> = call
                 .arguments
                 .iter()
                 .map(|arg| argument_to_literal(arg, resolver))
                 .collect();
-            // Drop only when nothing was extractable. Otherwise keep
-            // positional `None` slots so consumers know which arg was
-            // non-literal.
+            let arg_spans: Vec<Span> = call
+                .arguments
+                .iter()
+                .map(|arg| span_from_oxc(arg.span()))
+                .collect();
+
             if should_emit_call(category, &data, jsx_recipe_ident.as_deref()) {
                 if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
                     let owner = StyleSourceOwner {
@@ -417,6 +375,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     data,
                     jsx_recipe_ident,
                     span: span_from_oxc(call.span),
+                    arg_spans,
                 });
             } else if category != MatchCategory::Jsx
                 && !data.is_empty()
@@ -452,8 +411,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 data: vec![Some(object)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
+                arg_spans: vec![span_from_oxc(tagged.span)],
             });
         }
+
         if let Some(resolved) = self.resolve_callee_expr(&tagged.tag)
             && resolved.category == MatchCategory::Css
             && resolved.name.as_ref() == "css"
@@ -467,6 +428,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 data: vec![Some(object)],
                 jsx_recipe_ident: None,
                 span: span_from_oxc(tagged.span),
+                arg_spans: vec![span_from_oxc(tagged.span)],
             });
         }
         walk::walk_tagged_template_expression(self, tagged);

@@ -1,9 +1,16 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
-import { formatDiagnostic } from '@pandacss/compiler-shared'
+import { formatDiagnostic, withDiagnosticFile } from '@pandacss/compiler-shared'
+import {
+  createPandaSourcePluginHooks,
+  createSourceTransformer,
+  runSourceTransform,
+  type PandaTransformerOptions,
+  type SourceTransformer,
+} from '@pandacss/transformer'
 import { extname } from 'node:path'
 import type { HmrContext, ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 
-export interface PandaPluginOptions {
+export interface PandaPluginOptions extends PandaTransformerOptions {
   /** Project root. Defaults to Vite's resolved `root`. */
   cwd?: string
   /** Explicit config file (relative to `cwd`); otherwise discovered upward. */
@@ -27,22 +34,24 @@ function warnDiagnostics(
   warn(`panda: ${diagnostics.length} diagnostic(s) ${context}\n${shown}${hidden}`)
 }
 
-function withDiagnosticFile(diagnostic: Diagnostic, file: string | undefined): Diagnostic {
-  if (!file || diagnostic.file) return diagnostic
-  return { ...diagnostic, file }
-}
-
 /**
  * Vite plugin for Panda CSS.
  * The CSS file declaring Panda layers is treated as the generated CSS root.
  */
 export function pandacss(options: PandaPluginOptions = {}): Plugin {
+  const { cwd: cwdOption, configPath, outdir: outdirOption, ...transformerOptions } = options
   let driver: Driver | undefined
   let cwd = ''
   let outdir: string | undefined
   let resolvedConfig: ResolvedConfig | undefined
   let designSystemDiagnosticsKey = ''
+  let sourceTransformer: SourceTransformer | undefined
   const rootIds = new Set<string>()
+  const sourceHooks = createPandaSourcePluginHooks(() => ({
+    ...transformerOptions,
+    getCompiler: () => driver?.compiler,
+    getTransformer: () => sourceTransformer,
+  }))
 
   const codegen = () => {
     driver?.codegen({ cwd, outdir })
@@ -108,14 +117,38 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
 
     async configResolved(config: ResolvedConfig) {
       resolvedConfig = config
-      cwd = options.cwd ?? config.root
-      driver = await createNodeDriver({ cwd, configPath: options.configPath })
-      outdir = options.outdir
+      cwd = cwdOption ?? config.root
+      driver = await createNodeDriver({ cwd, configPath })
+      sourceTransformer = createSourceTransformer(driver.compiler)
+      outdir = outdirOption
       codegen()
       driver.parseFiles()
     },
 
+    resolveId(id) {
+      return sourceHooks.resolveId(id)
+    },
+
+    load(id) {
+      return sourceHooks.load(id)
+    },
+
     transform(code, id) {
+      const sourceResult = runSourceTransform(
+        this,
+        {
+          ...transformerOptions,
+          getCompiler: () => driver?.compiler,
+          getTransformer: () => sourceTransformer,
+        },
+        code,
+        id,
+      )
+      if (sourceResult) {
+        warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', id)
+        return { code: sourceResult.code, map: sourceResult.map }
+      }
+
       if (!driver || extname(id.split('?')[0]) !== '.css') return null
       if (!driver.compiler.hasLayerDeclaration(code)) return null
 

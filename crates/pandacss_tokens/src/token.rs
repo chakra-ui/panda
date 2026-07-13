@@ -9,16 +9,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::category::TokenCategory;
 
-// PERF(port): FxHashMap because extension keys are short well-known strings
-// (`theme`, `isSemantic`, `prop`, …) where FxHash beats SipHash decisively.
+// PERF(port): FxHashMap — extension keys are short well-known strings, faster than SipHash.
 pub type TokenExtensions = FxHashMap<String, String>;
 
 /// One resolved token. `condition: None` is the base / unconditional variant.
 ///
-/// `extensions: Option<Box<...>>` keeps the no-metadata case (the vast
-/// majority of tokens) to one nullable pointer instead of an inline 48-byte
-/// `HashMap` — saves ~40 bytes per token and avoids a heap allocation when
-/// building dictionaries with thousands of plain tokens.
+/// `extensions: Option<Box<...>>` keeps the common no-metadata token to one
+/// nullable pointer instead of an inline 48-byte `HashMap` — saves ~40 bytes
+/// per token and skips a heap allocation for plain tokens.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(from = "TokenWire", into = "TokenWire"))]
@@ -29,16 +27,14 @@ pub struct Token {
     pub var: Arc<str>,
     pub category: TokenCategory,
     pub condition: Option<Arc<str>>,
-    /// Pre-alias-substitution value. Optional because the JS path strips
-    /// it once references are expanded.
+    /// Pre-alias-substitution value; `None` once references are expanded.
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub original_value: Option<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub description: Option<Arc<str>>,
     #[cfg_attr(feature = "serde", serde(default))]
     pub deprecated: bool,
-    /// Author-provided deprecation message (`deprecated: 'use X instead'`).
-    /// `None` when deprecated via plain `true`.
+    /// Author-provided message; `None` when deprecated via plain `true`.
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Option::is_none")
@@ -164,8 +160,7 @@ impl Token {
             .map(String::as_str)
     }
 
-    /// Lazily allocates the underlying map on first write so tokens with
-    /// no extensions never pay the allocation cost.
+    /// Allocates the extensions map on first write, not before.
     pub fn set_extension(&mut self, key: impl Into<String>, value: impl Into<String>) {
         self.extensions
             .get_or_insert_with(|| Box::new(FxHashMap::default()))

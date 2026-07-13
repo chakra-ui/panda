@@ -14,6 +14,7 @@ mod files;
 mod interop;
 mod introspect;
 mod recipes;
+mod transform_source;
 mod transforms;
 
 use napi_derive::napi;
@@ -211,7 +212,7 @@ pub struct WriteSplitCssOptions {
 
 #[napi]
 pub struct Compiler {
-    inner: pandacss_project::Project,
+    pub(crate) inner: pandacss_project::Project,
     config: serde_json::Value,
     user_config: UserConfig,
     callbacks: CallbackHost,

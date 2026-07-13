@@ -21,6 +21,36 @@ fn run_jsx(source: &str) -> ExtractUsage {
 }
 
 #[test]
+fn css_tagged_template_nested_declaration_without_trailing_semicolon_is_kept() {
+    // A block's last declaration may omit its `;` before `}`; it must still be
+    // captured (previously dropped, leaving an empty nested object).
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        css`color: red; &:hover { color: blue }`
+    "};
+    let result = run(source);
+    assert_yaml_snapshot!(result.calls[0].data, @r#"
+    - color: red
+      "&:hover":
+        color: blue
+    "#);
+}
+
+#[test]
+fn css_tagged_template_trailing_declaration_without_terminator_is_kept() {
+    // The final top-level declaration may have no `;` at all.
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        css`color: red; background: blue`
+    "};
+    let result = run(source);
+    assert_yaml_snapshot!(result.calls[0].data, @r#"
+    - color: red
+      background: blue
+    "#);
+}
+
+#[test]
 fn css_tagged_template_media_query_matches_js_core_fixture() {
     let source = indoc! {r"
         import { css } from '@panda/css';
