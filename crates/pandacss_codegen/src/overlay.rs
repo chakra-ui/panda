@@ -46,13 +46,22 @@ impl CodegenOverlay {
     pub(crate) fn resolve(&self, import: RuntimeImport) -> Option<String> {
         let (enabled, specifier) = match import {
             RuntimeImport::Helpers => (self.virtualize_utils, self.helpers.clone()),
-            RuntimeImport::CssCx => (self.virtualize_utils, format!("{}/cx", self.css)),
+            RuntimeImport::CssCx => (
+                self.virtualize_utils && !self.css.is_empty(),
+                format!("{}/cx", self.css),
+            ),
             RuntimeImport::CssConditions => (
-                self.virtualize_conditions,
+                self.virtualize_conditions && !self.css.is_empty(),
                 format!("{}/conditions", self.css),
             ),
-            RuntimeImport::CssCss => (self.virtualize_css, format!("{}/css", self.css)),
-            RuntimeImport::CssIndex => (self.virtualize_css, format!("{}/index", self.css)),
+            RuntimeImport::CssCss => (
+                self.virtualize_css && !self.css.is_empty(),
+                format!("{}/css", self.css),
+            ),
+            RuntimeImport::CssIndex => (
+                self.virtualize_css && !self.css.is_empty(),
+                format!("{}/index", self.css),
+            ),
         };
         (enabled && !specifier.is_empty()).then_some(specifier)
     }
@@ -125,6 +134,23 @@ mod tests {
             o.resolve(RuntimeImport::CssIndex).as_deref(),
             Some("@acme/ui/css/index")
         );
+    }
+
+    #[test]
+    fn empty_css_root_never_resolves() {
+        let o = CodegenOverlay {
+            css: String::new(),
+            helpers: String::new(),
+            virtualize_utils: true,
+            virtualize_conditions: true,
+            virtualize_css: true,
+            ..Default::default()
+        };
+        assert_eq!(o.resolve(RuntimeImport::CssCx), None);
+        assert_eq!(o.resolve(RuntimeImport::CssConditions), None);
+        assert_eq!(o.resolve(RuntimeImport::CssCss), None);
+        assert_eq!(o.resolve(RuntimeImport::CssIndex), None);
+        assert_eq!(o.resolve(RuntimeImport::Helpers), None);
     }
 
     #[test]
