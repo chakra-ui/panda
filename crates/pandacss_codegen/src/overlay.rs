@@ -42,7 +42,6 @@ impl CodegenOverlay {
         idents(&self.owned_patterns)
     }
 
-    #[allow(dead_code, reason = "wired into artifact emission in a follow-up task")]
     pub(crate) fn resolve(&self, import: RuntimeImport) -> Option<String> {
         let (enabled, specifier) = match import {
             RuntimeImport::Helpers => (self.virtualize_utils, self.helpers.clone()),

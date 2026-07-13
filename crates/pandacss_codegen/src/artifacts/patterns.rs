@@ -16,7 +16,7 @@ use crate::artifacts::ts_string::is_identifier;
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConfigDependency, ConstDecl,
     DependencySet, Expr, FunctionDecl, ImportDecl, InterfaceDecl, Item, ItemNode, JsDoc, Module,
-    Param, PatternCodegenMeta, Stmt, TsMember, TsMemberName, TsType,
+    Param, PatternCodegenMeta, RuntimeImport, Stmt, TsMember, TsMemberName, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -58,7 +58,7 @@ pub fn files(
         let definition = ctx.types.patterns.patterns.get(name);
         module_files.extend(emit_module_files(
             &format!("patterns/{}", file_stem(name)),
-            &module_with_type_data(name, pattern, definition, meta),
+            &module_with_type_data(ctx, name, pattern, definition, meta),
             options.format,
             false,
             options.import_extensions,
@@ -76,7 +76,7 @@ pub fn files(
     if emit_runtime {
         files.extend(emit_module_files(
             "patterns/runtime",
-            &runtime_module(),
+            &runtime_module(ctx),
             options.format,
             false,
             options.import_extensions,
@@ -109,6 +109,7 @@ pub fn files(
 
 #[must_use]
 pub fn module_with_type_data(
+    ctx: CodegenContext<'_>,
     name: &str,
     pattern: &PatternConfig,
     definition: Option<&PatternTypeDefinition>,
@@ -128,9 +129,15 @@ pub fn module_with_type_data(
             ["getPatternStyles", "patternFns"],
             "./runtime",
         ))
-        .with_import(ImportDecl::value(["memo"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["memo"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         // The public fn pipes styles through `css()` to return a className.
-        .with_import(ImportDecl::value(["css"], "../css/index"));
+        .with_import(ImportDecl::value(
+            ["css"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ));
 
     let pattern_imports = filtered_type_imports(&type_imports, &["PatternRuntimeConfig"]);
     if !pattern_imports.is_empty() {
@@ -195,9 +202,12 @@ fn type_import(specifiers: Vec<String>, source: &str) -> ImportDecl {
 /// Pattern runtime shared by every generated pattern file — the analogue of
 /// `recipes/runtime`. Holds the value-resolution helpers (`getPatternStyles`,
 /// `patternFns`) so they live with patterns rather than in the global helpers.
-fn runtime_module() -> Module {
+fn runtime_module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
-        .with_import(ImportDecl::value(["mapObject", "withDefaults"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["mapObject", "withDefaults"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_item(runtime_function(
             "isCssFunction",
             vec![Param::typed("v", TsType::Unknown)],

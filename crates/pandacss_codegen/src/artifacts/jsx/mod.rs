@@ -369,18 +369,20 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
 
     if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
         return match ctx.config.jsx_framework.as_ref() {
-            Some(JsxFramework::React) => react_jsx_literal::module(&factory, &component, &upper),
+            Some(JsxFramework::React) => {
+                react_jsx_literal::module(ctx, &factory, &component, &upper)
+            }
             Some(JsxFramework::Preact) => preact_jsx_literal::module(&factory, &component, &upper),
-            Some(JsxFramework::Qwik) => qwik_jsx_literal::module(&factory, &component, &upper),
+            Some(JsxFramework::Qwik) => qwik_jsx_literal::module(ctx, &factory, &component, &upper),
             Some(JsxFramework::Solid) => solid_jsx_literal::module(&factory, &component, &upper),
-            Some(JsxFramework::Vue) => vue_jsx_literal::module(&factory, &component, &upper),
+            Some(JsxFramework::Vue) => vue_jsx_literal::module(ctx, &factory, &component, &upper),
             _ => Module::new(),
         };
     }
 
     match ctx.config.jsx_framework.as_ref() {
-        Some(JsxFramework::React) => react_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Preact) => preact_jsx::module(&factory, &component, &upper),
+        Some(JsxFramework::React) => react_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Preact) => preact_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Qwik) => qwik_jsx::module(&factory, &component, &upper),
         Some(JsxFramework::Solid) => solid_jsx::module(&factory, &component, &upper),
         Some(JsxFramework::Vue) => vue_jsx::module(&factory, &component, &upper),

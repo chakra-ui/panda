@@ -8,7 +8,7 @@ use pandacss_config::CssSyntaxKind;
 
 use crate::{
     Artifact, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl, Item,
-    ItemNode, Module, TsType,
+    ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -45,7 +45,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
                 "isObject",
                 "withoutSpace",
             ],
-            "../helpers",
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(
             ["breakpointKeys", "finalizeConditions", "sortConditions"],

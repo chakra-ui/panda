@@ -1,6 +1,8 @@
 use pandacss_config::{JsxStylePropsConfig, PatternConfig};
 
-use crate::{CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
+use crate::{
+    CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
+};
 
 pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
     let factory = factory_name(ctx);
@@ -23,7 +25,10 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
         .with_import(type_import(&["DistributiveOmit"], "../types/system"));
 
     if matches!(style_props(ctx), JsxStylePropsConfig::Minimal) {
-        module = module.with_import(ImportDecl::value(["mergeCss"], "../css/css"));
+        module = module.with_import(ImportDecl::value(
+            ["mergeCss"],
+            &ctx.runtime_import(RuntimeImport::CssCss, "../css/css"),
+        ));
     }
 
     module

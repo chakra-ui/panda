@@ -3,7 +3,7 @@
 
 use crate::{
     Artifact, ArtifactId, CodegenContext, ConstDecl, DependencySet, Expr, ImportDecl, Item,
-    ItemNode, Module, TsType,
+    ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -33,7 +33,10 @@ fn module(ctx: CodegenContext<'_>) -> Module {
 
     let mut module = Module::new();
     if hash {
-        module = module.with_import(ImportDecl::value(["toHash"], "../helpers"));
+        module = module.with_import(ImportDecl::value(
+            ["toHash"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ));
     }
 
     module

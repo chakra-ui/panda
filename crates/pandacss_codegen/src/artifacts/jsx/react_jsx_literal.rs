@@ -1,9 +1,19 @@
-use crate::{ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
+use crate::{
+    CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
+};
 
-pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
+pub(super) fn module(
+    ctx: CodegenContext<'_>,
+    factory: &str,
+    component: &str,
+    upper: &str,
+) -> Module {
     Module::new()
         .with_import(value_import(&["createElement", "forwardRef"], "react"))
-        .with_import(ImportDecl::value(["css", "cx"], "../css/index"))
+        .with_import(ImportDecl::value(
+            ["css", "cx"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
         .with_import(ImportDecl::value(["getDisplayName"], "./helper"))
         .with_import(type_import(&[upper], "../types/jsx"))
         .with_item(raw_runtime(

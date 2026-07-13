@@ -5,7 +5,7 @@ use pandacss_config::CssSyntaxKind;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConstDecl, DependencySet, ExportDecl, Expr,
-    ImportDecl, Item, ItemNode, Module, TsType,
+    ImportDecl, Item, ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -34,7 +34,7 @@ pub fn files(
 
     emit_module_files(
         "css/cva",
-        &module(),
+        &module(ctx),
         options.format,
         false,
         options.import_extensions,
@@ -42,7 +42,7 @@ pub fn files(
     )
 }
 
-fn module() -> Module {
+fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_import(ImportDecl::value(
             [
@@ -54,7 +54,7 @@ fn module() -> Module {
                 "uniq",
                 "withDefaults",
             ],
-            "../helpers",
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(["css", "mergeCss"], "./css"))
         .with_import(ImportDecl::ty(["RecipeCreatorFn"], "../types/recipe"))

@@ -9,7 +9,7 @@ use serde_json::{Map, Value};
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConfigDependency, ConstDecl, DependencySet,
-    Expr, ImportDecl, Item, ItemNode, Module, TsType,
+    Expr, ImportDecl, Item, ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -204,13 +204,16 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
                 "withDefaults",
                 "withoutSpace",
             ],
-            "../helpers",
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
         .with_import(ImportDecl::value(
             ["breakpointKeys", "finalizeConditions", "sortConditions"],
-            "../css/conditions",
+            &ctx.runtime_import(RuntimeImport::CssConditions, "../css/conditions"),
         ))
-        .with_import(ImportDecl::value(["cx"], "../css/cx"))
+        .with_import(ImportDecl::value(
+            ["cx"],
+            &ctx.runtime_import(RuntimeImport::CssCx, "../css/cx"),
+        ))
         .with_item(Item::runtime(ItemNode::RawStmt(recipe_runtime_code(ctx))))
 }
 
