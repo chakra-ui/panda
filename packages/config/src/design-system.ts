@@ -83,7 +83,6 @@ export interface DesignSystemAppConfigKeys {
   conditions: boolean
   breakpoints: boolean
   utilities: boolean
-  tokens: boolean
   globalOptionsMatchDs: boolean
 }
 
@@ -144,6 +143,7 @@ export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata |
   const required: string[] = []
   if (overlay.virtualizeUtils) required.push('./helpers')
   if (overlay.virtualizeConditions || overlay.virtualizeCss) required.push('./css/*')
+  if (overlay.virtualizeCss) required.push('./css')
 
   return required
     .filter((subpath) => !hasExport(ds.packageExports, subpath))

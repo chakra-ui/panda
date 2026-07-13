@@ -28,7 +28,6 @@ function pureConsumerMetadata() {
       conditions: false,
       breakpoints: false,
       utilities: false,
-      tokens: false,
       globalOptionsMatchDs: true,
     },
   }
@@ -174,7 +173,7 @@ describe('collectExportMissingDiagnostics', () => {
         ds({
           name: '@acme/ds',
           specifier: '@acme/ds',
-          packageExports: { '.': './index.js', './helpers': './helpers/index.js' },
+          packageExports: { '.': './index.js', './helpers': './helpers/index.js', './css': './css/index.js' },
         }),
       ],
     })
@@ -197,6 +196,7 @@ describe('collectExportMissingDiagnostics', () => {
           packageExports: {
             '.': './index.js',
             './helpers': './helpers/index.js',
+            './css': './css/index.js',
             './css/*': './css/*.js',
           },
         }),
@@ -204,6 +204,31 @@ describe('collectExportMissingDiagnostics', () => {
     })
 
     expect(diagnostics).toEqual([])
+  })
+
+  test('reports a missing bare ./css export when only ./css/* is present', () => {
+    const diagnostics = collectExportMissingDiagnostics({
+      designSystem: [
+        ds({
+          name: '@acme/ds',
+          specifier: '@acme/ds',
+          packageExports: {
+            '.': './index.js',
+            './helpers': './helpers/index.js',
+            './css/*': './css/*.js',
+          },
+        }),
+      ],
+    })
+
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'design_system_export_missing',
+        severity: 'error',
+        message: expect.stringContaining('./css'),
+      }),
+    ])
+    expect(diagnostics.some((d) => d.message.includes('"./css"'))).toBe(true)
   })
 
   test('returns nothing without a single-level overlay', () => {

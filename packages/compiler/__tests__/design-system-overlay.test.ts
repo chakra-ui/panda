@@ -138,12 +138,26 @@ describe('overlay codegen — export missing diagnostics', () => {
       './panda.lib.json': './dist/panda.lib.json',
       './preset': './dist/preset.mjs',
       './helpers': './dist/helpers.mjs',
+      './css': './dist/css/index.mjs',
       './css/*': './dist/css/*.mjs',
     })
     const driver = await createNodeDriver({ cwd })
 
     const missing = (driver.designSystemDiagnostics ?? []).filter((d) => d.code === 'design_system_export_missing')
     expect(missing).toHaveLength(0)
+  })
+
+  it('surfaces design_system_export_missing for a missing bare ./css export', async () => {
+    cwd = setupAppConfigExports({
+      './panda.lib.json': './dist/panda.lib.json',
+      './preset': './dist/preset.mjs',
+      './helpers': './dist/helpers.mjs',
+      './css/*': './dist/css/*.mjs',
+    })
+    const driver = await createNodeDriver({ cwd })
+
+    const missing = (driver.designSystemDiagnostics ?? []).filter((d) => d.code === 'design_system_export_missing')
+    expect(missing.map((d) => d.message).join('\n')).toContain('"./css"')
   })
 })
 
