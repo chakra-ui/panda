@@ -35,6 +35,10 @@ use crate::{
 
 type FileExports = FxHashMap<String, Literal>;
 
+fn to_forward_slash(path: &Path) -> PathBuf {
+    PathBuf::from(path.to_string_lossy().replace('\\', "/"))
+}
+
 fn default_resolve_options() -> ResolveOptions {
     ResolveOptions {
         extensions: [".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".json"]
@@ -195,7 +199,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         self.inner
             .resolve_file(from_file, specifier)
             .ok()
-            .map(|resolution| resolution.full_path())
+            .map(|resolution| to_forward_slash(&resolution.full_path()))
     }
 
     fn resolve_named_export(
@@ -216,7 +220,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         let Ok(resolution) = self.inner.resolve(directory, specifier) else {
             return none();
         };
-        let path = resolution.full_path();
+        let path = to_forward_slash(&resolution.full_path());
 
         // A resolved module is a build dependency even if the export doesn't
         // fold — record `path` on every remaining exit.

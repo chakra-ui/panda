@@ -15,7 +15,6 @@ import type {
   SerializedHookFilter,
   Span,
   NativeTransformSourceInput,
-  TransformSourceOptions,
   TransformSourceResult,
 } from '@pandacss/compiler-shared'
 
