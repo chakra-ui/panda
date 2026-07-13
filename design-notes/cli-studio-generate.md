@@ -1,5 +1,5 @@
 ---
-title: CLI Studio Generate Command
+title: CLI Studio Command
 status: proposed
 scope:
   - packages/cli
@@ -8,67 +8,103 @@ scope:
   - website
 ---
 
-# CLI Studio Generate Command
+# CLI Studio Command
 
 ## Summary
 
-`panda studio generate` emits design-system viewer source directly into the user's project — Storybook stories plus the
-React components that render them — instead of spinning up a standalone app. It replaces the v1 `@pandacss/studio` Astro
-server. Users own the generated code, drop it into their existing Storybook (or any React surface), and re-run the
-command to refresh. No new server, no Astro, no separate deploy.
+`panda studio` replaces the removed v1 `@pandacss/studio` Astro app with two lighter tracks that share one token
+snapshot:
+
+- **`panda studio`** — boots a lightweight **live viewer** built from vanilla HTML/CSS/JS. This is the regression-safe
+  replacement for the old "run a server, look at my tokens" flow, minus Astro, a framework runtime, and the deploy step.
+- **`panda studio generate`** — emits the token **view components** as source into the user's project, shadcn-style, so
+  they can render them however they document their design system (their app, Storybook, MDX…). Views respect
+  `config.jsxFramework` — React and Solid.
+
+Both read a generated `tokens.json` snapshot. Users own whatever `generate` writes and re-run to refresh.
 
 ## Problem
 
 v1 Panda Studio (`packages/studio`, `packages/astro-plugin-studio`) was a full Astro application. To visualize their
-tokens a user had to install `@pandacss/studio`, run `panda studio` to boot a local Astro server, and self-host it to
-share with a team. The valuable part was always the token-viewer React components (`colors.tsx`, `radii.tsx`,
-`spacing.tsx`, typography views…); the Astro shell, the dev server, and the deploy step were pure overhead. Teams
-already run Storybook and asked "why can't I just embed this there?" — the answer required manually re-mapping tokens by
-hand.
+tokens a user had to install `@pandacss/studio`, boot a local Astro server, and self-host it to share with a team. The
+valuable part was always the token-viewer surface; the Astro shell, the framework runtime, and the deploy step were
+overhead. Teams asked two different things:
 
-The v1 pipeline (and Studio with it) was removed in the Rust migration. This note defines the replacement: give users
-the code, shadcn-style, via a codegen command.
+- "I just want to boot a viewer and look at my tokens" — same as v1, but the Astro weight was never the point.
+- "I document my design system my own way (Storybook, MDX, an internal app) — give me the views, not another app."
+
+The v1 pipeline (and Studio with it) was removed in the Rust migration. This note defines the replacement: keep a live
+viewer, but vanilla and minimal; and hand users the view code so they render it where they want.
 
 ## Command Shape
 
+`studio` is a command group. Bare `panda studio` boots the live viewer; `generate` writes view source.
+
 ```sh
-panda studio generate
+panda studio                          # boot the live vanilla viewer
+panda studio --port 4000
+panda studio generate                 # emit view components + tokens.json
 panda studio generate --outdir .storybook/studio
 panda studio generate -c panda.config.ts
 ```
 
-- `--outdir <dir>` — where to write. Default `styled-system/studio` (codegen's home; re-runnable, discoverable). Point
-  the Storybook `stories` glob at it, or pass `--outdir` to target the Storybook directory directly.
-- Shared flags: `--config`/`-c`, `--cwd` (per the standard CLI flag set in `cli-design-md.md`).
+- `panda studio` flags: `--port`, `--host`, plus shared `--config`/`-c`, `--cwd`.
+- `panda studio generate` flags: `--outdir <dir>` (default `styled-system/studio` — codegen's home; re-runnable,
+  discoverable), plus shared `--config`/`-c`, `--cwd`. Framework is read from `config.jsxFramework`.
 
-`studio` is a command group; `generate` is its only subcommand for now. Bare `panda studio` prints usage — there is no
-longer a server to start.
+Shared flags follow the standard CLI set in [`cli-design-md`](./cli-design-md.md).
 
-## What It Emits
+## The three layers
+
+The design has one framework-agnostic layer, one framework layer, and the user's renderer of choice on top:
+
+1. **Live viewer (agnostic)** — plain DOM. Works regardless of `jsxFramework` because it imports no framework runtime.
+2. **Generated views (React / Solid)** — real components, matched to `config.jsxFramework`.
+3. **The user's renderer** — their app, an MDX page, or Storybook. Storybook is *not* an agnostic layer: it is
+   framework-bound (`@storybook/react`, the Solid renderer, …), so a story simply wraps whichever generated view matches
+   the project. We document the Storybook recipe; we do not emit stories.
+
+## What `panda studio` serves — the live viewer
+
+A self-contained static bundle, served over a minimal local server:
+
+```
+index.html      # mounts the grid, links studio.css, loads studio.js
+studio.css       # layout + swatch/sample styles
+studio.js        # fetch('tokens.json'), build the grid with vanilla DOM APIs
+tokens.json      # the resolved token snapshot (see below)
+```
+
+`studio.js` groups tokens by category and renders a per-category preview (colors → swatch, spacing/sizes → bar, radii →
+rounded box, shadows → shadowed box, typography → text sample) with name + value labels. No framework, no bundler. The
+server is `node:http` serving the generated dir on `--port` — enough to satisfy the `fetch('tokens.json')` the page
+needs, and nothing more.
+
+## What `panda studio generate` emits — the views
 
 ```
 <outdir>/
-  tokens.json              # snapshot of the resolved token dictionary
+  tokens.json              # the resolved token snapshot
   components/
-    token-grid.tsx         # shared: groups tokens by category, renders swatch/sample grid
-  Colors.stories.tsx
-  Typography.stories.tsx   # fontSizes, fontWeights, fonts, lineHeights, letterSpacings
-  Spacing.stories.tsx
-  Sizes.stories.tsx
-  Radii.stories.tsx
-  Shadows.stories.tsx
+    token-grid.tsx         # shared: groups tokens by category, renders the swatch/sample grid
+  Colors.tsx
+  Typography.tsx           # fontSizes, fontWeights, fonts, lineHeights, letterSpacings
+  Spacing.tsx
+  Sizes.tsx
+  Radii.tsx
+  Shadows.tsx
 ```
 
-Each `*.stories.tsx` is plain CSF3 — a `Meta` default export (`title: 'Design System/Colors'`) plus one
-`UpperCamelCase` named export that renders `<TokenGrid category="colors" />` against `tokens.json`. This is the portable
-Storybook standard; no Storybook addon is required.
+Each view is a plain component with inline styles that reads `tokens.json` and renders one category. It does **not**
+import the styled-system runtime, so it renders anywhere regardless of how the host app consumes Panda. The component
+source is emitted for the project's `config.jsxFramework` — React (`.tsx` with React) or Solid (`.tsx` with `solid-js`).
 
-Emitted components are plain React with inline styles. They do **not** import the styled-system runtime, so the stories
-render in any Storybook regardless of how the host app consumes Panda.
+Rendering is the user's choice. The docs show how to drop a view into a `*.stories.tsx` for Storybook, an MDX page, or a
+route — but `generate` writes the views, not renderer-specific scaffolding.
 
 ## Data Source — snapshot, not live import
 
-The stories read a generated `tokens.json`, not the user's `styled-system`:
+Both tracks read a generated `tokens.json`, not the user's `styled-system`:
 
 ```jsonc
 // tokens.json
@@ -78,26 +114,31 @@ The stories read a generated `tokens.json`, not the user's `styled-system`:
 ```
 
 The generated `styled-system/tokens` module only exports `token(path)` and `token.var(path)` — the underlying token map
-is module-private and there is no way to enumerate tokens from it. So a live import can't drive the viewer. The
-`studio generate` command runs inside the compiler and already holds the fully-resolved token dictionary via
+is module-private and there is no way to enumerate tokens from it. So a live import can't drive the viewer. The command
+runs inside the compiler and already holds the fully-resolved token dictionary via
 `ctx.driver.compiler.spec().tokens`, so it writes a self-contained snapshot instead. Refresh model is identical to the
 rest of codegen: re-run when the config changes.
 
 The viewer renders each token's **value** (the swatch/sample), so the first cut omits the CSS variable string; it can be
-added later (Phase 7) via `token.var(path)`.
+added later via `token.var(path)`.
 
 ## Architecture
 
 No Rust changes. The command reads the already-exposed `Spec` and writes files. The whole feature is TS in
 `@pandacss/cli`:
 
-- `packages/cli/src/studio-codegen.ts` — pure core. `buildTokensSnapshot(spec)` → `StudioToken[]`, and
-  `studioFiles(tokens)` → `Record<relativePath, contents>` (tokens.json + static templates). No fs, no CLI concerns.
-- `packages/cli/src/commands/studio.ts` — the `studio` command group, the `generate` subcommand, and the exported
-  `runStudioGenerate` runner (fs write + logging). Mirrors `commands/analyze.ts`.
-- `packages/cli/src/schema.ts` — `studioGenerateFlagsSchema` (extends `commonFlagsSchema`, adds `outdir`).
+- `packages/cli/src/studio-codegen.ts` — pure core, no fs or CLI concerns. `buildTokensSnapshot(spec)` →
+  `StudioToken[]`; `viewerFiles(tokens)` → the vanilla `index.html`/`studio.css`/`studio.js`/`tokens.json` set;
+  `viewFiles(tokens, framework)` → the React/Solid view components + `tokens.json`.
+- `packages/cli/src/studio-server.ts` — `serveStudio(dir, { port, host })`: a `node:http` static-file server over the
+  viewer dir. No new dependency.
+- `packages/cli/src/commands/studio.ts` — the `studio` command group. The bare command generates the viewer bundle
+  (temp dir) and calls `serveStudio`; the `generate` subcommand writes view files to `--outdir`. Both exported as
+  runners (`runStudioServe`, `runStudioGenerate`). Mirrors `commands/analyze.ts`.
+- `packages/cli/src/schema.ts` — `studioServeFlagsSchema` (adds `port`, `host`) and `studioGenerateFlagsSchema` (adds
+  `outdir`), both extending `commonFlagsSchema`.
 - `packages/cli/src/cli-main.ts` — wire `studio: studioCommand` into `subCommands`.
-- `packages/cli/src/index.ts` — re-export `runStudioGenerate` (tests import from `../src`).
+- `packages/cli/src/index.ts` — re-export the runners (tests import from `../src`).
 
 Data source shapes (from `@pandacss/compiler-shared`):
 
@@ -118,52 +159,58 @@ function buildTokensSnapshot(spec: Spec): StudioToken[] {
 }
 ```
 
-`spec.tokens.categories` is `Record<name, { name; typeName; values: string[] }>` (names per category); `spec.tokens.values`
-is `Record<path, resolvedValue>` keyed by full path (`colors.red.500`).
+`spec.tokens.categories` is `Record<name, { name; typeName; values: string[] }>` (names per category);
+`spec.tokens.values` is `Record<path, resolvedValue>` keyed by full path (`colors.red.500`).
 
 ## Implementation Phases
 
-The whole scope, in order. Phases 1–3 are the first shippable slice; 4–7 are the rest of the v1 Studio surface,
-sequenced — not dropped. Each phase lands independently and is testable on its own (Vitest against a `createFixture()`
-temp project, mirroring `packages/cli/__tests__/codegen.test.ts`).
+Phases 1–4 are the shippable slice; 5–7 are the rest of the v1 Studio surface, sequenced — not dropped. Each phase lands
+independently and is testable on its own (Vitest against a `createFixture()` temp project, mirroring
+`packages/cli/__tests__/codegen.test.ts`).
 
-### Phase 1 — Command skeleton + `tokens.json`
+### Phase 1 — Snapshot core + `generate` (React)
 
-Working `panda studio generate` that writes only the snapshot.
+Working `panda studio generate` that writes React views + the snapshot.
 
 - `buildTokensSnapshot(spec)` — flatten `spec().tokens` into `StudioToken[]`; skip names with no resolved value.
-- `studioFiles(tokens)` — return `{ 'tokens.json': prettyJson }` (grows in Phase 2).
-- `studioGenerateFlagsSchema` — `commonFlagsSchema.extend({ outdir })`.
-- `studioCommand` + `runStudioGenerate` — resolve `outdir` (default `styled-system/studio`), `mkdirSync`/`writeFileSync`
-  each file, log `studio: wrote N files`.
+- `viewFiles(tokens, 'react')` — `token-grid.tsx` (plain React `TokenGrid({ category })` reading `../tokens.json`,
+  per-category preview, inline styles) plus one view per category.
+- `studioGenerateFlagsSchema`, `studioCommand` + `generate` subcommand + `runStudioGenerate` — resolve `outdir` (default
+  `styled-system/studio`), read `config.jsxFramework`, write each file, log `studio: wrote N files`.
 - Wire `studio` into `cli-main.ts`; re-export the runner from `src/index.ts`.
-- Tests: unit tests on `buildTokensSnapshot`/`studioFiles`; command test asserting `tokens.json` carries real colors and
-  that `--outdir` is honoured; `studio --help` smoke.
+- Tests: unit tests on `buildTokensSnapshot`/`viewFiles`; command test asserting `tokens.json` carries real colors,
+  views land on disk, and `--outdir` is honoured; `studio --help` smoke.
 
-### Phase 2 — Viewer components + stories
+### Phase 2 — Solid views
 
-Add the React surface to `studioFiles`.
+Branch the view templates on framework.
 
-- `TOKEN_GRID_TSX` — plain-React `TokenGrid({ category })`: imports `../tokens.json`, filters by category, renders a
-  per-category preview (colors → swatch; spacing/sizes → bar; radii → rounded box; shadows → shadowed box; typography →
-  text sample) plus name + value labels. Inline styles only.
-- Story templates — `Colors`, `Spacing`, `Sizes`, `Radii`, `Shadows` (one named export each) and `Typography` (five
-  exports: fontSizes/fontWeights/fonts/lineHeights/letterSpacings). CSF3 `Meta` default + `StoryObj` args.
-- Tests: assert each file is emitted with the right `title`/`category`; extend the command test to assert the files land
-  on disk.
+- `viewFiles(tokens, 'solid')` — the same components authored for `solid-js`.
+- Command reads `config.jsxFramework === 'solid'` and emits the Solid set.
+- Tests: fixture with `jsxFramework: 'solid'`; assert Solid-flavoured source is emitted.
 
-### Phase 3 — Verify in `sandbox/storybook` + docs
+### Phase 3 — Live vanilla viewer + server
+
+The regression-safe `panda studio` flow.
+
+- `viewerFiles(tokens)` — `index.html`, `studio.css`, `studio.js` (vanilla DOM, `fetch('tokens.json')`), `tokens.json`.
+- `serveStudio(dir, { port, host })` — `node:http` static server; `runStudioServe` builds the bundle to a temp dir and
+  serves it.
+- `studioServeFlagsSchema` (`port`, `host`); bare `panda studio` dispatches to `runStudioServe`.
+- Tests: unit-test `viewerFiles` shape; server test that a request for `tokens.json` returns the snapshot.
+
+### Phase 4 — Verify in `sandbox/storybook` + docs
 
 Prove it end-to-end and document it.
 
-- Generate into `sandbox/storybook` (Panda config + styled-system already present); add the `styled-system/studio` glob
-  to the sandbox `.storybook/main` `stories`; run Storybook; confirm a "Design System" section renders real sandbox
-  tokens. Keep the generated output gitignored.
+- Generate into `sandbox/storybook` (Panda config + styled-system already present); document dropping a generated view
+  into a `*.stories.tsx`; run Storybook; confirm a "Design System" section renders real sandbox tokens. Boot
+  `panda studio` against the same config and confirm the vanilla viewer renders. Keep generated output gitignored.
 - Changeset (`@pandacss/cli` minor).
-- Rewrite `website/content/docs/theming/studio.mdx` around the command (setup, `--outdir`, refresh model, what's shown),
-  replacing the v1 install/server instructions.
+- Rewrite `website/content/docs/theming/studio.mdx` around the two tracks (live viewer, `generate` + `--outdir`, refresh
+  model, framework support, the Storybook/MDX rendering recipes), replacing the v1 install/server instructions.
 
-### Phase 4 — Semantic tokens + theme selector
+### Phase 5 — Semantic tokens + theme selector
 
 The largest remaining piece; it was the bulk of v1's Astro complexity (`getActiveTheme`, `getThemeRelevantTokens`,
 deep-merge, theme switching).
@@ -174,53 +221,45 @@ deep-merge, theme switching).
   `packages/compiler-shared/src/types/output.ts`.
 - `StudioToken` gains `conditions?: Record<string, string>`; `buildTokensSnapshot` emits semantic tokens with their
   condition values, and snapshots each named theme alongside base.
-- New `SemanticTokens.stories.tsx` + a `ThemeSelector` control that swaps `data-theme`/class on the preview root and
-  re-reads condition values.
+- A theme selector in both the live viewer and the generated views: swap `data-theme`/class on the preview root and
+  re-read condition values.
 - Tests: sandbox config with a semantic token + `_dark` condition; assert the snapshot carries both condition values;
   render both themes.
 
-### Phase 5 — Contrast checker
+### Phase 6 — Contrast checker
 
 Standalone accessibility tool (v1 `playground/contrast-checker`).
 
 - Port v1 `lib/color-contrast-checker.ts` (WCAG contrast math) into an emitted `contrast.ts` util — pure, no deps.
-- `ContrastChecker.stories.tsx` — pick two color tokens, show contrast ratio + AA/AAA pass badges.
-- Tests: unit-test the ratio function against known pairs (`#000`/`#fff` → 21); story is visual.
+- A contrast view: pick two color tokens, show contrast ratio + AA/AAA pass badges.
+- Tests: unit-test the ratio function against known pairs (`#000`/`#fff` → 21); the view is visual.
 
-### Phase 6 — Typography playground
+### Phase 7 — Typography playground + CSS-variable metadata
 
-Interactive editor (v1 `playground/typography`).
+Interactive editor (v1 `playground/typography`) plus optional polish.
 
-- `TypographyPlayground.stories.tsx` — controls for size/weight/family/line-height/letter-spacing sourced from the
-  typography slice of `tokens.json`, live-previewing sample text. No snapshot change.
-- Tests: visual; assert the story file emits and imports `tokens.json`.
-
-### Phase 7 — codegen integration + CSS-variable metadata
-
-Optional polish.
-
-- Optionally refresh an existing `studio/` output during `panda codegen` (guarded by a config flag or by detecting the
-  dir). Separate command by default; this only adds an opt-in hook.
+- A typography playground view: controls for size/weight/family/line-height/letter-spacing sourced from the typography
+  slice of `tokens.json`, live-previewing sample text.
 - Add `variable: string` to `StudioToken` via `token.var(path)` or a shared cssVar formatter (**prerequisite:** locate
-  the formatter; not exposed on `Spec` today) so viewers can show `var(--…)` alongside the value.
-- Tests: snapshot a known token's `variable`; codegen integration test that a second run refreshes `tokens.json`.
+  the formatter; not exposed on `Spec` today) so views can show `var(--…)` alongside the value.
+- Tests: the playground view is visual; snapshot a known token's `variable`.
 
 ## Verification
 
-Generate into the existing `sandbox/storybook` package (Panda config + styled-system already present), run its
-Storybook, and confirm each section renders real tokens from the sandbox config. This is the Phase 3 gate and the proof
-attached to the PR.
+Generate into the existing `sandbox/storybook` package (Panda config + styled-system already present), render a
+generated view through its Storybook, and boot `panda studio` against the same config — confirm both surfaces show real
+tokens from the sandbox config. This is the Phase 4 gate and the proof attached to the PR.
 
 ## Unresolved Questions
 
 - Default `--outdir`: `styled-system/studio` vs a top-level `studio/`. Leaning `styled-system/studio` for the
   co-located-codegen mental model; revisit if it clutters the styled-system output.
-- Whether `panda codegen` should refresh an existing studio output in the same pass (Phase 7) or stay fully separate.
-  Starting separate (explicit command only).
-- Phase 4 needs a semantic/condition token view on `spec()` that does not exist yet — sizing that compiler change is the
-  first Phase 4 task.
+- Frameworks beyond React and Solid (Vue, Svelte, Preact) — generated views only. Deferred until asked for; the vanilla
+  live viewer already covers those users.
+- Phase 5 needs a semantic/condition token view on `spec()` that does not exist yet — sizing that compiler change is the
+  first Phase 5 task.
 
 ## Related
 
 - [cli-design-md](./cli-design-md.md) — shared CLI flag set and command conventions.
-- [codegen-design](./codegen-design.md) — the artifact codegen model this command mirrors.
+- [codegen-design](./codegen-design.md) — the artifact codegen model `generate` mirrors.
