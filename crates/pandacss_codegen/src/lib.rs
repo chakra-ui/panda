@@ -26,5 +26,5 @@ pub use graph::{
     Artifact, ArtifactFile, ArtifactGraph, ArtifactId, ArtifactNode, ConfigDependency,
     DependencySet, GenerateOptions, emit_module_files,
 };
-pub use overlay::CodegenOverlay;
+pub use overlay::{CodegenOverlay, RuntimeImport};
 pub use ts_strip::strip_typescript;

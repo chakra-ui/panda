@@ -17,6 +17,7 @@ fn overlay() -> CodegenOverlay {
         patterns: "@ds/patterns".into(),
         owned_recipes: Vec::new(),
         owned_patterns: Vec::new(),
+        ..Default::default()
     }
 }
 
