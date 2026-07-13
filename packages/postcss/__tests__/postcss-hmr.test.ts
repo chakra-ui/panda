@@ -76,6 +76,9 @@ describe('@pandacss/postcss HMR flow', () => {
           exports: {
             './panda.lib.json': './dist/panda.lib.json',
             './preset': './dist/panda.preset.mjs',
+            './helpers': './styled-system/helpers.js',
+            './css': './styled-system/css/index.js',
+            './css/*': './styled-system/css/*.js',
           },
         }),
         'node_modules/@acme/ds/dist/panda.lib.json': JSON.stringify({
