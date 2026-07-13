@@ -11,6 +11,7 @@ import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
+import { nearestPackageJson } from './lib-manifest'
 import { tryResolveFrom } from './resolve'
 import { ensureConfigObject, errorMessage, type ExtendableConfig } from './shared'
 
@@ -248,7 +249,8 @@ async function loadManifestLevel(
 
 function readPackageExports(manifestPath: string): Record<string, unknown> | undefined {
   try {
-    const packageJsonPath = resolve(dirname(manifestPath), 'package.json')
+    const packageJsonPath = nearestPackageJson(dirname(manifestPath))
+    if (packageJsonPath === undefined) return undefined
     const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { exports?: unknown }
     return isExportsMap(pkg.exports) ? pkg.exports : undefined
   } catch {

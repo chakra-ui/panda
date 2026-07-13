@@ -89,7 +89,7 @@ function isSubpathExportMap(exports: Record<string, unknown>): boolean {
   return Object.keys(exports).some((key) => key === '.' || key.startsWith('./'))
 }
 
-function nearestPackageJson(start: string): string | undefined {
+export function nearestPackageJson(start: string): string | undefined {
   let current = start
   while (true) {
     const candidate = join(current, 'package.json')

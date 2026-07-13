@@ -17,7 +17,7 @@ export {
 } from './lib-manifest'
 export { collectTokenPaths } from './token-paths'
 export { collectRecipeNames, collectPatternNames } from './artifact-names'
-export { buildCodegenOverlay, collectArtifactConflicts } from './design-system'
+export { buildCodegenOverlay, collectArtifactConflicts, collectExportMissingDiagnostics } from './design-system'
 export type { DesignSystemArtifactConflict, DesignSystemMetadata } from './design-system'
 
 export type { CompilePresetOptions, CompilePresetResult } from './lib-preset'

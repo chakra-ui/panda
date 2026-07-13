@@ -1,5 +1,5 @@
 import { defaultConfig, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
-import { loadConfig, type LoadConfigResult } from '@pandacss/config'
+import { collectExportMissingDiagnostics, loadConfig, type LoadConfigResult } from '@pandacss/config'
 import { artifactConflictDiagnostics, hydrateDesignSystem } from '../design-system'
 import { createCompilerFromSnapshot } from '../index'
 
@@ -27,6 +27,7 @@ export function createProjectFromLoadedConfig(loaded: LoadConfigResult): Project
   const designSystemDiagnostics = [
     ...hydrateDesignSystem(compiler, loaded.metadata?.designSystem, loaded.metadata?.userTokenPaths ?? []),
     ...artifactConflictDiagnostics(loaded.metadata),
+    ...collectExportMissingDiagnostics(loaded.metadata),
   ]
   return {
     compiler,

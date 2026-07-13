@@ -113,6 +113,40 @@ describe('overlay codegen — appConfigKeys', () => {
   })
 })
 
+describe('overlay codegen — export missing diagnostics', () => {
+  let cwd: string | undefined
+
+  afterEach(() => {
+    if (cwd) rmSync(cwd, { recursive: true, force: true })
+    cwd = undefined
+  })
+
+  it('surfaces design_system_export_missing when the DS package.json lacks required subpaths', async () => {
+    cwd = setupAppConfigExports({
+      './panda.lib.json': './dist/panda.lib.json',
+      './preset': './dist/preset.mjs',
+    })
+    const driver = await createNodeDriver({ cwd })
+
+    const missing = (driver.designSystemDiagnostics ?? []).filter((d) => d.code === 'design_system_export_missing')
+    expect(missing.length).toBeGreaterThan(0)
+    expect(missing.map((d) => d.message).join('\n')).toContain('./css/*')
+  })
+
+  it('surfaces no design_system_export_missing diagnostics when exports cover the required subpaths', async () => {
+    cwd = setupAppConfigExports({
+      './panda.lib.json': './dist/panda.lib.json',
+      './preset': './dist/preset.mjs',
+      './helpers': './dist/helpers.mjs',
+      './css/*': './dist/css/*.mjs',
+    })
+    const driver = await createNodeDriver({ cwd })
+
+    const missing = (driver.designSystemDiagnostics ?? []).filter((d) => d.code === 'design_system_export_missing')
+    expect(missing).toHaveLength(0)
+  })
+})
+
 describe('overlay codegen — written to disk', () => {
   let cwd: string | undefined
 
@@ -210,6 +244,42 @@ function setupAppConfig(extra: Record<string, unknown>): string {
       name: '@acme/ds',
       version: '1.0.0',
       exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/preset.mjs' },
+    }),
+    'node_modules/@acme/ds/dist/panda.lib.json': json({
+      schemaVersion: 1,
+      name: '@acme/ds',
+      version: '1.0.0',
+      panda: '^2.0.0',
+      preset: './preset.mjs',
+      buildInfo: './panda.buildinfo.json',
+      files: ['./**/*.js'],
+      importMap: {
+        css: '@acme/ds/css',
+        recipes: '@acme/ds/recipes',
+        patterns: '@acme/ds/patterns',
+        jsx: '@acme/ds/jsx',
+        tokens: '@acme/ds/tokens',
+      },
+    }),
+    'node_modules/@acme/ds/dist/preset.mjs': `export default { jsxFramework: 'react' }`,
+    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
+    'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
+  })
+  return root
+}
+
+function setupAppConfigExports(exports: Record<string, string>): string {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-exports-')))
+  writeFileTree(root, {
+    'panda.config.ts': `export default {
+      designSystem: '@acme/ds',
+      include: ['**/*.tsx'],
+    }`,
+    'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+    'node_modules/@acme/ds/package.json': json({
+      name: '@acme/ds',
+      version: '1.0.0',
+      exports,
     }),
     'node_modules/@acme/ds/dist/panda.lib.json': json({
       schemaVersion: 1,
