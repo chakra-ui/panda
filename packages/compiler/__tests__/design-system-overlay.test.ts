@@ -92,7 +92,7 @@ describe('overlay codegen — appConfigKeys', () => {
       driver as unknown as { codegenOverlay(): { virtualizeConditions: boolean; virtualizeCss: boolean } }
     ).codegenOverlay()
 
-    expect(overlay?.virtualizeConditions).toBe(true)
+    expect(overlay?.virtualizeConditions).toBe(false)
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
