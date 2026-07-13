@@ -600,8 +600,8 @@ fn generate_node(
         ArtifactId::Sva => crate::artifacts::sva::generate(ctx, options, node.dependencies),
         ArtifactId::Themes => crate::artifacts::themes::generate(ctx, options, node.dependencies),
         ArtifactId::Tokens => crate::artifacts::tokens::generate(ctx, options, node.dependencies),
-        ArtifactId::Cx => crate::artifacts::cx::generate(options, node.dependencies),
-        ArtifactId::Helpers => crate::artifacts::helpers::generate(options, node.dependencies),
+        ArtifactId::Cx => crate::artifacts::cx::generate(ctx, options, node.dependencies),
+        ArtifactId::Helpers => crate::artifacts::helpers::generate(ctx, options, node.dependencies),
         ArtifactId::JsxCreateRecipeContext => {
             crate::artifacts::jsx::generate_create_recipe_context(ctx, options, node.dependencies)
         }

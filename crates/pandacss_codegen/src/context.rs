@@ -102,6 +102,13 @@ impl<'a> CodegenContext<'a> {
     }
 
     #[must_use]
+    pub fn virtualizes(&self, import: RuntimeImport) -> bool {
+        self.overlay
+            .and_then(|overlay| overlay.resolve(import))
+            .is_some()
+    }
+
+    #[must_use]
     pub fn pattern_jsx_meta(&self, name: &str, pattern: &PatternConfig) -> PatternJsxCodegenMeta {
         let stem = file_stem(name);
         let raw_name = format!("{}Raw", js_ident(name));

@@ -4,12 +4,20 @@ use pandacss_config::CssSyntaxKind;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, Item, ItemNode,
-    Module,
+    Module, RuntimeImport,
     graph::{GenerateOptions, emit_module_files},
 };
 
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
+    if let Some(overlay) = ctx.overlay
+        && ctx.virtualizes(RuntimeImport::CssIndex)
+    {
+        return Module::new().with_item(Item::both(ItemNode::Export(ExportDecl::Star {
+            source: overlay.css.clone(),
+        })));
+    }
+
     let sources: &[&str] = if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
         &["./css", "./cx"]
     } else {

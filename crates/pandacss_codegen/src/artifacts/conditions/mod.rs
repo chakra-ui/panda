@@ -84,6 +84,10 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
+    if ctx.virtualizes(RuntimeImport::CssConditions) {
+        return Vec::new();
+    }
+
     if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
         return emit_module_files(
             "css/conditions",

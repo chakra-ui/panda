@@ -32,6 +32,10 @@ pub fn files(
         return Vec::new();
     }
 
+    if ctx.virtualizes(RuntimeImport::CssIndex) {
+        return Vec::new();
+    }
+
     emit_module_files(
         "css/sva",
         &module(ctx),

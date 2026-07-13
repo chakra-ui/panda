@@ -46,11 +46,11 @@ impl CodegenOverlay {
         let (enabled, specifier) = match import {
             RuntimeImport::Helpers => (self.virtualize_utils, self.helpers.clone()),
             RuntimeImport::CssCx => (
-                self.virtualize_utils && !self.css.is_empty(),
+                self.virtualize_css && !self.css.is_empty(),
                 format!("{}/cx", self.css),
             ),
             RuntimeImport::CssConditions => (
-                self.virtualize_conditions && !self.css.is_empty(),
+                self.virtualize_css && !self.css.is_empty(),
                 format!("{}/conditions", self.css),
             ),
             RuntimeImport::CssCss => (

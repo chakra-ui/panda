@@ -1,6 +1,8 @@
 use crate::common::{artifact, file, paths};
 use indoc::indoc;
-use pandacss_codegen::{ArtifactGraph, ArtifactId, CodegenInput, CodegenOverlay, GenerateOptions};
+use pandacss_codegen::{
+    ArtifactFile, ArtifactGraph, ArtifactId, CodegenInput, CodegenOverlay, GenerateOptions,
+};
 use pandacss_config::{CodegenFormat, TypeData, UserConfig};
 
 fn options() -> GenerateOptions {
@@ -45,6 +47,20 @@ fn patterns_config(patterns: &serde_json::Value) -> UserConfig {
         "patterns": patterns,
     }))
     .expect("config should deserialize")
+}
+
+fn config_with_app_recipe() -> UserConfig {
+    recipes_config(&serde_json::json!({
+        "button": { "className": "button" },
+    }))
+}
+
+fn generate_with(config: UserConfig, overlay: CodegenOverlay) -> Vec<ArtifactFile> {
+    ArtifactGraph
+        .generate_with_input(&input_with(config, overlay), options())
+        .into_iter()
+        .flat_map(|artifact| artifact.files)
+        .collect()
 }
 
 #[test]
@@ -201,4 +217,52 @@ fn jsx_conflict_keeps_app_component_local() {
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.ts");
     assert!(index.contains("export * from './stack';"));
     assert!(!index.contains("@ds/jsx/stack"));
+}
+
+#[test]
+fn pure_consumer_virtualizes_entire_runtime() {
+    let mut overlay = overlay();
+    overlay.css = "@acme/ui/css".into();
+    overlay.helpers = "@acme/ui/helpers".into();
+    overlay.virtualize_utils = true;
+    overlay.virtualize_conditions = true;
+    overlay.virtualize_css = true;
+
+    let files = generate_with(config_with_app_recipe(), overlay);
+
+    assert!(!files.iter().any(|f| f.path == "helpers.ts"));
+    assert!(!files.iter().any(|f| f.path == "css/css.ts"));
+    assert!(!files.iter().any(|f| f.path == "css/cx.ts"));
+    assert!(!files.iter().any(|f| f.path == "css/cva.ts"));
+    assert!(!files.iter().any(|f| f.path == "css/sva.ts"));
+    assert!(!files.iter().any(|f| f.path == "css/conditions.ts"));
+
+    let css_index = files
+        .iter()
+        .find(|f| f.path == "css/index.ts")
+        .expect("css/index barrel");
+    assert!(css_index.code.contains("@acme/ui/css"));
+}
+
+#[test]
+fn redeclared_conditions_keep_conditions_and_css_local() {
+    let mut overlay = overlay();
+    overlay.css = "@acme/ui/css".into();
+    overlay.helpers = "@acme/ui/helpers".into();
+    overlay.virtualize_utils = true;
+    overlay.virtualize_conditions = false;
+    overlay.virtualize_css = false;
+
+    let files = generate_with(config_with_app_recipe(), overlay);
+
+    assert!(files.iter().any(|f| f.path == "css/conditions.ts"));
+    assert!(files.iter().any(|f| f.path == "css/cx.ts"));
+    assert!(!files.iter().any(|f| f.path == "helpers.ts"));
+
+    let recipe_runtime = files
+        .iter()
+        .find(|f| f.path == "recipes/runtime.ts")
+        .expect("recipes/runtime should still be emitted locally");
+    assert!(recipe_runtime.code.contains("@acme/ui/helpers"));
+    assert!(recipe_runtime.code.contains("../css/conditions"));
 }

@@ -9,7 +9,7 @@ mod object;
 mod split_props;
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, DependencySet, Module,
+    Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, Module, RuntimeImport,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -55,7 +55,15 @@ pub fn module() -> Module {
 }
 
 #[must_use]
-pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<ArtifactFile> {
+pub fn files(
+    ctx: CodegenContext<'_>,
+    options: GenerateOptions,
+    dependencies: DependencySet,
+) -> Vec<ArtifactFile> {
+    if ctx.virtualizes(RuntimeImport::Helpers) {
+        return Vec::new();
+    }
+
     emit_module_files(
         "helpers",
         &module(),
@@ -67,10 +75,14 @@ pub fn files(options: GenerateOptions, dependencies: DependencySet) -> Vec<Artif
 }
 
 #[must_use]
-pub fn generate(options: GenerateOptions, dependencies: DependencySet) -> Artifact {
+pub fn generate(
+    ctx: CodegenContext<'_>,
+    options: GenerateOptions,
+    dependencies: DependencySet,
+) -> Artifact {
     Artifact {
         id: ArtifactId::Helpers,
         dependencies,
-        files: files(options, dependencies),
+        files: files(ctx, options, dependencies),
     }
 }
