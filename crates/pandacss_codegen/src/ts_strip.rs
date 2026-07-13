@@ -156,6 +156,13 @@ fn should_strip_param_type(
 }
 
 fn should_strip_variable_type(chars: &[char], colon: usize) -> bool {
+    // Skips the line-start scan below when it can't match anyway (a
+    // non-identifier char here always fails it) — avoids re-walking a huge
+    // single-line literal (e.g. an inlined token map) once per `:` inside it.
+    if colon == 0 || !is_ident_char(chars[colon - 1]) {
+        return false;
+    }
+
     let mut line_start = colon;
     while line_start > 0 && chars[line_start - 1] != '\n' {
         line_start -= 1;
@@ -169,6 +176,10 @@ fn should_strip_variable_type(chars: &[char], colon: usize) -> bool {
                 .all(|ch| ch.is_alphanumeric() || ch == '_' || ch == '$')
         })
     })
+}
+
+fn is_ident_char(ch: char) -> bool {
+    ch.is_alphanumeric() || ch == '_' || ch == '$'
 }
 
 fn should_strip_generic_call(chars: &[char], angle: usize) -> bool {
