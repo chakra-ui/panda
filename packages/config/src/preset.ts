@@ -57,20 +57,23 @@ export async function resolveAuthoredPresets(
   cwd: string,
   options: ResolveAuthoredPresetsOptions = {},
 ): Promise<ResolveAuthoredPresetsResult> {
+  const designSystem = (config as UserConfig).designSystem
+  const hasDesignSystem = typeof designSystem === 'string' && designSystem.length > 0
+  const trackSources = options.trackSources ?? hasDesignSystem
+
   const ctx: CollectContext = {
     cwd,
     configs: [],
     dependencies: new Set<string>(),
     presetResolvedHooks: [],
-    ...(options.trackSources ? { sourcedConfigs: [] } : {}),
+    ...(trackSources ? { sourcedConfigs: [] } : {}),
   }
 
   const rootSource: ConfigSource = { kind: 'config' }
   if (options.configFile) rootSource.file = normalize(relative(cwd, options.configFile))
 
-  const designSystem = (config as UserConfig).designSystem
   let dsChain: DesignSystemLevel[] = []
-  if (typeof designSystem === 'string' && designSystem.length > 0) {
+  if (hasDesignSystem) {
     dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
     for (const level of dsChain) {
       const block = await collectConfigBlock(
@@ -78,7 +81,7 @@ export async function resolveAuthoredPresets(
         { kind: 'preset', specifier: level.info.name },
         cwd,
         ctx.dependencies,
-        options.trackSources,
+        trackSources,
       )
       level.info.tokenPaths = collectTokenPaths(block.resolved)
       level.info.recipeNames = collectRecipeNames(block.resolved)
@@ -87,7 +90,7 @@ export async function resolveAuthoredPresets(
     }
   }
 
-  const rootBlock = await collectConfigBlock(config, rootSource, cwd, ctx.dependencies, options.trackSources)
+  const rootBlock = await collectConfigBlock(config, rootSource, cwd, ctx.dependencies, trackSources)
   appendConfigBlock(ctx, rootBlock)
 
   const dsInfos = dsChain.map((level) => level.info)

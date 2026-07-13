@@ -77,7 +77,7 @@ const DEFAULT_DESIGN_SYSTEM_LIB_FILES = ['./**/*.{js,mjs}']
  * config from disk; `scan` / `codegen` run through the Rust fs engine.
  */
 export async function createNodeDriver(options: NodeDriverOptions): Promise<NodeDriver> {
-  const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath, trackSources: true })
+  const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath })
   if (options.include?.length) applyIncludeOverride(loaded, options.cwd, options.include)
   await attachAppConfigKeys(loaded, options.cwd)
   return new NodeDriver(options, loaded)
@@ -241,7 +241,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   async reload(): Promise<DiffConfigResult> {
-    const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath, trackSources: true })
+    const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
     // Re-apply before diffing so the override isn't seen as a config change.
     if (this.#options.include?.length) applyIncludeOverride(next, this.#options.cwd, this.#options.include)
     await attachAppConfigKeys(next, this.#options.cwd)

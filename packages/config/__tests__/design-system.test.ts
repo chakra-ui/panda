@@ -99,6 +99,12 @@ describe('resolveAuthoredPresets / designSystem', () => {
     `)
   })
 
+  test('auto-enables source tracking when designSystem is set, without trackSources passed', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds' }, cwd)
+
+    expect(metadata?.sources).toBeDefined()
+  })
+
   test('collects token metadata after resolving design-system and consumer config blocks', async () => {
     const { metadata } = await resolveAuthoredPresets(
       {
