@@ -2,28 +2,38 @@ import type { BuildInfoArtifact, Driver, NodeDriver, ParseFileReport, TraceOptio
 import type { UsageReport } from '@pandacss/compiler-shared'
 import type { OutputSink } from './output'
 import type { CliResult } from './result'
-import { z } from 'zod'
+import {
+  bool,
+  enumOf,
+  type EnumValues,
+  type FlagsInfer,
+  object,
+  str,
+  stringOrArray,
+  stringOrNumber,
+} from './flags-schema'
 
-export const logLevelSchema = z.enum(['silent', 'error', 'warn', 'info', 'debug'])
-export const diagnosticFormatSchema = z.enum(['human', 'pretty', 'json', 'github'])
-export const traceOutputSchema = z.enum(['fmt', 'chrome-json']) satisfies z.ZodType<TraceOptions['output']>
+export const logLevelSchema = enumOf(['silent', 'error', 'warn', 'info', 'debug'])
+export const diagnosticFormatSchema = enumOf(['human', 'pretty', 'json', 'github'])
+export const traceOutputSchema = enumOf(['fmt', 'chrome-json'] satisfies readonly TraceOptions['output'][])
 
-const booleanFlag = z.boolean().optional()
-const stringFlag = z.string().optional()
-const numberLikeFlag = z.union([z.string(), z.number()]).optional()
+const booleanFlag = bool()
+const stringFlag = str()
+const numberLikeFlag = stringOrNumber()
 
-export const commonFlagsSchema = z.object({
+export const commonFlagsSchema = object({
   cwd: stringFlag,
   config: stringFlag,
-  include: z.union([z.string(), z.array(z.string())]).optional(),
+  include: stringOrArray(),
   watch: booleanFlag,
   json: booleanFlag,
-  format: diagnosticFormatSchema.optional(),
-  logLevel: logLevelSchema.optional(),
+  format: diagnosticFormatSchema,
+  logLevel: logLevelSchema,
   maxWarnings: numberLikeFlag,
   logfile: stringFlag,
+  profile: booleanFlag,
   trace: booleanFlag,
-  traceOutput: traceOutputSchema.optional(),
+  traceOutput: traceOutputSchema,
   traceFile: stringFlag,
   watchDebounce: numberLikeFlag,
 })
@@ -51,16 +61,24 @@ export const buildFlagsSchema = commonFlagsSchema.extend({
 })
 
 export const initFlagsSchema = commonFlagsSchema
-  .omit({ watch: true, watchDebounce: true, maxWarnings: true, trace: true, traceOutput: true, traceFile: true })
+  .omit({
+    watch: true,
+    watchDebounce: true,
+    maxWarnings: true,
+    profile: true,
+    trace: true,
+    traceOutput: true,
+    traceFile: true,
+  })
   .extend({
     force: booleanFlag,
     postcss: booleanFlag,
     gitignore: booleanFlag,
     codegen: booleanFlag,
-    outExtension: z.enum(['ts', 'js', 'mjs']).optional(),
+    outExtension: enumOf(['ts', 'js', 'mjs']),
     outdir: stringFlag,
     jsxFramework: stringFlag,
-    syntax: z.enum(['template-literal', 'object-literal']).optional(),
+    syntax: enumOf(['template-literal', 'object-literal']),
     strictTokens: booleanFlag,
     install: booleanFlag,
   })
@@ -74,7 +92,7 @@ export const buildinfoFlagsSchema = commonFlagsSchema.omit({ watch: true, watchD
 export const libFlagsSchema = commonFlagsSchema.extend({
   outdir: stringFlag,
   panda: stringFlag,
-  files: z.union([z.string(), z.array(z.string())]).optional(),
+  files: stringOrArray(),
   minify: booleanFlag,
 })
 
@@ -87,6 +105,7 @@ export const infoFlagsSchema = commonFlagsSchema.pick({
   logLevel: true,
   maxWarnings: true,
   logfile: true,
+  profile: true,
   trace: true,
   traceOutput: true,
   traceFile: true,
@@ -103,12 +122,8 @@ export const debugFlagsSchema = infoFlagsSchema.extend({
 })
 
 export const analyzeFlagsSchema = commonFlagsSchema.extend({
-  scope: z
-    .enum(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe'])
-    .optional()
-    .describe(
-      'Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)',
-    ),
+  // Scope to include in the report: all, tokens, recipes, utilities, patterns, keyframes (or token/recipe aliases)
+  scope: enumOf(['all', 'tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'token', 'recipe']),
   outfile: stringFlag,
   report: stringFlag,
   limit: numberLikeFlag,
@@ -117,20 +132,20 @@ export const analyzeFlagsSchema = commonFlagsSchema.extend({
   uiPort: numberLikeFlag,
 })
 
-export type LogLevel = z.infer<typeof logLevelSchema>
-export type CommonFlags = z.infer<typeof commonFlagsSchema>
-export type CodegenFlags = z.infer<typeof codegenFlagsSchema>
-export type CssgenFlags = z.infer<typeof cssgenFlagsSchema>
-export type BuildFlags = z.infer<typeof buildFlagsSchema>
-export type InitFlags = z.infer<typeof initFlagsSchema>
-export type BuildinfoFlags = z.infer<typeof buildinfoFlagsSchema>
-export type LibFlags = z.infer<typeof libFlagsSchema>
-export type InfoFlags = z.infer<typeof infoFlagsSchema>
-export type DoctorFlags = z.infer<typeof doctorFlagsSchema>
-export type DebugFlags = z.infer<typeof debugFlagsSchema>
-type AnalyzeScopeRaw = z.infer<typeof analyzeFlagsSchema>['scope']
+export type LogLevel = EnumValues<typeof logLevelSchema>
+export type CommonFlags = FlagsInfer<typeof commonFlagsSchema>
+export type CodegenFlags = FlagsInfer<typeof codegenFlagsSchema>
+export type CssgenFlags = FlagsInfer<typeof cssgenFlagsSchema>
+export type BuildFlags = FlagsInfer<typeof buildFlagsSchema>
+export type InitFlags = FlagsInfer<typeof initFlagsSchema>
+export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
+export type LibFlags = FlagsInfer<typeof libFlagsSchema>
+export type InfoFlags = FlagsInfer<typeof infoFlagsSchema>
+export type DoctorFlags = FlagsInfer<typeof doctorFlagsSchema>
+export type DebugFlags = FlagsInfer<typeof debugFlagsSchema>
+type AnalyzeScopeRaw = FlagsInfer<typeof analyzeFlagsSchema>['scope']
 export type AnalyzeScope = NonNullable<Exclude<AnalyzeScopeRaw, 'token' | 'recipe'>>
-export type AnalyzeFlags = z.infer<typeof analyzeFlagsSchema>
+export type AnalyzeFlags = FlagsInfer<typeof analyzeFlagsSchema>
 
 export interface BuildinfoResult extends CommandResult {
   outfile?: string
