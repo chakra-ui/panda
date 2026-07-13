@@ -9,7 +9,7 @@ use pandacss_config::{DEFAULT_PATTERN_JSX_ELEMENT, PatternConfig, TypeData, User
 use pandacss_shared::{file_stem, js_ident, pascal_case};
 use pandacss_tokens::TokenDictionary;
 
-use crate::CodegenOverlay;
+use crate::{CodegenOverlay, RuntimeImport};
 
 #[derive(Debug, Clone, Copy)]
 pub struct CodegenContext<'a> {
@@ -95,6 +95,13 @@ impl<'a> CodegenContext<'a> {
     }
 
     #[must_use]
+    pub fn runtime_import(&self, import: RuntimeImport, local: &'static str) -> String {
+        self.overlay
+            .and_then(|overlay| overlay.resolve(import))
+            .unwrap_or_else(|| local.to_owned())
+    }
+
+    #[must_use]
     pub fn pattern_jsx_meta(&self, name: &str, pattern: &PatternConfig) -> PatternJsxCodegenMeta {
         let stem = file_stem(name);
         let raw_name = format!("{}Raw", js_ident(name));
@@ -145,4 +152,37 @@ fn empty_patterns() -> &'static BTreeMap<String, PatternCodegenMeta> {
     static EMPTY: std::sync::OnceLock<BTreeMap<String, PatternCodegenMeta>> =
         std::sync::OnceLock::new();
     EMPTY.get_or_init(BTreeMap::new)
+}
+
+#[cfg(test)]
+mod tests {
+    use pandacss_config::UserConfig;
+
+    use crate::{CodegenContext, CodegenOverlay, RuntimeImport};
+
+    #[test]
+    fn runtime_import_falls_back_to_local_without_overlay() {
+        let config = UserConfig::default();
+        let ctx = CodegenContext::new(&config);
+        assert_eq!(
+            ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+            "../helpers"
+        );
+    }
+
+    #[test]
+    fn runtime_import_uses_overlay_when_virtualized() {
+        let config = UserConfig::default();
+        let overlay = CodegenOverlay {
+            helpers: "@acme/ui/helpers".into(),
+            virtualize_utils: true,
+            ..Default::default()
+        };
+        let mut ctx = CodegenContext::new(&config);
+        ctx.overlay = Some(&overlay);
+        assert_eq!(
+            ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+            "@acme/ui/helpers"
+        );
+    }
 }
