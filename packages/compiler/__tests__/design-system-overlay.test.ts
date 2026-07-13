@@ -34,9 +34,9 @@ describe('overlay codegen — in-memory artifacts', () => {
     expect(has(files, 'recipes/button')).toBe(false)
     expect(has(files, 'recipes/badge')).toBe(false)
 
-    // The generic runtime the app's own recipe imports stays local.
-    expect(has(files, 'css/cx')).toBe(true)
-    expect(has(files, 'helpers')).toBe(true)
+    expect(has(files, 'css/cx')).toBe(false)
+    expect(has(files, 'helpers')).toBe(false)
+    expect(pick(files, 'css/index')).toContain('@acme/ds/css')
 
     expect((driver.designSystemDiagnostics ?? []).map((d) => d.code)).not.toContain('design_system_artifact_conflict')
   })
@@ -167,11 +167,11 @@ describe('overlay codegen — written to disk', () => {
     expect(files).not.toContain('recipes/button.js')
     expect(files).not.toContain('recipes/badge.js')
 
-    // Generic runtime imported by the app's own recipe runtime stays local so the
-    // relative imports resolve (this is what a real bundler build needs).
     expect(files).toContain('recipes/runtime.js')
-    expect(files).toContain('helpers.js')
-    expect(files).toContain('css/cx.js')
+    expect(files).not.toContain('helpers.js')
+    expect(files).not.toContain('css/cx.js')
+    expect(read(cwd, 'css/index.js')).toContain('@acme/ds/css')
+    expect(read(cwd, 'recipes/runtime.js')).toContain('@acme/ds')
   })
 
   it('lets the app win a recipe name and drops it from the DS re-export', async () => {

@@ -4,6 +4,7 @@ export default defineConfig({
   designSystem: '@sandbox/ds',
   include: ['src/**/*.tsx'],
   outdir: 'styled-system',
+  clean: true,
   theme: {
     extend: {
       tokens: {

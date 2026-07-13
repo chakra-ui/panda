@@ -25,6 +25,21 @@ try {
   const patterns = read('patterns/index.js')
   assert.match(patterns, /from '@sandbox\/ds\/patterns'/, 'DS patterns must be re-exported from @sandbox/ds')
   assert.ok(!existsSync(join(ss, 'patterns/stack.js')), 'patterns/stack.js must NOT be emitted — the DS owns it')
+
+  for (const runtime of ['helpers.js', 'css/cx.js', 'css/conditions.js', 'css/css.js', 'css/cva.js', 'css/sva.js']) {
+    assert.ok(!existsSync(join(ss, runtime)), `${runtime} must NOT be emitted — the runtime is virtualized from @sandbox/ds`)
+  }
+
+  assert.match(
+    read('css/index.js'),
+    /export \* from '@sandbox\/ds\/css'/,
+    'css/index.js must be a re-export barrel of @sandbox/ds/css',
+  )
+  assert.match(
+    read('recipes/runtime.js'),
+    /from '@sandbox\/ds\/helpers'/,
+    "the app's recipe runtime must import helpers from @sandbox/ds, not a local ../helpers",
+  )
 } catch (error) {
   console.error(`✗ overlay is NOT virtualized — it re-emitted DS artifacts locally.\n  ${error.message}`)
   console.error('  A full local tree usually means a stale compiler.node. Rebuild it:')
@@ -32,4 +47,4 @@ try {
   process.exit(1)
 }
 
-console.log('✓ overlay styled-system is virtualized (DS recipes/patterns re-exported, not re-emitted)')
+console.log('✓ overlay styled-system is virtualized (DS recipes/patterns + runtime re-exported, not re-emitted)')
