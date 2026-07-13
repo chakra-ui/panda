@@ -76,10 +76,19 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
   return { ...config, importMap: [...roots, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
 }
 
+export interface DesignSystemAppConfigKeys {
+  conditions: boolean
+  breakpoints: boolean
+  utilities: boolean
+  tokens: boolean
+  globalOptionsMatchDs: boolean
+}
+
 export interface DesignSystemMetadata {
   designSystem?: ResolvedDesignSystem[]
   userRecipeNames?: string[]
   userPatternNames?: string[]
+  appConfigKeys?: DesignSystemAppConfigKeys
 }
 
 export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined): CodegenOverlay | undefined {
@@ -90,15 +99,19 @@ export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined):
   const appRecipes = new Set(metadata?.userRecipeNames ?? [])
   const appPatterns = new Set(metadata?.userPatternNames ?? [])
 
+  const keys = metadata?.appConfigKeys
+  const globalMatch = keys?.globalOptionsMatchDs ?? true
+  const virtualizeUtils = globalMatch
+  const virtualizeConditions = globalMatch && !keys?.conditions && !keys?.breakpoints
+  const virtualizeCss = virtualizeConditions && !keys?.utilities
+
   return {
     ...overlayRoots(ds),
-    css: '',
-    helpers: '',
     ownedRecipes: ds.recipeNames.filter((name) => !appRecipes.has(name)),
     ownedPatterns: ds.patternNames.filter((name) => !appPatterns.has(name)),
-    virtualizeUtils: false,
-    virtualizeConditions: false,
-    virtualizeCss: false,
+    virtualizeUtils,
+    virtualizeConditions,
+    virtualizeCss,
   }
 }
 
@@ -120,7 +133,9 @@ export function collectArtifactConflicts(metadata: DesignSystemMetadata | undefi
     .filter((entry) => entry.recipes.length > 0 || entry.patterns.length > 0)
 }
 
-function overlayRoots(ds: ResolvedDesignSystem): Pick<CodegenOverlay, 'jsx' | 'recipes' | 'patterns'> {
+function overlayRoots(
+  ds: ResolvedDesignSystem,
+): Pick<CodegenOverlay, 'jsx' | 'recipes' | 'patterns' | 'css' | 'helpers'> {
   const map = ds.importMap
   const root = (value: string | string[] | undefined, subpath: string): string => {
     const resolved = Array.isArray(value) ? value[0] : value
@@ -130,6 +145,8 @@ function overlayRoots(ds: ResolvedDesignSystem): Pick<CodegenOverlay, 'jsx' | 'r
     jsx: root(map?.jsx, 'jsx'),
     recipes: root(map?.recipes, 'recipes'),
     patterns: root(map?.patterns, 'patterns'),
+    css: root(map?.css, 'css'),
+    helpers: `${ds.specifier}/helpers`,
   }
 }
 

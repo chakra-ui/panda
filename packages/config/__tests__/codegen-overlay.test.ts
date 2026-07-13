@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import { buildCodegenOverlay, collectArtifactConflicts, type ResolvedDesignSystem } from '../src/design-system'
 
 function ds(
@@ -16,6 +16,24 @@ function ds(
   }
 }
 
+function pureConsumerMetadata() {
+  return {
+    designSystem: [ds({ name: '@acme/ui', specifier: '@acme/ui' })],
+    appConfigKeys: {
+      conditions: false,
+      breakpoints: false,
+      utilities: false,
+      tokens: false,
+      globalOptionsMatchDs: true,
+    },
+  }
+}
+
+function metadataWith(overrides: Partial<NonNullable<ReturnType<typeof pureConsumerMetadata>>['appConfigKeys']>) {
+  const base = pureConsumerMetadata()
+  return { ...base, appConfigKeys: { ...base.appConfigKeys, ...overrides } }
+}
+
 describe('buildCodegenOverlay', () => {
   test('derives roots and owned names from a single-level design system', () => {
     const overlay = buildCodegenOverlay({
@@ -28,14 +46,37 @@ describe('buildCodegenOverlay', () => {
       jsx: '@acme/ds/jsx',
       recipes: '@acme/ds/recipes',
       patterns: '@acme/ds/patterns',
-      css: '',
-      helpers: '',
+      css: '@acme/ds/css',
+      helpers: '@acme/ds/helpers',
       ownedRecipes: ['button'],
       ownedPatterns: ['stack'],
-      virtualizeUtils: false,
-      virtualizeConditions: false,
-      virtualizeCss: false,
+      virtualizeUtils: true,
+      virtualizeConditions: true,
+      virtualizeCss: true,
     })
+  })
+
+  it('virtualizes entire runtime for a pure consumer', () => {
+    const overlay = buildCodegenOverlay(pureConsumerMetadata())
+    expect(overlay?.virtualizeUtils).toBe(true)
+    expect(overlay?.virtualizeConditions).toBe(true)
+    expect(overlay?.virtualizeCss).toBe(true)
+    expect(overlay?.css).toBe('@acme/ui/css')
+    expect(overlay?.helpers).toBe('@acme/ui/helpers')
+  })
+
+  it('keeps css + conditions local when app authors conditions', () => {
+    const overlay = buildCodegenOverlay(metadataWith({ conditions: true }))
+    expect(overlay?.virtualizeUtils).toBe(true)
+    expect(overlay?.virtualizeConditions).toBe(false)
+    expect(overlay?.virtualizeCss).toBe(false)
+  })
+
+  it('keeps entire runtime local when a global option differs', () => {
+    const overlay = buildCodegenOverlay(metadataWith({ globalOptionsMatchDs: false }))
+    expect(overlay?.virtualizeUtils).toBe(false)
+    expect(overlay?.virtualizeConditions).toBe(false)
+    expect(overlay?.virtualizeCss).toBe(false)
   })
 
   test('excludes app-redefined names from the owned sets', () => {
