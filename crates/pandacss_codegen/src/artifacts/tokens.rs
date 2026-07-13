@@ -13,17 +13,25 @@ pub fn generate(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Artifact {
-    Artifact {
-        id: ArtifactId::Tokens,
-        dependencies,
-        files: emit_module_files(
+    let module = {
+        let _span = tracing::trace_span!(target: "codegen", "tokens_build_module").entered();
+        module(ctx)
+    };
+    let files = {
+        let _span = tracing::trace_span!(target: "codegen", "tokens_emit_module").entered();
+        emit_module_files(
             "tokens/index",
-            &module(ctx),
+            &module,
             options.format,
             false,
             options.import_extensions,
             dependencies,
-        ),
+        )
+    };
+    Artifact {
+        id: ArtifactId::Tokens,
+        dependencies,
+        files,
     }
 }
 
@@ -53,6 +61,12 @@ fn module(ctx: CodegenContext<'_>) -> Module {
 }
 
 fn runtime_code(ctx: CodegenContext<'_>, prefix: &str, hash: bool) -> String {
+    let span = tracing::trace_span!(
+        target: "codegen",
+        "tokens_runtime_code",
+        value_count = ctx.types.tokens.values.len()
+    );
+    let _entered = span.enter();
     let tokens =
         serde_json::to_string(&ctx.types.tokens.values).expect("token values should serialize");
     let var_prefix = var_prefix(prefix, hash);

@@ -99,7 +99,8 @@ pub struct ExtractDebugResult {
 #[must_use]
 pub fn extract(source: &str, path: &str, config: &ExtractorConfig) -> ExtractUsage {
     let _span =
-        tracing::trace_span!("extraction", path = path, source_len = source.len()).entered();
+        tracing::trace_span!(target: "extract", "extract", path = path, source_len = source.len())
+            .entered();
     let outcome = run_extract(source, path, config, None, false);
     ExtractUsage {
         calls: outcome.calls,
@@ -121,7 +122,8 @@ where
     F: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
 {
     let _span = tracing::trace_span!(
-        "extraction",
+        target: "extract",
+        "extract",
         path = path,
         source_len = source.len(),
         pattern_raw_transform = true
@@ -142,8 +144,8 @@ where
 
 #[must_use]
 pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> ExtractDebugResult {
-    let _span =
-        tracing::trace_span!("extraction_debug", path = path, source_len = source.len()).entered();
+    let _span = tracing::trace_span!(target: "extract", "extract_debug", path = path, source_len = source.len())
+        .entered();
     let outcome = run_extract(source, path, config, None, false);
     ExtractDebugResult {
         imports: outcome.imports,
@@ -156,8 +158,13 @@ pub fn extract_debug(source: &str, path: &str, config: &ExtractorConfig) -> Extr
 
 #[must_use]
 pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> ExtractVerboseResult {
-    let _span = tracing::trace_span!("extraction_verbose", path = path, source_len = source.len())
-        .entered();
+    let _span = tracing::trace_span!(
+        target: "extract",
+        "extract_verbose",
+        path = path,
+        source_len = source.len()
+    )
+    .entered();
     let outcome = run_extract(source, path, config, None, true);
     ExtractVerboseResult {
         calls: outcome.calls,
@@ -198,6 +205,10 @@ fn match_file_imports(
     })
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "single-parse pipeline stays readable as one ordered function; splitting would scatter the per-stage span+record pairs across helpers"
+)]
 fn run_extract<'cb>(
     source: &str,
     path: &str,
@@ -218,18 +229,30 @@ fn run_extract<'cb>(
     };
     let mut diagnostics = collect_parser_diagnostics(&parser_return.errors, source);
     let imports = {
-        let _span = tracing::trace_span!("collect_imports").entered();
-        collect_imports(&parser_return.program)
+        let span = tracing::trace_span!(target: "extract", "scan_imports", import_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let imports = collect_imports(&parser_return.program);
+        span.record("import_count", imports.len());
+        imports
     };
     let matched = {
-        let _span = tracing::trace_span!("match_imports").entered();
-        match_file_imports(config, path, &imports)
+        let span = tracing::trace_span!(target: "extract", "match_imports", matched_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let matched = match_file_imports(config, path, &imports);
+        span.record("matched_count", matched.len());
+        matched
     };
 
     // Export surface is collected from the same parse — no second AST walk.
     let exports = {
-        let _span = tracing::trace_span!("collect_export_info").entered();
-        crate::collect_export_info(&parser_return.program)
+        let span = tracing::trace_span!(target: "extract", "scan_exports", export_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let exports = crate::collect_export_info(&parser_return.program);
+        span.record(
+            "export_count",
+            exports.local.len() + exports.re_exports.len() + exports.export_all.len(),
+        );
+        exports
     };
 
     if should_skip_extraction(&matched, config) {
@@ -248,7 +271,7 @@ fn run_extract<'cb>(
 
     let line_index = crate::LineIndex::new(source);
     let resolver = {
-        let _span = tracing::trace_span!("semantic_build").entered();
+        let _span = tracing::trace_span!(target: "parse", "resolve_scopes", path = path).entered();
         Resolver::build(
             &parser_return.program,
             &matched,
@@ -262,37 +285,50 @@ fn run_extract<'cb>(
     };
     let ctx = VisitorContext::new(&matched, config).with_resolver(&resolver);
 
-    let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
-        if should_collect_calls(&matched, config) {
-            let _span = tracing::trace_span!("visit_calls").entered();
-            if verbose {
-                collect_calls_verbose(&parser_return.program, &ctx, &line_index)
-            } else {
-                let (calls, diagnostics, token_refs) =
-                    collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index);
-                (calls, diagnostics, token_refs, Vec::new())
-            }
+    let (calls, call_diagnostics, mut token_refs, mut style_source_refs) = if should_collect_calls(
+        &matched, config,
+    ) {
+        let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let result = if verbose {
+            collect_calls_verbose(&parser_return.program, &ctx, &line_index)
         } else {
-            (Vec::new(), Vec::new(), Vec::new(), Vec::new())
+            let (calls, diagnostics, token_refs) =
+                collect_calls_with_token_refs(&parser_return.program, &ctx, &line_index);
+            (calls, diagnostics, token_refs, Vec::new())
         };
+        span.record("call_count", result.0.len());
+        result
+    } else {
+        (Vec::new(), Vec::new(), Vec::new(), Vec::new())
+    };
 
     let mut jsx = if should_collect_jsx(config) {
-        let _span = tracing::trace_span!("visit_jsx").entered();
-        if verbose {
+        let span = tracing::trace_span!(target: "extract", "extract_jsx", jsx_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let jsx = if verbose {
             let (jsx, refs) = collect_jsx_verbose(&parser_return.program, &ctx);
             style_source_refs.extend(refs);
             jsx
         } else {
             collect_jsx(&parser_return.program, &ctx)
-        }
+        };
+        span.record("jsx_count", jsx.len());
+        jsx
     } else {
         Vec::new()
     };
     if should_collect_jsx(config) {
-        let _span = tracing::trace_span!("visit_template_styles").entered();
-        jsx.extend(crate::template_styles::collect_template_styles(
-            raw_source, path, &matched, config,
-        ));
+        let span = tracing::trace_span!(
+            target: "extract",
+            "extract_templates",
+            template_count = tracing::field::Empty
+        );
+        let _entered = span.enter();
+        let templates =
+            crate::template_styles::collect_template_styles(raw_source, path, &matched, config);
+        span.record("template_count", templates.len());
+        jsx.extend(templates);
     }
 
     diagnostics.extend(call_diagnostics);

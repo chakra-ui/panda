@@ -61,7 +61,7 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("codegen", method = "generate_artifacts").entered();
+        // No span here — `codegen_generate` (below, one layer in) is the real work.
         let options = generate_options(&self.user_config, options);
         let artifacts = self
             .inner
@@ -84,7 +84,7 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Option<CodegenArtifact>> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("codegen", method = "generate_artifact", id).entered();
+        // No span here — `artifact` (below, one layer in) is the real work.
         let id = id
             .parse::<ArtifactId>()
             .map_err(|()| napi::Error::from_reason(format!("unknown codegen artifact `{id}`")))?;
@@ -108,8 +108,7 @@ impl Compiler {
         options: Option<GenerateArtifactOptions>,
     ) -> napi::Result<Vec<CodegenArtifact>> {
         crate::init_tracing();
-        let _span =
-            tracing::trace_span!("codegen", method = "generate_affected_artifacts").entered();
+        // No span here — `affected_artifacts` (below, one layer in) is the real work.
         let changed = dependency_set_from_strings(dependencies)?;
         let options = generate_options(&self.user_config, options);
         let artifacts = self

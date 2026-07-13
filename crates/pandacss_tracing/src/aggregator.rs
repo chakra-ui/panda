@@ -10,15 +10,28 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use tracing::Subscriber;
+use tracing::field::{Field, Visit};
 use tracing::span::{Attributes, Id};
 use tracing_subscriber::layer::{Context, Layer};
 use tracing_subscriber::registry::LookupSpan;
+
+/// How many slowest instances to retain per span name.
+const SLOWEST_CAP: usize = 5;
+
+/// One slow instance of a span, labeled by its `path` field.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SlowestInstance {
+    pub label: String,
+    pub nanos: u128,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpanStat {
     pub name: &'static str,
     pub total_nanos: u128,
     pub count: u64,
+    /// Slowest instances, descending, capped at [`SLOWEST_CAP`].
+    pub slowest: Vec<SlowestInstance>,
 }
 
 impl SpanStat {
@@ -42,6 +55,8 @@ pub struct SpanTimings {
 struct Accum {
     total_nanos: u128,
     count: u64,
+    /// Sorted and capped to [`SLOWEST_CAP`] only at [`SpanTimings::snapshot`].
+    slowest: Vec<SlowestInstance>,
 }
 
 impl SpanTimings {
@@ -64,10 +79,16 @@ impl SpanTimings {
         };
         let mut out: Vec<SpanStat> = map
             .iter()
-            .map(|(name, accum)| SpanStat {
-                name,
-                total_nanos: accum.total_nanos,
-                count: accum.count,
+            .map(|(name, accum)| {
+                let mut slowest = accum.slowest.clone();
+                slowest.sort_by(|a, b| b.nanos.cmp(&a.nanos));
+                slowest.truncate(SLOWEST_CAP);
+                SpanStat {
+                    name,
+                    total_nanos: accum.total_nanos,
+                    count: accum.count,
+                    slowest,
+                }
             })
             .collect();
 
@@ -86,11 +107,14 @@ impl SpanTimings {
         }
     }
 
-    fn add(&self, name: &'static str, nanos: u128) {
+    fn add(&self, name: &'static str, nanos: u128, label: Option<String>) {
         if let Ok(mut map) = self.inner.lock() {
             let entry = map.entry(name).or_default();
             entry.total_nanos = entry.total_nanos.saturating_add(nanos);
             entry.count = entry.count.saturating_add(1);
+            if let Some(label) = label {
+                entry.slowest.push(SlowestInstance { label, nanos });
+            }
         }
     }
 }
@@ -102,11 +126,68 @@ pub struct SpanTimingsLayer<S> {
 
 struct EnteredAt(Instant);
 
+/// A span's `path` or `id` field, if it recorded one — whichever identifies
+/// *which instance* this span ran for (a file, a codegen artifact, …).
+struct InstanceLabel(String);
+
+/// Picks out a span's `path`/`id` field for [`InstanceLabel`]. `path` wins if
+/// a span somehow records both.
+#[derive(Default)]
+struct PathFieldVisitor {
+    path: Option<String>,
+    id: Option<String>,
+}
+
+impl PathFieldVisitor {
+    fn label(self) -> Option<String> {
+        self.path.or(self.id)
+    }
+}
+
+impl Visit for PathFieldVisitor {
+    fn record_str(&mut self, field: &Field, value: &str) {
+        match field.name() {
+            "path" => self.path = Some(value.to_owned()),
+            "id" => self.id = Some(value.to_owned()),
+            _ => {}
+        }
+    }
+
+    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
+        match field.name() {
+            "path" if self.path.is_none() => {
+                self.path = Some(unquote_debug(&format!("{value:?}")));
+            }
+            "id" if self.id.is_none() => {
+                self.id = Some(unquote_debug(&format!("{value:?}")));
+            }
+            _ => {}
+        }
+    }
+}
+
+/// `Debug` on string-like values (e.g. `&Path`) wraps them in quotes; strip a
+/// matching pair so labels read as plain paths, not `"like this"`.
+fn unquote_debug(value: &str) -> String {
+    value
+        .strip_prefix('"')
+        .and_then(|rest| rest.strip_suffix('"'))
+        .map_or_else(|| value.to_owned(), ToOwned::to_owned)
+}
+
 impl<S> Layer<S> for SpanTimingsLayer<S>
 where
     S: Subscriber + for<'a> LookupSpan<'a>,
 {
-    fn on_new_span(&self, _attrs: &Attributes<'_>, _id: &Id, _ctx: Context<'_, S>) {}
+    fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
+        let mut visitor = PathFieldVisitor::default();
+        attrs.record(&mut visitor);
+        if let Some(label) = visitor.label()
+            && let Some(span) = ctx.span(id)
+        {
+            span.extensions_mut().insert(InstanceLabel(label));
+        }
+    }
 
     fn on_enter(&self, id: &Id, ctx: Context<'_, S>) {
         // Stamp the entry time on the span itself so re-entry nests correctly.
@@ -126,6 +207,10 @@ where
 
         let elapsed = start.elapsed().as_nanos();
         let name = span.metadata().name();
-        self.timings.add(name, elapsed);
+        let label = span
+            .extensions()
+            .get::<InstanceLabel>()
+            .map(|InstanceLabel(label)| label.clone());
+        self.timings.add(name, elapsed, label);
     }
 }

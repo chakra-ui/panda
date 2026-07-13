@@ -57,6 +57,7 @@ describe('cli smoke', () => {
       \`--log-level=<level>\` Set output level: silent, error, warn, info, or debug
       \`--max-warnings\` Fail when warning diagnostics exceed this count
       \`--logfile\` Write human output to a log file
+      \`--profile\` Capture Rust compiler timings (trace.json, timings.json)
       \`--trace\` Enable compiler tracing
       \`--trace-output\` Trace output: fmt or chrome-json
       \`--trace-file\` Trace output file for chrome-json tracing
@@ -133,6 +134,32 @@ describe('cli smoke', () => {
 
     const check = runCli(['check', '--cwd', dir, '--log-level', 'silent'])
     expect(check).toMatchObject({ exitCode: 0, stdout: '', stderr: '' })
+  })
+
+  it('--profile writes trace.json and timings.json to .panda/', async () => {
+    dir = createFixture()
+
+    const build = runCli(['build', '--cwd', dir, '--profile', '--log-level', 'silent'])
+    expect(build).toMatchObject({ exitCode: 0, stdout: '', stderr: '' })
+
+    const traceFile = join(dir, '.panda', 'trace.json')
+    const timingsFile = join(dir, '.panda', 'timings.json')
+    expect(existsSync(traceFile)).toBe(true)
+    expect(existsSync(timingsFile)).toBe(true)
+
+    const timings = JSON.parse(await readFile(timingsFile, 'utf8'))
+    expect(timings.totalSpans).toBeGreaterThan(0)
+  })
+
+  it('debug --profile without --outdir falls back to .panda/, not the debug bundle', () => {
+    dir = createFixture()
+
+    const debug = runCli(['debug', '--cwd', dir, '--profile', '--log-level', 'silent'])
+    expect(debug.exitCode).toBe(0)
+
+    expect(existsSync(join(dir, '.panda', 'trace.json'))).toBe(true)
+    expect(existsSync(join(dir, '.panda', 'timings.json'))).toBe(true)
+    expect(existsSync(join(dir, 'styled-system', 'debug', 'trace.json'))).toBe(false)
   })
 
   it('emits info and doctor JSON against a fixture project', () => {

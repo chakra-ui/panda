@@ -17,6 +17,13 @@ impl Utility {
     /// Projects the utility metadata into the codegen [`UtilityTypeData`].
     #[must_use]
     pub fn type_data(&self) -> UtilityTypeData {
+        let _span = tracing::trace_span!(
+            target: "codegen",
+            "utility_type_data",
+            property_count = self.properties.len(),
+            shorthand_count = self.shorthands.len()
+        )
+        .entered();
         let mut properties = BTreeMap::new();
         let mut aliases = BTreeMap::new();
         let mut class_names = BTreeMap::new();
@@ -26,28 +33,34 @@ impl Utility {
         property_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
 
         let tokens = self.tokens.as_deref();
-        for (name, property) in property_entries {
-            let data = property_type_data(name, property, tokens);
+        {
+            let _span =
+                tracing::trace_span!(target: "codegen", "utility_type_data_properties").entered();
+            for (name, property) in property_entries {
+                let data = property_type_data(name, property, tokens);
 
-            aliases
-                .entry(data.alias.clone())
-                .or_insert_with(|| value_alias_type_data(&data));
+                aliases
+                    .entry(data.alias.clone())
+                    .or_insert_with(|| value_alias_type_data(&data));
 
-            class_names.insert(
-                name.clone(),
-                property
-                    .class_name
-                    .clone()
-                    .unwrap_or_else(|| hyphenate_property(name)),
-            );
+                class_names.insert(
+                    name.clone(),
+                    property
+                        .class_name
+                        .clone()
+                        .unwrap_or_else(|| hyphenate_property(name)),
+                );
 
-            properties.insert(name.clone(), data);
+                properties.insert(name.clone(), data);
+            }
         }
 
         let mut shorthands = BTreeMap::new();
         let mut shorthand_entries = self.shorthands.iter().collect::<Vec<_>>();
         shorthand_entries.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
 
+        let _shorthand_span =
+            tracing::trace_span!(target: "codegen", "utility_type_data_shorthands").entered();
         for (name, target) in shorthand_entries {
             if !self.shorthands_enabled {
                 continue;

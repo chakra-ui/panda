@@ -1143,6 +1143,7 @@ dependencies = [
  "pandacss_stylesheet",
  "pandacss_tokens",
  "serde_json",
+ "tracing",
 ]
 
 [[package]]
@@ -1281,6 +1282,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -1303,6 +1305,7 @@ name = "pandacss_tracing"
 version = "0.0.0"
 dependencies = [
  "insta",
+ "serde",
  "serde_json",
  "tracing",
  "tracing-chrome",
@@ -1321,6 +1324,7 @@ dependencies = [
  "pandacss_tokens",
  "rustc-hash",
  "serde_json",
+ "tracing",
 ]
 
 [[package]]

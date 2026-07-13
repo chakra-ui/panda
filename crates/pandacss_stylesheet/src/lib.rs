@@ -160,6 +160,8 @@ pub fn has_static_css(config: &UserConfig) -> bool {
 /// CSS rather than failing the compile.
 #[must_use]
 pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> StylesheetOutput {
+    let _span =
+        tracing::trace_span!(target: "css", "emit_css", atom_count = input.atoms.len()).entered();
     let mut diagnostics = Vec::new();
     push_layer_collision_diagnostics(&input.config.layers, &mut diagnostics);
 
@@ -247,6 +249,8 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     reason = "split output orchestration is easier to audit as one ordered pipeline"
 )]
 pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Vec<SplitCssFile> {
+    let _span =
+        tracing::trace_span!(target: "css", "split_css", atom_count = input.atoms.len()).entered();
     let mut diagnostics = Vec::new();
     let token_dictionary = match input.token_dictionary.clone() {
         Some(dictionary) => Some(dictionary),
@@ -426,6 +430,9 @@ pub fn theme_css_entries(
     config: &UserConfig,
     minify: bool,
 ) -> Result<Vec<(String, String)>, pandacss_tokens::TokenError> {
+    let _span =
+        tracing::trace_span!(target: "css", "theme_vars", theme_count = config.themes.len())
+            .entered();
     let token_dictionary = TokenDictionary::from_config(config)?;
     Ok(theme_css_entries_from_dictionary(
         config,

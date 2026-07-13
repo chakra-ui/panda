@@ -305,34 +305,54 @@ impl<C: ConditionMatcher> Encoder<C> {
 
     /// Walks a style object, emitting one atom per leaf. Mirrors `processAtomic` in the JS encoder.
     pub fn process_atomic(&mut self, style: &Literal) {
-        let _span = tracing::trace_span!("encoding", kind = "encoder_atomic").entered();
+        let span = tracing::trace_span!(target: "encode", "encode_atoms", atom_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let before = self.atoms.len();
         let mut path = SmallVec::new();
         self.walk(style, &mut path);
+        span.record("atom_count", self.atoms.len() - before);
     }
 
     /// Fused variant: walks once while applying `norm` inline (key resolution,
     /// leaf normalization, responsive-array expansion), skipping the upfront
     /// `StyleNormalizer.normalize` allocation pass.
     pub fn process_atomic_with<'a, N: NormalizeAtomic>(&mut self, style: &'a Literal, norm: &'a N) {
-        let _span = tracing::trace_span!("encoder_atomic").entered();
+        let span = tracing::trace_span!(target: "encode", "encode_atoms", atom_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let before = self.atoms.len();
         let mut path = SmallVec::new();
         self.walk_with(style, norm, &mut path);
+        span.record("atom_count", self.atoms.len() - before);
     }
 
     pub fn process_atomic_recipe(&mut self, recipe: &Recipe) {
-        let _span = tracing::trace_span!("encoding", kind = "encoder_recipe").entered();
+        let span = tracing::trace_span!(
+            target: "encode",
+            "encode_recipe_atoms",
+            atom_count = tracing::field::Empty
+        );
+        let _entered = span.enter();
+        let before = self.atoms.len();
         for style in recipe.atomic_styles() {
             self.process_atomic(style);
         }
+        span.record("atom_count", self.atoms.len() - before);
     }
 
     pub fn process_atomic_slot_recipe(&mut self, recipe: &SlotRecipe) {
-        let _span = tracing::trace_span!("encoding", kind = "encoder_slot_recipe").entered();
+        let span = tracing::trace_span!(
+            target: "encode",
+            "encode_slot_recipe_atoms",
+            atom_count = tracing::field::Empty
+        );
+        let _entered = span.enter();
+        let before = self.atoms.len();
         for (_slot, styles) in recipe.atomic_styles_per_slot() {
             for style in styles {
                 self.process_atomic(style);
             }
         }
+        span.record("atom_count", self.atoms.len() - before);
     }
 
     fn walk<'a>(

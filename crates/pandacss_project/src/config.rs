@@ -35,7 +35,10 @@ pub(crate) fn compile_config_with_token_dictionary(
     config: &pandacss_config::UserConfig,
     token_dictionary: Option<Arc<TokenDictionary>>,
 ) -> Result<Config> {
-    let entries = ConfigDefinitions::from_config(config)?;
+    let entries = {
+        let _span = tracing::trace_span!(target: "config", "config_entries").entered();
+        ConfigDefinitions::from_config(config)?
+    };
     let token_dictionary = match token_dictionary {
         Some(dictionary) => Some(dictionary),
         None => TokenDictionary::from_config(config)
@@ -43,11 +46,15 @@ pub(crate) fn compile_config_with_token_dictionary(
             .map(Arc::new),
     };
 
-    let mut utility = Utility::from_config_with_options(
-        &config.utilities,
-        utility_options_from_config(config, token_dictionary.clone()),
-    );
-    utility.register_compositions(&config.theme);
+    let utility = {
+        let _span = tracing::trace_span!(target: "config", "config_utility").entered();
+        let mut utility = Utility::from_config_with_options(
+            &config.utilities,
+            utility_options_from_config(config, token_dictionary.clone()),
+        );
+        utility.register_compositions(&config.theme);
+        utility
+    };
 
     let conditions =
         ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
@@ -60,18 +67,24 @@ pub(crate) fn compile_config_with_token_dictionary(
     extractor_config.token_dictionary = token_dictionary;
 
     let utility = (!utility.is_empty()).then_some(utility);
-    let patterns = PatternRegistry::from_definitions(&entries.patterns);
-    let recipes = RecipeRegistry::from_definitions(
-        &entries.recipes,
-        &entries.slot_recipes,
-        &StyleResolver {
-            utility: utility.as_ref(),
-            conditions: &conditions,
-            breakpoints: &entries.breakpoints,
-            separator: config.separator(),
-            hash_class_names: config.hash.class_name(),
-        },
-    );
+    let patterns = {
+        let _span = tracing::trace_span!(target: "config", "config_patterns").entered();
+        PatternRegistry::from_definitions(&entries.patterns)
+    };
+    let recipes = {
+        let _span = tracing::trace_span!(target: "config", "config_recipes").entered();
+        RecipeRegistry::from_definitions(
+            &entries.recipes,
+            &entries.slot_recipes,
+            &StyleResolver {
+                utility: utility.as_ref(),
+                conditions: &conditions,
+                breakpoints: &entries.breakpoints,
+                separator: config.separator(),
+                hash_class_names: config.hash.class_name(),
+            },
+        )
+    };
 
     Ok(Config {
         extractor_config,

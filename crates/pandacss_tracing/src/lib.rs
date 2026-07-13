@@ -13,7 +13,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 mod aggregator;
-pub use aggregator::{SpanStat, SpanTimings, SpanTimingsLayer};
+pub use aggregator::{SlowestInstance, SpanStat, SpanTimings, SpanTimingsLayer};
 
 const DEFAULT_FILTER: &str = "info";
 const DEFAULT_TRACE_FILE: &str = ".panda/trace.json";
@@ -27,7 +27,13 @@ static INIT_RESULT: OnceLock<bool> = OnceLock::new();
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TraceOutput {
     Fmt,
-    ChromeJson { file: PathBuf },
+    ChromeJson {
+        file: PathBuf,
+    },
+    /// Chrome-json trace plus the span-timings aggregator, for `--profile`.
+    Profile {
+        file: PathBuf,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -58,6 +64,10 @@ impl TraceConfig {
         let output = match output.unwrap_or("fmt") {
             "fmt" | "stderr" => TraceOutput::Fmt,
             "chrome-json" => TraceOutput::ChromeJson {
+                file: PathBuf::from(file.unwrap_or(DEFAULT_TRACE_FILE)),
+            },
+            // Undocumented value — `--profile` selects this internally.
+            "profile" => TraceOutput::Profile {
                 file: PathBuf::from(file.unwrap_or(DEFAULT_TRACE_FILE)),
             },
             _ => return None,
@@ -96,11 +106,7 @@ fn install(config: TraceConfig) -> bool {
             let subscriber = registry.with(timings.layer());
 
             if try_init(subscriber) {
-                let timing_slot = FMT_TIMINGS.get_or_init(|| Mutex::new(None));
-                if let Ok(mut slot) = timing_slot.lock() {
-                    *slot = Some(timings);
-                }
-
+                store_fmt_timings(timings);
                 true
             } else {
                 false
@@ -108,25 +114,15 @@ fn install(config: TraceConfig) -> bool {
         }
 
         TraceOutput::ChromeJson { file } => {
-            // Create the trace file's parent dir before the writer opens it.
-            if let Some(parent) = file
-                .parent()
-                .filter(|parent| !parent.as_os_str().is_empty())
-            {
-                let _ = std::fs::create_dir_all(parent);
-            }
-
-            let (chrome_layer, guard) =
-                tracing_chrome::ChromeLayerBuilder::new().file(file).build();
+            create_parent_dir(&file);
+            let (chrome_layer, guard) = tracing_chrome::ChromeLayerBuilder::new()
+                .file(file)
+                .include_args(true)
+                .build();
             let subscriber = registry.with(chrome_layer);
 
             if try_init(subscriber) {
-                // Dropping the flush guard truncates the trace, so park it in a static.
-                let guard_slot = CHROME_GUARD.get_or_init(|| Mutex::new(None));
-                if let Ok(mut slot) = guard_slot.lock() {
-                    *slot = Some(guard);
-                }
-
+                store_chrome_guard(guard);
                 true
             } else {
                 // Another subscriber won the race; flush what we built and bail.
@@ -134,6 +130,50 @@ fn install(config: TraceConfig) -> bool {
                 false
             }
         }
+
+        TraceOutput::Profile { file } => {
+            create_parent_dir(&file);
+            let (chrome_layer, guard) = tracing_chrome::ChromeLayerBuilder::new()
+                .file(file)
+                .include_args(true)
+                .build();
+            let timings = SpanTimings::new();
+            let subscriber = registry.with(chrome_layer).with(timings.layer());
+
+            if try_init(subscriber) {
+                store_chrome_guard(guard);
+                store_fmt_timings(timings);
+                true
+            } else {
+                guard.flush();
+                false
+            }
+        }
+    }
+}
+
+/// Creates the trace file's parent dir before the writer opens it.
+fn create_parent_dir(file: &std::path::Path) {
+    if let Some(parent) = file
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        let _ = std::fs::create_dir_all(parent);
+    }
+}
+
+/// Dropping the flush guard truncates the trace, so park it in a static.
+fn store_chrome_guard(guard: FlushGuard) {
+    let guard_slot = CHROME_GUARD.get_or_init(|| Mutex::new(None));
+    if let Ok(mut slot) = guard_slot.lock() {
+        *slot = Some(guard);
+    }
+}
+
+fn store_fmt_timings(timings: Arc<SpanTimings>) {
+    let timing_slot = FMT_TIMINGS.get_or_init(|| Mutex::new(None));
+    if let Ok(mut slot) = timing_slot.lock() {
+        *slot = Some(timings);
     }
 }
 
@@ -146,6 +186,15 @@ pub fn flush() {
     {
         guard.flush();
     }
+}
+
+/// Renders `timings.json`. Call before [`shutdown`], which consumes the same data.
+#[must_use]
+pub fn take_timings_json() -> Option<String> {
+    let timing_slot = FMT_TIMINGS.get()?;
+    let mut slot = timing_slot.lock().ok()?;
+    let timings = slot.take()?;
+    Some(render_timings_json(&timings.snapshot()))
 }
 
 #[must_use]
@@ -181,6 +230,66 @@ fn shutdown_chrome_json() -> bool {
         return false;
     };
     slot.take().is_some()
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimingsReport {
+    total_spans: u64,
+    total_time_ms: f64,
+    spans: Vec<TimingsSpan>,
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TimingsSpan {
+    name: &'static str,
+    count: u64,
+    total_ms: f64,
+    slowest: Vec<TimingsSlowest>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct TimingsSlowest {
+    label: String,
+    ms: f64,
+}
+
+/// # Panics
+/// Never — `TimingsReport` always serializes cleanly.
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "timings.json ms fields tolerate f64 precision loss"
+)]
+#[must_use]
+pub fn render_timings_json(stats: &[SpanStat]) -> String {
+    // Whole-nanosecond sum avoids f64's `-0.0` empty-sum identity.
+    let total_nanos = stats
+        .iter()
+        .fold(0_u128, |total, stat| total.saturating_add(stat.total_nanos));
+
+    let report = TimingsReport {
+        total_spans: stats.iter().map(|stat| stat.count).sum(),
+        total_time_ms: (total_nanos as f64) / 1_000_000.0,
+        spans: stats
+            .iter()
+            .map(|stat| TimingsSpan {
+                name: stat.name,
+                count: stat.count,
+                total_ms: stat.total_ms(),
+                slowest: stat
+                    .slowest
+                    .iter()
+                    .map(|instance| TimingsSlowest {
+                        label: instance.label.clone(),
+                        ms: (instance.nanos as f64) / 1_000_000.0,
+                    })
+                    .collect(),
+            })
+            .collect(),
+    };
+
+    serde_json::to_string_pretty(&report).expect("timings report serializes as JSON")
 }
 
 #[must_use]

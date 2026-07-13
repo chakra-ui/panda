@@ -586,6 +586,32 @@ fn generate_node(
     node: ArtifactNode,
     options: GenerateOptions,
 ) -> Artifact {
+    let span = tracing::trace_span!(
+        target: "codegen",
+        "artifact",
+        id = node.id.as_str(),
+        file_count = tracing::field::Empty,
+        byte_count = tracing::field::Empty
+    );
+    let _entered = span.enter();
+    let artifact = generate_node_inner(ctx, node, options);
+    span.record("file_count", artifact.files.len());
+    span.record(
+        "byte_count",
+        artifact
+            .files
+            .iter()
+            .map(|file| file.code.len())
+            .sum::<usize>(),
+    );
+    artifact
+}
+
+fn generate_node_inner(
+    ctx: CodegenContext<'_>,
+    node: ArtifactNode,
+    options: GenerateOptions,
+) -> Artifact {
     match node.id {
         ArtifactId::Conditions => {
             crate::artifacts::conditions::generate(ctx, options, node.dependencies)

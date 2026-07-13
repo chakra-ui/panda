@@ -130,7 +130,8 @@ impl TokenDictionary {
     ///
     /// Returns an error on invalid token transforms, e.g. malformed color-mix opacity.
     pub fn from_config(config: &pandacss_config::UserConfig) -> Result<Option<Self>, TokenError> {
-        let _span = tracing::debug_span!("token_dictionary_build", source = "config").entered();
+        // No span here — `from_options` is the sole instrumented boundary,
+        // so calling through this delegate doesn't double-count the work.
         Self::from_options(TokenDictionaryOptions::from_config(config))
     }
 
@@ -140,8 +141,13 @@ impl TokenDictionary {
     ///
     /// Returns an error on invalid token transforms, e.g. malformed color-mix opacity.
     pub fn from_options(options: TokenDictionaryOptions<'_>) -> Result<Option<Self>, TokenError> {
-        let _span = tracing::debug_span!("token_dictionary_build", source = "options").entered();
-        from_config::create_token_dictionary(options)
+        let span = tracing::debug_span!(target: "config", "load_tokens", token_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let dictionary = from_config::create_token_dictionary(options)?;
+        if let Some(dictionary) = &dictionary {
+            span.record("token_count", dictionary.len());
+        }
+        Ok(dictionary)
     }
 
     #[must_use]

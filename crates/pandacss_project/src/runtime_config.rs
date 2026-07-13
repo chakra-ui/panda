@@ -36,7 +36,7 @@ impl Config {
     /// # Errors
     /// Returns a `ConfigError` when the config has invalid tokens or recipes.
     pub fn from_user_config(config: &UserConfig) -> Result<Self> {
-        let _span = tracing::debug_span!("config_from_user_config").entered();
+        let _span = tracing::debug_span!(target: "config", "compile_config").entered();
         config::compile_config(config)
     }
 
