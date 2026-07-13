@@ -28,8 +28,13 @@ describe('buildCodegenOverlay', () => {
       jsx: '@acme/ds/jsx',
       recipes: '@acme/ds/recipes',
       patterns: '@acme/ds/patterns',
+      css: '',
+      helpers: '',
       ownedRecipes: ['button'],
       ownedPatterns: ['stack'],
+      virtualizeUtils: false,
+      virtualizeConditions: false,
+      virtualizeCss: false,
     })
   })
 

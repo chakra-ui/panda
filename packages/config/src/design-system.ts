@@ -92,8 +92,13 @@ export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined):
 
   return {
     ...overlayRoots(ds),
+    css: '',
+    helpers: '',
     ownedRecipes: ds.recipeNames.filter((name) => !appRecipes.has(name)),
     ownedPatterns: ds.patternNames.filter((name) => !appPatterns.has(name)),
+    virtualizeUtils: false,
+    virtualizeConditions: false,
+    virtualizeCss: false,
   }
 }
 

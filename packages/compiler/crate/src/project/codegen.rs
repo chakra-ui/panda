@@ -156,8 +156,13 @@ fn to_crate_overlay(overlay: CodegenOverlay) -> CodegenCrateOverlay {
         jsx: overlay.jsx,
         recipes: overlay.recipes,
         patterns: overlay.patterns,
+        css: overlay.css,
+        helpers: overlay.helpers,
         owned_recipes: overlay.owned_recipes,
         owned_patterns: overlay.owned_patterns,
+        virtualize_utils: overlay.virtualize_utils,
+        virtualize_conditions: overlay.virtualize_conditions,
+        virtualize_css: overlay.virtualize_css,
     }
 }
 

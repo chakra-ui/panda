@@ -42,8 +42,13 @@ export interface CodegenOverlay {
   jsx: string
   recipes: string
   patterns: string
+  css: string
+  helpers: string
   ownedRecipes: string[]
   ownedPatterns: string[]
+  virtualizeUtils: boolean
+  virtualizeConditions: boolean
+  virtualizeCss: boolean
 }
 
 export interface CodegenOptions extends GenerateArtifactOptions {

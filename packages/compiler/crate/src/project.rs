@@ -153,8 +153,13 @@ pub struct CodegenOverlay {
     pub jsx: String,
     pub recipes: String,
     pub patterns: String,
+    pub css: String,
+    pub helpers: String,
     pub owned_recipes: Vec<String>,
     pub owned_patterns: Vec<String>,
+    pub virtualize_utils: bool,
+    pub virtualize_conditions: bool,
+    pub virtualize_css: bool,
 }
 
 #[napi(object)]
