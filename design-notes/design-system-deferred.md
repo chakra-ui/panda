@@ -89,17 +89,15 @@ Why: the compiler resolves tokens against the merged config and has no record of
 lint plugin reads the resolved config and is the intended guardrail; a build-time warning for unresolved token
 references is a possible follow-up.
 
-### The generic runtime is emitted locally, not deduped
+### Recipe/pattern runtime factories still emit locally
 
-The overlay re-exports the design system's recipe, pattern, and jsx-component definitions, but still emits the generic
-runtime — `css`, `cva`, `cx`, `sva`, `helpers`, the jsx factory, `tokens`, `conditions`, `types` — locally from the
-merged config.
+Runtime virtualization covers every artifact import (`helpers`, the whole `css/` unit, plus definitions) except two:
+`recipes/runtime` and `patterns/runtime`. Whenever the app emits any recipe or pattern delta, its delta modules import
+the shared factory by a hardcoded `./runtime` sibling, and there's no DS-exported subpath for that module, so both
+factories stay local.
 
-Why: the app's own recipe and pattern modules import that runtime by relative path (`../helpers`, `../css/cx`). If the
-overlay skipped those files, the relative imports would dangle and a real bundler build would fail. So the win is scoped
-to the library-sized part (definitions), not the fixed-size runtime. Deduping the runtime too would mean rewriting the
-app delta modules' relative imports to point at the design-system package — a bigger, more fragile change deferred to a
-later pass.
+Why: virtualizing them needs `./recipes/runtime` and `./patterns/runtime` DS exports plus a resolver entry, same shape
+as the `css/` unit got. Deferred, not blocked — a plausible follow-up once the `css/`-unit pattern proves out.
 
 ### Cross-package source watch
 

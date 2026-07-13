@@ -318,6 +318,8 @@ not covered by ui's artifact (see
     "./preset": "./panda.preset.js",
     "./manifest.json": "./panda.manifest.json",
     "./css": "./styled-system/css/index.mjs",
+    "./css/*": "./styled-system/css/*",
+    "./helpers": "./styled-system/helpers.mjs",
     "./recipes/*": "./styled-system/recipes/*",
     "./patterns/*": "./styled-system/patterns/*",
     "./jsx/*": "./styled-system/jsx/*",
@@ -343,13 +345,19 @@ not covered by ui's artifact (see
 - ✅ **Manifest wire format** — `panda.lib.json` with `preset`, `buildInfo`, `importMap`, `designSystem` (parent),
   `files`.
 - ✅ **Overlay codegen (single-level)** — see [v1 overlay shape](#v1-overlay-shape-single-level) below.
+- ✅ **Runtime virtualization (single-level)** — every runtime import specifier (`helpers`, `css`/`cx`/`cva`/`sva`/
+  `conditions`/`index`, not just recipe/pattern/jsx definitions) resolves through `CodegenContext::runtime_import` /
+  `CodegenOverlay::resolve` to either the DS package or the local path. With no overlay, output stays byte-identical.
 - ⬜ **Overlay codegen (nested chains)** — multi-root barrel disambiguation across a DS-on-DS chain.
+- ⬜ **Recipe/pattern runtime factory virtualization** — `recipes/runtime` and `patterns/runtime` still emit locally;
+  see [design-system-deferred.md](./design-system-deferred.md).
 - ⬜ **Import-based hydration narrowing** — scan app imports and pass `only` to build-info hydration.
 - ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
 - ✅ **Virtual styled-system DX** — `panda lib` publishes the design system's styled-system subpath exports (`./css`,
-  `./recipes`, `./patterns`, `./jsx`, `./tokens`, plus `/*` wildcards for deep imports), so the consumer's overlay
-  barrels resolve with no bundler aliases. Only categories the codegen emitted are exported. TS `paths` generation stays
-  optional.
+  `./css/*`, `./helpers`, `./recipes`, `./patterns`, `./jsx`, `./tokens`, plus `/*` wildcards for deep imports), so the
+  consumer's overlay barrels resolve with no bundler aliases. Only categories the codegen emitted are exported. A
+  consume-side diagnostic, `design_system_export_missing` (error), fires when a DS `package.json` is missing a subpath
+  the overlay needs to virtualize. TS `paths` generation stays optional.
 
 ## v1 overlay shape (single-level)
 
@@ -359,10 +367,28 @@ and pattern names (minus any the app redefined). It rides `GenerateArtifactOptio
 Rust codegen graph. When absent, codegen output is byte-identical to today.
 
 The overlay re-exports the design system's recipe, pattern, and jsx-component **definitions** and skips re-emitting
-them. It does **not** touch the generic runtime: `css`, `cva`, `cx`, `sva`, `helpers`, and the jsx factory are still
-emitted locally, because the app's own recipe/pattern modules import them by relative path (`../helpers`, `../css/cx`).
-Skipping them would leave dangling imports that break a real bundler build — so the win is scoped to the library-sized
-part (recipe/pattern/jsx definitions), not the fixed-size runtime.
+them. It also virtualizes the runtime: every generated module's runtime import specifier is routed through
+`ctx.runtime_import(RuntimeImport::…, "../local/path")`, which asks `CodegenOverlay::resolve` whether that import should
+point at the DS package or fall back to the local relative path. With no overlay, `resolve` never fires and output is
+byte-identical to today.
+
+**Taint model.** Virtualization is coarse by design, not per-file:
+
+- `helpers` is a standalone module — nothing else re-exports it — so it virtualizes independently
+  (`virtualizeUtils = globalOptionsMatchDs`).
+- The whole `css/` directory (`css`, `cx`, `cva`, `sva`, `conditions`, `index`) is one unit. Its files cross-import as
+  siblings (`css/index` re-exports `./css` / `./cva` / `./cx` / `./sva`, `css/css` imports `./conditions`, …), so it
+  can't be split — it virtualizes together or stays local together:
+  `virtualizeCss = globalOptionsMatchDs && !conditions && !breakpoints && !utilities`. `virtualizeConditions` collapses
+  into `virtualizeCss` (conditions live inside the `css/` unit, not a separate export).
+- "Redeclare" means the app **authors** that config field, not merely inherits it through the merged preset. A
+  global-option divergence — `prefix`, `hash`, `separator`, `jsxFramework`, `jsxStyleProps`, `syntax` — forces the whole
+  runtime local, because a mismatched option changes the DS runtime's emitted shape.
+- Custom `conditions`, `breakpoints`, or `utilities` force `css/` local too: they can change what `css()` and
+  `conditions` need to resolve, so the DS-published `css/` unit is no longer a safe substitute.
+
+When `css/` is virtualized, `css/index` becomes a re-export barrel: `export * from "<ds>/css"` (plus `cva`/`cx`/`sva`
+re-exports), rather than the full local implementation.
 
 With an overlay, `panda codegen` writes into the app `styled-system`:
 
@@ -372,11 +398,19 @@ With an overlay, `panda codegen` writes into the app `styled-system`:
 - **jsx pattern components** — only app patterns are emitted; the index re-exports each owned DS component from
   `<ds>/jsx/<stem>` and the app's own from `./<stem>`. A redefined pattern is app-owned, so it stays local and the DS
   one isn't re-exported — no collision.
-- **css / cva / cx / sva / helpers, jsx factory, tokens, conditions, types** — emitted locally as normal.
+- **helpers** — virtualized independently; re-exports `<ds>/helpers` when global options match.
+- **css / cva / cx / sva / conditions / index** — virtualized together as the `css/` unit (see taint model above), or
+  all emitted locally together.
+- **tokens, types** — emitted locally as normal (per-app merged config, not DS-owned runtime).
+- **recipes/runtime, patterns/runtime** — the shared factory modules the app's own recipe/pattern delta files import via
+  a hardcoded `./runtime` sibling. There's no DS-exported subpath for them yet, so they stay local whenever the app
+  emits any recipe or pattern delta. See
+  [design-system-deferred.md](./design-system-deferred.md#recipe-pattern-runtime-factories-still-emit-locally).
 
 Name collisions between the app and the design system surface as `design_system_artifact_conflict` (warning); the app
-wins. Nested chains skip the overlay and emit the full local tree — merge and hydrate from the earlier phases still
-apply.
+wins. A DS `package.json` missing an `exports` subpath the overlay needs (`./helpers`, `./css/*`, …) surfaces
+`design_system_export_missing` (error) instead of a silent bundler failure. Nested chains skip the overlay entirely and
+emit the full local tree — merge and hydrate from the earlier phases still apply.
 
 Verified end-to-end in `sandbox-design-system`: the DS ships a `tag` recipe, the app adds a `panel` recipe and consumes
 both, and a Vite build resolves the re-exports.
