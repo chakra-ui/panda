@@ -453,8 +453,9 @@ function skippedDesignSystemLib(parsed: ParsedDesignSystemLib): WriteDesignSyste
   }
 }
 
-const STYLED_SYSTEM_CATEGORIES = ['css', 'recipes', 'patterns', 'jsx', 'tokens'] as const
-const DEEP_IMPORT_CATEGORIES = new Set(['recipes', 'patterns', 'jsx'])
+const STYLED_SYSTEM_CATEGORIES = ['css', 'recipes', 'patterns', 'jsx', 'tokens', 'helpers'] as const
+const DEEP_IMPORT_CATEGORIES = new Set(['css', 'recipes', 'patterns', 'jsx'])
+const SINGLE_FILE_CATEGORIES = new Set(['helpers'])
 
 function syncPackageExports(
   compiler: Compiler,
@@ -493,6 +494,14 @@ function styledSystemExports(compiler: Compiler, base: string, styledDir: string
 
   const entries: Record<string, unknown> = {}
   for (const category of STYLED_SYSTEM_CATEGORIES) {
+    if (SINGLE_FILE_CATEGORIES.has(category)) {
+      const runtime = find(styledDir, [`${category}.mjs`, `${category}.js`, `${category}.ts`])
+      if (!runtime) continue
+      const types = find(styledDir, [`${category}.d.mts`, `${category}.d.ts`])
+      entries[`./${category}`] = types ? { types: rel(types), default: rel(runtime) } : rel(runtime)
+      continue
+    }
+
     const dir = compiler.path.join([styledDir, category])
     const runtime = find(dir, ['index.mjs', 'index.js', 'index.ts'])
     if (!runtime) continue

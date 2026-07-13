@@ -389,6 +389,19 @@ describe('NodeDriver writeDesignSystemLib', () => {
     `)
   })
 
+  it('exports ./css/* and ./helpers when codegen emitted them', async () => {
+    dir = createLibProject()
+
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.codegen()
+    await driver.writeDesignSystemLib()
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(Object.keys(pkg.exports)).toEqual(
+      expect.arrayContaining(['./css', './css/*', './helpers', './patterns', './patterns/*', './tokens']),
+    )
+  })
+
   it('preserves an existing string root export', async () => {
     dir = createLibProject()
     writeFileTree(dir, {
