@@ -1,5 +1,10 @@
 import { describe, expect, it, test } from 'vitest'
-import { buildCodegenOverlay, collectArtifactConflicts, type ResolvedDesignSystem } from '../src/design-system'
+import {
+  buildCodegenOverlay,
+  collectArtifactConflicts,
+  collectExportMissingDiagnostics,
+  type ResolvedDesignSystem,
+} from '../src/design-system'
 
 function ds(
   overrides: Partial<ResolvedDesignSystem> & Pick<ResolvedDesignSystem, 'name' | 'specifier'>,
@@ -150,6 +155,58 @@ describe('collectArtifactConflicts', () => {
       collectArtifactConflicts({
         designSystem: [ds({ name: '@acme/ds', specifier: '@acme/ds', recipeNames: ['button'] })],
         userRecipeNames: ['card'],
+      }),
+    ).toEqual([])
+  })
+})
+
+describe('collectExportMissingDiagnostics', () => {
+  test('reports a missing ./css/* export when the overlay virtualizes css', () => {
+    const diagnostics = collectExportMissingDiagnostics({
+      designSystem: [
+        ds({
+          name: '@acme/ds',
+          specifier: '@acme/ds',
+          packageExports: { '.': './index.js', './helpers': './helpers/index.js' },
+        }),
+      ],
+    })
+
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'design_system_export_missing',
+        severity: 'error',
+        message: expect.stringContaining('./css/*'),
+      }),
+    ])
+  })
+
+  test('is empty when the exports map covers every virtualized subpath', () => {
+    const diagnostics = collectExportMissingDiagnostics({
+      designSystem: [
+        ds({
+          name: '@acme/ds',
+          specifier: '@acme/ds',
+          packageExports: {
+            '.': './index.js',
+            './helpers': './helpers/index.js',
+            './css/*': './css/*.js',
+          },
+        }),
+      ],
+    })
+
+    expect(diagnostics).toEqual([])
+  })
+
+  test('returns nothing without a single-level overlay', () => {
+    expect(collectExportMissingDiagnostics(undefined)).toEqual([])
+    expect(
+      collectExportMissingDiagnostics({
+        designSystem: [
+          ds({ name: '@acme/ds', specifier: '@acme/ds' }),
+          ds({ name: '@acme/base', specifier: '@acme/base' }),
+        ],
       }),
     ).toEqual([])
   })

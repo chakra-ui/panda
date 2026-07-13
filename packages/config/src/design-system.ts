@@ -1,6 +1,7 @@
 import {
   outdirBasename,
   type CodegenOverlay,
+  type Diagnostic,
   type DesignSystemManifest,
   type ImportMapInput,
   type ImportMapOption,
@@ -24,6 +25,7 @@ export interface ResolvedDesignSystem {
   recipeNames: string[]
   patternNames: string[]
   importMap?: DesignSystemManifest['importMap']
+  packageExports?: Record<string, unknown>
 }
 
 export interface DesignSystemLevel {
@@ -133,6 +135,31 @@ export function collectArtifactConflicts(metadata: DesignSystemMetadata | undefi
     .filter((entry) => entry.recipes.length > 0 || entry.patterns.length > 0)
 }
 
+export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata | undefined): Diagnostic[] {
+  const overlay = buildCodegenOverlay(metadata)
+  if (!overlay) return []
+
+  const [ds] = metadata!.designSystem!
+  const required: string[] = []
+  if (overlay.virtualizeUtils) required.push('./helpers')
+  if (overlay.virtualizeConditions || overlay.virtualizeCss) required.push('./css/*')
+
+  return required
+    .filter((subpath) => !hasExport(ds.packageExports, subpath))
+    .map((subpath) => exportMissingDiagnostic(ds.name, subpath))
+}
+
+function hasExport(packageExports: Record<string, unknown> | undefined, subpath: string): boolean {
+  return packageExports != null && Object.prototype.hasOwnProperty.call(packageExports, subpath)
+}
+
+function exportMissingDiagnostic(dsName: string, subpath: string): Diagnostic {
+  const message = `designSystem ${JSON.stringify(dsName)} doesn't export ${JSON.stringify(subpath)}, which this app's codegen needs. Rebuild it with \`panda lib\`.`
+  return createConfigDiagnostic('design_system_export_missing', message, [
+    `Rebuild ${JSON.stringify(dsName)} with \`panda lib\` to add the ${JSON.stringify(subpath)} export.`,
+  ])
+}
+
 function overlayRoots(
   ds: ResolvedDesignSystem,
 ): Pick<CodegenOverlay, 'jsx' | 'recipes' | 'patterns' | 'css' | 'helpers'> {
@@ -196,6 +223,7 @@ async function loadManifestLevel(
 
   const parent =
     typeof manifest.designSystem === 'string' && manifest.designSystem.length > 0 ? manifest.designSystem : undefined
+  const packageExports = readPackageExports(manifestPath)
 
   return {
     parent,
@@ -212,9 +240,24 @@ async function loadManifestLevel(
         recipeNames: [],
         patternNames: [],
         ...(manifest.importMap ? { importMap: manifest.importMap } : {}),
+        ...(packageExports ? { packageExports } : {}),
       },
     },
   }
+}
+
+function readPackageExports(manifestPath: string): Record<string, unknown> | undefined {
+  try {
+    const packageJsonPath = resolve(dirname(manifestPath), 'package.json')
+    const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { exports?: unknown }
+    return isExportsMap(pkg.exports) ? pkg.exports : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function isExportsMap(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function presetImportUrl(path: string): string {
