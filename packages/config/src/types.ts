@@ -1,6 +1,6 @@
 import type { ProjectCallbacks, ProjectHooks, SerializedConfig } from '@pandacss/compiler-shared'
 import type { HostHooks } from './hooks'
-import type { ResolvedDesignSystem } from './design-system'
+import type { DesignSystemAppConfigKeys, ResolvedDesignSystem } from './design-system'
 import type { ConfigSources } from './sources'
 
 export interface LoadConfigOptions {
@@ -30,5 +30,6 @@ export interface LoadConfigResult {
     userTokenPaths?: string[]
     userRecipeNames?: string[]
     userPatternNames?: string[]
+    appConfigKeys?: DesignSystemAppConfigKeys
   }
 }

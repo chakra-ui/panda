@@ -17,8 +17,10 @@ import {
 } from '@pandacss/compiler-shared'
 import {
   buildCodegenOverlay,
+  bundleConfig,
   compilePreset,
   defaultImportMap,
+  type ConfigSources,
   type HostHooks,
   type LoadConfigResult,
   diffConfig,
@@ -32,6 +34,7 @@ import {
   toRelativeKey,
   type CompilePresetResult,
 } from '@pandacss/config'
+import { dirname, resolve as resolvePath } from 'node:path'
 import { createProjectFromLoadedConfig } from './tooling/create-project'
 
 export interface NodeDriverOptions {
@@ -74,8 +77,9 @@ const DEFAULT_DESIGN_SYSTEM_LIB_FILES = ['./**/*.{js,mjs}']
  * config from disk; `scan` / `codegen` run through the Rust fs engine.
  */
 export async function createNodeDriver(options: NodeDriverOptions): Promise<NodeDriver> {
-  const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath })
+  const loaded = await loadConfig({ cwd: options.cwd, file: options.configPath, trackSources: true })
   if (options.include?.length) applyIncludeOverride(loaded, options.cwd, options.include)
+  await attachAppConfigKeys(loaded, options.cwd)
   return new NodeDriver(options, loaded)
 }
 
@@ -88,6 +92,42 @@ function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: st
     loaded.config.exclude = mergeExcludes(existing, resolved.excludes)
   }
   loaded.dependencies = Array.from(deps)
+}
+
+const GLOBAL_OPTION_KEYS = ['prefix', 'hash', 'separator', 'jsxFramework', 'jsxStyleProps', 'syntax'] as const
+
+async function attachAppConfigKeys(loaded: LoadConfigResult, cwd: string): Promise<void> {
+  const chain = loaded.metadata?.designSystem
+  const sources = loaded.metadata?.sources
+  if (!chain || chain.length !== 1 || !sources) return
+
+  const [ds] = chain
+  const conditions = authoredByAppConfig(sources, 'conditions')
+  const breakpoints = authoredByAppConfig(sources, 'theme.breakpoints')
+  const utilities = authoredByAppConfig(sources, 'utilities')
+  const tokens = authoredByAppConfig(sources, 'theme.tokens') || authoredByAppConfig(sources, 'theme.semanticTokens')
+
+  const overriddenGlobals = GLOBAL_OPTION_KEYS.filter((key) => authoredByAppConfig(sources, key))
+  let globalOptionsMatchDs = true
+  if (overriddenGlobals.length > 0) {
+    const presetPath = resolvePath(dirname(ds.manifestPath), ds.manifest.preset)
+    const preset = (await bundleConfig(presetPath, cwd)).config as Record<string, unknown>
+    const config = loaded.config as unknown as Record<string, unknown>
+    globalOptionsMatchDs = overriddenGlobals.every((key) => JSON.stringify(config[key]) === JSON.stringify(preset[key]))
+  }
+
+  loaded.metadata = {
+    ...loaded.metadata,
+    appConfigKeys: { conditions, breakpoints, utilities, tokens, globalOptionsMatchDs },
+  }
+}
+
+function authoredByAppConfig(sources: ConfigSources, prefix: string): boolean {
+  return Object.entries(sources.paths).some(([path, ids]) => {
+    if (path !== prefix && !path.startsWith(`${prefix}.`)) return false
+    const idList = Array.isArray(ids) ? ids : [ids]
+    return idList.some((id) => sources.entries[id]?.kind === 'config')
+  })
 }
 
 export class NodeDriver extends BaseDriver {
@@ -201,9 +241,10 @@ export class NodeDriver extends BaseDriver {
   }
 
   async reload(): Promise<DiffConfigResult> {
-    const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath })
+    const next = await loadConfig({ cwd: this.#options.cwd, file: this.#options.configPath, trackSources: true })
     // Re-apply before diffing so the override isn't seen as a config change.
     if (this.#options.include?.length) applyIncludeOverride(next, this.#options.cwd, this.#options.include)
+    await attachAppConfigKeys(next, this.#options.cwd)
     const diff = diffConfig(this.#loaded, next)
     const nextDesignSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, next)
     const designSystemArtifactsChanged = this.#designSystemArtifactSnapshot !== nextDesignSystemArtifactSnapshot

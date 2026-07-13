@@ -61,6 +61,58 @@ describe('overlay codegen — in-memory artifacts', () => {
   })
 })
 
+describe('overlay codegen — appConfigKeys', () => {
+  let cwd: string | undefined
+
+  afterEach(() => {
+    if (cwd) rmSync(cwd, { recursive: true, force: true })
+    cwd = undefined
+  })
+
+  it('keeps conditions local when the app authors conditions', async () => {
+    cwd = setupAppConfig({ conditions: { brand: '&[data-brand]' } })
+    const driver = await createNodeDriver({ cwd })
+    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeConditions: boolean } }).codegenOverlay()
+
+    expect(overlay?.virtualizeConditions).toBe(false)
+  })
+
+  it('virtualizes conditions for a pure consumer', async () => {
+    cwd = setupAppConfig({})
+    const driver = await createNodeDriver({ cwd })
+    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeConditions: boolean } }).codegenOverlay()
+
+    expect(overlay?.virtualizeConditions).toBe(true)
+  })
+
+  it('keeps css local when the app authors utilities', async () => {
+    cwd = setupAppConfig({ utilities: { marginX: { className: 'mx', values: 'spacing' } } })
+    const driver = await createNodeDriver({ cwd })
+    const overlay = (
+      driver as unknown as { codegenOverlay(): { virtualizeConditions: boolean; virtualizeCss: boolean } }
+    ).codegenOverlay()
+
+    expect(overlay?.virtualizeConditions).toBe(true)
+    expect(overlay?.virtualizeCss).toBe(false)
+  })
+
+  it('keeps entire runtime local when the app diverges on a global option', async () => {
+    cwd = setupAppConfig({ jsxFramework: 'vue' })
+    const driver = await createNodeDriver({ cwd })
+    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeUtils: boolean } }).codegenOverlay()
+
+    expect(overlay?.virtualizeUtils).toBe(false)
+  })
+
+  it('stays virtualized when the app repeats the same global option as the design system', async () => {
+    cwd = setupAppConfig({ jsxFramework: 'react' })
+    const driver = await createNodeDriver({ cwd })
+    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeUtils: boolean } }).codegenOverlay()
+
+    expect(overlay?.virtualizeUtils).toBe(true)
+  })
+})
+
 describe('overlay codegen — written to disk', () => {
   let cwd: string | undefined
 
@@ -139,6 +191,43 @@ function setup(appRecipes: Record<string, unknown>): string {
       button: ${JSON.stringify(recipe('button'))},
       badge: ${JSON.stringify(recipe('badge'))},
     } } }`,
+    'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
+    'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
+  })
+  return root
+}
+
+function setupAppConfig(extra: Record<string, unknown>): string {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-appkeys-')))
+  writeFileTree(root, {
+    'panda.config.ts': `export default {
+      designSystem: '@acme/ds',
+      include: ['**/*.tsx'],
+      ...${JSON.stringify(extra)},
+    }`,
+    'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+    'node_modules/@acme/ds/package.json': json({
+      name: '@acme/ds',
+      version: '1.0.0',
+      exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/preset.mjs' },
+    }),
+    'node_modules/@acme/ds/dist/panda.lib.json': json({
+      schemaVersion: 1,
+      name: '@acme/ds',
+      version: '1.0.0',
+      panda: '^2.0.0',
+      preset: './preset.mjs',
+      buildInfo: './panda.buildinfo.json',
+      files: ['./**/*.js'],
+      importMap: {
+        css: '@acme/ds/css',
+        recipes: '@acme/ds/recipes',
+        patterns: '@acme/ds/patterns',
+        jsx: '@acme/ds/jsx',
+        tokens: '@acme/ds/tokens',
+      },
+    }),
+    'node_modules/@acme/ds/dist/preset.mjs': `export default { jsxFramework: 'react' }`,
     'node_modules/@acme/ds/dist/comp.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
     'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 999, modules: {}, atoms: [] }),
   })
