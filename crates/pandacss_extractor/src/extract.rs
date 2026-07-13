@@ -194,7 +194,7 @@ fn match_file_imports(
             .cross_file
             .as_ref()
             .and_then(|resolver| resolver.resolve_path(file_path, specifier))
-            .map(|resolved| resolved.to_string_lossy().replace('\\', "/"))
+            .map(|resolved| resolved.to_string_lossy().into_owned())
     })
 }
 
