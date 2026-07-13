@@ -4,16 +4,19 @@
 '@pandacss/config': minor
 ---
 
-Consuming a `designSystem` no longer regenerates a full copy of its recipes and patterns. With a single-level
-`designSystem`, `panda codegen` re-exports the library's recipe, pattern, and jsx-component definitions from the library
-package and emits only your own delta. For a library with many components that's the bulk of the tree; the small generic
-runtime (`css`, `cx`, `helpers`, the jsx factory) is still generated locally.
+Consuming a `designSystem` no longer regenerates a copy of its styled-system. With a single-level `designSystem`,
+`panda codegen` re-exports the library's recipe, pattern, and jsx definitions from the library package and imports the
+generic runtime (`css`, `cx`, `helpers`, conditions, the jsx factory) from it too, emitting only your own delta. A
+consumer that adds tokens, recipes, or patterns ships almost no generated runtime.
 
-When you declare a recipe or pattern the library already ships, your definition is merged over the library's
-(`theme.extend` deep-merge) and Panda warns (`design_system_artifact_conflict`).
+The runtime is generated locally only where you diverge from the library: authoring `conditions`, `breakpoints`, or
+`utilities` keeps the `css` runtime local, and a differing `prefix`, `hash`, `separator`, `jsxFramework`,
+`jsxStyleProps`, or `syntax` keeps all of it local.
 
-`panda lib` now also publishes the design system's styled-system subpath exports (`./css`, `./recipes`, `./patterns`,
-`./jsx`, `./tokens`), so the overlay barrels resolve with no bundler aliases. Only categories the codegen emitted are
-exported.
+`panda lib` publishes the subpath exports the consumer imports (`./css`, `./css/*`, `./helpers`, `./recipes`,
+`./patterns`, `./jsx`, `./tokens`), so everything resolves without bundler aliases; only emitted categories are
+exported. A library whose `package.json` is missing a needed export fails with `design_system_export_missing` instead of
+a silent bundler error.
 
-Nested design-system chains keep emitting the full local tree for now; only single-level consumers get the overlay.
+Declaring a recipe or pattern the library already ships merges your definition over it (`theme.extend`) and warns
+(`design_system_artifact_conflict`). Nested design-system chains still emit the full local tree.
