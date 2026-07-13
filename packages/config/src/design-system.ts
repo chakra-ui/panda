@@ -104,8 +104,8 @@ export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined):
   const keys = metadata?.appConfigKeys
   const globalMatch = keys?.globalOptionsMatchDs ?? true
   const virtualizeUtils = globalMatch
-  const virtualizeConditions = globalMatch && !keys?.conditions && !keys?.breakpoints
-  const virtualizeCss = virtualizeConditions && !keys?.utilities
+  const virtualizeCss = globalMatch && !keys?.conditions && !keys?.breakpoints && !keys?.utilities
+  const virtualizeConditions = virtualizeCss
 
   return {
     ...overlayRoots(ds),

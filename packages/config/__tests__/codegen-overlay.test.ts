@@ -77,6 +77,13 @@ describe('buildCodegenOverlay', () => {
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
+  it('keeps the whole css/ dir local when app authors only utilities', () => {
+    const overlay = buildCodegenOverlay(metadataWith({ utilities: true }))
+    expect(overlay?.virtualizeUtils).toBe(true)
+    expect(overlay?.virtualizeConditions).toBe(false)
+    expect(overlay?.virtualizeCss).toBe(false)
+  })
+
   it('keeps entire runtime local when a global option differs', () => {
     const overlay = buildCodegenOverlay(metadataWith({ globalOptionsMatchDs: false }))
     expect(overlay?.virtualizeUtils).toBe(false)
