@@ -1,9 +1,19 @@
-use crate::{ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
+use crate::{
+    CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
+};
 
-pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
+pub(super) fn module(
+    ctx: CodegenContext<'_>,
+    factory: &str,
+    component: &str,
+    upper: &str,
+) -> Module {
     Module::new()
         .with_import(value_import(&["computed", "defineComponent", "h"], "vue"))
-        .with_import(ImportDecl::value(["cx", "cva"], "../css/index"))
+        .with_import(ImportDecl::value(
+            ["cx", "cva"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
         .with_import(ImportDecl::value(
             [
                 "composeCvaFn",

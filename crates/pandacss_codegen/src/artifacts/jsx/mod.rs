@@ -29,7 +29,7 @@ use pandacss_shared::{file_stem, pascal_case};
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, ImportDecl,
-    Item, ItemNode, Module,
+    Item, ItemNode, Module, RuntimeImport,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -306,7 +306,10 @@ pub(super) fn html_props_name(ctx: CodegenContext<'_>) -> String {
 
 fn is_valid_prop_module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
-        .with_import(ImportDecl::value(["splitProps"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["splitProps"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_import(type_import(
             &["DistributiveOmit", "JsxStyleProps"],
             "../types/system",
@@ -372,9 +375,13 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
             Some(JsxFramework::React) => {
                 react_jsx_literal::module(ctx, &factory, &component, &upper)
             }
-            Some(JsxFramework::Preact) => preact_jsx_literal::module(&factory, &component, &upper),
+            Some(JsxFramework::Preact) => {
+                preact_jsx_literal::module(ctx, &factory, &component, &upper)
+            }
             Some(JsxFramework::Qwik) => qwik_jsx_literal::module(ctx, &factory, &component, &upper),
-            Some(JsxFramework::Solid) => solid_jsx_literal::module(&factory, &component, &upper),
+            Some(JsxFramework::Solid) => {
+                solid_jsx_literal::module(ctx, &factory, &component, &upper)
+            }
             Some(JsxFramework::Vue) => vue_jsx_literal::module(ctx, &factory, &component, &upper),
             _ => Module::new(),
         };
@@ -383,9 +390,9 @@ fn factory_module(ctx: CodegenContext<'_>) -> Module {
     match ctx.config.jsx_framework.as_ref() {
         Some(JsxFramework::React) => react_jsx::module(ctx, &factory, &component, &upper),
         Some(JsxFramework::Preact) => preact_jsx::module(ctx, &factory, &component, &upper),
-        Some(JsxFramework::Qwik) => qwik_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Solid) => solid_jsx::module(&factory, &component, &upper),
-        Some(JsxFramework::Vue) => vue_jsx::module(&factory, &component, &upper),
+        Some(JsxFramework::Qwik) => qwik_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Solid) => solid_jsx::module(ctx, &factory, &component, &upper),
+        Some(JsxFramework::Vue) => vue_jsx::module(ctx, &factory, &component, &upper),
         _ => Module::new(),
     }
 }

@@ -1,6 +1,8 @@
 use pandacss_config::CssSyntaxKind;
 
-use crate::{CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
+use crate::{
+    CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
+};
 
 pub(super) fn module(ctx: CodegenContext<'_>) -> Module {
     if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
@@ -10,7 +12,10 @@ pub(super) fn module(ctx: CodegenContext<'_>) -> Module {
     }
 
     Module::new()
-        .with_import(ImportDecl::value(["css"], "../css/index"))
+        .with_import(ImportDecl::value(
+            ["css"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
         .with_item(raw_runtime(JSX_HELPER_RUNTIME))
         .with_item(raw_type(JSX_HELPER_TYPES))
 }

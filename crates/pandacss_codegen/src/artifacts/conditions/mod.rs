@@ -5,7 +5,7 @@ mod conditions_literal;
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, Block, CodegenContext, ConstDecl, DependencySet, Expr,
-    FunctionDecl, ImportDecl, Item, ItemNode, Module, Param, Stmt, TsType,
+    FunctionDecl, ImportDecl, Item, ItemNode, Module, Param, RuntimeImport, Stmt, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 use pandacss_config::CssSyntaxKind;
@@ -13,21 +13,28 @@ use pandacss_config::CssSyntaxKind;
 #[must_use]
 pub fn module(ctx: CodegenContext<'_>) -> Module {
     if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
-        return conditions_literal::module();
+        return conditions_literal::module(ctx);
     }
 
     let keys = ctx.condition_keys();
-    runtime_module(&keys, &ctx.config.theme.breakpoint_names())
+    runtime_module(ctx, &keys, &ctx.config.theme.breakpoint_names())
 }
 
 #[must_use]
-pub fn declaration_module(keys: &[String], breakpoint_keys: &[String]) -> Module {
-    runtime_module(keys, breakpoint_keys)
+pub fn declaration_module(
+    ctx: CodegenContext<'_>,
+    keys: &[String],
+    breakpoint_keys: &[String],
+) -> Module {
+    runtime_module(ctx, keys, breakpoint_keys)
 }
 
-fn runtime_module(keys: &[String], breakpoint_keys: &[String]) -> Module {
+fn runtime_module(ctx: CodegenContext<'_>, keys: &[String], breakpoint_keys: &[String]) -> Module {
     Module::new()
-        .with_import(ImportDecl::value(["withoutSpace"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["withoutSpace"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_item(Item::raw_stmt(&runtime_consts(keys)))
         .with_item(Item::both(ItemNode::Const(ConstDecl {
             exported: true,
@@ -80,7 +87,7 @@ pub fn files(
     if matches!(ctx.config.syntax, CssSyntaxKind::TemplateLiteral) {
         return emit_module_files(
             "css/conditions",
-            &conditions_literal::module(),
+            &conditions_literal::module(ctx),
             options.format,
             false,
             options.import_extensions,
@@ -91,7 +98,11 @@ pub fn files(
     if !options.format.is_source_ts() {
         return emit_module_files(
             "css/conditions",
-            &declaration_module(&ctx.condition_keys(), &ctx.config.theme.breakpoint_names()),
+            &declaration_module(
+                ctx,
+                &ctx.condition_keys(),
+                &ctx.config.theme.breakpoint_names(),
+            ),
             options.format,
             false,
             options.import_extensions,

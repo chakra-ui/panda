@@ -1,9 +1,12 @@
-use crate::{ImportDecl, Item, ItemNode, Module};
+use crate::{CodegenContext, ImportDecl, Item, ItemNode, Module, RuntimeImport};
 
 #[must_use]
-pub fn module() -> Module {
+pub fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
-        .with_import(ImportDecl::value(["withoutSpace"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["withoutSpace"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_item(Item::runtime(ItemNode::RawStmt(
             CONDITIONS_LITERAL_RUNTIME.into(),
         )))

@@ -1,6 +1,13 @@
-use crate::{ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module};
+use crate::{
+    CodegenContext, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module, RuntimeImport,
+};
 
-pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
+pub(super) fn module(
+    ctx: CodegenContext<'_>,
+    factory: &str,
+    component: &str,
+    upper: &str,
+) -> Module {
     Module::new()
         .with_import(value_import(
             &["createMemo", "mergeProps", "splitProps"],
@@ -10,8 +17,14 @@ pub(super) fn module(factory: &str, component: &str, upper: &str) -> Module {
             &["Dynamic", "createComponent"],
             "solid-js/web",
         ))
-        .with_import(ImportDecl::value(["cx", "cva"], "../css/index"))
-        .with_import(ImportDecl::value(["normalizeHTMLProps"], "../helpers"))
+        .with_import(ImportDecl::value(
+            ["cx", "cva"],
+            &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
+        ))
+        .with_import(ImportDecl::value(
+            ["normalizeHTMLProps"],
+            &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
+        ))
         .with_import(ImportDecl::value(
             [
                 "composeCvaFn",
