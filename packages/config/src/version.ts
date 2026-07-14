@@ -15,3 +15,7 @@ export function runningPandaRange(): string | undefined {
   const match = readPandaVersion()?.match(/\d+/)
   return match ? `^${match[0]}.0.0` : undefined
 }
+
+export function isStampablePandaRange(range: string | undefined): range is string {
+  return range !== undefined && /^[v=><~^]|^\d/.test(range.trim())
+}

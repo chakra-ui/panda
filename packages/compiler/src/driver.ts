@@ -24,6 +24,7 @@ import {
   type HostHooks,
   type LoadConfigResult,
   diffConfig,
+  isStampablePandaRange,
   loadConfig,
   mergeExcludes,
   readPackageIdentity,
@@ -398,7 +399,8 @@ export class NodeDriver extends BaseDriver {
     parsed: ParsedDesignSystemLib,
   ): WriteDesignSystemLibResult {
     const identity = readPackageIdentity(this.#options.cwd)
-    const pandaRange = options.panda ?? identity.pandaPeer ?? runningPandaRange() ?? '*'
+    const peerRange = isStampablePandaRange(identity.pandaPeer) ? identity.pandaPeer : undefined
+    const pandaRange = options.panda ?? peerRange ?? runningPandaRange() ?? '*'
     const outdir = options.outdir ?? DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR
     const outRoot = this.compiler.path.resolve(outdir)
 

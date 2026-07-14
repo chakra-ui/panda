@@ -84,6 +84,42 @@ describe('lib command', () => {
     expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
   })
 
+  it('replaces an unpublishable catalog: peer range with the running major', async () => {
+    dir = createLibFixture()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify(
+        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'catalog:' } },
+        null,
+        2,
+      ),
+    )
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const manifest = readManifest(dir)
+    expect(manifest.panda).not.toBe('catalog:')
+    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+  })
+
+  it('honors an explicit --panda range over an unpublishable peer', async () => {
+    dir = createLibFixture()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify(
+        { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'workspace:*' } },
+        null,
+        2,
+      ),
+    )
+
+    const result = await runLib({ cwd: dir, panda: '2.0.0-beta.8', logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    expect(readManifest(dir).panda).toBe('2.0.0-beta.8')
+  })
+
   it('syncs styled-system subpath exports for categories the codegen emitted', async () => {
     dir = createLibFixture()
     await runCodegen({ cwd: dir, logLevel: 'silent' })
