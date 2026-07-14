@@ -136,20 +136,24 @@ type CssgenOnceResult = Pick<
 
 const MINIMAL_LAYERS = ['recipes', 'utilities'] satisfies StylesheetLayerName[]
 
+function resolveMinify(ctx: RunContext, flags: CssgenFlags): boolean {
+  return flags.minify ?? ctx.driver.config.minify === true
+}
+
 function splitCssOptions(ctx: RunContext, flags: CssgenFlags) {
   return {
     outdir: ctx.outdir,
     layers: flags.minimal ? MINIMAL_LAYERS : undefined,
     emitLayerDeclaration: flags.minimal ? false : undefined,
-    minify: flags.minify,
+    minify: resolveMinify(ctx, flags),
   }
 }
 
-function layerCssOptions(flags: CssgenFlags) {
+function layerCssOptions(ctx: RunContext, flags: CssgenFlags) {
   return {
     layers: MINIMAL_LAYERS,
     emitLayerDeclaration: false,
-    minify: flags.minify,
+    minify: resolveMinify(ctx, flags),
   }
 }
 
@@ -208,8 +212,8 @@ export async function writeCssgenOutput(
     phase: 'write',
     run: () =>
       flags.minimal
-        ? ctx.driver.writeLayerCss({ outfile, ...layerCssOptions(flags) })
-        : ctx.driver.writeCss({ outfile, minify: flags.minify }),
+        ? ctx.driver.writeLayerCss({ outfile, ...layerCssOptions(ctx, flags) })
+        : ctx.driver.writeCss({ outfile, minify: resolveMinify(ctx, flags) }),
   })
 
   const cssBytes = Buffer.byteLength(output.css)
@@ -274,7 +278,9 @@ function checkCssgenOutput(
     timings: ctx.timings,
     phase: 'emit',
     run: () =>
-      flags.minimal ? ctx.driver.getLayerCss(layerCssOptions(flags)) : ctx.driver.cssgen({ minify: flags.minify }),
+      flags.minimal
+        ? ctx.driver.getLayerCss(layerCssOptions(ctx, flags))
+        : ctx.driver.cssgen({ minify: resolveMinify(ctx, flags) }),
   })
 
   const cssBytes = Buffer.byteLength(output.css)
