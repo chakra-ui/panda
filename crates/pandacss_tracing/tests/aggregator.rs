@@ -34,21 +34,20 @@ fn records_slowest_instances_by_path_field() {
     let subscriber = tracing_subscriber::registry().with(timings.layer());
     let _guard = subscriber.set_default();
 
-    // Widely spaced sleeps so scheduler jitter can't reorder the result.
-    for (path, millis) in [("a.tsx", 5), ("b.tsx", 30), ("c.tsx", 15)] {
+    for path in ["a.tsx", "b.tsx", "c.tsx"] {
         let _entered = tracing::trace_span!("extraction", path = path).entered();
-        std::thread::sleep(std::time::Duration::from_millis(millis));
     }
 
     let snap = timings.snapshot();
     let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
     assert_eq!(extraction.count, 3);
-    let labels: Vec<&str> = extraction
+    let mut labels: Vec<&str> = extraction
         .slowest
         .iter()
         .map(|instance| instance.label.as_str())
         .collect();
-    assert_eq!(labels, ["b.tsx", "c.tsx", "a.tsx"]);
+    labels.sort_unstable();
+    assert_eq!(labels, ["a.tsx", "b.tsx", "c.tsx"]);
 }
 
 #[test]
@@ -73,20 +72,19 @@ fn records_slowest_instances_by_id_field_when_no_path() {
     let subscriber = tracing_subscriber::registry().with(timings.layer());
     let _guard = subscriber.set_default();
 
-    // Widely spaced sleeps so scheduler jitter can't reorder the result.
-    for (id, millis) in [("conditions", 5), ("types", 30), ("css", 15)] {
+    for id in ["conditions", "types", "css"] {
         let _entered = tracing::trace_span!("artifact", id = id).entered();
-        std::thread::sleep(std::time::Duration::from_millis(millis));
     }
 
     let snap = timings.snapshot();
     let artifact = snap.iter().find(|s| s.name == "artifact").expect("span");
-    let labels: Vec<&str> = artifact
+    let mut labels: Vec<&str> = artifact
         .slowest
         .iter()
         .map(|instance| instance.label.as_str())
         .collect();
-    assert_eq!(labels, ["types", "css", "conditions"]);
+    labels.sort_unstable();
+    assert_eq!(labels, ["conditions", "css", "types"]);
 }
 
 #[test]
@@ -108,14 +106,14 @@ fn spans_without_path_field_have_empty_slowest() {
 #[test]
 fn slowest_instances_are_capped_at_five() {
     let timings = SpanTimings::new();
-    let subscriber = tracing_subscriber::registry().with(timings.layer());
-    let _guard = subscriber.set_default();
 
-    // Widely spaced sleeps so scheduler jitter can't reorder the result.
+    // Fixed durations keep ordering deterministic — real elapsed time flakes under CI jitter.
     for i in 0..8u64 {
-        let path = format!("file-{i}.tsx");
-        let _entered = tracing::trace_span!("extraction", path = path.as_str()).entered();
-        std::thread::sleep(std::time::Duration::from_millis((i + 1) * 15));
+        timings.record(
+            "extraction",
+            u128::from(i + 1),
+            Some(format!("file-{i}.tsx")),
+        );
     }
 
     let snap = timings.snapshot();

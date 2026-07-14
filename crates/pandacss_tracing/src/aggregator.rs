@@ -107,7 +107,7 @@ impl SpanTimings {
         }
     }
 
-    fn add(&self, name: &'static str, nanos: u128, label: Option<String>) {
+    pub fn record(&self, name: &'static str, nanos: u128, label: Option<String>) {
         if let Ok(mut map) = self.inner.lock() {
             let entry = map.entry(name).or_default();
             entry.total_nanos = entry.total_nanos.saturating_add(nanos);
@@ -211,6 +211,6 @@ where
             .extensions()
             .get::<InstanceLabel>()
             .map(|InstanceLabel(label)| label.clone());
-        self.timings.add(name, elapsed, label);
+        self.timings.record(name, elapsed, label);
     }
 }
