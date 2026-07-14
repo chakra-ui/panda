@@ -85,6 +85,9 @@ Some topics span several notes. Keep the detailed contract in one place and link
   JSON/report outputs, UI mode, and the `inspectFileSource` aggregation boundary.
 - [CLI DESIGN.md export](./cli-design-md.md) — planned `panda design-md`: export resolved theme/recipes to Google's
   DESIGN.md, prose scaffold patterns (reference corpus + tiers), `--check` drift gate, optional `panda lib --design-md`.
+- [CLI studio generate command](./cli-studio-generate.md) — proposed `panda studio generate`: emit Storybook token
+  stories + viewer components into the user's project (replacing the v1 Astro Studio server), fed by a `tokens.json`
+  snapshot; scope vs deferred theme/contrast views.
 - [Transformer](./transformer/README.md) — Rust-core host-neutral source transforms: planning, printing, the private
   `cx` runtime module, and adapter boundaries for Vite, Rollup, Rolldown, webpack, and Rspack.
 - [Config loading](./config-loading-design.md) — `@pandacss/config`: bundle + serialize a user config into the
