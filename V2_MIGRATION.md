@@ -324,8 +324,8 @@ Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. `panda.
 
 ### `--cpu-prof` is now `--profile`
 
-v1's `--cpu-prof` recorded a Node `.cpuprofile` via `node:inspector`. It's gone in v2 — the hot path moved into the
-Rust engine behind NAPI, so a Node CPU profiler only sees the thin JS dispatcher, not where time actually goes.
+v1's `--cpu-prof` recorded a Node `.cpuprofile` via `node:inspector`. It's gone in v2 — the hot path moved into the Rust
+engine behind NAPI, so a Node CPU profiler only sees the thin JS dispatcher, not where time actually goes.
 
 Use `--profile` instead, on any command:
 
@@ -338,8 +338,8 @@ panda build --profile
 ```
 
 It writes `.panda/trace.json` (a Chrome trace — open in `chrome://tracing` or `ui.perfetto.dev`) and
-`.panda/timings.json` (per-span totals and the slowest files). See [Profiling a slow
-build](https://panda-css.com/docs/references/cli#profiling-a-slow-build) for the full flag reference.
+`.panda/timings.json` (per-span totals and the slowest files). See
+[Profiling a slow build](https://panda-css.com/docs/references/cli#profiling-a-slow-build) for the full flag reference.
 
 ### MCP moved out of the CLI
 
@@ -501,10 +501,65 @@ Recommended monorepo workflow:
 
 1. **App/root:** run a normal `panda build` or `panda cssgen` to emit the full stylesheet once.
 2. **Per package:** run `panda cssgen --minimal` to emit package-local usage CSS.
-3. **Published design systems:** ship `panda buildinfo` and hydrate in consumers (see `design-notes/build-info.md`).
+3. **Published design systems:** run `panda lib` and point consumers at it with `designSystem` (see
+   [Design systems](#design-systems) below).
 
 The v1 positional layer names (`preflight`, `global`, `tokens`, …) and positional glob override are not part of the v2
 CLI surface yet.
+
+---
+
+## Design systems
+
+To publish a component library so consumers share your tokens, recipes, and generated CSS without re-extracting your
+source, ship it as a design system. This replaces v1's `panda ship`.
+
+### Publish the library
+
+Run `panda lib` in the library package:
+
+```sh
+panda lib
+```
+
+It writes three artifacts to the output dir (`dist` by default) and syncs the package's `exports`:
+
+- `panda.lib.json` — the manifest: name, version, stamped peer range, import map, and pointers to the other two files.
+- `panda.buildinfo.json` — portable extraction state (atoms and recipes) that consumers hydrate.
+- `panda.preset.mjs` — a compiled preset carrying your tokens, recipes, and patterns.
+
+`panda lib` stamps a peer Panda range into the manifest so a consumer can detect a version mismatch. It uses the
+package's `@pandacss/dev` peer dependency. Pass `--panda <range>` to set one explicitly, for example when your peer uses
+a workspace protocol like `catalog:` that can't be published as-is.
+
+### Consume the library
+
+In the consumer's config, point `designSystem` at the published package name:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  designSystem: '@acme/design-system',
+  include: ['./src/**/*.{ts,tsx}'],
+})
+```
+
+Panda resolves `@acme/design-system/panda.lib.json`, merges the preset, and hydrates the build info, so the library's
+CSS is emitted without re-scanning its source. The manifest carries the import map, so you don't set `importMap`
+separately.
+
+Don't add `panda.buildinfo.json` to `include`. `include` lists source files to scan; Panda parses each one as a module,
+so a JSON artifact there fails with a parse error. `designSystem` is the only wiring you need.
+
+### Known gaps
+
+- **Nested chains.** A single-level `designSystem` is the supported path. A deeper chain (`app → @acme/ds → @acme/base`)
+  still produces correct CSS and tokens but hydrates the full tree rather than each package's local slice, and parent
+  tokens may not yet appear in the consumer's generated types.
+- **Unresolved tokens emit silently.** Referencing a token the design system doesn't define emits the raw value as
+  literal CSS with no diagnostic; the generated types still (correctly) reject it. See
+  `design-notes/design-system-deferred.md` for the full ledger of deferred behavior.
 
 ---
 
@@ -525,8 +580,8 @@ Known gaps in the beta. Expect them to change before stable:
 ## Feedback
 
 It's a beta, so bug reports are the most useful thing you can send. Attach a `panda debug` dump (`panda debug` →
-`<outdir>/debug`) so maintainers can reproduce. For a slow build, add `--profile` (`panda debug --outdir <dir>
---profile`) so the dump includes `trace.json` and `timings.json` too.
+`<outdir>/debug`) so maintainers can reproduce. For a slow build, add `--profile`
+(`panda debug --outdir <dir> --profile`) so the dump includes `trace.json` and `timings.json` too.
 
 - Issues: <https://github.com/chakra-ui/panda/issues>
 - Docs: <https://panda-css.com>

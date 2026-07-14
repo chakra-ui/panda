@@ -31,7 +31,7 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
   "strings": ["color", "red", "padding", "4px"],   // intern table (every prop/cond/value string)
