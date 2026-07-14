@@ -279,6 +279,9 @@ export const fallback: NativeBinding = {
   flushTracing() {
     /* no-op */
   },
+  takeTimingsJson() {
+    return undefined
+  },
   shutdownTracing() {
     return false
   },

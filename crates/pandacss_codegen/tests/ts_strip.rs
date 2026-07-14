@@ -69,3 +69,42 @@ fn keeps_regex_non_capturing_group() {
         "return /^[0-9]+(?:px|em)?(?:!)?$/.test(v)"
     );
 }
+
+#[test]
+fn preserves_a_large_inline_object_literal_with_many_colons() {
+    let entries: Vec<String> = (0..2000)
+        .map(|i| format!(r#""token.{i}":"value-{i}""#))
+        .collect();
+    let source = format!(
+        "const tokens: Record<string, string> = {{{}}}",
+        entries.join(",")
+    );
+    let expected = format!("const tokens = {{{}}}", entries.join(","));
+
+    assert_eq!(strip_typescript(&source), expected);
+}
+
+#[test]
+fn strips_a_large_inline_object_literal_in_linear_time() {
+    // Regression guard: `should_strip_variable_type` used to re-walk the whole
+    // line's start on every `:`, making this quadratic in the entry count —
+    // a huge single-line token map (real codegen output) took tens of
+    // milliseconds. A generous bound still catches that regression by a wide
+    // margin without flaking on a merely slow CI machine.
+    let entries: Vec<String> = (0..20_000)
+        .map(|i| format!(r#""token.{i}":"value-{i}""#))
+        .collect();
+    let source = format!(
+        "const tokens: Record<string, string> = {{{}}}",
+        entries.join(",")
+    );
+
+    let start = std::time::Instant::now();
+    let _ = strip_typescript(&source);
+    assert!(
+        start.elapsed() < std::time::Duration::from_millis(500),
+        "strip_typescript took {:?} for {} entries — expected roughly linear time",
+        start.elapsed(),
+        entries.len()
+    );
+}

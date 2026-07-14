@@ -40,7 +40,9 @@ impl Compiler {
     pub fn parse_file_source(&mut self, env: Env, path: String, source: String) -> ParseFileReport {
         crate::init_tracing();
         let report = self.parse_inner(&env, &path, &source);
-        let _span = tracing::trace_span!("boundary_encode", method = "parse_file_report").entered();
+        let _span =
+            tracing::trace_span!(target: "css", "snapshot_parse_report", path = path.as_str())
+                .entered();
         let report = convert_report(path, report);
         crate::flush_tracing();
         report

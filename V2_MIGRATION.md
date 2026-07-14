@@ -322,6 +322,25 @@ import { defineConfig } from '@pandacss/dev'
 
 Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. `panda.config.ts` loads as ESM.
 
+### `--cpu-prof` is now `--profile`
+
+v1's `--cpu-prof` recorded a Node `.cpuprofile` via `node:inspector`. It's gone in v2 — the hot path moved into the
+Rust engine behind NAPI, so a Node CPU profiler only sees the thin JS dispatcher, not where time actually goes.
+
+Use `--profile` instead, on any command:
+
+```bash
+# ❌ v1
+panda build --cpu-prof
+
+# ✅ v2
+panda build --profile
+```
+
+It writes `.panda/trace.json` (a Chrome trace — open in `chrome://tracing` or `ui.perfetto.dev`) and
+`.panda/timings.json` (per-span totals and the slowest files). See [Profiling a slow
+build](https://panda-css.com/docs/references/cli#profiling-a-slow-build) for the full flag reference.
+
 ### MCP moved out of the CLI
 
 MCP runs from its own package, `@pandacss/mcp`, with a `panda-mcp` binary:
@@ -469,7 +488,7 @@ const Button = withContext('button')
 
 Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` instead of `--silent`, `--quiet`, or
 `--verbose`. Shared CLI flags use kebab-case, including `--max-warnings`, `--watch-debounce`, `--trace-output`, and
-`--trace-file`.
+`--trace-file`. `--profile` replaces v1's `--cpu-prof` (see [above](#--cpu-prof-is-now---profile)).
 
 ---
 
@@ -506,7 +525,8 @@ Known gaps in the beta. Expect them to change before stable:
 ## Feedback
 
 It's a beta, so bug reports are the most useful thing you can send. Attach a `panda debug` dump (`panda debug` →
-`<outdir>/debug`) so maintainers can reproduce.
+`<outdir>/debug`) so maintainers can reproduce. For a slow build, add `--profile` (`panda debug --outdir <dir>
+--profile`) so the dump includes `trace.json` and `timings.json` too.
 
 - Issues: <https://github.com/chakra-ui/panda/issues>
 - Docs: <https://panda-css.com>

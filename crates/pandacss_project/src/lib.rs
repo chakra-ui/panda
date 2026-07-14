@@ -436,7 +436,9 @@ impl Project {
                     let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
-                    let _span = tracing::trace_span!("recipe_resolution", kind = "cva").entered();
+                    let _span =
+                        tracing::trace_span!(target: "encode", "recipe_resolution", kind = "cva")
+                            .entered();
                     if let Some(recipe) = Recipe::from_literal_owned(arg) {
                         encoder.process_atomic_recipe(&recipe);
                         self.inline_recipes.insert(
@@ -457,7 +459,9 @@ impl Project {
                     let Some(arg) = data.into_iter().next().flatten() else {
                         continue;
                     };
-                    let _span = tracing::trace_span!("recipe_resolution", kind = "sva").entered();
+                    let _span =
+                        tracing::trace_span!(target: "encode", "recipe_resolution", kind = "sva")
+                            .entered();
                     if let Some(recipe) = SlotRecipe::from_literal_owned(arg) {
                         encoder.process_atomic_slot_recipe(&recipe);
                         self.inline_slot_recipes.insert(
@@ -508,8 +512,9 @@ impl Project {
                         .filter(|literal| matches!(literal, Literal::Object(_)))
                         .unwrap_or(&empty_object);
                     let _span = tracing::trace_span!(
+                        target: "encode",
                         "recipe_resolution",
-                        kind = "config_call",
+                        kind = "call",
                         name = call.name.as_str()
                     )
                     .entered();
@@ -590,6 +595,7 @@ impl Project {
             let recipe_names = compiled.recipes.find_by_jsx(&jsx.name);
             if !recipe_names.is_empty() {
                 let _span = tracing::trace_span!(
+                    target: "encode",
                     "recipe_resolution",
                     kind = "jsx",
                     name = jsx.name.as_str(),
@@ -896,7 +902,7 @@ impl Project {
         style: &Literal,
         policy: ShorthandPolicy,
     ) {
-        let _span = tracing::trace_span!("encoding_atomic").entered();
+        let _span = tracing::trace_span!(target: "encode", "encode_style").entered();
         let normalizer = StyleNormalizer::new(
             self.config.utility.as_ref(),
             &self.config.breakpoints,
@@ -928,7 +934,7 @@ impl Project {
         style: &Literal,
         policy: ShorthandPolicy,
     ) {
-        let _span = tracing::trace_span!("encoding_style_props").entered();
+        let _span = tracing::trace_span!(target: "encode", "encode_props").entered();
         let Literal::Object(entries) = style else {
             self.process_atomic(encoder, style, policy);
             return;

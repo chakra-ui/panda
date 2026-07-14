@@ -120,7 +120,9 @@ impl Recipe {
 
     #[must_use]
     pub fn from_literal_owned(literal: Literal) -> Option<Self> {
-        let _span = tracing::trace_span!("recipe_resolution", kind = "recipe_parse").entered();
+        let _span =
+            tracing::trace_span!(target: "encode", "recipe_resolution", kind = "parse_recipe")
+                .entered();
         let entries = object_entries_owned(literal)?;
 
         let mut recipe = Recipe::default();
@@ -162,7 +164,12 @@ impl SlotRecipe {
 
     #[must_use]
     pub fn from_literal_owned(literal: Literal) -> Option<Self> {
-        let _span = tracing::trace_span!("recipe_resolution", kind = "slot_recipe_parse").entered();
+        let _span = tracing::trace_span!(
+            target: "encode",
+            "recipe_resolution",
+            kind = "parse_slot_recipe"
+        )
+        .entered();
         let entries = object_entries_owned(literal)?;
 
         let mut slots: Vec<String> = Vec::new();

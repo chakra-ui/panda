@@ -5,7 +5,7 @@ import { builtinModules } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, normalize, relative } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { rolldown } from 'rolldown'
+import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
 
@@ -25,6 +25,8 @@ export async function bundleConfig<T extends Config = Config>(
   filepath: string,
   cwd: string,
 ): Promise<BundleConfigResult<T>> {
+  const { rolldown } = await import('rolldown')
+
   const build = await rolldown({
     input: filepath,
     cwd,
@@ -100,11 +102,9 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   return value != null && typeof value === 'object' && typeof (value as { then?: unknown }).then === 'function'
 }
 
-function collectDependencies(
-  output: Awaited<ReturnType<Awaited<ReturnType<typeof rolldown>>['generate']>>['output'],
-  entry: string,
-  cwd: string,
-): string[] {
+type RolldownOutputItem = NonNullable<RolldownOutput['output']>[number]
+
+function collectDependencies(output: RolldownOutputItem[], entry: string, cwd: string): string[] {
   const dependencies = new Set<string>()
   // Resolve through symlinks before diffing: Rolldown reports module ids by
   // realpath, so a symlinked `cwd` would otherwise yield the same file twice.

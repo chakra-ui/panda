@@ -62,7 +62,9 @@ impl Compiler {
         options: Option<CompileOptions>,
     ) -> napi::Result<CompileOutput> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("css_compile", method = "project_compile").entered();
+        let span =
+            tracing::trace_span!(target: "css", "compile_css", file_count = tracing::field::Empty);
+        let _entered = span.enter();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms(env);
         let has_utility_transforms = self.callbacks.has_utility_transforms();
@@ -96,6 +98,7 @@ impl Compiler {
                 .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
             options.as_ref().and_then(|options| options.minify),
         );
+        span.record("file_count", output.manifest.files.len());
         crate::flush_tracing();
         Ok(output)
     }
@@ -163,7 +166,9 @@ impl Compiler {
         options: LayerCssOptions,
     ) -> napi::Result<CompileOutput> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("get_layer_css").entered();
+        let _span =
+            tracing::trace_span!(target: "css", "layer_css", layer_count = options.layers.len())
+                .entered();
         let (static_pattern_atoms, static_pattern_diagnostics) =
             self.collect_static_pattern_atoms(env);
         let has_utility_transforms = self.callbacks.has_utility_transforms();
@@ -250,7 +255,7 @@ impl Compiler {
         options: Option<CssOutputOptions>,
     ) -> napi::Result<Vec<crate::compile::SplitCssFile>> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("get_split_css").entered();
+        let _span = tracing::trace_span!(target: "css", "get_split_css").entered();
         let (static_pattern_atoms, _diagnostics) = self.collect_static_pattern_atoms(env);
         let has_utility_transforms = self.callbacks.has_utility_transforms();
         let Compiler {

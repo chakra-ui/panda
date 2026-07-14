@@ -81,6 +81,23 @@ describe('debug command', () => {
     expect(existsSync(join(dir, 'debug-out', 'config.json'))).toBe(true)
   })
 
+  it('--profile with --outdir writes trace.json and timings.json into the bundle', async () => {
+    dir = createFixture()
+
+    await runDebug({ cwd: dir, outdir: 'debug-out', profile: true, logLevel: 'silent' })
+    const debugDir = join(dir, 'debug-out')
+
+    expect(existsSync(join(debugDir, 'trace.json'))).toBe(true)
+    expect(existsSync(join(debugDir, 'timings.json'))).toBe(true)
+    expect(JSON.parse(readFileSync(join(debugDir, 'timings.json'), 'utf8')).totalSpans).toBeGreaterThan(0)
+  })
+
+  it('rejects --profile combined with --dry', async () => {
+    dir = createFixture()
+
+    await expect(runDebug({ cwd: dir, profile: true, dry: true })).rejects.toThrow(/--profile.*--dry/)
+  })
+
   it.skipIf(skipUnreadable)('keeps dumping when a source file is unreadable', async () => {
     dir = createFixture()
     const locked = join(dir, 'Locked.tsx')

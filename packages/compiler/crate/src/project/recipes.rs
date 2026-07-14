@@ -14,9 +14,11 @@ impl Compiler {
     #[napi]
     pub fn atoms(&mut self, env: Env) -> napi::Result<Vec<crate::Atom>> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("boundary_encode", method = "atoms").entered();
+        let span = tracing::trace_span!(target: "css", "snapshot_atoms", atom_count = tracing::field::Empty);
+        let _entered = span.enter();
         let _ = env;
         let atoms = to_atoms(self.inner.atoms());
+        span.record("atom_count", atoms.len());
         crate::flush_tracing();
         Ok(atoms)
     }
@@ -26,8 +28,13 @@ impl Compiler {
     #[must_use]
     pub fn recipes(&self) -> Vec<RecipeEntry> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("boundary_encode", method = "recipes").entered();
-        let entries = self
+        let span = tracing::trace_span!(
+            target: "css",
+            "snapshot_recipes",
+            recipe_count = tracing::field::Empty
+        );
+        let _entered = span.enter();
+        let entries: Vec<RecipeEntry> = self
             .inner
             .recipes()
             .map(|(file, span_start, recipe)| RecipeEntry {
@@ -36,6 +43,7 @@ impl Compiler {
                 recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
             })
             .collect();
+        span.record("recipe_count", entries.len());
         crate::flush_tracing();
         entries
     }
@@ -45,8 +53,13 @@ impl Compiler {
     #[must_use]
     pub fn slot_recipes(&self) -> Vec<RecipeEntry> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("boundary_encode", method = "slot_recipes").entered();
-        let entries = self
+        let span = tracing::trace_span!(
+            target: "css",
+            "snapshot_slot_recipes",
+            recipe_count = tracing::field::Empty
+        );
+        let _entered = span.enter();
+        let entries: Vec<RecipeEntry> = self
             .inner
             .slot_recipes()
             .map(|(file, span_start, recipe)| RecipeEntry {
@@ -55,6 +68,7 @@ impl Compiler {
                 recipe: serde_json::to_value(recipe).unwrap_or(serde_json::Value::Null),
             })
             .collect();
+        span.record("recipe_count", entries.len());
         crate::flush_tracing();
         entries
     }
@@ -63,7 +77,7 @@ impl Compiler {
     #[napi(js_name = encodedRecipes)]
     pub fn encoded_recipes(&mut self, env: Env) -> napi::Result<serde_json::Value> {
         crate::init_tracing();
-        let _span = tracing::trace_span!("boundary_encode", method = "encoded_recipes").entered();
+        let _span = tracing::trace_span!(target: "css", "snapshot_encoded_recipes").entered();
         let _ = env;
         let encoded = serde_json::to_value(self.inner.encoded_recipes().snapshot())
             .unwrap_or(serde_json::Value::Null);

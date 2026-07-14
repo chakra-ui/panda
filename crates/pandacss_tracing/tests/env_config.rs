@@ -36,6 +36,23 @@ fn parses_chrome_json_output() {
 }
 
 #[test]
+fn parses_profile_output() {
+    assert_eq!(
+        TraceConfig::from_values(
+            Some("trace"),
+            Some("profile"),
+            Some("target/panda-profile.json")
+        ),
+        Some(TraceConfig {
+            filter: "trace".to_owned(),
+            output: TraceOutput::Profile {
+                file: PathBuf::from("target/panda-profile.json"),
+            },
+        })
+    );
+}
+
+#[test]
 fn unknown_output_disables_tracing() {
     assert_eq!(
         TraceConfig::from_values(Some("trace"), Some("otlp"), None),
@@ -74,6 +91,43 @@ fn shutdown_finalizes_chrome_json() {
     let json: serde_json::Value =
         serde_json::from_str(&contents).expect("trace file should be valid JSON");
     assert!(json.as_array().is_some_and(|entries| !entries.is_empty()));
+    assert!(contents.contains("file_parse"));
+
+    let _ = std::fs::remove_file(trace_file);
+}
+
+#[test]
+fn profile_mode_produces_both_trace_file_and_timings_json() {
+    let trace_file = std::env::temp_dir().join(format!(
+        "panda-profile-{}-{}.json",
+        std::process::id(),
+        "shutdown"
+    ));
+    let _ = std::fs::remove_file(&trace_file);
+
+    let initialized = pandacss_tracing::init(TraceConfig {
+        filter: "trace".to_owned(),
+        output: TraceOutput::Profile {
+            file: trace_file.clone(),
+        },
+    });
+    if !initialized {
+        return;
+    }
+
+    let span = tracing::info_span!("file_parse", path = "/virtual/Button.tsx");
+    let entered = span.enter();
+    tracing::info!("parsed");
+    drop(entered);
+
+    let timings_json = pandacss_tracing::take_timings_json().expect("timings collected");
+    assert!(timings_json.contains("file_parse"));
+    assert!(timings_json.contains("/virtual/Button.tsx"));
+
+    pandacss_tracing::flush();
+    assert!(pandacss_tracing::shutdown());
+
+    let contents = std::fs::read_to_string(&trace_file).expect("trace file should exist");
     assert!(contents.contains("file_parse"));
 
     let _ = std::fs::remove_file(trace_file);

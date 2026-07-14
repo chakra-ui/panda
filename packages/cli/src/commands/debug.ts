@@ -1,12 +1,18 @@
 import { defineCommand } from 'citty'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { diagnosticsPass, type Diagnostic } from '@pandacss/compiler-shared'
 import { includeArgs, parseCliFlags, runtimeArgs } from '../args'
 import { runCommand } from '../run-command'
 import { normalizeCliDiagnostics } from '../diagnostics'
 import { debugFlagsSchema } from '../schema'
-import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
+import {
+  consoleOutput,
+  renderCommandDiagnostics,
+  resolveCwd,
+  shouldPrintHumanSummary,
+  type OutputSink,
+} from '../output'
 import { setExitCode } from '../result'
 import type { DebugFlags, DebugResult } from '../schema'
 
@@ -26,10 +32,22 @@ export const debugCommand = defineCommand({
 })
 
 export async function runDebug(flags: DebugFlags = {}, output: OutputSink = consoleOutput): Promise<DebugResult> {
+  if (flags.profile && flags.dry) {
+    throw new Error('--profile writes trace.json/timings.json to disk; drop --dry or --profile.')
+  }
+
+  // Default debug outdir needs config, resolved after tracing must already start.
+  let profilePaths: { trace: string; timings: string } | undefined
+  if (flags.profile && flags.outdir) {
+    const outdir = resolve(resolveCwd(flags.cwd), flags.outdir)
+    profilePaths = { trace: join(outdir, 'trace.json'), timings: join(outdir, 'timings.json') }
+  }
+
   return runCommand({
     command: 'debug',
     flags,
     output,
+    profilePaths,
     failData: () => ({ files: [], sourceCount: 0 }),
     async execute(ctx) {
       const { driver, cwd } = ctx

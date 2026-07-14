@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm codegen && vite",
+    "dev": "vite",
     "build": "pnpm codegen && tsc && vite build",
     "preview": "vite preview",
     "codegen": "panda codegen",

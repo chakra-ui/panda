@@ -12,7 +12,7 @@ import {
 } from './output'
 import { createResult, toJsonPayload, type CliResult } from './result'
 import { renderTimings, timeAsync } from './timing'
-import { startCommandTracing } from './tracing'
+import { startCommandTracing, type ProfilePaths } from './tracing'
 import type { CommonFlags, PhaseTimings } from './schema'
 
 export interface CommandRunContext<TFlags extends CommonFlags = CommonFlags> {
@@ -47,6 +47,8 @@ export interface RunCommandOptions<TFlags extends CommonFlags, TData extends obj
   ): void
   /** Keep tracing open until `result.stop()` (watch mode). */
   keepTracing?: boolean
+  /** `--profile` output location. Defaults to `.panda/trace.json` + `.panda/timings.json`. */
+  profilePaths?: ProfilePaths
 }
 
 export async function runCommand<TFlags extends CommonFlags, TData extends object>(
@@ -60,6 +62,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
     execute,
     renderHuman,
     keepTracing = false,
+    profilePaths,
   } = options
 
   type Result = CliResult & TData & { driver?: NodeDriver; stop?: () => Promise<void> }
@@ -68,7 +71,7 @@ export async function runCommand<TFlags extends CommonFlags, TData extends objec
   const cwd = resolveCwd(flags.cwd)
   const commandOutput = createCommandOutput(rawOutput, flags, cwd)
   const timings: PhaseTimings = {}
-  const stopTracing = startCommandTracing(flags, cwd, commandOutput)
+  const stopTracing = startCommandTracing(flags, cwd, commandOutput, profilePaths)
 
   const emit = (result: Result) => {
     if (shouldPrintJson(flags)) {

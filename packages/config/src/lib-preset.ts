@@ -1,5 +1,4 @@
 import { builtinModules } from 'node:module'
-import { rolldown } from 'rolldown'
 import { importMetaUrlPlugin } from './bundle-plugins'
 import { PandaError } from './error'
 
@@ -20,6 +19,7 @@ export interface CompilePresetOptions {
 
 export async function compilePreset(options: CompilePresetOptions): Promise<CompilePresetResult> {
   const { configPath, cwd } = options
+  const { rolldown } = await import('rolldown')
   const build = await rolldown({
     input: VIRTUAL_ENTRY,
     cwd,

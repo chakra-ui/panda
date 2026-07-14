@@ -164,9 +164,6 @@ importers:
       citty:
         specifier: 0.1.6
         version: 0.1.6
-      zod:
-        specifier: ^4.0.0
-        version: 4.3.6
     devDependencies:
       preact:
         specifier: 10.27.2

@@ -128,9 +128,9 @@ export interface ExtractorSessionConstructor {
 export interface TraceOptions {
   /** Tracing filter, e.g. "trace", "debug", or "pandacss_project=trace". */
   filter?: string
-  /** `fmt` writes to stderr; `chrome-json` writes a Chrome trace file. */
-  output?: 'fmt' | 'chrome-json'
-  /** Required for useful `chrome-json` output. Defaults to `.panda/trace.json`. */
+  /** `fmt` → stderr. `chrome-json` → trace file. `profile` → both, plus `takeTimingsJson`. */
+  output?: 'fmt' | 'chrome-json' | 'profile'
+  /** Required for useful `chrome-json`/`profile` output. Defaults to `.panda/trace.json`. */
   file?: string
 }
 
@@ -193,6 +193,7 @@ export interface CompilerConstructor {
 export interface NativeBinding {
   startTracing?(options?: TraceOptions): boolean
   flushTracing?(): void
+  takeTimingsJson?(): string | null | undefined
   shutdownTracing?(): boolean
   compile(input?: CompileInput): CompileOutput
   scanImports(path: string, source: string): ImportScanResult

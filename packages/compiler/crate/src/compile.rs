@@ -108,7 +108,7 @@ pub struct CompileLayerRange {
 )]
 pub fn compile(input: Option<CompileInput>) -> CompileOutput {
     crate::init_tracing();
-    let _span = tracing::debug_span!("config_compile", entry = "top_level_compile").entered();
+    let _span = tracing::debug_span!(target: "css", "compile").entered();
 
     let input = input.unwrap_or(CompileInput {
         files: None,
@@ -181,6 +181,8 @@ pub(crate) fn build_compile_output(
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
     minify_override: Option<bool>,
 ) -> CompileOutput {
+    // No span here — `manifest` and `stylesheet` (below) are the two real
+    // pieces of work; this is thin orchestration around them.
     let token_dictionary = project.config().token_dictionary();
     let manifest = compile_manifest(project, token_dictionary.as_ref());
     let output = build_stylesheet_output(
@@ -332,11 +334,15 @@ pub(crate) fn build_stylesheet_output(
     utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
     minify_override: Option<bool>,
 ) -> pandacss_stylesheet::StylesheetOutput {
+    let span =
+        tracing::trace_span!(target: "css", "stylesheet", atom_count = tracing::field::Empty);
+    let _entered = span.enter();
     let snapshots = if let Some(transform) = utility_transform {
         project.stylesheet_snapshots_with_utility_transform(user_config, transform)
     } else {
         project.stylesheet_snapshots(user_config)
     };
+    span.record("atom_count", snapshots.atoms.len());
     let options = pandacss_stylesheet::StylesheetOptions {
         minify: resolve_minify(user_config, minify_override),
         include_static: pandacss_stylesheet::has_static_css(user_config),
@@ -373,7 +379,9 @@ fn compile_manifest(
     project: &pandacss_project::Project,
     token_dictionary: Option<&std::sync::Arc<pandacss_tokens::TokenDictionary>>,
 ) -> CompileManifest {
-    let files = project
+    let span = tracing::trace_span!(target: "css", "manifest", file_count = tracing::field::Empty);
+    let _entered = span.enter();
+    let files: Vec<CompileFileManifest> = project
         .file_manifest()
         .into_iter()
         .map(|(path, hash)| CompileFileManifest {
@@ -381,6 +389,7 @@ fn compile_manifest(
             hash: format!("{hash:016x}"),
         })
         .collect();
+    span.record("file_count", files.len());
     let tokens = token_dictionary.map_or_else(Vec::new, |dict| {
         let mut paths: BTreeSet<String> = BTreeSet::new();
         for token in dict.iter() {

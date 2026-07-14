@@ -210,10 +210,10 @@ pub(super) fn apply_utility_transform(
         value: pandacss_project::atom_value_cache_key(original),
     };
     if let Some(cached) = cache.get(&cache_key).cloned() {
-        tracing::trace!(cache = "utility_transform", action = "hit", target = prop);
+        tracing::trace!(name: "utility_transform_cache_hit", cache = "utility_transform", action = "hit", target = prop);
         return Ok(Some(cached));
     }
-    tracing::trace!(cache = "utility_transform", action = "miss", target = prop);
+    tracing::trace!(name: "utility_transform_cache_miss", cache = "utility_transform", action = "miss", target = prop);
 
     let resolved_json = atom_value_to_json(resolved);
     let original_json = atom_value_to_json(original);
@@ -269,10 +269,11 @@ pub(super) fn apply_pattern_transform(
             }
         });
     if let Some(cached) = cache_key.as_ref().and_then(|key| cache.get(key)).cloned() {
-        tracing::trace!(cache = "pattern_transform", action = "hit", target = name);
+        tracing::trace!(name: "pattern_transform_cache_hit", cache = "pattern_transform", action = "hit", target = name);
         return Ok(cached);
     }
     tracing::trace!(
+        name: "pattern_transform_cache_miss",
         cache = "pattern_transform",
         action = if cache_key.is_some() {
             "miss"
@@ -316,6 +317,7 @@ pub(super) fn apply_pattern_transform(
 
 fn trace_cache_store(cache: &'static str, target: &str, len: usize, capacity: usize) {
     tracing::trace!(
+        name: "transform_cache_store",
         cache,
         action = "store",
         target,

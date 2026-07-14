@@ -62,6 +62,11 @@ export function flushTracing(): void {
   binding.flushTracing?.()
 }
 
+/** Renders `timings.json` from spans collected so far. Call before `shutdownTracing`. */
+export function takeTimingsJson(): string | undefined {
+  return binding.takeTimingsJson?.() ?? undefined
+}
+
 export function shutdownTracing(): boolean {
   return binding.shutdownTracing?.() ?? false
 }

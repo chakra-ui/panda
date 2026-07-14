@@ -85,6 +85,13 @@ pub fn flush_tracing_export() {
     pandacss_tracing::flush();
 }
 
+/// Renders `timings.json`. Call before `shutdownTracing`, which consumes the same data.
+#[napi(js_name = "takeTimingsJson")]
+#[must_use]
+pub fn take_timings_json() -> Option<String> {
+    pandacss_tracing::take_timings_json()
+}
+
 #[napi]
 #[must_use]
 pub fn shutdown_tracing() -> bool {

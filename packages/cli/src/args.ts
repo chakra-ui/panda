@@ -1,5 +1,5 @@
 import type { ArgsDef } from 'citty'
-import type { z } from 'zod'
+import type { FlagsInfer, FlagsSchema, Issue, ParseResult, Shape } from './flags-schema'
 
 export function baseArgs(): ArgsDef {
   return {
@@ -46,6 +46,7 @@ export function normalizeInclude(value: unknown): string[] | undefined {
 
 export function traceArgs(): ArgsDef {
   return {
+    profile: { type: 'boolean', description: 'Capture Rust compiler timings (trace.json, timings.json)' },
     trace: { type: 'boolean', description: 'Enable compiler tracing' },
     'trace-output': { type: 'string', description: 'Trace output: fmt or chrome-json' },
     'trace-file': { type: 'string', description: 'Trace output file for chrome-json tracing' },
@@ -60,9 +61,11 @@ export function runtimeArgs(): ArgsDef {
   }
 }
 
-export function parseCliFlags<TSchema extends z.ZodType>(schema: TSchema, args: unknown): z.infer<TSchema> {
+export function parseCliFlags<TSchema extends FlagsSchema<Shape>>(schema: TSchema, args: unknown): FlagsInfer<TSchema> {
   const flags = normalizeCliFlags(args)
-  const result = schema.safeParse(flags)
+  // `schema`'s member access resolves through the `FlagsSchema<Shape>` bound, not
+  // the caller's concrete shape — bridge back to the precise inferred type here.
+  const result = schema.safeParse(flags) as ParseResult<FlagsInfer<TSchema>>
 
   if (result.success) return result.data
 
@@ -112,7 +115,7 @@ function flagName(path: PropertyKey | undefined): string {
   return `--${String(path).replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)}`
 }
 
-function formatIssue(issue: z.core.$ZodIssue, flags: Record<string, unknown>): string {
+function formatIssue(issue: Issue, flags: Record<string, unknown>): string {
   const path = issue.path[0]
   const name = flagName(path)
   const received = path === undefined ? undefined : flags[String(path)]
