@@ -187,10 +187,6 @@ export interface DesignSystemValidateOptions {
   pandaVersion?: string
 }
 
-export type DesignSystemChainPlan = { status: 'ordered'; order: string[] } | { status: 'cycle'; cycle: string[] }
-
-export type DesignSystemChainResult = { ok: true; order: string[] } | { ok: false; reason: 'cycle'; cycle: string[] }
-
 export interface DesignSystemLoadOptions {
   buildInfo: BuildInfoArtifact
   /**
