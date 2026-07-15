@@ -29,6 +29,19 @@ const major = (value: string): number => {
   return match ? Number(match[0]) : NaN
 }
 
+/**
+ * Accepted majors from a peer range. Handles `||` unions (`^2 || ^3` -> {2,3});
+ * an empty set (no number found) means "unreadable", which fails closed.
+ */
+const acceptedMajors = (range: string): Set<number> => {
+  const majors = new Set<number>()
+  for (const alternative of range.split('||')) {
+    const value = major(alternative)
+    if (!Number.isNaN(value)) majors.add(value)
+  }
+  return majors
+}
+
 export class DesignSystem {
   readonly #binding: DesignSystemBinding
   readonly #buildInfo: BuildInfo
@@ -48,7 +61,7 @@ export class DesignSystem {
     if (manifest.schemaVersion !== this.schemaVersion) return { ok: false, reason: 'schemaVersion' }
 
     const running = options?.pandaVersion
-    if (running !== undefined && major(running) !== major(manifest.panda)) {
+    if (running !== undefined && !acceptedMajors(manifest.panda).has(major(running))) {
       return { ok: false, reason: 'pandaRange' }
     }
 
