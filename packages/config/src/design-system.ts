@@ -153,6 +153,50 @@ export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata |
     .map((subpath) => exportMissingDiagnostic(ds.name, subpath))
 }
 
+export function collectNameCollisionDiagnostics(metadata: DesignSystemMetadata | undefined): Diagnostic[] {
+  const overlay = buildCodegenOverlay(metadata)
+  if (!overlay) return []
+  return [
+    ...identCollisions('recipe', [...overlay.ownedRecipes, ...(metadata?.userRecipeNames ?? [])]),
+    ...identCollisions('pattern', [...overlay.ownedPatterns, ...(metadata?.userPatternNames ?? [])]),
+  ]
+}
+
+// Names that survive as distinct config keys but collapse to the same generated
+// export identifier (`my-stack` and `my_stack` -> `my_stack`) would produce a
+// duplicate/overwriting barrel export. Mirrors `pandacss_shared::js_ident`.
+function jsIdent(value: string): string {
+  let out = ''
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i]
+    if (/[A-Za-z0-9_$]/.test(ch)) {
+      if (i === 0 && ch >= '0' && ch <= '9') out += '_'
+      out += ch
+    } else {
+      out += '_'
+    }
+  }
+  return out === '' ? '_' : out
+}
+
+function identCollisions(kind: 'recipe' | 'pattern', names: string[]): Diagnostic[] {
+  const byIdent = new Map<string, Set<string>>()
+  for (const name of names) {
+    const ident = jsIdent(name)
+    const set = byIdent.get(ident) ?? new Set<string>()
+    set.add(name)
+    byIdent.set(ident, set)
+  }
+  const collisions: Diagnostic[] = []
+  for (const [ident, raw] of byIdent) {
+    if (raw.size < 2) continue
+    const list = [...raw].map((name) => JSON.stringify(name)).join(', ')
+    const message = `${kind} names ${list} both generate the export ${JSON.stringify(ident)}; one would overwrite the other in the generated barrel. Rename one so they produce distinct identifiers.`
+    collisions.push(createConfigDiagnostic('design_system_name_collision', message))
+  }
+  return collisions
+}
+
 function hasExport(packageExports: Record<string, unknown> | undefined, subpath: string): boolean {
   return packageExports != null && Object.prototype.hasOwnProperty.call(packageExports, subpath)
 }

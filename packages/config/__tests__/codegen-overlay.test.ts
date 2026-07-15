@@ -3,6 +3,7 @@ import {
   buildCodegenOverlay,
   collectArtifactConflicts,
   collectExportMissingDiagnostics,
+  collectNameCollisionDiagnostics,
   type ResolvedDesignSystem,
 } from '../src/design-system'
 
@@ -143,6 +144,33 @@ describe('buildCodegenOverlay', () => {
       ],
     })
     expect(overlay).toBeUndefined()
+  })
+})
+
+describe('collectNameCollisionDiagnostics', () => {
+  test('flags recipe names that collapse to the same generated identifier', () => {
+    const diagnostics = collectNameCollisionDiagnostics({
+      designSystem: [ds({ name: '@acme/ds', specifier: '@acme/ds', recipeNames: ['my-stack'] })],
+      userRecipeNames: ['my_stack'],
+    })
+
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'design_system_name_collision',
+        message: expect.stringContaining('"my_stack"'),
+      }),
+    ])
+  })
+
+  test('is empty when generated identifiers are distinct', () => {
+    expect(
+      collectNameCollisionDiagnostics({
+        designSystem: [
+          ds({ name: '@acme/ds', specifier: '@acme/ds', recipeNames: ['button'], patternNames: ['stack'] }),
+        ],
+        userRecipeNames: ['card'],
+      }),
+    ).toEqual([])
   })
 })
 
