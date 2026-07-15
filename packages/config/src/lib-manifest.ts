@@ -41,6 +41,8 @@ export function defaultImportMap(name: string): DesignSystemManifestImportMap {
 export interface SyncExportsResult {
   changed: boolean
   json: string
+  /** Existing subpaths whose value differed from the one Panda wrote (overwritten). */
+  conflicts: string[]
 }
 
 export interface SyncExportsOptions {
@@ -53,11 +55,17 @@ export function syncExports(options: SyncExportsOptions): SyncExportsResult {
   const pkg = JSON.parse(packageJson) as Record<string, unknown>
   const existing = normalizeExports(pkg.exports)
   const merged: Record<string, unknown> = { ...existing }
-  for (const [key, value] of Object.entries(entries)) merged[key] = value
+  const conflicts: string[] = []
+  for (const [key, value] of Object.entries(entries)) {
+    if (key in existing && JSON.stringify(existing[key]) !== JSON.stringify(value)) {
+      conflicts.push(key)
+    }
+    merged[key] = value
+  }
 
   const changed = JSON.stringify(pkg.exports) !== JSON.stringify(merged)
   const out = { ...pkg, exports: merged }
-  return { changed, json: `${JSON.stringify(out, null, 2)}\n` }
+  return { changed, json: `${JSON.stringify(out, null, 2)}\n`, conflicts }
 }
 
 export function toPosixPath(path: string): string {
@@ -80,6 +88,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 function normalizeExports(exports: unknown): Record<string, unknown> {
   if (exports === undefined) return {}
   if (typeof exports === 'string') return { '.': exports }
+  if (Array.isArray(exports)) return { '.': exports }
   if (!isPlainObject(exports)) return {}
   if (isSubpathExportMap(exports)) return exports
   return { '.': exports }

@@ -62,4 +62,32 @@ describe('lib-manifest', () => {
     expect(parsed.exports['.']).toEqual(root)
     expect(parsed.exports['./panda.lib.json']).toBe('./dist/panda.lib.json')
   })
+
+  test('syncExports preserves an array-form root export instead of dropping it', () => {
+    const array = ['./dist/index.mjs', './dist/fallback.js']
+    const { json } = syncExports({
+      packageJson: JSON.stringify({ name: '@acme/ds', exports: array }),
+      entries: { './panda.lib.json': './dist/panda.lib.json' },
+    })
+    const parsed = JSON.parse(json)
+    expect(parsed.exports['.']).toEqual(array)
+    expect(parsed.exports['./panda.lib.json']).toBe('./dist/panda.lib.json')
+  })
+
+  test('syncExports reports a conflict when overwriting a differing subpath', () => {
+    const result = syncExports({
+      packageJson: JSON.stringify({ name: '@acme/ds', exports: { './preset': './custom/preset.js' } }),
+      entries: { './preset': './dist/panda.preset.mjs' },
+    })
+    expect(result.conflicts).toEqual(['./preset'])
+    expect(JSON.parse(result.json).exports['./preset']).toBe('./dist/panda.preset.mjs')
+  })
+
+  test('syncExports does not report a conflict when the subpath value is identical', () => {
+    const result = syncExports({
+      packageJson: JSON.stringify({ name: '@acme/ds', exports: { './preset': './dist/panda.preset.mjs' } }),
+      entries: { './preset': './dist/panda.preset.mjs' },
+    })
+    expect(result.conflicts).toEqual([])
+  })
 })
