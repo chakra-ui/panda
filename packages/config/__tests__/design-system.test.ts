@@ -340,6 +340,14 @@ describe('resolveAuthoredPresets / designSystem', () => {
       diagnostics: [{ code: 'design_system_manifest_not_exported', severity: 'error', category: 'config' }],
     })
   })
+
+  test('rejects a workspace: protocol specifier with clear guidance', async () => {
+    const promise = resolveAuthoredPresets({ designSystem: 'workspace:*' }, cwd)
+    await expect(promise).rejects.toThrow(/isn't supported/)
+    await expect(promise).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_unsupported_specifier', severity: 'error', category: 'config' }],
+    })
+  })
 })
 
 describe('resolveAuthoredPresets / designSystem nested chains', () => {
@@ -542,6 +550,25 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
 
     expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/raw-identity', '@acme/skinned'])
     expect(config.importMap).toEqual(['@acme/raw', '@acme/skinned', 'styled-system'])
+  })
+
+  test('rejects a chain where two different packages share a name', async () => {
+    const dupCwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-dup-')))
+    // `@acme/dup` extends `@acme/dup-parent`, but the parent names itself `@acme/dup` too.
+    writeDesignSystemAt(moduleDir(dupCwd, '@acme/dup'), '@acme/dup', {
+      manifest: { designSystem: '@acme/dup-parent' },
+      preset: 'export default {}',
+    })
+    writeDesignSystemAt(moduleDir(dupCwd, '@acme/dup-parent'), '@acme/dup-parent', {
+      manifest: { name: '@acme/dup' },
+      preset: 'export default {}',
+    })
+
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/dup' }, dupCwd)).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_duplicate_name', severity: 'error', category: 'config' }],
+    })
+
+    rmSync(dupCwd, { recursive: true, force: true })
   })
 })
 

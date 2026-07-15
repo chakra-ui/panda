@@ -35,6 +35,7 @@ export async function loadDesignSystemChain(
 ): Promise<DesignSystemLevel[]> {
   const levels: DesignSystemLevel[] = []
   const seenAt = new Map<string, number>()
+  const seenNames = new Map<string, string>()
 
   let currentSpec = spec
   let fromDir = cwd
@@ -53,6 +54,13 @@ export async function loadDesignSystemChain(
     deps.add(manifestPath)
 
     const { level, parent } = await loadManifestLevel(currentSpec, manifestPath, deps)
+
+    const priorPath = seenNames.get(level.info.name)
+    if (priorPath !== undefined && priorPath !== manifestPath) {
+      throw duplicateNameError(level.info.name, priorPath, manifestPath)
+    }
+    seenNames.set(level.info.name, manifestPath)
+
     levels.push(level)
 
     if (parent === undefined) break
@@ -74,6 +82,9 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
 }
 
 function resolveManifestPath(spec: string, fromDir: string): string | undefined {
+  const protocol = specifierProtocol(spec)
+  if (protocol) throw unsupportedSpecifierError(spec, protocol)
+
   let outcome: ResolveOutcome
   try {
     outcome = resolveFrom(`${spec}/panda.lib.json`, fromDir)
@@ -200,4 +211,19 @@ function invalidManifestError(spec: string, field: string): PandaError {
       `Rebuild ${JSON.stringify(spec)} with \`panda lib\`.`,
     ]),
   ])
+}
+
+function duplicateNameError(name: string, firstPath: string, secondPath: string): PandaError {
+  const message = `Two different packages in the design-system chain are both named ${JSON.stringify(name)} (${JSON.stringify(firstPath)} and ${JSON.stringify(secondPath)}). Their styles would overwrite each other; give each package a unique name.`
+  return createConfigError(message, [createConfigDiagnostic('design_system_duplicate_name', message)])
+}
+
+function specifierProtocol(spec: string): string | undefined {
+  const match = spec.match(/^([a-z][a-z0-9+.-]*):/i)
+  return match ? match[1] : undefined
+}
+
+function unsupportedSpecifierError(spec: string, protocol: string): PandaError {
+  const message = `designSystem ${JSON.stringify(spec)} uses the "${protocol}:" protocol, which isn't supported. Use the published package name (e.g. "@acme/design-system") that resolves to its \`panda.lib.json\`.`
+  return createConfigError(message, [createConfigDiagnostic('design_system_unsupported_specifier', message)])
 }
