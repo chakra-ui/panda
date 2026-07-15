@@ -292,6 +292,54 @@ describe('resolveAuthoredPresets / designSystem', () => {
       ],
     })
   })
+
+  test('reports a parse error (not "failed to read") for a malformed manifest', async () => {
+    writeFileTree(moduleDir(cwd, '@acme/bad-json'), {
+      'package.json': json({ name: '@acme/bad-json', version: '1.0.0' }),
+      'panda.lib.json': '{ not valid json',
+    })
+    const promise = resolveAuthoredPresets({ designSystem: '@acme/bad-json' }, cwd)
+    await expect(promise).rejects.toThrow(/Failed to parse/)
+    await expect(promise).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_manifest_invalid', severity: 'error', category: 'config' }],
+    })
+  })
+
+  test('attaches a coded diagnostic when the preset module fails to load', async () => {
+    writeFileTree(moduleDir(cwd, '@acme/bad-preset'), {
+      'package.json': json({ name: '@acme/bad-preset', version: '1.0.0' }),
+      'panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/bad-preset',
+        panda: '^2.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+      }),
+      'panda.preset.mjs': 'throw new Error("boom in preset")',
+    })
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/bad-preset' }, cwd)).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_preset_load_failed', severity: 'error', category: 'config' }],
+    })
+  })
+
+  test('distinguishes an installed package that does not expose panda.lib.json', async () => {
+    writeFileTree(moduleDir(cwd, '@acme/no-export'), {
+      'package.json': json({ name: '@acme/no-export', version: '1.0.0', exports: { '.': './index.js' } }),
+      'index.js': 'export default {}',
+      'panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/no-export',
+        panda: '^2.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+      }),
+    })
+    const promise = resolveAuthoredPresets({ designSystem: '@acme/no-export' }, cwd)
+    await expect(promise).rejects.toThrow(/doesn't expose/)
+    await expect(promise).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_manifest_not_exported', severity: 'error', category: 'config' }],
+    })
+  })
 })
 
 describe('resolveAuthoredPresets / designSystem nested chains', () => {
