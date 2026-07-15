@@ -104,6 +104,14 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.validate(manifest, { pandaVersion: '1.9.0' })).toEqual({ ok: false, reason: 'pandaRange' })
   })
 
+  it('validate() accepts either major of a multi-major `||` range', () => {
+    const app = project()
+    const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: '^2.0.0 || ^3.0.0' }
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '3.1.0' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '4.0.0' })).toEqual({ ok: false, reason: 'pandaRange' })
+  })
+
   // --- load(): consumer side — validate + hydrate the library's build info ---
 
   // A library publishing two styled modules, plus the manifest pointing at it.
