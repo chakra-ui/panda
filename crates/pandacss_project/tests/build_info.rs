@@ -157,6 +157,48 @@ fn hydrate_reproduces_every_atom() {
 }
 
 #[test]
+fn build_info_excludes_hydrated_parent_atoms() {
+    let mut parent = create_project(json!({}));
+    parent.parse_file(
+        "base.tsx",
+        "import { css } from '@panda/css'; css({ color: 'red' });",
+    );
+    let parent_info = parent.build_info("^2.0.0".into());
+
+    // A middle package hydrates its parent, then adds its own local style.
+    let mut child = create_project(json!({}));
+    assert!(child.hydrate("@acme/base", &parent_info, None));
+    child.parse_file(
+        "local.tsx",
+        "import { css } from '@panda/css'; css({ margin: '8px' });",
+    );
+
+    // The published artifact must carry only the child's own extraction, not the
+    // hydrated parent's atoms or its synthetic `buildinfo:` module.
+    let child_info = child.build_info("^2.0.0".into());
+
+    let module_keys: Vec<&str> = child_info.modules.keys().map(String::as_str).collect();
+    assert_eq!(module_keys, ["local.tsx"]);
+    assert!(child_info.strings.iter().any(|s| s == "margin"));
+    assert!(!child_info.strings.iter().any(|s| s == "color"));
+    assert!(!child_info.strings.iter().any(|s| s == "red"));
+}
+
+#[test]
+fn hydrate_rejects_a_corrupt_intern_table() {
+    let source = lib_project();
+    let mut info = source.build_info("^2.0.0".into());
+    assert!(!info.atoms.is_empty());
+    // Point an atom's prop at a string index past the intern table.
+    info.atoms[0].p = 9999;
+
+    let mut consumer = create_project(json!({}));
+    // A dropped-atom corruption must be a no-op (caller re-extracts), not a
+    // partial hydrate reported as success.
+    assert!(!consumer.hydrate("@acme/ds", &info, None));
+}
+
+#[test]
 fn hydrate_with_module_filter_emits_only_imported_modules() {
     let source = lib_project();
     let info = source.build_info("^2.0.0".into());

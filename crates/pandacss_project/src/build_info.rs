@@ -23,6 +23,11 @@ use crate::{FileEntry, ParseFileReport};
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
 pub const SCHEMA_VERSION: u32 = 3;
 
+/// Synthetic file-key prefix for atoms hydrated from a parent design system.
+/// Excluded from serialized build info so a published artifact carries only
+/// this project's own extraction, not a hydrated parent's.
+pub(crate) const HYDRATED_FILE_PREFIX: &str = "buildinfo:";
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct BuildInfo {
@@ -276,44 +281,42 @@ fn recipes_from_build(
     build: &BuildRecipes,
     strings: &[String],
     groups: Option<&FxHashSet<u32>>,
-) -> EncodedRecipesSnapshot {
+) -> Option<EncodedRecipesSnapshot> {
     let keep = |combined: usize| {
         groups.is_none_or(|set| u32::try_from(combined).is_ok_and(|index| set.contains(&index)))
     };
-    let base: Vec<_> = build
-        .base
-        .iter()
-        .enumerate()
-        .filter(|(index, _)| keep(*index))
-        .filter_map(|(_, group)| group_from_build(group, strings))
-        .collect();
+    // Like `atom_from_build`, a kept group that fails to reconstruct means the
+    // intern table is corrupt; propagate `None` so the caller re-extracts.
+    let mut base = Vec::new();
+    for (index, group) in build.base.iter().enumerate() {
+        if keep(index) {
+            base.push(group_from_build(group, strings)?);
+        }
+    }
     let base_len = build.base.len();
     let variant_len = build.variants.len();
-    let variants: Vec<_> = build
-        .variants
-        .iter()
-        .enumerate()
-        .filter(|(index, _)| keep(base_len + *index))
-        .filter_map(|(_, group)| group_from_build(group, strings))
-        .collect();
-    let compounds: Vec<_> = build
-        .compounds
-        .iter()
-        .enumerate()
-        .filter(|(index, _)| keep(base_len + variant_len + *index))
-        .filter_map(|(_, group)| group_from_build(group, strings))
-        .collect();
-    let atomic = build
-        .atomic
-        .iter()
-        .filter_map(|atom| atom_from_build(atom, strings))
-        .collect();
-    EncodedRecipesSnapshot {
+    let mut variants = Vec::new();
+    for (index, group) in build.variants.iter().enumerate() {
+        if keep(base_len + index) {
+            variants.push(group_from_build(group, strings)?);
+        }
+    }
+    let mut compounds = Vec::new();
+    for (index, group) in build.compounds.iter().enumerate() {
+        if keep(base_len + variant_len + index) {
+            compounds.push(group_from_build(group, strings)?);
+        }
+    }
+    let mut atomic = Vec::new();
+    for atom in &build.atomic {
+        atomic.push(atom_from_build(atom, strings)?);
+    }
+    Some(EncodedRecipesSnapshot {
         base,
         variants,
         compounds,
         atomic,
-    }
+    })
 }
 
 /// Indices selected by `only_modules`, reading `field` (`.atoms` or `.recipes`)
@@ -357,8 +360,17 @@ impl super::Project {
     pub fn build_info(&self, panda: String) -> BuildInfo {
         let config_fingerprint = self.config_fingerprint.to_string();
 
-        // Deduped, emit-ordered — modules reference this index space.
-        let mut atoms: Vec<&Atom> = self.atoms_cache.iter().collect();
+        // Deduped, emit-ordered — modules reference this index space. Only this
+        // project's own atoms are serialized; hydrated parent atoms (under
+        // `HYDRATED_FILE_PREFIX` files) are excluded so the artifact stays local.
+        let mut local_atoms: FxHashSet<&Atom> = FxHashSet::default();
+        for (path, entry) in &self.files {
+            if path.starts_with(HYDRATED_FILE_PREFIX) {
+                continue;
+            }
+            local_atoms.extend(entry.atoms.iter());
+        }
+        let mut atoms: Vec<&Atom> = local_atoms.into_iter().collect();
         atoms.sort_by(|a, b| super::compare_atoms_by_emit_order(a, b));
         let position: FxHashMap<&Atom, u32> = atoms
             .iter()
@@ -385,6 +397,9 @@ impl super::Project {
         let mut modules = BTreeMap::new();
         let mut styled_modules = FxHashSet::default();
         for (path, entry) in &self.files {
+            if path.starts_with(HYDRATED_FILE_PREFIX) {
+                continue;
+            }
             let mut atom_indices: Vec<u32> = entry
                 .atoms
                 .iter()
@@ -452,23 +467,34 @@ impl super::Project {
         let selected_atoms = selected_module_indices(info, only_modules, |entry| &entry.atoms);
         let selected_recipes = selected_module_indices(info, only_modules, |entry| &entry.recipes);
 
-        let atoms: FxHashSet<Atom> = info
-            .atoms
-            .iter()
-            .enumerate()
-            .filter(|(index, _)| {
-                selected_atoms
-                    .as_ref()
-                    .is_none_or(|set| u32::try_from(*index).is_ok_and(|index| set.contains(&index)))
-            })
-            .filter_map(|(_, build)| atom_from_build(build, &info.strings))
-            .collect();
+        // A selected atom that fails to reconstruct means the intern table is
+        // corrupt (an out-of-range string index). Refuse to hydrate partial data
+        // and let the caller re-extract, same as a schema-version mismatch.
+        let mut atoms: FxHashSet<Atom> = FxHashSet::default();
+        for (index, build) in info.atoms.iter().enumerate() {
+            let selected = selected_atoms
+                .as_ref()
+                .is_none_or(|set| u32::try_from(index).is_ok_and(|index| set.contains(&index)));
+            if !selected {
+                continue;
+            }
+            match atom_from_build(build, &info.strings) {
+                Some(atom) => {
+                    atoms.insert(atom);
+                }
+                None => return false,
+            }
+        }
 
         // Stored under the lib's name; `stylesheet_snapshots` merges it in.
-        let recipes = recipes_from_build(&info.recipes, &info.strings, selected_recipes.as_ref());
+        let Some(recipes) =
+            recipes_from_build(&info.recipes, &info.strings, selected_recipes.as_ref())
+        else {
+            return false;
+        };
         self.set_hydrated_recipes(name, recipes);
 
-        let key: Arc<str> = Arc::from(format!("buildinfo:{name}").as_str());
+        let key: Arc<str> = Arc::from(format!("{HYDRATED_FILE_PREFIX}{name}").as_str());
         if self.files.contains_key(&key) {
             self.drop_file_state(&key);
         }

@@ -111,6 +111,76 @@ describe('hydrateDesignSystem (consumer)', () => {
     await expect(createNodeDriver({ cwd })).rejects.toThrow(/incompatible buildInfo/)
   })
 
+  it('re-extracts when the manifest Panda range is incompatible but files are present', async () => {
+    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
+    writeFileTree(cwd, {
+      'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
+      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+      'node_modules/@acme/ds/package.json': json({
+        name: '@acme/ds',
+        version: '1.0.0',
+        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
+      }),
+      'node_modules/@acme/ds/dist/panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        version: '1.0.0',
+        panda: '^999.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        files: ['./button.js'],
+        importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
+      }),
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
+      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
+      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
+        schemaVersion: 3,
+        panda: '^999.0.0',
+        configFingerprint: 'x',
+        strings: [],
+        atoms: [],
+        modules: {},
+      }),
+    })
+
+    const driver = await createNodeDriver({ cwd })
+    const codes = (driver.designSystemDiagnostics ?? []).map((d) => d.code)
+    expect(codes).toContain('design_system_buildinfo_stale')
+    expect(driver.cssgen().css).toContain('rebeccapurple')
+  })
+
+  it('re-extracts when build info is structurally invalid but files are present', async () => {
+    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
+    writeFileTree(cwd, {
+      'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
+      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+      'node_modules/@acme/ds/package.json': json({
+        name: '@acme/ds',
+        version: '1.0.0',
+        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
+      }),
+      'node_modules/@acme/ds/dist/panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        version: '1.0.0',
+        panda: '^2.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        files: ['./button.js'],
+        importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
+      }),
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
+      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
+      // Valid JSON, but missing required build-info fields — deserialize fails.
+      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 3 }),
+    })
+
+    const driver = await createNodeDriver({ cwd })
+    const codes = (driver.designSystemDiagnostics ?? []).map((d) => d.code)
+    expect(codes).toContain('design_system_buildinfo_stale')
+    expect(driver.cssgen().css).toContain('rebeccapurple')
+  })
+
   it('warns on a token defined by both the design system and the consumer', async () => {
     cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
     writeFileTree(cwd, {

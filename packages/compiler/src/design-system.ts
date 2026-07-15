@@ -1,4 +1,9 @@
-import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
+import {
+  type BuildInfoArtifact,
+  type Compiler,
+  type DesignSystemLoadResult,
+  type Diagnostic,
+} from '@pandacss/compiler-shared'
 import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
 
 type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
@@ -21,10 +26,18 @@ function hydrateLevel(
   pandaVersion: string | undefined,
   consumerTokenPaths: string[],
 ): Diagnostic[] {
-  const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
-  if (!compat.ok) throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
-
   const diagnostics: Diagnostic[] = []
+
+  const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
+  if (!compat.ok) {
+    // A version/schema-skewed layer can still re-extract from its `files`; only
+    // hard-fail when no re-extract source is available.
+    if (tryStaleFallback(compiler, ds, diagnostics)) {
+      diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
+      return diagnostics
+    }
+    throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
+  }
 
   let buildInfo: BuildInfoArtifact | undefined
   try {
@@ -36,12 +49,36 @@ function hydrateLevel(
   }
 
   if (buildInfo) {
-    const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
-    if (!result.ok && !tryStaleFallback(compiler, ds, diagnostics)) throw hydrateLoadError(ds, result.reason)
+    // `load` can throw when the artifact is JSON-parseable but structurally
+    // invalid (binding deserialize fails); treat that like a read failure and
+    // re-extract when possible.
+    let result: DesignSystemLoadResult | undefined
+    try {
+      result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
+    } catch (error) {
+      if (!tryStaleFallback(compiler, ds, diagnostics)) throw hydrateReadError(ds, error)
+    }
+    if (result && !result.ok && !tryStaleFallback(compiler, ds, diagnostics)) {
+      throw hydrateLoadError(ds, result.reason)
+    }
   }
 
   diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
+  diagnostics.push(...optionMismatchDiagnostics(ds))
   return diagnostics
+}
+
+function optionMismatchDiagnostics(ds: ResolvedDesignSystem): Diagnostic[] {
+  if (!ds.optionMismatch || ds.optionMismatch.length === 0) return []
+  const options = ds.optionMismatch.join(', ')
+  return [
+    {
+      code: 'design_system_option_mismatch',
+      severity: 'warning',
+      category: 'designSystem',
+      message: `${JSON.stringify(ds.name)} was built with different ${options}; its prebuilt class names won't match yours, so its components can render unstyled. Match these options to the design system, or rebuild it with your options.`,
+    },
+  ]
 }
 
 function tryStaleFallback(compiler: Compiler, ds: ResolvedDesignSystem, diagnostics: Diagnostic[]): boolean {
