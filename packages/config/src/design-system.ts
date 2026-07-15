@@ -145,6 +145,8 @@ export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata |
   if (overlay.virtualizeUtils) required.push('./helpers')
   if (overlay.virtualizeConditions || overlay.virtualizeCss) required.push('./css/*')
   if (overlay.virtualizeCss) required.push('./css')
+  if (overlay.ownedRecipes.length > 0) required.push('./recipes')
+  if (overlay.ownedPatterns.length > 0) required.push('./patterns')
 
   return required
     .filter((subpath) => !hasExport(ds.packageExports, subpath))

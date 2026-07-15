@@ -400,8 +400,8 @@ export class NodeDriver extends BaseDriver {
     parsed: ParsedDesignSystemLib,
   ): WriteDesignSystemLibResult {
     const identity = readPackageIdentity(this.#options.cwd)
-    const explicitRange = isStampablePandaRange(options.panda) ? options.panda : undefined
-    const peerRange = isStampablePandaRange(identity.pandaPeer) ? identity.pandaPeer : undefined
+    const explicitRange = isStampablePandaRange(options.panda) ? options.panda.trim() : undefined
+    const peerRange = isStampablePandaRange(identity.pandaPeer) ? identity.pandaPeer.trim() : undefined
     const pandaRange = explicitRange ?? peerRange ?? runningPandaRange() ?? '*'
     const outdir = options.outdir ?? DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR
     const outRoot = this.compiler.path.resolve(outdir)

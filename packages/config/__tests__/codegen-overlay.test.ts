@@ -238,6 +238,26 @@ describe('collectExportMissingDiagnostics', () => {
     expect(diagnostics.some((d) => d.message.includes('"./css"'))).toBe(true)
   })
 
+  test('reports a missing ./recipes export when the design system owns recipes', () => {
+    const diagnostics = collectExportMissingDiagnostics({
+      designSystem: [
+        ds({
+          name: '@acme/ds',
+          specifier: '@acme/ds',
+          recipeNames: ['button'],
+          packageExports: {
+            '.': './index.js',
+            './helpers': './helpers/index.js',
+            './css': './css/index.js',
+            './css/*': './css/*.js',
+          },
+        }),
+      ],
+    })
+
+    expect(diagnostics.some((d) => d.message.includes('"./recipes"'))).toBe(true)
+  })
+
   test('returns nothing without a single-level overlay', () => {
     expect(collectExportMissingDiagnostics(undefined)).toEqual([])
     expect(
