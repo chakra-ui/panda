@@ -83,6 +83,7 @@ export interface DesignSystemAppConfigKeys {
   conditions: boolean
   breakpoints: boolean
   utilities: boolean
+  tokens: boolean
   globalOptionsMatchDs: boolean
 }
 
@@ -104,7 +105,7 @@ export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined):
   const keys = metadata?.appConfigKeys
   const globalMatch = keys?.globalOptionsMatchDs ?? true
   const virtualizeUtils = globalMatch
-  const virtualizeCss = globalMatch && !keys?.conditions && !keys?.breakpoints && !keys?.utilities
+  const virtualizeCss = globalMatch && !keys?.conditions && !keys?.breakpoints && !keys?.utilities && !keys?.tokens
   const virtualizeConditions = virtualizeCss
 
   return {

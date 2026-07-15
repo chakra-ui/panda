@@ -28,6 +28,7 @@ function pureConsumerMetadata() {
       conditions: false,
       breakpoints: false,
       utilities: false,
+      tokens: false,
       globalOptionsMatchDs: true,
     },
   }
@@ -81,6 +82,12 @@ describe('buildCodegenOverlay', () => {
     expect(overlay?.virtualizeUtils).toBe(true)
     expect(overlay?.virtualizeConditions).toBe(false)
     expect(overlay?.virtualizeCss).toBe(false)
+  })
+
+  it('keeps css local when the app extends tokens, so css() sees the added token', () => {
+    const overlay = buildCodegenOverlay(metadataWith({ tokens: true }))
+    expect(overlay?.virtualizeCss).toBe(false)
+    expect(overlay?.virtualizeConditions).toBe(false)
   })
 
   it('keeps entire runtime local when a global option differs', () => {

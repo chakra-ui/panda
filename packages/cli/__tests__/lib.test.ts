@@ -120,6 +120,17 @@ describe('lib command', () => {
     expect(readManifest(dir).panda).toBe('2.0.0-beta.8')
   })
 
+  it('ignores an unpublishable --panda value instead of stamping it', async () => {
+    dir = createLibFixture()
+
+    const result = await runLib({ cwd: dir, panda: 'catalog:', logLevel: 'silent' })
+    expect(result.ok).toBe(true)
+
+    const manifest = readManifest(dir)
+    expect(manifest.panda).not.toBe('catalog:')
+    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+  })
+
   it('syncs styled-system subpath exports for categories the codegen emitted', async () => {
     dir = createLibFixture()
     await runCodegen({ cwd: dir, logLevel: 'silent' })

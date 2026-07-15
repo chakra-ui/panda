@@ -106,6 +106,7 @@ async function attachAppConfigKeys(loaded: LoadConfigResult, cwd: string): Promi
   const conditions = authoredByAppConfig(sources, 'conditions')
   const breakpoints = authoredByAppConfig(sources, 'theme.breakpoints')
   const utilities = authoredByAppConfig(sources, 'utilities')
+  const tokens = authoredByAppConfig(sources, 'theme.tokens') || authoredByAppConfig(sources, 'theme.semanticTokens')
 
   const overriddenGlobals = GLOBAL_OPTION_KEYS.filter((key) => authoredByAppConfig(sources, key))
   let globalOptionsMatchDs = true
@@ -118,7 +119,7 @@ async function attachAppConfigKeys(loaded: LoadConfigResult, cwd: string): Promi
 
   loaded.metadata = {
     ...loaded.metadata,
-    appConfigKeys: { conditions, breakpoints, utilities, globalOptionsMatchDs },
+    appConfigKeys: { conditions, breakpoints, utilities, tokens, globalOptionsMatchDs },
   }
 }
 
@@ -399,8 +400,9 @@ export class NodeDriver extends BaseDriver {
     parsed: ParsedDesignSystemLib,
   ): WriteDesignSystemLibResult {
     const identity = readPackageIdentity(this.#options.cwd)
+    const explicitRange = isStampablePandaRange(options.panda) ? options.panda : undefined
     const peerRange = isStampablePandaRange(identity.pandaPeer) ? identity.pandaPeer : undefined
-    const pandaRange = options.panda ?? peerRange ?? runningPandaRange() ?? '*'
+    const pandaRange = explicitRange ?? peerRange ?? runningPandaRange() ?? '*'
     const outdir = options.outdir ?? DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR
     const outRoot = this.compiler.path.resolve(outdir)
 
