@@ -109,7 +109,7 @@ export interface BuildInfoArtifact {
   exports?: Record<string, string>
 }
 
-export type BuildInfoIncompatibility = 'schemaVersion' | 'pandaRange'
+export type BuildInfoIncompatibility = 'schemaVersion' | 'pandaRange' | 'corrupt'
 
 export type BuildInfoCompatibility = { ok: true } | { ok: false; reason: BuildInfoIncompatibility }
 

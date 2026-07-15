@@ -21,6 +21,9 @@ export interface ResolvedDesignSystem {
   files: string[]
   tokenPaths: string[]
   importMap?: DesignSystemManifest['importMap']
+  /** Class-name options (`hash`/`prefix`/`separator`) the consumer overrode away
+   * from this design system's, which would break its prebuilt class names. */
+  optionMismatch?: string[]
 }
 
 export interface DesignSystemLevel {

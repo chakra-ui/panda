@@ -73,7 +73,11 @@ export class BuildInfo {
     const compat = this.validate(info)
     if (!compat.ok) return { ok: false, reason: compat.reason, modules: [] }
 
-    this.#native.applyBuildInfo(options.name, info, options.only)
+    // The engine returns false when the artifact is structurally corrupt (a
+    // dropped atom/recipe from an out-of-range intern index). Treat it like an
+    // incompatibility so the caller re-extracts instead of hydrating partial CSS.
+    const applied = this.#native.applyBuildInfo(options.name, info, options.only)
+    if (!applied) return { ok: false, reason: 'corrupt', modules: [] }
 
     // The engine hydrates only modules that exist; report that exact set so the
     // result never claims to have hydrated an unknown `only` key.

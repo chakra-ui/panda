@@ -49,6 +49,21 @@ export interface ResolveAuthoredPresetsOptions {
   preserveRuntimeHooks?: boolean
 }
 
+const CLASS_NAME_OPTION_KEYS = ['hash', 'prefix', 'separator'] as const
+type ClassNameOptions = Partial<Record<(typeof CLASS_NAME_OPTION_KEYS)[number], unknown>>
+
+function pickClassNameOptions(config: UserConfig): ClassNameOptions {
+  return { hash: config.hash, prefix: config.prefix, separator: config.separator }
+}
+
+// Only an explicit consumer override that differs from the design system counts:
+// it changes generated class names, so the DS's prebuilt runtime renders unstyled.
+function classNameOptionMismatch(consumer: ClassNameOptions, ds: ClassNameOptions): string[] {
+  return CLASS_NAME_OPTION_KEYS.filter(
+    (key) => consumer[key] !== undefined && JSON.stringify(consumer[key]) !== JSON.stringify(ds[key]),
+  )
+}
+
 export async function resolveAuthoredPresets(
   config: ExtendableConfig,
   cwd: string,
@@ -67,6 +82,7 @@ export async function resolveAuthoredPresets(
 
   const designSystem = (config as UserConfig).designSystem
   let dsChain: DesignSystemLevel[] = []
+  const dsClassNameOptions: ClassNameOptions[] = []
   if (typeof designSystem === 'string' && designSystem.length > 0) {
     dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
     for (const level of dsChain) {
@@ -78,12 +94,19 @@ export async function resolveAuthoredPresets(
         options.trackSources,
       )
       level.info.tokenPaths = collectTokenPaths(block.resolved)
+      dsClassNameOptions.push(pickClassNameOptions(block.resolved))
       appendConfigBlock(ctx, block)
     }
   }
 
   const rootBlock = await collectConfigBlock(config, rootSource, cwd, ctx.dependencies, options.trackSources)
   appendConfigBlock(ctx, rootBlock)
+
+  const consumerClassNameOptions = pickClassNameOptions(rootBlock.resolved)
+  dsChain.forEach((level, i) => {
+    const mismatch = classNameOptionMismatch(consumerClassNameOptions, dsClassNameOptions[i])
+    if (mismatch.length > 0) level.info.optionMismatch = mismatch
+  })
 
   const dsInfos = dsChain.map((level) => level.info)
   const finalize = (resolved: UserConfig): UserConfig => {

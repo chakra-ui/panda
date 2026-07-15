@@ -234,6 +234,16 @@ describe('resolveAuthoredPresets / designSystem', () => {
     )
   })
 
+  test('flags class-name option overrides that break the design system runtime', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds', hash: true }, cwd)
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toEqual(['hash'])
+  })
+
+  test('does not flag when class-name options match the design system', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds' }, cwd)
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
+  })
+
   // Manifest and package resolution failures.
 
   test('attaches diagnostics for an invalid manifest', async () => {
