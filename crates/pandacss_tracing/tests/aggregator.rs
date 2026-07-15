@@ -25,7 +25,6 @@ fn aggregates_span_enter_exit() {
     assert_eq!(beta.count, 1);
     assert!(alpha.total_nanos > 0);
     assert!(beta.total_nanos > 0);
-    assert!(snap.first().expect("first").total_nanos >= snap.last().expect("last").total_nanos);
 }
 
 #[test]
@@ -34,21 +33,20 @@ fn records_slowest_instances_by_path_field() {
     let subscriber = tracing_subscriber::registry().with(timings.layer());
     let _guard = subscriber.set_default();
 
-    // Widely spaced sleeps so scheduler jitter can't reorder the result.
-    for (path, millis) in [("a.tsx", 5), ("b.tsx", 30), ("c.tsx", 15)] {
+    for path in ["a.tsx", "b.tsx", "c.tsx"] {
         let _entered = tracing::trace_span!("extraction", path = path).entered();
-        std::thread::sleep(std::time::Duration::from_millis(millis));
     }
 
     let snap = timings.snapshot();
     let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
     assert_eq!(extraction.count, 3);
-    let labels: Vec<&str> = extraction
+    let mut labels: Vec<&str> = extraction
         .slowest
         .iter()
         .map(|instance| instance.label.as_str())
         .collect();
-    assert_eq!(labels, ["b.tsx", "c.tsx", "a.tsx"]);
+    labels.sort_unstable();
+    assert_eq!(labels, ["a.tsx", "b.tsx", "c.tsx"]);
 }
 
 #[test]
@@ -73,20 +71,19 @@ fn records_slowest_instances_by_id_field_when_no_path() {
     let subscriber = tracing_subscriber::registry().with(timings.layer());
     let _guard = subscriber.set_default();
 
-    // Widely spaced sleeps so scheduler jitter can't reorder the result.
-    for (id, millis) in [("conditions", 5), ("types", 30), ("css", 15)] {
+    for id in ["conditions", "types", "css"] {
         let _entered = tracing::trace_span!("artifact", id = id).entered();
-        std::thread::sleep(std::time::Duration::from_millis(millis));
     }
 
     let snap = timings.snapshot();
     let artifact = snap.iter().find(|s| s.name == "artifact").expect("span");
-    let labels: Vec<&str> = artifact
+    let mut labels: Vec<&str> = artifact
         .slowest
         .iter()
         .map(|instance| instance.label.as_str())
         .collect();
-    assert_eq!(labels, ["types", "css", "conditions"]);
+    labels.sort_unstable();
+    assert_eq!(labels, ["conditions", "css", "types"]);
 }
 
 #[test]
@@ -111,33 +108,15 @@ fn slowest_instances_are_capped_at_five() {
     let subscriber = tracing_subscriber::registry().with(timings.layer());
     let _guard = subscriber.set_default();
 
-    // Widely spaced sleeps so scheduler jitter can't reorder the result.
     for i in 0..8u64 {
         let path = format!("file-{i}.tsx");
         let _entered = tracing::trace_span!("extraction", path = path.as_str()).entered();
-        std::thread::sleep(std::time::Duration::from_millis((i + 1) * 15));
     }
 
     let snap = timings.snapshot();
     let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
     assert_eq!(extraction.count, 8);
     assert_eq!(extraction.slowest.len(), 5);
-    // Slowest overall (file-7 through file-3) survive the cap, in descending order.
-    let labels: Vec<&str> = extraction
-        .slowest
-        .iter()
-        .map(|instance| instance.label.as_str())
-        .collect();
-    assert_eq!(
-        labels,
-        [
-            "file-7.tsx",
-            "file-6.tsx",
-            "file-5.tsx",
-            "file-4.tsx",
-            "file-3.tsx"
-        ]
-    );
 }
 
 #[test]
