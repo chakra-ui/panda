@@ -1,7 +1,5 @@
 import type { BuildInfo } from './build-info'
 import type {
-  DesignSystemChainPlan,
-  DesignSystemChainResult,
   DesignSystemLoadOptions,
   DesignSystemLoadResult,
   DesignSystemManifest,
@@ -17,7 +15,6 @@ import type {
 export interface DesignSystemBinding {
   createManifest(input: DesignSystemManifestInput): DesignSystemManifest
   manifestSchemaVersion(): number
-  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
 /**
@@ -67,12 +64,5 @@ export class DesignSystem {
     if (!result.ok) return { ok: false, reason: result.reason, modules: [] }
 
     return { ok: true, name: manifest.name, modules: result.modules }
-  }
-
-  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainResult {
-    const plan = this.#binding.resolveChain(manifests)
-    return plan.status === 'ordered'
-      ? { ok: true, order: plan.order }
-      : { ok: false, reason: 'cycle', cycle: plan.cycle }
   }
 }

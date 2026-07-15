@@ -196,7 +196,6 @@ function toDesignSystemBinding(
   return {
     createManifest: (input) => compiler.createDesignSystemManifest(input),
     manifestSchemaVersion: () => compiler.designSystemManifestSchemaVersion(),
-    resolveChain: (manifests) => compiler.resolveDesignSystemChain(manifests),
   }
 }
 

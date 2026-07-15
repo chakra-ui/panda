@@ -61,8 +61,7 @@ pub type UtilityStyleKey = (Box<str>, AtomValue);
 
 pub use build_info::{BuildAtom, BuildInfo, BuildValue, ModuleEntry, SCHEMA_VERSION};
 pub use design_system::{
-    ChainPlan, DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestImportMap, ManifestInput,
-    resolve_chain,
+    DesignSystemManifest, MANIFEST_SCHEMA_VERSION, ManifestImportMap, ManifestInput,
 };
 pub use error::{ConfigError, Result};
 pub use hook_filter::HookFilter;
