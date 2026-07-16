@@ -1,9 +1,4 @@
-import {
-  type BuildInfoArtifact,
-  type Compiler,
-  type DesignSystemLoadResult,
-  type Diagnostic,
-} from '@pandacss/compiler-shared'
+import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
 import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
 
 type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
@@ -29,15 +24,7 @@ function hydrateLevel(
   const diagnostics: Diagnostic[] = []
 
   const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
-  if (!compat.ok) {
-    // A version/schema-skewed layer can still re-extract from its `files`; only
-    // hard-fail when no re-extract source is available.
-    if (tryStaleFallback(compiler, ds, diagnostics)) {
-      diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
-      return diagnostics
-    }
-    throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
-  }
+  if (!compat.ok) throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
 
   let buildInfo: BuildInfoArtifact | undefined
   try {
@@ -50,19 +37,11 @@ function hydrateLevel(
 
   let hydratedPrebuilt = false
   if (buildInfo) {
-    // `load` can throw when the artifact is JSON-parseable but structurally
-    // invalid (binding deserialize fails); treat that like a read failure and
-    // re-extract when possible.
-    let result: DesignSystemLoadResult | undefined
-    try {
-      result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
-    } catch (error) {
-      if (!tryStaleFallback(compiler, ds, diagnostics)) throw hydrateReadError(ds, error)
-    }
-    if (result && !result.ok && !tryStaleFallback(compiler, ds, diagnostics)) {
+    const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
+    if (!result.ok && !tryStaleFallback(compiler, ds, diagnostics)) {
       throw hydrateLoadError(ds, result.reason)
     }
-    hydratedPrebuilt = result?.ok ?? false
+    hydratedPrebuilt = result.ok
   }
 
   diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))

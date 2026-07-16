@@ -7,6 +7,7 @@ import type {
   DesignSystemManifestInput,
   DesignSystemValidateOptions,
 } from './types'
+import { satisfiesVersionRange } from './semver'
 
 /**
  * Minimal primitives `DesignSystem` needs; native and wasm adapters can map
@@ -15,15 +16,6 @@ import type {
 export interface DesignSystemBinding {
   createManifest(input: DesignSystemManifestInput): DesignSystemManifest
   manifestSchemaVersion(): number
-}
-
-/**
- * Major from a version or range (`^2.1.0` -> `2`); `NaN` when no number is found
- * so an unreadable value fails the major check rather than passing silently.
- */
-const major = (value: string): number => {
-  const match = value.match(/\d+/)
-  return match ? Number(match[0]) : NaN
 }
 
 export class DesignSystem {
@@ -45,7 +37,7 @@ export class DesignSystem {
     if (manifest.schemaVersion !== this.schemaVersion) return { ok: false, reason: 'schemaVersion' }
 
     const running = options?.pandaVersion
-    if (running !== undefined && major(running) !== major(manifest.panda)) {
+    if (running !== undefined && !satisfiesVersionRange(running, manifest.panda)) {
       return { ok: false, reason: 'pandaRange' }
     }
 
@@ -55,6 +47,9 @@ export class DesignSystem {
   load(manifest: DesignSystemManifest, options: DesignSystemLoadOptions): DesignSystemLoadResult {
     const compat = this.validate(manifest, { pandaVersion: options.pandaVersion })
     if (!compat.ok) return { ok: false, reason: compat.reason, modules: [] }
+
+    const buildInfoCompat = this.#buildInfo.validate(options.buildInfo)
+    if (!buildInfoCompat.ok) return { ok: false, reason: buildInfoCompat.reason, modules: [] }
 
     // `imports` omitted -> hydrate every module (namespace import); otherwise
     // resolve the touched modules so only their CSS emits (tree-shaking).

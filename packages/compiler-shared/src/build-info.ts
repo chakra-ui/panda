@@ -36,16 +36,19 @@ export class BuildInfo {
   }
 
   validate(info: BuildInfoArtifact): BuildInfoCompatibility {
-    return info.schemaVersion === this.#schemaVersion ? { ok: true } : { ok: false, reason: 'schemaVersion' }
+    if (!isRecord(info) || typeof info.schemaVersion !== 'number') return { ok: false, reason: 'corrupt' }
+    if (info.schemaVersion !== this.#schemaVersion) return { ok: false, reason: 'schemaVersion' }
+    if (!hasBuildInfoShape(info)) return { ok: false, reason: 'corrupt' }
+    return { ok: true }
   }
 
   modulesFor(info: BuildInfoArtifact, exportNames: string[]): string[] {
-    const exports = info.exports ?? {}
+    const exports = isRecord(info.exports) ? info.exports : {}
     const modules = new Set<string>()
 
     for (const name of exportNames) {
       const module = exports[name]
-      if (module !== undefined) modules.add(module)
+      if (typeof module === 'string') modules.add(module)
     }
 
     return [...modules]
@@ -76,7 +79,12 @@ export class BuildInfo {
     // The engine returns false when the artifact is structurally corrupt (a
     // dropped atom/recipe from an out-of-range intern index). Treat it like an
     // incompatibility so the caller re-extracts instead of hydrating partial CSS.
-    const applied = this.#native.applyBuildInfo(options.name, info, options.only)
+    let applied: boolean
+    try {
+      applied = this.#native.applyBuildInfo(options.name, info, options.only)
+    } catch {
+      return { ok: false, reason: 'corrupt', modules: [] }
+    }
     if (!applied) return { ok: false, reason: 'corrupt', modules: [] }
 
     // The engine hydrates only modules that exist; report that exact set so the
@@ -85,4 +93,20 @@ export class BuildInfo {
 
     return { ok: true, modules }
   }
+}
+
+function hasBuildInfoShape(info: Record<string, unknown>): boolean {
+  return (
+    typeof info.panda === 'string' &&
+    typeof info.configFingerprint === 'string' &&
+    Array.isArray(info.strings) &&
+    Array.isArray(info.atoms) &&
+    isRecord(info.modules) &&
+    (info.exports === undefined || isRecord(info.exports)) &&
+    (info.recipes === undefined || isRecord(info.recipes))
+  )
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

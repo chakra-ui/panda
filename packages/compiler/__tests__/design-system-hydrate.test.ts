@@ -111,7 +111,7 @@ describe('hydrateDesignSystem (consumer)', () => {
     await expect(createNodeDriver({ cwd })).rejects.toThrow(/incompatible buildInfo/)
   })
 
-  it('re-extracts when the manifest Panda range is incompatible but files are present', async () => {
+  it('fails closed when the manifest Panda range is incompatible even when files are present', async () => {
     cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
     writeFileTree(cwd, {
       'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
@@ -143,10 +143,7 @@ describe('hydrateDesignSystem (consumer)', () => {
       }),
     })
 
-    const driver = await createNodeDriver({ cwd })
-    const codes = (driver.designSystemDiagnostics ?? []).map((d) => d.code)
-    expect(codes).toContain('design_system_buildinfo_stale')
-    expect(driver.cssgen().css).toContain('rebeccapurple')
+    await expect(createNodeDriver({ cwd })).rejects.toThrow(/manifest requires Panda \^999\.0\.0/)
   })
 
   it('re-extracts when build info is structurally invalid but files are present', async () => {

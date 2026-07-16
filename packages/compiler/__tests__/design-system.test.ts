@@ -92,13 +92,29 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.validate(manifest)).toEqual({ ok: false, reason: 'schemaVersion' })
   })
 
-  it('validate() accepts when the running Panda major matches the manifest range', () => {
+  it('validate() accepts when the running Panda version satisfies the manifest range', () => {
     const app = project()
     const manifest = app.designSystem.create(fullInput)
     expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: true })
   })
 
-  it('validate() rejects when the running Panda major is outside the manifest range', () => {
+  it('validate() applies the stable compatibility contract to a beta compiler', () => {
+    const app = project()
+    const manifest = app.designSystem.create(fullInput)
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.0.0-beta.8' })).toEqual({ ok: true })
+  })
+
+  it('validate() honors ranges within the same major', () => {
+    const app = project()
+    const manifest = app.designSystem.create({ ...fullInput, panda: '~2.0.0' })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.0.9' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.1.0' })).toEqual({
+      ok: false,
+      reason: 'pandaRange',
+    })
+  })
+
+  it('validate() rejects when the running Panda version is outside the manifest range', () => {
     const app = project()
     const manifest = app.designSystem.create(fullInput)
     expect(app.designSystem.validate(manifest, { pandaVersion: '1.9.0' })).toEqual({ ok: false, reason: 'pandaRange' })
@@ -169,7 +185,7 @@ describe('compiler.designSystem', () => {
     })
   })
 
-  it('load() bails on a manifest schemaVersion mismatch — host re-extracts files', () => {
+  it('load() bails on a manifest schemaVersion mismatch — host fails closed', () => {
     const app = project()
     const { manifest, buildInfo } = lib()
     const stale: DesignSystemManifest = { ...manifest, schemaVersion: manifest.schemaVersion + 1 }
@@ -177,7 +193,7 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.load(stale, { buildInfo })).toEqual({ ok: false, reason: 'schemaVersion', modules: [] })
   })
 
-  it('load() bails when the running Panda major is outside the range — host re-extracts files', () => {
+  it('load() bails when the running Panda version is outside the range — host fails closed', () => {
     const app = project()
     const { manifest, buildInfo } = lib()
 
@@ -196,6 +212,18 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.load(manifest, { buildInfo: stale })).toEqual({
       ok: false,
       reason: 'schemaVersion',
+      modules: [],
+    })
+  })
+
+  it('load() reports structurally invalid build info as corrupt', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+    const corrupt = { schemaVersion: buildInfo.schemaVersion } as typeof buildInfo
+
+    expect(app.designSystem.load(manifest, { buildInfo: corrupt })).toEqual({
+      ok: false,
+      reason: 'corrupt',
       modules: [],
     })
   })

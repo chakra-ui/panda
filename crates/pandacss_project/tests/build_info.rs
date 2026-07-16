@@ -216,6 +216,41 @@ fn hydrate_rejects_a_corrupt_recipe_entry() {
 }
 
 #[test]
+fn hydrate_rejects_a_corrupt_module_atom_index() {
+    let source = lib_project();
+    let mut info = source.build_info("^2.0.0".into());
+    let invalid_index = u32::try_from(info.atoms.len()).expect("atom count fits in u32");
+    info.modules
+        .get_mut("button.tsx")
+        .expect("button module")
+        .atoms = vec![invalid_index];
+
+    let mut consumer = create_project(json!({}));
+    assert!(!consumer.hydrate("@acme/ds", &info, Some(&["button.tsx".into()])));
+    assert!(sorted_atoms(&consumer).is_empty());
+}
+
+#[test]
+fn hydrate_rejects_a_corrupt_module_recipe_index() {
+    let source = recipe_lib_project();
+    let mut info = source.build_info("^2.0.0".into());
+    let recipe_count =
+        info.recipes.base.len() + info.recipes.variants.len() + info.recipes.compounds.len();
+    let invalid_index = u32::try_from(recipe_count).expect("recipe count fits in u32");
+    info.modules
+        .get_mut("button.tsx")
+        .expect("button module")
+        .recipes = vec![invalid_index];
+
+    let mut consumer = create_project(json!({}));
+    assert!(!consumer.hydrate("@acme/ds", &info, Some(&["button.tsx".into()])));
+    assert_eq!(
+        emit_recipes(&mut consumer),
+        json!({ "base": [], "variants": [], "atomic": [] })
+    );
+}
+
+#[test]
 fn hydrate_with_module_filter_emits_only_imported_modules() {
     let source = lib_project();
     let info = source.build_info("^2.0.0".into());

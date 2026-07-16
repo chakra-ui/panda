@@ -334,6 +334,14 @@ fn selected_module_indices(
     })
 }
 
+fn selected_indices_in_bounds(indices: Option<&FxHashSet<u32>>, len: usize) -> bool {
+    indices.is_none_or(|indices| {
+        indices
+            .iter()
+            .all(|&index| usize::try_from(index).is_ok_and(|index| index < len))
+    })
+}
+
 /// Reconstruct an [`Atom`] from its build encoding against the intern table.
 #[must_use]
 fn atom_from_build(build: &BuildAtom, strings: &[String]) -> Option<Atom> {
@@ -464,6 +472,22 @@ impl super::Project {
 
         let selected_atoms = selected_module_indices(info, only_modules, |entry| &entry.atoms);
         let selected_recipes = selected_module_indices(info, only_modules, |entry| &entry.recipes);
+
+        let Some(recipe_count) = info
+            .recipes
+            .base
+            .len()
+            .checked_add(info.recipes.variants.len())
+            .and_then(|count| count.checked_add(info.recipes.compounds.len()))
+        else {
+            return false;
+        };
+        // Invalid module references would otherwise look like a successful empty selection.
+        if !selected_indices_in_bounds(selected_atoms.as_ref(), info.atoms.len())
+            || !selected_indices_in_bounds(selected_recipes.as_ref(), recipe_count)
+        {
+            return false;
+        }
 
         // A selected atom that fails to reconstruct means the intern table is
         // corrupt (an out-of-range string index). Refuse to hydrate partial data

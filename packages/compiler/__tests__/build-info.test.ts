@@ -82,6 +82,18 @@ describe('compiler.buildInfo', () => {
     })
   })
 
+  it('validate() and hydrate() report malformed artifacts as corrupt', () => {
+    const app = consumer()
+    const malformed = { schemaVersion: libBuildInfo().schemaVersion } as BuildInfoArtifact
+
+    expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+    expect(app.buildInfo.hydrate(malformed, { name: '@acme/ds' })).toEqual({
+      ok: false,
+      reason: 'corrupt',
+      modules: [],
+    })
+  })
+
   it('create() preserves token identity alongside the resolved value', () => {
     // Build info keeps both the token path and the resolved value at extraction time.
     const lib = createProject({

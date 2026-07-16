@@ -138,7 +138,8 @@ Field meanings:
 - `importMap`: package roots used by the library's compiled JSX.
 - `designSystem`: this library's parent design system, if any.
 - `panda` and `schemaVersion`: compatibility guards.
-- `files`: fallback files for stale or incompatible build info.
+- `files`: fallback files for missing, malformed, stale, or corrupt build info. They do not bypass manifest
+  compatibility failures.
 
 ## Rust owns values, TypeScript owns files
 
@@ -148,17 +149,17 @@ The compiler exposes value-level design-system operations:
 compiler.designSystem.create(input)
 compiler.designSystem.validate(manifest)
 compiler.designSystem.load(manifest, { buildInfo })
-compiler.designSystem.resolveChain(manifests)
 ```
 
-These methods take plain data and return plain data. They do not read from disk.
+These methods do not read from disk. `create` and `validate` are pure value operations; `load` validates the manifest
+and hydrates build info into the active compiler project.
 
 | Layer                 | Owns                                                               | Touches files? |
 | --------------------- | ------------------------------------------------------------------ | -------------- |
-| Rust engine           | manifest types, create, validate, load, chain ordering             | no             |
+| Rust engine           | manifest types/create and build-info serialization/hydration       | no             |
 | Native/wasm bindings  | flat primitives over the engine                                    | no             |
-| `compiler-shared`     | JS facade and shared types                                         | no             |
-| TypeScript host + CLI | Node resolution, reading manifests, writing artifacts/package.json | yes            |
+| `compiler-shared`     | manifest validation plus the `designSystem`/`buildInfo` JS facades | no             |
+| TypeScript host + CLI | chain resolution, reading manifests, fallback, writing artifacts   | yes            |
 
 ## The producer flow
 
@@ -207,7 +208,8 @@ It preserves existing root exports, including string and conditional root export
 
 Build info is the normal path. Consumers should hydrate `panda.buildinfo.json`, not re-scan the library.
 
-`files` is only the fallback path. Panda uses it when build info is stale or incompatible.
+`files` is only the fallback path. Panda uses it when build info is unavailable, malformed, schema-stale, or corrupt. An
+incompatible manifest schema or Panda range is a package-contract failure and remains fail-closed.
 
 By default, `panda lib` infers `files` from the modules it parsed and writes paths relative to `panda.lib.json`:
 
@@ -311,8 +313,8 @@ When an app config has `designSystem: '@acme/ds'`, the host:
 4. Orders the chain root-first.
 5. Imports each `panda.preset.mjs`.
 6. Merges presets under the app config, so the app wins.
-7. Creates the compiler driver.
-8. Hydrates each design system's `panda.buildinfo.json`.
+7. Creates the compiler driver and validates every manifest against the running Panda version.
+8. Hydrates each compatible design system's `panda.buildinfo.json`.
 
 If build info is stale but the manifest has `files`, Panda scans those files relative to the manifest directory and
 emits `design_system_buildinfo_stale`. If there are no fallback files, Panda fails closed.
@@ -544,6 +546,7 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_cycle`                  | error    | the chain revisits a package                                |
 | `design_system_parent_not_found`       | error    | a manifest parent does not resolve from the manifest dir    |
 | `design_system_buildinfo_stale`        | warning  | build info fails validation and fallback re-extract is used |
+| `design_system_option_mismatch`        | warning  | consumer class-name options differ from a hydrated library  |
 | `design_system_token_conflict`         | warning  | design system and app both define the same token path       |
 
 Errors stop the build. Warnings continue when Panda has a clear fallback. The app config wins token conflicts.
@@ -607,6 +610,8 @@ source changes.
 ### Panda should be a peer dependency
 
 A design-system package should peer-depend on Panda. The manifest `panda` field is the range the consumer must satisfy.
+When a workspace stores that peer as `workspace:` or `catalog:`, `panda lib` publishes a portable range derived from the
+running Panda version instead of leaking the package-manager protocol into `panda.lib.json`.
 
 ## Open follow-ups
 

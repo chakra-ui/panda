@@ -27,7 +27,7 @@ pub struct DesignSystemManifest {
     /// This library's own parent design system — the chain link. Omitted at a root.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub design_system: Option<String>,
-    /// Re-extract fallback globs when build info can't be hydrated (version skew).
+    /// Re-extract fallback globs when build info is unavailable, stale, or corrupt.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub files: Vec<String>,
 }

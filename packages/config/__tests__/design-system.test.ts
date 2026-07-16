@@ -244,6 +244,33 @@ describe('resolveAuthoredPresets / designSystem', () => {
     expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
   })
 
+  test('does not flag explicit values that equal the normalized defaults', async () => {
+    const { metadata } = await resolveAuthoredPresets(
+      {
+        designSystem: '@acme/ds',
+        hash: false,
+        prefix: { className: '', cssVar: '' },
+        separator: '_',
+      },
+      cwd,
+    )
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
+  })
+
+  test('compares prefix fields by value rather than object property order', async () => {
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/prefixed',
+      preset: { prefix: { cssVar: 'acme', className: 'ui' } },
+    })
+
+    const { metadata } = await resolveAuthoredPresets(
+      { designSystem: '@acme/prefixed', prefix: { className: 'ui', cssVar: 'acme' } },
+      cwd,
+    )
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
+  })
+
   // Manifest and package resolution failures.
 
   test('attaches diagnostics for an invalid manifest', async () => {
@@ -414,6 +441,7 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     writeDesignSystemAt(foundationsDir, '@acme/foundations', {
       preset: {
         name: '@acme/foundations',
+        hash: true,
         theme: {
           tokens: {
             colors: {
@@ -508,6 +536,18 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' }, cwd)
 
     expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/foundations', '@acme/marketing'])
+  })
+
+  test('compares child options against the effective inherited chain', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing', hash: true }, cwd)
+
+    expect(metadata?.designSystem?.map((ds) => ds.optionMismatch)).toEqual([undefined, undefined])
+  })
+
+  test('flags a consumer override away from the inherited chain options', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing', hash: false }, cwd)
+
+    expect(metadata?.designSystem?.map((ds) => ds.optionMismatch)).toEqual([['hash'], ['hash']])
   })
 
   test('wires one importMap root per design system, root-first, then the local outdir', async () => {

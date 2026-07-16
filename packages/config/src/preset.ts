@@ -14,6 +14,7 @@ import type { ConfigSources } from './sources'
 import { expandSmartInclude } from './smart-include'
 import { collectTokenPaths } from './token-paths'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
+import { findClassNameOptionMismatches, normalizeClassNameOptions, type NormalizedClassNameOptions } from './normalize'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
@@ -27,10 +28,10 @@ interface CollectContext {
   presetResolvedHooks: Array<PluginHookEntry<'preset:resolved'>>
 }
 
-interface ConfigBlock {
+interface ConfigResolution {
   configs: ExtendableConfig[]
   sourcedConfigs?: SourcedConfig[]
-  resolved: UserConfig
+  config: UserConfig
 }
 
 export interface ResolveAuthoredPresetsResult {
@@ -47,21 +48,6 @@ export interface ResolveAuthoredPresetsOptions {
   trackSources?: boolean
   configFile?: string
   preserveRuntimeHooks?: boolean
-}
-
-const CLASS_NAME_OPTION_KEYS = ['hash', 'prefix', 'separator'] as const
-type ClassNameOptions = Partial<Record<(typeof CLASS_NAME_OPTION_KEYS)[number], unknown>>
-
-function pickClassNameOptions(config: UserConfig): ClassNameOptions {
-  return { hash: config.hash, prefix: config.prefix, separator: config.separator }
-}
-
-// Only an explicit consumer override that differs from the design system counts:
-// it changes generated class names, so the DS's prebuilt runtime renders unstyled.
-function classNameOptionMismatch(consumer: ClassNameOptions, ds: ClassNameOptions): string[] {
-  return CLASS_NAME_OPTION_KEYS.filter(
-    (key) => consumer[key] !== undefined && JSON.stringify(consumer[key]) !== JSON.stringify(ds[key]),
-  )
 }
 
 export async function resolveAuthoredPresets(
@@ -82,29 +68,28 @@ export async function resolveAuthoredPresets(
 
   const designSystem = (config as UserConfig).designSystem
   let dsChain: DesignSystemLevel[] = []
-  const dsClassNameOptions: ClassNameOptions[] = []
+  const dsClassNameOptions: NormalizedClassNameOptions[] = []
   if (typeof designSystem === 'string' && designSystem.length > 0) {
     dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
     for (const level of dsChain) {
-      const block = await collectConfigBlock(
+      const resolution = await resolveConfigEntry(
         level.preset,
         { kind: 'preset', specifier: level.info.name },
         cwd,
         ctx.dependencies,
         options.trackSources,
       )
-      level.info.tokenPaths = collectTokenPaths(block.resolved)
-      dsClassNameOptions.push(pickClassNameOptions(block.resolved))
-      appendConfigBlock(ctx, block)
+      level.info.tokenPaths = collectTokenPaths(resolution.config)
+      appendConfigResolution(ctx, resolution)
+      dsClassNameOptions.push(normalizeClassNameOptions(mergeConfigs(ctx.configs) as UserConfig))
     }
   }
 
-  const rootBlock = await collectConfigBlock(config, rootSource, cwd, ctx.dependencies, options.trackSources)
-  appendConfigBlock(ctx, rootBlock)
+  const rootResolution = await resolveConfigEntry(config, rootSource, cwd, ctx.dependencies, options.trackSources)
+  appendConfigResolution(ctx, rootResolution)
 
-  const consumerClassNameOptions = pickClassNameOptions(rootBlock.resolved)
   dsChain.forEach((level, i) => {
-    const mismatch = classNameOptionMismatch(consumerClassNameOptions, dsClassNameOptions[i])
+    const mismatch = findClassNameOptionMismatches(rootResolution.config, dsClassNameOptions[i])
     if (mismatch.length > 0) level.info.optionMismatch = mismatch
   })
 
@@ -114,7 +99,7 @@ export async function resolveAuthoredPresets(
     return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
   }
   const dsMetadata =
-    dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(rootBlock.resolved) } : undefined
+    dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(rootResolution.config) } : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
@@ -137,13 +122,13 @@ export async function resolveAuthoredPresets(
   }
 }
 
-async function collectConfigBlock(
+async function resolveConfigEntry(
   config: ExtendableConfig,
   source: ConfigSource,
   cwd: string,
   dependencies: Set<string>,
   trackSources: boolean | undefined,
-): Promise<ConfigBlock> {
+): Promise<ConfigResolution> {
   const ctx: CollectContext = {
     cwd,
     configs: [],
@@ -157,14 +142,14 @@ async function collectConfigBlock(
   return {
     configs: ctx.configs,
     ...(ctx.sourcedConfigs ? { sourcedConfigs: ctx.sourcedConfigs } : {}),
-    resolved: mergeConfigs(ctx.configs) as UserConfig,
+    config: mergeConfigs(ctx.configs) as UserConfig,
   }
 }
 
-function appendConfigBlock(ctx: CollectContext, block: ConfigBlock): void {
-  ctx.configs.push(...block.configs)
-  if (ctx.sourcedConfigs && block.sourcedConfigs) {
-    ctx.sourcedConfigs.push(...block.sourcedConfigs)
+function appendConfigResolution(ctx: CollectContext, resolution: ConfigResolution): void {
+  ctx.configs.push(...resolution.configs)
+  if (ctx.sourcedConfigs && resolution.sourcedConfigs) {
+    ctx.sourcedConfigs.push(...resolution.sourcedConfigs)
   }
 }
 

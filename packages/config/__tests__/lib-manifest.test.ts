@@ -1,7 +1,22 @@
 import { describe, expect, test } from 'vitest'
-import { defaultImportMap, syncExports } from '../src/lib-manifest'
+import { defaultImportMap, resolvePublishedPandaRange, syncExports } from '../src/lib-manifest'
 
 describe('lib-manifest', () => {
+  test.each([
+    ['workspace:*', '^2.0.0'],
+    ['workspace:^', '^2.0.0'],
+    ['workspace:~', '~2.0.0'],
+    ['catalog:', '^2.0.0'],
+    ['workspace:^2.1.0', '^2.1.0'],
+    ['^2.2.0', '^2.2.0'],
+  ])('normalizes a publish-time Panda range of %s', (range, expected) => {
+    expect(resolvePublishedPandaRange(range, '2.0.0-beta.8')).toBe(expected)
+  })
+
+  test('keeps the wildcard fallback when no Panda peer is declared', () => {
+    expect(resolvePublishedPandaRange(undefined, '2.0.0-beta.8')).toBe('*')
+  })
+
   test('derives importMap roots from the package name', () => {
     const map = defaultImportMap('@acme/ds')
     expect(map.css).toBe('@acme/ds/css')
