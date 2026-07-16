@@ -20,39 +20,33 @@ export interface DesignSystemBinding {
   resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
-/**
- * Major from a version or range (`^2.1.0` -> `2`); `NaN` when no number is found
- * so an unreadable value fails the major check rather than passing silently.
- */
 const major = (value: string): number => {
   const match = value.match(/\d+/)
   return match ? Number(match[0]) : NaN
 }
 
-/**
- * Accepted majors from a peer range. Handles `||` unions (`^2 || ^3` -> {2,3});
- * an empty set (no number found) means "unreadable", which fails closed.
- */
-const acceptedMajors = (range: string): Set<number> => {
-  const majors = new Set<number>()
-  for (const alternative of range.split('||')) {
-    const value = major(alternative)
-    if (!Number.isNaN(value)) majors.add(value)
+const alternativeAcceptsMajor = (alternative: string, running: number): boolean => {
+  const range = alternative.trim()
+  if (range === '' || range === '*' || range === 'x' || range === 'X') return true
+
+  const hyphen = range.split(' - ')
+  if (hyphen.length === 2) {
+    const low = major(hyphen[0])
+    const high = major(hyphen[1])
+    return !Number.isNaN(low) && !Number.isNaN(high) && running >= low && running <= high
   }
-  return majors
+
+  if (/^>=?\s*\d/.test(range) && !range.includes('<')) {
+    const low = major(range)
+    return !Number.isNaN(low) && running >= low
+  }
+
+  const only = major(range)
+  return !Number.isNaN(only) && only === running
 }
 
-/**
- * A range that constrains no major — `*`, `x`, or empty, or a `||` union that
- * lists one. `panda lib` writes `*` when the package declares no Panda peer, so
- * this keeps the default artifact hydratable on any major. Unresolved protocols
- * (`catalog:`, `workspace:*`) are not wildcards and still fail closed.
- */
-const acceptsAnyMajor = (range: string): boolean =>
-  range.split('||').some((alternative) => {
-    const trimmed = alternative.trim()
-    return trimmed === '' || trimmed === '*' || trimmed === 'x' || trimmed === 'X'
-  })
+const rangeAcceptsMajor = (range: string, running: number): boolean =>
+  range.split('||').some((alternative) => alternativeAcceptsMajor(alternative, running))
 
 export class DesignSystem {
   readonly #binding: DesignSystemBinding
@@ -73,11 +67,7 @@ export class DesignSystem {
     if (manifest.schemaVersion !== this.schemaVersion) return { ok: false, reason: 'schemaVersion' }
 
     const running = options?.pandaVersion
-    if (
-      running !== undefined &&
-      !acceptsAnyMajor(manifest.panda) &&
-      !acceptedMajors(manifest.panda).has(major(running))
-    ) {
+    if (running !== undefined && !rangeAcceptsMajor(manifest.panda, major(running))) {
       return { ok: false, reason: 'pandaRange' }
     }
 

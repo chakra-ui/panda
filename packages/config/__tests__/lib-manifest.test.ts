@@ -11,6 +11,9 @@ describe('lib-manifest', () => {
     expect(resolvePandaPeerRange('workspace:~', '2.0.0')).toBe('~2.0.0')
     // An explicit workspace range keeps its range.
     expect(resolvePandaPeerRange('workspace:^3.0.0', '2.0.0')).toBe('^3.0.0')
+    // npm: aliases resolve to the aliased range, not the raw protocol.
+    expect(resolvePandaPeerRange('npm:@pandacss/dev@^2', '2.0.0')).toBe('^2')
+    expect(resolvePandaPeerRange('npm:some2pkg@^3.0.0', '2.0.0')).toBe('^3.0.0')
     // Non-protocol ranges pass through; undefined stays undefined.
     expect(resolvePandaPeerRange('^2.0.0', '2.0.0')).toBe('^2.0.0')
     expect(resolvePandaPeerRange(undefined, '2.0.0')).toBeUndefined()

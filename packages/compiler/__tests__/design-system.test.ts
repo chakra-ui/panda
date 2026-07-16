@@ -121,10 +121,37 @@ describe('compiler.designSystem', () => {
     }
   })
 
+  it('validate() accepts an open lower-bound range for any higher major', () => {
+    const app = project()
+    const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: '>=2.0.0' }
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '4.0.0' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '1.9.0' })).toEqual({ ok: false, reason: 'pandaRange' })
+  })
+
+  it('validate() accepts a major inside a hyphen range', () => {
+    const app = project()
+    const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: '2.0.0 - 3.0.0' }
+    expect(app.designSystem.validate(manifest, { pandaVersion: '3.1.0' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '4.0.0' })).toEqual({ ok: false, reason: 'pandaRange' })
+  })
+
+  it('validate() accepts an open lower-bound arm of a `||` union', () => {
+    const app = project()
+    const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: '1.x || >=2' }
+    expect(app.designSystem.validate(manifest, { pandaVersion: '1.2.3' })).toEqual({ ok: true })
+    expect(app.designSystem.validate(manifest, { pandaVersion: '3.0.0' })).toEqual({ ok: true })
+  })
+
   it('validate() still fails closed for an unresolved protocol range', () => {
     const app = project()
-    const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: 'catalog:' }
-    expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: false, reason: 'pandaRange' })
+    for (const range of ['catalog:', 'workspace:*']) {
+      const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: range }
+      expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({
+        ok: false,
+        reason: 'pandaRange',
+      })
+    }
   })
 
   // --- load(): consumer side — validate + hydrate the library's build info ---
