@@ -9,6 +9,7 @@ export { readPandaVersion } from './version'
 export { compilePreset } from './lib-preset'
 export {
   readPackageIdentity,
+  resolvePandaPeerRange,
   defaultImportMap,
   syncExports,
   toPosixPath,

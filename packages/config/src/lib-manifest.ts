@@ -28,6 +28,33 @@ export function readPackageIdentity(cwd: string): PackageIdentity {
   }
 }
 
+/**
+ * Resolve a pnpm `workspace:`/`catalog:` peer protocol to a concrete range so
+ * `panda lib` never writes an unhydratable manifest. `workspace:<range>` keeps
+ * its range; bare `workspace:` / `catalog:` protocols fall back to the installed
+ * Panda version (`^`), since that is what the design system was built against.
+ * Non-protocol ranges pass through unchanged.
+ */
+export function resolvePandaPeerRange(
+  peer: string | undefined,
+  installedVersion: string | undefined,
+): string | undefined {
+  if (peer === undefined) return undefined
+
+  if (peer.startsWith('workspace:')) {
+    const spec = peer.slice('workspace:'.length)
+    if (spec === '^' || spec === '~') return installedVersion ? `${spec}${installedVersion}` : undefined
+    if (spec === '' || spec === '*') return installedVersion ? `^${installedVersion}` : undefined
+    return spec
+  }
+
+  if (peer.startsWith('catalog:')) {
+    return installedVersion ? `^${installedVersion}` : undefined
+  }
+
+  return peer
+}
+
 export function defaultImportMap(name: string): DesignSystemManifestImportMap {
   return {
     css: `${name}/css`,

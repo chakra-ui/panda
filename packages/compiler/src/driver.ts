@@ -23,6 +23,8 @@ import {
   loadConfig,
   mergeExcludes,
   readPackageIdentity,
+  readPandaVersion,
+  resolvePandaPeerRange,
   resolveSmartInclude,
   syncExports,
   toPosixRelative,
@@ -341,7 +343,7 @@ export class NodeDriver extends BaseDriver {
     parsed: ParsedDesignSystemLib,
   ): WriteDesignSystemLibResult {
     const identity = readPackageIdentity(this.#options.cwd)
-    const pandaRange = options.panda ?? identity.pandaPeer ?? '*'
+    const pandaRange = options.panda ?? resolvePandaPeerRange(identity.pandaPeer, readPandaVersion()) ?? '*'
     const outdir = options.outdir ?? DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR
     const outRoot = this.compiler.path.resolve(outdir)
 

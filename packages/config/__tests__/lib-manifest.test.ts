@@ -1,7 +1,23 @@
 import { describe, expect, test } from 'vitest'
-import { defaultImportMap, syncExports } from '../src/lib-manifest'
+import { defaultImportMap, resolvePandaPeerRange, syncExports } from '../src/lib-manifest'
 
 describe('lib-manifest', () => {
+  test('resolvePandaPeerRange resolves workspace/catalog protocols to a concrete range', () => {
+    // Bare protocols fall back to the installed version.
+    expect(resolvePandaPeerRange('catalog:', '2.0.0')).toBe('^2.0.0')
+    expect(resolvePandaPeerRange('catalog:react18', '2.0.0')).toBe('^2.0.0')
+    expect(resolvePandaPeerRange('workspace:*', '2.0.0')).toBe('^2.0.0')
+    expect(resolvePandaPeerRange('workspace:^', '2.0.0')).toBe('^2.0.0')
+    expect(resolvePandaPeerRange('workspace:~', '2.0.0')).toBe('~2.0.0')
+    // An explicit workspace range keeps its range.
+    expect(resolvePandaPeerRange('workspace:^3.0.0', '2.0.0')).toBe('^3.0.0')
+    // Non-protocol ranges pass through; undefined stays undefined.
+    expect(resolvePandaPeerRange('^2.0.0', '2.0.0')).toBe('^2.0.0')
+    expect(resolvePandaPeerRange(undefined, '2.0.0')).toBeUndefined()
+    // No installed version to fall back to → undefined (caller defaults to `*`).
+    expect(resolvePandaPeerRange('catalog:', undefined)).toBeUndefined()
+  })
+
   test('derives importMap roots from the package name', () => {
     const map = defaultImportMap('@acme/ds')
     expect(map.css).toBe('@acme/ds/css')
