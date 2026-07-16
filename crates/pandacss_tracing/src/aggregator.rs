@@ -214,3 +214,62 @@ where
         self.timings.record(name, elapsed, label);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn snapshot_orders_spans_by_total_time_descending() {
+        let timings = SpanTimings::new();
+        timings.record("beta", 2_000, None);
+        timings.record("alpha", 5_000, None);
+
+        let names: Vec<&str> = timings.snapshot().iter().map(|s| s.name).collect();
+        assert_eq!(names, ["alpha", "beta"]);
+    }
+
+    #[test]
+    fn snapshot_orders_slowest_instances_by_duration_descending() {
+        let timings = SpanTimings::new();
+        timings.record("extraction", 5, Some("a.tsx".into()));
+        timings.record("extraction", 30, Some("b.tsx".into()));
+        timings.record("extraction", 15, Some("c.tsx".into()));
+
+        let snap = timings.snapshot();
+        let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
+        let labels: Vec<&str> = extraction
+            .slowest
+            .iter()
+            .map(|i| i.label.as_str())
+            .collect();
+        assert_eq!(labels, ["b.tsx", "c.tsx", "a.tsx"]);
+    }
+
+    #[test]
+    fn snapshot_caps_slowest_instances_at_five_in_descending_order() {
+        let timings = SpanTimings::new();
+        for i in 0..8u128 {
+            timings.record("extraction", (i + 1) * 15, Some(format!("file-{i}.tsx")));
+        }
+
+        let snap = timings.snapshot();
+        let extraction = snap.iter().find(|s| s.name == "extraction").expect("span");
+        assert_eq!(extraction.count, 8);
+        let labels: Vec<&str> = extraction
+            .slowest
+            .iter()
+            .map(|i| i.label.as_str())
+            .collect();
+        assert_eq!(
+            labels,
+            [
+                "file-7.tsx",
+                "file-6.tsx",
+                "file-5.tsx",
+                "file-4.tsx",
+                "file-3.tsx"
+            ],
+        );
+    }
+}

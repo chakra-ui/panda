@@ -25,7 +25,6 @@ fn aggregates_span_enter_exit() {
     assert_eq!(beta.count, 1);
     assert!(alpha.total_nanos > 0);
     assert!(beta.total_nanos > 0);
-    assert!(snap.first().expect("first").total_nanos >= snap.last().expect("last").total_nanos);
 }
 
 #[test]
