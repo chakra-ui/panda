@@ -13,7 +13,6 @@
 import type {
   Atom,
   BuildInfoArtifact,
-  DesignSystemChainPlan,
   DesignSystemManifest,
   DesignSystemManifestInput,
   CodegenArtifact,
@@ -170,5 +169,4 @@ export declare class WasmCompiler {
   // `DesignSystemBinding` contract used by the public namespace.
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
-  resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }

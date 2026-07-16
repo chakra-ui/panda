@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runBuild } from '../src'
 import { cleanupFixture, createFixture, normalizeOutput, writeSyntaxError } from './helpers'
@@ -95,6 +95,62 @@ describe('build command (default panda)', () => {
     expect(result.exitCode).toBe(1)
   })
 
+  it('applies the warning budget to design-system diagnostics and keeps JSON output machine-clean', async () => {
+    dir = createFixture()
+    writeStaleDesignSystemFixture(dir)
+    const stdout: string[] = []
+    const stderr: string[] = []
+
+    const result = await runBuild(
+      { cwd: dir, json: true, maxWarnings: 0 },
+      { log: (message) => stdout.push(message), error: (message) => stderr.push(message) },
+    )
+
+    const json = JSON.parse(stdout[0])
+    expect({
+      result: {
+        ok: result.ok,
+        exitCode: result.exitCode,
+        diagnostics: result.diagnostics.map(({ code, severity }) => ({ code, severity })),
+      },
+      json: {
+        ok: json.ok,
+        exitCode: json.exitCode,
+        diagnostics: json.diagnostics.map(({ code, severity }: { code: string; severity: string }) => ({
+          code,
+          severity,
+        })),
+      },
+      stdoutMessages: stdout.length,
+      stderr,
+    }).toMatchInlineSnapshot(`
+      {
+        "json": {
+          "diagnostics": [
+            {
+              "code": "design_system_buildinfo_stale",
+              "severity": "warning",
+            },
+          ],
+          "exitCode": 1,
+          "ok": false,
+        },
+        "result": {
+          "diagnostics": [
+            {
+              "code": "design_system_buildinfo_stale",
+              "severity": "warning",
+            },
+          ],
+          "exitCode": 1,
+          "ok": false,
+        },
+        "stderr": [],
+        "stdoutMessages": 1,
+      }
+    `)
+  })
+
   it('--check passes after a clean build', async () => {
     dir = createFixture()
 
@@ -148,3 +204,32 @@ describe('build command (default panda)', () => {
     expect(readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')).toContain('red')
   })
 })
+
+function writeStaleDesignSystemFixture(root: string): void {
+  writeFileSync(join(root, 'panda.config.ts'), `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`)
+  const files: Record<string, string> = {
+    'node_modules/@acme/ds/package.json': JSON.stringify({
+      name: '@acme/ds',
+      version: '1.0.0',
+      exports: { './panda.lib.json': './dist/panda.lib.json' },
+    }),
+    'node_modules/@acme/ds/dist/panda.lib.json': JSON.stringify({
+      schemaVersion: 1,
+      name: '@acme/ds',
+      panda: '^2.0.0',
+      preset: './panda.preset.mjs',
+      buildInfo: './panda.buildinfo.json',
+      files: ['./button.js'],
+      importMap: { css: '@acme/ds/css' },
+    }),
+    'node_modules/@acme/ds/dist/panda.preset.mjs': 'export default {}',
+    'node_modules/@acme/ds/dist/panda.buildinfo.json': JSON.stringify({ schemaVersion: 999 }),
+    'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'; css({ color: 'blue' })",
+  }
+
+  for (const [path, contents] of Object.entries(files)) {
+    const target = join(root, path)
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, contents)
+  }
+}

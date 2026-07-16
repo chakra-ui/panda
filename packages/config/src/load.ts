@@ -5,9 +5,11 @@ import { PandaError } from './error'
 import { findConfig } from './find'
 import { configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook } from './hooks'
-import { resolveAuthoredPresets } from './preset'
+import { diffClassNameOptions } from './normalize'
+import { resolveAuthoredPresetsForLoad, type DesignSystemCompatibilityContext } from './preset'
 import { createConfigSnapshot } from './serialize'
 import { isPlainObject } from './shared'
+import { collectTokenEntries, resolveUserTokenPathsAfterHooks, type TokenEntries } from './token-paths'
 import type { LoadConfigOptions, LoadConfigResult } from './types'
 
 /**
@@ -32,15 +34,26 @@ export async function loadConfig(options: LoadConfigOptions): Promise<LoadConfig
 
   // Resolve and default onto a copy — never mutate `config`: identical configs
   // share one cached `data:`-URL module, so mutation would leak `cwd` across loads.
-  const authored = await resolveAuthoredPresets(config as UserConfig, cwd, {
+  const authored = await resolveAuthoredPresetsForLoad(config as UserConfig, cwd, {
     configFile: path,
     trackSources: options.trackSources,
     preserveRuntimeHooks: true,
   })
+
   const authoredDependencies = Array.from(
     new Set([...dependencies, ...authored.dependencies, ...(authored.config.dependencies ?? [])]),
   )
+  const tokenEntriesBeforeHooks = collectTokenEntries(authored.config)
+
   const userConfig = await runConfigResolvedHooks(authored.config, path, authoredDependencies)
+
+  refreshDesignSystemMetadata(
+    authored.metadata,
+    authored.designSystemCompatibility,
+    userConfig,
+    tokenEntriesBeforeHooks,
+  )
+
   const resolved = applyConfigDefaults(userConfig, cwd) as UserConfig
 
   // Explicit `config.dependencies` escape hatch, on top of bundled module ids.
@@ -61,6 +74,31 @@ export async function loadConfig(options: LoadConfigOptions): Promise<LoadConfig
     },
     dependencies: dependencyList,
     ...(authored.metadata ? { metadata: authored.metadata } : {}),
+  }
+}
+
+function refreshDesignSystemMetadata(
+  metadata: LoadConfigResult['metadata'] | undefined,
+  designSystemCompatibility: DesignSystemCompatibilityContext[],
+  config: UserConfig,
+  tokenEntriesBeforeHooks: TokenEntries,
+): void {
+  if (!metadata?.designSystem?.length) return
+
+  metadata.userTokenPaths = resolveUserTokenPathsAfterHooks(
+    metadata.userTokenPaths ?? [],
+    tokenEntriesBeforeHooks,
+    config,
+  )
+
+  for (const { designSystem, classNameOptions } of designSystemCompatibility) {
+    const mismatch = diffClassNameOptions(config, classNameOptions, 'effective')
+
+    if (mismatch.length > 0) {
+      designSystem.optionMismatch = mismatch
+    } else {
+      delete designSystem.optionMismatch
+    }
   }
 }
 

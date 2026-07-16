@@ -93,6 +93,7 @@ export interface BuildRecipes {
 export interface BuildModuleEntry {
   atoms?: number[]
   recipes?: number[]
+  tokenRefs?: number[]
 }
 
 /**
@@ -104,12 +105,13 @@ export interface BuildInfoArtifact {
   configFingerprint: string
   strings: string[]
   atoms: BuildAtom[]
+  tokenRefs?: number[]
   recipes?: BuildRecipes
   modules: Record<string, BuildModuleEntry>
   exports?: Record<string, string>
 }
 
-export type BuildInfoIncompatibility = 'schemaVersion' | 'pandaRange'
+export type BuildInfoIncompatibility = 'schemaVersion' | 'pandaRange' | 'corrupt'
 
 export type BuildInfoCompatibility = { ok: true } | { ok: false; reason: BuildInfoIncompatibility }
 
@@ -186,10 +188,6 @@ export type DesignSystemManifestCompatibility =
 export interface DesignSystemValidateOptions {
   pandaVersion?: string
 }
-
-export type DesignSystemChainPlan = { status: 'ordered'; order: string[] } | { status: 'cycle'; cycle: string[] }
-
-export type DesignSystemChainResult = { ok: true; order: string[] } | { ok: false; reason: 'cycle'; cycle: string[] }
 
 export interface DesignSystemLoadOptions {
   buildInfo: BuildInfoArtifact

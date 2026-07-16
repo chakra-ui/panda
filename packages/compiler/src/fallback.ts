@@ -48,7 +48,6 @@ const fallbackDesignSystem = new DesignSystem(
   {
     createManifest: (input) => ({ ...input, schemaVersion: -1 }),
     manifestSchemaVersion: () => -1,
-    resolveChain: () => ({ status: 'ordered', order: [] }),
   },
   fallbackBuildInfo,
 )
@@ -98,9 +97,6 @@ class FallbackCompiler implements Compiler {
   }
   designSystemManifestSchemaVersion() {
     return -1
-  }
-  resolveDesignSystemChain() {
-    return { status: 'ordered', order: [] } as const
   }
   config() {
     return {}
