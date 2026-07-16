@@ -14,6 +14,8 @@ packages/compiler/npm/wasm32-wasi/compiler.wasi-browser.js
 packages/compiler/npm/wasm32-wasi/compiler.wasi.cjs
 packages/compiler/npm/wasm32-wasi/wasi-worker-browser.mjs
 packages/compiler/npm/wasm32-wasi/wasi-worker.mjs
+packages/compiler-wasm/pkg-node
+packages/compiler-wasm/pkg-web
 website/pages/**/*.mdx
 .draft/**/*.mdx
 styled-system
