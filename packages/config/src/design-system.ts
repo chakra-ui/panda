@@ -133,9 +133,9 @@ async function loadManifestLevel(
   let preset: ExtendableConfig
   try {
     const mod = await import(presetImportUrl(presetPath))
-    preset = ensureConfigObject(mod.default ?? mod, manifest.name ?? spec)
+    preset = ensureConfigObject('default' in mod ? mod.default : mod, manifest.name ?? spec)
   } catch (error) {
-    if (error instanceof PandaError) throw error
+    if (error instanceof PandaError && error.diagnostics?.length) throw error
     const message = `Failed to load the preset for designSystem ${JSON.stringify(spec)} (${JSON.stringify(manifest.preset)}): ${errorMessage(error)}`
     throw createConfigError(message, [
       createConfigDiagnostic('design_system_preset_load_failed', message, [

@@ -322,6 +322,23 @@ describe('resolveAuthoredPresets / designSystem', () => {
     })
   })
 
+  test('attaches a coded diagnostic when the preset module does not export a config object', async () => {
+    writeFileTree(moduleDir(cwd, '@acme/invalid-preset'), {
+      'package.json': json({ name: '@acme/invalid-preset', version: '1.0.0' }),
+      'panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/invalid-preset',
+        panda: '^2.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+      }),
+      'panda.preset.mjs': 'export default null',
+    })
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/invalid-preset' }, cwd)).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_preset_load_failed', severity: 'error', category: 'config' }],
+    })
+  })
+
   test('distinguishes an installed package that does not expose panda.lib.json', async () => {
     writeFileTree(moduleDir(cwd, '@acme/no-export'), {
       'package.json': json({ name: '@acme/no-export', version: '1.0.0', exports: { '.': './index.js' } }),
