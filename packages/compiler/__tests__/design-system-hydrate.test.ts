@@ -134,7 +134,7 @@ describe('hydrateDesignSystem (consumer)', () => {
       'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
       'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
       'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
-        schemaVersion: 3,
+        schemaVersion: 4,
         panda: '^999.0.0',
         configFingerprint: 'x',
         strings: [],
@@ -169,13 +169,59 @@ describe('hydrateDesignSystem (consumer)', () => {
       'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
       'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
       // Valid JSON, but missing required build-info fields — deserialize fails.
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 3 }),
+      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 4 }),
     })
 
     const driver = await createNodeDriver({ cwd })
     const codes = (driver.designSystemDiagnostics ?? []).map((d) => d.code)
     expect(codes).toContain('design_system_buildinfo_stale')
     expect(driver.cssgen().css).toContain('rebeccapurple')
+  })
+
+  it('keeps runtime token references from hydrated build info during token pruning', async () => {
+    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
+    writeFileTree(cwd, {
+      'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
+      'App.tsx': 'export const App = () => null',
+      'node_modules/@acme/ds/package.json': json({
+        name: '@acme/ds',
+        version: '1.0.0',
+        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
+      }),
+      'node_modules/@acme/ds/dist/panda.lib.json': json({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        version: '1.0.0',
+        panda: '^2.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+        importMap: { tokens: '@acme/ds/tokens' },
+      }),
+      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
+        optimize: { removeUnusedTokens: true },
+        theme: {
+          tokens: {
+            colors: {
+              red: { value: '#f00' },
+              blue: { value: '#00f' },
+            },
+          },
+        },
+      }`,
+      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
+        schemaVersion: 4,
+        panda: '^2.0.0',
+        configFingerprint: 'cfg1-test',
+        strings: ['colors.red'],
+        atoms: [],
+        tokenRefs: [0],
+        modules: { 'tokens.ts': { tokenRefs: [0] } },
+      }),
+    })
+
+    const css = (await createNodeDriver({ cwd })).cssgen().css
+    expect(css).toContain('--colors-red: #f00')
+    expect(css).not.toContain('--colors-blue')
   })
 
   it('warns on a token defined by both the design system and the consumer', async () => {

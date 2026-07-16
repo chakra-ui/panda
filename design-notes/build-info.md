@@ -31,25 +31,32 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
-  "strings": ["color", "red", "padding", "4px"],   // intern table (every prop/cond/value string)
+  "strings": ["color", "red", "padding", "4px", "colors.brand"], // intern table
   "atoms": [{ "p": 0, "v": 1 }],                   // [propIdx, valueIdx]; token values use `{ t, v }`
+  "tokenRefs": [4],                                  // string indices for runtime token CSS-var usage
   "recipes": { "base": [...], "variants": [...] }, // interned EncodedRecipesSnapshot groups
-  "modules": { "button": { "atoms": [0], "recipes": [0] } }, // per-module indices into atoms[]/recipe groups
+  "modules": { "button": { "atoms": [0], "recipes": [0], "tokenRefs": [0] } }, // per-module indices
   "exports": { "Button": "button" }                // export name → module key (added by panda buildinfo)
 }
 ```
 
 A value is a bare index (string), `{ t, v }` (token path + resolved value), or `{ n }` (number — preserving the
 px-driving type tag). Full atom/recipe data is kept (not pre-built CSS) so the consumer re-emits with **token identity**
-preserved instead of reducing tokens to opaque CSS values.
+preserved instead of reducing tokens to opaque CSS values. Top-level `tokenRefs` entries point into `strings`; each
+module's `tokenRefs` entries point into that top-level array, preserving import-based tree-shaking.
 
 **Token definitions are not in build info.** The artifact carries token _usage_ (path + producer-resolved value at
 extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in
 via the manifest — see [design-system-manifest.md](./design-system-manifest.md)). Hydrated utilities reference
 `var(--path)`; the consumer's `TokenDictionary` supplies the final CSS value at emit time.
+
+Runtime `token()` / `token.var()` calls that require a CSS variable are carried separately in `tokenRefs`. They may not
+produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed
+`removeUnusedTokens` after hydration. Primitive `token()` calls that inline a non-variable value are intentionally not
+retained.
 
 ## Token identity (re-emit half)
 
@@ -109,7 +116,7 @@ Two paths, by how the engine encodes each:
 ## Collision safety
 
 `validate` is pure and checks the wire `schemaVersion` and required top-level shape. `hydrate` validates first, and the
-engine rejects invalid intern and per-module atom/recipe indices atomically; malformed input returns
+engine rejects invalid intern and per-module atom/recipe/token-ref indices atomically; malformed input returns
 `{ ok: false, reason: 'corrupt' }` instead of throwing or hydrating partial CSS. The host handles build-info failures by
 re-extracting the library source when `files` is available. Manifest schema and Panda-range checks are separate
 package-contract gates and remain fail-closed.

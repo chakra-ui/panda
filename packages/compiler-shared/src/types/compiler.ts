@@ -93,6 +93,7 @@ export interface BuildRecipes {
 export interface BuildModuleEntry {
   atoms?: number[]
   recipes?: number[]
+  tokenRefs?: number[]
 }
 
 /**
@@ -104,6 +105,7 @@ export interface BuildInfoArtifact {
   configFingerprint: string
   strings: string[]
   atoms: BuildAtom[]
+  tokenRefs?: number[]
   recipes?: BuildRecipes
   modules: Record<string, BuildModuleEntry>
   exports?: Record<string, string>

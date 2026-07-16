@@ -31,7 +31,7 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
     // `color: red` is shared, so it appears once in `atoms` and is referenced by
     // both modules; `padding`/`margin` are module-local.
     assert_yaml_snapshot!(info, @"
-    schemaVersion: 3
+    schemaVersion: 4
     panda: ^2.0.0
     configFingerprint: cfg1-4c1d66652eda8809
     strings:
@@ -130,6 +130,49 @@ fn build_info_preserves_token_identity() {
     );
 }
 
+#[test]
+fn build_info_round_trips_runtime_token_refs_with_module_provenance() {
+    let mut source = create_project(json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        }
+    }));
+    source.parse_file(
+        "red.ts",
+        "import { token } from '@panda/tokens'; export const red = token.var('colors.red');",
+    );
+    source.parse_file(
+        "blue.ts",
+        "import { token } from '@panda/tokens'; export const blue = token.var('colors.blue');",
+    );
+
+    let info = source.build_info("^2.0.0".into());
+    let refs = info
+        .token_refs
+        .iter()
+        .map(|&index| info.strings[index as usize].as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(refs, ["colors.blue", "colors.red"]);
+    assert_eq!(info.modules["blue.ts"].token_refs, [0]);
+    assert_eq!(info.modules["red.ts"].token_refs, [1]);
+
+    let json = serde_json::to_string(&info).expect("serialize build info");
+    let restored: BuildInfo = serde_json::from_str(&json).expect("deserialize build info");
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &restored, Some(&["red.ts".into()])));
+
+    let config = create_config(json!({}));
+    assert_eq!(
+        consumer.stylesheet_snapshots(&config).token_refs,
+        ["colors.red"]
+    );
+}
+
 fn lib_project() -> pandacss_project::Project {
     let mut project = create_project(json!({}));
     project.parse_file(
@@ -185,6 +228,42 @@ fn build_info_excludes_hydrated_parent_atoms() {
 }
 
 #[test]
+fn build_info_excludes_hydrated_parent_token_refs() {
+    let config = json!({
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "value": "#f00" },
+                    "blue": { "value": "#00f" }
+                }
+            }
+        }
+    });
+    let mut parent = create_project(config.clone());
+    parent.parse_file(
+        "red.ts",
+        "import { token } from '@panda/tokens'; export const red = token.var('colors.red');",
+    );
+    let parent_info = parent.build_info("^2.0.0".into());
+
+    let mut child = create_project(config);
+    assert!(child.hydrate("@acme/base", &parent_info, None));
+    child.parse_file(
+        "blue.ts",
+        "import { token } from '@panda/tokens'; export const blue = token.var('colors.blue');",
+    );
+    let child_info = child.build_info("^2.0.0".into());
+    let refs = child_info
+        .token_refs
+        .iter()
+        .map(|&index| child_info.strings[index as usize].as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(refs, ["colors.blue"]);
+    assert_eq!(child_info.modules.keys().collect::<Vec<_>>(), ["blue.ts"]);
+}
+
+#[test]
 fn hydrate_rejects_a_corrupt_intern_table() {
     let source = lib_project();
     let mut info = source.build_info("^2.0.0".into());
@@ -196,6 +275,32 @@ fn hydrate_rejects_a_corrupt_intern_table() {
     // A dropped-atom corruption must be a no-op (caller re-extracts), not a
     // partial hydrate reported as success.
     assert!(!consumer.hydrate("@acme/ds", &info, None));
+}
+
+#[test]
+fn hydrate_rejects_corrupt_token_ref_indices() {
+    let mut source = create_project(json!({
+        "theme": { "tokens": { "colors": { "red": { "value": "#f00" } } } }
+    }));
+    source.parse_file(
+        "red.ts",
+        "import { token } from '@panda/tokens'; token.var('colors.red');",
+    );
+    let info = source.build_info("^2.0.0".into());
+
+    let mut corrupt_string = info.clone();
+    corrupt_string.token_refs[0] =
+        u32::try_from(corrupt_string.strings.len()).expect("string table length fits in u32");
+    let mut consumer = create_project(json!({}));
+    assert!(!consumer.hydrate("@acme/ds", &corrupt_string, None));
+
+    let mut corrupt_module = info;
+    corrupt_module
+        .modules
+        .get_mut("red.ts")
+        .expect("red module")
+        .token_refs = vec![1];
+    assert!(!consumer.hydrate("@acme/ds", &corrupt_module, Some(&["red.ts".into()])));
 }
 
 #[test]
@@ -444,6 +549,71 @@ fn hydrate_reproduces_every_recipe() {
     assert!(consumer.hydrate("@acme/ds", &info, None));
 
     // The consumer owns no recipes, so its emit snapshot is exactly the lib's.
+    assert_eq!(emit_recipes(&mut consumer), emit_recipes(&mut source));
+}
+
+#[test]
+fn hydrated_recipes_emit_in_design_system_chain_order_before_local_recipes() {
+    fn recipe_info(color: &str) -> BuildInfo {
+        let mut project = create_project(json!({
+            "theme": { "recipes": { "button": { "base": { "color": color } } } }
+        }));
+        project.parse_file(
+            "button.tsx",
+            "import { button } from '@panda/recipes'; button();",
+        );
+        project.build_info("^2.0.0".into())
+    }
+
+    let mut app = create_project(json!({
+        "theme": { "recipes": { "button": { "base": { "color": "blue" } } } }
+    }));
+    app.parse_file(
+        "app.tsx",
+        "import { button } from '@panda/recipes'; button();",
+    );
+
+    assert!(app.hydrate("@z/root", &recipe_info("red"), None));
+    assert!(app.hydrate("@a/child", &recipe_info("green"), None));
+
+    let snapshot = emit_recipes(&mut app);
+    let colors = snapshot["base"]
+        .as_array()
+        .expect("recipe base groups")
+        .iter()
+        .map(|group| group["entries"][0]["value"].as_str().expect("color value"))
+        .collect::<Vec<_>>();
+    assert_eq!(colors, ["red", "green", "blue"]);
+}
+
+#[test]
+fn hydrate_reproduces_compound_recipe_variants() {
+    let mut source = create_project(json!({
+        "theme": {
+            "recipes": {
+                "button": {
+                    "variants": {
+                        "intent": { "danger": { "backgroundColor": "red" } },
+                        "size": { "sm": { "fontSize": "12px" } }
+                    },
+                    "compoundVariants": [{
+                        "intent": "danger",
+                        "size": "sm",
+                        "css": { "color": "black" }
+                    }]
+                }
+            }
+        }
+    }));
+    source.parse_file(
+        "button.tsx",
+        "import { button } from '@panda/recipes'; button({ intent: 'danger', size: 'sm' });",
+    );
+    let info = source.build_info("^2.0.0".into());
+    assert_eq!(info.recipes.compounds.len(), 1);
+
+    let mut consumer = create_project(json!({}));
+    assert!(consumer.hydrate("@acme/ds", &info, None));
     assert_eq!(emit_recipes(&mut consumer), emit_recipes(&mut source));
 }
 

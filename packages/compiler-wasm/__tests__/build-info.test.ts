@@ -59,6 +59,43 @@ describeIfBuilt('@pandacss/compiler-wasm build info', () => {
     `)
   })
 
+  it('preserves module-scoped runtime token references over the wasm binding', async () => {
+    const config = {
+      ...baseConfig,
+      optimize: { removeUnusedTokens: true },
+      theme: {
+        tokens: {
+          colors: {
+            red: { value: '#f00' },
+            blue: { value: '#00f' },
+          },
+        },
+      },
+    }
+    const lib = await createCompiler(config)
+    lib.parseFileSource('red.ts', "import { token } from '@panda/tokens'\nexport const red = token.var('colors.red')")
+    lib.parseFileSource(
+      'blue.ts',
+      "import { token } from '@panda/tokens'\nexport const blue = token.var('colors.blue')",
+    )
+    const info = lib.buildInfo.create({ panda: '^2.0.0' })
+
+    expect(info.tokenRefs?.map((index) => info.strings[index])).toEqual(['colors.blue', 'colors.red'])
+    const app = await createCompiler(config)
+    expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only: ['red.ts'] })).toEqual({
+      ok: true,
+      modules: ['red.ts'],
+    })
+    expect(app.getLayerCss({ layers: ['tokens'] }).css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-red: #f00;
+        }
+      }
+      "
+    `)
+  })
+
   // Barrel export name → module key → selective recipe hydrate.
   it('emits exports for recipe-consuming components over the wasm binding', async () => {
     const lib = await createCompiler({

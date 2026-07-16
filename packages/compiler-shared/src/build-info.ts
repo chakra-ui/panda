@@ -101,6 +101,7 @@ function hasBuildInfoShape(info: Record<string, unknown>): boolean {
     typeof info.configFingerprint === 'string' &&
     Array.isArray(info.strings) &&
     Array.isArray(info.atoms) &&
+    (info.tokenRefs === undefined || Array.isArray(info.tokenRefs)) &&
     isRecord(info.modules) &&
     (info.exports === undefined || isRecord(info.exports)) &&
     (info.recipes === undefined || isRecord(info.recipes))

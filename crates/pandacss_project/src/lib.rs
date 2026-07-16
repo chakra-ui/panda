@@ -149,6 +149,8 @@ pub struct Project {
     /// Recipe snapshots hydrated from build info, keyed by source library
     /// name and merged into [`Self::stylesheet_snapshots`].
     hydrated_recipes: FxHashMap<Arc<str>, EncodedRecipesSnapshot>,
+    /// Root-first hydration order. Local recipes are emitted after these entries.
+    hydrated_recipe_order: Vec<Arc<str>>,
 }
 
 pub struct ProjectStylesheetSnapshots<'a> {
@@ -225,6 +227,7 @@ impl Project {
             inline_slot_recipe_spans: FxHashMap::default(),
             config_diagnostics,
             hydrated_recipes: FxHashMap::default(),
+            hydrated_recipe_order: Vec::new(),
         }
     }
 
@@ -767,9 +770,18 @@ impl Project {
     /// library name; re-hydration replaces. Merged in [`Self::stylesheet_snapshots`].
     pub(crate) fn set_hydrated_recipes(&mut self, name: &str, snapshot: EncodedRecipesSnapshot) {
         self.invalidate_stylesheet_snapshots();
-        if snapshot.base.is_empty() && snapshot.variants.is_empty() && snapshot.atomic.is_empty() {
+        if snapshot.base.is_empty()
+            && snapshot.variants.is_empty()
+            && snapshot.compounds.is_empty()
+            && snapshot.atomic.is_empty()
+        {
             self.hydrated_recipes.remove(name);
+            self.hydrated_recipe_order
+                .retain(|existing| existing.as_ref() != name);
         } else {
+            if !self.hydrated_recipes.contains_key(name) {
+                self.hydrated_recipe_order.push(Arc::from(name));
+            }
             self.hydrated_recipes.insert(Arc::from(name), snapshot);
         }
     }
@@ -1043,16 +1055,28 @@ impl Project {
         }
 
         if self.encoded_recipes_snapshot_cache.is_none() {
-            let mut snapshot = self.encoded_recipes_cache.view().snapshot();
-            // Sort by source name so multi-library output stays stable.
-            let mut names: Vec<&Arc<str>> = self.hydrated_recipes.keys().collect();
-            names.sort();
-            for name in names {
-                let hydrated = &self.hydrated_recipes[name];
+            let local = self.encoded_recipes_cache.view().snapshot();
+            let mut snapshot = EncodedRecipesSnapshot {
+                base: Vec::new(),
+                variants: Vec::new(),
+                compounds: Vec::new(),
+                atomic: Vec::new(),
+            };
+            for name in &self.hydrated_recipe_order {
+                let Some(hydrated) = self.hydrated_recipes.get(name) else {
+                    continue;
+                };
                 snapshot.base.extend(hydrated.base.iter().cloned());
                 snapshot.variants.extend(hydrated.variants.iter().cloned());
+                snapshot
+                    .compounds
+                    .extend(hydrated.compounds.iter().cloned());
                 snapshot.atomic.extend(hydrated.atomic.iter().cloned());
             }
+            snapshot.base.extend(local.base);
+            snapshot.variants.extend(local.variants);
+            snapshot.compounds.extend(local.compounds);
+            snapshot.atomic.extend(local.atomic);
             self.encoded_recipes_snapshot_cache = Some(snapshot);
         }
 

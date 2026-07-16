@@ -21,7 +21,7 @@ use crate::{FileEntry, ParseFileReport};
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
 
 /// Synthetic file-key prefix for atoms hydrated from a parent design system.
 /// Excluded from serialized build info so a published artifact carries only
@@ -39,6 +39,9 @@ pub struct BuildInfo {
     /// Intern table — every prop / condition / value string is referenced by index.
     pub strings: Vec<String>,
     pub atoms: Vec<BuildAtom>,
+    /// Token paths (as string-table indices) referenced outside encoded styles.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub token_refs: Vec<u32>,
     /// Interned recipe / slot-recipe styles. Omitted when the library has none.
     #[serde(default, skip_serializing_if = "BuildRecipes::is_empty")]
     pub recipes: BuildRecipes,
@@ -121,12 +124,16 @@ pub enum BuildValue {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct ModuleEntry {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub atoms: Vec<u32>,
     /// Combined indices into `recipes` (base then variants) this module uses.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub recipes: Vec<u32>,
+    /// Indices into the top-level `tokenRefs` array this module uses.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub token_refs: Vec<u32>,
 }
 
 #[allow(
@@ -317,9 +324,9 @@ fn recipes_from_build(
     })
 }
 
-/// Indices selected by `only_modules`, reading `field` (`.atoms` or `.recipes`)
-/// off each named module's [`ModuleEntry`]. `None` means "no restriction" —
-/// distinct from an empty set, which would select nothing.
+/// Indices selected by `only_modules`, reading an index field off each named
+/// module's [`ModuleEntry`]. `None` means "no restriction" — distinct from an
+/// empty set, which would select nothing.
 fn selected_module_indices(
     info: &BuildInfo,
     only_modules: Option<&[String]>,
@@ -400,6 +407,24 @@ impl super::Project {
             .map(|(index, group)| (group.class_name.as_ref(), index as u32))
             .collect();
 
+        let mut token_ref_paths = self
+            .files
+            .iter()
+            .filter(|(path, _)| !path.starts_with(HYDRATED_FILE_PREFIX))
+            .flat_map(|(_, entry)| entry.token_refs.iter().map(String::as_str))
+            .collect::<Vec<_>>();
+        token_ref_paths.sort_unstable();
+        token_ref_paths.dedup();
+        let token_ref_position: FxHashMap<&str, u32> = token_ref_paths
+            .iter()
+            .enumerate()
+            .map(|(index, path)| (*path, index as u32))
+            .collect();
+        let token_refs = token_ref_paths
+            .iter()
+            .map(|path| interner.intern(path))
+            .collect();
+
         let mut modules = BTreeMap::new();
         let mut styled_modules = FxHashSet::default();
         for (path, entry) in &self.files {
@@ -424,7 +449,18 @@ impl super::Project {
             recipe_indices.sort_unstable();
             recipe_indices.dedup();
 
-            if !atom_indices.is_empty() || !recipe_indices.is_empty() {
+            let mut token_ref_indices = entry
+                .token_refs
+                .iter()
+                .filter_map(|path| token_ref_position.get(path.as_str()).copied())
+                .collect::<Vec<_>>();
+            token_ref_indices.sort_unstable();
+            token_ref_indices.dedup();
+
+            if !atom_indices.is_empty()
+                || !recipe_indices.is_empty()
+                || !token_ref_indices.is_empty()
+            {
                 styled_modules.insert(path.to_string());
             }
 
@@ -433,6 +469,7 @@ impl super::Project {
                 ModuleEntry {
                     atoms: atom_indices,
                     recipes: recipe_indices,
+                    token_refs: token_ref_indices,
                 },
             );
         }
@@ -445,6 +482,7 @@ impl super::Project {
             config_fingerprint,
             strings: interner.table,
             atoms: build_atoms,
+            token_refs,
             recipes,
             modules,
             exports,
@@ -472,6 +510,8 @@ impl super::Project {
 
         let selected_atoms = selected_module_indices(info, only_modules, |entry| &entry.atoms);
         let selected_recipes = selected_module_indices(info, only_modules, |entry| &entry.recipes);
+        let selected_token_refs =
+            selected_module_indices(info, only_modules, |entry| &entry.token_refs);
 
         let Some(recipe_count) = info
             .recipes
@@ -485,6 +525,7 @@ impl super::Project {
         // Invalid module references would otherwise look like a successful empty selection.
         if !selected_indices_in_bounds(selected_atoms.as_ref(), info.atoms.len())
             || !selected_indices_in_bounds(selected_recipes.as_ref(), recipe_count)
+            || !selected_indices_in_bounds(selected_token_refs.as_ref(), info.token_refs.len())
         {
             return false;
         }
@@ -514,6 +555,19 @@ impl super::Project {
         else {
             return false;
         };
+        let mut token_refs = Vec::new();
+        for (index, &path_index) in info.token_refs.iter().enumerate() {
+            let selected = selected_token_refs
+                .as_ref()
+                .is_none_or(|set| u32::try_from(index).is_ok_and(|index| set.contains(&index)));
+            if !selected {
+                continue;
+            }
+            let Some(path) = string_at(&info.strings, path_index) else {
+                return false;
+            };
+            token_refs.push(path.into());
+        }
         self.set_hydrated_recipes(name, recipes);
 
         let key: Arc<str> = Arc::from(format!("{HYDRATED_FILE_PREFIX}{name}").as_str());
@@ -529,7 +583,7 @@ impl super::Project {
                 atoms,
                 encoded_recipes: EncodedRecipes::new(false),
                 utility_styles: FxHashMap::default(),
-                token_refs: Vec::new(),
+                token_refs,
                 exports: pandacss_extractor::ExportInfo::default(),
                 diagnostics: Vec::new(),
                 report: ParseFileReport::default(),
