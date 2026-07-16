@@ -532,6 +532,12 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | Code                                   | Severity | When                                                        |
 | -------------------------------------- | -------- | ----------------------------------------------------------- |
 | `design_system_manifest_not_found`     | error    | `designSystem` set but no `panda.lib.json` resolves         |
+| `design_system_manifest_not_exported`  | error    | installed package does not export `./panda.lib.json`        |
+| `design_system_manifest_invalid`       | error    | manifest is malformed or missing required entries           |
+| `design_system_resolve_failed`         | error    | manifest resolution fails for an unexpected reason          |
+| `design_system_preset_load_failed`     | error    | manifest preset cannot load as a config object              |
+| `design_system_unsupported_specifier`  | error    | `designSystem` uses an unsupported protocol specifier       |
+| `design_system_duplicate_name`         | error    | two different manifests in a chain use the same name        |
 | `design_system_in_include`             | error    | a manifest-bearing package appears in `include`             |
 | `design_system_version_mismatch`       | error    | manifest `schemaVersion` does not match the running binding |
 | `design_system_peer_range_unsatisfied` | error    | consumer Panda does not satisfy manifest `panda` range      |
