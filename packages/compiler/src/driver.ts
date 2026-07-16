@@ -95,7 +95,17 @@ function applyIncludeOverride(loaded: LoadConfigResult, cwd: string, include: st
   loaded.dependencies = Array.from(deps)
 }
 
-const GLOBAL_OPTION_KEYS = ['prefix', 'hash', 'separator', 'jsxFramework', 'jsxStyleProps', 'syntax'] as const
+const GLOBAL_OPTION_KEYS = [
+  'prefix',
+  'hash',
+  'separator',
+  'jsxFramework',
+  'jsxStyleProps',
+  'syntax',
+  'strictTokens',
+  'strictPropertyValues',
+  'shorthands',
+] as const
 
 async function attachAppConfigKeys(loaded: LoadConfigResult, cwd: string): Promise<void> {
   const chain = loaded.metadata?.designSystem

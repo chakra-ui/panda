@@ -111,6 +111,14 @@ describe('overlay codegen — appConfigKeys', () => {
 
     expect(overlay?.virtualizeUtils).toBe(true)
   })
+
+  it('keeps runtime local when the app diverges on shorthands (prop-type surface)', async () => {
+    cwd = setupAppConfig({ shorthands: false })
+    const driver = await createNodeDriver({ cwd })
+    const overlay = (driver as unknown as { codegenOverlay(): { virtualizeUtils: boolean } }).codegenOverlay()
+
+    expect(overlay?.virtualizeUtils).toBe(false)
+  })
 })
 
 describe('overlay codegen — export missing diagnostics', () => {
