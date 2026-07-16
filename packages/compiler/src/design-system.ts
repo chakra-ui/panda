@@ -48,6 +48,7 @@ function hydrateLevel(
     if (!tryStaleFallback(compiler, ds, diagnostics)) throw hydrateReadError(ds, error)
   }
 
+  let hydratedPrebuilt = false
   if (buildInfo) {
     // `load` can throw when the artifact is JSON-parseable but structurally
     // invalid (binding deserialize fails); treat that like a read failure and
@@ -61,10 +62,11 @@ function hydrateLevel(
     if (result && !result.ok && !tryStaleFallback(compiler, ds, diagnostics)) {
       throw hydrateLoadError(ds, result.reason)
     }
+    hydratedPrebuilt = result?.ok ?? false
   }
 
   diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
-  diagnostics.push(...optionMismatchDiagnostics(ds))
+  if (hydratedPrebuilt) diagnostics.push(...optionMismatchDiagnostics(ds))
   return diagnostics
 }
 

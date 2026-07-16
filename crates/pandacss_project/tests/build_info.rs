@@ -199,6 +199,23 @@ fn hydrate_rejects_a_corrupt_intern_table() {
 }
 
 #[test]
+fn hydrate_rejects_a_corrupt_recipe_entry() {
+    let source = recipe_lib_project();
+    let mut info = source.build_info("^2.0.0".into());
+    let group = info
+        .recipes
+        .base
+        .iter_mut()
+        .find(|group| !group.entries.is_empty())
+        .expect("a recipe base group with entries");
+    // Point a recipe style entry's prop past the intern table.
+    group.entries[0].p = 9999;
+
+    let mut consumer = create_project(json!({}));
+    assert!(!consumer.hydrate("@acme/ds", &info, None));
+}
+
+#[test]
 fn hydrate_with_module_filter_emits_only_imported_modules() {
     let source = lib_project();
     let info = source.build_info("^2.0.0".into());

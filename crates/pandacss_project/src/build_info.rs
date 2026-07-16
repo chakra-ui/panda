@@ -256,22 +256,20 @@ fn group_from_build(
     build: &BuildRecipeGroup,
     strings: &[String],
 ) -> Option<RecipeStyleGroupSnapshot> {
+    let slot = match build.slot {
+        Some(idx) => serde_json::Value::String(string_at(strings, idx)?.into()),
+        None => serde_json::Value::Null,
+    };
+    let mut entries = Vec::with_capacity(build.entries.len());
+    for entry in &build.entries {
+        entries.push(entry_from_build(entry, strings)?);
+    }
     Some(RecipeStyleGroupSnapshot {
         recipe: string_at(strings, build.r)?,
-        slot: build.slot.map_or(serde_json::Value::Null, |idx| {
-            strings
-                .get(idx as usize)
-                .map_or(serde_json::Value::Null, |s| {
-                    serde_json::Value::String(s.clone())
-                })
-        }),
+        slot,
         class_name: string_at(strings, build.cls)?,
         conditions: conditions_from_build(&build.cond, strings)?,
-        entries: build
-            .entries
-            .iter()
-            .filter_map(|entry| entry_from_build(entry, strings))
-            .collect(),
+        entries,
     })
 }
 
