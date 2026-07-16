@@ -42,6 +42,18 @@ const acceptedMajors = (range: string): Set<number> => {
   return majors
 }
 
+/**
+ * A range that constrains no major — `*`, `x`, or empty, or a `||` union that
+ * lists one. `panda lib` writes `*` when the package declares no Panda peer, so
+ * this keeps the default artifact hydratable on any major. Unresolved protocols
+ * (`catalog:`, `workspace:*`) are not wildcards and still fail closed.
+ */
+const acceptsAnyMajor = (range: string): boolean =>
+  range.split('||').some((alternative) => {
+    const trimmed = alternative.trim()
+    return trimmed === '' || trimmed === '*' || trimmed === 'x' || trimmed === 'X'
+  })
+
 export class DesignSystem {
   readonly #binding: DesignSystemBinding
   readonly #buildInfo: BuildInfo
@@ -61,7 +73,11 @@ export class DesignSystem {
     if (manifest.schemaVersion !== this.schemaVersion) return { ok: false, reason: 'schemaVersion' }
 
     const running = options?.pandaVersion
-    if (running !== undefined && !acceptedMajors(manifest.panda).has(major(running))) {
+    if (
+      running !== undefined &&
+      !acceptsAnyMajor(manifest.panda) &&
+      !acceptedMajors(manifest.panda).has(major(running))
+    ) {
       return { ok: false, reason: 'pandaRange' }
     }
 

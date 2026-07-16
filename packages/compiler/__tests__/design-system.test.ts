@@ -112,6 +112,21 @@ describe('compiler.designSystem', () => {
     expect(app.designSystem.validate(manifest, { pandaVersion: '4.0.0' })).toEqual({ ok: false, reason: 'pandaRange' })
   })
 
+  it('validate() accepts any major for a wildcard range (`panda lib` default)', () => {
+    const app = project()
+    for (const range of ['*', 'x', '']) {
+      const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: range }
+      expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: true })
+      expect(app.designSystem.validate(manifest, { pandaVersion: '5.0.0' })).toEqual({ ok: true })
+    }
+  })
+
+  it('validate() still fails closed for an unresolved protocol range', () => {
+    const app = project()
+    const manifest: DesignSystemManifest = { ...app.designSystem.create(fullInput), panda: 'catalog:' }
+    expect(app.designSystem.validate(manifest, { pandaVersion: '2.5.1' })).toEqual({ ok: false, reason: 'pandaRange' })
+  })
+
   // --- load(): consumer side — validate + hydrate the library's build info ---
 
   // A library publishing two styled modules, plus the manifest pointing at it.
