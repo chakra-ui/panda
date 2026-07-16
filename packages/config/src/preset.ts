@@ -10,12 +10,12 @@ import {
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
-import type { ConfigSources } from './sources'
-import { expandSmartInclude } from './smart-include'
-import { collectTokenPaths } from './token-paths'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
-import { findClassNameOptionMismatches, normalizeClassNameOptions, type NormalizedClassNameOptions } from './normalize'
+import { diffClassNameOptions, normalizeClassNameOptions, type NormalizedClassNameOptions } from './normalize'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
+import { expandSmartInclude } from './smart-include'
+import type { ConfigSources } from './sources'
+import { collectTokenPaths } from './token-paths'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
 type ConfigSource = SourcedConfig['source']
@@ -50,11 +50,30 @@ export interface ResolveAuthoredPresetsOptions {
   preserveRuntimeHooks?: boolean
 }
 
+export interface DesignSystemCompatibilityContext {
+  designSystem: ResolvedDesignSystem
+  classNameOptions: NormalizedClassNameOptions
+}
+
 export async function resolveAuthoredPresets(
   config: ExtendableConfig,
   cwd: string,
   options: ResolveAuthoredPresetsOptions = {},
 ): Promise<ResolveAuthoredPresetsResult> {
+  const { designSystemCompatibility: _, ...result } = await resolveAuthoredPresetsForLoad(config, cwd, options)
+
+  return result
+}
+
+export async function resolveAuthoredPresetsForLoad(
+  config: ExtendableConfig,
+  cwd: string,
+  options: ResolveAuthoredPresetsOptions = {},
+): Promise<
+  ResolveAuthoredPresetsResult & {
+    designSystemCompatibility: DesignSystemCompatibilityContext[]
+  }
+> {
   const ctx: CollectContext = {
     cwd,
     configs: [],
@@ -64,11 +83,15 @@ export async function resolveAuthoredPresets(
   }
 
   const rootSource: ConfigSource = { kind: 'config' }
-  if (options.configFile) rootSource.file = normalize(relative(cwd, options.configFile))
+
+  if (options.configFile) {
+    rootSource.file = normalize(relative(cwd, options.configFile))
+  }
 
   const designSystem = (config as UserConfig).designSystem
   let dsChain: DesignSystemLevel[] = []
-  const dsClassNameOptions: NormalizedClassNameOptions[] = []
+  const designSystemCompatibility: DesignSystemCompatibilityContext[] = []
+
   if (typeof designSystem === 'string' && designSystem.length > 0) {
     dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
     for (const level of dsChain) {
@@ -79,35 +102,50 @@ export async function resolveAuthoredPresets(
         ctx.dependencies,
         options.trackSources,
       )
+
       level.info.tokenPaths = collectTokenPaths(resolution.config)
       appendConfigResolution(ctx, resolution)
-      dsClassNameOptions.push(normalizeClassNameOptions(mergeConfigs(ctx.configs) as UserConfig))
+
+      designSystemCompatibility.push({
+        designSystem: level.info,
+        classNameOptions: normalizeClassNameOptions(mergeConfigs(ctx.configs) as UserConfig),
+      })
     }
   }
 
   const rootResolution = await resolveConfigEntry(config, rootSource, cwd, ctx.dependencies, options.trackSources)
   appendConfigResolution(ctx, rootResolution)
 
-  dsChain.forEach((level, i) => {
-    const mismatch = findClassNameOptionMismatches(rootResolution.config, dsClassNameOptions[i])
-    if (mismatch.length > 0) level.info.optionMismatch = mismatch
-  })
+  for (const { designSystem, classNameOptions } of designSystemCompatibility) {
+    const mismatch = diffClassNameOptions(rootResolution.config, classNameOptions, 'explicit')
+
+    if (mismatch.length > 0) {
+      designSystem.optionMismatch = mismatch
+    }
+  }
 
   const dsInfos = dsChain.map((level) => level.info)
   const finalize = (resolved: UserConfig): UserConfig => {
     const withImportMap = dsInfos.length > 0 ? withDesignSystemImportMap(resolved, dsInfos) : resolved
+
     return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
   }
+
   const dsMetadata =
     dsInfos.length > 0 ? { designSystem: dsInfos, userTokenPaths: collectTokenPaths(rootResolution.config) } : undefined
 
   if (ctx.sourcedConfigs) {
     const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
-    if (options.preserveRuntimeHooks) attachRuntimeHooks(merged.config, ctx.configs)
+
+    if (options.preserveRuntimeHooks) {
+      attachRuntimeHooks(merged.config, ctx.configs)
+    }
+
     return {
       config: finalize(merged.config as UserConfig),
       dependencies: Array.from(ctx.dependencies),
       metadata: { sources: merged.sources, ...dsMetadata },
+      designSystemCompatibility,
     }
   }
 
@@ -119,6 +157,7 @@ export async function resolveAuthoredPresets(
     ),
     dependencies: Array.from(ctx.dependencies),
     ...(dsMetadata ? { metadata: dsMetadata } : {}),
+    designSystemCompatibility,
   }
 }
 

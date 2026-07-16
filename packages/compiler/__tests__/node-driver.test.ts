@@ -69,6 +69,31 @@ function writeFileTree(root: string, files: Record<string, string>): void {
   }
 }
 
+async function captureDesignSystemError(promise: Promise<unknown>) {
+  const error = await promise.then(
+    () => {
+      throw new Error('Expected design-system loading to fail')
+    },
+    (reason: unknown) => reason,
+  )
+  const value = error as {
+    message?: string
+    diagnostics?: Array<{ code: string; severity: string; message: string; help?: string[] }>
+  }
+  const normalizeVersion = (message: string | undefined) =>
+    message?.replace(/; the consumer uses .*\.$/, '; the consumer uses <version>.')
+
+  return {
+    diagnostics: value.diagnostics?.map(({ code, severity, message, help }) => ({
+      code,
+      help,
+      message: normalizeVersion(message),
+      severity,
+    })),
+    message: normalizeVersion(value.message),
+  }
+}
+
 describe('createNodeDriver', () => {
   let dir: string
 
@@ -741,7 +766,21 @@ describe('createNodeDriver designSystem', () => {
     })
 
     try {
-      await expect(createNodeDriver({ cwd: dir })).rejects.toThrow(/Failed to hydrate designSystem "@acme\/ds"/)
+      await expect(captureDesignSystemError(createNodeDriver({ cwd: dir }))).resolves.toMatchInlineSnapshot(`
+        {
+          "diagnostics": [
+            {
+              "code": "design_system_buildinfo_stale",
+              "help": [
+                "Run \`panda lib\` in "@acme/ds" to rebuild panda.buildinfo.json.",
+              ],
+              "message": ""@acme/ds" build info could not be read: file not found. No fallback source files were available.",
+              "severity": "error",
+            },
+          ],
+          "message": ""@acme/ds" build info could not be read: file not found. No fallback source files were available.",
+        }
+      `)
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
@@ -767,7 +806,21 @@ describe('createNodeDriver designSystem', () => {
     })
 
     try {
-      await expect(createNodeDriver({ cwd: dir })).rejects.toThrow(/manifest schemaVersion 999 is incompatible/)
+      await expect(captureDesignSystemError(createNodeDriver({ cwd: dir }))).resolves.toMatchInlineSnapshot(`
+        {
+          "diagnostics": [
+            {
+              "code": "design_system_version_mismatch",
+              "help": [
+                "Upgrade "@acme/ds", or rebuild it with a compatible version of Panda.",
+              ],
+              "message": ""@acme/ds" panda.lib.json uses schemaVersion 999; expected 1.",
+              "severity": "error",
+            },
+          ],
+          "message": ""@acme/ds" panda.lib.json uses schemaVersion 999; expected 1.",
+        }
+      `)
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
@@ -793,7 +846,21 @@ describe('createNodeDriver designSystem', () => {
     })
 
     try {
-      await expect(createNodeDriver({ cwd: dir })).rejects.toThrow(/manifest requires Panda \^999\.0\.0/)
+      await expect(captureDesignSystemError(createNodeDriver({ cwd: dir }))).resolves.toMatchInlineSnapshot(`
+        {
+          "diagnostics": [
+            {
+              "code": "design_system_peer_range_unsatisfied",
+              "help": [
+                "Install a compatible Panda version or update "@acme/ds".",
+              ],
+              "message": ""@acme/ds" requires Panda ^999.0.0; the consumer uses <version>.",
+              "severity": "error",
+            },
+          ],
+          "message": ""@acme/ds" requires Panda ^999.0.0; the consumer uses <version>.",
+        }
+      `)
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

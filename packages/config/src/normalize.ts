@@ -18,16 +18,22 @@ export function normalizeClassNameOptions(config: UserConfig): NormalizedClassNa
   }
 }
 
-export function findClassNameOptionMismatches(
+export function diffClassNameOptions(
   consumer: UserConfig,
   designSystem: NormalizedClassNameOptions,
+  scope: 'explicit' | 'effective',
 ): ClassNameOptionKey[] {
-  // Inherited values are compatible; only an explicit consumer override can
-  // make its generated class names diverge from the prebuilt library runtime.
   const normalized = normalizeClassNameOptions(consumer)
+
   return CLASS_NAME_OPTION_KEYS.filter((key) => {
-    if (consumer[key] === undefined) return false
-    if (key === 'separator') return normalized.separator !== designSystem.separator
+    if (scope === 'explicit' && consumer[key] === undefined) {
+      return false
+    }
+
+    if (key === 'separator') {
+      return normalized.separator !== designSystem.separator
+    }
+
     return (
       normalized[key].cssVar !== designSystem[key].cssVar || normalized[key].className !== designSystem[key].className
     )
@@ -35,17 +41,25 @@ export function findClassNameOptionMismatches(
 }
 
 function normalizeHash(value: UserConfig['hash']): NormalizedClassNameOptions['hash'] {
-  if (typeof value === 'boolean') return { cssVar: value, className: value }
+  if (typeof value === 'boolean') {
+    return { cssVar: value, className: value }
+  }
+
   if (value && typeof value === 'object') {
     return { cssVar: value.cssVar === true, className: value.className === true }
   }
+
   return { cssVar: false, className: false }
 }
 
 function normalizePrefix(value: UserConfig['prefix']): NormalizedClassNameOptions['prefix'] {
-  if (typeof value === 'string') return { cssVar: value, className: value }
+  if (typeof value === 'string') {
+    return { cssVar: value, className: value }
+  }
+
   if (value && typeof value === 'object') {
     return { cssVar: value.cssVar ?? '', className: value.className ?? '' }
   }
+
   return { cssVar: '', className: '' }
 }

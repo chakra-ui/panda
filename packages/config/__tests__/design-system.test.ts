@@ -285,6 +285,34 @@ describe('resolveAuthoredPresets / designSystem', () => {
     })
   })
 
+  test.each([
+    ['schemaVersion', { schemaVersion: 0 }, 'positive integer "schemaVersion"'],
+    ['name', { name: '  ' }, 'missing a "name" entry'],
+    ['panda', { panda: '' }, 'missing a "panda" entry'],
+    ['files', { files: './button.js' }, '"files" entry'],
+    ['importMap', { importMap: { css: ['@acme/ds/css'] } }, '"importMap.css" entry'],
+  ])('validates the complete manifest shape before loading its preset (%s)', async (field, manifest, message) => {
+    const name = `@acme/invalid-${field}`
+    writeDesignSystemPackage({
+      cwd,
+      name,
+      manifest,
+      preset: 'throw new Error("the preset must not be imported")',
+    })
+
+    await expect(resolveAuthoredPresets({ designSystem: name }, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_manifest_invalid',
+          severity: 'error',
+          category: 'config',
+          file: expect.stringMatching(/panda\.lib\.json$/),
+          message: expect.stringContaining(message),
+        },
+      ],
+    })
+  })
+
   test('errors with guidance when the package does not resolve', async () => {
     await expect(resolveAuthoredPresets({ designSystem: '@acme/missing' }, cwd)).rejects.toThrow(
       /designSystem "@acme\/missing" could not be resolved/,

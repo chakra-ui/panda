@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { loadConfig } from '../src/load'
@@ -31,7 +31,9 @@ const CONFIG_SOURCE = `export default {
 async function loadTempConfig(files: Record<string, string>) {
   const dir = mkdtempSync(join(tmpdir(), 'panda-config-'))
   for (const [file, source] of Object.entries(files)) {
-    writeFileSync(join(dir, file), source)
+    const path = join(dir, file)
+    mkdirSync(dirname(path), { recursive: true })
+    writeFileSync(path, source)
   }
   const result = await loadConfig({ cwd: dir })
   return { dir, result }
@@ -185,6 +187,60 @@ describe('loadConfig', () => {
 })
 
 describe('loadConfig preset resolution', () => {
+  test('refreshes design-system option compatibility and token ownership after config hooks', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        designSystem: '@acme/ds',
+        theme: { tokens: { colors: { appOnly: { value: '#f00' } } } },
+        plugins: [{
+          name: 'design-system-rewriter',
+          hooks: {
+            'config:resolved'({ config }) {
+              config.hash = true
+              delete config.theme.tokens.colors.appOnly
+              config.theme.tokens.colors.brand = { value: '#0f0' }
+              config.theme.tokens.colors.hookOnly = { value: '#00f' }
+            },
+          },
+        }],
+      }`,
+      'node_modules/@acme/ds/package.json': JSON.stringify({
+        name: '@acme/ds',
+        version: '1.0.0',
+        exports: { './panda.lib.json': './panda.lib.json' },
+      }),
+      'node_modules/@acme/ds/panda.lib.json': JSON.stringify({
+        schemaVersion: 1,
+        name: '@acme/ds',
+        panda: '^2.0.0',
+        preset: './panda.preset.mjs',
+        buildInfo: './panda.buildinfo.json',
+      }),
+      'node_modules/@acme/ds/panda.preset.mjs': `export default {
+        theme: { tokens: { colors: { brand: { value: '#123' }, dsOnly: { value: '#456' } } } },
+      }`,
+    })
+
+    try {
+      expect({
+        userTokenPaths: result.metadata?.userTokenPaths,
+        optionMismatch: result.metadata?.designSystem?.[0]?.optionMismatch,
+      }).toMatchInlineSnapshot(`
+        {
+          "optionMismatch": [
+            "hash",
+          ],
+          "userTokenPaths": [
+            "colors.brand",
+            "colors.hookOnly",
+          ],
+        }
+      `)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   test('runs config:resolved after presets are merged', async () => {
     const { dir, result } = await loadTempConfig({
       'panda.config.ts': `export default {

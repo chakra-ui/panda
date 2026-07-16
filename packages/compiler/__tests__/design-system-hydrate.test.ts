@@ -1,8 +1,10 @@
-import { createNodeDriver } from '../src'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { createNodeDriver } from '../src'
+
+const DEFAULT_CONFIG = `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`
 
 describe('hydrateDesignSystem (consumer)', () => {
   let cwd: string | undefined
@@ -13,50 +15,31 @@ describe('hydrateDesignSystem (consumer)', () => {
   })
 
   it('re-extracts manifest files from the manifest dir and warns when build info is stale', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default {
-        designSystem: '@acme/ds',
-        include: ['**/*.tsx'],
-      }`,
-      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: {
-          './panda.lib.json': './dist/panda.lib.json',
-          './preset': './dist/panda.preset.mjs',
-        },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        files: ['./button.js'],
-        importMap: {
-          css: '@acme/ds/css',
-          recipes: '@acme/ds/recipes',
-          patterns: '@acme/ds/patterns',
-          jsx: '@acme/ds/jsx',
-          tokens: '@acme/ds/tokens',
-        },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
-      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
-        schemaVersion: 999,
-        modules: {},
-        atoms: [],
-      }),
+    cwd = createFixture({
+      manifest: { files: ['./button.js'] },
+      buildInfo: staleBuildInfo(),
     })
 
     const driver = await createNodeDriver({ cwd })
-    const codes = (driver.designSystemDiagnostics ?? []).map((d) => d.code)
+    const stale = (driver.designSystemDiagnostics ?? []).find((d) => d.code === 'design_system_buildinfo_stale')
 
-    expect(codes).toContain('design_system_buildinfo_stale')
+    expect({
+      severity: stale?.severity,
+      category: stale?.category,
+      file: stale?.file?.split('/').at(-1),
+      message: stale?.message,
+      help: stale?.help,
+    }).toMatchInlineSnapshot(`
+      {
+        "severity": "warning",
+        "category": "designSystem",
+        "file": "panda.buildinfo.json",
+        "message": ""@acme/ds" build info uses schemaVersion 999; expected 4. Re-extracted 1 source file.",
+        "help": [
+          "Run \`panda lib\` in "@acme/ds" to rebuild panda.buildinfo.json.",
+        ],
+      }
+    `)
     expect(driver.cssgen().css).toContain('rebeccapurple')
 
     writeFileTree(cwd, {
@@ -69,135 +52,100 @@ describe('hydrateDesignSystem (consumer)', () => {
   })
 
   it('throws (fail-closed) when build info is stale and the manifest has no files fallback', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default {
-        designSystem: '@acme/ds',
-        include: ['**/*.tsx'],
-      }`,
-      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: {
-          './panda.lib.json': './dist/panda.lib.json',
-          './preset': './dist/panda.preset.mjs',
-        },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        importMap: {
-          css: '@acme/ds/css',
-          recipes: '@acme/ds/recipes',
-          patterns: '@acme/ds/patterns',
-          jsx: '@acme/ds/jsx',
-          tokens: '@acme/ds/tokens',
-        },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
-      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
-        schemaVersion: 999,
-        modules: {},
-        atoms: [],
-      }),
-    })
+    cwd = createFixture({ buildInfo: staleBuildInfo() })
 
-    await expect(createNodeDriver({ cwd })).rejects.toThrow(/incompatible buildInfo/)
+    await expect(createNodeDriver({ cwd })).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_buildinfo_stale',
+          severity: 'error',
+          message: expect.stringMatching(/uses schemaVersion 999; expected 4\. No fallback source files/),
+        },
+      ],
+    })
   })
 
   it('fails closed when the manifest Panda range is incompatible even when files are present', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
-      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^999.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        files: ['./button.js'],
-        importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
-      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
-        schemaVersion: 4,
-        panda: '^999.0.0',
-        configFingerprint: 'x',
-        strings: [],
-        atoms: [],
-        modules: {},
-      }),
-    })
+    cwd = createFixture({ manifest: { panda: '^999.0.0', files: ['./button.js'] } })
 
-    await expect(createNodeDriver({ cwd })).rejects.toThrow(/manifest requires Panda \^999\.0\.0/)
+    await expect(createNodeDriver({ cwd })).rejects.toMatchObject({
+      diagnostics: [{ code: 'design_system_peer_range_unsatisfied', severity: 'error' }],
+    })
   })
 
   it('re-extracts when build info is structurally invalid but files are present', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
-      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        files: ['./button.js'],
-        importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes', jsx: '@acme/ds/jsx' },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default { theme: { tokens: {} } }`,
-      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-      // Valid JSON, but missing required build-info fields — deserialize fails.
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({ schemaVersion: 4 }),
+    cwd = createFixture({
+      manifest: { files: ['./button.js'] },
+      buildInfo: { schemaVersion: 4 },
     })
 
     const driver = await createNodeDriver({ cwd })
-    const codes = (driver.designSystemDiagnostics ?? []).map((d) => d.code)
-    expect(codes).toContain('design_system_buildinfo_stale')
+    const stale = (driver.designSystemDiagnostics ?? []).find((d) => d.code === 'design_system_buildinfo_stale')
+    expect(stale?.message).toMatch(/malformed or corrupt\. Re-extracted 1 source file\./)
     expect(driver.cssgen().css).toContain('rebeccapurple')
   })
 
+  it('reports a build-info read failure separately from schema and structure failures', async () => {
+    cwd = createFixture({
+      manifest: { files: ['./button.js'] },
+      buildInfo: '{ invalid json',
+    })
+
+    const driver = await createNodeDriver({ cwd })
+    const stale = (driver.designSystemDiagnostics ?? []).find((d) => d.code === 'design_system_buildinfo_stale')
+    expect(stale?.message).toMatch(/could not be read:.*Re-extracted 1 source file\./)
+  })
+
+  it('re-extracts source with consumer class-name options instead of loading incompatible build info', async () => {
+    cwd = createFixture({
+      config: `export default { designSystem: '@acme/ds', hash: true, include: ['**/*.tsx'] }`,
+      manifest: { files: ['./button.js'] },
+    })
+
+    const driver = await createNodeDriver({ cwd })
+    const diagnostic = (driver.designSystemDiagnostics ?? []).find(
+      (entry) => entry.code === 'design_system_option_mismatch',
+    )
+
+    expect({
+      severity: diagnostic?.severity,
+      category: diagnostic?.category,
+      message: diagnostic?.message,
+      help: diagnostic?.help,
+    }).toMatchInlineSnapshot(`
+      {
+        "severity": "warning",
+        "category": "designSystem",
+        "message": ""@acme/ds" was built with different hash. Re-extracted 1 source file with the consumer options.",
+        "help": [
+          "Match hash with "@acme/ds", or rebuild it with \`panda lib\`.",
+        ],
+      }
+    `)
+    expect(driver.cssgen().css).toContain('rebeccapurple')
+  })
+
+  it('fails closed on class-name option mismatch when no fallback sources are published', async () => {
+    cwd = createFixture({
+      config: `export default { designSystem: '@acme/ds', hash: true, include: ['**/*.tsx'] }`,
+    })
+
+    await expect(createNodeDriver({ cwd })).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_option_mismatch',
+          severity: 'error',
+          message: expect.stringContaining('No fallback source files were available'),
+        },
+      ],
+    })
+  })
+
   it('keeps runtime token references from hydrated build info during token pruning', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default { designSystem: '@acme/ds', include: ['**/*.tsx'] }`,
-      'App.tsx': 'export const App = () => null',
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        importMap: { tokens: '@acme/ds/tokens' },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
+    cwd = createFixture({
+      app: 'export const App = () => null',
+      manifest: { importMap: { tokens: '@acme/ds/tokens' } },
+      preset: `export default {
         optimize: { removeUnusedTokens: true },
         theme: {
           tokens: {
@@ -208,7 +156,7 @@ describe('hydrateDesignSystem (consumer)', () => {
           },
         },
       }`,
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
+      buildInfo: {
         schemaVersion: 4,
         panda: '^2.0.0',
         configFingerprint: 'cfg1-test',
@@ -216,7 +164,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         atoms: [],
         tokenRefs: [0],
         modules: { 'tokens.ts': { tokenRefs: [0] } },
-      }),
+      },
     })
 
     const css = (await createNodeDriver({ cwd })).cssgen().css
@@ -224,70 +172,55 @@ describe('hydrateDesignSystem (consumer)', () => {
     expect(css).not.toContain('--colors-blue')
   })
 
-  it('warns on a token defined by both the design system and the consumer', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default {
+  it('groups token conflicts from one design system into one informational diagnostic', async () => {
+    cwd = createFixture({
+      config: `export default {
         designSystem: '@acme/ds',
         include: ['**/*.tsx'],
         theme: {
           tokens: {
             colors: {
               brand: { value: 'red' },
+              accent: { value: 'red' },
+              muted: { value: 'red' },
+              surface: { value: 'red' },
             },
           },
         },
       }`,
-      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        files: ['./**/*.{js,mjs}'],
-        importMap: {
-          css: '@acme/ds/css',
-          recipes: '@acme/ds/recipes',
-          patterns: '@acme/ds/patterns',
-          jsx: '@acme/ds/jsx',
-          tokens: '@acme/ds/tokens',
-        },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
+      manifest: { files: ['./**/*.{js,mjs}'] },
+      preset: `export default {
         theme: {
           tokens: {
             colors: {
               brand: { value: 'blue' },
+              accent: { value: 'blue' },
+              muted: { value: 'blue' },
+              surface: { value: 'blue' },
             },
           },
         },
       }`,
-      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
-        schemaVersion: 999,
-        modules: {},
-        atoms: [],
-      }),
+      buildInfo: staleBuildInfo(),
     })
 
     const driver = await createNodeDriver({ cwd })
     const conflicts = (driver.designSystemDiagnostics ?? []).filter((d) => d.code === 'design_system_token_conflict')
 
-    expect(conflicts).toHaveLength(1)
-    expect(conflicts[0].message).toContain('colors.brand')
+    expect(conflicts.map(({ code, severity, message }) => ({ code, severity, message }))).toMatchInlineSnapshot(`
+      [
+        {
+          "code": "design_system_token_conflict",
+          "severity": "info",
+          "message": "4 token paths are defined by both "@acme/ds" and this config ("colors.accent", "colors.brand", "colors.muted" and 1 more); the local values win.",
+        },
+      ]
+    `)
   })
 
   it('warns on a conflict after resolving mixed token authoring forms', async () => {
-    cwd = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
-    writeFileTree(cwd, {
-      'panda.config.ts': `export default {
+    cwd = createFixture({
+      config: `export default {
         designSystem: '@acme/ds',
         include: ['**/*.tsx'],
         theme: {
@@ -300,29 +233,8 @@ describe('hydrateDesignSystem (consumer)', () => {
           },
         },
       }`,
-      'App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
-      'node_modules/@acme/ds/package.json': json({
-        name: '@acme/ds',
-        version: '1.0.0',
-        exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
-      }),
-      'node_modules/@acme/ds/dist/panda.lib.json': json({
-        schemaVersion: 1,
-        name: '@acme/ds',
-        version: '1.0.0',
-        panda: '^2.0.0',
-        preset: './panda.preset.mjs',
-        buildInfo: './panda.buildinfo.json',
-        files: ['./**/*.{js,mjs}'],
-        importMap: {
-          css: '@acme/ds/css',
-          recipes: '@acme/ds/recipes',
-          patterns: '@acme/ds/patterns',
-          jsx: '@acme/ds/jsx',
-          tokens: '@acme/ds/tokens',
-        },
-      }),
-      'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
+      manifest: { files: ['./**/*.{js,mjs}'] },
+      preset: `export default {
         theme: {
           tokens: {
             colors: {
@@ -331,12 +243,7 @@ describe('hydrateDesignSystem (consumer)', () => {
           },
         },
       }`,
-      'node_modules/@acme/ds/dist/button.js': "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
-      'node_modules/@acme/ds/dist/panda.buildinfo.json': json({
-        schemaVersion: 999,
-        modules: {},
-        atoms: [],
-      }),
+      buildInfo: staleBuildInfo(),
     })
 
     const driver = await createNodeDriver({ cwd })
@@ -347,7 +254,61 @@ describe('hydrateDesignSystem (consumer)', () => {
   })
 })
 
-// Fixture helpers
+interface DesignSystemFixture {
+  config?: string
+  app?: string
+  manifest?: Record<string, unknown>
+  preset?: string
+  source?: string
+  buildInfo?: unknown
+}
+
+function createFixture(options: DesignSystemFixture = {}): string {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-ds-hydrate-')))
+  const buildInfo =
+    typeof options.buildInfo === 'string' ? options.buildInfo : json(options.buildInfo ?? validBuildInfo())
+
+  writeFileTree(root, {
+    'panda.config.ts': options.config ?? DEFAULT_CONFIG,
+    'App.tsx': options.app ?? "import { css } from '@panda/css'; css({ color: 'red' })",
+    'node_modules/@acme/ds/package.json': json({
+      name: '@acme/ds',
+      version: '1.0.0',
+      exports: { './panda.lib.json': './dist/panda.lib.json', './preset': './dist/panda.preset.mjs' },
+    }),
+    'node_modules/@acme/ds/dist/panda.lib.json': json({
+      schemaVersion: 1,
+      name: '@acme/ds',
+      version: '1.0.0',
+      panda: '^2.0.0',
+      preset: './panda.preset.mjs',
+      buildInfo: './panda.buildinfo.json',
+      importMap: { css: '@acme/ds/css' },
+      ...options.manifest,
+    }),
+    'node_modules/@acme/ds/dist/panda.preset.mjs': options.preset ?? `export default { theme: { tokens: {} } }`,
+    'node_modules/@acme/ds/dist/button.js':
+      options.source ?? "import { css } from '@acme/ds/css'\ncss({ color: 'rebeccapurple' })",
+    'node_modules/@acme/ds/dist/panda.buildinfo.json': buildInfo,
+  })
+
+  return root
+}
+
+function validBuildInfo(): Record<string, unknown> {
+  return {
+    schemaVersion: 4,
+    panda: '^2.0.0',
+    configFingerprint: 'cfg1-test',
+    strings: [],
+    atoms: [],
+    modules: {},
+  }
+}
+
+function staleBuildInfo(): Record<string, unknown> {
+  return { schemaVersion: 999, modules: {}, atoms: [] }
+}
 
 function writeFileTree(root: string, files: Record<string, string>): void {
   for (const [path, content] of Object.entries(files)) {

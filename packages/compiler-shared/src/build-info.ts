@@ -22,12 +22,12 @@ export interface BuildInfoNative {
 
 export class BuildInfo {
   readonly #native: BuildInfoNative
-  readonly #schemaVersion: number
+  readonly schemaVersion: number
   readonly configFingerprint: string
 
   constructor(native: BuildInfoNative) {
     this.#native = native
-    this.#schemaVersion = native.buildInfoSchemaVersion()
+    this.schemaVersion = native.buildInfoSchemaVersion()
     this.configFingerprint = native.configFingerprint()
   }
 
@@ -37,7 +37,7 @@ export class BuildInfo {
 
   validate(info: BuildInfoArtifact): BuildInfoCompatibility {
     if (!isRecord(info) || typeof info.schemaVersion !== 'number') return { ok: false, reason: 'corrupt' }
-    if (info.schemaVersion !== this.#schemaVersion) return { ok: false, reason: 'schemaVersion' }
+    if (info.schemaVersion !== this.schemaVersion) return { ok: false, reason: 'schemaVersion' }
     if (!hasBuildInfoShape(info)) return { ok: false, reason: 'corrupt' }
     return { ok: true }
   }

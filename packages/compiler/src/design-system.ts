@@ -3,15 +3,29 @@ import { readPandaVersion, type LoadConfigResult } from '@pandacss/config'
 
 type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
 
+type BuildInfoIssue =
+  | { kind: 'read'; detail: string }
+  | { kind: 'schemaVersion'; received: unknown; expected: number }
+  | { kind: 'corrupt' }
+
+type FallbackDiagnostic = (sourceCount: number, severity: 'warning' | 'error') => Diagnostic
+
 export function hydrateDesignSystem(
   compiler: Compiler,
   chain: ResolvedDesignSystem[] | undefined,
   consumerTokenPaths: string[] = [],
 ): Diagnostic[] {
-  if (!chain || chain.length === 0) return []
+  if (!chain || chain.length === 0) {
+    return []
+  }
+
   const pandaVersion = readPandaVersion()
   const diagnostics: Diagnostic[] = []
-  for (const ds of chain) diagnostics.push(...hydrateLevel(compiler, ds, pandaVersion, consumerTokenPaths))
+
+  for (const ds of chain) {
+    diagnostics.push(...hydrateLevel(compiler, ds, pandaVersion, consumerTokenPaths))
+  }
+
   return diagnostics
 }
 
@@ -21,74 +35,180 @@ function hydrateLevel(
   pandaVersion: string | undefined,
   consumerTokenPaths: string[],
 ): Diagnostic[] {
-  const diagnostics: Diagnostic[] = []
-
   const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
-  if (!compat.ok) throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
 
-  let buildInfo: BuildInfoArtifact | undefined
-  try {
-    const content = compiler.fs.readFile(ds.buildInfoPath)
-    if (content == null) throw new Error(`file not found`)
-    buildInfo = JSON.parse(content) as BuildInfoArtifact
-  } catch (error) {
-    if (!tryStaleFallback(compiler, ds, diagnostics)) throw hydrateReadError(ds, error)
+  if (!compat.ok) {
+    throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
   }
 
-  let hydratedPrebuilt = false
-  if (buildInfo) {
-    const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
-    if (!result.ok && !tryStaleFallback(compiler, ds, diagnostics)) {
-      throw hydrateLoadError(ds, result.reason)
-    }
-    hydratedPrebuilt = result.ok
-  }
+  const diagnostics = hydrateArtifacts(compiler, ds, pandaVersion)
 
   diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
-  if (hydratedPrebuilt) diagnostics.push(...optionMismatchDiagnostics(ds))
+
   return diagnostics
 }
 
-function optionMismatchDiagnostics(ds: ResolvedDesignSystem): Diagnostic[] {
-  if (!ds.optionMismatch || ds.optionMismatch.length === 0) return []
-  const options = ds.optionMismatch.join(', ')
-  return [
-    {
-      code: 'design_system_option_mismatch',
-      severity: 'warning',
-      category: 'designSystem',
-      message: `${JSON.stringify(ds.name)} was built with different ${options}; its prebuilt class names won't match yours, so its components can render unstyled. Match these options to the design system, or rebuild it with your options.`,
-    },
-  ]
+function hydrateArtifacts(
+  compiler: Compiler,
+  ds: ResolvedDesignSystem,
+  pandaVersion: string | undefined,
+): Diagnostic[] {
+  if (ds.optionMismatch && ds.optionMismatch.length > 0) {
+    const diagnostic = recoverFromSources(compiler, ds, (sourceCount, severity) =>
+      optionMismatchDiagnostic(ds, sourceCount, severity),
+    )
+
+    return [diagnostic]
+  }
+
+  let buildInfo: BuildInfoArtifact
+
+  try {
+    const content = compiler.fs.readFile(ds.buildInfoPath)
+
+    if (content == null) {
+      throw new Error('file not found')
+    }
+
+    buildInfo = JSON.parse(content) as BuildInfoArtifact
+  } catch (error) {
+    const issue: BuildInfoIssue = { kind: 'read', detail: errorMessage(error) }
+    const diagnostic = recoverFromSources(compiler, ds, (sourceCount, severity) =>
+      buildInfoDiagnostic(ds, issue, sourceCount, severity),
+    )
+
+    return [diagnostic]
+  }
+
+  const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
+
+  if (!result.ok) {
+    const issue: BuildInfoIssue =
+      result.reason === 'schemaVersion'
+        ? {
+            kind: 'schemaVersion',
+            received: buildInfo.schemaVersion,
+            expected: compiler.buildInfo.schemaVersion,
+          }
+        : { kind: 'corrupt' }
+    const diagnostic = recoverFromSources(compiler, ds, (sourceCount, severity) =>
+      buildInfoDiagnostic(ds, issue, sourceCount, severity),
+    )
+
+    return [diagnostic]
+  }
+
+  return []
 }
 
-function tryStaleFallback(compiler: Compiler, ds: ResolvedDesignSystem, diagnostics: Diagnostic[]): boolean {
-  if (ds.files.length === 0) return false
-  const sources = compiler.scan({ include: ds.files, cwd: compiler.path.dirname(ds.manifestPath) })
-  if (sources.length === 0) return false
+function recoverFromSources(
+  compiler: Compiler,
+  ds: ResolvedDesignSystem,
+  createDiagnostic: FallbackDiagnostic,
+): Diagnostic {
+  const sources = extractFallbackSources(compiler, ds)
+  const severity = sources.length === 0 ? 'error' : 'warning'
+  const diagnostic = createDiagnostic(sources.length, severity)
+
+  if (sources.length === 0) {
+    throw diagnosticError(diagnostic)
+  }
 
   compiler.parseFiles(sources)
-  diagnostics.push({
+
+  return diagnostic
+}
+
+function extractFallbackSources(compiler: Compiler, ds: ResolvedDesignSystem) {
+  if (ds.files.length === 0) {
+    return []
+  }
+
+  return compiler.scan({ include: ds.files, cwd: compiler.path.dirname(ds.manifestPath) })
+}
+
+function buildInfoDiagnostic(
+  ds: ResolvedDesignSystem,
+  issue: BuildInfoIssue,
+  sourceCount: number,
+  severity: 'warning' | 'error',
+): Diagnostic {
+  const reason = buildInfoIssueMessage(issue)
+  const outcome =
+    sourceCount > 0
+      ? ` Re-extracted ${sourceCount} source ${sourceCount === 1 ? 'file' : 'files'}.`
+      : ' No fallback source files were available.'
+
+  return {
     code: 'design_system_buildinfo_stale',
-    severity: 'warning',
+    severity,
     category: 'designSystem',
-    message: `Re-extracting ${JSON.stringify(ds.name)} from source; rebuild it with \`panda lib\` to restore the fast path.`,
-  })
-  return true
+    file: ds.buildInfoPath,
+    message: `${JSON.stringify(ds.name)} build info ${reason}.${outcome}`,
+    help: [`Run \`panda lib\` in ${JSON.stringify(ds.name)} to rebuild panda.buildinfo.json.`],
+  }
+}
+
+function buildInfoIssueMessage(issue: BuildInfoIssue): string {
+  if (issue.kind === 'schemaVersion') {
+    return `uses schemaVersion ${formatValue(issue.received)}; expected ${issue.expected}`
+  }
+
+  if (issue.kind === 'read') {
+    return `could not be read: ${issue.detail}`
+  }
+
+  return 'is malformed or corrupt'
+}
+
+function optionMismatchDiagnostic(
+  ds: ResolvedDesignSystem,
+  sourceCount: number,
+  severity: 'warning' | 'error',
+): Diagnostic {
+  const options = ds.optionMismatch?.join(', ') ?? 'class-name options'
+  const outcome =
+    sourceCount > 0
+      ? ` Re-extracted ${sourceCount} source ${sourceCount === 1 ? 'file' : 'files'} with the consumer options.`
+      : ' No fallback source files were available, so the prebuilt class names cannot be used safely.'
+
+  return {
+    code: 'design_system_option_mismatch',
+    severity,
+    category: 'designSystem',
+    file: ds.manifestPath,
+    message: `${JSON.stringify(ds.name)} was built with different ${options}.${outcome}`,
+    help: [`Match ${options} with ${JSON.stringify(ds.name)}, or rebuild it with \`panda lib\`.`],
+  }
 }
 
 function tokenConflictDiagnostics(ds: ResolvedDesignSystem, consumerTokenPaths: string[]): Diagnostic[] {
-  if (consumerTokenPaths.length === 0 || ds.tokenPaths.length === 0) return []
+  if (consumerTokenPaths.length === 0 || ds.tokenPaths.length === 0) {
+    return []
+  }
 
   const designSystemTokenPaths = new Set(ds.tokenPaths)
   const conflicts = [...new Set(consumerTokenPaths.filter((path) => designSystemTokenPaths.has(path)))].sort()
 
-  return conflicts.map((path) => ({
-    code: 'design_system_token_conflict',
-    severity: 'warning',
-    category: 'designSystem',
-    message: `Token ${JSON.stringify(path)} is defined by both ${JSON.stringify(ds.name)} and this config; the local value wins.`,
-  }))
+  if (conflicts.length === 0) {
+    return []
+  }
+
+  const preview = conflicts
+    .slice(0, 3)
+    .map((path) => JSON.stringify(path))
+    .join(', ')
+  const remainder = conflicts.length > 3 ? ` and ${conflicts.length - 3} more` : ''
+
+  return [
+    {
+      code: 'design_system_token_conflict',
+      severity: 'info',
+      category: 'designSystem',
+      file: ds.manifestPath,
+      message: `${conflicts.length} token ${conflicts.length === 1 ? 'path is' : 'paths are'} defined by both ${JSON.stringify(ds.name)} and this config (${preview}${remainder}); the local values win.`,
+    },
+  ]
 }
 
 function incompatibleManifestError(
@@ -98,27 +218,38 @@ function incompatibleManifestError(
   pandaVersion?: string,
 ): Error {
   if (reason === 'schemaVersion') {
-    return new Error(
-      `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.manifestPath)}: manifest schemaVersion ${ds.manifest.schemaVersion} is incompatible with this compiler (expected ${compiler.designSystem.schemaVersion}).`,
-    )
+    return diagnosticError({
+      code: 'design_system_version_mismatch',
+      severity: 'error',
+      category: 'designSystem',
+      file: ds.manifestPath,
+      message: `${JSON.stringify(ds.name)} panda.lib.json uses schemaVersion ${ds.manifest.schemaVersion}; expected ${compiler.designSystem.schemaVersion}.`,
+      help: [`Upgrade ${JSON.stringify(ds.name)}, or rebuild it with a compatible version of Panda.`],
+    })
   }
 
-  const running = pandaVersion ? ` (you are on ${pandaVersion})` : ''
-  return new Error(
-    `Failed to hydrate designSystem ${JSON.stringify(ds.name)}: manifest requires Panda ${ds.manifest.panda}${running}.`,
-  )
+  const running = pandaVersion ? `; the consumer uses ${pandaVersion}` : ''
+
+  return diagnosticError({
+    code: 'design_system_peer_range_unsatisfied',
+    severity: 'error',
+    category: 'designSystem',
+    file: ds.manifestPath,
+    message: `${JSON.stringify(ds.name)} requires Panda ${ds.manifest.panda}${running}.`,
+    help: [`Install a compatible Panda version or update ${JSON.stringify(ds.name)}.`],
+  })
 }
 
-function hydrateReadError(ds: ResolvedDesignSystem, error: unknown): Error {
-  return new Error(
-    `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.buildInfoPath)}: ${errorMessage(error)}`,
-  )
+function diagnosticError(diagnostic: Diagnostic): Error {
+  const error = new Error(diagnostic.message) as Error & { diagnostics: Diagnostic[] }
+
+  error.diagnostics = [diagnostic]
+
+  return error
 }
 
-function hydrateLoadError(ds: ResolvedDesignSystem, reason: string): Error {
-  return new Error(
-    `Failed to hydrate designSystem ${JSON.stringify(ds.name)} from ${JSON.stringify(ds.buildInfoPath)}: incompatible buildInfo ${reason}.`,
-  )
+function formatValue(value: unknown): string {
+  return typeof value === 'number' || typeof value === 'string' ? JSON.stringify(value) : String(value)
 }
 
 function errorMessage(error: unknown): string {
