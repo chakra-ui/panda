@@ -10,6 +10,7 @@ import { studioGenerateFlagsSchema, studioServeFlagsSchema } from '../schema'
 import type { StudioGenerateFlags, StudioGenerateResult, StudioServeFlags, StudioServeResult } from '../schema'
 import { serveStudio, type StudioServer } from '../studio-server'
 import {
+  buildSemanticMap,
   buildTokensSnapshot,
   keyframesToCss,
   viewFiles,
@@ -58,7 +59,8 @@ export async function runStudioGenerate(
     failData: () => ({ files: [], framework: 'react' as StudioFramework }),
     async execute(ctx) {
       const framework = resolveFramework(ctx.driver.config.jsxFramework)
-      const tokens = buildTokensSnapshot(ctx.driver.compiler.spec())
+      const spec = ctx.driver.compiler.spec()
+      const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
       const keyframes = keyframesToCss(readKeyframes(ctx.driver.config))
       const outdir = flags.outdir ? ctx.driver.resolvePath(flags.outdir) : join(ctx.driver.getOutdir(), 'studio')
 
@@ -86,7 +88,8 @@ export async function runStudioServe(
     keepTracing: true,
     failData: () => ({}),
     async execute(ctx) {
-      const tokens = buildTokensSnapshot(ctx.driver.compiler.spec())
+      const spec = ctx.driver.compiler.spec()
+      const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
       const keyframes = keyframesToCss(readKeyframes(ctx.driver.config))
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
       writeStudioFiles(dir, viewerFiles(tokens, keyframes))

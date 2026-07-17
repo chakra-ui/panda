@@ -5,6 +5,7 @@ export interface StudioToken {
   path: string
   name: string
   value: string
+  conditions?: Record<string, string>
 }
 
 export type StudioFramework = 'react' | 'solid'
@@ -21,18 +22,68 @@ const VIEWS: Array<{ name: string; categories: string[] }> = [
   { name: 'Sizes', categories: ['sizes'] },
   { name: 'Radii', categories: ['radii'] },
   { name: 'Shadows', categories: ['shadows'] },
+  { name: 'Semantic', categories: ['semantic'] },
 ]
 
-export function buildTokensSnapshot(spec: Spec): StudioToken[] {
+export function buildTokensSnapshot(spec: Spec, semantic: Record<string, Record<string, string>> = {}): StudioToken[] {
   const out: StudioToken[] = []
   for (const [category, meta] of Object.entries(spec.tokens.categories)) {
     for (const name of meta.values) {
       const path = `${category}.${name}`
+      if (semantic[path]) continue
       const value = spec.tokens.values[path]
       if (value == null || value === '') continue
       out.push({ category, path, name, value })
     }
   }
+  for (const [path, conditions] of Object.entries(semantic)) {
+    const dot = path.indexOf('.')
+    const category = dot === -1 ? path : path.slice(0, dot)
+    const name = dot === -1 ? path : path.slice(dot + 1)
+    const value = conditions.base ?? Object.values(conditions)[0]
+    if (value == null || value === '') continue
+    out.push({ category, path, name, value, conditions })
+  }
+  return out
+}
+
+export function buildSemanticMap(spec: Spec, config: unknown): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {}
+  const values = spec.tokens.values
+
+  const resolve = (raw: unknown): string => {
+    const str = String(raw)
+    const ref = /^\{(.+)\}$/.exec(str.trim())
+    return ref ? values[ref[1]] ?? str : str
+  }
+
+  const walk = (node: unknown, category: string, segments: string[], theme: string) => {
+    if (!node || typeof node !== 'object') return
+    for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
+      if (!child || typeof child !== 'object') continue
+      if ('value' in child) {
+        const path = `${category}.${[...segments, key].join('.')}`
+        const raw = (child as { value: unknown }).value
+        const conditions = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : { base: raw }
+        out[path] ??= {}
+        for (const [condition, value] of Object.entries(conditions)) {
+          out[path][theme ? `${theme} · ${condition}` : condition] = resolve(value)
+        }
+      } else {
+        walk(child, category, [...segments, key], theme)
+      }
+    }
+  }
+
+  const cfg = config as {
+    theme?: { semanticTokens?: Record<string, unknown> }
+    themes?: Record<string, { semanticTokens?: Record<string, unknown> }>
+  }
+  const addSet = (semanticTokens: Record<string, unknown> | undefined, theme: string) => {
+    for (const [category, tokens] of Object.entries(semanticTokens ?? {})) walk(tokens, category, [], theme)
+  }
+  addSet(cfg?.theme?.semanticTokens, '')
+  for (const [name, theme] of Object.entries(cfg?.themes ?? {})) addSet(theme?.semanticTokens, name)
   return out
 }
 
@@ -85,6 +136,7 @@ const VIEWER_HTML = `<!doctype html>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Panda Studio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐼%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="studio.css" />
   </head>
   <body>
@@ -196,6 +248,14 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); }
 .badge.pass { background: color-mix(in srgb, #16a34a 20%, transparent); border-color: #16a34a; }
 .badge.fail { background: color-mix(in srgb, #dc2626 15%, transparent); border-color: #dc2626; opacity: 0.7; }
+.semantic { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: start; }
+.semantic-card { border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 12px; }
+.semantic-name { font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+.semantic-conds { display: flex; flex-direction: column; gap: 8px; }
+.semantic-cond { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.semantic-cond .sw { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+.semantic-cond .label { font-weight: 600; min-width: 90px; }
+.semantic-cond .cv { color: var(--muted); font-family: ui-monospace, monospace; word-break: break-all; }
 .type-play { display: flex; flex-direction: column; gap: 12px; }
 .type-play-preview { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 32px; min-height: 200px; overflow-wrap: anywhere; }
 .type-play-css { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); line-height: 1.7; white-space: pre; overflow-x: auto; }
@@ -417,8 +477,10 @@ function render(tokens, query) {
     : tokens
   document.getElementById('count').textContent = matches.length + ' tokens'
 
+  const semantic = matches.filter((token) => token.conditions)
   const byCategory = new Map()
   for (const token of matches) {
+    if (token.conditions) continue
     if (!byCategory.has(token.category)) byCategory.set(token.category, [])
     byCategory.get(token.category).push(token)
   }
@@ -440,21 +502,71 @@ function render(tokens, query) {
     section.append(heading, body)
     grid.appendChild(section)
   }
+
+  if (semantic.length) {
+    const section = document.createElement('section')
+    section.id = 'cat-semantic'
+    section.dataset.cat = 'semantic'
+    const heading = document.createElement('h2')
+    heading.textContent = 'semantic tokens'
+    const body = document.createElement('div')
+    renderSemantic(body, semantic)
+    section.append(heading, body)
+    grid.appendChild(section)
+  }
+
   updateActiveNav()
+}
+
+function renderSemantic(container, tokens) {
+  const grid = document.createElement('div')
+  grid.className = 'semantic'
+  for (const token of tokens) {
+    const card = document.createElement('div')
+    card.className = 'semantic-card'
+    const name = document.createElement('div')
+    name.className = 'semantic-name'
+    name.textContent = token.name
+    const conds = document.createElement('div')
+    conds.className = 'semantic-conds'
+    for (const [label, value] of Object.entries(token.conditions)) {
+      const row = document.createElement('div')
+      row.className = 'semantic-cond'
+      const swatch = document.createElement('div')
+      swatch.className = 'sw'
+      swatch.style.background = value
+      const labelEl = document.createElement('span')
+      labelEl.className = 'label'
+      labelEl.textContent = label
+      const valueEl = document.createElement('span')
+      valueEl.className = 'cv'
+      valueEl.textContent = value
+      row.append(swatch, labelEl, valueEl)
+      conds.appendChild(row)
+    }
+    card.append(name, conds)
+    grid.appendChild(card)
+  }
+  container.appendChild(grid)
+}
+
+function navItem(nav, cat, label) {
+  const item = document.createElement('li')
+  const link = document.createElement('a')
+  link.href = '#cat-' + cat
+  link.dataset.cat = cat
+  link.textContent = label
+  item.appendChild(link)
+  nav.appendChild(item)
 }
 
 function buildNav(tokens) {
   const nav = document.getElementById('nav')
-  const categories = [...new Set(tokens.map((token) => token.category))].sort((a, b) => rank(a) - rank(b))
-  for (const category of categories) {
-    const item = document.createElement('li')
-    const link = document.createElement('a')
-    link.href = '#cat-' + category
-    link.dataset.cat = category
-    link.textContent = category
-    item.appendChild(link)
-    nav.appendChild(item)
-  }
+  const categories = [...new Set(tokens.filter((token) => !token.conditions).map((token) => token.category))].sort(
+    (a, b) => rank(a) - rank(b),
+  )
+  for (const category of categories) navItem(nav, category, category)
+  if (tokens.some((token) => token.conditions)) navItem(nav, 'semantic', 'semantic tokens')
 }
 
 function updateActiveNav() {
@@ -689,6 +801,14 @@ const COMPONENT_CSS = `.panda-studio { --fg: #1a1a1a; --muted: #71717a; --border
 .panda-studio .s-px { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
 .panda-studio .s-track { background: var(--card); border-radius: 999px; }
 .panda-studio .s-bar { height: 12px; border-radius: 999px; background: var(--accent); }
+.panda-studio .semantic { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: start; }
+.panda-studio .semantic-card { border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 12px; }
+.panda-studio .semantic-name { font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+.panda-studio .semantic-conds { display: flex; flex-direction: column; gap: 8px; }
+.panda-studio .semantic-cond { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.panda-studio .semantic-cond .sw { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+.panda-studio .semantic-cond .label { font-weight: 600; min-width: 90px; }
+.panda-studio .semantic-cond .cv { color: var(--muted); font-family: ui-monospace, monospace; word-break: break-all; }
 .panda-studio .anim-box { width: 44px; height: 44px; border-radius: 8px; background: var(--accent); }
 .panda-studio .ease-track { width: 100%; padding: 0 4px; }
 .panda-studio .ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
@@ -744,6 +864,7 @@ interface StudioToken {
   path: string
   name: string
   value: string
+  conditions?: Record<string, string>
 }
 
 const all = tokens as StudioToken[]
@@ -829,14 +950,40 @@ function Scale({ items }: { items: StudioToken[] }) {
   )
 }
 
+function Semantic({ items }: { items: StudioToken[] }) {
+  return (
+    <div className="semantic">
+      {items.map((token) => (
+        <div className="semantic-card" key={token.path}>
+          <div className="semantic-name">{token.name}</div>
+          <div className="semantic-conds">
+            {Object.entries(token.conditions ?? {}).map(([label, value]) => (
+              <div className="semantic-cond" key={label}>
+                <div className="sw" style={{ background: value }} />
+                <span className="label">{label}</span>
+                <span className="cv">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function TokenGrid({ category }: { category: string }) {
-  const items = all.filter((token) => token.category === category)
+  const items =
+    category === 'semantic'
+      ? all.filter((token) => token.conditions)
+      : all.filter((token) => token.category === category && !token.conditions)
   if (items.length === 0) return null
 
   return (
     <div className="panda-studio">
       <style>{CSS}</style>
-      {category === 'colors' ? (
+      {category === 'semantic' ? (
+        <Semantic items={items} />
+      ) : category === 'colors' ? (
         <Palette items={items} />
       ) : TYPE_CATEGORIES.has(category) ? (
         <TypeList category={category} items={items} />
@@ -879,6 +1026,7 @@ interface StudioToken {
   path: string
   name: string
   value: string
+  conditions?: Record<string, string>
 }
 
 const all = tokens as StudioToken[]
@@ -970,16 +1118,46 @@ function Scale(props: { items: StudioToken[] }) {
   )
 }
 
+function Semantic(props: { items: StudioToken[] }) {
+  return (
+    <div class="semantic">
+      <For each={props.items}>
+        {(token) => (
+          <div class="semantic-card">
+            <div class="semantic-name">{token.name}</div>
+            <div class="semantic-conds">
+              <For each={Object.entries(token.conditions ?? {})}>
+                {([label, value]) => (
+                  <div class="semantic-cond">
+                    <div class="sw" style={{ background: value }} />
+                    <span class="label">{label}</span>
+                    <span class="cv">{value}</span>
+                  </div>
+                )}
+              </For>
+            </div>
+          </div>
+        )}
+      </For>
+    </div>
+  )
+}
+
 export function TokenGrid(props: { category: string }) {
-  const items = () => all.filter((token) => token.category === props.category)
+  const items = () =>
+    props.category === 'semantic'
+      ? all.filter((token) => token.conditions)
+      : all.filter((token) => token.category === props.category && !token.conditions)
   const mode = () =>
-    props.category === 'colors'
-      ? 'palette'
-      : TYPE_CATEGORIES.has(props.category)
-        ? 'type'
-        : SCALE_CATEGORIES.has(props.category)
-          ? 'scale'
-          : 'grid'
+    props.category === 'semantic'
+      ? 'semantic'
+      : props.category === 'colors'
+        ? 'palette'
+        : TYPE_CATEGORIES.has(props.category)
+          ? 'type'
+          : SCALE_CATEGORIES.has(props.category)
+            ? 'scale'
+            : 'grid'
 
   return (
     <Switch>
@@ -988,6 +1166,7 @@ export function TokenGrid(props: { category: string }) {
         <div class="panda-studio">
           <style>{CSS}</style>
           <Switch>
+            <Match when={mode() === 'semantic'}><Semantic items={items()} /></Match>
             <Match when={mode() === 'palette'}><Palette items={items()} /></Match>
             <Match when={mode() === 'type'}><TypeList category={props.category} items={items()} /></Match>
             <Match when={mode() === 'scale'}><Scale items={items()} /></Match>

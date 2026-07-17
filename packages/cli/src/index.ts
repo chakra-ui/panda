@@ -9,7 +9,7 @@ export { runAnalyze } from './commands/analyze'
 export { infoDriver, runInfo } from './commands/info'
 export { runInit, setupGitIgnore } from './commands/init'
 export { runStudioGenerate, runStudioServe } from './commands/studio'
-export { buildTokensSnapshot, viewFiles, viewerFiles } from './studio-codegen'
+export { buildSemanticMap, buildTokensSnapshot, keyframesToCss, viewFiles, viewerFiles } from './studio-codegen'
 export type { StudioToken, StudioFile, StudioFramework } from './studio-codegen'
 export { serveStudio } from './studio-server'
 export type {

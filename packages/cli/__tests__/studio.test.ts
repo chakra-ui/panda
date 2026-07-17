@@ -1,7 +1,14 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { buildTokensSnapshot, runStudioGenerate, runStudioServe, viewFiles, viewerFiles } from '../src'
+import {
+  buildSemanticMap,
+  buildTokensSnapshot,
+  runStudioGenerate,
+  runStudioServe,
+  viewFiles,
+  viewerFiles,
+} from '../src'
 import type { StudioToken } from '../src'
 import { cleanupFixture, createFixture } from './helpers'
 
@@ -129,5 +136,36 @@ describe('studio viewer', () => {
     } finally {
       await result.stop?.()
     }
+  })
+})
+
+describe('studio semantic tokens', () => {
+  const spec = { tokens: { categories: {}, values: { 'colors.white': '#fff', 'colors.black': '#000' } } } as never
+  const config = {
+    theme: { semanticTokens: { colors: { bg: { value: { base: '{colors.white}', _dark: '{colors.black}' } } } } },
+    themes: { ocean: { semanticTokens: { colors: { bg: { value: { base: '#e0f2fe' } } } } } },
+  }
+
+  it('resolves semantic conditions and named themes against token values', () => {
+    expect(buildSemanticMap(spec, config)).toEqual({
+      'colors.bg': { base: '#fff', _dark: '#000', 'ocean · base': '#e0f2fe' },
+    })
+  })
+
+  it('emits semantic tokens with conditions, base as the display value', () => {
+    const semantic = buildSemanticMap(spec, config)
+    const tokens = buildTokensSnapshot(spec, semantic)
+    const bg = tokens.find((token) => token.path === 'colors.bg')
+    expect(bg).toMatchObject({ category: 'colors', name: 'bg', value: '#fff' })
+    expect(bg?.conditions).toEqual({ base: '#fff', _dark: '#000', 'ocean · base': '#e0f2fe' })
+  })
+
+  it('keeps semantic paths out of the primitive list', () => {
+    const specWithSemantic = {
+      tokens: { categories: { colors: { values: ['bg'] } }, values: { 'colors.bg': 'var(--colors-white)' } },
+    } as never
+    const tokens = buildTokensSnapshot(specWithSemantic, { 'colors.bg': { base: '#fff' } })
+    expect(tokens.filter((token) => token.path === 'colors.bg')).toHaveLength(1)
+    expect(tokens[0].value).toBe('#fff')
   })
 })
