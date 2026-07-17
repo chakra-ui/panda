@@ -88,14 +88,20 @@ const VIEWER_HTML = `<!doctype html>
     <link rel="stylesheet" href="studio.css" />
   </head>
   <body>
-    <div class="wrap">
-      <header>
-        <span class="logo">🐼</span>
-        <h1>Panda Studio</h1>
-        <span class="count" id="count"></span>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand"><span class="logo">🐼</span> Panda Studio</div>
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+          <input class="search" id="search" type="search" placeholder="Filter tokens…" aria-label="Filter tokens" />
+        </div>
+        <nav class="nav"><div class="nav-label">Tokens</div><ul id="nav"></ul></nav>
         <button class="theme" id="theme" type="button" aria-label="Toggle color theme"></button>
-      </header>
-      <main id="grid"></main>
+      </aside>
+      <main class="content">
+        <div class="content-head"><span class="count" id="count"></span></div>
+        <div id="grid"></div>
+      </main>
     </div>
     <script src="studio.js"></script>
   </body>
@@ -118,15 +124,29 @@ const VIEWER_CSS = `:root {
 }
 :root[data-theme='dark'] { color-scheme: dark; --bg: #0d0d0f; --fg: #f4f4f5; --muted: #8f8f99; --border: #26262a; --card: #161619; --swatch: #3f3f46; --shadow-bg: #f4f4f5; }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, system-ui, sans-serif; }
-.wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
-header { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
-header .logo { font-size: 22px; line-height: 1; }
-header h1 { font-size: 18px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
-header .count { margin-left: auto; color: var(--muted); font-size: 13px; }
-.theme { width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; flex-shrink: 0; height: 100vh; position: sticky; top: 0; overflow: auto; border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.brand .logo { font-size: 20px; line-height: 1; }
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 10px; color: var(--muted); pointer-events: none; }
+.search { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 13px; }
+.search::placeholder { color: var(--muted); }
+.search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+.nav { display: flex; flex-direction: column; }
+.nav-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+.nav a { display: block; padding: 6px 10px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--fg); text-decoration: none; text-transform: capitalize; }
+.nav a:hover { background: var(--card); }
+.nav a.active { background: var(--accent); color: #1a1a1a; }
+.theme { margin-top: auto; width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .theme:hover { border-color: var(--accent); }
-section { margin-bottom: 44px; }
+.content { flex: 1; min-width: 0; padding: 28px 40px 80px; }
+.content-head { margin-bottom: 24px; min-height: 16px; }
+.content .count { color: var(--muted); font-size: 13px; }
+section { margin-bottom: 44px; scroll-margin-top: 24px; }
 section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 16px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; align-items: start; }
 .card { border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 12px; }
@@ -349,23 +369,30 @@ function makeCard(token) {
   return card
 }
 
-fetch('tokens.json').then((res) => res.json()).then((tokens) => {
+const rank = (category) => {
+  const index = CATEGORY_ORDER.indexOf(category)
+  return index === -1 ? CATEGORY_ORDER.length : index
+}
+
+function render(tokens, query) {
   const grid = document.getElementById('grid')
-  document.getElementById('count').textContent = tokens.length + ' tokens'
+  grid.textContent = ''
+  const term = query.trim().toLowerCase()
+  const matches = term
+    ? tokens.filter((token) => (token.name + ' ' + token.value + ' ' + token.category).toLowerCase().includes(term))
+    : tokens
+  document.getElementById('count').textContent = matches.length + ' tokens'
 
   const byCategory = new Map()
-  for (const token of tokens) {
+  for (const token of matches) {
     if (!byCategory.has(token.category)) byCategory.set(token.category, [])
     byCategory.get(token.category).push(token)
   }
 
-  const rank = (category) => {
-    const index = CATEGORY_ORDER.indexOf(category)
-    return index === -1 ? CATEGORY_ORDER.length : index
-  }
-
   for (const category of [...byCategory.keys()].sort((a, b) => rank(a) - rank(b))) {
     const section = document.createElement('section')
+    section.id = 'cat-' + category
+    section.dataset.cat = category
     const heading = document.createElement('h2')
     heading.textContent = category
     const body = document.createElement('div')
@@ -379,6 +406,56 @@ fetch('tokens.json').then((res) => res.json()).then((tokens) => {
     section.append(heading, body)
     grid.appendChild(section)
   }
+  observeSections()
+}
+
+function buildNav(tokens) {
+  const nav = document.getElementById('nav')
+  const categories = [...new Set(tokens.map((token) => token.category))].sort((a, b) => rank(a) - rank(b))
+  for (const category of categories) {
+    const item = document.createElement('li')
+    const link = document.createElement('a')
+    link.href = '#cat-' + category
+    link.dataset.cat = category
+    link.textContent = category
+    item.appendChild(link)
+    nav.appendChild(item)
+  }
+}
+
+let sectionObserver
+function observeSections() {
+  if (sectionObserver) sectionObserver.disconnect()
+  const links = new Map([...document.querySelectorAll('#nav a')].map((link) => [link.dataset.cat, link]))
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        for (const link of document.querySelectorAll('#nav a.active')) link.classList.remove('active')
+        links.get(entry.target.dataset.cat)?.classList.add('active')
+      }
+    },
+    { rootMargin: '0px 0px -80% 0px' },
+  )
+  for (const section of document.querySelectorAll('section[data-cat]')) sectionObserver.observe(section)
+}
+
+function persistQuery(query) {
+  const url = new URL(location.href)
+  if (query) url.searchParams.set('q', query)
+  else url.searchParams.delete('q')
+  history.replaceState(null, '', url)
+}
+
+fetch('tokens.json').then((res) => res.json()).then((tokens) => {
+  buildNav(tokens)
+  const search = document.getElementById('search')
+  search.value = new URLSearchParams(location.search).get('q') || ''
+  search.addEventListener('input', () => {
+    persistQuery(search.value)
+    render(tokens, search.value)
+  })
+  render(tokens, search.value)
 })
 `
 
