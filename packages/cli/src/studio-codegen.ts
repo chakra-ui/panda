@@ -40,22 +40,43 @@ export function tokensSnapshotFile(tokens: StudioToken[]): StudioFile {
   return { path: 'tokens.json', code: `${JSON.stringify(tokens, null, 2)}\n` }
 }
 
-export function viewFiles(tokens: StudioToken[], framework: StudioFramework): StudioFile[] {
+export function viewFiles(tokens: StudioToken[], framework: StudioFramework, keyframesCss = ''): StudioFile[] {
   const templates = framework === 'solid' ? solidTemplates : reactTemplates
   return [
     tokensSnapshotFile(tokens),
-    { path: 'components/token-grid.tsx', code: templates.tokenGrid() },
+    { path: 'components/token-grid.tsx', code: templates.tokenGrid(keyframesCss) },
     ...VIEWS.map((view) => ({ path: `${view.name}.tsx`, code: templates.view(view.name, view.categories) })),
   ]
 }
 
-export function viewerFiles(tokens: StudioToken[]): StudioFile[] {
+export function viewerFiles(tokens: StudioToken[], keyframesCss = ''): StudioFile[] {
   return [
     tokensSnapshotFile(tokens),
     { path: 'index.html', code: VIEWER_HTML },
-    { path: 'studio.css', code: VIEWER_CSS },
+    { path: 'studio.css', code: keyframesCss ? `${VIEWER_CSS}\n${keyframesCss}` : VIEWER_CSS },
     { path: 'studio.js', code: VIEWER_JS },
   ]
+}
+
+export function keyframesToCss(keyframes: unknown): string {
+  if (!keyframes || typeof keyframes !== 'object') return ''
+  const kebab = (prop: string) => prop.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
+  const blocks: string[] = []
+  for (const [name, frames] of Object.entries(keyframes as Record<string, unknown>)) {
+    if (!frames || typeof frames !== 'object') continue
+    const steps = Object.entries(frames as Record<string, unknown>)
+      .map(([step, decls]) => {
+        if (!decls || typeof decls !== 'object') return ''
+        const props = Object.entries(decls as Record<string, unknown>)
+          .map(([prop, value]) => `${kebab(prop)}: ${String(value)}`)
+          .join('; ')
+        return `${step} { ${props} }`
+      })
+      .filter(Boolean)
+      .join(' ')
+    if (steps) blocks.push(`@keyframes ${name} { ${steps} }`)
+  }
+  return blocks.join('\n')
 }
 
 const VIEWER_HTML = `<!doctype html>
@@ -130,6 +151,10 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .scale .s-px { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
 .scale .s-track { background: var(--card); border-radius: 999px; }
 .scale .s-bar { height: 12px; border-radius: 999px; background: var(--accent); }
+.anim-box { width: 44px; height: 44px; border-radius: 8px; background: var(--accent); }
+.ease-track { width: 100%; padding: 0 4px; }
+.ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
+@keyframes panda-studio-ease { from { transform: translateX(0); } to { transform: translateX(130px); } }
 `
 
 const VIEWER_JS = `const root = document.documentElement
@@ -155,7 +180,7 @@ renderThemeButton()
 const CATEGORY_ORDER = ['colors', 'fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings', 'spacing', 'sizes', 'radii', 'borders', 'shadows', 'blurs', 'aspectRatios', 'durations', 'easings', 'animations', 'breakpoints']
 const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
 const SCALE_CATEGORIES = new Set(['spacing', 'sizes'])
-const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio' }
+const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing' }
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
 function toPx(value) {
@@ -283,6 +308,23 @@ function makePreview(category, value) {
     wrap.appendChild(chip)
     return wrap
   }
+  if (kind === 'animation') {
+    const box = document.createElement('div')
+    box.className = 'anim-box'
+    box.style.animation = value
+    wrap.appendChild(box)
+    return wrap
+  }
+  if (kind === 'easing') {
+    const track = document.createElement('div')
+    track.className = 'ease-track'
+    const dot = document.createElement('div')
+    dot.className = 'ease-dot'
+    dot.style.animationTimingFunction = value
+    track.appendChild(dot)
+    wrap.appendChild(track)
+    return wrap
+  }
   const chip = document.createElement('div')
   chip.style.height = '48px'
   chip.style.aspectRatio = value
@@ -364,11 +406,15 @@ const COMPONENT_CSS = `.panda-studio { --fg: #1a1a1a; --muted: #71717a; --border
 .panda-studio .s-value { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
 .panda-studio .s-px { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
 .panda-studio .s-track { background: var(--card); border-radius: 999px; }
-.panda-studio .s-bar { height: 12px; border-radius: 999px; background: var(--accent); }`
+.panda-studio .s-bar { height: 12px; border-radius: 999px; background: var(--accent); }
+.panda-studio .anim-box { width: 44px; height: 44px; border-radius: 8px; background: var(--accent); }
+.panda-studio .ease-track { width: 100%; padding: 0 4px; }
+.panda-studio .ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
+@keyframes panda-studio-ease { from { transform: translateX(0); } to { transform: translateX(130px); } }`
 
 const SHARED_HELPERS = `const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
 const SCALE_CATEGORIES = new Set(['spacing', 'sizes'])
-const GRID_KIND: Record<string, string> = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio' }
+const GRID_KIND: Record<string, string> = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing' }
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
 const familyOf = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name)
@@ -400,7 +446,7 @@ function scaleRows(items: StudioToken[]) {
 }`
 
 const reactTemplates = {
-  tokenGrid: () => `import { Fragment } from 'react'
+  tokenGrid: (keyframesCss: string) => `import { Fragment } from 'react'
 import type { CSSProperties } from 'react'
 import tokens from '../tokens.json'
 
@@ -412,7 +458,7 @@ interface StudioToken {
 }
 
 const all = tokens as StudioToken[]
-const CSS = \`${COMPONENT_CSS}\`
+const CSS = \`${COMPONENT_CSS}\n${keyframesCss}\`
 ${SHARED_HELPERS}
 
 function typeStyle(category: string, value: string): CSSProperties {
@@ -433,6 +479,8 @@ function GridPreview({ category, value }: { category: string; value: string }) {
     case 'shadow': return <div className="chip" style={{ background: 'var(--shadow-bg)', boxShadow: value }} />
     case 'blur': return <div className="chip" style={{ background: 'linear-gradient(135deg, var(--accent), #ec4899)', filter: \`blur(\${value})\` }} />
     case 'ratio': return <div style={{ height: 48, aspectRatio: value, background: 'var(--swatch)', borderRadius: 6 }} />
+    case 'animation': return <div className="anim-box" style={{ animation: value }} />
+    case 'easing': return <div className="ease-track"><div className="ease-dot" style={{ animationTimingFunction: value }} /></div>
     default: return null
   }
 }
@@ -532,7 +580,7 @@ ${categories.map((category) => `      <TokenGrid category="${category}" />`).joi
 }
 
 const solidTemplates = {
-  tokenGrid: () => `import { For, Match, Switch } from 'solid-js'
+  tokenGrid: (keyframesCss: string) => `import { For, Match, Switch } from 'solid-js'
 import type { JSX } from 'solid-js'
 import tokens from '../tokens.json'
 
@@ -544,7 +592,7 @@ interface StudioToken {
 }
 
 const all = tokens as StudioToken[]
-const CSS = \`${COMPONENT_CSS}\`
+const CSS = \`${COMPONENT_CSS}\n${keyframesCss}\`
 ${SHARED_HELPERS}
 
 function typeStyle(category: string, value: string): JSX.CSSProperties {
@@ -565,6 +613,8 @@ function GridPreview(props: { category: string; value: string }) {
     case 'shadow': return <div class="chip" style={{ background: 'var(--shadow-bg)', 'box-shadow': props.value }} />
     case 'blur': return <div class="chip" style={{ background: 'linear-gradient(135deg, var(--accent), #ec4899)', filter: \`blur(\${props.value})\` }} />
     case 'ratio': return <div style={{ height: '48px', 'aspect-ratio': props.value, background: 'var(--swatch)', 'border-radius': '6px' }} />
+    case 'animation': return <div class="anim-box" style={{ animation: props.value }} />
+    case 'easing': return <div class="ease-track"><div class="ease-dot" style={{ 'animation-timing-function': props.value }} /></div>
     default: return null
   }
 }

@@ -9,7 +9,14 @@ import { runCommand } from '../run-command'
 import { studioGenerateFlagsSchema, studioServeFlagsSchema } from '../schema'
 import type { StudioGenerateFlags, StudioGenerateResult, StudioServeFlags, StudioServeResult } from '../schema'
 import { serveStudio, type StudioServer } from '../studio-server'
-import { buildTokensSnapshot, viewFiles, viewerFiles, type StudioFile, type StudioFramework } from '../studio-codegen'
+import {
+  buildTokensSnapshot,
+  keyframesToCss,
+  viewFiles,
+  viewerFiles,
+  type StudioFile,
+  type StudioFramework,
+} from '../studio-codegen'
 
 export const studioGenerateCommand = defineCommand({
   meta: {
@@ -52,9 +59,10 @@ export async function runStudioGenerate(
     async execute(ctx) {
       const framework = resolveFramework(ctx.driver.config.jsxFramework)
       const tokens = buildTokensSnapshot(ctx.driver.compiler.spec())
+      const keyframes = keyframesToCss(readKeyframes(ctx.driver.config))
       const outdir = flags.outdir ? ctx.driver.resolvePath(flags.outdir) : join(ctx.driver.getOutdir(), 'studio')
 
-      const files = writeStudioFiles(outdir, viewFiles(tokens, framework))
+      const files = writeStudioFiles(outdir, viewFiles(tokens, framework, keyframes))
 
       if (shouldPrintHumanSummary(flags)) {
         ctx.output.log(`studio: wrote ${files.length} ${framework} files to ${outdir}`)
@@ -79,8 +87,9 @@ export async function runStudioServe(
     failData: () => ({}),
     async execute(ctx) {
       const tokens = buildTokensSnapshot(ctx.driver.compiler.spec())
+      const keyframes = keyframesToCss(readKeyframes(ctx.driver.config))
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeStudioFiles(dir, viewerFiles(tokens))
+      writeStudioFiles(dir, viewerFiles(tokens, keyframes))
 
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 
@@ -103,6 +112,10 @@ export async function runStudioServe(
 
 function resolveFramework(jsxFramework: unknown): StudioFramework {
   return jsxFramework === 'solid' ? 'solid' : 'react'
+}
+
+function readKeyframes(config: unknown): unknown {
+  return (config as { theme?: { keyframes?: unknown } } | undefined)?.theme?.keyframes
 }
 
 function writeStudioFiles(outdir: string, files: StudioFile[]): string[] {
