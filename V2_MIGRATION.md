@@ -481,7 +481,8 @@ const Button = withContext('button')
 | `panda debug`     | Write bug-report artifacts under `<outdir>/debug`.                                           |
 | `panda codegen`   | Advanced: generate the `styled-system` output only.                                          |
 | `panda cssgen`    | Advanced: generate CSS only.                                                                 |
-| `panda buildinfo` | Advanced: emit design-system build metadata.                                                 |
+| `panda lib`       | Publish a design system (`panda.lib.json` + build info + preset). See [Design systems](#design-systems). |
+| `panda buildinfo` | Write build-info JSON only. Prefer `panda lib` for libraries.                                |
 
 `panda inspect` and `panda validate` are removed in v2. Use `panda info` and `panda doctor`.
 
@@ -506,25 +507,27 @@ v1's positional layer names (`preflight`, `global`, `tokens`, …) and positiona
 
 ## Design systems
 
-Ship a component library so apps share your tokens, recipes, and CSS without re-scanning your source. This replaces v1's
+Ship a component library so apps share your tokens, recipes, and CSS without re-scanning your source. Replaces v1's
 `panda ship`.
 
-### Publish the library
+### Shipping a library
 
 ```sh
+# Monorepo / publish source — inferred fallback files often point at ../src/...
 panda lib
+
+# Built-only package ("files": ["dist"]) — set fallback globs yourself (relative to lib outdir)
+panda lib --files './**/*.{js,mjs}'
 ```
 
-By default it writes three files under `dist` and syncs package `exports`:
+Writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs` under `dist` (default), and syncs package
+`exports`. Build info is what consumers hydrate; the preset carries tokens, recipes, and patterns.
 
-- `panda.lib.json` — manifest (name, peer range, import map, pointers to the other files)
-- `panda.buildinfo.json` — extracted atoms and recipes for consumers
-- `panda.preset.mjs` — compiled preset (tokens, recipes, patterns)
+Fallback `files` are only used when build info is missing or stale. Without `--files`, they're inferred from the scan.
+If package.json only publishes `dist`, inferred `../src/...` paths won't ship — `panda lib` drops them and warns.
+`--files` skips that filter. You own the source→dist mapping; Panda won't guess it.
 
-The peer range in the manifest comes from your `@pandacss/dev` peer (`workspace:`, `catalog:`, and `npm:` become a
-portable range). Override with `--panda <range>`.
-
-### Consume the library
+### Using it in an app
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -535,14 +538,14 @@ export default defineConfig({
 })
 ```
 
-Panda loads the package's `panda.lib.json`, merges its preset (and any parent), and applies the build info so the
-library's CSS shows up without scanning its source. You don't set `importMap` separately.
+Panda loads `panda.lib.json`, merges the preset (and any parent), and applies the build info. You don't set `importMap`
+separately.
 
-Don't put `panda.buildinfo.json` in `include` — that globs source modules, and JSON fails to parse. `designSystem` is
-enough.
+Don't put `panda.buildinfo.json` in `include` — that globs source, and JSON fails to parse. `designSystem` is enough.
 
-Run `panda build` (or `panda codegen`) in the app. Import styles from your local `outdir`, not from the design-system
-package. Local codegen has the merged types; the published package may not ship a typed styled-system yet:
+Run `panda build` (or `panda codegen`) after wiring it. Import from your local `outdir`, not the design-system package.
+Local codegen re-emits merged types (including parent tokens); the published package may not ship a typed styled-system
+yet:
 
 ```ts
 import { css } from '../styled-system/css' // local outdir (merged types)
@@ -552,10 +555,24 @@ import { css } from '../styled-system/css' // local outdir (merged types)
 Extraction still matches both package roots and the local outdir. Local imports are the beta convention for types until
 a published styled-system lands. See [`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
 
+### Chaining libraries
+
+In a chain (`base → examples → components → app`), each package runs `panda lib` on its own source. Parent atoms stay in
+the parent; consumers compose the chain through `designSystem`.
+
+### Stamping a peer range
+
+The peer range in the manifest comes from your `@pandacss/dev` peer. `workspace:`, `catalog:`, and `npm:` become a
+portable range. Override with `--panda <range>` when you need an exact stamp:
+
+```sh
+panda lib --panda '^2.0.0'
+```
+
 ### Known gaps
 
 - **Package-root types.** Prefer the local `outdir` import above. `@acme/ds/css` can fail typechecking even when CSS is
-  fine.
+  fine. Re-run local codegen so merged tokens land in `outdir`.
 - **Missing tokens.** A token path the library doesn't define still emits as literal CSS with no build warning. Types
   reject it. See [`design-notes/design-system-manifest.md`](design-notes/design-system-manifest.md).
 
