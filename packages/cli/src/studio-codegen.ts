@@ -95,11 +95,17 @@ const VIEWER_HTML = `<!doctype html>
           <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
           <input class="search" id="search" type="search" placeholder="Filter tokens…" aria-label="Filter tokens" />
         </div>
-        <nav class="nav"><div class="nav-label">Tokens</div><ul id="nav"></ul></nav>
+        <nav class="nav">
+          <div class="nav-label">Tokens</div>
+          <ul id="nav"></ul>
+          <div class="nav-label nav-label-spaced">Playground</div>
+          <ul><li><a href="#tool-contrast" data-cat="tool-contrast">Contrast</a></li></ul>
+        </nav>
       </aside>
       <main class="content">
         <div class="content-head"><span class="count" id="count"></span></div>
         <div id="grid"></div>
+        <div id="tools"></div>
       </main>
       <button class="theme" id="theme" type="button" aria-label="Toggle color theme"></button>
     </div>
@@ -175,6 +181,18 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .ease-track { width: 100%; padding: 0 4px; }
 .ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
 @keyframes panda-studio-ease { from { transform: translateX(0); } to { transform: translateX(130px); } }
+.nav-label-spaced { margin-top: 20px; }
+.tool { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+.tool-controls { display: flex; flex-direction: column; gap: 12px; }
+.tool-controls label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.tool-controls select, .tool-controls textarea { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 13px; font-family: inherit; }
+.tool-controls select:focus, .tool-controls textarea:focus { outline: none; border-color: var(--accent); }
+.contrast-preview { display: flex; align-items: center; justify-content: center; height: 160px; border: 1px solid var(--border); border-radius: 12px; font-size: 30px; font-weight: 600; }
+.contrast-score { font-size: 40px; font-weight: 700; margin: 16px 0 12px; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); }
+.badge.pass { background: color-mix(in srgb, #16a34a 20%, transparent); border-color: #16a34a; }
+.badge.fail { background: color-mix(in srgb, #dc2626 15%, transparent); border-color: #dc2626; opacity: 0.7; }
 `
 
 const VIEWER_JS = `const root = document.documentElement
@@ -444,7 +462,104 @@ function updateActiveNav() {
       if (section.getBoundingClientRect().top <= 120) active = section.dataset.cat
     }
   }
-  for (const link of document.querySelectorAll('#nav a')) link.classList.toggle('active', link.dataset.cat === active)
+  for (const link of document.querySelectorAll('.nav a')) link.classList.toggle('active', link.dataset.cat === active)
+}
+
+function toRgb(value) {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 1
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#000'
+  ctx.fillStyle = value
+  ctx.fillRect(0, 0, 1, 1)
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+  return [r, g, b]
+}
+
+function luminance(rgb) {
+  const [r, g, b] = rgb.map((channel) => {
+    const c = channel / 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function contrastRatio(fg, bg) {
+  const a = luminance(toRgb(fg))
+  const b = luminance(toRgb(bg))
+  const [hi, lo] = a > b ? [a, b] : [b, a]
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+function badge(label, pass) {
+  const el = document.createElement('span')
+  el.className = 'badge ' + (pass ? 'pass' : 'fail')
+  el.textContent = (pass ? '✓ ' : '✗ ') + label
+  return el
+}
+
+function renderContrast(container, colors) {
+  if (colors.length === 0) return
+
+  const section = document.createElement('section')
+  section.id = 'tool-contrast'
+  section.dataset.cat = 'tool-contrast'
+  const heading = document.createElement('h2')
+  heading.textContent = 'contrast'
+
+  const tool = document.createElement('div')
+  tool.className = 'tool'
+
+  const controls = document.createElement('div')
+  controls.className = 'tool-controls'
+  const options = colors.map((token) => '<option value="' + token.value + '">' + token.name + '</option>').join('')
+  controls.innerHTML =
+    '<label>Foreground<select id="contrast-fg">' + options + '</select></label>' +
+    '<label>Background<select id="contrast-bg">' + options + '</select></label>'
+
+  const result = document.createElement('div')
+  const preview = document.createElement('div')
+  preview.className = 'contrast-preview'
+  preview.textContent = 'Aa'
+  const score = document.createElement('div')
+  score.className = 'contrast-score'
+  const badges = document.createElement('div')
+  badges.className = 'badges'
+  result.append(preview, score, badges)
+
+  tool.append(controls, result)
+  section.append(heading, tool)
+  container.appendChild(section)
+
+  const fg = controls.querySelector('#contrast-fg')
+  const bg = controls.querySelector('#contrast-bg')
+  const dark = colors.find((token) => luminance(toRgb(token.value)) < 0.2)
+  const light = colors.find((token) => luminance(toRgb(token.value)) > 0.8)
+  if (dark) fg.value = dark.value
+  if (light) bg.value = light.value
+
+  function update() {
+    const ratio = contrastRatio(fg.value, bg.value)
+    preview.style.color = fg.value
+    preview.style.background = bg.value
+    score.textContent = ratio.toFixed(2) + ' : 1'
+    badges.textContent = ''
+    badges.append(
+      badge('AA', ratio >= 4.5),
+      badge('AA Large', ratio >= 3),
+      badge('AAA', ratio >= 7),
+      badge('AAA Large', ratio >= 4.5),
+    )
+  }
+  fg.addEventListener('change', update)
+  bg.addEventListener('change', update)
+  update()
+}
+
+function renderTools(tokens) {
+  const tools = document.getElementById('tools')
+  renderContrast(tools, tokens.filter((token) => token.category === 'colors'))
+  updateActiveNav()
 }
 
 let navScrollQueued = false
@@ -470,6 +585,7 @@ function persistQuery(query) {
 
 fetch('tokens.json').then((res) => res.json()).then((tokens) => {
   buildNav(tokens)
+  renderTools(tokens)
   const search = document.getElementById('search')
   search.value = new URLSearchParams(location.search).get('q') || ''
   search.addEventListener('input', () => {
