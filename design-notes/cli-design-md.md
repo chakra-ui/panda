@@ -11,6 +11,7 @@ related:
   - cli-analyze.md
   - design-system-manifest.md
   - output-and-host-layer.md
+  - agent-skills.md
 ---
 
 # Export DESIGN.md from the CLI
