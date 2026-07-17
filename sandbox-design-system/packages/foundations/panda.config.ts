@@ -8,6 +8,10 @@ export default defineConfig({
     tokens: {
       colors: {
         foundation: { value: '#0f766e' },
+        // Nested token — consumers should see `bg.neutral` in local outdir types after full re-emit.
+        bg: {
+          neutral: { value: '#f0fdfa' },
+        },
       },
       spacing: {
         foundationGap: { value: '10px' },

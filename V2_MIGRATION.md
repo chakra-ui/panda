@@ -562,18 +562,32 @@ export default defineConfig({
 })
 ```
 
-Panda resolves `@acme/design-system/panda.lib.json`, merges the preset, and hydrates the build info, so the library's
-CSS is emitted without re-scanning its source. The manifest carries the import map, so you don't set `importMap`
-separately.
+Panda resolves `@acme/design-system/panda.lib.json`, merges the preset (and any parent chain), and hydrates the build
+info, so the library's CSS is emitted without re-scanning its source. The manifest carries the import map, so you don't
+set `importMap` separately.
 
 Don't add `panda.buildinfo.json` to `include`. `include` lists source files to scan; Panda parses each one as a module,
 so a JSON artifact there fails with a parse error. `designSystem` is the only wiring you need.
 
+Run `panda codegen` (or `panda build`) in the app. That **full local re-emit** writes `outdir` types from the merged
+config, including design-system and parent tokens. For TypeScript, import from that local outdir — not from the design
+system package's `css` / `tokens` paths. `panda lib` does not yet publish a typed styled-system on the package, so
+`@acme/design-system/css` may fail typechecking even when CSS is correct:
+
+```ts
+import { css } from '../styled-system/css' // local full re-emit (merged types)
+// not: import { css } from '@acme/design-system/css'
+```
+
+Extraction still matches both the design-system package roots and the local outdir (dual `importMap`). The local import
+is the beta convention for types until overlay / DS-published styled-system lands. See
+[`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
+
 ### Known gaps
 
-- **Consumer token types.** Nested chains resolve and hydrate correctly, but parent design-system tokens may not yet
-  appear in the consumer's generated types. Overlay codegen is tracked in
-  [`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
+- **Package-root types.** Full local codegen already includes DS/parent tokens in `outdir`. Importing `@acme/ds/css` for
+  types can still fail because the published package may not ship a typed styled-system yet. Use the local outdir until
+  overlay or DS-published styled-system ships.
 - **Unresolved tokens emit silently.** Referencing a token the design system doesn't define emits the raw value as
   literal CSS with no diagnostic; the generated types still (correctly) reject it. See
   [`design-notes/design-system-manifest.md`](design-notes/design-system-manifest.md).

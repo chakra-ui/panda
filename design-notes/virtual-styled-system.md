@@ -338,11 +338,15 @@ not covered by ui's artifact (see
 - ✅ **importMap normalization** — `normalizeImportMap` / `prepareCompilerConfig` in
   [`packages/compiler-shared/src/import-map.ts`](../packages/compiler-shared/src/import-map.ts); applied in `config`
   snapshots and native/wasm compiler bindings before Rust.
+- ✅ **Full consumer re-emit (interim type path)** — app `panda codegen` emits a complete local `outdir` from the merged
+  effective config (DS + parents + app), including token types. Apps should import from that outdir for TypeScript until
+  overlay / DS-published styled-system ships. Dual `importMap` still matches DS package roots for extraction.
 - ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
 - ⬜ **Import-based hydration narrowing** — scan app imports and pass `only` to build-info hydration.
 - ⬜ **Expanded manifest wire format** — package-export `importMap` paths, optional dependency lists, and virtual
   overlay metadata. The implemented `panda.lib.json` uses `importMap` and singular `designSystem` parent links today.
-- ⬜ **Overlay codegen** — emit only app delta; skip DS-owned modules; merged types from effective config.
+- ⬜ **Overlay codegen** — emit only app delta; skip DS-owned modules; keep merged types from effective config. Deferred
+  optimization over full local re-emit.
 - ⬜ **Virtual styled-system DX** — no bundler aliases required for DS consume; TS `paths` generation optional.
 
 ## Unresolved questions

@@ -1,4 +1,5 @@
 import { Badge, Button } from '@sandbox/ds'
+// Full local re-emit: import from outdir (merged designSystem + app types), not `@sandbox/ds/css`.
 import { css } from '../styled-system/css'
 
 export function App() {
