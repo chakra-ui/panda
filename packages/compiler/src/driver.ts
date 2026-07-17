@@ -4,16 +4,24 @@ import {
   type CodegenArtifact,
   type GenerateArtifactOptions,
   type CodegenOptions,
+  type CompileOptions,
+  type CompileOutput,
   type Compiler,
   type DesignSystemWatchFileKind,
   type DesignSystemWatchTarget,
   type Diagnostic,
   type DiffConfigResult,
   type SourceChange,
+  type WriteCssOptions,
+  type WriteCssResult,
+  type WriteFilesResult,
+  type WriteLayerCssOptions,
+  type WriteSplitCssOptions,
   collectParseDiagnostics,
   diagnosticsPass,
   normalizeDiagnostics,
 } from '@pandacss/compiler-shared'
+import type { CssgenDoneHookArgs } from '@pandacss/types'
 import {
   compilePreset,
   defaultImportMap,
@@ -59,6 +67,7 @@ export interface WriteDesignSystemLibResult {
 }
 
 type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
+type CssgenDoneHooks = NonNullable<HostHooks['cssgen:done']>
 
 interface ParsedDesignSystemLib {
   parsedFileCount: number
@@ -273,6 +282,71 @@ export class NodeDriver extends BaseDriver {
     }
 
     return files
+  }
+
+  override cssgen(options?: CompileOptions): CompileOutput {
+    const output = super.cssgen(options)
+    this.runCssgenDone({
+      artifact: 'styles.css',
+      content: output.css,
+      cwd: this.#options.cwd,
+      manifest: output.manifest,
+      layerRanges: output.layerRanges,
+    })
+    return output
+  }
+
+  override writeCss(options: WriteCssOptions): WriteCssResult {
+    const result = super.writeCss(options)
+    this.runCssgenDone({
+      artifact: 'styles.css',
+      content: result.css,
+      path: result.path,
+      outfile: options.outfile,
+      cwd: options.cwd ?? this.#options.cwd,
+      manifest: result.manifest,
+      layerRanges: result.layerRanges,
+    })
+    return result
+  }
+
+  override writeLayerCss(options: WriteLayerCssOptions): WriteCssResult {
+    const result = super.writeLayerCss(options)
+    this.runCssgenDone({
+      artifact: 'styles.layer',
+      content: result.css,
+      path: result.path,
+      outfile: options.outfile,
+      cwd: options.cwd ?? this.#options.cwd,
+      manifest: result.manifest,
+      layerRanges: result.layerRanges,
+    })
+    return result
+  }
+
+  override writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult {
+    const result = super.writeSplitCss(options)
+    const cwd = options?.cwd ?? this.#options.cwd
+    const outdir = result.root
+    for (const file of result.files) {
+      const path = this.compiler.path.join([result.root, file.path])
+      this.runCssgenDone({
+        artifact: 'styles.split',
+        content: file.code,
+        path,
+        outdir,
+        cwd,
+      })
+    }
+    return result
+  }
+
+  private runCssgenDone(args: CssgenDoneHookArgs): void {
+    const hooks: CssgenDoneHooks = this.#loaded.hostHooks?.['cssgen:done'] ?? []
+    for (const entry of hooks) {
+      const handler = resolveHookHandler(entry.value, 'cssgen:done')
+      handler(args)
+    }
   }
 
   private codegenWithPrepareHooks(

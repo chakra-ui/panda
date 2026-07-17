@@ -410,10 +410,10 @@ Supported v2 beta hooks:
 - `parser:before`
 - `codegen:prepare`
 - `codegen:done`
+- `cssgen:done`
 
 Removed v1 hooks:
 
-- `cssgen:done`
 - `context:created`
 - `parser:after`
 - `config:change`
@@ -421,9 +421,26 @@ Removed v1 hooks:
 - `utility:created`
 - similar v1 engine hooks
 
-If you used `cssgen:done` to strip unused token variables or keyframes from the final CSS, use
-`optimize.removeUnusedTokens` / `removeUnusedKeyframes` instead. For other final CSS transforms, run a PostCSS step
-after Panda.
+`cssgen:done` is back as an observe-only host hook. It runs after final CSS is produced (CLI, Vite, PostCSS) and
+receives `{ artifact, content, path?, … }`. It does not rewrite the CSS string.
+
+```ts
+export default defineConfig({
+  plugins: [
+    {
+      name: 'analytics',
+      hooks: {
+        'cssgen:done': ({ content, path }) => {
+          report({ bytes: content.length, path })
+        },
+      },
+    },
+  ],
+})
+```
+
+If you used v1 `cssgen:done` to strip unused token variables or keyframes, use `optimize.removeUnusedTokens` /
+`removeUnusedKeyframes` instead. For other final CSS transforms, run a PostCSS step after Panda.
 
 `parser:before` still runs after Panda reads a file and before it parses the source. Use it for source transforms in
 mixed codebases.

@@ -998,6 +998,31 @@ describe('loadConfig preset resolution', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
+
+  test('collects cssgen:done into hostHooks', async () => {
+    const { dir, result } = await loadTempConfig({
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        plugins: [
+          {
+            name: 'analytics',
+            hooks: {
+              'cssgen:done'({ content }) {
+                void content
+              },
+            },
+          },
+        ],
+      }`,
+    })
+
+    try {
+      expect(result.hostHooks?.['cssgen:done']).toMatchObject([{ pluginIndex: 0, name: 'analytics' }])
+      expect(typeof result.hostHooks?.['cssgen:done']?.[0]?.value).toBe('function')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('loadConfig errors', () => {

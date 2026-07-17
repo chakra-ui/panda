@@ -18,6 +18,7 @@ export interface PluginHookEntry<Name extends keyof HookRegistry> {
 export type HostHooks = {
   'codegen:prepare'?: Array<PluginHookEntry<'codegen:prepare'>>
   'codegen:done'?: Array<PluginHookEntry<'codegen:done'>>
+  'cssgen:done'?: Array<PluginHookEntry<'cssgen:done'>>
 }
 
 export function serializeHooks(

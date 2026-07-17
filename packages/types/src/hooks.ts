@@ -85,6 +85,43 @@ export interface CodegenDoneHookArgs {
   cwd?: string | undefined
 }
 
+export type CssgenArtifact = 'styles.css' | 'styles.layer' | 'styles.split'
+
+export interface CssgenDoneManifestFile {
+  path: string
+  hash: string
+}
+
+export interface CssgenDoneManifest {
+  files: CssgenDoneManifestFile[]
+  tokens: string[]
+}
+
+export interface CssgenDoneLayerRange {
+  start: number
+  end: number
+}
+
+export interface CssgenDoneLayerRanges {
+  reset?: CssgenDoneLayerRange
+  base?: CssgenDoneLayerRange
+  tokens?: CssgenDoneLayerRange
+  recipes?: CssgenDoneLayerRange
+  utilities?: CssgenDoneLayerRange
+}
+
+export interface CssgenDoneHookArgs {
+  artifact: CssgenArtifact
+  content: string
+  /** Absolute path when written to disk; omitted for string sinks (Vite/PostCSS). */
+  path?: string | undefined
+  outfile?: string | undefined
+  outdir?: string | undefined
+  cwd?: string | undefined
+  manifest?: CssgenDoneManifest | undefined
+  layerRanges?: CssgenDoneLayerRanges | undefined
+}
+
 export interface PandaHooks {
   /**
    * Called after authored presets are merged, before defaults and serialization.
@@ -107,6 +144,11 @@ export interface PandaHooks {
    * Called after generated files are written by a JS host.
    */
   'codegen:done': (args: CodegenDoneHookArgs) => void
+  /**
+   * Called after final CSS is produced by a JS host (observe-only; no rewrite).
+   * Fires for CLI, Vite, and PostCSS string sinks. Use `optimize` or PostCSS to mutate CSS.
+   */
+  'cssgen:done': (args: CssgenDoneHookArgs) => void
 }
 
 export type HookRegistry = {

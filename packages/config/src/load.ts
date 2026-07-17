@@ -71,6 +71,7 @@ export async function loadConfig(options: LoadConfigOptions): Promise<LoadConfig
     hostHooks: {
       'codegen:prepare': collectPluginHookHandlers(resolved, 'codegen:prepare'),
       'codegen:done': collectPluginHookHandlers(resolved, 'codegen:done'),
+      'cssgen:done': collectPluginHookHandlers(resolved, 'cssgen:done'),
     },
     dependencies: dependencyList,
     ...(authored.metadata ? { metadata: authored.metadata } : {}),
