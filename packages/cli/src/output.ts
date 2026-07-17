@@ -1,7 +1,6 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Diagnostic } from '@pandacss/compiler'
-import { countErrors } from '@pandacss/compiler-shared'
 import { renderDiagnostics, type DiagnosticFormat } from './diagnostics'
 import type { CommonFlags, LogLevel } from './schema'
 
@@ -57,18 +56,33 @@ export function renderCommandDiagnostics(
   flags: CommonFlags,
   cwd: string,
 ): void {
-  if (!allowsLogLevel(flags, 'error') || diagnostics.length === 0) return
+  if (diagnostics.length === 0) {
+    return
+  }
 
-  const message = renderDiagnostics(diagnostics, {
-    cwd,
-    format: commandFormat(flags),
-    quiet: !allowsLogLevel(flags, 'warn'),
+  const visible = diagnostics.filter((diagnostic) => {
+    if (diagnostic.severity === 'error') {
+      return allowsLogLevel(flags, 'error')
+    }
+
+    if (diagnostic.severity === 'warning') {
+      return allowsLogLevel(flags, 'warn')
+    }
+
+    return allowsLogLevel(flags, 'info')
   })
 
-  if (!message) return
+  const message = renderDiagnostics(visible, {
+    cwd,
+    format: commandFormat(flags),
+  })
 
-  if (countErrors(diagnostics) > 0) {
-    output.error?.(message)
+  if (!message) {
+    return
+  }
+
+  if (output.error) {
+    output.error(message)
   } else {
     output.log(message)
   }

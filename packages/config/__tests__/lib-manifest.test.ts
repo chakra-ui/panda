@@ -1,24 +1,26 @@
 import { describe, expect, test } from 'vitest'
-import { defaultImportMap, resolvePandaPeerRange, syncExports } from '../src/lib-manifest'
+import { defaultImportMap, resolvePublishedPandaRange, syncExports } from '../src/lib-manifest'
 
 describe('lib-manifest', () => {
-  test('resolvePandaPeerRange resolves workspace/catalog protocols to a concrete range', () => {
-    // Bare protocols fall back to the installed version.
-    expect(resolvePandaPeerRange('catalog:', '2.0.0')).toBe('^2.0.0')
-    expect(resolvePandaPeerRange('catalog:react18', '2.0.0')).toBe('^2.0.0')
-    expect(resolvePandaPeerRange('workspace:*', '2.0.0')).toBe('^2.0.0')
-    expect(resolvePandaPeerRange('workspace:^', '2.0.0')).toBe('^2.0.0')
-    expect(resolvePandaPeerRange('workspace:~', '2.0.0')).toBe('~2.0.0')
-    // An explicit workspace range keeps its range.
-    expect(resolvePandaPeerRange('workspace:^3.0.0', '2.0.0')).toBe('^3.0.0')
-    // npm: aliases resolve to the aliased range, not the raw protocol.
-    expect(resolvePandaPeerRange('npm:@pandacss/dev@^2', '2.0.0')).toBe('^2')
-    expect(resolvePandaPeerRange('npm:some2pkg@^3.0.0', '2.0.0')).toBe('^3.0.0')
-    // Non-protocol ranges pass through; undefined stays undefined.
-    expect(resolvePandaPeerRange('^2.0.0', '2.0.0')).toBe('^2.0.0')
-    expect(resolvePandaPeerRange(undefined, '2.0.0')).toBeUndefined()
-    // No installed version to fall back to → undefined (caller defaults to `*`).
-    expect(resolvePandaPeerRange('catalog:', undefined)).toBeUndefined()
+  test.each([
+    ['workspace:*', '^2.0.0'],
+    ['workspace:^', '^2.0.0'],
+    ['workspace:~', '~2.0.0'],
+    ['catalog:', '^2.0.0'],
+    ['workspace:^2.1.0', '^2.1.0'],
+    ['^2.2.0', '^2.2.0'],
+    ['npm:@pandacss/dev@^3.0.0', '^3.0.0'],
+    ['npm:some2pkg@^3.0.0', '^3.0.0'],
+  ])('normalizes a publish-time Panda range of %s', (range, expected) => {
+    expect(resolvePublishedPandaRange(range, '2.0.0-beta.8')).toBe(expected)
+  })
+
+  test('keeps the wildcard fallback when no Panda peer is declared', () => {
+    expect(resolvePublishedPandaRange(undefined, '2.0.0-beta.8')).toBe('*')
+  })
+
+  test('falls back to the installed major for an npm: alias without a version', () => {
+    expect(resolvePublishedPandaRange('npm:@pandacss/dev', '2.0.0-beta.8')).toBe('^2.0.0')
   })
 
   test('derives importMap roots from the package name', () => {

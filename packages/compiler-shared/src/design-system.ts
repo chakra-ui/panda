@@ -1,7 +1,5 @@
 import type { BuildInfo } from './build-info'
 import type {
-  DesignSystemChainPlan,
-  DesignSystemChainResult,
   DesignSystemLoadOptions,
   DesignSystemLoadResult,
   DesignSystemManifest,
@@ -9,6 +7,7 @@ import type {
   DesignSystemManifestInput,
   DesignSystemValidateOptions,
 } from './types'
+import { satisfiesVersionRange } from './semver'
 
 /**
  * Minimal primitives `DesignSystem` needs; native and wasm adapters can map
@@ -17,36 +16,7 @@ import type {
 export interface DesignSystemBinding {
   createManifest(input: DesignSystemManifestInput): DesignSystemManifest
   manifestSchemaVersion(): number
-  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
-
-const major = (value: string): number => {
-  const match = value.match(/\d+/)
-  return match ? Number(match[0]) : NaN
-}
-
-const alternativeAcceptsMajor = (alternative: string, running: number): boolean => {
-  const range = alternative.trim()
-  if (range === '' || range === '*' || range === 'x' || range === 'X') return true
-
-  const hyphen = range.split(' - ')
-  if (hyphen.length === 2) {
-    const low = major(hyphen[0])
-    const high = major(hyphen[1])
-    return !Number.isNaN(low) && !Number.isNaN(high) && running >= low && running <= high
-  }
-
-  if (/^>=?\s*\d/.test(range) && !range.includes('<')) {
-    const low = major(range)
-    return !Number.isNaN(low) && running >= low
-  }
-
-  const only = major(range)
-  return !Number.isNaN(only) && only === running
-}
-
-const rangeAcceptsMajor = (range: string, running: number): boolean =>
-  range.split('||').some((alternative) => alternativeAcceptsMajor(alternative, running))
 
 export class DesignSystem {
   readonly #binding: DesignSystemBinding
@@ -67,7 +37,7 @@ export class DesignSystem {
     if (manifest.schemaVersion !== this.schemaVersion) return { ok: false, reason: 'schemaVersion' }
 
     const running = options?.pandaVersion
-    if (running !== undefined && !rangeAcceptsMajor(manifest.panda, major(running))) {
+    if (running !== undefined && !satisfiesVersionRange(running, manifest.panda)) {
       return { ok: false, reason: 'pandaRange' }
     }
 
@@ -78,6 +48,9 @@ export class DesignSystem {
     const compat = this.validate(manifest, { pandaVersion: options.pandaVersion })
     if (!compat.ok) return { ok: false, reason: compat.reason, modules: [] }
 
+    const buildInfoCompat = this.#buildInfo.validate(options.buildInfo)
+    if (!buildInfoCompat.ok) return { ok: false, reason: buildInfoCompat.reason, modules: [] }
+
     // `imports` omitted -> hydrate every module (namespace import); otherwise
     // resolve the touched modules so only their CSS emits (tree-shaking).
     const only =
@@ -86,12 +59,5 @@ export class DesignSystem {
     if (!result.ok) return { ok: false, reason: result.reason, modules: [] }
 
     return { ok: true, name: manifest.name, modules: result.modules }
-  }
-
-  resolveChain(manifests: DesignSystemManifest[]): DesignSystemChainResult {
-    const plan = this.#binding.resolveChain(manifests)
-    return plan.status === 'ordered'
-      ? { ok: true, order: plan.order }
-      : { ok: false, reason: 'cycle', cycle: plan.cycle }
   }
 }

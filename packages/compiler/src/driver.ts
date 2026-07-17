@@ -24,7 +24,7 @@ import {
   mergeExcludes,
   readPackageIdentity,
   readPandaVersion,
-  resolvePandaPeerRange,
+  resolvePublishedPandaRange,
   resolveSmartInclude,
   syncExports,
   toPosixRelative,
@@ -343,7 +343,7 @@ export class NodeDriver extends BaseDriver {
     parsed: ParsedDesignSystemLib,
   ): WriteDesignSystemLibResult {
     const identity = readPackageIdentity(this.#options.cwd)
-    const pandaRange = options.panda ?? resolvePandaPeerRange(identity.pandaPeer, readPandaVersion()) ?? '*'
+    const pandaRange = resolvePublishedPandaRange(options.panda ?? identity.pandaPeer, readPandaVersion())
     const outdir = options.outdir ?? DEFAULT_DESIGN_SYSTEM_LIB_OUTDIR
     const outRoot = this.compiler.path.resolve(outdir)
 
@@ -394,7 +394,7 @@ export class NodeDriver extends BaseDriver {
       ],
     })
 
-    const { changed: exportsChanged, conflicts } = syncPackageExports(this.compiler, identity.packagePath, {
+    const exportsChanged = syncPackageExports(this.compiler, identity.packagePath, {
       manifestPath,
       presetPath,
     })
@@ -405,7 +405,7 @@ export class NodeDriver extends BaseDriver {
       presetPath,
       exportsChanged,
       parsedFileCount: parsed.parsedFileCount,
-      diagnostics: [...parsed.diagnostics, ...exportConflictDiagnostics(identity.name, conflicts)],
+      diagnostics: parsed.diagnostics,
     }
   }
 }
@@ -441,7 +441,7 @@ function syncPackageExports(
   compiler: Compiler,
   packagePath: string,
   paths: { manifestPath: string; presetPath: string },
-): { changed: boolean; conflicts: string[] } {
+): boolean {
   const base = compiler.path.dirname(packagePath)
   const entries = {
     './panda.lib.json': toPosixRelative(base, paths.manifestPath),
@@ -463,21 +463,7 @@ function syncPackageExports(
       ],
     })
   }
-  return { changed: result.changed, conflicts: result.conflicts }
-}
-
-function exportConflictDiagnostics(name: string, conflicts: string[]): Diagnostic[] {
-  if (conflicts.length === 0) return []
-  const paths = conflicts.map((path) => JSON.stringify(path)).join(', ')
-  const plural = conflicts.length > 1
-  return [
-    {
-      code: 'design_system_export_overwritten',
-      severity: 'warning',
-      category: 'designSystem',
-      message: `\`panda lib\` overwrote the existing ${paths} export${plural ? 's' : ''} in ${JSON.stringify(name)}'s package.json. Remove ${plural ? 'them' : 'it'} if Panda should own ${plural ? 'these paths' : 'this path'}.`,
-    },
-  ]
+  return result.changed
 }
 
 function stabilizePath(cwd: string, file: string): string {

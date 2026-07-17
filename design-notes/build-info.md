@@ -8,7 +8,7 @@ surface is one namespace:
 
 ```ts
 compiler.buildInfo.create({ panda }) // producer (panda buildinfo); configFingerprint is engine-owned
-compiler.buildInfo.configFingerprint // this compiler's own fingerprint (compare vs an artifact's)
+compiler.buildInfo.configFingerprint // this compiler's fingerprint (introspection; strict consume guard deferred)
 compiler.buildInfo.validate(info) // schema-compatible? (discriminated { ok })
 compiler.buildInfo.modulesFor(info, ['Button']) // barrel imports → module keys
 compiler.buildInfo.hydrate(info, { name, only }) // consumer (designSystem); `only` tree-shakes
@@ -31,25 +31,32 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
-  "strings": ["color", "red", "padding", "4px"],   // intern table (every prop/cond/value string)
+  "strings": ["color", "red", "padding", "4px", "colors.brand"], // intern table
   "atoms": [{ "p": 0, "v": 1 }],                   // [propIdx, valueIdx]; token values use `{ t, v }`
+  "tokenRefs": [4],                                  // string indices for runtime token CSS-var usage
   "recipes": { "base": [...], "variants": [...] }, // interned EncodedRecipesSnapshot groups
-  "modules": { "button": { "atoms": [0], "recipes": [0] } }, // per-module indices into atoms[]/recipe groups
+  "modules": { "button": { "atoms": [0], "recipes": [0], "tokenRefs": [0] } }, // per-module indices
   "exports": { "Button": "button" }                // export name → module key (added by panda buildinfo)
 }
 ```
 
 A value is a bare index (string), `{ t, v }` (token path + resolved value), or `{ n }` (number — preserving the
 px-driving type tag). Full atom/recipe data is kept (not pre-built CSS) so the consumer re-emits with **token identity**
-preserved instead of reducing tokens to opaque CSS values.
+preserved instead of reducing tokens to opaque CSS values. Top-level `tokenRefs` entries point into `strings`; each
+module's `tokenRefs` entries point into that top-level array, preserving import-based tree-shaking.
 
 **Token definitions are not in build info.** The artifact carries token _usage_ (path + producer-resolved value at
 extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in
 via the manifest — see [design-system-manifest.md](./design-system-manifest.md)). Hydrated utilities reference
 `var(--path)`; the consumer's `TokenDictionary` supplies the final CSS value at emit time.
+
+Runtime `token()` / `token.var()` calls that require a CSS variable are carried separately in `tokenRefs`. They may not
+produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed
+`removeUnusedTokens` after hydration. Primitive `token()` calls that inline a non-variable value are intentionally not
+retained.
 
 ## Token identity (re-emit half)
 
@@ -108,19 +115,18 @@ Two paths, by how the engine encodes each:
 
 ## Collision safety
 
-`validate` is pure and checks the wire `schemaVersion` against the running binding (`buildInfoSchemaVersion()`) — a
-cross-version hashing change is the real corruption vector (same atom, different class name). `hydrate` validates first;
-an incompatible artifact is a no-op (`{ ok: false, reason }`) the host handles by re-extracting the lib's source. The
-peer-range / `configFingerprint` checks share the `reason` union and are layered on by the host (it knows the running
-version). Same-version libs merge cleanly — atom hashes are content-addressed.
+`validate` is pure and checks the wire `schemaVersion` and required top-level shape. `hydrate` validates first, and the
+engine rejects invalid intern and per-module atom/recipe/token-ref indices atomically; malformed input returns
+`{ ok: false, reason: 'corrupt' }` instead of throwing or hydrating partial CSS. The host handles build-info failures by
+re-extracting the library source when `files` is available. Manifest schema and Panda-range checks are separate
+package-contract gates and remain fail-closed.
 
 `configFingerprint` is the **engine's own** fingerprint (`Project::config_fingerprint`, also exposed on the NAPI binding
-as `configFingerprint()`), not a JS re-derivation: the engine is the component that knows which config drives encoding.
-It hashes the resolved `UserConfig` with machine-local IO / codegen fields removed (`cwd`/`outdir`/`include`/`exclude`/
-`importMap`/`jsx*`/`syntax`/codegen flags/validation) and object keys canonically ordered, so two libraries that differ
-only in those compare as compatible and the same library fingerprints identically across checkouts. The producer
-(`buildInfo.create({ panda })`) supplies only the published peer range; the host reads its own
-`compiler.buildInfo.configFingerprint` to compare against an artifact's `configFingerprint`.
+as `configFingerprint()`), not a JS re-derivation. It hashes the resolved `UserConfig` with machine-local IO / codegen
+fields removed and object keys canonically ordered, so the same producer configuration fingerprints identically across
+checkouts. It is recorded for introspection today, but is not a strict consumer guard: an app legitimately extends the
+design-system config and would fail full-config equality. The host separately compares normalized effective
+`hash`/`prefix`/`separator` values before using prebuilt class names; a broader contract fingerprint remains deferred.
 
 ## Layering
 
@@ -246,8 +252,9 @@ cover in its artifact.
 
 Manifest resolution and diagnostics are owned by [design-system-manifest.md](./design-system-manifest.md). The
 build-info-specific rule is: hydrate each package independently; never merge build-info JSON blobs. Presets merge in the
-config layer, while build info merges only through hydrated emit output. On fingerprint mismatch for one layer, the host
-falls back to that package's published source when `files` exists, or fails closed for that layer.
+config layer, while build info merges only through hydrated emit output. On a build-info schema, shape, or corruption
+failure for one layer, the host falls back to that package's published source when `files` exists, or fails closed for
+that layer.
 
 **Transitive discovery that is still deferred:**
 
@@ -261,7 +268,7 @@ falls back to that package's published source when `files` exists, or fails clos
 ```txt
 1. Ship build info from every layer consumers can import from.
 2. App hydrates each package in the manifest chain. Import-based tree-shaking is still a host follow-up.
-3. Compare `configFingerprint` per artifact against the consumer after preset merge.
+3. Match class-name options across producer and consumer; broader contract fingerprinting is still deferred.
 4. When in doubt, declare the parent in `manifest.designSystem` so the consumer hydrates both layers.
 ```
 

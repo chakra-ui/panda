@@ -138,7 +138,8 @@ Field meanings:
 - `importMap`: package roots used by the library's compiled JSX.
 - `designSystem`: this library's parent design system, if any.
 - `panda` and `schemaVersion`: compatibility guards.
-- `files`: fallback files for stale or incompatible build info.
+- `files`: fallback files for missing, malformed, stale, or corrupt build info. They do not bypass manifest
+  compatibility failures.
 
 ## Rust owns values, TypeScript owns files
 
@@ -148,17 +149,17 @@ The compiler exposes value-level design-system operations:
 compiler.designSystem.create(input)
 compiler.designSystem.validate(manifest)
 compiler.designSystem.load(manifest, { buildInfo })
-compiler.designSystem.resolveChain(manifests)
 ```
 
-These methods take plain data and return plain data. They do not read from disk.
+These methods do not read from disk. `create` and `validate` are pure value operations; `load` validates the manifest
+and hydrates build info into the active compiler project.
 
 | Layer                 | Owns                                                               | Touches files? |
 | --------------------- | ------------------------------------------------------------------ | -------------- |
-| Rust engine           | manifest types, create, validate, load, chain ordering             | no             |
+| Rust engine           | manifest types/create and build-info serialization/hydration       | no             |
 | Native/wasm bindings  | flat primitives over the engine                                    | no             |
-| `compiler-shared`     | JS facade and shared types                                         | no             |
-| TypeScript host + CLI | Node resolution, reading manifests, writing artifacts/package.json | yes            |
+| `compiler-shared`     | manifest validation plus the `designSystem`/`buildInfo` JS facades | no             |
+| TypeScript host + CLI | chain resolution, reading manifests, fallback, writing artifacts   | yes            |
 
 ## The producer flow
 
@@ -207,7 +208,8 @@ It preserves existing root exports, including string and conditional root export
 
 Build info is the normal path. Consumers should hydrate `panda.buildinfo.json`, not re-scan the library.
 
-`files` is only the fallback path. Panda uses it when build info is stale or incompatible.
+`files` is only the fallback path. Panda uses it when build info is unavailable, malformed, schema-stale, or corrupt. An
+incompatible manifest schema or Panda range is a package-contract failure and remains fail-closed.
 
 By default, `panda lib` infers `files` from the modules it parsed and writes paths relative to `panda.lib.json`:
 
@@ -306,16 +308,18 @@ build tools that honor those messages will rebuild when design-system artifacts 
 When an app config has `designSystem: '@acme/ds'`, the host:
 
 1. Resolves `@acme/ds/panda.lib.json`.
-2. Reads that manifest.
+2. Parses and validates the complete manifest before importing its preset.
 3. Walks the manifest's parent chain, resolving each parent from the previous manifest's directory.
 4. Orders the chain root-first.
 5. Imports each `panda.preset.mjs`.
 6. Merges presets under the app config, so the app wins.
-7. Creates the compiler driver.
-8. Hydrates each design system's `panda.buildinfo.json`.
+7. Creates the compiler driver and validates every manifest against the running Panda version.
+8. Hydrates each compatible design system's `panda.buildinfo.json`.
 
-If build info is stale but the manifest has `files`, Panda scans those files relative to the manifest directory and
-emits `design_system_buildinfo_stale`. If there are no fallback files, Panda fails closed.
+If build info cannot be read, has the wrong schema version, or is malformed but the manifest has `files`, Panda scans
+those files relative to the manifest directory and emits a reason-specific `design_system_buildinfo_stale`. If there are
+no fallback files, Panda fails closed. Class-name option mismatches use the same source fallback instead of loading
+prebuilt class names produced with incompatible options.
 
 ## Flow sketch
 
@@ -419,7 +423,7 @@ HYDRATION
      ▼
   check token path conflicts
      │
-     ├── conflict ──► warn: design_system_token_conflict
+     ├── conflict ──► info: design_system_token_conflict (grouped per package)
      │                   local app value wins
      │
      └── no conflict
@@ -529,24 +533,27 @@ unresolved token references is a possible follow-up.
 
 Setup is where this feature succeeds or fails. Diagnostics should say what happened and what to do next.
 
-| Code                                   | Severity | When                                                        |
-| -------------------------------------- | -------- | ----------------------------------------------------------- |
-| `design_system_manifest_not_found`     | error    | `designSystem` set but no `panda.lib.json` resolves         |
-| `design_system_manifest_not_exported`  | error    | installed package does not export `./panda.lib.json`        |
-| `design_system_manifest_invalid`       | error    | manifest is malformed or missing required entries           |
-| `design_system_resolve_failed`         | error    | manifest resolution fails for an unexpected reason          |
-| `design_system_preset_load_failed`     | error    | manifest preset cannot load as a config object              |
-| `design_system_unsupported_specifier`  | error    | `designSystem` uses an unsupported protocol specifier       |
-| `design_system_duplicate_name`         | error    | two different manifests in a chain use the same name        |
-| `design_system_in_include`             | error    | a manifest-bearing package appears in `include`             |
-| `design_system_version_mismatch`       | error    | manifest `schemaVersion` does not match the running binding |
-| `design_system_peer_range_unsatisfied` | error    | consumer Panda does not satisfy manifest `panda` range      |
-| `design_system_cycle`                  | error    | the chain revisits a package                                |
-| `design_system_parent_not_found`       | error    | a manifest parent does not resolve from the manifest dir    |
-| `design_system_buildinfo_stale`        | warning  | build info fails validation and fallback re-extract is used |
-| `design_system_token_conflict`         | warning  | design system and app both define the same token path       |
+| Code                                   | Severity      | When                                                            |
+| -------------------------------------- | ------------- | --------------------------------------------------------------- |
+| `design_system_manifest_not_found`     | error         | `designSystem` set but no `panda.lib.json` resolves             |
+| `design_system_manifest_not_exported`  | error         | installed package does not export `./panda.lib.json`            |
+| `design_system_manifest_invalid`       | error         | manifest is malformed or missing required entries               |
+| `design_system_resolve_failed`         | error         | manifest resolution fails for an unexpected reason              |
+| `design_system_preset_load_failed`     | error         | manifest preset cannot load as a config object                  |
+| `design_system_unsupported_specifier`  | error         | `designSystem` uses an unsupported protocol specifier           |
+| `design_system_duplicate_name`         | error         | two different manifests in a chain use the same name            |
+| `design_system_in_include`             | error         | a manifest-bearing package appears in `include`                 |
+| `design_system_version_mismatch`       | error         | manifest `schemaVersion` does not match the running binding     |
+| `design_system_peer_range_unsatisfied` | error         | consumer Panda does not satisfy manifest `panda` range          |
+| `design_system_cycle`                  | error         | the chain revisits a package                                    |
+| `design_system_parent_not_found`       | error         | a manifest parent does not resolve from the manifest dir        |
+| `design_system_buildinfo_stale`        | warning/error | build info is unusable; fallback re-extracts or fails closed    |
+| `design_system_option_mismatch`        | warning/error | class-name options differ; fallback re-extracts or fails closed |
+| `design_system_token_conflict`         | info          | design system and app define overlapping token paths            |
 
-Errors stop the build. Warnings continue when Panda has a clear fallback. The app config wins token conflicts.
+Errors stop the build. Warnings continue only when Panda has a clear source fallback. Token conflicts are grouped once
+per design-system package, and the app config wins them. CLI exit status and `--max-warnings` are calculated from the
+complete diagnostic set, including hydration diagnostics.
 
 ## Delivery phases
 
@@ -607,6 +614,8 @@ source changes.
 ### Panda should be a peer dependency
 
 A design-system package should peer-depend on Panda. The manifest `panda` field is the range the consumer must satisfy.
+When a workspace stores that peer as `workspace:` or `catalog:`, `panda lib` publishes a portable range derived from the
+running Panda version instead of leaking the package-manager protocol into `panda.lib.json`.
 
 ## Open follow-ups
 

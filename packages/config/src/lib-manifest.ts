@@ -2,11 +2,40 @@ import type { DesignSystemManifestImportMap } from '@pandacss/compiler-shared'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 
+const PACKAGE_MANAGER_RANGE_PATTERN = /^(?:workspace|catalog):/
+const PORTABLE_WORKSPACE_RANGE_PATTERN = /^[~^]?\d/
+const VERSION_CORE_PATTERN = /^(\d+)\.(\d+)\.(\d+)/
+
 export interface PackageIdentity {
   name: string
   version?: string
   pandaPeer?: string
   packagePath: string
+}
+
+export function resolvePublishedPandaRange(range: string | undefined, currentVersion: string | undefined): string {
+  const authored = range?.trim()
+  if (!authored) return '*'
+
+  if (authored.startsWith('npm:')) {
+    const at = authored.lastIndexOf('@')
+    if (at > 'npm:'.length) return authored.slice(at + 1)
+    const core = currentVersion?.match(VERSION_CORE_PATTERN)?.[0]
+    return core ? `^${core}` : '*'
+  }
+
+  if (!PACKAGE_MANAGER_RANGE_PATTERN.test(authored)) return authored
+
+  if (authored?.startsWith('workspace:')) {
+    const workspaceRange = authored.slice('workspace:'.length)
+    if (PORTABLE_WORKSPACE_RANGE_PATTERN.test(workspaceRange)) return workspaceRange
+  }
+
+  const core = currentVersion?.match(VERSION_CORE_PATTERN)?.[0]
+  if (!core) return '*'
+
+  const operator = authored === 'workspace:~' ? '~' : '^'
+  return `${operator}${core}`
 }
 
 export function readPackageIdentity(cwd: string): PackageIdentity {
@@ -26,32 +55,6 @@ export function readPackageIdentity(cwd: string): PackageIdentity {
     pandaPeer: typeof peer === 'string' ? peer : undefined,
     packagePath,
   }
-}
-
-export function resolvePandaPeerRange(
-  peer: string | undefined,
-  installedVersion: string | undefined,
-): string | undefined {
-  if (peer === undefined) return undefined
-  const fromInstalled = installedVersion ? `^${installedVersion}` : undefined
-
-  if (peer.startsWith('workspace:')) {
-    const spec = peer.slice('workspace:'.length)
-    if (spec === '^' || spec === '~') return installedVersion ? `${spec}${installedVersion}` : undefined
-    if (spec === '' || spec === '*') return fromInstalled
-    return spec
-  }
-
-  if (peer.startsWith('catalog:')) {
-    return fromInstalled
-  }
-
-  if (peer.startsWith('npm:')) {
-    const at = peer.lastIndexOf('@')
-    return at > 'npm:'.length ? peer.slice(at + 1) : fromInstalled
-  }
-
-  return peer
 }
 
 export function defaultImportMap(name: string): DesignSystemManifestImportMap {

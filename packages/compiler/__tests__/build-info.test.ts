@@ -30,7 +30,7 @@ describe('compiler.buildInfo', () => {
     // modules; `padding`/`margin` are module-local.
     expect(libBuildInfo()).toMatchInlineSnapshot(`
       {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "panda": "^2.0.0",
         "configFingerprint": "cfg1-b858936874c1c863",
         "strings": [
@@ -82,6 +82,18 @@ describe('compiler.buildInfo', () => {
     })
   })
 
+  it('validate() and hydrate() report malformed artifacts as corrupt', () => {
+    const app = consumer()
+    const malformed = { schemaVersion: libBuildInfo().schemaVersion } as BuildInfoArtifact
+
+    expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+    expect(app.buildInfo.hydrate(malformed, { name: '@acme/ds' })).toEqual({
+      ok: false,
+      reason: 'corrupt',
+      modules: [],
+    })
+  })
+
   it('create() preserves token identity alongside the resolved value', () => {
     // Build info keeps both the token path and the resolved value at extraction time.
     const lib = createProject({
@@ -107,6 +119,64 @@ describe('compiler.buildInfo', () => {
     if (typeof value !== 'object' || value === null || !('t' in value) || !('v' in value)) return
     expect(info.strings[value.t]).toBe('colors.red.500')
     expect(info.strings[value.v]).toBe('#ef4444')
+  })
+
+  it('hydrates module-scoped runtime token references for unused-token pruning', () => {
+    const config = {
+      optimize: { removeUnusedTokens: true },
+      conditions: { dark: '.dark &' },
+      theme: {
+        tokens: {
+          colors: {
+            red: { value: '#f00' },
+            blue: { value: '#00f' },
+            green: { value: '#0f0' },
+          },
+        },
+        semanticTokens: {
+          colors: {
+            fg: {
+              value: {
+                base: '{colors.red}',
+                _dark: '{colors.blue}',
+              },
+            },
+          },
+        },
+      },
+    }
+    const lib = createProject(config)
+    lib.parseFileSource('fg.ts', "import { token } from '@panda/tokens'\nexport const fg = token('colors.fg')")
+    lib.parseFileSource(
+      'green.ts',
+      "import { token } from '@panda/tokens'\nexport const green = token.var('colors.green')",
+    )
+    const info = lib.buildInfo.create({ panda: '^2.0.0' })
+
+    expect(info.tokenRefs?.map((index) => info.strings[index])).toEqual(['colors.fg', 'colors.green'])
+    expect(info.modules).toEqual({
+      'fg.ts': { tokenRefs: [0] },
+      'green.ts': { tokenRefs: [1] },
+    })
+    expect(info.exports).toEqual({ fg: 'fg.ts', green: 'green.ts' })
+
+    const app = createProject(config)
+    const only = app.buildInfo.modulesFor(info, ['fg'])
+    expect(only).toEqual(['fg.ts'])
+    expect(app.buildInfo.hydrate(info, { name: '@acme/ds', only })).toEqual({ ok: true, modules: ['fg.ts'] })
+    expect(app.getLayerCss({ layers: ['tokens'] }).css).toMatchInlineSnapshot(`
+      "@layer tokens {
+        :where(:root, :host) {
+          --colors-red: #f00;
+          --colors-blue: #00f;
+          --colors-fg: var(--colors-red);
+        }
+        .dark {
+          --colors-fg: var(--colors-blue);
+        }
+      }
+      "
+    `)
   })
 
   // --- Consumer: hydrate + tree-shake ---
@@ -512,6 +582,41 @@ describe('compiler.buildInfo', () => {
     const result = app.buildInfo.hydrate(recipeLibBuildInfo(), { name: '@acme/ds' })
     expect(result).toEqual({ ok: true, modules: ['button.tsx', 'tabs.tsx'] })
     expect(app.getLayerCss({ layers: ['recipes'] }).css).toBe(reference)
+  })
+
+  it('emits parent and child design-system recipes before app overrides', () => {
+    const recipeInfo = (color: string) => {
+      const project = createProject({ theme: { recipes: { button: { base: { color } } } } })
+      project.parseFileSource('button.tsx', "import { button } from '@panda/recipes'\nbutton()")
+      return project.buildInfo.create({ panda: '^2.0.0' })
+    }
+    const app = createProject({ theme: { recipes: { button: { base: { color: 'blue' } } } } })
+    app.parseFileSource('app.tsx', "import { button } from '@panda/recipes'\nbutton()")
+
+    expect(app.buildInfo.hydrate(recipeInfo('red'), { name: '@z/root' })).toEqual({
+      ok: true,
+      modules: ['button.tsx'],
+    })
+    expect(app.buildInfo.hydrate(recipeInfo('green'), { name: '@a/child' })).toEqual({
+      ok: true,
+      modules: ['button.tsx'],
+    })
+    expect(app.getLayerCss({ layers: ['recipes'] }).css).toMatchInlineSnapshot(`
+      "@layer recipes {
+        @layer base {
+          .button {
+            color: red;
+          }
+          .button {
+            color: green;
+          }
+          .button {
+            color: blue;
+          }
+        }
+      }
+      "
+    `)
   })
 
   it('hydrate() tree-shakes recipes to the imported modules', () => {

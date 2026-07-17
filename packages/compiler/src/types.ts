@@ -2,7 +2,6 @@ import type {
   BuildInfoNative,
   Compiler as SharedCompiler,
   CompileOutput,
-  DesignSystemChainPlan,
   DesignSystemManifest,
   DesignSystemManifestInput,
   Diagnostic,
@@ -141,7 +140,6 @@ export interface NativeCompilerOptions {
 interface RawDesignSystemBinding {
   createDesignSystemManifest(input: DesignSystemManifestInput): DesignSystemManifest
   designSystemManifestSchemaVersion(): number
-  resolveDesignSystemChain(manifests: DesignSystemManifest[]): DesignSystemChainPlan
 }
 
 interface RawFileSystemBinding {
