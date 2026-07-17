@@ -4,16 +4,24 @@ import {
   type CodegenArtifact,
   type GenerateArtifactOptions,
   type CodegenOptions,
+  type CompileOptions,
+  type CompileOutput,
   type Compiler,
   type DesignSystemWatchFileKind,
   type DesignSystemWatchTarget,
   type Diagnostic,
   type DiffConfigResult,
   type SourceChange,
+  type WriteCssOptions,
+  type WriteCssResult,
+  type WriteFilesResult,
+  type WriteLayerCssOptions,
+  type WriteSplitCssOptions,
   collectParseDiagnostics,
   diagnosticsPass,
   normalizeDiagnostics,
 } from '@pandacss/compiler-shared'
+import type { CssgenDoneHookArgs } from '@pandacss/types'
 import {
   compilePreset,
   defaultImportMap,
@@ -59,6 +67,7 @@ export interface WriteDesignSystemLibResult {
 }
 
 type CodegenPrepareHooks = NonNullable<HostHooks['codegen:prepare']>
+type CssgenDoneHooks = NonNullable<HostHooks['cssgen:done']>
 
 interface ParsedDesignSystemLib {
   parsedFileCount: number
@@ -275,6 +284,71 @@ export class NodeDriver extends BaseDriver {
     return files
   }
 
+  override cssgen(options?: CompileOptions): CompileOutput {
+    const output = super.cssgen(options)
+    this.runCssgenDone({
+      artifact: 'styles.css',
+      content: output.css,
+      cwd: this.#options.cwd,
+      manifest: output.manifest,
+      layerRanges: output.layerRanges,
+    })
+    return output
+  }
+
+  override writeCss(options: WriteCssOptions): WriteCssResult {
+    const result = super.writeCss(options)
+    this.runCssgenDone({
+      artifact: 'styles.css',
+      content: result.css,
+      path: result.path,
+      outfile: options.outfile,
+      cwd: options.cwd ?? this.#options.cwd,
+      manifest: result.manifest,
+      layerRanges: result.layerRanges,
+    })
+    return result
+  }
+
+  override writeLayerCss(options: WriteLayerCssOptions): WriteCssResult {
+    const result = super.writeLayerCss(options)
+    this.runCssgenDone({
+      artifact: 'styles.layer',
+      content: result.css,
+      path: result.path,
+      outfile: options.outfile,
+      cwd: options.cwd ?? this.#options.cwd,
+      manifest: result.manifest,
+      layerRanges: result.layerRanges,
+    })
+    return result
+  }
+
+  override writeSplitCss(options?: WriteSplitCssOptions): WriteFilesResult {
+    const result = super.writeSplitCss(options)
+    const cwd = options?.cwd ?? this.#options.cwd
+    const outdir = result.root
+    for (const file of result.files) {
+      const path = this.compiler.path.join([result.root, file.path])
+      this.runCssgenDone({
+        artifact: 'styles.split',
+        content: file.code,
+        path,
+        outdir,
+        cwd,
+      })
+    }
+    return result
+  }
+
+  private runCssgenDone(args: CssgenDoneHookArgs): void {
+    const hooks: CssgenDoneHooks = this.#loaded.hostHooks?.['cssgen:done'] ?? []
+    for (const entry of hooks) {
+      const handler = resolveHookHandler(entry.value, 'cssgen:done')
+      handler(args)
+    }
+  }
+
   private codegenWithPrepareHooks(
     hooks: CodegenPrepareHooks,
     outdir: string,
@@ -394,7 +468,7 @@ export class NodeDriver extends BaseDriver {
       ],
     })
 
-    const exportsChanged = syncPackageExports(this.compiler, identity.packagePath, {
+    const { changed: exportsChanged, conflicts } = syncPackageExports(this.compiler, identity.packagePath, {
       manifestPath,
       presetPath,
     })
@@ -405,9 +479,23 @@ export class NodeDriver extends BaseDriver {
       presetPath,
       exportsChanged,
       parsedFileCount: parsed.parsedFileCount,
-      diagnostics: parsed.diagnostics,
+      diagnostics: [...parsed.diagnostics, ...exportConflictDiagnostics(identity.name, conflicts)],
     }
   }
+}
+
+function exportConflictDiagnostics(name: string, conflicts: string[]): Diagnostic[] {
+  if (conflicts.length === 0) return []
+  const paths = conflicts.map((path) => JSON.stringify(path)).join(', ')
+  const plural = conflicts.length > 1
+  return [
+    {
+      code: 'design_system_export_overwritten',
+      severity: 'warning',
+      category: 'designSystem',
+      message: `\`panda lib\` overwrote the existing ${paths} export${plural ? 's' : ''} in ${JSON.stringify(name)}'s package.json. Restore or rename ${plural ? 'them' : 'it'} if you still need the previous target${plural ? 's' : ''}.`,
+    },
+  ]
 }
 
 type HookHandler = (args: unknown) => unknown
@@ -441,7 +529,7 @@ function syncPackageExports(
   compiler: Compiler,
   packagePath: string,
   paths: { manifestPath: string; presetPath: string },
-): boolean {
+): { changed: boolean; conflicts: string[] } {
   const base = compiler.path.dirname(packagePath)
   const entries = {
     './panda.lib.json': toPosixRelative(base, paths.manifestPath),
@@ -463,7 +551,7 @@ function syncPackageExports(
       ],
     })
   }
-  return result.changed
+  return { changed: result.changed, conflicts: result.conflicts }
 }
 
 function stabilizePath(cwd: string, file: string): string {

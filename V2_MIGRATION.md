@@ -324,8 +324,8 @@ Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. `panda.
 
 ### `--cpu-prof` is now `--profile`
 
-v1's `--cpu-prof` recorded a Node `.cpuprofile` via `node:inspector`. It's gone in v2 — the hot path moved into the
-Rust engine behind NAPI, so a Node CPU profiler only sees the thin JS dispatcher, not where time actually goes.
+v1's `--cpu-prof` recorded a Node `.cpuprofile` via `node:inspector`. It's gone in v2 — the hot path moved into the Rust
+engine behind NAPI, so a Node CPU profiler only sees the thin JS dispatcher, not where time actually goes.
 
 Use `--profile` instead, on any command:
 
@@ -338,8 +338,8 @@ panda build --profile
 ```
 
 It writes `.panda/trace.json` (a Chrome trace — open in `chrome://tracing` or `ui.perfetto.dev`) and
-`.panda/timings.json` (per-span totals and the slowest files). See [Profiling a slow
-build](https://panda-css.com/docs/references/cli#profiling-a-slow-build) for the full flag reference.
+`.panda/timings.json` (per-span totals and the slowest files). See
+[Profiling a slow build](https://panda-css.com/docs/references/cli#profiling-a-slow-build) for the full flag reference.
 
 ### MCP moved out of the CLI
 
@@ -410,10 +410,10 @@ Supported v2 beta hooks:
 - `parser:before`
 - `codegen:prepare`
 - `codegen:done`
+- `cssgen:done`
 
 Removed v1 hooks:
 
-- `cssgen:done`
 - `context:created`
 - `parser:after`
 - `config:change`
@@ -421,9 +421,26 @@ Removed v1 hooks:
 - `utility:created`
 - similar v1 engine hooks
 
-If you used `cssgen:done` to strip unused token variables or keyframes from the final CSS, use
-`optimize.removeUnusedTokens` / `removeUnusedKeyframes` instead. For other final CSS transforms, run a PostCSS step
-after Panda.
+`cssgen:done` is back as an observe-only host hook. It runs after final CSS is produced (CLI, Vite, PostCSS) and
+receives `{ artifact, content, path?, … }`. It does not rewrite the CSS string.
+
+```ts
+export default defineConfig({
+  plugins: [
+    {
+      name: 'analytics',
+      hooks: {
+        'cssgen:done': ({ content, path }) => {
+          report({ bytes: content.length, path })
+        },
+      },
+    },
+  ],
+})
+```
+
+If you used v1 `cssgen:done` to strip unused token variables or keyframes, use `optimize.removeUnusedTokens` /
+`removeUnusedKeyframes` instead. For other final CSS transforms, run a PostCSS step after Panda.
 
 `parser:before` still runs after Panda reads a file and before it parses the source. Use it for source transforms in
 mixed codebases.
@@ -501,10 +518,79 @@ Recommended monorepo workflow:
 
 1. **App/root:** run a normal `panda build` or `panda cssgen` to emit the full stylesheet once.
 2. **Per package:** run `panda cssgen --minimal` to emit package-local usage CSS.
-3. **Published design systems:** ship `panda buildinfo` and hydrate in consumers (see `design-notes/build-info.md`).
+3. **Published design systems:** run `panda lib` and point consumers at it with `designSystem` (see
+   [Design systems](#design-systems) below).
 
 The v1 positional layer names (`preflight`, `global`, `tokens`, …) and positional glob override are not part of the v2
 CLI surface yet.
+
+---
+
+## Design systems
+
+To publish a component library so consumers share your tokens, recipes, and generated CSS without re-extracting your
+source, ship it as a design system. This replaces v1's `panda ship`.
+
+### Publish the library
+
+Run `panda lib` in the library package:
+
+```sh
+panda lib
+```
+
+It writes three artifacts to the output dir (`dist` by default) and syncs the package's `exports`:
+
+- `panda.lib.json` — the manifest: name, version, stamped peer range, import map, and pointers to the other two files.
+- `panda.buildinfo.json` — portable extraction state (atoms and recipes) that consumers hydrate.
+- `panda.preset.mjs` — a compiled preset carrying your tokens, recipes, and patterns.
+
+`panda lib` stamps a peer Panda range into the manifest so a consumer can detect a version mismatch. It reads the
+package's `@pandacss/dev` peer dependency and rewrites package-manager protocols (`workspace:`, `catalog:`, `npm:`) to
+a portable range. Pass `--panda <range>` to override the stamped range.
+
+### Consume the library
+
+In the consumer's config, point `designSystem` at the published package name:
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  designSystem: '@acme/design-system',
+  include: ['./src/**/*.{ts,tsx}'],
+})
+```
+
+Panda resolves `@acme/design-system/panda.lib.json`, merges the preset (and any parent chain), and hydrates the build
+info, so the library's CSS is emitted without re-scanning its source. The manifest carries the import map, so you don't
+set `importMap` separately.
+
+Don't add `panda.buildinfo.json` to `include`. `include` lists source files to scan; Panda parses each one as a module,
+so a JSON artifact there fails with a parse error. `designSystem` is the only wiring you need.
+
+Run `panda codegen` (or `panda build`) in the app. That **full local re-emit** writes `outdir` types from the merged
+config, including design-system and parent tokens. For TypeScript, import from that local outdir — not from the design
+system package's `css` / `tokens` paths. `panda lib` does not yet publish a typed styled-system on the package, so
+`@acme/design-system/css` may fail typechecking even when CSS is correct:
+
+```ts
+import { css } from '../styled-system/css' // local full re-emit (merged types)
+// not: import { css } from '@acme/design-system/css'
+```
+
+Extraction still matches both the design-system package roots and the local outdir (dual `importMap`). The local import
+is the beta convention for types until overlay / DS-published styled-system lands. See
+[`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
+
+### Known gaps
+
+- **Package-root types.** Full local codegen already includes DS/parent tokens in `outdir`. Importing `@acme/ds/css` for
+  types can still fail because the published package may not ship a typed styled-system yet. Use the local outdir until
+  overlay or DS-published styled-system ships.
+- **Unresolved tokens emit silently.** Referencing a token the design system doesn't define emits the raw value as
+  literal CSS with no diagnostic; the generated types still (correctly) reject it. See
+  [`design-notes/design-system-manifest.md`](design-notes/design-system-manifest.md).
 
 ---
 
@@ -525,8 +611,8 @@ Known gaps in the beta. Expect them to change before stable:
 ## Feedback
 
 It's a beta, so bug reports are the most useful thing you can send. Attach a `panda debug` dump (`panda debug` →
-`<outdir>/debug`) so maintainers can reproduce. For a slow build, add `--profile` (`panda debug --outdir <dir>
---profile`) so the dump includes `trace.json` and `timings.json` too.
+`<outdir>/debug`) so maintainers can reproduce. For a slow build, add `--profile`
+(`panda debug --outdir <dir> --profile`) so the dump includes `trace.json` and `timings.json` too.
 
 - Issues: <https://github.com/chakra-ui/panda/issues>
 - Docs: <https://panda-css.com>

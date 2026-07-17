@@ -15,7 +15,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { createNodeDriver } from '../src'
 import { createProject } from './test-utils'
 
-const CONFIG = `import { writeFileSync } from 'node:fs'
+const CONFIG = `import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 export default {
@@ -38,6 +38,12 @@ export default {
         },
         'codegen:done': ({ files, outdir, cwd }) => {
           writeFileSync(join(cwd, 'codegen-done.json'), JSON.stringify({ files, outdir }))
+        },
+        'cssgen:done': ({ artifact, content, path, cwd }) => {
+          const target = join(cwd, 'cssgen-done.json')
+          const prev = existsSync(target) ? JSON.parse(readFileSync(target, 'utf8')) : []
+          prev.push({ artifact, bytes: content.length, path: path ?? null })
+          writeFileSync(target, JSON.stringify(prev))
         },
       },
     },
@@ -129,6 +135,32 @@ describe('createNodeDriver', () => {
     expect(driver.cssgen().css).toContain('red')
   })
 
+  it('runs cssgen:done for string sinks and disk writes', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+    rmSync(join(dir, 'cssgen-done.json'), { force: true })
+
+    driver.cssgen()
+    expect(JSON.parse(readFileSync(join(dir, 'cssgen-done.json'), 'utf8'))).toEqual([
+      { artifact: 'styles.css', bytes: expect.any(Number), path: null },
+    ])
+
+    rmSync(join(dir, 'cssgen-done.json'), { force: true })
+    const written = driver.writeCss({ outfile: 'styled-system/styles.css' })
+    expect(JSON.parse(readFileSync(join(dir, 'cssgen-done.json'), 'utf8'))).toEqual([
+      { artifact: 'styles.css', bytes: expect.any(Number), path: written.path },
+    ])
+
+    rmSync(join(dir, 'cssgen-done.json'), { force: true })
+    const layered = driver.writeLayerCss({
+      outfile: 'styled-system/minimal.css',
+      layers: ['utilities'],
+    })
+    expect(JSON.parse(readFileSync(join(dir, 'cssgen-done.json'), 'utf8'))).toEqual([
+      { artifact: 'styles.layer', bytes: expect.any(Number), path: layered.path },
+    ])
+  })
+
   it('writes artifacts under outdir via the engine fs, embedding the user transform', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()
@@ -202,6 +234,7 @@ describe('createNodeDriver', () => {
   it('writes split stylesheet output under outdir through the driver host', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()
+    rmSync(join(dir, 'cssgen-done.json'), { force: true })
 
     const result = driver.writeSplitCss()
 
@@ -212,6 +245,13 @@ describe('createNodeDriver', () => {
       "@import './styles/utilities.css';",
     )
     expect(readFileSync(join(dir, 'styled-system', 'styles', 'utilities.css'), 'utf8')).toContain('red')
+
+    const cssgenDone = JSON.parse(readFileSync(join(dir, 'cssgen-done.json'), 'utf8')) as Array<{
+      artifact: string
+      path: string | null
+    }>
+    expect(cssgenDone.every((entry) => entry.artifact === 'styles.split')).toBe(true)
+    expect(cssgenDone.map((entry) => entry.path)).toEqual(expect.arrayContaining(result.paths))
   })
 
   it('skips rewriting unchanged split stylesheet outputs', async () => {

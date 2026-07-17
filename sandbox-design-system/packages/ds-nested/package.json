@@ -6,7 +6,11 @@
   "exports": {
     "./button": "./src/button.tsx",
     "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/panda.preset.mjs"
+    "./preset": "./dist/panda.preset.mjs",
+    "./css": "./styled-system/css/index.js",
+    "./tokens": "./styled-system/tokens/index.js",
+    "./patterns": "./styled-system/patterns/index.js",
+    "./types": "./styled-system/types/index.d.ts"
   },
   "scripts": {
     "codegen": "panda codegen",

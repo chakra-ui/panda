@@ -74,14 +74,15 @@ export default {
 
 - **Class A: config / construction**: `preset:resolved`, `config:resolved`. Host-only and may be async because config
   and preset resolution already run asynchronously.
-- **Class B: output / batch**: `codegen:prepare`, `codegen:done`. Host-only and sync; prepare runs before generated
-  files are written, done runs after.
+- **Class B: output / batch**: `codegen:prepare`, `codegen:done`, `cssgen:done`. Host-only and sync; prepare runs
+  before generated files are written, done runs after. `cssgen:done` observes final CSS after compile (string sinks and
+  disk writes).
 - **Class C: per-file source transform**: `parser:before`. Hot path, sync-only, requires Rust-side filters.
 - **Class D: per-unit hot path**: existing `utility.transform` / `pattern.transform` callbacks. Sync-only. General
   user-facing D hooks, including `parser:after`, are deferred.
 
-The v2.0 scope is `config:resolved`, `preset:resolved`, `codegen:prepare`, `codegen:done`, existing typed callbacks,
-`config.plugins`, and filtered `parser:before`.
+The v2.0 scope is `config:resolved`, `preset:resolved`, `codegen:prepare`, `codegen:done`, `cssgen:done`, existing typed
+callbacks, `config.plugins`, and filtered `parser:before`.
 
 ## Filter and Invalidation Contract
 
@@ -120,6 +121,11 @@ Rust owns filter matching (`id` glob/regex, `code` string/regex) and calls JS on
 `codegen:prepare` runs in the JS host before `Driver.codegen()` writes files and receives `{ artifacts, outdir, cwd }`.
 It may return replacement artifacts. `codegen:done` runs after files are written and receives `{ files, outdir, cwd }`.
 Both are synchronous so `Driver.codegen()` remains a sync API.
+
+`cssgen:done` runs in the JS host after final CSS is produced — on `NodeDriver.cssgen`, `writeCss`, `writeLayerCss`, and
+`writeSplitCss` (one call per split file). It receives
+`{ artifact, content, path?, outfile?, outdir?, cwd?, manifest?, layerRanges? }` and returns `void`. It is observe-only;
+use `optimize` or a PostCSS plugin to mutate CSS. Vite and PostCSS fire it through `driver.cssgen()` (no `path`).
 
 ## Native Plugins
 
@@ -222,9 +228,27 @@ export default {
 
 ### `cssgen:done`
 
-`cssgen:done` is not in the initial v2 hook set. For final CSS cleanup like removing unused variables/keyframes, prefer
-Panda's `optimize` options or a project PostCSS plugin after Panda. Reconsider a dedicated host-side CSS output hook
-only when v2 has a stable CSS artifact contract.
+Use `cssgen:done` for synchronous side effects after final CSS is produced — reporting, analytics, or copying the CSS
+string. It does not rewrite CSS. For unused token/keyframe cleanup, use `optimize.removeUnusedTokens` /
+`removeUnusedKeyframes`. For other transforms, run PostCSS after Panda.
+
+```ts
+export default {
+  plugins: [
+    {
+      name: 'analytics',
+      hooks: {
+        'cssgen:done': ({ content, path, artifact }) => {
+          report({ bytes: content.length, path, artifact })
+        },
+      },
+    },
+  ],
+}
+```
+
+`artifact` is `'styles.css'` (full compile), `'styles.layer'` (`--minimal` / layer CSS), or `'styles.split'` (one call
+per split file). `path` is set only for disk writes.
 
 ### Removed Engine Hooks
 

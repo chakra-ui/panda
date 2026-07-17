@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runCssgen, writeCssgenOutput } from '../src'
 import {
   cleanupFixture,
+  CONFIG,
   createFixture,
   EMPTY_CONFIG,
   normalizeOutput,
@@ -57,6 +58,17 @@ describe('cssgen command', () => {
     dir = createFixture()
 
     await runCssgen({ cwd: dir, minify: true, logLevel: 'silent' })
+
+    const css = readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')
+
+    expect(css).toContain('{')
+    expect(css).not.toContain('\n  ')
+  })
+
+  it('minify: true in config writes compact CSS without the flag', async () => {
+    dir = createFixture(CONFIG.replace('export default {', 'export default {\n  minify: true,'))
+
+    await runCssgen({ cwd: dir, logLevel: 'silent' })
 
     const css = readFileSync(join(dir, 'styled-system', 'styles.css'), 'utf8')
 

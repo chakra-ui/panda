@@ -16,18 +16,33 @@ export interface PackageIdentity {
 export function resolvePublishedPandaRange(range: string | undefined, currentVersion: string | undefined): string {
   const authored = range?.trim()
   if (!authored) return '*'
+
+  if (authored.startsWith('npm:')) {
+    return resolveNpmAliasRange(authored) ?? portableRangeFromInstalled(currentVersion, '^')
+  }
+
   if (!PACKAGE_MANAGER_RANGE_PATTERN.test(authored)) return authored
 
-  if (authored?.startsWith('workspace:')) {
+  if (authored.startsWith('workspace:')) {
     const workspaceRange = authored.slice('workspace:'.length)
     if (PORTABLE_WORKSPACE_RANGE_PATTERN.test(workspaceRange)) return workspaceRange
   }
 
-  const core = currentVersion?.match(VERSION_CORE_PATTERN)?.[0]
-  if (!core) return '*'
-
   const operator = authored === 'workspace:~' ? '~' : '^'
-  return `${operator}${core}`
+  return portableRangeFromInstalled(currentVersion, operator)
+}
+
+/** `npm:@scope/pkg@^3` → `^3`; bare `npm:@scope/pkg` has no range suffix. */
+function resolveNpmAliasRange(spec: string): string | undefined {
+  const at = spec.lastIndexOf('@')
+  // Scoped names keep an `@` right after `npm:`; only a later `@` is the version.
+  if (at <= 'npm:'.length) return undefined
+  return spec.slice(at + 1)
+}
+
+function portableRangeFromInstalled(currentVersion: string | undefined, operator: '^' | '~'): string {
+  const core = currentVersion?.match(VERSION_CORE_PATTERN)?.[0]
+  return core ? `${operator}${core}` : '*'
 }
 
 export function readPackageIdentity(cwd: string): PackageIdentity {
@@ -62,6 +77,8 @@ export function defaultImportMap(name: string): DesignSystemManifestImportMap {
 export interface SyncExportsResult {
   changed: boolean
   json: string
+  /** Existing subpaths whose value differed from the one Panda wrote (overwritten). */
+  conflicts: string[]
 }
 
 export interface SyncExportsOptions {
@@ -74,11 +91,18 @@ export function syncExports(options: SyncExportsOptions): SyncExportsResult {
   const pkg = JSON.parse(packageJson) as Record<string, unknown>
   const existing = normalizeExports(pkg.exports)
   const merged: Record<string, unknown> = { ...existing }
-  for (const [key, value] of Object.entries(entries)) merged[key] = value
+  const conflicts: string[] = []
+  for (const [key, value] of Object.entries(entries)) {
+    // `value` is always a string path; object/array existing entries always conflict.
+    if (key in existing && existing[key] !== value) {
+      conflicts.push(key)
+    }
+    merged[key] = value
+  }
 
   const changed = JSON.stringify(pkg.exports) !== JSON.stringify(merged)
   const out = { ...pkg, exports: merged }
-  return { changed, json: `${JSON.stringify(out, null, 2)}\n` }
+  return { changed, json: `${JSON.stringify(out, null, 2)}\n`, conflicts }
 }
 
 export function toPosixPath(path: string): string {
@@ -101,6 +125,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 function normalizeExports(exports: unknown): Record<string, unknown> {
   if (exports === undefined) return {}
   if (typeof exports === 'string') return { '.': exports }
+  if (Array.isArray(exports)) return { '.': exports }
   if (!isPlainObject(exports)) return {}
   if (isSubpathExportMap(exports)) return exports
   return { '.': exports }
