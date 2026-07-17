@@ -1,6 +1,8 @@
 import type { SerializedConfig } from '@pandacss/compiler-shared'
 import { describe, expect, test } from 'vitest'
 import { diffConfig } from '../src/diff'
+import { loadConfig } from '../src/load'
+import { test as diskTest, writeFileTree } from './design-system/helpers'
 
 const base: SerializedConfig = {
   outdir: 'styled-system',
@@ -136,6 +138,29 @@ describe('diffConfig', () => {
     const prev: SerializedConfig = { utilities: { size: { transform: { ...ref } } } }
     const next: SerializedConfig = { utilities: { size: { transform: { ...ref } } } }
     expect(diffConfig(prev, next).hasChanged).toBe(false)
+  })
+
+  diskTest('loadConfig A → mutate token → loadConfig B surfaces a tokens dependency', async ({ cwd }) => {
+    writeFileTree(cwd, {
+      'panda.config.ts': `export default {
+        theme: { tokens: { colors: { brand: { value: '#111' } } } },
+        utilities: { size: { className: 'size', values: 'sizes' } },
+      }`,
+    })
+    const previous = await loadConfig({ cwd })
+
+    writeFileTree(cwd, {
+      'panda.config.ts': `export default {
+        theme: { tokens: { colors: { brand: { value: '#222' } } } },
+        utilities: { size: { className: 'size', values: 'sizes' } },
+      }`,
+    })
+    const next = await loadConfig({ cwd })
+
+    const result = diffConfig(previous.config, next.config)
+    expect(result.hasChanged).toBe(true)
+    expect(result.dependencies).toContain('tokens')
+    expect(result.dependencies).not.toContain('utilities')
   })
 
   test('a parser:before filter edit is visible through the hook snapshot', () => {
