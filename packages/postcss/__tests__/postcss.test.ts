@@ -14,7 +14,7 @@ interface MockDriver {
   configPath: string
   codegen: ReturnType<typeof vi.fn>
   cssgen: ReturnType<typeof vi.fn>
-  designSystemDiagnostics: Array<{ severity: 'warning' | 'error'; code: string; message: string }>
+  designSystemDiagnostics: Array<{ severity: 'info' | 'warning' | 'error'; code: string; message: string }>
   designSystemWatchTargets: ReturnType<typeof vi.fn>
   getOutdir: ReturnType<typeof vi.fn>
   isDesignSystemFile: ReturnType<typeof vi.fn>
@@ -136,21 +136,30 @@ describe('@pandacss/postcss', () => {
     `)
   })
 
-  it('emits design-system diagnostics with severity and code', async () => {
+  it('records informational design-system diagnostics without promoting them to warnings', async () => {
     const { driver, run } = await setup()
     driver.designSystemDiagnostics = [
       {
-        severity: 'warning',
+        severity: 'info',
         code: 'design_system_token_conflict',
-        message: 'Token "colors.brand" is defined by both "@acme/ds" and this config; the local value wins.',
+        message: '1 token path is defined by both "@acme/ds" and this config ("colors.brand"); the local values win.',
       },
     ]
 
     const result = await run(INPUT)
 
-    expect(result.warnings().map((warning) => warning.text)).toMatchInlineSnapshot(`
+    expect(result.warnings()).toEqual([])
+    expect(result.messages.filter((message) => message.type === 'pandacss-diagnostic')).toMatchInlineSnapshot(`
       [
-        "warning design_system_token_conflict Token "colors.brand" is defined by both "@acme/ds" and this config; the local value wins.",
+        {
+          "diagnostic": {
+            "code": "design_system_token_conflict",
+            "message": "1 token path is defined by both "@acme/ds" and this config ("colors.brand"); the local values win.",
+            "severity": "info",
+          },
+          "plugin": "pandacss",
+          "type": "pandacss-diagnostic",
+        },
       ]
     `)
   })

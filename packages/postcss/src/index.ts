@@ -208,6 +208,12 @@ function emitDiagnostics(root: Root, result: Result, diagnostics: Diagnostic[]) 
   }
 
   for (const diagnostic of diagnostics) {
+    if (diagnostic.severity === 'info') {
+      result.messages.push({ type: 'pandacss-diagnostic', plugin: PLUGIN_NAME, diagnostic })
+
+      continue
+    }
+
     result.warn(formatDiagnostic(diagnostic), { plugin: PLUGIN_NAME })
   }
 }

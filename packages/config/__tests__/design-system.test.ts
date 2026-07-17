@@ -240,6 +240,43 @@ describe('resolveAuthoredPresets / designSystem', () => {
     )
   })
 
+  test('flags class-name option overrides that break the design system runtime', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds', hash: true }, cwd)
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toEqual(['hash'])
+  })
+
+  test('does not flag when class-name options match the design system', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/ds' }, cwd)
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
+  })
+
+  test('does not flag explicit values that equal the normalized defaults', async () => {
+    const { metadata } = await resolveAuthoredPresets(
+      {
+        designSystem: '@acme/ds',
+        hash: false,
+        prefix: { className: '', cssVar: '' },
+        separator: '_',
+      },
+      cwd,
+    )
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
+  })
+
+  test('compares prefix fields by value rather than object property order', async () => {
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/prefixed',
+      preset: { prefix: { cssVar: 'acme', className: 'ui' } },
+    })
+
+    const { metadata } = await resolveAuthoredPresets(
+      { designSystem: '@acme/prefixed', prefix: { className: 'ui', cssVar: 'acme' } },
+      cwd,
+    )
+    expect(metadata?.designSystem?.[0]?.optionMismatch).toBeUndefined()
+  })
+
   // Manifest and package resolution failures.
 
   test('attaches diagnostics for an invalid manifest', async () => {
@@ -249,6 +286,34 @@ describe('resolveAuthoredPresets / designSystem', () => {
           code: 'design_system_manifest_invalid',
           severity: 'error',
           category: 'config',
+        },
+      ],
+    })
+  })
+
+  test.each([
+    ['schemaVersion', { schemaVersion: 0 }, 'positive integer "schemaVersion"'],
+    ['name', { name: '  ' }, 'missing a "name" entry'],
+    ['panda', { panda: '' }, 'missing a "panda" entry'],
+    ['files', { files: './button.js' }, '"files" entry'],
+    ['importMap', { importMap: { css: ['@acme/ds/css'] } }, '"importMap.css" entry'],
+  ])('validates the complete manifest shape before loading its preset (%s)', async (field, manifest, message) => {
+    const name = `@acme/invalid-${field}`
+    writeDesignSystemPackage({
+      cwd,
+      name,
+      manifest,
+      preset: 'throw new Error("the preset must not be imported")',
+    })
+
+    await expect(resolveAuthoredPresets({ designSystem: name }, cwd)).rejects.toMatchObject({
+      diagnostics: [
+        {
+          code: 'design_system_manifest_invalid',
+          severity: 'error',
+          category: 'config',
+          file: expect.stringMatching(/panda\.lib\.json$/),
+          message: expect.stringContaining(message),
         },
       ],
     })
@@ -410,6 +475,7 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     writeDesignSystemAt(foundationsDir, '@acme/foundations', {
       preset: {
         name: '@acme/foundations',
+        hash: true,
         theme: {
           tokens: {
             colors: {
@@ -504,6 +570,18 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing' }, cwd)
 
     expect(metadata?.designSystem?.map((ds) => ds.name)).toEqual(['@acme/foundations', '@acme/marketing'])
+  })
+
+  test('compares child options against the effective inherited chain', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing', hash: true }, cwd)
+
+    expect(metadata?.designSystem?.map((ds) => ds.optionMismatch)).toEqual([undefined, undefined])
+  })
+
+  test('flags a consumer override away from the inherited chain options', async () => {
+    const { metadata } = await resolveAuthoredPresets({ designSystem: '@acme/marketing', hash: false }, cwd)
+
+    expect(metadata?.designSystem?.map((ds) => ds.optionMismatch)).toEqual([['hash'], ['hash']])
   })
 
   test('wires one importMap root per design system, root-first, then the local outdir', async () => {

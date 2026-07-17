@@ -12,7 +12,6 @@ export type DiagnosticFormat = 'human' | 'pretty' | 'json' | 'github'
 export interface DiagnosticRenderOptions {
   cwd: string
   format?: DiagnosticFormat
-  quiet?: boolean
 }
 
 export function normalizeCliDiagnostics(
@@ -78,10 +77,11 @@ export function missingConfigDiagnostic(configPath: string | undefined, cwd: str
 }
 
 export function renderDiagnostics(diagnostics: Diagnostic[], options: DiagnosticRenderOptions): string {
-  const normalized = normalizeCliDiagnostics(diagnostics, { cwd: options.cwd })
-  const visible = options.quiet ? normalized.filter((diagnostic) => diagnostic.severity === 'error') : normalized
+  const visible = normalizeCliDiagnostics(diagnostics, { cwd: options.cwd })
 
-  if (visible.length === 0) return ''
+  if (visible.length === 0) {
+    return ''
+  }
 
   switch (options.format) {
     case 'github':
@@ -103,7 +103,10 @@ export function formatDiagnostic(diagnostic: Diagnostic): string {
       ? ` ${diagnostic.file}`
       : ''
 
-  return `${diagnostic.severity} ${diagnostic.code}${location} ${diagnostic.message}`
+  const header = `${diagnostic.severity} ${diagnostic.code}${location} ${diagnostic.message}`
+  const help = (diagnostic.help ?? []).map((message) => `  help: ${message}`)
+
+  return [header, ...help].join('\n')
 }
 
 function formatPrettyDiagnostic(diagnostic: Diagnostic, cwd: string): string {

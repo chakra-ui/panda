@@ -72,18 +72,6 @@ describe('lib command', () => {
     expect(result.exportsChanged).toBe(true)
   })
 
-  it('stamps a concrete major when the package declares no @pandacss/dev peer', async () => {
-    dir = createLibFixture()
-    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@acme/ds', version: '1.2.3' }, null, 2))
-
-    const result = await runLib({ cwd: dir, logLevel: 'silent' })
-    expect(result.ok).toBe(true)
-
-    const manifest = readManifest(dir)
-    expect(manifest.panda).not.toBe('*')
-    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
-  })
-
   it('replaces an unpublishable catalog: peer range with the running major', async () => {
     dir = createLibFixture()
     writeFileSync(
@@ -150,6 +138,19 @@ describe('lib command', () => {
     expect(pkg.exports['./panda.lib.json']).toBe('./dist/panda.lib.json')
     expect(pkg.exports['./recipes']).toBeUndefined()
     expect(pkg.exports['./jsx']).toBeUndefined()
+  })
+
+  it.each(['workspace:*', 'workspace:^', 'catalog:'])('publishes a portable Panda range for %s peers', async (peer) => {
+    dir = createLibFixture()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify({ name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': peer } }, null, 2),
+    )
+
+    const result = await runLib({ cwd: dir, logLevel: 'silent' })
+
+    expect(result.ok).toBe(true)
+    expect(readManifest(dir).panda).toBe('^2.0.0')
   })
 
   it('preserves an existing string root export when syncing package exports', async () => {

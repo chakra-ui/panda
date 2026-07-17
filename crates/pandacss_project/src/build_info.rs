@@ -21,7 +21,12 @@ use crate::{FileEntry, ParseFileReport};
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
+
+/// Synthetic file-key prefix for atoms hydrated from a parent design system.
+/// Excluded from serialized build info so a published artifact carries only
+/// this project's own extraction, not a hydrated parent's.
+pub(crate) const HYDRATED_FILE_PREFIX: &str = "buildinfo:";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -34,6 +39,9 @@ pub struct BuildInfo {
     /// Intern table — every prop / condition / value string is referenced by index.
     pub strings: Vec<String>,
     pub atoms: Vec<BuildAtom>,
+    /// Token paths (as string-table indices) referenced outside encoded styles.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub token_refs: Vec<u32>,
     /// Interned recipe / slot-recipe styles. Omitted when the library has none.
     #[serde(default, skip_serializing_if = "BuildRecipes::is_empty")]
     pub recipes: BuildRecipes,
@@ -116,12 +124,16 @@ pub enum BuildValue {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct ModuleEntry {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub atoms: Vec<u32>,
     /// Combined indices into `recipes` (base then variants) this module uses.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub recipes: Vec<u32>,
+    /// Indices into the top-level `tokenRefs` array this module uses.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub token_refs: Vec<u32>,
 }
 
 #[allow(
@@ -251,22 +263,20 @@ fn group_from_build(
     build: &BuildRecipeGroup,
     strings: &[String],
 ) -> Option<RecipeStyleGroupSnapshot> {
+    let slot = match build.slot {
+        Some(idx) => serde_json::Value::String(string_at(strings, idx)?.into()),
+        None => serde_json::Value::Null,
+    };
+    let mut entries = Vec::with_capacity(build.entries.len());
+    for entry in &build.entries {
+        entries.push(entry_from_build(entry, strings)?);
+    }
     Some(RecipeStyleGroupSnapshot {
         recipe: string_at(strings, build.r)?,
-        slot: build.slot.map_or(serde_json::Value::Null, |idx| {
-            strings
-                .get(idx as usize)
-                .map_or(serde_json::Value::Null, |s| {
-                    serde_json::Value::String(s.clone())
-                })
-        }),
+        slot,
         class_name: string_at(strings, build.cls)?,
         conditions: conditions_from_build(&build.cond, strings)?,
-        entries: build
-            .entries
-            .iter()
-            .filter_map(|entry| entry_from_build(entry, strings))
-            .collect(),
+        entries,
     })
 }
 
@@ -276,49 +286,47 @@ fn recipes_from_build(
     build: &BuildRecipes,
     strings: &[String],
     groups: Option<&FxHashSet<u32>>,
-) -> EncodedRecipesSnapshot {
+) -> Option<EncodedRecipesSnapshot> {
     let keep = |combined: usize| {
         groups.is_none_or(|set| u32::try_from(combined).is_ok_and(|index| set.contains(&index)))
     };
-    let base: Vec<_> = build
-        .base
-        .iter()
-        .enumerate()
-        .filter(|(index, _)| keep(*index))
-        .filter_map(|(_, group)| group_from_build(group, strings))
-        .collect();
+    // Like `atom_from_build`, a kept group that fails to reconstruct means the
+    // intern table is corrupt; propagate `None` so the caller re-extracts.
+    let mut base = Vec::new();
+    for (index, group) in build.base.iter().enumerate() {
+        if keep(index) {
+            base.push(group_from_build(group, strings)?);
+        }
+    }
     let base_len = build.base.len();
     let variant_len = build.variants.len();
-    let variants: Vec<_> = build
-        .variants
-        .iter()
-        .enumerate()
-        .filter(|(index, _)| keep(base_len + *index))
-        .filter_map(|(_, group)| group_from_build(group, strings))
-        .collect();
-    let compounds: Vec<_> = build
-        .compounds
-        .iter()
-        .enumerate()
-        .filter(|(index, _)| keep(base_len + variant_len + *index))
-        .filter_map(|(_, group)| group_from_build(group, strings))
-        .collect();
-    let atomic = build
-        .atomic
-        .iter()
-        .filter_map(|atom| atom_from_build(atom, strings))
-        .collect();
-    EncodedRecipesSnapshot {
+    let mut variants = Vec::new();
+    for (index, group) in build.variants.iter().enumerate() {
+        if keep(base_len + index) {
+            variants.push(group_from_build(group, strings)?);
+        }
+    }
+    let mut compounds = Vec::new();
+    for (index, group) in build.compounds.iter().enumerate() {
+        if keep(base_len + variant_len + index) {
+            compounds.push(group_from_build(group, strings)?);
+        }
+    }
+    let mut atomic = Vec::new();
+    for atom in &build.atomic {
+        atomic.push(atom_from_build(atom, strings)?);
+    }
+    Some(EncodedRecipesSnapshot {
         base,
         variants,
         compounds,
         atomic,
-    }
+    })
 }
 
-/// Indices selected by `only_modules`, reading `field` (`.atoms` or `.recipes`)
-/// off each named module's [`ModuleEntry`]. `None` means "no restriction" —
-/// distinct from an empty set, which would select nothing.
+/// Indices selected by `only_modules`, reading an index field off each named
+/// module's [`ModuleEntry`]. `None` means "no restriction" — distinct from an
+/// empty set, which would select nothing.
 fn selected_module_indices(
     info: &BuildInfo,
     only_modules: Option<&[String]>,
@@ -330,6 +338,14 @@ fn selected_module_indices(
             .filter_map(|module| info.modules.get(module))
             .flat_map(|entry| field(entry).iter().copied())
             .collect()
+    })
+}
+
+fn selected_indices_in_bounds(indices: Option<&FxHashSet<u32>>, len: usize) -> bool {
+    indices.is_none_or(|indices| {
+        indices
+            .iter()
+            .all(|&index| usize::try_from(index).is_ok_and(|index| index < len))
     })
 }
 
@@ -357,8 +373,17 @@ impl super::Project {
     pub fn build_info(&self, panda: String) -> BuildInfo {
         let config_fingerprint = self.config_fingerprint.to_string();
 
-        // Deduped, emit-ordered — modules reference this index space.
-        let mut atoms: Vec<&Atom> = self.atoms_cache.iter().collect();
+        // Deduped, emit-ordered — modules reference this index space. Only this
+        // project's own atoms are serialized; hydrated parent atoms (under
+        // `HYDRATED_FILE_PREFIX` files) are excluded so the artifact stays local.
+        let mut local_atoms: FxHashSet<&Atom> = FxHashSet::default();
+        for (path, entry) in &self.files {
+            if path.starts_with(HYDRATED_FILE_PREFIX) {
+                continue;
+            }
+            local_atoms.extend(entry.atoms.iter());
+        }
+        let mut atoms: Vec<&Atom> = local_atoms.into_iter().collect();
         atoms.sort_by(|a, b| super::compare_atoms_by_emit_order(a, b));
         let position: FxHashMap<&Atom, u32> = atoms
             .iter()
@@ -382,9 +407,30 @@ impl super::Project {
             .map(|(index, group)| (group.class_name.as_ref(), index as u32))
             .collect();
 
+        let mut token_ref_paths = self
+            .files
+            .iter()
+            .filter(|(path, _)| !path.starts_with(HYDRATED_FILE_PREFIX))
+            .flat_map(|(_, entry)| entry.token_refs.iter().map(String::as_str))
+            .collect::<Vec<_>>();
+        token_ref_paths.sort_unstable();
+        token_ref_paths.dedup();
+        let token_ref_position: FxHashMap<&str, u32> = token_ref_paths
+            .iter()
+            .enumerate()
+            .map(|(index, path)| (*path, index as u32))
+            .collect();
+        let token_refs = token_ref_paths
+            .iter()
+            .map(|path| interner.intern(path))
+            .collect();
+
         let mut modules = BTreeMap::new();
         let mut styled_modules = FxHashSet::default();
         for (path, entry) in &self.files {
+            if path.starts_with(HYDRATED_FILE_PREFIX) {
+                continue;
+            }
             let mut atom_indices: Vec<u32> = entry
                 .atoms
                 .iter()
@@ -403,7 +449,18 @@ impl super::Project {
             recipe_indices.sort_unstable();
             recipe_indices.dedup();
 
-            if !atom_indices.is_empty() || !recipe_indices.is_empty() {
+            let mut token_ref_indices = entry
+                .token_refs
+                .iter()
+                .filter_map(|path| token_ref_position.get(path.as_str()).copied())
+                .collect::<Vec<_>>();
+            token_ref_indices.sort_unstable();
+            token_ref_indices.dedup();
+
+            if !atom_indices.is_empty()
+                || !recipe_indices.is_empty()
+                || !token_ref_indices.is_empty()
+            {
                 styled_modules.insert(path.to_string());
             }
 
@@ -412,6 +469,7 @@ impl super::Project {
                 ModuleEntry {
                     atoms: atom_indices,
                     recipes: recipe_indices,
+                    token_refs: token_ref_indices,
                 },
             );
         }
@@ -424,6 +482,7 @@ impl super::Project {
             config_fingerprint,
             strings: interner.table,
             atoms: build_atoms,
+            token_refs,
             recipes,
             modules,
             exports,
@@ -451,24 +510,67 @@ impl super::Project {
 
         let selected_atoms = selected_module_indices(info, only_modules, |entry| &entry.atoms);
         let selected_recipes = selected_module_indices(info, only_modules, |entry| &entry.recipes);
+        let selected_token_refs =
+            selected_module_indices(info, only_modules, |entry| &entry.token_refs);
 
-        let atoms: FxHashSet<Atom> = info
-            .atoms
-            .iter()
-            .enumerate()
-            .filter(|(index, _)| {
-                selected_atoms
-                    .as_ref()
-                    .is_none_or(|set| u32::try_from(*index).is_ok_and(|index| set.contains(&index)))
-            })
-            .filter_map(|(_, build)| atom_from_build(build, &info.strings))
-            .collect();
+        let Some(recipe_count) = info
+            .recipes
+            .base
+            .len()
+            .checked_add(info.recipes.variants.len())
+            .and_then(|count| count.checked_add(info.recipes.compounds.len()))
+        else {
+            return false;
+        };
+        // Invalid module references would otherwise look like a successful empty selection.
+        if !selected_indices_in_bounds(selected_atoms.as_ref(), info.atoms.len())
+            || !selected_indices_in_bounds(selected_recipes.as_ref(), recipe_count)
+            || !selected_indices_in_bounds(selected_token_refs.as_ref(), info.token_refs.len())
+        {
+            return false;
+        }
+
+        // A selected atom that fails to reconstruct means the intern table is
+        // corrupt (an out-of-range string index). Refuse to hydrate partial data
+        // and let the caller re-extract, same as a schema-version mismatch.
+        let mut atoms: FxHashSet<Atom> = FxHashSet::default();
+        for (index, build) in info.atoms.iter().enumerate() {
+            let selected = selected_atoms
+                .as_ref()
+                .is_none_or(|set| u32::try_from(index).is_ok_and(|index| set.contains(&index)));
+            if !selected {
+                continue;
+            }
+            match atom_from_build(build, &info.strings) {
+                Some(atom) => {
+                    atoms.insert(atom);
+                }
+                None => return false,
+            }
+        }
 
         // Stored under the lib's name; `stylesheet_snapshots` merges it in.
-        let recipes = recipes_from_build(&info.recipes, &info.strings, selected_recipes.as_ref());
+        let Some(recipes) =
+            recipes_from_build(&info.recipes, &info.strings, selected_recipes.as_ref())
+        else {
+            return false;
+        };
+        let mut token_refs = Vec::new();
+        for (index, &path_index) in info.token_refs.iter().enumerate() {
+            let selected = selected_token_refs
+                .as_ref()
+                .is_none_or(|set| u32::try_from(index).is_ok_and(|index| set.contains(&index)));
+            if !selected {
+                continue;
+            }
+            let Some(path) = string_at(&info.strings, path_index) else {
+                return false;
+            };
+            token_refs.push(path.into());
+        }
         self.set_hydrated_recipes(name, recipes);
 
-        let key: Arc<str> = Arc::from(format!("buildinfo:{name}").as_str());
+        let key: Arc<str> = Arc::from(format!("{HYDRATED_FILE_PREFIX}{name}").as_str());
         if self.files.contains_key(&key) {
             self.drop_file_state(&key);
         }
@@ -481,7 +583,7 @@ impl super::Project {
                 atoms,
                 encoded_recipes: EncodedRecipes::new(false),
                 utility_styles: FxHashMap::default(),
-                token_refs: Vec::new(),
+                token_refs,
                 exports: pandacss_extractor::ExportInfo::default(),
                 diagnostics: Vec::new(),
                 report: ParseFileReport::default(),

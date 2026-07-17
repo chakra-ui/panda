@@ -9,6 +9,7 @@ export { isStampablePandaRange, readPandaVersion, runningPandaRange } from './ve
 export { compilePreset } from './lib-preset'
 export {
   readPackageIdentity,
+  resolvePublishedPandaRange,
   defaultImportMap,
   syncExports,
   toPosixPath,
