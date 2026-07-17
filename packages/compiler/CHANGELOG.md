@@ -1,5 +1,86 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- ea9ccae: Add `--profile` to any command. It writes `trace.json` (open in `chrome://tracing` or `ui.perfetto.dev`) and
+  `timings.json` (per-span totals and slowest files) to `.panda/`, or into `panda debug --outdir` when combined with
+  `debug`. Replaces v1's `--cpu-prof`, which couldn't see time spent in the Rust engine.
+- 8b6d08f: Bring back `cssgen:done` as an observe-only host hook for reporting on final CSS from CLI, Vite, and PostCSS.
+  Use `optimize` or PostCSS to mutate CSS.
+
+### Patch Changes
+
+- 9409487: Add token inspection metadata and `no-primitive-token` to enforce semantic token usage when a matching
+  semantic token category exists.
+- 682338e: - Keep nested design-system build info package-local, and safely re-extract source when build info is stale,
+  malformed, or corrupt.
+  - Normalize workspace Panda ranges and warn when effective consumer class-name options differ from the library.
+  - Preserve recipe cascade order, compound variants, and runtime token references when hydrating design-system build
+    info.
+  - Validate manifests before loading presets, and reconcile token ownership and class-name compatibility after config
+    hooks.
+  - Make hydration diagnostics actionable and CI-correct, with reason-specific fallback errors and grouped token
+    conflicts.
+- 853bb65: Speed up the generated `css()` runtime. Calling `css({ ... })` inline with the same styles now reuses a
+  cached result instead of re-serializing on every call, so style-heavy trees render noticeably faster (~3x on a dense
+  SSR page).
+- 05c5125: Stop adding `className` to pattern property types.
+
+  Pattern `*Properties` interfaces now only list configured pattern props. JSX components get React's `className` type
+  back, and passing `className` to a pattern function no longer emits a `class-name_*` utility class.
+
+- b7ab62c: Fix runtime class names for multiline string values.
+
+  Runtime `css()` now collapses multiline whitespace the same way cssgen does, so values like `` margin: `1rem\n2rem` ``
+  match the generated CSS selector.
+
+- 8b6d08f: `panda lib` no longer silently loses or clobbers package.json `exports`. An array-form root export is
+  preserved (under `"."`) instead of dropped, and overwriting a subpath whose value differs from Panda's now emits a
+  warning naming the overwritten path.
+- d8e8465: `panda lib` omits inferred fallback `files` that package.json `"files"` would not publish, and warns with a
+  `--files` tip for dist-only packages.
+- 6e3c160: Speed up `css()`, style-prop, and recipe resolution: the generated `memo()` cache now hashes flat style
+  objects directly instead of always falling back to `JSON.stringify`. Nested and responsive values still use the
+  original path, so caching stays correct.
+
+  SSR throughput up 30-40% across all three in a variant-button benchmark.
+
+- f8f3124: Memoize generated `css()` calls that receive multiple style arguments to avoid repeated merge and
+  serialization work, and reuse cached raw recipe/pattern resolution in generated runtimes.
+
+  In the generated runtime benchmarks, repeated multi-arg `css()` calls improved from about `1.7us` to `249ns`, the
+  generic styled raw path improved by about `3x`, and shared pattern prop splitting dropped from roughly `2.5us` to
+  sub-`200ns` in the final generated stack path.
+
+- 0f88913: Speed up generated pattern helpers by memoizing their className output for repeated style props.
+- 682338e: Remove the unused `designSystem.resolveChain` binding. Design-system chains are resolved by the config loader
+  (`loadDesignSystemChain`), which walks the single parent link each manifest declares; the separate Rust
+  `resolve_chain` primitive was never called on that path, so the duplicate ordering/cycle logic is gone.
+- 33fa885: Keep native CSS keywords assignable under `strictTokens` for properties whose token category is empty.
+
+  A property like `cursor` (no `cursor` tokens defined) now accepts `'pointer'`, `'grab'`, and other native keywords
+  instead of requiring the `[pointer]` escape hatch. The same applies to any utility pointing at an unpopulated token
+  category, such as `opacity` and `zIndex`.
+
+- e0d46e5: Fix cross-file style extraction on Windows. Resolved module paths are normalized to forward slashes, so
+  tsconfig-aliased and relative `css()` imports match and report their dependencies correctly on Windows; POSIX output
+  is unchanged.
+- Updated dependencies [9409487]
+- Updated dependencies [682338e]
+- Updated dependencies [56013a1]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [95e5501]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [d8e8465]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [682338e]
+  - @pandacss/compiler-shared@2.0.0-beta.9
+  - @pandacss/config@2.0.0-beta.9
+  - @pandacss/types@2.0.0-beta.9
+
 ## 2.0.0-beta.8
 
 ### Patch Changes

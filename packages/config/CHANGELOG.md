@@ -1,5 +1,43 @@
 # @pandacss/config
 
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- 8b6d08f: Bring back `cssgen:done` as an observe-only host hook for reporting on final CSS from CLI, Vite, and PostCSS.
+  Use `optimize` or PostCSS to mutate CSS.
+
+### Patch Changes
+
+- 682338e: - Keep nested design-system build info package-local, and safely re-extract source when build info is stale,
+  malformed, or corrupt.
+  - Normalize workspace Panda ranges and warn when effective consumer class-name options differ from the library.
+  - Preserve recipe cascade order, compound variants, and runtime token references when hydrating design-system build
+    info.
+  - Validate manifests before loading presets, and reconcile token ownership and class-name compatibility after config
+    hooks.
+  - Make hydration diagnostics actionable and CI-correct, with reason-specific fallback errors and grouped token
+    conflicts.
+- 56013a1: Config bundling is now lazy. `rolldown` is only `import()`-ed when a config actually needs bundling, instead
+  of loading eagerly on every `@pandacss/config` import — cuts a meaningful chunk of per-command startup overhead.
+- 95e5501: Improve `designSystem` resolution errors for invalid manifests and presets, missing manifest exports,
+  unsupported protocol specifiers, and duplicate manifest names.
+- 8b6d08f: `panda lib` no longer silently loses or clobbers package.json `exports`. An array-form root export is
+  preserved (under `"."`) instead of dropped, and overwriting a subpath whose value differs from Panda's now emits a
+  warning naming the overwritten path.
+- d8e8465: `panda lib` omits inferred fallback `files` that package.json `"files"` would not publish, and warns with a
+  `--files` tip for dist-only packages.
+- 8b6d08f: `panda lib` now resolves an `npm:` peer alias (`npm:@pandacss/dev@^3.0.0`) to its aliased range when writing
+  the manifest, alongside the existing `workspace:`/`catalog:` handling, so an aliased dependency still produces a
+  hydratable `panda` range.
+- Updated dependencies [9409487]
+- Updated dependencies [682338e]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [682338e]
+  - @pandacss/compiler-shared@2.0.0-beta.9
+  - @pandacss/types@2.0.0-beta.9
+
 ## 2.0.0-beta.8
 
 ### Patch Changes

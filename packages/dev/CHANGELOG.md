@@ -1,5 +1,41 @@
 # @pandacss/dev
 
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- 8b6d08f: Bring back `cssgen:done` as an observe-only host hook for reporting on final CSS from CLI, Vite, and PostCSS.
+  Use `optimize` or PostCSS to mutate CSS.
+
+### Patch Changes
+
+- Updated dependencies [9409487]
+- Updated dependencies [682338e]
+- Updated dependencies [ea9ccae]
+- Updated dependencies [31aa2c4]
+- Updated dependencies [56013a1]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [853bb65]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [95e5501]
+- Updated dependencies [05c5125]
+- Updated dependencies [b7ab62c]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [d8e8465]
+- Updated dependencies [6e3c160]
+- Updated dependencies [f8f3124]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [0f88913]
+- Updated dependencies [682338e]
+- Updated dependencies [33fa885]
+- Updated dependencies [32d60cf]
+- Updated dependencies [e0d46e5]
+  - @pandacss/compiler@2.0.0-beta.9
+  - @pandacss/config@2.0.0-beta.9
+  - @pandacss/cli@2.0.0-beta.9
+  - @pandacss/postcss@2.0.0-beta.9
+  - @pandacss/types@2.0.0-beta.9
+
 ## 2.0.0-beta.8
 
 ### Patch Changes
