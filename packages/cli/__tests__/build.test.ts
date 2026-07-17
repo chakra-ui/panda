@@ -211,7 +211,12 @@ function writeStaleDesignSystemFixture(root: string): void {
     'node_modules/@acme/ds/package.json': JSON.stringify({
       name: '@acme/ds',
       version: '1.0.0',
-      exports: { './panda.lib.json': './dist/panda.lib.json' },
+      exports: {
+        './panda.lib.json': './dist/panda.lib.json',
+        './css': './styled-system/css/index.js',
+        './css/*': './styled-system/css/*.js',
+        './helpers': './styled-system/helpers.js',
+      },
     }),
     'node_modules/@acme/ds/dist/panda.lib.json': JSON.stringify({
       schemaVersion: 1,
