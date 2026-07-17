@@ -7,17 +7,12 @@ export default defineConfig({
   clean: true,
   theme: {
     extend: {
-      tokens: {
-        spacing: {
-          4: { value: '1rem' },
-          6: { value: '1.5rem' },
-        },
-      },
       recipes: {
-        // App-only recipe: emitted locally as the overlay delta.
+        // App-only recipe: emitted locally as the overlay delta. Uses only the
+        // design system's spacing tokens so the runtime stays fully virtualized.
         panel: {
           className: 'panel',
-          base: { display: 'flex', flexDirection: 'column', gap: '3', padding: '6' },
+          base: { display: 'flex', flexDirection: 'column', gap: '3', padding: '3' },
         },
         // Also declared by the design system: the app's definition merges over it (theme.extend),
         // and Panda warns. The DS `tag` is black; this makes it brand-colored so the merge is visible.
