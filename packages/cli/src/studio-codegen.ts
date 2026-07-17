@@ -406,7 +406,7 @@ function render(tokens, query) {
     section.append(heading, body)
     grid.appendChild(section)
   }
-  observeSections()
+  updateActiveNav()
 }
 
 function buildNav(tokens) {
@@ -423,22 +423,34 @@ function buildNav(tokens) {
   }
 }
 
-let sectionObserver
-function observeSections() {
-  if (sectionObserver) sectionObserver.disconnect()
-  const links = new Map([...document.querySelectorAll('#nav a')].map((link) => [link.dataset.cat, link]))
-  sectionObserver = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue
-        for (const link of document.querySelectorAll('#nav a.active')) link.classList.remove('active')
-        links.get(entry.target.dataset.cat)?.classList.add('active')
-      }
-    },
-    { rootMargin: '0px 0px -80% 0px' },
-  )
-  for (const section of document.querySelectorAll('section[data-cat]')) sectionObserver.observe(section)
+function updateActiveNav() {
+  const sections = [...document.querySelectorAll('section[data-cat]')]
+  if (sections.length === 0) return
+  const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
+  let active = sections[0].dataset.cat
+  if (atBottom) {
+    active = sections[sections.length - 1].dataset.cat
+  } else {
+    for (const section of sections) {
+      if (section.getBoundingClientRect().top <= 120) active = section.dataset.cat
+    }
+  }
+  for (const link of document.querySelectorAll('#nav a')) link.classList.toggle('active', link.dataset.cat === active)
 }
+
+let navScrollQueued = false
+window.addEventListener(
+  'scroll',
+  () => {
+    if (navScrollQueued) return
+    navScrollQueued = true
+    requestAnimationFrame(() => {
+      navScrollQueued = false
+      updateActiveNav()
+    })
+  },
+  { passive: true },
+)
 
 function persistQuery(query) {
   const url = new URL(location.href)
