@@ -2,12 +2,10 @@
 '@pandacss/cli': major
 ---
 
-Panda CSS v2 beta rewrites the compiler hot path in Rust on top of Oxc.
+Panda CSS v2 beta moves the compiler hot path to Rust on Oxc.
 
-Highlights:
+- Rust/Oxc extraction and CSS emission replace ts-morph + ts-evaluator
+- CLI publishes as `@pandacss/cli` (`panda` / `pandacss` binaries unchanged)
+- v1 stays on `latest`; v2 betas use `beta`
 
-- Rust/Oxc extraction and CSS emission replace the `ts-morph` + `ts-evaluator` pipeline.
-- CLI published as `@pandacss/cli` (the `panda` / `pandacss` binaries are unchanged).
-- v1 (`1.x`) remains on the `latest` dist-tag; v2 betas publish under the `beta` dist-tag.
-
-Because `@pandacss/**` packages are versioned together, this major bump applies to every published Panda package.
+All `@pandacss/**` packages bump together on this major.

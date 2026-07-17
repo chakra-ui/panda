@@ -1,84 +1,10 @@
 # @pandacss/preset-base
 
-## 2.0.0-beta.9
-
-### Patch Changes
-
-- Updated dependencies [8b6d08f]
-- Updated dependencies [8b6d08f]
-  - @pandacss/types@2.0.0-beta.9
-
-## 2.0.0-beta.8
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.8
-
-## 2.0.0-beta.7
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.7
-
-## 2.0.0-beta.6
-
-### Patch Changes
-
-- Updated dependencies [7b71a43]
-  - @pandacss/types@2.0.0-beta.6
-
-## 2.0.0-beta.5
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.5
-
-## 2.0.0-beta.4
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.4
-
-## 2.0.0-beta.3
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.3
-
-## 2.0.0-beta.2
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.2
-
-## 2.0.0-beta.1
-
-### Patch Changes
-
-- Updated dependencies [07eafef]
-  - @pandacss/types@2.0.0-beta.1
-
-## 2.0.0-beta.0
-
-### Patch Changes
-
-- @pandacss/types@2.0.0-beta.0
-
-## 1.10.0
-
-### Patch Changes
-
-- Updated dependencies [c31f3a2]
-- Updated dependencies [bbaa8b3]
-- Updated dependencies [8d3b6f8]
-- Updated dependencies [44457bb]
-  - @pandacss/types@1.10.0
-
 ## 1.9.1
 
 ### Patch Changes
 
-- 028e755: Fix `Spacer` pattern not resolving spacing tokens for the `size` prop.
+- Fix `Spacer` pattern not resolving spacing tokens for the `size` prop.
 
   Previously, `<Spacer size="5" />` would generate invalid CSS (`flex: 0 0 5`) instead of resolving the spacing token.
   Now it correctly outputs `flex: 0 0 var(--spacing-5, 5)`.
@@ -90,37 +16,11 @@
 
   - @pandacss/types@1.9.1
 
-## 1.9.0
-
-### Patch Changes
-
-- @pandacss/types@1.9.0
-
-## 1.8.2
-
-### Patch Changes
-
-- Updated dependencies [331d1a5]
-  - @pandacss/types@1.8.2
-
-## 1.8.1
-
-### Patch Changes
-
-- Updated dependencies [3c86c29]
-  - @pandacss/types@1.8.1
-
-## 1.8.0
-
-### Patch Changes
-
-- @pandacss/types@1.8.0
-
 ## 1.7.3
 
 ### Patch Changes
 
-- ac2fb5c: **Gradient Utilities**: Fixed `token()` and brace syntax not working in `bgGradient`, `bgLinear`, and
+- **Gradient Utilities**: Fixed `token()` and brace syntax not working in `bgGradient`, `bgLinear`, and
   `textGradient` utilities.
 
   Before this fix, using token references in gradient values would not expand correctly:
@@ -139,92 +39,30 @@
 
   - @pandacss/types@1.7.3
 
-## 1.7.2
-
-### Patch Changes
-
-- @pandacss/types@1.7.2
-
 ## 1.7.1
 
 ### Patch Changes
 
-- b6e9646: Ensure the `WebkitTextFillColor` utility can accept color token values, like other color utilities.
+- Ensure the `WebkitTextFillColor` utility can accept color token values, like other color utilities.
   - @pandacss/types@1.7.1
-
-## 1.7.0
-
-### Patch Changes
-
-- Updated dependencies [86b30b1]
-  - @pandacss/types@1.7.0
-
-## 1.6.1
-
-### Patch Changes
-
-- @pandacss/types@1.6.1
-
-## 1.6.0
-
-### Patch Changes
-
-- @pandacss/types@1.6.0
-
-## 1.5.1
-
-### Patch Changes
-
-- @pandacss/types@1.5.1
-
-## 1.5.0
-
-### Patch Changes
-
-- Updated dependencies [91c65ff]
-  - @pandacss/types@1.5.0
-
-## 1.4.3
-
-### Patch Changes
-
-- @pandacss/types@1.4.3
-
-## 1.4.2
-
-### Patch Changes
-
-- @pandacss/types@1.4.2
-
-## 1.4.1
-
-### Patch Changes
-
-- @pandacss/types@1.4.1
 
 ## 1.4.0
 
 ### Minor Changes
 
-- 29cf719: - **Preset Base**: Change default spacing from `10px` and `8px`
+- **Preset Base**: Change default spacing from `10px` and `8px`
   - **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
 
 ### Patch Changes
 
-- 1bca361: Fix regression in `_marker` condition due to the use of `:is()` which doesn't work for pseudo elements.
+- Fix regression in `_marker` condition due to the use of `:is()` which doesn't work for pseudo elements.
   - @pandacss/types@1.4.0
-
-## 1.3.1
-
-### Patch Changes
-
-- @pandacss/types@1.3.1
 
 ## 1.3.0
 
 ### Minor Changes
 
-- 1c36121: Added new transition values and enhanced transition property utilities
+- Added new transition values and enhanced transition property utilities
 
   - `size` → `width, height, min-width, max-width, min-height, max-height`
   - `position` → `left, right, top, bottom, inset, inset-inline, inset-block`
@@ -240,16 +78,11 @@
   css({ transitionProperty: 'size', transitionDuration: '300ms' })
   ```
 
-### Patch Changes
-
-- Updated dependencies [70efd73]
-  - @pandacss/types@1.3.0
-
 ## 1.2.0
 
 ### Minor Changes
 
-- 9964772: Add new utilities for managing focus rings with `focusRing` and `focusVisibleRing` properties
+- Add new utilities for managing focus rings with `focusRing` and `focusVisibleRing` properties
 
   - `focusRing`: Style focus states using `&:is(:focus, [data-focus])` selector with `outside`, `inside`, `mixed`, or
     `none` values
@@ -269,30 +102,18 @@
   </div>
   ```
 
-### Patch Changes
-
-- @pandacss/types@1.2.0
-
-## 1.1.0
-
-### Patch Changes
-
-- Updated dependencies [47a0011]
-- Updated dependencies [e8ec0aa]
-  - @pandacss/types@1.1.0
-
 ## 1.0.1
 
 ### Patch Changes
 
-- 0019184: Fix issue where `bgGradient` did not respect the gradient token.
+- Fix issue where `bgGradient` did not respect the gradient token.
   - @pandacss/types@1.0.1
 
 ## 1.0.0
 
 ### Major Changes
 
-- a20811c: - Fix issue where `rtl` and `ltr` variants does not work with `[dir=auto]`
+- Fix issue where `rtl` and `ltr` variants does not work with `[dir=auto]`
   - Add `::-webkit-details-marker` to `marker` condition
   - Add new `inset-2xs`, `inset-xs` and `inset-sm` shadows
   - Add new `noscript` and `inverted-colors` conditions
@@ -301,7 +122,7 @@
   - Remap blur tokens:
     - `blurs.sm` -> `blurs.xs`
     - `blurs.base` -> `blurs.sm`
-- a3bcbea: Stable release of PandaCSS
+- Stable release of PandaCSS
 
   ### Style Context
 
@@ -357,7 +178,7 @@
 
 ### Minor Changes
 
-- 860cc7d: Add support for `bgLinear`, `bgRadial` and `bgConic` properties.
+- Add support for `bgLinear`, `bgRadial` and `bgConic` properties.
 
   ### `bgLinear`
 
@@ -403,82 +224,42 @@
   <div className={css({ boxSize: '24' })} />
   ```
 
-### Patch Changes
-
-- Updated dependencies [a3bcbea]
-  - @pandacss/types@1.0.0
-
 ## 0.54.0
 
 ### Minor Changes
 
-- 654ed5c: Adds more `aria` attributes to conditions for better accessibility and styling hooks.
+- Adds more `aria` attributes to conditions for better accessibility and styling hooks.
 
   - `[aria-disabled=true]` was added to `disabled`, `peerDisabled`, and `groupDisabled` conditions.
   - `[aria-readonly=true]` was added to the `readOnly` condition.
   - `[aria-invalid=true]` was added to `invalid` and `groupInvalid` conditions.
 
-### Patch Changes
-
-- @pandacss/types@0.54.0
-
-## 0.53.7
-
-### Patch Changes
-
-- @pandacss/types@0.53.7
-
-## 0.53.6
-
-### Patch Changes
-
-- @pandacss/types@0.53.6
-
 ## 0.53.5
 
 ### Patch Changes
 
-- 6fb83a8: Add tokens for logical border widths
+- Add tokens for logical border widths
   - @pandacss/types@0.53.5
-
-## 0.53.4
-
-### Patch Changes
-
-- @pandacss/types@0.53.4
 
 ## 0.53.3
 
 ### Patch Changes
 
-- 00aa868: Add cursor utility config
+- Add cursor utility config
   - @pandacss/types@0.53.3
 
 ## 0.53.2
 
 ### Patch Changes
 
-- 01d72ad: - Update `groupInvalid` condition according to other group selector implementations
+- Update `groupInvalid` condition according to other group selector implementations
   - @pandacss/types@0.53.2
-
-## 0.53.1
-
-### Patch Changes
-
-- @pandacss/types@0.53.1
-
-## 0.53.0
-
-### Patch Changes
-
-- Updated dependencies [5286731]
-  - @pandacss/types@0.53.0
 
 ## 0.52.0
 
 ### Minor Changes
 
-- bb37d2b: Add support for new conditions
+- Add support for new conditions
 
   - `current` -> `&:is([aria-current=true], [data-current])`
   - `today` -> `&[data-today]`
@@ -497,43 +278,11 @@
   - `atValue` -> `&[data-state=at-value]`
   - `hidden` -> `&:is([hidden], [data-hidden])`
 
-### Patch Changes
-
-- @pandacss/types@0.52.0
-
-## 0.51.1
-
-### Patch Changes
-
-- @pandacss/types@0.51.1
-
-## 0.51.0
-
-### Patch Changes
-
-- Updated dependencies [d68ad1f]
-  - @pandacss/types@0.51.0
-
-## 0.50.0
-
-### Patch Changes
-
-- Updated dependencies [fea78c7]
-- Updated dependencies [ad89b90]
-  - @pandacss/types@0.50.0
-
-## 0.49.0
-
-### Patch Changes
-
-- Updated dependencies [97a0e4d]
-  - @pandacss/types@0.49.0
-
 ## 0.48.1
 
 ### Patch Changes
 
-- af9715a: Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are
+- Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are
   `auto`, `stable`, and `both-edges`.
   - @pandacss/types@0.48.1
 
@@ -541,7 +290,7 @@
 
 ### Minor Changes
 
-- cff19aa: [Breaking] Remove default utility values for `gridTemplateColumns`, `gridTemplateRows`, `gridColumn` and
+- [Breaking] Remove default utility values for `gridTemplateColumns`, `gridTemplateRows`, `gridColumn` and
   `gridRow` to prevent interference with native css values.
 
   For example `1` or `2` is a valid native value for `gridColumn` or `gridRow`, and should not be overridden by the
@@ -628,119 +377,25 @@
   }
   ```
 
-### Patch Changes
-
-- @pandacss/types@0.48.0
-
-## 0.47.1
-
-### Patch Changes
-
-- @pandacss/types@0.47.1
-
-## 0.47.0
-
-### Patch Changes
-
-- Updated dependencies [5e683ee]
-  - @pandacss/types@0.47.0
-
-## 0.46.1
-
-### Patch Changes
-
-- @pandacss/types@0.46.1
-
 ## 0.46.0
 
 ### Patch Changes
 
-- b7ed157: fix: use sizing tokens for flexBasis instead of spacing tokens
+- fix: use sizing tokens for flexBasis instead of spacing tokens
   - @pandacss/types@0.46.0
-
-## 0.45.2
-
-### Patch Changes
-
-- @pandacss/types@0.45.2
-
-## 0.45.1
-
-### Patch Changes
-
-- @pandacss/types@0.45.1
-
-## 0.45.0
-
-### Patch Changes
-
-- Updated dependencies [dcc9053]
-  - @pandacss/types@0.45.0
-
-## 0.44.0
-
-### Patch Changes
-
-- Updated dependencies [c99cb75]
-  - @pandacss/types@0.44.0
-
-## 0.43.0
-
-### Patch Changes
-
-- Updated dependencies [e952f82]
-  - @pandacss/types@0.43.0
 
 ## 0.42.0
 
 ### Minor Changes
 
-- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+- Ensure classnames are unique across utilities to prevent potential clash
   - Add support for `4xl` border radius token
-
-### Patch Changes
-
-- Updated dependencies [e157dd1]
-- Updated dependencies [19c3a2c]
-- Updated dependencies [f00ff88]
-- Updated dependencies [17a1932]
-  - @pandacss/types@0.42.0
-
-## 0.41.0
-
-### Patch Changes
-
-- @pandacss/types@0.41.0
-
-## 0.40.1
-
-### Patch Changes
-
-- @pandacss/types@0.40.1
-
-## 0.40.0
-
-### Patch Changes
-
-- @pandacss/types@0.40.0
-
-## 0.39.2
-
-### Patch Changes
-
-- @pandacss/types@0.39.2
-
-## 0.39.1
-
-### Patch Changes
-
-- @pandacss/types@0.39.1
 
 ## 0.39.0
 
 ### Minor Changes
 
-- df2546a: **BREAKING 💥**
+- **BREAKING 💥**
 
   Remove `linkBox` pattern in favor of using adding `position: relative` when using the `linkOverlay` pattern.
 
@@ -781,40 +436,15 @@
 
 ### Patch Changes
 
-- 2116abe: Fix issue where `float` property did not allow inherited values (auto, initial, none, etc.)
-- c3e797e: Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
+- Fix issue where `float` property did not allow inherited values (auto, initial, none, etc.)
+- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
   autocompletion was available.
-- Updated dependencies [221c9a2]
-- Updated dependencies [c3e797e]
-  - @pandacss/types@0.39.0
-
-## 0.38.0
-
-### Patch Changes
-
-- Updated dependencies [96b47b3]
-- Updated dependencies [bc09d89]
-  - @pandacss/types@0.38.0
-
-## 0.37.2
-
-### Patch Changes
-
-- Updated dependencies [74dfb3e]
-  - @pandacss/types@0.37.2
-
-## 0.37.1
-
-### Patch Changes
-
-- Updated dependencies [885963c]
-  - @pandacss/types@0.37.1
 
 ## 0.37.0
 
 ### Minor Changes
 
-- bcfb5c5: ### Fixed
+- ### Fixed
 
   - Fix className collisions between utilities by using unique class names per property in the default preset.
 
@@ -865,93 +495,17 @@
   />
   ```
 
-### Patch Changes
-
-- Updated dependencies [bcfb5c5]
-- Updated dependencies [6247dfb]
-  - @pandacss/types@0.37.0
-
-## 0.36.1
-
-### Patch Changes
-
-- Updated dependencies [bd0cb07]
-  - @pandacss/types@0.36.1
-
-## 0.36.0
-
-### Patch Changes
-
-- Updated dependencies [861a280]
-- Updated dependencies [2691f16]
-- Updated dependencies [340f4f1]
-- Updated dependencies [fabdabe]
-  - @pandacss/types@0.36.0
-
-## 0.35.0
-
-### Patch Changes
-
-- Updated dependencies [50db354]
-- Updated dependencies [f6befbf]
-- Updated dependencies [a0c4d27]
-  - @pandacss/types@0.35.0
-
-## 0.34.3
-
-### Patch Changes
-
-- @pandacss/types@0.34.3
-
-## 0.34.2
-
-### Patch Changes
-
-- @pandacss/types@0.34.2
-
-## 0.34.1
-
-### Patch Changes
-
-- @pandacss/types@0.34.1
-
-## 0.34.0
-
-### Patch Changes
-
-- Updated dependencies [d1516c8]
-  - @pandacss/types@0.34.0
-
 ## 0.33.0
 
 ### Patch Changes
 
-- cca50d5: Add a `group` to every utility in the `@pandacss/preset-base`, this helps Panda tooling organize utilities.
-- Updated dependencies [cca50d5]
-- Updated dependencies [fde37d8]
-  - @pandacss/types@0.33.0
-
-## 0.32.1
-
-### Patch Changes
-
-- Updated dependencies [a032375]
-- Updated dependencies [89ffb6b]
-  - @pandacss/types@0.32.1
-
-## 0.32.0
-
-### Patch Changes
-
-- Updated dependencies [60cace3]
-- Updated dependencies [de4d9ef]
-  - @pandacss/types@0.32.0
+- Add a `group` to every utility in the `@pandacss/preset-base`, this helps Panda tooling organize utilities.
 
 ## 0.31.0
 
 ### Minor Changes
 
-- 40cb30b9: Add `textShadowColor` utility
+- Add `textShadowColor` utility
 
   ```ts
   css({
@@ -960,46 +514,11 @@
   })
   ```
 
-### Patch Changes
-
-- Updated dependencies [8f36f9af]
-- Updated dependencies [a17fe387]
-- Updated dependencies [2d69b340]
-  - @pandacss/types@0.31.0
-
-## 0.30.2
-
-### Patch Changes
-
-- Updated dependencies [6b829cab]
-  - @pandacss/types@0.30.2
-
-## 0.30.1
-
-### Patch Changes
-
-- @pandacss/types@0.30.1
-
-## 0.30.0
-
-### Patch Changes
-
-- Updated dependencies [74485ef1]
-- Updated dependencies [ab32d1d7]
-- Updated dependencies [d5977c24]
-  - @pandacss/types@0.30.0
-
-## 0.29.1
-
-### Patch Changes
-
-- @pandacss/types@0.29.1
-
 ## 0.29.0
 
 ### Minor Changes
 
-- 5fcdeb75: Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
+- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
   to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
   This function allows you to mix two colors together, and we use it to change the opacity of a color using the
@@ -1097,7 +616,7 @@
   });
   ```
 
-- 250b4d11: ### Container Query Theme
+- ### Container Query Theme
 
   Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
 
@@ -1210,7 +729,7 @@
   }
   ```
 
-- f778d3e5: Updated the default preset in Panda to use the new `defaultValues` feature.
+- Updated the default preset in Panda to use the new `defaultValues` feature.
 
   To override the default values, consider using the `extend` pattern.
 
@@ -1226,45 +745,11 @@
   })
   ```
 
-### Patch Changes
-
-- Updated dependencies [5fcdeb75]
-- Updated dependencies [250b4d11]
-- Updated dependencies [a2fb5cc6]
-  - @pandacss/types@0.29.0
-
-## 0.28.0
-
-### Patch Changes
-
-- Updated dependencies [f58f6df2]
-  - @pandacss/types@0.28.0
-
-## 0.27.3
-
-### Patch Changes
-
-- Updated dependencies [1ed4df77]
-  - @pandacss/types@0.27.3
-
-## 0.27.2
-
-### Patch Changes
-
-- @pandacss/types@0.27.2
-
-## 0.27.1
-
-### Patch Changes
-
-- Updated dependencies [ee9341db]
-  - @pandacss/types@0.27.1
-
 ## 0.27.0
 
 ### Minor Changes
 
-- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+- Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
 
   ## Public changes:
 
@@ -1283,7 +768,7 @@
   - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
     and rename it to `transformStyles` to better convey what it does
 
-- bee3ec85: Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define
+- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define
   the aspect ratio of an element.
 
   ```js
@@ -1323,133 +808,47 @@
   For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
   might need to update it to include the new aspect ratio tokens.
 
-### Patch Changes
-
-- Updated dependencies [84304901]
-  - @pandacss/types@0.27.0
-
 ## 0.26.2
 
 ### Patch Changes
 
-- f823a8c5: Fix `placeholder` condition in `preset-base`
+- Fix `placeholder` condition in `preset-base`
   - @pandacss/types@0.26.2
-
-## 0.26.1
-
-### Patch Changes
-
-- @pandacss/types@0.26.1
 
 ## 0.26.0
 
 ### Patch Changes
 
-- 3f6b3662: Add `data-placeholder` and `data-placeholder-shown` conditions
-- Updated dependencies [b5cf6ee6]
-- Updated dependencies [58df7d74]
-  - @pandacss/types@0.26.0
-
-## 0.25.0
-
-### Patch Changes
-
-- Updated dependencies [59fd291c]
-  - @pandacss/types@0.25.0
-
-## 0.24.2
-
-### Patch Changes
-
-- Updated dependencies [71e82a4e]
-  - @pandacss/types@0.24.2
-
-## 0.24.1
-
-### Patch Changes
-
-- @pandacss/types@0.24.1
-
-## 0.24.0
-
-### Patch Changes
-
-- Updated dependencies [f6881022]
-  - @pandacss/types@0.24.0
-
-## 0.23.0
-
-### Patch Changes
-
-- @pandacss/types@0.23.0
-
-## 0.22.1
-
-### Patch Changes
-
-- Updated dependencies [8f4ce97c]
-  - @pandacss/types@0.22.1
+- Add `data-placeholder` and `data-placeholder-shown` conditions
 
 ## 0.22.0
 
 ### Patch Changes
 
-- 1cc8fcff: Fixes a missing bracket in \_indeterminate condition
-- Updated dependencies [526c6e34]
-  - @pandacss/types@0.22.0
-
-## 0.21.0
-
-### Patch Changes
-
-- Updated dependencies [5b061615]
-- Updated dependencies [105f74ce]
-  - @pandacss/types@0.21.0
+- Fixes a missing bracket in \_indeterminate condition
 
 ## 0.20.1
 
 ### Patch Changes
 
-- 428e5401: - Added `strokeWidth` to svg utilities.
+- Added `strokeWidth` to svg utilities.
   - Connected `outlineWidth` utility to `borderWidths` token.
   - Add `borderWidth`, `borderTopWidth`, `borderLeftWidth`, `borderRightWidth`, `borderBottomWidth` to border utilities.
   - @pandacss/types@0.20.1
-
-## 0.20.0
-
-### Patch Changes
-
-- Updated dependencies [24ee49a5]
-- Updated dependencies [904aec7b]
-  - @pandacss/types@0.20.0
-
-## 0.19.0
-
-### Patch Changes
-
-- Updated dependencies [61831040]
-- Updated dependencies [89f86923]
-  - @pandacss/types@0.19.0
-
-## 0.18.3
-
-### Patch Changes
-
-- @pandacss/types@0.18.3
 
 ## 0.18.2
 
 ### Patch Changes
 
-- 3e1ea626: Fix regression in grid pattern where `columns` doesn't not work as expected.
+- Fix regression in grid pattern where `columns` doesn't not work as expected.
   - @pandacss/types@0.18.2
 
 ## 0.18.1
 
 ### Patch Changes
 
-- ce34ea45: Make `_required` target `[data-required]` and `[aria-required=true]` attributes
-- aac7b379: Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a
+- Make `_required` target `[data-required]` and `[aria-required=true]` attributes
+- Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a
   minChildWidth wasn't interpreted as a token value
 
   Before:
@@ -1476,151 +875,25 @@
 
   - @pandacss/types@0.18.1
 
-## 0.18.0
-
-### Patch Changes
-
-- @pandacss/types@0.18.0
-
-## 0.17.5
-
-### Patch Changes
-
-- @pandacss/types@0.17.5
-
-## 0.17.4
-
-### Patch Changes
-
-- Updated dependencies [fa77080a]
-  - @pandacss/types@0.17.4
-
-## 0.17.3
-
-### Patch Changes
-
-- Updated dependencies [529a262e]
-  - @pandacss/types@0.17.3
-
-## 0.17.2
-
-### Patch Changes
-
-- @pandacss/types@0.17.2
-
-## 0.17.1
-
-### Patch Changes
-
-- @pandacss/types@0.17.1
-
-## 0.17.0
-
-### Patch Changes
-
-- Updated dependencies [fc4688e6]
-  - @pandacss/types@0.17.0
-
 ## 0.16.0
 
 ### Patch Changes
 
-- 0f3bede5: Add closed condition `&:is([closed], [data-closed], [data-state="closed"])`
+- Add closed condition `&:is([closed], [data-closed], [data-state="closed"])`
   - @pandacss/types@0.16.0
-
-## 0.15.5
-
-### Patch Changes
-
-- @pandacss/types@0.15.5
-
-## 0.15.4
-
-### Patch Changes
-
-- @pandacss/types@0.15.4
-
-## 0.15.3
-
-### Patch Changes
-
-- Updated dependencies [1ac2011b]
-- Updated dependencies [58743bc4]
-  - @pandacss/types@0.15.3
-
-## 0.15.2
-
-### Patch Changes
-
-- Updated dependencies [26a788c0]
-  - @pandacss/types@0.15.2
-
-## 0.15.1
-
-### Patch Changes
-
-- @pandacss/types@0.15.1
-
-## 0.15.0
-
-### Patch Changes
-
-- Updated dependencies [4bc515ea]
-- Updated dependencies [39298609]
-  - @pandacss/types@0.15.0
-
-## 0.14.0
-
-### Patch Changes
-
-- Updated dependencies [8106b411]
-- Updated dependencies [e6459a59]
-- Updated dependencies [6f7ee198]
-  - @pandacss/types@0.14.0
-
-## 0.13.1
-
-### Patch Changes
-
-- @pandacss/types@0.13.1
-
-## 0.13.0
-
-### Patch Changes
-
-- @pandacss/types@0.13.0
-
-## 0.12.2
-
-### Patch Changes
-
-- @pandacss/types@0.12.2
-
-## 0.12.1
-
-### Patch Changes
-
-- @pandacss/types@0.12.1
 
 ## 0.12.0
 
 ### Patch Changes
 
-- bf2ff391: Add `animationName` utility
+- Add `animationName` utility
   - @pandacss/types@0.12.0
-
-## 0.11.1
-
-### Patch Changes
-
-- Updated dependencies [23b516f4]
-  - @pandacss/types@0.11.1
 
 ## 0.11.0
 
 ### Minor Changes
 
-- 811f4fb1: Add new visually hidden and bleed patterns.
+- Add new visually hidden and bleed patterns.
 
   ### Bleed
 
@@ -1660,27 +933,18 @@
   }
   ```
 
-### Patch Changes
-
-- Updated dependencies [5b95caf5]
-  - @pandacss/types@0.11.0
-
 ## 0.10.0
 
 ### Patch Changes
 
-- 00d11a8b: Update conditions
-- 1972b4fa: Add opacity utility to base preset
-- Updated dependencies [24e783b3]
-- Updated dependencies [386e5098]
-- Updated dependencies [a669f4d5]
-  - @pandacss/types@0.10.0
+- Update conditions
+- Add opacity utility to base preset
 
 ## 0.9.0
 
 ### Minor Changes
 
-- c08de87f: ### Breaking
+- ### Breaking
 
   - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
     intent of the property more clearly.
@@ -1730,24 +994,17 @@
   })
   ```
 
-### Patch Changes
-
-- Updated dependencies [c08de87f]
-  - @pandacss/types@0.9.0
-
 ## 0.8.0
 
 ### Patch Changes
 
-- be0ad578: Fix parser issue with TS path mappings
-- Updated dependencies [be0ad578]
-  - @pandacss/types@0.8.0
+- Fix parser issue with TS path mappings
 
 ## 0.7.0
 
 ### Minor Changes
 
-- 60a77841: Refactor `transition` utility to improve DX of adding transition. Transitions will now add a default
+- Refactor `transition` utility to improve DX of adding transition. Transitions will now add a default
   transition property, timing function and duration. This allows you to add transitions with a single property.
 
   ```jsx
@@ -1766,72 +1023,41 @@
 
 ### Patch Changes
 
-- d9eeba60: Fix issue where `zIndex` tokens are not connected to zIndex utility
-- Updated dependencies [a9c189b7]
-  - @pandacss/types@0.7.0
+- Fix issue where `zIndex` tokens are not connected to zIndex utility
 
 ## 0.6.0
 
 ### Minor Changes
 
-- 97fbe63f: Add negative fraction values to `translateX` and `translateY` utilities
+- Add negative fraction values to `translateX` and `translateY` utilities
 
 ### Patch Changes
 
-- 08d33e0f: - Fix issue where `gridRows` has the wrong `className`
+- Fix issue where `gridRows` has the wrong `className`
 
   - Fix issue where `gridItem` pattern did not use the `colStart` and `rowStart` values
 
-- f7aff8eb: Fix issue where `_even` and `_odd` map to incorrect selectors
+- Fix issue where `_even` and `_odd` map to incorrect selectors
   - @pandacss/types@0.6.0
-
-## 0.5.1
-
-### Patch Changes
-
-- Updated dependencies [8c670d60]
-- Updated dependencies [1ed239cd]
-- Updated dependencies [78ed6ed4]
-  - @pandacss/types@0.5.1
-
-## 0.5.0
-
-### Patch Changes
-
-- Updated dependencies [ead9eaa3]
-  - @pandacss/types@0.5.0
 
 ## 0.4.0
 
 ### Patch Changes
 
-- e8024347: Fix issue here divider pattern generated incorrect css in horizontal orientation
-- d00eb17c: Add `auto` value where neccessary to base utilities.
-- 9156c1c6: Fix placeholder condition to map to `&::placeholder`
-- 54a8913c: Fix issue where patterns that include css selectors doesn't work in JSX
-- 0f36ebad: Add polyfill for common properties to reduce the need for autoprefixer
-- Updated dependencies [c7b42325]
-- Updated dependencies [5b344b9c]
-  - @pandacss/types@0.4.0
-
-## 0.3.2
-
-### Patch Changes
-
-- @pandacss/types@0.3.2
+- Fix issue here divider pattern generated incorrect css in horizontal orientation
+- Add `auto` value where neccessary to base utilities.
+- Fix placeholder condition to map to `&::placeholder`
+- Fix issue where patterns that include css selectors doesn't work in JSX
+- Add polyfill for common properties to reduce the need for autoprefixer
 
 ## 0.3.1
 
 ### Patch Changes
 
-- efd79d83: Baseline release for the launch
-- Updated dependencies [efd79d83]
-  - @pandacss/types@0.3.1
+- Baseline release for the launch
 
 ## 0.3.0
 
 ### Patch Changes
 
-- bd5c049b: Initial release
-- Updated dependencies [6d81ee9e]
-  - @pandacss/types@0.3.0
+- Initial release

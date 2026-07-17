@@ -4,77 +4,14 @@
 
 ### Patch Changes
 
-- 9409487: Add token inspection metadata and `no-primitive-token` to enforce semantic token usage when a matching
-  semantic token category exists.
-- Updated dependencies [9409487]
-- Updated dependencies [682338e]
-- Updated dependencies [ea9ccae]
-- Updated dependencies [56013a1]
-- Updated dependencies [853bb65]
-- Updated dependencies [8b6d08f]
-- Updated dependencies [95e5501]
-- Updated dependencies [05c5125]
-- Updated dependencies [b7ab62c]
-- Updated dependencies [8b6d08f]
-- Updated dependencies [d8e8465]
-- Updated dependencies [6e3c160]
-- Updated dependencies [f8f3124]
-- Updated dependencies [8b6d08f]
-- Updated dependencies [0f88913]
-- Updated dependencies [682338e]
-- Updated dependencies [33fa885]
-- Updated dependencies [e0d46e5]
-  - @pandacss/compiler@2.0.0-beta.9
-  - @pandacss/compiler-shared@2.0.0-beta.9
-  - @pandacss/config@2.0.0-beta.9
-
-## 2.0.0-beta.8
-
-### Patch Changes
-
-- Updated dependencies [72580e5]
-  - @pandacss/compiler-shared@2.0.0-beta.8
-  - @pandacss/compiler@2.0.0-beta.8
-  - @pandacss/config@2.0.0-beta.8
-
-## 2.0.0-beta.7
-
-### Patch Changes
-
-- Updated dependencies [97d142a]
-- Updated dependencies [0a11fda]
-  - @pandacss/compiler@2.0.0-beta.7
-  - @pandacss/compiler-shared@2.0.0-beta.7
-  - @pandacss/config@2.0.0-beta.7
-
-## 2.0.0-beta.6
-
-### Patch Changes
-
-- Updated dependencies [8a936bd]
-- Updated dependencies [82e7811]
-- Updated dependencies [b5a620d]
-- Updated dependencies [7b71a43]
-- Updated dependencies [d075c2b]
-- Updated dependencies [86504d6]
-  - @pandacss/compiler@2.0.0-beta.6
-  - @pandacss/compiler-shared@2.0.0-beta.6
-  - @pandacss/config@2.0.0-beta.6
-
-## 2.0.0-beta.5
-
-### Patch Changes
-
-- Updated dependencies [a9c6e47]
-  - @pandacss/compiler@2.0.0-beta.5
-  - @pandacss/compiler-shared@2.0.0-beta.5
-  - @pandacss/config@2.0.0-beta.5
+- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching
+  category exists.
 
 ## 2.0.0-beta.4
 
 ### Patch Changes
 
-- 23580df: Add the ESLint plugin core (settings, project caching, inspection caching, source range lookup), the first
+- Add the ESLint plugin core (settings, project caching, inspection caching, source range lookup), the first
   Panda lint rules (`extraction-diagnostics`, `file-not-included`, `no-invalid-token-paths`, `no-debug`, a consolidated
   `no-deprecated` covering deprecated tokens, utilities, recipes, and patterns — with the author's deprecation message
   and a `kinds` option, and `prefer-token`, which flags raw values where a token exists and tells you the token to use
@@ -90,13 +27,3 @@
 
   The same rules also run under oxlint via the `@pandacss/eslint-plugin/oxlint` entry (oxlint's ESLint-compatible JS
   plugins).
-
-- Updated dependencies [9521059]
-- Updated dependencies [74dab7b]
-- Updated dependencies [0202dba]
-- Updated dependencies [23580df]
-- Updated dependencies [5316642]
-- Updated dependencies [1378d4a]
-  - @pandacss/compiler@2.0.0-beta.4
-  - @pandacss/compiler-shared@2.0.0-beta.4
-  - @pandacss/config@2.0.0-beta.4

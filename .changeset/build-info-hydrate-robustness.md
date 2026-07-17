@@ -7,4 +7,4 @@
 '@pandacss/postcss': patch
 ---
 
-Harden design-system build-info hydration: keep nested packages local, fall back safely when build info is stale or corrupt, and surface clearer option-mismatch and token-ownership diagnostics.
+Design-system build info loads more reliably when packages are nested, files are stale, or options do not match. You get clearer errors for token conflicts and mismatched config.
