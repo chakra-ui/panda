@@ -72,17 +72,35 @@ describe('lib command', () => {
     expect(result.exportsChanged).toBe(true)
   })
 
-  it.each(['workspace:*', 'workspace:^', 'catalog:'])('publishes a portable Panda range for %s peers', async (peer) => {
+  it.each(['workspace:*', 'workspace:^', 'catalog:', 'npm:@pandacss/dev@^2.0.0'])(
+    'publishes a portable Panda range for %s peers',
+    async (peer) => {
+      dir = createLibFixture()
+      writeFileSync(
+        join(dir, 'package.json'),
+        JSON.stringify({ name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': peer } }, null, 2),
+      )
+
+      const result = await runLib({ cwd: dir, logLevel: 'silent' })
+
+      expect(result.ok).toBe(true)
+      expect(readManifest(dir).panda).toBe('^2.0.0')
+    },
+  )
+
+  it('warns when panda lib overwrites an existing conflicting package export', async () => {
     dir = createLibFixture()
     writeFileSync(
       join(dir, 'package.json'),
-      JSON.stringify({ name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': peer } }, null, 2),
+      JSON.stringify({ name: '@acme/ds', version: '1.2.3', exports: { './preset': './custom/preset.js' } }, null, 2),
     )
 
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(true)
-    expect(readManifest(dir).panda).toBe('^2.0.0')
+    expect(result.diagnostics.some((d) => d.code === 'design_system_export_overwritten')).toBe(true)
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports['./preset']).toBe('./dist/panda.preset.mjs')
   })
 
   it('preserves an existing string root export when syncing package exports', async () => {
