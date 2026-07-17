@@ -3,6 +3,7 @@ import { buildCommand, buildSubcommand, checkCommand, devCommand } from '../src/
 import { doctorCommand } from '../src/commands/doctor'
 import { infoCommand } from '../src/commands/info'
 import { analyzeCommand } from '../src/commands/analyze'
+import { studioCommand, studioGenerateCommand } from '../src/commands/studio'
 
 describe('cli main', () => {
   it('defines the default build command route', () => {
@@ -16,5 +17,11 @@ describe('cli main', () => {
     expect(analyzeCommand.meta).toMatchObject({ name: 'analyze' })
     expect(infoCommand.meta).toMatchObject({ name: 'info' })
     expect(doctorCommand.meta).toMatchObject({ name: 'doctor' })
+  })
+
+  it('defines studio as leaf commands so space-separated flags parse', () => {
+    expect(studioCommand.meta).toMatchObject({ name: 'studio' })
+    expect(studioGenerateCommand.meta).toMatchObject({ name: 'studio generate' })
+    expect(studioCommand.subCommands).toBeUndefined()
   })
 })

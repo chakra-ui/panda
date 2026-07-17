@@ -9,6 +9,7 @@ import { doctorCommand } from './commands/doctor'
 import { infoCommand } from './commands/info'
 import { initCommand } from './commands/init'
 import { libCommand } from './commands/lib'
+import { studioCommand, studioGenerateCommand } from './commands/studio'
 import { ExitCode } from './result'
 import { readCliVersion } from './version'
 
@@ -42,11 +43,21 @@ export async function main(argv = process.argv): Promise<void> {
       analyze: analyzeCommand,
       codegen: codegenCommand,
       cssgen: cssgenCommand,
+      studio: studioCommand,
     },
   })
 
   if (isVersionRequest(rawArgs)) {
     console.log(version)
+    return
+  }
+
+  if (rawArgs[0] === 'studio') {
+    if (rawArgs[1] === 'generate') {
+      await runMain(studioGenerateCommand, { rawArgs: rawArgs.slice(2), showUsage: showPlainUsage })
+    } else {
+      await runMain(studioCommand, { rawArgs: rawArgs.slice(1), showUsage: showPlainUsage })
+    }
     return
   }
 

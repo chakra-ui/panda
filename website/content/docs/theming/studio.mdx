@@ -1,42 +1,107 @@
 ---
-title: Using Panda Studio
-description: Document your design system visually using Panda Studio.
+title: Panda Studio
+description: Visualize your design tokens with a live viewer, or generate token views you render yourself.
 ---
 
-### Panda Studio
+# Panda Studio
 
-Panda Studio is a visual interface for exploring and understanding your entire design system. It provides a read-only
-view of your tokens, semantic tokens, recipes, patterns, conditions, and more.
+`panda studio` turns your resolved design tokens into a visual reference. It has two tracks that share one token
+snapshot:
 
-![Panda Studio UI](/panda-studio.png)
+- **`panda studio`** boots a live viewer to look at your tokens.
+- **`panda studio generate`** writes the token views into your project as source, so you render them wherever you
+  document your design system.
 
-If you don't want to manually generate spec files or build a documentation website, Panda Studio is the easiest option.
+Both read a generated `tokens.json` snapshot of your fully-resolved tokens. Re-run after a config change to refresh.
 
-- Studio does not require separate spec generation.
+## Live viewer
 
-- Studio generates and visualizes your design system automatically.
-
-- Studio acts as a fully-featured documentation tool without writing any documentation code.
-
-> Spec files are primarily for custom documentation setups and Storybook integrations. Panda Studio is for teams who
-> want instant documentation.
-
-## Panda Studio Setup
-
-To use panda studio, first install it:
+Boot the viewer against your config:
 
 ```bash
-pnpm i @pandacss/studio
+panda studio
 ```
 
-Next, launch it locally using:
+This builds a self-contained bundle (plain HTML, CSS, and JS — no framework, no bundler) and serves it locally. It
+groups your tokens by category and renders a preview for each: colors as swatches, spacing and sizes as bars, radii and
+shadows as boxes, and typography as text samples. It follows your system light/dark theme, with a toggle in the header.
+
+Set the port with `--port`:
 
 ```bash
-pnpm panda studio
+panda studio --port 4000
 ```
 
-This starts a local server and launches an interactive dashboard showing all your design system elements. Since Studio
-reads your theme configuration directly, any changes to your `panda.config.ts` will appear automatically the next time
-you run it.
+## Generating views
 
-You can also deploy the studio as a standalone design system portal for your team.
+If you already document your design system your own way, generate the views as source and render them yourself:
+
+```bash
+panda studio generate
+```
+
+This writes to `styled-system/studio` by default. Use `--outdir` to change it:
+
+```bash
+panda studio generate --outdir .storybook/studio
+```
+
+You get one component per category plus the shared grid and the snapshot:
+
+```
+styled-system/studio/
+  tokens.json
+  components/
+    token-grid.tsx
+  Colors.tsx
+  Typography.tsx
+  Spacing.tsx
+  Sizes.tsx
+  Radii.tsx
+  Shadows.tsx
+```
+
+Each view is a plain component with inline styles that reads `tokens.json`. It doesn't import the styled-system runtime,
+so it renders anywhere regardless of how your app consumes Panda.
+
+You own these files. Edit them freely, and re-run `panda studio generate` to refresh the snapshot after a config change.
+
+### Framework support
+
+The generated views match your `config.jsxFramework`:
+
+- `react` (the default) emits `.tsx` components using React.
+- `solid` emits `.tsx` components using `solid-js`.
+
+For any other framework, use the live viewer — it's framework-agnostic.
+
+## Rendering the views
+
+The views are plain components, so drop them wherever you render UI.
+
+### Storybook
+
+Wrap a view in a story:
+
+```tsx
+// stories/design-system.stories.tsx
+import { Colors } from '../styled-system/studio/Colors'
+import { Typography } from '../styled-system/studio/Typography'
+
+export default { title: 'Design System/Tokens' }
+
+export const AllColors = () => <Colors />
+export const AllTypography = () => <Typography />
+```
+
+### An app route or MDX page
+
+Import a view and render it:
+
+```tsx
+import { Colors } from './styled-system/studio/Colors'
+
+export default function TokensPage() {
+  return <Colors />
+}
+```

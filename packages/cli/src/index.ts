@@ -8,6 +8,10 @@ export { runLib } from './commands/lib'
 export { runAnalyze } from './commands/analyze'
 export { infoDriver, runInfo } from './commands/info'
 export { runInit, setupGitIgnore } from './commands/init'
+export { runStudioGenerate, runStudioServe } from './commands/studio'
+export { buildTokensSnapshot, viewFiles, viewerFiles } from './studio-codegen'
+export type { StudioToken, StudioFile, StudioFramework } from './studio-codegen'
+export { serveStudio } from './studio-server'
 export type {
   BuildFlags,
   BuildResult,
@@ -32,4 +36,8 @@ export type {
   LibFlags,
   LibResult,
   LogLevel,
+  StudioGenerateFlags,
+  StudioGenerateResult,
+  StudioServeFlags,
+  StudioServeResult,
 } from './schema'
