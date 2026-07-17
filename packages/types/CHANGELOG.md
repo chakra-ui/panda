@@ -4,8 +4,8 @@
 
 ### Minor Changes
 
-- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize`
-  or PostCSS if you need to mutate CSS.
+- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize` or PostCSS
+  if you need to mutate CSS.
 
 ### Patch Changes
 
@@ -24,8 +24,8 @@
 
 ### Patch Changes
 
-- Fix the `preset:resolved` hook missing its `utils` argument. Plugin authors can now use `omit` / `pick` /
-  `traverse` inside `preset:resolved` (matching `config:resolved` and v1).
+- Fix the `preset:resolved` hook missing its `utils` argument. Plugin authors can now use `omit` / `pick` / `traverse`
+  inside `preset:resolved` (matching `config:resolved` and v1).
 
 ## 1.10.0
 
@@ -65,8 +65,8 @@
 
 ### Patch Changes
 
-- Expand `TextStyleProperty` type (consumed by `TextStyle` → `TextStyles` types) to include support for
-  `text-box` properties:
+- Expand `TextStyleProperty` type (consumed by `TextStyle` → `TextStyles` types) to include support for `text-box`
+  properties:
 
   - [`text-box`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box)
   - [`text-box-edge`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge)
@@ -76,8 +76,8 @@
 
 ### Minor Changes
 
-- Add `panda spec` command to generate specification files for your theme (useful for documentation). This
-  command generates JSON specification files containing metadata, examples, and usage information.
+- Add `panda spec` command to generate specification files for your theme (useful for documentation). This command
+  generates JSON specification files containing metadata, examples, and usage information.
 
   ```bash
   # Generate all spec files
@@ -255,8 +255,8 @@
 
 ### Minor Changes
 
-- **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
-  internal `ts-morph` and userland `typescript`.
+- **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between internal
+  `ts-morph` and userland `typescript`.
 
   > The current version of TS supported is `5.6.2`
 
@@ -264,8 +264,8 @@
 
 ### Minor Changes
 
-- Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how
-  your design system is used and answers the following questions:
+- Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how your
+  design system is used and answers the following questions:
 
   - What tokens are most used?
   - What recipe variants are most used?
@@ -308,8 +308,8 @@
 
 ### Minor Changes
 
-- Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate
-  animation properties.
+- Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate animation
+  properties.
 
   > Pairing animation styles with text styles and layer styles can make your styles a lot cleaner.
 
@@ -397,8 +397,8 @@
 
 ### Minor Changes
 
-- Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or
-  conditional styles.
+- Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or conditional
+  styles.
 
   **Before**
 
@@ -522,20 +522,19 @@
 ### Patch Changes
 
 - Minor changes to the format of the `panda analyze --output coverage.json` file
-- [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
-  generated CSS where possible.
+- [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the generated
+  CSS where possible.
 
 ## 0.39.0
 
 ### Minor Changes
 
-- Add support for more typography related properties in text styles such as `fontFeatureSettings`,
-  `fontPalette`, etc.
+- Add support for more typography related properties in text styles such as `fontFeatureSettings`, `fontPalette`, etc.
 
 ### Patch Changes
 
-- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
-  autocompletion was available.
+- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no autocompletion was
+  available.
 
 ## 0.38.0
 
@@ -697,8 +696,7 @@
 
 ### Patch Changes
 
-- Fix an issue where the `compoundVariants` classes would not be present at runtime when using
-  `config recipes`
+- Fix an issue where the `compoundVariants` classes would not be present at runtime when using `config recipes`
 
   ```ts
   // panda.config.ts
@@ -865,8 +863,8 @@
 
 ### Minor Changes
 
-- Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes and
-  CSS variables.
+- Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes and CSS
+  variables.
 
   Can pre-generate multiple themes with token overrides as static CSS, but also dynamically import and inject a theme
   stylesheet at runtime (browser or server).
@@ -1212,8 +1210,8 @@
 ### Patch Changes
 
 - Add missing reducers to properly return the results of hooks for `config:resolved` and `parser:before`
-- Add missing methods for ParserResultInterface (which can be used in the `parser:after` hook to dynamically
-  add extraction results from your own logic, like using a custom parser)
+- Add missing methods for ParserResultInterface (which can be used in the `parser:after` hook to dynamically add
+  extraction results from your own logic, like using a custom parser)
 - Add an optional `className` key in `sva` config which will can be used to target slots in the DOM.
 
   Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
@@ -1391,9 +1389,9 @@
 
 ### Patch Changes
 
-- Allow configuring the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX.
-  This can be especially useful when working with libraries that have properties that look like CSS properties but are
-  not and should be ignored.
+- Allow configuring the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX. This can be
+  especially useful when working with libraries that have properties that look like CSS properties but are not and
+  should be ignored.
 
   > **Note**: This feature mostly affects users who have `jsxStyleProps` set to `all`. This is currently the default.
   >
@@ -1427,8 +1425,8 @@
 
 ### Patch Changes
 
-- Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all
-  presets have been merged.
+- Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all presets have
+  been merged.
 
   For example, this could be used if you want to use most of a preset but want to completely omit a few things, while
   keeping the rest. Let's say we want to remove the `stack` pattern from the built-in `@pandacss/preset-base`:
@@ -1468,8 +1466,8 @@
 
 ### Minor Changes
 
-- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
-  to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) to use
+  the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
   This function allows you to mix two colors together, and we use it to change the opacity of a color using the
   `{color}/{opacity}` syntax.
@@ -1811,8 +1809,8 @@
 
 ### Patch Changes
 
-- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
-  seen as a truthy value
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being seen as a
+  truthy value
 
 ## 0.24.0
 
@@ -1968,9 +1966,8 @@
 
 ### Patch Changes
 
-- Fix `slotRecipes` typings,
-  [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
-  weren't added to `config.slotRecipes`
+- Fix `slotRecipes` typings, [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added
+  to `config.recipes` weren't added to `config.slotRecipes`
 
 ## 0.22.0
 
@@ -2110,8 +2107,8 @@
 
 ### Patch Changes
 
-- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
-  instead of being tied to the `outdir`
+- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from instead of
+  being tied to the `outdir`
 
   You can now do things like leverage the native package.json
   [`imports`](https://nodejs.org/api/packages.html#subpath-imports):
@@ -2183,10 +2180,10 @@
 
 ### Patch Changes
 
-- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
-  there's no way to get it from there.
-- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
-  with `{cvaFn}.raw`
+- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently there's no
+  way to get it from there.
+- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like with
+  `{cvaFn}.raw`
 
 ## 0.11.1
 
@@ -2198,8 +2195,7 @@
 
 ### Patch Changes
 
-- Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
-  dependency
+- Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook) dependency
 
 ## 0.10.0
 
@@ -2260,8 +2256,8 @@
 
 ### Patch Changes
 
-- Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
-  further reduce it.
+- Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and further
+  reduce it.
 
   `config.jsxStyleProps`:
 
@@ -2366,9 +2362,9 @@
   }
   ```
 
-- Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
-  parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
-  path `src/styled-system`
+- Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on parser NOT
+  matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full path
+  `src/styled-system`
 
 ## 0.5.0
 
@@ -2512,8 +2508,8 @@ export default defineConfig({
 
 ### Minor Changes
 
-- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
-  to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) to use
+  the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
   This function allows you to mix two colors together, and we use it to change the opacity of a color using the
   `{color}/{opacity}` syntax.
@@ -2855,8 +2851,8 @@ export default defineConfig({
 
 ### Patch Changes
 
-- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
-  seen as a truthy value
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being seen as a
+  truthy value
 
 ## 0.24.0
 
@@ -3012,9 +3008,8 @@ export default defineConfig({
 
 ### Patch Changes
 
-- Fix `slotRecipes` typings,
-  [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
-  weren't added to `config.slotRecipes`
+- Fix `slotRecipes` typings, [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added
+  to `config.recipes` weren't added to `config.slotRecipes`
 
 ## 0.22.0
 
@@ -3154,8 +3149,8 @@ export default defineConfig({
 
 ### Patch Changes
 
-- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
-  instead of being tied to the `outdir`
+- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from instead of
+  being tied to the `outdir`
 
   You can now do things like leverage the native package.json
   [`imports`](https://nodejs.org/api/packages.html#subpath-imports):
@@ -3227,10 +3222,10 @@ export default defineConfig({
 
 ### Patch Changes
 
-- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
-  there's no way to get it from there.
-- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
-  with `{cvaFn}.raw`
+- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently there's no
+  way to get it from there.
+- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like with
+  `{cvaFn}.raw`
 
 ## 0.11.1
 
@@ -3242,8 +3237,7 @@ export default defineConfig({
 
 ### Patch Changes
 
-- Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
-  dependency
+- Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook) dependency
 
 ## 0.10.0
 
@@ -3304,8 +3298,8 @@ export default defineConfig({
 
 ### Patch Changes
 
-- Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
-  further reduce it.
+- Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and further
+  reduce it.
 
   `config.jsxStyleProps`:
 
@@ -3410,9 +3404,9 @@ export default defineConfig({
   }
   ```
 
-- Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
-  parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
-  path `src/styled-system`
+- Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on parser NOT
+  matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full path
+  `src/styled-system`
 
 ## 0.5.0
 

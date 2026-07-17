@@ -4,15 +4,14 @@
 
 ### Patch Changes
 
-- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching
-  category exists.
+- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching category exists.
 
 ## 2.0.0-beta.4
 
 ### Patch Changes
 
-- Add the ESLint plugin core (settings, project caching, inspection caching, source range lookup), the first
-  Panda lint rules (`extraction-diagnostics`, `file-not-included`, `no-invalid-token-paths`, `no-debug`, a consolidated
+- Add the ESLint plugin core (settings, project caching, inspection caching, source range lookup), the first Panda lint
+  rules (`extraction-diagnostics`, `file-not-included`, `no-invalid-token-paths`, `no-debug`, a consolidated
   `no-deprecated` covering deprecated tokens, utilities, recipes, and patterns — with the author's deprecation message
   and a `kinds` option, and `prefer-token`, which flags raw values where a token exists and tells you the token to use
   (semantic tokens preferred, value forms normalized) across every style-writing form — `css()`, style props, responsive

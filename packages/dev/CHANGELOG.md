@@ -4,8 +4,8 @@
 
 ### Minor Changes
 
-- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize`
-  or PostCSS if you need to mutate CSS.
+- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize` or PostCSS
+  if you need to mutate CSS.
 
 ## 2.0.0-beta.0
 

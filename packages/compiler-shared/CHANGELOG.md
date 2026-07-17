@@ -4,10 +4,9 @@
 
 ### Patch Changes
 
-- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching
-  category exists.
-- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
-  match. You get clearer errors for token conflicts and mismatched config.
+- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching category exists.
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not match. You
+  get clearer errors for token conflicts and mismatched config.
 - Remove the unused `designSystem.resolveChain` API. Chain resolution already happens in the config loader.
 
 ## 2.0.0-beta.8
@@ -69,8 +68,8 @@
 
 ### Minor Changes
 
-- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
-  triggers extra reloads/rebuilds for no-op codegen and CSS writes.
+- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and triggers extra
+  reloads/rebuilds for no-op codegen and CSS writes.
 
   The compiler write APIs now use object params consistently:
 
