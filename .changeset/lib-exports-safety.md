@@ -3,4 +3,4 @@
 '@pandacss/compiler': patch
 ---
 
-`panda lib` no longer silently loses or clobbers package.json `exports`. An array-form root export is preserved (under `"."`) instead of dropped, and overwriting a subpath whose value differs from Panda's now emits a warning naming the overwritten path.
+`panda lib` keeps array-form package.json `exports` and warns when it overwrites a subpath you already set.
