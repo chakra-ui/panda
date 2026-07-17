@@ -1,5 +1,15 @@
 # @pandacss/compiler-shared
 
+## 2.0.0-beta.9
+
+### Patch Changes
+
+- 9409487: Add token inspection metadata and `no-primitive-token` to enforce semantic token usage when a matching
+  semantic token category exists.
+- 682338e: Harden design-system build-info hydration: keep nested packages local, fall back safely when build info is
+  stale or corrupt, and surface clearer option-mismatch and token-ownership diagnostics.
+- 682338e: Remove the unused `designSystem.resolveChain` API. Chain resolution already happens in the config loader.
+
 ## 2.0.0-beta.8
 
 ### Patch Changes

@@ -1,5 +1,33 @@
 # @pandacss/config
 
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- 8b6d08f: Bring back `cssgen:done` as an observe-only host hook for reporting on final CSS from CLI, Vite, and PostCSS.
+  Use `optimize` or PostCSS to mutate CSS.
+
+### Patch Changes
+
+- 682338e: Harden design-system build-info hydration: keep nested packages local, fall back safely when build info is
+  stale or corrupt, and surface clearer option-mismatch and token-ownership diagnostics.
+- 56013a1: Config bundling is now lazy. `rolldown` is only `import()`-ed when a config actually needs bundling, instead
+  of loading eagerly on every `@pandacss/config` import — cuts a meaningful chunk of per-command startup overhead.
+- 95e5501: Improve `designSystem` resolution errors for invalid manifests and presets, missing manifest exports,
+  unsupported protocol specifiers, and duplicate manifest names.
+- 8b6d08f: `panda lib` keeps array-form package.json `exports` and warns when it overwrites a subpath you already set.
+- d8e8465: `panda lib` omits inferred fallback `files` that package.json `"files"` would not publish, and warns with a
+  `--files` tip for dist-only packages.
+- 8b6d08f: `panda lib` now resolves `npm:` peer aliases (like `npm:@pandacss/dev@^3.0.0`) into a real `panda` range in
+  the manifest, same as `workspace:` and `catalog:`.
+- Updated dependencies [9409487]
+- Updated dependencies [682338e]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [682338e]
+  - @pandacss/compiler-shared@2.0.0-beta.9
+  - @pandacss/types@2.0.0-beta.9
+
 ## 2.0.0-beta.8
 
 ### Patch Changes

@@ -1,5 +1,58 @@
 # @pandacss/cli
 
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- ea9ccae: Add `--profile` to any command. It writes `trace.json` (open in `chrome://tracing` or `ui.perfetto.dev`) and
+  `timings.json` (per-span totals and slowest files) to `.panda/`, or into `panda debug --outdir` when combined with
+  `debug`. Replaces v1's `--cpu-prof`, which couldn't see time spent in the Rust engine.
+
+### Patch Changes
+
+- 682338e: Harden design-system build-info hydration: keep nested packages local, fall back safely when build info is
+  stale or corrupt, and surface clearer option-mismatch and token-ownership diagnostics.
+- 31aa2c4: Replaced `zod` with a small local flag validator. `zod` resolved ~76 separate ESM files at CLI startup;
+  removing it cuts a meaningful chunk of Node's module-loading overhead on every `panda` invocation, most noticeable on
+  fast commands like `codegen`.
+- 8b6d08f: Support `minify` as a top-level config key. The migration guide and `panda cssgen --minify` already treated
+  it as one, but the `Config` type rejected it and nothing read it. `cssgen` now honors `minify` from config, and the
+  `--minify` flag still overrides it.
+- d8e8465: `panda lib` omits inferred fallback `files` that package.json `"files"` would not publish, and warns with a
+  `--files` tip for dist-only packages.
+- 32d60cf: Fix `panda --watch` crashing on macOS with
+  `Error: Events were dropped by the FSEvents client. File system must be re-scanned.`
+
+  `@parcel/watcher` surfaces a macOS FSEvents backpressure condition — its event buffer overflowed and the OS coalesced
+  the backlog — as a _recoverable_ subscribe-callback error. Apple's FSEvents API sets
+  `kFSEventStreamEventFlagMustScanSubDirs` and expects the client to re-scan. The watcher was rethrowing this error
+  inside `@parcel/watcher`'s native callback, which becomes an uncaught exception and kills the watch process (commonly
+  hit when `panda --watch` runs next to a bundler's dependency pre-bundle, e.g. `vite`). It now recognizes the "must be
+  re-scanned" signal and triggers a full re-scan — re-reading every source file from disk — instead of crashing; any
+  other error is left to propagate unchanged.
+
+- Updated dependencies [9409487]
+- Updated dependencies [682338e]
+- Updated dependencies [ea9ccae]
+- Updated dependencies [56013a1]
+- Updated dependencies [853bb65]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [95e5501]
+- Updated dependencies [05c5125]
+- Updated dependencies [b7ab62c]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [d8e8465]
+- Updated dependencies [6e3c160]
+- Updated dependencies [f8f3124]
+- Updated dependencies [8b6d08f]
+- Updated dependencies [0f88913]
+- Updated dependencies [682338e]
+- Updated dependencies [33fa885]
+- Updated dependencies [e0d46e5]
+  - @pandacss/compiler@2.0.0-beta.9
+  - @pandacss/compiler-shared@2.0.0-beta.9
+  - @pandacss/config@2.0.0-beta.9
+
 ## 2.0.0-beta.8
 
 ### Patch Changes
