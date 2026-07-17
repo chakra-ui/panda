@@ -99,7 +99,10 @@ const VIEWER_HTML = `<!doctype html>
           <div class="nav-label">Tokens</div>
           <ul id="nav"></ul>
           <div class="nav-label nav-label-spaced">Playground</div>
-          <ul><li><a href="#tool-contrast" data-cat="tool-contrast">Contrast</a></li></ul>
+          <ul>
+            <li><a href="#tool-contrast" data-cat="tool-contrast">Contrast</a></li>
+            <li><a href="#tool-typography" data-cat="tool-typography">Typography</a></li>
+          </ul>
         </nav>
       </aside>
       <main class="content">
@@ -193,6 +196,10 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); }
 .badge.pass { background: color-mix(in srgb, #16a34a 20%, transparent); border-color: #16a34a; }
 .badge.fail { background: color-mix(in srgb, #dc2626 15%, transparent); border-color: #dc2626; opacity: 0.7; }
+.type-play { display: flex; flex-direction: column; gap: 12px; }
+.type-play-preview { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 32px; min-height: 200px; overflow-wrap: anywhere; }
+.type-play-css { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); line-height: 1.7; white-space: pre; overflow-x: auto; }
+.tool-controls textarea { resize: vertical; min-height: 64px; }
 `
 
 const VIEWER_JS = `const root = document.documentElement
@@ -556,9 +563,70 @@ function renderContrast(container, colors) {
   update()
 }
 
+function optionsFor(tokens, category) {
+  return tokens
+    .filter((token) => token.category === category)
+    .map((token) => '<option value="' + token.value + '">' + token.name + ' (' + token.value + ')</option>')
+    .join('')
+}
+
+function renderTypographyPlayground(container, tokens) {
+  const fields = [
+    { prop: 'font-size', category: 'fontSizes', label: 'Font size' },
+    { prop: 'font-weight', category: 'fontWeights', label: 'Font weight' },
+    { prop: 'font-family', category: 'fonts', label: 'Font family' },
+    { prop: 'line-height', category: 'lineHeights', label: 'Line height' },
+    { prop: 'letter-spacing', category: 'letterSpacings', label: 'Letter spacing' },
+  ].filter((field) => tokens.some((token) => token.category === field.category))
+  if (fields.length === 0) return
+
+  const section = document.createElement('section')
+  section.id = 'tool-typography'
+  section.dataset.cat = 'tool-typography'
+  const heading = document.createElement('h2')
+  heading.textContent = 'typography'
+
+  const tool = document.createElement('div')
+  tool.className = 'tool'
+
+  const controls = document.createElement('div')
+  controls.className = 'tool-controls'
+  controls.innerHTML =
+    fields
+      .map(
+        (field) =>
+          '<label>' + field.label + '<select data-prop="' + field.prop + '">' + optionsFor(tokens, field.category) + '</select></label>',
+      )
+      .join('') + '<label>Sample text<textarea id="type-play-text">The quick brown fox jumps over the lazy dog</textarea></label>'
+
+  const output = document.createElement('div')
+  output.className = 'type-play'
+  const preview = document.createElement('div')
+  preview.className = 'type-play-preview'
+  const cssOut = document.createElement('div')
+  cssOut.className = 'type-play-css'
+  output.append(preview, cssOut)
+
+  tool.append(controls, output)
+  section.append(heading, tool)
+  container.appendChild(section)
+
+  const selects = [...controls.querySelectorAll('select')]
+  const text = controls.querySelector('#type-play-text')
+  function update() {
+    for (const select of selects) preview.style.setProperty(select.dataset.prop, select.value)
+    preview.textContent = text.value
+    cssOut.textContent = selects.map((select) => select.dataset.prop + ': ' + select.value + ';').join('\\n')
+  }
+  for (const select of selects) select.addEventListener('change', update)
+  text.addEventListener('input', update)
+  update()
+}
+
 function renderTools(tokens) {
   const tools = document.getElementById('tools')
   renderContrast(tools, tokens.filter((token) => token.category === 'colors'))
+  renderTypographyPlayground(tools, tokens)
   updateActiveNav()
 }
 
