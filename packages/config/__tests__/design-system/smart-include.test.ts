@@ -2,8 +2,8 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { resolveAuthoredPresets } from '../src/preset'
-import { resolveSmartInclude, SMART_INCLUDE_EXTENSIONS } from '../src/smart-include'
+import { resolveSmartInclude, SMART_INCLUDE_EXTENSIONS } from '../../src/design-system/smart-include'
+import { resolveAuthoredPresets } from '../../src/preset'
 
 const EXT = SMART_INCLUDE_EXTENSIONS.join(',')
 

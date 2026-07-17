@@ -473,6 +473,59 @@ describe('NodeDriver writeDesignSystemLib', () => {
     `)
   })
 
+  it('omits inferred fallback files that package.json files would not publish', async () => {
+    dir = createLibProject()
+    writeFileTree(dir, {
+      'package.json': JSON.stringify(
+        {
+          name: '@acme/ds',
+          version: '1.2.3',
+          files: ['dist'],
+          peerDependencies: { '@pandacss/dev': '^2.0.0' },
+        },
+        null,
+        2,
+      ),
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    const result = await driver.writeDesignSystemLib()
+
+    const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8'))
+    expect(manifest.files).toBeUndefined()
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'design_system_files_not_publishable',
+        severity: 'warning',
+        category: 'designSystem',
+      }),
+    ])
+    expect(result.diagnostics[0]?.message).toContain("panda lib --files './**/*.{js,mjs}'")
+  })
+
+  it('keeps explicit --files even when they sit outside package.json files', async () => {
+    dir = createLibProject()
+    writeFileTree(dir, {
+      'package.json': JSON.stringify(
+        {
+          name: '@acme/ds',
+          version: '1.2.3',
+          files: ['dist'],
+          peerDependencies: { '@pandacss/dev': '^2.0.0' },
+        },
+        null,
+        2,
+      ),
+    })
+
+    const driver = await createNodeDriver({ cwd: dir })
+    const result = await driver.writeDesignSystemLib({ files: ['./**/*.{js,mjs}'] })
+
+    const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'panda.lib.json'), 'utf8'))
+    expect(manifest.files).toEqual(['./**/*.{js,mjs}'])
+    expect(result.diagnostics.filter((d) => d.code === 'design_system_files_not_publishable')).toEqual([])
+  })
+
   it('does not publish hydrated parent build info as fallback files', async () => {
     dir = createLibProject("  designSystem: '@acme/foundations',")
 

@@ -1,6 +1,8 @@
 import type { DesignSystemManifestImportMap } from '@pandacss/compiler-shared'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, relative } from 'node:path'
+import { dirname, join } from 'node:path'
+import { isPlainObject } from '../shared'
+import { readPublishFilesField } from './publishable-files'
 
 const PACKAGE_MANAGER_RANGE_PATTERN = /^(?:workspace|catalog):/
 const PORTABLE_WORKSPACE_RANGE_PATTERN = /^[~^]?\d/
@@ -11,6 +13,8 @@ export interface PackageIdentity {
   version?: string
   pandaPeer?: string
   packagePath: string
+  /** package.json `"files"` when it's a string array; used for lib fallback publish checks. */
+  publishFiles?: string[]
 }
 
 export function resolvePublishedPandaRange(range: string | undefined, currentVersion: string | undefined): string {
@@ -61,6 +65,7 @@ export function readPackageIdentity(cwd: string): PackageIdentity {
     version: typeof pkg.version === 'string' ? pkg.version : undefined,
     pandaPeer: typeof peer === 'string' ? peer : undefined,
     packagePath,
+    publishFiles: readPublishFilesField(pkg.files),
   }
 }
 
@@ -103,23 +108,6 @@ export function syncExports(options: SyncExportsOptions): SyncExportsResult {
   const changed = JSON.stringify(pkg.exports) !== JSON.stringify(merged)
   const out = { ...pkg, exports: merged }
   return { changed, json: `${JSON.stringify(out, null, 2)}\n`, conflicts }
-}
-
-export function toPosixPath(path: string): string {
-  return path.split('\\').join('/')
-}
-
-export function toPosixRelative(from: string, to: string): string {
-  const rel = toPosixPath(relative(from, to))
-  return rel.startsWith('.') ? rel : `./${rel}`
-}
-
-export function toRelativeKey(key: string, cwd: string): string {
-  return toPosixPath(isAbsolute(key) ? relative(cwd, key) : key)
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function normalizeExports(exports: unknown): Record<string, unknown> {

@@ -1,15 +1,15 @@
 import type { UserConfig } from '@pandacss/types'
 import { existsSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { createConfigDiagnostic, createConfigError, PandaError } from './error'
-import { tryResolveFrom } from './resolve'
-import { errorMessage } from './shared'
+import { createConfigDiagnostic, createConfigError, PandaError } from '../error'
+import { tryResolveFrom } from '../resolve'
+import { toPosixPath } from '../paths'
+import { errorMessage } from '../shared'
 
 export const SMART_INCLUDE_EXTENSIONS = ['js', 'mjs', 'cjs', 'jsx', 'ts', 'cts', 'mts', 'tsx', 'vue', 'svelte', 'astro']
 
 const MANIFEST = 'panda.lib.json'
 const PACKAGE_SPECIFIER = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/i
-const PATH_SEPARATOR = /[\\/]/
 
 export interface SmartIncludeResult {
   include: string[]
@@ -115,11 +115,7 @@ function nearestPackageDir(from: string): string | undefined {
 function globBase(packageDir: string, cwd: string): string {
   const rel = relative(cwd, packageDir)
   const base = isInsideCwd(rel) ? rel : packageDir
-  return toPosix(base)
-}
-
-function toPosix(path: string): string {
-  return path.split(PATH_SEPARATOR).join('/')
+  return toPosixPath(base)
 }
 
 function inIncludeError(specs: string[]): PandaError {

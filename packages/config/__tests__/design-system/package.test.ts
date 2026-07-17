@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { defaultImportMap, resolvePublishedPandaRange, syncExports } from '../src/lib-manifest'
+import { defaultImportMap, resolvePublishedPandaRange, syncExports } from '../../src/design-system/package'
 
-describe('lib-manifest', () => {
+describe('design-system/package', () => {
   test.each([
     ['workspace:*', '^2.0.0'],
     ['workspace:^', '^2.0.0'],

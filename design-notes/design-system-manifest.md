@@ -237,6 +237,11 @@ panda lib --files './**/*.{js,mjs}'
 Do not guess `src/*` to `dist/*`. Node can resolve package exports, but it cannot tell Panda how a library's build
 mapped source files to output files. The package author owns that contract.
 
+When package.json `"files"` would not publish an inferred fallback path (classic: `"files": ["dist"]` while inference
+points at `../src/...`), `panda lib` omits those paths from the manifest and warns with
+`design_system_files_not_publishable` instead of shipping a recovery list that fail-closes after install. Explicit
+`--files` skips that filter.
+
 ### Monorepo task runners own the chain
 
 `panda lib` is the producer task. The consumer can be `panda dev`, `@pandacss/vite`, or `@pandacss/postcss`.
@@ -552,6 +557,7 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_option_mismatch`        | warning/error | class-name options differ; fallback re-extracts or fails closed |
 | `design_system_token_conflict`         | info          | design system and app define overlapping token paths            |
 | `design_system_export_overwritten`     | warning       | `panda lib` overwrote a differing package.json export subpath   |
+| `design_system_files_not_publishable`  | warning       | inferred fallback `files` would not ship in the npm tarball     |
 
 Errors stop the build. Warnings continue only when Panda has a clear source fallback. Token conflicts are grouped once
 per design-system package, and the app config wins them. CLI exit status and `--max-warnings` are calculated from the

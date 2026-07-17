@@ -1,6 +1,7 @@
 import { builtinModules } from 'node:module'
-import { importMetaUrlPlugin } from './bundle-plugins'
-import { PandaError } from './error'
+import { importMetaUrlPlugin } from '../bundle-plugins'
+import { PandaError } from '../error'
+import { errorMessage } from '../shared'
 
 const APP_FIELDS = ['designSystem', 'include', 'exclude', 'outdir', 'cwd', 'watch', 'clean', 'gitignore', 'importMap']
 
@@ -80,8 +81,4 @@ async function validatePreset(code: string): Promise<void> {
   } catch (error) {
     throw new PandaError('CONFIG_ERROR', `💥 Failed to compile design system preset: ${errorMessage(error)}`)
   }
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
 }

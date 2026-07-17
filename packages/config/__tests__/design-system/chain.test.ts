@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { resolveAuthoredPresets } from '../src/preset'
+import { resolveAuthoredPresets } from '../../src/preset'
 
 describe('resolveAuthoredPresets / designSystem', () => {
   let cwd: string

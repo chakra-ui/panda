@@ -1,3 +1,5 @@
+import { isPlainObject, omitKeys } from './shared'
+
 export interface ConfigSourceEntry {
   kind: 'config' | 'preset'
   name?: string
@@ -31,7 +33,6 @@ const sectionKeySet = new Set([
   'themes',
 ])
 
-const omitKeys = new Set(['__proto__', 'constructor', 'prototype'])
 const tokenKeys = new Set(['description', 'extensions', 'type', 'value', 'deprecated'])
 const directFieldSections = new Set(['patterns', 'utilities'])
 const themeEntryKeys = new Set([
@@ -135,10 +136,4 @@ function shouldTrackThemePath(rest: string[], value: unknown, current: unknown):
   if (key === 'containerNames' || key === 'colorPalette') return rest.length <= 2
 
   return rest.length <= 2
-}
-
-function isPlainObject(value: unknown): value is Record<string, any> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  const proto = Object.getPrototypeOf(value)
-  return proto === Object.prototype || proto === null
 }

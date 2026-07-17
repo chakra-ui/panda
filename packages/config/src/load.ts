@@ -9,7 +9,7 @@ import { diffClassNameOptions } from './normalize'
 import { resolveAuthoredPresetsForLoad, type DesignSystemCompatibilityContext } from './preset'
 import { createConfigSnapshot } from './serialize'
 import { isPlainObject } from './shared'
-import { collectTokenEntries, resolveUserTokenPathsAfterHooks, type TokenEntries } from './token-paths'
+import { collectTokenEntries, resolveUserTokenPathsAfterHooks, type TokenEntries } from './design-system/token-paths'
 import type { LoadConfigOptions, LoadConfigResult } from './types'
 
 /**

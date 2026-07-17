@@ -4,22 +4,20 @@ export { diffConfig } from './diff'
 export { findConfig } from './find'
 export { bundleConfig } from './bundle'
 export { mergeConfigs } from './merge'
-export { resolveSmartInclude, mergeExcludes } from './smart-include'
 export { readPandaVersion } from './version'
-export { compilePreset } from './lib-preset'
-export {
-  readPackageIdentity,
-  resolvePublishedPandaRange,
-  defaultImportMap,
-  syncExports,
-  toPosixPath,
-  toPosixRelative,
-  toRelativeKey,
-} from './lib-manifest'
-export { collectTokenPaths } from './token-paths'
+export { compilePreset } from './design-system/compile-preset'
+export { defaultImportMap, readPackageIdentity, resolvePublishedPandaRange, syncExports } from './design-system/package'
+export { filterPublishableLibFiles, readPublishFilesField } from './design-system/publishable-files'
+export { mergeExcludes, resolveSmartInclude } from './design-system/smart-include'
+export { collectTokenPaths } from './design-system/token-paths'
+export { toPosixPath, toPosixRelative, toRelativeKey } from './paths'
 
-export type { CompilePresetOptions, CompilePresetResult } from './lib-preset'
-export type { PackageIdentity, SyncExportsOptions, SyncExportsResult } from './lib-manifest'
+export type { CompilePresetOptions, CompilePresetResult } from './design-system/compile-preset'
+export type { PackageIdentity, SyncExportsOptions, SyncExportsResult } from './design-system/package'
+export type {
+  FilterPublishableLibFilesOptions,
+  FilterPublishableLibFilesResult,
+} from './design-system/publishable-files'
 export type { ConfigSnapshot } from './serialize'
 export type { DiffConfigResult } from './diff'
 export type { HostHooks } from './hooks'

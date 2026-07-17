@@ -28,6 +28,7 @@ import {
   type HostHooks,
   type LoadConfigResult,
   diffConfig,
+  filterPublishableLibFiles,
   loadConfig,
   mergeExcludes,
   readPackageIdentity,
@@ -430,6 +431,17 @@ export class NodeDriver extends BaseDriver {
       mapModuleKey: (key) => toRelativeKey(key, this.#options.cwd),
     })
 
+    const { files: libFiles, diagnostics: filesDiagnostics } = resolveDesignSystemLibFiles({
+      explicit: options.files,
+      compiler: this.compiler,
+      cwd: this.#options.cwd,
+      outRoot,
+      buildInfo,
+      packageRoot: this.compiler.path.dirname(identity.packagePath),
+      publishFiles: identity.publishFiles,
+      packageName: identity.name,
+    })
+
     const manifest = this.compiler.designSystem.create({
       name: identity.name,
       version: identity.version,
@@ -438,7 +450,7 @@ export class NodeDriver extends BaseDriver {
       buildInfo: './panda.buildinfo.json',
       importMap: defaultImportMap(identity.name),
       designSystem: typeof this.config.designSystem === 'string' ? this.config.designSystem : undefined,
-      files: options.files ?? inferDesignSystemLibFiles(this.compiler, this.#options.cwd, outRoot, buildInfo),
+      files: libFiles,
     })
 
     this.compiler.writeArtifacts({
@@ -479,8 +491,56 @@ export class NodeDriver extends BaseDriver {
       presetPath,
       exportsChanged,
       parsedFileCount: parsed.parsedFileCount,
-      diagnostics: [...parsed.diagnostics, ...exportConflictDiagnostics(identity.name, conflicts)],
+      diagnostics: [...parsed.diagnostics, ...filesDiagnostics, ...exportConflictDiagnostics(identity.name, conflicts)],
     }
+  }
+}
+
+function resolveDesignSystemLibFiles(options: {
+  explicit?: string[]
+  compiler: Compiler
+  cwd: string
+  outRoot: string
+  buildInfo: BuildInfoArtifact
+  packageRoot: string
+  publishFiles?: string[]
+  packageName: string
+}): { files: string[]; diagnostics: Diagnostic[] } {
+  if (options.explicit) {
+    return { files: options.explicit, diagnostics: [] }
+  }
+
+  const inferred = inferDesignSystemLibFiles(options.compiler, options.cwd, options.outRoot, options.buildInfo)
+  const { files, unpublished } = filterPublishableLibFiles({
+    files: inferred,
+    packageRoot: options.packageRoot,
+    outRoot: options.outRoot,
+    publishFiles: options.publishFiles,
+  })
+
+  if (unpublished.length === 0) {
+    return { files, diagnostics: [] }
+  }
+
+  return {
+    files,
+    diagnostics: [unpublishedLibFilesDiagnostic(options.packageName, unpublished)],
+  }
+}
+
+function unpublishedLibFilesDiagnostic(name: string, unpublished: string[]): Diagnostic {
+  const sample = unpublished
+    .slice(0, 3)
+    .map((path) => JSON.stringify(path))
+    .join(', ')
+  const more = unpublished.length > 3 ? `, and ${unpublished.length - 3} more` : ''
+  return {
+    code: 'design_system_files_not_publishable',
+    severity: 'warning',
+    category: 'designSystem',
+    message:
+      `\`panda lib\` omitted ${unpublished.length === 1 ? 'a fallback file' : 'fallback files'} from ${JSON.stringify(name)}'s manifest because package.json \`"files"\` would not publish ${sample}${more}. ` +
+      `Happy-path consumers still hydrate build info. For dist-only recovery, re-run with \`panda lib --files './**/*.{js,mjs}'\` (or the globs you actually publish).`,
   }
 }
 

@@ -14,17 +14,27 @@ export function isPlainObject(value: unknown): value is Dict {
 }
 
 export function clone<T>(value: T): T {
-  if (Array.isArray(value)) return value.map((item) => clone(item)) as T
-
-  if (isPlainObject(value)) {
-    const result: Dict = {}
-    for (const [key, item] of Object.entries(value)) {
-      if (item !== undefined && !omitKeys.has(key)) result[key] = clone(item)
-    }
-    return result as T
+  // Direct loops over `Object.keys` instead of entries/map, which allocates
+  // intermediate arrays (plus a [key, value] tuple per property) per node.
+  if (Array.isArray(value)) {
+    const len = value.length
+    const out = new Array(len)
+    for (let i = 0; i < len; i++) out[i] = clone(value[i])
+    return out as T
   }
 
-  return value
+  if (!isPlainObject(value)) return value
+
+  const source = value as Dict
+  const out: Dict = {}
+  const keys = Object.keys(source)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]!
+    if (omitKeys.has(key)) continue
+    const item = source[key]
+    if (item !== undefined) out[key] = clone(item)
+  }
+  return out as T
 }
 
 export function ensureConfigObject(config: unknown, name: string): ExtendableConfig {
@@ -34,4 +44,9 @@ export function ensureConfigObject(config: unknown, name: string): ExtendableCon
 
 export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+/** Drop keys whose value is `undefined` (shallow). */
+export function compact<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(Object.entries(value ?? {}).filter(([, item]) => item !== undefined)) as T
 }
