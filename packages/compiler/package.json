@@ -1,6 +1,6 @@
 {
   "name": "@pandacss/compiler",
-  "version": "2.0.0-beta.8",
+  "version": "2.0.0-beta.9",
   "description": "Native Rust binding for the Panda compiler engine",
   "type": "module",
   "main": "./dist/index.js",
@@ -66,7 +66,8 @@
   "dependencies": {
     "@napi-rs/wasm-runtime": "^1.1.6",
     "@pandacss/compiler-shared": "workspace:*",
-    "@pandacss/config": "workspace:*"
+    "@pandacss/config": "workspace:*",
+    "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.7.1",

@@ -10,10 +10,12 @@ import type { UserConfig } from '@pandacss/types'
 import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { createConfigDiagnostic, createConfigError, PandaError } from './error'
-import { nearestPackageJson } from './lib-manifest'
-import { resolveFrom, type ResolveOutcome } from './resolve'
-import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
+import { createConfigDiagnostic, createConfigError, PandaError } from '../error'
+import { nearestPackageJson } from './package'
+import { resolveFrom, type ResolveOutcome } from '../resolve'
+import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from '../shared'
+
+const SPECIFIER_PROTOCOL = /^([a-z][a-z0-9+.-]*):/i
 
 export interface ResolvedDesignSystem {
   name: string
@@ -453,7 +455,7 @@ function duplicateNameError(name: string, firstPath: string, secondPath: string)
 }
 
 function specifierProtocol(spec: string): string | undefined {
-  const match = spec.match(/^([a-z][a-z0-9+.-]*):/i)
+  const match = spec.match(SPECIFIER_PROTOCOL)
   return match ? match[1] : undefined
 }
 

@@ -1,5 +1,5 @@
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
-import { isPlainObject, type ExtendableConfig } from './shared'
+import { clone, isPlainObject, type ExtendableConfig } from './shared'
 
 interface TraverseItem {
   value: unknown
@@ -19,11 +19,11 @@ interface TraverseOptions {
  */
 export const configResolvedUtils = {
   omit<T extends object>(obj: T, paths: string[]): T {
-    const clone = cloneValue(obj)
+    const next = clone(obj)
     for (const path of paths) {
-      deleteAtPath(clone, path)
+      deleteAtPath(next, path)
     }
-    return clone
+    return next
   },
   pick<T extends object>(obj: T, paths: string[]): Partial<T> {
     const result: Record<string, unknown> = {}
@@ -38,28 +38,6 @@ export const configResolvedUtils = {
   traverse(obj: unknown, callback: (item: TraverseItem) => void, options: TraverseOptions = {}): void {
     traverseValue(obj, callback, options)
   },
-}
-
-function cloneValue<T>(value: T): T {
-  // Direct loops over a single `Object.keys` array instead of
-  // `Object.fromEntries(Object.entries().map())`, which allocates three
-  // intermediate arrays (plus a [key, value] tuple per property) per node.
-  if (Array.isArray(value)) {
-    const len = value.length
-    const out = new Array(len)
-    for (let i = 0; i < len; i++) out[i] = cloneValue(value[i])
-    return out as T
-  }
-  if (!isPlainObject(value)) return value
-
-  const source = value as Record<string, unknown>
-  const out: Record<string, unknown> = {}
-  const keys = Object.keys(source)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
-    out[key] = cloneValue(source[key])
-  }
-  return out as T
 }
 
 function pathParts(path: string) {
@@ -81,7 +59,7 @@ function setAtPath(target: Record<string, unknown>, path: string, value: unknown
 
   parts.forEach((part, index) => {
     if (index === parts.length - 1) {
-      current[part] = cloneValue(value)
+      current[part] = clone(value)
       return
     }
 

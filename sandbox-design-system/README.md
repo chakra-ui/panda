@@ -44,6 +44,34 @@ Only `panel.js` and `tag.js` are real modules under `recipes/`; `chip` is not re
 (`css/`, `helpers.js`, the jsx factory) is still emitted locally because the app's own recipe modules import it by
 relative path. The Vite build is the real check that the `@sandbox/ds/*` re-exports resolve.
 
+## Consumer types: package `/css` vs full local re-emit
+
+Design-system packages export their codegen’d styled-system:
+
+```jsonc
+"./css": "./styled-system/css/index.js",
+"./tokens": "./styled-system/tokens/index.js",
+"./patterns": "./styled-system/patterns/index.js",
+"./types": "./styled-system/types/index.d.ts"
+```
+
+`@sandbox/app-nested` imports **both** roots to prove they resolve under Vite:
+
+```ts
+import { css as dsCss } from '@sandbox/ds-nested/css' // DS-owned styled-system
+import { css } from '../styled-system/css' // local full re-emit (+ app overrides)
+```
+
+Package `/css` covers DS + parent tokens. Local outdir covers that plus app-only tokens
+(e.g. `spacing.2`, app `brand` override in types).
+
+After build, check:
+
+```txt
+packages/ds-nested/styled-system/types/tokens.d.ts   # DS + foundations
+packages/app-nested/styled-system/types/tokens.d.ts  # + app overrides
+```
+
 ## Run it
 
 ```sh

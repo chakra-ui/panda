@@ -1,25 +1,61 @@
 # @pandacss/compiler
 
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- Add `--profile` to any command. It writes `trace.json` and `timings.json` to `.panda/` (or into
+  `panda debug --outdir`). Open the trace in `chrome://tracing` or `ui.perfetto.dev`. Replaces v1's `--cpu-prof`.
+- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize`
+  or PostCSS if you need to mutate CSS.
+
+### Patch Changes
+
+- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching
+  category exists.
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
+  match. You get clearer errors for token conflicts and mismatched config.
+- Generated `css()` caches repeated inline styles instead of re-serializing every call (~3x faster on dense
+  SSR pages).
+- Stop adding `className` to pattern property types. Pattern `*Properties` interfaces only list configured props; JSX
+  components keep React's `className`, and pattern functions no longer emit a `class-name_*` utility class.
+
+- Fix runtime class names for multiline string values. Runtime `css()` collapses multiline whitespace the same
+  way cssgen does, so selectors match.
+
+- `panda lib` keeps array-form package.json `exports` and warns when it overwrites a subpath you already set.
+- `panda lib` omits inferred `files` that package.json `"files"` would not publish, and warns with a `--files`
+  tip for dist-only packages.
+- Speed up `css()`, style props, and recipe resolution in generated runtimes. Repeated calls with the same flat
+  style objects hit the cache about 30–40% faster in SSR benchmarks.
+
+- Memoize multi-arg `css()` calls and shared recipe/pattern resolution in generated runtimes so repeated calls
+  skip redundant merge work.
+
+- Speed up generated pattern helpers by memoizing class names for repeated style props.
+- Remove the unused `designSystem.resolveChain` API. Chain resolution already happens in the config loader.
+- Under `strictTokens`, empty token categories still accept native CSS keywords. `cursor: 'pointer'` works
+  without the `[pointer]` escape hatch; same for utilities like `opacity` and `zIndex` with no tokens defined.
+
+- Fix cross-file style extraction on Windows. Resolved paths use forward slashes so aliased and relative
+  `css()` imports match; POSIX is unchanged.
+
 ## 2.0.0-beta.8
 
 ### Patch Changes
 
-- 72580e5: Fix PostCSS HMR style updates.
+- Fix PostCSS HMR style updates.
 
   Component edits now keep previous atoms available during refresh, and design-system source fallback files refresh
   through the driver instead of waiting for a restart.
-
-- Updated dependencies [72580e5]
-  - @pandacss/compiler-shared@2.0.0-beta.8
-  - @pandacss/config@2.0.0-beta.8
 
 ## 2.0.0-beta.7
 
 ### Patch Changes
 
-- 97d142a: Fix generated token types when a category has no tokens. A config with missing or empty categories no longer
+- Fix generated token types when a category has no tokens. A config with missing or empty categories no longer
   collapses `TokenValue` to bare `string`, so native CSS value autocomplete (e.g. `currentColor`) stays intact.
-- 0a11fda: Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
+- Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
   updates its styles live, instead of leaving them stale until you restart the dev server.
   - @pandacss/compiler-shared@2.0.0-beta.7
   - @pandacss/config@2.0.0-beta.7
@@ -28,7 +64,7 @@
 
 ### Minor Changes
 
-- b5a620d: Add `panda lib` to package a Panda design system.
+- Add `panda lib` to package a Panda design system.
 
   It scans your library source, writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs`, then syncs the
   package exports. It can also run in watch mode.
@@ -36,37 +72,31 @@
   Consumers also get token conflict warnings when the app and design system define the same token path; the app value
   wins. If a library's build info is stale, Panda re-extracts its manifest `files` instead of failing the build.
 
-- 7b71a43: Adopt a published design system with `designSystem: '@acme/ds'`.
+- Adopt a published design system with `designSystem: '@acme/ds'`.
 
   Panda reads the library's `panda.lib.json`, merges its preset below your config, and reuses its pre-extracted styles.
   If the design system needs a different Panda major version, Panda reports a clear error.
 
 ### Patch Changes
 
-- 8a936bd: Add `panda analyze` reports. You can write JSON, open a static HTML report, or run the live report UI.
-- 82e7811: Add `compiler.designSystem` helpers for `panda.lib.json` manifests.
+- Add `panda analyze` reports. You can write JSON, open a static HTML report, or run the live report UI.
+- Add `compiler.designSystem` helpers for `panda.lib.json` manifests.
 
   The new helpers create, validate, load, and order design-system manifests so consumers can adopt a library through the
   `designSystem` config field.
 
-- d075c2b: Only extract JSX style props when `jsxFramework` is configured.
+- Only extract JSX style props when `jsxFramework` is configured.
 
   This prevents CSS from being generated for JSX components in projects that have not enabled JSX extraction.
   Function-call extraction is unchanged.
 
-- 86504d6: Add a WASI compiler fallback for WebContainer-based environments like StackBlitz.
-- Updated dependencies [8a936bd]
-- Updated dependencies [82e7811]
-- Updated dependencies [b5a620d]
-- Updated dependencies [7b71a43]
-  - @pandacss/compiler-shared@2.0.0-beta.6
-  - @pandacss/config@2.0.0-beta.6
+- Add a WASI compiler fallback for WebContainer-based environments like StackBlitz.
 
 ## 2.0.0-beta.5
 
 ### Patch Changes
 
-- a9c6e47: Fix v2 CSS-output regressions in `globalCss` and nested style objects:
+- Fix v2 CSS-output regressions in `globalCss` and nested style objects:
 
   - Bare element selectors (e.g. `'.article': { h2: { ... } }`) now nest as descendants instead of being dropped.
   - Comma-separated selector groups now distribute the parent to every member (`h2, h3, h4` →
@@ -82,23 +112,23 @@
 
 ### Minor Changes
 
-- 9521059: Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`,
+- Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`,
   `buildinfo`) to override the config's `include` globs for a single run. The flag is repeatable and accepts
   comma-separated values, and replaces (does not merge with) the configured globs — useful for scanning a subset of
   files in CI or one-off builds.
 
 ### Patch Changes
 
-- 74dab7b: `styled-system/types/index` now re-exports `./jsx` for all JSX frameworks, not just React. Solid, Vue,
+- `styled-system/types/index` now re-exports `./jsx` for all JSX frameworks, not just React. Solid, Vue,
   Preact, and Qwik generated `types/jsx` but never re-exported it, which could cause "inferred type cannot be named"
   TypeScript errors.
-- 0202dba: Fix `globalCss` and token-reference parity with extracted styles.
+- Fix `globalCss` and token-reference parity with extracted styles.
 
   - Expand composition props and nested utility transforms in `globalCss`.
   - Resolve token references in raw at-rule conditions.
   - Preserve `token(path, fallback)` fallbacks in emitted CSS variables.
 
-- 23580df: Expose lint-friendly inspection data from `inspectFileSource`, including extracted calls, JSX entries, token
+- Expose lint-friendly inspection data from `inspectFileSource`, including extracted calls, JSX entries, token
   references, component entries, and style entries with safe local key/value spans. Style entries cover every
   style-writing form — `css()` (including the `css(a, b)` multi-argument merge), style props, responsive arrays,
   per-prop conditions, JSX `css` props (object **and** `css={[...]}` array forms), and recipe styles in `cva` / `sva` /
@@ -115,27 +145,24 @@
   preferred over the primitives they reference, with hex and px/rem normalization), or `null`. Token references in
   inspection results also carry `isVar` (whether the call was `token.var(...)`).
 
-- 5316642: Fix slot recipe inference to include slots that appear only in `compoundVariants`. Previously, when `slots`
+- Fix slot recipe inference to include slots that appear only in `compoundVariants`. Previously, when `slots`
   was omitted from an `sva` call, a slot used solely inside a compound variant's `css` was dropped and its styles never
   emitted.
-- 1378d4a: Complete the SVG asset color-name shortening table (full parity with v1's 55 named colors) and fix a hex
+- Complete the SVG asset color-name shortening table (full parity with v1's 55 named colors) and fix a hex
   substring-match bug where values like `#fff000` were incorrectly shortened to `white000`.
-- Updated dependencies [23580df]
-  - @pandacss/compiler-shared@2.0.0-beta.4
-  - @pandacss/config@2.0.0-beta.4
 
 ## 2.0.0-beta.3
 
 ### Patch Changes
 
-- 2117c7a: Improve generated style prop types for native CSS values and Panda utilities.
+- Improve generated style prop types for native CSS values and Panda utilities.
 
   Utility shorthands like `bg`, `bgColor`, and `color` now accept the matching native CSS values when `strictTokens` is
   off. Keyframe steps also use the same style object types as global CSS.
 
-- 1d1ec6c: Trim surrounding whitespace before generating class names, so cssgen and runtime `css()` produce the same
+- Trim surrounding whitespace before generating class names, so cssgen and runtime `css()` produce the same
   class for values like `'0 auto '`.
-- 21dc46a: Fix several nested arbitrary selector edge cases.
+- Fix several nested arbitrary selector edge cases.
 
   - Keep `&` intact inside quoted attribute selector values, like `[data-category="sound & vision"]`.
   - Keep parent selectors like `&:last-child` attached to the parent when followed by a nested descendant such as
@@ -143,12 +170,12 @@
   - Scope comma selector members without `&` as descendants.
   - Wrap combinator parents in `:is()` when a nested selector contains multiple `&` tokens.
 
-- 6a61a2d: Fix generated types for recipes with no variants.
+- Fix generated types for recipes with no variants.
 
   Variant-less recipes no longer add a broad string index signature, so `defaultProps` and `createSlotRecipeContext`
   providers accept valid non-variant props again.
 
-- 376d6f2: Improve parse handling during extraction.
+- Improve parse handling during extraction.
 
   - `.astro` frontmatter with a top-level `return` now extracts correctly.
   - Files Panda can't fully parse now warn instead of aborting the build. The warning explains that some styles may be
@@ -160,7 +187,7 @@
 
 ### Minor Changes
 
-- 0b77f58: Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
+- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
   triggers extra reloads/rebuilds for no-op codegen and CSS writes.
 
   The compiler write APIs now use object params consistently:
@@ -171,7 +198,7 @@
 
 ### Patch Changes
 
-- bc39e0f: Fix cssgen dropping the leading dash on vendor-prefixed property names, so the class (and the CSS property)
+- Fix cssgen dropping the leading dash on vendor-prefixed property names, so the class (and the CSS property)
   never matched the runtime.
 
   A vendor-prefixed property is authored PascalCase — `WebkitBackgroundClip`, `WebkitTextFillColor`, `MozAppearance`.
@@ -187,12 +214,12 @@
   `-moz-appearance`. camelCase props are unchanged (`backgroundColor` → `background-color`), and the `msTransform` →
   `-ms-transform` special case is preserved.
 
-- ac3eba5: Fix object-map utility values generating CSS selectors that do not match runtime class names.
+- Fix object-map utility values generating CSS selectors that do not match runtime class names.
 
   Authored literal values now keep their literal class segment, e.g. `minHeight: '100vh'` emits `.min-h_100vh` instead
   of reverse-mapping to `.min-h_screen`.
 
-- adc8d7c: Fix the runtime `css()` naming `!important` classes differently from cssgen, so the rule never matched.
+- Fix the runtime `css()` naming `!important` classes differently from cssgen, so the rule never matched.
 
   `css({ padding: '0 !important' })` put `p_0_!important` on the element — the runtime hashed the whole string
   (`withoutSpace('0 !important')`) — but cssgen wrote `.p_0\!` (it strips `!important` and marks the class with a
@@ -205,31 +232,18 @@
   `/\s*!(important)?/i`) and wires them into `createCssRuntime`'s `serializeCss`, so both `css({})` and `css\`\`` are
   fixed in one place.
 
-- Updated dependencies [0b77f58]
-  - @pandacss/compiler-shared@2.0.0-beta.2
-  - @pandacss/config@2.0.0-beta.2
-
-## 2.0.0-beta.1
-
-### Patch Changes
-
-- Updated dependencies [349e7ef]
-- Updated dependencies [07eafef]
-  - @pandacss/config@2.0.0-beta.1
-  - @pandacss/compiler-shared@2.0.0-beta.1
-
 ## 2.0.0-beta.0
 
 ### Minor Changes
 
-- cc30235: Emit native token CSS in the Rust stylesheet compiler and align the default `cssVarRoot` with JS output
+- Emit native token CSS in the Rust stylesheet compiler and align the default `cssVarRoot` with JS output
   (`:where(:root, :host)`).
 
 ### Patch Changes
 
-- b567ae6: Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including
+- Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including
   React, Preact, Vue, Solid, and Qwik builds.
-- 8e66595: Merge adjacent selectors that share an identical declaration block into one comma-joined rule (parity with
+- Merge adjacent selectors that share an identical declaration block into one comma-joined rule (parity with
   the legacy engine's merge-rules pass).
 
   The v2 native emitter now coalesces consecutive rules with the same declaration block — e.g.
@@ -239,7 +253,7 @@
   parser, no new dependency, identical in the native and wasm builds. It covers the atomic and globalCss layers. CSS is
   functionally equivalent, just smaller.
 
-- 939a3d9: Sort container queries by their resolved `inline-size`, like media queries.
+- Sort container queries by their resolved `inline-size`, like media queries.
 
   The cascade sorter only recognized `width`-based queries, so theme container conditions (which emit
   `@container (inline-size >= …)`) fell back to raw-string ordering — e.g. `inline-size >= 16rem` sorted before
@@ -247,7 +261,7 @@
   every size axis (`width`, `inline-size`, `height`, `block-size`), in both modern (`>=`/`<`) and legacy
   (`min-*`/`max-*`) forms, so container breakpoints sort by magnitude.
 
-- 742d649: Fix custom utility `transform` callbacks being decomposed instead of merged in the v2 engine.
+- Fix custom utility `transform` callbacks being decomposed instead of merged in the v2 engine.
 
   A custom utility whose `transform` returns a multi-declaration object now emits a single class keyed on the utility's
   `className` (matching the legacy engine) instead of shattering into separate per-property atoms. This restores:
@@ -260,7 +274,3 @@
   - **Conditions returned by the transform** — `_hover`/child selectors lower to real selectors.
 
   Recipes that exercise utility transforms get the same token-resolution and nested-condition fix.
-
-- Updated dependencies [742d649]
-  - @pandacss/compiler-shared@2.0.0-beta.0
-  - @pandacss/config@2.0.0-beta.0

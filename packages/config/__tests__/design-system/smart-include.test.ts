@@ -2,8 +2,8 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { resolveAuthoredPresets } from '../src/preset'
-import { resolveSmartInclude, SMART_INCLUDE_EXTENSIONS } from '../src/smart-include'
+import { resolveSmartInclude, SMART_INCLUDE_EXTENSIONS } from '../../src/design-system/smart-include'
+import { resolveAuthoredPresets } from '../../src/preset'
 
 const EXT = SMART_INCLUDE_EXTENSIONS.join(',')
 
@@ -101,14 +101,9 @@ describe('resolveAuthoredPresets / smart include', () => {
     expect(config.include).toEqual([`node_modules/@acme/sealed/**/*.{${EXT}}`])
   })
 
-  test('throws when package resolution fails for an unexpected reason', async () => {
-    await expect(resolveAuthoredPresets({ include: ['@acme/broken'] } as any, cwd)).rejects.toThrow(
-      /Failed to resolve include package "@acme\/broken"/,
-    )
-  })
-
-  test('attaches diagnostics to include package resolution failures', async () => {
+  test('rejects when package resolution fails for an unexpected reason', async () => {
     await expect(resolveAuthoredPresets({ include: ['@acme/broken'] } as any, cwd)).rejects.toMatchObject({
+      message: expect.stringMatching(/Failed to resolve include package "@acme\/broken"/),
       diagnostics: [
         {
           code: 'include_package_resolution_failed',
@@ -120,33 +115,31 @@ describe('resolveAuthoredPresets / smart include', () => {
   })
 
   test('redirects a manifest-bearing package to designSystem', async () => {
-    await expect(resolveAuthoredPresets({ include: ['@acme/ds'] } as any, cwd)).rejects.toThrow(
-      /Design system in `include`: "@acme\/ds".*it belongs in `designSystem`/s,
-    )
+    await expect(resolveAuthoredPresets({ include: ['@acme/ds'] } as any, cwd)).rejects.toMatchObject({
+      message: expect.stringMatching(/Design system in `include`: "@acme\/ds".*it belongs in `designSystem`/s),
+      diagnostics: [{ code: 'design_system_in_include', severity: 'error', category: 'config' }],
+    })
   })
 
   test('detects a manifest on disk even when exports would hide it', async () => {
-    await expect(resolveAuthoredPresets({ include: ['@acme/sealed-ds'] } as any, cwd)).rejects.toThrow(
-      /Design system in `include`: "@acme\/sealed-ds"/,
-    )
+    await expect(resolveAuthoredPresets({ include: ['@acme/sealed-ds'] } as any, cwd)).rejects.toMatchObject({
+      message: expect.stringMatching(/Design system in `include`: "@acme\/sealed-ds"/),
+      diagnostics: [{ code: 'design_system_in_include', severity: 'error', category: 'config' }],
+    })
   })
 
   test('detects a `panda lib` package whose exports expose only the manifest', async () => {
-    await expect(resolveAuthoredPresets({ include: ['@acme/lib-ds'] } as any, cwd)).rejects.toThrow(
-      /Design system in `include`: "@acme\/lib-ds"/,
-    )
+    await expect(resolveAuthoredPresets({ include: ['@acme/lib-ds'] } as any, cwd)).rejects.toMatchObject({
+      message: expect.stringMatching(/Design system in `include`: "@acme\/lib-ds"/),
+      diagnostics: [{ code: 'design_system_in_include', severity: 'error', category: 'config' }],
+    })
   })
 
-  test('batches every manifest-bearing offender into one error, skipping consumers', async () => {
-    await expect(
-      resolveAuthoredPresets({ include: ['@acme/ds', '@acme/charts', '@acme/ds2'] } as any, cwd),
-    ).rejects.toThrow(/Design systems in `include`: "@acme\/ds", "@acme\/ds2"/)
-  })
-
-  test('attaches one diagnostic per manifest-bearing include offender', async () => {
+  test('batches every manifest-bearing offender into one error with one diagnostic each', async () => {
     await expect(
       resolveAuthoredPresets({ include: ['@acme/ds', '@acme/charts', '@acme/ds2'] } as any, cwd),
     ).rejects.toMatchObject({
+      message: expect.stringMatching(/Design systems in `include`: "@acme\/ds", "@acme\/ds2"/),
       diagnostics: [
         { code: 'design_system_in_include', severity: 'error', category: 'config' },
         { code: 'design_system_in_include', severity: 'error', category: 'config' },

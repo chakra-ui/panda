@@ -6,7 +6,9 @@ import {
   withDesignSystemImportMap,
   type DesignSystemLevel,
   type ResolvedDesignSystem,
-} from './design-system'
+} from './design-system/chain'
+import { expandSmartInclude } from './design-system/smart-include'
+import { collectTokenPaths } from './design-system/token-paths'
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { attachRuntimeHooks, configResolvedUtils } from './hook-utils'
 import { collectPluginHookHandlers, normalizeHook, type PluginHookEntry } from './hooks'
@@ -14,9 +16,7 @@ import { collectPatternNames, collectRecipeNames } from './artifact-names'
 import { mergeConfigs, mergeConfigsWithSources, type SourcedConfig } from './merge'
 import { diffClassNameOptions, normalizeClassNameOptions, type NormalizedClassNameOptions } from './normalize'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from './shared'
-import { expandSmartInclude } from './smart-include'
 import type { ConfigSources } from './sources'
-import { collectTokenPaths } from './token-paths'
 
 type PresetEntry = NonNullable<Config['presets']>[number]
 type ConfigSource = SourcedConfig['source']

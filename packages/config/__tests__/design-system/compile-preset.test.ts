@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { compilePreset } from '../src/lib-preset'
+import { compilePreset } from '../../src/design-system/compile-preset'
 
 describe('compilePreset', () => {
   let dir: string

@@ -1,13 +1,11 @@
 import type { ProjectCallbackKind, ProjectHooks, SerializedHookFilter } from '@pandacss/compiler-shared'
 import type { HookRegistry, UserConfig } from '@pandacss/types'
+import { compact } from './shared'
 
 export type HookSerializationCallbacks = Partial<Record<ProjectCallbackKind, Record<string, Function>>>
 
 type Sanitize = (value: unknown, path: string[], callbacks: HookSerializationCallbacks) => any
 type HashCallbackSource = (fn: Function) => string
-
-const compact = <T extends Record<string, any>>(value: T): T =>
-  Object.fromEntries(Object.entries(value ?? {}).filter(([, item]) => item !== undefined)) as T
 
 export interface PluginHookEntry<Name extends keyof HookRegistry> {
   pluginIndex: number
@@ -18,6 +16,7 @@ export interface PluginHookEntry<Name extends keyof HookRegistry> {
 export type HostHooks = {
   'codegen:prepare'?: Array<PluginHookEntry<'codegen:prepare'>>
   'codegen:done'?: Array<PluginHookEntry<'codegen:done'>>
+  'cssgen:done'?: Array<PluginHookEntry<'cssgen:done'>>
 }
 
 export function serializeHooks(

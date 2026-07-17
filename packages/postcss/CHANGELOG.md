@@ -1,102 +1,30 @@
 # @pandacss/postcss
 
+## 2.0.0-beta.9
+
+### Patch Changes
+
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
+  match. You get clearer errors for token conflicts and mismatched config.
+
 ## 2.0.0-beta.8
 
 ### Patch Changes
 
-- 72580e5: Fix PostCSS HMR style updates.
+- Fix PostCSS HMR style updates.
 
   Component edits now keep previous atoms available during refresh, and design-system source fallback files refresh
   through the driver instead of waiting for a restart.
-
-- Updated dependencies [72580e5]
-  - @pandacss/compiler-shared@2.0.0-beta.8
-  - @pandacss/compiler@2.0.0-beta.8
 
 ## 2.0.0-beta.7
 
 ### Patch Changes
 
-- 0a11fda: Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
+- Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
   updates its styles live, instead of leaving them stale until you restart the dev server.
-- Updated dependencies [97d142a]
-- Updated dependencies [0a11fda]
-  - @pandacss/compiler@2.0.0-beta.7
-  - @pandacss/compiler-shared@2.0.0-beta.7
-
-## 2.0.0-beta.6
-
-### Patch Changes
-
-- Updated dependencies [8a936bd]
-- Updated dependencies [82e7811]
-- Updated dependencies [b5a620d]
-- Updated dependencies [7b71a43]
-- Updated dependencies [d075c2b]
-- Updated dependencies [86504d6]
-  - @pandacss/compiler@2.0.0-beta.6
-  - @pandacss/compiler-shared@2.0.0-beta.6
-
-## 2.0.0-beta.5
-
-### Patch Changes
-
-- Updated dependencies [a9c6e47]
-  - @pandacss/compiler@2.0.0-beta.5
-  - @pandacss/compiler-shared@2.0.0-beta.5
-
-## 2.0.0-beta.4
-
-### Patch Changes
-
-- Updated dependencies [9521059]
-- Updated dependencies [74dab7b]
-- Updated dependencies [0202dba]
-- Updated dependencies [23580df]
-- Updated dependencies [5316642]
-- Updated dependencies [1378d4a]
-  - @pandacss/compiler@2.0.0-beta.4
-  - @pandacss/compiler-shared@2.0.0-beta.4
-
-## 2.0.0-beta.3
-
-### Patch Changes
-
-- Updated dependencies [2117c7a]
-- Updated dependencies [1d1ec6c]
-- Updated dependencies [21dc46a]
-- Updated dependencies [6a61a2d]
-- Updated dependencies [376d6f2]
-  - @pandacss/compiler@2.0.0-beta.3
-  - @pandacss/compiler-shared@2.0.0-beta.3
-
-## 2.0.0-beta.2
-
-### Patch Changes
-
-- Updated dependencies [bc39e0f]
-- Updated dependencies [ac3eba5]
-- Updated dependencies [adc8d7c]
-- Updated dependencies [0b77f58]
-  - @pandacss/compiler@2.0.0-beta.2
-  - @pandacss/compiler-shared@2.0.0-beta.2
-
-## 2.0.0-beta.1
-
-### Patch Changes
-
-- @pandacss/compiler@2.0.0-beta.1
-- @pandacss/compiler-shared@2.0.0-beta.1
 
 ## 2.0.0-beta.0
 
 ### Patch Changes
 
-- cf5cd89: Add an experimental PostCSS integration backed by the v2 compiler driver.
-- Updated dependencies [b567ae6]
-- Updated dependencies [8e66595]
-- Updated dependencies [cc30235]
-- Updated dependencies [939a3d9]
-- Updated dependencies [742d649]
-  - @pandacss/compiler@2.0.0-beta.0
-  - @pandacss/compiler-shared@2.0.0-beta.0
+- Add an experimental PostCSS integration backed by the v2 compiler driver.

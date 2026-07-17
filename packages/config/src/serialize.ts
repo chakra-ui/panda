@@ -8,9 +8,7 @@ import {
 import type { UserConfig } from '@pandacss/types'
 import { stringify } from 'javascript-stringify'
 import { serializeHooks, type HookSerializationCallbacks } from './hooks'
-
-const compact = <T extends Record<string, any>>(value: T): T =>
-  Object.fromEntries(Object.entries(value ?? {}).filter(([, item]) => item !== undefined)) as T
+import { compact } from './shared'
 
 const runtimeOnlyKeys = new Set(['hooks', 'plugins', 'presets', 'name'])
 

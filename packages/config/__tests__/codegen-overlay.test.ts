@@ -5,7 +5,7 @@ import {
   collectExportMissingDiagnostics,
   collectNameCollisionDiagnostics,
   type ResolvedDesignSystem,
-} from '../src/design-system'
+} from '../src/design-system/chain'
 
 function ds(
   overrides: Partial<ResolvedDesignSystem> & Pick<ResolvedDesignSystem, 'name' | 'specifier'>,

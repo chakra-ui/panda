@@ -1,63 +1,56 @@
 # @pandacss/types
 
-## 2.0.0-beta.8
+## 2.0.0-beta.9
 
-## 2.0.0-beta.7
+### Minor Changes
+
+- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize`
+  or PostCSS if you need to mutate CSS.
+
+### Patch Changes
+
+- Support `minify` as a top-level config key. `cssgen` reads it from config; `--minify` still overrides it.
 
 ## 2.0.0-beta.6
 
 ### Minor Changes
 
-- 7b71a43: Adopt a published design system with `designSystem: '@acme/ds'`.
+- Adopt a published design system with `designSystem: '@acme/ds'`.
 
   Panda reads the library's `panda.lib.json`, merges its preset below your config, and reuses its pre-extracted styles.
   If the design system needs a different Panda major version, Panda reports a clear error.
-
-## 2.0.0-beta.5
-
-## 2.0.0-beta.4
-
-## 2.0.0-beta.3
-
-## 2.0.0-beta.2
 
 ## 2.0.0-beta.1
 
 ### Patch Changes
 
-- 07eafef: Fix the `preset:resolved` hook missing its `utils` argument. Plugin authors can now use `omit` / `pick` /
+- Fix the `preset:resolved` hook missing its `utils` argument. Plugin authors can now use `omit` / `pick` /
   `traverse` inside `preset:resolved` (matching `config:resolved` and v1).
-
-## 2.0.0-beta.0
 
 ## 1.10.0
 
 ### Minor Changes
 
-- bbaa8b3: - Extract Vue, Svelte, and LightningCSS support into standalone plugins.
+- Extract Vue, Svelte, and LightningCSS support into standalone plugins.
   - Fix double CSS optimization in PostCSS plugin.
 
 ### Patch Changes
 
-- c31f3a2: Improve error handling architecture across all packages.
-- 8d3b6f8: Add support for generating theme tokens in `panda spec` output.
+- Improve error handling architecture across all packages.
+- Add support for generating theme tokens in `panda spec` output.
 
   Previously, tokens defined in the `themes` config were excluded from the spec output because they are registered as
   virtual tokens. Now, `panda spec` generates a `themes.json` file containing tokens and semantic tokens for each
   configured theme.
 
-- 44457bb: Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and
+- Use TypeScript 6.0 or later with Panda. This release updates static analysis and codegen to ts-morph v28 and
   TypeScript 6.0.2.
-
-## 1.9.1
-
-## 1.9.0
 
 ## 1.8.2
 
 ### Patch Changes
 
-- 331d1a5: Update `csstype` from 3.1.3 to 3.2.3, which adds support for newer CSS properties including:
+- Update `csstype` from 3.1.3 to 3.2.3, which adds support for newer CSS properties including:
 
   - Anchor positioning: `anchorName`, `anchorScope`, `positionAnchor`, `positionArea`, `positionTry`,
     `positionTryFallbacks`, `positionTryOrder`, `positionVisibility`
@@ -72,26 +65,18 @@
 
 ### Patch Changes
 
-- 3c86c29: Expand `TextStyleProperty` type (consumed by `TextStyle` → `TextStyles` types) to include support for
+- Expand `TextStyleProperty` type (consumed by `TextStyle` → `TextStyles` types) to include support for
   `text-box` properties:
 
   - [`text-box`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box)
   - [`text-box-edge`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge)
   - [`text-box-trim`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-trim)
 
-## 1.8.0
-
-## 1.7.3
-
-## 1.7.2
-
-## 1.7.1
-
 ## 1.7.0
 
 ### Minor Changes
 
-- 86b30b1: Add `panda spec` command to generate specification files for your theme (useful for documentation). This
+- Add `panda spec` command to generate specification files for your theme (useful for documentation). This
   command generates JSON specification files containing metadata, examples, and usage information.
 
   ```bash
@@ -126,17 +111,11 @@
   import recipes from 'styled-system/specs/recipes'
   ```
 
-## 1.6.1
-
-## 1.6.0
-
-## 1.5.1
-
 ## 1.5.0
 
 ### Minor Changes
 
-- 91c65ff: Add support for controlling the color palette generation via `theme.colorPalette` property.
+- Add support for controlling the color palette generation via `theme.colorPalette` property.
 
   ```ts
   // Disable color palette generation completely
@@ -167,21 +146,11 @@
   })
   ```
 
-## 1.4.3
-
-## 1.4.2
-
-## 1.4.1
-
-## 1.4.0
-
-## 1.3.1
-
 ## 1.3.0
 
 ### Patch Changes
 
-- 70efd73: Enhanced composition types with comprehensive CSS property support
+- Enhanced composition types with comprehensive CSS property support
 
   **Text Style Properties:** Added these properties to `theme.textStyles`:
 
@@ -197,13 +166,11 @@
   - Background shorthands (`bg`, `bgColor`, `bgImage`)
   - Styling (`borderImage*`, `outline*`, `color`)
 
-## 1.2.0
-
 ## 1.1.0
 
 ### Minor Changes
 
-- 47a0011: Add missing WebKit CSS properties to resolve TypeScript errors. Adds support for:
+- Add missing WebKit CSS properties to resolve TypeScript errors. Adds support for:
 
   - `WebkitUserDrag` / `-webkit-user-drag` - Controls element drag behavior
   - `WebkitAppRegion` / `-webkit-app-region` - For Electron window controls
@@ -213,15 +180,13 @@
 
   Fixes TypeScript errors when using these vendor-prefixed properties in Panda CSS.
 
-- e8ec0aa: Add support for `preset:resolved` hook to pick/omit specific preset properties.
-
-## 1.0.1
+- Add support for `preset:resolved` hook to pick/omit specific preset properties.
 
 ## 1.0.0
 
 ### Major Changes
 
-- a3bcbea: Stable release of PandaCSS
+- Stable release of PandaCSS
 
   ### Style Context
 
@@ -275,42 +240,22 @@
   </CardRoot>
   ```
 
-## 0.54.0
-
-## 0.53.7
-
-## 0.53.6
-
-## 0.53.5
-
-## 0.53.4
-
-## 0.53.3
-
-## 0.53.2
-
-## 0.53.1
-
 ## 0.53.0
 
 ### Minor Changes
 
-- 5286731: Add support for recent baseline and experimental css properties:
+- Add support for recent baseline and experimental css properties:
 
   - **Size interpolation:** fieldSizing, interpolateSize
   - **Text rendering:** textWrapMode, textWrapStyle and textSpacingTrim
   - **[Experimental] Anchor positioning:** anchorName, anchorScope, positionAnchor, positionArea, positionTry,
     positionTryFallback, positionTryOrder, positionVisibility
 
-## 0.52.0
-
-## 0.51.1
-
 ## 0.51.0
 
 ### Minor Changes
 
-- d68ad1f: **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
+- **[BREAKING]**: Fix issue where Next.js build might fail intermittently due to version mismatch between
   internal `ts-morph` and userland `typescript`.
 
   > The current version of TS supported is `5.6.2`
@@ -319,7 +264,7 @@
 
 ### Minor Changes
 
-- fea78c7: Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how
+- Adds support for static analysis of used tokens and recipe variants. It helps to get a birds-eye view of how
   your design system is used and answers the following questions:
 
   - What tokens are most used?
@@ -332,7 +277,7 @@
 
   > Still work in progress but we're excited to get your feedback!
 
-- ad89b90: Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
+- Add support for semantic tokens in composite shadow `blur`, `offsetX`, `offsetY` and `spread` properties.
 
   This enables the use of semantic tokens in composite shadow properties.
 
@@ -363,7 +308,7 @@
 
 ### Minor Changes
 
-- 97a0e4d: Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate
+- Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate
   animation properties.
 
   > Pairing animation styles with text styles and layer styles can make your styles a lot cleaner.
@@ -416,17 +361,11 @@
   This feature will drive consumers to lean in towards CSS for animations rather than JS. Composing animation names is a
   powerful feature we should encourage consumers to use.
 
-## 0.48.1
-
-## 0.48.0
-
-## 0.47.1
-
 ## 0.47.0
 
 ### Minor Changes
 
-- 5e683ee: Add support for cursor token types. Useful for tokenizing cursor types for interactive components.
+- Add support for cursor token types. Useful for tokenizing cursor types for interactive components.
 
   Here's an example of how to define a cursor token in your `panda.config.ts` file:
 
@@ -454,19 +393,11 @@
 
   This makes it easy to manage cursor styles across your application.
 
-## 0.46.1
-
-## 0.46.0
-
-## 0.45.2
-
-## 0.45.1
-
 ## 0.45.0
 
 ### Minor Changes
 
-- dcc9053: Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or
+- Remove `base` from `css` or pattern style objects. The `base` keyword is only supported in recipes or
   conditional styles.
 
   **Before**
@@ -499,13 +430,13 @@
 
 ### Minor Changes
 
-- c99cb75: Add a `name` mandatory key in `Preset` to make it easy to target one specifically
+- Add a `name` mandatory key in `Preset` to make it easy to target one specifically
 
 ## 0.43.0
 
 ### Minor Changes
 
-- e952f82: Add support for defining global font face in config and preset
+- Add support for defining global font face in config and preset
 
   ```ts
   // pandacss.config.js
@@ -565,9 +496,9 @@
 
 ### Minor Changes
 
-- e157dd1: - Ensure classnames are unique across utilities to prevent potential clash
+- Ensure classnames are unique across utilities to prevent potential clash
   - Add support for `4xl` border radius token
-- f00ff88: BREAKING: Remove `emitPackage` config option,
+- BREAKING: Remove `emitPackage` config option,
 
   tldr: use `importMap` instead for absolute paths (e.g can be used for component libraries)
 
@@ -590,37 +521,27 @@
 
 ### Patch Changes
 
-- 19c3a2c: Minor changes to the format of the `panda analyze --output coverage.json` file
-- 17a1932: [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
+- Minor changes to the format of the `panda analyze --output coverage.json` file
+- [BREAKING] Removed the legacy `config.optimize` option because it was redundant. Now, we always optimize the
   generated CSS where possible.
-
-## 0.41.0
-
-## 0.40.1
-
-## 0.40.0
-
-## 0.39.2
-
-## 0.39.1
 
 ## 0.39.0
 
 ### Minor Changes
 
-- 221c9a2: Add support for more typography related properties in text styles such as `fontFeatureSettings`,
+- Add support for more typography related properties in text styles such as `fontFeatureSettings`,
   `fontPalette`, etc.
 
 ### Patch Changes
 
-- c3e797e: Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
+- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
   autocompletion was available.
 
 ## 0.38.0
 
 ### Minor Changes
 
-- bc09d89: Add support for deprecating tokens, utilities, patterns and config recipes.
+- Add support for deprecating tokens, utilities, patterns and config recipes.
 
   Set the `deprecated` property to `true` to enable deprecation warnings. Alternatively, you can also set it to a string
   to provide a custom migration message.
@@ -696,7 +617,7 @@
 
 ### Patch Changes
 
-- 96b47b3: Add support for array values in the special `css` property for the JSX factory and JSX patterns
+- Add support for array values in the special `css` property for the JSX factory and JSX patterns
 
   This makes it even easier to merge styles from multiple sources.
 
@@ -732,7 +653,7 @@
 
 ### Patch Changes
 
-- 74dfb3e: - Fix `sva` typings, the `splitVariantProps` was missing from the `d.ts` file
+- Fix `sva` typings, the `splitVariantProps` was missing from the `d.ts` file
 
   - Add a `getVariantProps` helper to the slot recipes API (`sva` and `config slot recipes`)
 
@@ -776,7 +697,7 @@
 
 ### Patch Changes
 
-- 885963c: - Fix an issue where the `compoundVariants` classes would not be present at runtime when using
+- Fix an issue where the `compoundVariants` classes would not be present at runtime when using
   `config recipes`
 
   ```ts
@@ -863,7 +784,7 @@
 
 ### Minor Changes
 
-- bcfb5c5: ### Fixed
+- ### Fixed
 
   - Fix className collisions between utilities by using unique class names per property in the default preset.
 
@@ -914,7 +835,7 @@
   />
   ```
 
-- 6247dfb: Allow multiple `importMap` (or multiple single import entrypoints if using the object format).
+- Allow multiple `importMap` (or multiple single import entrypoints if using the object format).
 
   It can be useful to use a component library's `styled-system` while also using your own `styled-system` in your app.
 
@@ -938,13 +859,13 @@
 
 ### Patch Changes
 
-- bd0cb07: Fix theme variants typings
+- Fix theme variants typings
 
 ## 0.36.0
 
 ### Minor Changes
 
-- 2691f16: Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes and
+- Add `config.themes` to easily define and apply a theme on multiple tokens at once, using data attributes and
   CSS variables.
 
   Can pre-generate multiple themes with token overrides as static CSS, but also dynamically import and inject a theme
@@ -1192,7 +1113,7 @@
   })
   ```
 
-- fabdabe: ## Changes
+- ## Changes
 
   When using `strictTokens: true`, if you didn't have `tokens` (or `semanticTokens`) on a given `Token category`, you'd
   still not be able to use _any_ values in properties bound to that category. Now, `strictTokens` will correctly only
@@ -1246,7 +1167,7 @@
 
 ### Patch Changes
 
-- 861a280: Introduce a new `globalVars` config option to define type-safe
+- Introduce a new `globalVars` config option to define type-safe
   [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) and custom
   [CSS @property](https://developer.mozilla.org/en-US/docs/Web/CSS/@property).
 
@@ -1283,17 +1204,17 @@
   })
   ```
 
-- 340f4f1: Fix `Expression produces a union type that is too complex to represent` with `splitCssProps` because of
+- Fix `Expression produces a union type that is too complex to represent` with `splitCssProps` because of
   `JsxStyleProps` type
 
 ## 0.35.0
 
 ### Patch Changes
 
-- 50db354: Add missing reducers to properly return the results of hooks for `config:resolved` and `parser:before`
-- f6befbf: Add missing methods for ParserResultInterface (which can be used in the `parser:after` hook to dynamically
+- Add missing reducers to properly return the results of hooks for `config:resolved` and `parser:before`
+- Add missing methods for ParserResultInterface (which can be used in the `parser:after` hook to dynamically
   add extraction results from your own logic, like using a custom parser)
-- a0c4d27: Add an optional `className` key in `sva` config which will can be used to target slots in the DOM.
+- Add an optional `className` key in `sva` config which will can be used to target slots in the DOM.
 
   Each slot will contain a `${className}__${slotName}` class in addition to the atomic styles.
 
@@ -1326,17 +1247,11 @@
   }
   ```
 
-## 0.34.3
-
-## 0.34.2
-
-## 0.34.1
-
 ## 0.34.0
 
 ### Minor Changes
 
-- d1516c8: Deprecates `emitPackage`, it will be removed in the next major version.
+- Deprecates `emitPackage`, it will be removed in the next major version.
 
   ## Why?
 
@@ -1361,7 +1276,7 @@
 
 ### Minor Changes
 
-- fde37d8: Add support for element level css reset via `preflight.level`. Learn more
+- Add support for element level css reset via `preflight.level`. Learn more
   [here](https://github.com/chakra-ui/panda/discussions/1992).
 
   Setting `preflight.level` to `'element'` applies the reset directly to the individual elements that have the scope
@@ -1394,13 +1309,13 @@
 
 ### Patch Changes
 
-- cca50d5: Add a `group` to every utility in the `@pandacss/preset-base`, this helps Panda tooling organize utilities.
+- Add a `group` to every utility in the `@pandacss/preset-base`, this helps Panda tooling organize utilities.
 
 ## 0.32.1
 
 ### Patch Changes
 
-- a032375: Add a way to create config conditions with nested at-rules/selectors
+- Add a way to create config conditions with nested at-rules/selectors
 
   ```ts
   export default defaultConfig({
@@ -1432,13 +1347,13 @@
   }
   ```
 
-- 89ffb6b: Add missing config dependencies for some `styled-system/types` files
+- Add missing config dependencies for some `styled-system/types` files
 
 ## 0.32.0
 
 ### Minor Changes
 
-- de4d9ef: Allow `config.hooks` to be shared in `plugins`
+- Allow `config.hooks` to be shared in `plugins`
 
   For hooks that can transform Panda's internal state by returning something (like `cssgen:done` and `codegen:prepare`),
   each hook instance will be called sequentially and the return result (if any) of the previous hook call is passed to
@@ -1446,7 +1361,7 @@
 
 ### Patch Changes
 
-- 60cace3: This change allows the user to set `jsxFramework` to any string to enable extracting JSX components.
+- This change allows the user to set `jsxFramework` to any string to enable extracting JSX components.
 
   ***
 
@@ -1462,21 +1377,21 @@
 
 ### Minor Changes
 
-- a17fe387: - Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
+- Add a `config.polyfill` option that will polyfill the CSS @layer at-rules using a
   [postcss plugin](https://www.npmjs.com/package/@csstools/postcss-cascade-layers)
   - And `--polyfill` flag to `panda` and `panda cssgen` commands
 
 ### Patch Changes
 
-- 8f36f9af: Add a `RecipeVariant` type to get the variants in a strict object from `cva` function. This complements the
+- Add a `RecipeVariant` type to get the variants in a strict object from `cva` function. This complements the
   `RecipeVariantprops` type that extracts the variant as optional props, mostly intended for JSX components.
-- 2d69b340: Fix `styled` factory nested composition with `cva`
+- Fix `styled` factory nested composition with `cva`
 
 ## 0.30.2
 
 ### Patch Changes
 
-- 6b829cab: Allow configuring the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX.
+- Allow configuring the `matchTag` / `matchTagProp` functions to customize the way Panda extracts your JSX.
   This can be especially useful when working with libraries that have properties that look like CSS properties but are
   not and should be ignored.
 
@@ -1508,13 +1423,11 @@
   })
   ```
 
-## 0.30.1
-
 ## 0.30.0
 
 ### Patch Changes
 
-- 74485ef1: Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all
+- Add `utils` functions in the `config:resolved` hook, making it easy to apply transformations after all
   presets have been merged.
 
   For example, this could be used if you want to use most of a preset but want to completely omit a few things, while
@@ -1533,7 +1446,7 @@
   })
   ```
 
-- ab32d1d7: Introduce 3 new hooks:
+- Introduce 3 new hooks:
 
   ## `tokens:created`
 
@@ -1551,13 +1464,11 @@
           formatTokenName: (path) => '
   ```
 
-## 0.29.1
-
 ## 0.29.0
 
 ### Minor Changes
 
-- 5fcdeb75: Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
+- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
   to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
   This function allows you to mix two colors together, and we use it to change the opacity of a color using the
@@ -1655,7 +1566,7 @@
   });
   ```
 
-- 250b4d11: ### Container Query Theme
+- ### Container Query Theme
 
   Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
 
@@ -1768,7 +1679,7 @@
   }
   ```
 
-- a2fb5cc6: - Add support for explicitly specifying config related files that should trigger a context reload on change.
+- Add support for explicitly specifying config related files that should trigger a context reload on change.
 
   > We automatically track the config file and (transitive) files imported by the config file as much as possible, but
   > sometimes we might miss some. You can use this option as a workaround for those edge cases.
@@ -1792,7 +1703,7 @@
 
 ### Minor Changes
 
-- f58f6df2: Refactor `config.hooks` to be much more powerful, you can now:
+- Refactor `config.hooks` to be much more powerful, you can now:
 
   - Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
     load all `recipes` from a folder
@@ -1852,21 +1763,19 @@
 
 ### Patch Changes
 
-- 1ed4df77: Fix issue where HMR doesn't work when tsconfig paths is used.
-
-## 0.27.2
+- Fix issue where HMR doesn't work when tsconfig paths is used.
 
 ## 0.27.1
 
 ### Patch Changes
 
-- ee9341db: Fix issue in windows environments where HMR doesn't work in webpack projects.
+- Fix issue in windows environments where HMR doesn't work in webpack projects.
 
 ## 0.27.0
 
 ### Minor Changes
 
-- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+- Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
 
   ## Public changes:
 
@@ -1885,37 +1794,31 @@
   - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
     and rename it to `transformStyles` to better convey what it does
 
-## 0.26.2
-
-## 0.26.1
-
 ## 0.26.0
 
 ### Patch Changes
 
-- b5cf6ee6: Add `borderWidths` token to types
-- 58df7d74: Remove eject type from presets
+- Add `borderWidths` token to types
+- Remove eject type from presets
 
 ## 0.25.0
 
 ### Patch Changes
 
-- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+- Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
 
 ## 0.24.2
 
 ### Patch Changes
 
-- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
   seen as a truthy value
-
-## 0.24.1
 
 ## 0.24.0
 
 ### Patch Changes
 
-- f6881022: Add `patterns` to `config.staticCss`
+- Add `patterns` to `config.staticCss`
 
   ***
 
@@ -2061,13 +1964,11 @@
   }
   ```
 
-## 0.23.0
-
 ## 0.22.1
 
 ### Patch Changes
 
-- 8f4ce97c: Fix `slotRecipes` typings,
+- Fix `slotRecipes` typings,
   [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
   weren't added to `config.slotRecipes`
 
@@ -2075,13 +1976,13 @@
 
 ### Patch Changes
 
-- 526c6e34: Fix issue where static-css types was not exported.
+- Fix issue where static-css types was not exported.
 
 ## 0.21.0
 
 ### Patch Changes
 
-- 5b061615: Add a shortcut for the `config.importMap` option
+- Add a shortcut for the `config.importMap` option
 
   You can now also use a string to customize the base import path and keep the default entrypoints:
 
@@ -2104,7 +2005,7 @@
   }
   ```
 
-- 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+- Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
   import { defineRecipe } from '@pandacss/dev'
@@ -2139,13 +2040,11 @@
   })
   ```
 
-## 0.20.1
-
 ## 0.20.0
 
 ### Minor Changes
 
-- 904aec7b: - Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+- Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
 
   - Add support for extending `staticCss` defined in presets
 
@@ -2174,64 +2073,44 @@
 
 ### Patch Changes
 
-- 24ee49a5: - Add support for granular config change detection
+- Add support for granular config change detection
   - Improve the `codegen` experience by only rewriting files affecteds by a config change
 
 ## 0.19.0
 
 ### Patch Changes
 
-- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+- Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
 
   > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
 
-- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
-
-## 0.18.3
-
-## 0.18.2
-
-## 0.18.1
-
-## 0.18.0
-
-## 0.17.5
+- Fix issue where css variables were not supported in layer styles and text styles types.
 
 ## 0.17.4
 
 ### Patch Changes
 
-- fa77080a: Fix issue where types package was not built correctly.
+- Fix issue where types package was not built correctly.
 
 ## 0.17.3
 
 ### Patch Changes
 
-- 529a262e: Fix regression in types due to incorrect `package.json` structure
-
-## 0.17.2
-
-## 0.17.1
+- Fix regression in types due to incorrect `package.json` structure
 
 ## 0.17.0
 
 ### Patch Changes
 
-- fc4688e6: Export all types from @pandacss/types, which will also export all types exposed in the outdir/types
+- Export all types from @pandacss/types, which will also export all types exposed in the outdir/types
 
   Also make the `config.prefix` object Partial so that each key is optional.
-
-## 0.16.0
-
-## 0.15.5
-
-## 0.15.4
 
 ## 0.15.3
 
 ### Patch Changes
 
-- 1ac2011b: Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
+- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
   instead of being tied to the `outdir`
 
   You can now do things like leverage the native package.json
@@ -2277,7 +2156,7 @@
   })
   ```
 
-- 58743bc4: - Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
+- Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
   https://github.com/chakra-ui/panda/pull/1410)
   - Fix `ExtendableTheme` (specifically make the `RecipeConfig` Partial inside the `theme: { extend: { ... } }` object),
     same for slotRecipes
@@ -2286,59 +2165,47 @@
 
 ### Patch Changes
 
-- 26a788c0: - Switch to interface for runtime types
+- Switch to interface for runtime types
   - Create custom partial types for each config object property
-
-## 0.15.1
 
 ## 0.15.0
 
 ### Patch Changes
 
-- 4bc515ea: Allow `string`s as `zIndex` and `opacity` tokens in order to support css custom properties
-- 39298609: Make the types suggestion faster (updated `DeepPartial`)
+- Allow `string`s as `zIndex` and `opacity` tokens in order to support css custom properties
+- Make the types suggestion faster (updated `DeepPartial`)
 
 ## 0.14.0
 
 ### Minor Changes
 
-- 8106b411: Add `generator:done` hook to perform actions when codegen artifacts are emitted.
+- Add `generator:done` hook to perform actions when codegen artifacts are emitted.
 
 ### Patch Changes
 
-- e6459a59: The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
+- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
   there's no way to get it from there.
-- 6f7ee198: Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
+- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
   with `{cvaFn}.raw`
-
-## 0.13.1
-
-## 0.13.0
-
-## 0.12.2
-
-## 0.12.1
-
-## 0.12.0
 
 ## 0.11.1
 
 ### Patch Changes
 
-- 23b516f4: Make layers customizable
+- Make layers customizable
 
 ## 0.11.0
 
 ### Patch Changes
 
-- 5b95caf5: Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
+- Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
   dependency
 
 ## 0.10.0
 
 ### Minor Changes
 
-- a669f4d5: Introduce new slot recipe features.
+- Introduce new slot recipe features.
 
   Slot recipes are useful for styling composite or multi-part components easily.
 
@@ -2393,7 +2260,7 @@
 
 ### Patch Changes
 
-- 24e783b3: Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
+- Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
   further reduce it.
 
   `config.jsxStyleProps`:
@@ -2404,13 +2271,13 @@
     - `<styled.div />` and `styled("div")` aren't valid
     - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
 
-- 386e5098: Update `RecipeVariantProps` to support slot recipes
+- Update `RecipeVariantProps` to support slot recipes
 
 ## 0.9.0
 
 ### Minor Changes
 
-- c08de87f: ### Breaking
+- ### Breaking
 
   - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
     intent of the property more clearly.
@@ -2464,22 +2331,20 @@
 
 ### Patch Changes
 
-- be0ad578: Fix parser issue with TS path mappings
+- Fix parser issue with TS path mappings
 
 ## 0.7.0
 
 ### Patch Changes
 
-- a9c189b7: Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
-
-## 0.6.0
+- Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
 
 ## 0.5.1
 
 ### Patch Changes
 
-- 8c670d60: Remove `breakpoints` from Tokens type
-- 1ed239cd: Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
+- Remove `breakpoints` from Tokens type
+- Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
 
   before:
 
@@ -2501,7 +2366,7 @@
   }
   ```
 
-- 78ed6ed4: Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
+- Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
   parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
   path `src/styled-system`
 
@@ -2509,7 +2374,7 @@
 
 ### Minor Changes
 
-- ead9eaa3: Add support for tagged template literal version.
+- Add support for tagged template literal version.
 
   This features is pure css approach to writing styles, and can be a great way to migrate from styled-components and
   emotion.
@@ -2539,7 +2404,7 @@
 
 ### Minor Changes
 
-- 5b344b9c: Add support for disabling shorthand props
+- Add support for disabling shorthand props
 
   ```ts
   import { defineConfig } from '@pandacss/dev'
@@ -2552,38 +2417,33 @@
 
 ### Patch Changes
 
-- c7b42325: Add types for supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`)
-
-## 0.3.2
+- Add types for supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`)
 
 ## 0.3.1
 
 ### Patch Changes
 
-- efd79d83: Baseline release for the launch
+- Baseline release for the launch
 
 ## 0.3.0
 
 ### Minor Changes
 
-- 6d81ee9e: - Set default jsx factory to 'styled'
+- Set default jsx factory to 'styled'
   - Fix issue where pattern JSX was not being generated correctly when properties are not defined
 
 ## 0.0.2
 
 ### Patch Changes
 
-- c308e8be: Allow asynchronous presets
-- fb40fff2: Initial release of all packages
+- Allow asynchronous presets
+- Initial release of all packages
 
   - Internal AST parser for TS and TSX
   - Support for defining presets in config
   - Support for design tokens (core and semantic)
   - Add `outExtension` key to config to allow file extension options for generated javascript. `.js` or `.mjs`
   - Add `jsxElement` option to patterns, to allow specifying the jsx element rendered by the patterns.
-
-- Updated dependencies [fb40fff2]
-  - @pandacss/extractor@0.0.2
 
 * path.join('-'), }) }, }, })
 
@@ -2627,7 +2487,7 @@ export default defineConfig({
 })
 ```
 
-- d5977c24: - Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
+- Add a `--logfile` flag to the `panda`, `panda codegen`, `panda cssgen` and `panda debug` commands.
 
   - Add a `logfile` option to the postcss plugin
 
@@ -2648,13 +2508,11 @@ export default defineConfig({
   }
   ```
 
-## 0.29.1
-
 ## 0.29.0
 
 ### Minor Changes
 
-- 5fcdeb75: Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
+- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
   to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
   This function allows you to mix two colors together, and we use it to change the opacity of a color using the
@@ -2752,7 +2610,7 @@ export default defineConfig({
   });
   ```
 
-- 250b4d11: ### Container Query Theme
+- ### Container Query Theme
 
   Improve support for CSS container queries by adding a new `containerNames` and `containerSizes` theme options.
 
@@ -2865,7 +2723,7 @@ export default defineConfig({
   }
   ```
 
-- a2fb5cc6: - Add support for explicitly specifying config related files that should trigger a context reload on change.
+- Add support for explicitly specifying config related files that should trigger a context reload on change.
 
   > We automatically track the config file and (transitive) files imported by the config file as much as possible, but
   > sometimes we might miss some. You can use this option as a workaround for those edge cases.
@@ -2889,7 +2747,7 @@ export default defineConfig({
 
 ### Minor Changes
 
-- f58f6df2: Refactor `config.hooks` to be much more powerful, you can now:
+- Refactor `config.hooks` to be much more powerful, you can now:
 
   - Tweak the config after it has been resolved (after presets are loaded and merged), this could be used to dynamically
     load all `recipes` from a folder
@@ -2949,21 +2807,19 @@ export default defineConfig({
 
 ### Patch Changes
 
-- 1ed4df77: Fix issue where HMR doesn't work when tsconfig paths is used.
-
-## 0.27.2
+- Fix issue where HMR doesn't work when tsconfig paths is used.
 
 ## 0.27.1
 
 ### Patch Changes
 
-- ee9341db: Fix issue in windows environments where HMR doesn't work in webpack projects.
+- Fix issue in windows environments where HMR doesn't work in webpack projects.
 
 ## 0.27.0
 
 ### Minor Changes
 
-- 84304901: Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
+- Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
 
   ## Public changes:
 
@@ -2982,37 +2838,31 @@ export default defineConfig({
   - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
     and rename it to `transformStyles` to better convey what it does
 
-## 0.26.2
-
-## 0.26.1
-
 ## 0.26.0
 
 ### Patch Changes
 
-- b5cf6ee6: Add `borderWidths` token to types
-- 58df7d74: Remove eject type from presets
+- Add `borderWidths` token to types
+- Remove eject type from presets
 
 ## 0.25.0
 
 ### Patch Changes
 
-- 59fd291c: Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
+- Add a way to generate the staticCss for _all_ recipes (and all variants of each recipe)
 
 ## 0.24.2
 
 ### Patch Changes
 
-- 71e82a4e: Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
+- Fix a regression with utility where boolean values would be treated as a string, resulting in "false" being
   seen as a truthy value
-
-## 0.24.1
 
 ## 0.24.0
 
 ### Patch Changes
 
-- f6881022: Add `patterns` to `config.staticCss`
+- Add `patterns` to `config.staticCss`
 
   ***
 
@@ -3158,13 +3008,11 @@ export default defineConfig({
   }
   ```
 
-## 0.23.0
-
 ## 0.22.1
 
 ### Patch Changes
 
-- 8f4ce97c: Fix `slotRecipes` typings,
+- Fix `slotRecipes` typings,
   [the recently added `recipe.staticCss`](https://github.com/chakra-ui/panda/pull/1765) added to `config.recipes`
   weren't added to `config.slotRecipes`
 
@@ -3172,13 +3020,13 @@ export default defineConfig({
 
 ### Patch Changes
 
-- 526c6e34: Fix issue where static-css types was not exported.
+- Fix issue where static-css types was not exported.
 
 ## 0.21.0
 
 ### Patch Changes
 
-- 5b061615: Add a shortcut for the `config.importMap` option
+- Add a shortcut for the `config.importMap` option
 
   You can now also use a string to customize the base import path and keep the default entrypoints:
 
@@ -3201,7 +3049,7 @@ export default defineConfig({
   }
   ```
 
-- 105f74ce: Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
+- Add a way to specify a recipe's `staticCss` options from inside a recipe config, e.g.:
 
   ```js
   import { defineRecipe } from '@pandacss/dev'
@@ -3236,13 +3084,11 @@ export default defineConfig({
   })
   ```
 
-## 0.20.1
-
 ## 0.20.0
 
 ### Minor Changes
 
-- 904aec7b: - Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
+- Add support for `staticCss` in presets allowing you create sharable, pre-generated styles
 
   - Add support for extending `staticCss` defined in presets
 
@@ -3271,64 +3117,44 @@ export default defineConfig({
 
 ### Patch Changes
 
-- 24ee49a5: - Add support for granular config change detection
+- Add support for granular config change detection
   - Improve the `codegen` experience by only rewriting files affecteds by a config change
 
 ## 0.19.0
 
 ### Patch Changes
 
-- 61831040: Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
+- Fix issue where typescript error is shown in recipes when `exactOptionalPropertyTypes` is set.
 
   > To learn more about this issue, see [this issue](https://github.com/chakra-ui/panda/issues/1688)
 
-- 89f86923: Fix issue where css variables were not supported in layer styles and text styles types.
-
-## 0.18.3
-
-## 0.18.2
-
-## 0.18.1
-
-## 0.18.0
-
-## 0.17.5
+- Fix issue where css variables were not supported in layer styles and text styles types.
 
 ## 0.17.4
 
 ### Patch Changes
 
-- fa77080a: Fix issue where types package was not built correctly.
+- Fix issue where types package was not built correctly.
 
 ## 0.17.3
 
 ### Patch Changes
 
-- 529a262e: Fix regression in types due to incorrect `package.json` structure
-
-## 0.17.2
-
-## 0.17.1
+- Fix regression in types due to incorrect `package.json` structure
 
 ## 0.17.0
 
 ### Patch Changes
 
-- fc4688e6: Export all types from @pandacss/types, which will also export all types exposed in the outdir/types
+- Export all types from @pandacss/types, which will also export all types exposed in the outdir/types
 
   Also make the `config.prefix` object Partial so that each key is optional.
-
-## 0.16.0
-
-## 0.15.5
-
-## 0.15.4
 
 ## 0.15.3
 
 ### Patch Changes
 
-- 1ac2011b: Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
+- Add a new `config.importMap` option that allows you to specify a custom module specifier to import from
   instead of being tied to the `outdir`
 
   You can now do things like leverage the native package.json
@@ -3374,7 +3200,7 @@ export default defineConfig({
   })
   ```
 
-- 58743bc4: - Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
+- Fix `ExtendableUtilityConfig` typings after a regression in 0.15.2 (due to
   https://github.com/chakra-ui/panda/pull/1410)
   - Fix `ExtendableTheme` (specifically make the `RecipeConfig` Partial inside the `theme: { extend: { ... } }` object),
     same for slotRecipes
@@ -3383,59 +3209,47 @@ export default defineConfig({
 
 ### Patch Changes
 
-- 26a788c0: - Switch to interface for runtime types
+- Switch to interface for runtime types
   - Create custom partial types for each config object property
-
-## 0.15.1
 
 ## 0.15.0
 
 ### Patch Changes
 
-- 4bc515ea: Allow `string`s as `zIndex` and `opacity` tokens in order to support css custom properties
-- 39298609: Make the types suggestion faster (updated `DeepPartial`)
+- Allow `string`s as `zIndex` and `opacity` tokens in order to support css custom properties
+- Make the types suggestion faster (updated `DeepPartial`)
 
 ## 0.14.0
 
 ### Minor Changes
 
-- 8106b411: Add `generator:done` hook to perform actions when codegen artifacts are emitted.
+- Add `generator:done` hook to perform actions when codegen artifacts are emitted.
 
 ### Patch Changes
 
-- e6459a59: The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
+- The utility transform fn now allow retrieving the token object with the raw value/conditions as currently
   there's no way to get it from there.
-- 6f7ee198: Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
+- Add `{svaFn}.raw` function to get raw styles and allow reusable components with style overrides, just like
   with `{cvaFn}.raw`
-
-## 0.13.1
-
-## 0.13.0
-
-## 0.12.2
-
-## 0.12.1
-
-## 0.12.0
 
 ## 0.11.1
 
 ### Patch Changes
 
-- 23b516f4: Make layers customizable
+- Make layers customizable
 
 ## 0.11.0
 
 ### Patch Changes
 
-- 5b95caf5: Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
+- Add a hook call when the final `styles.css` content has been generated, remove cyclic (from an unused hook)
   dependency
 
 ## 0.10.0
 
 ### Minor Changes
 
-- a669f4d5: Introduce new slot recipe features.
+- Introduce new slot recipe features.
 
   Slot recipes are useful for styling composite or multi-part components easily.
 
@@ -3490,7 +3304,7 @@ export default defineConfig({
 
 ### Patch Changes
 
-- 24e783b3: Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
+- Reduce the overall `outdir` size, introduce the new config `jsxStyleProps` option to disable style props and
   further reduce it.
 
   `config.jsxStyleProps`:
@@ -3501,13 +3315,13 @@ export default defineConfig({
     - `<styled.div />` and `styled("div")` aren't valid
     - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
 
-- 386e5098: Update `RecipeVariantProps` to support slot recipes
+- Update `RecipeVariantProps` to support slot recipes
 
 ## 0.9.0
 
 ### Minor Changes
 
-- c08de87f: ### Breaking
+- ### Breaking
 
   - Renamed the `name` property of a config recipe to `className`. This is to ensure API consistency and express the
     intent of the property more clearly.
@@ -3561,22 +3375,20 @@ export default defineConfig({
 
 ### Patch Changes
 
-- be0ad578: Fix parser issue with TS path mappings
+- Fix parser issue with TS path mappings
 
 ## 0.7.0
 
 ### Patch Changes
 
-- a9c189b7: Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
-
-## 0.6.0
+- Fix issue where `splitVariantProps` in cva doesn't resolve the correct types
 
 ## 0.5.1
 
 ### Patch Changes
 
-- 8c670d60: Remove `breakpoints` from Tokens type
-- 1ed239cd: Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
+- Remove `breakpoints` from Tokens type
+- Add feature where `config.staticCss.recipes` can now use [`*`] to generate all variants of a recipe.
 
   before:
 
@@ -3598,7 +3410,7 @@ export default defineConfig({
   }
   ```
 
-- 78ed6ed4: Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
+- Fix issue where using a nested outdir like `src/styled-system` with a baseUrl like `./src` would result on
   parser NOT matching imports like `import { container } from "styled-system/patterns";` cause it would expect the full
   path `src/styled-system`
 
@@ -3606,7 +3418,7 @@ export default defineConfig({
 
 ### Minor Changes
 
-- ead9eaa3: Add support for tagged template literal version.
+- Add support for tagged template literal version.
 
   This features is pure css approach to writing styles, and can be a great way to migrate from styled-components and
   emotion.
@@ -3636,7 +3448,7 @@ export default defineConfig({
 
 ### Minor Changes
 
-- 5b344b9c: Add support for disabling shorthand props
+- Add support for disabling shorthand props
 
   ```ts
   import { defineConfig } from '@pandacss/dev'
@@ -3649,35 +3461,30 @@ export default defineConfig({
 
 ### Patch Changes
 
-- c7b42325: Add types for supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`)
-
-## 0.3.2
+- Add types for supported at-rules (`@media`, `@layer`, `@container`, `@supports`, and `@page`)
 
 ## 0.3.1
 
 ### Patch Changes
 
-- efd79d83: Baseline release for the launch
+- Baseline release for the launch
 
 ## 0.3.0
 
 ### Minor Changes
 
-- 6d81ee9e: - Set default jsx factory to 'styled'
+- Set default jsx factory to 'styled'
   - Fix issue where pattern JSX was not being generated correctly when properties are not defined
 
 ## 0.0.2
 
 ### Patch Changes
 
-- c308e8be: Allow asynchronous presets
-- fb40fff2: Initial release of all packages
+- Allow asynchronous presets
+- Initial release of all packages
 
   - Internal AST parser for TS and TSX
   - Support for defining presets in config
   - Support for design tokens (core and semantic)
   - Add `outExtension` key to config to allow file extension options for generated javascript. `.js` or `.mjs`
   - Add `jsxElement` option to patterns, to allow specifying the jsx element rendered by the patterns.
-
-- Updated dependencies [fb40fff2]
-  - @pandacss/extractor@0.0.2

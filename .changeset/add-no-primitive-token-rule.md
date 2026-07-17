@@ -5,4 +5,4 @@
 '@pandacss/eslint-plugin': patch
 ---
 
-Add token inspection metadata and `no-primitive-token` to enforce semantic token usage when a matching semantic token category exists.
+Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching category exists.

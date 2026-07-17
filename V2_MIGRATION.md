@@ -1,8 +1,8 @@
 # Panda CSS v2 — beta guide and migration
 
 > v2 is in beta (`2.0.0-beta`). You write the same Panda you already know — `css()`, recipes, patterns, tokens,
-> conditions, JSX props. What changed is the engine underneath. This guide is for v1 users trying the beta, and for
-> anyone starting fresh on v2.
+> conditions, JSX props. What changed is the compiler. This guide is for v1 users trying the beta, and for anyone
+> starting fresh on v2.
 >
 > New to Panda? Go straight to [Get started (new project)](#get-started-new-project).
 
@@ -26,7 +26,7 @@ What you get:
 - A smaller install. The `ts-morph` / `ts-evaluator` dependency tree is gone.
 - The same CSS. Output stays in parity with v1 (see [What changed](#what-changed-in-v2)).
 
-The authoring API is stable. The internal package layout and a few CLI surfaces are not finished yet — see
+The authoring API is stable. The internal package layout and a few CLI surfaces are still unfinished. See
 [Still being finalized](#still-being-finalized).
 
 ---
@@ -204,13 +204,11 @@ The engine aims for the same CSS as v1. These are the differences you'll notice,
 - **Grouped `@media` / `@supports`.** Rules that share a wrapper are grouped before they're written.
 - **Modern breakpoint syntax.** Responsive conditions use range syntax, `@media (width >= Nrem)`, with px and em
   normalized to `rem`.
-- **Container queries sort by size.** Container conditions sort by resolved length across every axis (`width`,
-  `inline-size`, `height`, `block-size`), in both modern (`>=`/`<`) and legacy (`min-*`/`max-*`) forms. This fixes
-  mobile-first ordering for theme container breakpoints.
-- **Eager compound variants.** Compound variants emit at build time by default; runtime combo classes still apply for
-  dynamic usage. In v2 they become **named classes** in `@layer recipes.compound_variants` (v1 atomized compound `css`
-  into `@layer utilities` and merged at runtime). Set `optimize.smartCompoundVariants: true` to emit only extracted
-  combinations instead of every permutation.
+- **Container queries sort by size.** Theme container conditions keep mobile-first order across `width`,
+  `inline-size`, `height`, and `block-size` (modern and legacy forms).
+- **Eager compound variants.** Compound variants emit at build time as named classes in
+  `@layer recipes.compound_variants` (v1 atomized them into utilities). Runtime combo classes still apply for dynamic
+  usage. Set `optimize.smartCompoundVariants: true` to emit only extracted combinations.
 
 ### Config: `optimize`
 
@@ -278,8 +276,8 @@ production.
 
 ### Types: smaller `.d.ts` and `isolatedDeclarations`
 
-v2 reshapes the `cva` and `sva` return types so they're keyed by a clean props type, not the full variant record. That
-means you can annotate an exported inline recipe with only its variant keys and keep the CSS out of your `.d.ts`:
+`cva` / `sva` return types are keyed by a clean props type, not the full variant record. Annotate an exported recipe with
+only its variant keys and keep the CSS out of your `.d.ts`:
 
 ```tsx
 import { cva } from 'styled-system/css'
@@ -324,10 +322,7 @@ Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. `panda.
 
 ### `--cpu-prof` is now `--profile`
 
-v1's `--cpu-prof` recorded a Node `.cpuprofile` via `node:inspector`. It's gone in v2 — the hot path moved into the
-Rust engine behind NAPI, so a Node CPU profiler only sees the thin JS dispatcher, not where time actually goes.
-
-Use `--profile` instead, on any command:
+`--cpu-prof` is gone. Use `--profile` on any command — it sees time in the Rust engine, not only the Node side:
 
 ```bash
 # ❌ v1
@@ -337,9 +332,9 @@ panda build --cpu-prof
 panda build --profile
 ```
 
-It writes `.panda/trace.json` (a Chrome trace — open in `chrome://tracing` or `ui.perfetto.dev`) and
-`.panda/timings.json` (per-span totals and the slowest files). See [Profiling a slow
-build](https://panda-css.com/docs/references/cli#profiling-a-slow-build) for the full flag reference.
+It writes `.panda/trace.json` (open in `chrome://tracing` or `ui.perfetto.dev`) and `.panda/timings.json` (per-span
+totals and slowest files). See
+[Profiling a slow build](https://panda-css.com/docs/references/cli#profiling-a-slow-build).
 
 ### MCP moved out of the CLI
 
@@ -360,30 +355,25 @@ pnpm dlx @pandacss/mcp
 
 ### Packages folded into the engine
 
-Several v1 packages were internals of the old Node pipeline. They no longer exist in v2 — that work moved into the Rust
-engine behind `@pandacss/compiler`. Remove any direct imports of:
+These v1 internals are gone — their work lives in `@pandacss/compiler` now. Drop direct imports of:
 
 `@pandacss/core`, `@pandacss/extractor`, `@pandacss/generator`, `@pandacss/node`, `@pandacss/parser`,
 `@pandacss/token-dictionary`, `@pandacss/is-valid-prop`, `@pandacss/logger`, `@pandacss/reporter`, the standalone plugin
 packages, and the Astro `@pandacss/studio`.
 
-Most apps only depend on `@pandacss/dev` plus a bundler or PostCSS plugin, so this changes nothing for them. It only
-bites if you reached into Panda's internals.
+If you only use `@pandacss/dev` plus Vite or PostCSS, you're fine.
 
-Kept and published on the beta: `@pandacss/dev`, `@pandacss/cli`, `@pandacss/compiler`, `@pandacss/compiler-wasm`,
+Still published on beta: `@pandacss/dev`, `@pandacss/cli`, `@pandacss/compiler`, `@pandacss/compiler-wasm`,
 `@pandacss/compiler-shared`, `@pandacss/config`, `@pandacss/postcss`, `@pandacss/vite`, `@pandacss/types`,
 `@pandacss/preset-base`, `@pandacss/preset-panda`, `@pandacss/mcp`.
 
 ### PostCSS plugin is experimental
 
-`@pandacss/postcss` v2 runs on the new compiler driver and is experimental during the beta. If it gives you trouble, the
-Vite plugin or the CLI build is the steadier path right now.
+`@pandacss/postcss` v2 is experimental in the beta. If it misbehaves, use the Vite plugin or `panda build` instead.
 
 ### Hooks moved to plugins
 
-Hooks are not gone in v2. What changed is where hooks live and which v1 hooks still exist.
-
-In v2, hooks live under named plugins, not a root `hooks` object:
+Hooks still exist. Put them on named plugins, not a root `hooks` object:
 
 ```ts
 import { defineConfig } from '@pandacss/dev'
@@ -403,43 +393,52 @@ export default defineConfig({
 })
 ```
 
-Supported v2 beta hooks:
+Supported in the beta:
 
 - `config:resolved`
 - `preset:resolved`
 - `parser:before`
 - `codegen:prepare`
 - `codegen:done`
-
-Removed v1 hooks:
-
 - `cssgen:done`
+
+Gone from v1:
+
 - `context:created`
 - `parser:after`
 - `config:change`
 - `tokens:created`
 - `utility:created`
 - similar v1 engine hooks
+- `parser:before.configure(...)` (JSX match rules) — v2 `parser:before` only transforms file content
 
-If you used `cssgen:done` to strip unused token variables or keyframes from the final CSS, use
-`optimize.removeUnusedTokens` / `removeUnusedKeyframes` instead. For other final CSS transforms, run a PostCSS step
-after Panda.
+`cssgen:done` is observe-only. It runs after final CSS is produced (CLI, Vite, PostCSS) with
+`{ artifact, content, path?, … }` and does not rewrite the string:
 
-`parser:before` still runs after Panda reads a file and before it parses the source. Use it for source transforms in
-mixed codebases.
+```ts
+export default defineConfig({
+  plugins: [
+    {
+      name: 'analytics',
+      hooks: {
+        'cssgen:done': ({ content, path }) => {
+          report({ bytes: content.length, path })
+        },
+      },
+    },
+  ],
+})
+```
 
-The v1 `parser:before.configure(...)` API for changing JSX extraction rules is removed. v2 `parser:before` receives file
-content and returns transformed content.
-
-If your v1 `parser:before` used `configure({ matchTag, matchTagProp })` to avoid Chakra v2 / Panda JSX name collisions,
-that `configure` API is the removed part. Do not expect the old callback to run unchanged.
+Used v1 `cssgen:done` to strip unused tokens or keyframes? Use `optimize.removeUnusedTokens` /
+`removeUnusedKeyframes` instead. For other CSS transforms, run PostCSS after Panda.
 
 ### `createStyleContext` is now two helpers
 
-`createStyleContext` is removed from the generated `styled-system/jsx`. Two helpers replace it, one per recipe kind:
+`createStyleContext` is gone from `styled-system/jsx`. Use one helper per recipe kind:
 
-- `createRecipeContext` — for a config recipe (`cva`). Returns `{ withContext }`.
-- `createSlotRecipeContext` — for a slot recipe (`sva`). Returns `{ withRootProvider, withProvider, withContext }`.
+- `createRecipeContext` — config recipe (`cva`). Returns `{ withContext }`.
+- `createSlotRecipeContext` — slot recipe (`sva`). Returns `{ withRootProvider, withProvider, withContext }`.
 
 ```tsx
 // ❌ v1 — one helper for both
@@ -482,7 +481,8 @@ const Button = withContext('button')
 | `panda debug`     | Write bug-report artifacts under `<outdir>/debug`.                                           |
 | `panda codegen`   | Advanced: generate the `styled-system` output only.                                          |
 | `panda cssgen`    | Advanced: generate CSS only.                                                                 |
-| `panda buildinfo` | Advanced: emit design-system build metadata.                                                 |
+| `panda lib`       | Publish a design system (`panda.lib.json` + build info + preset). See [Design systems](#design-systems). |
+| `panda buildinfo` | Write build-info JSON only. Prefer `panda lib` for libraries.                                |
 
 `panda inspect` and `panda validate` are removed in v2. Use `panda info` and `panda doctor`.
 
@@ -494,17 +494,87 @@ Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` i
 
 ## CSS output for monorepos
 
-v2 keeps `panda cssgen --minimal` for packages that should emit usage CSS without duplicating foundation CSS. It writes
-recipes and utilities only; reset, base, and tokens should be emitted once by the app/root build.
+`panda cssgen --minimal` emits package usage CSS (recipes + utilities) without duplicating reset, base, and tokens.
+Emit the full stylesheet once from the app/root.
 
-Recommended monorepo workflow:
+1. **App/root:** `panda build` or `panda cssgen` for the full stylesheet.
+2. **Per package:** `panda cssgen --minimal` for local usage CSS.
+3. **Published libraries:** `panda lib`, then consumers use `designSystem` (see [Design systems](#design-systems)).
 
-1. **App/root:** run a normal `panda build` or `panda cssgen` to emit the full stylesheet once.
-2. **Per package:** run `panda cssgen --minimal` to emit package-local usage CSS.
-3. **Published design systems:** ship `panda buildinfo` and hydrate in consumers (see `design-notes/build-info.md`).
+v1's positional layer names (`preflight`, `global`, `tokens`, …) and positional glob override aren't in the v2 CLI yet.
 
-The v1 positional layer names (`preflight`, `global`, `tokens`, …) and positional glob override are not part of the v2
-CLI surface yet.
+---
+
+## Design systems
+
+Ship a component library so apps share your tokens, recipes, and CSS without re-scanning your source. Replaces v1's
+`panda ship`.
+
+### Shipping a library
+
+```sh
+# Monorepo / publish source — inferred fallback files often point at ../src/...
+panda lib
+
+# Built-only package ("files": ["dist"]) — set fallback globs yourself (relative to lib outdir)
+panda lib --files './**/*.{js,mjs}'
+```
+
+Writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs` under `dist` (default), and syncs package
+`exports`. Build info is what consumers hydrate; the preset carries tokens, recipes, and patterns.
+
+Fallback `files` are only used when build info is missing or stale. Without `--files`, they're inferred from the scan.
+If package.json only publishes `dist`, inferred `../src/...` paths won't ship — `panda lib` drops them and warns.
+`--files` skips that filter. You own the source→dist mapping; Panda won't guess it.
+
+### Using it in an app
+
+```ts
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  designSystem: '@acme/design-system',
+  include: ['./src/**/*.{ts,tsx}'],
+})
+```
+
+Panda loads `panda.lib.json`, merges the preset (and any parent), and applies the build info. You don't set `importMap`
+separately.
+
+Don't put `panda.buildinfo.json` in `include` — that globs source, and JSON fails to parse. `designSystem` is enough.
+
+Run `panda build` (or `panda codegen`) after wiring it. Import from your local `outdir`, not the design-system package.
+Local codegen re-emits merged types (including parent tokens); the published package may not ship a typed styled-system
+yet:
+
+```ts
+import { css } from '../styled-system/css' // local outdir (merged types)
+// not: import { css } from '@acme/design-system/css'
+```
+
+Extraction still matches both package roots and the local outdir. Local imports are the beta convention for types until
+a published styled-system lands. See [`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
+
+### Chaining libraries
+
+In a chain (`base → examples → components → app`), each package runs `panda lib` on its own source. Parent atoms stay in
+the parent; consumers compose the chain through `designSystem`.
+
+### Stamping a peer range
+
+The peer range in the manifest comes from your `@pandacss/dev` peer. `workspace:`, `catalog:`, and `npm:` become a
+portable range. Override with `--panda <range>` when you need an exact stamp:
+
+```sh
+panda lib --panda '^2.0.0'
+```
+
+### Known gaps
+
+- **Package-root types.** Prefer the local `outdir` import above. `@acme/ds/css` can fail typechecking even when CSS is
+  fine. Re-run local codegen so merged tokens land in `outdir`.
+- **Missing tokens.** A token path the library doesn't define still emits as literal CSS with no build warning. Types
+  reject it. See [`design-notes/design-system-manifest.md`](design-notes/design-system-manifest.md).
 
 ---
 
@@ -524,9 +594,8 @@ Known gaps in the beta. Expect them to change before stable:
 
 ## Feedback
 
-It's a beta, so bug reports are the most useful thing you can send. Attach a `panda debug` dump (`panda debug` →
-`<outdir>/debug`) so maintainers can reproduce. For a slow build, add `--profile` (`panda debug --outdir <dir>
---profile`) so the dump includes `trace.json` and `timings.json` too.
+Found a bug? Open an issue with a `panda debug` dump (`panda debug` → `<outdir>/debug`). For a slow build, add
+`--profile` so the dump includes `trace.json` and `timings.json`.
 
 - Issues: <https://github.com/chakra-ui/panda/issues>
 - Docs: <https://panda-css.com>

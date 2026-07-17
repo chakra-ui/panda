@@ -323,6 +323,11 @@ interface CssgenOptions {
    * @default 'true'
    */
   layers?: Partial<CascadeLayers>
+  /**
+   * Whether to minify the emitted css. The `--minify` CLI flag overrides this.
+   * @default false
+   */
+  minify?: boolean
 }
 
 export interface OptimizeOptions {

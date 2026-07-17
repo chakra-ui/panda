@@ -2,8 +2,4 @@
 '@pandacss/compiler': patch
 ---
 
-Speed up `css()`, style-prop, and recipe resolution: the generated `memo()` cache now hashes flat style objects directly
-instead of always falling back to `JSON.stringify`. Nested and responsive values still use the original path, so caching
-stays correct.
-
-SSR throughput up 30-40% across all three in a variant-button benchmark.
+Speed up `css()`, style props, and recipe resolution in generated runtimes. Repeated calls with the same flat style objects hit the cache about 30–40% faster in SSR benchmarks.

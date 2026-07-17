@@ -1,29 +1,28 @@
 # @pandacss/cli
 
-## 2.0.0-beta.8
+## 2.0.0-beta.9
+
+### Minor Changes
+
+- Add `--profile` to any command. It writes `trace.json` and `timings.json` to `.panda/` (or into
+  `panda debug --outdir`). Open the trace in `chrome://tracing` or `ui.perfetto.dev`. Replaces v1's `--cpu-prof`.
 
 ### Patch Changes
 
-- Updated dependencies [72580e5]
-  - @pandacss/compiler-shared@2.0.0-beta.8
-  - @pandacss/compiler@2.0.0-beta.8
-  - @pandacss/config@2.0.0-beta.8
-
-## 2.0.0-beta.7
-
-### Patch Changes
-
-- Updated dependencies [97d142a]
-- Updated dependencies [0a11fda]
-  - @pandacss/compiler@2.0.0-beta.7
-  - @pandacss/compiler-shared@2.0.0-beta.7
-  - @pandacss/config@2.0.0-beta.7
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
+  match. You get clearer errors for token conflicts and mismatched config.
+- Faster CLI startup: flag parsing no longer loads zod on every `panda` run.
+- Support `minify` as a top-level config key. `cssgen` reads it from config; `--minify` still overrides it.
+- `panda lib` omits inferred `files` that package.json `"files"` would not publish, and warns with a `--files`
+  tip for dist-only packages.
+- Fix `panda --watch` crashing on macOS when FSEvents drops events. The watcher now re-scans instead of
+  exiting.
 
 ## 2.0.0-beta.6
 
 ### Minor Changes
 
-- b5a620d: Add `panda lib` to package a Panda design system.
+- Add `panda lib` to package a Panda design system.
 
   It scans your library source, writes `panda.lib.json`, `panda.buildinfo.json`, and `panda.preset.mjs`, then syncs the
   package exports. It can also run in watch mode.
@@ -33,65 +32,22 @@
 
 ### Patch Changes
 
-- 8a936bd: Add `panda analyze` reports. You can write JSON, open a static HTML report, or run the live report UI.
-- Updated dependencies [8a936bd]
-- Updated dependencies [82e7811]
-- Updated dependencies [b5a620d]
-- Updated dependencies [7b71a43]
-- Updated dependencies [d075c2b]
-- Updated dependencies [86504d6]
-  - @pandacss/compiler@2.0.0-beta.6
-  - @pandacss/compiler-shared@2.0.0-beta.6
-  - @pandacss/config@2.0.0-beta.6
-
-## 2.0.0-beta.5
-
-### Patch Changes
-
-- Updated dependencies [a9c6e47]
-  - @pandacss/compiler@2.0.0-beta.5
-  - @pandacss/compiler-shared@2.0.0-beta.5
-  - @pandacss/config@2.0.0-beta.5
+- Add `panda analyze` reports. You can write JSON, open a static HTML report, or run the live report UI.
 
 ## 2.0.0-beta.4
 
 ### Minor Changes
 
-- 9521059: Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`,
+- Add a `--include` flag to the scanning commands (`panda`, `build`, `dev`, `check`, `cssgen`, `debug`, `info`,
   `buildinfo`) to override the config's `include` globs for a single run. The flag is repeatable and accepts
   comma-separated values, and replaces (does not merge with) the configured globs — useful for scanning a subset of
   files in CI or one-off builds.
-
-### Patch Changes
-
-- Updated dependencies [9521059]
-- Updated dependencies [74dab7b]
-- Updated dependencies [0202dba]
-- Updated dependencies [23580df]
-- Updated dependencies [5316642]
-- Updated dependencies [1378d4a]
-  - @pandacss/compiler@2.0.0-beta.4
-  - @pandacss/compiler-shared@2.0.0-beta.4
-  - @pandacss/config@2.0.0-beta.4
-
-## 2.0.0-beta.3
-
-### Patch Changes
-
-- Updated dependencies [2117c7a]
-- Updated dependencies [1d1ec6c]
-- Updated dependencies [21dc46a]
-- Updated dependencies [6a61a2d]
-- Updated dependencies [376d6f2]
-  - @pandacss/compiler@2.0.0-beta.3
-  - @pandacss/compiler-shared@2.0.0-beta.3
-  - @pandacss/config@2.0.0-beta.3
 
 ## 2.0.0-beta.2
 
 ### Patch Changes
 
-- 0b77f58: Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
+- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
   triggers extra reloads/rebuilds for no-op codegen and CSS writes.
 
   The compiler write APIs now use object params consistently:
@@ -100,19 +56,11 @@
   - `writeCss({ outfile, cwd, emitLayerDeclaration })`
   - `writeSplitCss({ outdir, cwd })`
 
-- Updated dependencies [bc39e0f]
-- Updated dependencies [ac3eba5]
-- Updated dependencies [adc8d7c]
-- Updated dependencies [0b77f58]
-  - @pandacss/compiler@2.0.0-beta.2
-  - @pandacss/compiler-shared@2.0.0-beta.2
-  - @pandacss/config@2.0.0-beta.2
-
 ## 2.0.0-beta.1
 
 ### Minor Changes
 
-- 213eb37: Add the default `panda` command (no subcommand) that runs the full build — codegen then cssgen — in a single
+- Add the default `panda` command (no subcommand) that runs the full build — codegen then cssgen — in a single
   driver pass, restoring the v1 ergonomic where the common case is one word.
 
   - Shares the build across both passes (one config load, merged diagnostics, one summary line).
@@ -121,7 +69,7 @@
   - Named subcommands (`codegen`, `cssgen`, `init`, …) must come first (`panda codegen …`); a leading flag runs the
     default build (`panda --watch`).
 
-- 213eb37: Add the `panda debug` command — dumps the resolved config and per-file extraction for bug reports.
+- Add the `panda debug` command — dumps the resolved config and per-file extraction for bug reports.
 
   - writes `info.json` (platform, node, config path), `config.json`, `<file>.extract.json` per source, and the project
     `styles.css` under `<outdir>/debug`.
@@ -130,7 +78,7 @@
 
 ### Patch Changes
 
-- 88095b5: Scaffold and install the default presets in `panda init` so new projects are styled out of the box.
+- Scaffold and install the default presets in `panda init` so new projects are styled out of the box.
 
   v2 resolves presets explicitly — a config without `presets` produces a bare system (no `bg`/`color` utilities, no
   `fontSizes`/spacing scales, no `_hover`/`_active` conditions). The generated `panda.config.ts` now includes
@@ -143,7 +91,7 @@
     succeeds.
   - re-running `init` on an existing config doesn't touch dependencies; `--force` re-scaffolds and installs.
 
-- f7315fe: Improve the CLI surface with standard devtool commands and version output.
+- Improve the CLI surface with standard devtool commands and version output.
 
   - Add `panda build`, `panda dev`, `panda check`, `panda info`, and `panda doctor`.
   - Keep advanced `codegen`, `cssgen`, and `buildinfo` commands working.
@@ -153,17 +101,11 @@
   - Validate CLI flags with typed schemas and report invalid values clearly.
   - Fix `panda --version` and `panda -v` to print the CLI package version.
 
-- Updated dependencies [349e7ef]
-- Updated dependencies [07eafef]
-  - @pandacss/config@2.0.0-beta.1
-  - @pandacss/compiler@2.0.0-beta.1
-  - @pandacss/compiler-shared@2.0.0-beta.1
-
 ## 2.0.0-beta.0
 
 ### Major Changes
 
-- 4f7e283: Panda CSS v2 — the compiler hot path is rewritten in Rust (Oxc-based engine) and shipped via the native
+- Panda CSS v2 — the compiler hot path is rewritten in Rust (Oxc-based engine) and shipped via the native
   `@pandacss/compiler` binding, with a `@pandacss/compiler-wasm` build for the browser. This is the first `2.0.0-beta`
   pre-release.
 
@@ -174,14 +116,3 @@
   - v1 (`1.x`) remains on the `latest` dist-tag; v2 betas publish under the `beta` dist-tag.
 
   Since `@pandacss/**` is a fixed version group, this major bump applies to every published Panda package.
-
-### Patch Changes
-
-- Updated dependencies [b567ae6]
-- Updated dependencies [8e66595]
-- Updated dependencies [cc30235]
-- Updated dependencies [939a3d9]
-- Updated dependencies [742d649]
-  - @pandacss/compiler@2.0.0-beta.0
-  - @pandacss/compiler-shared@2.0.0-beta.0
-  - @pandacss/config@2.0.0-beta.0

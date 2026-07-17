@@ -1,6 +1,6 @@
 import type { UserConfig } from '@pandacss/types'
 import { isDeepStrictEqual } from 'node:util'
-import { isPlainObject } from './shared'
+import { isPlainObject } from '../shared'
 
 export function collectTokenPaths(config: Pick<UserConfig, 'theme'> | undefined): string[] {
   return [...collectTokenEntries(config).keys()].sort()

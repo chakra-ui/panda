@@ -5,7 +5,4 @@
 '@pandacss/types': minor
 ---
 
-Adopt a published design system with `designSystem: '@acme/ds'`.
-
-Panda reads the library's `panda.lib.json`, merges its preset below your config, and reuses its pre-extracted styles. If
-the design system needs a different Panda major version, Panda reports a clear error.
+Use a published design system with `designSystem: '@acme/ds'`. Panda reads `panda.lib.json`, merges the preset below your config, and reuses pre-extracted styles. Version mismatches report a clear error.

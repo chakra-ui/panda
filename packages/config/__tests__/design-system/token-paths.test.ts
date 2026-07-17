@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { collectTokenPaths } from '../src/token-paths'
+import { collectTokenPaths } from '../../src/design-system/token-paths'
 
 describe('collectTokenPaths', () => {
   it('collects from theme.tokens and theme.semanticTokens', () => {

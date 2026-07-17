@@ -86,6 +86,21 @@ split it with a heading.
 - ❌ `## Advanced`
 - ✅ `## Usage in custom utilities`
 
+## Changelogs and changesets
+
+Release notes are for people upgrading, not a dump of the git log.
+
+- **Only versions with user-facing changes.** If a package release is empty, or the only entry would be "Updated
+  dependencies", omit that version from the changelog. Lockfiles and git history already track bumps.
+- **Lead with the impact.** One or two short sentences. Names users see (`panda lib`, `designSystem`, `--profile`). Skip
+  root-cause essays and impl detail.
+- **Skip commit hashes and dependency lists.** They add noise; the prose should stand alone.
+- **Same bar for `.changeset/` files.** Concise user-visible copy — the changelog inherits it.
+
+❌ Empty `## 2.0.0-beta.8` / `### Patch Changes` with nothing under it  
+❌ A version whose only line is `Updated dependencies`  
+✅ Only ship a version section when there's something a user should know
+
 ## Before / after
 
 - ❌ "Panda v2 introduces a powerful, blazing-fast Rust engine that seamlessly unlocks next-level performance."
@@ -101,3 +116,4 @@ split it with a heading.
 - Any word you can delete without losing meaning? Delete it.
 - Any claim without a specific behind it? Add the specific, or cut the claim.
 - Did you say what's still rough or unfinished?
+- For changelogs: any empty or deps-only version sections? Cut them.

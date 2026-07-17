@@ -183,6 +183,9 @@ importers:
       '@pandacss/config':
         specifier: workspace:*
         version: link:../config
+      '@pandacss/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.7.1

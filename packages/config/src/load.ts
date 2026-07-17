@@ -9,7 +9,7 @@ import { diffClassNameOptions } from './normalize'
 import { resolveAuthoredPresetsForLoad, type DesignSystemCompatibilityContext } from './preset'
 import { createConfigSnapshot } from './serialize'
 import { isPlainObject } from './shared'
-import { collectTokenEntries, resolveUserTokenPathsAfterHooks, type TokenEntries } from './token-paths'
+import { collectTokenEntries, resolveUserTokenPathsAfterHooks, type TokenEntries } from './design-system/token-paths'
 import type { LoadConfigOptions, LoadConfigResult } from './types'
 
 /**
@@ -71,6 +71,7 @@ export async function loadConfig(options: LoadConfigOptions): Promise<LoadConfig
     hostHooks: {
       'codegen:prepare': collectPluginHookHandlers(resolved, 'codegen:prepare'),
       'codegen:done': collectPluginHookHandlers(resolved, 'codegen:done'),
+      'cssgen:done': collectPluginHookHandlers(resolved, 'cssgen:done'),
     },
     dependencies: dependencyList,
     ...(authored.metadata ? { metadata: authored.metadata } : {}),

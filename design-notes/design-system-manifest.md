@@ -209,7 +209,8 @@ re-exports:
 
 Only categories the codegen actually emitted are added, so a design system with no recipes never exports `./recipes`.
 The `recipes`/`patterns`/`jsx` categories also get a `/*` wildcard for deep imports. It preserves existing root exports,
-including string and conditional root export forms.
+including string, array, and conditional root export forms. Overwriting a subpath whose value differs from Panda's emits
+`design_system_export_overwritten`.
 
 ### Fallback files in workspaces and published packages
 
@@ -242,6 +243,11 @@ panda lib --files './**/*.{js,mjs}'
 
 Do not guess `src/*` to `dist/*`. Node can resolve package exports, but it cannot tell Panda how a library's build
 mapped source files to output files. The package author owns that contract.
+
+When package.json `"files"` would not publish an inferred fallback path (classic: `"files": ["dist"]` while inference
+points at `../src/...`), `panda lib` omits those paths from the manifest and warns with
+`design_system_files_not_publishable` instead of shipping a recovery list that fail-closes after install. Explicit
+`--files` skips that filter.
 
 ### Monorepo task runners own the chain
 
@@ -558,6 +564,8 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_option_mismatch`        | warning/error | class-name options differ; fallback re-extracts or fails closed |
 | `design_system_token_conflict`         | info          | design system and app define overlapping token paths            |
 | `design_system_artifact_conflict`      | warning       | design system and app both define the same recipe/pattern       |
+| `design_system_export_overwritten`     | warning       | `panda lib` overwrote a differing package.json export subpath   |
+| `design_system_files_not_publishable`  | warning       | inferred fallback `files` would not ship in the npm tarball     |
 
 Errors stop the build. Warnings continue only when Panda has a clear source fallback. Token conflicts are grouped once
 per design-system package, and the app config wins them. CLI exit status and `--max-warnings` are calculated from the
