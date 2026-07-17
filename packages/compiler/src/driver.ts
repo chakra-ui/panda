@@ -419,7 +419,7 @@ function exportConflictDiagnostics(name: string, conflicts: string[]): Diagnosti
       code: 'design_system_export_overwritten',
       severity: 'warning',
       category: 'designSystem',
-      message: `\`panda lib\` overwrote the existing ${paths} export${plural ? 's' : ''} in ${JSON.stringify(name)}'s package.json. Remove ${plural ? 'them' : 'it'} if Panda should own ${plural ? 'these paths' : 'this path'}.`,
+      message: `\`panda lib\` overwrote the existing ${paths} export${plural ? 's' : ''} in ${JSON.stringify(name)}'s package.json. Restore or rename ${plural ? 'them' : 'it'} if you still need the previous target${plural ? 's' : ''}.`,
     },
   ]
 }

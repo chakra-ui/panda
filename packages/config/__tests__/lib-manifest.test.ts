@@ -104,6 +104,17 @@ describe('lib-manifest', () => {
     expect(JSON.parse(result.json).exports['./preset']).toBe('./dist/panda.preset.mjs')
   })
 
+  test('syncExports reports a conflict when overwriting a conditional export with a string path', () => {
+    const result = syncExports({
+      packageJson: JSON.stringify({
+        name: '@acme/ds',
+        exports: { './preset': { import: './custom/preset.js' } },
+      }),
+      entries: { './preset': './dist/panda.preset.mjs' },
+    })
+    expect(result.conflicts).toEqual(['./preset'])
+  })
+
   test('syncExports does not report a conflict when the subpath value is identical', () => {
     const result = syncExports({
       packageJson: JSON.stringify({ name: '@acme/ds', exports: { './preset': './dist/panda.preset.mjs' } }),

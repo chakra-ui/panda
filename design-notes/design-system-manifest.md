@@ -202,7 +202,8 @@ field.
 }
 ```
 
-It preserves existing root exports, including string and conditional root export forms.
+It preserves existing root exports, including string, array, and conditional root export forms. Overwriting a subpath
+whose value differs from Panda's emits `design_system_export_overwritten`.
 
 ### Fallback files in workspaces and published packages
 
@@ -550,6 +551,7 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_buildinfo_stale`        | warning/error | build info is unusable; fallback re-extracts or fails closed    |
 | `design_system_option_mismatch`        | warning/error | class-name options differ; fallback re-extracts or fails closed |
 | `design_system_token_conflict`         | info          | design system and app define overlapping token paths            |
+| `design_system_export_overwritten`     | warning       | `panda lib` overwrote a differing package.json export subpath   |
 
 Errors stop the build. Warnings continue only when Panda has a clear source fallback. Token conflicts are grouped once
 per design-system package, and the app config wins them. CLI exit status and `--max-warnings` are calculated from the

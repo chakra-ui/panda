@@ -528,9 +528,9 @@ It writes three artifacts to the output dir (`dist` by default) and syncs the pa
 - `panda.buildinfo.json` — portable extraction state (atoms and recipes) that consumers hydrate.
 - `panda.preset.mjs` — a compiled preset carrying your tokens, recipes, and patterns.
 
-`panda lib` stamps a peer Panda range into the manifest so a consumer can detect a version mismatch. It uses the
-package's `@pandacss/dev` peer dependency. Pass `--panda <range>` to set one explicitly, for example when your peer uses
-a workspace protocol like `catalog:` that can't be published as-is.
+`panda lib` stamps a peer Panda range into the manifest so a consumer can detect a version mismatch. It reads the
+package's `@pandacss/dev` peer dependency and rewrites package-manager protocols (`workspace:`, `catalog:`, `npm:`) to
+a portable range. Pass `--panda <range>` to override the stamped range.
 
 ### Consume the library
 
@@ -554,12 +554,12 @@ so a JSON artifact there fails with a parse error. `designSystem` is the only wi
 
 ### Known gaps
 
-- **Nested chains.** A single-level `designSystem` is the supported path. A deeper chain (`app → @acme/ds → @acme/base`)
-  still produces correct CSS and tokens but hydrates the full tree rather than each package's local slice, and parent
-  tokens may not yet appear in the consumer's generated types.
+- **Consumer token types.** Nested chains resolve and hydrate correctly, but parent design-system tokens may not yet
+  appear in the consumer's generated types. Overlay codegen is tracked in
+  [`design-notes/virtual-styled-system.md`](design-notes/virtual-styled-system.md).
 - **Unresolved tokens emit silently.** Referencing a token the design system doesn't define emits the raw value as
   literal CSS with no diagnostic; the generated types still (correctly) reject it. See
-  `design-notes/design-system-deferred.md` for the full ledger of deferred behavior.
+  [`design-notes/design-system-manifest.md`](design-notes/design-system-manifest.md).
 
 ---
 
