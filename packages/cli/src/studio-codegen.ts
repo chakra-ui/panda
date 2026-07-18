@@ -311,12 +311,15 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .type-name { font-size: 12px; font-weight: 600; }
 .type-value { font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace; }
 .type-sample { overflow: hidden; }
+.sort-control { margin-bottom: 18px; }
+.sort-control label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.sort-control select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--card); color: var(--fg); font-size: 12px; }
 .scale { display: grid; grid-template-columns: max-content max-content max-content 1fr; column-gap: 24px; row-gap: 12px; align-items: center; }
 .scale .s-name { font-size: 13px; font-weight: 600; }
 .scale .s-value { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
 .scale .s-px { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
 .scale .s-track { background: var(--card); border-radius: 999px; }
-.scale .s-bar { height: 12px; border-radius: 999px; background: var(--accent); }
+.scale .s-bar { height: 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 55%, transparent); }
 .anim-box { width: 44px; height: 44px; border-radius: 8px; background: var(--accent); }
 .ease-track { width: 100%; padding: 0 4px; }
 .ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
@@ -384,18 +387,39 @@ function scaleWidth(px, min, max) {
   return ((Math.log(px) - Math.log(min)) / (Math.log(max) - Math.log(min))) * 98 + 2
 }
 
-function renderScale(container, tokens) {
+function renderScaleWithSort(container, items) {
+  const control = document.createElement('div')
+  control.className = 'sort-control'
+  const label = document.createElement('label')
+  label.textContent = 'Sort'
+  const select = document.createElement('select')
+  select.innerHTML =
+    '<option value="asc">Ascending</option><option value="desc">Descending</option><option value="token">Token order</option>'
+  label.appendChild(select)
+  control.appendChild(label)
+  const scaleBody = document.createElement('div')
+  const draw = () => {
+    scaleBody.textContent = ''
+    renderScale(scaleBody, items, select.value)
+  }
+  select.addEventListener('change', draw)
+  draw()
+  container.append(control, scaleBody)
+}
+
+function renderScale(container, tokens, sort) {
   const rows = tokens
     .filter((token) => !token.name.includes('breakpoint-') && !Number.isNaN(toPx(token.value)))
     .map((token) => ({ token, px: toPx(token.value) }))
-    .sort((a, b) => a.px - b.px)
   if (rows.length === 0) return
 
-  const maxPx = rows[rows.length - 1].px || 1
-  const minPx = rows.find((row) => row.px > 0)?.px ?? maxPx
+  const byPx = rows.slice().sort((a, b) => a.px - b.px)
+  const maxPx = byPx[byPx.length - 1].px || 1
+  const minPx = byPx.find((row) => row.px > 0)?.px ?? maxPx
+  const ordered = sort === 'token' ? rows : sort === 'desc' ? byPx.slice().reverse() : byPx
   const scale = document.createElement('div')
   scale.className = 'scale'
-  for (const { token, px } of rows) {
+  for (const { token, px } of ordered) {
     const name = document.createElement('div')
     name.className = 's-name'
     name.textContent = token.name
@@ -594,7 +618,7 @@ function renderView(tokens, view, query) {
   const body = document.createElement('div')
   if (view === 'colors') renderColors(body, items)
   else if (TYPE_CATEGORIES.has(view)) renderType(body, view, items)
-  else if (SCALE_CATEGORIES.has(view)) renderScale(body, items)
+  else if (SCALE_CATEGORIES.has(view)) renderScaleWithSort(body, items)
   else {
     body.className = 'grid'
     for (const token of items) body.appendChild(makeCard(token))
