@@ -1,0 +1,205 @@
+.pg-tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 16px;
+}
+.pg-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.pg-tab {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pg-tab-active {
+  color: var(--fg);
+}
+
+.pg-tabs-line {
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.pg-tabs-line .pg-tab {
+  padding: 8px 4px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+.pg-tabs-line .pg-tab-active {
+  color: var(--colors-accent, var(--accent));
+  border-bottom-color: var(--colors-accent, var(--accent));
+}
+
+.pg-tabs-subtle .pg-tab {
+  border-radius: var(--radii-md, 8px);
+}
+.pg-tabs-subtle .pg-tab-active {
+  color: var(--colors-accent, var(--accent));
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 15%, transparent);
+}
+
+.pg-tabs-enclosed {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radii-md, 8px);
+  padding: 3px;
+  gap: 3px;
+}
+.pg-tabs-enclosed .pg-tab {
+  border-radius: calc(var(--radii-md, 8px) - 2px);
+}
+.pg-tabs-enclosed .pg-tab-active {
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 7px 11px;
+}
+
+.pg-tabs-outline {
+  border: 1px solid var(--border);
+  border-radius: var(--radii-md, 8px);
+  overflow: hidden;
+  gap: 0;
+}
+.pg-tabs-outline .pg-tab {
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+}
+.pg-tabs-outline .pg-tab:last-child {
+  border-right: none;
+}
+.pg-tabs-outline .pg-tab-active {
+  color: var(--colors-accent, var(--accent));
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 10%, transparent);
+}
+
+.pg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pg-control-label {
+  font-size: 14px;
+  color: var(--fg);
+}
+
+.pg-checkbox-item,
+.pg-radio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.pg-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radii-md, 8px);
+  flex-shrink: 0;
+  color: var(--bg);
+}
+.pg-checkbox-solid {
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.pg-checkbox-outline {
+  border: 1px solid var(--border);
+  background: transparent;
+}
+.pg-checkbox-subtle {
+  border: 1px solid transparent;
+  background: var(--card);
+}
+.pg-checkbox.pg-checked.pg-checkbox-solid {
+  border-color: var(--colors-accent, var(--accent));
+  background: var(--colors-accent, var(--accent));
+  color: var(--bg);
+}
+.pg-checkbox.pg-checked.pg-checkbox-outline {
+  border-color: var(--colors-accent, var(--accent));
+  color: var(--colors-accent, var(--accent));
+}
+.pg-checkbox.pg-checked.pg-checkbox-subtle {
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 18%, transparent);
+  color: var(--colors-accent, var(--accent));
+}
+.pg-check-glyph {
+  display: block;
+}
+
+.pg-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pg-radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radii-full, 999px);
+  flex-shrink: 0;
+}
+.pg-radio-solid,
+.pg-radio-outline {
+  border: 1px solid var(--border);
+  background: transparent;
+}
+.pg-radio-subtle {
+  border: 1px solid transparent;
+  background: var(--card);
+}
+.pg-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radii-full, 999px);
+  background: transparent;
+}
+.pg-radio.pg-selected {
+  border-color: var(--colors-accent, var(--accent));
+}
+.pg-radio.pg-selected.pg-radio-subtle {
+  background: color-mix(in srgb, var(--colors-accent, var(--accent)) 18%, transparent);
+}
+.pg-radio.pg-selected .pg-radio-dot {
+  background: var(--colors-accent, var(--accent));
+}
+
+.pg-switch {
+  display: inline-flex;
+  align-items: center;
+  width: 38px;
+  height: 22px;
+  border-radius: var(--radii-full, 999px);
+  padding: 2px;
+  background: var(--border);
+  transition: background 0.15s ease;
+}
+.pg-switch-knob {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radii-full, 999px);
+  background: var(--bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+.pg-switch.pg-on .pg-switch-knob {
+  transform: translateX(16px);
+}
+.pg-switch.pg-on.pg-switch-accent {
+  background: var(--colors-accent, var(--accent));
+}
+.pg-switch.pg-on.pg-switch-gray {
+  background: var(--muted);
+}
