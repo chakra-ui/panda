@@ -44,6 +44,18 @@ describe('studio generate', () => {
     expect(snapshot).toEqual(SAMPLE)
   })
 
+  it('builds a snapshot from a spec, skipping empty values', () => {
+    const spec = {
+      tokens: {
+        categories: { colors: { values: ['red.500', 'blank'] } },
+        values: { 'colors.red.500': '#ef4444', 'colors.blank': '' },
+      },
+    } as never
+    expect(buildTokensSnapshot(spec)).toEqual([
+      { category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' },
+    ])
+  })
+
   it('writes React views + tokens.json to the default outdir', async () => {
     dir = createFixture(TOKEN_CONFIG)
 
