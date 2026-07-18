@@ -15,9 +15,47 @@ export interface StudioFile {
   code: string
 }
 
-const VIEWS: Array<{ name: string; categories: string[] }> = [
+const CATEGORY_ORDER = [
+  'colors',
+  'fontSizes',
+  'fontWeights',
+  'fonts',
+  'lineHeights',
+  'letterSpacings',
+  'spacing',
+  'sizes',
+  'radii',
+  'borders',
+  'shadows',
+  'blurs',
+  'aspectRatios',
+  'durations',
+  'easings',
+  'animations',
+  'breakpoints',
+]
+const TYPE_CATEGORIES = ['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings']
+const SCALE_CATEGORIES = ['spacing', 'sizes', 'breakpoints']
+const GRID_KIND: Record<string, string> = {
+  radii: 'radius',
+  borders: 'border',
+  shadows: 'shadow',
+  blurs: 'blur',
+  aspectRatios: 'ratio',
+  animations: 'animation',
+  easings: 'easing',
+  durations: 'duration',
+}
+
+const jsArray = (items: string[]) => `[${items.map((item) => `'${item}'`).join(', ')}]`
+const jsRecord = (record: Record<string, string>) =>
+  `{ ${Object.entries(record)
+    .map(([key, value]) => `${key}: '${value}'`)
+    .join(', ')} }`
+
+const GENERATE_VIEWS: Array<{ name: string; categories: string[] }> = [
   { name: 'Colors', categories: ['colors'] },
-  { name: 'Typography', categories: ['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'] },
+  { name: 'Typography', categories: TYPE_CATEGORIES },
   { name: 'Spacing', categories: ['spacing'] },
   { name: 'Sizes', categories: ['sizes'] },
   { name: 'Radii', categories: ['radii'] },
@@ -96,7 +134,7 @@ export function viewFiles(tokens: StudioToken[], framework: StudioFramework, key
   return [
     tokensSnapshotFile(tokens),
     { path: 'components/token-grid.tsx', code: templates.tokenGrid(keyframesCss) },
-    ...VIEWS.map((view) => ({ path: `${view.name}.tsx`, code: templates.view(view.name, view.categories) })),
+    ...GENERATE_VIEWS.map((view) => ({ path: `${view.name}.tsx`, code: templates.view(view.name, view.categories) })),
   ]
 }
 
@@ -120,31 +158,10 @@ interface ViewerView {
   group: 'tokens' | 'playground'
 }
 
-const VIEWER_ORDER = [
-  'colors',
-  'fontSizes',
-  'fontWeights',
-  'fonts',
-  'lineHeights',
-  'letterSpacings',
-  'spacing',
-  'sizes',
-  'radii',
-  'borders',
-  'shadows',
-  'blurs',
-  'aspectRatios',
-  'durations',
-  'easings',
-  'animations',
-  'breakpoints',
-]
-const VIEWER_TYPE_CATS = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
-
 function viewerViews(tokens: StudioToken[]): ViewerView[] {
   const rank = (category: string) => {
-    const index = VIEWER_ORDER.indexOf(category)
-    return index === -1 ? VIEWER_ORDER.length : index
+    const index = CATEGORY_ORDER.indexOf(category)
+    return index === -1 ? CATEGORY_ORDER.length : index
   }
   const categories = [...new Set(tokens.filter((token) => !token.conditions).map((token) => token.category))].sort(
     (a, b) => rank(a) - rank(b),
@@ -154,7 +171,7 @@ function viewerViews(tokens: StudioToken[]): ViewerView[] {
     views.push({ id: 'semantic', label: 'semantic tokens', group: 'tokens' })
   if (tokens.some((token) => token.category === 'colors'))
     views.push({ id: 'contrast', label: 'Contrast', group: 'playground' })
-  if (tokens.some((token) => VIEWER_TYPE_CATS.has(token.category)))
+  if (tokens.some((token) => TYPE_CATEGORIES.includes(token.category)))
     views.push({ id: 'typography', label: 'Typography', group: 'playground' })
   return views
 }
@@ -332,9 +349,9 @@ themeButton.addEventListener('click', () => {
 })
 renderThemeButton()
 
-const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
-const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
-const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing', durations: 'duration' }
+const TYPE_CATEGORIES = new Set(${jsArray(TYPE_CATEGORIES)})
+const SCALE_CATEGORIES = new Set(${jsArray(SCALE_CATEGORIES)})
+const GRID_KIND = ${jsRecord(GRID_KIND)}
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
 function toPx(value) {
@@ -831,9 +848,9 @@ const COMPONENT_CSS = `.panda-studio { --fg: #1a1a1a; --muted: #71717a; --border
 .panda-studio .ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
 @keyframes panda-studio-ease { from { transform: translateX(0); } to { transform: translateX(130px); } }`
 
-const SHARED_HELPERS = `const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
-const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
-const GRID_KIND: Record<string, string> = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing', durations: 'duration' }
+const SHARED_HELPERS = `const TYPE_CATEGORIES = new Set(${jsArray(TYPE_CATEGORIES)})
+const SCALE_CATEGORIES = new Set(${jsArray(SCALE_CATEGORIES)})
+const GRID_KIND: Record<string, string> = ${jsRecord(GRID_KIND)}
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
 const familyOf = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name)
