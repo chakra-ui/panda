@@ -300,6 +300,12 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .name { font-size: 12px; font-weight: 600; }
 .value { font-size: 11px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, monospace; margin-top: 3px; word-break: break-word; }
 .chip { width: 48px; height: 48px; border-radius: 8px; }
+.preview-shadow { height: auto; overflow: visible; }
+.shadow-pair { display: flex; gap: 8px; width: 100%; }
+.shadow-cell { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 12px; border-radius: 8px; }
+.shadow-cell .chip { background: var(--card); }
+.force-light { --card: #ffffff; background: #ffffff; }
+.force-dark { --card: #1c1c20; background: #0d0d0f; }
 .palette { margin-bottom: 24px; }
 .palette-name { font-size: 13px; font-weight: 600; text-transform: capitalize; margin: 0 0 10px; }
 .shades { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
@@ -518,12 +524,27 @@ function makePreview(category, value) {
   const wrap = document.createElement('div')
   wrap.className = 'preview'
 
-  if (kind === 'radius' || kind === 'border' || kind === 'shadow' || kind === 'blur') {
+  if (kind === 'shadow') {
+    wrap.className = 'preview preview-shadow'
+    const pair = document.createElement('div')
+    pair.className = 'shadow-pair'
+    for (const mode of ['force-light', 'force-dark']) {
+      const cell = document.createElement('div')
+      cell.className = 'shadow-cell ' + mode
+      const chip = document.createElement('div')
+      chip.className = 'chip'
+      chip.style.boxShadow = value
+      cell.appendChild(chip)
+      pair.appendChild(cell)
+    }
+    wrap.appendChild(pair)
+    return wrap
+  }
+  if (kind === 'radius' || kind === 'border' || kind === 'blur') {
     const chip = document.createElement('div')
     chip.className = 'chip'
     if (kind === 'radius') { chip.style.background = 'var(--swatch)'; chip.style.borderRadius = value }
     if (kind === 'border') chip.style.border = value
-    if (kind === 'shadow') { chip.style.background = 'var(--shadow-bg)'; chip.style.boxShadow = value }
     if (kind === 'blur') { chip.style.background = 'linear-gradient(135deg, var(--accent), #ec4899)'; chip.style.filter = 'blur(' + value + ')' }
     wrap.appendChild(chip)
     return wrap
