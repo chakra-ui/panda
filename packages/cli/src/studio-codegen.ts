@@ -95,17 +95,29 @@ export function buildSemanticMap(spec: Spec, config: unknown): Record<string, Re
     return ref ? values[ref[1]] ?? str : str
   }
 
+  const flatten = (raw: unknown, condition: string | undefined, into: Record<string, string>) => {
+    if (raw && typeof raw === 'object') {
+      for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+        const next =
+          key === 'base' && condition === undefined ? undefined : condition === undefined ? key : `${condition}:${key}`
+        flatten(value, next, into)
+      }
+    } else {
+      into[condition ?? 'base'] = resolve(raw)
+    }
+  }
+
   const walk = (node: unknown, category: string, segments: string[], theme: string) => {
     if (!node || typeof node !== 'object') return
     for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
       if (!child || typeof child !== 'object') continue
       if ('value' in child) {
         const path = `${category}.${[...segments, key].join('.')}`
-        const raw = (child as { value: unknown }).value
-        const conditions = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : { base: raw }
         out[path] ??= {}
+        const conditions: Record<string, string> = {}
+        flatten((child as { value: unknown }).value, undefined, conditions)
         for (const [condition, value] of Object.entries(conditions)) {
-          out[path][theme ? `${theme} · ${condition}` : condition] = resolve(value)
+          out[path][theme ? `${theme} · ${condition}` : condition] = value
         }
       } else {
         walk(child, category, [...segments, key], theme)

@@ -152,6 +152,21 @@ describe('studio semantic tokens', () => {
     })
   })
 
+  it('flattens nested conditions with colon-joined keys, matching the compiler', () => {
+    const nested = {
+      theme: {
+        semanticTokens: {
+          colors: {
+            brand: { value: { base: '{colors.white}', _dark: { base: '{colors.black}', _sunset: '{colors.white}' } } },
+          },
+        },
+      },
+    }
+    expect(buildSemanticMap(spec, nested)).toEqual({
+      'colors.brand': { base: '#fff', '_dark:base': '#000', '_dark:_sunset': '#fff' },
+    })
+  })
+
   it('emits semantic tokens with conditions, base as the display value', () => {
     const semantic = buildSemanticMap(spec, config)
     const tokens = buildTokensSnapshot(spec, semantic)
