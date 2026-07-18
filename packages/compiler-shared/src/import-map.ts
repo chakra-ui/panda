@@ -1,7 +1,6 @@
-import type { ImportMapInput, ImportMapOption, ImportMapOutput, SerializedConfig } from './types'
+import type { ImportMapOption, ImportMapOutput } from '@pandacss/types'
+import type { SerializedConfig } from './types'
 import { defaultConfig } from './defaults'
-
-export type { ImportMapInput, ImportMapOption, ImportMapOutput }
 
 /** Config slice accepted by {@link normalizeImportMap}. */
 export interface ImportMapConfig {

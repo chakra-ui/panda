@@ -76,8 +76,8 @@
 
 ### Minor Changes
 
-- Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate
-  animation properties.
+- Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate animation
+  properties.
 
   > Pairing animation styles with text styles and layer styles can make your styles a lot cleaner.
 
@@ -159,8 +159,8 @@
   - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
     and rename it to `transformStyles` to better convey what it does
 
-- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define
-  the aspect ratio of an element.
+- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define the aspect
+  ratio of an element.
 
   ```js
   export default defineConfig({

@@ -323,6 +323,10 @@ fn capitalize_for_theme_condition(value: &str) -> String {
 /// complete token/keyframe surface for external CSS.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "opt-in flags are independent; no shared state machine"
+)]
 pub struct OptimizeConfig {
     #[serde(default)]
     pub remove_unused_tokens: bool,
@@ -333,6 +337,10 @@ pub struct OptimizeConfig {
     /// (smaller CSS; pair with `staticCss.recipes`).
     #[serde(default)]
     pub smart_compound_variants: bool,
+    /// When `true`, design-system build-info hydrate is narrowed to export
+    /// names the consumer imports from that package (host-side; default off).
+    #[serde(default)]
+    pub treeshake_design_system: bool,
 }
 
 /// User-facing names for the five cascade layers (matches v1's

@@ -125,6 +125,9 @@ class FallbackCompiler implements Compiler {
   scan() {
     return []
   }
+  designSystemImportSelections() {
+    return []
+  }
   realpath(path: string) {
     return path
   }

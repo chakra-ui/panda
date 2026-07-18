@@ -106,6 +106,7 @@ fn optimize_defaults_and_overrides() {
     assert!(!default_config.optimize.remove_unused_tokens);
     assert!(!default_config.optimize.remove_unused_keyframes);
     assert!(!default_config.optimize.smart_compound_variants);
+    assert!(!default_config.optimize.treeshake_design_system);
     assert!(configured.optimize.remove_unused_tokens);
     assert!(configured.optimize.remove_unused_keyframes);
     assert!(partial.optimize.remove_unused_tokens);
@@ -113,6 +114,7 @@ fn optimize_defaults_and_overrides() {
     assert!(!legacy_boolean.optimize.remove_unused_tokens);
     assert!(!legacy_boolean.optimize.remove_unused_keyframes);
     assert!(!legacy_boolean.optimize.smart_compound_variants);
+    assert!(!legacy_boolean.optimize.treeshake_design_system);
 
     let smart: UserConfig = serde_json::from_value(json!({
         "optimize": { "smartCompoundVariants": true }
@@ -120,13 +122,20 @@ fn optimize_defaults_and_overrides() {
     .expect("smart compound config");
     assert!(smart.optimize.smart_compound_variants);
 
+    let treeshake: UserConfig = serde_json::from_value(json!({
+        "optimize": { "treeshakeDesignSystem": true }
+    }))
+    .expect("treeshake design system config");
+    assert!(treeshake.optimize.treeshake_design_system);
+
     let serialized = serde_json::to_value(&configured).expect("serialized config");
     assert_eq!(
         serialized.get("optimize"),
         Some(&json!({
             "removeUnusedTokens": true,
             "removeUnusedKeyframes": true,
-            "smartCompoundVariants": false
+            "smartCompoundVariants": false,
+            "treeshakeDesignSystem": false
         }))
     );
 }

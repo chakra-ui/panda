@@ -1,7 +1,7 @@
-import type { Config } from '@pandacss/types'
+import type { Config, Dict } from '@pandacss/types'
 import { PandaError } from './error'
 
-export type Dict = Record<string, any>
+export type { Dict }
 export type Extendable<T> = T & { extend?: T }
 export type ExtendableConfig = Extendable<Config>
 

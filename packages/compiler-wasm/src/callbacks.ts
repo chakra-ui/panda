@@ -7,8 +7,6 @@ import {
 import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
 import type { WasmCompiler } from './types'
 
-export type { PatternHelpers } from '@pandacss/compiler-shared'
-
 export function registerCallbacks(
   project: WasmCompiler,
   callbacks: ProjectCallbacks,

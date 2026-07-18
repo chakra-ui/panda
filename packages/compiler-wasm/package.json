@@ -46,7 +46,8 @@
     "pkg-web"
   ],
   "dependencies": {
-    "@pandacss/compiler-shared": "workspace:*"
+    "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/types": "workspace:*"
   },
   "devDependencies": {
     "@pandacss/config": "workspace:*"

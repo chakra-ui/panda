@@ -223,6 +223,13 @@ export interface Compiler {
    * File discovery and parsing.
    */
   scan(options?: ScanOptions): string[]
+  /**
+   * Per-package DS import selections from one scan of `include` sources.
+   * Each entry is `null` = hydrate all, or export names to narrow.
+   */
+  designSystemImportSelections(
+    packages: Array<{ packageRoots: string[]; excludeModules?: string[] }>,
+  ): Array<string[] | null>
   isSourceFile(path: string): boolean
   parseFiles(paths: string[]): ParseFileReport[]
   parseFile(path: string): ParseFileReport

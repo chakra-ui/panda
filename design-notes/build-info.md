@@ -54,9 +54,8 @@ via the manifest — see [design-system-manifest.md](./design-system-manifest.md
 `var(--path)`; the consumer's `TokenDictionary` supplies the final CSS value at emit time.
 
 Runtime `token()` / `token.var()` calls that require a CSS variable are carried separately in `tokenRefs`. They may not
-produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed
-`removeUnusedTokens` after hydration. Primitive `token()` calls that inline a non-variable value are intentionally not
-retained.
+produce an atom or recipe—for example, an exported `token.var('colors.brand')` value—but still seed `removeUnusedTokens`
+after hydration. Primitive `token()` calls that inline a non-variable value are intentionally not retained.
 
 ## Token identity (re-emit half)
 
@@ -80,15 +79,39 @@ replace preset delivery: the cross-config tests intentionally give both sides th
 
 The unit is the **library source file** (`button.tsx` → module `button`), reusing the encoder's per-`FileEntry` grouping
 — no `Atom` rewrite. Atoms attribute to their **call site's** file, so transitive helpers/patterns land in the right
-module and shared tokens stay module-independent (tokens layer).
+module and shared tokens stay module-independent (tokens layer). Two exports in one file share one module: import either
+and you hydrate both.
 
-The filter follows the app's imports, which rarely name a file:
+### Opt-in consume narrowing
 
-| app import                            | resolves via                     |
-| ------------------------------------- | -------------------------------- |
-| `@acme/ds/button` (subpath)           | the subpath _is_ the module key  |
-| `{ Button } from '@acme/ds'` (barrel) | `exports["Button"]` → `"button"` |
-| `* as DS` (namespace)                 | all modules (no tree-shaking)    |
+```ts
+optimize: {
+  treeshakeDesignSystem: true
+}
+```
+
+Off by default — without it, every design-system build-info module hydrates. With it on, the host scans the app's
+`include` sources **once** and feeds every package in the `designSystem` chain (`designSystemImportSelections` on the
+native/wasm compiler). Export names go to `designSystem.load({ imports })` → `modulesFor()` → `hydrate({ only })`.
+
+| app import                                                       | result                                        |
+| ---------------------------------------------------------------- | --------------------------------------------- |
+| `{ Button } from '@acme/ds'`                                     | modules for `Button` only                     |
+| `@acme/ds/button` (subpath)                                      | stem / module key (`button`, `button.tsx`, …) |
+| `export { Button } from '@acme/ds'`                              | same as a named import                        |
+| `import *` / `export *` / side-effect / `import()` / `require()` | all modules                                   |
+| no DS imports                                                    | nothing                                       |
+| `@acme/ds/css`, `/tokens`, `/recipes`, `/patterns`, `/jsx`       | ignored (styled-system subpaths)              |
+
+Watch sync (`NodeDriver.syncDesignSystemTreeShake` on `cssgen` / `writeCss`) re-scans when the import set changes. The
+scan prefers the project's in-memory source from `applyChange` over disk, so Vite HMR doesn't treeshake against a stale
+file.
+
+If `imports` is non-empty but nothing resolves (missing `exports` map, typo), load **fails open** to full hydrate —
+better over-include CSS than ship an empty sheet. Modules that only publish `tokenRefs` stay selected under narrowing so
+token pruning still sees live refs.
+
+### How names map to modules
 
 The barrel case needs `exports`, which the **engine** emits (it has the AST; the CLI would have to re-parse): export
 facts resolve to the style-contributing module (`pandacss_extractor::collect_export_info` → `FileEntry.exports` →
@@ -97,8 +120,7 @@ its export resolves to the recipe-carrying module. Consumer lookup is O(1) via `
 locally-declared exports (`export function/const/class`, `export { local as Public }`), named re-exports
 (`export { X as Y } from './y'`), star re-exports (`export * from './y'`), and default re-exports
 (`export { default as Button } from './button'`). Namespace stars (`export * as DS from './ds'`) intentionally fall back
-to the namespace-import path for now. Panda-native scanning is primary (over-includes safely); a bundler plugin is the
-precise opt-in.
+to the namespace-import path for now.
 
 ## Recipes, slot recipes, patterns
 
@@ -149,9 +171,8 @@ It is not the package manifest and it does not carry the executable preset. The 
 preset, build-info file, import map, fallback files, and optional parent design system together is
 [design-system-manifest.md](./design-system-manifest.md).
 
-When a consumer uses `designSystem`, the Node host currently hydrates each manifest's whole build-info artifact. The
-lower-level engine can tree-shake with `hydrate({ only })`, and `modulesFor()` can map imported export names to module
-keys, but the host does not yet scan app imports to narrow design-system hydration.
+When a consumer uses `designSystem`, the host hydrates each manifest's build-info artifact. Narrowing is opt-in via
+`optimize.treeshakeDesignSystem` — see [Opt-in consume narrowing](#opt-in-consume-narrowing) above.
 
 Consume-side package layout, dual importMap, overlay codegen, and DS npm exports are covered in
 [virtual-styled-system.md](./virtual-styled-system.md).
@@ -308,16 +329,19 @@ from `panda ship`: the `styles.css` / package scaffolding fallback for non-Panda
   emit uses the consumer theme.
 
 The **producer artifact + both bindings are done**. The **token re-emit half** is done at the engine level. The singular
-`designSystem` consume path is wired through config loading and the Node driver. What's left is import-based tree-shaken
-consume and virtual overlay polish.
+`designSystem` consume path (including opt-in import narrowing) is wired through config loading and the Node driver.
+What's left is virtual overlay polish and the items below.
 
 ### Remaining — consume polish
 
-- ⬜ **Import-based hydration narrowing** — scan the consumer's DS imports, map package exports to module keys, and call
-  `hydrate({ only })` instead of hydrating each build-info artifact wholesale.
+- ✅ **Import-based hydration narrowing** — `optimize.treeshakeDesignSystem` (see
+  [Opt-in consume narrowing](#opt-in-consume-narrowing)). Covered in
+  `packages/compiler/__tests__/design-system/hydrate.test.ts`.
 - ⬜ **Plural dependency metadata** — transitive build info for a middle DS that re-exports upstream components without
   making that upstream package its `manifest.designSystem` parent.
 - ⬜ **Per-package CSS layers** — emit hydrated CSS under package-scoped layers such as `@layer ds-acme-ui`.
+- ⬜ **cssgen scan cost** — with the flag on, every `cssgen` / `writeCss` re-globs and import-scans the full `include`
+  set before the tree-shake key short-circuit. Fine for small apps; may want a cheaper dirty check later.
 
 ### Remaining — `exports` completeness
 

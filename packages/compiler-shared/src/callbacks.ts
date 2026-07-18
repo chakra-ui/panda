@@ -1,15 +1,8 @@
 // Binding-agnostic callback runtime. Only `registerCallbacks` (which talks to a
 // native vs wasm instance) lives in each binding package.
 
-import type {
-  ColorMixResult,
-  PatternHelpers,
-  ProjectCallbacks,
-  ProjectHooks,
-  RawToken,
-  TokenLookup,
-  TransformArgs,
-} from './types'
+import type { ColorMixResult, PatternHelpers, TransformArgs } from '@pandacss/types'
+import type { ProjectCallbacks, ProjectHooks, RawToken, TokenLookup } from './types'
 
 export function assertProjectCallbacks(config: Record<string, unknown>, callbacks: ProjectCallbacks) {
   assertCallbackRefs('utility.values', getUtilityValueRefs(config), callbacks['utility.values'])

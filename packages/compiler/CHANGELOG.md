@@ -6,39 +6,37 @@
 
 - Add `--profile` to any command. It writes `trace.json` and `timings.json` to `.panda/` (or into
   `panda debug --outdir`). Open the trace in `chrome://tracing` or `ui.perfetto.dev`. Replaces v1's `--cpu-prof`.
-- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize`
-  or PostCSS if you need to mutate CSS.
+- Bring back `cssgen:done` as an observe-only hook for final CSS from CLI, Vite, and PostCSS. Use `optimize` or PostCSS
+  if you need to mutate CSS.
 
 ### Patch Changes
 
-- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching
-  category exists.
-- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
-  match. You get clearer errors for token conflicts and mismatched config.
-- Generated `css()` caches repeated inline styles instead of re-serializing every call (~3x faster on dense
-  SSR pages).
+- Add `no-primitive-token` (and inspection metadata) so you can require semantic tokens when a matching category exists.
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not match. You
+  get clearer errors for token conflicts and mismatched config.
+- Generated `css()` caches repeated inline styles instead of re-serializing every call (~3x faster on dense SSR pages).
 - Stop adding `className` to pattern property types. Pattern `*Properties` interfaces only list configured props; JSX
   components keep React's `className`, and pattern functions no longer emit a `class-name_*` utility class.
 
-- Fix runtime class names for multiline string values. Runtime `css()` collapses multiline whitespace the same
-  way cssgen does, so selectors match.
+- Fix runtime class names for multiline string values. Runtime `css()` collapses multiline whitespace the same way
+  cssgen does, so selectors match.
 
 - `panda lib` keeps array-form package.json `exports` and warns when it overwrites a subpath you already set.
-- `panda lib` omits inferred `files` that package.json `"files"` would not publish, and warns with a `--files`
-  tip for dist-only packages.
-- Speed up `css()`, style props, and recipe resolution in generated runtimes. Repeated calls with the same flat
-  style objects hit the cache about 30–40% faster in SSR benchmarks.
+- `panda lib` omits inferred `files` that package.json `"files"` would not publish, and warns with a `--files` tip for
+  dist-only packages.
+- Speed up `css()`, style props, and recipe resolution in generated runtimes. Repeated calls with the same flat style
+  objects hit the cache about 30–40% faster in SSR benchmarks.
 
-- Memoize multi-arg `css()` calls and shared recipe/pattern resolution in generated runtimes so repeated calls
-  skip redundant merge work.
+- Memoize multi-arg `css()` calls and shared recipe/pattern resolution in generated runtimes so repeated calls skip
+  redundant merge work.
 
 - Speed up generated pattern helpers by memoizing class names for repeated style props.
 - Remove the unused `designSystem.resolveChain` API. Chain resolution already happens in the config loader.
-- Under `strictTokens`, empty token categories still accept native CSS keywords. `cursor: 'pointer'` works
-  without the `[pointer]` escape hatch; same for utilities like `opacity` and `zIndex` with no tokens defined.
+- Under `strictTokens`, empty token categories still accept native CSS keywords. `cursor: 'pointer'` works without the
+  `[pointer]` escape hatch; same for utilities like `opacity` and `zIndex` with no tokens defined.
 
-- Fix cross-file style extraction on Windows. Resolved paths use forward slashes so aliased and relative
-  `css()` imports match; POSIX is unchanged.
+- Fix cross-file style extraction on Windows. Resolved paths use forward slashes so aliased and relative `css()` imports
+  match; POSIX is unchanged.
 
 ## 2.0.0-beta.8
 
@@ -53,10 +51,10 @@
 
 ### Patch Changes
 
-- Fix generated token types when a category has no tokens. A config with missing or empty categories no longer
-  collapses `TokenValue` to bare `string`, so native CSS value autocomplete (e.g. `currentColor`) stays intact.
-- Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
-  updates its styles live, instead of leaving them stale until you restart the dev server.
+- Fix generated token types when a category has no tokens. A config with missing or empty categories no longer collapses
+  `TokenValue` to bare `string`, so native CSS value autocomplete (e.g. `currentColor`) stays intact.
+- Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now updates its
+  styles live, instead of leaving them stale until you restart the dev server.
   - @pandacss/compiler-shared@2.0.0-beta.7
   - @pandacss/config@2.0.0-beta.7
 
@@ -119,9 +117,9 @@
 
 ### Patch Changes
 
-- `styled-system/types/index` now re-exports `./jsx` for all JSX frameworks, not just React. Solid, Vue,
-  Preact, and Qwik generated `types/jsx` but never re-exported it, which could cause "inferred type cannot be named"
-  TypeScript errors.
+- `styled-system/types/index` now re-exports `./jsx` for all JSX frameworks, not just React. Solid, Vue, Preact, and
+  Qwik generated `types/jsx` but never re-exported it, which could cause "inferred type cannot be named" TypeScript
+  errors.
 - Fix `globalCss` and token-reference parity with extracted styles.
 
   - Expand composition props and nested utility transforms in `globalCss`.
@@ -145,8 +143,8 @@
   preferred over the primitives they reference, with hex and px/rem normalization), or `null`. Token references in
   inspection results also carry `isVar` (whether the call was `token.var(...)`).
 
-- Fix slot recipe inference to include slots that appear only in `compoundVariants`. Previously, when `slots`
-  was omitted from an `sva` call, a slot used solely inside a compound variant's `css` was dropped and its styles never
+- Fix slot recipe inference to include slots that appear only in `compoundVariants`. Previously, when `slots` was
+  omitted from an `sva` call, a slot used solely inside a compound variant's `css` was dropped and its styles never
   emitted.
 - Complete the SVG asset color-name shortening table (full parity with v1's 55 named colors) and fix a hex
   substring-match bug where values like `#fff000` were incorrectly shortened to `white000`.
@@ -160,8 +158,8 @@
   Utility shorthands like `bg`, `bgColor`, and `color` now accept the matching native CSS values when `strictTokens` is
   off. Keyframe steps also use the same style object types as global CSS.
 
-- Trim surrounding whitespace before generating class names, so cssgen and runtime `css()` produce the same
-  class for values like `'0 auto '`.
+- Trim surrounding whitespace before generating class names, so cssgen and runtime `css()` produce the same class for
+  values like `'0 auto '`.
 - Fix several nested arbitrary selector edge cases.
 
   - Keep `&` intact inside quoted attribute selector values, like `[data-category="sound & vision"]`.
@@ -187,8 +185,8 @@
 
 ### Minor Changes
 
-- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
-  triggers extra reloads/rebuilds for no-op codegen and CSS writes.
+- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and triggers extra
+  reloads/rebuilds for no-op codegen and CSS writes.
 
   The compiler write APIs now use object params consistently:
 
@@ -198,8 +196,8 @@
 
 ### Patch Changes
 
-- Fix cssgen dropping the leading dash on vendor-prefixed property names, so the class (and the CSS property)
-  never matched the runtime.
+- Fix cssgen dropping the leading dash on vendor-prefixed property names, so the class (and the CSS property) never
+  matched the runtime.
 
   A vendor-prefixed property is authored PascalCase — `WebkitBackgroundClip`, `WebkitTextFillColor`, `MozAppearance`.
   The runtime `css()` hyphenates these with `property.replace(/[A-Z]/g, "-$&").toLowerCase()`, which prepends a dash to
@@ -241,10 +239,10 @@
 
 ### Patch Changes
 
-- Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including
-  React, Preact, Vue, Solid, and Qwik builds.
-- Merge adjacent selectors that share an identical declaration block into one comma-joined rule (parity with
-  the legacy engine's merge-rules pass).
+- Improve compiled JSX extraction so `css` props are recognized from framework runtime helper output, including React,
+  Preact, Vue, Solid, and Qwik builds.
+- Merge adjacent selectors that share an identical declaration block into one comma-joined rule (parity with the legacy
+  engine's merge-rules pass).
 
   The v2 native emitter now coalesces consecutive rules with the same declaration block — e.g.
   `css({ _hover: { color: 'red' } })` + `css({ '[data-x] &': { color: 'red' } })` emits one

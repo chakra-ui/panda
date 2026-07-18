@@ -58,6 +58,69 @@ impl WasmCompiler {
         serde_wasm_bindgen::to_value(&strings).map_err(|err| JsValue::from_str(&err.to_string()))
     }
 
+    /// Per-package import selections from one scan. Each entry is `null` = all,
+    /// or export names to narrow.
+    ///
+    /// # Errors
+    /// Returns a JS error when the scan fails or serialization fails.
+    #[wasm_bindgen(js_name = designSystemImportSelections)]
+    pub fn design_system_import_selections(&self, packages: JsValue) -> Result<JsValue, JsValue> {
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct PackageQuery {
+            package_roots: Vec<String>,
+            exclude_modules: Option<Vec<String>>,
+        }
+
+        let packages: Vec<PackageQuery> = serde_wasm_bindgen::from_value(packages)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+
+        let paths = self.scan_paths(JsValue::UNDEFINED)?;
+        let sources: Vec<(String, String)> = paths
+            .into_iter()
+            .filter_map(|path| {
+                let source = self.source_for_import_scan(&path)?;
+                Some((path.to_string_lossy().into_owned(), source))
+            })
+            .collect();
+
+        let root_lists: Vec<Vec<&str>> = packages
+            .iter()
+            .map(|pkg| pkg.package_roots.iter().map(String::as_str).collect())
+            .collect();
+        let exclude_lists: Vec<Vec<&str>> = packages
+            .iter()
+            .map(|pkg| {
+                pkg.exclude_modules
+                    .as_ref()
+                    .map(|mods| mods.iter().map(String::as_str).collect())
+                    .unwrap_or_default()
+            })
+            .collect();
+        let queries: Vec<pandacss_extractor::DesignSystemPackageQuery<'_>> = root_lists
+            .iter()
+            .zip(exclude_lists.iter())
+            .map(
+                |(roots, excluded)| pandacss_extractor::DesignSystemPackageQuery {
+                    package_roots: roots.as_slice(),
+                    exclude_modules: excluded.as_slice(),
+                },
+            )
+            .collect();
+
+        let selections: Vec<Option<Vec<String>>> =
+            pandacss_extractor::collect_design_system_imports_for_packages(
+                sources
+                    .iter()
+                    .map(|(path, source)| (path.as_str(), source.as_str())),
+                &queries,
+            )
+            .into_iter()
+            .map(pandacss_extractor::DesignSystemImportSelection::into_load_imports)
+            .collect();
+        serde_wasm_bindgen::to_value(&selections).map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
     /// Real on-disk path (symlinks followed) from the in-memory filesystem, so two
     /// paths to the same file compare equal. Returns the input when unresolved.
     #[must_use]
@@ -115,6 +178,23 @@ impl WasmCompiler {
         self.fs
             .glob(&opts)
             .map_err(|err| JsValue::from_str(&format!("scan failed: {err}")))
+    }
+
+    /// Prefer the project's in-memory source (watch `applyChange`) over the vfs.
+    fn source_for_import_scan(&self, path: &Path) -> Option<String> {
+        let path_str = path.to_string_lossy();
+        if let Some(source) = self.inner.file_source(path_str.as_ref()) {
+            return Some(source.to_owned());
+        }
+        if let Ok(real) = self.fs.canonicalize(path) {
+            let real_str = real.to_string_lossy();
+            if real_str != path_str
+                && let Some(source) = self.inner.file_source(real_str.as_ref())
+            {
+                return Some(source.to_owned());
+            }
+        }
+        self.fs.read_to_string(path).ok()
     }
 
     /// Shared parse path used by `parse_file` and `parseFiles` — wires the

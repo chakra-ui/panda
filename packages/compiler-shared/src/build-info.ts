@@ -44,14 +44,29 @@ export class BuildInfo {
 
   modulesFor(info: BuildInfoArtifact, exportNames: string[]): string[] {
     const exports = isRecord(info.exports) ? info.exports : {}
+    const moduleKeys = isRecord(info.modules) ? Object.keys(info.modules) : []
     const modules = new Set<string>()
 
     for (const name of exportNames) {
-      const module = exports[name]
-      if (typeof module === 'string') modules.add(module)
+      const fromExport = exports[name]
+      if (typeof fromExport === 'string') {
+        modules.add(fromExport)
+        continue
+      }
+      const fromKey = resolveModuleKey(name, moduleKeys)
+      if (fromKey) modules.add(fromKey)
     }
 
     return [...modules]
+  }
+
+  /** Modules that publish token refs — keep them under treeshake. */
+  tokenRefModules(info: BuildInfoArtifact): string[] {
+    const out: string[] = []
+    for (const key in info.modules) {
+      if (info.modules[key]?.tokenRefs?.length) out.push(key)
+    }
+    return out
   }
 
   normalize(info: BuildInfoArtifact, options: BuildInfoNormalizeOptions): BuildInfoArtifact {
@@ -110,4 +125,16 @@ function hasBuildInfoShape(info: Record<string, unknown>): boolean {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+const MODULE_KEY_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'] as const
+
+/** Resolve a subpath stem (`badge`) or key (`badge.tsx`) against `modules` keys. */
+function resolveModuleKey(name: string, moduleKeys: string[]): string | undefined {
+  if (moduleKeys.includes(name)) return name
+  for (const ext of MODULE_KEY_EXTENSIONS) {
+    const key = name.endsWith(ext) ? name : `${name}${ext}`
+    if (moduleKeys.includes(key)) return key
+  }
+  return undefined
 }

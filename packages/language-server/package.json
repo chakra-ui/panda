@@ -48,6 +48,7 @@
   "dependencies": {
     "@pandacss/compiler": "workspace:*",
     "@pandacss/compiler-shared": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "@pandacss/typescript-plugin": "workspace:*",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"

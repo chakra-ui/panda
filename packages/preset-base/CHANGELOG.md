@@ -20,8 +20,8 @@
 
 ### Patch Changes
 
-- **Gradient Utilities**: Fixed `token()` and brace syntax not working in `bgGradient`, `bgLinear`, and
-  `textGradient` utilities.
+- **Gradient Utilities**: Fixed `token()` and brace syntax not working in `bgGradient`, `bgLinear`, and `textGradient`
+  utilities.
 
   Before this fix, using token references in gradient values would not expand correctly:
 
@@ -282,16 +282,16 @@
 
 ### Patch Changes
 
-- Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are
-  `auto`, `stable`, and `both-edges`.
+- Fix issue where `scrollbarGutter` property incorrectly referenced spacing tokens. The only valid values are `auto`,
+  `stable`, and `both-edges`.
   - @pandacss/types@0.48.1
 
 ## 0.48.0
 
 ### Minor Changes
 
-- [Breaking] Remove default utility values for `gridTemplateColumns`, `gridTemplateRows`, `gridColumn` and
-  `gridRow` to prevent interference with native css values.
+- [Breaking] Remove default utility values for `gridTemplateColumns`, `gridTemplateRows`, `gridColumn` and `gridRow` to
+  prevent interference with native css values.
 
   For example `1` or `2` is a valid native value for `gridColumn` or `gridRow`, and should not be overridden by the
   utility.
@@ -437,8 +437,8 @@
 ### Patch Changes
 
 - Fix issue where `float` property did not allow inherited values (auto, initial, none, etc.)
-- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no
-  autocompletion was available.
+- Fix issue where `animationName` property was not connected to `theme.keyframes`, as a result, no autocompletion was
+  available.
 
 ## 0.37.0
 
@@ -518,8 +518,8 @@
 
 ### Minor Changes
 
-- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default)
-  to use the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
+- Update every utilities connected to the `colors` tokens in the `@pandacss/preset-base` (included by default) to use
+  the [`color-mix`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function.
 
   This function allows you to mix two colors together, and we use it to change the opacity of a color using the
   `{color}/{opacity}` syntax.
@@ -768,8 +768,8 @@
   - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
     and rename it to `transformStyles` to better convey what it does
 
-- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define
-  the aspect ratio of an element.
+- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define the aspect
+  ratio of an element.
 
   ```js
   export default defineConfig({
@@ -848,8 +848,8 @@
 ### Patch Changes
 
 - Make `_required` target `[data-required]` and `[aria-required=true]` attributes
-- Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a
-  minChildWidth wasn't interpreted as a token value
+- Fix an issue with the `grid` pattern from @pandacss/preset-base (included by default), setting a minChildWidth wasn't
+  interpreted as a token value
 
   Before:
 
@@ -1004,8 +1004,8 @@
 
 ### Minor Changes
 
-- Refactor `transition` utility to improve DX of adding transition. Transitions will now add a default
-  transition property, timing function and duration. This allows you to add transitions with a single property.
+- Refactor `transition` utility to improve DX of adding transition. Transitions will now add a default transition
+  property, timing function and duration. This allows you to add transitions with a single property.
 
   ```jsx
   <div className={css({ transition: 'background' })}>Content</div>

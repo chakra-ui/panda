@@ -9,14 +9,13 @@
 
 ### Patch Changes
 
-- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
-  match. You get clearer errors for token conflicts and mismatched config.
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not match. You
+  get clearer errors for token conflicts and mismatched config.
 - Faster CLI startup: flag parsing no longer loads zod on every `panda` run.
 - Support `minify` as a top-level config key. `cssgen` reads it from config; `--minify` still overrides it.
-- `panda lib` omits inferred `files` that package.json `"files"` would not publish, and warns with a `--files`
-  tip for dist-only packages.
-- Fix `panda --watch` crashing on macOS when FSEvents drops events. The watcher now re-scans instead of
-  exiting.
+- `panda lib` omits inferred `files` that package.json `"files"` would not publish, and warns with a `--files` tip for
+  dist-only packages.
+- Fix `panda --watch` crashing on macOS when FSEvents drops events. The watcher now re-scans instead of exiting.
 
 ## 2.0.0-beta.6
 
@@ -47,8 +46,8 @@
 
 ### Patch Changes
 
-- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and
-  triggers extra reloads/rebuilds for no-op codegen and CSS writes.
+- Skip rewriting generated files when the content is unchanged, so watch mode no longer bumps mtimes and triggers extra
+  reloads/rebuilds for no-op codegen and CSS writes.
 
   The compiler write APIs now use object params consistently:
 
@@ -60,8 +59,8 @@
 
 ### Minor Changes
 
-- Add the default `panda` command (no subcommand) that runs the full build — codegen then cssgen — in a single
-  driver pass, restoring the v1 ergonomic where the common case is one word.
+- Add the default `panda` command (no subcommand) that runs the full build — codegen then cssgen — in a single driver
+  pass, restoring the v1 ergonomic where the common case is one word.
 
   - Shares the build across both passes (one config load, merged diagnostics, one summary line).
   - Supports `--outdir`, `--outfile`, `--splitting`, `--clean`, `--check`, `--watch`, and the common flags. `--outdir`

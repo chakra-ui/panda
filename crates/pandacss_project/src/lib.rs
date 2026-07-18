@@ -165,6 +165,9 @@ pub struct ProjectStylesheetSnapshots<'a> {
 
 // Private so the bucket shape can change freely — [`ParsedFile`] is the public view.
 struct FileEntry {
+    /// Latest source text for this path (watch / treeshake). Empty for hydrated
+    /// synthetic files.
+    source: Arc<str>,
     source_hash: u64,
     parse_epoch: u64,
     cacheable: bool,
@@ -664,6 +667,7 @@ impl Project {
         }
 
         let entry = FileEntry {
+            source: Arc::from(source),
             source_hash,
             parse_epoch: self.parse_epoch,
             cacheable: !report
@@ -726,6 +730,17 @@ impl Project {
             recipes: &self.inline_recipes,
             slot_recipes: &self.inline_slot_recipes,
         })
+    }
+
+    /// Latest parsed source for `path`, when the project knows the file.
+    /// Used by design-system import scanning so watch updates win over disk.
+    #[must_use]
+    pub fn file_source(&self, path: &str) -> Option<&str> {
+        let source = &self.files.get(path)?.source;
+        if source.is_empty() {
+            return None;
+        }
+        Some(source)
     }
 
     pub fn remove_file(&mut self, path: &str) -> bool {
@@ -832,6 +847,7 @@ impl Project {
             let missing_recipes = existing
                 .encoded_recipes
                 .extend_missing_from(&entry.encoded_recipes);
+            existing.source = entry.source;
             existing.source_hash = entry.source_hash;
             existing.parse_epoch = entry.parse_epoch;
             existing.cacheable = entry.cacheable;

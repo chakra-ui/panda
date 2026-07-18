@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSy
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createNodeDriver } from '../src'
+import { createNodeDriver } from '../../src'
 
 /**
  * Full local re-emit: consumer codegen from the merged designSystem config must

@@ -1,6 +1,6 @@
 import type { DesignSystemManifest, DesignSystemManifestInput } from '@pandacss/compiler-shared'
 import { describe, expect, it } from 'vitest'
-import { createProject } from './test-utils'
+import { createProject } from '../test-utils'
 
 const project = () => createProject({})
 
@@ -182,6 +182,34 @@ describe('compiler.designSystem', () => {
       ok: true,
       name: '@acme/ds',
       modules: [],
+    })
+  })
+
+  it('load() fails open to every module when imports cannot be resolved', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+    const withoutExports = { ...buildInfo, exports: undefined }
+
+    expect(app.designSystem.load(manifest, { buildInfo: withoutExports, imports: ['Button'] })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: ['button.tsx', 'card.tsx'],
+    })
+    expect(app.designSystem.load(manifest, { buildInfo, imports: ['Missing'] })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: ['button.tsx', 'card.tsx'],
+    })
+  })
+
+  it('load() resolves deep-import stems to module keys', () => {
+    const app = project()
+    const { manifest, buildInfo } = lib()
+
+    expect(app.designSystem.load(manifest, { buildInfo, imports: ['button', 'default'] })).toEqual({
+      ok: true,
+      name: '@acme/ds',
+      modules: ['button.tsx'],
     })
   })
 

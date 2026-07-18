@@ -375,12 +375,6 @@ export interface RawToken {
   var?: string
 }
 
-export interface ColorMixResult {
-  invalid: boolean
-  value: string
-  color?: string
-}
-
 export interface RecipeEntry {
   file: string
   spanStart: number
