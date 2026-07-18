@@ -15,51 +15,62 @@ export function ViewContent({
   theme: string
 }) {
   const term = query.trim().toLowerCase()
-  if (view === 'contrast') return <Contrast colors={tokens.filter((t) => t.category === 'colors')} />
-  if (view === 'typography') return <TypographyPlayground tokens={tokens} />
-  if (view === 'playground')
-    return (
-      <section>
-        <h2>playground</h2>
-        <Showcase tokens={tokens} theme={theme} />
-      </section>
-    )
 
-  if (view === 'semantic') {
-    const items = tokens.filter((t) => t.conditions).filter((t) => !term || matchesTerm(t, term))
-    return (
-      <section>
-        <h2>semantic tokens</h2>
-        <Semantic items={items} />
-      </section>
-    )
+  switch (view) {
+    case 'contrast':
+      return <Contrast colors={tokens.filter((t) => t.category === 'colors')} />
+
+    case 'typography':
+      return <TypographyPlayground tokens={tokens} />
+
+    case 'playground':
+      return (
+        <section>
+          <h2>playground</h2>
+          <Showcase tokens={tokens} theme={theme} />
+        </section>
+      )
+
+    case 'semantic': {
+      const items = tokens.filter((t) => t.conditions).filter((t) => !term || matchesTerm(t, term))
+      return (
+        <section>
+          <h2>semantic tokens</h2>
+          <Semantic items={items} />
+        </section>
+      )
+    }
+
+    default: {
+      const items = tokens
+        .filter((t) => !t.conditions && t.category === view)
+        .filter((t) => !term || matchesTerm(t, term))
+      return (
+        <section>
+          <h2>{view}</h2>
+          {view === 'colors' ? (
+            <Palette items={items} />
+          ) : TYPE_CATEGORIES.has(view) ? (
+            <TypeList category={view} items={items} />
+          ) : SCALE_CATEGORIES.has(view) ? (
+            <Scale items={items} />
+          ) : view === 'shadows' ? (
+            <div class="grid">
+              {items.map((token) => (
+                <ShadowCard token={token} key={token.path} />
+              ))}
+            </div>
+          ) : (
+            <div class="grid">
+              {items.map((token) => (
+                <Card token={token} key={token.path} />
+              ))}
+            </div>
+          )}
+        </section>
+      )
+    }
   }
-
-  const items = tokens.filter((t) => !t.conditions && t.category === view).filter((t) => !term || matchesTerm(t, term))
-  return (
-    <section>
-      <h2>{view}</h2>
-      {view === 'colors' ? (
-        <Palette items={items} />
-      ) : TYPE_CATEGORIES.has(view) ? (
-        <TypeList category={view} items={items} />
-      ) : SCALE_CATEGORIES.has(view) ? (
-        <Scale items={items} />
-      ) : view === 'shadows' ? (
-        <div class="grid">
-          {items.map((token) => (
-            <ShadowCard token={token} key={token.path} />
-          ))}
-        </div>
-      ) : (
-        <div class="grid">
-          {items.map((token) => (
-            <Card token={token} key={token.path} />
-          ))}
-        </div>
-      )}
-    </section>
-  )
 }
 
 export function countFor(view: string, tokens: StudioToken[], query: string): number | null {

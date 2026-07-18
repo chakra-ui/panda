@@ -28,6 +28,22 @@ export const GRID_KIND: Record<string, string> = {
 }
 export const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
+const REM_TO_PX = 16
+
+const MIN_BAR_PERCENT = 2
+const FULL_BAR_PERCENT = 100
+
+const SRGB_THRESHOLD = 0.03928
+const SRGB_LINEAR_DIVISOR = 12.92
+const SRGB_OFFSET = 0.055
+const SRGB_SCALE = 1.055
+const SRGB_GAMMA = 2.4
+const LUMA_R = 0.2126
+const LUMA_G = 0.7152
+const LUMA_B = 0.0722
+
+const CONTRAST_OFFSET = 0.05
+
 export const familyOf = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name)
 export const shadeOf = (name: string) => (name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : name)
 export const byShade = (a: StudioToken, b: StudioToken) =>
@@ -49,13 +65,14 @@ export function groupFamilies(items: StudioToken[]): Array<[string, StudioToken[
 
 export function toPx(value: string) {
   const match = /^([\d.]+)(rem|em|px)$/.exec(value)
-  return match ? (match[2] === 'px' ? parseFloat(match[1]) : parseFloat(match[1]) * 16) : NaN
+  return match ? (match[2] === 'px' ? parseFloat(match[1]) : parseFloat(match[1]) * REM_TO_PX) : NaN
 }
 
 function scaleWidth(px: number, min: number, max: number) {
   if (px <= 0) return 0
-  if (max <= min) return 100
-  return ((Math.log(px) - Math.log(min)) / (Math.log(max) - Math.log(min))) * 98 + 2
+  if (max <= min) return FULL_BAR_PERCENT
+  const ratio = (Math.log(px) - Math.log(min)) / (Math.log(max) - Math.log(min))
+  return MIN_BAR_PERCENT + ratio * (FULL_BAR_PERCENT - MIN_BAR_PERCENT)
 }
 
 export function scaleRows(items: StudioToken[], sort: 'asc' | 'desc' | 'token') {
@@ -100,14 +117,14 @@ function toRgb(value: string): [number, number, number] {
 export function luminance(value: string): number {
   const channels = toRgb(value).map((channel) => {
     const c = channel / 255
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    return c <= SRGB_THRESHOLD ? c / SRGB_LINEAR_DIVISOR : Math.pow((c + SRGB_OFFSET) / SRGB_SCALE, SRGB_GAMMA)
   })
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+  return LUMA_R * channels[0] + LUMA_G * channels[1] + LUMA_B * channels[2]
 }
 
 export function contrastRatio(fg: string, bg: string): number {
   const a = luminance(fg)
   const b = luminance(bg)
   const [hi, lo] = a > b ? [a, b] : [b, a]
-  return (hi + 0.05) / (lo + 0.05)
+  return (hi + CONTRAST_OFFSET) / (lo + CONTRAST_OFFSET)
 }
