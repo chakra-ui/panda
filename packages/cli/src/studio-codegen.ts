@@ -101,12 +101,62 @@ export function viewFiles(tokens: StudioToken[], framework: StudioFramework, key
 }
 
 export function viewerFiles(tokens: StudioToken[], keyframesCss = ''): StudioFile[] {
-  return [
+  const views = viewerViews(tokens)
+  const pages = views.length ? views : [{ id: 'tokens', label: 'Tokens', group: 'tokens' as const }]
+  const files: StudioFile[] = [
     tokensSnapshotFile(tokens),
-    { path: 'index.html', code: VIEWER_HTML },
     { path: 'studio.css', code: keyframesCss ? `${VIEWER_CSS}\n${keyframesCss}` : VIEWER_CSS },
     { path: 'studio.js', code: VIEWER_JS },
   ]
+  pages.forEach((view, index) => {
+    files.push({ path: index === 0 ? 'index.html' : `${view.id}.html`, code: viewerHtml(view, views) })
+  })
+  return files
+}
+
+interface ViewerView {
+  id: string
+  label: string
+  group: 'tokens' | 'playground'
+}
+
+const VIEWER_ORDER = [
+  'colors',
+  'fontSizes',
+  'fontWeights',
+  'fonts',
+  'lineHeights',
+  'letterSpacings',
+  'spacing',
+  'sizes',
+  'radii',
+  'borders',
+  'shadows',
+  'blurs',
+  'aspectRatios',
+  'durations',
+  'easings',
+  'animations',
+  'breakpoints',
+]
+const VIEWER_TYPE_CATS = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
+
+function viewerViews(tokens: StudioToken[]): ViewerView[] {
+  const rank = (category: string) => {
+    const index = VIEWER_ORDER.indexOf(category)
+    return index === -1 ? VIEWER_ORDER.length : index
+  }
+  const categories = [...new Set(tokens.filter((token) => !token.conditions).map((token) => token.category))].sort(
+    (a, b) => rank(a) - rank(b),
+  )
+  const views: ViewerView[] = categories.map((id) => ({ id, label: id, group: 'tokens' }))
+  if (tokens.some((token) => token.conditions))
+    views.push({ id: 'semantic', label: 'semantic tokens', group: 'tokens' })
+  if (tokens.some((token) => token.category === 'colors'))
+    views.push({ id: 'contrast', label: 'Contrast', group: 'playground' })
+  if (tokens.some((token) => VIEWER_TYPE_CATS.has(token.category)))
+    views.push({ id: 'typography', label: 'Typography', group: 'playground' })
+  return views
 }
 
 export function keyframesToCss(keyframes: unknown): string {
@@ -130,16 +180,17 @@ export function keyframesToCss(keyframes: unknown): string {
   return blocks.join('\n')
 }
 
-const VIEWER_HTML = `<!doctype html>
+function viewerHtml(view: ViewerView, views: ViewerView[]): string {
+  return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Panda Studio</title>
+    <title>Panda Studio — ${view.label}</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐼%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="studio.css" />
   </head>
-  <body>
+  <body data-view="${view.id}">
     <div class="app">
       <aside class="sidebar">
         <div class="brand"><span class="logo">🐼</span> Panda Studio</div>
@@ -150,11 +201,8 @@ const VIEWER_HTML = `<!doctype html>
         <nav class="nav">
           <div class="nav-label">Tokens</div>
           <ul id="nav"></ul>
-          <div class="nav-label nav-label-spaced">Playground</div>
-          <ul>
-            <li><a href="#tool-contrast" data-cat="tool-contrast">Contrast</a></li>
-            <li><a href="#tool-typography" data-cat="tool-typography">Typography</a></li>
-          </ul>
+          <div class="nav-label nav-label-spaced" id="nav-play-label">Playground</div>
+          <ul id="nav-play"></ul>
         </nav>
       </aside>
       <main class="content">
@@ -164,10 +212,12 @@ const VIEWER_HTML = `<!doctype html>
       </main>
       <button class="theme" id="theme" type="button" aria-label="Toggle color theme"></button>
     </div>
+    <script id="views" type="application/json">${JSON.stringify(views)}</script>
     <script src="studio.js"></script>
   </body>
 </html>
 `
+}
 
 const VIEWER_CSS = `:root {
   color-scheme: light;
@@ -282,7 +332,6 @@ themeButton.addEventListener('click', () => {
 })
 renderThemeButton()
 
-const CATEGORY_ORDER = ['colors', 'fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings', 'spacing', 'sizes', 'radii', 'borders', 'shadows', 'blurs', 'aspectRatios', 'durations', 'easings', 'animations', 'breakpoints']
 const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
 const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
 const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing', durations: 'duration' }
@@ -463,59 +512,60 @@ function makeCard(token) {
   return card
 }
 
-const rank = (category) => {
-  const index = CATEGORY_ORDER.indexOf(category)
-  return index === -1 ? CATEGORY_ORDER.length : index
+function matchesTerm(token, term) {
+  return (token.name + ' ' + token.value + ' ' + token.category).toLowerCase().includes(term)
 }
 
-function render(tokens, query) {
+function renderView(tokens, view, query) {
   const grid = document.getElementById('grid')
+  const tools = document.getElementById('tools')
+  const count = document.getElementById('count')
   grid.textContent = ''
+  tools.textContent = ''
+
+  if (view === 'contrast') {
+    count.textContent = ''
+    renderContrast(tools, tokens.filter((token) => token.category === 'colors'))
+    return
+  }
+  if (view === 'typography') {
+    count.textContent = ''
+    renderTypographyPlayground(tools, tokens)
+    return
+  }
+
   const term = query.trim().toLowerCase()
-  const matches = term
-    ? tokens.filter((token) => (token.name + ' ' + token.value + ' ' + token.category).toLowerCase().includes(term))
-    : tokens
-  document.getElementById('count').textContent = matches.length + ' tokens'
 
-  const semantic = matches.filter((token) => token.conditions)
-  const byCategory = new Map()
-  for (const token of matches) {
-    if (token.conditions) continue
-    if (!byCategory.has(token.category)) byCategory.set(token.category, [])
-    byCategory.get(token.category).push(token)
-  }
-
-  for (const category of [...byCategory.keys()].sort((a, b) => rank(a) - rank(b))) {
+  if (view === 'semantic') {
+    let items = tokens.filter((token) => token.conditions)
+    if (term) items = items.filter((token) => matchesTerm(token, term))
+    count.textContent = items.length + ' tokens'
     const section = document.createElement('section')
-    section.id = 'cat-' + category
-    section.dataset.cat = category
-    const heading = document.createElement('h2')
-    heading.textContent = category
-    const body = document.createElement('div')
-    if (category === 'colors') renderColors(body, byCategory.get(category))
-    else if (TYPE_CATEGORIES.has(category)) renderType(body, category, byCategory.get(category))
-    else if (SCALE_CATEGORIES.has(category)) renderScale(body, byCategory.get(category))
-    else {
-      body.className = 'grid'
-      for (const token of byCategory.get(category)) body.appendChild(makeCard(token))
-    }
-    section.append(heading, body)
-    grid.appendChild(section)
-  }
-
-  if (semantic.length) {
-    const section = document.createElement('section')
-    section.id = 'cat-semantic'
-    section.dataset.cat = 'semantic'
     const heading = document.createElement('h2')
     heading.textContent = 'semantic tokens'
     const body = document.createElement('div')
-    renderSemantic(body, semantic)
+    renderSemantic(body, items)
     section.append(heading, body)
     grid.appendChild(section)
+    return
   }
 
-  updateActiveNav()
+  let items = tokens.filter((token) => !token.conditions && token.category === view)
+  if (term) items = items.filter((token) => matchesTerm(token, term))
+  count.textContent = items.length + ' tokens'
+  const section = document.createElement('section')
+  const heading = document.createElement('h2')
+  heading.textContent = view
+  const body = document.createElement('div')
+  if (view === 'colors') renderColors(body, items)
+  else if (TYPE_CATEGORIES.has(view)) renderType(body, view, items)
+  else if (SCALE_CATEGORIES.has(view)) renderScale(body, items)
+  else {
+    body.className = 'grid'
+    for (const token of items) body.appendChild(makeCard(token))
+  }
+  section.append(heading, body)
+  grid.appendChild(section)
 }
 
 function renderSemantic(container, tokens) {
@@ -550,38 +600,25 @@ function renderSemantic(container, tokens) {
   container.appendChild(grid)
 }
 
-function navItem(nav, cat, label) {
-  const item = document.createElement('li')
-  const link = document.createElement('a')
-  link.href = '#cat-' + cat
-  link.dataset.cat = cat
-  link.textContent = label
-  item.appendChild(link)
-  nav.appendChild(item)
-}
-
-function buildNav(tokens) {
-  const nav = document.getElementById('nav')
-  const categories = [...new Set(tokens.filter((token) => !token.conditions).map((token) => token.category))].sort(
-    (a, b) => rank(a) - rank(b),
-  )
-  for (const category of categories) navItem(nav, category, category)
-  if (tokens.some((token) => token.conditions)) navItem(nav, 'semantic', 'semantic tokens')
-}
-
-function updateActiveNav() {
-  const sections = [...document.querySelectorAll('section[data-cat]')]
-  if (sections.length === 0) return
-  const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
-  let active = sections[0].dataset.cat
-  if (atBottom) {
-    active = sections[sections.length - 1].dataset.cat
-  } else {
-    for (const section of sections) {
-      if (section.getBoundingClientRect().top <= 120) active = section.dataset.cat
+function buildNav(views, current) {
+  const tokenList = document.getElementById('nav')
+  const playList = document.getElementById('nav-play')
+  let hasPlayground = false
+  views.forEach((view, index) => {
+    const item = document.createElement('li')
+    const link = document.createElement('a')
+    link.href = index === 0 ? 'index.html' : view.id + '.html'
+    link.textContent = view.label
+    if (view.id === current) link.classList.add('active')
+    item.appendChild(link)
+    if (view.group === 'playground') {
+      playList.appendChild(item)
+      hasPlayground = true
+    } else {
+      tokenList.appendChild(item)
     }
-  }
-  for (const link of document.querySelectorAll('.nav a')) link.classList.toggle('active', link.dataset.cat === active)
+  })
+  if (!hasPlayground) document.getElementById('nav-play-label').style.display = 'none'
 }
 
 function toRgb(value) {
@@ -735,27 +772,6 @@ function renderTypographyPlayground(container, tokens) {
   update()
 }
 
-function renderTools(tokens) {
-  const tools = document.getElementById('tools')
-  renderContrast(tools, tokens.filter((token) => token.category === 'colors'))
-  renderTypographyPlayground(tools, tokens)
-  updateActiveNav()
-}
-
-let navScrollQueued = false
-window.addEventListener(
-  'scroll',
-  () => {
-    if (navScrollQueued) return
-    navScrollQueued = true
-    requestAnimationFrame(() => {
-      navScrollQueued = false
-      updateActiveNav()
-    })
-  },
-  { passive: true },
-)
-
 function persistQuery(query) {
   const url = new URL(location.href)
   if (query) url.searchParams.set('q', query)
@@ -764,15 +780,16 @@ function persistQuery(query) {
 }
 
 fetch('tokens.json').then((res) => res.json()).then((tokens) => {
-  buildNav(tokens)
-  renderTools(tokens)
+  const views = JSON.parse(document.getElementById('views').textContent)
+  const current = document.body.dataset.view
+  buildNav(views, current)
   const search = document.getElementById('search')
   search.value = new URLSearchParams(location.search).get('q') || ''
   search.addEventListener('input', () => {
     persistQuery(search.value)
-    render(tokens, search.value)
+    renderView(tokens, current, search.value)
   })
-  render(tokens, search.value)
+  renderView(tokens, current, search.value)
 })
 `
 
