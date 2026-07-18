@@ -1,12 +1,29 @@
 import { matchesTerm, SCALE_CATEGORIES, type StudioToken, TYPE_CATEGORIES } from './helpers'
 import { Card, Palette, Scale, Semantic, ShadowCard, TypeList } from './sections'
-import { Contrast, Playground, TypographyPlayground } from './tools'
+import { Showcase } from './showcase'
+import { Contrast, TypographyPlayground } from './tools'
 
-export function ViewContent({ view, tokens, query }: { view: string; tokens: StudioToken[]; query: string }) {
+export function ViewContent({
+  view,
+  tokens,
+  query,
+  theme,
+}: {
+  view: string
+  tokens: StudioToken[]
+  query: string
+  theme: string
+}) {
   const term = query.trim().toLowerCase()
   if (view === 'contrast') return <Contrast colors={tokens.filter((t) => t.category === 'colors')} />
   if (view === 'typography') return <TypographyPlayground tokens={tokens} />
-  if (view === 'playground') return <Playground tokens={tokens} />
+  if (view === 'playground')
+    return (
+      <section>
+        <h2>playground</h2>
+        <Showcase tokens={tokens} theme={theme} />
+      </section>
+    )
 
   if (view === 'semantic') {
     const items = tokens.filter((t) => t.conditions).filter((t) => !term || matchesTerm(t, term))

@@ -79,7 +79,7 @@ export function App({ tokens, views, current, logo }: AppProps) {
               onSearch={onSearch}
               count={countFor(current, tokens, query)}
             />
-            <ViewContent view={current} tokens={tokens} query={query} />
+            <ViewContent view={current} tokens={tokens} query={query} theme={activeTheme} />
           </>
         )}
       </main>
