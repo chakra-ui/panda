@@ -179,21 +179,26 @@ function Semantic({ items }: { items: StudioToken[] }) {
       {[...byCategory.entries()].map(([category, group]) => (
         <>
           {multi && <h3 class="semantic-sub">{category}</h3>}
-          <div class="semantic">
-            {group.map((token) => (
-              <div class="semantic-card" key={token.path}>
-                <div class="semantic-name">{token.name}</div>
-                {category === 'colors' ? (
-                  <div class="sem-swatches">
-                    {Object.entries(token.conditions ?? {}).map(([label, value]) => (
-                      <div key={label}>
-                        <div class="sem-chip" style={{ background: value }} title={value} />
-                        <div class="sem-cond-name">{label}</div>
-                        <div class="sem-cond-value">{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
+          {category === 'colors' ? (
+            group.map((token) => (
+              <div class="palette" key={token.path}>
+                <div class="palette-name">{token.name}</div>
+                <div class="shades">
+                  {Object.entries(token.conditions ?? {}).map(([label, value]) => (
+                    <div key={label}>
+                      <div class="shade-chip" style={{ background: value }} title={value} />
+                      <div class="shade-name">{label}</div>
+                      <div class="shade-value">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="semantic">
+              {group.map((token) => (
+                <div class="semantic-card" key={token.path}>
+                  <div class="semantic-name">{token.name}</div>
                   <div class="semantic-conds">
                     {Object.entries(token.conditions ?? {}).map(([label, value]) => (
                       <div class="semantic-cond" key={label}>
@@ -202,10 +207,10 @@ function Semantic({ items }: { items: StudioToken[] }) {
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       ))}
     </>
@@ -323,133 +328,80 @@ function TypographyPlayground({ tokens }: { tokens: StudioToken[] }) {
   )
 }
 
-function PlaygroundBox({ category, value, mini }: { category: string; value: string; mini?: boolean }) {
-  const cls = mini ? ' pg-mini' : ''
-  if (category === 'colors') return <div class={`pg-fill${cls}`} style={{ background: value }} />
-  if (category === 'spacing')
-    return (
-      <div class={`pg-surface${cls}`} style={{ padding: value }}>
-        <div class="pg-dot" />
-      </div>
-    )
-  if (category === 'sizes') return <div class={`pg-fill${cls}`} style={{ width: value, height: value }} />
-  if (category === 'radii') return <div class={`pg-fill${cls}`} style={{ borderRadius: value }} />
-  if (category === 'borders') return <div class={`pg-surface${cls}`} style={{ border: value }} />
-  if (category === 'shadows')
-    return <div class={`pg-fill${cls}`} style={{ background: 'var(--card)', boxShadow: value }} />
-  if (category === 'blurs')
-    return (
-      <div
-        class={`pg-fill${cls}`}
-        style={{ background: 'linear-gradient(135deg, var(--accent), #ec4899)', filter: `blur(${value})` }}
-      />
-    )
-  if (category === 'aspectRatios')
-    return <div class={`pg-fill${cls}`} style={{ aspectRatio: value, height: 'auto', width: 120 }} />
-  if (TYPE_CATEGORIES.has(category))
-    return (
-      <div class={`pg-text${cls}`} style={typeStyle(category, value)}>
-        Ag
-      </div>
-    )
-  if (category === 'durations')
-    return (
-      <div
-        class={`pg-fill${cls}`}
-        style={{ background: 'var(--accent)', animation: `panda-studio-ease ${value} infinite alternate` }}
-      />
-    )
-  if (category === 'easings')
-    return (
-      <div
-        class={`pg-fill${cls}`}
-        style={{
-          background: 'var(--accent)',
-          animation: 'panda-studio-ease 1.4s infinite alternate',
-          animationTimingFunction: value,
-        }}
-      />
-    )
-  if (category === 'animations')
-    return <div class={`pg-fill${cls}`} style={{ background: 'var(--accent)', animation: value }} />
-  return <div class={`pg-text${cls}`}>{value}</div>
+const PG_HTML = `<div class="card">
+  <span class="tag">Panda</span>
+  <h1>Design tokens, live</h1>
+  <p>Edit the HTML and CSS. Every token in your config is a CSS variable, e.g. var(--colors-accent).</p>
+  <button>Get started</button>
+</div>`
+
+const PG_CSS = `.card {
+  max-width: 380px;
+  padding: var(--spacing-6, 24px);
+  border-radius: var(--radii-xl, 16px);
+  background: var(--colors-bg, #fff);
+  color: var(--colors-text, #111);
+  box-shadow: var(--shadows-lg, 0 10px 30px rgba(0, 0, 0, 0.12));
 }
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--colors-accent, #f6e458);
+  color: #1a1a1a;
+}
+h1 { font-size: var(--fontSizes-2xl, 1.6rem); margin: 14px 0 6px; }
+p { color: var(--colors-muted, #667085); line-height: 1.6; }
+button {
+  margin-top: 16px;
+  border: 0;
+  padding: 10px 18px;
+  border-radius: var(--radii-md, 8px);
+  background: var(--colors-accent, #f6e458);
+  font-weight: 600;
+  cursor: pointer;
+}`
 
 function Playground({ tokens }: { tokens: StudioToken[] }) {
-  const cats = [...new Set(tokens.filter((token) => !token.conditions).map((token) => token.category))]
-  const hasSemantic = tokens.some((token) => token.conditions)
-  const categories = hasSemantic ? [...cats, 'semantic'] : cats
-  const [cat, setCat] = useState(categories[0])
-  const list = useMemo(
-    () =>
-      cat === 'semantic'
-        ? tokens.filter((t) => t.conditions)
-        : tokens.filter((t) => t.category === cat && !t.conditions),
-    [cat, tokens],
-  )
-  const [path, setPath] = useState(list[0]?.path)
-  const token = list.find((t) => t.path === path) ?? list[0]
+  const vars = tokens.map((token) => `  --${token.path.replace(/\./g, '-')}: ${token.value};`).join('\n')
+  const [html, setHtml] = useState(PG_HTML)
+  const [css, setCss] = useState(PG_CSS)
+  const srcdoc = `<!doctype html><html><head><meta charset="utf-8" /><style>
+:root {
+${vars}
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 28px; font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #111; }
+${css}
+</style></head><body>
+${html}
+</body></html>`
 
   return (
     <section>
       <h2>playground</h2>
-      <div class="tool">
-        <div class="tool-controls">
-          <label>
-            Category
-            <select
-              value={cat}
-              onChange={(e) => {
-                const next = (e.currentTarget as HTMLSelectElement).value
-                setCat(next)
-                const first = (
-                  next === 'semantic'
-                    ? tokens.filter((t) => t.conditions)
-                    : tokens.filter((t) => t.category === next && !t.conditions)
-                )[0]
-                setPath(first?.path)
-              }}
-            >
-              {categories.map((c) => (
-                <option value={c} key={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+      <div class="pg-editor">
+        <div class="pg-panes">
+          <label class="pg-pane">
+            <span>HTML</span>
+            <textarea
+              spellcheck={false}
+              value={html}
+              onInput={(e) => setHtml((e.currentTarget as HTMLTextAreaElement).value)}
+            />
           </label>
-          <label>
-            Token
-            <select value={path} onChange={(e) => setPath((e.currentTarget as HTMLSelectElement).value)}>
-              {list.map((t) => (
-                <option value={t.path} key={t.path}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+          <label class="pg-pane">
+            <span>CSS</span>
+            <textarea
+              spellcheck={false}
+              value={css}
+              onInput={(e) => setCss((e.currentTarget as HTMLTextAreaElement).value)}
+            />
           </label>
         </div>
-        <div>
-          {token && (
-            <>
-              <div class="pg-preview">
-                <PlaygroundBox category={token.category} value={token.value} />
-              </div>
-              <div class="pg-meta">
-                {token.path} → {token.value}
-              </div>
-              {token.conditions && (
-                <div class="pg-themes">
-                  {Object.entries(token.conditions).map(([label, value]) => (
-                    <div class="pg-cond" key={label}>
-                      <PlaygroundBox category={token.category} value={value} mini />
-                      <div class="pg-cond-label">{label}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <iframe class="pg-frame" title="Playground preview" srcdoc={srcdoc} />
       </div>
     </section>
   )
@@ -616,14 +568,14 @@ export function App({ tokens, views, current, logo }: AppProps) {
           </nav>
         ) : (
           <nav class="nav">
-            <div class="nav-label">Tokens</div>
-            {navList(tokenViews)}
             {semanticViews.length > 0 && (
               <>
-                <div class="nav-label nav-label-spaced">Semantic</div>
+                <div class="nav-label">Semantic</div>
                 {navList(semanticViews)}
               </>
             )}
+            <div class={semanticViews.length > 0 ? 'nav-label nav-label-spaced' : 'nav-label'}>Tokens</div>
+            {navList(tokenViews)}
             {playViews.length > 0 && (
               <>
                 <div class="nav-label nav-label-spaced">Playground</div>
