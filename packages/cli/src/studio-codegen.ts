@@ -200,7 +200,7 @@ renderThemeButton()
 const CATEGORY_ORDER = ['colors', 'fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings', 'spacing', 'sizes', 'radii', 'borders', 'shadows', 'blurs', 'aspectRatios', 'durations', 'easings', 'animations', 'breakpoints']
 const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
 const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
-const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing' }
+const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing', durations: 'duration' }
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
 function toPx(value) {
@@ -335,19 +335,21 @@ function makePreview(category, value) {
     wrap.appendChild(box)
     return wrap
   }
-  if (kind === 'easing') {
+  if (kind === 'easing' || kind === 'duration') {
     const track = document.createElement('div')
     track.className = 'ease-track'
     const dot = document.createElement('div')
     dot.className = 'ease-dot'
-    dot.style.animationTimingFunction = value
+    if (kind === 'easing') dot.style.animationTimingFunction = value
+    else { dot.style.animationDuration = value; dot.style.animationTimingFunction = 'linear' }
     track.appendChild(dot)
     wrap.appendChild(track)
     return wrap
   }
   const chip = document.createElement('div')
-  chip.style.height = '48px'
+  chip.style.height = '64px'
   chip.style.aspectRatio = value
+  chip.style.maxWidth = '100%'
   chip.style.background = 'var(--swatch)'
   chip.style.borderRadius = '6px'
   wrap.appendChild(chip)
@@ -503,7 +505,7 @@ const COMPONENT_CSS = `.panda-studio { --fg: #1a1a1a; --muted: #71717a; --border
 
 const SHARED_HELPERS = `const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
 const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
-const GRID_KIND: Record<string, string> = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing' }
+const GRID_KIND: Record<string, string> = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing', durations: 'duration' }
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
 const familyOf = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name)
@@ -567,9 +569,10 @@ function GridPreview({ category, value }: { category: string; value: string }) {
     case 'border': return <div className="chip" style={{ border: value }} />
     case 'shadow': return <div className="chip" style={{ background: 'var(--shadow-bg)', boxShadow: value }} />
     case 'blur': return <div className="chip" style={{ background: 'linear-gradient(135deg, var(--accent), #ec4899)', filter: \`blur(\${value})\` }} />
-    case 'ratio': return <div style={{ height: 48, aspectRatio: value, background: 'var(--swatch)', borderRadius: 6 }} />
+    case 'ratio': return <div style={{ height: 64, aspectRatio: value, maxWidth: '100%', background: 'var(--swatch)', borderRadius: 6 }} />
     case 'animation': return <div className="anim-box" style={{ animation: value }} />
     case 'easing': return <div className="ease-track"><div className="ease-dot" style={{ animationTimingFunction: value }} /></div>
+    case 'duration': return <div className="ease-track"><div className="ease-dot" style={{ animationDuration: value, animationTimingFunction: 'linear' }} /></div>
     default: return null
   }
 }
@@ -701,9 +704,10 @@ function GridPreview(props: { category: string; value: string }) {
     case 'border': return <div class="chip" style={{ border: props.value }} />
     case 'shadow': return <div class="chip" style={{ background: 'var(--shadow-bg)', 'box-shadow': props.value }} />
     case 'blur': return <div class="chip" style={{ background: 'linear-gradient(135deg, var(--accent), #ec4899)', filter: \`blur(\${props.value})\` }} />
-    case 'ratio': return <div style={{ height: '48px', 'aspect-ratio': props.value, background: 'var(--swatch)', 'border-radius': '6px' }} />
+    case 'ratio': return <div style={{ height: '64px', 'aspect-ratio': props.value, 'max-width': '100%', background: 'var(--swatch)', 'border-radius': '6px' }} />
     case 'animation': return <div class="anim-box" style={{ animation: props.value }} />
     case 'easing': return <div class="ease-track"><div class="ease-dot" style={{ 'animation-timing-function': props.value }} /></div>
+    case 'duration': return <div class="ease-track"><div class="ease-dot" style={{ 'animation-duration': props.value, 'animation-timing-function': 'linear' }} /></div>
     default: return null
   }
 }
