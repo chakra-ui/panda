@@ -238,7 +238,7 @@ function viewerHtml(view: ViewerView, views: ViewerView[]): string {
         </nav>
       </aside>
       <main class="content">
-        <div class="content-head"><span class="count" id="count"></span></div>
+        <div class="content-head"><nav class="crumb" id="crumb"></nav><span class="count" id="count"></span></div>
         <div id="grid"></div>
         <div id="tools"></div>
       </main>
@@ -288,6 +288,9 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-s
 .theme:hover { border-color: var(--accent); }
 .content { flex: 1; min-width: 0; padding: 28px 40px 80px; }
 .content-head { margin-bottom: 24px; min-height: 16px; }
+.crumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: capitalize; }
+.crumb .sep { opacity: 0.5; }
+.crumb .here { color: var(--fg); font-weight: 600; }
 .content .count { color: var(--muted); font-size: 13px; }
 section { margin-bottom: 44px; scroll-margin-top: 24px; }
 section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 16px; }
@@ -653,6 +656,21 @@ function buildNav(views, current) {
   if (!hasPlayground) document.getElementById('nav-play-label').style.display = 'none'
 }
 
+function buildBreadcrumb(views, current) {
+  const crumb = document.getElementById('crumb')
+  const view = views.find((item) => item.id === current)
+  if (!view) return
+  const group = document.createElement('span')
+  group.textContent = view.group === 'playground' ? 'Playground' : 'Tokens'
+  const sep = document.createElement('span')
+  sep.className = 'sep'
+  sep.textContent = '/'
+  const here = document.createElement('span')
+  here.className = 'here'
+  here.textContent = view.label
+  crumb.append(group, sep, here)
+}
+
 function toRgb(value) {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 1
@@ -815,6 +833,7 @@ fetch('tokens.json').then((res) => res.json()).then((tokens) => {
   const views = JSON.parse(document.getElementById('views').textContent)
   const current = document.body.dataset.view
   buildNav(views, current)
+  buildBreadcrumb(views, current)
   const search = document.getElementById('search')
   search.value = new URLSearchParams(location.search).get('q') || ''
   search.addEventListener('input', () => {
