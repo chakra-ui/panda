@@ -1,6 +1,8 @@
 use indoc::indoc;
 use insta::assert_yaml_snapshot;
-use pandacss_extractor::{DiagnosticSeverity, ImportScanResult, scan_imports};
+use pandacss_extractor::{
+    DiagnosticSeverity, ImportScanResult, ScanImportsOptions, scan_imports, scan_imports_with,
+};
 
 fn scan(source: &str) -> ImportScanResult {
     scan_imports(source, "fixture.tsx")
@@ -528,4 +530,62 @@ fn span_covers_declaration() {
     let record = &result.imports[0];
     let slice = &source[record.span.start as usize..record.span.end as usize];
     assert_eq!(slice, "import x from 'src';");
+}
+
+#[test]
+fn reexports_opt_in_covers_export_from() {
+    let source = indoc! {"
+        import { Button } from '@acme/ds'
+        export { Card as C } from '@acme/ds'
+        export * from '@acme/ds'
+    "};
+    assert_eq!(scan(source).imports.len(), 1);
+
+    let with_reexports = scan_imports_with(
+        source,
+        "fixture.tsx",
+        ScanImportsOptions {
+            reexports: true,
+            dynamic: false,
+        },
+    );
+    assert_yaml_snapshot!(with_reexports, @r#"
+    imports:
+      - module: "@acme/ds"
+        kind: value
+        typeOnly: false
+        specifiers:
+          - kind: named
+            imported: Button
+            local: Button
+            typeOnly: false
+            span:
+              start: 9
+              end: 15
+        span:
+          start: 0
+          end: 33
+      - module: "@acme/ds"
+        kind: value
+        typeOnly: false
+        specifiers:
+          - kind: named
+            imported: Card
+            local: C
+            typeOnly: false
+            span:
+              start: 43
+              end: 52
+        span:
+          start: 34
+          end: 70
+      - module: "@acme/ds"
+        kind: sideEffect
+        typeOnly: false
+        specifiers: []
+        span:
+          start: 71
+          end: 95
+    diagnostics: []
+    "#);
 }

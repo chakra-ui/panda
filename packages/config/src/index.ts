@@ -12,6 +12,7 @@ export { mergeExcludes, resolveSmartInclude } from './design-system/smart-includ
 export { collectTokenPaths } from './design-system/token-paths'
 export { toPosixPath, toPosixRelative, toRelativeKey } from './paths'
 
+export type { ResolvedDesignSystem } from './design-system/chain'
 export type { CompilePresetOptions, CompilePresetResult } from './design-system/compile-preset'
 export type { PackageIdentity, SyncExportsOptions, SyncExportsResult } from './design-system/package'
 export type {

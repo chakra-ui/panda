@@ -343,6 +343,11 @@ export interface OptimizeOptions {
    * Narrow compound variant CSS to statically selected variant combinations.
    */
   smartCompoundVariants?: boolean
+  /**
+   * Hydrate only build-info modules for design-system exports the app imports.
+   * Off by default. Namespace / side-effect imports still hydrate everything.
+   */
+  treeshakeDesignSystem?: boolean
 }
 
 interface CodegenOptions {

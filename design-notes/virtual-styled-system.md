@@ -342,7 +342,8 @@ not covered by ui's artifact (see
   effective config (DS + parents + app), including token types. Apps should import from that outdir for TypeScript until
   overlay / DS-published styled-system ships. Dual `importMap` still matches DS package roots for extraction.
 - ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
-- ⬜ **Import-based hydration narrowing** — scan app imports and pass `only` to build-info hydration.
+- ✅ **Import-based hydration narrowing** — `optimize.treeshakeDesignSystem` (see
+  [build-info.md](./build-info.md#opt-in-consume-narrowing)).
 - ⬜ **Expanded manifest wire format** — package-export `importMap` paths, optional dependency lists, and virtual
   overlay metadata. The implemented `panda.lib.json` uses `importMap` and singular `designSystem` parent links today.
 - ⬜ **Overlay codegen** — emit only app delta; skip DS-owned modules; keep merged types from effective config. Deferred

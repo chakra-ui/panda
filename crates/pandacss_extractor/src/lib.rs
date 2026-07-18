@@ -13,6 +13,7 @@ mod astro_adapter;
 mod calls;
 mod cross_file;
 mod css_template;
+mod design_system_imports;
 mod export_names;
 mod extract;
 mod fragment;
@@ -29,12 +30,17 @@ mod template_styles;
 mod vue_adapter;
 
 pub use calls::{ExtractedCall, ExtractedCallsResult, extract_calls};
+pub use design_system_imports::{
+    DesignSystemImportSelection, DesignSystemPackageQuery, collect_design_system_imports,
+    collect_design_system_imports_for_packages, selection_from_import_records,
+};
 pub use extract::{
     ExtractDebugResult, ExtractUsage, ExtractVerboseResult, TokenRef, extract, extract_debug,
     extract_verbose, extract_with_pattern_raw_transform,
 };
 pub use imports::{
-    ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind, scan_imports,
+    ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
+    ScanImportsOptions, scan_imports, scan_imports_with,
 };
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.

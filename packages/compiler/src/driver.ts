@@ -40,7 +40,8 @@ import {
   toRelativeKey,
   type CompilePresetResult,
 } from '@pandacss/config'
-import { createProjectFromLoadedConfig } from './tooling/create-project'
+import { collectImportSelections, hydrateDesignSystem, treeshakeKeyFromSelections } from './design-system'
+import { createProjectFromLoadedConfig, treeshakeDesignSystemEnabled } from './tooling/create-project'
 
 export interface NodeDriverOptions {
   cwd: string
@@ -106,6 +107,7 @@ export class NodeDriver extends BaseDriver {
   #designSystemPreset: CompilePresetResult | undefined
   #designSystemArtifactSnapshot: string
   #designSystemWatchTargets: DesignSystemWatchTarget[] | undefined
+  #designSystemTreeshakeKey: string
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = createProjectFromLoadedConfig(loaded)
@@ -114,6 +116,7 @@ export class NodeDriver extends BaseDriver {
     this.#loaded = loaded
     this.#designSystemDiagnostics = built.designSystemDiagnostics
     this.#designSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, loaded)
+    this.#designSystemTreeshakeKey = built.designSystemTreeshakeKey ?? ''
   }
 
   get designSystemDiagnostics() {
@@ -215,8 +218,30 @@ export class NodeDriver extends BaseDriver {
       this.#designSystemPreset = undefined
       this.#designSystemArtifactSnapshot = nextDesignSystemArtifactSnapshot
       this.#designSystemWatchTargets = undefined
+      this.#designSystemTreeshakeKey = built.designSystemTreeshakeKey ?? ''
     }
     return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
+  }
+
+  /** Re-hydrate when treeshake import set changes. */
+  syncDesignSystemTreeShake(): boolean {
+    if (!treeshakeDesignSystemEnabled(this.#loaded.config)) return false
+    const chain = this.#loaded.metadata?.designSystem
+    if (!chain?.length) return false
+
+    const selections = collectImportSelections(this.compiler, chain)
+    const nextKey = treeshakeKeyFromSelections(chain, selections)
+    if (nextKey === this.#designSystemTreeshakeKey) return false
+
+    const hydrated = hydrateDesignSystem(this.compiler, {
+      chain,
+      consumerTokenPaths: this.#loaded.metadata?.userTokenPaths ?? [],
+      treeshake: true,
+      importSelections: selections,
+    })
+    this.#designSystemDiagnostics = hydrated.diagnostics
+    this.#designSystemTreeshakeKey = hydrated.treeshakeKey
+    return true
   }
 
   applyChange(change: SourceChange): boolean {
@@ -286,6 +311,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   override cssgen(options?: CompileOptions): CompileOutput {
+    this.syncDesignSystemTreeShake()
     const output = super.cssgen(options)
     this.runCssgenDone({
       artifact: 'styles.css',
@@ -298,6 +324,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   override writeCss(options: WriteCssOptions): WriteCssResult {
+    this.syncDesignSystemTreeShake()
     const result = super.writeCss(options)
     this.runCssgenDone({
       artifact: 'styles.css',
