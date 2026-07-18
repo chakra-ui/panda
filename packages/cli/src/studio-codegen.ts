@@ -209,6 +209,12 @@ function toPx(value) {
   return match[2] === 'px' ? parseFloat(match[1]) : parseFloat(match[1]) * 16
 }
 
+function scaleWidth(px, min, max) {
+  if (px <= 0) return 0
+  if (max <= min) return 100
+  return ((Math.log(px) - Math.log(min)) / (Math.log(max) - Math.log(min))) * 98 + 2
+}
+
 function renderScale(container, tokens) {
   const rows = tokens
     .filter((token) => !token.name.includes('breakpoint-') && !Number.isNaN(toPx(token.value)))
@@ -217,6 +223,7 @@ function renderScale(container, tokens) {
   if (rows.length === 0) return
 
   const maxPx = rows[rows.length - 1].px || 1
+  const minPx = rows.find((row) => row.px > 0)?.px ?? maxPx
   const scale = document.createElement('div')
   scale.className = 'scale'
   for (const { token, px } of rows) {
@@ -233,7 +240,7 @@ function renderScale(container, tokens) {
     track.className = 's-track'
     const bar = document.createElement('div')
     bar.className = 's-bar'
-    bar.style.width = (px <= 0 ? 0 : Math.max((px / maxPx) * 100, 2)) + '%'
+    bar.style.width = scaleWidth(px, minPx, maxPx) + '%'
     track.appendChild(bar)
     scale.append(name, value, pixels, track)
   }
@@ -527,13 +534,20 @@ function groupFamilies(items: StudioToken[]) {
   return [...families.entries()]
 }
 
+function scaleWidth(px: number, min: number, max: number) {
+  if (px <= 0) return 0
+  if (max <= min) return 100
+  return ((Math.log(px) - Math.log(min)) / (Math.log(max) - Math.log(min))) * 98 + 2
+}
+
 function scaleRows(items: StudioToken[]) {
   const rows = items
     .filter((token) => !token.name.includes('breakpoint-') && !Number.isNaN(toPx(token.value)))
     .map((token) => ({ token, px: toPx(token.value) }))
     .sort((a, b) => a.px - b.px)
   const maxPx = rows.length ? rows[rows.length - 1].px || 1 : 1
-  return rows.map((row) => ({ ...row, width: row.px <= 0 ? 0 : Math.max((row.px / maxPx) * 100, 2) }))
+  const minPx = rows.find((row) => row.px > 0)?.px ?? maxPx
+  return rows.map((row) => ({ ...row, width: scaleWidth(row.px, minPx, maxPx) }))
 }`
 
 const reactTemplates = {
