@@ -53,11 +53,35 @@ export class DesignSystem {
 
     // `imports` omitted -> hydrate every module (namespace import); otherwise
     // resolve the touched modules so only their CSS emits (tree-shaking).
-    const only =
-      options.imports !== undefined ? this.#buildInfo.modulesFor(options.buildInfo, options.imports) : undefined
+    const only = resolveHydrateOnly(this.#buildInfo, options.buildInfo, options.imports)
     const result = this.#buildInfo.hydrate(options.buildInfo, { name: manifest.name, only })
     if (!result.ok) return { ok: false, reason: result.reason, modules: [] }
 
     return { ok: true, name: manifest.name, modules: result.modules }
   }
+}
+
+/**
+ * Narrow hydrate selection:
+ * - `undefined` imports → full hydrate
+ * - `[]` → nothing (app does not touch the package)
+ * - non-empty names that resolve → those modules (+ token-ref modules)
+ * - non-empty names that resolve to nothing / missing exports map → fail open (full)
+ */
+function resolveHydrateOnly(
+  buildInfo: BuildInfo,
+  artifact: DesignSystemLoadOptions['buildInfo'],
+  imports: string[] | undefined,
+): string[] | undefined {
+  if (imports === undefined) return undefined
+  if (imports.length === 0) return []
+
+  const modules = buildInfo.modulesFor(artifact, imports)
+  if (modules.length === 0) return undefined
+
+  const only = new Set(modules)
+  for (const key of buildInfo.tokenRefModules(artifact)) {
+    only.add(key)
+  }
+  return only.size === modules.length ? modules : [...only]
 }

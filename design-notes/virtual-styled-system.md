@@ -348,10 +348,11 @@ not covered by ui's artifact (see
 - ✅ **Runtime virtualization (single-level)** — every runtime import specifier (`helpers`, `css`/`cx`/`cva`/`sva`/
   `conditions`/`index`, not just recipe/pattern/jsx definitions) resolves through `CodegenContext::runtime_import` /
   `CodegenOverlay::resolve` to either the DS package or the local path. With no overlay, output stays byte-identical.
+- ✅ **Import-based hydration narrowing** — `optimize.treeshakeDesignSystem` (see
+  [build-info.md](./build-info.md#opt-in-consume-narrowing)).
 - ⬜ **Overlay codegen (nested chains)** — multi-root barrel disambiguation across a DS-on-DS chain.
 - ⬜ **Recipe/pattern runtime factory virtualization** — `recipes/runtime` and `patterns/runtime` still emit locally;
   see [design-system-deferred.md](./design-system-deferred.md).
-- ⬜ **Import-based hydration narrowing** — scan app imports and pass `only` to build-info hydration.
 - ⬜ **Plural `designSystems` config field** — consume multiple independent DS packages without a parent-chain relation.
 - ✅ **Virtual styled-system DX** — `panda lib` publishes the design system's styled-system subpath exports (`./css`,
   `./css/*`, `./helpers`, `./recipes`, `./patterns`, `./jsx`, `./tokens`, plus `/*` wildcards for deep imports), so the

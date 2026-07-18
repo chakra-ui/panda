@@ -11,7 +11,7 @@ export type PatternProperty =
   | { type: 'string' | 'boolean' | 'number'; description?: string }
 
 export interface PatternHelpers {
-  map: (value: any, fn: (value: string) => string | undefined) => any
+  map: (value: any, fn: (value: any) => any) => any
   isCssUnit: (value: any) => boolean
   isCssVar: (value: any) => boolean
   isCssFunction: (value: any) => boolean

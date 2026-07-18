@@ -16,9 +16,10 @@ import type { ExtendableUtilityConfig, UtilityConfig } from './utility'
 
 export type { TSConfig }
 
-export type CascadeLayer = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
+/** The five cascade layers, in emit order. */
+export type StylesheetLayerName = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
-export type CascadeLayers = Record<CascadeLayer, string>
+export type StylesheetLayers = Record<StylesheetLayerName, string>
 
 export interface Patterns {
   [pattern: string]: PatternConfig
@@ -198,7 +199,7 @@ export interface ImportMapOutput<T = string> {
   tokens: T[]
 }
 
-type ImportMapOption = string | ImportMapInput
+export type ImportMapOption = string | ImportMapInput
 
 interface FileSystemOptions {
   /**
@@ -322,7 +323,7 @@ interface CssgenOptions {
    * Layer mappings used in the generated css.
    * @default 'true'
    */
-  layers?: Partial<CascadeLayers>
+  layers?: Partial<StylesheetLayers>
   /**
    * Whether to minify the emitted css. The `--minify` CLI flag overrides this.
    * @default false
@@ -343,6 +344,11 @@ export interface OptimizeOptions {
    * Narrow compound variant CSS to statically selected variant combinations.
    */
   smartCompoundVariants?: boolean
+  /**
+   * Hydrate only build-info modules for design-system exports the app imports.
+   * Off by default. Namespace / side-effect imports still hydrate everything.
+   */
+  treeshakeDesignSystem?: boolean
 }
 
 interface CodegenOptions {

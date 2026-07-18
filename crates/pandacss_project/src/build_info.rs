@@ -577,6 +577,7 @@ impl super::Project {
         self.add_file_state(
             key,
             FileEntry {
+                source: Arc::from(""),
                 source_hash: 0,
                 parse_epoch: self.parse_epoch,
                 cacheable: true,

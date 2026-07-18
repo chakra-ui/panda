@@ -220,6 +220,7 @@ export default defineConfig({
     removeUnusedTokens: true, // drop unused `--*` from theme CSS
     removeUnusedKeyframes: true,
     smartCompoundVariants: true, // JIT compound variant CSS (default: all combos)
+    treeshakeDesignSystem: true, // hydrate only DS modules you import (default: all)
   },
 })
 ```

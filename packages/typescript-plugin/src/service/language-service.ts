@@ -1,5 +1,5 @@
 import ts from 'typescript'
-import type { ImportMapOutput } from '@pandacss/compiler-shared'
+import type { ImportMapOutput } from '@pandacss/types'
 import {
   completeConfigStyleObject,
   completeConfigTokenPath,

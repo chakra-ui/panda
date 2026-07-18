@@ -1,7 +1,10 @@
 import { type BuildInfoArtifact, type Compiler, type Diagnostic } from '@pandacss/compiler-shared'
-import { collectArtifactConflicts, readPandaVersion, type LoadConfigResult } from '@pandacss/config'
-
-type ResolvedDesignSystem = NonNullable<NonNullable<LoadConfigResult['metadata']>['designSystem']>[number]
+import {
+  collectArtifactConflicts,
+  readPandaVersion,
+  type LoadConfigResult,
+  type ResolvedDesignSystem,
+} from '@pandacss/config'
 
 export function artifactConflictDiagnostics(metadata: LoadConfigResult['metadata']): Diagnostic[] {
   return collectArtifactConflicts(metadata).flatMap((conflict) => [
@@ -26,23 +29,86 @@ type BuildInfoIssue =
 
 type FallbackDiagnostic = (sourceCount: number, severity: 'warning' | 'error') => Diagnostic
 
+export interface HydrateDesignSystemOptions {
+  chain: ResolvedDesignSystem[] | undefined
+  consumerTokenPaths?: string[]
+  /** Narrow hydrate to export names imported from each design-system package. */
+  treeshake?: boolean
+  /** Precomputed selections — skips a second scan (watch sync). */
+  importSelections?: Array<string[] | null>
+}
+
+export interface HydrateDesignSystemResult {
+  diagnostics: Diagnostic[]
+  /** Fingerprint of import selections — empty when treeshake is off. */
+  treeshakeKey: string
+}
+
+/** Hydrate each design-system level. With `treeshake`, one scan feeds every package. */
 export function hydrateDesignSystem(
   compiler: Compiler,
-  chain: ResolvedDesignSystem[] | undefined,
-  consumerTokenPaths: string[] = [],
-): Diagnostic[] {
+  options: HydrateDesignSystemOptions,
+): HydrateDesignSystemResult {
+  const { chain, consumerTokenPaths = [], treeshake, importSelections } = options
   if (!chain || chain.length === 0) {
-    return []
+    return { diagnostics: [], treeshakeKey: '' }
   }
 
   const pandaVersion = readPandaVersion()
   const diagnostics: Diagnostic[] = []
+  const selections = treeshake ? importSelections ?? collectImportSelections(compiler, chain) : undefined
 
-  for (const ds of chain) {
-    diagnostics.push(...hydrateLevel(compiler, ds, pandaVersion, consumerTokenPaths))
+  for (let i = 0; i < chain.length; i++) {
+    const ds = chain[i]!
+    const imports = selections ? selections[i] ?? undefined : undefined
+    diagnostics.push(...hydrateLevel(compiler, ds, pandaVersion, consumerTokenPaths, imports))
   }
 
-  return diagnostics
+  return {
+    diagnostics,
+    treeshakeKey: treeshakeKeyFromSelections(chain, selections),
+  }
+}
+
+/** One scan for the whole chain. `null` = full hydrate; `string[]` = narrow. */
+export function collectImportSelections(compiler: Compiler, chain: ResolvedDesignSystem[]): Array<string[] | null> {
+  return compiler.designSystemImportSelections(
+    chain.map((ds) => ({
+      packageRoots: getPackageRoots(ds),
+      excludeModules: getExcludedModules(ds),
+    })),
+  )
+}
+
+export function treeshakeKeyFromSelections(
+  chain: ResolvedDesignSystem[],
+  selections: Array<string[] | null> | undefined,
+): string {
+  if (!selections?.length) return ''
+  return chain.map((ds, i) => `${ds.name}:${JSON.stringify(selections[i] ?? null)}`).join('|')
+}
+
+const STYLED_SYSTEM_SUBPATHS = ['css', 'recipes', 'patterns', 'jsx', 'tokens'] as const
+
+function getPackageRoots(ds: ResolvedDesignSystem): string[] {
+  return [...new Set([ds.specifier, ds.name].filter((value): value is string => Boolean(value)))]
+}
+
+/** Always exclude conventional styled-system subpaths (+ manifest importMap). */
+function getExcludedModules(ds: ResolvedDesignSystem): string[] {
+  const excluded = new Set<string>()
+  for (const root of getPackageRoots(ds)) {
+    for (const sub of STYLED_SYSTEM_SUBPATHS) {
+      excluded.add(`${root}/${sub}`)
+    }
+  }
+  const map = ds.importMap
+  if (map) {
+    for (const value of [map.css, map.recipes, map.patterns, map.jsx, map.tokens]) {
+      if (typeof value === 'string' && value.length > 0) excluded.add(value)
+    }
+  }
+  return [...excluded]
 }
 
 function hydrateLevel(
@@ -50,6 +116,7 @@ function hydrateLevel(
   ds: ResolvedDesignSystem,
   pandaVersion: string | undefined,
   consumerTokenPaths: string[],
+  imports: string[] | undefined,
 ): Diagnostic[] {
   const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
 
@@ -57,7 +124,7 @@ function hydrateLevel(
     throw incompatibleManifestError(compiler, ds, compat.reason, pandaVersion)
   }
 
-  const diagnostics = hydrateArtifacts(compiler, ds, pandaVersion)
+  const diagnostics = hydrateArtifacts(compiler, ds, pandaVersion, imports)
 
   diagnostics.push(...tokenConflictDiagnostics(ds, consumerTokenPaths))
 
@@ -68,6 +135,7 @@ function hydrateArtifacts(
   compiler: Compiler,
   ds: ResolvedDesignSystem,
   pandaVersion: string | undefined,
+  imports: string[] | undefined,
 ): Diagnostic[] {
   if (ds.optionMismatch && ds.optionMismatch.length > 0) {
     const diagnostic = recoverFromSources(compiler, ds, (sourceCount, severity) =>
@@ -96,7 +164,11 @@ function hydrateArtifacts(
     return [diagnostic]
   }
 
-  const result = compiler.designSystem.load(ds.manifest, { buildInfo, pandaVersion })
+  const result = compiler.designSystem.load(ds.manifest, {
+    buildInfo,
+    pandaVersion,
+    ...(imports !== undefined ? { imports } : {}),
+  })
 
   if (!result.ok) {
     const issue: BuildInfoIssue =

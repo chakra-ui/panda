@@ -1,7 +1,6 @@
 import {
   BaseDriver,
   type BuildInfoArtifact,
-  type CodegenArtifact,
   type CodegenOverlay,
   type GenerateArtifactOptions,
   type CodegenOptions,
@@ -20,6 +19,7 @@ import {
   type WriteSplitCssOptions,
   collectParseDiagnostics,
   diagnosticsPass,
+  fromCodegenPrepareArtifacts,
   normalizeDiagnostics,
 } from '@pandacss/compiler-shared'
 import type { CssgenDoneHookArgs } from '@pandacss/types'
@@ -45,7 +45,8 @@ import {
   type CompilePresetResult,
 } from '@pandacss/config'
 import { dirname, resolve as resolvePath } from 'node:path'
-import { createProjectFromLoadedConfig } from './tooling/create-project'
+import { collectImportSelections, hydrateDesignSystem, treeshakeKeyFromSelections } from './design-system'
+import { createProjectFromLoadedConfig, treeshakeDesignSystemEnabled } from './tooling/create-project'
 
 export interface NodeDriverOptions {
   cwd: string
@@ -160,6 +161,7 @@ export class NodeDriver extends BaseDriver {
   #designSystemWatchTargets: DesignSystemWatchTarget[] | undefined
   #codegenOverlay: CodegenOverlay | undefined
   #codegenOverlayResolved = false
+  #designSystemTreeshakeKey: string
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = createProjectFromLoadedConfig(loaded)
@@ -168,6 +170,7 @@ export class NodeDriver extends BaseDriver {
     this.#loaded = loaded
     this.#designSystemDiagnostics = built.designSystemDiagnostics
     this.#designSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, loaded)
+    this.#designSystemTreeshakeKey = built.designSystemTreeshakeKey ?? ''
   }
 
   get designSystemDiagnostics() {
@@ -280,8 +283,30 @@ export class NodeDriver extends BaseDriver {
       this.#designSystemWatchTargets = undefined
       this.#codegenOverlay = undefined
       this.#codegenOverlayResolved = false
+      this.#designSystemTreeshakeKey = built.designSystemTreeshakeKey ?? ''
     }
     return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
+  }
+
+  /** Re-hydrate when treeshake import set changes. */
+  syncDesignSystemTreeShake(): boolean {
+    if (!treeshakeDesignSystemEnabled(this.#loaded.config)) return false
+    const chain = this.#loaded.metadata?.designSystem
+    if (!chain?.length) return false
+
+    const selections = collectImportSelections(this.compiler, chain)
+    const nextKey = treeshakeKeyFromSelections(chain, selections)
+    if (nextKey === this.#designSystemTreeshakeKey) return false
+
+    const hydrated = hydrateDesignSystem(this.compiler, {
+      chain,
+      consumerTokenPaths: this.#loaded.metadata?.userTokenPaths ?? [],
+      treeshake: true,
+      importSelections: selections,
+    })
+    this.#designSystemDiagnostics = hydrated.diagnostics
+    this.#designSystemTreeshakeKey = hydrated.treeshakeKey
+    return true
   }
 
   applyChange(change: SourceChange): boolean {
@@ -351,6 +376,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   override cssgen(options?: CompileOptions): CompileOutput {
+    this.syncDesignSystemTreeShake()
     const output = super.cssgen(options)
     this.runCssgenDone({
       artifact: 'styles.css',
@@ -363,6 +389,7 @@ export class NodeDriver extends BaseDriver {
   }
 
   override writeCss(options: WriteCssOptions): WriteCssResult {
+    this.syncDesignSystemTreeShake()
     const result = super.writeCss(options)
     this.runCssgenDone({
       artifact: 'styles.css',
@@ -433,7 +460,7 @@ export class NodeDriver extends BaseDriver {
           throw new Error('Invalid codegen:prepare hook result. Expected an artifact array or undefined.')
         }
 
-        artifacts = next as CodegenArtifact[]
+        artifacts = fromCodegenPrepareArtifacts(next)
       }
     }
 

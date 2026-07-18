@@ -20,6 +20,7 @@ export {
 } from './design-system/chain'
 export type { DesignSystemArtifactConflict, DesignSystemMetadata } from './design-system/chain'
 
+export type { ResolvedDesignSystem } from './design-system/chain'
 export type { CompilePresetOptions, CompilePresetResult } from './design-system/compile-preset'
 export type { PackageIdentity, SyncExportsOptions, SyncExportsResult } from './design-system/package'
 export type {

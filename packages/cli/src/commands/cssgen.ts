@@ -1,5 +1,6 @@
 import { defineCommand } from 'citty'
-import { type ParseFileReport, type StylesheetLayerName } from '@pandacss/compiler'
+import { type ParseFileReport } from '@pandacss/compiler'
+import type { StylesheetLayerName } from '@pandacss/types'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
 import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
 import { checkExpectedFiles, formatCheckSummary, isCheckClean } from '../check'

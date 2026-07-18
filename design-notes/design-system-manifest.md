@@ -512,8 +512,8 @@ The generated styled-system subpath exports (`./css`, `./recipes`, and friends) 
 
 ## CSS layering and tree-shaking
 
-Build info is keyed by source module. When the app imports one component, Panda can hydrate only the modules reachable
-from that import.
+Build info is keyed by source module. Opt into `optimize.treeshakeDesignSystem` to hydrate only the modules your app
+imports — details in [build-info.md](./build-info.md#opt-in-consume-narrowing).
 
 Hydrated CSS is emitted under design-system layers, ordered root-first before the app:
 

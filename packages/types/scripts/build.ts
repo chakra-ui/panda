@@ -7,22 +7,17 @@ const toDts = toExt('.d.ts')
 
 export const main = () => {
   const inputPath = path.join(__dirname, '..', 'src')
+  const distPath = path.join(__dirname, '..', 'dist')
   const files = fs.readdirSync(inputPath)
 
-  const getOrCreateDir = (dir: string) => {
-    try {
-      fs.mkdirSync(dir)
-    } catch {
-      // ignore
-    }
-  }
+  fs.rmSync(distPath, { recursive: true, force: true })
+  fs.mkdirSync(distPath, { recursive: true })
 
-  files.forEach((file) => {
-    const destFile = path.join('dist', file.endsWith('.d.ts') ? file : toDts(file))
-    getOrCreateDir('dist')
-    const content = fs.readFileSync(path.join('src', file as string))
+  for (const file of files) {
+    const destFile = path.join(distPath, file.endsWith('.d.ts') ? file : toDts(file))
+    const content = fs.readFileSync(path.join(inputPath, file))
     fs.writeFileSync(destFile, content)
-  })
+  }
 }
 
 main()

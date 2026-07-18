@@ -1,4 +1,4 @@
-import type { ImportMapOutput } from './config'
+import type { ImportMapOutput, StylesheetLayerName } from '@pandacss/types'
 import type { Diagnostic } from './diagnostics'
 
 export type CodegenArtifactId =
@@ -72,11 +72,6 @@ export interface CodegenArtifact {
   id: CodegenArtifactId | (string & {})
   files: CodegenFile[]
 }
-
-/**
- * The five cascade layers, in emit order.
- */
-export type StylesheetLayerName = 'reset' | 'base' | 'tokens' | 'recipes' | 'utilities'
 
 export interface CompileOptions {
   /**

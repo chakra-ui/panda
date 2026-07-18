@@ -62,19 +62,21 @@ export interface ConfigResolvedHookArgs {
   utils: ConfigResolvedHookUtils
 }
 
-export interface CodegenFile {
+/** Hook-facing codegen file — `dependencies` stay plain strings for plugin authors. */
+export interface CodegenPrepareFile {
   path: string
   code: string
   dependencies: string[]
 }
 
-export interface CodegenArtifact {
+/** Hook-facing codegen artifact — distinct from the compiler `CodegenArtifact` API. */
+export interface CodegenPrepareArtifact {
   id: string
-  files: CodegenFile[]
+  files: CodegenPrepareFile[]
 }
 
 export interface CodegenPrepareHookArgs {
-  artifacts: CodegenArtifact[]
+  artifacts: CodegenPrepareArtifact[]
   outdir: string
   cwd?: string | undefined
 }
@@ -139,7 +141,7 @@ export interface PandaHooks {
   /**
    * Called before generated files are written by a JS host.
    */
-  'codegen:prepare': (args: CodegenPrepareHookArgs) => void | CodegenArtifact[]
+  'codegen:prepare': (args: CodegenPrepareHookArgs) => void | CodegenPrepareArtifact[]
   /**
    * Called after generated files are written by a JS host.
    */

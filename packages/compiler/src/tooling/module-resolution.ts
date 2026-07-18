@@ -1,4 +1,5 @@
-import { outdirBasename, type ImportMapOutput } from '@pandacss/compiler-shared'
+import { outdirBasename } from '@pandacss/compiler-shared'
+import type { ImportMapOutput } from '@pandacss/types'
 
 export interface ResolveModuleTargetOptions {
   outdir: string

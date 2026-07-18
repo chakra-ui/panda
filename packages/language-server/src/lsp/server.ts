@@ -2,7 +2,7 @@ import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { TextDocuments, type Connection, type CompletionItem, type Hover } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import type { ImportMapOutput } from '@pandacss/compiler-shared'
+import type { ImportMapOutput } from '@pandacss/types'
 import { ProjectRegistry, SpecIndex } from '@pandacss/compiler/tooling'
 import { getCompletions, getHover, type LanguageServiceContext } from '@pandacss/typescript-plugin/service'
 

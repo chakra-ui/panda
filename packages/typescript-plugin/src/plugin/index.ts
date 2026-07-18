@@ -1,5 +1,5 @@
 import ts from 'typescript'
-import type { ImportMapOutput } from '@pandacss/compiler-shared'
+import type { ImportMapOutput } from '@pandacss/types'
 import { ProjectRegistry, SpecIndex, type CompletionEntry, type Project } from '@pandacss/compiler/tooling'
 import { getCompletions, getHover, type LanguageServiceContext } from '../service/language-service'
 
