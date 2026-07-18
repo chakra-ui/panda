@@ -1,10 +1,10 @@
+import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
 import {
   createPatternHelpers,
   createTransformArgs,
   getPatternDefaultValueRefsByTransformId,
   mergePatternDefaultValues,
 } from '@pandacss/compiler-shared'
-import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
 import type { RawCompiler } from './index'
 
 export type { ColorMixResult, PatternHelpers, RawToken, TransformArgs } from '@pandacss/compiler-shared'
@@ -20,16 +20,20 @@ export function registerCallbacks(
 ) {
   const utilityTransforms = callbacks['utility.transform']
   const hasUtilityTransforms = !!utilityTransforms && Object.keys(utilityTransforms).length > 0
+
   const patternTransforms = callbacks['pattern.transform']
   const hasPatternTransforms = !!patternTransforms && Object.keys(patternTransforms).length > 0
 
   const config = project.config()
+
   const patternDefaultValues = callbacks['pattern.defaultValues']
   const patternDefaultValueRefs =
     config && patternDefaultValues ? getPatternDefaultValueRefsByTransformId(config) : new Map<string, string>()
+
   if (hasPatternTransforms && !project.registerPatternTransform) {
     throw new Error('Native project does not support pattern.transform callbacks')
   }
+
   if (project.registerPatternTransform && patternTransforms) {
     for (const [id, callback] of Object.entries(patternTransforms)) {
       const defaultValueId = patternDefaultValueRefs.get(id)
@@ -48,6 +52,7 @@ export function registerCallbacks(
   if (hasUtilityTransforms && !project.registerUtilityTransform) {
     throw new Error('Native project does not support utility.transform callbacks')
   }
+
   if (project.registerUtilityTransform && utilityTransforms) {
     for (const [id, callback] of Object.entries(utilityTransforms)) {
       // Native passes the resolved value first, the original alias second (`args.raw`).
@@ -58,9 +63,11 @@ export function registerCallbacks(
   }
 
   const sourceTransforms = hooks?.['parser:before']
+
   if (sourceTransforms?.length && !project.registerSourceTransform) {
     throw new Error('Native project does not support parser:before callbacks')
   }
+
   if (project.registerSourceTransform && sourceTransforms) {
     for (const hook of sourceTransforms) {
       const callback = callbacks['parser:before']?.[hook.id]

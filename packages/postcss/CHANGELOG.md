@@ -4,8 +4,8 @@
 
 ### Patch Changes
 
-- Design-system build info loads more reliably when packages are nested, files are stale, or options do not
-  match. You get clearer errors for token conflicts and mismatched config.
+- Design-system build info loads more reliably when packages are nested, files are stale, or options do not match. You
+  get clearer errors for token conflicts and mismatched config.
 
 ## 2.0.0-beta.8
 
@@ -20,8 +20,8 @@
 
 ### Patch Changes
 
-- Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now
-  updates its styles live, instead of leaving them stale until you restart the dev server.
+- Fix hot module reloading with the PostCSS integration (`@pandacss/dev/postcss`). Editing a component now updates its
+  styles live, instead of leaving them stale until you restart the dev server.
 
 ## 2.0.0-beta.0
 
