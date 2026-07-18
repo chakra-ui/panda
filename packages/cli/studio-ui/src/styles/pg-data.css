@@ -47,36 +47,29 @@
 }
 
 .pg-slider {
-  position: relative;
+  appearance: none;
   width: 100%;
   max-width: 320px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-}
-.pg-slider-track {
-  position: absolute;
-  left: 0;
-  right: 0;
   height: 6px;
   border-radius: var(--radii-full, 999px);
   background: var(--border);
+  cursor: pointer;
+  accent-color: var(--colors-accent, var(--accent));
 }
-.pg-slider-fill {
-  position: absolute;
-  left: 0;
-  height: 6px;
-  border-radius: var(--radii-full, 999px);
-  background: var(--colors-accent, var(--accent));
-}
-.pg-slider-thumb {
-  position: absolute;
+.pg-slider::-webkit-slider-thumb {
+  appearance: none;
   width: 16px;
   height: 16px;
   border-radius: var(--radii-full, 999px);
   background: var(--card);
   border: 2px solid var(--colors-accent, var(--accent));
-  transform: translateX(-50%);
+}
+.pg-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radii-full, 999px);
+  background: var(--card);
+  border: 2px solid var(--colors-accent, var(--accent));
 }
 
 .pg-steps {

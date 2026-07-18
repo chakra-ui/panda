@@ -13,13 +13,7 @@ function Stars({ tone }: { tone: 'accent' | 'gray' }) {
 }
 
 function Slider({ value }: { value: number }) {
-  return (
-    <div class="pg-slider">
-      <div class="pg-slider-track" />
-      <div class="pg-slider-fill" style={`width:${value}%`} />
-      <div class="pg-slider-thumb" style={`left:${value}%`} />
-    </div>
-  )
+  return <input type="range" class="pg-slider" min={0} max={100} defaultValue={String(value)} />
 }
 
 export function DataDisplay() {

@@ -1,62 +1,72 @@
-import { Section, SectionTitle, SectionContent, Row, DemoList } from '../showcase-kit'
+import { useState } from 'preact/hooks'
+import { Row, Section, SectionContent, SectionTitle } from '../showcase-kit'
 
-const tabVariants = ['line', 'subtle', 'enclosed', 'outline'] as const
-const tabItems = ['Components', 'Hooks', 'Utilities']
+const TAB_VARIANTS = ['line', 'subtle', 'enclosed', 'outline'] as const
+const TABS = [
+  { value: 'components', label: 'Components' },
+  { value: 'hooks', label: 'Hooks' },
+  { value: 'utilities', label: 'Utilities' },
+]
 
-function TabStrip({ variant }: { variant: (typeof tabVariants)[number] }) {
+function TabStrip({ variant }: { variant: string }) {
+  const [active, setActive] = useState('components')
   return (
     <div class={`pg-tabs pg-tabs-${variant}`}>
-      {tabItems.map((label, i) => (
-        <button type="button" class={`pg-tab${i === 0 ? ' pg-tab-active' : ''}`} key={label}>
-          {label}
+      {TABS.map((tab) => (
+        <button
+          key={tab.value}
+          type="button"
+          class={`pg-tab${active === tab.value ? ' pg-tab-active' : ''}`}
+          onClick={() => setActive(tab.value)}
+        >
+          {tab.label}
         </button>
       ))}
     </div>
   )
 }
 
-const checkVariants = ['solid', 'outline', 'subtle'] as const
-
-function CheckboxItem({ variant, checked }: { variant: string; checked: boolean }) {
+function Checkbox({ variant, defaultChecked }: { variant: string; defaultChecked?: boolean }) {
   return (
-    <label class="pg-checkbox-item">
-      <span class={`pg-checkbox pg-checkbox-${variant}${checked ? ' pg-checked' : ''}`}>
-        {checked ? (
-          <svg class="pg-check-glyph" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-            <path
-              d="M3 8.5l3 3 7-7"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        ) : null}
+    <label class={`pg-cb pg-cb-${variant}`}>
+      <input type="checkbox" defaultChecked={defaultChecked} />
+      <span class="pg-cb-box">
+        <svg
+          viewBox="0 0 16 16"
+          width="11"
+          height="11"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3.5 8.5l3 3 6-7" />
+        </svg>
       </span>
       <span class="pg-control-label">Accept terms</span>
     </label>
   )
 }
 
-const radioVariants = ['solid', 'outline', 'subtle'] as const
-
-function RadioItem({ variant, label, selected }: { variant: string; label: string; selected: boolean }) {
+function RadioItem({ name, label, defaultChecked }: { name: string; label: string; defaultChecked?: boolean }) {
   return (
-    <label class="pg-radio-item">
-      <span class={`pg-radio pg-radio-${variant}${selected ? ' pg-selected' : ''}`}>
-        <span class="pg-radio-dot" />
-      </span>
+    <label class="pg-radio">
+      <input type="radio" name={name} defaultChecked={defaultChecked} />
+      <span class="pg-radio-mark" />
       <span class="pg-control-label">{label}</span>
     </label>
   )
 }
 
-function SwitchItem({ on, tone }: { on: boolean; tone: 'accent' | 'gray' }) {
+function Switch({ gray, defaultChecked }: { gray?: boolean; defaultChecked?: boolean }) {
   return (
-    <span class={`pg-switch pg-switch-${tone}${on ? ' pg-on' : ''}`}>
-      <span class="pg-switch-knob" />
-    </span>
+    <label class={`pg-switch${gray ? ' pg-switch-gray' : ''}`}>
+      <input type="checkbox" defaultChecked={defaultChecked} />
+      <span class="pg-switch-track">
+        <span class="pg-switch-knob" />
+      </span>
+    </label>
   )
 }
 
@@ -67,8 +77,8 @@ export function Controls() {
         <SectionTitle>Tabs</SectionTitle>
         <SectionContent>
           <div class="pg-tabs-grid">
-            {tabVariants.map((variant) => (
-              <TabStrip variant={variant} key={variant} />
+            {TAB_VARIANTS.map((variant) => (
+              <TabStrip key={variant} variant={variant} />
             ))}
           </div>
         </SectionContent>
@@ -78,10 +88,10 @@ export function Controls() {
         <SectionTitle>Checkbox</SectionTitle>
         <SectionContent>
           <Row>
-            {checkVariants.map((variant) => (
+            {['solid', 'outline', 'subtle'].map((variant) => (
               <div class="pg-stack" key={variant}>
-                <CheckboxItem variant={variant} checked={false} />
-                <CheckboxItem variant={variant} checked={true} />
+                <Checkbox variant={variant} />
+                <Checkbox variant={variant} defaultChecked />
               </div>
             ))}
           </Row>
@@ -92,10 +102,10 @@ export function Controls() {
         <SectionTitle>Radio</SectionTitle>
         <SectionContent>
           <Row>
-            {radioVariants.map((variant) => (
+            {['solid', 'outline', 'subtle'].map((variant) => (
               <div class="pg-radio-group" key={variant}>
-                <RadioItem variant={variant} label="Radio one" selected={false} />
-                <RadioItem variant={variant} label="Radio second" selected={true} />
+                <RadioItem name={`pg-radio-${variant}`} label="Radio one" />
+                <RadioItem name={`pg-radio-${variant}`} label="Radio second" defaultChecked />
               </div>
             ))}
           </Row>
@@ -106,9 +116,9 @@ export function Controls() {
         <SectionTitle>Switch</SectionTitle>
         <SectionContent>
           <Row>
-            <SwitchItem on={false} tone="accent" />
-            <SwitchItem on={true} tone="accent" />
-            <SwitchItem on={true} tone="gray" />
+            <Switch />
+            <Switch defaultChecked />
+            <Switch gray defaultChecked />
           </Row>
         </SectionContent>
       </Section>
