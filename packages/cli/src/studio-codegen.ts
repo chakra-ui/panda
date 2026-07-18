@@ -146,10 +146,16 @@ export function tokensSnapshotFile(tokens: StudioToken[]): StudioFile {
 
 export function viewFiles(tokens: StudioToken[], framework: StudioFramework, keyframesCss = ''): StudioFile[] {
   const templates = framework === 'solid' ? solidTemplates : reactTemplates
+  const css = keyframesCss ? `${COMPONENT_CSS}\n${keyframesCss}` : COMPONENT_CSS
   return [
     tokensSnapshotFile(tokens),
-    { path: 'components/token-grid.tsx', code: templates.tokenGrid(keyframesCss) },
-    ...GENERATE_VIEWS.map((view) => ({ path: `${view.name}.tsx`, code: templates.view(view.name, view.categories) })),
+    { path: 'studio.css', code: `${css}\n` },
+    { path: 'helpers.ts', code: HELPERS_TS },
+    { path: 'token-grid.tsx', code: templates.tokenGrid() },
+    ...GENERATE_VIEWS.map((view) => ({
+      path: `${view.name.toLowerCase()}.tsx`,
+      code: templates.view(view.name, view.categories),
+    })),
   ]
 }
 
@@ -1097,21 +1103,29 @@ const COMPONENT_CSS = `.panda-studio { --fg: #1a1a1a; --muted: #71717a; --border
 .panda-studio .ease-dot { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); animation: panda-studio-ease 1.4s infinite alternate; }
 @keyframes panda-studio-ease { from { transform: translateX(0); } to { transform: translateX(130px); } }`
 
-const SHARED_HELPERS = `const TYPE_CATEGORIES = new Set(${jsArray(TYPE_CATEGORIES)})
-const SCALE_CATEGORIES = new Set(${jsArray(SCALE_CATEGORIES)})
-const GRID_KIND: Record<string, string> = ${jsRecord(GRID_KIND)}
-const SAMPLE = 'The quick brown fox jumps over the lazy dog'
+const HELPERS_TS = `export interface StudioToken {
+  category: string
+  path: string
+  name: string
+  value: string
+  conditions?: Record<string, string>
+}
 
-const familyOf = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name)
-const shadeOf = (name: string) => (name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : name)
-const byShade = (a: StudioToken, b: StudioToken) => (parseFloat(shadeOf(a.name)) || 0) - (parseFloat(shadeOf(b.name)) || 0)
+export const TYPE_CATEGORIES = new Set(${jsArray(TYPE_CATEGORIES)})
+export const SCALE_CATEGORIES = new Set(${jsArray(SCALE_CATEGORIES)})
+export const GRID_KIND: Record<string, string> = ${jsRecord(GRID_KIND)}
+export const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
-function toPx(value: string) {
+export const familyOf = (name: string) => (name.includes('.') ? name.slice(0, name.lastIndexOf('.')) : name)
+export const shadeOf = (name: string) => (name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : name)
+export const byShade = (a: StudioToken, b: StudioToken) => (parseFloat(shadeOf(a.name)) || 0) - (parseFloat(shadeOf(b.name)) || 0)
+
+export function toPx(value: string) {
   const match = /^([\\d.]+)(rem|em|px)$/.exec(value)
   return match ? (match[2] === 'px' ? parseFloat(match[1]) : parseFloat(match[1]) * 16) : NaN
 }
 
-function groupFamilies(items: StudioToken[]) {
+export function groupFamilies(items: StudioToken[]) {
   const families = new Map<string, StudioToken[]>()
   for (const token of items) {
     const family = familyOf(token.name)
@@ -1121,13 +1135,13 @@ function groupFamilies(items: StudioToken[]) {
   return [...families.entries()]
 }
 
-function scaleWidth(px: number, min: number, max: number) {
+export function scaleWidth(px: number, min: number, max: number) {
   if (px <= 0) return 0
   if (max <= min) return 100
   return ((Math.log(px) - Math.log(min)) / (Math.log(max) - Math.log(min))) * 98 + 2
 }
 
-function scaleRows(items: StudioToken[]) {
+export function scaleRows(items: StudioToken[]) {
   const rows = items
     .filter((token) => !token.name.includes('breakpoint-') && !Number.isNaN(toPx(token.value)))
     .map((token) => ({ token, px: toPx(token.value) }))
@@ -1135,24 +1149,18 @@ function scaleRows(items: StudioToken[]) {
   const maxPx = rows.length ? rows[rows.length - 1].px || 1 : 1
   const minPx = rows.find((row) => row.px > 0)?.px ?? maxPx
   return rows.map((row) => ({ ...row, width: scaleWidth(row.px, minPx, maxPx) }))
-}`
+}
+`
 
 const reactTemplates = {
-  tokenGrid: (keyframesCss: string) => `import { Fragment } from 'react'
+  tokenGrid: () => `import { Fragment } from 'react'
 import type { CSSProperties } from 'react'
-import tokens from '../tokens.json'
-
-interface StudioToken {
-  category: string
-  path: string
-  name: string
-  value: string
-  conditions?: Record<string, string>
-}
+import tokens from './tokens.json'
+import css from './studio.css?raw'
+import { GRID_KIND, SAMPLE, SCALE_CATEGORIES, TYPE_CATEGORIES, byShade, groupFamilies, scaleRows, shadeOf } from './helpers'
+import type { StudioToken } from './helpers'
 
 const all = tokens as StudioToken[]
-const CSS = \`${COMPONENT_CSS}\n${keyframesCss}\`
-${SHARED_HELPERS}
 
 function typeStyle(category: string, value: string): CSSProperties {
   switch (category) {
@@ -1263,7 +1271,7 @@ export function TokenGrid({ category }: { category: string }) {
 
   return (
     <div className="panda-studio">
-      <style>{CSS}</style>
+      <style>{css}</style>
       {category === 'semantic' ? (
         <Semantic items={items} />
       ) : category === 'colors' ? (
@@ -1287,7 +1295,7 @@ export function TokenGrid({ category }: { category: string }) {
   )
 }
 `,
-  view: (name: string, categories: string[]) => `import { TokenGrid } from './components/token-grid'
+  view: (name: string, categories: string[]) => `import { TokenGrid } from './token-grid'
 
 export function ${name}() {
   return (
@@ -1300,21 +1308,14 @@ ${categories.map((category) => `      <TokenGrid category="${category}" />`).joi
 }
 
 const solidTemplates = {
-  tokenGrid: (keyframesCss: string) => `import { For, Match, Switch } from 'solid-js'
+  tokenGrid: () => `import { For, Match, Switch } from 'solid-js'
 import type { JSX } from 'solid-js'
-import tokens from '../tokens.json'
-
-interface StudioToken {
-  category: string
-  path: string
-  name: string
-  value: string
-  conditions?: Record<string, string>
-}
+import tokens from './tokens.json'
+import css from './studio.css?raw'
+import { GRID_KIND, SAMPLE, SCALE_CATEGORIES, TYPE_CATEGORIES, byShade, groupFamilies, scaleRows, shadeOf } from './helpers'
+import type { StudioToken } from './helpers'
 
 const all = tokens as StudioToken[]
-const CSS = \`${COMPONENT_CSS}\n${keyframesCss}\`
-${SHARED_HELPERS}
 
 function typeStyle(category: string, value: string): JSX.CSSProperties {
   switch (category) {
@@ -1447,7 +1448,7 @@ export function TokenGrid(props: { category: string }) {
       <Match when={items().length === 0}>{null}</Match>
       <Match when={items().length > 0}>
         <div class="panda-studio">
-          <style>{CSS}</style>
+          <style>{css}</style>
           <Switch>
             <Match when={mode() === 'semantic'}><Semantic items={items()} /></Match>
             <Match when={mode() === 'palette'}><Palette items={items()} /></Match>
@@ -1473,7 +1474,7 @@ export function TokenGrid(props: { category: string }) {
   )
 }
 `,
-  view: (name: string, categories: string[]) => `import { TokenGrid } from './components/token-grid'
+  view: (name: string, categories: string[]) => `import { TokenGrid } from './token-grid'
 
 export function ${name}() {
   return (

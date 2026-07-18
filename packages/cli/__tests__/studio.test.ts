@@ -72,14 +72,17 @@ describe('studio generate', () => {
 
     const studioDir = join(dir, 'styled-system', 'studio')
     expect(result.framework).toBe('react')
-    expect(existsSync(join(studioDir, 'Colors.tsx'))).toBe(true)
-    expect(existsSync(join(studioDir, 'components', 'token-grid.tsx'))).toBe(true)
+    expect(existsSync(join(studioDir, 'colors.tsx'))).toBe(true)
+    expect(existsSync(join(studioDir, 'token-grid.tsx'))).toBe(true)
+    expect(existsSync(join(studioDir, 'studio.css'))).toBe(true)
+    expect(existsSync(join(studioDir, 'helpers.ts'))).toBe(true)
 
     const snapshot = JSON.parse(readFileSync(join(studioDir, 'tokens.json'), 'utf8'))
     expect(snapshot).toContainEqual({ category: 'colors', path: 'colors.red.500', name: 'red.500', value: '#ef4444' })
 
-    const grid = readFileSync(join(studioDir, 'components', 'token-grid.tsx'), 'utf8')
+    const grid = readFileSync(join(studioDir, 'token-grid.tsx'), 'utf8')
     expect(grid).toContain("from 'react'")
+    expect(grid).toContain("import css from './studio.css?raw'")
     expect(logs[0]).toContain('studio: wrote')
   })
 
@@ -88,7 +91,7 @@ describe('studio generate', () => {
 
     await runStudioGenerate({ cwd: dir, outdir: '.storybook/studio', logLevel: 'silent' })
 
-    expect(existsSync(join(dir, '.storybook', 'studio', 'Colors.tsx'))).toBe(true)
+    expect(existsSync(join(dir, '.storybook', 'studio', 'colors.tsx'))).toBe(true)
   })
 
   it('emits Solid source when jsxFramework is solid', async () => {
@@ -97,7 +100,7 @@ describe('studio generate', () => {
     const result = await runStudioGenerate({ cwd: dir, logLevel: 'silent' })
     expect(result.framework).toBe('solid')
 
-    const grid = readFileSync(join(dir, 'styled-system', 'studio', 'components', 'token-grid.tsx'), 'utf8')
+    const grid = readFileSync(join(dir, 'styled-system', 'studio', 'token-grid.tsx'), 'utf8')
     expect(grid).toContain("from 'solid-js'")
     expect(grid).toContain('<For')
   })
