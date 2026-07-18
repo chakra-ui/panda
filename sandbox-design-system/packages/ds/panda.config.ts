@@ -4,6 +4,7 @@ export default defineConfig({
   presets: ['@pandacss/preset-base'],
   include: ['src/**/*.{ts,tsx}'],
   outdir: 'styled-system',
+  jsxFramework: 'react',
   theme: {
     tokens: {
       colors: {
@@ -40,6 +41,20 @@ export default defineConfig({
           color: 'white',
           backgroundColor: 'black',
         },
+      },
+    },
+  },
+  patterns: {
+    // Distinct from preset-base `stack` so lib publish + overlay jsx re-exports are unambiguous.
+    rail: {
+      description: 'Vertical rail — published so consumers can re-export from ./jsx',
+      properties: {
+        gap: { type: 'property', value: 'gap' },
+      },
+      defaultValues: { gap: '3' },
+      transform(props) {
+        const { gap, ...rest } = props
+        return { display: 'flex', flexDirection: 'column', gap, ...rest }
       },
     },
   },

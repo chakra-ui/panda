@@ -7,20 +7,24 @@ mod css;
 mod misc;
 mod object;
 mod split_props;
+mod token;
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, Module, RuntimeImport,
+    Artifact, ArtifactFile, ArtifactId, CodegenContext, DependencySet, ExportDecl, Item, ItemNode,
+    Module, RuntimeImport,
     graph::{GenerateOptions, emit_module_files},
 };
 
 #[must_use]
-pub fn module() -> Module {
+pub fn module(ctx: CodegenContext<'_>) -> Module {
     Module::new()
         .with_item(object::is_object())
         .with_item(object::has_own())
         .with_item(misc::is_base_condition())
         .with_item(misc::filter_base_conditions())
         .with_item(misc::to_hash())
+        .with_item(token::to_css_var(ctx))
+        .with_item(token::color_mix())
         .with_item(object::compact())
         .with_item(object::with_defaults())
         .with_item(object::to_variant_map())
@@ -60,13 +64,21 @@ pub fn files(
     options: GenerateOptions,
     dependencies: DependencySet,
 ) -> Vec<ArtifactFile> {
-    if ctx.virtualizes(RuntimeImport::Helpers) {
-        return Vec::new();
-    }
+    // Same shape as virtualized `css/index`: keep a local entry that star-re-exports the DS
+    // module so `import { memo } from '../styled-system/helpers'` still resolves.
+    let body = if let Some(overlay) = ctx.overlay
+        && ctx.virtualizes(RuntimeImport::Helpers)
+    {
+        Module::new().with_item(Item::both(ItemNode::Export(ExportDecl::Star {
+            source: overlay.helpers.clone(),
+        })))
+    } else {
+        module(ctx)
+    };
 
     emit_module_files(
         "helpers",
-        &module(),
+        &body,
         options.format,
         false,
         options.import_extensions,

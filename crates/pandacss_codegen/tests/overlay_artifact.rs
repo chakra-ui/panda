@@ -81,6 +81,9 @@ fn recipes_emits_only_app_delta() {
     }));
     let mut overlay = overlay();
     overlay.owned_recipes = vec!["button".into()];
+    overlay.virtualize_css = true;
+    overlay.css = "@ds/css".into();
+    overlay.helpers = "@ds/helpers".into();
 
     let artifacts = ArtifactGraph.generate_with_input(&input_with(config, overlay), options());
     let recipes = artifact(&artifacts, ArtifactId::Recipes);
@@ -92,10 +95,14 @@ fn recipes_emits_only_app_delta() {
     assert_eq!(
         file(recipes, "recipes/index.ts"),
         indoc! {r"
-        export { button } from '@ds/recipes';
+        export * from '@ds/recipes/button';
         export * from './card';
         "}
         .trim()
+    );
+    assert_eq!(
+        file(recipes, "recipes/runtime.ts").trim(),
+        "export * from '@ds/recipes/runtime';"
     );
 }
 
@@ -138,7 +145,7 @@ fn recipes_all_owned_skips_runtime() {
     assert_eq!(paths(recipes), vec!["recipes/index.ts"]);
     assert_eq!(
         file(recipes, "recipes/index.ts"),
-        "export { button } from '@ds/recipes';"
+        "export * from '@ds/recipes/button';"
     );
 }
 
@@ -165,7 +172,7 @@ fn patterns_emits_only_app_delta() {
     assert_eq!(
         file(patterns, "patterns/index.ts"),
         indoc! {r"
-        export { stack } from '@ds/patterns';
+        export * from '@ds/patterns/stack';
         export * from './grid';
         "}
         .trim()
@@ -195,9 +202,10 @@ fn jsx_reexports_owned_ds_pattern_and_emits_app_delta() {
     assert_eq!(paths(jsx_patterns), vec!["jsx/grid.ts"]);
 
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.ts");
-    assert!(index.contains("export * from './factory';"));
     assert!(index.contains("export * from '@ds/jsx/stack';"));
+    assert!(index.contains("export * from './factory';"));
     assert!(index.contains("export * from './grid';"));
+    assert!(!index.contains("export { Stack }"));
 }
 
 #[test]
@@ -216,7 +224,7 @@ fn jsx_conflict_keeps_app_component_local() {
     );
     let index = file(artifact(&artifacts, ArtifactId::JsxIndex), "jsx/index.ts");
     assert!(index.contains("export * from './stack';"));
-    assert!(!index.contains("@ds/jsx/stack"));
+    assert!(!index.contains("from '@ds/jsx"));
 }
 
 #[test]
@@ -224,13 +232,22 @@ fn pure_consumer_virtualizes_entire_runtime() {
     let mut overlay = overlay();
     overlay.css = "@acme/ui/css".into();
     overlay.helpers = "@acme/ui/helpers".into();
-    overlay.virtualize_utils = true;
-    overlay.virtualize_conditions = true;
+    overlay.virtualize_helpers = true;
     overlay.virtualize_css = true;
+    overlay.owned_recipes = vec!["button".into()];
 
-    let files = generate_with(config_with_app_recipe(), overlay);
+    let config: UserConfig = serde_json::from_value(serde_json::json!({
+        "jsxFramework": "react",
+        "theme": { "recipes": { "button": { "className": "button" } } },
+    }))
+    .expect("config");
+    let files = generate_with(config, overlay);
 
-    assert!(!files.iter().any(|f| f.path == "helpers.ts"));
+    let helpers = files
+        .iter()
+        .find(|f| f.path == "helpers.ts")
+        .expect("helpers barrel");
+    assert_eq!(helpers.code.trim(), "export * from '@acme/ui/helpers';");
     assert!(!files.iter().any(|f| f.path == "css/css.ts"));
     assert!(!files.iter().any(|f| f.path == "css/cx.ts"));
     assert!(!files.iter().any(|f| f.path == "css/cva.ts"));
@@ -241,7 +258,63 @@ fn pure_consumer_virtualizes_entire_runtime() {
         .iter()
         .find(|f| f.path == "css/index.ts")
         .expect("css/index barrel");
-    assert!(css_index.code.contains("@acme/ui/css"));
+    assert_eq!(
+        css_index.code.trim(),
+        indoc! {r"
+        export * from '@acme/ui/css/css';
+        export * from '@acme/ui/css/cva';
+        export * from '@acme/ui/css/cx';
+        export * from '@acme/ui/css/sva';
+        "}
+        .trim()
+    );
+
+    assert!(!files.iter().any(|f| f.path == "recipes/runtime.ts"));
+
+    for (path, source) in [
+        ("jsx/factory.ts", "export * from '@ds/jsx/factory';"),
+        ("jsx/helper.ts", "export * from '@ds/jsx/helper';"),
+        (
+            "jsx/is-valid-prop.ts",
+            "export * from '@ds/jsx/is-valid-prop';",
+        ),
+        (
+            "jsx/create-recipe-context.ts",
+            "export * from '@ds/jsx/create-recipe-context';",
+        ),
+        (
+            "jsx/create-slot-recipe-context.ts",
+            "export * from '@ds/jsx/create-slot-recipe-context';",
+        ),
+    ] {
+        let file = files
+            .iter()
+            .find(|f| f.path == path)
+            .unwrap_or_else(|| panic!("{path}"));
+        assert_eq!(file.code.trim(), source);
+    }
+}
+
+#[test]
+fn app_only_recipe_keeps_local_runtime_when_ds_owns_none() {
+    let mut overlay = overlay();
+    overlay.css = "@acme/ui/css".into();
+    overlay.helpers = "@acme/ui/helpers".into();
+    overlay.virtualize_helpers = true;
+    overlay.virtualize_css = true;
+
+    let files = generate_with(config_with_app_recipe(), overlay);
+
+    let recipe_runtime = files
+        .iter()
+        .find(|f| f.path == "recipes/runtime.ts")
+        .expect("recipes/runtime");
+    assert!(recipe_runtime.code.contains("export function createRecipe"));
+    assert!(
+        !recipe_runtime
+            .code
+            .contains("export * from '@ds/recipes/runtime'")
+    );
 }
 
 #[test]
@@ -249,20 +322,27 @@ fn redeclared_conditions_keep_conditions_and_css_local() {
     let mut overlay = overlay();
     overlay.css = "@acme/ui/css".into();
     overlay.helpers = "@acme/ui/helpers".into();
-    overlay.virtualize_utils = true;
-    overlay.virtualize_conditions = false;
+    overlay.virtualize_helpers = true;
     overlay.virtualize_css = false;
 
     let files = generate_with(config_with_app_recipe(), overlay);
 
     assert!(files.iter().any(|f| f.path == "css/conditions.ts"));
     assert!(files.iter().any(|f| f.path == "css/cx.ts"));
-    assert!(!files.iter().any(|f| f.path == "helpers.ts"));
+    let helpers = files
+        .iter()
+        .find(|f| f.path == "helpers.ts")
+        .expect("helpers barrel");
+    assert_eq!(helpers.code.trim(), "export * from '@acme/ui/helpers';");
 
     let recipe_runtime = files
         .iter()
         .find(|f| f.path == "recipes/runtime.ts")
         .expect("recipes/runtime should still be emitted locally");
+    assert!(
+        recipe_runtime.code.contains("export function createRecipe"),
+        "css not virtualized ⇒ full local recipe runtime, not a DS star barrel"
+    );
     assert!(recipe_runtime.code.contains("@acme/ui/helpers"));
     assert!(recipe_runtime.code.contains("../css/conditions"));
 }

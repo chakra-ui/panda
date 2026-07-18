@@ -46,8 +46,7 @@ export interface CodegenOverlay {
   helpers: string
   ownedRecipes: string[]
   ownedPatterns: string[]
-  virtualizeUtils: boolean
-  virtualizeConditions: boolean
+  virtualizeHelpers: boolean
   virtualizeCss: boolean
 }
 

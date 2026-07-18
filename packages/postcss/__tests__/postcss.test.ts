@@ -169,9 +169,9 @@ describe('@pandacss/postcss', () => {
     driver.designSystemWatchTargets.mockReturnValueOnce([
       {
         name: '@acme/ds',
-        manifestPath: '/project/node_modules/@acme/ds/panda.lib.json',
-        buildInfoPath: '/project/node_modules/@acme/ds/panda.buildinfo.json',
-        presetPath: '/project/node_modules/@acme/ds/panda.preset.mjs',
+        manifestPath: '/project/node_modules/@acme/ds/panda/lib.json',
+        buildInfoPath: '/project/node_modules/@acme/ds/panda/buildinfo.json',
+        presetPath: '/project/node_modules/@acme/ds/panda/preset.mjs',
         sourceFiles: ['/project/node_modules/@acme/ds/src/button.tsx'],
       },
     ])
@@ -193,19 +193,19 @@ describe('@pandacss/postcss', () => {
           "type": "dependency",
         },
         {
-          "file": "/project/node_modules/@acme/ds/panda.lib.json",
+          "file": "/project/node_modules/@acme/ds/panda/lib.json",
           "parent": "/project/styles.css",
           "plugin": "pandacss",
           "type": "dependency",
         },
         {
-          "file": "/project/node_modules/@acme/ds/panda.buildinfo.json",
+          "file": "/project/node_modules/@acme/ds/panda/buildinfo.json",
           "parent": "/project/styles.css",
           "plugin": "pandacss",
           "type": "dependency",
         },
         {
-          "file": "/project/node_modules/@acme/ds/panda.preset.mjs",
+          "file": "/project/node_modules/@acme/ds/panda/preset.mjs",
           "parent": "/project/styles.css",
           "plugin": "pandacss",
           "type": "dependency",

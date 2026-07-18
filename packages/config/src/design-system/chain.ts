@@ -1,17 +1,18 @@
 import {
   outdirBasename,
   type CodegenOverlay,
-  type Diagnostic,
   type DesignSystemManifest,
+  type Diagnostic,
 } from '@pandacss/compiler-shared'
 import type { ImportMapInput, ImportMapOption, UserConfig } from '@pandacss/types'
 import { readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createConfigDiagnostic, createConfigError, PandaError } from '../error'
-import { nearestPackageJson } from './package'
 import { resolveFrom, type ResolveOutcome } from '../resolve'
 import { ensureConfigObject, errorMessage, isPlainObject, type ExtendableConfig } from '../shared'
+import type { DesignSystemOverlayInput } from './overlay-input'
+import { nearestPackageJson } from './package'
 
 const SPECIFIER_PROTOCOL = /^([a-z][a-z0-9+.-]*):/i
 
@@ -88,42 +89,30 @@ export function withDesignSystemImportMap(config: UserConfig, infos: ResolvedDes
   return { ...config, importMap: [...roots, outdirBasename(config.outdir ?? 'styled-system'), ...existing] }
 }
 
-export interface DesignSystemAppConfigKeys {
-  conditions: boolean
-  breakpoints: boolean
-  utilities: boolean
-  tokens: boolean
-  globalOptionsMatchDs: boolean
-}
-
 export interface DesignSystemMetadata {
   designSystem?: ResolvedDesignSystem[]
   userRecipeNames?: string[]
   userPatternNames?: string[]
-  appConfigKeys?: DesignSystemAppConfigKeys
+  overlayInput?: DesignSystemOverlayInput
 }
 
 export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined): CodegenOverlay | undefined {
   const chain = metadata?.designSystem
   if (!chain || chain.length !== 1) return undefined
+  if (metadata?.overlayInput && !metadata.overlayInput.compatible) return undefined
 
   const [ds] = chain
   const appRecipes = new Set(metadata?.userRecipeNames ?? [])
   const appPatterns = new Set(metadata?.userPatternNames ?? [])
-
-  const keys = metadata?.appConfigKeys
-  const globalMatch = keys?.globalOptionsMatchDs ?? true
-  const virtualizeUtils = globalMatch
-  const virtualizeCss = globalMatch && !keys?.conditions && !keys?.breakpoints && !keys?.utilities && !keys?.tokens
-  const virtualizeConditions = virtualizeCss
+  const authored = metadata?.overlayInput?.authored
+  const runtimeDirty = !!(authored?.conditions || authored?.breakpoints || authored?.utilities || authored?.tokens)
 
   return {
     ...overlayRoots(ds),
     ownedRecipes: ds.recipeNames.filter((name) => !appRecipes.has(name)),
     ownedPatterns: ds.patternNames.filter((name) => !appPatterns.has(name)),
-    virtualizeUtils,
-    virtualizeConditions,
-    virtualizeCss,
+    virtualizeHelpers: true,
+    virtualizeCss: !runtimeDirty,
   }
 }
 
@@ -151,11 +140,21 @@ export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata |
 
   const [ds] = metadata!.designSystem!
   const required: string[] = []
-  if (overlay.virtualizeUtils) required.push('./helpers')
-  if (overlay.virtualizeConditions || overlay.virtualizeCss) required.push('./css/*')
-  if (overlay.virtualizeCss) required.push('./css')
-  if (overlay.ownedRecipes.length > 0) required.push('./recipes')
-  if (overlay.ownedPatterns.length > 0) required.push('./patterns')
+  if (overlay.virtualizeHelpers) required.push('./helpers')
+  if (overlay.virtualizeCss) {
+    required.push('./css', './css/*')
+  }
+  if (overlay.ownedRecipes.length > 0) {
+    required.push('./recipes', './recipes/*')
+  }
+  if (overlay.ownedPatterns.length > 0) {
+    required.push('./patterns', './patterns/*')
+  }
+  const appPatterns = metadata?.userPatternNames?.length ?? 0
+  const dsPatterns = ds.patternNames?.length ?? 0
+  if (overlay.ownedPatterns.length > 0 || (overlay.virtualizeCss && (appPatterns > 0 || dsPatterns > 0))) {
+    required.push('./jsx', './jsx/*')
+  }
 
   return required
     .filter((subpath) => !hasExport(ds.packageExports, subpath))
@@ -240,7 +239,7 @@ function resolveManifestPath(spec: string, fromDir: string): string | undefined 
 
   let outcome: ResolveOutcome
   try {
-    outcome = resolveFrom(`${spec}/panda.lib.json`, fromDir)
+    outcome = resolveFrom(`${spec}/panda/lib.json`, fromDir)
   } catch (error) {
     const message = `Failed to resolve designSystem ${JSON.stringify(spec)} from ${JSON.stringify(fromDir)}: ${errorMessage(error)}`
     throw createConfigError(message, [createConfigDiagnostic('design_system_resolve_failed', message)])
@@ -251,10 +250,10 @@ function resolveManifestPath(spec: string, fromDir: string): string | undefined 
 }
 
 function manifestNotExportedError(spec: string): PandaError {
-  const message = `designSystem ${JSON.stringify(spec)} is installed but doesn't expose \`./panda.lib.json\`. If it's a Panda design system, rebuild it with \`panda lib\`; otherwise it can't be consumed as a design system.`
+  const message = `designSystem ${JSON.stringify(spec)} is installed but doesn't expose \`./panda/*\` (missing \`panda/lib.json\`). If it's a Panda design system, rebuild it with \`panda lib\`; otherwise it can't be consumed as a design system.`
   return createConfigError(message, [
     createConfigDiagnostic('design_system_manifest_not_exported', message, [
-      `Rebuild ${JSON.stringify(spec)} with \`panda lib\`, or check its package.json \`exports\` includes \`./panda.lib.json\`.`,
+      `Rebuild ${JSON.stringify(spec)} with \`panda lib\`, or check its package.json \`exports\` includes \`./panda/*\`.`,
     ]),
   ])
 }
@@ -458,6 +457,6 @@ function specifierProtocol(spec: string): string | undefined {
 }
 
 function unsupportedSpecifierError(spec: string, protocol: string): PandaError {
-  const message = `designSystem ${JSON.stringify(spec)} uses the "${protocol}:" protocol, which isn't supported. Use the published package name (e.g. "@acme/design-system") that resolves to its \`panda.lib.json\`.`
+  const message = `designSystem ${JSON.stringify(spec)} uses the "${protocol}:" protocol, which isn't supported. Use the published package name (e.g. "@acme/design-system") that resolves to its \`panda/lib.json\`.`
   return createConfigError(message, [createConfigDiagnostic('design_system_unsupported_specifier', message)])
 }

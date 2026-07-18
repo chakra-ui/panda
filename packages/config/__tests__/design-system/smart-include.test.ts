@@ -33,12 +33,12 @@ describe('resolveAuthoredPresets / smart include', () => {
     pkg('@acme/sealed', { 'dist/index.js': 'export const Sealed = () => {}' }, { exports: { '.': './dist/index.js' } })
     pkg('@acme/broken', { 'index.js': 'export const Broken = () => {}' }, { exports: { '.': 42 } })
 
-    pkg('@acme/ds', { 'panda.lib.json': manifest('@acme/ds') })
-    pkg('@acme/ds2', { 'panda.lib.json': manifest('@acme/ds2') })
+    pkg('@acme/ds', { 'panda/lib.json': manifest('@acme/ds') })
+    pkg('@acme/ds2', { 'panda/lib.json': manifest('@acme/ds2') })
 
     pkg(
       '@acme/sealed-ds',
-      { 'dist/index.js': 'export default {}', 'panda.lib.json': manifest('@acme/sealed-ds') },
+      { 'dist/index.js': 'export default {}', 'panda/lib.json': manifest('@acme/sealed-ds') },
       { exports: { '.': './dist/index.js' } },
     )
 
@@ -46,8 +46,8 @@ describe('resolveAuthoredPresets / smart include', () => {
     // exported — neither `.` nor `./package.json`.
     pkg(
       '@acme/lib-ds',
-      { 'panda.lib.json': manifest('@acme/lib-ds'), 'panda.preset.mjs': 'export default {}' },
-      { exports: { './panda.lib.json': './panda.lib.json', './preset': './panda.preset.mjs' } },
+      { 'panda/lib.json': manifest('@acme/lib-ds'), 'panda/preset.mjs': 'export default {}' },
+      { exports: { './panda/*': './panda/*' } },
     )
 
     mkdirSync(join(cwd, 'components'), { recursive: true })

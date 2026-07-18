@@ -13,8 +13,8 @@ export interface PandaRollupOptions extends PandaTransformerOptions {
   /** File name of the emitted stylesheet asset. Defaults to `panda.css`. */
   fileName?: string
   /**
-   * Emit design-system lib artifacts (`panda.lib.json`, `panda.buildinfo.json`,
-   * `panda.preset.mjs`) next to the bundle and sync the package `exports`, like
+   * Emit design-system lib artifacts under `panda/` (`lib.json`, `buildinfo.json`,
+   * `preset.mjs`) next to the bundle and sync the package `exports`, like
    * `panda lib`. Defaults to `false`.
    */
   lib?: boolean

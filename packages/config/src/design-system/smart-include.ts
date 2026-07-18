@@ -8,7 +8,7 @@ import { errorMessage } from '../shared'
 
 export const SMART_INCLUDE_EXTENSIONS = ['js', 'mjs', 'cjs', 'jsx', 'ts', 'cts', 'mts', 'tsx', 'vue', 'svelte', 'astro']
 
-const MANIFEST = 'panda.lib.json'
+const MANIFEST_SUBPATH = 'panda/lib.json'
 const PACKAGE_SPECIFIER = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/i
 
 export interface SmartIncludeResult {
@@ -33,10 +33,8 @@ export function resolveSmartInclude(include: string[], cwd: string, deps: Set<st
       continue
     }
 
-    // A `panda lib` package exports `./panda.lib.json` but neither `.` nor
-    // `./package.json`, so resolvePackageDir can't see it. Probe the manifest
-    // the way designSystem resolution does.
-    if (tryResolveFrom(`${entry}/${MANIFEST}`, cwd) !== undefined) {
+    // Probe the manifest export — sealed packages often omit `.` / `./package.json`.
+    if (tryResolveFrom(`${entry}/${MANIFEST_SUBPATH}`, cwd) !== undefined) {
       offenders.push(entry)
       continue
     }
@@ -46,7 +44,7 @@ export function resolveSmartInclude(include: string[], cwd: string, deps: Set<st
       next.push(entry)
       continue
     }
-    if (existsSync(join(packageDir, MANIFEST))) {
+    if (existsSync(join(packageDir, ...MANIFEST_SUBPATH.split('/')))) {
       offenders.push(entry)
       continue
     }
@@ -121,7 +119,7 @@ function globBase(packageDir: string, cwd: string): string {
 function inIncludeError(specs: string[]): PandaError {
   const list = specs.map((spec) => JSON.stringify(spec)).join(', ')
   const plural = specs.length > 1
-  const message = `Design system${plural ? 's' : ''} in \`include\`: ${list}. ${plural ? 'They each ship' : 'It ships'} a ${MANIFEST}, so ${plural ? 'they belong' : 'it belongs'} in \`designSystem\`, not \`include\`. \`include\` is for files, not design systems.`
+  const message = `Design system${plural ? 's' : ''} in \`include\`: ${list}. ${plural ? 'They each ship' : 'It ships'} a ${MANIFEST_SUBPATH}, so ${plural ? 'they belong' : 'it belongs'} in \`designSystem\`, not \`include\`. \`include\` is for files, not design systems.`
   return createConfigError(
     message,
     specs.map((spec) =>

@@ -1,4 +1,4 @@
-//! `panda.lib.json` — the manifest a library publishes so a consumer adopts it
+//! `panda/lib.json` — the manifest a library publishes so a consumer adopts it
 //! with one `designSystem: '@acme/ds'` field. Values only; the host owns fs +
 //! module resolution. See `design-notes/design-system-manifest.md`.
 
@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 /// rather than mis-reading the manifest.
 pub const MANIFEST_SCHEMA_VERSION: u32 = 1;
 
-/// The published `panda.lib.json` record. Paths are relative to the manifest's
-/// own directory (resolves the same from `node_modules`, a symlink, or Docker).
+/// The published `panda/lib.json` record. `preset` / `buildInfo` are relative to
+/// the manifest directory; `files` are relative to the lib outdir.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DesignSystemManifest {
@@ -24,7 +24,7 @@ pub struct DesignSystemManifest {
     pub build_info: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub import_map: Option<ManifestImportMap>,
-    /// This library's own parent design system — the chain link. Omitted at a root.
+    /// Parent design system package name. Omitted at a root.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub design_system: Option<String>,
     /// Re-extract fallback globs when build info is unavailable, stale, or corrupt.

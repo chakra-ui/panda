@@ -4,6 +4,7 @@ export default defineConfig({
   presets: ['@pandacss/preset-base'],
   include: ['src/**/*.tsx'],
   outdir: 'styled-system',
+  jsxFramework: 'react',
   theme: {
     tokens: {
       colors: {

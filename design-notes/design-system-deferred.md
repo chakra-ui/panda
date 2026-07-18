@@ -89,16 +89,6 @@ Why: the compiler resolves tokens against the merged config and has no record of
 lint plugin reads the resolved config and is the intended guardrail; a build-time warning for unresolved token
 references is a possible follow-up.
 
-### Recipe/pattern runtime factories still emit locally
-
-Runtime virtualization covers every artifact import (`helpers`, the whole `css/` unit, plus definitions) except two:
-`recipes/runtime` and `patterns/runtime`. Whenever the app emits any recipe or pattern delta, its delta modules import
-the shared factory by a hardcoded `./runtime` sibling, and there's no DS-exported subpath for that module, so both
-factories stay local.
-
-Why: virtualizing them needs `./recipes/runtime` and `./patterns/runtime` DS exports plus a resolver entry, same shape
-as the `css/` unit got. Deferred, not blocked — a plausible follow-up once the `css/`-unit pattern proves out.
-
 ### Cross-package source watch
 
 Editing a workspace design system's source refreshes its JS through your bundler, but Panda only watches manifest and
@@ -111,7 +101,7 @@ the dev-mode watch work.
 
 ### Workspace-protocol and symlink resolution
 
-`designSystem` resolves a package's `panda.lib.json` through normal Node resolution, which covers `node_modules`, pnpm
+`designSystem` resolves a package's `panda/lib.json` through normal Node resolution, which covers `node_modules`, pnpm
 symlinks, and Docker layers. What we haven't confirmed is a `workspace:@acme/ds` specifier and every symlink shape a
 monorepo can throw at it.
 
@@ -136,7 +126,7 @@ Versioning a token-shape break is the author's semver responsibility, not someth
 
 ### Runtime manifest consumption
 
-`panda.lib.json` is a build-time contract. Nothing reads it at runtime.
+`panda/lib.json` is a build-time contract. Nothing reads it at runtime.
 
 ## Related notes
 

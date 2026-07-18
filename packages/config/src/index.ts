@@ -18,9 +18,8 @@ export {
   collectExportMissingDiagnostics,
   collectNameCollisionDiagnostics,
 } from './design-system/chain'
-export type { DesignSystemArtifactConflict, DesignSystemMetadata } from './design-system/chain'
-
-export type { ResolvedDesignSystem } from './design-system/chain'
+export type { DesignSystemArtifactConflict, DesignSystemMetadata, ResolvedDesignSystem } from './design-system/chain'
+export type { DesignSystemOverlayInput } from './design-system/overlay-input'
 export type { CompilePresetOptions, CompilePresetResult } from './design-system/compile-preset'
 export type { PackageIdentity, SyncExportsOptions, SyncExportsResult } from './design-system/package'
 export type {

@@ -71,9 +71,9 @@ describe('resolveAuthoredPresets / designSystem', () => {
 
     expect(toRelativePaths(cwd, dependencies)).toMatchInlineSnapshot(`
       [
-        "node_modules/@acme/ds/panda.buildinfo.json",
-        "node_modules/@acme/ds/panda.lib.json",
-        "node_modules/@acme/ds/panda.preset.mjs",
+        "node_modules/@acme/ds/panda/buildinfo.json",
+        "node_modules/@acme/ds/panda/lib.json",
+        "node_modules/@acme/ds/panda/preset.mjs",
       ]
     `)
   })
@@ -97,7 +97,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
     expect(designSystemMetadata(cwd, metadata?.designSystem)).toMatchInlineSnapshot(`
       [
         {
-          "buildInfoPath": "node_modules/@acme/ds/panda.buildinfo.json",
+          "buildInfoPath": "node_modules/@acme/ds/panda/buildinfo.json",
           "files": [
             "./dist/**/*.mjs",
           ],
@@ -297,7 +297,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
           code: 'design_system_manifest_invalid',
           severity: 'error',
           category: 'config',
-          file: expect.stringMatching(/panda\.lib\.json$/),
+          file: expect.stringMatching(/panda\/lib\.json$/),
           message: expect.stringContaining(message),
         },
       ],
@@ -316,7 +316,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
       'package.json': json({
         name: '@acme/broken-resolve',
         exports: {
-          './panda.lib.json': 42,
+          './panda/*': 42,
         },
       }),
     })
@@ -334,7 +334,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
       writeBuildInfo: false,
     })
     writeFileTree(moduleDir(cwd, '@acme/bad-json'), {
-      'panda.lib.json': '{ not valid json',
+      'panda/lib.json': '{ not valid json',
     })
 
     await expect(resolveAuthoredPresets({ designSystem: '@acme/bad-json' }, cwd)).rejects.toMatchObject({
@@ -367,7 +367,7 @@ describe('resolveAuthoredPresets / designSystem', () => {
     })
   })
 
-  test('rejects an installed package that does not expose panda.lib.json', async () => {
+  test('rejects an installed package that does not expose ./panda/*', async () => {
     writeDesignSystemPackage({
       cwd,
       name: '@acme/no-export',
@@ -400,7 +400,7 @@ describe('resolveAuthoredPresets / designSystem nested chains', () => {
     // Chain fixture:
     // node_modules/
     //   @acme/marketing/
-    //     panda.lib.json -> designSystem: "@acme/foundations"
+    //     panda/lib.json -> designSystem: "@acme/foundations"
     //     node_modules/@acme/foundations/
     const marketingDir = moduleDir(cwd, '@acme/marketing')
     const foundationsDir = moduleDir(marketingDir, '@acme/foundations')

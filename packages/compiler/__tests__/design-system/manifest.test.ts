@@ -8,8 +8,8 @@ const fullInput: DesignSystemManifestInput = {
   name: '@acme/ds',
   version: '1.2.3',
   panda: '^2.0.0',
-  preset: './panda.preset.mjs',
-  buildInfo: './panda.buildinfo.json',
+  preset: './preset.mjs',
+  buildInfo: './buildinfo.json',
   importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
   designSystem: '@acme/foundations',
   files: ['./dist/**/*.mjs'],
@@ -25,8 +25,8 @@ describe('compiler.designSystem', () => {
       name: '@acme/ds',
       version: '1.2.3',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
       importMap: { css: '@acme/ds/css', recipes: '@acme/ds/recipes' },
       designSystem: '@acme/foundations',
       files: ['./dist/**/*.mjs'],
@@ -37,8 +37,8 @@ describe('compiler.designSystem', () => {
     const manifest = project().designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
     })
 
     expect(manifest.version).toBeUndefined()
@@ -51,7 +51,7 @@ describe('compiler.designSystem', () => {
     const app = project()
     expect(() =>
       // @ts-expect-error - missing required `panda`
-      app.designSystem.create({ name: '@acme/ds', preset: './panda.preset.mjs', buildInfo: './panda.buildinfo.json' }),
+      app.designSystem.create({ name: '@acme/ds', preset: './preset.mjs', buildInfo: './buildinfo.json' }),
     ).toThrow()
   })
 
@@ -59,8 +59,8 @@ describe('compiler.designSystem', () => {
     const manifest = project().designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
       // @ts-expect-error - unknown field is dropped, not surfaced
       bogus: 'ignored',
     })
@@ -71,8 +71,8 @@ describe('compiler.designSystem', () => {
     const manifest = project().designSystem.create({
       name: '@acme/ds',
       panda: '^2.0.0',
-      preset: './panda.preset.mjs',
-      buildInfo: './panda.buildinfo.json',
+      preset: './preset.mjs',
+      buildInfo: './buildinfo.json',
       files: [],
     })
     expect('files' in manifest).toBe(false)

@@ -74,20 +74,19 @@ describe('@pandacss/postcss HMR flow', () => {
           name: '@acme/ds',
           version: '1.0.0',
           exports: {
-            './panda.lib.json': './dist/panda.lib.json',
-            './preset': './dist/panda.preset.mjs',
+            './panda/*': './dist/panda/*',
             './helpers': './styled-system/helpers.js',
             './css': './styled-system/css/index.js',
             './css/*': './styled-system/css/*.js',
           },
         }),
-        'node_modules/@acme/ds/dist/panda.lib.json': JSON.stringify({
+        'node_modules/@acme/ds/dist/panda/lib.json': JSON.stringify({
           schemaVersion: 1,
           name: '@acme/ds',
           version: '1.0.0',
           panda: '^2.0.0',
-          preset: './panda.preset.mjs',
-          buildInfo: './panda.buildinfo.json',
+          preset: './preset.mjs',
+          buildInfo: './buildinfo.json',
           files: ['./button.js'],
           importMap: {
             css: '@acme/ds/css',
@@ -97,13 +96,13 @@ describe('@pandacss/postcss HMR flow', () => {
             tokens: '@acme/ds/tokens',
           },
         }),
-        'node_modules/@acme/ds/dist/panda.preset.mjs': `export default {
+        'node_modules/@acme/ds/dist/panda/preset.mjs': `export default {
   utilities: {
     color: { className: 'c' },
   },
 }
 `,
-        'node_modules/@acme/ds/dist/panda.buildinfo.json': JSON.stringify({
+        'node_modules/@acme/ds/dist/panda/buildinfo.json': JSON.stringify({
           schemaVersion: 999,
           modules: {},
           atoms: [],

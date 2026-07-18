@@ -14,8 +14,7 @@ const DEFAULT_OUTDIR = 'dist'
 export const libCommand = defineCommand({
   meta: {
     name: 'lib',
-    description:
-      'Publish a design system: write panda.lib.json, portable build info, and a compiled preset, and sync package.json exports',
+    description: 'Publish a design system: write machine artifacts under panda/, and sync package.json exports',
   },
   args: () => ({
     ...baseArgs(),

@@ -73,9 +73,17 @@ pub fn files(
         !ctx.config.patterns.is_empty()
     };
     if emit_runtime {
+        let body = if ctx.virtualizes(RuntimeImport::CssIndex)
+            && let Some(overlay) = ctx.overlay
+            && !overlay.owned_patterns.is_empty()
+        {
+            crate::overlay::star_reexport(format!("{}/runtime", overlay.patterns))
+        } else {
+            runtime_module(ctx)
+        };
         files.extend(emit_module_files(
             "patterns/runtime",
-            &runtime_module(ctx),
+            &body,
             options.format,
             false,
             options.import_extensions,
@@ -267,10 +275,10 @@ fn runtime_function(name: &str, params: Vec<Param>, return_type: TsType, body: &
 }
 
 fn index_module(ctx: CodegenContext<'_>, names: &[String]) -> Module {
-    let named_reexport = ctx
+    let ds_sources = ctx
         .overlay
-        .map(|overlay| (overlay.owned_pattern_idents(), overlay.patterns.as_str()));
-    crate::overlay::index_barrel(named_reexport, names)
+        .map_or_else(Vec::new, crate::CodegenOverlay::owned_pattern_sources);
+    crate::overlay::index_barrel(&ds_sources, names)
 }
 
 fn type_imports(

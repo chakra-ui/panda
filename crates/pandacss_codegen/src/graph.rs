@@ -255,6 +255,9 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
+                // `toCssVar` bakes `prefix` / `hash` into the helpers module.
+                ConfigDependency::Hash,
+                ConfigDependency::Prefix,
             ]),
         },
         ArtifactNode {
@@ -429,8 +432,7 @@ impl ArtifactGraph {
             dependencies: DependencySet::from_slice(&[
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
-                ConfigDependency::Hash,
-                ConfigDependency::Prefix,
+                // Prefix/hash live in helpers (`toCssVar`); tokens only owns the value map.
                 ConfigDependency::Tokens,
             ]),
         },

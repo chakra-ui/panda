@@ -30,7 +30,7 @@ export default {
 }
 ```
 
-The library publishes one manifest, `panda.lib.json`. The manifest points to the library preset, portable build info,
+The library publishes one manifest, `panda/lib.json`. The manifest points to the library preset, portable build info,
 import roots, fallback files, and optional parent design system. The author creates all of it with:
 
 ```sh
@@ -42,7 +42,7 @@ ordering, manifest validation, and hydration logic testable without a fixture fi
 
 ## Canonical scope
 
-This is the source of truth for the `designSystem` config field, `panda.lib.json`, parent-chain resolution,
+This is the source of truth for the `designSystem` config field, `panda/lib.json`, parent-chain resolution,
 design-system diagnostics, and the current built/deferred status. [Build info](./build-info.md) owns the portable
 hydration payload. [Virtual styled-system](./virtual-styled-system.md) owns dual importMap and overlay codegen.
 
@@ -88,11 +88,11 @@ Non-goals:
 `designSystem` and `include` answer different questions.
 
 - `designSystem`: "What is my design language?" Use this for a package that defines tokens, recipes, conditions, and
-  ships `panda.lib.json`.
+  ships `panda/lib.json`.
 - `include`: "Which files use that design language?" Use this for app source and packages that consume a design system
   but are not design systems themselves.
 
-A package with `panda.lib.json` belongs in `designSystem`. If it appears in `include`, Panda reports
+A package with `panda/lib.json` belongs in `designSystem`. If it appears in `include`, Panda reports
 `design_system_in_include`.
 
 ### Why `designSystem` is singular
@@ -108,8 +108,9 @@ hash-space questions. We should not add that surface without clear demand.
 
 ## The manifest is the package contract
 
-The library publishes `panda.lib.json`. Every path is relative to the manifest's own directory, so the same manifest
-works from `node_modules`, a workspace symlink, or a Docker layer.
+The library publishes machine artifacts under a private `panda/` folder. Consumers resolve
+`@acme/ds/panda/lib.json`. `preset` and `buildInfo` are relative to the manifest file; `files` are relative to the
+lib outdir (parent of `panda/`). The same layout works from `node_modules`, a workspace symlink, or a Docker layer.
 
 ```jsonc
 {
@@ -117,8 +118,8 @@ works from `node_modules`, a workspace symlink, or a Docker layer.
   "name": "@acme/ds",
   "version": "1.2.3", // informational; never enforced
   "panda": "^2.0.0", // peer range the consumer must satisfy
-  "preset": "./panda.preset.mjs", // compiled preset module
-  "buildInfo": "./panda.buildinfo.json",
+  "preset": "./preset.mjs", // compiled preset module
+  "buildInfo": "./buildinfo.json",
   "importMap": {
     "css": "@acme/ds/css",
     "recipes": "@acme/ds/recipes",
@@ -127,7 +128,7 @@ works from `node_modules`, a workspace symlink, or a Docker layer.
     "tokens": "@acme/ds/tokens",
   },
   "designSystem": "@acme/foundations", // optional parent
-  "files": ["../src/button.tsx"], // fallback when build info can't hydrate
+  "files": ["../src/button.tsx"], // fallback when build info can't hydrate (relative to lib outdir)
 }
 ```
 
@@ -168,12 +169,12 @@ and hydrates build info into the active compiler project.
 It writes:
 
 ```txt
-dist/panda.lib.json
-dist/panda.buildinfo.json
-dist/panda.preset.mjs
+dist/panda/lib.json
+dist/panda/buildinfo.json
+dist/panda/preset.mjs
 ```
 
-`panda.preset.mjs` is bundled from the author config, but app-only fields are stripped:
+`preset.mjs` is bundled from the author config, but app-only fields are stripped:
 
 ```txt
 designSystem
@@ -197,8 +198,7 @@ re-exports:
 {
   "exports": {
     ".": "./dist/index.js",
-    "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/panda.preset.mjs",
+    "./panda/*": "./dist/panda/*",
     "./css": { "types": "./styled-system/css/index.d.ts", "default": "./styled-system/css/index.js" },
     "./recipes": { "types": "./styled-system/recipes/index.d.ts", "default": "./styled-system/recipes/index.js" },
     "./recipes/*": { "types": "./styled-system/recipes/*.d.ts", "default": "./styled-system/recipes/*.js" },
@@ -207,24 +207,25 @@ re-exports:
 }
 ```
 
-Only categories the codegen actually emitted are added, so a design system with no recipes never exports `./recipes`.
-The `recipes`/`patterns`/`jsx` categories also get a `/*` wildcard for deep imports. It preserves existing root exports,
-including string, array, and conditional root export forms. Overwriting a subpath whose value differs from Panda's emits
-`design_system_export_overwritten`.
+Only styled-system categories the codegen actually emitted are added, so a design system with no recipes never exports
+`./recipes`. The `recipes`/`patterns`/`jsx` categories also get a `/*` wildcard for deep imports. It preserves existing
+root exports, including string, array, and conditional root export forms. Overwriting a subpath whose value differs from
+Panda's emits `design_system_export_overwritten`.
 
 ### Fallback files in workspaces and published packages
 
-Build info is the normal path. Consumers should hydrate `panda.buildinfo.json`, not re-scan the library.
+Build info is the normal path. Consumers should hydrate `panda/buildinfo.json`, not re-scan the library.
 
 `files` is only the fallback path. Panda uses it when build info is unavailable, malformed, schema-stale, or corrupt. An
 incompatible manifest schema or Panda range is a package-contract failure and remains fail-closed.
 
-By default, `panda lib` infers `files` from the modules it parsed and writes paths relative to `panda.lib.json`:
+Machine artifacts live under `dist/panda/`, but `files` stay relative to the **lib outdir** (`dist/`) so `--files`
+stays ergonomic:
 
 ```txt
 packages/ds/
   src/button.tsx
-  dist/panda.lib.json
+  dist/panda/lib.json
 ```
 
 ```json
@@ -268,7 +269,7 @@ Turbo-style setup:
   "tasks": {
     "lib": {
       "dependsOn": ["^lib"],
-      "outputs": ["dist/panda.lib.json", "dist/panda.buildinfo.json", "dist/panda.preset.mjs"],
+      "outputs": ["dist/panda/lib.json", "dist/panda/buildinfo.json", "dist/panda/preset.mjs"],
     },
     "dev": {
       "cache": false,
@@ -290,9 +291,9 @@ Nx-style setup:
     "lib": {
       "dependsOn": [{ "projects": "{dependencies}", "target": "lib" }],
       "outputs": [
-        "{projectRoot}/dist/panda.lib.json",
-        "{projectRoot}/dist/panda.buildinfo.json",
-        "{projectRoot}/dist/panda.preset.mjs",
+        "{projectRoot}/dist/panda/lib.json",
+        "{projectRoot}/dist/panda/buildinfo.json",
+        "{projectRoot}/dist/panda/preset.mjs",
       ],
       "cache": true,
     },
@@ -320,19 +321,19 @@ build tools that honor those messages will rebuild when design-system artifacts 
 
 When an app config has `designSystem: '@acme/ds'`, the host:
 
-1. Resolves `@acme/ds/panda.lib.json`.
+1. Resolves `@acme/ds/panda/lib.json`.
 2. Parses and validates the complete manifest before importing its preset.
 3. Walks the manifest's parent chain, resolving each parent from the previous manifest's directory.
 4. Orders the chain root-first.
-5. Imports each `panda.preset.mjs`.
+5. Imports each `panda/preset.mjs`.
 6. Merges presets under the app config, so the app wins.
 7. Creates the compiler driver and validates every manifest against the running Panda version.
-8. Hydrates each compatible design system's `panda.buildinfo.json`.
+8. Hydrates each compatible design system's `panda/buildinfo.json`.
 
 If build info cannot be read, has the wrong schema version, or is malformed but the manifest has `files`, Panda scans
-those files relative to the manifest directory and emits a reason-specific `design_system_buildinfo_stale`. If there are
-no fallback files, Panda fails closed. Class-name option mismatches use the same source fallback instead of loading
-prebuilt class names produced with incompatible options.
+those files relative to the lib outdir (parent of `panda/`) and emits a reason-specific `design_system_buildinfo_stale`.
+If there are no fallback files, Panda fails closed. Class-name option mismatches use the same source fallback instead of
+loading prebuilt class names produced with incompatible options.
 
 ## Flow sketch
 
@@ -347,24 +348,23 @@ PRODUCER: @acme/ds
      │
      ├───────────────► scan library source
      │                       │
-     │                       ├──► create panda.buildinfo.json
-     │                       └──► create panda.lib.json manifest
+     │                       ├──► create panda/buildinfo.json
+     │                       └──► create panda/lib.json manifest
      │
-     └───────────────► compile panda.preset.mjs
+     └───────────────► compile panda/preset.mjs
                              │
                              ▼
                        strip app-only fields
                        include / outdir / importMap / designSystem
 
-  panda.lib.json + panda.buildinfo.json + panda.preset.mjs
+  panda/lib.json + panda/buildinfo.json + panda/preset.mjs
      │
      ▼
-  write dist artifacts
+  write dist/panda artifacts
      │
      ▼
   sync package.json exports
-     ├── ./panda.lib.json -> ./dist/panda.lib.json
-     └── ./preset         -> ./dist/panda.preset.mjs
+     └── ./panda/* -> ./dist/panda/*
 ```
 
 ```txt
@@ -374,7 +374,7 @@ CONSUMER APP
   designSystem: "@acme/ds"
      │
      ▼
-  resolve @acme/ds/panda.lib.json
+  resolve @acme/ds/panda/lib.json
      │
      ▼
   read manifest
@@ -387,7 +387,7 @@ CONSUMER APP
      └── no ───► use current manifest
                               │
                               ▼
-                       import panda.preset.mjs
+                       import panda/preset.mjs
                               │
                               ▼
                        merge configs
@@ -410,7 +410,7 @@ HYDRATION
   compiler driver
      │
      ▼
-  read panda.buildinfo.json
+  read panda/buildinfo.json
      │
      ▼
   build info valid?
@@ -422,7 +422,7 @@ HYDRATION
           ▼
       manifest has fallback files?
           │
-          ├── yes ──► scan fallback files relative to manifest dir
+          ├── yes ──► scan fallback files relative to lib outdir
           │              │
           │              ▼
           │         warn: design_system_buildinfo_stale
@@ -548,8 +548,8 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 
 | Code                                   | Severity      | When                                                            |
 | -------------------------------------- | ------------- | --------------------------------------------------------------- |
-| `design_system_manifest_not_found`     | error         | `designSystem` set but no `panda.lib.json` resolves             |
-| `design_system_manifest_not_exported`  | error         | installed package does not export `./panda.lib.json`            |
+| `design_system_manifest_not_found`     | error         | `designSystem` set but no `panda/lib.json` resolves             |
+| `design_system_manifest_not_exported`  | error         | installed package does not export `./panda/*` (`panda/lib.json`) |
 | `design_system_manifest_invalid`       | error         | manifest is malformed or missing required entries               |
 | `design_system_resolve_failed`         | error         | manifest resolution fails for an unexpected reason              |
 | `design_system_preset_load_failed`     | error         | manifest preset cannot load as a config object                  |
@@ -590,7 +590,7 @@ complete diagnostic set, including hydration diagnostics.
 
 ## Decisions
 
-- **Manifest file.** Use standalone `panda.lib.json`, not a `package.json` field.
+- **Manifest file.** Use standalone `panda/lib.json` under `./panda/*`, not a `package.json` field.
 - **Stale build info.** Re-extract that layer when `files` exists, warn, and continue.
 - **Token conflict.** App config wins, and Panda warns. Conflict detection compares token paths after each design system
   preset and the app config are resolved into canonical `theme.tokens`/`theme.semanticTokens` shapes.
@@ -616,7 +616,7 @@ These questions shaped the design, but they are supporting context rather than a
 
 ### Splitting preset and components packages
 
-The preset package is the design system. It ships `panda.lib.json` and belongs in `designSystem`.
+The preset package is the design system. It ships `panda/lib.json` and belongs in `designSystem`.
 
 The components package consumes that design system. It belongs in smart `include`.
 
@@ -643,7 +643,7 @@ source changes.
 
 A design-system package should peer-depend on Panda. The manifest `panda` field is the range the consumer must satisfy.
 When a workspace stores that peer as `workspace:` or `catalog:`, `panda lib` publishes a portable range derived from the
-running Panda version instead of leaking the package-manager protocol into `panda.lib.json`.
+running Panda version instead of leaking the package-manager protocol into `panda/lib.json`.
 
 ## Open follow-ups
 

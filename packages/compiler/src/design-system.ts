@@ -212,7 +212,8 @@ function extractFallbackSources(compiler: Compiler, ds: ResolvedDesignSystem) {
     return []
   }
 
-  return compiler.scan({ include: ds.files, cwd: compiler.path.dirname(ds.manifestPath) })
+  const filesCwd = compiler.path.resolve(compiler.path.join([compiler.path.dirname(ds.manifestPath), '..']))
+  return compiler.scan({ include: ds.files, cwd: filesCwd })
 }
 
 function buildInfoDiagnostic(
@@ -233,7 +234,7 @@ function buildInfoDiagnostic(
     category: 'designSystem',
     file: ds.buildInfoPath,
     message: `${JSON.stringify(ds.name)} build info ${reason}.${outcome}`,
-    help: [`Run \`panda lib\` in ${JSON.stringify(ds.name)} to rebuild panda.buildinfo.json.`],
+    help: [`Run \`panda lib\` in ${JSON.stringify(ds.name)} to rebuild panda/buildinfo.json.`],
   }
 }
 
@@ -311,7 +312,7 @@ function incompatibleManifestError(
       severity: 'error',
       category: 'designSystem',
       file: ds.manifestPath,
-      message: `${JSON.stringify(ds.name)} panda.lib.json uses schemaVersion ${ds.manifest.schemaVersion}; expected ${compiler.designSystem.schemaVersion}.`,
+      message: `${JSON.stringify(ds.name)} panda/lib.json uses schemaVersion ${ds.manifest.schemaVersion}; expected ${compiler.designSystem.schemaVersion}.`,
       help: [`Upgrade ${JSON.stringify(ds.name)}, or rebuild it with a compatible version of Panda.`],
     })
   }

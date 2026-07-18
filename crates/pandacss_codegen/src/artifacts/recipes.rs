@@ -8,8 +8,8 @@ use pandacss_shared::{compound_class_name, file_stem, js_ident, number_to_js_str
 use serde_json::{Map, Value};
 
 use crate::{
-    Artifact, ArtifactFile, ArtifactId, CodegenContext, ConfigDependency, ConstDecl, DependencySet,
-    Expr, ImportDecl, Item, ItemNode, Module, RuntimeImport, TsType,
+    Artifact, ArtifactFile, ArtifactId, CodegenContext, CodegenOverlay, ConfigDependency,
+    ConstDecl, DependencySet, Expr, ImportDecl, Item, ItemNode, Module, RuntimeImport, TsType,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -91,9 +91,17 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
 
     let emit_runtime = ctx.overlay.is_none() || !stems.is_empty();
     if emit_runtime {
+        let body = if ctx.virtualizes(RuntimeImport::CssIndex)
+            && let Some(overlay) = ctx.overlay
+            && !overlay.owned_recipes.is_empty()
+        {
+            crate::overlay::star_reexport(format!("{}/runtime", overlay.recipes))
+        } else {
+            runtime_module(ctx)
+        };
         files.extend(emit_module_files(
             "recipes/runtime",
-            &runtime_module(ctx),
+            &body,
             options.format,
             false,
             options.import_extensions,
@@ -218,10 +226,10 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
 }
 
 fn index_module(ctx: CodegenContext<'_>, stems: &[String]) -> Module {
-    let named_reexport = ctx
+    let ds_sources = ctx
         .overlay
-        .map(|overlay| (overlay.owned_recipe_idents(), overlay.recipes.as_str()));
-    crate::overlay::index_barrel(named_reexport, stems)
+        .map_or_else(Vec::new, CodegenOverlay::owned_recipe_sources);
+    crate::overlay::index_barrel(&ds_sources, stems)
 }
 
 fn recipe_config_code(

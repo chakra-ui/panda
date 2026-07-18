@@ -7,8 +7,7 @@
     ".": "./src/index.ts",
     "./badge": "./src/badge/index.ts",
     "./button": "./src/button/index.ts",
-    "./panda.lib.json": "./dist/panda.lib.json",
-    "./preset": "./dist/panda.preset.mjs",
+    "./panda/*": "./dist/panda/*",
     "./css": {
       "types": "./styled-system/css/index.d.ts",
       "default": "./styled-system/css/index.js"
@@ -40,6 +39,14 @@
     "./helpers": {
       "types": "./styled-system/helpers.d.ts",
       "default": "./styled-system/helpers.js"
+    },
+    "./jsx": {
+      "types": "./styled-system/jsx/index.d.ts",
+      "default": "./styled-system/jsx/index.js"
+    },
+    "./jsx/*": {
+      "types": "./styled-system/jsx/*.d.ts",
+      "default": "./styled-system/jsx/*.js"
     }
   },
   "scripts": {

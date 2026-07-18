@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use pandacss_shared::file_stem;
+
 use crate::{ExportDecl, Item, ItemNode, Module};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,8 +22,7 @@ pub struct CodegenOverlay {
     pub helpers: String,
     pub owned_recipes: Vec<String>,
     pub owned_patterns: Vec<String>,
-    pub virtualize_utils: bool,
-    pub virtualize_conditions: bool,
+    pub virtualize_helpers: bool,
     pub virtualize_css: bool,
 }
 
@@ -34,17 +35,21 @@ impl CodegenOverlay {
         self.owned_patterns.iter().any(|owned| owned == name)
     }
 
-    pub(crate) fn owned_recipe_idents(&self) -> Vec<String> {
-        idents(&self.owned_recipes)
+    pub(crate) fn owned_recipe_sources(&self) -> Vec<String> {
+        deep_sources(&self.recipes, &self.owned_recipes)
     }
 
-    pub(crate) fn owned_pattern_idents(&self) -> Vec<String> {
-        idents(&self.owned_patterns)
+    pub(crate) fn owned_pattern_sources(&self) -> Vec<String> {
+        deep_sources(&self.patterns, &self.owned_patterns)
+    }
+
+    pub(crate) fn owned_jsx_sources(&self) -> Vec<String> {
+        deep_sources(&self.jsx, &self.owned_patterns)
     }
 
     pub(crate) fn resolve(&self, import: RuntimeImport) -> Option<String> {
         let (enabled, specifier) = match import {
-            RuntimeImport::Helpers => (self.virtualize_utils, self.helpers.clone()),
+            RuntimeImport::Helpers => (self.virtualize_helpers, self.helpers.clone()),
             RuntimeImport::CssCx => (
                 self.virtualize_css && !self.css.is_empty(),
                 format!("{}/cx", self.css),
@@ -59,25 +64,19 @@ impl CodegenOverlay {
             ),
             RuntimeImport::CssIndex => (
                 self.virtualize_css && !self.css.is_empty(),
-                format!("{}/index", self.css),
+                self.css.clone(),
             ),
         };
         (enabled && !specifier.is_empty()).then_some(specifier)
     }
 }
 
-pub(crate) fn index_barrel(
-    named_reexport: Option<(Vec<String>, &str)>,
-    app_stems: &[String],
-) -> Module {
-    let mut module = Module::new();
-
-    if let Some((names, source)) = named_reexport.filter(|(names, _)| !names.is_empty()) {
-        module = module.with_item(Item::both(ItemNode::Export(ExportDecl::Named {
-            names,
-            source: source.to_owned(),
-        })));
-    }
+pub(crate) fn index_barrel(ds_sources: &[String], app_stems: &[String]) -> Module {
+    let module = ds_sources.iter().fold(Module::new(), |module, source| {
+        module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
+            source: source.clone(),
+        })))
+    });
 
     app_stems.iter().fold(module, |module, stem| {
         module.with_item(Item::both(ItemNode::Export(ExportDecl::Star {
@@ -86,10 +85,19 @@ pub(crate) fn index_barrel(
     })
 }
 
-fn idents(names: &[String]) -> Vec<String> {
+pub(crate) fn star_reexport(source: impl Into<String>) -> Module {
+    Module::new().with_item(Item::both(ItemNode::Export(ExportDecl::Star {
+        source: source.into(),
+    })))
+}
+
+fn deep_sources(root: &str, names: &[String]) -> Vec<String> {
+    if root.is_empty() {
+        return Vec::new();
+    }
     names
         .iter()
-        .map(|name| pandacss_shared::js_ident(name))
+        .map(|name| format!("{root}/{}", file_stem(name)))
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
@@ -103,8 +111,7 @@ mod tests {
         CodegenOverlay {
             css: "@acme/ui/css".into(),
             helpers: "@acme/ui/helpers".into(),
-            virtualize_utils: true,
-            virtualize_conditions: true,
+            virtualize_helpers: true,
             virtualize_css: true,
             ..Default::default()
         }
@@ -131,7 +138,7 @@ mod tests {
         );
         assert_eq!(
             o.resolve(RuntimeImport::CssIndex).as_deref(),
-            Some("@acme/ui/css/index")
+            Some("@acme/ui/css")
         );
     }
 
@@ -140,8 +147,7 @@ mod tests {
         let o = CodegenOverlay {
             css: String::new(),
             helpers: String::new(),
-            virtualize_utils: true,
-            virtualize_conditions: true,
+            virtualize_helpers: true,
             virtualize_css: true,
             ..Default::default()
         };
@@ -155,7 +161,6 @@ mod tests {
     #[test]
     fn leaves_non_virtualized_imports_local() {
         let mut o = overlay();
-        o.virtualize_conditions = false;
         o.virtualize_css = false;
         assert_eq!(
             o.resolve(RuntimeImport::Helpers).as_deref(),
@@ -163,5 +168,29 @@ mod tests {
         );
         assert_eq!(o.resolve(RuntimeImport::CssConditions), None);
         assert_eq!(o.resolve(RuntimeImport::CssIndex), None);
+    }
+
+    #[test]
+    fn owned_sources_use_file_stems() {
+        let o = CodegenOverlay {
+            recipes: "@ds/recipes".into(),
+            patterns: "@ds/patterns".into(),
+            jsx: "@ds/jsx".into(),
+            owned_recipes: vec!["chip".into(), "iconButton".into()],
+            owned_patterns: vec!["aspectRatio".into(), "stack".into()],
+            ..Default::default()
+        };
+        assert_eq!(
+            o.owned_recipe_sources(),
+            vec!["@ds/recipes/chip", "@ds/recipes/icon-button"]
+        );
+        assert_eq!(
+            o.owned_pattern_sources(),
+            vec!["@ds/patterns/aspect-ratio", "@ds/patterns/stack"]
+        );
+        assert_eq!(
+            o.owned_jsx_sources(),
+            vec!["@ds/jsx/aspect-ratio", "@ds/jsx/stack"]
+        );
     }
 }

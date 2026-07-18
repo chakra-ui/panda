@@ -88,7 +88,7 @@ export interface SyncExportsResult {
 
 export interface SyncExportsOptions {
   packageJson: string
-  entries: Record<string, string>
+  entries: Record<string, unknown>
 }
 
 export function syncExports(options: SyncExportsOptions): SyncExportsResult {
@@ -97,9 +97,9 @@ export function syncExports(options: SyncExportsOptions): SyncExportsResult {
   const existing = normalizeExports(pkg.exports)
   const merged: Record<string, unknown> = { ...existing }
   const conflicts: string[] = []
+
   for (const [key, value] of Object.entries(entries)) {
-    // `value` is always a string path; object/array existing entries always conflict.
-    if (key in existing && existing[key] !== value) {
+    if (key in merged && !exportsValueEqual(merged[key], value)) {
       conflicts.push(key)
     }
     merged[key] = value
@@ -108,6 +108,10 @@ export function syncExports(options: SyncExportsOptions): SyncExportsResult {
   const changed = JSON.stringify(pkg.exports) !== JSON.stringify(merged)
   const out = { ...pkg, exports: merged }
   return { changed, json: `${JSON.stringify(out, null, 2)}\n`, conflicts }
+}
+
+function exportsValueEqual(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
 }
 
 function normalizeExports(exports: unknown): Record<string, unknown> {

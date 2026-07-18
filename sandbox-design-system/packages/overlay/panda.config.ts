@@ -5,6 +5,7 @@ export default defineConfig({
   include: ['src/**/*.tsx'],
   outdir: 'styled-system',
   clean: true,
+  jsxFramework: 'react',
   theme: {
     extend: {
       recipes: {

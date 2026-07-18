@@ -4,7 +4,7 @@ use napi_derive::napi;
 
 #[napi]
 impl Compiler {
-    /// Build a `panda.lib.json` value from host-supplied fields, stamping the
+    /// Build a `panda/lib.json` value from host-supplied fields, stamping the
     /// engine-owned schema version. Backs the `designSystem.create` JS namespace.
     ///
     /// # Errors

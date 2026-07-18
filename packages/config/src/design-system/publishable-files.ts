@@ -5,6 +5,7 @@ export interface FilterPublishableLibFilesOptions {
   /** Fallback paths relative to the lib outdir (same form as manifest `files`). */
   files: string[]
   packageRoot: string
+  /** Lib outdir — resolve `files` entries from here. */
   outRoot: string
   /** package.json `"files"`; omit when the whole package is packed. */
   publishFiles?: string[]

@@ -180,7 +180,7 @@ mod tests {
         let config = UserConfig::default();
         let overlay = CodegenOverlay {
             helpers: "@acme/ui/helpers".into(),
-            virtualize_utils: true,
+            virtualize_helpers: true,
             ..Default::default()
         };
         let mut ctx = CodegenContext::new(&config);

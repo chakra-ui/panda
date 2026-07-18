@@ -12,8 +12,8 @@ function ds(
 ): ResolvedDesignSystem {
   return {
     manifest: {} as ResolvedDesignSystem['manifest'],
-    manifestPath: `/node_modules/${overrides.specifier}/panda.lib.json`,
-    buildInfoPath: `/node_modules/${overrides.specifier}/panda.buildinfo.json`,
+    manifestPath: `/node_modules/${overrides.specifier}/panda/lib.json`,
+    buildInfoPath: `/node_modules/${overrides.specifier}/panda/buildinfo.json`,
     files: [],
     tokenPaths: [],
     recipeNames: [],
@@ -25,19 +25,36 @@ function ds(
 function pureConsumerMetadata() {
   return {
     designSystem: [ds({ name: '@acme/ui', specifier: '@acme/ui' })],
-    appConfigKeys: {
-      conditions: false,
-      breakpoints: false,
-      utilities: false,
-      tokens: false,
-      globalOptionsMatchDs: true,
+    overlayInput: {
+      authored: {
+        conditions: false,
+        breakpoints: false,
+        utilities: false,
+        tokens: false,
+      },
+      compatible: true,
     },
   }
 }
 
-function metadataWith(overrides: Partial<NonNullable<ReturnType<typeof pureConsumerMetadata>>['appConfigKeys']>) {
+function metadataWith(
+  overrides: Partial<{
+    conditions: boolean
+    breakpoints: boolean
+    utilities: boolean
+    tokens: boolean
+    compatible: boolean
+  }>,
+) {
   const base = pureConsumerMetadata()
-  return { ...base, appConfigKeys: { ...base.appConfigKeys, ...overrides } }
+  const { compatible, ...authored } = overrides
+  return {
+    ...base,
+    overlayInput: {
+      authored: { ...base.overlayInput.authored, ...authored },
+      compatible: compatible ?? base.overlayInput.compatible,
+    },
+  }
 }
 
 describe('buildCodegenOverlay', () => {
@@ -56,46 +73,38 @@ describe('buildCodegenOverlay', () => {
       helpers: '@acme/ds/helpers',
       ownedRecipes: ['button'],
       ownedPatterns: ['stack'],
-      virtualizeUtils: true,
-      virtualizeConditions: true,
+      virtualizeHelpers: true,
       virtualizeCss: true,
     })
   })
 
   it('virtualizes entire runtime for a pure consumer', () => {
     const overlay = buildCodegenOverlay(pureConsumerMetadata())
-    expect(overlay?.virtualizeUtils).toBe(true)
-    expect(overlay?.virtualizeConditions).toBe(true)
+    expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(true)
     expect(overlay?.css).toBe('@acme/ui/css')
     expect(overlay?.helpers).toBe('@acme/ui/helpers')
   })
 
-  it('keeps css + conditions local when app authors conditions', () => {
+  it('keeps css local when app authors conditions', () => {
     const overlay = buildCodegenOverlay(metadataWith({ conditions: true }))
-    expect(overlay?.virtualizeUtils).toBe(true)
-    expect(overlay?.virtualizeConditions).toBe(false)
+    expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
   it('keeps the whole css/ dir local when app authors only utilities', () => {
     const overlay = buildCodegenOverlay(metadataWith({ utilities: true }))
-    expect(overlay?.virtualizeUtils).toBe(true)
-    expect(overlay?.virtualizeConditions).toBe(false)
+    expect(overlay?.virtualizeHelpers).toBe(true)
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
   it('keeps css local when the app extends tokens, so css() sees the added token', () => {
     const overlay = buildCodegenOverlay(metadataWith({ tokens: true }))
     expect(overlay?.virtualizeCss).toBe(false)
-    expect(overlay?.virtualizeConditions).toBe(false)
   })
 
-  it('keeps entire runtime local when a global option differs', () => {
-    const overlay = buildCodegenOverlay(metadataWith({ globalOptionsMatchDs: false }))
-    expect(overlay?.virtualizeUtils).toBe(false)
-    expect(overlay?.virtualizeConditions).toBe(false)
-    expect(overlay?.virtualizeCss).toBe(false)
+  it('returns undefined when globals are incompatible (full local tree)', () => {
+    expect(buildCodegenOverlay(metadataWith({ compatible: false }))).toBeUndefined()
   })
 
   test('excludes app-redefined names from the owned sets', () => {
@@ -281,9 +290,59 @@ describe('collectExportMissingDiagnostics', () => {
           },
         }),
       ],
+      overlayInput: pureConsumerMetadata().overlayInput,
     })
 
-    expect(diagnostics.some((d) => d.message.includes('"./recipes"'))).toBe(true)
+    const messages = diagnostics.map((d) => d.message).join('\n')
+    expect(messages).toContain('./recipes')
+    expect(messages).toContain('./recipes/*')
+  })
+
+  test('does not require ./recipes when the DS owns no recipes (app-only delta)', () => {
+    const diagnostics = collectExportMissingDiagnostics({
+      designSystem: [
+        ds({
+          name: '@acme/ds',
+          specifier: '@acme/ds',
+          recipeNames: ['button'],
+          packageExports: {
+            '.': './index.js',
+            './helpers': './helpers/index.js',
+            './css': './css/index.js',
+            './css/*': './css/*.js',
+          },
+        }),
+      ],
+      userRecipeNames: ['button', 'card'],
+      overlayInput: pureConsumerMetadata().overlayInput,
+    })
+
+    const messages = diagnostics.map((d) => d.message).join('\n')
+    expect(messages).not.toContain('./recipes')
+  })
+
+  test('reports missing ./jsx exports when the design system owns patterns', () => {
+    const diagnostics = collectExportMissingDiagnostics({
+      designSystem: [
+        ds({
+          name: '@acme/ds',
+          specifier: '@acme/ds',
+          patternNames: ['stack'],
+          packageExports: {
+            '.': './index.js',
+            './helpers': './helpers/index.js',
+            './css': './css/index.js',
+            './css/*': './css/*.js',
+            './patterns': './patterns/index.js',
+          },
+        }),
+      ],
+    })
+
+    const messages = diagnostics.map((d) => d.message).join('\n')
+    expect(messages).toContain('./patterns/*')
+    expect(messages).toContain('./jsx')
+    expect(messages).toContain('./jsx/*')
   })
 
   test('returns nothing without a single-level overlay', () => {
@@ -294,6 +353,18 @@ describe('collectExportMissingDiagnostics', () => {
           ds({ name: '@acme/ds', specifier: '@acme/ds' }),
           ds({ name: '@acme/base', specifier: '@acme/base' }),
         ],
+      }),
+    ).toEqual([])
+  })
+
+  test('returns nothing when globals are incompatible', () => {
+    expect(
+      collectExportMissingDiagnostics({
+        designSystem: [ds({ name: '@acme/ds', specifier: '@acme/ds', recipeNames: ['button'] })],
+        overlayInput: {
+          authored: { conditions: false, breakpoints: false, utilities: false, tokens: false },
+          compatible: false,
+        },
       }),
     ).toEqual([])
   })

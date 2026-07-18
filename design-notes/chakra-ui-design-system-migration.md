@@ -43,7 +43,7 @@ letting Panda apps override the runtime and declarations with app-generated arti
 
 This note is the Chakra-specific application of the generic design-system contracts:
 
-- [design-system-manifest.md](./design-system-manifest.md) owns `designSystem`, `panda.lib.json`, parent-chain
+- [design-system-manifest.md](./design-system-manifest.md) owns `designSystem`, `panda/lib.json`, parent-chain
   resolution, and diagnostics.
 - [build-info.md](./build-info.md) owns build-info hydration and module/export tree-shaking.
 - [virtual-styled-system.md](./virtual-styled-system.md) owns dual importMap, app-composed `styled-system`, and overlay

@@ -742,6 +742,12 @@ importers:
       '@pandacss/preset-base':
         specifier: workspace:*
         version: link:../../../packages/preset-base
+      '@types/react':
+        specifier: 19.2.7
+        version: 19.2.7
+      react:
+        specifier: 19.2.0
+        version: 19.2.0
 
   sandbox-design-system/packages/overlay:
     dependencies:

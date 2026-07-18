@@ -7,6 +7,7 @@ import {
   type DesignSystemLevel,
   type ResolvedDesignSystem,
 } from './design-system/chain'
+import { buildOverlayInput, type DesignSystemOverlayInput } from './design-system/overlay-input'
 import { expandSmartInclude } from './design-system/smart-include'
 import { collectTokenPaths } from './design-system/token-paths'
 import { createConfigDiagnostic, createConfigError, PandaError } from './error'
@@ -44,6 +45,7 @@ export interface ResolveAuthoredPresetsResult {
     userTokenPaths?: string[]
     userRecipeNames?: string[]
     userPatternNames?: string[]
+    overlayInput?: DesignSystemOverlayInput
   }
 }
 
@@ -56,6 +58,7 @@ export interface ResolveAuthoredPresetsOptions {
 export interface DesignSystemCompatibilityContext {
   designSystem: ResolvedDesignSystem
   classNameOptions: NormalizedClassNameOptions
+  presetConfig: UserConfig
 }
 
 export async function resolveAuthoredPresets(
@@ -101,13 +104,14 @@ export async function resolveAuthoredPresetsForLoad(
   if (hasDesignSystem) {
     dsChain = await loadDesignSystemChain(designSystem, cwd, ctx.dependencies)
     for (const level of dsChain) {
-      const resolution = await resolveConfigEntry(
-        level.preset,
-        { kind: 'preset', specifier: level.info.name },
-        cwd,
-        ctx.dependencies,
-        trackSources,
-      )
+      const dsSource: ConfigSource = { kind: 'preset', specifier: level.info.name, name: level.info.name }
+      const resolution = await resolveConfigEntry(level.preset, dsSource, cwd, ctx.dependencies, trackSources)
+      // Attribute nested DS presets to the DS so their conditions/utilities don't force local css/.
+      if (resolution.sourcedConfigs) {
+        for (const sourced of resolution.sourcedConfigs) {
+          sourced.source = dsSource
+        }
+      }
       level.info.tokenPaths = collectTokenPaths(resolution.config)
       level.info.recipeNames = collectRecipeNames(resolution.config)
       level.info.patternNames = collectPatternNames(resolution.config)
@@ -116,6 +120,7 @@ export async function resolveAuthoredPresetsForLoad(
       designSystemCompatibility.push({
         designSystem: level.info,
         classNameOptions: normalizeClassNameOptions(mergeConfigs(ctx.configs) as UserConfig),
+        presetConfig: resolution.config,
       })
     }
   }
@@ -138,6 +143,50 @@ export async function resolveAuthoredPresetsForLoad(
     return expandSmartInclude(withImportMap, cwd, ctx.dependencies)
   }
 
+  const leafCompatibility = designSystemCompatibility[designSystemCompatibility.length - 1]
+
+  if (ctx.sourcedConfigs) {
+    const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
+
+    if (options.preserveRuntimeHooks) {
+      attachRuntimeHooks(merged.config, ctx.configs)
+    }
+
+    const finalized = finalize(merged.config as UserConfig)
+    let overlayInput: DesignSystemOverlayInput | undefined
+    if (leafCompatibility) {
+      const input = buildOverlayInput(merged.sources, finalized, dsInfos, leafCompatibility.presetConfig, cwd)
+      const leafClassMismatch = leafCompatibility.designSystem.optionMismatch ?? []
+      overlayInput = {
+        authored: input.authored,
+        compatible: input.compatible && leafClassMismatch.length === 0,
+      }
+    }
+    const dsMetadata =
+      dsInfos.length > 0
+        ? {
+            designSystem: dsInfos,
+            userTokenPaths: collectTokenPaths(rootResolution.config),
+            userRecipeNames: collectRecipeNames(rootResolution.config),
+            userPatternNames: collectPatternNames(rootResolution.config),
+            ...(overlayInput ? { overlayInput } : {}),
+          }
+        : undefined
+
+    return {
+      config: finalized,
+      dependencies: Array.from(ctx.dependencies),
+      metadata: { sources: merged.sources, ...dsMetadata },
+      designSystemCompatibility,
+    }
+  }
+
+  const mergedConfig = (
+    options.preserveRuntimeHooks
+      ? attachRuntimeHooks(mergeConfigs(ctx.configs), ctx.configs)
+      : mergeConfigs(ctx.configs)
+  ) as UserConfig
+  const finalized = finalize(mergedConfig)
   const dsMetadata =
     dsInfos.length > 0
       ? {
@@ -148,27 +197,8 @@ export async function resolveAuthoredPresetsForLoad(
         }
       : undefined
 
-  if (ctx.sourcedConfigs) {
-    const merged = mergeConfigsWithSources(ctx.sourcedConfigs)
-
-    if (options.preserveRuntimeHooks) {
-      attachRuntimeHooks(merged.config, ctx.configs)
-    }
-
-    return {
-      config: finalize(merged.config as UserConfig),
-      dependencies: Array.from(ctx.dependencies),
-      metadata: { sources: merged.sources, ...dsMetadata },
-      designSystemCompatibility,
-    }
-  }
-
   return {
-    config: finalize(
-      (options.preserveRuntimeHooks
-        ? attachRuntimeHooks(mergeConfigs(ctx.configs), ctx.configs)
-        : mergeConfigs(ctx.configs)) as UserConfig,
-    ),
+    config: finalized,
     dependencies: Array.from(ctx.dependencies),
     ...(dsMetadata ? { metadata: dsMetadata } : {}),
     designSystemCompatibility,

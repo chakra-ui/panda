@@ -158,8 +158,7 @@ pub struct CodegenOverlay {
     pub helpers: String,
     pub owned_recipes: Vec<String>,
     pub owned_patterns: Vec<String>,
-    pub virtualize_utils: bool,
-    pub virtualize_conditions: bool,
+    pub virtualize_helpers: bool,
     pub virtualize_css: bool,
 }
 
