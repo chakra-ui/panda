@@ -233,7 +233,7 @@ function renderScale(container, tokens) {
     track.className = 's-track'
     const bar = document.createElement('div')
     bar.className = 's-bar'
-    bar.style.width = Math.max((px / maxPx) * 100, 2) + '%'
+    bar.style.width = (px <= 0 ? 0 : Math.max((px / maxPx) * 100, 2)) + '%'
     track.appendChild(bar)
     scale.append(name, value, pixels, track)
   }
@@ -533,7 +533,7 @@ function scaleRows(items: StudioToken[]) {
     .map((token) => ({ token, px: toPx(token.value) }))
     .sort((a, b) => a.px - b.px)
   const maxPx = rows.length ? rows[rows.length - 1].px || 1 : 1
-  return rows.map((row) => ({ ...row, width: Math.max((row.px / maxPx) * 100, 2) }))
+  return rows.map((row) => ({ ...row, width: row.px <= 0 ? 0 : Math.max((row.px / maxPx) * 100, 2) }))
 }`
 
 const reactTemplates = {
