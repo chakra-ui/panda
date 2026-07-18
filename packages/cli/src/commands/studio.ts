@@ -12,6 +12,7 @@ import { serveStudio, type StudioServer } from '../studio-server'
 import {
   buildSemanticMap,
   buildTokensSnapshot,
+  fontfaceToCss,
   keyframesToCss,
   viewFiles,
   viewerFiles,
@@ -61,10 +62,10 @@ export async function runStudioGenerate(
       const framework = resolveFramework(ctx.driver.config.jsxFramework)
       const spec = ctx.driver.compiler.spec()
       const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
-      const keyframes = keyframesToCss(readKeyframes(ctx.driver.config))
+      const styles = studioStyles(ctx.driver.config)
       const outdir = flags.outdir ? ctx.driver.resolvePath(flags.outdir) : join(ctx.driver.getOutdir(), 'studio')
 
-      const files = writeStudioFiles(outdir, viewFiles(tokens, framework, keyframes))
+      const files = writeStudioFiles(outdir, viewFiles(tokens, framework, styles))
 
       if (shouldPrintHumanSummary(flags)) {
         ctx.output.log(`studio: wrote ${files.length} ${framework} files to ${outdir}`)
@@ -90,9 +91,9 @@ export async function runStudioServe(
     async execute(ctx) {
       const spec = ctx.driver.compiler.spec()
       const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
-      const keyframes = keyframesToCss(readKeyframes(ctx.driver.config))
+      const styles = studioStyles(ctx.driver.config)
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeStudioFiles(dir, viewerFiles(tokens, keyframes))
+      writeStudioFiles(dir, viewerFiles(tokens, styles))
 
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 
@@ -117,8 +118,9 @@ function resolveFramework(jsxFramework: unknown): StudioFramework {
   return jsxFramework === 'solid' ? 'solid' : 'react'
 }
 
-function readKeyframes(config: unknown): unknown {
-  return (config as { theme?: { keyframes?: unknown } } | undefined)?.theme?.keyframes
+function studioStyles(config: unknown): string {
+  const cfg = config as { theme?: { keyframes?: unknown }; globalFontface?: unknown } | undefined
+  return [keyframesToCss(cfg?.theme?.keyframes), fontfaceToCss(cfg?.globalFontface)].filter(Boolean).join('\n')
 }
 
 function writeStudioFiles(outdir: string, files: StudioFile[]): string[] {

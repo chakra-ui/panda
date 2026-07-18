@@ -212,6 +212,33 @@ export function keyframesToCss(keyframes: unknown): string {
   return blocks.join('\n')
 }
 
+export function fontfaceToCss(globalFontface: unknown): string {
+  if (!globalFontface || typeof globalFontface !== 'object') return ''
+  const kebab = (prop: string) => prop.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
+  const src = (value: unknown): string => {
+    const one = (item: unknown) => {
+      if (!item || typeof item !== 'object') return String(item)
+      const entry = item as { url?: string; format?: string }
+      return `url("${entry.url ?? ''}")${entry.format ? ` format("${entry.format}")` : ''}`
+    }
+    return Array.isArray(value) ? value.map(one).join(', ') : one(value)
+  }
+  const rule = (family: string, decls: Record<string, unknown>) => {
+    const body = Object.entries(decls)
+      .map(([prop, value]) => `${kebab(prop)}: ${prop === 'src' ? src(value) : String(value)}`)
+      .join('; ')
+    return `@font-face { font-family: "${family}"; ${body} }`
+  }
+  const blocks: string[] = []
+  for (const [family, def] of Object.entries(globalFontface as Record<string, unknown>)) {
+    if (family === 'extend' || !def || typeof def !== 'object') continue
+    for (const one of Array.isArray(def) ? def : [def]) {
+      if (one && typeof one === 'object') blocks.push(rule(family, one as Record<string, unknown>))
+    }
+  }
+  return blocks.join('\n')
+}
+
 function viewerHtml(view: ViewerView, views: ViewerView[]): string {
   return `<!doctype html>
 <html lang="en">

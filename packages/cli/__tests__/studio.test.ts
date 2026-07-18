@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   buildSemanticMap,
   buildTokensSnapshot,
+  fontfaceToCss,
   runStudioGenerate,
   runStudioServe,
   viewFiles,
@@ -136,6 +137,24 @@ describe('studio viewer', () => {
     } finally {
       await result.stop?.()
     }
+  })
+})
+
+describe('studio fonts', () => {
+  it('emits @font-face css so the viewer loads the user font', () => {
+    const css = fontfaceToCss({
+      Custom: { src: [{ url: '/fonts/custom.woff2', format: 'woff2' }], fontWeight: 500, fontDisplay: 'swap' },
+    })
+    expect(css).toContain('@font-face')
+    expect(css).toContain('font-family: "Custom"')
+    expect(css).toContain('url("/fonts/custom.woff2") format("woff2")')
+    expect(css).toContain('font-weight: 500')
+    expect(css).toContain('font-display: swap')
+  })
+
+  it('returns empty string when no fontface is configured', () => {
+    expect(fontfaceToCss(undefined)).toBe('')
+    expect(fontfaceToCss({})).toBe('')
   })
 })
 
