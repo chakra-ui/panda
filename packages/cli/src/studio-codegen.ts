@@ -183,7 +183,7 @@ function viewerViews(tokens: StudioToken[]): ViewerView[] {
   )
   const views: ViewerView[] = categories.map((id) => ({ id, label: id, group: 'tokens' }))
   if (tokens.some((token) => token.conditions))
-    views.push({ id: 'semantic', label: 'semantic tokens', group: 'tokens' })
+    views.splice(1, 0, { id: 'semantic', label: 'semantic tokens', group: 'tokens' })
   if (tokens.some((token) => token.category === 'colors'))
     views.push({ id: 'contrast', label: 'Contrast', group: 'playground' })
   if (tokens.some((token) => TYPE_CATEGORIES.includes(token.category)))
@@ -342,7 +342,9 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); }
 .badge.pass { background: color-mix(in srgb, #16a34a 20%, transparent); border-color: #16a34a; }
 .badge.fail { background: color-mix(in srgb, #dc2626 15%, transparent); border-color: #dc2626; opacity: 0.7; }
-.semantic { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: start; }
+.semantic-sub { font-size: 12px; font-weight: 600; text-transform: capitalize; color: var(--fg); margin: 20px 0 10px; }
+.semantic-sub:first-child { margin-top: 0; }
+.semantic { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; align-items: start; margin-bottom: 8px; }
 .semantic-card { border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 12px; }
 .semantic-name { font-size: 12px; font-weight: 600; margin-bottom: 10px; }
 .semantic-conds { display: flex; flex-direction: column; gap: 8px; }
@@ -649,35 +651,53 @@ function renderView(tokens, view, query) {
 }
 
 function renderSemantic(container, tokens) {
-  const grid = document.createElement('div')
-  grid.className = 'semantic'
+  const byCategory = new Map()
   for (const token of tokens) {
-    const card = document.createElement('div')
-    card.className = 'semantic-card'
-    const name = document.createElement('div')
-    name.className = 'semantic-name'
-    name.textContent = token.name
-    const conds = document.createElement('div')
-    conds.className = 'semantic-conds'
-    for (const [label, value] of Object.entries(token.conditions)) {
-      const row = document.createElement('div')
-      row.className = 'semantic-cond'
-      const swatch = document.createElement('div')
-      swatch.className = 'sw'
-      swatch.style.background = value
-      const labelEl = document.createElement('span')
-      labelEl.className = 'label'
-      labelEl.textContent = label
-      const valueEl = document.createElement('span')
-      valueEl.className = 'cv'
-      valueEl.textContent = value
-      row.append(swatch, labelEl, valueEl)
-      conds.appendChild(row)
-    }
-    card.append(name, conds)
-    grid.appendChild(card)
+    if (!byCategory.has(token.category)) byCategory.set(token.category, [])
+    byCategory.get(token.category).push(token)
   }
-  container.appendChild(grid)
+  const multi = byCategory.size > 1
+  for (const [category, group] of byCategory) {
+    if (multi) {
+      const sub = document.createElement('h3')
+      sub.className = 'semantic-sub'
+      sub.textContent = category
+      container.appendChild(sub)
+    }
+    const grid = document.createElement('div')
+    grid.className = 'semantic'
+    for (const token of group) {
+      const card = document.createElement('div')
+      card.className = 'semantic-card'
+      const name = document.createElement('div')
+      name.className = 'semantic-name'
+      name.textContent = token.name
+      const conds = document.createElement('div')
+      conds.className = 'semantic-conds'
+      for (const [label, value] of Object.entries(token.conditions)) {
+        const row = document.createElement('div')
+        row.className = 'semantic-cond'
+        const labelEl = document.createElement('span')
+        labelEl.className = 'label'
+        labelEl.textContent = label
+        const valueEl = document.createElement('span')
+        valueEl.className = 'cv'
+        valueEl.textContent = value
+        if (category === 'colors') {
+          const swatch = document.createElement('div')
+          swatch.className = 'sw'
+          swatch.style.background = value
+          row.append(swatch, labelEl, valueEl)
+        } else {
+          row.append(labelEl, valueEl)
+        }
+        conds.appendChild(row)
+      }
+      card.append(name, conds)
+      grid.appendChild(card)
+    }
+    container.appendChild(grid)
+  }
 }
 
 function buildNav(views, current) {
