@@ -96,12 +96,12 @@ const VIEWER_HTML = `<!doctype html>
           <input class="search" id="search" type="search" placeholder="Filter tokens…" aria-label="Filter tokens" />
         </div>
         <nav class="nav"><div class="nav-label">Tokens</div><ul id="nav"></ul></nav>
-        <button class="theme" id="theme" type="button" aria-label="Toggle color theme"></button>
       </aside>
       <main class="content">
         <div class="content-head"><span class="count" id="count"></span></div>
         <div id="grid"></div>
       </main>
+      <button class="theme" id="theme" type="button" aria-label="Toggle color theme"></button>
     </div>
     <script src="studio.js"></script>
   </body>
@@ -141,7 +141,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-s
 .nav a { display: block; padding: 6px 10px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--fg); text-decoration: none; text-transform: capitalize; }
 .nav a:hover { background: var(--card); }
 .nav a.active { background: var(--accent); color: #1a1a1a; }
-.theme { margin-top: auto; width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.theme { position: fixed; top: 14px; right: 20px; z-index: 20; width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .theme:hover { border-color: var(--accent); }
 .content { flex: 1; min-width: 0; padding: 28px 40px 80px; }
 .content-head { margin-bottom: 24px; min-height: 16px; }
@@ -199,7 +199,7 @@ renderThemeButton()
 
 const CATEGORY_ORDER = ['colors', 'fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings', 'spacing', 'sizes', 'radii', 'borders', 'shadows', 'blurs', 'aspectRatios', 'durations', 'easings', 'animations', 'breakpoints']
 const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
-const SCALE_CATEGORIES = new Set(['spacing', 'sizes'])
+const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
 const GRID_KIND = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing' }
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
@@ -502,7 +502,7 @@ const COMPONENT_CSS = `.panda-studio { --fg: #1a1a1a; --muted: #71717a; --border
 @keyframes panda-studio-ease { from { transform: translateX(0); } to { transform: translateX(130px); } }`
 
 const SHARED_HELPERS = `const TYPE_CATEGORIES = new Set(['fontSizes', 'fontWeights', 'fonts', 'lineHeights', 'letterSpacings'])
-const SCALE_CATEGORIES = new Set(['spacing', 'sizes'])
+const SCALE_CATEGORIES = new Set(['spacing', 'sizes', 'breakpoints'])
 const GRID_KIND: Record<string, string> = { radii: 'radius', borders: 'border', shadows: 'shadow', blurs: 'blur', aspectRatios: 'ratio', animations: 'animation', easings: 'easing' }
 const SAMPLE = 'The quick brown fox jumps over the lazy dog'
 
