@@ -20,3 +20,4 @@ website/pages/**/*.mdx
 .draft/**/*.mdx
 styled-system
 packages/transformer/src/runtime/internal/source.ts
+**/CHANGELOG.md
