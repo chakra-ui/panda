@@ -24,12 +24,7 @@ export function ViewContent({
       return <TypographyPlayground tokens={tokens} />
 
     case 'playground':
-      return (
-        <section>
-          <h2>playground</h2>
-          <Showcase tokens={tokens} theme={theme} />
-        </section>
-      )
+      return <Showcase tokens={tokens} theme={theme} />
 
     case 'semantic': {
       const items = tokens.filter((t) => t.conditions).filter((t) => !term || matchesTerm(t, term))

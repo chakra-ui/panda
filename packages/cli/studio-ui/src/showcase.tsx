@@ -34,52 +34,107 @@ export function Showcase({ tokens, theme }: { tokens: StudioToken[]; theme: stri
   return (
     <div class="showcase" style={vars}>
       <div class="sc-intro">
-        <span class="sc-eyebrow">Playground</span>
         <h1>Your tokens, in action</h1>
         <p class="sc-lead">
           A live preview of your design tokens across real components — colors, typography, spacing, radii and shadows.
         </p>
       </div>
 
-      <Section title="Buttons">
-        <div class="sc-row">
-          <button class="sc-btn sc-solid">Solid</button>
-          <button class="sc-btn sc-outline">Outline</button>
-          <button class="sc-btn sc-subtle">Subtle</button>
-          <button class="sc-btn sc-ghost">Ghost</button>
-          <button class="sc-btn sc-solid" disabled>
-            Disabled
-          </button>
-        </div>
-        <div class="sc-row">
-          <button class="sc-btn sc-solid sc-sm">Small</button>
-          <button class="sc-btn sc-solid">Medium</button>
-          <button class="sc-btn sc-solid sc-lg">Large</button>
-          <button class="sc-icon-btn" aria-label="Add">
-            +
-          </button>
-        </div>
-      </Section>
+      <div class="sc-grid">
+        <Section title="Buttons">
+          <div class="sc-row">
+            <button class="sc-btn sc-solid">Solid</button>
+            <button class="sc-btn sc-outline">Outline</button>
+            <button class="sc-btn sc-subtle">Subtle</button>
+            <button class="sc-btn sc-ghost">Ghost</button>
+            <button class="sc-btn sc-solid" disabled>
+              Disabled
+            </button>
+          </div>
+          <div class="sc-row">
+            <button class="sc-btn sc-solid sc-sm">Small</button>
+            <button class="sc-btn sc-solid">Medium</button>
+            <button class="sc-btn sc-solid sc-lg">Large</button>
+            <button class="sc-icon-btn" aria-label="Add">
+              +
+            </button>
+          </div>
+        </Section>
 
-      <Section title="Controls">
-        <div class="sc-controls">
-          <label class="sc-check">
-            <input type="checkbox" checked /> Checkbox
-          </label>
-          <label class="sc-check">
-            <span class="sc-switch">
-              <input type="checkbox" checked />
-              <span class="sc-switch-track" />
-            </span>
-            Switch
-          </label>
-          <label class="sc-check">
-            <input type="radio" name="sc-radio" checked /> Radio
-          </label>
+        <Section title="Controls">
+          <div class="sc-controls">
+            <label class="sc-check">
+              <input type="checkbox" checked /> Checkbox
+            </label>
+            <label class="sc-check">
+              <span class="sc-switch">
+                <input type="checkbox" checked />
+                <span class="sc-switch-track" />
+              </span>
+              Switch
+            </label>
+            <label class="sc-check">
+              <input type="radio" name="sc-radio" checked /> Radio
+            </label>
+          </div>
           <label class="sc-range-field">
             Slider
             <input class="sc-range" type="range" value={62} />
           </label>
+        </Section>
+
+        <Section title="Tabs">
+          <div class="sc-tabs">
+            <button class="sc-tab sc-tab-on">Components</button>
+            <button class="sc-tab">Hooks</button>
+            <button class="sc-tab">Utilities</button>
+          </div>
+        </Section>
+
+        <Section title="Badges">
+          <div class="sc-row">
+            <span class="sc-badge sc-accent">Accent</span>
+            <span class="sc-badge sc-ok">Success</span>
+            <span class="sc-badge sc-warn">Warning</span>
+            <span class="sc-badge sc-err">Danger</span>
+          </div>
+        </Section>
+
+        <Section title="Rating">
+          <div class="sc-rating">
+            <span class="sc-star sc-on">★</span>
+            <span class="sc-star sc-on">★</span>
+            <span class="sc-star sc-on">★</span>
+            <span class="sc-star">★</span>
+            <span class="sc-star">★</span>
+          </div>
+        </Section>
+
+        <Section title="Keyboard">
+          <div class="sc-row">
+            <kbd class="sc-kbd">⌘</kbd>
+            <kbd class="sc-kbd">K</kbd>
+            <span class="sc-muted">to search</span>
+          </div>
+        </Section>
+      </div>
+
+      <Section title="Steps">
+        <div class="sc-steps">
+          <div class="sc-step sc-step-done">
+            <span class="sc-step-dot">✓</span>
+            <span class="sc-step-label">Cart</span>
+          </div>
+          <div class="sc-step-line sc-step-line-done" />
+          <div class="sc-step sc-step-on">
+            <span class="sc-step-dot">2</span>
+            <span class="sc-step-label">Shipping</span>
+          </div>
+          <div class="sc-step-line" />
+          <div class="sc-step">
+            <span class="sc-step-dot">3</span>
+            <span class="sc-step-label">Payment</span>
+          </div>
         </div>
       </Section>
 
@@ -104,16 +159,36 @@ export function Showcase({ tokens, theme }: { tokens: StudioToken[]; theme: stri
       </Section>
 
       <Section title="Feedback">
-        <div class="sc-row">
-          <span class="sc-badge sc-accent">Accent</span>
-          <span class="sc-badge sc-ok">Success</span>
-          <span class="sc-badge sc-warn">Warning</span>
-          <span class="sc-badge sc-err">Danger</span>
-        </div>
         <div class="sc-progress" role="progressbar">
           <div class="sc-progress-bar" style={{ width: '64%' }} />
         </div>
-        <div class="sc-alert">Alerts, inputs and buttons all pull from the same tokens.</div>
+        <div class="sc-feedback-row">
+          <span class="sc-spinner" aria-label="Loading" />
+          <div class="sc-alert">Alerts, spinners and progress all pull from the same tokens.</div>
+        </div>
+      </Section>
+
+      <Section title="Pagination">
+        <div class="sc-pagination">
+          <button class="sc-page" aria-label="Previous">
+            ‹
+          </button>
+          <button class="sc-page sc-page-on">1</button>
+          <button class="sc-page">2</button>
+          <button class="sc-page">3</button>
+          <button class="sc-page">4</button>
+          <button class="sc-page" aria-label="Next">
+            ›
+          </button>
+        </div>
+      </Section>
+
+      <Section title="Quote">
+        <blockquote class="sc-quote">
+          If anyone thinks he is something when he is nothing, he deceives himself. Each one should test his own
+          actions.
+          <cite>— Uzumaki Naruto</cite>
+        </blockquote>
       </Section>
 
       <Section title="Surfaces">

@@ -1,9 +1,9 @@
 .showcase {
-  max-width: 900px;
+  width: 100%;
   font-family: var(--fonts-body, inherit);
 }
 .sc-intro {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 .sc-eyebrow {
   text-transform: uppercase;
@@ -26,20 +26,31 @@
   margin: 0;
 }
 
+.sc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
 .sc-section {
-  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.sc-grid .sc-section {
+  margin-bottom: 0;
 }
 .sc-section-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding-bottom: 10px;
+  background: var(--card);
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 18px;
 }
 .sc-section-body {
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -104,7 +115,7 @@
 .sc-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 22px;
   align-items: center;
 }
 .sc-check {
@@ -137,7 +148,6 @@
   flex: 1;
   border-radius: 999px;
   background: var(--border);
-  transition: background 0.15s;
   position: relative;
 }
 .sc-switch-track::after {
@@ -163,18 +173,113 @@
   gap: 8px;
   font-size: 13px;
   color: var(--fg);
-  min-width: 180px;
 }
 .sc-range {
   accent-color: var(--colors-accent, var(--accent));
   width: 100%;
 }
 
+.sc-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+}
+.sc-tab {
+  border: 0;
+  background: transparent;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.sc-tab-on {
+  color: var(--fg);
+  border-bottom-color: var(--colors-accent, var(--accent));
+}
+
+.sc-rating {
+  display: flex;
+  gap: 2px;
+  font-size: 22px;
+}
+.sc-star {
+  color: var(--border);
+}
+.sc-star.sc-on {
+  color: var(--colors-accent, var(--accent));
+}
+
+.sc-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--card);
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.sc-steps {
+  display: flex;
+  align-items: center;
+}
+.sc-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.sc-step-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+}
+.sc-step-on .sc-step-dot {
+  border-color: var(--colors-accent, var(--accent));
+  color: var(--colors-accent, var(--accent));
+}
+.sc-step-on .sc-step-label,
+.sc-step-done .sc-step-label {
+  color: var(--fg);
+  font-weight: 600;
+}
+.sc-step-done .sc-step-dot {
+  background: var(--colors-accent, var(--accent));
+  border-color: var(--colors-accent, var(--accent));
+  color: #1a1a1a;
+}
+.sc-step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  margin: 0 12px;
+}
+.sc-step-line-done {
+  background: var(--colors-accent, var(--accent));
+}
+
 .sc-form {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  max-width: 560px;
+  max-width: 620px;
 }
 .sc-field {
   display: flex;
@@ -227,25 +332,85 @@
   background: var(--colors-red-100, #fee2e2);
   color: var(--colors-red-700, #b91c1c);
 }
+
 .sc-progress {
   height: 8px;
   border-radius: 999px;
   background: var(--border);
   overflow: hidden;
-  max-width: 420px;
+  max-width: 460px;
 }
 .sc-progress-bar {
   height: 100%;
   border-radius: 999px;
   background: var(--colors-accent, var(--accent));
 }
+.sc-feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sc-feedback-row .sc-alert {
+  flex: 1;
+}
+.sc-spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--colors-accent, var(--accent));
+  animation: sc-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes sc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .sc-alert {
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-radius: var(--radii-md, 10px);
   background: color-mix(in srgb, var(--colors-accent, var(--accent)) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--colors-accent, var(--accent)) 35%, transparent);
   color: var(--fg);
   font-size: 14px;
+}
+
+.sc-pagination {
+  display: flex;
+  gap: 6px;
+}
+.sc-page {
+  min-width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  border-radius: var(--radii-md, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sc-page-on {
+  background: var(--colors-accent, var(--accent));
+  border-color: var(--colors-accent, var(--accent));
+  color: #1a1a1a;
+}
+
+.sc-quote {
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--colors-accent, var(--accent));
+  color: var(--fg);
+  line-height: 1.6;
+  font-size: 15px;
+}
+.sc-quote cite {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
 }
 
 .sc-stats {
@@ -261,7 +426,7 @@
   padding: 16px;
   border-radius: var(--radii-lg, 12px);
   border: 1px solid var(--border);
-  background: var(--card);
+  background: var(--bg);
 }
 .sc-stat-label {
   font-size: 12px;
@@ -280,7 +445,7 @@
 .sc-card {
   padding: 20px;
   border-radius: var(--radii-lg, 14px);
-  background: var(--card);
+  background: var(--bg);
   border: 1px solid var(--border);
   box-shadow: var(--shadows-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
   display: flex;
