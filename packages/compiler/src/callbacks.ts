@@ -7,8 +7,6 @@ import {
 } from '@pandacss/compiler-shared'
 import type { RawCompiler } from './index'
 
-export type { ColorMixResult, PatternHelpers, RawToken, TransformArgs } from '@pandacss/compiler-shared'
-
 /** Wire JS-backed transform callbacks into a freshly-constructed native
  *  instance. The shared runtime ([`@pandacss/compiler-shared`]) owns the
  *  validation + helper construction; only the instance plumbing lives here. */

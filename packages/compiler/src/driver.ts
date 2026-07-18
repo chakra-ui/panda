@@ -1,7 +1,6 @@
 import {
   BaseDriver,
   type BuildInfoArtifact,
-  type CodegenArtifact,
   type GenerateArtifactOptions,
   type CodegenOptions,
   type CompileOptions,
@@ -19,6 +18,7 @@ import {
   type WriteSplitCssOptions,
   collectParseDiagnostics,
   diagnosticsPass,
+  fromCodegenPrepareArtifacts,
   normalizeDiagnostics,
 } from '@pandacss/compiler-shared'
 import type { CssgenDoneHookArgs } from '@pandacss/types'
@@ -394,7 +394,7 @@ export class NodeDriver extends BaseDriver {
           throw new Error('Invalid codegen:prepare hook result. Expected an artifact array or undefined.')
         }
 
-        artifacts = next as CodegenArtifact[]
+        artifacts = fromCodegenPrepareArtifacts(next)
       }
     }
 

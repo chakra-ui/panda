@@ -1,30 +1,4 @@
-import type { ColorMixResult, RawToken } from './extraction'
-
-/**
- * Author import map before normalization.
- */
-export interface ImportMapInput {
-  css?: string | string[]
-  recipe?: string | string[]
-  recipes?: string | string[]
-  pattern?: string | string[]
-  patterns?: string | string[]
-  jsx?: string | string[]
-  tokens?: string | string[]
-}
-
-/**
- * Normalized import map passed to snapshots and Rust.
- */
-export interface ImportMapOutput {
-  css: string[]
-  recipe: string[]
-  pattern: string[]
-  jsx: string[]
-  tokens: string[]
-}
-
-export type ImportMapOption = string | ImportMapInput
+import type { ParserResultBeforeHookArgs, PatternHelpers, TransformArgs } from '@pandacss/types'
 
 /**
  * JSON-safe, resolved Panda config consumed by the compiler.
@@ -91,34 +65,13 @@ export interface CompilerOptions {
   hooks?: ProjectHooks
 }
 
-export interface TransformArgs {
-  token: ((path: string) => string | undefined) & { raw: (path: string) => RawToken | undefined }
-  raw: unknown
-  utils: {
-    colorMix(value: string): ColorMixResult
-  }
-}
-
-export interface PatternHelpers {
-  map(value: unknown, fn: (value: any) => any): unknown
-  isCssUnit(value: unknown): boolean
-  isCssVar(value: unknown): boolean
-  isCssFunction(value: unknown): boolean
-}
-
 export type UtilityValuesTheme = (category: string) => Record<string, string> | undefined
 export type UtilityValuesCallback = (theme: UtilityValuesTheme) => Record<string, string> | string[] | undefined
 export type UtilityTransformCallback = (value: string, args: TransformArgs) => unknown
 export type PatternTransformCallback = (props: Record<string, any>, helpers: PatternHelpers) => unknown
 export type PatternDefaultValuesCallback = (props: Record<string, any>) => unknown
 
-export interface SourceTransformArgs {
-  filePath: string
-  content: string
-  original?: string
-}
-
-export type SourceTransformCallback = (args: SourceTransformArgs) => string | void
+export type SourceTransformCallback = (args: ParserResultBeforeHookArgs) => string | void
 
 export interface ProjectCallbackMap {
   'utility.transform': Record<string, UtilityTransformCallback>

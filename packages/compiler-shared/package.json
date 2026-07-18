@@ -34,7 +34,9 @@
   "files": [
     "dist"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@pandacss/types": "workspace:*"
+  },
   "devDependencies": {},
   "engines": {
     "node": ">=22"

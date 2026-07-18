@@ -43,7 +43,6 @@ import type {
 import { registerCallbacks } from './callbacks'
 import type { TokenDictionaryInput, WasmCompiler, WasmFileSystem } from './types'
 
-export type { PatternHelpers } from './callbacks'
 export type {
   MatcherInput,
   MatchersInput,
