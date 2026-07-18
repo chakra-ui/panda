@@ -43,6 +43,7 @@ export const studioCommand = defineCommand({
     ...baseArgs(),
     port: { type: 'string', description: 'Port for the live viewer server' },
     host: { type: 'string', description: 'Host for the live viewer server' },
+    logo: { type: 'string', description: 'Custom logo (path or URL) for the viewer header' },
     ...outputArgs(),
     ...traceArgs(),
   }),
@@ -93,7 +94,7 @@ export async function runStudioServe(
       const tokens = buildTokensSnapshot(spec, buildSemanticMap(spec, ctx.driver.config))
       const styles = studioStyles(ctx.driver.config)
       const dir = mkdtempSync(join(tmpdir(), 'panda-studio-'))
-      writeStudioFiles(dir, viewerFiles(tokens, styles))
+      writeStudioFiles(dir, viewerFiles(tokens, styles, flags.logo))
 
       server = await serveStudio(dir, { port: flags.port, host: flags.host })
 

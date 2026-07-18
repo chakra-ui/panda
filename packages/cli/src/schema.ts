@@ -128,6 +128,7 @@ export const studioGenerateFlagsSchema = commonFlagsSchema.extend({
 export const studioServeFlagsSchema = commonFlagsSchema.extend({
   port: numberLikeFlag,
   host: stringFlag,
+  logo: stringFlag,
 })
 
 export const analyzeFlagsSchema = commonFlagsSchema.extend({

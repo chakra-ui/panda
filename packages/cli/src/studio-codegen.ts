@@ -153,7 +153,7 @@ export function viewFiles(tokens: StudioToken[], framework: StudioFramework, key
   ]
 }
 
-export function viewerFiles(tokens: StudioToken[], keyframesCss = ''): StudioFile[] {
+export function viewerFiles(tokens: StudioToken[], keyframesCss = '', logo = ''): StudioFile[] {
   const views = viewerViews(tokens)
   const pages = views.length ? views : [{ id: 'tokens', label: 'Tokens', group: 'tokens' as const }]
   const files: StudioFile[] = [
@@ -162,7 +162,7 @@ export function viewerFiles(tokens: StudioToken[], keyframesCss = ''): StudioFil
     { path: 'studio.js', code: VIEWER_JS },
   ]
   pages.forEach((view, index) => {
-    files.push({ path: index === 0 ? 'index.html' : `${view.id}.html`, code: viewerHtml(view, views) })
+    files.push({ path: index === 0 ? 'index.html' : `${view.id}.html`, code: viewerHtml(view, views, logo) })
   })
   return files
 }
@@ -184,6 +184,7 @@ function viewerViews(tokens: StudioToken[]): ViewerView[] {
   const views: ViewerView[] = categories.map((id) => ({ id, label: id, group: 'tokens' }))
   if (tokens.some((token) => token.conditions))
     views.splice(1, 0, { id: 'semantic', label: 'semantic tokens', group: 'tokens' })
+  if (tokens.length) views.push({ id: 'playground', label: 'Playground', group: 'playground' })
   if (tokens.some((token) => token.category === 'colors'))
     views.push({ id: 'contrast', label: 'Contrast', group: 'playground' })
   if (tokens.some((token) => TYPE_CATEGORIES.includes(token.category)))
@@ -239,7 +240,8 @@ export function fontfaceToCss(globalFontface: unknown): string {
   return blocks.join('\n')
 }
 
-function viewerHtml(view: ViewerView, views: ViewerView[]): string {
+function viewerHtml(view: ViewerView, views: ViewerView[], logo = ''): string {
+  const brand = logo ? `<img class="logo logo-custom" src="${logo}" alt="logo" />` : PANDA_MARK
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -252,7 +254,7 @@ function viewerHtml(view: ViewerView, views: ViewerView[]): string {
   <body data-view="${view.id}">
     <div class="app">
       <aside class="sidebar">
-        <div class="brand">${PANDA_MARK} Panda Studio</div>
+        <div class="brand">${brand} Panda Studio</div>
         <div class="search-wrap">
           <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
           <input class="search" id="search" type="search" placeholder="Filter tokens…" aria-label="Filter tokens" />
@@ -300,6 +302,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-s
 .sidebar { width: 240px; flex-shrink: 0; height: 100vh; position: sticky; top: 0; overflow: auto; border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
 .brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
 .brand .logo { font-size: 20px; line-height: 1; }
+.brand .logo-custom { height: 22px; width: auto; }
 .search-wrap { position: relative; display: flex; align-items: center; }
 .search-icon { position: absolute; left: 10px; color: var(--muted); pointer-events: none; }
 .search { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); font-size: 13px; }
@@ -383,6 +386,16 @@ section h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; lette
 .type-play-preview { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 32px; min-height: 200px; overflow-wrap: anywhere; }
 .type-play-css { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); line-height: 1.7; white-space: pre; overflow-x: auto; }
 .tool-controls textarea { resize: vertical; min-height: 64px; }
+.pg-preview { min-height: 140px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 28px; }
+.pg-fill { width: 80px; height: 80px; border-radius: 10px; background: var(--swatch); }
+.pg-surface { min-width: 80px; min-height: 60px; border-radius: 10px; background: var(--card); border: 1px dashed var(--border); display: inline-flex; align-items: center; justify-content: center; }
+.pg-dot { width: 40px; height: 40px; background: var(--accent); border-radius: 6px; }
+.pg-text { font-size: 2rem; }
+.pg-meta { margin-top: 12px; font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; word-break: break-all; }
+.pg-themes { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; }
+.pg-cond { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pg-mini { transform: scale(0.65); }
+.pg-cond-label { font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace; }
 `
 
 const VIEWER_JS = `const root = document.documentElement
@@ -642,6 +655,11 @@ function renderView(tokens, view, query) {
     renderTypographyPlayground(tools, tokens)
     return
   }
+  if (view === 'playground') {
+    count.textContent = ''
+    renderPlayground(tools, tokens)
+    return
+  }
 
   const term = query.trim().toLowerCase()
 
@@ -734,7 +752,8 @@ function buildNav(views, current) {
   views.forEach((view, index) => {
     const item = document.createElement('li')
     const link = document.createElement('a')
-    link.href = index === 0 ? 'index.html' : view.id + '.html'
+    link.dataset.base = index === 0 ? 'index.html' : view.id + '.html'
+    link.href = link.dataset.base
     link.textContent = view.label
     if (view.id === current) link.classList.add('active')
     item.appendChild(link)
@@ -746,6 +765,11 @@ function buildNav(views, current) {
     }
   })
   if (!hasPlayground) document.getElementById('nav-play-label').style.display = 'none'
+}
+
+function applyNavQuery(query) {
+  const suffix = query ? '?q=' + encodeURIComponent(query) : ''
+  for (const link of document.querySelectorAll('.nav a')) link.href = link.dataset.base + suffix
 }
 
 function buildBreadcrumb(views, current) {
@@ -914,6 +938,103 @@ function renderTypographyPlayground(container, tokens) {
   update()
 }
 
+function playgroundApply(box, category, value) {
+  box.className = 'pg-box'
+  box.removeAttribute('style')
+  box.textContent = ''
+  if (category === 'colors') { box.classList.add('pg-fill'); box.style.background = value }
+  else if (category === 'spacing') { box.classList.add('pg-surface'); box.style.padding = value; const dot = document.createElement('div'); dot.className = 'pg-dot'; box.appendChild(dot) }
+  else if (category === 'sizes') { box.classList.add('pg-fill'); box.style.width = value; box.style.height = value }
+  else if (category === 'radii') { box.classList.add('pg-fill'); box.style.borderRadius = value }
+  else if (category === 'borders') { box.classList.add('pg-surface'); box.style.border = value }
+  else if (category === 'shadows') { box.classList.add('pg-fill'); box.style.background = 'var(--card)'; box.style.boxShadow = value }
+  else if (category === 'blurs') { box.classList.add('pg-fill'); box.style.background = 'linear-gradient(135deg, var(--accent), #ec4899)'; box.style.filter = 'blur(' + value + ')' }
+  else if (category === 'aspectRatios') { box.classList.add('pg-fill'); box.style.aspectRatio = value; box.style.height = 'auto'; box.style.width = '120px' }
+  else if (TYPE_CATEGORIES.has(category)) { box.classList.add('pg-text'); box.textContent = 'Ag'; applyType(box, category, value) }
+  else if (category === 'durations') { box.classList.add('pg-fill'); box.style.background = 'var(--accent)'; box.style.animation = 'panda-studio-ease ' + value + ' infinite alternate' }
+  else if (category === 'easings') { box.classList.add('pg-fill'); box.style.background = 'var(--accent)'; box.style.animation = 'panda-studio-ease 1.4s infinite alternate'; box.style.animationTimingFunction = value }
+  else if (category === 'animations') { box.classList.add('pg-fill'); box.style.background = 'var(--accent)'; box.style.animation = value }
+  else { box.classList.add('pg-text'); box.textContent = value }
+}
+
+function renderPlayground(container, tokens) {
+  const section = document.createElement('section')
+  const heading = document.createElement('h2')
+  heading.textContent = 'playground'
+  const tool = document.createElement('div')
+  tool.className = 'tool'
+
+  const cats = [...new Set(tokens.filter((token) => !token.conditions).map((token) => token.category))]
+  const hasSemantic = tokens.some((token) => token.conditions)
+  const catOptions =
+    cats.map((cat) => '<option value="' + cat + '">' + cat + '</option>').join('') +
+    (hasSemantic ? '<option value="semantic">semantic</option>' : '')
+
+  const controls = document.createElement('div')
+  controls.className = 'tool-controls'
+  controls.innerHTML =
+    '<label>Category<select id="pg-cat">' + catOptions + '</select></label>' +
+    '<label>Token<select id="pg-token"></select></label>'
+
+  const output = document.createElement('div')
+  output.className = 'pg-output'
+  const preview = document.createElement('div')
+  preview.className = 'pg-preview'
+  const meta = document.createElement('div')
+  meta.className = 'pg-meta'
+  const themes = document.createElement('div')
+  themes.className = 'pg-themes'
+  output.append(preview, meta, themes)
+
+  tool.append(controls, output)
+  section.append(heading, tool)
+  container.appendChild(section)
+
+  const catSel = controls.querySelector('#pg-cat')
+  const tokenSel = controls.querySelector('#pg-token')
+  const tokensFor = (cat) =>
+    cat === 'semantic'
+      ? tokens.filter((token) => token.conditions)
+      : tokens.filter((token) => token.category === cat && !token.conditions)
+
+  function draw() {
+    const list = tokensFor(catSel.value)
+    const token = list.find((item) => item.path === tokenSel.value) || list[0]
+    preview.textContent = ''
+    meta.textContent = ''
+    themes.textContent = ''
+    if (!token) return
+    const box = document.createElement('div')
+    playgroundApply(box, token.category, token.value)
+    preview.appendChild(box)
+    meta.textContent = token.path + '  →  ' + token.value
+    if (token.conditions) {
+      for (const [label, value] of Object.entries(token.conditions)) {
+        const cell = document.createElement('div')
+        cell.className = 'pg-cond'
+        const mini = document.createElement('div')
+        playgroundApply(mini, token.category, value)
+        mini.classList.add('pg-mini')
+        const lbl = document.createElement('div')
+        lbl.className = 'pg-cond-label'
+        lbl.textContent = label
+        cell.append(mini, lbl)
+        themes.appendChild(cell)
+      }
+    }
+  }
+
+  function fillTokens() {
+    const list = tokensFor(catSel.value)
+    tokenSel.innerHTML = list.map((token) => '<option value="' + token.path + '">' + token.name + '</option>').join('')
+    draw()
+  }
+
+  catSel.addEventListener('change', fillTokens)
+  tokenSel.addEventListener('change', draw)
+  fillTokens()
+}
+
 function persistQuery(query) {
   const url = new URL(location.href)
   if (query) url.searchParams.set('q', query)
@@ -928,8 +1049,10 @@ fetch('tokens.json').then((res) => res.json()).then((tokens) => {
   buildBreadcrumb(views, current)
   const search = document.getElementById('search')
   search.value = new URLSearchParams(location.search).get('q') || ''
+  applyNavQuery(search.value)
   search.addEventListener('input', () => {
     persistQuery(search.value)
+    applyNavQuery(search.value)
     renderView(tokens, current, search.value)
   })
   renderView(tokens, current, search.value)

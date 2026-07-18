@@ -113,7 +113,7 @@ describe('studio viewer', () => {
 
   it('emits a self-contained vanilla bundle, one page per section', () => {
     const paths = viewerFiles(SAMPLE).map((file) => file.path)
-    expect(paths).toEqual(['tokens.json', 'studio.css', 'studio.js', 'index.html', 'contrast.html'])
+    expect(paths).toEqual(['tokens.json', 'studio.css', 'studio.js', 'index.html', 'playground.html', 'contrast.html'])
   })
 
   it('serves tokens.json over http', async () => {
