@@ -51,27 +51,26 @@ src/studio/
 
 ## Goal → task map
 
-1. **Separate files / maintainable / jsx** — the rewrite above. ✅ decided.
-2. **Fix nesting** — nested semantic conditions flatten + colon-join (`_dark:_sunset`).
-   **Done** (`buildSemanticMap`, commit b5214cc9). Nested paths (`brand.primary`) already worked.
-3. **Semantic beyond colors** — `buildSemanticMap` already walks every category. Render
-   semantic tokens grouped by category, each with its category's preview (colors→swatch,
-   spacing→scale, shadows→box…), not swatch-only. Semantic view moves up the nav.
-4. **Keep search on the page** — move the filter input into the content header (breadcrumb
-   row), not only the sidebar.
-5. **Breadcrumb** — `Tokens / Colors` on each page so the current page is clear.
-6. **Shadows/semantics in both modes** — render shadow (and semantic) previews inside a
-   forced-light and a forced-dark wrapper side by side, so both are always visible.
-7. **Spacing/sizes** — dim the scale bar (opacity) so it is not glaring; add a sort control
-   (token order / ascending / descending). Same for sizes.
-8. **Playground across all categories** — one playground that composes any token category,
-   plus semantic tokens and named themes.
-9. **Proper panda logo** — replace the 🐼 emoji with the real Panda mark (inline SVG).
-10. **Custom font + logo (v1 parity)** — read `config` for a custom logo and load the
-    user's font so samples render in their typeface.
+1. **Separate files / maintainable / jsx** — the rewrite above. Decided; not yet built.
+2. **Fix nesting** — ✅ done (b5214cc9). Nested conditions flatten + colon-join
+   (`_dark:_sunset`); nested paths (`brand.primary`) already worked.
+3. **Semantic beyond colors** — ✅ done (569646b2). Grouped by category, swatches for
+   colors, plain values for the rest; semantic view moved up to nav #2.
+4. **Keep search on the page** — pending. Intent unclear: prominent content-header search
+   vs preserving the query across page navigation. Needs a call.
+5. **Breadcrumb** — ✅ done (f32d3fd5). `Tokens / <page>` in the content header.
+6. **Shadows/semantics in both modes** — ✅ shadows done (eb5349ac): each shadow on a
+   forced-light and forced-dark cell. Semantic forced-wrappers folded into #3's grouping.
+7. **Spacing/sizes** — ✅ done (518444cc). Dimmed bar + ascending/descending/token sort.
+8. **Playground across all categories** — pending. Large; best built in the Phase B rewrite.
+9. **Proper panda logo** — ✅ done (f9b7ccfa). Official Panda P mark, `currentColor`.
+10. **Custom font + logo (v1 parity)** — pending. Fonts: read `config.globalFontface` and
+    emit `@font-face` so samples use the user's font. Logo: v2 has no `studio.logo` config;
+    needs a new config surface (decision required).
 
 ## Sequencing
 
-Phase A (data): nesting ✅. Phase B: scaffold hono/jsx + port pages to parity behind the
-existing server. Phase C: layer features 3–10 in the new structure. Ship incrementally;
-keep the old viewer working until the new one reaches parity.
+Phase A (data): nesting ✅. Several UI wins (3, 5, 6, 7, 9) shipped in the current viewer.
+Phase B: scaffold hono/jsx + port pages to parity behind the existing server, then build
+the playground (8) and search (4) there. Ship incrementally; keep the old viewer working
+until the new one reaches parity.
