@@ -120,6 +120,18 @@ describe('studio viewer', () => {
     expect(paths).toEqual(['tokens.json', 'studio.css', 'studio.js', 'index.html', 'playground.html', 'contrast.html'])
   })
 
+  it('emits one semantic page per category present, not a single semantic view', () => {
+    const tokens: StudioToken[] = [
+      ...SAMPLE,
+      { category: 'colors', path: 'colors.bg', name: 'bg', value: '#fff', conditions: { base: '#fff', _dark: '#000' } },
+      { category: 'fonts', path: 'fonts.body', name: 'body', value: 'sans', conditions: { base: 'sans' } },
+    ]
+    const paths = viewerFiles(tokens).map((file) => file.path)
+    expect(paths).toContain('semantic-colors.html')
+    expect(paths).toContain('semantic-fonts.html')
+    expect(paths).not.toContain('semantic.html')
+  })
+
   it('serves tokens.json over http', async () => {
     dir = createFixture(TOKEN_CONFIG)
 

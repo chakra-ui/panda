@@ -186,8 +186,11 @@ function viewerViews(tokens: StudioToken[]): ViewerView[] {
     (a, b) => rank(a) - rank(b),
   )
   const views: ViewerView[] = categories.map((id) => ({ id, label: id, group: 'tokens' }))
-  if (tokens.some((token) => token.conditions))
-    views.push({ id: 'semantic', label: 'Semantic tokens', group: 'semantic' })
+  const semanticCategories = [
+    ...new Set(tokens.filter((token) => token.conditions).map((token) => token.category)),
+  ].sort((a, b) => rank(a) - rank(b))
+  for (const category of semanticCategories)
+    views.push({ id: `semantic-${category}`, label: category, group: 'semantic' })
   if (tokens.length) views.push({ id: 'playground', label: 'Playground', group: 'playground' })
   if (tokens.some((token) => token.category === 'colors'))
     views.push({ id: 'contrast', label: 'Contrast', group: 'playground' })

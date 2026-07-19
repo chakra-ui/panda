@@ -16,6 +16,19 @@ export function ViewContent({
 }) {
   const term = query.trim().toLowerCase()
 
+  if (view.startsWith('semantic-')) {
+    const category = view.slice('semantic-'.length)
+    const items = tokens
+      .filter((t) => t.conditions && t.category === category)
+      .filter((t) => !term || matchesTerm(t, term))
+    return (
+      <section>
+        <h2>{category}</h2>
+        <Semantic items={items} />
+      </section>
+    )
+  }
+
   switch (view) {
     case 'contrast':
       return <Contrast colors={tokens.filter((t) => t.category === 'colors')} />
@@ -25,16 +38,6 @@ export function ViewContent({
 
     case 'playground':
       return <Showcase tokens={tokens} theme={theme} />
-
-    case 'semantic': {
-      const items = tokens.filter((t) => t.conditions).filter((t) => !term || matchesTerm(t, term))
-      return (
-        <section>
-          <h2>semantic tokens</h2>
-          <Semantic items={items} />
-        </section>
-      )
-    }
 
     default: {
       const items = tokens
@@ -71,9 +74,8 @@ export function ViewContent({
 export function countFor(view: string, tokens: StudioToken[], query: string): number | null {
   if (view === 'contrast' || view === 'typography' || view === 'playground') return null
   const term = query.trim().toLowerCase()
-  const items =
-    view === 'semantic'
-      ? tokens.filter((t) => t.conditions)
-      : tokens.filter((t) => !t.conditions && t.category === view)
+  const items = view.startsWith('semantic-')
+    ? tokens.filter((t) => t.conditions && t.category === view.slice('semantic-'.length))
+    : tokens.filter((t) => !t.conditions && t.category === view)
   return items.filter((t) => !term || matchesTerm(t, term)).length
 }

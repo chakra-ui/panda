@@ -1,6 +1,5 @@
-import { useMemo, useState } from 'preact/hooks'
-import { matchesTerm, type StudioToken, type StudioView } from './helpers'
-import { Semantic } from './sections'
+import { useState } from 'preact/hooks'
+import type { StudioToken, StudioView } from './helpers'
 import { ContentHead, Sidebar, ThemeToggle } from './shell'
 import { countFor, ViewContent } from './view'
 
@@ -9,12 +8,6 @@ interface AppProps {
   views: StudioView[]
   current: string
   logo: string
-}
-
-function semanticCategories(tokens: StudioToken[]): string[] {
-  const cats: string[] = []
-  for (const token of tokens) if (token.conditions && !cats.includes(token.category)) cats.push(token.category)
-  return cats
 }
 
 function viewHref(views: StudioView[], id: string, query: string) {
@@ -37,14 +30,9 @@ export function App({ tokens, views, current, logo }: AppProps) {
   const [query, setQuery] = useState(new URLSearchParams(location.search).get('q') ?? '')
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') ?? '')
 
-  const semanticCats = useMemo(() => semanticCategories(tokens), [tokens])
-  const [semCat, setSemCat] = useState(semanticCats[0] ?? '')
-
   const activeTheme = theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   const view = views.find((v) => v.id === current)
-  const inSemantic = current === 'semantic'
   const href = (id: string) => viewHref(views, id, query)
-  const term = query.trim().toLowerCase()
 
   const onSearch = (value: string) => {
     setQuery(value)
@@ -58,7 +46,7 @@ export function App({ tokens, views, current, logo }: AppProps) {
     setTheme(next)
   }
 
-  const semItems = tokens.filter((t) => t.conditions && t.category === semCat && (!term || matchesTerm(t, term)))
+  const crumb = view?.group === 'semantic' ? 'Semantic tokens' : view?.group === 'playground' ? 'Playground' : 'Tokens'
 
   return (
     <div class="app">
@@ -66,36 +54,19 @@ export function App({ tokens, views, current, logo }: AppProps) {
         logo={logo}
         current={current}
         href={href}
-        inSemantic={inSemantic}
-        backHref={href(views[0]?.id)}
-        semanticCats={semanticCats}
-        semCat={semCat}
-        onSemCat={setSemCat}
         tokenViews={views.filter((v) => v.group === 'tokens')}
         semanticViews={views.filter((v) => v.group === 'semantic')}
         playViews={views.filter((v) => v.group === 'playground')}
       />
       <main class="content">
-        {inSemantic ? (
-          <>
-            <ContentHead group="Semantic" here={semCat} query={query} onSearch={onSearch} count={semItems.length} />
-            <section>
-              <h2>{semCat}</h2>
-              <Semantic items={semItems} />
-            </section>
-          </>
-        ) : (
-          <>
-            <ContentHead
-              group={view?.group === 'playground' ? 'Playground' : 'Tokens'}
-              here={view?.label}
-              query={query}
-              onSearch={onSearch}
-              count={countFor(current, tokens, query)}
-            />
-            <ViewContent view={current} tokens={tokens} query={query} theme={activeTheme} />
-          </>
-        )}
+        <ContentHead
+          group={crumb}
+          here={view?.label}
+          query={query}
+          onSearch={onSearch}
+          count={countFor(current, tokens, query)}
+        />
+        <ViewContent view={current} tokens={tokens} query={query} theme={activeTheme} />
       </main>
       <ThemeToggle theme={activeTheme} onToggle={toggleTheme} />
     </div>

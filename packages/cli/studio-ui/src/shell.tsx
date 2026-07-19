@@ -89,65 +89,34 @@ interface SidebarProps {
   logo: string
   current: string
   href: (id: string) => string
-  inSemantic: boolean
-  backHref: string
-  semanticCats: string[]
-  semCat: string
-  onSemCat: (cat: string) => void
   tokenViews: StudioView[]
   semanticViews: StudioView[]
   playViews: StudioView[]
 }
 
 export function Sidebar(props: SidebarProps) {
-  const { logo, current, href, inSemantic, backHref, semanticCats, semCat, onSemCat } = props
-  const { tokenViews, semanticViews, playViews } = props
+  const { logo, current, href, tokenViews, semanticViews, playViews } = props
   return (
     <aside class="sidebar">
       <div class="brand">
         {logo ? <img class="logo logo-custom" src={logo} alt="logo" /> : <PandaMark />} Panda Studio
       </div>
-      {inSemantic ? (
-        <nav class="nav">
-          <a class="nav-back" href={backHref}>
-            ← All tokens
-          </a>
-          <div class="nav-label nav-label-spaced">Semantic</div>
-          <ul>
-            {semanticCats.map((cat) => (
-              <li key={cat}>
-                <a
-                  class={cat === semCat ? 'active' : ''}
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onSemCat(cat)
-                  }}
-                >
-                  {cat}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ) : (
-        <nav class="nav">
-          {semanticViews.length > 0 && (
-            <>
-              <div class="nav-label">Semantic</div>
-              <NavList items={semanticViews} current={current} href={href} />
-            </>
-          )}
-          <div class={semanticViews.length > 0 ? 'nav-label nav-label-spaced' : 'nav-label'}>Tokens</div>
-          <NavList items={tokenViews} current={current} href={href} />
-          {playViews.length > 0 && (
-            <>
-              <div class="nav-label nav-label-spaced">Playground</div>
-              <NavList items={playViews} current={current} href={href} />
-            </>
-          )}
-        </nav>
-      )}
+      <nav class="nav">
+        {semanticViews.length > 0 && (
+          <>
+            <div class="nav-label">Semantic tokens</div>
+            <NavList items={semanticViews} current={current} href={href} />
+          </>
+        )}
+        <div class={semanticViews.length > 0 ? 'nav-label nav-label-spaced' : 'nav-label'}>Tokens</div>
+        <NavList items={tokenViews} current={current} href={href} />
+        {playViews.length > 0 && (
+          <>
+            <div class="nav-label nav-label-spaced">Playground</div>
+            <NavList items={playViews} current={current} href={href} />
+          </>
+        )}
+      </nav>
     </aside>
   )
 }

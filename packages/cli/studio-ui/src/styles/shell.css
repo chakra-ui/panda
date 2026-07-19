@@ -95,22 +95,6 @@
   background: var(--accent);
   color: #1a1a1a;
 }
-.nav-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 7px;
-  margin-bottom: 4px;
-}
-.nav-back:hover {
-  background: var(--card);
-  color: var(--fg);
-}
 .theme {
   position: fixed;
   top: 14px;
