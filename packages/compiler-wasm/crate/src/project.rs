@@ -130,7 +130,7 @@ impl WasmCompiler {
             .map(Arc::new);
         resolve_utility_values_callbacks(
             &mut config,
-            token_dictionary.as_deref(),
+            token_dictionary.as_ref(),
             &utility_values_callbacks,
         )?;
         let callbacks = CallbackHost::from_config(&config);

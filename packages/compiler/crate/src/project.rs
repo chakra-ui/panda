@@ -34,9 +34,24 @@ use self::transforms::{
     get_pattern_transform_refs, get_utility_transform_refs, resolve_utility_values_callbacks,
 };
 
-/// JS `utility.values` callbacks keyed by callback id, passed from the TS layer.
+/// Opaque `theme` handle passed into `utility.values` callbacks.
+pub struct JsCallbackArg(pub(crate) napi::sys::napi_value);
+
+impl napi::bindgen_prelude::ToNapiValue for JsCallbackArg {
+    /// # Safety
+    /// `val.0` must be a live `napi_value` for `_env`; this only forwards it.
+    unsafe fn to_napi_value(
+        _env: napi::sys::napi_env,
+        val: Self,
+    ) -> napi::Result<napi::sys::napi_value> {
+        // SAFETY: valid env-scoped handle; returned as-is.
+        Ok(val.0)
+    }
+}
+
+/// JS `utility.values` callbacks keyed by callback id (`theme(category)` arg).
 type UtilityValueCallbacks =
-    HashMap<String, FunctionRef<FnArgs<(serde_json::Value,)>, serde_json::Value>>;
+    HashMap<String, FunctionRef<FnArgs<(JsCallbackArg,)>, serde_json::Value>>;
 
 /// Per-call telemetry from `parseFile`. Mirrors `pandacss_project::ParseFileReport`.
 #[napi(object)]
@@ -309,7 +324,7 @@ impl Compiler {
             .map(Arc::new);
         resolve_utility_values_callbacks(
             &mut config,
-            token_dictionary.as_deref(),
+            token_dictionary.as_ref(),
             utility_values_callbacks.as_ref(),
             &env,
         )?;

@@ -2,6 +2,7 @@ import { createNodeDriver } from '@pandacss/compiler'
 import { type Diagnostic, type Driver, formatDiagnostic, type SourceChange } from '@pandacss/compiler-shared'
 import { extname, normalize, resolve } from 'node:path'
 import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root } from 'postcss'
+import { readFileStamp } from './fs-stamp'
 
 const PLUGIN_NAME = 'pandacss'
 
@@ -19,7 +20,9 @@ export interface PluginOptions {
 interface DriverState {
   driver: Driver
   generatedOutdirs: Set<string>
-  parsedSources: Set<string>
+  parsedSources: Map<string, string>
+  configStamp: string
+  dsSourceStamp: string
 }
 
 const driverStates = new Map<string, DriverState>()
@@ -41,14 +44,17 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     let state = driverStates.get(key)
     if (!state) {
       const driver = await createNodeDriver({ cwd, configPath: options.configPath })
-      state = { driver, generatedOutdirs: new Set(), parsedSources: new Set() }
-      driverStates.set(key, state)
-    } else {
-      const diff = await state.driver.reload()
-      if (diff.hasChanged) {
-        state.generatedOutdirs.clear()
-        state.parsedSources.clear()
+      state = {
+        driver,
+        generatedOutdirs: new Set(),
+        parsedSources: new Map(),
+        configStamp: stampPaths(configStampPaths(driver)),
+        dsSourceStamp: stampPaths(dsSourceStampPaths(driver)),
       }
+      driverStates.set(key, state)
+      driver.syncDesignSystemSources()
+    } else {
+      await syncDriverState(state)
     }
 
     const { driver } = state
@@ -58,7 +64,6 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
 
     ensureCodegen(state, { cwd, outdir: options.outdir })
     syncProjectSources(state)
-    driver.syncDesignSystemSources()
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
@@ -127,24 +132,86 @@ function ensureCodegen(state: DriverState, options: { cwd: string; outdir: strin
   state.generatedOutdirs.add(outdirKey)
 }
 
+async function syncDriverState(state: DriverState) {
+  const nextConfigStamp = stampPaths(configStampPaths(state.driver))
+  if (state.configStamp !== nextConfigStamp) {
+    const diff = await state.driver.reload()
+    state.configStamp = stampPaths(configStampPaths(state.driver))
+    if (diff.hasChanged) {
+      state.generatedOutdirs.clear()
+      state.parsedSources.clear()
+    }
+    state.driver.syncDesignSystemSources()
+    state.dsSourceStamp = stampPaths(dsSourceStampPaths(state.driver))
+    return
+  }
+
+  const nextDsSourceStamp = stampPaths(dsSourceStampPaths(state.driver))
+  if (state.dsSourceStamp !== nextDsSourceStamp) {
+    state.driver.syncDesignSystemSources()
+    state.dsSourceStamp = nextDsSourceStamp
+  }
+}
+
 function syncProjectSources(state: DriverState) {
-  const files = new Set(state.driver.scan())
+  const files = state.driver.scan()
+  const scanned = new Set(files)
   const changes: SourceChange[] = []
 
-  for (const path of state.parsedSources) {
-    if (!files.has(path)) {
+  for (const path of state.parsedSources.keys()) {
+    if (!scanned.has(path)) {
       changes.push({ path, kind: 'unlink' })
       state.parsedSources.delete(path)
     }
   }
 
   for (const path of files) {
-    const known = state.parsedSources.has(path)
-    changes.push({ path, kind: known ? 'change' : 'add' })
-    state.parsedSources.add(path)
+    const stamp = readFileStamp(path)
+    const known = state.parsedSources.get(path)
+    if (known === undefined) {
+      changes.push({ path, kind: 'add' })
+      state.parsedSources.set(path, stamp)
+      continue
+    }
+    if (known !== stamp) {
+      changes.push({ path, kind: 'change' })
+      state.parsedSources.set(path, stamp)
+    }
   }
 
-  state.driver.applyChanges(changes)
+  if (changes.length > 0) {
+    state.driver.applyChanges(changes)
+  }
+}
+
+function configStampPaths(driver: Driver): string[] {
+  const paths: string[] = []
+  if (driver.configPath) paths.push(driver.configPath)
+  for (const dep of driver.configDependencies) {
+    paths.push(driver.resolvePath(dep))
+  }
+  for (const target of driver.designSystemWatchTargets?.() ?? []) {
+    paths.push(target.manifestPath, target.buildInfoPath, target.presetPath)
+  }
+  return paths
+}
+
+function dsSourceStampPaths(driver: Driver): string[] {
+  const paths: string[] = []
+  for (const target of driver.designSystemWatchTargets?.() ?? []) {
+    for (const file of target.sourceFiles) paths.push(file)
+  }
+  return paths
+}
+
+function stampPaths(paths: string[]): string {
+  if (paths.length === 0) return ''
+  let stamp = ''
+  for (let i = 0; i < paths.length; i++) {
+    if (i) stamp += '\0'
+    stamp += `${paths[i]}\0${readFileStamp(paths[i]!)}`
+  }
+  return stamp
 }
 
 function registerDependencies(driver: Driver, result: Result, cwd: string, parent: string | undefined) {

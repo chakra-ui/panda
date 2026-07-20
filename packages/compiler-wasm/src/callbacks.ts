@@ -1,8 +1,8 @@
 import {
-  createPatternHelpers,
-  createTransformArgs,
+  createTransformHelpers,
   getPatternDefaultValueRefsByTransformId,
   mergePatternDefaultValues,
+  PATTERN_HELPERS,
 } from '@pandacss/compiler-shared'
 import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
 import type { WasmCompiler } from './types'
@@ -13,6 +13,8 @@ export function registerCallbacks(
   hooks: ProjectHooks | undefined,
   tokenDictionary: TokenLookup | undefined,
 ) {
+  const { token, utils } = createTransformHelpers(tokenDictionary)
+
   const utilityTransforms = callbacks['utility.transform']
   if (utilityTransforms && Object.keys(utilityTransforms).length > 0 && !project.registerUtilityTransform) {
     throw new Error('WASM project does not support utility.transform callbacks')
@@ -21,7 +23,7 @@ export function registerCallbacks(
     for (const [id, callback] of Object.entries(utilityTransforms)) {
       // Native passes the resolved value first, the original alias second (`args.raw`).
       project.registerUtilityTransform(id, (resolved, original) => {
-        return callback(resolved as string, createTransformArgs(original, tokenDictionary))
+        return callback(resolved as string, { raw: original, token, utils })
       })
     }
   }
@@ -44,7 +46,7 @@ export function registerCallbacks(
           string,
           any
         >
-        return callback(nextProps, createPatternHelpers())
+        return callback(nextProps, PATTERN_HELPERS)
       })
     }
   }

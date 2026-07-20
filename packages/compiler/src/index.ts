@@ -12,7 +12,6 @@ import {
   assertProjectCallbacks,
   BuildInfo,
   DesignSystem,
-  getTokenCategoryValues,
   inspectFile,
   inspectFiles,
   mergeCallbacks,
@@ -22,14 +21,7 @@ import {
 import { registerCallbacks } from './callbacks'
 import { fallback } from './fallback'
 import { loadNativeBinding } from './load-binary'
-import type {
-  CompileInput,
-  NativeCompilerOptions,
-  NativeCompiler,
-  RawCompiler,
-  TokenDictionary,
-  TraceOptions,
-} from './types'
+import type { CompileInput, NativeCompilerOptions, NativeCompiler, RawCompiler, TraceOptions } from './types'
 
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
@@ -204,17 +196,9 @@ function toNativeOptions(options: CompilerOptions | undefined): NativeCompilerOp
   return { crossFile: options.crossFile }
 }
 
-function createUtilityValuesCallbacks(
-  callbacks: ProjectCallbacks,
-): Record<string, (tokenDictionary: TokenDictionary | undefined) => unknown> | undefined {
+function createUtilityValuesCallbacks(callbacks: ProjectCallbacks): ProjectCallbacks['utility.values'] | undefined {
   const utilityValues = callbacks['utility.values']
   if (!utilityValues || Object.keys(utilityValues).length === 0) return undefined
-
-  return Object.fromEntries(
-    Object.entries(utilityValues).map(([id, callback]) => [
-      id,
-      (tokenDictionary: TokenDictionary | undefined) =>
-        callback((category: string) => getTokenCategoryValues(category, tokenDictionary)),
-    ]),
-  )
+  // Native injects a Rust-backed `theme(category)` — pass author callbacks through as-is.
+  return utilityValues
 }

@@ -66,6 +66,7 @@ export function sva(config: SvaConfig) {
   const slots = Object.entries(slotRecipes).map(([slot, recipe]) => [slot, cva(recipe)] as const)
   const defaultVariants = config.defaultVariants ?? {}
   const variantKeys = Object.keys(config.variants ?? {})
+  const variantKeySet = new Set(variantKeys)
 
   const svaFn = (props: Record<string, unknown> = {}) => {
     const result: Record<string, string> = {}
@@ -101,7 +102,7 @@ export function sva(config: SvaConfig) {
       const rest: Record<string, unknown> = {}
       const variantProps: Record<string, unknown> = {}
       for (const key in props) {
-        if (variantKeys.includes(key)) variantProps[key] = props[key]
+        if (variantKeySet.has(key)) variantProps[key] = props[key]
         else rest[key] = props[key]
       }
       return [rest, variantProps] as const

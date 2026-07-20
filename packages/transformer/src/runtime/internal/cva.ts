@@ -49,6 +49,7 @@ export function cva(config: StringCvaConfig) {
   const defaultVariants = config.defaultVariants ?? {}
   const compoundVariants = config.compoundVariants ?? []
   const variantKeys = Object.keys(variants)
+  const variantKeySet = new Set(variantKeys)
 
   const resolve = (props: Record<string, unknown> = {}) => {
     const computed = withDefaults(defaultVariants, props)
@@ -83,7 +84,7 @@ export function cva(config: StringCvaConfig) {
       const rest: Record<string, unknown> = {}
       const variantProps: Record<string, unknown> = {}
       for (const key in props) {
-        if (variantKeys.includes(key)) variantProps[key] = props[key]
+        if (variantKeySet.has(key)) variantProps[key] = props[key]
         else rest[key] = props[key]
       }
       return [rest, variantProps] as const

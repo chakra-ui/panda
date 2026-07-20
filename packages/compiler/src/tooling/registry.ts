@@ -1,5 +1,5 @@
-import { watch, type FSWatcher } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { realpathSync, unwatchFile, watch, watchFile, type FSWatcher, type Stats } from 'node:fs'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { findConfig } from '@pandacss/config'
 import { createProjectFromConfig, type Project, type ProjectKey } from './create-project'
 
@@ -7,11 +7,19 @@ export interface ProjectRegistryOptions {
   createProject?: (key: ProjectKey) => Promise<Project>
 }
 
+/** Fallback when directory `fs.watch` drops events (macOS FSEvents). */
+const FILE_POLL_INTERVAL_MS = 1000
+
+type PollListener = (curr: Stats, prev: Stats) => void
+
 // No discover()/resolveConfigForFile() yet — nothing calls this against a
 // multi-config workspace today; see design-notes/language-service-implementation.md.
 export class ProjectRegistry {
   #projects = new Map<string, Promise<Project>>()
   #watchers = new Map<string, FSWatcher[]>()
+  #watchedDirs = new Map<string, Map<string, Set<string>>>()
+  /** path → listener so `unwatchFile` doesn't clear other registries. */
+  #polledFiles = new Map<string, Map<string, PollListener>>()
   #createProject: (key: ProjectKey) => Promise<Project>
 
   constructor(options: ProjectRegistryOptions = {}) {
@@ -24,18 +32,14 @@ export class ProjectRegistry {
     const cached = this.#projects.get(cacheKey)
     if (cached) return cached
 
-    // Watch the config file itself before the load even settles, so fixing a bad config
-    // (syntax error, missing preset, ...) and saving retries instead of staying cached forever
-    // — a rejected promise is still a cached promise otherwise.
-    if (resolvedPath) this.#watch(cacheKey, [resolvedPath])
+    // Watch before load settles so a rejected config can retry on save.
+    if (resolvedPath) this.#watch(cacheKey, key.cwd, [resolvedPath])
 
     const project = this.#createProject(key)
     project.then(
       (resolved) => {
-        // Only still the active promise for this key — a concurrent invalidation may have
-        // already evicted it, and re-watching would leak watchers for a stale cache entry.
         if (resolvedPath && this.#projects.get(cacheKey) === project) {
-          this.#watch(cacheKey, [resolvedPath, ...resolved.dependencies])
+          this.#watch(cacheKey, key.cwd, [resolvedPath, ...resolved.dependencies])
         }
       },
       () => this.#evict(cacheKey),
@@ -44,68 +48,101 @@ export class ProjectRegistry {
     return project
   }
 
-  // Coarse: wipes the whole cache regardless of which paths changed.
   invalidate(_changedPaths: string[] = []): void {
-    for (const watchers of this.#watchers.values()) {
-      for (const watcher of watchers) watcher.close()
+    for (const cacheKey of [...this.#watchers.keys(), ...this.#polledFiles.keys()]) {
+      this.#closeWatchers(cacheKey)
     }
     this.#watchers.clear()
+    this.#watchedDirs.clear()
+    this.#polledFiles.clear()
     this.#projects.clear()
   }
 
-  // Watches directories (not individual files) — editors that save via atomic
-  // rename/replace can otherwise silently stop notifying a file-level watcher.
-  #watch(cacheKey: string, paths: string[]): void {
-    this.#closeWatchers(cacheKey)
-
+  // Dir watch + `watchFile` poll; deps are cwd-relative like the driver.
+  #watch(cacheKey: string, cwd: string, paths: string[]): void {
     const filesByDir = new Map<string, Set<string>>()
     for (const path of new Set(paths)) {
-      const dir = dirname(path)
+      const absolute = isAbsolute(path) ? path : resolve(cwd, path)
+      const normalized = canonicalPath(absolute)
+      const dir = dirname(normalized)
       if (!filesByDir.has(dir)) filesByDir.set(dir, new Set())
-      filesByDir.get(dir)?.add(path)
+      filesByDir.get(dir)?.add(normalized)
     }
 
-    const watchers: FSWatcher[] = []
+    const watched = this.#watchedDirs.get(cacheKey) ?? new Map<string, Set<string>>()
+    const watchers = this.#watchers.get(cacheKey) ?? []
+
     for (const [dir, filesInDir] of filesByDir) {
+      const existing = watched.get(dir)
+      if (existing) {
+        for (const file of filesInDir) {
+          if (existing.has(file)) continue
+          existing.add(file)
+          this.#pollFile(cacheKey, file)
+        }
+        continue
+      }
+
+      const tracked = new Set(filesInDir)
       try {
         watchers.push(
           watch(dir, (_event, filename) => {
-            if (filename && filesInDir.has(join(dir, filename))) this.#evict(cacheKey)
+            if (!filename || tracked.has(join(dir, filename))) this.#evict(cacheKey)
           }),
         )
+        watched.set(dir, tracked)
       } catch {
-        // Directory not watchable (deleted, permissions, ...) — best-effort only.
+        // Best-effort — dir may be missing or unwatchable.
       }
+
+      for (const file of tracked) this.#pollFile(cacheKey, file)
     }
+
+    this.#watchedDirs.set(cacheKey, watched)
     this.#watchers.set(cacheKey, watchers)
+  }
+
+  #pollFile(cacheKey: string, file: string): void {
+    const polled = this.#polledFiles.get(cacheKey) ?? new Map<string, PollListener>()
+    if (polled.has(file)) return
+    const listener: PollListener = () => this.#evict(cacheKey)
+    polled.set(file, listener)
+    this.#polledFiles.set(cacheKey, polled)
+    watchFile(file, { interval: FILE_POLL_INTERVAL_MS }, listener)
   }
 
   #closeWatchers(cacheKey: string): void {
     for (const watcher of this.#watchers.get(cacheKey) ?? []) watcher.close()
+    for (const [file, listener] of this.#polledFiles.get(cacheKey) ?? []) {
+      unwatchFile(file, listener)
+    }
+    this.#polledFiles.delete(cacheKey)
   }
 
   #evict(cacheKey: string): void {
     this.#closeWatchers(cacheKey)
     this.#watchers.delete(cacheKey)
+    this.#watchedDirs.delete(cacheKey)
     this.#projects.delete(cacheKey)
   }
 }
 
-// A config can be split across multiple files (recipes, semantic tokens, etc. imported into
-// panda.config.ts) — callers may pass the directory of whichever file is currently being
-// edited, not necessarily the config's own directory. Resolve to the actual config file first
-// so every file under the same project root shares one cached project instead of one per
-// distinct edited-file directory.
+function canonicalPath(filepath: string): string {
+  try {
+    return realpathSync(filepath)
+  } catch {
+    return filepath
+  }
+}
+
 function resolveConfigPath(key: ProjectKey): string | undefined {
   try {
-    return findConfig({ cwd: key.cwd, file: key.configPath })
+    return canonicalPath(findConfig({ cwd: key.cwd, file: key.configPath }))
   } catch {
     return undefined
   }
 }
 
-// No config file exists yet (e.g. before `panda init`) — fall back to a key that at least
-// dedupes repeated calls for the same (cwd, configPath) without pretending to watch anything.
 function syntheticKey(key: ProjectKey): string {
   return `${key.cwd}\0${key.configPath ?? ''}`
 }

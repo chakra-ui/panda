@@ -41,6 +41,23 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: false })
   })
 
+  it('registers new scan() matches on later CSS transforms without re-adding known files', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss() as unknown as TestPlugin
+    const addWatchFile = vi.fn()
+    const ctx = { addWatchFile, warn: vi.fn() }
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    plugin.transform.call(ctx, CSS_ROOT, '/project/src/index.css')
+    expect(addWatchFile).toHaveBeenCalledWith('/project/src/app.tsx')
+
+    addWatchFile.mockClear()
+    driver.scan.mockReturnValueOnce(['/project/src/app.tsx', '/project/src/new.tsx'])
+    plugin.transform.call(ctx, CSS_ROOT, '/project/src/index.css')
+
+    expect(addWatchFile.mock.calls.map(([file]) => file)).toEqual(['/project/src/new.tsx'])
+  })
+
   it('reloads design-system changes before returning component HMR modules', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin

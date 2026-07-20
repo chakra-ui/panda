@@ -27,7 +27,7 @@ function assertCallbackRefs(kind: string, refs: Map<string, string>, callbacks: 
   }
 }
 
-export function createTransformArgs(raw: unknown, tokenDictionary: TokenLookup | undefined): TransformArgs {
+export function createTransformHelpers(tokenDictionary: TokenLookup | undefined) {
   const token = Object.assign((path: string) => tokenDictionary?.vars[path] ?? tokenDictionary?.values[path], {
     raw: (path: string): RawToken | undefined => {
       const value = tokenDictionary?.values[path]
@@ -38,12 +38,16 @@ export function createTransformArgs(raw: unknown, tokenDictionary: TokenLookup |
   })
 
   return {
-    raw,
     token,
     utils: {
       colorMix: (value: string) => colorMix(value, token),
     },
   }
+}
+
+export function createTransformArgs(raw: unknown, tokenDictionary: TokenLookup | undefined): TransformArgs {
+  const { token, utils } = createTransformHelpers(tokenDictionary)
+  return { raw, token, utils }
 }
 
 function colorMix(value: string, token: TransformArgs['token']): ColorMixResult {
@@ -67,13 +71,11 @@ function colorMix(value: string, token: TransformArgs['token']): ColorMixResult 
   }
 }
 
-export function createPatternHelpers(): PatternHelpers {
-  return {
-    map: mapPatternValue,
-    isCssUnit,
-    isCssVar,
-    isCssFunction,
-  }
+export const PATTERN_HELPERS: PatternHelpers = {
+  map: mapPatternValue,
+  isCssUnit,
+  isCssVar,
+  isCssFunction,
 }
 
 function mapPatternValue(value: unknown, fn: (value: any) => any): unknown {
@@ -244,20 +246,4 @@ function assignCallbacks<K extends keyof ProjectCallbacks>(
   callbacks: NonNullable<ProjectCallbacks[K]>,
 ) {
   result[kind] = { ...result[kind], ...callbacks } as ProjectCallbacks[K]
-}
-
-/** Project a token dictionary down to a single category's `name → varRef` map
- *  for `utility.values` callbacks. Returns the CSS-var ref (`var(--spacing-2)`),
- *  matching legacy `getCategoryValues`, so `(theme) => theme('spacing')` keeps
- *  token indirection instead of inlining the raw value. */
-export function getTokenCategoryValues(category: string, tokenDictionary: TokenLookup | undefined) {
-  if (!tokenDictionary) return undefined
-
-  const prefix = `${category}.`
-  const out: Record<string, string> = {}
-  for (const [path, value] of Object.entries(tokenDictionary.values)) {
-    if (path.startsWith(prefix)) out[path.slice(prefix.length)] = tokenDictionary.vars[path] ?? value
-  }
-
-  return Object.keys(out).length > 0 ? out : undefined
 }

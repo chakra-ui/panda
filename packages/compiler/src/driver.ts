@@ -42,6 +42,8 @@ import {
   toRelativeKey,
   type CompilePresetResult,
 } from '@pandacss/config'
+import { statSync } from 'node:fs'
+import { dirname, resolve as resolvePath } from 'node:path'
 import { collectImportSelections, hydrateDesignSystem, treeshakeKeyFromSelections } from './design-system'
 import { createProjectFromLoadedConfig, treeshakeDesignSystemEnabled } from './tooling/create-project'
 
@@ -112,6 +114,10 @@ export class NodeDriver extends BaseDriver {
   #codegenOverlay: CodegenOverlay | undefined
   #codegenOverlayResolved = false
   #designSystemTreeshakeKey: string
+  #configFilePaths: Set<string> | undefined
+  #designSystemFileKinds: Map<string, DesignSystemWatchFileKind> | undefined
+  #sourceGeneration = 0
+  #treeshakeSyncedGeneration = -1
 
   constructor(options: NodeDriverOptions, loaded: LoadConfigResult) {
     const built = createProjectFromLoadedConfig(loaded)
@@ -119,7 +125,7 @@ export class NodeDriver extends BaseDriver {
     this.#options = options
     this.#loaded = loaded
     this.#designSystemDiagnostics = built.designSystemDiagnostics
-    this.#designSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, loaded)
+    this.#designSystemArtifactSnapshot = designSystemArtifactSnapshot(loaded)
     this.#designSystemTreeshakeKey = built.designSystemTreeshakeKey ?? ''
   }
 
@@ -170,23 +176,21 @@ export class NodeDriver extends BaseDriver {
   }
 
   override isDesignSystemFile(file: string): DesignSystemWatchFileKind | false {
-    const target = this.compiler.path.realpath(file)
+    const kinds = (this.#designSystemFileKinds ??= this.buildDesignSystemFileKinds())
+    return kinds.get(this.compiler.path.realpath(file)) ?? false
+  }
 
+  private buildDesignSystemFileKinds(): Map<string, DesignSystemWatchFileKind> {
+    const kinds = new Map<string, DesignSystemWatchFileKind>()
     for (const watchTarget of this.#designSystemWatchTargets ?? this.designSystemWatchTargets()) {
-      if (
-        [watchTarget.manifestPath, watchTarget.buildInfoPath, watchTarget.presetPath].some(
-          (path) => this.compiler.path.realpath(path) === target,
-        )
-      ) {
-        return 'artifact'
+      for (const path of [watchTarget.manifestPath, watchTarget.buildInfoPath, watchTarget.presetPath]) {
+        kinds.set(this.compiler.path.realpath(path), 'artifact')
       }
-
-      if (watchTarget.sourceFiles.some((path) => this.compiler.path.realpath(path) === target)) {
-        return 'source'
+      for (const path of watchTarget.sourceFiles) {
+        kinds.set(this.compiler.path.realpath(path), 'source')
       }
     }
-
-    return false
+    return kinds
   }
 
   override async syncDesignSystemFileChange(change: SourceChange): Promise<boolean> {
@@ -222,7 +226,7 @@ export class NodeDriver extends BaseDriver {
     // Re-apply before diffing so the override isn't seen as a config change.
     if (this.#options.include?.length) applyIncludeOverride(next, this.#options.cwd, this.#options.include)
     const diff = diffConfig(this.#loaded, next)
-    const nextDesignSystemArtifactSnapshot = designSystemArtifactSnapshot(this.compiler, next)
+    const nextDesignSystemArtifactSnapshot = designSystemArtifactSnapshot(next)
     const designSystemArtifactsChanged = this.#designSystemArtifactSnapshot !== nextDesignSystemArtifactSnapshot
 
     if (diff.hasChanged || designSystemArtifactsChanged) {
@@ -236,6 +240,10 @@ export class NodeDriver extends BaseDriver {
       this.#codegenOverlay = undefined
       this.#codegenOverlayResolved = false
       this.#designSystemTreeshakeKey = built.designSystemTreeshakeKey ?? ''
+      this.#configFilePaths = undefined
+      this.#designSystemFileKinds = undefined
+      this.#sourceGeneration++
+      this.#treeshakeSyncedGeneration = -1
     }
     return designSystemArtifactsChanged && !diff.hasChanged ? { ...diff, hasChanged: true } : diff
   }
@@ -245,9 +253,11 @@ export class NodeDriver extends BaseDriver {
     if (!treeshakeDesignSystemEnabled(this.#loaded.config)) return false
     const chain = this.#loaded.metadata?.designSystem
     if (!chain?.length) return false
+    if (this.#treeshakeSyncedGeneration === this.#sourceGeneration) return false
 
     const selections = collectImportSelections(this.compiler, chain)
     const nextKey = treeshakeKeyFromSelections(chain, selections)
+    this.#treeshakeSyncedGeneration = this.#sourceGeneration
     if (nextKey === this.#designSystemTreeshakeKey) return false
 
     const hydrated = hydrateDesignSystem(this.compiler, {
@@ -262,6 +272,9 @@ export class NodeDriver extends BaseDriver {
   }
 
   applyChange(change: SourceChange): boolean {
+    this.#sourceGeneration++
+    this.#treeshakeSyncedGeneration = -1
+
     if (change.kind === 'unlink') {
       return this.compiler.removeFile(change.path)
     }
@@ -426,17 +439,22 @@ export class NodeDriver extends BaseDriver {
   }
 
   override isConfigFile(file: string): boolean {
+    const paths = (this.#configFilePaths ??= this.buildConfigFilePaths())
+    return paths.has(this.compiler.path.realpath(file))
+  }
+
+  private buildConfigFilePaths(): Set<string> {
     // `realpath` (via the fs engine) follows symlinks so paths to the same file
     // compare equal — `dependencies` are relative to `cwd` (config's `collectDependencies`).
-    const target = this.compiler.path.realpath(file)
-    const configPath = this.compiler.path.realpath(this.#loaded.path)
-
-    if (configPath === target) return true
-
-    return this.#loaded.dependencies.some((dependency) => {
+    const paths = new Set<string>()
+    if (this.#loaded.path) {
+      paths.add(this.compiler.path.realpath(this.#loaded.path))
+    }
+    for (const dependency of this.#loaded.dependencies) {
       const dependencyPath = this.compiler.path.resolve(dependency, this.#options.cwd)
-      return this.compiler.path.realpath(dependencyPath) === target
-    })
+      paths.add(this.compiler.path.realpath(dependencyPath))
+    }
+    return paths
   }
 
   private parseDesignSystemLib(): ParsedDesignSystemLib {
@@ -702,19 +720,33 @@ function stabilizePath(cwd: string, file: string): string {
   return relativePath && !relativePath.startsWith('..') ? relativePath : file
 }
 
-function designSystemArtifactSnapshot(compiler: Compiler, loaded: LoadConfigResult): string {
+function designSystemArtifactSnapshot(loaded: LoadConfigResult): string {
   return JSON.stringify(
-    loaded.metadata?.designSystem?.map((ds) => ({
-      name: ds.name,
-      specifier: ds.specifier,
-      manifest: ds.manifest,
-      manifestPath: ds.manifestPath,
-      buildInfoPath: ds.buildInfoPath,
-      buildInfo: compiler.fs.readFile(ds.buildInfoPath) ?? '',
-      files: ds.files,
-      tokenPaths: ds.tokenPaths,
-    })) ?? [],
+    loaded.metadata?.designSystem?.map((ds) => {
+      const presetPath = resolvePath(dirname(ds.manifestPath), ds.manifest.preset)
+      return {
+        name: ds.name,
+        specifier: ds.specifier,
+        manifest: ds.manifest,
+        manifestPath: ds.manifestPath,
+        buildInfoPath: ds.buildInfoPath,
+        manifestStamp: diskFileStamp(ds.manifestPath),
+        buildInfoStamp: diskFileStamp(ds.buildInfoPath),
+        presetStamp: diskFileStamp(presetPath),
+        files: ds.files,
+        tokenPaths: ds.tokenPaths,
+      }
+    }) ?? [],
   )
+}
+
+function diskFileStamp(path: string): string {
+  try {
+    const stat = statSync(path)
+    return `${stat.mtimeMs}:${stat.size}`
+  } catch {
+    return 'missing'
+  }
 }
 
 function realpathIfExists(compiler: Compiler, path: string): string {
