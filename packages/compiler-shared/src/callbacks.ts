@@ -99,17 +99,19 @@ const lengthUnits =
   'cm,mm,Q,in,pc,pt,px,em,ex,ch,rem,lh,rlh,vw,vh,vmin,vmax,vb,vi,svw,svh,lvw,lvh,dvw,dvh,cqw,cqh,cqi,cqb,cqmin,cqmax,%'
 const lengthUnitsPattern = `(?:${lengthUnits.split(',').join('|')})`
 const lengthRegExp = new RegExp(`^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?${lengthUnitsPattern}$`)
+const CSS_VAR_RE = /^var\(--.+\)$/
+const CSS_FUNCTION_RE = /^(min|max|clamp|calc)\(.*\)/
 
 function isCssUnit(value: unknown) {
   return typeof value === 'string' && lengthRegExp.test(value)
 }
 
 function isCssVar(value: unknown) {
-  return typeof value === 'string' && /^var\(--.+\)$/.test(value)
+  return typeof value === 'string' && CSS_VAR_RE.test(value)
 }
 
 function isCssFunction(value: unknown) {
-  return typeof value === 'string' && /^(min|max|clamp|calc)\(.*\)/.test(value)
+  return typeof value === 'string' && CSS_FUNCTION_RE.test(value)
 }
 
 function getUtilityTransformRefs(config: Record<string, unknown>) {

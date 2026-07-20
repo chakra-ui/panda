@@ -176,10 +176,16 @@ export function collectNameCollisionDiagnostics(metadata: DesignSystemMetadata |
 function jsIdent(value: string): string {
   let out = ''
   for (let i = 0; i < value.length; i++) {
-    const ch = value[i]
-    if (/[A-Za-z0-9_$]/.test(ch)) {
-      if (i === 0 && ch >= '0' && ch <= '9') out += '_'
-      out += ch
+    const code = value.charCodeAt(i)
+    const isIdent =
+      code === 36 || // $
+      code === 95 || // _
+      (code >= 48 && code <= 57) || // 0-9
+      (code >= 65 && code <= 90) || // A-Z
+      (code >= 97 && code <= 122) // a-z
+    if (isIdent) {
+      if (i === 0 && code >= 48 && code <= 57) out += '_'
+      out += value[i]
     } else {
       out += '_'
     }
