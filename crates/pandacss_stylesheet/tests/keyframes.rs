@@ -1,7 +1,7 @@
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_output, config};
+use crate::common::{compile_keyframes_output, compile_output, config};
 
 #[test]
 fn emits_single_keyframe_block_in_tokens_layer() {
@@ -366,4 +366,114 @@ fn keyframe_steps_expand_configured_utilities() {
       }
     }
     ");
+}
+
+#[test]
+fn compile_keyframes_wraps_in_tokens_layer_without_vars() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "tokens": { "colors": { "red": { "value": "#f00" } } },
+            "keyframes": {
+                "spin": {
+                    "from": { "opacity": "0" },
+                    "to": { "opacity": "1" }
+                }
+            }
+        }
+    }));
+    let css = compile_keyframes_output(
+        &config,
+        "",
+        StylesheetOptions {
+            emit_layer_declaration: true,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert!(!css.contains("--colors-red"));
+    assert_snapshot!(css, @"
+    @layer tokens {
+      @keyframes spin {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn compile_keyframes_bare_without_layer_wrapper() {
+    let config = config(serde_json::json!({
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                }
+            }
+        }
+    }));
+    let css = compile_keyframes_output(
+        &config,
+        "",
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert_snapshot!(css, @"
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    ");
+}
+
+#[test]
+fn compile_keyframes_honors_remove_unused() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                },
+                "fade": {
+                    "to": { "opacity": "0" }
+                }
+            }
+        }
+    }));
+    let css = compile_keyframes_output(
+        &config,
+        "import { css } from '@panda/css'; css({ animationName: 'spin' });",
+        StylesheetOptions {
+            emit_layer_declaration: false,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert!(css.contains("@keyframes spin"));
+    assert!(!css.contains("@keyframes fade"));
+}
+
+#[test]
+fn compile_keyframes_empty_when_none_defined() {
+    let config = config(serde_json::json!({}));
+    let css = compile_keyframes_output(
+        &config,
+        "",
+        StylesheetOptions {
+            emit_layer_declaration: true,
+            ..StylesheetOptions::default()
+        },
+    )
+    .css;
+    assert_eq!(css, "");
 }

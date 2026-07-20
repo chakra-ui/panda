@@ -40,6 +40,42 @@ describe('init command', () => {
     expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('styled-system')
   })
 
+  it('rejects --interactive with --json', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    const logs: string[] = []
+    const result = await runInit(
+      { cwd: dir, interactive: true, json: true, codegen: false },
+      { log: (message) => logs.push(message), error: (message) => logs.push(message) },
+    )
+
+    expect(result.ok).toBe(false)
+    expect(result.exitCode).toBe(2)
+    expect(logs.join('\n')).toContain('--interactive cannot be used with --json')
+    expect(existsSync(join(dir, 'panda.config.ts'))).toBe(false)
+  })
+
+  it('writes strictTokens when set', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    await runInit({ cwd: dir, codegen: false, logLevel: 'silent', strictTokens: true })
+    expect(readFileSync(join(dir, 'panda.config.ts'), 'utf8')).toContain('strictTokens: true')
+  })
+
+  it('writes jsxStyleProps and outExtension when set', async () => {
+    dir = createFixture(undefined, { config: false, source: false })
+    await runInit({
+      cwd: dir,
+      codegen: false,
+      logLevel: 'silent',
+      jsxFramework: 'react',
+      jsxStyleProps: 'minimal',
+      outExtension: 'ts',
+    })
+    const config = readFileSync(join(dir, 'panda.config.ts'), 'utf8')
+    expect(config).toContain('jsxFramework: "react"')
+    expect(config).toContain('jsxStyleProps: "minimal"')
+    expect(config).toContain('outExtension: "ts"')
+  })
+
   it('supports outdir overrides for config and gitignore', async () => {
     dir = createFixture(undefined, { config: false, source: false })
 
@@ -200,6 +236,18 @@ describe('init command', () => {
       expect(execSync).not.toHaveBeenCalled()
       expect(result.presetsInstalled).toEqual([])
       expect(readFileSync(join(dir!, 'panda.config.ts'), 'utf8')).toContain('presets: [],')
+    })
+
+    it('fails codegen when @pandacss/dev is not installed', async () => {
+      dir = createFixture(undefined, { config: false, source: false })
+      writePkg(dir)
+
+      const result = await runInit({ cwd: dir, install: false, logLevel: 'silent' })
+
+      expect(result.ok).toBe(false)
+      expect(result.configWritten).toBe(true)
+      expect(result.codegenFiles).toEqual([])
+      expect(result.diagnostics.some((d) => d.code === 'config_load_error')).toBe(true)
     })
 
     it('reports nothing installed when the install command fails', async () => {

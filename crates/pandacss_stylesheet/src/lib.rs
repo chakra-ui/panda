@@ -3,6 +3,7 @@ mod emitter;
 mod grouped;
 mod layers;
 mod numeric_value;
+mod polyfill;
 mod preflight;
 mod selector;
 mod sort;
@@ -11,8 +12,8 @@ mod static_css_diagnostics;
 mod style_rules;
 mod writer;
 
-pub use emitter::UtilityStyleOverrides;
-pub use layers::has_layer_declaration;
+pub use emitter::{UtilityStyleOverrides, emit_keyframes};
+pub use layers::{has_layer_declaration, strip_layer_order_statements};
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
 
@@ -36,6 +37,7 @@ pub struct StylesheetOptions {
     pub include_static: bool,
     pub source_map: bool,
     pub emit_layer_declaration: bool,
+    pub polyfill: bool,
     /// When set, `split_css` emits only the selected layers (and rebuilds the
     /// index `@layer` preamble + `@import` lines to match).
     pub layers: Option<Vec<StylesheetLayer>>,
@@ -48,6 +50,7 @@ impl Default for StylesheetOptions {
             include_static: false,
             source_map: false,
             emit_layer_declaration: true,
+            polyfill: false,
             layers: None,
         }
     }
@@ -218,6 +221,7 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
     };
 
     let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
+    let emit_layer_declaration = options.emit_layer_declaration && !options.polyfill;
     let emitted = emitter::emit(
         input.config,
         &utility,
@@ -229,7 +233,86 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         recipes,
         input.utility_styles,
         options.minify,
-        options.emit_layer_declaration,
+        emit_layer_declaration,
+        options.polyfill,
+    );
+
+    StylesheetOutput {
+        css: emitted.css,
+        source_map: options.source_map.then(String::new),
+        diagnostics,
+        layer_ranges: emitted.layer_ranges,
+    }
+}
+
+/// Compile only `theme.keyframes` CSS (no token vars or other layers).
+///
+/// `emit_layer_declaration` controls whether blocks are wrapped in
+/// `@layer tokens { … }`. Unused-keyframe filtering follows config.
+#[must_use]
+pub fn compile_keyframes(
+    input: StylesheetInput<'_>,
+    options: &StylesheetOptions,
+) -> StylesheetOutput {
+    let mut diagnostics = Vec::new();
+    let token_dictionary = match input.token_dictionary {
+        Some(dictionary) => Some(dictionary),
+        None => match TokenDictionary::from_config(input.config) {
+            Ok(dictionary) => dictionary.map(Arc::new),
+            Err(error) => {
+                diagnostics.push(Diagnostic::error(
+                    diagnostic_codes::TOKEN_DICTIONARY_BUILD_FAILED,
+                    format!("Failed to build token dictionary: {error}"),
+                ));
+                None
+            }
+        },
+    };
+    let utility = utility_from_config(input.config, token_dictionary.clone());
+
+    let mut atoms = input.atoms.iter().collect::<Vec<_>>();
+    let generated = if options.include_static {
+        static_css::expand(
+            input.config,
+            &utility,
+            token_dictionary.as_deref(),
+            &mut diagnostics,
+        )
+    } else {
+        Vec::new()
+    };
+    if !generated.is_empty() {
+        atoms.reserve(generated.len());
+        atoms.extend(generated.iter());
+    }
+    if options.include_static && !input.static_pattern_atoms.is_empty() {
+        atoms.reserve(input.static_pattern_atoms.len());
+        atoms.extend(input.static_pattern_atoms.iter());
+    }
+
+    let encoded_recipes = if options.include_static {
+        input.static_encoded_recipes.and_then(|static_recipes| {
+            (!is_empty_encoded_recipes(static_recipes))
+                .then(|| merge_encoded_recipes(input.encoded_recipes, static_recipes))
+        })
+    } else {
+        None
+    };
+    let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
+    let wrap_in_layer = options.emit_layer_declaration;
+    let emitted = emitter::emit_keyframes(
+        input.config,
+        &utility,
+        emitter::EmitTokenContext {
+            dictionary: token_dictionary.as_deref(),
+            refs: input.token_refs,
+        },
+        atoms,
+        recipes,
+        input.utility_styles,
+        options.minify,
+        wrap_in_layer,
+        options.polyfill,
     );
 
     StylesheetOutput {
@@ -298,7 +381,8 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
         recipes,
         input.utility_styles,
         options.minify,
-        true,
+        options.emit_layer_declaration && !options.polyfill,
+        options.polyfill,
     );
 
     let selected = options.layers.as_deref();
@@ -332,8 +416,14 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     }
 
     if layer_selected(StylesheetLayer::Recipes) {
-        let recipe_files =
-            emitter::emit_recipe_split(input.config, &utility, recipes, options.minify);
+        let recipe_files = emitter::emit_recipe_split(
+            input.config,
+            &utility,
+            recipes,
+            options.minify,
+            options.polyfill,
+            full.polyfill_analyze.as_ref(),
+        );
         if !recipe_files.is_empty() {
             let mut recipe_imports = Vec::with_capacity(recipe_files.len());
             for (name, css) in &recipe_files {
@@ -368,7 +458,7 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Ve
     }
 
     // `styles.css` entry: the @layer order declaration + the imports above.
-    let mut index = if options.emit_layer_declaration {
+    let mut index = if options.emit_layer_declaration && !options.polyfill {
         layer_order_declaration(&input.config.layers, selected)
     } else {
         String::new()

@@ -9,6 +9,7 @@ mod keyframes;
 mod layers;
 mod nested_selector_parity;
 mod output;
+mod polyfill;
 mod preflight;
 mod recipes;
 mod selector;

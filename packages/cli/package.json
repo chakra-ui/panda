@@ -48,11 +48,15 @@
     "bin.js"
   ],
   "dependencies": {
+    "@clack/prompts": "1.7.0",
     "@pandacss/compiler": "workspace:*",
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/config": "workspace:*",
+    "@pandacss/types": "workspace:*",
     "@parcel/watcher": "2.5.1",
-    "citty": "0.1.6"
+    "citty": "0.1.6",
+    "picocolors": "1.1.1",
+    "string-width": "7.2.0"
   },
   "devDependencies": {
     "preact": "10.27.2",

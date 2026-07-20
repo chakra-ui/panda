@@ -75,6 +75,7 @@ export function renderCommandDiagnostics(
   const message = renderDiagnostics(visible, {
     cwd,
     format: commandFormat(flags),
+    noColor: flags.noColor,
   })
 
   if (!message) {

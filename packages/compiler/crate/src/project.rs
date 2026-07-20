@@ -198,6 +198,7 @@ pub struct WriteCssOptions {
     pub cwd: Option<String>,
     pub emit_layer_declaration: Option<bool>,
     pub minify: Option<bool>,
+    pub polyfill: Option<bool>,
 }
 
 #[napi(object)]
@@ -207,6 +208,7 @@ pub struct WriteSplitCssOptions {
     pub layers: Option<Vec<String>>,
     pub emit_layer_declaration: Option<bool>,
     pub minify: Option<bool>,
+    pub polyfill: Option<bool>,
 }
 
 #[napi]

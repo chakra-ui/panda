@@ -1,5 +1,7 @@
 use insta::assert_snapshot;
-use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions, has_layer_declaration};
+use pandacss_stylesheet::{
+    StylesheetLayer, StylesheetOptions, has_layer_declaration, strip_layer_order_statements,
+};
 
 use crate::common::{compile_css, compile_output, config};
 
@@ -197,4 +199,65 @@ fn has_layer_declaration_rejects_non_matches() {
         "@layered reset, base, tokens, recipes, utilities;",
         &LAYERS
     )); // wrong keyword
+}
+
+#[test]
+fn strip_layer_order_statements_removes_panda_statements_keeps_blocks() {
+    assert_eq!(
+        strip_layer_order_statements(
+            "@layer reset, base, tokens, recipes, utilities;\n@layer reset { .x { color: red } }",
+            &LAYERS
+        ),
+        "\n@layer reset { .x { color: red } }"
+    );
+    assert_eq!(
+        strip_layer_order_statements("@layered reset, base;", &LAYERS),
+        "@layered reset, base;"
+    );
+}
+
+#[test]
+fn strip_layer_order_statements_leaves_unrelated_layer_orders() {
+    let css =
+        "@layer framework, overrides;\n@layer reset, base, tokens, recipes, utilities;\n.x {}";
+    assert_eq!(
+        strip_layer_order_statements(css, &LAYERS),
+        "@layer framework, overrides;\n\n.x {}"
+    );
+    // Incomplete Panda list is not stripped either.
+    assert_eq!(
+        strip_layer_order_statements("@layer reset, base;", &LAYERS),
+        "@layer reset, base;"
+    );
+}
+
+#[test]
+fn has_layer_declaration_ignores_comments() {
+    // A documented/commented-out Panda order line must not trigger detection.
+    assert!(!has_layer_declaration(
+        "/* @layer reset, base, tokens, recipes, utilities; */\n.x { color: red }",
+        &LAYERS
+    ));
+    // The real statement after the comment still counts.
+    assert!(has_layer_declaration(
+        "/* keep in sync with docs */\n@layer reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    ));
+    // Unterminated comment: nothing after it is reachable, so no match.
+    assert!(!has_layer_declaration(
+        "/* @layer reset, base, tokens, recipes, utilities;",
+        &LAYERS
+    ));
+}
+
+#[test]
+fn strip_layer_order_statements_leaves_comments_untouched() {
+    let css = "/* @layer reset, base, tokens, recipes, utilities; */\n.x { color: red }";
+    assert_eq!(strip_layer_order_statements(css, &LAYERS), css);
+
+    let css = "/* note */\n@layer reset, base, tokens, recipes, utilities;\n.x {}";
+    assert_eq!(
+        strip_layer_order_statements(css, &LAYERS),
+        "/* note */\n\n.x {}"
+    );
 }

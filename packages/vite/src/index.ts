@@ -162,10 +162,12 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         }
       })
 
-      const output = driver.cssgen({ emitLayerDeclaration: false })
+      const polyfill = driver.config.polyfill === true
+      const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
       warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet')
 
-      return { code: `${code}\n${output.css}`, map: null }
+      const entry = polyfill ? driver.compiler.stripLayerOrderStatements(code) : code
+      return { code: `${entry}\n${output.css}`, map: null }
     },
 
     async handleHotUpdate(ctx: HmrContext) {

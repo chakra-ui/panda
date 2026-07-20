@@ -81,6 +81,8 @@ export interface CompileOptions {
    * Override config-level minification for this compile.
    */
   minify?: boolean
+  /** Override config-level cascade-layer polyfill for this compile. */
+  polyfill?: boolean
 }
 
 /**
@@ -93,12 +95,14 @@ export interface CssOutputOptions {
   layers?: StylesheetLayerName[]
   emitLayerDeclaration?: boolean
   minify?: boolean
+  polyfill?: boolean
 }
 
 export interface LayerCssOptions {
   layers: StylesheetLayerName[]
   emitLayerDeclaration?: boolean
   minify?: boolean
+  polyfill?: boolean
 }
 
 export type SplitCssOptions = CssOutputOptions

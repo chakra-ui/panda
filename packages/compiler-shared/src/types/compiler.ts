@@ -215,6 +215,8 @@ export interface Compiler {
   config(): SerializedConfig
   layers(): LayerNames
   hasLayerDeclaration(css: string): boolean
+  /** Remove Panda `@layer …;` order statements; leave unrelated ones. */
+  stripLayerOrderStatements(css: string): string
   spec(): Spec
   sources(): SourceEntry[]
   diagnostics(): Diagnostic[]
@@ -244,6 +246,8 @@ export interface Compiler {
    */
   compile(options?: CompileOptions): CompileOutput
   getLayerCss(options: LayerCssOptions): CompileOutput
+  /** Theme `@keyframes` CSS only (no token vars or other layers). */
+  getKeyframeCss(options?: CompileOptions): CompileOutput
   getSplitCss(options?: SplitCssOptions): CssFile[]
 
   readonly buildInfo: BuildInfo

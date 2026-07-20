@@ -52,11 +52,13 @@ describe('cli smoke', () => {
       \`-o, --outfile\` Output file for extracted CSS
       \`--splitting\` Emit split CSS files
       \`--clean\` Clean the output directory before generating
+      \`--polyfill\` Polyfill cascade layers with :not(#\\#) (overrides config polyfill)
       \`--json\` Print JSON
       \`--format\` Diagnostic output format: human, pretty, json, or github
       \`--log-level=<level>\` Set output level: silent, error, warn, info, or debug
       \`--max-warnings\` Fail when warning diagnostics exceed this count
       \`--logfile\` Write human output to a log file
+      \`--no-color\` Disable ANSI colors in human output
       \`--profile\` Capture Rust compiler timings (trace.json, timings.json)
       \`--trace\` Enable compiler tracing
       \`--trace-output\` Trace output: fmt or chrome-json

@@ -1,17 +1,17 @@
 import { type Driver } from '@pandacss/compiler'
-import { runningPandaRange, toRelativeKey } from '@pandacss/config'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
+import { runningPandaRange, toRelativeKey } from '@pandacss/config'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { baseArgs, includeArgs, outputArgs, parseCliFlags, traceArgs } from '../args'
-import { runCommand } from '../run-command'
 import { collectCliParseDiagnostics, normalizeCliDiagnostics } from '../diagnostics'
-import { buildinfoFlagsSchema } from '../schema'
 import { consoleOutput, renderCommandDiagnostics, shouldPrintHumanSummary, type OutputSink } from '../output'
 import { setExitCode } from '../result'
-import { time } from '../timing'
+import { runCommand } from '../run-command'
 import type { BuildinfoFlags, BuildinfoResult } from '../schema'
+import { buildinfoFlagsSchema } from '../schema'
+import { time } from '../timing'
 
 export const buildinfoCommand = defineCommand({
   meta: {

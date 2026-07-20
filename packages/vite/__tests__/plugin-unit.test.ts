@@ -38,7 +38,7 @@ describe('@pandacss/vite design-system HMR', () => {
         "/project/node_modules/@acme/ds/src/button.css.ts",
       ]
     `)
-    expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false })
+    expect(driver.cssgen).toHaveBeenCalledWith({ emitLayerDeclaration: false, polyfill: false })
   })
 
   it('reloads design-system changes before returning component HMR modules', async () => {
@@ -162,8 +162,12 @@ function createMockDriver() {
     sourceTransformer,
     compiler: {
       hasLayerDeclaration: vi.fn((css: string) => css.includes('@layer')),
+      stripLayerOrderStatements: vi.fn((css: string) =>
+        css.replace(/@layer\s+reset,\s*base,\s*tokens,\s*recipes,\s*utilities;/g, ''),
+      ),
       getFile: vi.fn(() => ({ diagnostics: [] })),
     },
+    config: {},
     configPath: '/project/panda.config.ts',
     designSystemDiagnostics: [],
     applyChange: vi.fn(() => true),
