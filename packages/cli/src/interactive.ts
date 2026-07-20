@@ -1,4 +1,3 @@
-import * as p from '@clack/prompts'
 import { createRequire } from 'node:module'
 import { shouldPrintJson } from './output'
 import type { InitFlags } from './schema'
@@ -61,16 +60,18 @@ export function formatInteractiveGuardFailure(failure: InteractiveGuardFailure):
   }
 }
 
-function cancelIfNeeded<T>(value: T | symbol): T {
-  if (p.isCancel(value)) {
-    p.cancel('Operation cancelled.')
-    throw new InteractiveCancelled()
-  }
-  return value
-}
-
 /** Clack wizard for `panda init -i`. Cancel throws {@link InteractiveCancelled}. */
 export async function promptInitFlags(): Promise<InteractiveAnswers> {
+  const p = await import('@clack/prompts')
+
+  function cancelIfNeeded<T>(value: T | symbol): T {
+    if (p.isCancel(value)) {
+      p.cancel('Operation cancelled.')
+      throw new InteractiveCancelled()
+    }
+    return value
+  }
+
   p.intro(`panda v${version}`)
 
   const usePostcss = cancelIfNeeded(
