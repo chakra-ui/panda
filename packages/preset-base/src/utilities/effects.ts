@@ -123,8 +123,8 @@ export const effects: UtilityConfig = {
     },
     transform(value) {
       return {
-        backdropFilter: value,
         WebkitBackdropFilter: value,
+        backdropFilter: value,
       }
     },
   },
