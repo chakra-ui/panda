@@ -586,8 +586,8 @@ describe('style encoder', () => {
 
           @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
             .navbar[data-part="blur"] {
-              backdrop-filter: blur(8px);
               -webkit-backdrop-filter: blur(8px);
+              backdrop-filter: blur(8px);
               background-color: rgba(255, 255, 255, 0.85) !important;
       }
 
