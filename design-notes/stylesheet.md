@@ -15,6 +15,7 @@ Owned:
 - Reset/preflight emission, including `preflight.scope` and `preflight.level`.
 - Base layer config CSS: `globalCss`, `globalVars`, `globalFontface`, and `globalPositionTry`.
 - Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`.
+  Keyframes-only CSS is available via `compile_keyframes` / host `getKeyframeCss()` (no token vars).
 - Recipes layer: config recipes, slot recipes, compound variants, and split recipe files.
 - Utilities layer: dynamic atoms, recipe atomic atoms, static atoms, and utility sub-layers.
 - Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe

@@ -154,6 +154,53 @@ impl Compiler {
         Ok(WriteFilesResult { root, paths, files })
     }
 
+    /// Theme `@keyframes` CSS only (no token vars or other layers).
+    #[napi(js_name = getKeyframeCss)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn get_keyframe_css(
+        &mut self,
+        env: Env,
+        options: Option<CompileOptions>,
+    ) -> napi::Result<CompileOutput> {
+        crate::init_tracing();
+        let _span = tracing::trace_span!(target: "css", "keyframe_css").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms(env);
+        let has_utility_transforms = self.callbacks.has_utility_transforms();
+        let Compiler {
+            inner,
+            user_config,
+            callbacks,
+            ..
+        } = self;
+        let utility_cache = &mut callbacks.transform_cache.utility;
+        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+            apply_utility_transform(
+                prop,
+                resolved,
+                original,
+                &callbacks.utility_transform_refs,
+                &callbacks.utility_transforms,
+                utility_cache,
+                &env,
+            )
+        };
+        let output = crate::compile::build_keyframes_compile_output(
+            inner,
+            user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+            has_utility_transforms
+                .then_some(&mut utility_transform as &mut pandacss_project::UtilityTransformFn<'_>),
+            options.as_ref(),
+        );
+        crate::flush_tracing();
+        Ok(output)
+    }
+
     /// CSS for the named cascade layers, concatenated in order. Sliced in Rust
     /// (byte offsets stay valid); unknown layer names are skipped.
     #[napi(js_name = getLayerCss)]

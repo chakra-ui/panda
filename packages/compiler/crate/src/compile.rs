@@ -222,6 +222,63 @@ pub(crate) fn build_compile_output(
     }
 }
 
+pub(crate) fn build_keyframes_compile_output(
+    project: &mut pandacss_project::Project,
+    user_config: &UserConfig,
+    static_pattern_atoms: &[CoreAtom],
+    static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    utility_transform: Option<&mut pandacss_project::UtilityTransformFn<'_>>,
+    options: Option<&CompileOptions>,
+) -> CompileOutput {
+    let token_dictionary = project.config().token_dictionary();
+    let manifest = compile_manifest(project, token_dictionary.as_ref());
+    let emit_layer_declaration = options.is_none_or(CompileOptions::should_emit_layer_declaration);
+    let minify_override = options.and_then(|options| options.minify);
+    let polyfill_override = options.and_then(|options| options.polyfill);
+    let snapshots = if let Some(transform) = utility_transform {
+        project.stylesheet_snapshots_with_utility_transform(user_config, transform)
+    } else {
+        project.stylesheet_snapshots(user_config)
+    };
+    let polyfill = resolve_polyfill(user_config, polyfill_override);
+    let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
+        minify: resolve_minify(user_config, minify_override),
+        include_static: pandacss_stylesheet::has_static_css(user_config),
+        source_map: false,
+        emit_layer_declaration,
+        polyfill,
+        layers: None,
+    };
+    let output = pandacss_stylesheet::compile_keyframes(
+        pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            utility_styles: snapshots.utility_styles,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+            token_refs: snapshots.token_refs,
+        },
+        &stylesheet_options,
+    );
+    CompileOutput {
+        css: output.css,
+        source_map: output.source_map,
+        manifest,
+        layer_ranges: empty_layer_ranges(),
+        diagnostics: project
+            .diagnostics()
+            .iter()
+            .cloned()
+            .chain(project.file_diagnostics().into_iter().cloned())
+            .chain(static_pattern_diagnostics)
+            .chain(output.diagnostics)
+            .map(crate::convert::convert_diagnostic)
+            .collect(),
+    }
+}
+
 pub(crate) fn build_layer_compile_output(
     project: &mut pandacss_project::Project,
     user_config: &UserConfig,

@@ -14,8 +14,8 @@ use super::interop::{
 };
 use super::serde_types::{
     CompileFileManifestSerde, CompileLayerRangeSerde, CompileLayerRangesSerde,
-    CompileManifestSerde, CompileOutputSerde, CssOutputOptionsSerde, LayerCssOptionsSerde,
-    SplitCssFileSerde, WriteCssResultSerde, WriteFilesResultSerde,
+    CompileManifestSerde, CompileOptionsSerde, CompileOutputSerde, CssOutputOptionsSerde,
+    LayerCssOptionsSerde, SplitCssFileSerde, WriteCssResultSerde, WriteFilesResultSerde,
 };
 
 /*
@@ -114,6 +114,26 @@ impl WasmCompiler {
         };
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Theme `@keyframes` CSS only (no token vars or other layers).
+    #[wasm_bindgen(js_name = getKeyframeCss)]
+    pub fn get_keyframe_css(&mut self, options: Option<JsValue>) -> Result<JsValue, JsValue> {
+        let _span = tracing::trace_span!("get_keyframe_css", method = "wasm").entered();
+        let (static_pattern_atoms, static_pattern_diagnostics) =
+            self.collect_static_pattern_atoms();
+        let options = compile_options_from_js(options)?;
+        let output = build_keyframes_compile_output(
+            &mut self.inner,
+            &self.user_config,
+            &static_pattern_atoms,
+            static_pattern_diagnostics,
+            &options,
+        );
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        output
             .serialize(&serializer)
             .map_err(|err| JsValue::from_str(&err.to_string()))
     }
@@ -270,6 +290,54 @@ fn build_compile_output(
         source_map: output.source_map,
         manifest,
         layer_ranges: layer_ranges_from(&output.layer_ranges),
+        diagnostics,
+    }
+}
+
+fn build_keyframes_compile_output(
+    project: &mut pandacss_project::Project,
+    user_config: &pandacss_config::UserConfig,
+    static_pattern_atoms: &[CoreAtom],
+    static_pattern_diagnostics: Vec<pandacss_extractor::Diagnostic>,
+    options: &CompileOptionsSerde,
+) -> CompileOutputSerde {
+    let token_dictionary = project.config().token_dictionary();
+    let manifest = compile_manifest_serde(project, token_dictionary.as_ref());
+    let snapshots = project.stylesheet_snapshots(user_config);
+    let polyfill = resolve_polyfill(user_config, options.polyfill);
+    let stylesheet_options = pandacss_stylesheet::StylesheetOptions {
+        minify: resolve_minify(user_config, options.minify),
+        include_static: pandacss_stylesheet::has_static_css(user_config),
+        source_map: false,
+        emit_layer_declaration: options.emit_layer_declaration.unwrap_or(true),
+        polyfill,
+        layers: None,
+    };
+    let output = pandacss_stylesheet::compile_keyframes(
+        pandacss_stylesheet::StylesheetInput {
+            config: user_config,
+            token_dictionary,
+            atoms: snapshots.atoms,
+            utility_styles: snapshots.utility_styles,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms,
+            token_refs: snapshots.token_refs,
+        },
+        &stylesheet_options,
+    );
+    let diagnostics = project
+        .diagnostics()
+        .iter()
+        .cloned()
+        .chain(static_pattern_diagnostics)
+        .chain(output.diagnostics)
+        .collect();
+    CompileOutputSerde {
+        css: output.css,
+        source_map: output.source_map,
+        manifest,
+        layer_ranges: empty_layer_ranges(),
         diagnostics,
     }
 }

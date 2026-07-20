@@ -197,6 +197,83 @@ fn finish_emit(
     }
 }
 
+/// Emit only `theme.keyframes` as CSS (no token vars, no other layers).
+///
+/// When `wrap_in_layer` is true, wraps the blocks in `@layer tokens { … }`
+/// (same cascade placement as the full stylesheet). With `polyfill`, the layer
+/// is recorded then flattened like a normal emit.
+#[must_use]
+#[allow(
+    clippy::too_many_arguments,
+    reason = "mirrors emit(); a context struct would only relocate the same inputs"
+)]
+pub fn emit_keyframes<'a>(
+    config: &'a UserConfig,
+    utility: &'a Utility,
+    tokens: EmitTokenContext<'a>,
+    mut atoms: Vec<&'a Atom>,
+    recipes: &'a EncodedRecipesSnapshot,
+    utility_styles: &'a UtilityStyleOverrides,
+    minify: bool,
+    wrap_in_layer: bool,
+    polyfill: bool,
+) -> EmitOutput {
+    let cx = EmitContext::new(config, utility, utility_styles, tokens.dictionary);
+    let layers = &config.layers;
+    let mut writer = if polyfill && wrap_in_layer {
+        CssWriter::recording(minify)
+    } else {
+        CssWriter::new(minify, 256)
+    };
+    let mut layer_ranges = StylesheetLayerRanges::default();
+
+    if !recipes.atomic.is_empty() {
+        atoms.extend(recipes.atomic.iter());
+    }
+    atoms = dedup_atom_refs(atoms);
+
+    let keyframes = as_non_empty_object(&config.theme.keyframes);
+    let usage = if config.optimize.remove_unused_keyframes {
+        Some(cx.collect_usage(tokens.dictionary, tokens.refs, &atoms, recipes, keyframes))
+    } else {
+        None
+    };
+    let keyframes = keyframes.filter(|keyframes| {
+        !config.optimize.remove_unused_keyframes
+            || usage
+                .as_ref()
+                .is_some_and(|usage| has_used_keyframes(keyframes, &usage.keyframes))
+    });
+
+    let Some(keyframes) = keyframes else {
+        return EmitOutput {
+            css: String::new(),
+            layer_ranges,
+            polyfill_analyze: None,
+        };
+    };
+
+    let used = config
+        .optimize
+        .remove_unused_keyframes
+        .then(|| usage.as_ref().map(|usage| &usage.keyframes))
+        .flatten();
+
+    if wrap_in_layer {
+        layer_ranges.tokens = Some(write_layer(&mut writer, &layers.tokens, |writer| {
+            cx.serialize_keyframes(writer, keyframes, used);
+        }));
+        finish_emit(writer, polyfill, layers, minify, layer_ranges)
+    } else {
+        cx.serialize_keyframes(&mut writer, keyframes, used);
+        EmitOutput {
+            css: writer.finish(),
+            layer_ranges,
+            polyfill_analyze: None,
+        }
+    }
+}
+
 pub fn emit_theme_css(
     config: &UserConfig,
     dictionary: &TokenDictionary,

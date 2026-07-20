@@ -1,5 +1,6 @@
 import type {
   Atom,
+  CompileOptions,
   CompileOutput,
   Compiler,
   DesignSystemManifestInput,
@@ -250,6 +251,9 @@ class FallbackCompiler implements Compiler {
     return emptyCompileOutput()
   }
   getLayerCss(_options: LayerCssOptions) {
+    return emptyCompileOutput()
+  }
+  getKeyframeCss(_options?: CompileOptions) {
     return emptyCompileOutput()
   }
   getSplitCss(_options?: SplitCssOptions) {

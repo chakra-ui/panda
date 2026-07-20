@@ -246,6 +246,8 @@ export interface Compiler {
    */
   compile(options?: CompileOptions): CompileOutput
   getLayerCss(options: LayerCssOptions): CompileOutput
+  /** Theme `@keyframes` CSS only (no token vars or other layers). */
+  getKeyframeCss(options?: CompileOptions): CompileOutput
   getSplitCss(options?: SplitCssOptions): CssFile[]
 
   readonly buildInfo: BuildInfo

@@ -506,6 +506,7 @@ Emit the full stylesheet once from the app/root.
 3. **Published libraries:** `panda lib`, then consumers use `designSystem` (see [Design systems](#design-systems)).
 
 v1's positional layer names (`preflight`, `global`, `tokens`, …) and positional glob override aren't in the v2 CLI yet.
+For keyframes-only CSS, use the compiler API: `getKeyframeCss()` (v1 `panda cssgen keyframes`).
 
 ---
 

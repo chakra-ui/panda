@@ -151,6 +151,7 @@ export declare class WasmCompiler {
   summary(): ProjectSummary
   compile(options?: CompileOptions): CompileOutput
   getLayerCss(options: LayerCssOptions): CompileOutput
+  getKeyframeCss(options?: CompileOptions): CompileOutput
   getSplitCss(options?: SplitCssOptions): CssFile[]
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined

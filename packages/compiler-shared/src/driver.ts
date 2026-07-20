@@ -122,6 +122,8 @@ export interface Driver {
   cssgen(options?: CompileOptions): CompileOutput
   /** CSS for selected cascade layers only. */
   getLayerCss(options: LayerCssOptions): CompileOutput
+  /** Theme `@keyframes` CSS only (no token vars or other layers). */
+  getKeyframeCss(options?: CompileOptions): CompileOutput
   /** Generate split stylesheet files in memory without writing. */
   getSplitCss(options?: SplitCssOptions): CssFile[]
   /** Generate + write stylesheet CSS through the host filesystem. Returns the compile output plus written path. */
@@ -224,6 +226,10 @@ export abstract class BaseDriver implements Driver {
 
   getLayerCss(options: LayerCssOptions): CompileOutput {
     return this.#compiler.getLayerCss(options)
+  }
+
+  getKeyframeCss(options?: CompileOptions): CompileOutput {
+    return this.#compiler.getKeyframeCss(options)
   }
 
   getSplitCss(options?: SplitCssOptions): CssFile[] {

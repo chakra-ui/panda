@@ -1,6 +1,6 @@
 use pandacss_config::UserConfig;
 use pandacss_project::{Project, System};
-use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions};
+use pandacss_stylesheet::{StylesheetInput, StylesheetLayer, StylesheetOptions, StylesheetOutput};
 
 pub fn config(value: serde_json::Value) -> UserConfig {
     serde_json::from_value(value).expect("valid config")
@@ -34,12 +34,44 @@ pub fn compile_output(
     config: &UserConfig,
     source: &str,
     options: StylesheetOptions,
-) -> pandacss_stylesheet::StylesheetOutput {
+) -> StylesheetOutput {
     let system = System::new(config.clone()).expect("valid project");
     let mut project = Project::new(system);
     project.parse_file("/style.ts", source);
     let snapshots = project.stylesheet_snapshots(config);
     pandacss_stylesheet::compile(
+        StylesheetInput {
+            config,
+            token_dictionary: None,
+            atoms: snapshots.atoms,
+            utility_styles: snapshots.utility_styles,
+            encoded_recipes: snapshots.encoded_recipes,
+            static_encoded_recipes: Some(snapshots.static_encoded_recipes),
+            static_pattern_atoms: &[],
+            token_refs: snapshots.token_refs,
+        },
+        &StylesheetOptions {
+            include_static: true,
+            ..options
+        },
+    )
+}
+
+#[allow(dead_code)]
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "test helper; owned options read more naturally at call sites"
+)]
+pub fn compile_keyframes_output(
+    config: &UserConfig,
+    source: &str,
+    options: StylesheetOptions,
+) -> StylesheetOutput {
+    let system = System::new(config.clone()).expect("valid project");
+    let mut project = Project::new(system);
+    project.parse_file("/style.ts", source);
+    let snapshots = project.stylesheet_snapshots(config);
+    pandacss_stylesheet::compile_keyframes(
         StylesheetInput {
             config,
             token_dictionary: None,

@@ -12,7 +12,7 @@ mod static_css_diagnostics;
 mod style_rules;
 mod writer;
 
-pub use emitter::UtilityStyleOverrides;
+pub use emitter::{UtilityStyleOverrides, emit_keyframes};
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
 pub use sort::order_properties;
@@ -234,6 +234,84 @@ pub fn compile(input: StylesheetInput<'_>, options: &StylesheetOptions) -> Style
         input.utility_styles,
         options.minify,
         emit_layer_declaration,
+        options.polyfill,
+    );
+
+    StylesheetOutput {
+        css: emitted.css,
+        source_map: options.source_map.then(String::new),
+        diagnostics,
+        layer_ranges: emitted.layer_ranges,
+    }
+}
+
+/// Compile only `theme.keyframes` CSS (no token vars or other layers).
+///
+/// `emit_layer_declaration` controls whether blocks are wrapped in
+/// `@layer tokens { … }`. Unused-keyframe filtering follows config.
+#[must_use]
+pub fn compile_keyframes(
+    input: StylesheetInput<'_>,
+    options: &StylesheetOptions,
+) -> StylesheetOutput {
+    let mut diagnostics = Vec::new();
+    let token_dictionary = match input.token_dictionary {
+        Some(dictionary) => Some(dictionary),
+        None => match TokenDictionary::from_config(input.config) {
+            Ok(dictionary) => dictionary.map(Arc::new),
+            Err(error) => {
+                diagnostics.push(Diagnostic::error(
+                    diagnostic_codes::TOKEN_DICTIONARY_BUILD_FAILED,
+                    format!("Failed to build token dictionary: {error}"),
+                ));
+                None
+            }
+        },
+    };
+    let utility = utility_from_config(input.config, token_dictionary.clone());
+
+    let mut atoms = input.atoms.iter().collect::<Vec<_>>();
+    let generated = if options.include_static {
+        static_css::expand(
+            input.config,
+            &utility,
+            token_dictionary.as_deref(),
+            &mut diagnostics,
+        )
+    } else {
+        Vec::new()
+    };
+    if !generated.is_empty() {
+        atoms.reserve(generated.len());
+        atoms.extend(generated.iter());
+    }
+    if options.include_static && !input.static_pattern_atoms.is_empty() {
+        atoms.reserve(input.static_pattern_atoms.len());
+        atoms.extend(input.static_pattern_atoms.iter());
+    }
+
+    let encoded_recipes = if options.include_static {
+        input.static_encoded_recipes.and_then(|static_recipes| {
+            (!is_empty_encoded_recipes(static_recipes))
+                .then(|| merge_encoded_recipes(input.encoded_recipes, static_recipes))
+        })
+    } else {
+        None
+    };
+    let recipes = encoded_recipes.as_ref().unwrap_or(input.encoded_recipes);
+    let wrap_in_layer = options.emit_layer_declaration;
+    let emitted = emitter::emit_keyframes(
+        input.config,
+        &utility,
+        emitter::EmitTokenContext {
+            dictionary: token_dictionary.as_deref(),
+            refs: input.token_refs,
+        },
+        atoms,
+        recipes,
+        input.utility_styles,
+        options.minify,
+        wrap_in_layer,
         options.polyfill,
     );
 
