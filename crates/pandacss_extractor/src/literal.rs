@@ -377,11 +377,7 @@ pub(crate) fn property_key_to_string(
         };
     }
     let expr = key.as_expression()?;
-    match expression_to_literal(expr, resolver)? {
-        Literal::String(s) | Literal::Token { value: s, .. } => Some(s),
-        Literal::Number(n) => Some(number_as_key(n)),
-        _ => None,
-    }
+    literal_to_property_key(&expression_to_literal(expr, resolver)?)
 }
 
 fn static_member_to_literal(
@@ -398,13 +394,23 @@ fn computed_member_to_literal(
 ) -> Option<Literal> {
     let object = expression_to_literal(&member.object, resolver)?;
     let key_literal = expression_to_literal(&member.expression, resolver)?;
-    let key = match key_literal {
-        Literal::String(s) | Literal::Token { value: s, .. } => s,
-        Literal::Number(n) => number_as_key(n),
-        // `obj[true]` / `obj[null]` are valid JS but not real Panda usage.
-        _ => return None,
-    };
+    let key = literal_to_property_key(&key_literal)?;
     lookup_member(&object, &key)
+}
+
+/// JS `ToPropertyKey` as far as static extraction cares: strings/tokens pass
+/// through, numbers stringify. `obj[true]` / `obj[null]` are valid JS but not
+/// real Panda usage, so they (and objects/arrays) drop instead of coercing.
+pub(crate) fn literal_to_property_key(lit: &Literal) -> Option<String> {
+    match lit {
+        Literal::String(s) | Literal::Token { value: s, .. } => Some(s.clone()),
+        Literal::Number(n) => Some(number_as_key(*n)),
+        Literal::Bool(_)
+        | Literal::Null
+        | Literal::Object(_)
+        | Literal::Array(_)
+        | Literal::Conditional(_) => None,
+    }
 }
 
 fn lookup_member(object: &Literal, key: &str) -> Option<Literal> {
@@ -451,6 +457,7 @@ fn call_to_literal(
     resolver
         .resolve_token_call(call)
         .or_else(|| resolver.resolve_raw_style_call(call))
+        .or_else(|| resolver.resolve_pure_call(call))
 }
 
 fn number_as_key(value: f64) -> String {
@@ -540,7 +547,7 @@ fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) ->
 
 /// JS `===`. Objects/arrays compare unequal (reference identity); cross-type
 /// pairs are always `false`.
-fn strict_eq(a: &Literal, b: &Literal) -> bool {
+pub(crate) fn strict_eq(a: &Literal, b: &Literal) -> bool {
     match (a, b) {
         (Literal::Null, Literal::Null) => true,
         (Literal::String(x), Literal::String(y)) => x == y,
@@ -556,7 +563,7 @@ fn strict_eq(a: &Literal, b: &Literal) -> bool {
 
 /// JS `==` for literals. Mixed object/array pairs return `None` — they'd
 /// need runtime `ToPrimitive`, which we don't model.
-fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
+pub(crate) fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
     if matches!(
         (a, b),
         (Literal::Null, Literal::Null)
@@ -586,7 +593,7 @@ fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
 
 /// JS `<`: lexicographic for two strings, else `ToNumber`-coerced. `None`
 /// if coercion fails on either side.
-fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
+pub(crate) fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
     if is_string_like(a) && is_string_like(b) {
         return Some(coerce_to_string(a)? < coerce_to_string(b)?);
     }
@@ -677,7 +684,7 @@ pub(crate) fn template_literal_to_literal(
     Some(Literal::String(collapse_whitespace(&out).trim().to_owned()))
 }
 
-fn truthy(value: &Literal) -> bool {
+pub(crate) fn truthy(value: &Literal) -> bool {
     match value {
         Literal::Null => false,
         Literal::Bool(b) => *b,
@@ -689,7 +696,7 @@ fn truthy(value: &Literal) -> bool {
 
 /// JS `ToString`. Object/array/conditional are `None` — `[object Object]`
 /// and `"a,b,c"` aren't useful styles, and `Conditional` has no single form.
-fn coerce_to_string(lit: &Literal) -> Option<String> {
+pub(crate) fn coerce_to_string(lit: &Literal) -> Option<String> {
     match lit {
         Literal::String(s) | Literal::Token { value: s, .. } => Some(s.clone()),
         Literal::Number(n) => Some(number_to_js_string(*n)),
@@ -701,7 +708,7 @@ fn coerce_to_string(lit: &Literal) -> Option<String> {
 
 /// JS `ToNumber`. `None` where JS would yield `NaN`, since that doesn't
 /// round-trip through JSON.
-fn coerce_to_number(lit: &Literal) -> Option<f64> {
+pub(crate) fn coerce_to_number(lit: &Literal) -> Option<f64> {
     match lit {
         Literal::Number(n) => Some(*n),
         Literal::Bool(b) => Some(if *b { 1.0 } else { 0.0 }),
@@ -720,6 +727,6 @@ fn coerce_to_number(lit: &Literal) -> Option<f64> {
 
 /// `Token` behaves like a string for coercion/equality but keeps its path
 /// around separately for build-info identity.
-fn is_string_like(value: &Literal) -> bool {
+pub(crate) fn is_string_like(value: &Literal) -> bool {
     matches!(value, Literal::String(_) | Literal::Token { .. })
 }

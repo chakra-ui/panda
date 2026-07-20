@@ -7,11 +7,11 @@
 //! consumer types (`ExtractorConfig`, `Project`) stay non-generic; the
 //! concrete impl is `ResolverImpl<F>` behind a `Box<dyn CrossFileLookup>`.
 //!
-//! Cache: `path → HashMap<exported_name, Literal>`. Each file parses and
+//! Cache: `path → HashMap<exported_name, ExportEntry>`. Each file parses and
 //! folds once per session, then drops its AST.
 //!
-//! Folds top-level `export const X = <foldable>` only — not re-exports,
-//! `export default`, or non-const declarations yet.
+//! Folds top-level `export const X = <foldable>` values and simple pure
+//! function exports (arrow / function) into an owned descriptor.
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -28,12 +28,20 @@ use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
+use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
 use crate::{
     Matchers, TokenDictionary, collect_imports, imports::module_export_name, match_import_records,
     scope::Resolver,
 };
 
-type FileExports = FxHashMap<String, Literal>;
+/// A folded named export: a style literal or a pure callable descriptor.
+#[derive(Debug, Clone)]
+pub(crate) enum ExportEntry {
+    Literal(Literal),
+    PureFn(OwnedPureFn),
+}
+
+type FileExports = FxHashMap<String, ExportEntry>;
 
 fn to_forward_slash(path: &Path) -> PathBuf {
     PathBuf::from(path.to_string_lossy().replace('\\', "/"))
@@ -108,10 +116,10 @@ impl CrossFileResolver {
     }
 }
 
-/// A cross-file lookup: the folded value plus the resolved module path
+/// A cross-file lookup: the folded export plus the resolved module path
 /// (recorded as a build dependency even when the value doesn't fold).
 pub(crate) struct CrossFileResolution {
-    pub(crate) value: Option<Literal>,
+    pub(crate) entry: Option<ExportEntry>,
     pub(crate) path: Option<PathBuf>,
 }
 
@@ -211,7 +219,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         tokens: Option<&TokenDictionary>,
     ) -> CrossFileResolution {
         let none = || CrossFileResolution {
-            value: None,
+            entry: None,
             path: None,
         };
         let Some(directory) = from_file.parent() else {
@@ -231,7 +239,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             .get(&path)
         {
             return CrossFileResolution {
-                value: exports.get(name).cloned(),
+                entry: exports.get(name).cloned(),
                 path: Some(path),
             };
         }
@@ -242,7 +250,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             let mut in_flight = self.in_flight.lock().expect("cross-file guard poisoned");
             if !in_flight.insert(guard_key.clone()) {
                 return CrossFileResolution {
-                    value: None,
+                    entry: None,
                     path: Some(path),
                 };
             }
@@ -256,13 +264,13 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             .expect("cross-file guard poisoned")
             .remove(&guard_key);
 
-        let value = exports.get(name).cloned();
+        let entry = exports.get(name).cloned();
         self.cache
             .lock()
             .expect("cross-file cache poisoned")
             .insert(path.clone(), exports);
         CrossFileResolution {
-            value,
+            entry,
             path: Some(path),
         }
     }
@@ -297,15 +305,24 @@ fn collect_from_named(
     resolver: &Resolver<'_, '_>,
     out: &mut FileExports,
 ) {
-    if let Some(Declaration::VariableDeclaration(var)) = &decl.declaration {
-        collect_from_var(var, resolver, out);
-        return;
+    match &decl.declaration {
+        Some(Declaration::VariableDeclaration(var)) => {
+            collect_from_var(var, resolver, out);
+            return;
+        }
+        Some(Declaration::FunctionDeclaration(func)) => {
+            if let (Some(id), Some(pure_fn)) = (&func.id, lower_function(func, Some(resolver))) {
+                out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
+            }
+            return;
+        }
+        _ => {}
     }
 
     for specifier in &decl.specifiers {
         let exported = module_export_name(&specifier.exported);
         let local = module_export_name(&specifier.local);
-        let value = if let Some(source) = &decl.source {
+        let entry = if let Some(source) = &decl.source {
             // Transitive re-export deps aren't threaded back to the importer yet.
             lookup
                 .resolve_named_export(
@@ -315,12 +332,16 @@ fn collect_from_named(
                     resolver.matchers(),
                     resolver.tokens(),
                 )
-                .value
+                .entry
+        } else if let Some(value) = resolver.resolve_root_name(&local) {
+            Some(ExportEntry::Literal(value))
         } else {
-            resolver.resolve_root_name(&local)
+            resolver
+                .lookup_root_pure_fn(&local)
+                .map(ExportEntry::PureFn)
         };
-        if let Some(value) = value {
-            out.insert(exported, value);
+        if let Some(entry) = entry {
+            out.insert(exported, entry);
         }
     }
 }
@@ -337,7 +358,9 @@ fn collect_from_var(
         match &declarator.id {
             BindingPattern::BindingIdentifier(id) => {
                 if let Some(value) = expression_to_literal(init, Some(resolver)) {
-                    out.insert(id.name.to_string(), value);
+                    out.insert(id.name.to_string(), ExportEntry::Literal(value));
+                } else if let Some(pure_fn) = lower_callable_expr(init, Some(resolver)) {
+                    out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
                 }
             }
             BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
@@ -356,7 +379,7 @@ fn collect_pattern_bindings(
     match pattern {
         BindingPattern::BindingIdentifier(id) => {
             if let Some(value) = resolver.resolve_root_name(id.name.as_str()) {
-                out.insert(id.name.to_string(), value);
+                out.insert(id.name.to_string(), ExportEntry::Literal(value));
             }
         }
         BindingPattern::ObjectPattern(object) => {

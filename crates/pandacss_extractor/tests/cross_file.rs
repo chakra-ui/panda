@@ -547,3 +547,153 @@ fn deep_import_chain_resolves_through_re_export() {
           - color: "#ef4444"
     "##);
 }
+
+// --- pure function exports ----------------------------------------------
+
+#[test]
+fn imported_pure_arrow_call_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { getColor } from './helpers';
+            import { css } from '@panda/css';
+            css({ color: getColor() });
+        "},
+        &[("helpers.ts", "export const getColor = () => 'red';\n")],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    calls:
+      - name: css
+        data:
+          - color: red
+    "##);
+}
+
+#[test]
+fn imported_group_hover_helper_folds_computed_key() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { groupHover } from './helpers';
+            import { css } from '@panda/css';
+            css({ [groupHover('cool')]: { color: 'red' } });
+        "},
+        &[(
+            "helpers.ts",
+            "export const groupHover = (name: string) => `.${name}:is(:hover, [data-hover]) &`;\n",
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r#"
+    calls:
+      - name: css
+        data:
+          - ".cool:is(:hover, [data-hover]) &":
+              color: red
+    "#);
+}
+
+#[test]
+fn imported_function_declaration_call_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { getColor } from './helpers';
+            import { css } from '@panda/css';
+            css({ color: getColor() });
+        "},
+        &[(
+            "helpers.ts",
+            "export function getColor() {\n  return 'teal.500';\n}\n",
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    calls:
+      - name: css
+        data:
+          - color: teal.500
+    "##);
+}
+
+#[test]
+fn re_exported_pure_fn_call_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { groupHover } from './a';
+            import { css } from '@panda/css';
+            css({ [groupHover('btn')]: { bg: 'red' } });
+        "},
+        &[
+            ("a.ts", "export { groupHover } from './helpers';\n"),
+            (
+                "helpers.ts",
+                "export const groupHover = (name: string) => `.group-${name}:hover &`;\n",
+            ),
+        ],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r#"
+    calls:
+      - name: css
+        data:
+          - ".group-btn:hover &":
+              bg: red
+    "#);
+}
+
+#[test]
+fn bare_imported_function_value_does_not_fold() {
+    // `getColor` without a call is not a style literal.
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { getColor } from './helpers';
+            import { css } from '@panda/css';
+            css({ color: getColor });
+        "},
+        &[("helpers.ts", "export const getColor = () => 'red';\n")],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert!(run(&fs, &main, &src).calls.is_empty());
+}
+
+#[test]
+fn imported_aliased_pure_fn_export_does_not_fold() {
+    // `export { g }` where `g` aliases a local arrow — export collection does
+    // not chase identifier aliases to PureFn (only direct arrow/function inits).
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { g } from './helpers';
+            import { css } from '@panda/css';
+            css({ color: g() });
+        "},
+        &[(
+            "helpers.ts",
+            "const f = () => 'red';\nconst g = f;\nexport { g };\n",
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert!(run(&fs, &main, &src).calls.is_empty());
+}
+
+#[test]
+fn imported_pure_helper_object_return_spreads() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { getColorConfig } from './helpers';
+            import { css } from '@panda/css';
+            css({ ...getColorConfig(), padding: '4px' });
+        "},
+        &[(
+            "helpers.ts",
+            "export const getColorConfig = () => ({ color: 'teal.600', backgroundColor: 'teal.650' });\n",
+        )],
+    );
+    let src = String::from_utf8(oxc_resolver::FileSystem::read(&fs, &main).unwrap()).unwrap();
+    assert_yaml_snapshot!(shape(&run(&fs, &main, &src)), @r##"
+    calls:
+      - name: css
+        data:
+          - color: teal.600
+            backgroundColor: teal.650
+            padding: 4px
+    "##);
+}

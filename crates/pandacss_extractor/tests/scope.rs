@@ -902,27 +902,426 @@ fn template_literal_with_member_interpolation_folds() {
     ");
 }
 
-// --- evaluation boundary: function calls aren't resolved ---
+// --- pure call folding ---
 
 #[test]
-fn local_function_call_return_is_not_resolved() {
-    // The same-file evaluator folds values, not arbitrary call results, so a
-    // call to a local function drops the call.
+fn local_function_call_return_folds() {
     let src = indoc! {r"
         import { css } from '@panda/css';
         const f = () => 'red';
+        css({ color: f() });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 57
+        end: 76
+    ");
+}
+
+#[test]
+fn iife_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: (() => 'red')() });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: red
+      span:
+        start: 34
+        end: 65
+    ");
+}
+
+#[test]
+fn local_function_declaration_call_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function getColor() {
+          return 'yellow.700';
+        }
+        css({ color: getColor() });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: yellow.700
+      span:
+        start: 81
+        end: 107
+    ");
+}
+
+#[test]
+fn pure_helper_param_template_folds_as_computed_key() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const groupHover = (name: string) => `.${name}:is(:hover, [data-hover]) &`;
+        css({ [groupHover('cool')]: { color: 'red' } });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @r#"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - ".cool:is(:hover, [data-hover]) &":
+            color: red
+      span:
+        start: 110
+        end: 157
+    "#);
+}
+
+#[test]
+fn pure_helper_array_index_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const pickSecond = (arr: string[]) => arr[1];
+        const colors = ['never', 'purple.900'];
+        css({ color: pickSecond(colors) });
+    "};
+    assert_yaml_snapshot!(run(src).calls, @"
+    - category: css
+      name: css
+      alias: css
+      data:
+        - color: purple.900
+      span:
+        start: 120
+        end: 154
+    ");
+}
+
+#[test]
+fn pure_helper_boolean_index_does_not_fold() {
+    // Mirrors `literal.rs`'s `computed_member_to_literal`: `obj[true]` is
+    // valid JS but not real Panda usage, so it drops instead of coercing the
+    // boolean to a string key — the pure-fn body evaluator shares this rule
+    // via `literal_to_property_key` rather than the looser `coerce_to_string`.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const pick = (flag: boolean) => ({ true: 'red', false: 'blue' })[flag];
+        css({ color: pick(true) });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn impure_math_random_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+        css({ color: pick(['a', 'b']) });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn pure_helper_object_return_spreads_into_css() {
+    // v1: `getColorConfig()` via ts-evaluator → BoxNodeObject, then spread.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const getColorConfig = () => ({ color: 'teal.600', backgroundColor: 'teal.650' });
+        css({ ...getColorConfig(), padding: '4px' });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_eq!(json["color"], "teal.600");
+    assert_eq!(json["backgroundColor"], "teal.650");
+    assert_eq!(json["padding"], "4px");
+}
+
+#[test]
+fn pure_helper_object_return_spreads_into_jsx() {
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        const getColorConfig = () => ({ color: 'teal.600', backgroundColor: 'teal.650' });
+        const el = <Box {...getColorConfig()} padding='4px' />;
+    "};
+    let json = serde_json::to_value(&run_jsx(src).jsx[0].data).unwrap();
+    assert_eq!(json["color"], "teal.600");
+    assert_eq!(json["backgroundColor"], "teal.650");
+    assert_eq!(json["padding"], "4px");
+}
+
+#[test]
+fn pure_helper_body_object_spread_does_not_fold() {
+    // Object spread inside the pure body is out of IR scope (v1 folded via VM).
+    // Outer static siblings still extract (lenient object / spread skip).
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const base = { color: 'red' };
+        const getStyles = () => ({ ...base, padding: '20px' });
+        css({ ...getStyles(), margin: '8px' });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_eq!(json["margin"], "8px");
+    assert!(json.get("color").is_none());
+    assert!(json.get("padding").is_none());
+}
+
+#[test]
+fn pure_helper_default_and_multi_args_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const tone = (base: string, shade: string = '500') => `${base}.${shade}`;
+        css({ color: tone('purple'), bg: tone('blue', '700') });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_eq!(json["color"], "purple.500");
+    assert_eq!(json["bg"], "blue.700");
+}
+
+#[test]
+fn pure_helper_local_alias_does_not_fold() {
+    // `g` aliases `f`; lookup only lowers direct arrow/function initializers.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const f = () => 'red';
+        const g = f;
+        css({ color: g() });
+    "};
+    assert!(
+        run(src).calls.is_empty(),
+        "aliased pure callable should not fold yet"
+    );
+}
+
+#[test]
+fn nested_pure_call_in_body_does_not_fold() {
+    // Nested calls are rejected even when the callee is itself pure.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const inner = () => 'red';
+        const outer = () => inner();
+        css({ color: outer() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn object_entries_factory_does_not_fold() {
+    // v1 folded this via ts-evaluator's ECMA preset; static pure_fn does not.
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const pickKey = () => Object.entries({ color: 'red' }).map(([k]) => k)[0];
+        css({ color: pickKey() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn rest_param_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const first = (...xs: string[]) => xs[0];
+        css({ color: first('red', 'blue') });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn member_callee_pure_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const helpers = { getColor: () => 'red' };
+        css({ color: helpers.getColor() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn optional_pure_call_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const f = () => 'red';
+        css({ color: f?.() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn spread_args_pure_call_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const f = (a: string) => a;
+        const args = ['red'] as const;
+        css({ color: f(...args) });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn async_pure_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const f = async () => 'red';
         css({ color: f() });
     "};
     assert!(run(src).calls.is_empty());
 }
 
 #[test]
-fn iife_is_not_resolved() {
+fn destructured_param_helper_does_not_fold() {
     let src = indoc! {r"
         import { css } from '@panda/css';
-        css({ color: (() => 'red')() });
+        const f = ({ color }: { color: string }) => color;
+        css({ color: f({ color: 'red' }) });
     "};
     assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn multi_statement_body_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function f() {
+          const x = 'red';
+          return x;
+        }
+        css({ color: f() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn mutated_pure_helper_binding_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        let f = () => 'red';
+        f = () => 'blue';
+        css({ color: f() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn function_expression_iife_folds() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        css({ color: (function () { return 'red'; })() });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_eq!(json["color"], "red");
+}
+
+#[test]
+fn class_static_method_reference_does_not_fold() {
+    // A plain reference pulled off a class isn't an arrow/function/
+    // parenthesized initializer, so `lower_callable_expr` never reaches a
+    // body — classes are out of scope entirely (v1 folded via ts-evaluator's
+    // full TS interpreter).
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        class Colors {
+          static primary() {
+            return 'red';
+          }
+        }
+        const primary = Colors.primary;
+        css({ color: primary() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn generator_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function* pickColor() {
+          yield 'red';
+        }
+        css({ color: pickColor() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn for_loop_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function sumUp() {
+          let total = 0;
+          for (let i = 0; i < 3; i++) {
+            total += i;
+          }
+          return total;
+        }
+        css({ opacity: sumUp() });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn while_loop_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        function firstPositive(xs: number[]) {
+          let i = 0;
+          while (xs[i] <= 0) {
+            i++;
+          }
+          return xs[i];
+        }
+        css({ opacity: firstPositive([-1, -1, 2]) });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn array_map_method_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const shout = (xs: string[]) => xs.map((x) => x.toUpperCase())[0];
+        css({ color: shout(['red']) });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn array_reduce_method_helper_does_not_fold() {
+    let src = indoc! {r"
+        import { css } from '@panda/css';
+        const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+        css({ opacity: sum([1, 2, 3]) });
+    "};
+    assert!(run(src).calls.is_empty());
+}
+
+#[test]
+fn pure_helper_folds_inside_cva_base() {
+    // Pure-fn folding isn't `css()`-specific: `cva`/`sva`/JSX style props all
+    // route through the same `expression_to_literal`, so a helper call
+    // inside a `cva` slot resolves exactly like it would in `css()`.
+    let src = indoc! {r"
+        import { cva } from '@panda/css';
+        const tone = (shade: string) => `red.${shade}`;
+        const button = cva({
+          base: { color: tone('600') },
+        });
+    "};
+    let json = serde_json::to_value(&run(src).calls[0].data[0]).unwrap();
+    assert_eq!(json["base"]["color"], "red.600");
+}
+
+#[test]
+fn pure_helper_folds_inside_jsx_style_prop() {
+    let src = indoc! {r"
+        import { Box } from '@panda/jsx';
+        const tone = (shade: string) => `red.${shade}`;
+        const el = <Box color={tone('600')} />;
+    "};
+    let json = serde_json::to_value(&run_jsx(src).jsx[0].data).unwrap();
+    assert_eq!(json["color"], "red.600");
 }
 
 #[test]
