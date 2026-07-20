@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { DistributiveOmit, HTMLPandaProps, JsxStyleProps, Pretty } from '../types';
+import type { DistributiveOmit, JsxStyleProps, Pretty } from '../types';
 
 declare const isCssProperty: (value: string) => boolean;
 
