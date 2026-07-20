@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 1.11.5
+
+### Patch Changes
+
+- 4ef39c8: Resolve tsconfig `paths` from referenced projects when bundling the config file (Vite solution-style setups).
+- Updated dependencies [0c185d9]
+  - @pandacss/preset-base@1.11.5
+  - @pandacss/logger@1.11.5
+  - @pandacss/preset-panda@1.11.5
+  - @pandacss/shared@1.11.5
+  - @pandacss/types@1.11.5
+
 ## 1.11.4
 
 ### Patch Changes

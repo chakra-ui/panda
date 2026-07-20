@@ -1,5 +1,12 @@
 # @pandacss/preset-base
 
+## 1.11.5
+
+### Patch Changes
+
+- 0c185d9: Emit `-webkit-backdrop-filter` before `backdrop-filter` so Lightning CSS keeps the unprefixed declaration.
+  - @pandacss/types@1.11.5
+
 ## 1.11.4
 
 ### Patch Changes
