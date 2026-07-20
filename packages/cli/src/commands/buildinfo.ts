@@ -1,6 +1,6 @@
 import { type Driver } from '@pandacss/compiler'
 import { diagnosticsPass } from '@pandacss/compiler-shared'
-import { runningPandaRange, toRelativeKey } from '@pandacss/config'
+import { getPandaMajorRange, toRelativeKey } from '@pandacss/config'
 import { defineCommand } from 'citty'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
@@ -59,7 +59,7 @@ export async function runBuildinfo(
         timings,
         phase: 'buildinfo',
         run: () => {
-          const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? runningPandaRange() ?? '*' })
+          const info = driver.compiler.buildInfo.create({ panda: flags.panda ?? getPandaMajorRange() ?? '*' })
           return driver.compiler.buildInfo.normalize(info, { mapModuleKey: (key) => toRelativeKey(key, cwd) })
         },
       })
