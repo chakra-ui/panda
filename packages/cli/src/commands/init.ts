@@ -15,9 +15,17 @@ import {
   shouldPrintJson,
   type OutputSink,
 } from '../output'
-import { createResult, setExitCode, toJsonPayload } from '../result'
+import { createResult, ExitCode, setExitCode, toJsonPayload } from '../result'
 import { renderTimings, timeAsync } from '../timing'
 import { configLoadDiagnostics } from '../diagnostics'
+import {
+  formatInteractiveGuardFailure,
+  InteractiveCancelled,
+  interactiveGuardFailure,
+  mergeInteractiveFlags,
+  promptInitFlags,
+} from '../interactive'
+import { formatInitNextSteps, formatInitSummary } from '../next-steps'
 import type { InitFlags, InitResult, PhaseTimings } from '../schema'
 
 /** Presets scaffolded into the generated config and installed by `panda init`. */
@@ -34,16 +42,25 @@ export const initCommand = defineCommand({
     postcss: { type: 'boolean', description: 'Emit a PostCSS config file', alias: 'p' },
     gitignore: { type: 'boolean', description: 'Update .gitignore with the output directory' },
     codegen: { type: 'boolean', description: 'Run codegen after setup' },
-    outExtension: { type: 'string', description: 'Generated runtime file extension' },
+    'out-extension': {
+      type: 'string',
+      description: 'Generated runtime file extension: js, mjs, or ts',
+    },
     outdir: { type: 'string', description: 'Output directory for generated files' },
-    jsxFramework: { type: 'string', description: 'The JSX framework to use' },
-    syntax: { type: 'string', description: 'The CSS syntax preference' },
-    strictTokens: { type: 'boolean', description: 'Set strictTokens to true' },
+    'jsx-framework': { type: 'string', description: 'JSX framework: react, preact, vue, solid, or qwik' },
+    'jsx-style-props': {
+      type: 'string',
+      description: 'JSX style props: all, minimal, or none',
+    },
+    syntax: { type: 'string', description: 'CSS syntax: object-literal or template-literal' },
+    'strict-tokens': { type: 'boolean', description: 'Set strictTokens to true' },
     install: {
       type: 'boolean',
       description: 'Install the default presets (use --no-install to skip)',
       default: true,
     },
+    interactive: { type: 'boolean', description: 'Run the init wizard', alias: 'i' },
+    'no-input': { type: 'boolean', description: 'Disable prompts (fail if interactive is required)' },
     json: { type: 'boolean', description: 'Print JSON' },
     format: { type: 'string', description: 'Diagnostic output format: human, pretty, json, or github' },
     'log-level': {
@@ -52,16 +69,57 @@ export const initCommand = defineCommand({
       description: 'Set output level: silent, error, warn, info, or debug',
     },
     logfile: { type: 'string', description: 'Write human output to a log file' },
+    'no-color': { type: 'boolean', description: 'Disable ANSI colors in human output' },
   }),
   run: async ({ args }) => setExitCode(await runInit(parseCliFlags(initFlagsSchema, args))),
 })
 
 export async function runInit(flags: InitFlags = {}, output: OutputSink = consoleOutput): Promise<InitResult> {
   const startedAt = performance.now()
-  const cwd = resolveCwd(flags.cwd)
-  const commandOutput = createCommandOutput(output, flags, cwd)
+  let resolvedFlags = flags
+
+  if (flags.interactive) {
+    const failure = interactiveGuardFailure(flags)
+    if (failure) {
+      const message = formatInteractiveGuardFailure(failure)
+      if (output.error) output.error(message)
+      else output.log(message)
+      return {
+        ...createResult({
+          command: 'init',
+          startedAt,
+          data: emptyInitData(resolveCwd(flags.cwd), flags),
+          diagnostics: [],
+          ok: false,
+        }),
+        exitCode: ExitCode.UsageError,
+      }
+    }
+
+    try {
+      resolvedFlags = mergeInteractiveFlags(flags, await promptInitFlags())
+    } catch (error) {
+      if (error instanceof InteractiveCancelled) {
+        return {
+          ...createResult({
+            command: 'init',
+            startedAt,
+            data: emptyInitData(resolveCwd(flags.cwd), flags),
+            diagnostics: [],
+            ok: true,
+          }),
+          exitCode: ExitCode.Success,
+        }
+      }
+      throw error
+    }
+  }
+
+  const cwd = resolveCwd(resolvedFlags.cwd)
+  const commandOutput = createCommandOutput(output, resolvedFlags, cwd)
   const timings: PhaseTimings = {}
-  const outdir = flags.outdir ?? 'styled-system'
+  const outdir = resolvedFlags.outdir ?? 'styled-system'
+  flags = resolvedFlags
 
   let configPath = resolveConfigTarget(cwd, flags.config)
   let configWritten = false
@@ -87,6 +145,7 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
           outdir,
           outExtension: flags.outExtension,
           jsxFramework: flags.jsxFramework,
+          jsxStyleProps: flags.jsxStyleProps,
           syntax: flags.syntax,
           strictTokens: flags.strictTokens,
           presets: willInstall ? DEFAULT_PRESETS : [],
@@ -119,6 +178,9 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
       })
     }
 
+    // Codegen loads the scaffolded config (`import … from '@pandacss/dev'`). That
+    // package must already be installed in the project — same as the documented
+    // install → init flow. Missing it surfaces as a normal config-load failure.
     if (flags.codegen !== false) {
       const driver = await timeAsync({
         timings,
@@ -177,16 +239,45 @@ export async function runInit(flags: InitFlags = {}, output: OutputSink = consol
   } else {
     if (shouldPrintHumanSummary(flags)) {
       commandOutput.log(
-        `init: ${configWritten ? 'wrote' : 'kept'} ${configPath}` +
-          `${presetsInstalled.length > 0 ? `, installed ${presetsInstalled.join(', ')}` : ''}` +
-          `${gitignoreWritten ? ', updated .gitignore' : ''}` +
-          `${codegenFiles.length > 0 ? `, wrote ${codegenFiles.length} codegen files` : ''}`,
+        formatInitSummary({
+          cwd,
+          configPath,
+          outdir,
+          configWritten,
+          postcssWritten,
+          gitignoreWritten,
+          codegenFiles,
+          presetsInstalled,
+          noColor: flags.noColor,
+        }),
       )
+      if (configWritten && process.stdout.isTTY) {
+        commandOutput.log('')
+        commandOutput.log(
+          formatInitNextSteps({
+            outdir,
+            noColor: flags.noColor,
+          }),
+        )
+      }
     }
     renderTimings({ command: 'init', timings, output: commandOutput, flags })
   }
 
   return result
+}
+
+function emptyInitData(cwd: string, flags: InitFlags) {
+  return {
+    timings: {} as PhaseTimings,
+    configPath: resolveConfigTarget(cwd, flags.config),
+    outdir: flags.outdir ?? 'styled-system',
+    configWritten: false,
+    postcssWritten: false,
+    gitignoreWritten: false,
+    codegenFiles: [] as string[],
+    presetsInstalled: [] as string[],
+  }
 }
 
 interface SetupConfigOptions {
@@ -195,6 +286,7 @@ interface SetupConfigOptions {
   outdir: string
   outExtension?: 'ts' | 'js' | 'mjs'
   jsxFramework?: string
+  jsxStyleProps?: 'all' | 'minimal' | 'none'
   syntax?: 'template-literal' | 'object-literal'
   strictTokens?: boolean
   presets: readonly string[]
@@ -282,6 +374,7 @@ function configSource(options: SetupConfigOptions): string {
 
   if (options.outExtension) lines.push(`  outExtension: ${JSON.stringify(options.outExtension)},`)
   if (options.jsxFramework) lines.push(`  jsxFramework: ${JSON.stringify(options.jsxFramework)},`)
+  if (options.jsxStyleProps) lines.push(`  jsxStyleProps: ${JSON.stringify(options.jsxStyleProps)},`)
   if (options.syntax) lines.push(`  syntax: ${JSON.stringify(options.syntax)},`)
   if (options.strictTokens) lines.push('  strictTokens: true,')
 

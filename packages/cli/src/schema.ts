@@ -31,6 +31,7 @@ export const commonFlagsSchema = object({
   logLevel: logLevelSchema,
   maxWarnings: numberLikeFlag,
   logfile: stringFlag,
+  noColor: booleanFlag,
   profile: booleanFlag,
   trace: booleanFlag,
   traceOutput: traceOutputSchema,
@@ -80,9 +81,12 @@ export const initFlagsSchema = commonFlagsSchema
     outExtension: enumOf(['ts', 'js', 'mjs']),
     outdir: stringFlag,
     jsxFramework: stringFlag,
+    jsxStyleProps: enumOf(['all', 'minimal', 'none']),
     syntax: enumOf(['template-literal', 'object-literal']),
     strictTokens: booleanFlag,
     install: booleanFlag,
+    interactive: booleanFlag,
+    noInput: booleanFlag,
   })
 
 export const buildinfoFlagsSchema = commonFlagsSchema.omit({ watch: true, watchDebounce: true }).extend({

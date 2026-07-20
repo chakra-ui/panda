@@ -124,7 +124,12 @@ panda init --postcss              # also write postcss.config.cjs
 panda init --gitignore            # add styled-system to .gitignore (on by default)
 panda init --jsxFramework react   # JSX helpers (react | preact | vue | solid | qwik)
 panda init --outdir src/styled-system
+panda init -i                     # interactive wizard (TTY only; not a log mode)
 ```
+
+The wizard asks for PostCSS, `outExtension` (`js` / `mjs` / `ts`), JSX framework (or none),
+`jsxStyleProps` (`all` / `minimal` / `none` when a framework is chosen), `strictTokens`, and `.gitignore`.
+Template-literal `syntax` stays a flag/config option only.
 
 ### 3. Tell Panda what to scan
 
@@ -493,6 +498,9 @@ const Button = withContext('button')
 Logging flags are consolidated: use `--log-level silent|error|warn|info|debug` instead of `--silent`, `--quiet`, or
 `--verbose`. Shared CLI flags use kebab-case, including `--max-warnings`, `--watch-debounce`, `--trace-output`, and
 `--trace-file`. `--profile` replaces v1's `--cpu-prof` (see [above](#--cpu-prof-is-now---profile)).
+
+`panda init -i` / `--interactive` is the init wizard only (same as v1) — it does not toggle “fancy” logs. Human TTY
+output can use ANSI colors; pass `--no-color` or set `NO_COLOR` to disable. Use `--no-input` to forbid prompts.
 
 ---
 

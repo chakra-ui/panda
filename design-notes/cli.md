@@ -202,7 +202,8 @@ Watch mode keeps tracing active until the returned `stop()` function runs.
 
 ## Lifecycle commands
 
-- `panda init` scaffolds a v2-ready config and optional PostCSS wiring.
+- `panda init` scaffolds a v2-ready config and optional PostCSS wiring. `panda init -i` runs a TTY wizard;
+  `--no-input` forbids prompts. Human TTY output may use ANSI color (`--no-color` / `NO_COLOR` to disable).
 - `panda build` generates artifacts and CSS once.
 - `panda dev` watches and rebuilds.
 - `panda check` verifies generated output without writing.
