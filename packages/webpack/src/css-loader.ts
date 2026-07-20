@@ -20,6 +20,8 @@ export default function pandaCssLoader(this: LoaderContext<PandaCssLoaderOptions
   for (const file of driver.scan()) this.addDependency(file)
   if (driver.configPath) this.addDependency(driver.configPath)
 
-  const { css } = driver.cssgen({ emitLayerDeclaration: false })
-  return `${source}\n${css}`
+  const polyfill = driver.config.polyfill === true
+  const { css } = driver.cssgen({ emitLayerDeclaration: false, polyfill })
+  const entry = polyfill ? driver.compiler.stripLayerOrderStatements(source) : source
+  return `${entry}\n${css}`
 }

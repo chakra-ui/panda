@@ -6,10 +6,11 @@ import {
   type Diagnostic,
   type ParseFileReport,
 } from '@pandacss/compiler-shared'
+import { colorSeverity, createColors, type ColorOptions } from './color'
 
 export type DiagnosticFormat = 'human' | 'pretty' | 'json' | 'github'
 
-export interface DiagnosticRenderOptions {
+export interface DiagnosticRenderOptions extends ColorOptions {
   cwd: string
   format?: DiagnosticFormat
 }
@@ -83,44 +84,48 @@ export function renderDiagnostics(diagnostics: Diagnostic[], options: Diagnostic
     return ''
   }
 
+  // Machine formats stay uncolored for parsers / Actions annotations.
+  const color =
+    options.format === 'json' || options.format === 'github' ? createColors({ noColor: true }) : createColors(options)
+
   switch (options.format) {
     case 'github':
       return visible.map(formatGithubDiagnostic).join('\n')
     case 'pretty':
-      return visible.map((diagnostic) => formatPrettyDiagnostic(diagnostic, options.cwd)).join('\n\n')
+      return visible.map((diagnostic) => formatPrettyDiagnostic(diagnostic, options.cwd, color)).join('\n\n')
     case 'json':
       return JSON.stringify(visible, null, 2)
     case 'human':
     default:
-      return visible.map(formatDiagnostic).join('\n')
+      return visible.map((diagnostic) => formatDiagnostic(diagnostic, color)).join('\n')
   }
 }
 
-export function formatDiagnostic(diagnostic: Diagnostic): string {
+export function formatDiagnostic(diagnostic: Diagnostic, colors = createColors({ noColor: true })): string {
   const location = diagnostic.location
     ? ` ${diagnostic.file ?? '<unknown>'}:${diagnostic.location.start.line}:${diagnostic.location.start.column}`
     : diagnostic.file
       ? ` ${diagnostic.file}`
       : ''
 
-  const header = `${diagnostic.severity} ${diagnostic.code}${location} ${diagnostic.message}`
-  const help = (diagnostic.help ?? []).map((message) => `  help: ${message}`)
+  const header = `${colorSeverity(diagnostic.severity, colors)} ${colors.dim(diagnostic.code)}${location} ${diagnostic.message}`
+  const help = (diagnostic.help ?? []).map((message) => `  ${colors.dim('help:')} ${message}`)
 
   return [header, ...help].join('\n')
 }
 
-function formatPrettyDiagnostic(diagnostic: Diagnostic, cwd: string): string {
-  const header = `${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`
-  if (!diagnostic.file || !diagnostic.location) return formatDiagnostic(diagnostic)
+function formatPrettyDiagnostic(diagnostic: Diagnostic, cwd: string, colors = createColors({ noColor: true })): string {
+  const header = `${colorSeverity(diagnostic.severity, colors)} ${colors.dim(diagnostic.code)}: ${diagnostic.message}`
+  if (!diagnostic.file || !diagnostic.location) return formatDiagnostic(diagnostic, colors)
 
   const filePath = isAbsolute(diagnostic.file) ? diagnostic.file : resolve(cwd, diagnostic.file)
 
-  if (!existsSync(filePath)) return formatDiagnostic(diagnostic)
+  if (!existsSync(filePath)) return formatDiagnostic(diagnostic, colors)
 
   const lineNumber = diagnostic.location.start.line
   const line = readFileSync(filePath, 'utf8').split(/\r?\n/)[lineNumber - 1]
 
-  if (line == null) return formatDiagnostic(diagnostic)
+  if (line == null) return formatDiagnostic(diagnostic, colors)
 
   const startColumn = Math.max(1, diagnostic.location.start.column)
   const endColumn =
@@ -130,10 +135,15 @@ function formatPrettyDiagnostic(diagnostic: Diagnostic, cwd: string): string {
   const marker = `${' '.repeat(String(lineNumber).length)} │ ${' '.repeat(startColumn - 1)}${'^'.repeat(
     Math.max(1, endColumn - startColumn),
   )}`
-  const details = [`  ┌─ ${diagnostic.file}:${lineNumber}:${startColumn}`, `  │`, `${lineNumber} │ ${line}`, marker]
+  const details = [
+    `  ┌─ ${colors.cyan(`${diagnostic.file}:${lineNumber}:${startColumn}`)}`,
+    `  │`,
+    `${lineNumber} │ ${line}`,
+    marker,
+  ]
 
   for (const help of diagnostic.help ?? []) {
-    details.push(`  = help: ${help}`)
+    details.push(`  = ${colors.dim('help:')} ${help}`)
   }
 
   return [header, ...details].join('\n')

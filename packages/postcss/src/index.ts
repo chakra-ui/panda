@@ -1,7 +1,7 @@
 import { createNodeDriver } from '@pandacss/compiler'
 import { type Diagnostic, type Driver, formatDiagnostic, type SourceChange } from '@pandacss/compiler-shared'
 import { extname, normalize, resolve } from 'node:path'
-import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root, TransformCallback } from 'postcss'
+import type { ChildNode, Helpers, Message, Plugin, PluginCreator, Result, Root } from 'postcss'
 
 const PLUGIN_NAME = 'pandacss'
 
@@ -26,7 +26,8 @@ const driverStates = new Map<string, DriverState>()
 let driverGuard: Promise<void> | undefined
 
 const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => {
-  const postcssProcess: TransformCallback = async (root: Root, result: Result) => {
+  const postcssProcess = async (root: Root, helpers: Helpers) => {
+    const result = helpers.result
     const fileName = result.opts.from
 
     if (shouldSkip(fileName, options.allow)) return
@@ -51,6 +52,7 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     }
 
     const { driver } = state
+    const polyfill = driver.config.polyfill === true
 
     if (!driver.compiler.hasLayerDeclaration(inputCss)) return
 
@@ -60,7 +62,13 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
 
-    const output = driver.cssgen({ emitLayerDeclaration: false })
+    if (polyfill) {
+      const stripped = driver.compiler.stripLayerOrderStatements(inputCss)
+      root.removeAll()
+      root.append(helpers.postcss.parse(stripped, { from: fileName }))
+    }
+
+    const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
     emitDiagnostics(root, result, output.diagnostics)
     root.append(output.css)
 
@@ -78,7 +86,7 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
         .catch(() => {
           /** keep the queue alive after a failed run */
         })
-        .then(() => postcssProcess(root, helpers.result))
+        .then(() => postcssProcess(root, helpers))
       return driverGuard
     },
   } satisfies Plugin

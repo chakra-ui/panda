@@ -1,6 +1,6 @@
-import * as parcelWatcher from '@parcel/watcher'
 import { statSync } from 'node:fs'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
+import type { AsyncSubscription } from '@parcel/watcher'
 import type { Driver, SourceChange } from '@pandacss/compiler'
 
 export type WatchEvent = SourceChange
@@ -90,6 +90,8 @@ export async function handleWatchBatch(
 }
 
 export async function startProjectWatch(options: ProjectWatchOptions): Promise<() => Promise<void>> {
+  // Native watcher — only load when a command actually enters watch mode.
+  const parcelWatcher = await import('@parcel/watcher')
   const targets = options.driver.watchTargets()
   const configFiles = new Set(targets.config.map((path) => resolve(options.cwd, path)))
   const configDirs = new Set([...configFiles].map((path) => dirname(path)))
@@ -133,7 +135,7 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
     })
   }, debounceMs)
 
-  const subscriptions: parcelWatcher.AsyncSubscription[] = []
+  const subscriptions: AsyncSubscription[] = []
   const subscribe = async (dir: string, filter?: (event: WatchEvent) => boolean) => {
     const subscription = await parcelWatcher.subscribe(
       dir,

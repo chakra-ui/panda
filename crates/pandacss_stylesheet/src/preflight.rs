@@ -52,9 +52,19 @@ fn write_rule(writer: &mut CssWriter, rule: &PreflightRule, scope: Option<&str>,
     };
     writer.rule(selector.as_ref(), |writer| {
         for (property, value) in rule.declarations {
-            writer.declaration(property, value, false);
+            let (value, important) = strip_important(value);
+            writer.declaration(property, value, important);
         }
     });
+}
+
+/// Preflight bakes `!important` into the value string. `CssWriter` needs it
+/// as a flag, so the polyfill can invert its layer priority correctly.
+fn strip_important(value: &str) -> (&str, bool) {
+    match value.strip_suffix("!important") {
+        Some(rest) => (rest.trim_end(), true),
+        None => (value, false),
+    }
 }
 
 /// Top-level rules in v1's emit order: the `reset` definition then the

@@ -25,6 +25,10 @@ export function buildArgs(): ArgsDef {
     outfile: { type: 'string', description: 'Output file for extracted CSS', alias: 'o' },
     splitting: { type: 'boolean', description: 'Emit split CSS files' },
     clean: { type: 'boolean', description: 'Clean the output directory before generating' },
+    polyfill: {
+      type: 'boolean',
+      description: 'Polyfill cascade layers with :not(#\\#) (overrides config polyfill)',
+    },
     ...outputArgs(),
     ...traceArgs(),
     'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },

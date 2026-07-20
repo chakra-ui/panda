@@ -1,5 +1,6 @@
 import type {
   Atom,
+  CompileOptions,
   CompileOutput,
   Compiler,
   DesignSystemManifestInput,
@@ -160,6 +161,9 @@ class FallbackCompiler implements Compiler {
   hasLayerDeclaration() {
     return false
   }
+  stripLayerOrderStatements(css: string) {
+    return css
+  }
   spec() {
     return {
       conditions: { keys: [], breakpoints: [], containers: [] },
@@ -247,6 +251,9 @@ class FallbackCompiler implements Compiler {
     return emptyCompileOutput()
   }
   getLayerCss(_options: LayerCssOptions) {
+    return emptyCompileOutput()
+  }
+  getKeyframeCss(_options?: CompileOptions) {
     return emptyCompileOutput()
   }
   getSplitCss(_options?: SplitCssOptions) {

@@ -125,6 +125,7 @@ export declare class WasmCompiler {
   parseFiles(paths: string[]): ParseFileReport[]
   layers(): LayerNames
   hasLayerDeclaration(css: string): boolean
+  stripLayerOrderStatements(css: string): string
   spec(): Spec
   sources(): SourceEntry[]
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
@@ -150,6 +151,7 @@ export declare class WasmCompiler {
   summary(): ProjectSummary
   compile(options?: CompileOptions): CompileOutput
   getLayerCss(options: LayerCssOptions): CompileOutput
+  getKeyframeCss(options?: CompileOptions): CompileOutput
   getSplitCss(options?: SplitCssOptions): CssFile[]
   generateArtifacts(options?: GenerateArtifactOptions): CodegenArtifact[]
   generateArtifact(id: CodegenArtifactId, options?: GenerateArtifactOptions): CodegenArtifact | undefined

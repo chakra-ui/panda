@@ -15,6 +15,7 @@ Owned:
 - Reset/preflight emission, including `preflight.scope` and `preflight.level`.
 - Base layer config CSS: `globalCss`, `globalVars`, `globalFontface`, and `globalPositionTry`.
 - Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`.
+  Keyframes-only CSS is available via `compile_keyframes` / host `getKeyframeCss()` (no token vars).
 - Recipes layer: config recipes, slot recipes, compound variants, and split recipe files.
 - Utilities layer: dynamic atoms, recipe atomic atoms, static atoms, and utility sub-layers.
 - Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe
@@ -99,6 +100,25 @@ selectors become ancestors, and pseudo-elements are emitted after pseudo-classes
 - Empty static recipe snapshots skip `merge_encoded_recipes()`.
 - Current emit cost is `O(total atoms log total atoms)`. Incremental watch-mode CSS patching would require a different
   API with per-bucket output and stable invalidation.
+
+## Cascade-layer polyfill
+
+With `polyfill` / `--polyfill`, emit is two-phase (csstools: boosts need the full sheet):
+
+1. **Record** — `CssWriter` stores `LayerEnter`/`LayerExit`, `Rule`, `Declaration`, `AtRule`, `Raw` (no `@layer`, no
+   selector mutation). `Declaration` is for descriptors with no enclosing rule (`@font-face`/`@property`/
+   `@position-try`).
+2. **Analyze + flatten** — `step = maxIds + 1` over every recorded selector; nested preamble ranks; flat CSS with
+   `rank * step` as one `:not(#\##\#…)`.
+
+`!important` reverses layer priority per spec, so a rule mixing important and non-important declarations splits into
+two blocks: normal gets `rank * step`, important gets `(max_rank - rank) * step` (`write_rule` in `polyfill.rs`).
+`@keyframes` step selectors (`from`/`to`/`50%`) are never boosted — they aren't real selectors, and a `:not()` there
+drops the whole block in every browser.
+
+Native `@layer` emit is unchanged when polyfill is off. Split reuses the merged analyze result. Hosts keep the entry
+`@layer …;` as the injection marker, then call `compiler.stripLayerOrderStatements(css)` (Panda order lines only,
+comment-aware).
 
 ## Output Modes
 

@@ -63,6 +63,7 @@ Initialize Panda in a project.
 
 ```bash
 pnpm panda init
+pnpm panda init -i
 pnpm panda init --postcss
 pnpm panda init --outdir styled-system
 ```
@@ -70,15 +71,19 @@ pnpm panda init --outdir styled-system
 | Flag | Description |
 | ---- | ----------- |
 | `--force, -f` | Overwrite an existing config file. |
+| `--interactive, -i` | Run the init wizard (TTY only). |
+| `--no-input` | Disable prompts; fails if `--interactive` is set. |
 | `--postcss, -p` | Emit a PostCSS config file. |
 | `--gitignore` / `--no-gitignore` | Update `.gitignore` with the output directory. |
 | `--codegen` / `--no-codegen` | Run codegen after setup. |
-| `--out-extension <ext>` | Generated runtime file extension: `ts`, `js`, or `mjs`. |
+| `--out-extension <ext>` | Generated runtime file extension: `js`, `mjs`, or `ts`. |
 | `--outdir <dir>` | Output directory for generated files. |
-| `--jsx-framework <framework>` | JSX framework to use. |
+| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, `solid`, or `qwik`. |
+| `--jsx-style-props <mode>` | JSX style props: `all`, `minimal`, or `none`. |
 | `--syntax <syntax>` | CSS syntax preference: `template-literal` or `object-literal`. |
 | `--strict-tokens` | Set `strictTokens` to `true`. |
 | `--install` / `--no-install` | Install default presets when possible. |
+| `--no-color` | Disable ANSI colors in human output. |
 
 ## build
 
